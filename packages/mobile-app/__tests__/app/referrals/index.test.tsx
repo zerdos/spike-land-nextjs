@@ -7,14 +7,14 @@ import * as Clipboard from "expo-clipboard";
 import React from "react";
 import { Alert } from "react-native";
 
-import { useReferralStats } from "../../hooks";
+import { useReferralStats } from "@/hooks";
 
-import ReferralsScreen from "./index";
+import ReferralsScreen from "@/app/referrals/index";
 
 // Mock dependencies
 jest.mock("expo-clipboard");
-jest.mock("../../hooks");
-jest.mock("../../components/ReferralStats", () => ({
+jest.mock("@/hooks");
+jest.mock("@/components/ReferralStats", () => ({
   ReferralStats: ({ stats, isLoading, testID }: any) => {
     const { View, Text } = require("react-native");
     return (
@@ -26,7 +26,7 @@ jest.mock("../../components/ReferralStats", () => ({
   },
 }));
 
-jest.mock("../../components/ShareButtons", () => ({
+jest.mock("@/components/ShareButtons", () => ({
   ShareButtons: ({ referralUrl, onShareError }: any) => {
     const { View, Text, TouchableOpacity } = require("react-native");
     return (
@@ -43,7 +43,7 @@ jest.mock("../../components/ShareButtons", () => ({
   },
 }));
 
-jest.mock("../../components/ReferredUsersList", () => ({
+jest.mock("@/components/ReferredUsersList", () => ({
   ReferredUsersList: ({ users, onLoadMore, hasMore }: any) => {
     const { View, Text, TouchableOpacity } = require("react-native");
     return (

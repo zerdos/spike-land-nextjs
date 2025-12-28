@@ -33,7 +33,7 @@ const mockAuthStore = {
   isLoading: false,
   user: { id: "user-1", email: "test@example.com", name: "Test User" },
 };
-jest.mock("../../stores", () => ({
+jest.mock("@/stores", () => ({
   useAuthStore: jest.fn(() => mockAuthStore),
 }));
 
@@ -61,7 +61,7 @@ const mockSettingsStore: {
   updateNotificationPreference: jest.fn(() => Promise.resolve()),
   initialize: jest.fn(() => Promise.resolve()),
 };
-jest.mock("../../stores/settings-store", () => ({
+jest.mock("@/stores/settings-store", () => ({
   useSettingsStore: jest.fn(() => mockSettingsStore),
 }));
 
@@ -105,7 +105,7 @@ jest.mock("tamagui", () => {
 });
 
 // Import component after mocks
-import NotificationsScreen from "./notifications";
+import NotificationsScreen from "@/app/settings/notifications";
 
 // ============================================================================
 // Test Helpers

@@ -46,16 +46,18 @@ export interface NotificationsListResponse {
 // Configuration
 // ============================================================================
 
-// Configure notification behavior
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Configure notification behavior (only on native platforms)
+if (Platform.OS !== "web") {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 // ============================================================================
 // Push Token Registration
@@ -66,6 +68,12 @@ Notifications.setNotificationHandler({
  * Returns null if registration fails or is not supported
  */
 export async function registerForPushNotifications(): Promise<string | null> {
+  // Push notifications are not available on web
+  if (Platform.OS === "web") {
+    console.warn("Push notifications are not available on web");
+    return null;
+  }
+
   // Check if running on physical device
   if (!Device.isDevice) {
     console.warn("Push notifications require a physical device");
@@ -145,6 +153,12 @@ export async function scheduleLocalNotification(
   body: string,
   data?: NotificationData,
 ): Promise<string> {
+  // Local notifications are not available on web
+  if (Platform.OS === "web") {
+    console.warn("Local notifications are not available on web");
+    return "";
+  }
+
   const notificationId = await Notifications.scheduleNotificationAsync({
     content: {
       title,
@@ -167,6 +181,12 @@ export async function scheduleDelayedNotification(
   delaySeconds: number,
   data?: NotificationData,
 ): Promise<string> {
+  // Local notifications are not available on web
+  if (Platform.OS === "web") {
+    console.warn("Local notifications are not available on web");
+    return "";
+  }
+
   const notificationId = await Notifications.scheduleNotificationAsync({
     content: {
       title,
@@ -187,6 +207,7 @@ export async function scheduleDelayedNotification(
  * Cancel a scheduled notification
  */
 export async function cancelNotification(notificationId: string): Promise<void> {
+  if (Platform.OS === "web") return;
   await Notifications.cancelScheduledNotificationAsync(notificationId);
 }
 
@@ -194,6 +215,7 @@ export async function cancelNotification(notificationId: string): Promise<void> 
  * Cancel all scheduled notifications
  */
 export async function cancelAllNotifications(): Promise<void> {
+  if (Platform.OS === "web") return;
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
@@ -308,6 +330,7 @@ export async function deleteNotification(notificationId: string): Promise<boolea
  * Set the app badge count
  */
 export async function setBadgeCount(count: number): Promise<void> {
+  if (Platform.OS === "web") return;
   await Notifications.setBadgeCountAsync(count);
 }
 
@@ -315,6 +338,7 @@ export async function setBadgeCount(count: number): Promise<void> {
  * Clear the app badge
  */
 export async function clearBadge(): Promise<void> {
+  if (Platform.OS === "web") return;
   await Notifications.setBadgeCountAsync(0);
 }
 
@@ -322,5 +346,6 @@ export async function clearBadge(): Promise<void> {
  * Get the current badge count
  */
 export async function getBadgeCount(): Promise<number> {
+  if (Platform.OS === "web") return 0;
   return await Notifications.getBadgeCountAsync();
 }

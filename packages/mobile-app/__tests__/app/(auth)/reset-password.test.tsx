@@ -6,8 +6,8 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 
-import { authService } from "../../services/auth";
-import { calculatePasswordStrength } from "./reset-password";
+import { calculatePasswordStrength } from "@/app/(auth)/reset-password";
+import { authService } from "@/services/auth";
 
 // Mock modules before importing the component
 jest.mock("expo-router", () => ({
@@ -15,7 +15,7 @@ jest.mock("expo-router", () => ({
   useLocalSearchParams: jest.fn(),
 }));
 
-jest.mock("../../services/auth", () => ({
+jest.mock("@/services/auth", () => ({
   authService: {
     resetPassword: jest.fn(),
   },
@@ -155,7 +155,7 @@ jest.mock("tamagui", () => {
   };
 });
 
-import ResetPasswordScreen from "./reset-password";
+import ResetPasswordScreen from "@/app/(auth)/reset-password";
 
 const mockRouter = {
   push: jest.fn(),

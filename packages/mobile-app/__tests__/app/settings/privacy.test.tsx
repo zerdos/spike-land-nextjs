@@ -35,7 +35,7 @@ const mockAuthStore = {
   user: { id: "user-1", email: "test@example.com", name: "Test User" },
   signOut: jest.fn(() => Promise.resolve()),
 };
-jest.mock("../../stores", () => ({
+jest.mock("@/stores", () => ({
   useAuthStore: jest.fn(() => mockAuthStore),
 }));
 
@@ -65,7 +65,7 @@ const mockSettingsStore: {
   deleteAccount: jest.fn(() => Promise.resolve({ success: true })),
   initialize: jest.fn(() => Promise.resolve()),
 };
-jest.mock("../../stores/settings-store", () => ({
+jest.mock("@/stores/settings-store", () => ({
   useSettingsStore: jest.fn(() => mockSettingsStore),
 }));
 
@@ -141,7 +141,7 @@ jest.mock("tamagui", () => {
 });
 
 // Import component after mocks
-import PrivacyScreen from "./privacy";
+import PrivacyScreen from "@/app/settings/privacy";
 
 // ============================================================================
 // Test Helpers

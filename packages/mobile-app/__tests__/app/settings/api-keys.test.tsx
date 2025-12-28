@@ -39,7 +39,7 @@ const mockAuthStore = {
   isLoading: false,
   user: { id: "user-1", email: "test@example.com", name: "Test User" },
 };
-jest.mock("../../stores", () => ({
+jest.mock("@/stores", () => ({
   useAuthStore: jest.fn(() => mockAuthStore),
 }));
 
@@ -78,7 +78,7 @@ const mockSettingsStore: {
   deleteApiKey: jest.fn(() => Promise.resolve({ success: true })),
   clearNewlyCreatedKey: jest.fn(),
 };
-jest.mock("../../stores/settings-store", () => ({
+jest.mock("@/stores/settings-store", () => ({
   useSettingsStore: jest.fn(() => mockSettingsStore),
 }));
 
@@ -137,7 +137,7 @@ jest.mock("tamagui", () => {
 });
 
 // Import component after mocks
-import ApiKeysScreen from "./api-keys";
+import ApiKeysScreen from "@/app/settings/api-keys";
 
 // ============================================================================
 // Test Helpers

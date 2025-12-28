@@ -3,6 +3,59 @@
  * Configures mocks, extends matchers, and sets up test environment
  */
 
+// ============================================================================
+// Browser API Mocks - MUST BE FIRST (before any imports)
+// ============================================================================
+
+// Mock addEventListener/removeEventListener for tamagui
+if (typeof global.addEventListener === "undefined") {
+  global.addEventListener = jest.fn();
+}
+if (typeof global.removeEventListener === "undefined") {
+  global.removeEventListener = jest.fn();
+}
+
+// Mock window object for web APIs used by tamagui
+Object.defineProperty(global, "window", {
+  value: {
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    matchMedia: jest.fn(() => ({
+      matches: false,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    })),
+    getComputedStyle: jest.fn(() => ({
+      getPropertyValue: jest.fn(),
+    })),
+    requestAnimationFrame: jest.fn((cb) => setTimeout(cb, 0)),
+    cancelAnimationFrame: jest.fn(),
+  },
+  writable: true,
+});
+
+// Mock document for SSR checks
+Object.defineProperty(global, "document", {
+  value: {
+    createElement: jest.fn(() => ({
+      style: {},
+      setAttribute: jest.fn(),
+      appendChild: jest.fn(),
+    })),
+    head: {
+      appendChild: jest.fn(),
+    },
+    body: {
+      appendChild: jest.fn(),
+    },
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  },
+  writable: true,
+});
+
 import "@testing-library/jest-native/extend-expect";
 
 // ============================================================================

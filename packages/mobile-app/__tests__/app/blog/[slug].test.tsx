@@ -81,7 +81,7 @@ jest.mock("@/services/api/blog", () => ({
   getBlogPost: jest.fn(),
 }));
 
-import BlogDetailScreen from "./[slug]";
+import BlogDetailScreen from "@/app/blog/[slug]";
 
 const mockRouter = {
   push: jest.fn(),

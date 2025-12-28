@@ -8,8 +8,8 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Alert } from "react-native";
 
+import CanvasScreen from "@/app/canvas/[albumId]";
 import { useGalleryStore } from "@/stores";
-import CanvasScreen from "./[albumId]";
 
 // Mock expo-router
 jest.mock("expo-router", () => ({

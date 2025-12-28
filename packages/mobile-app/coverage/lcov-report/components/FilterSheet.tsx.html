@@ -532,12 +532,7 @@
 <a name='L469'></a><a href='#L469'>469</a>
 <a name='L470'></a><a href='#L470'>470</a>
 <a name='L471'></a><a href='#L471'>471</a>
-<a name='L472'></a><a href='#L472'>472</a>
-<a name='L473'></a><a href='#L473'>473</a>
-<a name='L474'></a><a href='#L474'>474</a>
-<a name='L475'></a><a href='#L475'>475</a>
-<a name='L476'></a><a href='#L476'>476</a>
-<a name='L477'></a><a href='#L477'>477</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L472'></a><a href='#L472'>472</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -764,7 +759,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -772,7 +766,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -891,8 +884,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -906,7 +897,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1035,8 +1025,8 @@ import {
 } from "tamagui";
 &nbsp;
 import {
-  getSortLabel,
   type DateRange,
+  getSortLabel,
   type ImageFilters,
   type SortOption,
 } from "../hooks/useImageSearch";
@@ -1072,7 +1062,7 @@ export interface FilterSheetProps {
 // Constants
 // ============================================================================
 &nbsp;
-const SORT_OPTIONS: { value: SortOption; label: string }[] = <span class="cstat-no" title="statement not covered" >[</span>
+const SORT_OPTIONS: { value: SortOption; label: string; }[] = <span class="cstat-no" title="statement not covered" >[</span>
   { value: "newest", label: "Newest First" },
   { value: "oldest", label: "Oldest First" },
   { value: "name_asc", label: "Name A-Z" },
@@ -1098,10 +1088,10 @@ interface DatePickerButtonProps {
 function <span class="fstat-no" title="function not covered" >DatePickerButton(</span>{ label, value, onPress, testID }: DatePickerButtonProps) {
   const displayValue = <span class="cstat-no" title="statement not covered" >value</span>
     ? value.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
     : "Select date";
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  return (</span>
@@ -1240,8 +1230,7 @@ export function <span class="fstat-no" title="function not covered" >FilterSheet
 &nbsp;
   // Check if any filters have changed
   const hasChanges = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
-    const filtersChanged =
-<span class="cstat-no" title="statement not covered" >      JSON.stringify(localFilters) !== JSON.stringify(filters);</span>
+    const filtersChanged = <span class="cstat-no" title="statement not covered" >JSON.stringify(localFilters) !== JSON.stringify(filters);</span>
     const sortChanged = <span class="cstat-no" title="statement not covered" >localSortBy !== sortBy;</span>
 <span class="cstat-no" title="statement not covered" >    return filtersChanged || sortChanged;</span>
   }, [localFilters, filters, localSortBy, sortBy]);
@@ -1250,8 +1239,7 @@ export function <span class="fstat-no" title="function not covered" >FilterSheet
   const selectedAlbumCount = <span class="cstat-no" title="statement not covered" >localFilters.albumIds.length;</span>
 &nbsp;
   // Check if date range is set
-  const hasDateRange =
-<span class="cstat-no" title="statement not covered" >    localFilters.dateRange.startDate !== null ||</span>
+  const hasDateRange = <span class="cstat-no" title="statement not covered" >localFilters.dateRange.startDate !== null ||</span>
     localFilters.dateRange.endDate !== null;
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  return (</span>
@@ -1329,17 +1317,13 @@ export function <span class="fstat-no" title="function not covered" >FilterSheet
                       chromeless
                       onPress={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >handleSortChange(option.value)}</span>
                       testID={`${testID}-sort-option-${option.value}`}
-                      backgroundColor={
-                        localSortBy === option.value ? "$blue2" : "transparent"
-                      }
+                      backgroundColor={localSortBy === option.value ? "$blue2" : "transparent"}
                       justifyContent="flex-start"
                       borderRadius={0}
                     &gt;
                       &lt;XStack flex={1} justifyContent="space-between" alignItems="center"&gt;
                         &lt;Text&gt;{option.label}&lt;/Text&gt;
-                        {localSortBy === option.value &amp;&amp; (
-                          &lt;Check size={16} color="$blue10" /&gt;
-                        )}
+                        {localSortBy === option.value &amp;&amp; &lt;Check size={16} color="$blue10" /&gt;}
                       &lt;/XStack&gt;
                     &lt;/Button&gt;
                   ))}
@@ -1362,45 +1346,46 @@ export function <span class="fstat-no" title="function not covered" >FilterSheet
                 )}
               &lt;/XStack&gt;
 &nbsp;
-              {albums.length === 0 ? (
-                &lt;Text fontSize="$3" color="$gray9" paddingVertical="$2"&gt;
-                  No albums available
-                &lt;/Text&gt;
-              ) : (
-                &lt;YStack gap="$2"&gt;
-                  {albums.map(<span class="fstat-no" title="function not covered" >(a</span>lbum) =&gt; {
-                    const isChecked = <span class="cstat-no" title="statement not covered" >localFilters.albumIds.includes(album.id);</span>
-<span class="cstat-no" title="statement not covered" >                    return (</span>
-                      &lt;XStack
-                        key={album.id}
-                        alignItems="center"
-                        gap="$3"
-                        paddingVertical="$1"
-                      &gt;
-                        &lt;Checkbox
-                          id={`album-${album.id}`}
-                          checked={isChecked}
-                          onCheckedChange={<span class="fstat-no" title="function not covered" >(c</span>hecked) =&gt;
-<span class="cstat-no" title="statement not covered" >                            handleAlbumToggle(album.id, checked as boolean)</span>
-                          }
-                          testID={`${testID}-album-${album.id}`}
+              {albums.length === 0
+                ? (
+                  &lt;Text fontSize="$3" color="$gray9" paddingVertical="$2"&gt;
+                    No albums available
+                  &lt;/Text&gt;
+                )
+                : (
+                  &lt;YStack gap="$2"&gt;
+                    {albums.map(<span class="fstat-no" title="function not covered" >(a</span>lbum) =&gt; {
+                      const isChecked = <span class="cstat-no" title="statement not covered" >localFilters.albumIds.includes(album.id);</span>
+<span class="cstat-no" title="statement not covered" >                      return (</span>
+                        &lt;XStack
+                          key={album.id}
+                          alignItems="center"
+                          gap="$3"
+                          paddingVertical="$1"
                         &gt;
-                          &lt;Checkbox.Indicator&gt;
-                            &lt;Check size={14} /&gt;
-                          &lt;/Checkbox.Indicator&gt;
-                        &lt;/Checkbox&gt;
-                        &lt;Label
-                          htmlFor={`album-${album.id}`}
-                          flex={1}
-                          pressStyle={{ opacity: 0.7 }}
-                        &gt;
-                          &lt;Text fontSize="$4"&gt;{album.name}&lt;/Text&gt;
-                        &lt;/Label&gt;
-                      &lt;/XStack&gt;
-                    );
-                  })}
-                &lt;/YStack&gt;
-              )}
+                          &lt;Checkbox
+                            id={`album-${album.id}`}
+                            checked={isChecked}
+                            onCheckedChange={<span class="fstat-no" title="function not covered" >(c</span>hecked) =&gt;
+<span class="cstat-no" title="statement not covered" >                              handleAlbumToggle(album.id, checked as boolean)}</span>
+                            testID={`${testID}-album-${album.id}`}
+                          &gt;
+                            &lt;Checkbox.Indicator&gt;
+                              &lt;Check size={14} /&gt;
+                            &lt;/Checkbox.Indicator&gt;
+                          &lt;/Checkbox&gt;
+                          &lt;Label
+                            htmlFor={`album-${album.id}`}
+                            flex={1}
+                            pressStyle={{ opacity: 0.7 }}
+                          &gt;
+                            &lt;Text fontSize="$4"&gt;{album.name}&lt;/Text&gt;
+                          &lt;/Label&gt;
+                        &lt;/XStack&gt;
+                      );
+                    })}
+                  &lt;/YStack&gt;
+                )}
             &lt;/YStack&gt;
 &nbsp;
             &lt;Separator /&gt;
@@ -1498,7 +1483,7 @@ export default FilterSheet;
     <div class="footer quiet pad2 space-top1 center small">
       Code coverage generated by
       <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-      at 2025-12-28T19:13:34.512Z
+      at 2025-12-28T19:45:28.215Z
     </div>
     <script src="../prettify.js"></script>
     <script>

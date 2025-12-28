@@ -3,13 +3,13 @@
  * Tests for the admin user management page
  */
 
+import UserManagementPage from "@/app/admin/users/index";
+import * as adminApi from "@/services/api/admin";
+import config from "@/tamagui.config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";
 import { TamaguiProvider } from "tamagui";
-import * as adminApi from "../../../services/api/admin";
-import config from "../../../tamagui.config";
-import UserManagementPage from "./index";
 
 // Mock expo-router
 const mockPush = jest.fn();
@@ -20,7 +20,7 @@ jest.mock("expo-router", () => ({
 }));
 
 // Mock the admin API
-jest.mock("../../../services/api/admin");
+jest.mock("@/services/api/admin");
 const mockAdminApi = adminApi as jest.Mocked<typeof adminApi>;
 
 // Test wrapper with providers

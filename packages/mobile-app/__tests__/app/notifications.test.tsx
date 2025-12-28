@@ -2,17 +2,17 @@
  * Tests for Notifications Screen
  */
 
+import NotificationsScreen from "@/app/notifications";
+import * as notificationsService from "@/services/notifications";
+import type { NotificationType, ServerNotification } from "@/services/notifications";
+import config from "@/tamagui.config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";
 import { TamaguiProvider } from "tamagui";
-import * as notificationsService from "../services/notifications";
-import type { NotificationType, ServerNotification } from "../services/notifications";
-import config from "../tamagui.config";
-import NotificationsScreen from "./notifications";
 
 // Override specific mocks for this test file
-jest.mock("../services/notifications", () => ({
+jest.mock("@/services/notifications", () => ({
   fetchNotifications: jest.fn(),
   markNotificationAsRead: jest.fn(),
   markAllNotificationsAsRead: jest.fn(),
