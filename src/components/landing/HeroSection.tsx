@@ -33,8 +33,8 @@ export function HeroSection({
           {/* Subheadline */}
           <p className="mx-auto mb-4 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
             Pixel uses Google&apos;s latest Gemini model to restore details that weren&apos;t even
-            visible before. Blurry holiday snapshots. Grainy VHS stills. That photo of your
-            grandparents you&apos;ve had since childhood.
+            visible before. Blurry childhood photos. Grainy VHS stills. That photo of your
+            grandparents you&apos;ve had since forever.
           </p>
           <p className="mx-auto mb-12 max-w-2xl text-base text-muted-foreground/80 italic">
             This wasn&apos;t possible until now. Now it is.

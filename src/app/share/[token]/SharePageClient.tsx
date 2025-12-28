@@ -145,7 +145,7 @@ export function SharePageClient({
           <div className="flex gap-2 sm:justify-center">
             <Button
               variant="outline"
-              className="flex-1 sm:flex-none border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white h-12"
+              className="flex-1 sm:flex-none border-white/20 bg-white/10 text-white hover:bg-white/15 hover:text-white h-12"
               onClick={() => handleDownload("original")}
               disabled={downloadingOriginal}
             >

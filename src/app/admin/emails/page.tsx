@@ -154,7 +154,7 @@ export default function EmailLogsPage() {
           </p>
         </div>
         <div className="text-right">
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
             Total: {pagination.total} emails
           </p>
         </div>
@@ -274,7 +274,7 @@ export default function EmailLogsPage() {
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-4 py-8 text-center text-neutral-500"
+                      className="px-4 py-8 text-center text-neutral-600 dark:text-neutral-400"
                     >
                       Loading...
                     </td>
@@ -285,7 +285,7 @@ export default function EmailLogsPage() {
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-4 py-8 text-center text-neutral-500"
+                      className="px-4 py-8 text-center text-neutral-600 dark:text-neutral-400"
                     >
                       No emails found
                     </td>
@@ -317,7 +317,7 @@ export default function EmailLogsPage() {
                           {email.status}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-sm text-neutral-500">
+                      <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
                         {formatDate(email.sentAt)}
                       </td>
                       <td className="px-4 py-3">
@@ -339,7 +339,7 @@ export default function EmailLogsPage() {
         {/* Pagination */}
         {pagination.totalPages > 1 && (
           <div className="flex items-center justify-between border-t px-4 py-3">
-            <div className="text-sm text-neutral-500">
+            <div className="text-sm text-neutral-600 dark:text-neutral-400">
               Page {pagination.page} of {pagination.totalPages}
             </div>
             <div className="flex gap-2">
@@ -386,19 +386,19 @@ export default function EmailLogsPage() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-neutral-500">
+                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   To
                 </label>
                 <p>{selectedEmail.to}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-500">
+                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   Subject
                 </label>
                 <p>{selectedEmail.subject}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-500">
+                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   Template
                 </label>
                 <div>
@@ -406,7 +406,7 @@ export default function EmailLogsPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-500">
+                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   Status
                 </label>
                 <div>
@@ -416,7 +416,7 @@ export default function EmailLogsPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-500">
+                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   Resend ID
                 </label>
                 <p className="font-mono text-sm">
@@ -424,7 +424,7 @@ export default function EmailLogsPage() {
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-500">
+                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   User
                 </label>
                 <p>
@@ -434,13 +434,13 @@ export default function EmailLogsPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">
+                  <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                     Sent At
                   </label>
                   <p className="text-sm">{formatDate(selectedEmail.sentAt)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">
+                  <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                     Opened At
                   </label>
                   <p className="text-sm">
@@ -448,7 +448,7 @@ export default function EmailLogsPage() {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">
+                  <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                     Clicked At
                   </label>
                   <p className="text-sm">
@@ -456,7 +456,7 @@ export default function EmailLogsPage() {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">
+                  <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                     Bounced At
                   </label>
                   <p className="text-sm">

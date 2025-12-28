@@ -185,7 +185,7 @@ export function AgentsDashboardClient({ initialData }: Props) {
               {isRefreshing ? "Refreshing..." : "Refresh"}
             </Button>
           </div>
-          <div className="text-right text-sm text-neutral-500">
+          <div className="text-right text-sm text-neutral-600 dark:text-neutral-400">
             <p>
               Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "—"}
             </p>
@@ -224,21 +224,21 @@ export function AgentsDashboardClient({ initialData }: Props) {
       {/* Status Overview */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="p-4">
-          <p className="text-sm text-neutral-500">Total Sessions</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">Total Sessions</p>
           <p className="mt-1 text-2xl font-bold">{data.pagination.total}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-neutral-500">Active Agents</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">Active Agents</p>
           <p className="mt-1 text-2xl font-bold text-cyan-600">{activeCount}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-neutral-500">Awaiting Approval</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">Awaiting Approval</p>
           <p className="mt-1 text-2xl font-bold text-amber-600">
             {data.statusCounts.AWAITING_PLAN_APPROVAL || 0}
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-neutral-500">Completed</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">Completed</p>
           <p className="mt-1 text-2xl font-bold text-green-600">
             {data.statusCounts.COMPLETED || 0}
           </p>
@@ -251,7 +251,7 @@ export function AgentsDashboardClient({ initialData }: Props) {
         {data.sessions.length === 0
           ? (
             <Card className="p-8 text-center">
-              <p className="text-neutral-500">No agent sessions yet.</p>
+              <p className="text-neutral-600 dark:text-neutral-400">No agent sessions yet.</p>
               {data.julesAvailable && (
                 <Button
                   variant="outline"
@@ -351,7 +351,7 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
               Error: {approveError}
             </p>
           )}
-          <div className="mt-2 flex items-center gap-4 text-xs text-neutral-500">
+          <div className="mt-2 flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
             {session.sourceRepo && (
               <span>Repo: {session.sourceRepo.split("/").slice(-2).join("/")}</span>
             )}
@@ -418,22 +418,23 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
           )}
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-neutral-500">External ID:</span>{" "}
+              <span className="text-neutral-600 dark:text-neutral-400">External ID:</span>{" "}
               <code className="text-xs">{session.externalId}</code>
             </div>
             <div>
-              <span className="text-neutral-500">Created:</span>{" "}
+              <span className="text-neutral-600 dark:text-neutral-400">Created:</span>{" "}
               {new Date(session.createdAt).toLocaleString()}
             </div>
             {session.planApprovedAt && (
               <div>
-                <span className="text-neutral-500">Plan Approved:</span>{" "}
+                <span className="text-neutral-600 dark:text-neutral-400">Plan Approved:</span>{" "}
                 {new Date(session.planApprovedAt).toLocaleString()}
               </div>
             )}
             {session.outputBranch && (
               <div>
-                <span className="text-neutral-500">Output Branch:</span> {session.outputBranch}
+                <span className="text-neutral-600 dark:text-neutral-400">Output Branch:</span>{" "}
+                {session.outputBranch}
               </div>
             )}
           </div>

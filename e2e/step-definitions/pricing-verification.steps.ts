@@ -246,9 +246,9 @@ Then(
 Then(
   "I should see {string} enhancement cost",
   async function(this: CustomWorld, tier: string) {
-    const costText = this.page.getByText(
-      new RegExp(`${tier}|token.*${tier}`, "i"),
-    );
+    // Look for the specific enhancement text in the Token Usage Guide section
+    // e.g., "1K Enhancement", "2K Enhancement", "4K Enhancement"
+    const costText = this.page.getByText(`${tier} Enhancement`);
     await expect(costText).toBeVisible();
   },
 );

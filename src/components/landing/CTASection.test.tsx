@@ -5,27 +5,27 @@ import { CTASection } from "./CTASection";
 describe("CTASection Component", () => {
   it("should render the section heading", () => {
     render(<CTASection />);
-    expect(screen.getByText("Christmas is coming.")).toBeInTheDocument();
+    expect(screen.getByText("Blend your photos. Create something new.")).toBeInTheDocument();
   });
 
   it("should render the section description", () => {
     render(<CTASection />);
-    expect(screen.getByText(/Dig out those old photos/)).toBeInTheDocument();
+    expect(screen.getByText(/Combine two images into something unexpected/)).toBeInTheDocument();
   });
 
   it("should render the CTA button", () => {
     render(<CTASection />);
     expect(
-      screen.getByRole("link", { name: /Try Pixel for free/i }),
+      screen.getByRole("link", { name: /Try Photo Mixer/i }),
     ).toBeInTheDocument();
   });
 
   it("should have correct href for CTA button", () => {
     render(<CTASection />);
     const ctaLink = screen.getByRole("link", {
-      name: /Try Pixel for free/i,
+      name: /Try Photo Mixer/i,
     });
-    expect(ctaLink).toHaveAttribute("href", "/pixel");
+    expect(ctaLink).toHaveAttribute("href", "/apps/pixel/mix");
   });
 
   it("should render as a section element", () => {
