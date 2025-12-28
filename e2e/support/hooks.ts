@@ -54,6 +54,46 @@ Before(async function(this: CustomWorld) {
   }
 });
 
+// Set up API mocks for checkout scenarios
+// These mocks must be set up BEFORE navigating to /checkout to prevent redirects
+Before({ tags: "@requires-api-mock" }, async function(this: CustomWorld) {
+  if (!this.page) return;
+
+  // Mock /api/user to return a user
+  await this.page.route("**/api/user", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        email: "test@example.com",
+        name: "Test User",
+      }),
+    });
+  });
+
+  // Mock /api/merch/cart to return a cart with items
+  await this.page.route("**/api/merch/cart", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        cart: {
+          items: [
+            {
+              id: "e2e-item-1",
+              productId: "cushion-square",
+              name: "Square Cushion",
+              price: 29.99,
+              quantity: 1,
+              imageId: "e2e-image-1",
+            },
+          ],
+        },
+      }),
+    });
+  });
+});
+
 // Only run generic setup for non-video-wall scenarios
 // Note: VideoWallWorld is the actual world constructor for all scenarios,
 // but we call the parent CustomWorld.init() for non-video-wall scenarios

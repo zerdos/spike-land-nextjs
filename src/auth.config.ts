@@ -8,7 +8,8 @@
  * Database operations are handled in auth.ts (route handlers only).
  */
 
-import type { NextAuthConfig } from "next-auth";
+import type { Session, User } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import Apple from "next-auth/providers/apple";
 import Facebook from "next-auth/providers/facebook";
 import GitHub from "next-auth/providers/github";
@@ -61,7 +62,7 @@ export function createStableUserId(email: string): string {
  * NextAuth configuration for Edge runtime (middleware).
  * Does not include database operations.
  */
-export const authConfig: NextAuthConfig = {
+export const authConfig = {
   // Trust the host when running behind a proxy (required for Vercel, Cloudflare, etc.)
   // This allows NextAuth to correctly handle X-Forwarded-Host headers
   trustHost: true,
@@ -102,30 +103,30 @@ export const authConfig: NextAuthConfig = {
   },
   providers: [
     Apple({
-      clientId: process.env.AUTH_APPLE_ID?.trim(),
-      clientSecret: process.env.AUTH_APPLE_SECRET?.trim(),
+      clientId: process.env.AUTH_APPLE_ID?.trim() ?? "",
+      clientSecret: process.env.AUTH_APPLE_SECRET?.trim() ?? "",
     }),
     Facebook({
-      clientId: process.env.AUTH_FACEBOOK_ID?.trim(),
-      clientSecret: process.env.AUTH_FACEBOOK_SECRET?.trim(),
+      clientId: process.env.AUTH_FACEBOOK_ID?.trim() ?? "",
+      clientSecret: process.env.AUTH_FACEBOOK_SECRET?.trim() ?? "",
     }),
     GitHub({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
+      clientId: process.env.GITHUB_ID ?? "",
+      clientSecret: process.env.GITHUB_SECRET ?? "",
     }),
     Google({
-      clientId: process.env.GOOGLE_ID,
-      clientSecret: process.env.GOOGLE_SECRET,
+      clientId: process.env.GOOGLE_ID ?? "",
+      clientSecret: process.env.GOOGLE_SECRET ?? "",
     }),
   ],
   callbacks: {
-    session({ session, token }) {
+    session({ session, token }: { session: Session; token: JWT; }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
       }
       return session;
     },
-    jwt({ token, user }) {
+    jwt({ token, user }: { token: JWT; user?: User; }) {
       if (user?.email) {
         // Use stable ID based on email (same across all OAuth providers)
         token.sub = createStableUserId(user.email);
@@ -142,6 +143,6 @@ export const authConfig: NextAuthConfig = {
     error: "/auth/error",
   },
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
   },
 };
