@@ -2,7 +2,6 @@
  * API Client for Spike Land mobile app
  * Handles all HTTP communication with the backend
  */
-//
 import { API_CONFIG } from "@spike-npm-land/shared";
 import * as storage from "./storage";
 
