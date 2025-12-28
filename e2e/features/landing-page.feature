@@ -116,22 +116,22 @@ Feature: Landing Page - CTA and Feature Cards
 
   # CTASection Component Tests
   @fast
-  Scenario: CTASection displays Christmas heading
+  Scenario: CTASection displays main heading
     When I visit "/"
     Then the page should load successfully
-    And I should see "Christmas is coming" text
+    And I should see "Blend your photos" text
 
   @fast
   Scenario: CTASection displays call-to-action message
     When I visit "/"
     Then the page should load successfully
-    And I should see "Dig out those old photos" text
+    And I should see "Mix old with new" text
 
   @fast
-  Scenario: CTASection Try Pixel button navigates correctly
+  Scenario: CTASection Try Photo Mixer button navigates correctly
     When I visit "/"
-    And I click the "Try Pixel for free" link
-    Then I should be on the "/pixel" page
+    And I click the "Try Photo Mixer" link
+    Then I should be on the "/apps/pixel/mix" page
 
   # PlatformHero Component Tests
   @fast

@@ -50,7 +50,7 @@ describe("Card Components", () => {
         "bg-secondary",
         "text-secondary-foreground",
         "border",
-        "border-white/5",
+        "border-white/10",
         "shadow-sm",
       );
     });
