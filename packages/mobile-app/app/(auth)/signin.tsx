@@ -228,10 +228,10 @@ export default function SignInScreen() {
                       icon={emailCheckLoading
                         ? <ActivityIndicator size="small" color="white" />
                         : undefined}
+                      color="white"
+                      fontWeight="600"
                     >
-                      <Text color="white" fontWeight="600">
-                        Continue
-                      </Text>
+                      Continue
                     </Button>
                   </YStack>
 
@@ -280,10 +280,10 @@ export default function SignInScreen() {
                       icon={isLoading
                         ? <ActivityIndicator size="small" color="white" />
                         : undefined}
+                      color="white"
+                      fontWeight="600"
                     >
-                      <Text color="white" fontWeight="600">
-                        Sign In
-                      </Text>
+                      Sign In
                     </Button>
                   </YStack>
 

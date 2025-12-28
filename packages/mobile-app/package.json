@@ -15,6 +15,7 @@
     "@expo/vector-icons": "^15.0.3",
     "@react-navigation/native": "^7.1.8",
     "@spike-npm-land/shared": "workspace:*",
+    "@tamagui/animations-css": "^1.141.5",
     "@tamagui/config": "^1.121.6",
     "@tamagui/font-inter": "^1.121.6",
     "@tamagui/lucide-icons": "^1.141.5",
