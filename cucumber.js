@@ -119,6 +119,6 @@ module.exports = {
     retry: 1, // Retry once for transient DB issues
     tags: "@requires-db and not @skip and not @flaky",
     timeout: 30000, // Longer timeout for DB operations
-    parallel: 16, // Sequential to avoid DB conflicts
+    parallel: 1, // Sequential to avoid DB conflicts
   },
 };
