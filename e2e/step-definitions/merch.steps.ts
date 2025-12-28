@@ -812,6 +812,9 @@ When("I complete the shipping address form", async function(this: CustomWorld) {
     }
   });
 
+  // Fill email field (required for checkout validation)
+  await this.page.fill('[id="email"]', "test@example.com");
+
   await this.page.fill('[id="name"]', "John Doe");
   await this.page.fill('[id="line1"]', "123 Test Street");
   await this.page.fill('[id="city"]', "London");

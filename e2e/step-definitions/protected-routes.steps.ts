@@ -27,8 +27,15 @@ When(
 );
 
 When("my session expires", async function(this: CustomWorld) {
+  // Clear existing session routes first
+  await this.page.unrouteAll({ behavior: "ignoreErrors" });
   await mockSessionExpired(this.page);
   await this.page.reload();
+  // Wait for redirect to home with callbackUrl (middleware redirects expired sessions)
+  await this.page.waitForURL(
+    (url) => url.pathname === "/" && url.searchParams.has("callbackUrl"),
+    { timeout: 10000 },
+  ).catch(() => {});
   await this.page.waitForLoadState("networkidle");
 });
 
@@ -40,8 +47,10 @@ When(
 
     for (const route of routes) {
       await navigateToPath(this.page, this.baseUrl, route);
-      const currentUrl = await getCurrentUrl(this.page);
+      // Wait for redirect to complete before checking URL
+      await this.page.waitForURL((url) => url.pathname === "/", { timeout: 10000 });
 
+      const currentUrl = await getCurrentUrl(this.page);
       const url = new URL(currentUrl);
       expect(url.pathname).toBe("/");
 

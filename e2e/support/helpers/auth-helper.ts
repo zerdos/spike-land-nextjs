@@ -78,7 +78,14 @@ export async function mockAuthCallback(
 ) {
   await mockSession(page, user);
 
-  const redirectUrl = callbackUrl || "/";
+  // Extract callbackUrl from current URL if not provided
+  let redirectUrl = callbackUrl;
+  if (!redirectUrl) {
+    const currentUrl = new URL(page.url());
+    const encodedCallback = currentUrl.searchParams.get("callbackUrl");
+    redirectUrl = encodedCallback ? decodeURIComponent(encodedCallback) : "/";
+  }
+
   await page.goto(redirectUrl);
   await page.waitForLoadState("networkidle");
 }
