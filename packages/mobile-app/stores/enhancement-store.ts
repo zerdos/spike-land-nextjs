@@ -3,9 +3,16 @@
  * Manages enhancement history and current enhancement state with Zustand
  */
 
-import type { EnhancedImage, EnhancementTier, ImageEnhancementJob } from "@spike-npm-land/shared";
+import type {
+  EnhancedImage,
+  EnhancementTier,
+  ImageEnhancementJob,
+  JobStatus,
+  PipelineStage,
+} from "@spike-npm-land/shared";
 import { create } from "zustand";
 import { getImages } from "../services/api/images";
+import { getJobStatus } from "../services/api/jobs";
 
 // ============================================================================
 // Types
@@ -16,6 +23,18 @@ export interface EnhancementHistoryItem {
   image: EnhancedImage;
   latestJob: ImageEnhancementJob | null;
   createdAt: Date;
+}
+
+export interface CurrentJobState {
+  id: string;
+  status: JobStatus;
+  stage: PipelineStage | null;
+  progress: number;
+  statusMessage: string;
+  error: string | null;
+  resultUrl: string | null;
+  startedAt: Date;
+  completedAt: Date | null;
 }
 
 interface EnhancementState {
@@ -31,9 +50,13 @@ interface EnhancementState {
   currentImageId: string | null;
   selectedTier: EnhancementTier | null;
 
-  // Current job tracking
+  // Current job tracking (legacy)
   currentJobId: string | null;
   currentJobStatus: string | null;
+
+  // Enhanced job tracking
+  currentJob: CurrentJobState | null;
+  isPolling: boolean;
 }
 
 interface EnhancementActions {
@@ -49,12 +72,29 @@ interface EnhancementActions {
   setSelectedTier: (tier: EnhancementTier | null) => void;
   clearCurrentEnhancement: () => void;
 
-  // Job tracking
+  // Job tracking (legacy)
   setCurrentJobId: (jobId: string | null) => void;
   checkJobStatus: (jobId: string) => Promise<string | null>;
+
+  // Enhanced job tracking
+  startJob: (jobId: string) => void;
+  updateJobStatus: (updates: Partial<CurrentJobState>) => void;
+  completeJob: (resultUrl: string | null, error?: string | null) => void;
+  setPolling: (isPolling: boolean) => void;
 }
 
 type EnhancementStore = EnhancementState & EnhancementActions;
+
+// ============================================================================
+// Selectors
+// ============================================================================
+
+export const selectCurrentJob = (state: EnhancementStore) => state.currentJob;
+export const selectIsPolling = (state: EnhancementStore) => state.isPolling;
+export const selectJobProgress = (state: EnhancementStore) => state.currentJob?.progress ?? 0;
+export const selectJobStatus = (state: EnhancementStore) => state.currentJob?.status ?? null;
+export const selectJobError = (state: EnhancementStore) => state.currentJob?.error ?? null;
+export const selectJobResultUrl = (state: EnhancementStore) => state.currentJob?.resultUrl ?? null;
 
 // ============================================================================
 // Constants
@@ -80,6 +120,10 @@ export const useEnhancementStore = create<EnhancementStore>((set, get) => ({
 
   currentJobId: null,
   currentJobStatus: null,
+
+  // Enhanced job tracking
+  currentJob: null,
+  isPolling: false,
 
   // Actions
   fetchRecentImages: async (refresh = false) => {
@@ -172,6 +216,8 @@ export const useEnhancementStore = create<EnhancementStore>((set, get) => ({
       selectedTier: null,
       currentJobId: null,
       currentJobStatus: null,
+      currentJob: null,
+      isPolling: false,
     });
   },
 
@@ -179,11 +225,90 @@ export const useEnhancementStore = create<EnhancementStore>((set, get) => ({
     set({ currentJobId: jobId, currentJobStatus: jobId ? "QUEUED" : null });
   },
 
-  checkJobStatus: async (_jobId) => {
-    // In a real implementation, this would call the jobs API
-    // For now, just return the current status
-    return get().currentJobStatus;
+  checkJobStatus: async (jobId) => {
+    const response = await getJobStatus(jobId);
+
+    if (response.error || !response.data?.job) {
+      return null;
+    }
+
+    const job = response.data.job;
+    set({ currentJobStatus: job.status });
+
+    // Update enhanced job tracking if active
+    const currentJob = get().currentJob;
+    if (currentJob && currentJob.id === jobId) {
+      set({
+        currentJob: {
+          ...currentJob,
+          status: job.status,
+          stage: job.currentStage,
+        },
+      });
+    }
+
+    return job.status;
+  },
+
+  // Enhanced job tracking actions
+  startJob: (jobId) => {
+    set({
+      currentJobId: jobId,
+      currentJobStatus: "PENDING",
+      currentJob: {
+        id: jobId,
+        status: "PENDING",
+        stage: null,
+        progress: 0,
+        statusMessage: "Starting enhancement...",
+        error: null,
+        resultUrl: null,
+        startedAt: new Date(),
+        completedAt: null,
+      },
+      isPolling: true,
+    });
+  },
+
+  updateJobStatus: (updates) => {
+    const currentJob = get().currentJob;
+    if (!currentJob) return;
+
+    set({
+      currentJob: {
+        ...currentJob,
+        ...updates,
+      },
+      currentJobStatus: updates.status ?? currentJob.status,
+    });
+  },
+
+  completeJob: (resultUrl, error = null) => {
+    const currentJob = get().currentJob;
+    if (!currentJob) return;
+
+    const isError = error !== null;
+    set({
+      currentJob: {
+        ...currentJob,
+        status: isError ? "FAILED" : "COMPLETED",
+        progress: isError ? 0 : 100,
+        statusMessage: isError ? "Enhancement failed" : "Enhancement complete!",
+        error,
+        resultUrl,
+        completedAt: new Date(),
+      },
+      currentJobStatus: isError ? "FAILED" : "COMPLETED",
+      isPolling: false,
+    });
+  },
+
+  setPolling: (isPolling) => {
+    set({ isPolling });
   },
 }));
 
 export default useEnhancementStore;
+
+// Re-export types for external use
+export type { CurrentJobState, EnhancementActions, EnhancementState };

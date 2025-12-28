@@ -57,6 +57,18 @@ export interface SessionInfo {
   expiresAt: string;
 }
 
+export interface PasswordResetResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+export interface EmailVerificationResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
 // ============================================================================
 // Auth Service
 // ============================================================================
@@ -353,6 +365,109 @@ class AuthService {
       ...response.data,
       providers: response.data.providers || [],
     };
+  }
+
+  /**
+   * Request password reset email
+   */
+  async requestPasswordReset(email: string): Promise<PasswordResetResult> {
+    try {
+      const response = await apiClient.post<{
+        message: string;
+      }>("/api/auth/forgot-password", { email });
+
+      if (response.error) {
+        return { success: false, error: response.error };
+      }
+
+      return {
+        success: true,
+        message: response.data?.message || "Password reset email sent",
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to send reset email",
+      };
+    }
+  }
+
+  /**
+   * Reset password with token
+   */
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<PasswordResetResult> {
+    try {
+      const response = await apiClient.post<{
+        message: string;
+      }>("/api/auth/reset-password", { token, newPassword });
+
+      if (response.error) {
+        return { success: false, error: response.error };
+      }
+
+      return {
+        success: true,
+        message: response.data?.message || "Password reset successfully",
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to reset password",
+      };
+    }
+  }
+
+  /**
+   * Verify email with token
+   */
+  async verifyEmail(token: string): Promise<EmailVerificationResult> {
+    try {
+      const response = await apiClient.post<{
+        message: string;
+      }>("/api/auth/verify-email", { token });
+
+      if (response.error) {
+        return { success: false, error: response.error };
+      }
+
+      return {
+        success: true,
+        message: response.data?.message || "Email verified successfully",
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to verify email",
+      };
+    }
+  }
+
+  /**
+   * Resend verification email
+   */
+  async resendVerification(email: string): Promise<EmailVerificationResult> {
+    try {
+      const response = await apiClient.post<{
+        message: string;
+      }>("/api/auth/resend-verification", { email });
+
+      if (response.error) {
+        return { success: false, error: response.error };
+      }
+
+      return {
+        success: true,
+        message: response.data?.message || "Verification email sent",
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to send verification email",
+      };
+    }
   }
 }
 

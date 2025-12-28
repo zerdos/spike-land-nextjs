@@ -1,124 +1,168 @@
 /**
  * Enhancement Processing Screen
- * Shows progress while an image is being enhanced
+ * Shows progress while an image is being enhanced with real-time polling
  */
 
-import { Check, Clock, Sparkles, Zap } from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Progress, Spinner, Text, YStack } from "tamagui";
+import { Button, Text, YStack } from "tamagui";
 
+import { JobProgress } from "@/components/JobProgress";
+import { useEnhancementJob } from "@/hooks/useEnhancementJob";
 import { useEnhancementStore } from "@/stores";
-
-const STAGES = [
-  { key: "queued", label: "Queued", icon: Clock },
-  { key: "analyzing", label: "Analyzing Image", icon: Sparkles },
-  { key: "enhancing", label: "Enhancing", icon: Zap },
-  { key: "completed", label: "Complete", icon: Check },
-];
 
 export default function EnhancementProcessingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [currentStageIndex, setCurrentStageIndex] = useState(0);
-  const { currentJobId, checkJobStatus } = useEnhancementStore();
 
+  // Get job ID and store actions
+  const {
+    currentJobId,
+    updateJobStatus,
+    completeJob,
+    clearCurrentEnhancement,
+  } = useEnhancementStore();
+
+  // Hook for polling job status
+  const {
+    status,
+    stage,
+    progress,
+    statusMessage,
+    error,
+    isComplete,
+    isFailed,
+    retry,
+  } = useEnhancementJob(currentJobId, {
+    pollInterval: 2000,
+    autoStart: true,
+    onProgress: (job) => {
+      // Sync with store
+      updateJobStatus({
+        status: job.status,
+        stage: job.currentStage,
+        progress,
+        statusMessage,
+      });
+    },
+    onComplete: (job) => {
+      completeJob(job.enhancedUrl);
+    },
+    onError: (errorMessage) => {
+      completeJob(null, errorMessage);
+    },
+  });
+
+  // Handle navigation to gallery on completion
+  const handleViewInGallery = useCallback(() => {
+    clearCurrentEnhancement();
+    router.push("/(tabs)/gallery");
+  }, [clearCurrentEnhancement, router]);
+
+  // Handle background processing
+  const handleProcessInBackground = useCallback(() => {
+    router.back();
+  }, [router]);
+
+  // Handle retry
+  const handleRetry = useCallback(async () => {
+    await retry();
+  }, [retry]);
+
+  // Handle no job ID scenario
   useEffect(() => {
-    if (!currentJobId) return;
+    if (!currentJobId) {
+      // No job to process, go back
+      router.back();
+    }
+  }, [currentJobId, router]);
 
-    const pollInterval = setInterval(async () => {
-      const status = await checkJobStatus(currentJobId);
-
-      if (status === "COMPLETED") {
-        setCurrentStageIndex(3);
-        clearInterval(pollInterval);
-      } else if (status === "PROCESSING") {
-        setCurrentStageIndex(2);
-      } else if (status === "ANALYZING") {
-        setCurrentStageIndex(1);
-      }
-    }, 2000);
-
-    return () => clearInterval(pollInterval);
-  }, [currentJobId, checkJobStatus]);
-
-  const progress = ((currentStageIndex + 1) / STAGES.length) * 100;
-  const isComplete = currentStageIndex === STAGES.length - 1;
+  // Don't render if no job ID
+  if (!currentJobId) {
+    return null;
+  }
 
   return (
-    <YStack flex={1} backgroundColor="$background" paddingHorizontal="$4">
-      <YStack paddingTop={insets.top + 16} paddingBottom="$4" alignItems="center">
-        <Text fontSize="$8" fontWeight="700">
-          {isComplete ? "Enhancement Complete!" : "Enhancing..."}
+    <YStack
+      flex={1}
+      backgroundColor="$background"
+      paddingHorizontal="$4"
+      testID="processing-screen"
+    >
+      {/* Header */}
+      <YStack
+        paddingTop={insets.top + 16}
+        paddingBottom="$4"
+        alignItems="center"
+      >
+        <Text
+          fontSize="$8"
+          fontWeight="700"
+          testID="processing-title"
+        >
+          {isComplete
+            ? "Enhancement Complete!"
+            : isFailed
+            ? "Enhancement Failed"
+            : "Enhancing..."}
         </Text>
       </YStack>
 
-      <YStack flex={1} justifyContent="center" alignItems="center" gap="$6">
-        <YStack
-          width={120}
-          height={120}
-          borderRadius={60}
-          backgroundColor={isComplete ? "$green2" : "$blue2"}
-          justifyContent="center"
-          alignItems="center"
-        >
-          {isComplete
-            ? <Check size={64} color="$green10" />
-            : <Spinner size="large" color="$blue10" />}
-        </YStack>
-
-        <YStack width="100%" gap="$4">
-          <Progress value={progress} backgroundColor="$gray4">
-            <Progress.Indicator backgroundColor="$blue10" animation="bouncy" />
-          </Progress>
-
-          <YStack gap="$3">
-            {STAGES.map((stage, index) => {
-              const Icon = stage.icon;
-              const isActive = index === currentStageIndex;
-              const isDone = index < currentStageIndex;
-
-              return (
-                <YStack
-                  key={stage.key}
-                  flexDirection="row"
-                  alignItems="center"
-                  gap="$3"
-                  opacity={index > currentStageIndex ? 0.4 : 1}
-                >
-                  <YStack
-                    width={32}
-                    height={32}
-                    borderRadius={16}
-                    backgroundColor={isDone ? "$green10" : isActive ? "$blue10" : "$gray4"}
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <Icon size={16} color={isDone || isActive ? "white" : "$gray10"} />
-                  </YStack>
-                  <Text
-                    fontWeight={isActive ? "600" : "400"}
-                    color={isActive ? "$color" : "$gray10"}
-                  >
-                    {stage.label}
-                  </Text>
-                </YStack>
-              );
-            })}
-          </YStack>
-        </YStack>
+      {/* Progress Content */}
+      <YStack
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+      >
+        <JobProgress
+          status={status}
+          stage={stage}
+          progress={progress}
+          statusMessage={statusMessage}
+          error={error}
+          isComplete={isComplete}
+          isFailed={isFailed}
+          onRetry={handleRetry}
+          showRetryButton={true}
+          size="large"
+        />
       </YStack>
 
-      <YStack paddingBottom={insets.bottom + 16}>
+      {/* Bottom Actions */}
+      <YStack
+        paddingBottom={insets.bottom + 16}
+        gap="$3"
+      >
         {isComplete
           ? (
-            <Button size="$5" theme="active" onPress={() => router.push("/(tabs)/gallery")}>
+            <Button
+              size="$5"
+              theme="active"
+              onPress={handleViewInGallery}
+              testID="view-gallery-button"
+            >
               View in Gallery
             </Button>
           )
+          : isFailed
+          ? (
+            <Button
+              size="$5"
+              chromeless
+              onPress={handleProcessInBackground}
+              testID="go-back-button"
+            >
+              Go Back
+            </Button>
+          )
           : (
-            <Button size="$5" chromeless onPress={() => router.back()}>
+            <Button
+              size="$5"
+              chromeless
+              onPress={handleProcessInBackground}
+              testID="background-button"
+            >
               Process in Background
             </Button>
           )}

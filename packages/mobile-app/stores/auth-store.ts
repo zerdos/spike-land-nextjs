@@ -16,6 +16,9 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  emailVerified: boolean;
+  passwordResetLoading: boolean;
+  verificationLoading: boolean;
 }
 
 interface AuthActions {
@@ -31,6 +34,13 @@ interface AuthActions {
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
   clearError: () => void;
+  requestPasswordReset: (email: string) => Promise<{ success: boolean; error?: string; }>;
+  resetPassword: (
+    token: string,
+    newPassword: string,
+  ) => Promise<{ success: boolean; error?: string; }>;
+  verifyEmail: (token: string) => Promise<{ success: boolean; error?: string; }>;
+  resendVerification: (email: string) => Promise<{ success: boolean; error?: string; }>;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -45,6 +55,9 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
   isAuthenticated: false,
   isLoading: true,
   error: null,
+  emailVerified: false,
+  passwordResetLoading: false,
+  verificationLoading: false,
 
   // Actions
   initialize: async () => {
@@ -136,5 +149,37 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  requestPasswordReset: async (email) => {
+    set({ passwordResetLoading: true, error: null });
+    const result = await authService.requestPasswordReset(email);
+    set({ passwordResetLoading: false, error: result.error || null });
+    return { success: result.success, error: result.error };
+  },
+
+  resetPassword: async (token, newPassword) => {
+    set({ passwordResetLoading: true, error: null });
+    const result = await authService.resetPassword(token, newPassword);
+    set({ passwordResetLoading: false, error: result.error || null });
+    return { success: result.success, error: result.error };
+  },
+
+  verifyEmail: async (token) => {
+    set({ verificationLoading: true, error: null });
+    const result = await authService.verifyEmail(token);
+    if (result.success) {
+      set({ emailVerified: true, verificationLoading: false, error: null });
+    } else {
+      set({ verificationLoading: false, error: result.error || null });
+    }
+    return { success: result.success, error: result.error };
+  },
+
+  resendVerification: async (email) => {
+    set({ verificationLoading: true, error: null });
+    const result = await authService.resendVerification(email);
+    set({ verificationLoading: false, error: result.error || null });
+    return { success: result.success, error: result.error };
   },
 }));

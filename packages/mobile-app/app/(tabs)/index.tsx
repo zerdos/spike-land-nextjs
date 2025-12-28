@@ -1,12 +1,13 @@
 /**
- * Home/Enhance Screen
- * Main screen with image upload, token balance, and recent enhancements
+ * Home/Landing Screen
+ * Main screen with hero section, features, before/after comparison, and quick actions
  */
 
 import { Ionicons } from "@expo/vector-icons";
 import { ENHANCEMENT_COSTS } from "@spike-npm-land/shared";
+import { Clock, Coins, Image as ImageIcon, Layers } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
-import { router } from "expo-router";
+import { type Href, router } from "expo-router";
 import { useCallback, useEffect } from "react";
 import { FlatList, Pressable, RefreshControl, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,6 +17,7 @@ import {
   H2,
   H4,
   Paragraph,
+  ScrollView,
   Separator,
   Spinner,
   Text,
@@ -24,7 +26,19 @@ import {
   YStack,
 } from "tamagui";
 
+import { BeforeAfterSlider } from "../../components/BeforeAfterSlider";
+import { createFeatureCards, FeatureCard } from "../../components/FeatureCard";
+import { HeroSection } from "../../components/HeroSection";
 import { useEnhancementStore, useTokenStore } from "../../stores";
+
+// Sample before/after images for demo
+const SAMPLE_IMAGES = {
+  beforeUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=60",
+  afterUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=95",
+};
+
+// Pre-generate feature cards data
+const FEATURE_CARDS = createFeatureCards({ Clock, Image: ImageIcon, Layers, Coins });
 
 // ============================================================================
 // Token Balance Card Component
@@ -62,8 +76,7 @@ function TokenBalanceCard() {
 
         <Button
           size="$3"
-          theme="blue"
-          onPress={() => router.push("/pricing")}
+          onPress={() => router.push("/pricing" as Href)}
           icon={<Ionicons name="add-circle-outline" size={18} color="white" />}
         >
           Top Up
@@ -108,51 +121,156 @@ function TokenBalanceCard() {
 }
 
 // ============================================================================
-// Quick Enhance CTA Component
+// Features Section Component
 // ============================================================================
 
-function QuickEnhanceCTA() {
+function FeaturesSection() {
+  return (
+    <YStack marginTop="$6" paddingHorizontal="$4" gap="$4">
+      <YStack alignItems="center" gap="$2">
+        <H4 textAlign="center">Why Pixel?</H4>
+        <Paragraph textAlign="center" color="$gray11" fontSize="$3">
+          The fastest way to restore your memories
+        </Paragraph>
+      </YStack>
+
+      <YStack gap="$3">
+        <XStack gap="$3">
+          <View flex={1}>
+            <FeatureCard
+              icon={FEATURE_CARDS[0].icon}
+              title={FEATURE_CARDS[0].title}
+              description={FEATURE_CARDS[0].description}
+              variant={FEATURE_CARDS[0].variant}
+              testID="feature-card-0"
+            />
+          </View>
+          <View flex={1}>
+            <FeatureCard
+              icon={FEATURE_CARDS[1].icon}
+              title={FEATURE_CARDS[1].title}
+              description={FEATURE_CARDS[1].description}
+              variant={FEATURE_CARDS[1].variant}
+              testID="feature-card-1"
+            />
+          </View>
+        </XStack>
+        <XStack gap="$3">
+          <View flex={1}>
+            <FeatureCard
+              icon={FEATURE_CARDS[2].icon}
+              title={FEATURE_CARDS[2].title}
+              description={FEATURE_CARDS[2].description}
+              variant={FEATURE_CARDS[2].variant}
+              testID="feature-card-2"
+            />
+          </View>
+          <View flex={1}>
+            <FeatureCard
+              icon={FEATURE_CARDS[3].icon}
+              title={FEATURE_CARDS[3].title}
+              description={FEATURE_CARDS[3].description}
+              variant={FEATURE_CARDS[3].variant}
+              testID="feature-card-3"
+            />
+          </View>
+        </XStack>
+      </YStack>
+    </YStack>
+  );
+}
+
+// ============================================================================
+// Before/After Section Component
+// ============================================================================
+
+function BeforeAfterSection() {
+  return (
+    <YStack marginTop="$6" paddingHorizontal="$4" gap="$4">
+      <YStack alignItems="center" gap="$2">
+        <H4 textAlign="center">See the Transformation</H4>
+        <Paragraph textAlign="center" color="$gray11" fontSize="$3">
+          Slide to compare before and after
+        </Paragraph>
+      </YStack>
+
+      <BeforeAfterSlider
+        beforeImageUrl={SAMPLE_IMAGES.beforeUrl}
+        afterImageUrl={SAMPLE_IMAGES.afterUrl}
+        height={200}
+        beforeLabel="Original"
+        afterLabel="Enhanced"
+        testID="before-after-slider"
+      />
+    </YStack>
+  );
+}
+
+// ============================================================================
+// Quick Actions Section Component
+// ============================================================================
+
+function QuickActionsSection() {
   const handleEnhance = useCallback(() => {
-    router.push("/enhance/upload");
+    router.push("/enhance/upload" as Href);
+  }, []);
+
+  const handleAlbums = useCallback(() => {
+    router.push("/albums" as Href);
   }, []);
 
   return (
-    <Card
-      elevate
-      bordered
-      padding="$5"
-      marginHorizontal="$4"
-      marginTop="$4"
-      backgroundColor="$blue2"
-      pressStyle={{ scale: 0.98 }}
-      onPress={handleEnhance}
-    >
-      <YStack alignItems="center" gap="$3">
-        <View
-          backgroundColor="$blue5"
-          borderRadius="$10"
+    <YStack marginTop="$6" paddingHorizontal="$4" gap="$3">
+      <H4>Quick Actions</H4>
+
+      <XStack gap="$3">
+        <Card
+          flex={1}
+          elevate
+          bordered
           padding="$4"
+          backgroundColor="$blue2"
+          pressStyle={{ scale: 0.98 }}
+          onPress={handleEnhance}
         >
-          <Ionicons name="sparkles" size={40} color="#3B82F6" />
-        </View>
+          <YStack alignItems="center" gap="$2">
+            <View
+              backgroundColor="$blue5"
+              borderRadius="$10"
+              padding="$3"
+            >
+              <Ionicons name="sparkles" size={28} color="#3B82F6" />
+            </View>
+            <Text fontWeight="600" textAlign="center">
+              Enhance Photo
+            </Text>
+          </YStack>
+        </Card>
 
-        <YStack alignItems="center" gap="$1">
-          <H4>Enhance Your Photos</H4>
-          <Paragraph textAlign="center" color="$gray11" fontSize="$3">
-            Transform your images with AI-powered enhancement
-          </Paragraph>
-        </YStack>
-
-        <Button
-          size="$4"
-          theme="blue"
-          width="100%"
-          icon={<Ionicons name="camera-outline" size={20} color="white" />}
+        <Card
+          flex={1}
+          elevate
+          bordered
+          padding="$4"
+          backgroundColor="$purple2"
+          pressStyle={{ scale: 0.98 }}
+          onPress={handleAlbums}
         >
-          Start Enhancing
-        </Button>
-      </YStack>
-    </Card>
+          <YStack alignItems="center" gap="$2">
+            <View
+              backgroundColor="$purple5"
+              borderRadius="$10"
+              padding="$3"
+            >
+              <Ionicons name="albums" size={28} color="#A855F7" />
+            </View>
+            <Text fontWeight="600" textAlign="center">
+              View Albums
+            </Text>
+          </YStack>
+        </Card>
+      </XStack>
+    </YStack>
   );
 }
 
@@ -169,7 +287,7 @@ interface RecentEnhancementItemProps {
 
 function RecentEnhancementItem({ id, imageUrl, name, createdAt }: RecentEnhancementItemProps) {
   const handlePress = useCallback(() => {
-    router.push(`/enhance/${id}`);
+    router.push(`/enhance/${id}` as Href);
   }, [id]);
 
   const formattedDate = new Date(createdAt).toLocaleDateString(undefined, {
@@ -222,24 +340,17 @@ function RecentEnhancementsSection() {
   }
 
   if (recentImages.length === 0) {
-    return (
-      <YStack padding="$6" alignItems="center" gap="$2">
-        <Ionicons name="images-outline" size={48} color="#9CA3AF" />
-        <Text color="$gray10" textAlign="center">
-          No enhanced images yet.{"\n"}Start by enhancing your first photo!
-        </Text>
-      </YStack>
-    );
+    return null; // Hide section when no images
   }
 
   return (
-    <YStack marginTop="$4">
+    <YStack marginTop="$6">
       <XStack justifyContent="space-between" alignItems="center" paddingHorizontal="$4">
         <H4>Recent Enhancements</H4>
         <Button
           size="$2"
           chromeless
-          onPress={() => router.push("/gallery")}
+          onPress={() => router.push("/gallery" as Href)}
         >
           <Text color="$blue10" fontSize="$2">
             See All
@@ -282,36 +393,36 @@ export default function HomeScreen() {
 
   return (
     <View flex={1} backgroundColor="$background">
-      <FlatList
-        data={[{ key: "content" }]}
-        renderItem={() => (
-          <YStack paddingBottom={insets.bottom + 20}>
-            {/* Header */}
-            <YStack paddingHorizontal="$4" paddingTop="$4">
-              <H2>Pixel Enhance</H2>
-              <Paragraph color="$gray11">
-                AI-powered image enhancement
-              </Paragraph>
-            </YStack>
-
-            {/* Token Balance */}
-            <TokenBalanceCard />
-
-            {/* Quick Enhance CTA */}
-            <QuickEnhanceCTA />
-
-            {/* Recent Enhancements */}
-            <RecentEnhancementsSection />
-          </YStack>
-        )}
+      <ScrollView
         refreshControl={
           <RefreshControl
             refreshing={isLoadingHistory}
             onRefresh={handleRefresh}
           />
         }
-        keyExtractor={(item) => item.key}
-      />
+        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+      >
+        {/* Hero Section */}
+        <HeroSection testID="hero-section" />
+
+        {/* Before/After Comparison */}
+        <BeforeAfterSection />
+
+        {/* Features Section */}
+        <FeaturesSection />
+
+        {/* Token Balance */}
+        <TokenBalanceCard />
+
+        {/* Quick Actions */}
+        <QuickActionsSection />
+
+        {/* Recent Enhancements */}
+        <RecentEnhancementsSection />
+
+        {/* Bottom padding */}
+        <View height={40} />
+      </ScrollView>
     </View>
   );
 }

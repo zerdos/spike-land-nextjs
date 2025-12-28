@@ -287,11 +287,13 @@ export default function SignInScreen() {
                     </Button>
                   </YStack>
 
-                  {/* Forgot password - placeholder for future */}
+                  {/* Forgot password link */}
                   <XStack justifyContent="center" marginTop="$2">
-                    <Text color="$blue10" fontWeight="500" pressStyle={{ opacity: 0.7 }}>
-                      Forgot password?
-                    </Text>
+                    <Link href="/(auth)/forgot-password" asChild>
+                      <Text color="$blue10" fontWeight="500" pressStyle={{ opacity: 0.7 }}>
+                        Forgot password?
+                      </Text>
+                    </Link>
                   </XStack>
                 </YStack>
               )}
