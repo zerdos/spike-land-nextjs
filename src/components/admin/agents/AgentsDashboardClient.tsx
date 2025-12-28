@@ -12,6 +12,10 @@ import { Card } from "@/components/ui/card";
 import type { ExternalAgentStatus } from "@prisma/client";
 import { useCallback, useEffect, useState } from "react";
 
+import { type GitHubData, GitHubIssuesPanel } from "./GitHubIssuesPanel";
+import { type GitInfo, GitInfoPanel } from "./GitInfoPanel";
+import { ResourcesPanel, type ResourceStatus } from "./ResourcesPanel";
+
 interface AgentSession {
   id: string;
   externalId: string;
@@ -94,9 +98,19 @@ export function AgentsDashboardClient({ initialData }: Props) {
   const [isVisible, setIsVisible] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  useEffect(() => {
-    setLastUpdated(new Date());
-  }, []);
+  // New panel states
+  const [resourcesData, setResourcesData] = useState<ResourceStatus | null>(null);
+  const [resourcesLoading, setResourcesLoading] = useState(true);
+  const [resourcesError, setResourcesError] = useState<string | null>(null);
+
+  const [gitInfoData, setGitInfoData] = useState<GitInfo | null>(null);
+  const [gitInfoLoading, setGitInfoLoading] = useState(true);
+  const [gitInfoError, setGitInfoError] = useState<string | null>(null);
+
+  const [gitHubData, setGitHubData] = useState<GitHubData | null>(null);
+  const [gitHubLoading, setGitHubLoading] = useState(true);
+  const [gitHubError, setGitHubError] = useState<string | null>(null);
+  const [gitHubConfigured, setGitHubConfigured] = useState(true);
 
   const fetchData = useCallback(async () => {
     try {
@@ -113,11 +127,80 @@ export function AgentsDashboardClient({ initialData }: Props) {
     }
   }, []);
 
+  const fetchResources = useCallback(async () => {
+    setResourcesLoading(true);
+    try {
+      const response = await fetch("/api/admin/agents/resources");
+      if (!response.ok) {
+        throw new Error("Failed to fetch resources");
+      }
+      const result = await response.json();
+      setResourcesData(result.resources);
+      setResourcesError(null);
+    } catch (err) {
+      setResourcesError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setResourcesLoading(false);
+    }
+  }, []);
+
+  const fetchGitInfo = useCallback(async () => {
+    setGitInfoLoading(true);
+    try {
+      const response = await fetch("/api/admin/agents/git");
+      if (!response.ok) {
+        throw new Error("Failed to fetch git info");
+      }
+      const result = await response.json();
+      setGitInfoData(result);
+      setGitInfoError(null);
+    } catch (err) {
+      setGitInfoError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setGitInfoLoading(false);
+    }
+  }, []);
+
+  const fetchGitHub = useCallback(async () => {
+    setGitHubLoading(true);
+    try {
+      const response = await fetch("/api/admin/agents/github/issues");
+      if (response.status === 503) {
+        setGitHubConfigured(false);
+        setGitHubData(null);
+        return;
+      }
+      if (!response.ok) {
+        throw new Error("Failed to fetch GitHub data");
+      }
+      const result = await response.json();
+      setGitHubData(result);
+      setGitHubConfigured(true);
+      setGitHubError(null);
+    } catch (err) {
+      setGitHubError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setGitHubLoading(false);
+    }
+  }, []);
+
+  const fetchAllData = useCallback(async () => {
+    await Promise.all([fetchData(), fetchResources(), fetchGitInfo(), fetchGitHub()]);
+  }, [fetchData, fetchResources, fetchGitInfo, fetchGitHub]);
+
+  // Initial fetch for all panel data
+  useEffect(() => {
+    setLastUpdated(new Date());
+    fetchResources();
+    fetchGitInfo();
+    fetchGitHub();
+  }, [fetchResources, fetchGitInfo, fetchGitHub]);
+
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await fetchData();
+    await fetchAllData();
     setIsRefreshing(false);
-  }, [fetchData]);
+  }, [fetchAllData]);
 
   // Track page visibility
   useEffect(() => {
@@ -125,7 +208,7 @@ export function AgentsDashboardClient({ initialData }: Props) {
       const visible = document.visibilityState === "visible";
       setIsVisible(visible);
       if (visible && isPolling) {
-        fetchData();
+        fetchAllData();
       }
     };
 
@@ -133,15 +216,15 @@ export function AgentsDashboardClient({ initialData }: Props) {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isPolling, fetchData]);
+  }, [isPolling, fetchAllData]);
 
   // Polling
   useEffect(() => {
     if (!isPolling || !isVisible) return;
 
-    const intervalId = setInterval(fetchData, POLLING_INTERVAL);
+    const intervalId = setInterval(fetchAllData, POLLING_INTERVAL);
     return () => clearInterval(intervalId);
-  }, [isPolling, isVisible, fetchData]);
+  }, [isPolling, isVisible, fetchAllData]);
 
   // Count active agents (not completed/failed)
   const activeCount = data.sessions.filter(
@@ -185,7 +268,10 @@ export function AgentsDashboardClient({ initialData }: Props) {
               {isRefreshing ? "Refreshing..." : "Refresh"}
             </Button>
           </div>
-          <div className="text-right text-sm text-neutral-600 dark:text-neutral-400">
+          <div
+            className="text-right text-sm text-neutral-600 dark:text-neutral-400"
+            data-testid="timestamp"
+          >
             <p>
               Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "—"}
             </p>
@@ -200,7 +286,16 @@ export function AgentsDashboardClient({ initialData }: Props) {
 
       {error && (
         <Card className="border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-          <p className="text-red-600 dark:text-red-400">Error: {error}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-red-600 dark:text-red-400">Error: {error}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+            >
+              Retry
+            </Button>
+          </div>
         </Card>
       )}
 
@@ -224,18 +319,12 @@ export function AgentsDashboardClient({ initialData }: Props) {
       {/* Status Overview */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="p-4">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">Total Sessions</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">Total</p>
           <p className="mt-1 text-2xl font-bold">{data.pagination.total}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">Active Agents</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">Active</p>
           <p className="mt-1 text-2xl font-bold text-cyan-600">{activeCount}</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">Awaiting Approval</p>
-          <p className="mt-1 text-2xl font-bold text-amber-600">
-            {data.statusCounts.AWAITING_PLAN_APPROVAL || 0}
-          </p>
         </Card>
         <Card className="p-4">
           <p className="text-sm text-neutral-600 dark:text-neutral-400">Completed</p>
@@ -243,37 +332,65 @@ export function AgentsDashboardClient({ initialData }: Props) {
             {data.statusCounts.COMPLETED || 0}
           </p>
         </Card>
+        <Card className="p-4">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">Failed</p>
+          <p className="mt-1 text-2xl font-bold text-red-600">
+            {data.statusCounts.FAILED || 0}
+          </p>
+        </Card>
+      </div>
+
+      {/* Info Panels */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <ResourcesPanel
+          resources={resourcesData}
+          loading={resourcesLoading}
+          error={resourcesError}
+        />
+        <GitInfoPanel
+          gitInfo={gitInfoData}
+          loading={gitInfoLoading}
+          error={gitInfoError}
+        />
+        <GitHubIssuesPanel
+          data={gitHubData}
+          loading={gitHubLoading}
+          error={gitHubError}
+          isConfigured={gitHubConfigured}
+        />
       </div>
 
       {/* Sessions List */}
       <div>
         <h2 className="mb-4 text-xl font-semibold">Agent Sessions</h2>
-        {data.sessions.length === 0
-          ? (
-            <Card className="p-8 text-center">
-              <p className="text-neutral-600 dark:text-neutral-400">No agent sessions yet.</p>
-              {data.julesAvailable && (
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => setShowCreateModal(true)}
-                >
-                  Create your first task
-                </Button>
-              )}
-            </Card>
-          )
-          : (
-            <div className="space-y-4">
-              {data.sessions.map((session) => (
-                <AgentSessionCard
-                  key={session.id}
-                  session={session}
-                  onStatusChange={handleRefresh}
-                />
-              ))}
-            </div>
-          )}
+        <div data-testid="sessions-list">
+          {data.sessions.length === 0
+            ? (
+              <Card className="p-8 text-center">
+                <p className="text-neutral-600 dark:text-neutral-400">No active agents</p>
+                {data.julesAvailable && (
+                  <Button
+                    variant="outline"
+                    className="mt-4"
+                    onClick={() => setShowCreateModal(true)}
+                  >
+                    Create your first task
+                  </Button>
+                )}
+              </Card>
+            )
+            : (
+              <div className="space-y-4">
+                {data.sessions.map((session) => (
+                  <AgentSessionCard
+                    key={session.id}
+                    session={session}
+                    onStatusChange={handleRefresh}
+                  />
+                ))}
+              </div>
+            )}
+        </div>
       </div>
 
       {/* Create Modal */}
