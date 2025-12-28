@@ -142,7 +142,7 @@ describe("isVercelEnvironment", () => {
   });
 
   it("should return false when VERCEL is '0'", () => {
-    process.env.VERCEL = "0";
+    (process.env as Record<string, string>).VERCEL = "0";
     expect(isVercelEnvironment()).toBe(false);
   });
 });

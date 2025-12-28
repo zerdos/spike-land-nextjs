@@ -74,7 +74,7 @@ export const authConfig = {
       name: "authjs.pkce.code_verifier",
       options: {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "lax" as const,
         path: "/",
         secure: process.env.NODE_ENV === "production",
         maxAge: 60 * 15, // 15 minutes
@@ -84,7 +84,7 @@ export const authConfig = {
       name: "authjs.state",
       options: {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "lax" as const,
         path: "/",
         secure: process.env.NODE_ENV === "production",
         maxAge: 60 * 15, // 15 minutes
@@ -94,7 +94,7 @@ export const authConfig = {
       name: "authjs.callback-url",
       options: {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "lax" as const,
         path: "/",
         secure: process.env.NODE_ENV === "production",
         maxAge: 60 * 15, // 15 minutes

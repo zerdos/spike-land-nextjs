@@ -439,8 +439,7 @@ function constantTimeCompare(a: string, b: string): boolean {
   return result === 0;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const auth = async (...args: any[]) => {
+export const auth = async () => {
   // Check for E2E bypass via header (works on Vercel previews)
   // This is the primary bypass mechanism for CI/CD
   // SECURITY: Only enabled in non-production environments
@@ -468,8 +467,7 @@ export const auth = async (...args: any[]) => {
     }
   }
 
-  // @ts-expect-error - auth accepts variable arguments
-  return originalAuth(...args);
+  return originalAuth();
 };
 export { handlers, signIn, signOut };
 

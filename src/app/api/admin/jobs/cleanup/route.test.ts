@@ -45,12 +45,10 @@ describe("POST /api/admin/jobs/cleanup", () => {
   });
 
   it("should return 403 if not admin", async () => {
-    vi.mocked(auth).mockResolvedValue(
-      {
-        user: { id: "user123", email: "user@example.com" },
-        expires: "2024-12-31",
-      } as Parameters<typeof auth>[0] extends never ? never : Awaited<ReturnType<typeof auth>>,
-    );
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: "user123", email: "user@example.com" },
+      expires: "2024-12-31",
+    } as Awaited<ReturnType<typeof auth>>);
 
     vi.mocked(requireAdminByUserId).mockRejectedValue(
       new Error("Forbidden: Admin access required"),
