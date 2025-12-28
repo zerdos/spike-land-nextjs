@@ -43,7 +43,7 @@
     "db:seed-vouchers": "tsx prisma/seed-vouchers.ts",
     "db:seed-e2e": "tsx prisma/seed-e2e.ts",
     "db:cleanup-e2e": "tsx prisma/cleanup-e2e.ts",
-    "test:e2e:db": "cucumber-js --profile db",
+    "test:e2e:db": "CI=true cucumber-js --profile db",
     "db:studio": "prisma studio",
     "db:validate": "prisma validate",
     "db:format": "prisma format",
