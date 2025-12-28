@@ -703,31 +703,33 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -776,8 +778,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1054,8 +1054,8 @@ function <span class="fstat-no" title="function not covered" >AnimatedProgressCi
   const backgroundColor = <span class="cstat-no" title="statement not covered" >isComplete</span>
     ? "#22c55e"
     : isFailed
-      ? "#ef4444"
-      : "#3b82f6";
+    ? "#ef4444"
+    : "#3b82f6";
 &nbsp;
   const backgroundOpacity = <span class="cstat-no" title="statement not covered" >animatedValue.interpolate({</span>
     inputRange: [0, 1],
@@ -1112,7 +1112,9 @@ interface ProgressStepsProps {
   sizeConfig: typeof SIZE_CONFIG.medium;
 }
 &nbsp;
-function <span class="fstat-no" title="function not covered" >ProgressSteps(</span>{ currentStageIndex, isComplete, isFailed, sizeConfig }: ProgressStepsProps) {
+function <span class="fstat-no" title="function not covered" >ProgressSteps(</span>
+  { currentStageIndex, isComplete, isFailed, sizeConfig }: ProgressStepsProps,
+) {
 <span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;YStack gap="$3" width="100%"&gt;
       {STAGES.map(<span class="fstat-no" title="function not covered" >(s</span>tage, index) =&gt; {
@@ -1199,13 +1201,11 @@ export function <span class="fstat-no" title="function not covered" >JobProgress
         isComplete={isComplete}
         isFailed={isFailed}
       &gt;
-        {isComplete ? (
-          &lt;Check size={sizeConfig.iconSize} color="white" testID="complete-icon" /&gt;
-        ) : isFailed ? (
-          &lt;AlertCircle size={sizeConfig.iconSize} color="white" testID="error-icon" /&gt;
-        ) : (
-          &lt;Spinner size="large" color="white" testID="loading-spinner" /&gt;
-        )}
+        {isComplete
+          ? &lt;Check size={sizeConfig.iconSize} color="white" testID="complete-icon" /&gt;
+          : isFailed
+          ? &lt;AlertCircle size={sizeConfig.iconSize} color="white" testID="error-icon" /&gt;
+          : &lt;Spinner size="large" color="white" testID="loading-spinner" /&gt;}
       &lt;/AnimatedProgressCircle&gt;
 &nbsp;
       {/* Status Text */}
@@ -1220,8 +1220,8 @@ export function <span class="fstat-no" title="function not covered" >JobProgress
           {isFailed
             ? "Enhancement Failed"
             : isComplete
-              ? "Enhancement Complete!"
-              : statusMessage || "Processing..."}
+            ? "Enhancement Complete!"
+            : statusMessage || "Processing..."}
         &lt;/Text&gt;
 &nbsp;
         {/* Progress Percentage */}
@@ -1300,7 +1300,7 @@ export default JobProgress;
     <div class="footer quiet pad2 space-top1 center small">
       Code coverage generated by
       <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-      at 2025-12-28T19:13:34.562Z
+      at 2025-12-28T19:45:28.269Z
     </div>
     <script src="../prettify.js"></script>
     <script>

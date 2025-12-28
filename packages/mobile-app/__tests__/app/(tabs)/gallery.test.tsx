@@ -8,7 +8,7 @@ import React from "react";
 import { Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import GalleryScreen from "./gallery";
+import GalleryScreen from "@/app/(tabs)/gallery";
 
 // ============================================================================
 // Mocks
@@ -23,7 +23,7 @@ jest.mock("react-native-safe-area-context", () => ({
 }));
 
 const mockUseGalleryStore = jest.fn();
-jest.mock("../../stores", () => ({
+jest.mock("@/stores", () => ({
   useGalleryStore: (...args: unknown[]) => mockUseGalleryStore(...args),
 }));
 

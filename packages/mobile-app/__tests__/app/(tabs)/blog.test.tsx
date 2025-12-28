@@ -80,7 +80,7 @@ jest.mock("@/components/BlogCard", () => ({
   },
 }));
 
-import BlogScreen from "./blog";
+import BlogScreen from "@/app/(tabs)/blog";
 
 const mockRouter = {
   push: jest.fn(),

@@ -673,7 +673,12 @@
 <a name='L610'></a><a href='#L610'>610</a>
 <a name='L611'></a><a href='#L611'>611</a>
 <a name='L612'></a><a href='#L612'>612</a>
-<a name='L613'></a><a href='#L613'>613</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L613'></a><a href='#L613'>613</a>
+<a name='L614'></a><a href='#L614'>614</a>
+<a name='L615'></a><a href='#L615'>615</a>
+<a name='L616'></a><a href='#L616'>616</a>
+<a name='L617'></a><a href='#L617'>617</a>
+<a name='L618'></a><a href='#L618'>618</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -827,6 +832,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -940,7 +947,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1197,6 +1203,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1309,9 +1319,9 @@ import {
   YStack,
 } from "tamagui";
 &nbsp;
+import type { ApiKey } from "../../services/api/settings";
 import { useAuthStore } from "../../stores";
 import { useSettingsStore } from "../../stores/settings-store";
-import type { ApiKey } from "../../services/api/settings";
 &nbsp;
 // ============================================================================
 // Types
@@ -1374,29 +1384,31 @@ function <span class="fstat-no" title="function not covered" >ApiKeyItem(</span>
             &lt;/XStack&gt;
           &lt;/YStack&gt;
           &lt;XStack space="$2"&gt;
-            {apiKey.isActive ? (
-              &lt;XStack
-                backgroundColor="$green3"
-                paddingHorizontal="$2"
-                paddingVertical="$1"
-                borderRadius="$2"
-              &gt;
-                &lt;Text fontSize="$2" color="$green11"&gt;
-                  Active
-                &lt;/Text&gt;
-              &lt;/XStack&gt;
-            ) : (
-              &lt;XStack
-                backgroundColor="$red3"
-                paddingHorizontal="$2"
-                paddingVertical="$1"
-                borderRadius="$2"
-              &gt;
-                &lt;Text fontSize="$2" color="$red11"&gt;
-                  Revoked
-                &lt;/Text&gt;
-              &lt;/XStack&gt;
-            )}
+            {apiKey.isActive
+              ? (
+                &lt;XStack
+                  backgroundColor="$green3"
+                  paddingHorizontal="$2"
+                  paddingVertical="$1"
+                  borderRadius="$2"
+                &gt;
+                  &lt;Text fontSize="$2" color="$green11"&gt;
+                    Active
+                  &lt;/Text&gt;
+                &lt;/XStack&gt;
+              )
+              : (
+                &lt;XStack
+                  backgroundColor="$red3"
+                  paddingHorizontal="$2"
+                  paddingVertical="$1"
+                  borderRadius="$2"
+                &gt;
+                  &lt;Text fontSize="$2" color="$red11"&gt;
+                    Revoked
+                  &lt;/Text&gt;
+                &lt;/XStack&gt;
+              )}
           &lt;/XStack&gt;
         &lt;/XStack&gt;
 &nbsp;
@@ -1478,8 +1490,8 @@ function <span class="fstat-no" title="function not covered" >NewKeyDialog(</spa
           &lt;Dialog.Description&gt;
             &lt;YStack space="$3"&gt;
               &lt;Paragraph color="$gray11"&gt;
-                Your new API key "{keyName}" has been created. Copy it now - you
-                will not be able to see it again!
+                Your new API key "{keyName}" has been created. Copy it now - you will not be able to
+                see it again!
               &lt;/Paragraph&gt;
 &nbsp;
               &lt;Card backgroundColor="$gray2" padding="$3" borderRadius="$3"&gt;
@@ -1582,8 +1594,7 @@ function <span class="fstat-no" title="function not covered" >CreateKeyDialog(</
           &lt;Dialog.Description&gt;
             &lt;YStack space="$3"&gt;
               &lt;Paragraph color="$gray11"&gt;
-                Give your API key a descriptive name to help you identify it
-                later.
+                Give your API key a descriptive name to help you identify it later.
               &lt;/Paragraph&gt;
 &nbsp;
               &lt;YStack space="$2"&gt;
@@ -1616,13 +1627,13 @@ function <span class="fstat-no" title="function not covered" >CreateKeyDialog(</
               onPress={handleCreate}
               disabled={!name.trim() || isCreating}
             &gt;
-              {isCreating ? (
-                &lt;ActivityIndicator size="small" color="white" /&gt;
-              ) : (
-                &lt;Text color="white" fontWeight="600"&gt;
-                  Create
-                &lt;/Text&gt;
-              )}
+              {isCreating
+                ? &lt;ActivityIndicator size="small" color="white" /&gt;
+                : (
+                  &lt;Text color="white" fontWeight="600"&gt;
+                    Create
+                  &lt;/Text&gt;
+                )}
             &lt;/Button&gt;
           &lt;/XStack&gt;
         &lt;/Dialog.Content&gt;
@@ -1820,39 +1831,43 @@ export default function <span class="fstat-no" title="function not covered" >Api
 &nbsp;
       {/* Content */}
       &lt;YStack flex={1} padding="$4" paddingTop="$2"&gt;
-        {isLoadingApiKeys &amp;&amp; !isRefreshing ? (
-          &lt;YStack flex={1} justifyContent="center" alignItems="center"&gt;
-            &lt;ActivityIndicator size="large" /&gt;
-            &lt;Text marginTop="$3" color="$gray11"&gt;
-              Loading API keys...
-            &lt;/Text&gt;
-          &lt;/YStack&gt;
-        ) : apiKeysError ? (
-          renderErrorState()
-        ) : (
-          &lt;FlatList
-            data={apiKeys}
-            keyExtractor={<span class="fstat-no" title="function not covered" >(i</span>tem) =&gt; <span class="cstat-no" title="statement not covered" >item.id}</span>
-            renderItem={<span class="fstat-no" title="function not covered" >({</span> item }) =&gt; (
-<span class="cstat-no" title="statement not covered" >              &lt;ApiKeyItem</span>
-                apiKey={item}
-                onDelete={handleDelete}
-                onCopy={handleCopy}
-              /&gt;
-            )}
-            ListEmptyComponent={renderEmptyState}
-            refreshControl={
-              &lt;RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={handleRefresh}
-              /&gt;
-            }
-            contentContainerStyle={{
-              flexGrow: 1,
-              paddingBottom: 100,
-            }}
-          /&gt;
-        )}
+        {isLoadingApiKeys &amp;&amp; !isRefreshing
+          ? (
+            &lt;YStack flex={1} justifyContent="center" alignItems="center"&gt;
+              &lt;ActivityIndicator size="large" /&gt;
+              &lt;Text marginTop="$3" color="$gray11"&gt;
+                Loading API keys...
+              &lt;/Text&gt;
+            &lt;/YStack&gt;
+          )
+          : apiKeysError
+          ? (
+            renderErrorState()
+          )
+          : (
+            &lt;FlatList
+              data={apiKeys}
+              keyExtractor={<span class="fstat-no" title="function not covered" >(i</span>tem) =&gt; <span class="cstat-no" title="statement not covered" >item.id}</span>
+              renderItem={<span class="fstat-no" title="function not covered" >({</span> item }) =&gt; (
+<span class="cstat-no" title="statement not covered" >                &lt;ApiKeyItem</span>
+                  apiKey={item}
+                  onDelete={handleDelete}
+                  onCopy={handleCopy}
+                /&gt;
+              )}
+              ListEmptyComponent={renderEmptyState}
+              refreshControl={
+                &lt;RefreshControl
+                  refreshing={isRefreshing}
+                  onRefresh={handleRefresh}
+                /&gt;
+              }
+              contentContainerStyle={{
+                flexGrow: 1,
+                paddingBottom: 100,
+              }}
+            /&gt;
+          )}
       &lt;/YStack&gt;
 &nbsp;
       {/* Create Button */}
@@ -1906,7 +1921,7 @@ export default function <span class="fstat-no" title="function not covered" >Api
     <div class="footer quiet pad2 space-top1 center small">
       Code coverage generated by
       <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-      at 2025-12-28T19:13:34.562Z
+      at 2025-12-28T19:45:28.269Z
     </div>
     <script src="../../prettify.js"></script>
     <script>

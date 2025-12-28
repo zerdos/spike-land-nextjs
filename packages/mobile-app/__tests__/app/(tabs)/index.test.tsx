@@ -7,7 +7,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 import { router } from "expo-router";
 
 // Mock the stores
-jest.mock("../../stores", () => ({
+jest.mock("@/stores", () => ({
   useTokenStore: jest.fn(() => ({
     balance: 10,
     isLoading: false,
@@ -34,7 +34,7 @@ jest.mock("expo-router", () => {
 });
 
 // Mock the components
-jest.mock("../../components/HeroSection", () => ({
+jest.mock("@/components/HeroSection", () => ({
   HeroSection: ({ testID }: { testID?: string; }) => {
     const { View, Text, Pressable } = require("react-native");
     return (
@@ -49,7 +49,7 @@ jest.mock("../../components/HeroSection", () => ({
   },
 }));
 
-jest.mock("../../components/BeforeAfterSlider", () => ({
+jest.mock("@/components/BeforeAfterSlider", () => ({
   BeforeAfterSlider: ({ testID }: { testID?: string; }) => {
     const { View, Text } = require("react-native");
     return (
@@ -61,7 +61,7 @@ jest.mock("../../components/BeforeAfterSlider", () => ({
   },
 }));
 
-jest.mock("../../components/FeatureCard", () => ({
+jest.mock("@/components/FeatureCard", () => ({
   FeatureCard: ({ title, testID }: { title: string; testID?: string; }) => {
     const { View, Text } = require("react-native");
     return (
@@ -79,8 +79,8 @@ jest.mock("../../components/FeatureCard", () => ({
 }));
 
 // Import after mocks
-import { useEnhancementStore, useTokenStore } from "../../stores";
-import HomeScreen from "./index";
+import HomeScreen from "@/app/(tabs)/index";
+import { useEnhancementStore, useTokenStore } from "@/stores";
 
 describe("HomeScreen", () => {
   beforeEach(() => {

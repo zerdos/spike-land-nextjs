@@ -6,7 +6,7 @@
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, type AppStateStatus } from "react-native";
+import { AppState, type AppStateStatus, Platform } from "react-native";
 import {
   clearBadge,
   handleNotificationResponse,
@@ -142,7 +142,13 @@ export function usePushNotifications(
   );
 
   // Check for initial notification (app opened from notification)
+  // This is only available on native platforms, not web
   useEffect(() => {
+    // Skip on web - push notifications are not available
+    if (Platform.OS === "web") {
+      return;
+    }
+
     const checkInitialNotification = async () => {
       const response = await Notifications.getLastNotificationResponseAsync();
       if (response) {
@@ -154,7 +160,13 @@ export function usePushNotifications(
   }, [handleNotificationTap]);
 
   // Set up notification listeners
+  // These are only available on native platforms
   useEffect(() => {
+    // Skip on web - push notifications are not available
+    if (Platform.OS === "web") {
+      return;
+    }
+
     // Foreground notification listener
     notificationListenerRef.current = Notifications.addNotificationReceivedListener(
       handleNotificationReceived,
@@ -176,7 +188,12 @@ export function usePushNotifications(
   }, [handleNotificationReceived, handleNotificationTap]);
 
   // Request permissions on mount if enabled
+  // Only on native platforms
   useEffect(() => {
+    if (Platform.OS === "web") {
+      return;
+    }
+
     if (requestOnMount) {
       requestPermissions();
     }

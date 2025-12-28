@@ -2,13 +2,13 @@
  * Tests for Root Layout
  */
 
+import RootLayout from "@/app/_layout";
+import * as usePushNotificationsModule from "@/hooks/usePushNotifications";
+import { useAuthStore } from "@/stores";
 import { render, waitFor } from "@testing-library/react-native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import React from "react";
-import * as usePushNotificationsModule from "../hooks/usePushNotifications";
-import { useAuthStore } from "../stores";
-import RootLayout from "./_layout";
 
 // ============================================================================
 // Mocks
@@ -49,11 +49,11 @@ jest.mock("@/components/useColorScheme", () => ({
   useColorScheme: jest.fn(() => "light"),
 }));
 
-jest.mock("../stores", () => ({
+jest.mock("@/stores", () => ({
   useAuthStore: jest.fn(),
 }));
 
-jest.mock("../hooks/usePushNotifications", () => ({
+jest.mock("@/hooks/usePushNotifications", () => ({
   usePushNotifications: jest.fn(() => ({
     expoPushToken: null,
     notification: null,
@@ -65,7 +65,7 @@ jest.mock("../hooks/usePushNotifications", () => ({
   })),
 }));
 
-jest.mock("../tamagui.config", () => ({}));
+jest.mock("@/tamagui.config", () => ({}));
 
 jest.mock("@expo/vector-icons/FontAwesome", () => ({
   font: {},

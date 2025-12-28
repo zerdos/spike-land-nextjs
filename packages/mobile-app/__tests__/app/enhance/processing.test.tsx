@@ -2,14 +2,14 @@
  * Processing Screen Tests
  */
 
+import EnhancementProcessingScreen from "@/app/enhance/processing";
+import { useEnhancementJob } from "@/hooks/useEnhancementJob";
+import { useEnhancementStore } from "@/stores";
+import config from "@/tamagui.config";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { useRouter } from "expo-router";
 import React from "react";
 import { TamaguiProvider } from "tamagui";
-import { useEnhancementJob } from "../../hooks/useEnhancementJob";
-import { useEnhancementStore } from "../../stores";
-import config from "../../tamagui.config";
-import EnhancementProcessingScreen from "./processing";
 
 // Mock dependencies
 jest.mock("expo-router", () => ({
@@ -25,16 +25,16 @@ jest.mock("react-native-safe-area-context", () => ({
   }),
 }));
 
-jest.mock("../../hooks/useEnhancementJob", () => ({
+jest.mock("@/hooks/useEnhancementJob", () => ({
   useEnhancementJob: jest.fn(),
 }));
 
-jest.mock("../../stores", () => ({
+jest.mock("@/stores", () => ({
   useEnhancementStore: jest.fn(),
 }));
 
 // Mock JobProgress component
-jest.mock("../../components/JobProgress", () => ({
+jest.mock("@/components/JobProgress", () => ({
   JobProgress: ({ onRetry, ...props }: { onRetry?: () => void; }) => (
     <mock-job-progress
       testID="job-progress"

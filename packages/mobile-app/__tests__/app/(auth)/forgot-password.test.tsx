@@ -6,7 +6,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 import { useRouter } from "expo-router";
 import React from "react";
 
-import { authService } from "../../services/auth";
+import { authService } from "@/services/auth";
 
 // Mock modules before importing the component
 jest.mock("expo-router", () => ({
@@ -14,7 +14,7 @@ jest.mock("expo-router", () => ({
   Link: ({ children }: { children: React.ReactNode; }) => children,
 }));
 
-jest.mock("../../services/auth", () => ({
+jest.mock("@/services/auth", () => ({
   authService: {
     requestPasswordReset: jest.fn(),
   },
@@ -84,7 +84,7 @@ jest.mock("tamagui", () => {
   };
 });
 
-import ForgotPasswordScreen from "./forgot-password";
+import ForgotPasswordScreen from "@/app/(auth)/forgot-password";
 
 const mockRouter = {
   push: jest.fn(),

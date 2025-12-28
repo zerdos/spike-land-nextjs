@@ -27,13 +27,31 @@ const config = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
     // Mock expo winter runtime to prevent import errors
-    "^expo/src/winter/.*$": "<rootDir>/__mocks__/expo-winter.ts",
+    "^expo/src/winter/(.*)$": "<rootDir>/__mocks__/expo-winter.ts",
+    "^expo/src/winter$": "<rootDir>/__mocks__/expo-winter.ts",
     "^expo$": "<rootDir>/__mocks__/expo.ts",
     "^expo-secure-store$": "<rootDir>/__mocks__/expo-secure-store.ts",
     "^expo-image-picker$": "<rootDir>/__mocks__/expo-image-picker.ts",
     "^expo-constants$": "<rootDir>/__mocks__/expo-constants.ts",
+    // Tamagui mocks
     "^@tamagui/config$": "<rootDir>/__mocks__/@tamagui/config.ts",
     "^@tamagui/config/v3$": "<rootDir>/__mocks__/@tamagui/config.ts",
+    "^@tamagui/animations-css$": "<rootDir>/__mocks__/@tamagui/animations-css.ts",
+    "^@tamagui/font-inter$": "<rootDir>/__mocks__/@tamagui/font-inter.ts",
+    "^@tamagui/shorthands$": "<rootDir>/__mocks__/@tamagui/shorthands.ts",
+    "^@tamagui/lucide-icons$": "<rootDir>/__mocks__/@tamagui/lucide-icons.ts",
+    "^tamagui$": "<rootDir>/__mocks__/tamagui.ts",
+    // Mock the tamagui.config.ts to prevent import chain issues
+    "^\\./tamagui\\.config$": "<rootDir>/__mocks__/@tamagui/config.ts",
+    "^\\.\\./tamagui\\.config$": "<rootDir>/__mocks__/@tamagui/config.ts",
+    "^\\.\\./\\.\\./tamagui\\.config$": "<rootDir>/__mocks__/@tamagui/config.ts",
+    // Root directory mappings for tests in __tests__/app/ directory
+    // Maps relative imports from test files to correct source locations
+    "^\\.\\./\\.\\./(stores|hooks|components|services|constants)(.*)$": "<rootDir>/$1$2",
+    "^\\.\\./\\.\\./\\.\\./(stores|hooks|components|services|constants)(.*)$": "<rootDir>/$1$2",
+    "^\\.\\./\\.\\./\\.\\./\\.\\./(stores|hooks|components|services|constants)(.*)$":
+      "<rootDir>/$1$2",
+    // Shared package mock
     "^@spike-npm-land/shared$": "<rootDir>/__mocks__/@spike-npm-land/shared.ts",
   },
 
