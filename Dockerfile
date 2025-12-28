@@ -30,6 +30,8 @@ COPY --link package.json yarn.lock .yarnrc.yml ./
 COPY --link .yarn/ ./.yarn/
 COPY --link packages/mcp-server/package.json ./packages/mcp-server/
 COPY --link packages/opfs-node-adapter/package.json ./packages/opfs-node-adapter/
+COPY --link packages/mobile-app/package.json ./packages/mobile-app/
+COPY --link packages/shared/package.json ./packages/shared/
 COPY --link prisma ./prisma
 
 # ============================================================================
