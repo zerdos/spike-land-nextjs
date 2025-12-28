@@ -1,21 +1,13 @@
 /**
  * Canvas/Slideshow View
- * Full-screen image viewer with swipe navigation
+ * Full-screen image viewer with swipe navigation, sharing, and download
  */
 
-import {
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  Share2,
-  X,
-  ZoomIn,
-  ZoomOut,
-} from "@tamagui/lucide-icons";
+import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Dimensions, Pressable, StatusBar, StyleSheet } from "react-native";
+import { Alert, Dimensions, Pressable, StatusBar, StyleSheet } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
@@ -27,19 +19,89 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
 
+import { ImageActions } from "@/components/ImageActions";
+import { ShareSheet } from "@/components/ShareSheet";
 import { useGalleryStore } from "@/stores";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// ============================================================================
+// Toast Component (inline for simplicity)
+// ============================================================================
+
+interface ToastProps {
+  visible: boolean;
+  message: string;
+  type: "success" | "error";
+}
+
+function Toast({ visible, message, type }: ToastProps) {
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (visible) {
+      opacity.value = withTiming(1, { duration: 200 });
+    } else {
+      opacity.value = withTiming(0, { duration: 200 });
+    }
+  }, [visible, opacity]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
+  if (!visible && opacity.value === 0) {
+    return null;
+  }
+
+  return (
+    <Animated.View style={[styles.toast, animatedStyle]} pointerEvents="none">
+      <XStack
+        backgroundColor={type === "success" ? "$green10" : "$red10"}
+        paddingHorizontal="$4"
+        paddingVertical="$3"
+        borderRadius="$4"
+        shadowColor="black"
+        shadowOffset={{ width: 0, height: 2 }}
+        shadowOpacity={0.25}
+        shadowRadius={4}
+        elevation={5}
+      >
+        <Text color="white" fontWeight="600">
+          {message}
+        </Text>
+      </XStack>
+    </Animated.View>
+  );
+}
+
+// ============================================================================
+// Main Component
+// ============================================================================
 
 export default function CanvasScreen() {
   const router = useRouter();
   const { albumId: _albumId } = useLocalSearchParams<{ albumId: string; }>();
   const insets = useSafeAreaInsets();
+
+  // UI State
   const [showControls, setShowControls] = useState(true);
+  const [showShareSheet, setShowShareSheet] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toast, setToast] = useState<
+    { visible: boolean; message: string; type: "success" | "error"; }
+  >({
+    visible: false,
+    message: "",
+    type: "success",
+  });
+
   const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Store state
-  const { images, slideshowIndex: currentSlideshowIndex, goToSlide } = useGalleryStore();
+  const { images, slideshowIndex: currentSlideshowIndex, goToSlide, removeImage } =
+    useGalleryStore();
   const setCurrentSlideshowIndex = goToSlide;
 
   // Current image
@@ -55,7 +117,36 @@ export default function CanvasScreen() {
   const translateY = useSharedValue(0);
   const savedTranslateY = useSharedValue(0);
 
-  // Reset zoom when image changes
+  // ============================================================================
+  // Toast Helper
+  // ============================================================================
+
+  const showToast = useCallback((message: string, type: "success" | "error" = "success") => {
+    // Clear any existing toast timeout
+    if (toastTimeout.current) {
+      clearTimeout(toastTimeout.current);
+    }
+
+    setToast({ visible: true, message, type });
+
+    toastTimeout.current = setTimeout(() => {
+      setToast((prev) => ({ ...prev, visible: false }));
+    }, 3000);
+  }, []);
+
+  // Cleanup toast timeout
+  useEffect(() => {
+    return () => {
+      if (toastTimeout.current) {
+        clearTimeout(toastTimeout.current);
+      }
+    };
+  }, []);
+
+  // ============================================================================
+  // Zoom Reset on Image Change
+  // ============================================================================
+
   useEffect(() => {
     scale.value = withSpring(1);
     translateX.value = withSpring(0);
@@ -73,7 +164,10 @@ export default function CanvasScreen() {
     savedTranslateY,
   ]);
 
-  // Auto-hide controls
+  // ============================================================================
+  // Controls Visibility
+  // ============================================================================
+
   const resetControlsTimeout = useCallback(() => {
     if (controlsTimeout.current) {
       clearTimeout(controlsTimeout.current);
@@ -93,7 +187,10 @@ export default function CanvasScreen() {
     };
   }, [resetControlsTimeout]);
 
+  // ============================================================================
   // Navigation
+  // ============================================================================
+
   const goToPrevious = useCallback(() => {
     if (currentSlideshowIndex > 0) {
       setCurrentSlideshowIndex(currentSlideshowIndex - 1);
@@ -108,7 +205,93 @@ export default function CanvasScreen() {
     }
   }, [currentSlideshowIndex, images.length, setCurrentSlideshowIndex, resetControlsTimeout]);
 
+  // ============================================================================
+  // Action Handlers
+  // ============================================================================
+
+  const handleOpenShareSheet = useCallback(() => {
+    setShowShareSheet(true);
+    resetControlsTimeout();
+  }, [resetControlsTimeout]);
+
+  const handleCloseShareSheet = useCallback(() => {
+    setShowShareSheet(false);
+  }, []);
+
+  const handleShareComplete = useCallback((action: "share" | "download" | "copy") => {
+    const messages = {
+      share: "Image shared successfully!",
+      download: "Image saved to gallery!",
+      copy: "Link copied to clipboard!",
+    };
+    showToast(messages[action], "success");
+  }, [showToast]);
+
+  const handleShareError = useCallback((error: string) => {
+    showToast(error, "error");
+  }, [showToast]);
+
+  const handleDownload = useCallback(() => {
+    handleOpenShareSheet();
+  }, [handleOpenShareSheet]);
+
+  const handleShare = useCallback(() => {
+    handleOpenShareSheet();
+  }, [handleOpenShareSheet]);
+
+  const handleDelete = useCallback(async () => {
+    if (!currentImage) return;
+
+    Alert.alert(
+      "Delete Image",
+      "Are you sure you want to delete this image? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setIsDeleting(true);
+            try {
+              const success = await removeImage(currentImage.id);
+              if (success) {
+                showToast("Image deleted", "success");
+                // If this was the last image, go back
+                if (images.length <= 1) {
+                  router.back();
+                } else if (currentSlideshowIndex >= images.length - 1) {
+                  // If we deleted the last image, go to the previous one
+                  setCurrentSlideshowIndex(Math.max(0, currentSlideshowIndex - 1));
+                }
+              } else {
+                showToast("Failed to delete image", "error");
+              }
+            } catch (err) {
+              showToast(
+                err instanceof Error ? err.message : "Failed to delete image",
+                "error",
+              );
+            } finally {
+              setIsDeleting(false);
+            }
+          },
+        },
+      ],
+    );
+  }, [
+    currentImage,
+    currentSlideshowIndex,
+    images.length,
+    removeImage,
+    router,
+    setCurrentSlideshowIndex,
+    showToast,
+  ]);
+
+  // ============================================================================
   // Gestures
+  // ============================================================================
+
   const pinchGesture = Gesture.Pinch()
     .onUpdate((e) => {
       scale.value = savedScale.value * e.scale;
@@ -183,6 +366,10 @@ export default function CanvasScreen() {
     singleTapGesture,
   );
 
+  // ============================================================================
+  // Animated Styles
+  // ============================================================================
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       { translateX: translateX.value },
@@ -195,7 +382,10 @@ export default function CanvasScreen() {
     opacity: withTiming(showControls ? 1 : 0, { duration: 200 }),
   }));
 
-  // Zoom controls
+  // ============================================================================
+  // Zoom Controls
+  // ============================================================================
+
   const zoomIn = useCallback(() => {
     const newScale = Math.min(scale.value * 1.5, 4);
     scale.value = withSpring(newScale);
@@ -223,6 +413,10 @@ export default function CanvasScreen() {
     savedTranslateY,
     resetControlsTimeout,
   ]);
+
+  // ============================================================================
+  // Render
+  // ============================================================================
 
   if (!currentImage) {
     return (
@@ -275,10 +469,7 @@ export default function CanvasScreen() {
           <Text color="white" fontWeight="600">
             {currentSlideshowIndex + 1} / {images.length}
           </Text>
-          <XStack gap="$2">
-            <Button size="$3" chromeless circular icon={Share2} color="white" />
-            <Button size="$3" chromeless circular icon={Download} color="white" />
-          </XStack>
+          <XStack width={40} /> {/* Spacer for alignment */}
         </XStack>
 
         {/* Side Navigation */}
@@ -293,7 +484,7 @@ export default function CanvasScreen() {
           </Pressable>
         )}
 
-        {/* Bottom Bar */}
+        {/* Bottom Bar - Zoom Controls */}
         <XStack
           position="absolute"
           bottom={0}
@@ -314,9 +505,41 @@ export default function CanvasScreen() {
           <Button size="$3" chromeless circular icon={ZoomIn} color="white" onPress={zoomIn} />
         </XStack>
       </Animated.View>
+
+      {/* Image Actions Floating Bar */}
+      <ImageActions
+        visible={showControls && !showShareSheet}
+        onDownload={handleDownload}
+        onShare={handleShare}
+        onDelete={handleDelete}
+        isDeleting={isDeleting}
+        showDelete={true}
+        position="bottom"
+        style={{ bottom: insets.bottom + 80 }}
+      />
+
+      {/* Share Sheet */}
+      <ShareSheet
+        visible={showShareSheet}
+        imageId={currentImage.id}
+        onClose={handleCloseShareSheet}
+        onActionComplete={handleShareComplete}
+        onError={handleShareError}
+      />
+
+      {/* Toast Notifications */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+      />
     </GestureHandlerRootView>
   );
 }
+
+// ============================================================================
+// Styles
+// ============================================================================
 
 const styles = StyleSheet.create({
   container: {
@@ -352,5 +575,13 @@ const styles = StyleSheet.create({
   },
   navRight: {
     right: 16,
+  },
+  toast: {
+    position: "absolute",
+    top: 100,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    zIndex: 200,
   },
 });

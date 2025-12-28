@@ -36,6 +36,11 @@ export interface ImagesListParams {
   page?: number;
   limit?: number;
   albumId?: string;
+  search?: string;
+  sortBy?: "createdAt" | "name" | "size";
+  sortOrder?: "asc" | "desc";
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface ImagesListResponse {
@@ -95,6 +100,11 @@ export async function getImages(
   if (params?.page) searchParams.set("page", String(params.page));
   if (params?.limit) searchParams.set("limit", String(params.limit));
   if (params?.albumId) searchParams.set("albumId", params.albumId);
+  if (params?.search) searchParams.set("search", params.search);
+  if (params?.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params?.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+  if (params?.startDate) searchParams.set("startDate", params.startDate);
+  if (params?.endDate) searchParams.set("endDate", params.endDate);
 
   const query = searchParams.toString();
   return apiClient.get<ImagesListResponse>(
@@ -189,4 +199,42 @@ export async function addImagesToAlbum(
     `/api/albums/${albumId}/images`,
     { imageIds },
   );
+}
+
+// ============================================================================
+// Download & Share Methods
+// ============================================================================
+
+export interface DownloadUrlResponse {
+  downloadUrl: string;
+  expiresAt: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+}
+
+export interface ShareLinkResponse {
+  shareUrl: string;
+  shareToken: string;
+  expiresAt: string | null;
+}
+
+/**
+ * Get a presigned download URL for an image
+ * This URL is temporary and can be used to download the image to device
+ */
+export async function getDownloadUrl(
+  imageId: string,
+): Promise<ApiResponse<DownloadUrlResponse>> {
+  return apiClient.get<DownloadUrlResponse>(`/api/images/${imageId}/download`);
+}
+
+/**
+ * Get or create a shareable public link for an image
+ * This link can be shared with others to view the image
+ */
+export async function getShareLink(
+  imageId: string,
+): Promise<ApiResponse<ShareLinkResponse>> {
+  return apiClient.post<ShareLinkResponse>(`/api/images/${imageId}/share`);
 }

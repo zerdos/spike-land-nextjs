@@ -21,6 +21,18 @@ import {
 // Types
 // ============================================================================
 
+export type SortOption = "newest" | "oldest" | "name_asc" | "name_desc" | "size_asc" | "size_desc";
+
+export interface DateRange {
+  startDate: Date | null;
+  endDate: Date | null;
+}
+
+export interface ImageFilters {
+  albumIds: string[];
+  dateRange: DateRange;
+}
+
 interface GalleryState {
   // Images
   images: EnhancedImage[];
@@ -28,6 +40,11 @@ interface GalleryState {
   currentPage: number;
   isLoadingImages: boolean;
   hasMoreImages: boolean;
+
+  // Search and Filters
+  searchQuery: string;
+  filters: ImageFilters;
+  sortBy: SortOption;
 
   // Albums
   albums: Album[];
@@ -54,6 +71,13 @@ interface GalleryActions {
   fetchMoreImages: () => Promise<void>;
   refreshImages: () => Promise<void>;
   removeImage: (imageId: string) => Promise<boolean>;
+
+  // Search and Filter actions
+  setSearchQuery: (query: string) => void;
+  setFilters: (filters: Partial<ImageFilters>) => void;
+  resetFilters: () => void;
+  setSortBy: (sortBy: SortOption) => void;
+  clearSearch: () => void;
 
   // Album actions
   fetchAlbums: () => Promise<void>;
@@ -108,12 +132,57 @@ type GalleryStore = GalleryState & GalleryActions;
 
 const IMAGES_PER_PAGE = 20;
 
+/**
+ * Convert sort option to API parameters
+ */
+function sortOptionToApiParams(sortBy: SortOption): {
+  sortBy: "createdAt" | "name" | "size";
+  sortOrder: "asc" | "desc";
+} {
+  switch (sortBy) {
+    case "newest":
+      return { sortBy: "createdAt", sortOrder: "desc" };
+    case "oldest":
+      return { sortBy: "createdAt", sortOrder: "asc" };
+    case "name_asc":
+      return { sortBy: "name", sortOrder: "asc" };
+    case "name_desc":
+      return { sortBy: "name", sortOrder: "desc" };
+    case "size_asc":
+      return { sortBy: "size", sortOrder: "asc" };
+    case "size_desc":
+      return { sortBy: "size", sortOrder: "desc" };
+    default:
+      return { sortBy: "createdAt", sortOrder: "desc" };
+  }
+}
+
+/**
+ * Format date to ISO string (date only)
+ */
+function formatDateToIso(date: Date | null): string | undefined {
+  if (!date) return undefined;
+  return date.toISOString().split("T")[0];
+}
+
+const DEFAULT_FILTERS: ImageFilters = {
+  albumIds: [],
+  dateRange: {
+    startDate: null,
+    endDate: null,
+  },
+};
+
 const initialState: GalleryState = {
   images: [],
   totalImages: 0,
   currentPage: 1,
   isLoadingImages: false,
   hasMoreImages: true,
+
+  searchQuery: "",
+  filters: DEFAULT_FILTERS,
+  sortBy: "newest",
 
   albums: [],
   isLoadingAlbums: false,
@@ -144,11 +213,23 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
   fetchImages: async (params?: ImagesListParams) => {
     set({ isLoadingImages: true, error: null });
 
-    const { selectedAlbumId } = get();
+    const { selectedAlbumId, searchQuery, filters, sortBy } = get();
+
+    // Build search params from store state
+    const { sortBy: apiSortBy, sortOrder } = sortOptionToApiParams(sortBy);
+    const albumId = filters.albumIds.length > 0
+      ? filters.albumIds[0]
+      : selectedAlbumId || params?.albumId;
+
     const response = await getImages({
       page: 1,
       limit: IMAGES_PER_PAGE,
-      albumId: selectedAlbumId || params?.albumId,
+      albumId,
+      search: searchQuery.trim() || undefined,
+      sortBy: apiSortBy,
+      sortOrder,
+      startDate: formatDateToIso(filters.dateRange.startDate),
+      endDate: formatDateToIso(filters.dateRange.endDate),
       ...params,
     });
 
@@ -169,16 +250,36 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
   },
 
   fetchMoreImages: async () => {
-    const { isLoadingImages, hasMoreImages, currentPage, images, selectedAlbumId } = get();
+    const {
+      isLoadingImages,
+      hasMoreImages,
+      currentPage,
+      images,
+      selectedAlbumId,
+      searchQuery,
+      filters,
+      sortBy,
+    } = get();
 
     if (isLoadingImages || !hasMoreImages) return;
 
     set({ isLoadingImages: true });
 
+    // Build search params from store state
+    const { sortBy: apiSortBy, sortOrder } = sortOptionToApiParams(sortBy);
+    const albumId = filters.albumIds.length > 0
+      ? filters.albumIds[0]
+      : selectedAlbumId || undefined;
+
     const response = await getImages({
       page: currentPage + 1,
       limit: IMAGES_PER_PAGE,
-      albumId: selectedAlbumId || undefined,
+      albumId,
+      search: searchQuery.trim() || undefined,
+      sortBy: apiSortBy,
+      sortOrder,
+      startDate: formatDateToIso(filters.dateRange.startDate),
+      endDate: formatDateToIso(filters.dateRange.endDate),
     });
 
     if (response.error) {
@@ -216,6 +317,55 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
     }));
 
     return true;
+  },
+
+  // ============================================================================
+  // Search and Filter Actions
+  // ============================================================================
+
+  setSearchQuery: (query: string) => {
+    set({ searchQuery: query, currentPage: 1, hasMoreImages: true });
+    get().fetchImages();
+  },
+
+  setFilters: (partialFilters: Partial<ImageFilters>) => {
+    set((state) => ({
+      filters: {
+        ...state.filters,
+        ...partialFilters,
+        dateRange: partialFilters.dateRange
+          ? { ...state.filters.dateRange, ...partialFilters.dateRange }
+          : state.filters.dateRange,
+      },
+      currentPage: 1,
+      hasMoreImages: true,
+    }));
+    get().fetchImages();
+  },
+
+  resetFilters: () => {
+    set({
+      filters: DEFAULT_FILTERS,
+      currentPage: 1,
+      hasMoreImages: true,
+    });
+    get().fetchImages();
+  },
+
+  setSortBy: (newSortBy: SortOption) => {
+    set({ sortBy: newSortBy, currentPage: 1, hasMoreImages: true });
+    get().fetchImages();
+  },
+
+  clearSearch: () => {
+    set({
+      searchQuery: "",
+      filters: DEFAULT_FILTERS,
+      sortBy: "newest",
+      currentPage: 1,
+      hasMoreImages: true,
+    });
+    get().fetchImages();
   },
 
   // ============================================================================

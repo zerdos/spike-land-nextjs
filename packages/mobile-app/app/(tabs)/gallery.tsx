@@ -1,6 +1,6 @@
 /**
  * Gallery Tab Screen
- * Main gallery view with masonry grid, selection mode, and album filtering
+ * Main gallery view with masonry grid, selection mode, search, and filtering
  */
 
 import type { EnhancedImage, EnhancementTier } from "@spike-npm-land/shared";
@@ -8,6 +8,7 @@ import {
   Check,
   CheckSquare,
   ChevronDown,
+  Filter,
   FolderPlus,
   Image as ImageIcon,
   MoreHorizontal,
@@ -22,8 +23,11 @@ import { Alert, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Popover, Separator, Sheet, Text, XStack, YStack } from "tamagui";
 
+import { FilterSheet } from "@/components/FilterSheet";
 import { ImageGrid } from "@/components/gallery";
+import { SearchBar } from "@/components/SearchBar";
 import { useGalleryStore } from "@/stores";
+import type { ImageFilters, SortOption } from "@/stores/gallery-store";
 
 // ============================================================================
 // Types
@@ -41,6 +45,7 @@ export default function GalleryScreen() {
   const [showAlbumFilter, setShowAlbumFilter] = useState(false);
   const [showEnhanceSheet, setShowEnhanceSheet] = useState(false);
   const [showAddToAlbumSheet, setShowAddToAlbumSheet] = useState(false);
+  const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Store state
@@ -52,6 +57,10 @@ export default function GalleryScreen() {
     isSelectionMode,
     selectedImageIds,
     selectedAlbumId,
+    searchQuery,
+    filters,
+    sortBy,
+    totalImages,
     error,
 
     fetchImages,
@@ -59,6 +68,10 @@ export default function GalleryScreen() {
     refreshImages,
     fetchAlbums,
     setSelectedAlbum,
+    setSearchQuery,
+    setFilters,
+    resetFilters,
+    setSortBy,
     toggleSelectionMode,
     toggleImageSelection,
     selectAllImages,
@@ -92,6 +105,47 @@ export default function GalleryScreen() {
 
   // Selection count
   const selectionCount = selectedImageIds.size;
+
+  // Active filter count (for badge)
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.albumIds.length > 0) count++;
+    if (filters.dateRange.startDate || filters.dateRange.endDate) count++;
+    if (sortBy !== "newest") count++;
+    return count;
+  }, [filters, sortBy]);
+
+  // Check if search is active
+  const isSearchActive = searchQuery.trim().length > 0;
+
+  // Results text
+  const resultsText = useMemo(() => {
+    if (!isSearchActive && activeFilterCount === 0) return null;
+    const countText = `${totalImages} result${totalImages !== 1 ? "s" : ""}`;
+    if (isSearchActive) {
+      return `${countText} for "${searchQuery}"`;
+    }
+    return countText;
+  }, [isSearchActive, searchQuery, totalImages, activeFilterCount]);
+
+  // Handle search change
+  const handleSearchChange = useCallback(
+    (query: string) => {
+      setSearchQuery(query);
+    },
+    [setSearchQuery],
+  );
+
+  // Handle filter apply
+  const handleFilterApply = useCallback(() => {
+    // Filters are already applied via store
+  }, []);
+
+  // Handle filter reset
+  const handleFilterReset = useCallback(() => {
+    resetFilters();
+    setSortBy("newest");
+  }, [resetFilters, setSortBy]);
 
   // Handle image press
   const handleImagePress = useCallback(
@@ -187,10 +241,59 @@ export default function GalleryScreen() {
     [addSelectedImagesToAlbum],
   );
 
-  // Header component with album filter
+  // Header component with search bar, filters, and album filter
   const ListHeaderComponent = useMemo(
     () => (
       <YStack paddingHorizontal="$3" paddingTop="$2" paddingBottom="$3" gap="$3">
+        {/* Search Bar Row */}
+        <XStack alignItems="center" gap="$2">
+          <YStack flex={1}>
+            <SearchBar
+              value={searchQuery}
+              onChangeText={handleSearchChange}
+              placeholder="Search images..."
+              testID="gallery-search-bar"
+            />
+          </YStack>
+
+          {/* Filter Button */}
+          <Button
+            size="$3"
+            chromeless
+            circular
+            onPress={() => setShowFilterSheet(true)}
+            testID="gallery-filter-button"
+          >
+            <YStack>
+              <Filter size={20} color={activeFilterCount > 0 ? "$blue10" : "$gray10"} />
+              {activeFilterCount > 0 && (
+                <YStack
+                  position="absolute"
+                  top={-4}
+                  right={-4}
+                  backgroundColor="$blue10"
+                  borderRadius={8}
+                  width={16}
+                  height={16}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Text fontSize={10} color="white" fontWeight="600">
+                    {activeFilterCount}
+                  </Text>
+                </YStack>
+              )}
+            </YStack>
+          </Button>
+        </XStack>
+
+        {/* Results Text */}
+        {resultsText && (
+          <Text fontSize="$2" color="$gray10" testID="gallery-results-text">
+            {resultsText}
+          </Text>
+        )}
+
         {/* Album Filter */}
         <Popover
           open={showAlbumFilter}
@@ -268,7 +371,18 @@ export default function GalleryScreen() {
         </Popover>
       </YStack>
     ),
-    [showAlbumFilter, selectedAlbumName, selectedAlbumId, albums, handleAlbumSelect, router],
+    [
+      showAlbumFilter,
+      selectedAlbumName,
+      selectedAlbumId,
+      albums,
+      handleAlbumSelect,
+      router,
+      searchQuery,
+      handleSearchChange,
+      activeFilterCount,
+      resultsText,
+    ],
   );
 
   return (
@@ -352,6 +466,34 @@ export default function GalleryScreen() {
         onRefresh={handleRefresh}
         onLoadMore={handleLoadMore}
         ListHeaderComponent={ListHeaderComponent}
+        ListEmptyComponent={isSearchActive || activeFilterCount > 0
+          ? (
+            <YStack
+              flex={1}
+              alignItems="center"
+              justifyContent="center"
+              padding="$6"
+              gap="$3"
+              testID="gallery-empty-results"
+            >
+              <Text fontSize="$6" color="$gray10">
+                No results found
+              </Text>
+              <Text fontSize="$3" color="$gray9" textAlign="center">
+                {isSearchActive
+                  ? `No images match "${searchQuery}"`
+                  : "Try adjusting your filters"}
+              </Text>
+              <Button
+                size="$3"
+                onPress={handleFilterReset}
+                marginTop="$2"
+              >
+                <Text>Clear filters</Text>
+              </Button>
+            </YStack>
+          )
+          : undefined}
       />
 
       {/* Selection Actions Bar */}
@@ -504,6 +646,20 @@ export default function GalleryScreen() {
           </YStack>
         </Sheet.Frame>
       </Sheet>
+
+      {/* Filter Sheet */}
+      <FilterSheet
+        open={showFilterSheet}
+        onOpenChange={setShowFilterSheet}
+        filters={filters}
+        onFiltersChange={setFilters}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        albums={albums}
+        onApply={handleFilterApply}
+        onReset={handleFilterReset}
+        testID="gallery-filter-sheet"
+      />
     </YStack>
   );
 }

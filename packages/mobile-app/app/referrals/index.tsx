@@ -1,18 +1,17 @@
 /**
  * Referral Dashboard Screen
- * Displays referral code, stats, and referred users
+ * Displays referral code, stats, share buttons, and referred users
  */
 
 import { REFERRAL_CONFIG } from "@spike-npm-land/shared";
+import { HelpCircle } from "@tamagui/lucide-icons";
 import * as Clipboard from "expo-clipboard";
-import * as Sharing from "expo-sharing";
-import { useCallback, useState } from "react";
-import { Alert, FlatList, Linking, RefreshControl, StyleSheet } from "react-native";
+import React, { useCallback, useState } from "react";
+import { Alert, RefreshControl, ScrollView, StyleSheet } from "react-native";
 import {
   Button,
   Card,
   H1,
-  H3,
   H4,
   Paragraph,
   Separator,
@@ -23,84 +22,179 @@ import {
   YStack,
 } from "tamagui";
 
+import { ReferralStats } from "../../components/ReferralStats";
+import { ReferredUsersList } from "../../components/ReferredUsersList";
+import { ShareButtons } from "../../components/ShareButtons";
 import { useReferralStats } from "../../hooks";
-import { ReferredUser } from "../../services/api/referrals";
 
 // ============================================================================
-// Types
+// How It Works Component
 // ============================================================================
 
-interface ReferredUserItemProps {
-  user: ReferredUser;
-}
-
-// ============================================================================
-// Helper Components
-// ============================================================================
-
-function StatCard({
-  label,
-  value,
-  color = "$foreground",
-}: {
-  label: string;
-  value: number | string;
-  color?: string;
-}) {
+function HowItWorks() {
   return (
-    <Card elevate bordered padding="$3" flex={1}>
-      <YStack alignItems="center">
-        <H3 color={color}>{value}</H3>
-        <Paragraph size="$2" color="$gray10" textAlign="center">
-          {label}
-        </Paragraph>
+    <Card elevate bordered padding="$4" testID="how-it-works">
+      <XStack alignItems="center" gap="$2" marginBottom="$3">
+        <HelpCircle size={20} color="$blue10" />
+        <H4>How It Works</H4>
+      </XStack>
+      <YStack gap="$4">
+        {/* Step 1 */}
+        <XStack gap="$3" testID="step-1">
+          <View
+            backgroundColor="$blue10"
+            width={32}
+            height={32}
+            borderRadius={16}
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Text color="white" fontWeight="bold">
+              1
+            </Text>
+          </View>
+          <YStack flex={1}>
+            <Paragraph fontWeight="600">Share Your Link</Paragraph>
+            <Paragraph size="$2" color="$gray10">
+              Copy your referral link and share it with friends via social media, email, or
+              messaging apps.
+            </Paragraph>
+          </YStack>
+        </XStack>
+
+        {/* Step 2 */}
+        <XStack gap="$3" testID="step-2">
+          <View
+            backgroundColor="$blue10"
+            width={32}
+            height={32}
+            borderRadius={16}
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Text color="white" fontWeight="bold">
+              2
+            </Text>
+          </View>
+          <YStack flex={1}>
+            <Paragraph fontWeight="600">Friend Signs Up</Paragraph>
+            <Paragraph size="$2" color="$gray10">
+              When your friend creates an account using your link, they get{" "}
+              {REFERRAL_CONFIG.SIGNUP_BONUS_TOKENS} free tokens to start.
+            </Paragraph>
+          </YStack>
+        </XStack>
+
+        {/* Step 3 */}
+        <XStack gap="$3" testID="step-3">
+          <View
+            backgroundColor="$blue10"
+            width={32}
+            height={32}
+            borderRadius={16}
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Text color="white" fontWeight="bold">
+              3
+            </Text>
+          </View>
+          <YStack flex={1}>
+            <Paragraph fontWeight="600">Both Earn Tokens</Paragraph>
+            <Paragraph size="$2" color="$gray10">
+              After your friend verifies their email, you both receive{" "}
+              {REFERRAL_CONFIG.TOKENS_PER_REFERRAL} tokens!
+            </Paragraph>
+          </YStack>
+        </XStack>
       </YStack>
     </Card>
   );
 }
 
-function ReferredUserItem({ user }: ReferredUserItemProps) {
-  const statusColor = user.status === "COMPLETED"
-    ? "$green10"
-    : user.status === "PENDING"
-    ? "$yellow10"
-    : "$red10";
+// ============================================================================
+// Referral Link Card Component
+// ============================================================================
 
+interface ReferralLinkCardProps {
+  referralUrl: string | null;
+  referralCode: string | null;
+  onCopyCode: () => void;
+  isCopied: boolean;
+}
+
+function ReferralLinkCard({
+  referralUrl,
+  referralCode,
+  onCopyCode,
+  isCopied,
+}: ReferralLinkCardProps) {
   return (
-    <Card elevate bordered padding="$4" marginBottom="$2">
-      <XStack justifyContent="space-between" alignItems="center">
-        <YStack flex={1}>
-          <Paragraph fontWeight="600" numberOfLines={1}>
-            {user.email}
-          </Paragraph>
-          {user.name && (
-            <Paragraph size="$2" color="$gray10">
-              {user.name}
-            </Paragraph>
-          )}
-          <Paragraph size="$2" color="$gray9">
-            {new Date(user.createdAt).toLocaleDateString()}
-          </Paragraph>
-        </YStack>
+    <Card elevate bordered padding="$4" testID="referral-link-card">
+      <H4 marginBottom="$3">Your Referral Link</H4>
 
-        <YStack alignItems="flex-end">
-          <View
-            backgroundColor={statusColor}
-            paddingHorizontal="$2"
-            paddingVertical="$1"
-            borderRadius="$2"
-          >
-            <Text color="white" fontSize="$1" fontWeight="600">
-              {user.status}
-            </Text>
-          </View>
-          {user.tokensGranted > 0 && (
-            <Paragraph size="$2" color="$green10" marginTop="$1">
-              +{user.tokensGranted} tokens
-            </Paragraph>
-          )}
+      {/* Referral URL Display */}
+      <Card
+        backgroundColor="$gray3"
+        padding="$3"
+        borderRadius="$3"
+        marginBottom="$3"
+        testID="referral-url-display"
+      >
+        <Paragraph
+          fontSize="$2"
+          numberOfLines={1}
+          color="$gray11"
+        >
+          {referralUrl || "Loading..."}
+        </Paragraph>
+      </Card>
+
+      {/* Referral Code Display */}
+      <XStack
+        justifyContent="space-between"
+        alignItems="center"
+        testID="referral-code-section"
+      >
+        <YStack>
+          <Paragraph size="$2" color="$gray10">
+            Referral Code
+          </Paragraph>
+          <Text fontWeight="600" fontSize="$4">
+            {referralCode || "..."}
+          </Text>
         </YStack>
+        <Button
+          size="$3"
+          variant="outlined"
+          onPress={onCopyCode}
+          disabled={!referralCode}
+          testID="copy-code-button"
+        >
+          {isCopied ? "Copied!" : "Copy Code"}
+        </Button>
       </XStack>
+    </Card>
+  );
+}
+
+// ============================================================================
+// Hero Section Component
+// ============================================================================
+
+function HeroSection() {
+  return (
+    <Card elevate bordered padding="$5" backgroundColor="$blue2" testID="hero-section">
+      <YStack alignItems="center" gap="$3">
+        <H1 size="$8" textAlign="center">
+          Earn {REFERRAL_CONFIG.TOKENS_PER_REFERRAL} Tokens
+        </H1>
+        <Paragraph textAlign="center" color="$gray11" maxWidth={300}>
+          Invite friends and earn {REFERRAL_CONFIG.TOKENS_PER_REFERRAL}{" "}
+          tokens for each successful referral. Your friends get{" "}
+          {REFERRAL_CONFIG.SIGNUP_BONUS_TOKENS} tokens too!
+        </Paragraph>
+      </YStack>
     </Card>
   );
 }
@@ -122,316 +216,51 @@ export default function ReferralsScreen() {
     hasMoreUsers,
   } = useReferralStats();
 
-  const [copied, setCopied] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
 
-  // Copy referral link to clipboard
-  const handleCopyLink = useCallback(async () => {
-    if (!referralUrl) return;
-
-    try {
-      await Clipboard.setStringAsync(referralUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (_err) {
-      Alert.alert("Error", "Failed to copy to clipboard");
-    }
-  }, [referralUrl]);
-
-  // Native share
-  const handleShare = useCallback(async () => {
-    if (!referralUrl) return;
+  // Copy referral code to clipboard
+  const handleCopyCode = useCallback(async () => {
+    if (!referralCode) return;
 
     try {
-      const isAvailable = await Sharing.isAvailableAsync();
-
-      if (isAvailable) {
-        await Sharing.shareAsync(referralUrl, {
-          dialogTitle: "Share your referral link",
-          UTI: "public.url",
-        });
-      } else {
-        // Fallback to clipboard
-        handleCopyLink();
-        Alert.alert(
-          "Link Copied",
-          "Sharing is not available, but the link has been copied to your clipboard.",
-        );
-      }
+      await Clipboard.setStringAsync(referralCode);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2000);
     } catch (_err) {
-      console.error("Share error:", _err);
+      Alert.alert("Error", "Failed to copy code to clipboard");
     }
-  }, [referralUrl, handleCopyLink]);
+  }, [referralCode]);
 
-  // Social share handlers
-  const shareOnTwitter = useCallback(() => {
-    if (!referralUrl) return;
+  // Handle share success
+  const handleShareSuccess = useCallback(() => {
+    // Could track analytics here
+  }, []);
 
-    const text =
-      `Join me on Spike and get ${REFERRAL_CONFIG.SIGNUP_BONUS_TOKENS} free tokens! Use my referral link:`;
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${
-      encodeURIComponent(referralUrl)
-    }`;
-    Linking.openURL(twitterUrl);
-  }, [referralUrl]);
+  // Handle share error
+  const handleShareError = useCallback((error: Error) => {
+    console.error("Share error:", error);
+  }, []);
 
-  const shareOnFacebook = useCallback(() => {
-    if (!referralUrl) return;
-
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${
-      encodeURIComponent(referralUrl)
-    }`;
-    Linking.openURL(facebookUrl);
-  }, [referralUrl]);
-
-  const shareOnWhatsApp = useCallback(() => {
-    if (!referralUrl) return;
-
-    const text =
-      `Join me on Spike and get ${REFERRAL_CONFIG.SIGNUP_BONUS_TOKENS} free tokens! ${referralUrl}`;
-    const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(text)}`;
-    Linking.openURL(whatsappUrl);
-  }, [referralUrl]);
-
-  // Render header
-  const renderHeader = () => (
-    <YStack gap="$4" paddingBottom="$4">
-      {/* Hero Section */}
-      <Card elevate bordered padding="$5" backgroundColor="$blue2">
-        <YStack alignItems="center" gap="$3">
-          <H1 size="$8" textAlign="center">
-            Earn {REFERRAL_CONFIG.TOKENS_PER_REFERRAL} Tokens
-          </H1>
-          <Paragraph textAlign="center" color="$gray11">
-            Invite friends and earn {REFERRAL_CONFIG.TOKENS_PER_REFERRAL}{" "}
-            tokens for each successful referral. Your friends get{" "}
-            {REFERRAL_CONFIG.SIGNUP_BONUS_TOKENS} tokens too!
-          </Paragraph>
-        </YStack>
-      </Card>
-
-      {/* Referral Code Card */}
-      <Card elevate bordered padding="$4">
-        <H4 marginBottom="$3">Your Referral Link</H4>
-
-        <Card
-          backgroundColor="$gray3"
-          padding="$3"
-          borderRadius="$3"
-          marginBottom="$3"
-        >
-          <Paragraph
-            fontFamily="$mono"
-            fontSize="$2"
-            numberOfLines={1}
-            color="$gray11"
-          >
-            {referralUrl || "Loading..."}
-          </Paragraph>
-        </Card>
-
-        <XStack gap="$2" marginBottom="$3">
-          <Button flex={1} theme="blue" onPress={handleCopyLink}>
-            {copied ? "Copied!" : "Copy Link"}
-          </Button>
-          <Button flex={1} theme="green" onPress={handleShare}>
-            Share
-          </Button>
-        </XStack>
-
-        <YStack gap="$2">
-          <Paragraph size="$2" color="$gray10">
-            Referral Code:{" "}
-            <Text fontFamily="$mono" fontWeight="600">
-              {referralCode || "..."}
-            </Text>
-          </Paragraph>
-        </YStack>
-      </Card>
-
-      {/* Social Share Buttons */}
-      <Card elevate bordered padding="$4">
-        <H4 marginBottom="$3">Share on Social Media</H4>
-        <XStack gap="$2" flexWrap="wrap">
-          <Button
-            flex={1}
-            size="$4"
-            backgroundColor="$blue9"
-            onPress={shareOnTwitter}
-          >
-            Twitter
-          </Button>
-          <Button
-            flex={1}
-            size="$4"
-            backgroundColor="$blue8"
-            onPress={shareOnFacebook}
-          >
-            Facebook
-          </Button>
-          <Button
-            flex={1}
-            size="$4"
-            backgroundColor="$green9"
-            onPress={shareOnWhatsApp}
-          >
-            WhatsApp
-          </Button>
-        </XStack>
-      </Card>
-
-      {/* Stats Cards */}
-      {stats && (
-        <YStack gap="$2">
-          <H4>Your Stats</H4>
-          <XStack gap="$2">
-            <StatCard label="Total" value={stats.totalReferrals} />
-            <StatCard
-              label="Completed"
-              value={stats.completedReferrals}
-              color="$green10"
-            />
-            <StatCard
-              label="Pending"
-              value={stats.pendingReferrals}
-              color="$yellow10"
-            />
-          </XStack>
-          <Card elevate bordered padding="$4" marginTop="$2">
-            <XStack justifyContent="space-between" alignItems="center">
-              <Paragraph color="$gray11">Total Tokens Earned</Paragraph>
-              <H3 color="$blue10">{stats.tokensEarned}</H3>
-            </XStack>
-          </Card>
-        </YStack>
-      )}
-
-      {/* How It Works */}
-      <Card elevate bordered padding="$4">
-        <H4 marginBottom="$3">How It Works</H4>
-        <YStack gap="$4">
-          <XStack gap="$3">
-            <View
-              backgroundColor="$blue10"
-              width={32}
-              height={32}
-              borderRadius={16}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Text color="white" fontWeight="bold">
-                1
-              </Text>
-            </View>
-            <YStack flex={1}>
-              <Paragraph fontWeight="600">Share Your Link</Paragraph>
-              <Paragraph size="$2" color="$gray10">
-                Copy your referral link and share it with friends via social media, email, or
-                messaging apps.
-              </Paragraph>
-            </YStack>
-          </XStack>
-
-          <XStack gap="$3">
-            <View
-              backgroundColor="$blue10"
-              width={32}
-              height={32}
-              borderRadius={16}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Text color="white" fontWeight="bold">
-                2
-              </Text>
-            </View>
-            <YStack flex={1}>
-              <Paragraph fontWeight="600">Friend Signs Up</Paragraph>
-              <Paragraph size="$2" color="$gray10">
-                When your friend creates an account using your link, they get{" "}
-                {REFERRAL_CONFIG.SIGNUP_BONUS_TOKENS} free tokens to start.
-              </Paragraph>
-            </YStack>
-          </XStack>
-
-          <XStack gap="$3">
-            <View
-              backgroundColor="$blue10"
-              width={32}
-              height={32}
-              borderRadius={16}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Text color="white" fontWeight="bold">
-                3
-              </Text>
-            </View>
-            <YStack flex={1}>
-              <Paragraph fontWeight="600">Both Earn Tokens</Paragraph>
-              <Paragraph size="$2" color="$gray10">
-                After your friend verifies their email, you both receive{" "}
-                {REFERRAL_CONFIG.TOKENS_PER_REFERRAL} tokens!
-              </Paragraph>
-            </YStack>
-          </XStack>
-        </YStack>
-      </Card>
-
-      {/* Referred Users Header */}
-      <Separator marginVertical="$2" />
-      <H4>Your Referrals</H4>
-    </YStack>
-  );
-
-  // Render empty state for referred users
-  const renderEmpty = () => {
-    if (isLoading) return null;
-
-    return (
-      <Card elevate bordered padding="$6">
-        <YStack alignItems="center" gap="$2">
-          <Paragraph color="$gray10" textAlign="center">
-            No referrals yet
-          </Paragraph>
-          <Paragraph size="$2" color="$gray9" textAlign="center">
-            Share your link to get started and earn tokens!
-          </Paragraph>
-        </YStack>
-      </Card>
-    );
-  };
-
-  // Render footer
-  const renderFooter = () => {
-    if (!hasMoreUsers) return null;
-
-    return (
-      <Button
-        variant="outlined"
-        marginTop="$2"
-        onPress={loadMoreUsers}
-      >
-        Load More
-      </Button>
-    );
-  };
-
+  // Loading state
   if (isLoading && !stats) {
     return (
-      <View style={styles.centered}>
+      <View style={styles.centered} testID="loading-container">
         <Spinner size="large" color="$blue10" />
-        <Paragraph marginTop="$4">Loading referral data...</Paragraph>
+        <Paragraph marginTop="$4" color="$gray10">
+          Loading referral data...
+        </Paragraph>
       </View>
     );
   }
 
+  // Error state
   if (error) {
     return (
-      <View style={styles.centered}>
+      <View style={styles.centered} testID="error-container">
         <Paragraph color="$red10" textAlign="center" marginBottom="$4">
           {error}
         </Paragraph>
-        <Button onPress={refetch} theme="blue">
+        <Button onPress={refetch} testID="retry-button">
           Try Again
         </Button>
       </View>
@@ -439,16 +268,69 @@ export default function ReferralsScreen() {
   }
 
   return (
-    <FlatList
-      data={referredUsers}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <ReferredUserItem user={item} />}
-      ListHeaderComponent={renderHeader}
-      ListEmptyComponent={renderEmpty}
-      ListFooterComponent={renderFooter}
+    <ScrollView
+      style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
-    />
+      refreshControl={
+        <RefreshControl
+          refreshing={isLoading}
+          onRefresh={refetch}
+          testID="refresh-control"
+        />
+      }
+      showsVerticalScrollIndicator={false}
+      testID="referrals-screen"
+    >
+      {/* Hero Section */}
+      <HeroSection />
+
+      {/* Referral Stats */}
+      {stats && (
+        <ReferralStats
+          stats={stats}
+          isLoading={isLoading && !stats}
+          animationDuration={1000}
+        />
+      )}
+
+      {/* Referral Link Card */}
+      <ReferralLinkCard
+        referralUrl={referralUrl}
+        referralCode={referralCode}
+        onCopyCode={handleCopyCode}
+        isCopied={codeCopied}
+      />
+
+      {/* Share Buttons */}
+      <Card elevate bordered padding="$4" testID="share-buttons-card">
+        <H4 marginBottom="$3">Share Your Link</H4>
+        <ShareButtons
+          referralUrl={referralUrl || ""}
+          referralCode={referralCode || ""}
+          onCopySuccess={handleShareSuccess}
+          onShareSuccess={handleShareSuccess}
+          onShareError={handleShareError}
+        />
+      </Card>
+
+      {/* How It Works */}
+      <HowItWorks />
+
+      {/* Referred Users Section */}
+      <Separator marginVertical="$4" />
+
+      <YStack gap="$3" testID="referred-users-section">
+        <H4>Your Referrals</H4>
+        <ReferredUsersList
+          users={referredUsers}
+          isLoading={isLoading}
+          hasMore={hasMoreUsers}
+          onLoadMore={loadMoreUsers}
+          onRefresh={refetch}
+          isRefreshing={isLoading}
+        />
+      </YStack>
+    </ScrollView>
   );
 }
 
@@ -457,8 +339,13 @@ export default function ReferralsScreen() {
 // ============================================================================
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   content: {
     padding: 16,
+    gap: 16,
+    paddingBottom: 32,
   },
   centered: {
     flex: 1,

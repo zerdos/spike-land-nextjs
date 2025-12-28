@@ -1,67 +1,132 @@
 /**
  * Settings Screen
- * Full settings page with profile editing, API keys, and preferences
+ * Main settings hub with navigation to sub-screens and quick toggles
  */
 
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
+import { useCallback, useEffect } from "react";
+import { ActivityIndicator, Alert } from "react-native";
 import {
   Avatar,
   Button,
   Card,
   H3,
   H4,
-  Input,
-  Label,
   Paragraph,
+  ScrollView,
   Separator,
-  Switch,
   Text,
   XStack,
   YStack,
 } from "tamagui";
 
 import { useAuthStore, useTokenStore } from "../../stores";
+import { useSettingsStore } from "../../stores/settings-store";
 
-// Tab type
-type SettingsTab = "profile" | "api-keys" | "preferences" | "privacy";
+// ============================================================================
+// Types
+// ============================================================================
+
+interface SettingsRowProps {
+  icon: keyof typeof Ionicons.glyphMap;
+  iconColor: string;
+  title: string;
+  subtitle?: string;
+  onPress: () => void;
+  showChevron?: boolean;
+  rightElement?: React.ReactNode;
+}
+
+interface SectionHeaderProps {
+  title: string;
+}
+
+// ============================================================================
+// Components
+// ============================================================================
+
+function SectionHeader({ title }: SectionHeaderProps) {
+  return (
+    <Text
+      fontSize="$2"
+      fontWeight="600"
+      color="$gray10"
+      textTransform="uppercase"
+      letterSpacing={1}
+      marginBottom="$2"
+      marginTop="$4"
+      marginLeft="$1"
+    >
+      {title}
+    </Text>
+  );
+}
+
+function SettingsRow({
+  icon,
+  iconColor,
+  title,
+  subtitle,
+  onPress,
+  showChevron = true,
+  rightElement,
+}: SettingsRowProps) {
+  return (
+    <Button
+      size="$5"
+      chromeless
+      onPress={onPress}
+      paddingHorizontal="$3"
+      paddingVertical="$3"
+      justifyContent="flex-start"
+    >
+      <XStack flex={1} alignItems="center" space="$3">
+        <YStack
+          width={36}
+          height={36}
+          borderRadius="$3"
+          backgroundColor={`${iconColor}20`}
+          alignItems="center"
+          justifyContent="center"
+        >
+          <Ionicons name={icon} size={20} color={iconColor} />
+        </YStack>
+        <YStack flex={1}>
+          <Text fontSize="$4" fontWeight="500">
+            {title}
+          </Text>
+          {subtitle && (
+            <Text fontSize="$2" color="$gray10">
+              {subtitle}
+            </Text>
+          )}
+        </YStack>
+        {rightElement}
+        {showChevron && <Ionicons name="chevron-forward" size={20} color="#999" />}
+      </XStack>
+    </Button>
+  );
+}
+
+// ============================================================================
+// Main Screen
+// ============================================================================
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ tab?: SettingsTab; }>();
   const { user, isAuthenticated, isLoading: isAuthLoading, signOut } = useAuthStore();
-  const { balance, isLoading: isTokenLoading } = useTokenStore();
+  const { balance, isLoading: isTokenLoading, fetchBalance } = useTokenStore();
+  const { apiKeys, fetchApiKeys, initialize } = useSettingsStore();
 
-  // Active tab
-  const [activeTab, setActiveTab] = useState<SettingsTab>(params.tab || "profile");
-
-  // Profile form state
-  const [displayName, setDisplayName] = useState(user?.name || "");
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Preferences state
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(false);
-
-  // Privacy state
-  const [publicProfile, setPublicProfile] = useState(false);
-  const [showActivity, setShowActivity] = useState(true);
-
-  // Update tab from params
+  // Initialize on mount
   useEffect(() => {
-    if (params.tab && ["profile", "api-keys", "preferences", "privacy"].includes(params.tab)) {
-      setActiveTab(params.tab);
+    if (isAuthenticated) {
+      initialize();
+      fetchApiKeys();
+      fetchBalance();
     }
-  }, [params.tab]);
-
-  // Update display name when user changes
-  useEffect(() => {
-    if (user?.name) {
-      setDisplayName(user.name);
-    }
-  }, [user?.name]);
+  }, [isAuthenticated, initialize, fetchApiKeys, fetchBalance]);
 
   // Get user initials
   const getUserInitials = (name?: string | null): string => {
@@ -73,25 +138,6 @@ export default function SettingsScreen() {
       .toUpperCase()
       .slice(0, 2);
   };
-
-  // Handle save profile
-  const handleSaveProfile = useCallback(async () => {
-    if (!displayName.trim()) {
-      Alert.alert("Error", "Please enter a display name");
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      // TODO: Implement profile update API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      Alert.alert("Success", "Profile updated successfully");
-    } catch {
-      Alert.alert("Error", "Failed to update profile");
-    } finally {
-      setIsSaving(false);
-    }
-  }, [displayName]);
 
   // Handle sign out
   const handleSignOut = useCallback(() => {
@@ -113,30 +159,15 @@ export default function SettingsScreen() {
     );
   }, [signOut, router]);
 
-  // Handle delete account
-  const handleDeleteAccount = useCallback(() => {
-    Alert.alert(
-      "Delete Account",
-      "Are you absolutely sure? This action cannot be undone. All your data will be permanently deleted.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete Account",
-          style: "destructive",
-          onPress: async () => {
-            // TODO: Implement account deletion
-            Alert.alert("Info", "Account deletion is not yet implemented");
-          },
-        },
-      ],
-      { cancelable: true },
-    );
-  }, []);
-
   // Loading state
   if (isAuthLoading) {
     return (
-      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="$background">
+      <YStack
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        backgroundColor="$background"
+      >
         <ActivityIndicator size="large" />
       </YStack>
     );
@@ -145,7 +176,12 @@ export default function SettingsScreen() {
   // Not authenticated
   if (!isAuthenticated || !user) {
     return (
-      <YStack flex={1} justifyContent="center" padding="$4" backgroundColor="$background">
+      <YStack
+        flex={1}
+        justifyContent="center"
+        padding="$4"
+        backgroundColor="$background"
+      >
         <Card elevate size="$4" bordered padding="$6" alignItems="center">
           <Ionicons name="lock-closed-outline" size={64} color="#999" />
           <H3 marginTop="$4" textAlign="center">
@@ -170,30 +206,11 @@ export default function SettingsScreen() {
     );
   }
 
-  // Tab buttons component
-  const TabButton = ({ tab, label }: { tab: SettingsTab; label: string; }) => (
-    <Button
-      size="$3"
-      theme={activeTab === tab ? "active" : undefined}
-      backgroundColor={activeTab === tab ? "$blue10" : "$gray3"}
-      onPress={() => setActiveTab(tab)}
-      flex={1}
-    >
-      <Text
-        color={activeTab === tab ? "white" : "$gray11"}
-        fontSize="$2"
-        fontWeight={activeTab === tab ? "600" : "400"}
-      >
-        {label}
-      </Text>
-    </Button>
-  );
-
   return (
-    <ScrollView style={{ flex: 1 }}>
-      <YStack padding="$4" backgroundColor="$background" minHeight="100%">
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+      <YStack flex={1} padding="$4" backgroundColor="$background">
         {/* Header */}
-        <YStack marginBottom="$4">
+        <YStack marginBottom="$2">
           <XStack alignItems="center" space="$3">
             <Button
               size="$3"
@@ -206,278 +223,193 @@ export default function SettingsScreen() {
           </XStack>
         </YStack>
 
-        {/* Tab Navigation */}
-        <XStack space="$2" marginBottom="$4">
-          <TabButton tab="profile" label="Profile" />
-          <TabButton tab="api-keys" label="API Keys" />
-          <TabButton tab="preferences" label="Prefs" />
-          <TabButton tab="privacy" label="Privacy" />
-        </XStack>
-
-        {/* Profile Tab */}
-        {activeTab === "profile" && (
-          <YStack space="$4">
-            <Card elevate size="$4" bordered>
-              <YStack padding="$4" space="$4">
-                <H4>Profile Information</H4>
-                <Paragraph color="$gray11" fontSize="$2">
-                  Your profile information is managed by your OAuth provider
-                </Paragraph>
-
-                {/* User avatar and info */}
-                <XStack space="$4" alignItems="center">
-                  <Avatar circular size="$8">
-                    {user.image
-                      ? <Avatar.Image source={{ uri: user.image }} />
-                      : (
-                        <Avatar.Fallback backgroundColor="$blue10">
-                          <Text color="white" fontSize="$6" fontWeight="bold">
-                            {getUserInitials(user.name)}
-                          </Text>
-                        </Avatar.Fallback>
-                      )}
-                  </Avatar>
-                  <YStack flex={1}>
-                    <Text fontSize="$5" fontWeight="bold">
-                      {user.name || "User"}
-                    </Text>
-                    <Text fontSize="$3" color="$gray11">
-                      {user.email}
-                    </Text>
-                  </YStack>
-                </XStack>
-
-                <Separator />
-
-                {/* Display name */}
-                <YStack space="$2">
-                  <Label htmlFor="displayName" fontSize="$2" color="$gray11">
-                    Display Name
-                  </Label>
-                  <Input
-                    id="displayName"
-                    size="$4"
-                    placeholder="Enter display name"
-                    value={displayName}
-                    onChangeText={setDisplayName}
-                  />
-                  <Paragraph color="$gray10" fontSize="$1">
-                    This is how your name will be displayed across the platform
-                  </Paragraph>
-                </YStack>
-
-                {/* Email (read-only) */}
-                <YStack space="$2">
-                  <Label htmlFor="email" fontSize="$2" color="$gray11">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    size="$4"
-                    value={user.email || ""}
-                    disabled
-                    backgroundColor="$gray3"
-                  />
-                  <Paragraph color="$gray10" fontSize="$1">
-                    Email is managed by your OAuth provider and cannot be changed here
-                  </Paragraph>
-                </YStack>
-
-                <Button
-                  size="$4"
-                  theme="active"
-                  onPress={handleSaveProfile}
-                  disabled={isSaving}
-                  icon={isSaving ? <ActivityIndicator size="small" color="white" /> : undefined}
-                >
-                  <Text color="white" fontWeight="600">
-                    {isSaving ? "Saving..." : "Save Changes"}
-                  </Text>
-                </Button>
+        {/* User Profile Card */}
+        <Card elevate size="$4" bordered marginTop="$3">
+          <YStack padding="$4">
+            <XStack space="$4" alignItems="center">
+              <Avatar circular size="$6">
+                {user.image
+                  ? <Avatar.Image source={{ uri: user.image }} />
+                  : (
+                    <Avatar.Fallback backgroundColor="$blue10">
+                      <Text color="white" fontSize="$5" fontWeight="bold">
+                        {getUserInitials(user.name)}
+                      </Text>
+                    </Avatar.Fallback>
+                  )}
+              </Avatar>
+              <YStack flex={1}>
+                <Text fontSize="$5" fontWeight="bold">
+                  {user.name || "User"}
+                </Text>
+                <Text fontSize="$3" color="$gray11">
+                  {user.email}
+                </Text>
               </YStack>
-            </Card>
+            </XStack>
 
             {/* Token Balance */}
-            <Card elevate size="$4" bordered>
-              <YStack padding="$4" space="$3">
-                <H4>Token Balance</H4>
-                <XStack justifyContent="space-between" alignItems="center">
-                  <XStack space="$2" alignItems="center">
-                    <Ionicons name="sparkles" size={24} color="#F59E0B" />
-                    <Text fontSize="$4">Available Tokens</Text>
-                  </XStack>
-                  {isTokenLoading
-                    ? <ActivityIndicator size="small" />
-                    : (
-                      <Text fontSize="$5" fontWeight="bold" color="$blue10">
-                        {balance?.toLocaleString() ?? 0}
-                      </Text>
-                    )}
-                </XStack>
-                <Button size="$3" chromeless alignSelf="flex-start">
-                  <Text color="$blue10">Purchase more tokens</Text>
-                </Button>
-              </YStack>
-            </Card>
-          </YStack>
-        )}
-
-        {/* API Keys Tab */}
-        {activeTab === "api-keys" && (
-          <YStack space="$4">
-            <Card elevate size="$4" bordered>
-              <YStack padding="$4" space="$4">
-                <H4>API Keys</H4>
-                <Paragraph color="$gray11" fontSize="$2">
-                  Manage your API keys for external integrations
-                </Paragraph>
-
-                {/* Placeholder for API keys list */}
-                <Card backgroundColor="$gray2" padding="$4" borderRadius="$3">
-                  <YStack alignItems="center" space="$2">
-                    <Ionicons name="key-outline" size={40} color="#999" />
-                    <Text color="$gray11" textAlign="center">
-                      No API keys created yet
-                    </Text>
-                    <Text color="$gray10" fontSize="$2" textAlign="center">
-                      API keys allow you to access Spike Land services programmatically
-                    </Text>
-                  </YStack>
-                </Card>
-
-                <Button
-                  size="$4"
-                  theme="active"
-                  icon={<Ionicons name="add" size={20} color="white" />}
-                >
-                  <Text color="white" fontWeight="600">
-                    Create API Key
+            <XStack
+              marginTop="$4"
+              padding="$3"
+              backgroundColor="$gray2"
+              borderRadius="$3"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <XStack space="$2" alignItems="center">
+                <Ionicons name="sparkles" size={20} color="#F59E0B" />
+                <Text fontSize="$3" color="$gray11">
+                  Token Balance
+                </Text>
+              </XStack>
+              {isTokenLoading
+                ? <ActivityIndicator size="small" />
+                : (
+                  <Text fontSize="$4" fontWeight="bold" color="$blue10">
+                    {balance?.toLocaleString() ?? 0}
                   </Text>
-                </Button>
-              </YStack>
-            </Card>
+                )}
+            </XStack>
           </YStack>
-        )}
+        </Card>
 
-        {/* Preferences Tab */}
-        {activeTab === "preferences" && (
-          <YStack space="$4">
-            <Card elevate size="$4" bordered>
-              <YStack padding="$4" space="$4">
-                <H4>Account Preferences</H4>
-                <Paragraph color="$gray11" fontSize="$2">
-                  Customize how you want to interact with Spike Land
-                </Paragraph>
-
-                {/* Email notifications */}
-                <XStack justifyContent="space-between" alignItems="center">
-                  <YStack flex={1} marginRight="$4">
-                    <Text fontSize="$4">Email Notifications</Text>
-                    <Paragraph color="$gray10" fontSize="$2">
-                      Receive email updates about your account activity
-                    </Paragraph>
-                  </YStack>
-                  <Switch
-                    checked={emailNotifications}
-                    onCheckedChange={setEmailNotifications}
-                  />
-                </XStack>
-
-                <Separator />
-
-                {/* Push notifications */}
-                <XStack justifyContent="space-between" alignItems="center">
-                  <YStack flex={1} marginRight="$4">
-                    <Text fontSize="$4">Push Notifications</Text>
-                    <Paragraph color="$gray10" fontSize="$2">
-                      Get push notifications for important updates
-                    </Paragraph>
-                  </YStack>
-                  <Switch
-                    checked={pushNotifications}
-                    onCheckedChange={setPushNotifications}
-                  />
-                </XStack>
-              </YStack>
-            </Card>
+        {/* Account Section */}
+        <SectionHeader title="Account" />
+        <Card elevate size="$4" bordered>
+          <YStack>
+            <SettingsRow
+              icon="person-outline"
+              iconColor="#3B82F6"
+              title="Profile"
+              subtitle="Edit your profile information"
+              onPress={() => router.push("/settings?tab=profile" as any)}
+            />
+            <Separator marginHorizontal="$3" />
+            <SettingsRow
+              icon="key-outline"
+              iconColor="#8B5CF6"
+              title="API Keys"
+              subtitle={`${apiKeys.length} key${apiKeys.length !== 1 ? "s" : ""} configured`}
+              onPress={() => router.push("/settings/api-keys")}
+            />
+            <Separator marginHorizontal="$3" />
+            <SettingsRow
+              icon="wallet-outline"
+              iconColor="#F59E0B"
+              title="Tokens & Billing"
+              subtitle="Manage tokens and payment methods"
+              onPress={() => router.push("/tokens")}
+            />
           </YStack>
-        )}
+        </Card>
 
-        {/* Privacy Tab */}
-        {activeTab === "privacy" && (
-          <YStack space="$4">
-            <Card elevate size="$4" bordered>
-              <YStack padding="$4" space="$4">
-                <H4>Privacy Settings</H4>
-                <Paragraph color="$gray11" fontSize="$2">
-                  Control how others can see and interact with your profile
-                </Paragraph>
-
-                {/* Public profile */}
-                <XStack justifyContent="space-between" alignItems="center">
-                  <YStack flex={1} marginRight="$4">
-                    <Text fontSize="$4">Public Profile</Text>
-                    <Paragraph color="$gray10" fontSize="$2">
-                      Make your profile visible to other users
-                    </Paragraph>
-                  </YStack>
-                  <Switch checked={publicProfile} onCheckedChange={setPublicProfile} />
-                </XStack>
-
-                <Separator />
-
-                {/* Show activity */}
-                <XStack justifyContent="space-between" alignItems="center">
-                  <YStack flex={1} marginRight="$4">
-                    <Text fontSize="$4">Show Activity Status</Text>
-                    <Paragraph color="$gray10" fontSize="$2">
-                      Let others see when you're online
-                    </Paragraph>
-                  </YStack>
-                  <Switch checked={showActivity} onCheckedChange={setShowActivity} />
-                </XStack>
-              </YStack>
-            </Card>
-
-            {/* Danger Zone */}
-            <Card elevate size="$4" bordered borderColor="$red7">
-              <YStack padding="$4" space="$4">
-                <H4 color="$red10">Danger Zone</H4>
-                <Paragraph color="$gray11" fontSize="$2">
-                  Permanently delete your account and all associated data
-                </Paragraph>
-
-                <Button
-                  size="$4"
-                  backgroundColor="$red10"
-                  onPress={handleDeleteAccount}
-                  icon={<Ionicons name="trash-outline" size={20} color="white" />}
-                >
-                  <Text color="white" fontWeight="600">
-                    Delete Account
-                  </Text>
-                </Button>
-              </YStack>
-            </Card>
+        {/* Preferences Section */}
+        <SectionHeader title="Preferences" />
+        <Card elevate size="$4" bordered>
+          <YStack>
+            <SettingsRow
+              icon="notifications-outline"
+              iconColor="#22C55E"
+              title="Notifications"
+              subtitle="Email and push notification settings"
+              onPress={() => router.push("/settings/notifications")}
+            />
+            <Separator marginHorizontal="$3" />
+            <SettingsRow
+              icon="color-palette-outline"
+              iconColor="#EC4899"
+              title="Appearance"
+              subtitle="Theme and display preferences"
+              onPress={() => Alert.alert("Coming Soon", "Appearance settings are coming soon!")}
+            />
+            <Separator marginHorizontal="$3" />
+            <SettingsRow
+              icon="language-outline"
+              iconColor="#06B6D4"
+              title="Language"
+              subtitle="English (US)"
+              onPress={() => Alert.alert("Coming Soon", "Language settings are coming soon!")}
+            />
           </YStack>
-        )}
+        </Card>
+
+        {/* Privacy Section */}
+        <SectionHeader title="Privacy & Security" />
+        <Card elevate size="$4" bordered>
+          <YStack>
+            <SettingsRow
+              icon="shield-outline"
+              iconColor="#EF4444"
+              title="Privacy"
+              subtitle="Profile visibility and data settings"
+              onPress={() => router.push("/settings/privacy")}
+            />
+            <Separator marginHorizontal="$3" />
+            <SettingsRow
+              icon="lock-closed-outline"
+              iconColor="#6366F1"
+              title="Security"
+              subtitle="Password and authentication"
+              onPress={() => Alert.alert("Coming Soon", "Security settings are coming soon!")}
+            />
+          </YStack>
+        </Card>
+
+        {/* Support Section */}
+        <SectionHeader title="Support" />
+        <Card elevate size="$4" bordered>
+          <YStack>
+            <SettingsRow
+              icon="help-circle-outline"
+              iconColor="#0EA5E9"
+              title="Help Center"
+              subtitle="FAQs and documentation"
+              onPress={() => Alert.alert("Coming Soon", "Help center is coming soon!")}
+            />
+            <Separator marginHorizontal="$3" />
+            <SettingsRow
+              icon="chatbubble-outline"
+              iconColor="#14B8A6"
+              title="Contact Support"
+              subtitle="Get help from our team"
+              onPress={() => Alert.alert("Coming Soon", "Contact support is coming soon!")}
+            />
+            <Separator marginHorizontal="$3" />
+            <SettingsRow
+              icon="document-text-outline"
+              iconColor="#64748B"
+              title="Terms & Privacy"
+              subtitle="Legal information"
+              onPress={() => Alert.alert("Coming Soon", "Legal documents are coming soon!")}
+            />
+          </YStack>
+        </Card>
 
         {/* Sign Out */}
         <Card elevate size="$4" bordered marginTop="$4">
-          <Button size="$4" chromeless onPress={handleSignOut}>
-            <XStack space="$2" alignItems="center">
+          <Button size="$5" chromeless onPress={handleSignOut}>
+            <XStack
+              flex={1}
+              space="$3"
+              alignItems="center"
+              justifyContent="center"
+            >
               <Ionicons name="log-out-outline" size={20} color="#EF4444" />
-              <Text color="$red10" fontWeight="500">
+              <Text color="$red10" fontWeight="500" fontSize="$4">
                 Sign Out
               </Text>
             </XStack>
           </Button>
         </Card>
 
-        {/* App version */}
-        <YStack alignItems="center" padding="$4">
+        {/* App Version */}
+        <YStack alignItems="center" padding="$4" marginTop="$2">
           <Text color="$gray10" fontSize="$2">
-            Spike Land v1.0.0
+            Spike Land Mobile v1.0.0
+          </Text>
+          <Text color="$gray9" fontSize="$1" marginTop="$1">
+            Made with love in the UK
           </Text>
         </YStack>
       </YStack>

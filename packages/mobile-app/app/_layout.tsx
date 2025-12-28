@@ -9,6 +9,7 @@ import "react-native-reanimated";
 import { TamaguiProvider } from "tamagui";
 
 import { useColorScheme } from "@/components/useColorScheme";
+import { usePushNotifications } from "../hooks/usePushNotifications";
 import { useAuthStore } from "../stores";
 import config from "../tamagui.config";
 
@@ -69,6 +70,15 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  // Initialize push notifications after auth is complete
+  // Only register with server when user is authenticated
+  usePushNotifications({
+    requestOnMount: true,
+    registerWithServer: isAuthenticated,
+    handleNavigation: true,
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -134,6 +144,14 @@ function RootLayoutNav() {
               options={{ headerShown: false }}
             />
             <Stack.Screen name="voucher" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="blog/[slug]"
+              options={{ title: "Blog Post", headerShown: false }}
+            />
+            <Stack.Screen
+              name="notifications"
+              options={{ title: "Notifications", headerShown: true }}
+            />
           </Stack>
         </ThemeProvider>
       </TamaguiProvider>
