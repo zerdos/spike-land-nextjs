@@ -1,7 +1,6 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { assertUrlPath } from "../support/helpers/assertion-helper";
-import { mockAuthCallback, mockSessionExpired } from "../support/helpers/auth-helper";
 import { getCurrentUrl, getQueryParam, navigateToPath } from "../support/helpers/navigation-helper";
 import { CustomWorld } from "../support/world";
 
@@ -15,27 +14,121 @@ When(
 When(
   "I complete GitHub authentication as {string} with email {string}",
   async function(this: CustomWorld, name: string, email: string) {
-    await mockAuthCallback(this.page, { name, email });
+    // Extract callbackUrl from current URL before switching context
+    const currentUrl = new URL(this.page.url());
+    const encodedCallback = currentUrl.searchParams.get("callbackUrl");
+    const redirectUrl = encodedCallback ? decodeURIComponent(encodedCallback) : "/";
+
+    // Close current context (which has no bypass header for unauthenticated flow)
+    await this.page.close();
+    await this.context.close();
+
+    // Create a new context WITH the E2E bypass header (simulating authenticated user)
+    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
+    const extraHTTPHeaders: Record<string, string> = {};
+    if (e2eBypassSecret) {
+      extraHTTPHeaders["x-e2e-auth-bypass"] = e2eBypassSecret;
+    }
+
+    this.context = await this.browser.newContext({
+      baseURL: this.baseUrl,
+      extraHTTPHeaders: Object.keys(extraHTTPHeaders).length > 0
+        ? extraHTTPHeaders
+        : undefined,
+    });
+    this.page = await this.context.newPage();
+
+    // Set up session mock for client-side requests
+    await this.page.route("**/api/auth/session", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          user: { name, email, image: null },
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        }),
+      });
+    });
+
+    // Navigate to the callback URL
+    await this.page.goto(redirectUrl);
+    await this.page.waitForLoadState("networkidle");
   },
 );
 
 When(
   "I complete Google authentication as {string} with email {string}",
   async function(this: CustomWorld, name: string, email: string) {
-    await mockAuthCallback(this.page, { name, email });
+    // Extract callbackUrl from current URL before switching context
+    const currentUrl = new URL(this.page.url());
+    const encodedCallback = currentUrl.searchParams.get("callbackUrl");
+    const redirectUrl = encodedCallback ? decodeURIComponent(encodedCallback) : "/";
+
+    // Close current context (which has no bypass header for unauthenticated flow)
+    await this.page.close();
+    await this.context.close();
+
+    // Create a new context WITH the E2E bypass header (simulating authenticated user)
+    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
+    const extraHTTPHeaders: Record<string, string> = {};
+    if (e2eBypassSecret) {
+      extraHTTPHeaders["x-e2e-auth-bypass"] = e2eBypassSecret;
+    }
+
+    this.context = await this.browser.newContext({
+      baseURL: this.baseUrl,
+      extraHTTPHeaders: Object.keys(extraHTTPHeaders).length > 0
+        ? extraHTTPHeaders
+        : undefined,
+    });
+    this.page = await this.context.newPage();
+
+    // Set up session mock for client-side requests
+    await this.page.route("**/api/auth/session", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          user: { name, email, image: null },
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        }),
+      });
+    });
+
+    // Navigate to the callback URL
+    await this.page.goto(redirectUrl);
+    await this.page.waitForLoadState("networkidle");
   },
 );
 
 When("my session expires", async function(this: CustomWorld) {
-  // Clear existing session routes first
-  await this.page.unrouteAll({ behavior: "ignoreErrors" });
-  await mockSessionExpired(this.page);
-  await this.page.reload();
-  // Wait for redirect to home with callbackUrl (middleware redirects expired sessions)
-  await this.page.waitForURL(
-    (url) => url.pathname === "/" && url.searchParams.has("callbackUrl"),
-    { timeout: 10000 },
-  ).catch(() => {});
+  // Get current URL to navigate back to after context switch
+  const currentUrl = this.page.url();
+  const currentPath = new URL(currentUrl).pathname;
+
+  // Close current page and context (which has bypass header)
+  await this.page.close();
+  await this.context.close();
+
+  // Create a new context WITHOUT the E2E bypass header
+  // This simulates a truly expired/unauthenticated session
+  this.context = await this.browser.newContext({
+    baseURL: this.baseUrl,
+    // No extraHTTPHeaders - no bypass
+  });
+  this.page = await this.context.newPage();
+
+  // Mock no session for client-side requests
+  await this.page.route("**/api/auth/session", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(null),
+    });
+  });
+
+  // Navigate back to the protected route - should redirect to home
+  await this.page.goto(currentPath);
   await this.page.waitForLoadState("networkidle");
 });
 
