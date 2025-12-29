@@ -5,7 +5,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { Pressable, Text as RNText, TextInput, View } from "react-native";
 
 import { authService } from "@/services/auth";
 import { useAuthStore } from "@/stores/auth-store";
@@ -36,22 +35,29 @@ jest.mock("@expo/vector-icons", () => ({
 }));
 
 jest.mock("tamagui", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Pressable, Text: RNText, TextInput, View } = require("react-native");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const ReactMod = require("react");
+
   return {
     Button: (
-      { children, onPress, disabled, testID, ...props }: React.PropsWithChildren<
-        { onPress?: () => void; disabled?: boolean; testID?: string; }
-      >,
-    ) => (
-      <Pressable onPress={disabled ? undefined : onPress} testID={testID} {...props}>
-        {typeof children === "string" ? <RNText>{children}</RNText> : children}
-      </Pressable>
-    ),
-    Card: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <View {...props}>{children}</View>
-    ),
-    H2: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <RNText {...props}>{children}</RNText>
-    ),
+      { children, onPress, disabled, testID, ...props }: {
+        children?: React.ReactNode;
+        onPress?: () => void;
+        disabled?: boolean;
+        testID?: string;
+      },
+    ) =>
+      ReactMod.createElement(
+        Pressable,
+        { onPress: disabled ? undefined : onPress, testID, ...props },
+        typeof children === "string" ? ReactMod.createElement(RNText, null, children) : children,
+      ),
+    Card: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(View, props, children),
+    H2: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(RNText, props, children),
     Input: (
       { value, onChangeText, placeholder, testID, onSubmitEditing, ...props }: {
         value?: string;
@@ -60,25 +66,21 @@ jest.mock("tamagui", () => {
         testID?: string;
         onSubmitEditing?: () => void;
       },
-    ) => (
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        testID={testID}
-        onSubmitEditing={onSubmitEditing}
-        {...props}
-      />
-    ),
-    Paragraph: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <RNText {...props}>{children}</RNText>
-    ),
-    Text: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <RNText {...props}>{children}</RNText>
-    ),
-    YStack: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <View {...props}>{children}</View>
-    ),
+    ) =>
+      ReactMod.createElement(TextInput, {
+        value,
+        onChangeText,
+        placeholder,
+        testID,
+        onSubmitEditing,
+        ...props,
+      }),
+    Paragraph: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(RNText, props, children),
+    Text: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(RNText, props, children),
+    YStack: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(View, props, children),
   };
 });
 

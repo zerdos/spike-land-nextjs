@@ -6,7 +6,7 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import * as Clipboard from "expo-clipboard";
 import * as Sharing from "expo-sharing";
 import React from "react";
-import { Linking, Text as RNText, TouchableOpacity, View as RNView } from "react-native";
+import { Linking } from "react-native";
 
 import { ShareButtons } from "./ShareButtons";
 
@@ -15,56 +15,51 @@ jest.mock("expo-clipboard");
 jest.mock("expo-sharing");
 
 // Mock Tamagui components
-jest.mock("tamagui", () => ({
-  Button: ({
-    children,
-    onPress,
-    testID,
-    disabled,
-    icon,
-    ...props
-  }: {
-    children: React.ReactNode;
-    onPress?: () => void;
-    testID?: string;
-    disabled?: boolean;
-    icon?: React.ReactNode;
-  }) => (
-    <TouchableOpacity
-      onPress={onPress}
-      testID={testID}
-      disabled={disabled}
-      {...props}
-    >
-      {icon && <RNView>{icon}</RNView>}
-      <RNText>{children}</RNText>
-    </TouchableOpacity>
-  ),
-  XStack: ({
-    children,
-    testID,
-    ...props
-  }: {
-    children: React.ReactNode;
-    testID?: string;
-  }) => (
-    <RNView testID={testID} {...props}>
-      {children}
-    </RNView>
-  ),
-  YStack: ({
-    children,
-    testID,
-    ...props
-  }: {
-    children: React.ReactNode;
-    testID?: string;
-  }) => (
-    <RNView testID={testID} {...props}>
-      {children}
-    </RNView>
-  ),
-}));
+jest.mock("tamagui", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Text: RNText, TouchableOpacity, View: RNView } = require("react-native");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const ReactMod = require("react");
+
+  return {
+    Button: ({
+      children,
+      onPress,
+      testID,
+      disabled,
+      icon,
+      ...props
+    }: {
+      children: React.ReactNode;
+      onPress?: () => void;
+      testID?: string;
+      disabled?: boolean;
+      icon?: React.ReactNode;
+    }) =>
+      ReactMod.createElement(
+        TouchableOpacity,
+        { onPress, testID, disabled, ...props },
+        icon && ReactMod.createElement(RNView, null, icon),
+        ReactMod.createElement(RNText, null, children),
+      ),
+    XStack: ({
+      children,
+      testID,
+      ...props
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+    }) => ReactMod.createElement(RNView, { testID, ...props }, children),
+    YStack: ({
+      children,
+      testID,
+      ...props
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+    }) => ReactMod.createElement(RNView, { testID, ...props }, children),
+  };
+});
 
 // Mock Tamagui icons
 jest.mock("@tamagui/lucide-icons", () => ({

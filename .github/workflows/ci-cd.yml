@@ -128,7 +128,8 @@ jobs:
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v5
-        if: always()
+        # Only upload if coverage was generated (skipped when --changed finds no tests)
+        if: always() && hashFiles('./coverage/lcov.info') != ''
         with:
           files: ./coverage/lcov.info
           flags: unittests

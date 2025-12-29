@@ -104,6 +104,9 @@ async function mockSession(
 // Given('I am on the home page', ...)
 
 When("I am not logged in", async function(this: CustomWorld) {
+  // Remember current URL to navigate back after context switch
+  const currentUrl = this.page.url();
+
   // Close current page and context
   await this.page.close();
   await this.context.close();
@@ -118,6 +121,11 @@ When("I am not logged in", async function(this: CustomWorld) {
 
   // Mock no session for client-side requests
   await mockSession(this, null);
+
+  // Re-navigate to the page we were on (important for Background scenarios)
+  if (currentUrl && currentUrl !== "about:blank") {
+    await this.page.goto(currentUrl);
+  }
 });
 
 // Generic test user login

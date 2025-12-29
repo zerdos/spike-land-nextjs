@@ -4,7 +4,6 @@
 
 import { act, fireEvent, render } from "@testing-library/react-native";
 import React from "react";
-import { TextInput, TouchableOpacity, View } from "react-native";
 
 import { SearchBar, type SearchBarProps } from "./SearchBar";
 
@@ -14,6 +13,11 @@ import { SearchBar, type SearchBarProps } from "./SearchBar";
 
 // Mock tamagui components
 jest.mock("tamagui", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { TextInput, TouchableOpacity, View } = require("react-native");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const ReactMod = require("react");
+
   return {
     Button: (props: Record<string, unknown>) => {
       const {
@@ -27,15 +31,15 @@ jest.mock("tamagui", () => {
       // Handle icon prop - it can be a component function or a JSX element
       let iconElement = null;
       if (Icon) {
-        if (React.isValidElement(Icon)) {
+        if (ReactMod.isValidElement(Icon)) {
           // It's already a JSX element (e.g., <X size={16} />)
           iconElement = Icon;
         } else if (typeof Icon === "function") {
           // It's a component function
-          iconElement = React.createElement(Icon);
+          iconElement = ReactMod.createElement(Icon);
         }
       }
-      return React.createElement(
+      return ReactMod.createElement(
         TouchableOpacity,
         {
           onPress,
@@ -49,7 +53,7 @@ jest.mock("tamagui", () => {
         children,
       );
     },
-    Input: React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
+    Input: ReactMod.forwardRef((props: Record<string, unknown>, ref: unknown) => {
       const {
         testID,
         onChangeText,
@@ -59,7 +63,7 @@ jest.mock("tamagui", () => {
         placeholder,
         "aria-label": ariaLabel,
       } = props;
-      return React.createElement(TextInput, {
+      return ReactMod.createElement(TextInput, {
         ref,
         testID,
         onChangeText,
@@ -72,13 +76,13 @@ jest.mock("tamagui", () => {
     }),
     XStack: (props: Record<string, unknown>) => {
       const { children, testID } = props;
-      return React.createElement(View, { testID }, children);
+      return ReactMod.createElement(View, { testID }, children);
     },
     YStack: (props: Record<string, unknown>) => {
-      return React.createElement(View, null, props.children);
+      return ReactMod.createElement(View, null, props.children);
     },
     Stack: (props: Record<string, unknown>) => {
-      return React.createElement(View, null, props.children);
+      return ReactMod.createElement(View, null, props.children);
     },
   };
 });

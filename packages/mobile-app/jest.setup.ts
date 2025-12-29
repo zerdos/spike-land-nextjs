@@ -87,7 +87,8 @@ Object.defineProperty(global, "document", {
   writable: true,
 });
 
-import "@testing-library/jest-native/extend-expect";
+// Note: Jest matchers from @testing-library/react-native v12.4+ are automatically
+// available when importing from '@testing-library/react-native' - no setup needed
 
 // ============================================================================
 // Expo Module Mock - Must be first to prevent winter runtime issues
@@ -131,6 +132,7 @@ jest.mock("react-native-gesture-handler", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const View = require("react-native").View;
   return {
+    GestureHandlerRootView: View,
     Swipeable: View,
     DrawerLayout: View,
     State: {},
