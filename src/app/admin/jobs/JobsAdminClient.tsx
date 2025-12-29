@@ -545,10 +545,10 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                   <div
                     key={job.id}
                     onClick={() => selectJob(job)}
-                    className={`cursor-pointer rounded-md border p-3 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 ${
+                    className={`cursor-pointer rounded-md border p-3 transition-colors hover:bg-neutral-800 ${
                       selectedJob?.id === job.id
-                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-neutral-200 dark:border-neutral-700"
+                        ? "border-blue-500 bg-blue-900/20"
+                        : "border-neutral-700"
                     }`}
                   >
                     <div className="flex items-center justify-between">

@@ -367,7 +367,7 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-neutral-50 dark:bg-neutral-900">
+              <thead className="bg-neutral-900">
                 <tr>
                   <th className="px-4 py-3 text-left text-sm font-medium">
                     Time
@@ -389,7 +389,7 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+              <tbody className="divide-y divide-neutral-800">
                 {errors.length === 0
                   ? (
                     <tr>
@@ -405,7 +405,7 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                     errors.map((error) => (
                       <tr
                         key={error.id}
-                        className="hover:bg-neutral-50 dark:hover:bg-neutral-900/50"
+                        className="hover:bg-neutral-900/50"
                       >
                         <td className="px-4 py-3 text-sm whitespace-nowrap">
                           {formatDate(error.timestamp)}

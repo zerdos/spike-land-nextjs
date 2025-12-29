@@ -226,7 +226,7 @@ export default function VouchersPage() {
       {/* Vouchers List */}
       <Card className="overflow-hidden">
         <table className="w-full">
-          <thead className="border-b border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900">
+          <thead className="border-b border-neutral-800 bg-neutral-900">
             <tr>
               <th className="px-6 py-3 text-left text-sm font-medium">Code</th>
               <th className="px-6 py-3 text-left text-sm font-medium">Type</th>
