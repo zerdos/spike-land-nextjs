@@ -53,6 +53,11 @@ const config = {
       "<rootDir>/$1$2",
     // Shared package mock
     "^@spike-npm-land/shared$": "<rootDir>/__mocks__/@spike-npm-land/shared.ts",
+    // Expo vector icons mock
+    "^@expo/vector-icons$": "<rootDir>/__mocks__/@expo/vector-icons.tsx",
+    "^@expo/vector-icons/(.*)$": "<rootDir>/__mocks__/@expo/vector-icons.tsx",
+    // React Native SVG mock
+    "^react-native-svg$": "<rootDir>/__mocks__/react-native-svg.tsx",
   },
 
   // Coverage configuration
@@ -73,6 +78,8 @@ const config = {
     "!**/app/_layout.tsx",
     "!**/app/**/_layout.tsx",
     "!expo-env.d.ts",
+    // Storybook pages are demo/documentation pages - exclude from coverage
+    "!**/app/storybook/**",
   ],
   coverageDirectory: "coverage",
   coverageReporters: ["text", "text-summary", "lcov", "html"],

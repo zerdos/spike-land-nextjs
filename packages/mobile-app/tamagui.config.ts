@@ -1,4 +1,4 @@
-import { createAnimations } from "@tamagui/animations-css";
+import { createAnimations } from "@tamagui/animations-react-native";
 import { tokens as defaultTokens } from "@tamagui/config/v3";
 import { createInterFont } from "@tamagui/font-inter";
 import { shorthands } from "@tamagui/shorthands";
@@ -10,30 +10,65 @@ import { borderRadius, colors, lightColorsHex, spacing as themeSpacing } from ".
 // ============================================================================
 
 /**
- * CSS animations for web compatibility and React Native
+ * React Native animations using reanimated
  * Includes standard transitions and brand-specific effects
  */
 export const animations = createAnimations({
   // Standard transitions
-  quick: "100ms ease-in-out",
-  medium: "200ms ease-in-out",
-  slow: "300ms ease-in-out",
+  quick: {
+    type: "timing",
+    duration: 100,
+  },
+  medium: {
+    type: "timing",
+    duration: 200,
+  },
+  slow: {
+    type: "timing",
+    duration: 300,
+  },
 
   // Brand animations
-  bouncy: "200ms cubic-bezier(0.25, 0.1, 0.25, 1.5)",
-  lazy: "300ms ease-out",
+  bouncy: {
+    type: "spring",
+    damping: 10,
+    mass: 0.9,
+    stiffness: 100,
+  },
+  lazy: {
+    type: "timing",
+    duration: 300,
+  },
 
   // Fade animation
-  fade: "150ms ease-in-out",
+  fade: {
+    type: "timing",
+    duration: 150,
+  },
 
   // Slide animations
-  slideUp: "200ms ease-out",
-  slideDown: "200ms ease-out",
-  slideLeft: "200ms ease-out",
-  slideRight: "200ms ease-out",
+  slideUp: {
+    type: "timing",
+    duration: 200,
+  },
+  slideDown: {
+    type: "timing",
+    duration: 200,
+  },
+  slideLeft: {
+    type: "timing",
+    duration: 200,
+  },
+  slideRight: {
+    type: "timing",
+    duration: 200,
+  },
 
   // Scale animation for press states
-  press: "100ms ease-out",
+  press: {
+    type: "timing",
+    duration: 100,
+  },
 });
 
 // ============================================================================

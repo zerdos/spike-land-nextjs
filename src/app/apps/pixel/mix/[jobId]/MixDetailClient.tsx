@@ -7,7 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { EnhancementTier, JobStatus } from "@prisma/client";
-import { ArrowLeft, ArrowRight, Download, Loader2, LogIn, Sparkles } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  Download,
+  Loader2,
+  LogIn,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -29,6 +38,7 @@ interface MixJob {
   resultUrl: string | null;
   resultWidth: number | null;
   resultHeight: number | null;
+  errorMessage: string | null;
   createdAt: string;
   targetImage: ParentImage;
   sourceImage: ParentImage | null;
@@ -55,6 +65,7 @@ export function MixDetailClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeParent, setActiveParent] = useState<ComparisonParent>("parent1");
+  const [isRetrying, setIsRetrying] = useState(false);
   const [shareUrl, setShareUrl] = useState(
     `https://spike.land/apps/pixel/mix/${job.id}`,
   );
@@ -117,6 +128,45 @@ export function MixDetailClient({
     [router, job.id],
   );
 
+  const handleRetry = useCallback(async () => {
+    if (!job.sourceImage) return;
+
+    setIsRetrying(true);
+    try {
+      // Use anonymous enhance endpoint for anonymous jobs
+      const enhanceEndpoint = isAnonymousJob
+        ? "/api/images/anonymous-enhance"
+        : "/api/images/enhance";
+
+      const response = await fetch(enhanceEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          imageId: job.targetImage.id,
+          tier: job.tier,
+          blendSource: {
+            imageId: job.sourceImage.id,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create mix");
+      }
+
+      const result = await response.json();
+      // Navigate to the new job's page
+      router.push(`/apps/pixel/mix/${result.jobId}`);
+    } catch (error) {
+      console.error("Retry failed:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to retry mix");
+      setIsRetrying(false);
+    }
+  }, [job.targetImage.id, job.sourceImage, job.tier, isAnonymousJob, router]);
+
   // Get the current comparison images based on active parent
   const getCurrentComparison = () => {
     if (activeParent === "parent1") {
@@ -155,6 +205,7 @@ export function MixDetailClient({
 
   const isCompleted = job.status === "COMPLETED" && job.resultUrl;
   const isProcessing = job.status === "PROCESSING" || job.status === "PENDING";
+  const isFailed = job.status === "FAILED" || (!isCompleted && !isProcessing);
 
   return (
     <div className="container mx-auto pt-24 pb-8 px-4">
@@ -289,10 +340,43 @@ export function MixDetailClient({
                   </div>
                 )
                 : (
-                  <div className="aspect-video bg-muted rounded-md flex items-center justify-center">
-                    <p className="text-sm text-muted-foreground">
-                      Mix processing failed
-                    </p>
+                  <div className="aspect-video bg-muted rounded-md flex flex-col items-center justify-center gap-4 p-4">
+                    <div className="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
+                      <AlertCircle className="h-8 w-8 text-destructive" />
+                    </div>
+                    <div className="space-y-2 text-center">
+                      <p className="text-sm font-medium text-destructive">
+                        Mix processing failed
+                      </p>
+                      {job.errorMessage && (
+                        <p className="text-xs text-muted-foreground max-w-md">
+                          {job.errorMessage}
+                        </p>
+                      )}
+                      {isOwner && job.sourceImage && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleRetry}
+                          disabled={isRetrying}
+                          className="mt-2"
+                        >
+                          {isRetrying
+                            ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                Retrying...
+                              </>
+                            )
+                            : (
+                              <>
+                                <RefreshCw className="h-4 w-4 mr-1" />
+                                Retry Mix
+                              </>
+                            )}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 )}
             </CardContent>
@@ -395,9 +479,32 @@ export function MixDetailClient({
                   Download
                 </Button>
               )}
+              {isFailed && isOwner && job.sourceImage && (
+                <Button
+                  onClick={handleRetry}
+                  disabled={isRetrying}
+                  className="w-full"
+                  variant="default"
+                >
+                  {isRetrying
+                    ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Retrying...
+                      </>
+                    )
+                    : (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Retry Mix
+                      </>
+                    )}
+                </Button>
+              )}
               <Button
                 onClick={() => router.push("/apps/pixel/mix")}
                 className="w-full"
+                variant={isFailed ? "outline" : "default"}
               >
                 Create New Mix
               </Button>
