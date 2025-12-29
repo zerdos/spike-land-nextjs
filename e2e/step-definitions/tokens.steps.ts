@@ -328,7 +328,8 @@ Then(
     await expect(this.page.locator("input#voucher-code")).toBeVisible({
       timeout: TIMEOUTS.DEFAULT,
     });
-    await expect(this.page.getByText("Voucher Code")).toBeVisible({
+    // Use exact match to avoid matching DialogDescription "...redeem a voucher code"
+    await expect(this.page.getByLabel("Voucher Code")).toBeVisible({
       timeout: TIMEOUTS.DEFAULT,
     });
   },
