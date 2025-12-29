@@ -288,17 +288,17 @@ Then(
     const rows = dataTable.hashes();
     // Use data-testid for reliable selection
     const starterCard = this.page.locator('[data-testid="package-card-starter"]');
-    await expect(starterCard).toBeVisible({ timeout: 10000 });
+    await expect(starterCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
         const name = starterCard.getByText(row.Value);
-        await expect(name).toBeVisible();
+        await expect(name).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       } else if (row.Attribute === "Tokens") {
         const tokens = starterCard.getByText(
           new RegExp(`${row.Value}\\s+tokens`, "i"),
         );
-        await expect(tokens).toBeVisible();
+        await expect(tokens).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       }
     }
   },
@@ -310,17 +310,17 @@ Then(
     const rows = dataTable.hashes();
     // Use data-testid for reliable selection
     const basicCard = this.page.locator('[data-testid="package-card-basic"]');
-    await expect(basicCard).toBeVisible({ timeout: 10000 });
+    await expect(basicCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
         const name = basicCard.getByText(row.Value);
-        await expect(name).toBeVisible();
+        await expect(name).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       } else if (row.Attribute === "Tokens") {
         const tokens = basicCard.getByText(
           new RegExp(`${row.Value}\\s+tokens`, "i"),
         );
-        await expect(tokens).toBeVisible();
+        await expect(tokens).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       }
     }
   },
@@ -332,17 +332,17 @@ Then(
     const rows = dataTable.hashes();
     // Use data-testid for reliable selection
     const proCard = this.page.locator('[data-testid="package-card-pro"]');
-    await expect(proCard).toBeVisible({ timeout: 10000 });
+    await expect(proCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
         const name = proCard.getByText(row.Value);
-        await expect(name).toBeVisible();
+        await expect(name).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       } else if (row.Attribute === "Tokens") {
         const tokens = proCard.getByText(
           new RegExp(`${row.Value}\\s+tokens`, "i"),
         );
-        await expect(tokens).toBeVisible();
+        await expect(tokens).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       }
     }
   },
@@ -354,17 +354,17 @@ Then(
     const rows = dataTable.hashes();
     // Use data-testid for reliable selection
     const powerCard = this.page.locator('[data-testid="package-card-power"]');
-    await expect(powerCard).toBeVisible({ timeout: 10000 });
+    await expect(powerCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
         const name = powerCard.getByText(row.Value);
-        await expect(name).toBeVisible();
+        await expect(name).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       } else if (row.Attribute === "Tokens") {
         const tokens = powerCard.getByText(
           new RegExp(`${row.Value}\\s+tokens`, "i"),
         );
-        await expect(tokens).toBeVisible();
+        await expect(tokens).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       }
     }
   },
