@@ -1,122 +1,209 @@
 /**
  * Brand Page
  *
- * Displays spike.land brand assets including logos, icons, and brand guidelines.
+ * Displays brand assets for both spike.land platform and Pixel app,
+ * including logos, icons, and brand guidelines.
  */
 
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { PixelLogo, SpikeLandLogo } from "@/components/brand";
 import { borderRadius, colors, fontSize, spacing } from "@/constants/theme";
+
+const logoSizes = ["sm", "md", "lg", "xl"] as const;
 
 export default function BrandPage() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Brand</Text>
+        <Text style={styles.title}>Brand Identity</Text>
         <Text style={styles.subtitle}>
-          Logo variants, sizes, and the spike.land AI Spark logo
+          The visual core of the spike.land design system, built on a foundation of digital
+          precision and collaborative energy.
         </Text>
       </View>
 
-      {/* Logo Showcase */}
+      {/* AI Spark / Pixel Logo Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Logo Variants</Text>
-        <View style={styles.logoGrid}>
-          {/* Primary Logo */}
-          <View style={styles.logoCard}>
-            <View style={styles.logoContainer}>
-              <View style={styles.sparkIcon}>
-                <Ionicons name="diamond" size={40} color={colors.primary} />
+        <View style={styles.sectionHeader}>
+          <View style={[styles.headerIndicator, { backgroundColor: colors.primary }]} />
+          <View>
+            <Text style={styles.sectionTitle}>AI Spark Logo</Text>
+            <Text style={styles.sectionSubtitle}>
+              The primary symbol of our creative tools. A 3x3 grid representing pixel arrays.
+            </Text>
+          </View>
+        </View>
+
+        {/* Pixel Logo Sizes */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Sizes & Scale</Text>
+          <Text style={styles.cardDescription}>Universal logo sizes for varying contexts.</Text>
+          <View style={styles.logoRow}>
+            {logoSizes.map((size) => (
+              <View key={size} style={styles.logoItem}>
+                <View style={styles.logoBox}>
+                  <PixelLogo size={size} variant="icon" />
+                </View>
+                <View style={styles.sizeBadge}>
+                  <Text style={styles.badgeText}>{size.toUpperCase()}</Text>
+                </View>
               </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Pixel Logo Variants */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Structural Variants</Text>
+          <Text style={styles.cardDescription}>Layout options for different requirements.</Text>
+
+          <View style={styles.variantRow}>
+            <PixelLogo size="md" variant="horizontal" />
+            <View style={styles.variantBadge}>
+              <Text style={styles.variantBadgeText}>HORIZONTAL</Text>
             </View>
-            <Text style={styles.logoLabel}>Primary</Text>
           </View>
 
-          {/* Icon Only */}
-          <View style={styles.logoCard}>
-            <View style={styles.logoContainer}>
-              <Ionicons name="diamond" size={32} color={colors.primary} />
+          <View style={styles.variantRow}>
+            <PixelLogo size="lg" variant="icon" />
+            <View style={styles.variantBadge}>
+              <Text style={styles.variantBadgeText}>ICON ONLY</Text>
             </View>
-            <Text style={styles.logoLabel}>Icon</Text>
           </View>
 
-          {/* Horizontal */}
-          <View style={styles.logoCard}>
-            <View style={[styles.logoContainer, styles.logoHorizontal]}>
-              <Ionicons name="diamond" size={24} color={colors.primary} />
-              <Text style={styles.logoText}>spike.land</Text>
+          <View style={[styles.variantRow, styles.stackedRow]}>
+            <PixelLogo size="lg" variant="stacked" />
+            <View style={styles.variantBadge}>
+              <Text style={styles.variantBadgeText}>STACKED</Text>
             </View>
-            <Text style={styles.logoLabel}>Horizontal</Text>
           </View>
         </View>
       </View>
 
-      {/* Logo Sizes */}
+      {/* spike.land Platform Logo Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Logo Sizes</Text>
-        <View style={styles.sizeGrid}>
-          <View style={styles.sizeItem}>
-            <Ionicons name="diamond" size={16} color={colors.primary} />
-            <Text style={styles.sizeLabel}>SM (16px)</Text>
+        <View style={styles.sectionHeader}>
+          <View style={[styles.headerIndicator, { backgroundColor: "#FBBF24" }]} />
+          <View>
+            <Text style={styles.sectionTitle}>spike.land Platform Logo</Text>
+            <Text style={styles.sectionSubtitle}>
+              The parent platform identity featuring a lightning bolt icon.
+            </Text>
           </View>
-          <View style={styles.sizeItem}>
-            <Ionicons name="diamond" size={24} color={colors.primary} />
-            <Text style={styles.sizeLabel}>MD (24px)</Text>
+        </View>
+
+        {/* spike.land Logo Sizes */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Platform Scale</Text>
+          <Text style={styles.cardDescription}>Consistent sizing with the tool identity.</Text>
+          <View style={styles.logoRow}>
+            {logoSizes.map((size) => (
+              <View key={size} style={styles.logoItem}>
+                <View style={styles.logoBox}>
+                  <SpikeLandLogo size={size} variant="icon" />
+                </View>
+                <View style={styles.sizeBadge}>
+                  <Text style={styles.badgeText}>{size.toUpperCase()}</Text>
+                </View>
+              </View>
+            ))}
           </View>
-          <View style={styles.sizeItem}>
-            <Ionicons name="diamond" size={32} color={colors.primary} />
-            <Text style={styles.sizeLabel}>LG (32px)</Text>
+        </View>
+
+        {/* spike.land Logo Variants */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Platform Layouts</Text>
+          <Text style={styles.cardDescription}>Optimized for headers and banners.</Text>
+
+          <View style={styles.variantRow}>
+            <SpikeLandLogo size="md" variant="horizontal" />
+            <View style={styles.variantBadge}>
+              <Text style={styles.variantBadgeText}>HORIZONTAL</Text>
+            </View>
           </View>
-          <View style={styles.sizeItem}>
-            <Ionicons name="diamond" size={48} color={colors.primary} />
-            <Text style={styles.sizeLabel}>XL (48px)</Text>
+
+          <View style={[styles.variantRow, styles.stackedRow, styles.warningBg]}>
+            <SpikeLandLogo size="lg" variant="stacked" />
+            <View style={styles.variantBadge}>
+              <Text style={styles.variantBadgeText}>STACKED</Text>
+            </View>
           </View>
         </View>
       </View>
 
-      {/* Brand Colors */}
+      {/* Brand Colors Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Brand Colors</Text>
-        <View style={styles.colorRow}>
-          <View style={[styles.colorSwatch, { backgroundColor: colors.primary }]} />
-          <View style={styles.colorInfo}>
-            <Text style={styles.colorName}>Pixel Cyan</Text>
-            <Text style={styles.colorValue}>#00E5FF</Text>
+        <View style={styles.sectionHeader}>
+          <View style={[styles.headerIndicator, { backgroundColor: colors.pixelFuchsia }]} />
+          <View>
+            <Text style={styles.sectionTitle}>Brand Colors</Text>
+            <Text style={styles.sectionSubtitle}>Core palette for the design system.</Text>
           </View>
         </View>
-        <View style={styles.colorRow}>
-          <View style={[styles.colorSwatch, { backgroundColor: colors.pixelFuchsia }]} />
-          <View style={styles.colorInfo}>
-            <Text style={styles.colorName}>Pixel Fuchsia</Text>
-            <Text style={styles.colorValue}>#FF00FF</Text>
+
+        <View style={styles.card}>
+          <View style={styles.colorRow}>
+            <View style={[styles.colorSwatch, { backgroundColor: colors.primary }]} />
+            <View style={styles.colorInfo}>
+              <Text style={styles.colorName}>Pixel Cyan</Text>
+              <Text style={styles.colorValue}>#00E5FF</Text>
+            </View>
+          </View>
+
+          <View style={styles.colorRow}>
+            <View style={[styles.colorSwatch, { backgroundColor: colors.pixelFuchsia }]} />
+            <View style={styles.colorInfo}>
+              <Text style={styles.colorName}>Pixel Fuchsia</Text>
+              <Text style={styles.colorValue}>#FF00FF</Text>
+            </View>
+          </View>
+
+          <View style={styles.colorRow}>
+            <View style={[styles.colorSwatch, { backgroundColor: "#FBBF24" }]} />
+            <View style={styles.colorInfo}>
+              <Text style={styles.colorName}>Spike Amber</Text>
+              <Text style={styles.colorValue}>#FBBF24</Text>
+            </View>
           </View>
         </View>
       </View>
 
-      {/* Brand Guidelines */}
+      {/* Usage Guidelines */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Usage Guidelines</Text>
-        <View style={styles.guidelineCard}>
+        <View style={styles.sectionHeader}>
+          <View style={[styles.headerIndicator, { backgroundColor: colors.success }]} />
+          <View>
+            <Text style={styles.sectionTitle}>Usage Guidelines</Text>
+            <Text style={styles.sectionSubtitle}>Best practices for brand consistency.</Text>
+          </View>
+        </View>
+
+        <View style={styles.card}>
           <View style={styles.guidelineItem}>
             <Ionicons name="checkmark-circle" size={20} color={colors.success} />
             <Text style={styles.guidelineText}>
-              Use the primary cyan color for interactive elements
+              The AI Spark logo represents transformation and digital intelligence
             </Text>
           </View>
           <View style={styles.guidelineItem}>
             <Ionicons name="checkmark-circle" size={20} color={colors.success} />
             <Text style={styles.guidelineText}>
-              Maintain minimum clear space around the logo
+              Maintain clear space around the logo equivalent to the center spark size
+            </Text>
+          </View>
+          <View style={styles.guidelineItem}>
+            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Text style={styles.guidelineText}>
+              Use the horizontal variant for navigation bars and wide headers
             </Text>
           </View>
           <View style={styles.guidelineItem}>
             <Ionicons name="close-circle" size={20} color={colors.destructive} />
-            <Text style={styles.guidelineText}>
-              Don't alter the logo colors or proportions
-            </Text>
+            <Text style={styles.guidelineText}>Don't alter the logo colors or proportions</Text>
           </View>
           <View style={styles.guidelineItem}>
             <Ionicons name="close-circle" size={20} color={colors.destructive} />
@@ -154,84 +241,118 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   section: {
-    marginBottom: spacing[6],
+    marginBottom: spacing[8],
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing[3],
+    marginBottom: spacing[4],
+  },
+  headerIndicator: {
+    width: 4,
+    height: 28,
+    borderRadius: 2,
+    marginTop: 2,
   },
   sectionTitle: {
     fontSize: fontSize.lg,
-    fontWeight: "600",
+    fontWeight: "700",
     color: colors.foreground,
-    marginBottom: spacing[3],
+    marginBottom: spacing[1],
   },
-  logoGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing[3],
+  sectionSubtitle: {
+    fontSize: fontSize.sm,
+    color: colors.mutedForeground,
+    lineHeight: 20,
   },
-  logoCard: {
+  card: {
     backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing[4],
-    alignItems: "center",
     borderWidth: 1,
     borderColor: colors.border,
-    minWidth: 100,
-    flex: 1,
+    marginBottom: spacing[3],
   },
-  logoContainer: {
-    height: 80,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoHorizontal: {
-    flexDirection: "row",
-    gap: spacing[2],
-  },
-  sparkIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: borderRadius.xl,
-    backgroundColor: `${colors.primary}15`,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoText: {
-    fontSize: fontSize.lg,
-    fontWeight: "700",
+  cardTitle: {
+    fontSize: fontSize.base,
+    fontWeight: "600",
     color: colors.foreground,
+    marginBottom: spacing[1],
   },
-  logoLabel: {
+  cardDescription: {
     fontSize: fontSize.sm,
     color: colors.mutedForeground,
-    marginTop: spacing[2],
+    marginBottom: spacing[4],
   },
-  sizeGrid: {
+  logoRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing[4],
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing[4],
-    borderWidth: 1,
-    borderColor: colors.border,
+    justifyContent: "flex-start",
   },
-  sizeItem: {
+  logoItem: {
     alignItems: "center",
     gap: spacing[2],
   },
-  sizeLabel: {
-    fontSize: fontSize.xs,
+  logoBox: {
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing[3],
+    minWidth: 70,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sizeBadge: {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: borderRadius.sm,
+    paddingVertical: 2,
+    paddingHorizontal: spacing[2],
+  },
+  badgeText: {
+    fontSize: 10,
     color: colors.mutedForeground,
+    fontFamily: "monospace",
+    fontWeight: "500",
+  },
+  variantRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing[4],
+    marginBottom: spacing[3],
+  },
+  stackedRow: {
+    flexDirection: "column",
+    alignItems: "center",
+    gap: spacing[3],
+  },
+  warningBg: {
+    backgroundColor: "rgba(251, 191, 36, 0.05)",
+  },
+  variantBadge: {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: borderRadius.sm,
+    paddingVertical: 4,
+    paddingHorizontal: spacing[2],
+  },
+  variantBadgeText: {
+    fontSize: 10,
+    color: colors.mutedForeground,
+    fontWeight: "600",
+    letterSpacing: 0.5,
   },
   colorRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing[3],
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing[3],
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing[2],
+    marginBottom: spacing[3],
   },
   colorSwatch: {
     width: 48,
@@ -251,18 +372,11 @@ const styles = StyleSheet.create({
     color: colors.mutedForeground,
     fontFamily: "monospace",
   },
-  guidelineCard: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing[4],
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing[3],
-  },
   guidelineItem: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: spacing[3],
+    marginBottom: spacing[3],
   },
   guidelineText: {
     flex: 1,

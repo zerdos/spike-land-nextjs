@@ -56,6 +56,8 @@ const config = {
     // Expo vector icons mock
     "^@expo/vector-icons$": "<rootDir>/__mocks__/@expo/vector-icons.tsx",
     "^@expo/vector-icons/(.*)$": "<rootDir>/__mocks__/@expo/vector-icons.tsx",
+    // React Native SVG mock
+    "^react-native-svg$": "<rootDir>/__mocks__/react-native-svg.tsx",
   },
 
   // Coverage configuration
