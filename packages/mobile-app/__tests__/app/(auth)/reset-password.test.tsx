@@ -5,7 +5,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { Pressable, ScrollView, Text as RNText, TextInput, View } from "react-native";
 
 import { calculatePasswordStrength } from "@/app/(auth)/reset-password";
 import { authService } from "@/services/auth";
@@ -31,88 +30,35 @@ jest.mock("@expo/vector-icons", () => ({
 }));
 
 jest.mock("tamagui", () => {
-  return {
-    Button: (
-      { children, onPress, disabled, testID, ...props }: React.PropsWithChildren<
-        { onPress?: () => void; disabled?: boolean; testID?: string; }
-      >,
-    ) => (
-      <Pressable onPress={disabled ? undefined : onPress} testID={testID} {...props}>
-        {typeof children === "string" ? <RNText>{children}</RNText> : children}
-      </Pressable>
-    ),
-    Card: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <View {...props}>{children}</View>
-    ),
-    H2: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <RNText {...props}>{children}</RNText>
-    ),
-    Input: (
-      { value, onChangeText, placeholder, testID, onSubmitEditing, _id, ...props }: {
-        value?: string;
-        onChangeText?: (text: string) => void;
-        placeholder?: string;
-        testID?: string;
-        onSubmitEditing?: () => void;
-        _id?: string;
-      },
-    ) => (
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        testID={testID}
-        onSubmitEditing={onSubmitEditing}
-        {...props}
-      />
-    ),
-    Label: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <RNText {...props}>{children}</RNText>
-    ),
-    Paragraph: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <RNText {...props}>{children}</RNText>
-    ),
-    Progress: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <View {...props}>{children}</View>
-    ),
-    Text: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <RNText {...props}>{children}</RNText>
-    ),
-    XStack: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <View {...props}>{children}</View>
-    ),
-    YStack: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <View {...props}>{children}</View>
-    ),
-    ScrollView: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <ScrollView {...props}>{children}</ScrollView>
-    ),
-  };
-});
-
-// Add mock for Progress.Indicator
-jest.mock("tamagui", () => {
-  const Progress = ({ children, ...props }: React.PropsWithChildren<object>) => (
-    <View {...props}>{children}</View>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Pressable, ScrollView: RNScrollView, Text: RNText, TextInput, View } = require(
+    "react-native",
   );
-  Progress.Indicator = ({ ...props }: object) => <View {...props} />;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const ReactMod = require("react");
+
+  const Progress = ({ children, ...props }: { children?: React.ReactNode; }) =>
+    ReactMod.createElement(View, props, children);
+  Progress.Indicator = ({ ...props }: object) => ReactMod.createElement(View, props);
 
   return {
     Button: (
-      { children, onPress, disabled, testID, ...props }: React.PropsWithChildren<
-        { onPress?: () => void; disabled?: boolean; testID?: string; }
-      >,
-    ) => (
-      <Pressable onPress={disabled ? undefined : onPress} testID={testID} {...props}>
-        {typeof children === "string" ? <RNText>{children}</RNText> : children}
-      </Pressable>
-    ),
-    Card: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <View {...props}>{children}</View>
-    ),
-    H2: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <RNText {...props}>{children}</RNText>
-    ),
+      { children, onPress, disabled, testID, ...props }: {
+        children?: React.ReactNode;
+        onPress?: () => void;
+        disabled?: boolean;
+        testID?: string;
+      },
+    ) =>
+      ReactMod.createElement(
+        Pressable,
+        { onPress: disabled ? undefined : onPress, testID, ...props },
+        typeof children === "string" ? ReactMod.createElement(RNText, null, children) : children,
+      ),
+    Card: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(View, props, children),
+    H2: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(RNText, props, children),
     Input: (
       { value, onChangeText, placeholder, testID, onSubmitEditing, _id, ...props }: {
         value?: string;
@@ -122,35 +68,28 @@ jest.mock("tamagui", () => {
         onSubmitEditing?: () => void;
         _id?: string;
       },
-    ) => (
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        testID={testID}
-        onSubmitEditing={onSubmitEditing}
-        {...props}
-      />
-    ),
-    Label: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <RNText {...props}>{children}</RNText>
-    ),
-    Paragraph: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <RNText {...props}>{children}</RNText>
-    ),
+    ) =>
+      ReactMod.createElement(TextInput, {
+        value,
+        onChangeText,
+        placeholder,
+        testID,
+        onSubmitEditing,
+        ...props,
+      }),
+    Label: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(RNText, props, children),
+    Paragraph: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(RNText, props, children),
     Progress,
-    Text: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <RNText {...props}>{children}</RNText>
-    ),
-    XStack: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <View {...props}>{children}</View>
-    ),
-    YStack: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <View {...props}>{children}</View>
-    ),
-    ScrollView: ({ children, ...props }: React.PropsWithChildren<object>) => (
-      <ScrollView {...props}>{children}</ScrollView>
-    ),
+    Text: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(RNText, props, children),
+    XStack: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(View, props, children),
+    YStack: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(View, props, children),
+    ScrollView: ({ children, ...props }: { children?: React.ReactNode; }) =>
+      ReactMod.createElement(RNScrollView, props, children),
   };
 });
 

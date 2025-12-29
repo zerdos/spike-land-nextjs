@@ -4,93 +4,80 @@
 
 import { fireEvent, render } from "@testing-library/react-native";
 import React from "react";
-import { Text as RNText, TouchableOpacity, View as RNView } from "react-native";
 
 import { ReferredUser, ReferredUsersList } from "./ReferredUsersList";
 
 // Mock Tamagui components
-jest.mock("tamagui", () => ({
-  Button: ({
-    children,
-    onPress,
-    testID,
-    ...props
-  }: {
-    children: React.ReactNode;
-    onPress?: () => void;
-    testID?: string;
-  }) => (
-    <TouchableOpacity onPress={onPress} testID={testID} {...props}>
-      <RNText>{children}</RNText>
-    </TouchableOpacity>
-  ),
-  Card: ({
-    children,
-    testID,
-    ...props
-  }: {
-    children: React.ReactNode;
-    testID?: string;
-  }) => (
-    <RNView testID={testID} {...props}>
-      {children}
-    </RNView>
-  ),
-  Paragraph: ({
-    children,
-    testID,
-    ...props
-  }: {
-    children: React.ReactNode;
-    testID?: string;
-  }) => (
-    <RNText testID={testID} {...props}>
-      {children}
-    </RNText>
-  ),
-  Text: ({
-    children,
-    ...props
-  }: {
-    children: React.ReactNode;
-  }) => <RNText {...props}>{children}</RNText>,
-  View: ({
-    children,
-    testID,
-    ...props
-  }: {
-    children?: React.ReactNode;
-    testID?: string;
-  }) => (
-    <RNView testID={testID} {...props}>
-      {children}
-    </RNView>
-  ),
-  XStack: ({
-    children,
-    testID,
-    ...props
-  }: {
-    children: React.ReactNode;
-    testID?: string;
-  }) => (
-    <RNView testID={testID} {...props}>
-      {children}
-    </RNView>
-  ),
-  YStack: ({
-    children,
-    testID,
-    ...props
-  }: {
-    children: React.ReactNode;
-    testID?: string;
-  }) => (
-    <RNView testID={testID} {...props}>
-      {children}
-    </RNView>
-  ),
-}));
+jest.mock("tamagui", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Text: RNText, TouchableOpacity, View: RNView } = require("react-native");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const ReactMod = require("react");
+
+  return {
+    Button: ({
+      children,
+      onPress,
+      testID,
+      ...props
+    }: {
+      children: React.ReactNode;
+      onPress?: () => void;
+      testID?: string;
+    }) =>
+      ReactMod.createElement(
+        TouchableOpacity,
+        { onPress, testID, ...props },
+        ReactMod.createElement(RNText, null, children),
+      ),
+    Card: ({
+      children,
+      testID,
+      ...props
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+    }) => ReactMod.createElement(RNView, { testID, ...props }, children),
+    Paragraph: ({
+      children,
+      testID,
+      ...props
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+    }) => ReactMod.createElement(RNText, { testID, ...props }, children),
+    Text: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+    }) => ReactMod.createElement(RNText, props, children),
+    View: ({
+      children,
+      testID,
+      ...props
+    }: {
+      children?: React.ReactNode;
+      testID?: string;
+    }) => ReactMod.createElement(RNView, { testID, ...props }, children),
+    XStack: ({
+      children,
+      testID,
+      ...props
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+    }) => ReactMod.createElement(RNView, { testID, ...props }, children),
+    YStack: ({
+      children,
+      testID,
+      ...props
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+    }) => ReactMod.createElement(RNView, { testID, ...props }, children),
+  };
+});
 
 // Mock Tamagui icons
 jest.mock("@tamagui/lucide-icons", () => ({
