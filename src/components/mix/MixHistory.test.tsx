@@ -149,7 +149,7 @@ describe("MixHistory", () => {
     expect(screen.getByAltText("Target 2")).toBeInTheDocument();
     expect(screen.queryByAltText("Mix result")).not.toBeInTheDocument();
 
-    // Should show pulse animation placeholder (the result has a cyan pulse animation when processing)
+    // Should show pulse animation placeholder
     const pulseAnimation = document.querySelector(".animate-pulse-cyan");
     expect(pulseAnimation).toBeInTheDocument();
   });
