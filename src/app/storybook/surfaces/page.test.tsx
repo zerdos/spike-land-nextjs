@@ -63,13 +63,13 @@ describe("SurfacesPage", () => {
 
   it("copies class name to clipboard when clicking a glass tier", async () => {
     render(<SurfacesPage />);
-    const glass0 = screen.getByText("Tier 0 (glass-0)").closest(".group");
+    const glass0Group = screen.getByText("Tier 0 (glass-0)").closest(".group");
+    expect(glass0Group).toBeDefined();
     // The click listener is on the card div inside the group
-    const card = glass0?.querySelector(".glass-0");
-    if (card) {
-      fireEvent.click(card);
-      expect(navigator.clipboard.writeText).toHaveBeenCalledWith("glass-0");
-      expect(await screen.findByText("Copied!")).toBeDefined();
-    }
+    const card = glass0Group!.querySelector(".glass-0");
+    expect(card).toBeDefined();
+    fireEvent.click(card!);
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith("glass-0");
+    expect(await screen.findByText("Copied!")).toBeDefined();
   });
 });

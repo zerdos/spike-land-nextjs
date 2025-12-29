@@ -11,16 +11,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Copy, Layers, Search, Share2, Sparkles, Wifi } from "lucide-react";
+import { Copy, Layers, Plus, Search, Share2, Sparkles, Wifi, X } from "lucide-react";
 import { useState } from "react";
 
 export default function SurfacesPage() {
   const [copied, setCopied] = useState<string | null>(null);
 
-  const handleCopy = (className: string) => {
-    navigator.clipboard.writeText(className);
-    setCopied(className);
-    setTimeout(() => setCopied(null), 2000);
+  const handleCopy = async (className: string) => {
+    try {
+      await navigator.clipboard.writeText(className);
+      setCopied(className);
+      setTimeout(() => setCopied(null), 2000);
+    } catch (err) {
+      console.error("Failed to copy to clipboard:", err);
+    }
   };
 
   return (
@@ -344,41 +348,5 @@ export default function SurfacesPage() {
         ]}
       />
     </div>
-  );
-}
-
-function Plus({ className }: { className?: string; }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M5 12h14" />
-      <path d="M12 5v14" />
-    </svg>
-  );
-}
-
-function X({ className }: { className?: string; }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
   );
 }
