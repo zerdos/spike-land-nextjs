@@ -11745,9 +11745,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@workflow/cli@npm:4.0.1-beta.37":
-  version: 4.0.1-beta.37
-  resolution: "@workflow/cli@npm:4.0.1-beta.37"
+"@workflow/cli@npm:4.0.1-beta.38":
+  version: 4.0.1-beta.38
+  resolution: "@workflow/cli@npm:4.0.1-beta.38"
   dependencies:
     "@oclif/core": "npm:4.0.0"
     "@oclif/plugin-help": "npm:6.2.31"
@@ -11757,7 +11757,7 @@ __metadata:
     "@workflow/errors": "npm:4.0.1-beta.12"
     "@workflow/swc-plugin": "npm:4.0.1-beta.12"
     "@workflow/utils": "npm:4.0.1-beta.9"
-    "@workflow/web": "npm:4.0.1-beta.21"
+    "@workflow/web": "npm:4.0.1-beta.22"
     "@workflow/world": "npm:4.0.1-beta.11"
     "@workflow/world-local": "npm:4.0.1-beta.22"
     "@workflow/world-vercel": "npm:4.0.1-beta.24"
@@ -11781,7 +11781,7 @@ __metadata:
   bin:
     wf: bin/run.js
     workflow: bin/run.js
-  checksum: 10c0/acead927f7bbe7d57b4ecbe908ce75b9d74744dca748aa8f0e1e8a18124a58271a0c177dca02a68a6e0e7cb73a17d99238c75a80ce2fbf7c0d05557de6e07c25
+  checksum: 10c0/9c38bfeea07a7ddc88e53ee1f04b1666ead2f46c7e43b8150a794cff604cb102973cde5a9d2c2c246183cb4fc891d12fd1690303433d25f56f243c8adb1aec2f
   languageName: node
   linkType: hard
 
@@ -11929,14 +11929,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@workflow/web@npm:4.0.1-beta.21":
-  version: 4.0.1-beta.21
-  resolution: "@workflow/web@npm:4.0.1-beta.21"
+"@workflow/web@npm:4.0.1-beta.22":
+  version: 4.0.1-beta.22
+  resolution: "@workflow/web@npm:4.0.1-beta.22"
   dependencies:
     "@xyflow/react": "npm:12.9.3"
     next: "npm:16.0.10"
     nuqs: "npm:^2.2.5"
-  checksum: 10c0/39ebea74f5c06e0c4b5a1b306cb1b20e473fd698f3496cba93051ad1f0b03310748c4e8b7e311ab73701369d5a669d3f94467405627f7ba682a0b828b9ee3ab1
+  checksum: 10c0/10ecd4c6818d7b4f406ac8d5c191690d11963808ec0a3fc7ba1ca395175b766008a646ab466b85687f941b14d9a70dbde923858acb05c4395194a4a4e060baa3
   languageName: node
   linkType: hard
 
@@ -27701,7 +27701,7 @@ __metadata:
     typescript: "npm:5.9.3"
     vercel: "npm:^50.1.3"
     vitest: "npm:^4.0.16"
-    workflow: "npm:4.0.1-beta.37"
+    workflow: "npm:4.0.1-beta.38"
     zod: "npm:^4.2.1"
   languageName: unknown
   linkType: soft
@@ -28250,12 +28250,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"workflow@npm:4.0.1-beta.37":
-  version: 4.0.1-beta.37
-  resolution: "workflow@npm:4.0.1-beta.37"
+"workflow@npm:4.0.1-beta.38":
+  version: 4.0.1-beta.38
+  resolution: "workflow@npm:4.0.1-beta.38"
   dependencies:
     "@workflow/astro": "npm:4.0.0-beta.14"
-    "@workflow/cli": "npm:4.0.1-beta.37"
+    "@workflow/cli": "npm:4.0.1-beta.38"
     "@workflow/core": "npm:4.0.1-beta.32"
     "@workflow/errors": "npm:4.0.1-beta.12"
     "@workflow/next": "npm:4.0.1-beta.36"
@@ -28273,7 +28273,7 @@ __metadata:
   bin:
     wf: bin/run.js
     workflow: bin/run.js
-  checksum: 10c0/55a284d67b21e95c90fd2200bcef12a5852bac3c716ebd478cc6df488ade284b4df27ad9bae980a2f612a9d62cb5881eeb99ab8aa55360850d042a8bdae635ab
+  checksum: 10c0/f71217ab55902808abb031991e612d7abc7577c7bc45c1ffb99e06f0e4fe2f32c7a253bae2fa2adedc969d31404601fe7504f468189301a2a101bc4943e0c2b8
   languageName: node
   linkType: hard
 
