@@ -446,5 +446,3 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     }
   },
 }));
-
-export default useSettingsStore;

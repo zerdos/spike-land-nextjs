@@ -329,5 +329,3 @@ export function useImageShare(options: UseImageShareOptions = {}): UseImageShare
     isSharingAvailable,
   };
 }
-
-export default useImageShare;

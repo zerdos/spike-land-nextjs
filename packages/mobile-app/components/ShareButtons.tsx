@@ -249,5 +249,3 @@ export function ShareButtons({
     </YStack>
   );
 }
-
-export default ShareButtons;

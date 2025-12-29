@@ -317,4 +317,3 @@ export const Button: React.FC<ButtonProps> = ({
 // ============================================================================
 
 export { ButtonFrame, ButtonText };
-export default Button;

@@ -369,5 +369,3 @@ export function useEnhancement(): UseEnhancementReturn {
     estimatedEnhancements,
   };
 }
-
-export default useEnhancement;

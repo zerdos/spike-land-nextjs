@@ -308,7 +308,5 @@ export const useEnhancementStore = create<EnhancementStore>((set, get) => ({
   },
 }));
 
-export default useEnhancementStore;
-
 // Re-export types for external use
 export type { CurrentJobState, EnhancementActions, EnhancementState };
