@@ -17,6 +17,7 @@ const eslintConfig = tseslint.config(
       "fix-r2-versioning-cache/**",
       "coverage/**",
       ".yarn/**",
+      "packages/mobile-app/coverage/**",
       "src/app/.well-known/**",
     ],
   },
