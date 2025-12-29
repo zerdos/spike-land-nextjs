@@ -330,16 +330,6 @@ jest.mock("expo-device", () => ({
   osVersion: "17.0",
 }));
 
-// expo-camera mock
-jest.mock("expo-camera", () => ({
-  Camera: jest.fn(() => null),
-  useCameraPermissions: jest.fn(() => [{ granted: true }, jest.fn()]),
-  CameraType: {
-    front: "front",
-    back: "back",
-  },
-}));
-
 // expo-sharing mock
 jest.mock("expo-sharing", () => ({
   isAvailableAsync: jest.fn().mockResolvedValue(true),
