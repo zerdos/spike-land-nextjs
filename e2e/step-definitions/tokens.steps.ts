@@ -160,11 +160,11 @@ When(
     // Mock Stripe checkout
     await mockStripeCheckout(this);
 
-    // Find and click the package card
-    // Packages have a Select button
+    // Find and click the package card by data-package-id
+    // Falls back to "Buy Now" button if data attribute not found
     const packageCard = this.page.locator(`[data-package-id="${packageId}"]`)
       .or(
-        this.page.locator("button").filter({ hasText: "Select" }).first(),
+        this.page.locator("button").filter({ hasText: "Buy Now" }).first(),
       );
 
     await expect(packageCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
