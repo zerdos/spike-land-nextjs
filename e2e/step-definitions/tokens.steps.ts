@@ -324,10 +324,11 @@ Then("I should see token package cards", async function(this: CustomWorld) {
 Then(
   "I should see the voucher input section",
   async function(this: CustomWorld) {
+    // VoucherInput component has input#voucher-code and "Voucher Code" label
     await expect(this.page.locator("input#voucher-code")).toBeVisible({
       timeout: TIMEOUTS.DEFAULT,
     });
-    await expect(this.page.getByText("Have a voucher code?")).toBeVisible({
+    await expect(this.page.getByText("Voucher Code")).toBeVisible({
       timeout: TIMEOUTS.DEFAULT,
     });
   },
