@@ -528,7 +528,7 @@ describe("NotificationsScreen", () => {
       expect(cachedData?.notifications[0].read).toBe(true);
     });
 
-    it("optimistically removes notification on delete", async () => {
+    it("optimistically removes notification on delete", () => {
       const queryClient = createQueryClient();
 
       // Pre-populate the cache
@@ -541,33 +541,26 @@ describe("NotificationsScreen", () => {
         unreadCount: 2,
       });
 
-      mockNotificationsService.deleteNotification.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve(true), 100)),
-      );
+      // Simulate calling the delete function
+      mockNotificationsService.deleteNotification("notif-1");
 
-      // Trigger delete mutation directly through the query client
-      // since swipe gesture is complex to simulate
-      await act(async () => {
-        // Simulate the mutation
-        mockNotificationsService.deleteNotification("notif-1");
-
-        // Manually update cache to simulate optimistic update
-        queryClient.setQueryData(["notifications"], (
-          old: {
-            notifications: ServerNotification[];
-            total: number;
-            unreadCount: number;
-          } | undefined,
-        ) => {
-          if (!old) return old;
-          return {
-            ...old,
-            total: old.total - 1,
-            notifications: old.notifications.filter((n) => n.id !== "notif-1"),
-          };
-        });
+      // Manually update cache to simulate optimistic update (as the component would do)
+      queryClient.setQueryData(["notifications"], (
+        old: {
+          notifications: ServerNotification[];
+          total: number;
+          unreadCount: number;
+        } | undefined,
+      ) => {
+        if (!old) return old;
+        return {
+          ...old,
+          total: old.total - 1,
+          notifications: old.notifications.filter((n) => n.id !== "notif-1"),
+        };
       });
 
+      // Check that optimistic update was applied correctly
       const cachedData = queryClient.getQueryData<{
         notifications: ServerNotification[];
         total: number;
@@ -575,6 +568,7 @@ describe("NotificationsScreen", () => {
 
       expect(cachedData?.total).toBe(1);
       expect(cachedData?.notifications.length).toBe(1);
+      expect(mockNotificationsService.deleteNotification).toHaveBeenCalledWith("notif-1");
     });
   });
 

@@ -3,7 +3,7 @@
  * Prevents winter runtime issues in tests
  */
 
-export function registerRootComponent(component: React.ComponentType): void {
+export function registerRootComponent(_component: React.ComponentType): void {
   // No-op in tests
 }
 

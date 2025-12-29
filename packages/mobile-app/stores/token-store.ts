@@ -123,6 +123,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
     // Clear existing interval
     if (regenInterval) {
       clearInterval(regenInterval);
+      regenInterval = null;
     }
 
     // Update timer every second
@@ -161,3 +162,12 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
     }
   },
 }));
+
+// For testing purposes only - export a function to reset the interval
+// This ensures the module-level variable is properly cleaned up between tests
+export const _resetRegenInterval = () => {
+  if (regenInterval) {
+    clearInterval(regenInterval);
+    regenInterval = null;
+  }
+};

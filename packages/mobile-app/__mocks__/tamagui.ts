@@ -7,7 +7,7 @@ import { Image, Pressable, ScrollView, Text, TextInput, View } from "react-nativ
 
 // Create mock components that pass through to React Native equivalents
 const createMockComponent = (name: string, Component: React.ComponentType<any> = View) => {
-  const MockComponent = React.forwardRef((props: any, ref: any) => {
+  const MockComponent = React.forwardRef((props: Record<string, any>, ref: any) => {
     return React.createElement(Component, { ...props, ref, testID: props.testID || name });
   });
   MockComponent.displayName = name;
@@ -95,7 +95,7 @@ export const useThemeName = jest.fn(() => "dark");
 
 // Styling utilities
 export const styled = (Component: any) => {
-  const StyledComponent = React.forwardRef((props: any, ref: any) => {
+  const StyledComponent = React.forwardRef((props: Record<string, any>, ref: any) => {
     return React.createElement(Component, { ...props, ref });
   });
   StyledComponent.displayName = `styled(${Component.displayName || Component.name || "Component"})`;
@@ -110,9 +110,9 @@ export const getTokens = jest.fn(() => ({
   zIndex: {},
 }));
 
-export const getToken = jest.fn((name: string, fallback?: any) => fallback);
-export const getVariable = jest.fn((name: string, fallback?: any) => fallback);
-export const getVariableValue = jest.fn((name: string, fallback?: any) => fallback);
+export const getToken = jest.fn((_name: string, fallback?: any) => fallback);
+export const getVariable = jest.fn((_name: string, fallback?: any) => fallback);
+export const getVariableValue = jest.fn((_name: string, fallback?: any) => fallback);
 
 // Config utilities
 export const createTamagui = jest.fn((config: any) => config);

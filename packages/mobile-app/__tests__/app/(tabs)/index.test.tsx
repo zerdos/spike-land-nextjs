@@ -3,14 +3,18 @@
  * Ensures all landing components are rendered and integrated correctly
  */
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import { router } from "expo-router";
+import React from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
+
+const mockReact = React;
+const mockRN = { View, Text, Pressable, TextInput };
 
 // Mock @expo/vector-icons before any imports that use it
 jest.mock("@expo/vector-icons", () => {
-  const { View } = require("react-native");
   return {
-    Ionicons: View,
+    Ionicons: mockRN.View,
   };
 });
 
@@ -56,38 +60,35 @@ jest.mock("expo-router", () => {
 // Mock the components
 jest.mock("@/components/HeroSection", () => ({
   HeroSection: ({ testID }: { testID?: string; }) => {
-    const { View, Text, Pressable } = require("react-native");
     return (
-      <View testID={testID}>
-        <Text>AI Photo</Text>
-        <Text>Restoration</Text>
-        <Pressable testID={`${testID}-cta`}>
-          <Text>Start Enhancing</Text>
-        </Pressable>
-      </View>
+      <mockRN.View testID={testID}>
+        <mockRN.Text>AI Photo</mockRN.Text>
+        <mockRN.Text>Restoration</mockRN.Text>
+        <mockRN.Pressable testID={`${testID}-cta`}>
+          <mockRN.Text>Start Enhancing</mockRN.Text>
+        </mockRN.Pressable>
+      </mockRN.View>
     );
   },
 }));
 
 jest.mock("@/components/BeforeAfterSlider", () => ({
   BeforeAfterSlider: ({ testID }: { testID?: string; }) => {
-    const { View, Text } = require("react-native");
     return (
-      <View testID={testID}>
-        <Text>Before</Text>
-        <Text>After</Text>
-      </View>
+      <mockRN.View testID={testID}>
+        <mockRN.Text>Before</mockRN.Text>
+        <mockRN.Text>After</mockRN.Text>
+      </mockRN.View>
     );
   },
 }));
 
 jest.mock("@/components/FeatureCard", () => ({
   FeatureCard: ({ title, testID }: { title: string; testID?: string; }) => {
-    const { View, Text } = require("react-native");
     return (
-      <View testID={testID}>
-        <Text>{title}</Text>
-      </View>
+      <mockRN.View testID={testID}>
+        <mockRN.Text>{title}</mockRN.Text>
+      </mockRN.View>
     );
   },
   createFeatureCards: () => [
@@ -100,7 +101,6 @@ jest.mock("@/components/FeatureCard", () => ({
 
 // Override Tamagui Button mock to properly render text children
 jest.mock("tamagui", () => {
-  const { View, Text, Pressable, TextInput } = require("react-native");
   return {
     styled: jest.fn((component: unknown) => component),
     createTamagui: jest.fn(() => ({})),
@@ -117,49 +117,49 @@ jest.mock("tamagui", () => {
       lg: true,
     })),
     // Component mocks
-    View,
-    Text,
-    Stack: View,
-    XStack: View,
-    YStack: View,
-    ZStack: View,
+    View: mockRN.View,
+    Text: mockRN.Text,
+    Stack: mockRN.View,
+    XStack: mockRN.View,
+    YStack: mockRN.View,
+    ZStack: mockRN.View,
     Button: ({ children, onPress }: { children: React.ReactNode; onPress?: () => void; }) => (
-      <Pressable onPress={onPress}>
-        <Text>{children}</Text>
-      </Pressable>
+      <mockRN.Pressable onPress={onPress}>
+        <mockRN.Text>{children}</mockRN.Text>
+      </mockRN.Pressable>
     ),
-    Input: TextInput,
-    Label: Text,
-    H1: Text,
-    H2: Text,
-    H3: Text,
-    H4: Text,
-    Paragraph: Text,
-    Card: View,
-    Separator: View,
-    ScrollView: View,
+    Input: mockRN.TextInput,
+    Label: mockRN.Text,
+    H1: mockRN.Text,
+    H2: mockRN.Text,
+    H3: mockRN.Text,
+    H4: mockRN.Text,
+    Paragraph: mockRN.Text,
+    Card: mockRN.View,
+    Separator: mockRN.View,
+    ScrollView: mockRN.View,
     Sheet: {
-      Frame: View,
-      Overlay: View,
-      Handle: View,
-      ScrollView: View,
+      Frame: mockRN.View,
+      Overlay: mockRN.View,
+      Handle: mockRN.View,
+      ScrollView: mockRN.View,
     },
     Dialog: {
-      Trigger: Pressable,
-      Portal: View,
-      Overlay: View,
-      Content: View,
-      Title: Text,
-      Description: Text,
-      Close: Pressable,
+      Trigger: mockRN.Pressable,
+      Portal: mockRN.View,
+      Overlay: mockRN.View,
+      Content: mockRN.View,
+      Title: mockRN.Text,
+      Description: mockRN.Text,
+      Close: mockRN.Pressable,
     },
     Spinner: () => null,
     Avatar: {
-      Image: View,
-      Fallback: Text,
+      Image: mockRN.View,
+      Fallback: mockRN.Text,
     },
-    Progress: Object.assign(View, {
-      Indicator: View,
+    Progress: Object.assign(mockRN.View, {
+      Indicator: mockRN.View,
     }),
     getTokens: jest.fn(() => ({
       color: {},
