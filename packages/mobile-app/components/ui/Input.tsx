@@ -299,5 +299,3 @@ Input.displayName = "Input";
 // ============================================================================
 
 export { IconContainer, InputContainer, InputHelperText, InputLabel, InputWrapper };
-
-export default Input;

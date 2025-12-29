@@ -34,13 +34,35 @@
         "eslint-plugin-react",
         "eslint-plugin-react-hooks",
         "typescript-eslint",
-        "@workflow/core",
         "eslint-config-next"
       ],
       "paths": {
         "@/*": ["./src/*"],
         "@apps/*": ["./apps/*"]
       }
+    },
+    "packages/mobile-app": {
+      "entry": [
+        "app/**/*.tsx",
+        "app.json"
+      ],
+      "project": ["**/*.{ts,tsx}"],
+      "ignore": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.web.ts",
+        "__mocks__/**"
+      ],
+      "ignoreDependencies": [
+        "@babel/core",
+        "expo-camera",
+        "zod"
+      ]
+    },
+    "packages/shared": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["dist/**"]
     }
   }
 }

@@ -258,5 +258,3 @@ export function useImagePicker(
     removeImage,
   };
 }
-
-export default useImagePicker;

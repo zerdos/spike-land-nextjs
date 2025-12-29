@@ -246,5 +246,3 @@ function TokensDisplay({ value, animationDuration }: TokensDisplayProps) {
     </H3>
   );
 }
-
-export default ReferralStats;

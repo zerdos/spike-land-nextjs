@@ -227,5 +227,3 @@ export function usePushNotifications(
     clearNotification,
   };
 }
-
-export default usePushNotifications;

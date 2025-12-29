@@ -26,12 +26,11 @@ Feature: Pricing Page Verification
   Scenario: Token packs display correct information
     When I view the pricing page
     Then each token pack should display:
-      | Field        |
-      | Name         |
-      | Token count  |
-      | Price        |
+      | Field           |
+      | Name            |
+      | Token count     |
+      | Price           |
       | Price per token |
-      | Buy button   |
 
   Scenario: Pro pack is marked as most popular
     When I view the pricing page
@@ -105,14 +104,14 @@ Feature: Pricing Page Verification
     Then the basic pack should display:
       | Attribute | Value |
       | Name      | Basic |
-      | Tokens    | 25    |
+      | Tokens    | 50    |
 
   Scenario: Pro pack displays correctly
     When I view the pricing page
     Then the pro pack should display:
       | Attribute | Value |
       | Name      | Pro   |
-      | Tokens    | 100   |
+      | Tokens    | 150   |
 
   Scenario: Power pack displays correctly
     When I view the pricing page

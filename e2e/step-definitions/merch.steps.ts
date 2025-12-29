@@ -849,8 +849,21 @@ Then("I should see the Stripe payment element", async function(this: CustomWorld
   // In E2E tests with mocked API, Stripe Elements may not fully load
   // Check for the payment section which indicates we're on the payment step
   // This verifies the checkout flow transitioned correctly
-  const paymentHeading = this.page.getByRole("heading", { name: /Payment/i });
-  await expect(paymentHeading).toBeVisible({ timeout: 10000 });
+
+  // First wait for the API call to complete and UI to update
+  // The "Continue to Payment" button should show loading state then disappear
+  try {
+    await this.page.waitForSelector("text=Processing...", {
+      state: "hidden",
+      timeout: 15000,
+    });
+  } catch {
+    // May already be past processing state
+  }
+
+  // Look for Payment text - it's inside a CardTitle (which is a div, not a heading element)
+  const paymentTitle = this.page.getByText("Payment", { exact: true });
+  await expect(paymentTitle).toBeVisible({ timeout: 15000 });
 
   // Also check that the form is rendered (Elements wrapper is present)
   const paymentForm = this.page.locator("form");
@@ -867,13 +880,13 @@ Then("I should see payment security message", async function(this: CustomWorld) 
   } catch {
     // If security message is not visible (Stripe Elements failed to load),
     // verify we're on the payment step at minimum
-    const paymentHeading = this.page.getByRole("heading", { name: /Payment/i });
-    await expect(paymentHeading).toBeVisible({ timeout: 5000 });
+    const paymentTitle = this.page.getByText("Payment", { exact: true });
+    await expect(paymentTitle).toBeVisible({ timeout: 5000 });
     this.attach(
       JSON.stringify({
         note:
           "Security message not visible - Stripe Elements may not have fully loaded with mock clientSecret",
-        fallbackVerification: "Payment heading visible",
+        fallbackVerification: "Payment title visible",
       }),
       "application/json",
     );
@@ -888,8 +901,8 @@ Then("I should see the lock icon", async function(this: CustomWorld) {
     await expect(lockIcon).toBeVisible({ timeout: 10000 });
   } catch {
     // Fallback: verify we're on the payment step
-    const paymentHeading = this.page.getByRole("heading", { name: /Payment/i });
-    await expect(paymentHeading).toBeVisible({ timeout: 5000 });
+    const paymentTitle = this.page.getByText("Payment", { exact: true });
+    await expect(paymentTitle).toBeVisible({ timeout: 5000 });
     this.attach(
       JSON.stringify({
         note:

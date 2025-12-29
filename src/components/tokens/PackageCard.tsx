@@ -30,6 +30,7 @@ export function PackageCard(
 ) {
   return (
     <div
+      data-package-id={id}
       className={cn(
         "relative rounded-2xl p-6 text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl",
         gradient,
