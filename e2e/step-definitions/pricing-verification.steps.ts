@@ -13,8 +13,12 @@ When("I view the pricing page", async function(this: CustomWorld) {
   // This ensures hydration is complete
   const allPackageCards = this.page.locator('[data-testid^="package-card-"]');
   await expect(allPackageCards).toHaveCount(4, { timeout: TIMEOUTS.DEFAULT });
-  // Wait for network idle to ensure all data is loaded
-  await this.page.waitForLoadState("networkidle");
+  // Wait for a specific package card content to ensure React has fully rendered
+  // This is more reliable than networkidle which can timeout on analytics/polling
+  const proCard = this.page.locator('[data-testid="package-card-pro"]');
+  await expect(proCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  // Verify card has content (not just placeholder)
+  await expect(proCard.getByText(/Pro/i)).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 When(
