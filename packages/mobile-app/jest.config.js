@@ -5,10 +5,8 @@
 
 /** @type {import('jest').Config} */
 const config = {
-  // Use jest-expo preset
-  preset: "jest-expo",
-  // Set test environment to node to avoid winter runtime issues
-  testEnvironment: "node",
+  // Use react-native preset with custom setup
+  preset: "react-native",
 
   // Setup file for mocks and test utilities
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
