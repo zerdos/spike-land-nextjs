@@ -172,6 +172,10 @@ function RootLayoutNav() {
                 name="notifications"
                 options={{ title: "Notifications", headerShown: true }}
               />
+              <Stack.Screen
+                name="storybook"
+                options={{ headerShown: false }}
+              />
             </Stack>
           </ThemeProvider>
         </TamaguiProvider>

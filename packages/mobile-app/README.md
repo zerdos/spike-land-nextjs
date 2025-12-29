@@ -125,6 +125,7 @@ packages/mobile-app/
 │   ├── settings/           # App settings
 │   ├── tokens/             # Token management
 │   └── voucher/            # Voucher redemption
+│   └── storybook/          # Design system storybook (17 sections)
 │
 ├── components/             # Reusable UI components
 │   ├── ui/                 # Base UI components
@@ -168,14 +169,62 @@ packages/mobile-app/
 
 ## Development Commands
 
-| Command        | Description                        |
-| -------------- | ---------------------------------- |
-| `yarn start`   | Start Expo dev server with QR code |
-| `yarn ios`     | Start on iOS Simulator             |
-| `yarn android` | Start on Android Emulator          |
-| `yarn web`     | Start in web browser               |
-| `yarn lint`    | Run ESLint                         |
-| `yarn test`    | Run Jest tests                     |
+| Command         | Description                        |
+| --------------- | ---------------------------------- |
+| `yarn start`    | Start Expo dev server with QR code |
+| `yarn ios`      | Start on iOS Simulator             |
+| `yarn android`  | Start on Android Emulator          |
+| `yarn web`      | Start in web browser               |
+| `yarn lint`     | Run ESLint                         |
+| `yarn test`     | Run Jest tests with coverage       |
+| `yarn test:run` | Run Jest tests without coverage    |
+
+---
+
+## Testing
+
+The mobile app has comprehensive test coverage using Jest and `@testing-library/react-native`.
+
+### Test Structure
+
+```
+__tests__/
+├── app/
+│   └── storybook/     # Storybook page tests (18 files, 224+ tests)
+│       ├── index.test.tsx
+│       ├── brand.test.tsx
+│       ├── colors.test.tsx
+│       ├── typography.test.tsx
+│       ├── surfaces.test.tsx
+│       ├── buttons.test.tsx
+│       ├── components.test.tsx
+│       ├── comparison.test.tsx
+│       ├── data-display.test.tsx
+│       ├── layout.test.tsx
+│       ├── feedback.test.tsx
+│       ├── loading.test.tsx
+│       ├── modals.test.tsx
+│       ├── accessibility.test.tsx
+│       ├── merch.test.tsx
+│       ├── photo-mix.test.tsx
+│       ├── auth.test.tsx
+│       └── errors.test.tsx
+├── hooks/              # Custom hook tests
+└── services/           # Service tests
+```
+
+### Running Tests
+
+```bash
+# Run all tests with coverage
+yarn test
+
+# Run specific test file
+yarn test:run __tests__/app/storybook/buttons.test.tsx
+
+# Run storybook tests only
+yarn test:run __tests__/app/storybook/
+```
 
 ---
 
@@ -352,6 +401,39 @@ export PATH=$PATH:$ANDROID_HOME/platform-tools
 # Rebuild shared package
 cd packages/shared && yarn build
 ```
+
+---
+
+## Design System Storybook
+
+The mobile app includes a comprehensive design system storybook at `/storybook` route, mirroring the web app's storybook at [localhost:3000/storybook](http://localhost:3000/storybook/components).
+
+### Accessing the Storybook
+
+```bash
+# Start the Expo web server
+cd packages/mobile-app
+yarn web
+
+# Navigate to http://localhost:8081/storybook
+```
+
+### Storybook Sections (17 total)
+
+| Category   | Sections                            |
+| ---------- | ----------------------------------- |
+| Foundation | Brand, Colors, Typography, Surfaces |
+| Actions    | Buttons                             |
+| Elements   | Components, Comparison              |
+| Data       | Data Display                        |
+| Structure  | Layout                              |
+| Status     | Feedback, Loading                   |
+| Overlays   | Modals                              |
+| Principles | Accessibility                       |
+| Features   | Merch, PhotoMix                     |
+| Systems    | Auth, Errors                        |
+
+Each section demonstrates React Native components with proper styling matching the spike.land design system.
 
 ---
 

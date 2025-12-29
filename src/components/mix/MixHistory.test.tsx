@@ -90,7 +90,7 @@ describe("MixHistory", () => {
 
     render(<MixHistory {...defaultProps} />);
 
-    expect(screen.getByText("No mixes yet. Create your first mix above.")).toBeInTheDocument();
+    expect(screen.getByText("No mixes yet. Create your first blend above.")).toBeInTheDocument();
   });
 
   it("renders list of mixes", () => {
@@ -149,8 +149,8 @@ describe("MixHistory", () => {
     expect(screen.getByAltText("Target 2")).toBeInTheDocument();
     expect(screen.queryByAltText("Mix result")).not.toBeInTheDocument();
 
-    // Should show spinner placeholder
-    const spinner = document.querySelector(".animate-spin");
-    expect(spinner).toBeInTheDocument();
+    // Should show pulse animation placeholder
+    const pulseAnimation = document.querySelector(".animate-pulse-cyan");
+    expect(pulseAnimation).toBeInTheDocument();
   });
 });
