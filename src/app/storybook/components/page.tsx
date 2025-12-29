@@ -338,8 +338,8 @@ export default function ComponentsPage() {
 
           <div className="space-y-10">
             <ComponentSample title="Selections" description="Checkbox, Radio, and Switch controls.">
-              <div className="w-full max-w-sm space-y-8">
-                <div className="flex flex-wrap gap-8">
+              <div className="w-full max-w-sm space-y-10">
+                <div className="flex flex-wrap gap-10">
                   <div className="flex items-center space-x-3">
                     <Checkbox id="c1" defaultChecked />
                     <Label htmlFor="c1">Active</Label>
@@ -352,7 +352,7 @@ export default function ComponentsPage() {
 
                 <Separator className="opacity-10" />
 
-                <RadioGroup defaultValue="option-1">
+                <RadioGroup defaultValue="option-1" className="flex flex-row gap-8">
                   <div className="flex items-center space-x-3">
                     <RadioGroupItem value="option-1" id="r1" />
                     <Label htmlFor="r1">Standard Enhancement</Label>
@@ -363,7 +363,7 @@ export default function ComponentsPage() {
                   </div>
                 </RadioGroup>
 
-                <div className="space-y-2 pt-2">
+                <div className="space-y-4 pt-4">
                   <Label>Platform Tier</Label>
                   <Select defaultValue="hobby">
                     <SelectTrigger className="glass-input">
