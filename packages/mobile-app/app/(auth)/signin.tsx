@@ -137,17 +137,19 @@ export default function SignInScreen() {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <YStack flex={1} justifyContent="center" padding="$4" backgroundColor="$background">
+        <YStack flex={1} justifyContent="center" padding="$4" backgroundColor="#08080C">
           <Card
             elevate
             size="$4"
             bordered
             paddingHorizontal="$4"
             paddingVertical="$6"
+            backgroundColor="#0d1117"
+            borderColor="#21262d"
           >
             {/* Header */}
             <YStack space="$2" alignItems="center" marginBottom="$6">
-              <H2 fontWeight="bold">Welcome to Spike Land</H2>
+              <H2 fontWeight="bold" color="white">Welcome to Spike Land</H2>
               <Paragraph color="$gray11" textAlign="center">
                 {step === "email"
                   ? "Sign in to restore your photos"
@@ -179,21 +181,23 @@ export default function SignInScreen() {
                       <Button
                         key={provider.id}
                         size="$4"
-                        backgroundColor="$gray2"
-                        borderColor="$gray6"
+                        backgroundColor="#161b22"
+                        borderColor="#30363d"
                         borderWidth={1}
-                        pressStyle={{ backgroundColor: "$gray4" }}
+                        pressStyle={{ backgroundColor: "#21262d" }}
                         onPress={() => handleOAuthSignIn(provider.id)}
                         disabled={isLoading}
-                        icon={isLoading ? <ActivityIndicator size="small" /> : (
-                          <Ionicons
-                            name={provider.icon}
-                            size={20}
-                            color={provider.color}
-                          />
-                        )}
+                        icon={isLoading
+                          ? <ActivityIndicator size="small" color="white" />
+                          : (
+                            <Ionicons
+                              name={provider.icon}
+                              size={20}
+                              color={provider.id === "apple" ? "#FFFFFF" : provider.color}
+                            />
+                          )}
                       >
-                        <Text fontWeight="500">Continue with {provider.name}</Text>
+                        <Text fontWeight="500" color="white">Continue with {provider.name}</Text>
                       </Button>
                     ))}
                   </YStack>
@@ -219,16 +223,21 @@ export default function SignInScreen() {
                       onChangeText={setEmail}
                       onSubmitEditing={handleEmailContinue}
                       returnKeyType="next"
+                      backgroundColor="#161b22"
+                      borderColor="#30363d"
+                      color="white"
+                      placeholderTextColor="#6e7681"
                     />
                     <Button
                       size="$4"
-                      theme="active"
+                      backgroundColor="#00E5FF"
+                      pressStyle={{ backgroundColor: "#00B8CC" }}
                       onPress={handleEmailContinue}
                       disabled={isLoading || emailCheckLoading}
                       icon={emailCheckLoading
-                        ? <ActivityIndicator size="small" color="white" />
+                        ? <ActivityIndicator size="small" color="#001830" />
                         : undefined}
-                      color="white"
+                      color="#001830"
                       fontWeight="600"
                     >
                       Continue
@@ -237,9 +246,9 @@ export default function SignInScreen() {
 
                   {/* Sign up link */}
                   <XStack justifyContent="center" space="$2" marginTop="$4">
-                    <Text color="$gray11">Don't have an account?</Text>
+                    <Text color="#8b949e">Don't have an account?</Text>
                     <Link href="/(auth)/signup" asChild>
-                      <Text color="$blue10" fontWeight="600" pressStyle={{ opacity: 0.7 }}>
+                      <Text color="#00E5FF" fontWeight="600" pressStyle={{ opacity: 0.7 }}>
                         Sign up
                       </Text>
                     </Link>
@@ -253,10 +262,10 @@ export default function SignInScreen() {
                     size="$3"
                     chromeless
                     onPress={handleBackToEmail}
-                    icon={<Ionicons name="arrow-back" size={18} color="#666" />}
+                    icon={<Ionicons name="arrow-back" size={18} color="#8b949e" />}
                     alignSelf="flex-start"
                   >
-                    <Text color="$gray11">Change email</Text>
+                    <Text color="#8b949e">Change email</Text>
                   </Button>
 
                   {/* Password input */}
@@ -271,16 +280,21 @@ export default function SignInScreen() {
                       onSubmitEditing={handlePasswordSignIn}
                       returnKeyType="done"
                       autoFocus
+                      backgroundColor="#161b22"
+                      borderColor="#30363d"
+                      color="white"
+                      placeholderTextColor="#6e7681"
                     />
                     <Button
                       size="$4"
-                      theme="active"
+                      backgroundColor="#00E5FF"
+                      pressStyle={{ backgroundColor: "#00B8CC" }}
                       onPress={handlePasswordSignIn}
                       disabled={isLoading}
                       icon={isLoading
-                        ? <ActivityIndicator size="small" color="white" />
+                        ? <ActivityIndicator size="small" color="#001830" />
                         : undefined}
-                      color="white"
+                      color="#001830"
                       fontWeight="600"
                     >
                       Sign In
@@ -290,7 +304,7 @@ export default function SignInScreen() {
                   {/* Forgot password link */}
                   <XStack justifyContent="center" marginTop="$2">
                     <Link href="/(auth)/forgot-password" asChild>
-                      <Text color="$blue10" fontWeight="500" pressStyle={{ opacity: 0.7 }}>
+                      <Text color="#00E5FF" fontWeight="500" pressStyle={{ opacity: 0.7 }}>
                         Forgot password?
                       </Text>
                     </Link>
@@ -300,7 +314,7 @@ export default function SignInScreen() {
 
             {/* Footer */}
             <YStack alignItems="center" marginTop="$6" space="$2">
-              <Paragraph color="$gray10" fontSize="$1" textAlign="center">
+              <Paragraph color="#6e7681" fontSize="$1" textAlign="center">
                 By continuing, you agree to our Terms of Service and Privacy Policy.
               </Paragraph>
             </YStack>

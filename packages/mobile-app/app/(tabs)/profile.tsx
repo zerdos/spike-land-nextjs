@@ -58,9 +58,9 @@ export default function ProfileScreen() {
   // Loading state
   if (isLoading) {
     return (
-      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="$background">
-        <ActivityIndicator size="large" />
-        <Text marginTop="$4" color="$gray11">
+      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="#08080C">
+        <ActivityIndicator size="large" color="#00E5FF" />
+        <Text marginTop="$4" color="#8b949e">
           Loading...
         </Text>
       </YStack>
@@ -70,29 +70,38 @@ export default function ProfileScreen() {
   // Not authenticated state
   if (!isAuthenticated || !user) {
     return (
-      <YStack flex={1} justifyContent="center" padding="$4" backgroundColor="$background">
-        <Card elevate size="$4" bordered padding="$6" alignItems="center">
-          <Ionicons name="person-circle-outline" size={80} color="#999" />
-          <H3 marginTop="$4" textAlign="center">
+      <YStack flex={1} justifyContent="center" padding="$4" backgroundColor="#08080C">
+        <Card
+          elevate
+          size="$4"
+          bordered
+          padding="$6"
+          alignItems="center"
+          backgroundColor="#0d1117"
+          borderColor="#21262d"
+        >
+          <Ionicons name="person-circle-outline" size={80} color="#6e7681" />
+          <H3 marginTop="$4" textAlign="center" color="white">
             Sign in to your account
           </H3>
-          <Paragraph color="$gray11" textAlign="center" marginTop="$2">
+          <Paragraph color="#8b949e" textAlign="center" marginTop="$2">
             Access your photos, settings, and more
           </Paragraph>
           <Button
             size="$4"
-            theme="active"
+            backgroundColor="#00E5FF"
+            pressStyle={{ backgroundColor: "#00B8CC" }}
             onPress={handleSignIn}
             marginTop="$6"
             width="100%"
           >
-            <Text color="white" fontWeight="600">
+            <Text color="#001830" fontWeight="600">
               Sign In
             </Text>
           </Button>
           <Link href="/(auth)/signup" asChild>
             <Button size="$4" chromeless marginTop="$2" width="100%">
-              <Text color="$blue10" fontWeight="500">
+              <Text color="#00E5FF" fontWeight="500">
                 Create Account
               </Text>
             </Button>
