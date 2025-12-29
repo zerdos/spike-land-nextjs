@@ -302,5 +302,3 @@ export {
   CardHeaderFrame,
   CardTitleText,
 };
-
-export default Card;

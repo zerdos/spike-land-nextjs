@@ -132,5 +132,3 @@ export function useReferralStats(
     hasMoreUsers,
   };
 }
-
-export default useReferralStats;

@@ -95,6 +95,8 @@ Given(
     await mockVoucherRedemption(this, {
       [voucherCode]: { tokens: 50, alreadyRedeemed: true },
     });
+    // Mark that we've set up the voucher mock to prevent overwriting
+    (this as unknown as { voucherMockSet?: boolean; }).voucherMockSet = true;
   },
 );
 
@@ -117,14 +119,18 @@ When("I open the purchase modal", async function(this: CustomWorld) {
 When(
   "I enter the voucher code {string}",
   async function(this: CustomWorld, code: string) {
-    // Mock voucher API with valid codes
-    await mockVoucherRedemption(this, {
-      "LAUNCH100": { tokens: 100 },
-      "WELCOME50": { tokens: 50 },
-      "REFRESH50": { tokens: 50 },
-      "TESTCODE": { tokens: 10 },
-      "lowercase": { tokens: 25 },
-    });
+    // Only mock if not already mocked (to preserve alreadyRedeemed status from Given steps)
+    // Check if we have an existing mock by checking world state
+    if (!(this as unknown as { voucherMockSet?: boolean; }).voucherMockSet) {
+      // Mock voucher API with valid codes
+      await mockVoucherRedemption(this, {
+        "LAUNCH100": { tokens: 100 },
+        "WELCOME50": { tokens: 50 },
+        "REFRESH50": { tokens: 50 },
+        "TESTCODE": { tokens: 10 },
+        "lowercase": { tokens: 25 },
+      });
+    }
 
     const input = this.page.locator("input#voucher-code");
     await expect(input).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
@@ -154,15 +160,14 @@ When(
     // Mock Stripe checkout
     await mockStripeCheckout(this);
 
-    // Find and click the package card
-    // Packages have a Select button
-    const packageCard = this.page.locator(`[data-package-id="${packageId}"]`)
-      .or(
-        this.page.locator("button").filter({ hasText: "Select" }).first(),
-      );
-
+    // Find the package card by data-package-id, then click its Buy Now button
+    const packageCard = this.page.locator(`[data-package-id="${packageId}"]`);
     await expect(packageCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    await packageCard.click();
+
+    // Click the Buy Now button within this specific package card
+    const buyButton = packageCard.locator("button").filter({ hasText: /Buy Now/i });
+    await expect(buyButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await buyButton.click();
 
     // Wait for navigation to Stripe checkout
     await this.page.waitForURL(/stripe|checkout/i, { timeout: TIMEOUTS.LONG });
@@ -267,8 +272,9 @@ Then(
   "I should see an error message for the voucher",
   async function(this: CustomWorld) {
     // Look for alert with error styling
+    // Match both mock ("has already been redeemed") and real API ("have already redeemed")
     const errorAlert = this.page.locator('[role="alert"]').filter({
-      hasText: /(Invalid|already been redeemed|error)/i,
+      hasText: /(Invalid|already.*redeem|error)/i,
     });
     await expect(errorAlert).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
