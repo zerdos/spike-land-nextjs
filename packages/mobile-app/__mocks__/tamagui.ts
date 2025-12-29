@@ -6,10 +6,17 @@ import React from "react";
 import { Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 // Create mock components that pass through to React Native equivalents
-const createMockComponent = (name: string, Component: React.ComponentType<any> = View) => {
-  const MockComponent = React.forwardRef((props: Record<string, any>, ref: any) => {
-    return React.createElement(Component, { ...props, ref, testID: props.testID || name });
-  });
+const createMockComponent = (
+  name: string,
+  Component: React.ComponentType<Record<string, unknown>> = View as React.ComponentType<
+    Record<string, unknown>
+  >,
+) => {
+  const MockComponent = React.forwardRef(
+    (props: Record<string, unknown>, ref: React.ForwardedRef<unknown>) => {
+      return React.createElement(Component, { ...props, ref, testID: props.testID || name });
+    },
+  );
   MockComponent.displayName = name;
   return MockComponent;
 };
@@ -21,20 +28,38 @@ export const YStack = createMockComponent("YStack");
 export const ZStack = createMockComponent("ZStack");
 
 // Text components
-export const SizableText = createMockComponent("SizableText", Text as any);
-export const Paragraph = createMockComponent("Paragraph", Text as any);
-export const Heading = createMockComponent("Heading", Text as any);
-export const H1 = createMockComponent("H1", Text as any);
-export const H2 = createMockComponent("H2", Text as any);
-export const H3 = createMockComponent("H3", Text as any);
-export const H4 = createMockComponent("H4", Text as any);
-export const H5 = createMockComponent("H5", Text as any);
-export const H6 = createMockComponent("H6", Text as any);
-export const Label = createMockComponent("Label", Text as any);
+export const SizableText = createMockComponent(
+  "SizableText",
+  Text as React.ComponentType<Record<string, unknown>>,
+);
+export const Paragraph = createMockComponent(
+  "Paragraph",
+  Text as React.ComponentType<Record<string, unknown>>,
+);
+export const Heading = createMockComponent(
+  "Heading",
+  Text as React.ComponentType<Record<string, unknown>>,
+);
+export const H1 = createMockComponent("H1", Text as React.ComponentType<Record<string, unknown>>);
+export const H2 = createMockComponent("H2", Text as React.ComponentType<Record<string, unknown>>);
+export const H3 = createMockComponent("H3", Text as React.ComponentType<Record<string, unknown>>);
+export const H4 = createMockComponent("H4", Text as React.ComponentType<Record<string, unknown>>);
+export const H5 = createMockComponent("H5", Text as React.ComponentType<Record<string, unknown>>);
+export const H6 = createMockComponent("H6", Text as React.ComponentType<Record<string, unknown>>);
+export const Label = createMockComponent(
+  "Label",
+  Text as React.ComponentType<Record<string, unknown>>,
+);
 
 // Input components
-export const Input = createMockComponent("Input", TextInput as any);
-export const TextArea = createMockComponent("TextArea", TextInput as any);
+export const Input = createMockComponent(
+  "Input",
+  TextInput as React.ComponentType<Record<string, unknown>>,
+);
+export const TextArea = createMockComponent(
+  "TextArea",
+  TextInput as React.ComponentType<Record<string, unknown>>,
+);
 
 // Interactive components
 export const Button = createMockComponent("Button", Pressable);
@@ -56,11 +81,17 @@ export const Tooltip = createMockComponent("Tooltip");
 export const Tabs = createMockComponent("Tabs");
 
 // Media components
-export const TamaguiImage = createMockComponent("Image", Image as any);
+export const TamaguiImage = createMockComponent(
+  "Image",
+  Image as React.ComponentType<Record<string, unknown>>,
+);
 export const Avatar = createMockComponent("Avatar");
 
 // Layout components
-export const ScrollViewBase = createMockComponent("ScrollView", ScrollView as any);
+export const ScrollViewBase = createMockComponent(
+  "ScrollView",
+  ScrollView as React.ComponentType<Record<string, unknown>>,
+);
 export const Spinner = createMockComponent("Spinner");
 export const Progress = createMockComponent("Progress");
 
@@ -94,10 +125,12 @@ export const useMedia = jest.fn(() => ({
 export const useThemeName = jest.fn(() => "dark");
 
 // Styling utilities
-export const styled = (Component: any) => {
-  const StyledComponent = React.forwardRef((props: Record<string, any>, ref: any) => {
-    return React.createElement(Component, { ...props, ref });
-  });
+export const styled = (Component: React.ComponentType<Record<string, unknown>>) => {
+  const StyledComponent = React.forwardRef(
+    (props: Record<string, unknown>, ref: React.ForwardedRef<unknown>) => {
+      return React.createElement(Component, { ...props, ref });
+    },
+  );
   StyledComponent.displayName = `styled(${Component.displayName || Component.name || "Component"})`;
   return StyledComponent;
 };
@@ -110,12 +143,12 @@ export const getTokens = jest.fn(() => ({
   zIndex: {},
 }));
 
-export const getToken = jest.fn((_name: string, fallback?: any) => fallback);
-export const getVariable = jest.fn((_name: string, fallback?: any) => fallback);
-export const getVariableValue = jest.fn((_name: string, fallback?: any) => fallback);
+export const getToken = jest.fn((_name: string, fallback?: unknown) => fallback);
+export const getVariable = jest.fn((_name: string, fallback?: unknown) => fallback);
+export const getVariableValue = jest.fn((_name: string, fallback?: unknown) => fallback);
 
 // Config utilities
-export const createTamagui = jest.fn((config: any) => config);
+export const createTamagui = jest.fn((config: Record<string, unknown>) => config);
 export const TamaguiProvider = ({ children }: { children: React.ReactNode; }) => children;
 
 // Default export

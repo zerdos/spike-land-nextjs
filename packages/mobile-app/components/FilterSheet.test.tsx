@@ -7,10 +7,10 @@
 // ============================================================================
 
 jest.mock("@tamagui/lucide-icons", () => {
-  const React = require("react");
-  const { View } = require("react-native");
+  const ReactActual = jest.requireActual("react");
+  const RN = jest.requireActual("react-native");
   // Must use React.createElement, not call View as a function
-  const MockIcon = (props: any) => React.createElement(View, props);
+  const MockIcon = (props: any) => ReactActual.createElement(RN.View, props);
   return {
     Calendar: MockIcon,
     Check: MockIcon,
@@ -59,13 +59,14 @@ jest.mock("@tamagui/lucide-icons", () => {
 // ============================================================================
 
 jest.mock("tamagui", () => {
-  const React = require("react");
-  const { View, Text, Pressable, TextInput, ScrollView } = require("react-native");
+  const ReactActual = jest.requireActual("react");
+  const RN = jest.requireActual("react-native");
+  const { View, Text, Pressable, TextInput, ScrollView } = RN;
 
   // Create Checkbox mock with Indicator subcomponent
-  const CheckboxComponent = React.forwardRef(
+  const CheckboxComponent = ReactActual.forwardRef(
     ({ children, testID, checked, onCheckedChange, ...props }: any, ref: any) => {
-      return React.createElement(
+      return ReactActual.createElement(
         Pressable,
         {
           ref,
@@ -79,17 +80,17 @@ jest.mock("tamagui", () => {
       );
     },
   );
-  CheckboxComponent.Indicator = (props: any) => React.createElement(View, props);
+  CheckboxComponent.Indicator = (props: any) => ReactActual.createElement(View, props);
 
   // Sheet mock with compound components
   const SheetComponent = ({ children, open, ...props }: any) => {
     if (!open) return null;
-    return React.createElement(View, props, children);
+    return ReactActual.createElement(View, props, children);
   };
-  SheetComponent.Frame = (props: any) => React.createElement(View, props);
+  SheetComponent.Frame = (props: any) => ReactActual.createElement(View, props);
   SheetComponent.Overlay = () => null;
   SheetComponent.Handle = () => null;
-  SheetComponent.ScrollView = (props: any) => React.createElement(ScrollView, props);
+  SheetComponent.ScrollView = (props: any) => ReactActual.createElement(ScrollView, props);
 
   return {
     styled: jest.fn((component: any) => component),
@@ -158,7 +159,7 @@ import type { Album } from "@spike-npm-land/shared";
 import { fireEvent, render } from "@testing-library/react-native";
 import React from "react";
 
-import type { ImageFilters, SortOption } from "../hooks/useImageSearch";
+import type { ImageFilters } from "../hooks/useImageSearch";
 import { FilterSheet, type FilterSheetProps } from "./FilterSheet";
 
 // ============================================================================

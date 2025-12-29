@@ -51,7 +51,7 @@ function getWhatsAppShareUrl(referralUrl: string): string {
 
 export function ShareButtons({
   referralUrl,
-  referralCode,
+  referralCode: _referralCode,
   onCopySuccess,
   onShareSuccess,
   onShareError,

@@ -4,6 +4,7 @@
 
 import { fireEvent, render } from "@testing-library/react-native";
 import React from "react";
+import { Text as RNText, TouchableOpacity, View as RNView } from "react-native";
 
 import { ReferredUser, ReferredUsersList } from "./ReferredUsersList";
 
@@ -18,14 +19,11 @@ jest.mock("tamagui", () => ({
     children: React.ReactNode;
     onPress?: () => void;
     testID?: string;
-  }) => {
-    const { TouchableOpacity, Text } = require("react-native");
-    return (
-      <TouchableOpacity onPress={onPress} testID={testID} {...props}>
-        <Text>{children}</Text>
-      </TouchableOpacity>
-    );
-  },
+  }) => (
+    <TouchableOpacity onPress={onPress} testID={testID} {...props}>
+      <RNText>{children}</RNText>
+    </TouchableOpacity>
+  ),
   Card: ({
     children,
     testID,
@@ -33,14 +31,11 @@ jest.mock("tamagui", () => ({
   }: {
     children: React.ReactNode;
     testID?: string;
-  }) => {
-    const { View } = require("react-native");
-    return (
-      <View testID={testID} {...props}>
-        {children}
-      </View>
-    );
-  },
+  }) => (
+    <RNView testID={testID} {...props}>
+      {children}
+    </RNView>
+  ),
   Paragraph: ({
     children,
     testID,
@@ -48,23 +43,17 @@ jest.mock("tamagui", () => ({
   }: {
     children: React.ReactNode;
     testID?: string;
-  }) => {
-    const { Text } = require("react-native");
-    return (
-      <Text testID={testID} {...props}>
-        {children}
-      </Text>
-    );
-  },
+  }) => (
+    <RNText testID={testID} {...props}>
+      {children}
+    </RNText>
+  ),
   Text: ({
     children,
     ...props
   }: {
     children: React.ReactNode;
-  }) => {
-    const { Text: RNText } = require("react-native");
-    return <RNText {...props}>{children}</RNText>;
-  },
+  }) => <RNText {...props}>{children}</RNText>,
   View: ({
     children,
     testID,
@@ -72,14 +61,11 @@ jest.mock("tamagui", () => ({
   }: {
     children?: React.ReactNode;
     testID?: string;
-  }) => {
-    const { View: RNView } = require("react-native");
-    return (
-      <RNView testID={testID} {...props}>
-        {children}
-      </RNView>
-    );
-  },
+  }) => (
+    <RNView testID={testID} {...props}>
+      {children}
+    </RNView>
+  ),
   XStack: ({
     children,
     testID,
@@ -87,14 +73,11 @@ jest.mock("tamagui", () => ({
   }: {
     children: React.ReactNode;
     testID?: string;
-  }) => {
-    const { View } = require("react-native");
-    return (
-      <View testID={testID} {...props}>
-        {children}
-      </View>
-    );
-  },
+  }) => (
+    <RNView testID={testID} {...props}>
+      {children}
+    </RNView>
+  ),
   YStack: ({
     children,
     testID,
@@ -102,14 +85,11 @@ jest.mock("tamagui", () => ({
   }: {
     children: React.ReactNode;
     testID?: string;
-  }) => {
-    const { View } = require("react-native");
-    return (
-      <View testID={testID} {...props}>
-        {children}
-      </View>
-    );
-  },
+  }) => (
+    <RNView testID={testID} {...props}>
+      {children}
+    </RNView>
+  ),
 }));
 
 // Mock Tamagui icons

@@ -5,6 +5,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
+import { Pressable, Text as RNText, TextInput, View } from "react-native";
 
 import { authService } from "@/services/auth";
 import { useAuthStore } from "@/stores/auth-store";
@@ -35,7 +36,6 @@ jest.mock("@expo/vector-icons", () => ({
 }));
 
 jest.mock("tamagui", () => {
-  const { View, Text: RNText, TextInput, Pressable } = require("react-native");
   return {
     Button: (
       { children, onPress, disabled, testID, ...props }: React.PropsWithChildren<

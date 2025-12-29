@@ -14,8 +14,8 @@ jest.mock("react-native-safe-area-context", () => ({
 
 // Mock Tamagui lucide icons - proper React component mocks
 jest.mock("@tamagui/lucide-icons", () => {
-  const React = require("react");
-  const { View } = require("react-native");
+  const React = jest.requireActual("react");
+  const { View } = jest.requireActual("react-native");
   const MockIcon = (props: any) => React.createElement(View, { testID: props.testID });
   return {
     Bell: MockIcon,
@@ -30,8 +30,8 @@ jest.mock("@tamagui/lucide-icons", () => {
 
 // Mock expo-router with Stack.Screen that renders headerRight
 jest.mock("expo-router", () => {
-  const React = require("react");
-  const { View } = require("react-native");
+  const React = jest.requireActual("react");
+  const { View } = jest.requireActual("react-native");
 
   const mockRouter = {
     push: jest.fn(),
@@ -68,13 +68,13 @@ jest.mock("expo-router", () => {
 // Mock NotificationItem component BEFORE importing the screen
 // This prevents loading react-native-reanimated from the component
 jest.mock("@/components/NotificationItem", () => {
-  const React = require("react");
-  const { View, Pressable, Text } = require("react-native");
+  const React = jest.requireActual("react");
+  const { View, Pressable, Text } = jest.requireActual("react-native");
 
   const MockNotificationItem = ({
     notification,
     onPress,
-    onDismiss,
+    _onDismiss,
     testID,
   }: {
     notification: { id: string; title: string; body: string; read: boolean; };

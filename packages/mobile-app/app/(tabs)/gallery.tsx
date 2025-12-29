@@ -27,7 +27,6 @@ import { FilterSheet } from "@/components/FilterSheet";
 import { ImageGrid } from "@/components/gallery";
 import { SearchBar } from "@/components/SearchBar";
 import { useGalleryStore } from "@/stores";
-import type { ImageFilters, SortOption } from "@/stores/gallery-store";
 
 // ============================================================================
 // Types

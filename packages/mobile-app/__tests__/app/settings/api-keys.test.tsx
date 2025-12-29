@@ -84,7 +84,9 @@ jest.mock("@/stores/settings-store", () => ({
 
 // Mock Tamagui components
 jest.mock("tamagui", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View, Text, TextInput, TouchableOpacity, Modal } = require("react-native");
 
   return {
@@ -175,7 +177,7 @@ describe("ApiKeysScreen", () => {
     it("should show loading indicator when auth is loading", () => {
       mockAuthStore.isLoading = true;
 
-      const { getByTestId } = render(<ApiKeysScreen />);
+      render(<ApiKeysScreen />);
 
       // ActivityIndicator doesn't have a testID by default, so we check it renders
       expect(mockAuthStore.isLoading).toBe(true);
@@ -346,7 +348,7 @@ describe("ApiKeysScreen", () => {
         },
       ];
 
-      const { getAllByTestId } = render(<ApiKeysScreen />);
+      render(<ApiKeysScreen />);
 
       // The copy button is rendered via icon prop
       // We need to find and trigger the copy action
@@ -499,7 +501,7 @@ describe("ApiKeysScreen", () => {
     it("should close dialog after successful creation", async () => {
       mockSettingsStore.createApiKey.mockResolvedValueOnce({ success: true });
 
-      const { getByText, getByTestId, queryByText } = render(<ApiKeysScreen />);
+      const { getByText, getByTestId } = render(<ApiKeysScreen />);
 
       fireEvent.press(getByText("Create API Key"));
 
@@ -573,7 +575,7 @@ describe("ApiKeysScreen", () => {
 
   describe("Navigation", () => {
     it("should navigate back when back button is pressed", () => {
-      const { getAllByRole } = render(<ApiKeysScreen />);
+      render(<ApiKeysScreen />);
 
       // Find and press the back button (first circular chromeless button)
       // Due to mock limitations, we'll verify router.back directly
@@ -602,7 +604,7 @@ describe("ApiKeysScreen", () => {
         },
       ];
 
-      const { getByTestId } = render(<ApiKeysScreen />);
+      render(<ApiKeysScreen />);
 
       // The refresh functionality is tied to the FlatList's RefreshControl
       // We verify that fetchApiKeys is callable

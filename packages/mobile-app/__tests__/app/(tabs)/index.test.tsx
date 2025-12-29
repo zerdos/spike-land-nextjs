@@ -6,15 +6,13 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { router } from "expo-router";
 import React from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
-
-const mockReact = React;
-const mockRN = { View, Text, Pressable, TextInput };
 
 // Mock @expo/vector-icons before any imports that use it
 jest.mock("@expo/vector-icons", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const RN = require("react-native");
   return {
-    Ionicons: mockRN.View,
+    Ionicons: RN.View,
   };
 });
 
@@ -58,49 +56,69 @@ jest.mock("expo-router", () => {
 });
 
 // Mock the components
-jest.mock("@/components/HeroSection", () => ({
-  HeroSection: ({ testID }: { testID?: string; }) => {
-    return (
-      <mockRN.View testID={testID}>
-        <mockRN.Text>AI Photo</mockRN.Text>
-        <mockRN.Text>Restoration</mockRN.Text>
-        <mockRN.Pressable testID={`${testID}-cta`}>
-          <mockRN.Text>Start Enhancing</mockRN.Text>
-        </mockRN.Pressable>
-      </mockRN.View>
-    );
-  },
-}));
+jest.mock("@/components/HeroSection", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const RN = require("react-native");
+  return {
+    HeroSection: ({ testID }: { testID?: string; }) => {
+      return React.createElement(
+        RN.View,
+        { testID },
+        React.createElement(RN.Text, null, "AI Photo"),
+        React.createElement(RN.Text, null, "Restoration"),
+        React.createElement(
+          RN.Pressable,
+          { testID: `${testID}-cta` },
+          React.createElement(RN.Text, null, "Start Enhancing"),
+        ),
+      );
+    },
+  };
+});
 
-jest.mock("@/components/BeforeAfterSlider", () => ({
-  BeforeAfterSlider: ({ testID }: { testID?: string; }) => {
-    return (
-      <mockRN.View testID={testID}>
-        <mockRN.Text>Before</mockRN.Text>
-        <mockRN.Text>After</mockRN.Text>
-      </mockRN.View>
-    );
-  },
-}));
+jest.mock("@/components/BeforeAfterSlider", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const RN = require("react-native");
+  return {
+    BeforeAfterSlider: ({ testID }: { testID?: string; }) => {
+      return React.createElement(
+        RN.View,
+        { testID },
+        React.createElement(RN.Text, null, "Before"),
+        React.createElement(RN.Text, null, "After"),
+      );
+    },
+  };
+});
 
-jest.mock("@/components/FeatureCard", () => ({
-  FeatureCard: ({ title, testID }: { title: string; testID?: string; }) => {
-    return (
-      <mockRN.View testID={testID}>
-        <mockRN.Text>{title}</mockRN.Text>
-      </mockRN.View>
-    );
-  },
-  createFeatureCards: () => [
-    { icon: null, title: "60-Second Magic", description: "Fast", variant: "purple" },
-    { icon: null, title: "Print-Ready 4K", description: "Quality", variant: "yellow" },
-    { icon: null, title: "Batch Albums", description: "Batch", variant: "blue" },
-    { icon: null, title: "Free Tokens", description: "Free", variant: "green" },
-  ],
-}));
+jest.mock("@/components/FeatureCard", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const RN = require("react-native");
+  return {
+    FeatureCard: ({ title, testID }: { title: string; testID?: string; }) => {
+      return React.createElement(RN.View, { testID }, React.createElement(RN.Text, null, title));
+    },
+    createFeatureCards: () => [
+      { icon: null, title: "60-Second Magic", description: "Fast", variant: "purple" },
+      { icon: null, title: "Print-Ready 4K", description: "Quality", variant: "yellow" },
+      { icon: null, title: "Batch Albums", description: "Batch", variant: "blue" },
+      { icon: null, title: "Free Tokens", description: "Free", variant: "green" },
+    ],
+  };
+});
 
 // Override Tamagui Button mock to properly render text children
 jest.mock("tamagui", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const RN = require("react-native");
   return {
     styled: jest.fn((component: unknown) => component),
     createTamagui: jest.fn(() => ({})),
@@ -117,49 +135,46 @@ jest.mock("tamagui", () => {
       lg: true,
     })),
     // Component mocks
-    View: mockRN.View,
-    Text: mockRN.Text,
-    Stack: mockRN.View,
-    XStack: mockRN.View,
-    YStack: mockRN.View,
-    ZStack: mockRN.View,
-    Button: ({ children, onPress }: { children: React.ReactNode; onPress?: () => void; }) => (
-      <mockRN.Pressable onPress={onPress}>
-        <mockRN.Text>{children}</mockRN.Text>
-      </mockRN.Pressable>
-    ),
-    Input: mockRN.TextInput,
-    Label: mockRN.Text,
-    H1: mockRN.Text,
-    H2: mockRN.Text,
-    H3: mockRN.Text,
-    H4: mockRN.Text,
-    Paragraph: mockRN.Text,
-    Card: mockRN.View,
-    Separator: mockRN.View,
-    ScrollView: mockRN.View,
+    View: RN.View,
+    Text: RN.Text,
+    Stack: RN.View,
+    XStack: RN.View,
+    YStack: RN.View,
+    ZStack: RN.View,
+    Button: ({ children, onPress }: { children: React.ReactNode; onPress?: () => void; }) =>
+      React.createElement(RN.Pressable, { onPress }, React.createElement(RN.Text, null, children)),
+    Input: RN.TextInput,
+    Label: RN.Text,
+    H1: RN.Text,
+    H2: RN.Text,
+    H3: RN.Text,
+    H4: RN.Text,
+    Paragraph: RN.Text,
+    Card: RN.View,
+    Separator: RN.View,
+    ScrollView: RN.View,
     Sheet: {
-      Frame: mockRN.View,
-      Overlay: mockRN.View,
-      Handle: mockRN.View,
-      ScrollView: mockRN.View,
+      Frame: RN.View,
+      Overlay: RN.View,
+      Handle: RN.View,
+      ScrollView: RN.View,
     },
     Dialog: {
-      Trigger: mockRN.Pressable,
-      Portal: mockRN.View,
-      Overlay: mockRN.View,
-      Content: mockRN.View,
-      Title: mockRN.Text,
-      Description: mockRN.Text,
-      Close: mockRN.Pressable,
+      Trigger: RN.Pressable,
+      Portal: RN.View,
+      Overlay: RN.View,
+      Content: RN.View,
+      Title: RN.Text,
+      Description: RN.Text,
+      Close: RN.Pressable,
     },
     Spinner: () => null,
     Avatar: {
-      Image: mockRN.View,
-      Fallback: mockRN.Text,
+      Image: RN.View,
+      Fallback: RN.Text,
     },
-    Progress: Object.assign(mockRN.View, {
-      Indicator: mockRN.View,
+    Progress: Object.assign(RN.View, {
+      Indicator: RN.View,
     }),
     getTokens: jest.fn(() => ({
       color: {},

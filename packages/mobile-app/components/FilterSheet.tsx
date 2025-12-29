@@ -6,7 +6,6 @@
 import type { Album } from "@spike-npm-land/shared";
 import { Calendar, Check, ChevronDown, RotateCcw } from "@tamagui/lucide-icons";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { StyleSheet } from "react-native";
 import {
   Button,
   Checkbox,
@@ -459,13 +458,5 @@ export function FilterSheet({
     </Sheet>
   );
 }
-
-// ============================================================================
-// Styles
-// ============================================================================
-
-const styles = StyleSheet.create({
-  // Reserved for future use
-});
 
 export default FilterSheet;

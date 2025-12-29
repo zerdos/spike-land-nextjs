@@ -5,6 +5,7 @@
 
 // Mock react-native-reanimated BEFORE any imports
 jest.mock("react-native-reanimated", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const RN = require("react-native");
   const AnimatedMock = {
     View: RN.View,
@@ -51,7 +52,9 @@ jest.mock("react-native-safe-area-context", () => ({
 
 // Mock tamagui with proper Button that wraps children in Text
 jest.mock("tamagui", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const RN = require("react-native");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react");
 
   // Custom Button component that wraps string children in Text
@@ -142,7 +145,6 @@ jest.mock("tamagui", () => {
 
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";
-import { Linking } from "react-native";
 
 import { useImageShare } from "@/hooks/useImageShare";
 import { ShareSheet } from "./ShareSheet";
@@ -248,7 +250,7 @@ describe("ShareSheet", () => {
       });
 
       const onActionComplete = jest.fn();
-      const { getByText, rerender } = render(
+      const { getByText } = render(
         <ShareSheet
           visible={true}
           imageId="img-123"
@@ -386,12 +388,10 @@ describe("ShareSheet", () => {
   describe("close behavior", () => {
     it("should call onClose when close button is pressed", () => {
       const onClose = jest.fn();
-      const { UNSAFE_getAllByType } = render(
+      render(
         <ShareSheet visible={true} imageId="img-123" onClose={onClose} />,
       );
 
-      // Find the close button (X icon button)
-      const buttons = UNSAFE_getAllByType("View");
       // The component uses Pressable which is mocked as View
       // We need to find the close functionality through the onClose callback
       expect(onClose).not.toHaveBeenCalled();
@@ -434,7 +434,7 @@ describe("ShareSheet", () => {
 
     it("should call onError callback", () => {
       const onError = jest.fn();
-      mockUseImageShare.mockImplementation(({ onError: errorCallback }) => {
+      mockUseImageShare.mockImplementation(({ onError: _errorCallback }) => {
         // Simulate an error being triggered
         return {
           ...defaultMockHook,

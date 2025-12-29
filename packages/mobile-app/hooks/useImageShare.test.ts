@@ -3,7 +3,7 @@
  * Tests for image sharing, downloading, and link copying functionality
  */
 
-import { act, renderHook, waitFor } from "@testing-library/react-native";
+import { act, renderHook } from "@testing-library/react-native";
 import * as Clipboard from "expo-clipboard";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";

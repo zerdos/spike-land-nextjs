@@ -36,7 +36,10 @@ const mockedUseSettingsStore = useSettingsStore as jest.MockedFunction<typeof us
 
 // Mock Tamagui components
 jest.mock("tamagui", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const RN = require("react-native");
   const {
     View,
     Text,
@@ -45,7 +48,7 @@ jest.mock("tamagui", () => {
     Modal,
     Switch: RNSwitch,
     ScrollView: RNScrollView,
-  } = require("react-native");
+  } = RN;
 
   return {
     Button: ({ children, onPress, disabled, icon, ...props }: any) => (
@@ -241,7 +244,7 @@ describe("PrivacyScreen", () => {
     });
 
     it("should call updatePrivacyPreference when public profile is toggled", async () => {
-      const { getAllByRole } = render(<PrivacyScreen />);
+      render(<PrivacyScreen />);
 
       // Find switches and toggle the first one (public profile)
       // Due to mock limitations, we test the update function directly
@@ -424,7 +427,7 @@ describe("PrivacyScreen", () => {
     });
 
     it("should close dialog when cancel is pressed", () => {
-      const { getByText, queryByText } = render(<PrivacyScreen />);
+      const { getByText } = render(<PrivacyScreen />);
 
       fireEvent.press(getByText("Delete Account"));
 

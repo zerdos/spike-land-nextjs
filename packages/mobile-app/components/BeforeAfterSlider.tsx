@@ -7,7 +7,7 @@ import { Image } from "expo-image";
 import { useCallback, useState } from "react";
 import { Dimensions, LayoutChangeEvent, StyleSheet, View as RNView } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { Card, Text, View } from "tamagui";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");

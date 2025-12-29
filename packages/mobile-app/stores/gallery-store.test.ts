@@ -5,12 +5,7 @@
 import { act } from "@testing-library/react-native";
 
 import * as imagesApi from "../services/api/images";
-import {
-  type DateRange,
-  type ImageFilters,
-  type SortOption,
-  useGalleryStore,
-} from "./gallery-store";
+import { useGalleryStore } from "./gallery-store";
 
 // ============================================================================
 // Mocks
@@ -28,8 +23,6 @@ jest.mock("../services/api/images", () => ({
 }));
 
 const mockGetImages = imagesApi.getImages as jest.MockedFunction<typeof imagesApi.getImages>;
-const mockGetAlbums = imagesApi.getAlbums as jest.MockedFunction<typeof imagesApi.getAlbums>;
-const mockDeleteImage = imagesApi.deleteImage as jest.MockedFunction<typeof imagesApi.deleteImage>;
 
 // ============================================================================
 // Test Data
@@ -67,20 +60,6 @@ const mockImages = [
     originalName: "photo2.jpg",
     createdAt: "2024-01-02T00:00:00Z",
     updatedAt: "2024-01-02T00:00:00Z",
-  },
-];
-
-const mockAlbums = [
-  {
-    id: "album-1",
-    name: "Vacation",
-    description: "Summer 2024",
-    userId: "user-1",
-    imageCount: 10,
-    privacy: "PRIVATE" as const,
-    defaultTier: "TIER_1K" as const,
-    createdAt: "2024-01-01T00:00:00Z",
-    updatedAt: "2024-01-01T00:00:00Z",
   },
 ];
 

@@ -10,7 +10,6 @@ import { AppState, type AppStateStatus, Platform } from "react-native";
 import {
   clearBadge,
   handleNotificationResponse,
-  type NotificationData,
   registerDeviceWithServer,
   registerForPushNotifications,
 } from "../services/notifications";

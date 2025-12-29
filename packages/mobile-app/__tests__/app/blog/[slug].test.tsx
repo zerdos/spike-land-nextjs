@@ -33,6 +33,7 @@ jest.mock("expo-sharing", () => ({
 }));
 
 jest.mock("tamagui", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View, Text: RNText, ScrollView, Pressable } = require("react-native");
   return {
     Spinner: ({ testID }: { testID?: string; }) => <View testID={testID || "spinner"} />,

@@ -5,7 +5,7 @@
 
 import type { ReactNode } from "react";
 import { StyleSheet, useColorScheme } from "react-native";
-import { Card, Paragraph, Text, View, XStack, YStack } from "tamagui";
+import { Card, Paragraph, Text, View, YStack } from "tamagui";
 
 export type FeatureCardVariant = "purple" | "yellow" | "blue" | "green";
 
@@ -35,14 +35,6 @@ interface FeatureCardProps {
    */
   onPress?: () => void;
 }
-
-// Gradient color mapping for icon backgrounds
-const variantColors: Record<FeatureCardVariant, { start: string; end: string; }> = {
-  purple: { start: "#A855F7", end: "#EC4899" },
-  yellow: { start: "#EAB308", end: "#F97316" },
-  blue: { start: "#3B82F6", end: "#06B6D4" },
-  green: { start: "#22C55E", end: "#10B981" },
-};
 
 // Solid colors for native (gradient fallback)
 const variantSolidColors: Record<FeatureCardVariant, string> = {

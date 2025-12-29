@@ -14,7 +14,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Button,
   Card,
-  H2,
   H4,
   Paragraph,
   ScrollView,

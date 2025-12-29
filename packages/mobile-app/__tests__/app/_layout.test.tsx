@@ -48,7 +48,9 @@ jest.mock("expo-splash-screen", () => ({
 }));
 
 jest.mock("expo-router", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View } = require("react-native");
 
   // Create Stack component as a function that renders its children

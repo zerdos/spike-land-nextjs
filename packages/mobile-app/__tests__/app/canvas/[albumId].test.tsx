@@ -409,18 +409,11 @@ describe("CanvasScreen", () => {
         images: [],
       });
 
-      const { UNSAFE_getAllByProps } = render(<CanvasScreen />);
+      const { getByTestId } = render(<CanvasScreen />);
 
-      // Find the accessible View (Button mock) - the Tamagui Button renders as
-      // a Pressable with accessible={true}
-      const accessibleElements = UNSAFE_getAllByProps({ accessible: true });
-
-      // There should be at least one accessible element (the Go Back button)
-      expect(accessibleElements.length).toBeGreaterThan(0);
-
-      // Find the button that has "Go Back" as its children or content
-      // The Button mock passes children through, so we look for it
-      const goBackButton = accessibleElements[0]; // The only accessible element in empty state
+      // Find the Go Back button by its testID
+      const goBackButton = getByTestId("go-back-button");
+      expect(goBackButton).toBeTruthy();
 
       fireEvent.press(goBackButton);
 

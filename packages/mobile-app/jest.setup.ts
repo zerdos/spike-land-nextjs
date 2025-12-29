@@ -102,6 +102,7 @@ jest.mock("expo", () => ({
 // ============================================================================
 
 jest.mock("react-native-reanimated", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const Reanimated = require("react-native-reanimated/mock");
   Reanimated.default.call = () => {};
   return {
@@ -127,6 +128,7 @@ jest.mock("react-native-reanimated", () => {
 // ============================================================================
 
 jest.mock("react-native-gesture-handler", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const View = require("react-native").View;
   return {
     Swipeable: View,
@@ -260,6 +262,7 @@ jest.mock("expo-status-bar", () => ({
 
 // expo-image mock
 jest.mock("expo-image", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View } = require("react-native");
   return {
     Image: View,
@@ -397,6 +400,7 @@ jest.mock("expo-media-library", () => ({
 
 // expo-linear-gradient mock
 jest.mock("expo-linear-gradient", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View } = require("react-native");
   return {
     LinearGradient: View,
@@ -416,6 +420,7 @@ jest.mock("expo-linear-gradient", () => {
 // ============================================================================
 
 jest.mock("@tamagui/lucide-icons", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View } = require("react-native");
   const MockIcon = (props: { testID?: string; }) => View(props);
   return {
@@ -465,6 +470,7 @@ jest.mock("@tamagui/lucide-icons", () => {
 // ============================================================================
 
 jest.mock("tamagui", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View, Text, Pressable, TextInput } = require("react-native");
   return {
     styled: jest.fn((component) => component),
@@ -601,18 +607,23 @@ jest.mock("react-native-safe-area-context", () => ({
 
 // Mock AppState for push notification tests
 const mockAppStateSubscription = { remove: jest.fn() };
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 jest.spyOn(require("react-native").AppState, "addEventListener").mockReturnValue(
   mockAppStateSubscription,
 );
 
 // Mock Linking for share tests
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 jest.spyOn(require("react-native").Linking, "canOpenURL").mockResolvedValue(true);
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 jest.spyOn(require("react-native").Linking, "openURL").mockResolvedValue(undefined);
 
 // Mock Alert for share tests and error dialogs
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 jest.spyOn(require("react-native").Alert, "alert").mockImplementation(jest.fn());
 
 // Mock Share for native share functionality
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 jest.spyOn(require("react-native").Share, "share").mockResolvedValue({
   action: "sharedAction",
   activityType: undefined,
