@@ -149,118 +149,144 @@ export default function ComponentsPage() {
           Integrated colors for high-energy layouts and semantic grouping.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <Card variant="blue" className="p-6 space-y-4">
-            <div className="flex justify-between items-start">
-              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+          <Card variant="blue" className="p-6 space-y-4 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+            <div className="flex justify-between items-start relative z-10">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md transition-transform group-hover:scale-110">
                 <Twitter className="w-5 h-5 text-white" />
               </div>
-              <Badge variant="outline" className="text-white border-white/30">Connect</Badge>
+              <Badge variant="outline" className="text-white border-white/30 backdrop-blur-sm">
+                Connect
+              </Badge>
             </div>
-            <div>
-              <p className="text-sm font-bold text-white">Twitter</p>
-              <p className="text-xs text-white/60">@spike.land</p>
+            <div className="relative z-10">
+              <p className="text-base font-bold text-white drop-shadow-md">Twitter</p>
+              <p className="text-xs text-white/80 font-medium">@spike.land</p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="w-full bg-white/10 hover:bg-white/20 border-white/20 text-white"
+              className="w-full bg-white/10 hover:bg-white/20 border-white/20 text-white relative z-10"
             >
               Follow
             </Button>
           </Card>
 
-          <Card variant="green" className="p-6 space-y-4">
-            <div className="flex justify-between items-start">
-              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+          <Card variant="green" className="p-6 space-y-4 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+            <div className="flex justify-between items-start relative z-10">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md transition-transform group-hover:scale-110">
                 <Music4 className="w-5 h-5 text-white" />
               </div>
-              <Badge variant="outline" className="text-white border-white/30">Live Now</Badge>
+              <Badge variant="outline" className="text-white border-white/30 backdrop-blur-sm">
+                Live Now
+              </Badge>
             </div>
-            <div>
-              <p className="text-sm font-bold text-white">Listening to...</p>
-              <p className="text-xs text-white/60">Midnight City - M83</p>
+            <div className="relative z-10">
+              <p className="text-base font-bold text-white drop-shadow-md">Listening to...</p>
+              <p className="text-xs text-white/80 font-medium">Midnight City - M83</p>
             </div>
-            <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden">
+            <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden relative z-10">
               <div className="h-full bg-white w-2/3" />
             </div>
           </Card>
 
-          <Card variant="pink" className="p-6 space-y-4">
-            <div className="flex justify-between items-start">
-              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+          <Card variant="pink" className="p-6 space-y-4 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+            <div className="flex justify-between items-start relative z-10">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md transition-transform group-hover:scale-110">
                 <Instagram className="w-5 h-5 text-white" />
               </div>
-              <Badge variant="outline" className="text-white border-white/30">News</Badge>
+              <Badge variant="outline" className="text-white border-white/30 backdrop-blur-sm">
+                News
+              </Badge>
             </div>
-            <div>
-              <p className="text-sm font-bold text-white">Dribbble.com</p>
-              <p className="text-xs text-white/60">Pixel-Perfect Design</p>
+            <div className="relative z-10">
+              <p className="text-base font-bold text-white drop-shadow-md">Dribbble.com</p>
+              <p className="text-xs text-white/80 font-medium">Pixel-Perfect Design</p>
             </div>
-            <div className="flex -space-x-1">
+            <div className="flex -space-x-1 relative z-10">
               {[1, 2, 3, 4].map(i => (
                 <div
                   key={i}
-                  className="w-7 h-7 rounded-full border-2 border-pink-500/50 bg-white/10"
+                  className="w-7 h-7 rounded-full border-2 border-pink-500/50 bg-white/10 backdrop-blur-sm"
                 />
               ))}
             </div>
           </Card>
 
-          <Card variant="layers" className="p-6 space-y-4">
-            <div className="flex justify-between items-start">
-              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+          <Card variant="layers" className="p-6 space-y-4 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+            <div className="flex justify-between items-start relative z-10">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md transition-transform group-hover:scale-110">
                 <Layers className="w-5 h-5 text-white" />
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 text-white/40 hover:text-white"
+                className="h-6 w-6 text-white/60 hover:text-white relative z-10"
               >
                 <Info className="w-4 h-4" />
               </Button>
             </div>
-            <div>
-              <p className="text-sm font-bold text-white">vqw07's layers.</p>
-              <p className="text-xs text-white/40">layers.to</p>
+            <div className="relative z-10">
+              <p className="text-base font-bold text-white drop-shadow-md">vqw07's layers.</p>
+              <p className="text-xs text-white/60 font-medium">layers.to</p>
             </div>
-            <div className="aspect-video bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-lg flex items-center justify-center border border-white/5">
-              <p className="text-[10px] font-black text-white/10 uppercase tracking-widest">
+            <div className="aspect-video bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-lg flex items-center justify-center border border-white/5 relative z-10">
+              <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">
                 Portfolio
               </p>
             </div>
           </Card>
 
-          <Card variant="fuchsia" className="p-6 space-y-4">
-            <div className="flex justify-between items-start">
-              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+          <Card variant="fuchsia" className="p-6 space-y-4 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+            <div className="flex justify-between items-start relative z-10">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md transition-transform group-hover:scale-110">
                 <Instagram className="w-5 h-5 text-white" />
               </div>
-              <Badge variant="outline" className="text-white border-white/30">Gallery</Badge>
+              <Badge variant="outline" className="text-white border-white/30 backdrop-blur-sm">
+                Gallery
+              </Badge>
             </div>
-            <div>
-              <p className="text-sm font-bold text-white">Instagram</p>
-              <p className="text-xs text-white/60">@spike_ai</p>
+            <div className="relative z-10">
+              <p className="text-base font-bold text-white drop-shadow-md">Instagram</p>
+              <p className="text-xs text-white/80 font-medium">@spike_ai</p>
             </div>
-            <div className="grid grid-cols-3 gap-1">
-              {[1, 2, 3].map(i => <div key={i} className="aspect-square bg-white/20 rounded" />)}
+            <div className="grid grid-cols-3 gap-2 relative z-10">
+              {[1, 2, 3].map(i => (
+                <div
+                  key={i}
+                  className="aspect-square bg-white/10 rounded-md border border-white/10 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
+                >
+                  <div className="w-full h-full bg-gradient-to-tr from-white/5 to-transparent rounded opacity-50" />
+                </div>
+              ))}
             </div>
           </Card>
 
-          <Card variant="orange" className="p-6 space-y-4">
-            <div className="flex justify-between items-start">
-              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+          <Card variant="orange" className="p-6 space-y-4 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60 pointer-events-none" />
+            <div className="flex justify-between items-start relative z-10">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md transition-transform group-hover:scale-110">
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
+              <Badge variant="outline" className="text-white border-white/30 backdrop-blur-sm">
+                Latest
+              </Badge>
             </div>
-            <div>
-              <p className="text-sm font-bold text-white">Substack.com</p>
-              <p className="text-xs text-white/60">The AI Spark Newsletter</p>
+            <div className="relative z-10 h-20 flex flex-col justify-end">
+              <p className="text-base font-bold text-white drop-shadow-md">Substack.com</p>
+              <p className="text-xs text-white/80 font-medium">The AI Spark Newsletter</p>
             </div>
-            <div className="flex -space-x-2">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="w-6 h-6 rounded-full border border-white/20 bg-white/10" />
-              ))}
-            </div>
+            <Button
+              variant="default"
+              size="sm"
+              className="w-full bg-white text-orange-600 hover:bg-white/90 border-0 font-bold relative z-10 shadow-lg"
+            >
+              Read Now
+            </Button>
           </Card>
         </div>
       </section>
@@ -500,7 +526,7 @@ export default function ComponentsPage() {
             title="Accordion"
             description="Collapsible sections for dense information."
           >
-            <Accordion type="single" collapsible className="w-full max-w-md">
+            <Accordion type="single" collapsible defaultValue="item-1" className="w-full max-w-md">
               <AccordionItem value="item-1" className="border-white/5">
                 <AccordionTrigger className="hover:text-primary">
                   System Requirements
@@ -538,7 +564,7 @@ export default function ComponentsPage() {
           <ComponentSample title="Tooltips" description="Contextual info on hover.">
             <TooltipProvider>
               <div className="flex gap-4">
-                <Tooltip>
+                <Tooltip defaultOpen>
                   <TooltipTrigger asChild>
                     <Button variant="outline" size="icon" className="rounded-full">?</Button>
                   </TooltipTrigger>
