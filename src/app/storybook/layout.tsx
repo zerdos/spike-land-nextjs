@@ -80,14 +80,14 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
                     href={`/storybook/${section.id}`}
                     onClick={onLinkClick}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 relative group",
+                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group",
                       isActive
-                        ? "bg-primary/8 text-primary font-semibold"
-                        : "text-muted-foreground hover:text-foreground hover:bg-white/10",
+                        ? "bg-primary/10 text-primary font-bold shadow-[inset_0_0_0_1px_rgba(var(--primary),0.1)]"
+                        : "text-muted-foreground hover:text-foreground hover:bg-white/5",
                     )}
                   >
                     {isActive && (
-                      <div className="absolute left-[-4px] w-1 h-4 bg-primary rounded-r-full" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full shadow-sm" />
                     )}
                     {Icon && (
                       <Icon
@@ -177,7 +177,7 @@ export default function StorybookLayout(
 
         {/* Main Content */}
         <main className="flex-1 lg:pl-64">
-          <div className="container mx-auto py-6 px-4 max-w-6xl">
+          <div className="container mx-auto py-8 px-6 max-w-7xl">
             {children}
           </div>
         </main>
