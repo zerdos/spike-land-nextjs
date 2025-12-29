@@ -9,9 +9,12 @@ When("I view the pricing page", async function(this: CustomWorld) {
   // Wait for the token packages grid to be visible (more reliable than networkidle)
   const packagesGrid = this.page.locator('[data-testid="token-packages-grid"]');
   await expect(packagesGrid).toBeVisible({ timeout: TIMEOUTS.LONG });
-  // Wait for at least one package card to be visible
-  const packageCard = this.page.locator('[data-testid^="package-card-"]').first();
-  await expect(packageCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  // Wait for ALL package cards to be visible (not just the first one)
+  // This ensures hydration is complete
+  const allPackageCards = this.page.locator('[data-testid^="package-card-"]');
+  await expect(allPackageCards).toHaveCount(4, { timeout: TIMEOUTS.DEFAULT });
+  // Wait for network idle to ensure all data is loaded
+  await this.page.waitForLoadState("networkidle");
 });
 
 When(
