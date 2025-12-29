@@ -64,9 +64,18 @@ describe("usePushNotifications", () => {
   let notificationResponseCallback:
     | ((r: Notifications.NotificationResponse) => void)
     | null = null;
+  let appStateCallback: ((state: string) => void) | null = null;
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Mock AppState.addEventListener to return a subscription with remove method
+    jest.spyOn(AppState, "addEventListener").mockImplementation((event, callback) => {
+      if (event === "change") {
+        appStateCallback = callback as (state: string) => void;
+      }
+      return { remove: jest.fn() };
+    });
 
     // Capture the callbacks when listeners are added
     mockNotifications.addNotificationReceivedListener.mockImplementation((callback) => {

@@ -264,13 +264,21 @@ export const Button: React.FC<ButtonProps> = ({
     return size === "lg" ? "large" : "small";
   };
 
+  // Wrap onPress to guard against disabled state
+  const handlePress = () => {
+    if (!isDisabled && onPress) {
+      onPress();
+    }
+  };
+
   return (
     <ButtonFrame
       variant={variant}
       size={size}
       disabled={isDisabled}
       fullWidth={fullWidth}
-      onPress={isDisabled ? undefined : onPress}
+      onPress={handlePress}
+      pointerEvents={isDisabled ? "none" : "auto"}
       accessible={true}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ||

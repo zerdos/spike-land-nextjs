@@ -40,6 +40,8 @@ if (typeof global.removeEventListener === "undefined") {
 }
 
 // Mock window object for web APIs used by tamagui
+// IMPORTANT: Include timer functions because @testing-library/react-native
+// checks `typeof window !== 'undefined'` and uses window.setTimeout if available
 Object.defineProperty(global, "window", {
   value: {
     addEventListener: jest.fn(),
@@ -56,6 +58,11 @@ Object.defineProperty(global, "window", {
     })),
     requestAnimationFrame: jest.fn((cb) => setTimeout(cb, 0)),
     cancelAnimationFrame: jest.fn(),
+    // Timer functions required by @testing-library/react-native
+    setTimeout: global.setTimeout,
+    clearTimeout: global.clearTimeout,
+    setInterval: global.setInterval,
+    clearInterval: global.clearInterval,
   },
   writable: true,
 });
@@ -589,6 +596,20 @@ jest.mock("react-native-safe-area-context", () => ({
 }));
 
 // ============================================================================
+// React Native Partial Mocks (AppState, Linking)
+// ============================================================================
+
+// Mock AppState for push notification tests
+const mockAppStateSubscription = { remove: jest.fn() };
+jest.spyOn(require("react-native").AppState, "addEventListener").mockReturnValue(
+  mockAppStateSubscription,
+);
+
+// Mock Linking for share tests
+jest.spyOn(require("react-native").Linking, "canOpenURL").mockResolvedValue(true);
+jest.spyOn(require("react-native").Linking, "openURL").mockResolvedValue(undefined);
+
+// ============================================================================
 // Console Suppression
 // ============================================================================
 
@@ -609,13 +630,10 @@ afterAll(() => {
 // Global Test Utilities
 // ============================================================================
 
-// Mock timers for testing time-dependent features
-beforeEach(() => {
-  jest.useFakeTimers();
-});
-
+// Clear mocks after each test
+// Note: Fake timers should be set up locally in tests that need them
+// (e.g., useEnhancementJob.test.ts) to avoid breaking @testing-library/react-native
 afterEach(() => {
-  jest.useRealTimers();
   jest.clearAllMocks();
 });
 
