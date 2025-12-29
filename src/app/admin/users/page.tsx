@@ -414,12 +414,12 @@ export default function UserManagementPage() {
                   </div>
 
                   {/* Danger Zone */}
-                  <div className="border-t border-red-200 pt-6">
-                    <h3 className="mb-3 font-semibold text-red-600">
+                  <div className="border-t border-red-800 pt-6">
+                    <h3 className="mb-3 font-semibold text-red-400">
                       Danger Zone
                     </h3>
-                    <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:bg-red-950/20">
-                      <p className="mb-3 text-sm text-red-700 dark:text-red-400">
+                    <div className="rounded-lg border border-red-800 bg-red-950/20 p-4">
+                      <p className="mb-3 text-sm text-red-400">
                         Permanently delete this user and all their data. This action cannot be
                         undone.
                       </p>

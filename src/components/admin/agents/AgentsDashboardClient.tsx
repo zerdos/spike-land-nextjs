@@ -57,14 +57,14 @@ interface Props {
 const POLLING_INTERVAL = 30000;
 
 const STATUS_COLORS: Record<ExternalAgentStatus, string> = {
-  QUEUED: "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
-  PLANNING: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  AWAITING_PLAN_APPROVAL: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
-  AWAITING_USER_FEEDBACK: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-  IN_PROGRESS: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200",
-  PAUSED: "bg-neutral-200 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300",
-  FAILED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  COMPLETED: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  QUEUED: "bg-neutral-800 text-neutral-200",
+  PLANNING: "bg-blue-900 text-blue-200",
+  AWAITING_PLAN_APPROVAL: "bg-amber-900 text-amber-200",
+  AWAITING_USER_FEEDBACK: "bg-purple-900 text-purple-200",
+  IN_PROGRESS: "bg-cyan-900 text-cyan-200",
+  PAUSED: "bg-neutral-700 text-neutral-300",
+  FAILED: "bg-red-900 text-red-200",
+  COMPLETED: "bg-green-900 text-green-200",
 };
 
 const STATUS_LABELS: Record<ExternalAgentStatus, string> = {

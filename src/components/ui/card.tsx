@@ -17,7 +17,7 @@ const cardVariants = cva(
         dashed:
           "border-2 border-dashed border-white/10 bg-white/[0.02] text-muted-foreground shadow-none opacity-60 transition-all active:scale-[0.98]",
         ghost: "border-none shadow-none bg-transparent transition-colors active:bg-white/5",
-        negative: "shadow-negative bg-[#E0E5EC] text-slate-800 border-none",
+        negative: "shadow-negative bg-neutral-800 text-neutral-200 border-none",
         floating: "shadow-floating bg-card glass-edge text-card-foreground",
         magic:
           "shadow-magic bg-card/80 border-t border-white/10 glass-edge-sm text-card-foreground backdrop-blur-3xl",

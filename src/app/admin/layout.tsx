@@ -68,15 +68,15 @@ export default async function AdminLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-h-screen bg-neutral-950">
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed top-0 left-0 h-screen w-64 border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+        <aside className="fixed top-0 left-0 h-screen w-64 border-r border-neutral-800 bg-neutral-900">
           <div className="flex h-full flex-col">
             {/* Header */}
-            <div className="border-b border-neutral-200 p-6 dark:border-neutral-800">
+            <div className="border-b border-neutral-800 p-6">
               <h1 className="text-xl font-semibold">Admin Dashboard</h1>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              <p className="text-sm text-neutral-400">
                 {session.user.name || session.user.email}
               </p>
             </div>
@@ -87,7 +87,7 @@ export default async function AdminLayout({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-neutral-800"
                 >
                   <span className="text-lg">{item.icon}</span>
                   <span>{item.label}</span>
@@ -96,10 +96,10 @@ export default async function AdminLayout({
             </nav>
 
             {/* Footer */}
-            <div className="border-t border-neutral-200 p-4 dark:border-neutral-800">
+            <div className="border-t border-neutral-800 p-4">
               <Link
                 href="/"
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-neutral-800"
               >
                 <span>←</span>
                 <span>Back to App</span>
