@@ -92,17 +92,17 @@ export default async function AdminMerchPage() {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      PENDING: "text-yellow-600 bg-yellow-50",
-      PAYMENT_PENDING: "text-yellow-600 bg-yellow-50",
-      PAID: "text-green-600 bg-green-50",
-      SUBMITTED: "text-blue-600 bg-blue-50",
-      IN_PRODUCTION: "text-blue-600 bg-blue-50",
-      SHIPPED: "text-purple-600 bg-purple-50",
-      DELIVERED: "text-green-600 bg-green-50",
-      CANCELLED: "text-red-600 bg-red-50",
-      REFUNDED: "text-gray-600 bg-gray-50",
+      PENDING: "text-yellow-400 bg-yellow-900/20",
+      PAYMENT_PENDING: "text-yellow-400 bg-yellow-900/20",
+      PAID: "text-green-400 bg-green-900/20",
+      SUBMITTED: "text-blue-400 bg-blue-900/20",
+      IN_PRODUCTION: "text-blue-400 bg-blue-900/20",
+      SHIPPED: "text-purple-400 bg-purple-900/20",
+      DELIVERED: "text-green-400 bg-green-900/20",
+      CANCELLED: "text-red-400 bg-red-900/20",
+      REFUNDED: "text-gray-400 bg-gray-900/20",
     };
-    return colors[status] || "text-gray-600 bg-gray-50";
+    return colors[status] || "text-gray-400 bg-gray-900/20";
   };
 
   return (

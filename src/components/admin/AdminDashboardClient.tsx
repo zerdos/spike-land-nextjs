@@ -337,35 +337,35 @@ export function AdminDashboardClient(
           )}
         </div>
         <div className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
-            <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+          <div className="rounded-lg border border-yellow-800 bg-yellow-900/20 p-4">
+            <p className="text-sm font-medium text-yellow-200">
               Pending
             </p>
-            <p className="mt-1 text-2xl font-bold text-yellow-900 dark:text-yellow-100">
+            <p className="mt-1 text-2xl font-bold text-yellow-100">
               {metrics.jobStatus.pending}
             </p>
           </div>
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-            <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+          <div className="rounded-lg border border-blue-800 bg-blue-900/20 p-4">
+            <p className="text-sm font-medium text-blue-200">
               Processing
             </p>
-            <p className="mt-1 text-2xl font-bold text-blue-900 dark:text-blue-100">
+            <p className="mt-1 text-2xl font-bold text-blue-100">
               {metrics.jobStatus.processing}
             </p>
           </div>
-          <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
-            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+          <div className="rounded-lg border border-green-800 bg-green-900/20 p-4">
+            <p className="text-sm font-medium text-green-200">
               Completed
             </p>
-            <p className="mt-1 text-2xl font-bold text-green-900 dark:text-green-100">
+            <p className="mt-1 text-2xl font-bold text-green-100">
               {metrics.jobStatus.completed}
             </p>
           </div>
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-            <p className="text-sm font-medium text-red-800 dark:text-red-200">
+          <div className="rounded-lg border border-red-800 bg-red-900/20 p-4">
+            <p className="text-sm font-medium text-red-200">
               Failed
             </p>
-            <p className="mt-1 text-2xl font-bold text-red-900 dark:text-red-100">
+            <p className="mt-1 text-2xl font-bold text-red-100">
               {metrics.jobStatus.failed}
             </p>
           </div>

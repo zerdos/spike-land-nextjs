@@ -248,7 +248,7 @@ export default function EmailLogsPage() {
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="border-b bg-neutral-50 dark:bg-neutral-900">
+            <thead className="border-b border-neutral-800 bg-neutral-900">
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-medium">To</th>
                 <th className="px-4 py-3 text-left text-sm font-medium">
@@ -295,7 +295,7 @@ export default function EmailLogsPage() {
                   emails.map((email) => (
                     <tr
                       key={email.id}
-                      className="hover:bg-neutral-50 dark:hover:bg-neutral-900"
+                      className="hover:bg-neutral-900"
                     >
                       <td className="px-4 py-3">
                         <div className="max-w-xs truncate text-sm">
