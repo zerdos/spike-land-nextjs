@@ -160,15 +160,14 @@ When(
     // Mock Stripe checkout
     await mockStripeCheckout(this);
 
-    // Find and click the package card by data-package-id
-    // Falls back to "Buy Now" button if data attribute not found
-    const packageCard = this.page.locator(`[data-package-id="${packageId}"]`)
-      .or(
-        this.page.locator("button").filter({ hasText: "Buy Now" }).first(),
-      );
-
+    // Find the package card by data-package-id, then click its Buy Now button
+    const packageCard = this.page.locator(`[data-package-id="${packageId}"]`);
     await expect(packageCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    await packageCard.click();
+
+    // Click the Buy Now button within this specific package card
+    const buyButton = packageCard.locator("button").filter({ hasText: /Buy Now/i });
+    await expect(buyButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await buyButton.click();
 
     // Wait for navigation to Stripe checkout
     await this.page.waitForURL(/stripe|checkout/i, { timeout: TIMEOUTS.LONG });
