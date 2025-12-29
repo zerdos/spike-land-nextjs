@@ -125,6 +125,7 @@ packages/mobile-app/
 │   ├── settings/           # App settings
 │   ├── tokens/             # Token management
 │   └── voucher/            # Voucher redemption
+│   └── storybook/          # Design system storybook (17 sections)
 │
 ├── components/             # Reusable UI components
 │   ├── ui/                 # Base UI components
@@ -352,6 +353,39 @@ export PATH=$PATH:$ANDROID_HOME/platform-tools
 # Rebuild shared package
 cd packages/shared && yarn build
 ```
+
+---
+
+## Design System Storybook
+
+The mobile app includes a comprehensive design system storybook at `/storybook` route, mirroring the web app's storybook at [localhost:3000/storybook](http://localhost:3000/storybook/components).
+
+### Accessing the Storybook
+
+```bash
+# Start the Expo web server
+cd packages/mobile-app
+yarn web
+
+# Navigate to http://localhost:8081/storybook
+```
+
+### Storybook Sections (17 total)
+
+| Category   | Sections                            |
+| ---------- | ----------------------------------- |
+| Foundation | Brand, Colors, Typography, Surfaces |
+| Actions    | Buttons                             |
+| Elements   | Components, Comparison              |
+| Data       | Data Display                        |
+| Structure  | Layout                              |
+| Status     | Feedback, Loading                   |
+| Overlays   | Modals                              |
+| Principles | Accessibility                       |
+| Features   | Merch, PhotoMix                     |
+| Systems    | Auth, Errors                        |
+
+Each section demonstrates React Native components with proper styling matching the spike.land design system.
 
 ---
 
