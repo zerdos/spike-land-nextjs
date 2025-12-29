@@ -5,8 +5,7 @@ import { Pressable, View } from "react-native";
 import { Text } from "tamagui";
 
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
-import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
+import { colors } from "@/constants/theme";
 import { useCartStore } from "@/stores";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -48,12 +47,20 @@ function CartTabIcon({ color }: { color: string; }) {
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+  // Force dark theme to match web app styling
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: colors.pixelCyan,
+        tabBarInactiveTintColor: "#9ca3af",
+        tabBarStyle: {
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
+        },
+        headerStyle: {
+          backgroundColor: colors.background,
+        },
+        headerTintColor: "#ffffff",
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
         headerShown: useClientOnlyValue(false, true),
@@ -71,7 +78,7 @@ export default function TabLayout() {
                   <FontAwesome
                     name="info-circle"
                     size={25}
-                    color={Colors[colorScheme ?? "light"].text}
+                    color={colors.foreground}
                     style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
                   />
                 )}
@@ -90,7 +97,7 @@ export default function TabLayout() {
               <Pressable>
                 {({ pressed }) => (
                   <View style={{ opacity: pressed ? 0.5 : 1, marginRight: 15 }}>
-                    <CartTabIcon color={Colors[colorScheme ?? "light"].text} />
+                    <CartTabIcon color={colors.foreground} />
                   </View>
                 )}
               </Pressable>

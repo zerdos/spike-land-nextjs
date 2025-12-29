@@ -2,12 +2,6 @@
  * Tests for NotificationItem Component
  */
 
-// MUST patch mocks BEFORE importing the component
-// The jest.setup.ts has broken mocks that need to be fixed
-
-import ReactModule from "react";
-import { View } from "react-native";
-
 // Create chainable gesture helper
 const createChainableGesture = () => {
   const gesture: Record<string, jest.Mock> = {};
@@ -32,33 +26,56 @@ const createChainableGesture = () => {
   return gesture;
 };
 
-// Fix react-native-gesture-handler
-const GestureHandler = jest.requireActual("react-native-gesture-handler");
-GestureHandler.Gesture = {
-  Pan: jest.fn(() => createChainableGesture()),
-  Tap: jest.fn(() => createChainableGesture()),
-  LongPress: jest.fn(() => createChainableGesture()),
-};
-GestureHandler.GestureHandlerRootView = View;
-GestureHandler.GestureDetector = View;
+// Mock react-native-gesture-handler
+jest.mock("react-native-gesture-handler", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { View } = require("react-native");
+  return {
+    Gesture: {
+      Pan: jest.fn(() => createChainableGesture()),
+      Tap: jest.fn(() => createChainableGesture()),
+      LongPress: jest.fn(() => createChainableGesture()),
+    },
+    GestureHandlerRootView: View,
+    GestureDetector: View,
+  };
+});
 
-// Fix react-native-reanimated
-const Reanimated = jest.requireActual("react-native-reanimated");
-Reanimated.default = {
-  View,
-  Text: View,
-  ScrollView: View,
-  createAnimatedComponent: jest.fn((comp) => comp),
-};
+// Mock react-native-reanimated
+jest.mock("react-native-reanimated", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { View } = require("react-native");
+  return {
+    __esModule: true,
+    default: {
+      View,
+      Text: View,
+      ScrollView: View,
+      createAnimatedComponent: jest.fn((comp: unknown) => comp),
+    },
+    useSharedValue: jest.fn((init: unknown) => ({ value: init })),
+    useAnimatedStyle: jest.fn(() => ({})),
+    withTiming: jest.fn((val: unknown) => val),
+    withSpring: jest.fn((val: unknown) => val),
+    runOnJS: jest.fn((fn: unknown) => fn),
+  };
+});
 
-// Fix @tamagui/lucide-icons - the mock in jest.setup.ts incorrectly calls View() as a function
-const LucideIcons = jest.requireActual("@tamagui/lucide-icons");
-const MockIcon = (props: Record<string, unknown>) => ReactModule.createElement(View, props);
-LucideIcons.Bell = MockIcon;
-LucideIcons.CheckCircle = MockIcon;
-LucideIcons.Coins = MockIcon;
-LucideIcons.Megaphone = MockIcon;
-LucideIcons.Trash2 = MockIcon;
+// Mock @tamagui/lucide-icons
+jest.mock("@tamagui/lucide-icons", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { View } = require("react-native");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const ReactMod = require("react");
+  const MockIcon = (props: Record<string, unknown>) => ReactMod.createElement(View, props);
+  return {
+    Bell: MockIcon,
+    CheckCircle: MockIcon,
+    Coins: MockIcon,
+    Megaphone: MockIcon,
+    Trash2: MockIcon,
+  };
+});
 
 // Now import everything else
 import { fireEvent, render } from "@testing-library/react-native";

@@ -1,12 +1,24 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS, waitForPricingData } from "../support/helpers/retry-helper";
+import { TIMEOUTS } from "../support/helpers/retry-helper";
 import { CustomWorld } from "../support/world";
 
 When("I view the pricing page", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-  // Wait for pricing data to be fully rendered
-  await waitForPricingData(this.page, { timeout: TIMEOUTS.DEFAULT });
+  // Wait for DOM to be ready
+  await this.page.waitForLoadState("domcontentloaded");
+  // Wait for the token packages grid to be visible (more reliable than networkidle)
+  const packagesGrid = this.page.locator('[data-testid="token-packages-grid"]');
+  await expect(packagesGrid).toBeVisible({ timeout: TIMEOUTS.LONG });
+  // Wait for ALL package cards to be visible (not just the first one)
+  // This ensures hydration is complete
+  const allPackageCards = this.page.locator('[data-testid^="package-card-"]');
+  await expect(allPackageCards).toHaveCount(4, { timeout: TIMEOUTS.DEFAULT });
+  // Wait for a specific package card content to ensure React has fully rendered
+  // This is more reliable than networkidle which can timeout on analytics/polling
+  const proCard = this.page.locator('[data-testid="package-card-pro"]');
+  await expect(proCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  // Verify card has content (not just placeholder)
+  await expect(proCard.getByText(/Pro/i)).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 When(
@@ -82,29 +94,34 @@ Then(
 
       switch (field.toLowerCase()) {
         case "name": {
-          const nameHeading = this.page.locator('[class*="CardTitle"]').first();
-          await expect(nameHeading).toBeVisible();
+          // Package cards have data-testid="package-card-X" and the name is displayed in CardTitle
+          // Look for a package card and check it has a visible package name
+          const packageCard = this.page.locator('[data-testid^="package-card-"]').first();
+          await expect(packageCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+          // Verify the card contains a package name (Starter, Basic, Pro, or Power)
+          const packageName = packageCard.getByText(/Starter|Basic|Pro|Power/i).first();
+          await expect(packageName).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           break;
         }
         case "token count": {
           const tokenCount = this.page.getByText(/\d+\s+tokens/i).first();
-          await expect(tokenCount).toBeVisible();
+          await expect(tokenCount).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           break;
         }
         case "price": {
           const price = this.page.getByText(/£\d+/i).first();
-          await expect(price).toBeVisible();
+          await expect(price).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           break;
         }
         case "price per token": {
           const pricePerToken = this.page.getByText(/£.*per token/i).first();
-          await expect(pricePerToken).toBeVisible();
+          await expect(pricePerToken).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           break;
         }
         case "buy button": {
           const buyButton = this.page.getByRole("button", { name: /buy now/i })
             .first();
-          await expect(buyButton).toBeVisible();
+          await expect(buyButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           break;
         }
       }
@@ -271,17 +288,17 @@ Then(
     const rows = dataTable.hashes();
     // Use data-testid for reliable selection
     const starterCard = this.page.locator('[data-testid="package-card-starter"]');
-    await expect(starterCard).toBeVisible({ timeout: 10000 });
+    await expect(starterCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
         const name = starterCard.getByText(row.Value);
-        await expect(name).toBeVisible();
+        await expect(name).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       } else if (row.Attribute === "Tokens") {
         const tokens = starterCard.getByText(
           new RegExp(`${row.Value}\\s+tokens`, "i"),
         );
-        await expect(tokens).toBeVisible();
+        await expect(tokens).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       }
     }
   },
@@ -293,17 +310,17 @@ Then(
     const rows = dataTable.hashes();
     // Use data-testid for reliable selection
     const basicCard = this.page.locator('[data-testid="package-card-basic"]');
-    await expect(basicCard).toBeVisible({ timeout: 10000 });
+    await expect(basicCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
         const name = basicCard.getByText(row.Value);
-        await expect(name).toBeVisible();
+        await expect(name).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       } else if (row.Attribute === "Tokens") {
         const tokens = basicCard.getByText(
           new RegExp(`${row.Value}\\s+tokens`, "i"),
         );
-        await expect(tokens).toBeVisible();
+        await expect(tokens).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       }
     }
   },
@@ -315,17 +332,17 @@ Then(
     const rows = dataTable.hashes();
     // Use data-testid for reliable selection
     const proCard = this.page.locator('[data-testid="package-card-pro"]');
-    await expect(proCard).toBeVisible({ timeout: 10000 });
+    await expect(proCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
         const name = proCard.getByText(row.Value);
-        await expect(name).toBeVisible();
+        await expect(name).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       } else if (row.Attribute === "Tokens") {
         const tokens = proCard.getByText(
           new RegExp(`${row.Value}\\s+tokens`, "i"),
         );
-        await expect(tokens).toBeVisible();
+        await expect(tokens).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       }
     }
   },
@@ -337,17 +354,17 @@ Then(
     const rows = dataTable.hashes();
     // Use data-testid for reliable selection
     const powerCard = this.page.locator('[data-testid="package-card-power"]');
-    await expect(powerCard).toBeVisible({ timeout: 10000 });
+    await expect(powerCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
     for (const row of rows) {
       if (row.Attribute === "Name") {
         const name = powerCard.getByText(row.Value);
-        await expect(name).toBeVisible();
+        await expect(name).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       } else if (row.Attribute === "Tokens") {
         const tokens = powerCard.getByText(
           new RegExp(`${row.Value}\\s+tokens`, "i"),
         );
-        await expect(tokens).toBeVisible();
+        await expect(tokens).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       }
     }
   },
