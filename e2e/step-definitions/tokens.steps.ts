@@ -95,6 +95,8 @@ Given(
     await mockVoucherRedemption(this, {
       [voucherCode]: { tokens: 50, alreadyRedeemed: true },
     });
+    // Mark that we've set up the voucher mock to prevent overwriting
+    (this as unknown as { voucherMockSet?: boolean; }).voucherMockSet = true;
   },
 );
 
@@ -117,14 +119,18 @@ When("I open the purchase modal", async function(this: CustomWorld) {
 When(
   "I enter the voucher code {string}",
   async function(this: CustomWorld, code: string) {
-    // Mock voucher API with valid codes
-    await mockVoucherRedemption(this, {
-      "LAUNCH100": { tokens: 100 },
-      "WELCOME50": { tokens: 50 },
-      "REFRESH50": { tokens: 50 },
-      "TESTCODE": { tokens: 10 },
-      "lowercase": { tokens: 25 },
-    });
+    // Only mock if not already mocked (to preserve alreadyRedeemed status from Given steps)
+    // Check if we have an existing mock by checking world state
+    if (!(this as unknown as { voucherMockSet?: boolean; }).voucherMockSet) {
+      // Mock voucher API with valid codes
+      await mockVoucherRedemption(this, {
+        "LAUNCH100": { tokens: 100 },
+        "WELCOME50": { tokens: 50 },
+        "REFRESH50": { tokens: 50 },
+        "TESTCODE": { tokens: 10 },
+        "lowercase": { tokens: 25 },
+      });
+    }
 
     const input = this.page.locator("input#voucher-code");
     await expect(input).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
