@@ -8,12 +8,13 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
-    // Exclude git worktrees from test discovery
+    // Exclude git worktrees and mobile app (mobile-app uses Jest, not vitest)
     exclude: [
       "**/node_modules/**",
       "**/dist/**",
       "**/fix-r2-versioning-cache/**",
       "**/.git/**",
+      "**/packages/mobile-app/**",
     ],
     // Use forks pool for better memory isolation in CI
     // Each test file runs in separate process with fresh memory

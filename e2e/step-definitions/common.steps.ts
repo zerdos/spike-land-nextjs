@@ -691,8 +691,9 @@ When("I confirm the batch enhancement", async function(this: CustomWorld) {
 
 // "I am on the enhance page" - consolidated from
 // batch-operations.steps.ts, image-enhancement.steps.ts
+// Note: The enhance app is at /apps/pixel, not /pixel (which is the landing page)
 Given("I am on the enhance page", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/pixel`);
+  await this.page.goto(`${this.baseUrl}/apps/pixel`);
   await this.page.waitForLoadState("networkidle");
 });
 

@@ -4,10 +4,7 @@
  */
 
 import { act } from "@testing-library/react-native";
-import * as storage from "../services/storage";
 import { useSettingsStore } from "./settings-store";
-
-const mockStorage = jest.mocked(storage);
 
 // ============================================================================
 // Mocks
@@ -26,6 +23,12 @@ jest.mock("../services/storage", () => ({
     return Promise.resolve();
   }),
 }));
+
+// Get references to the mocked storage functions after the mock is defined
+import * as storage from "../services/storage";
+const mockGetItemAsync = storage.getItemAsync as jest.Mock;
+const mockSetItemAsync = storage.setItemAsync as jest.Mock;
+const _mockDeleteItemAsync = storage.deleteItemAsync as jest.Mock;
 
 // Mock API client
 const mockApiResponses: Record<string, unknown> = {};
@@ -116,8 +119,8 @@ function clearMockResponses() {
 }
 
 function clearMockStorage() {
-  Object.keys(mockStorage).forEach((key) => {
-    delete mockStorage[key];
+  Object.keys(storageData).forEach((key) => {
+    delete storageData[key];
   });
 }
 
@@ -251,7 +254,7 @@ describe("useSettingsStore", () => {
     });
 
     it("should load persisted preferences before fetching from server", async () => {
-      mockStorage.getItemAsync.mockImplementation((key: string) => {
+      mockGetItemAsync.mockImplementation((key: string) => {
         if (key === "spike_notification_preferences") {
           return Promise.resolve(
             JSON.stringify({
@@ -903,11 +906,11 @@ describe("useSettingsStore", () => {
         await useSettingsStore.getState().persistPreferences();
       });
 
-      expect(mockStorage.setItemAsync).toHaveBeenCalledWith(
+      expect(mockSetItemAsync).toHaveBeenCalledWith(
         "spike_notification_preferences",
         expect.any(String),
       );
-      expect(mockStorage.setItemAsync).toHaveBeenCalledWith(
+      expect(mockSetItemAsync).toHaveBeenCalledWith(
         "spike_privacy_preferences",
         expect.any(String),
       );
@@ -916,7 +919,7 @@ describe("useSettingsStore", () => {
     it("should handle storage errors gracefully", async () => {
       const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-      mockStorage.setItemAsync.mockRejectedValueOnce(new Error("Storage full"));
+      mockSetItemAsync.mockRejectedValueOnce(new Error("Storage full"));
 
       await act(async () => {
         await useSettingsStore.getState().persistPreferences();
@@ -929,7 +932,7 @@ describe("useSettingsStore", () => {
 
   describe("loadPersistedPreferences", () => {
     it("should load preferences from storage", async () => {
-      mockStorage.getItemAsync.mockImplementation((key: string) => {
+      mockGetItemAsync.mockImplementation((key: string) => {
         if (key === "spike_notification_preferences") {
           return Promise.resolve(
             JSON.stringify({
@@ -964,7 +967,7 @@ describe("useSettingsStore", () => {
     });
 
     it("should use defaults when storage is empty", async () => {
-      mockStorage.getItemAsync.mockResolvedValue(null);
+      mockGetItemAsync.mockResolvedValue(null);
 
       await act(async () => {
         await useSettingsStore.getState().loadPersistedPreferences();
@@ -979,7 +982,7 @@ describe("useSettingsStore", () => {
     it("should handle storage errors and use defaults", async () => {
       const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-      mockStorage.getItemAsync.mockRejectedValue(new Error("Storage error"));
+      mockGetItemAsync.mockRejectedValue(new Error("Storage error"));
 
       await act(async () => {
         await useSettingsStore.getState().loadPersistedPreferences();

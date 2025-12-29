@@ -1,19 +1,25 @@
-const tintColorLight = "#2f95dc";
-const tintColorDark = "#fff";
+/**
+ * Colors matching the web app's design system
+ * Brand color: Pixel Cyan #00E5FF
+ */
+
+const pixelCyan = "#00E5FF";
+const tintColorLight = pixelCyan;
+const tintColorDark = pixelCyan;
 
 export default {
   light: {
-    text: "#000",
-    background: "#fff",
+    text: "#12121C", // Carbon Text
+    background: "#F8FAFB",
     tint: tintColorLight,
-    tabIconDefault: "#ccc",
+    tabIconDefault: "#9CA3AF",
     tabIconSelected: tintColorLight,
   },
   dark: {
-    text: "#fff",
-    background: "#000",
+    text: "#FFFFFF",
+    background: "#08080C", // Deep Space
     tint: tintColorDark,
-    tabIconDefault: "#ccc",
+    tabIconDefault: "#6B7280",
     tabIconSelected: tintColorDark,
   },
 };
