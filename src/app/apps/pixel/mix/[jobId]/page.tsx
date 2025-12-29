@@ -65,6 +65,7 @@ export default async function MixDetailPage({ params }: MixDetailPageProps) {
         resultUrl: job.enhancedUrl,
         resultWidth: job.enhancedWidth,
         resultHeight: job.enhancedHeight,
+        errorMessage: job.errorMessage,
         createdAt: job.createdAt.toISOString(),
         targetImage: {
           id: job.image.id,
