@@ -57,7 +57,7 @@ export default function StorybookIndexPage() {
           <Text style={styles.statLabel}>Categories</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>3</Text>
+          <Text style={styles.statNumber}>50+</Text>
           <Text style={styles.statLabel}>UI Components</Text>
         </View>
       </View>
