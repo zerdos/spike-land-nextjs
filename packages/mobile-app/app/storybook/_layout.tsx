@@ -223,7 +223,7 @@ function CustomDrawerContent({
           <Text style={styles.versionText}>Version 1.2.0</Text>
         </View>
         <Text style={styles.copyrightText}>Built for Spike Land Platform</Text>
-        <Text style={styles.copyrightText}>&copy; 2024 spike.land</Text>
+        <Text style={styles.copyrightText}>&copy; {new Date().getFullYear()} spike.land</Text>
       </View>
     </View>
   );
