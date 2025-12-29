@@ -324,5 +324,3 @@ export function useEnhancementJob(
     reset,
   };
 }
-
-export default useEnhancementJob;

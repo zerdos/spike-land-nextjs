@@ -354,5 +354,3 @@ const styles = StyleSheet.create({
     elevation: 20,
   },
 });
-
-export default ShareSheet;

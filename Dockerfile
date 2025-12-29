@@ -314,9 +314,7 @@ ENV SHARD_INDEX=4 \
     SHARD_TOTAL=8 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
-RUN --mount=type=cache,id=${TEST_CACHE_NS}-e2e-${TARGETARCH},target=/app/.e2e-cache,sharing=locked \
-    yarn start:server:and:test:pr > /tmp/e2e-4.log 2>&1 \
-    || (cat /tmp/e2e-4.log && exit 1)
+RUN yarn start:server:and:test:pr
 
 FROM e2e-test-base AS e2e-tests-5
 ARG TEST_CACHE_NS

@@ -332,5 +332,3 @@ export function useImageSearch(options: UseImageSearchOptions = {}): UseImageSea
     getApiParams,
   };
 }
-
-export default useImageSearch;

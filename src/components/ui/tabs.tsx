@@ -100,7 +100,7 @@ const TabsList = React.forwardRef<
         (listRef as React.MutableRefObject<typeof node>).current = node;
       }}
       className={cn(
-        "relative inline-flex h-11 items-center justify-center rounded-xl bg-muted/30 p-1 text-muted-foreground/60 glass-0",
+        "relative inline-flex h-14 items-center justify-center rounded-xl bg-muted/30 p-1 text-muted-foreground/60 glass-0",
         className,
       )}
       {...props}

@@ -327,4 +327,3 @@ class PurchasesService {
 
 // Export singleton instance
 export const purchasesService = new PurchasesService();
-export default purchasesService;

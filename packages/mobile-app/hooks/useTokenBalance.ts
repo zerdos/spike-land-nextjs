@@ -140,5 +140,3 @@ export function useTokenBalance(
     hasEnoughTokens,
   };
 }
-
-export default useTokenBalance;

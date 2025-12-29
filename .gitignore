@@ -29,6 +29,9 @@ playwright/.cache/
 # mcp-server build output
 packages/mcp-server/dist/
 
+# shared package build output
+packages/shared/dist/
+
 # misc
 .DS_Store
 *.pem

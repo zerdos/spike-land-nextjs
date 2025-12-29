@@ -368,27 +368,25 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  @media (min-width: 768px) {
-    .glass-1 {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(var(--glass-blur));
-      -webkit-backdrop-filter: blur(var(--glass-blur));
-    }
+  .glass-1 {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+  }
 
-    .glass-aura-blue,
-    .glass-aura-green,
-    .glass-aura-orange,
-    .glass-aura-fuchsia,
-    .glass-aura-pink,
-    .glass-aura-purple {
-      backdrop-filter: blur(var(--glass-blur-lg));
-      -webkit-backdrop-filter: blur(var(--glass-blur-lg));
-    }
+  .glass-aura-blue,
+  .glass-aura-green,
+  .glass-aura-orange,
+  .glass-aura-fuchsia,
+  .glass-aura-pink,
+  .glass-aura-purple {
+    backdrop-filter: blur(var(--glass-blur-lg));
+    -webkit-backdrop-filter: blur(var(--glass-blur-lg));
+  }
 
-    .glass-layers {
-      backdrop-filter: blur(var(--glass-blur-xl));
-      -webkit-backdrop-filter: blur(var(--glass-blur-xl));
-    }
+  .glass-layers {
+    backdrop-filter: blur(var(--glass-blur-xl));
+    -webkit-backdrop-filter: blur(var(--glass-blur-xl));
   }
 
   /* Elevation Tier 2: Interactive Surface / Modals / Popovers */
@@ -401,12 +399,10 @@
     box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.15), 0 10px 30px -10px rgba(0, 0, 0, 0.5);
   }
 
-  @media (min-width: 768px) {
-    .glass-2 {
-      background: rgba(255, 255, 255, 12%);
-      backdrop-filter: blur(var(--glass-blur-lg));
-      -webkit-backdrop-filter: blur(var(--glass-blur-lg));
-    }
+  .glass-2 {
+    background: rgba(255, 255, 255, 12%);
+    backdrop-filter: blur(var(--glass-blur-lg));
+    -webkit-backdrop-filter: blur(var(--glass-blur-lg));
   }
 
   /* Optical Physics: Dual-tone detailed edges with top highlight */

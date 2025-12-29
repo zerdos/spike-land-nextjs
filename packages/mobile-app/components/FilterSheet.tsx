@@ -458,5 +458,3 @@ export function FilterSheet({
     </Sheet>
   );
 }
-
-export default FilterSheet;
