@@ -5,6 +5,7 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
+import { Pressable, ScrollView, Text as RNText, TextInput, View } from "react-native";
 
 import { calculatePasswordStrength } from "@/app/(auth)/reset-password";
 import { authService } from "@/services/auth";
@@ -30,7 +31,6 @@ jest.mock("@expo/vector-icons", () => ({
 }));
 
 jest.mock("tamagui", () => {
-  const { View, Text: RNText, TextInput, Pressable, ScrollView } = require("react-native");
   return {
     Button: (
       { children, onPress, disabled, testID, ...props }: React.PropsWithChildren<
@@ -48,13 +48,13 @@ jest.mock("tamagui", () => {
       <RNText {...props}>{children}</RNText>
     ),
     Input: (
-      { value, onChangeText, placeholder, testID, onSubmitEditing, id, ...props }: {
+      { value, onChangeText, placeholder, testID, onSubmitEditing, _id, ...props }: {
         value?: string;
         onChangeText?: (text: string) => void;
         placeholder?: string;
         testID?: string;
         onSubmitEditing?: () => void;
-        id?: string;
+        _id?: string;
       },
     ) => (
       <TextInput
@@ -92,7 +92,6 @@ jest.mock("tamagui", () => {
 
 // Add mock for Progress.Indicator
 jest.mock("tamagui", () => {
-  const { View, Text: RNText, TextInput, Pressable, ScrollView } = require("react-native");
   const Progress = ({ children, ...props }: React.PropsWithChildren<object>) => (
     <View {...props}>{children}</View>
   );
@@ -115,13 +114,13 @@ jest.mock("tamagui", () => {
       <RNText {...props}>{children}</RNText>
     ),
     Input: (
-      { value, onChangeText, placeholder, testID, onSubmitEditing, id, ...props }: {
+      { value, onChangeText, placeholder, testID, onSubmitEditing, _id, ...props }: {
         value?: string;
         onChangeText?: (text: string) => void;
         placeholder?: string;
         testID?: string;
         onSubmitEditing?: () => void;
-        id?: string;
+        _id?: string;
       },
     ) => (
       <TextInput

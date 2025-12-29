@@ -16,178 +16,160 @@ jest.mock("expo-clipboard");
 jest.mock("@/hooks");
 jest.mock("@/components/ReferralStats", () => ({
   ReferralStats: ({ stats, isLoading, testID }: any) => {
-    const { View, Text } = require("react-native");
+    const MockView = jest.requireActual("react-native").View;
+    const MockText = jest.requireActual("react-native").Text;
     return (
-      <View testID={testID || "referral-stats"}>
-        <Text>Total: {stats?.totalReferrals}</Text>
-        <Text>Loading: {isLoading?.toString()}</Text>
-      </View>
+      <MockView testID={testID || "referral-stats"}>
+        <MockText>Total: {stats?.totalReferrals}</MockText>
+        <MockText>Loading: {isLoading?.toString()}</MockText>
+      </MockView>
     );
   },
 }));
 
 jest.mock("@/components/ShareButtons", () => ({
   ShareButtons: ({ referralUrl, onShareError }: any) => {
-    const { View, Text, TouchableOpacity } = require("react-native");
+    const MockView = jest.requireActual("react-native").View;
+    const MockText = jest.requireActual("react-native").Text;
+    const MockTouchableOpacity = jest.requireActual("react-native").TouchableOpacity;
     return (
-      <View testID="share-buttons">
-        <Text>{referralUrl}</Text>
-        <TouchableOpacity
+      <MockView testID="share-buttons">
+        <MockText>{referralUrl}</MockText>
+        <MockTouchableOpacity
           testID="trigger-share-error"
           onPress={() => onShareError?.(new Error("Share failed"))}
         >
-          <Text>Trigger Error</Text>
-        </TouchableOpacity>
-      </View>
+          <MockText>Trigger Error</MockText>
+        </MockTouchableOpacity>
+      </MockView>
     );
   },
 }));
 
 jest.mock("@/components/ReferredUsersList", () => ({
   ReferredUsersList: ({ users, onLoadMore, hasMore }: any) => {
-    const { View, Text, TouchableOpacity } = require("react-native");
+    const MockView = jest.requireActual("react-native").View;
+    const MockText = jest.requireActual("react-native").Text;
+    const MockTouchableOpacity = jest.requireActual("react-native").TouchableOpacity;
     return (
-      <View testID="referred-users-list">
-        <Text>Users: {users?.length || 0}</Text>
+      <MockView testID="referred-users-list">
+        <MockText>Users: {users?.length || 0}</MockText>
         {hasMore && (
-          <TouchableOpacity onPress={onLoadMore} testID="load-more">
-            <Text>Load More</Text>
-          </TouchableOpacity>
+          <MockTouchableOpacity onPress={onLoadMore} testID="load-more">
+            <MockText>Load More</MockText>
+          </MockTouchableOpacity>
         )}
-      </View>
+      </MockView>
     );
   },
 }));
 
 // Mock Tamagui components
-jest.mock("tamagui", () => ({
-  Button: ({
-    children,
-    onPress,
-    testID,
-    disabled,
-    ...props
-  }: {
-    children: React.ReactNode;
-    onPress?: () => void;
-    testID?: string;
-    disabled?: boolean;
-  }) => {
-    const { TouchableOpacity, Text } = require("react-native");
-    return (
-      <TouchableOpacity
+jest.mock("tamagui", () => {
+  const MockView = jest.requireActual("react-native").View;
+  const MockText = jest.requireActual("react-native").Text;
+  const MockTouchableOpacity = jest.requireActual("react-native").TouchableOpacity;
+
+  return {
+    Button: ({
+      children,
+      onPress,
+      testID,
+      disabled,
+      ...props
+    }: {
+      children: React.ReactNode;
+      onPress?: () => void;
+      testID?: string;
+      disabled?: boolean;
+    }) => (
+      <MockTouchableOpacity
         onPress={onPress}
         testID={testID}
         disabled={disabled}
         {...props}
       >
-        <Text>{children}</Text>
-      </TouchableOpacity>
-    );
-  },
-  Card: ({
-    children,
-    testID,
-    ...props
-  }: {
-    children: React.ReactNode;
-    testID?: string;
-  }) => {
-    const { View } = require("react-native");
-    return (
-      <View testID={testID} {...props}>
+        <MockText>{children}</MockText>
+      </MockTouchableOpacity>
+    ),
+    Card: ({
+      children,
+      testID,
+      ...props
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+    }) => (
+      <MockView testID={testID} {...props}>
         {children}
-      </View>
-    );
-  },
-  H1: ({ children, ...props }: { children: React.ReactNode; }) => {
-    const { Text } = require("react-native");
-    return <Text {...props}>{children}</Text>;
-  },
-  H4: ({ children, ...props }: { children: React.ReactNode; }) => {
-    const { Text } = require("react-native");
-    return <Text {...props}>{children}</Text>;
-  },
-  Paragraph: ({
-    children,
-    testID,
-    ...props
-  }: {
-    children: React.ReactNode;
-    testID?: string;
-  }) => {
-    const { Text } = require("react-native");
-    return (
-      <Text testID={testID} {...props}>
+      </MockView>
+    ),
+    H1: ({ children, ...props }: { children: React.ReactNode; }) => (
+      <MockText {...props}>{children}</MockText>
+    ),
+    H4: ({ children, ...props }: { children: React.ReactNode; }) => (
+      <MockText {...props}>{children}</MockText>
+    ),
+    Paragraph: ({
+      children,
+      testID,
+      ...props
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+    }) => (
+      <MockText testID={testID} {...props}>
         {children}
-      </Text>
-    );
-  },
-  Separator: () => {
-    const { View } = require("react-native");
-    return <View testID="separator" />;
-  },
-  Spinner: ({ testID }: { testID?: string; }) => {
-    const { View } = require("react-native");
-    return <View testID={testID || "spinner"} />;
-  },
-  Text: ({
-    children,
-    ...props
-  }: {
-    children: React.ReactNode;
-  }) => {
-    const { Text: RNText } = require("react-native");
-    return <RNText {...props}>{children}</RNText>;
-  },
-  View: ({
-    children,
-    testID,
-    style,
-    ...props
-  }: {
-    children?: React.ReactNode;
-    testID?: string;
-    style?: any;
-  }) => {
-    const { View: RNView } = require("react-native");
-    return (
-      <RNView testID={testID} style={style} {...props}>
+      </MockText>
+    ),
+    Separator: () => <MockView testID="separator" />,
+    Spinner: ({ testID }: { testID?: string; }) => <MockView testID={testID || "spinner"} />,
+    Text: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+    }) => <MockText {...props}>{children}</MockText>,
+    View: ({
+      children,
+      testID,
+      style,
+      ...props
+    }: {
+      children?: React.ReactNode;
+      testID?: string;
+      style?: any;
+    }) => (
+      <MockView testID={testID} style={style} {...props}>
         {children}
-      </RNView>
-    );
-  },
-  XStack: ({
-    children,
-    testID,
-    ...props
-  }: {
-    children: React.ReactNode;
-    testID?: string;
-  }) => {
-    const { View } = require("react-native");
-    return (
-      <View testID={testID} {...props}>
+      </MockView>
+    ),
+    XStack: ({
+      children,
+      testID,
+      ...props
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+    }) => (
+      <MockView testID={testID} {...props}>
         {children}
-      </View>
-    );
-  },
-  YStack: ({
-    children,
-    testID,
-    ...props
-  }: {
-    children: React.ReactNode;
-    testID?: string;
-  }) => {
-    const { View } = require("react-native");
-    return (
-      <View testID={testID} {...props}>
+      </MockView>
+    ),
+    YStack: ({
+      children,
+      testID,
+      ...props
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+    }) => (
+      <MockView testID={testID} {...props}>
         {children}
-      </View>
-    );
-  },
-}));
+      </MockView>
+    ),
+  };
+});
 
 // Mock Tamagui icons
 jest.mock("@tamagui/lucide-icons", () => ({

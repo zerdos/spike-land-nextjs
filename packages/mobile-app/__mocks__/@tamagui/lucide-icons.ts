@@ -7,7 +7,7 @@ import { View } from "react-native";
 
 // Create a mock icon component
 const createIconMock = (name: string) => {
-  const IconComponent = (props: Record<string, any>) => {
+  const IconComponent = (props: Record<string, unknown>) => {
     return React.createElement(View, {
       testID: props.testID || `icon-${name}`,
       ...props,

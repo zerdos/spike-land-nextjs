@@ -37,7 +37,8 @@ interface ToastProps {
 
 function Toast({ visible, message, type }: ToastProps) {
   // Use fallback for testing environments where useSharedValue may return undefined
-  const opacity = useSharedValue(0) ?? { value: 0 };
+  const rawOpacity = useSharedValue(0);
+  const opacity = useMemo(() => rawOpacity ?? { value: 0 }, [rawOpacity]);
 
   useEffect(() => {
     if (visible) {
@@ -114,13 +115,38 @@ export default function CanvasScreen() {
   }, [images, currentSlideshowIndex]);
 
   // Animation values - use fallback objects for testing environments
-  const defaultSharedValue = { value: 0 };
-  const scale = useSharedValue(1) ?? { ...defaultSharedValue, value: 1 };
-  const savedScale = useSharedValue(1) ?? { ...defaultSharedValue, value: 1 };
-  const translateX = useSharedValue(0) ?? defaultSharedValue;
-  const savedTranslateX = useSharedValue(0) ?? defaultSharedValue;
-  const translateY = useSharedValue(0) ?? defaultSharedValue;
-  const savedTranslateY = useSharedValue(0) ?? defaultSharedValue;
+  const defaultSharedValue = useMemo(() => ({ value: 0 }), []);
+  const rawScale = useSharedValue(1);
+  const rawSavedScale = useSharedValue(1);
+  const rawTranslateX = useSharedValue(0);
+  const rawSavedTranslateX = useSharedValue(0);
+  const rawTranslateY = useSharedValue(0);
+  const rawSavedTranslateY = useSharedValue(0);
+
+  const scale = useMemo(() => rawScale ?? { ...defaultSharedValue, value: 1 }, [
+    rawScale,
+    defaultSharedValue,
+  ]);
+  const savedScale = useMemo(() => rawSavedScale ?? { ...defaultSharedValue, value: 1 }, [
+    rawSavedScale,
+    defaultSharedValue,
+  ]);
+  const translateX = useMemo(() => rawTranslateX ?? defaultSharedValue, [
+    rawTranslateX,
+    defaultSharedValue,
+  ]);
+  const savedTranslateX = useMemo(() => rawSavedTranslateX ?? defaultSharedValue, [
+    rawSavedTranslateX,
+    defaultSharedValue,
+  ]);
+  const translateY = useMemo(() => rawTranslateY ?? defaultSharedValue, [
+    rawTranslateY,
+    defaultSharedValue,
+  ]);
+  const savedTranslateY = useMemo(() => rawSavedTranslateY ?? defaultSharedValue, [
+    rawSavedTranslateY,
+    defaultSharedValue,
+  ]);
 
   // ============================================================================
   // Toast Helper

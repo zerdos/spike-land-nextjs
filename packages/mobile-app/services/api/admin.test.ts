@@ -384,7 +384,7 @@ describe("Admin API Service", () => {
         status: 200,
       });
 
-      const result = await getJobs({ type: "enhancement" });
+      await getJobs({ type: "enhancement" });
 
       expect(mockApiClient.get).toHaveBeenCalledWith(
         "/api/admin/jobs?type=enhancement",
@@ -398,7 +398,7 @@ describe("Admin API Service", () => {
         status: 200,
       });
 
-      const result = await getJobs({
+      await getJobs({
         status: "FAILED",
         type: "mcp",
         page: 2,

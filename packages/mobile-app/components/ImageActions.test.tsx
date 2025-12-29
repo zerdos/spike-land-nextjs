@@ -5,21 +5,21 @@
 
 // Mock react-native-reanimated before any imports that might use it
 jest.mock("react-native-reanimated", () => {
-  const React = require("react");
-  const { View } = require("react-native");
+  const ReactActual = jest.requireActual("react");
+  const RN = jest.requireActual("react-native");
 
   // Create a proper Animated.View mock
-  const AnimatedView = React.forwardRef(
+  const AnimatedView = ReactActual.forwardRef(
     (
       props: {
         testID?: string;
         style?: object;
-        children?: React.ReactNode;
+        children?: ReactActual.ReactNode;
         pointerEvents?: string;
       },
-      ref: React.Ref<typeof View>,
+      ref: ReactActual.Ref<typeof RN.View>,
     ) => {
-      return React.createElement(View, { ...props, ref });
+      return ReactActual.createElement(RN.View, { ...props, ref });
     },
   );
   AnimatedView.displayName = "AnimatedView";
@@ -42,7 +42,7 @@ jest.mock("react-native-reanimated", () => {
     default: {
       View: AnimatedView,
       call: jest.fn(),
-      createAnimatedComponent: (component: React.ComponentType) => component,
+      createAnimatedComponent: (component: unknown) => component,
     },
     View: AnimatedView,
     useSharedValue: (initial: number) => createSharedValue(initial),

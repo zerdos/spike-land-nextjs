@@ -5,13 +5,10 @@
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Alert, Pressable, Text, TextInput, View } from "react-native";
+import { Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import GalleryScreen from "@/app/(tabs)/gallery";
-
-const mockReact = React;
-const mockRN = { Alert, Pressable, Text, TextInput, View };
 
 // ============================================================================
 // Mocks
@@ -19,7 +16,11 @@ const mockRN = { Alert, Pressable, Text, TextInput, View };
 
 // Mock Tamagui Lucide Icons - must come before tamagui mock
 jest.mock("@tamagui/lucide-icons", () => {
-  const MockIcon = () => mockReact.createElement(mockRN.View, { testID: "icon" });
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const RN = require("react-native");
+  const MockIcon = () => React.createElement(RN.View, { testID: "icon" });
   return {
     Calendar: MockIcon,
     Check: MockIcon,
@@ -40,20 +41,24 @@ jest.mock("@tamagui/lucide-icons", () => {
 
 // Mock child components used by GalleryScreen
 jest.mock("@/components/FilterSheet", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const RN = require("react-native");
   return {
     FilterSheet: ({ open, testID }: { open: boolean; testID?: string; }) =>
-      open
-        ? mockReact.createElement(mockRN.View, { testID: testID || "filter-sheet" })
-        : null,
+      open ? React.createElement(RN.View, { testID: testID || "filter-sheet" }) : null,
     __esModule: true,
     default: ({ open, testID }: { open: boolean; testID?: string; }) =>
-      open
-        ? mockReact.createElement(mockRN.View, { testID: testID || "filter-sheet" })
-        : null,
+      open ? React.createElement(RN.View, { testID: testID || "filter-sheet" }) : null,
   };
 });
 
 jest.mock("@/components/gallery", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const RN = require("react-native");
   return {
     ImageGrid: ({
       images,
@@ -68,14 +73,14 @@ jest.mock("@/components/gallery", () => {
       onRefresh: () => void;
       onLoadMore: () => void;
     }) =>
-      mockReact.createElement(
-        mockRN.View,
+      React.createElement(
+        RN.View,
         { testID: "image-grid" },
         ListHeaderComponent,
         images.length === 0 && ListEmptyComponent
           ? ListEmptyComponent
           : images.map((img: { id?: string; }, idx: number) =>
-            mockReact.createElement(mockRN.View, {
+            React.createElement(RN.View, {
               key: img?.id || idx,
               testID: `image-${img?.id || idx}`,
             })
@@ -86,6 +91,10 @@ jest.mock("@/components/gallery", () => {
 });
 
 jest.mock("@/components/SearchBar", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const RN = require("react-native");
   return {
     SearchBar: ({
       value,
@@ -96,10 +105,10 @@ jest.mock("@/components/SearchBar", () => {
       onChangeText?: (text: string) => void;
       testID?: string;
     }) =>
-      mockReact.createElement(
-        mockRN.View,
+      React.createElement(
+        RN.View,
         { testID: testID || "search-bar" },
-        mockReact.createElement(mockRN.TextInput, {
+        React.createElement(RN.TextInput, {
           testID: `${testID || "search-bar"}-input`,
           value,
           onChangeText,
@@ -115,10 +124,10 @@ jest.mock("@/components/SearchBar", () => {
       onChangeText?: (text: string) => void;
       testID?: string;
     }) =>
-      mockReact.createElement(
-        mockRN.View,
+      React.createElement(
+        RN.View,
         { testID: testID || "search-bar" },
-        mockReact.createElement(mockRN.TextInput, {
+        React.createElement(RN.TextInput, {
           testID: `${testID || "search-bar"}-input`,
           value,
           onChangeText,
@@ -129,13 +138,18 @@ jest.mock("@/components/SearchBar", () => {
 
 // Mock Tamagui with Popover subcomponents
 jest.mock("tamagui", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const RN = require("react-native");
+
   // Create wrapper components using require'd React
   const mockPopoverRoot = ({ children }: { children: unknown; }) =>
-    mockReact.createElement(mockRN.View, { testID: "popover" }, children);
+    React.createElement(RN.View, { testID: "popover" }, children);
   const mockPopoverTrigger = ({ children }: { children: unknown; }) =>
-    mockReact.createElement(mockRN.View, { testID: "popover-trigger" }, children);
+    React.createElement(RN.View, { testID: "popover-trigger" }, children);
   const mockPopoverContent = ({ children }: { children: unknown; }) =>
-    mockReact.createElement(mockRN.View, { testID: "popover-content" }, children);
+    React.createElement(RN.View, { testID: "popover-content" }, children);
 
   const MockPopover = Object.assign(mockPopoverRoot, {
     Trigger: mockPopoverTrigger,
@@ -143,17 +157,17 @@ jest.mock("tamagui", () => {
   });
 
   const mockSheetRoot = ({ children, open }: { children: unknown; open?: boolean; }) =>
-    open ? mockReact.createElement(mockRN.View, { testID: "sheet" }, children) : null;
+    open ? React.createElement(RN.View, { testID: "sheet" }, children) : null;
   const mockSheetFrame = ({ children }: { children: unknown; }) =>
-    mockReact.createElement(mockRN.View, { testID: "sheet-frame" }, children);
-  const mockSheetOverlay = () => mockReact.createElement(mockRN.View, { testID: "sheet-overlay" });
-  const mockSheetHandle = () => mockReact.createElement(mockRN.View, { testID: "sheet-handle" });
+    React.createElement(RN.View, { testID: "sheet-frame" }, children);
+  const mockSheetOverlay = () => React.createElement(RN.View, { testID: "sheet-overlay" });
+  const mockSheetHandle = () => React.createElement(RN.View, { testID: "sheet-handle" });
 
   const MockSheet = Object.assign(mockSheetRoot, {
     Frame: mockSheetFrame,
     Overlay: mockSheetOverlay,
     Handle: mockSheetHandle,
-    ScrollView: mockRN.View,
+    ScrollView: RN.View,
   });
 
   return {
@@ -171,41 +185,41 @@ jest.mock("tamagui", () => {
       md: false,
       lg: true,
     })),
-    View: mockRN.View,
-    Text: mockRN.Text,
-    Stack: mockRN.View,
-    XStack: mockRN.View,
-    YStack: mockRN.View,
-    ZStack: mockRN.View,
-    Button: mockRN.Pressable,
-    Input: mockRN.TextInput,
-    Label: mockRN.Text,
-    H1: mockRN.Text,
-    H2: mockRN.Text,
-    H3: mockRN.Text,
-    H4: mockRN.Text,
-    Paragraph: mockRN.Text,
-    Card: mockRN.View,
-    Separator: mockRN.View,
-    ScrollView: mockRN.View,
+    View: RN.View,
+    Text: RN.Text,
+    Stack: RN.View,
+    XStack: RN.View,
+    YStack: RN.View,
+    ZStack: RN.View,
+    Button: RN.Pressable,
+    Input: RN.TextInput,
+    Label: RN.Text,
+    H1: RN.Text,
+    H2: RN.Text,
+    H3: RN.Text,
+    H4: RN.Text,
+    Paragraph: RN.Text,
+    Card: RN.View,
+    Separator: RN.View,
+    ScrollView: RN.View,
     Popover: MockPopover,
     Sheet: MockSheet,
     Dialog: {
-      Trigger: mockRN.Pressable,
-      Portal: mockRN.View,
-      Overlay: mockRN.View,
-      Content: mockRN.View,
-      Title: mockRN.Text,
-      Description: mockRN.Text,
-      Close: mockRN.Pressable,
+      Trigger: RN.Pressable,
+      Portal: RN.View,
+      Overlay: RN.View,
+      Content: RN.View,
+      Title: RN.Text,
+      Description: RN.Text,
+      Close: RN.Pressable,
     },
     Spinner: () => null,
     Avatar: {
-      Image: mockRN.View,
-      Fallback: mockRN.Text,
+      Image: RN.View,
+      Fallback: RN.Text,
     },
-    Progress: Object.assign(mockRN.View, {
-      Indicator: mockRN.View,
+    Progress: Object.assign(RN.View, {
+      Indicator: RN.View,
     }),
     getTokens: jest.fn(() => ({
       color: {},

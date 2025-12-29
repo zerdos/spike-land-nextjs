@@ -26,6 +26,7 @@ jest.mock("expo-image", () => ({
 }));
 
 jest.mock("tamagui", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View, Text: RNText, ScrollView } = require("react-native");
   return {
     Spinner: () => <View testID="spinner" />,
@@ -73,6 +74,7 @@ jest.mock("@/components/BlogCard", () => ({
       testID: string;
     },
   ) => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { View, Text, Pressable } = require("react-native");
     return (
       <Pressable testID={testID} onPress={() => onPress(post)}>

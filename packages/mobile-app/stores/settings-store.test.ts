@@ -4,22 +4,25 @@
  */
 
 import { act } from "@testing-library/react-native";
+import * as storage from "../services/storage";
 import { useSettingsStore } from "./settings-store";
+
+const mockStorage = jest.mocked(storage);
 
 // ============================================================================
 // Mocks
 // ============================================================================
 
 // Mock storage
-const mockStorage: Record<string, string> = {};
+const storageData: Record<string, string> = {};
 jest.mock("../services/storage", () => ({
-  getItemAsync: jest.fn((key: string) => Promise.resolve(mockStorage[key] || null)),
+  getItemAsync: jest.fn((key: string) => Promise.resolve(storageData[key] || null)),
   setItemAsync: jest.fn((key: string, value: string) => {
-    mockStorage[key] = value;
+    storageData[key] = value;
     return Promise.resolve();
   }),
   deleteItemAsync: jest.fn((key: string) => {
-    delete mockStorage[key];
+    delete storageData[key];
     return Promise.resolve();
   }),
 }));
@@ -248,8 +251,7 @@ describe("useSettingsStore", () => {
     });
 
     it("should load persisted preferences before fetching from server", async () => {
-      const storage = require("../services/storage");
-      storage.getItemAsync.mockImplementation((key: string) => {
+      mockStorage.getItemAsync.mockImplementation((key: string) => {
         if (key === "spike_notification_preferences") {
           return Promise.resolve(
             JSON.stringify({
@@ -897,27 +899,24 @@ describe("useSettingsStore", () => {
 
   describe("persistPreferences", () => {
     it("should save preferences to storage", async () => {
-      const storage = require("../services/storage");
-
       await act(async () => {
         await useSettingsStore.getState().persistPreferences();
       });
 
-      expect(storage.setItemAsync).toHaveBeenCalledWith(
+      expect(mockStorage.setItemAsync).toHaveBeenCalledWith(
         "spike_notification_preferences",
         expect.any(String),
       );
-      expect(storage.setItemAsync).toHaveBeenCalledWith(
+      expect(mockStorage.setItemAsync).toHaveBeenCalledWith(
         "spike_privacy_preferences",
         expect.any(String),
       );
     });
 
     it("should handle storage errors gracefully", async () => {
-      const storage = require("../services/storage");
       const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-      storage.setItemAsync.mockRejectedValueOnce(new Error("Storage full"));
+      mockStorage.setItemAsync.mockRejectedValueOnce(new Error("Storage full"));
 
       await act(async () => {
         await useSettingsStore.getState().persistPreferences();
@@ -930,8 +929,7 @@ describe("useSettingsStore", () => {
 
   describe("loadPersistedPreferences", () => {
     it("should load preferences from storage", async () => {
-      const storage = require("../services/storage");
-      storage.getItemAsync.mockImplementation((key: string) => {
+      mockStorage.getItemAsync.mockImplementation((key: string) => {
         if (key === "spike_notification_preferences") {
           return Promise.resolve(
             JSON.stringify({
@@ -966,8 +964,7 @@ describe("useSettingsStore", () => {
     });
 
     it("should use defaults when storage is empty", async () => {
-      const storage = require("../services/storage");
-      storage.getItemAsync.mockResolvedValue(null);
+      mockStorage.getItemAsync.mockResolvedValue(null);
 
       await act(async () => {
         await useSettingsStore.getState().loadPersistedPreferences();
@@ -980,10 +977,9 @@ describe("useSettingsStore", () => {
     });
 
     it("should handle storage errors and use defaults", async () => {
-      const storage = require("../services/storage");
       const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-      storage.getItemAsync.mockRejectedValue(new Error("Storage error"));
+      mockStorage.getItemAsync.mockRejectedValue(new Error("Storage error"));
 
       await act(async () => {
         await useSettingsStore.getState().loadPersistedPreferences();

@@ -5,6 +5,9 @@
 // MUST patch mocks BEFORE importing the component
 // The jest.setup.ts has broken mocks that need to be fixed
 
+import ReactModule from "react";
+import { View } from "react-native";
+
 // Create chainable gesture helper
 const createChainableGesture = () => {
   const gesture: Record<string, jest.Mock> = {};
@@ -29,11 +32,8 @@ const createChainableGesture = () => {
   return gesture;
 };
 
-// Patch mocks BEFORE any component imports
-const { View } = require("react-native");
-
 // Fix react-native-gesture-handler
-const GestureHandler = require("react-native-gesture-handler");
+const GestureHandler = jest.requireActual("react-native-gesture-handler");
 GestureHandler.Gesture = {
   Pan: jest.fn(() => createChainableGesture()),
   Tap: jest.fn(() => createChainableGesture()),
@@ -43,7 +43,7 @@ GestureHandler.GestureHandlerRootView = View;
 GestureHandler.GestureDetector = View;
 
 // Fix react-native-reanimated
-const Reanimated = require("react-native-reanimated");
+const Reanimated = jest.requireActual("react-native-reanimated");
 Reanimated.default = {
   View,
   Text: View,
@@ -52,8 +52,7 @@ Reanimated.default = {
 };
 
 // Fix @tamagui/lucide-icons - the mock in jest.setup.ts incorrectly calls View() as a function
-const ReactModule = require("react");
-const LucideIcons = require("@tamagui/lucide-icons");
+const LucideIcons = jest.requireActual("@tamagui/lucide-icons");
 const MockIcon = (props: Record<string, unknown>) => ReactModule.createElement(View, props);
 LucideIcons.Bell = MockIcon;
 LucideIcons.CheckCircle = MockIcon;

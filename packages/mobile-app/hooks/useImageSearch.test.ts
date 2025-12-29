@@ -10,7 +10,6 @@ import {
   type SortOption,
   sortOptionToApiParams,
   useImageSearch,
-  type UseImageSearchOptions,
 } from "./useImageSearch";
 
 // ============================================================================

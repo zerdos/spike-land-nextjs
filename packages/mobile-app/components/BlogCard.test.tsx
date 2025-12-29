@@ -14,28 +14,26 @@ jest.mock("expo-image", () => ({
 }));
 
 // Mock tamagui components
-jest.mock("tamagui", () => ({
-  Card: ({ children, ...props }: React.PropsWithChildren<object>) => {
-    const { View } = require("react-native");
-    return <View {...props}>{children}</View>;
-  },
-  Stack: ({ children, ...props }: React.PropsWithChildren<object>) => {
-    const { View } = require("react-native");
-    return <View {...props}>{children}</View>;
-  },
-  Text: ({ children, ...props }: React.PropsWithChildren<object>) => {
-    const { Text } = require("react-native");
-    return <Text {...props}>{children}</Text>;
-  },
-  XStack: ({ children, ...props }: React.PropsWithChildren<object>) => {
-    const { View } = require("react-native");
-    return <View {...props}>{children}</View>;
-  },
-  YStack: ({ children, ...props }: React.PropsWithChildren<object>) => {
-    const { View } = require("react-native");
-    return <View {...props}>{children}</View>;
-  },
-}));
+jest.mock("tamagui", () => {
+  const RN = jest.requireActual("react-native");
+  return {
+    Card: ({ children, ...props }: React.PropsWithChildren<object>) => {
+      return <RN.View {...props}>{children}</RN.View>;
+    },
+    Stack: ({ children, ...props }: React.PropsWithChildren<object>) => {
+      return <RN.View {...props}>{children}</RN.View>;
+    },
+    Text: ({ children, ...props }: React.PropsWithChildren<object>) => {
+      return <RN.Text {...props}>{children}</RN.Text>;
+    },
+    XStack: ({ children, ...props }: React.PropsWithChildren<object>) => {
+      return <RN.View {...props}>{children}</RN.View>;
+    },
+    YStack: ({ children, ...props }: React.PropsWithChildren<object>) => {
+      return <RN.View {...props}>{children}</RN.View>;
+    },
+  };
+});
 
 // Mock lucide icons
 jest.mock("@tamagui/lucide-icons", () => ({

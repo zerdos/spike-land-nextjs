@@ -12,7 +12,6 @@ import {
   Button,
   Card,
   H3,
-  H4,
   Paragraph,
   ScrollView,
   Separator,
@@ -283,7 +282,7 @@ export default function SettingsScreen() {
               iconColor="#3B82F6"
               title="Profile"
               subtitle="Edit your profile information"
-              onPress={() => router.push("/settings?tab=profile" as any)}
+              onPress={() => router.push("/settings?tab=profile" as unknown as string)}
             />
             <Separator marginHorizontal="$3" />
             <SettingsRow

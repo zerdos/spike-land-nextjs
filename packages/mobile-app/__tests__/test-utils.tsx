@@ -6,6 +6,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, RenderOptions, RenderResult } from "@testing-library/react-native";
 import React, { ReactElement, ReactNode } from "react";
+import { TamaguiProvider } from "tamagui";
+
+import tamaguiConfig from "../__mocks__/@tamagui/config";
 
 import type { SubscriptionTier, User } from "@spike-npm-land/shared";
 
@@ -279,12 +282,9 @@ function AllProviders({ children, queryClient }: AllProvidersProps): ReactElemen
   const testQueryClient = queryClient ?? createTestQueryClient();
 
   // TamaguiProvider is mocked in jest.setup.ts, so this just passes through children
-  const { TamaguiProvider } = require("tamagui");
-  const config = require("../__mocks__/@tamagui/config").default;
-
   return (
     <QueryClientProvider client={testQueryClient}>
-      <TamaguiProvider config={config}>{children}</TamaguiProvider>
+      <TamaguiProvider config={tamaguiConfig}>{children}</TamaguiProvider>
     </QueryClientProvider>
   );
 }

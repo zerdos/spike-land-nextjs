@@ -29,18 +29,18 @@ jest.mock("@/stores", () => ({
 
 // Mock Tamagui components
 jest.mock("tamagui", () => {
-  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View, Text, TouchableOpacity } = require("react-native");
 
   return {
-    Button: ({ children, onPress, testID, ...props }: any) => (
+    Button: ({ children, onPress, testID }: any) => (
       <TouchableOpacity onPress={onPress} testID={testID}>
         {typeof children === "string" ? <Text>{children}</Text> : children}
       </TouchableOpacity>
     ),
-    Text: ({ children, testID, ...props }: any) => <Text testID={testID}>{children}</Text>,
-    YStack: ({ children, testID, ...props }: any) => <View testID={testID}>{children}</View>,
-    XStack: ({ children, testID, ...props }: any) => <View testID={testID}>{children}</View>,
+    Text: ({ children, testID }: any) => <Text testID={testID}>{children}</Text>,
+    YStack: ({ children, testID }: any) => <View testID={testID}>{children}</View>,
+    XStack: ({ children, testID }: any) => <View testID={testID}>{children}</View>,
     TamaguiProvider: ({ children }: any) => <>{children}</>,
     createTamagui: jest.fn(() => ({})),
     createTokens: jest.fn(() => ({})),
@@ -49,8 +49,8 @@ jest.mock("tamagui", () => {
 
 // Mock JobProgress component
 jest.mock("@/components/JobProgress", () => ({
-  JobProgress: ({ onRetry, ...props }: { onRetry?: () => void; }) => {
-    const React = require("react");
+  JobProgress: ({ onRetry: _onRetry, ...props }: { onRetry?: () => void; }) => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { View } = require("react-native");
     return (
       <View

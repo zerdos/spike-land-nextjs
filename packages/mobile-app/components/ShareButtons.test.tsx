@@ -6,7 +6,7 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import * as Clipboard from "expo-clipboard";
 import * as Sharing from "expo-sharing";
 import React from "react";
-import { Linking } from "react-native";
+import { Linking, Text as RNText, TouchableOpacity, View as RNView } from "react-native";
 
 import { ShareButtons } from "./ShareButtons";
 
@@ -29,20 +29,17 @@ jest.mock("tamagui", () => ({
     testID?: string;
     disabled?: boolean;
     icon?: React.ReactNode;
-  }) => {
-    const { TouchableOpacity, Text, View } = require("react-native");
-    return (
-      <TouchableOpacity
-        onPress={onPress}
-        testID={testID}
-        disabled={disabled}
-        {...props}
-      >
-        {icon && <View>{icon}</View>}
-        <Text>{children}</Text>
-      </TouchableOpacity>
-    );
-  },
+  }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      testID={testID}
+      disabled={disabled}
+      {...props}
+    >
+      {icon && <RNView>{icon}</RNView>}
+      <RNText>{children}</RNText>
+    </TouchableOpacity>
+  ),
   XStack: ({
     children,
     testID,
@@ -50,14 +47,11 @@ jest.mock("tamagui", () => ({
   }: {
     children: React.ReactNode;
     testID?: string;
-  }) => {
-    const { View } = require("react-native");
-    return (
-      <View testID={testID} {...props}>
-        {children}
-      </View>
-    );
-  },
+  }) => (
+    <RNView testID={testID} {...props}>
+      {children}
+    </RNView>
+  ),
   YStack: ({
     children,
     testID,
@@ -65,14 +59,11 @@ jest.mock("tamagui", () => ({
   }: {
     children: React.ReactNode;
     testID?: string;
-  }) => {
-    const { View } = require("react-native");
-    return (
-      <View testID={testID} {...props}>
-        {children}
-      </View>
-    );
-  },
+  }) => (
+    <RNView testID={testID} {...props}>
+      {children}
+    </RNView>
+  ),
 }));
 
 // Mock Tamagui icons

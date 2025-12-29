@@ -17,7 +17,7 @@ jest.mock("tamagui", () => ({
     children: React.ReactNode;
     testID?: string;
   }) => {
-    const { View } = require("react-native");
+    const { View } = jest.requireActual("react-native");
     return (
       <View testID={testID} {...props}>
         {children}
@@ -32,7 +32,7 @@ jest.mock("tamagui", () => ({
     children: React.ReactNode;
     testID?: string;
   }) => {
-    const { Text } = require("react-native");
+    const { Text } = jest.requireActual("react-native");
     return (
       <Text testID={testID} {...props}>
         {children}
@@ -40,7 +40,7 @@ jest.mock("tamagui", () => ({
     );
   },
   Paragraph: ({ children }: { children: React.ReactNode; }) => {
-    const { Text } = require("react-native");
+    const { Text } = jest.requireActual("react-native");
     return <Text>{children}</Text>;
   },
   XStack: ({
@@ -51,7 +51,7 @@ jest.mock("tamagui", () => ({
     children: React.ReactNode;
     testID?: string;
   }) => {
-    const { View } = require("react-native");
+    const { View } = jest.requireActual("react-native");
     return (
       <View testID={testID} {...props}>
         {children}
@@ -66,7 +66,7 @@ jest.mock("tamagui", () => ({
     children: React.ReactNode;
     testID?: string;
   }) => {
-    const { View } = require("react-native");
+    const { View } = jest.requireActual("react-native");
     return (
       <View testID={testID} {...props}>
         {children}

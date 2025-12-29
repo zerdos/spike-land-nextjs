@@ -9,7 +9,7 @@ jest.mock("@/tamagui.config", () => ({}));
 import UserManagementPage from "@/app/admin/users/index";
 import * as adminApi from "@/services/api/admin";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";
 
 // Mock expo-router
@@ -131,7 +131,7 @@ describe("UserManagementPage", () => {
     });
 
     it("should display role badges", async () => {
-      const { getByText, getAllByText } = render(<UserManagementPage />, {
+      const { getByText } = render(<UserManagementPage />, {
         wrapper: createWrapper(),
       });
 

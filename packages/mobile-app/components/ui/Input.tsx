@@ -25,7 +25,7 @@
 
 import React, { forwardRef, useCallback, useState } from "react";
 import { TextInput, TextInputProps } from "react-native";
-import { GetProps, Stack, styled, Text } from "tamagui";
+import { Stack, styled, Text } from "tamagui";
 import { borderRadius, colors, fontSize, spacing } from "../../constants/theme";
 
 // ============================================================================

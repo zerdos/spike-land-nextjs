@@ -2,8 +2,9 @@
  * SearchBar Component Tests
  */
 
-import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 import React from "react";
+import { TextInput, TouchableOpacity, View } from "react-native";
 
 import { SearchBar, type SearchBarProps } from "./SearchBar";
 
@@ -13,9 +14,6 @@ import { SearchBar, type SearchBarProps } from "./SearchBar";
 
 // Mock tamagui components
 jest.mock("tamagui", () => {
-  const { View, TouchableOpacity, TextInput } = require("react-native");
-  const MockReact = require("react");
-
   return {
     Button: (props: Record<string, unknown>) => {
       const {
@@ -29,15 +27,15 @@ jest.mock("tamagui", () => {
       // Handle icon prop - it can be a component function or a JSX element
       let iconElement = null;
       if (Icon) {
-        if (MockReact.isValidElement(Icon)) {
+        if (React.isValidElement(Icon)) {
           // It's already a JSX element (e.g., <X size={16} />)
           iconElement = Icon;
         } else if (typeof Icon === "function") {
           // It's a component function
-          iconElement = MockReact.createElement(Icon);
+          iconElement = React.createElement(Icon);
         }
       }
-      return MockReact.createElement(
+      return React.createElement(
         TouchableOpacity,
         {
           onPress,
@@ -51,7 +49,7 @@ jest.mock("tamagui", () => {
         children,
       );
     },
-    Input: MockReact.forwardRef((props: Record<string, unknown>, ref: unknown) => {
+    Input: React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
       const {
         testID,
         onChangeText,
@@ -61,7 +59,7 @@ jest.mock("tamagui", () => {
         placeholder,
         "aria-label": ariaLabel,
       } = props;
-      return MockReact.createElement(TextInput, {
+      return React.createElement(TextInput, {
         ref,
         testID,
         onChangeText,
@@ -74,13 +72,13 @@ jest.mock("tamagui", () => {
     }),
     XStack: (props: Record<string, unknown>) => {
       const { children, testID } = props;
-      return MockReact.createElement(View, { testID }, children);
+      return React.createElement(View, { testID }, children);
     },
     YStack: (props: Record<string, unknown>) => {
-      return MockReact.createElement(View, null, props.children);
+      return React.createElement(View, null, props.children);
     },
     Stack: (props: Record<string, unknown>) => {
-      return MockReact.createElement(View, null, props.children);
+      return React.createElement(View, null, props.children);
     },
   };
 });
