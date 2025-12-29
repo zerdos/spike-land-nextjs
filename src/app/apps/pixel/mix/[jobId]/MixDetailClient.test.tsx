@@ -71,6 +71,7 @@ describe("MixDetailClient", () => {
     resultWidth: 2048,
     resultHeight: 2048,
     createdAt: "2024-01-15T10:30:00Z",
+    errorMessage: null,
     targetImage: {
       id: "img-1",
       name: "Photo 1.jpg",

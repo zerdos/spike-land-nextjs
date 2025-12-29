@@ -169,14 +169,62 @@ packages/mobile-app/
 
 ## Development Commands
 
-| Command        | Description                        |
-| -------------- | ---------------------------------- |
-| `yarn start`   | Start Expo dev server with QR code |
-| `yarn ios`     | Start on iOS Simulator             |
-| `yarn android` | Start on Android Emulator          |
-| `yarn web`     | Start in web browser               |
-| `yarn lint`    | Run ESLint                         |
-| `yarn test`    | Run Jest tests                     |
+| Command         | Description                        |
+| --------------- | ---------------------------------- |
+| `yarn start`    | Start Expo dev server with QR code |
+| `yarn ios`      | Start on iOS Simulator             |
+| `yarn android`  | Start on Android Emulator          |
+| `yarn web`      | Start in web browser               |
+| `yarn lint`     | Run ESLint                         |
+| `yarn test`     | Run Jest tests with coverage       |
+| `yarn test:run` | Run Jest tests without coverage    |
+
+---
+
+## Testing
+
+The mobile app has comprehensive test coverage using Jest and `@testing-library/react-native`.
+
+### Test Structure
+
+```
+__tests__/
+├── app/
+│   └── storybook/     # Storybook page tests (18 files, 224+ tests)
+│       ├── index.test.tsx
+│       ├── brand.test.tsx
+│       ├── colors.test.tsx
+│       ├── typography.test.tsx
+│       ├── surfaces.test.tsx
+│       ├── buttons.test.tsx
+│       ├── components.test.tsx
+│       ├── comparison.test.tsx
+│       ├── data-display.test.tsx
+│       ├── layout.test.tsx
+│       ├── feedback.test.tsx
+│       ├── loading.test.tsx
+│       ├── modals.test.tsx
+│       ├── accessibility.test.tsx
+│       ├── merch.test.tsx
+│       ├── photo-mix.test.tsx
+│       ├── auth.test.tsx
+│       └── errors.test.tsx
+├── hooks/              # Custom hook tests
+└── services/           # Service tests
+```
+
+### Running Tests
+
+```bash
+# Run all tests with coverage
+yarn test
+
+# Run specific test file
+yarn test:run __tests__/app/storybook/buttons.test.tsx
+
+# Run storybook tests only
+yarn test:run __tests__/app/storybook/
+```
 
 ---
 
