@@ -2,21 +2,65 @@
  * FilterSheet Component Tests
  */
 
-import type { Album } from "@spike-npm-land/shared";
-import { fireEvent, render } from "@testing-library/react-native";
-import React from "react";
-
-import type { ImageFilters, SortOption } from "../hooks/useImageSearch";
-import { FilterSheet, type FilterSheetProps } from "./FilterSheet";
-
 // ============================================================================
-// Additional Mock for Checkbox compound component
+// Mock for @tamagui/lucide-icons - Override global mock to use React.createElement
 // ============================================================================
 
-// Extend the tamagui mock to include Checkbox with Indicator subcomponent
-jest.mock("tamagui", () => {
-  const { View, Text, Pressable, TextInput, ScrollView } = require("react-native");
+jest.mock("@tamagui/lucide-icons", () => {
   const React = require("react");
+  const { View } = require("react-native");
+  // Must use React.createElement, not call View as a function
+  const MockIcon = (props: any) => React.createElement(View, props);
+  return {
+    Calendar: MockIcon,
+    Check: MockIcon,
+    ChevronDown: MockIcon,
+    RotateCcw: MockIcon,
+    Sparkles: MockIcon,
+    Clock: MockIcon,
+    Image: MockIcon,
+    Layers: MockIcon,
+    Coins: MockIcon,
+    X: MockIcon,
+    ChevronRight: MockIcon,
+    ChevronLeft: MockIcon,
+    Plus: MockIcon,
+    Minus: MockIcon,
+    Settings: MockIcon,
+    User: MockIcon,
+    Home: MockIcon,
+    Search: MockIcon,
+    Download: MockIcon,
+    Share2: MockIcon,
+    Trash2: MockIcon,
+    Copy: MockIcon,
+    Loader2: MockIcon,
+    ZoomIn: MockIcon,
+    ZoomOut: MockIcon,
+    Gift: MockIcon,
+    Trophy: MockIcon,
+    Users: MockIcon,
+    CheckCircle: MockIcon,
+    UserPlus: MockIcon,
+    HelpCircle: MockIcon,
+    Facebook: MockIcon,
+    Twitter: MockIcon,
+    MessageCircle: MockIcon,
+    Bell: MockIcon,
+    Megaphone: MockIcon,
+    Inbox: MockIcon,
+    CheckCheck: MockIcon,
+    Circle: MockIcon,
+  };
+});
+
+// ============================================================================
+// Mock for tamagui - with Checkbox compound component support
+// ============================================================================
+
+jest.mock("tamagui", () => {
+  const React = require("react");
+  const { View, Text, Pressable, TextInput, ScrollView } = require("react-native");
 
   // Create Checkbox mock with Indicator subcomponent
   const CheckboxComponent = React.forwardRef(
@@ -35,17 +79,17 @@ jest.mock("tamagui", () => {
       );
     },
   );
-  CheckboxComponent.Indicator = View;
+  CheckboxComponent.Indicator = (props: any) => React.createElement(View, props);
 
   // Sheet mock with compound components
   const SheetComponent = ({ children, open, ...props }: any) => {
     if (!open) return null;
     return React.createElement(View, props, children);
   };
-  SheetComponent.Frame = View;
-  SheetComponent.Overlay = View;
-  SheetComponent.Handle = View;
-  SheetComponent.ScrollView = ScrollView;
+  SheetComponent.Frame = (props: any) => React.createElement(View, props);
+  SheetComponent.Overlay = () => null;
+  SheetComponent.Handle = () => null;
+  SheetComponent.ScrollView = (props: any) => React.createElement(ScrollView, props);
 
   return {
     styled: jest.fn((component: any) => component),
@@ -109,6 +153,13 @@ jest.mock("tamagui", () => {
     isWeb: false,
   };
 });
+
+import type { Album } from "@spike-npm-land/shared";
+import { fireEvent, render } from "@testing-library/react-native";
+import React from "react";
+
+import type { ImageFilters, SortOption } from "../hooks/useImageSearch";
+import { FilterSheet, type FilterSheetProps } from "./FilterSheet";
 
 // ============================================================================
 // Test Helpers
@@ -271,11 +322,12 @@ describe("FilterSheet", () => {
     });
 
     it("shows all sort options", () => {
-      const { getByTestId, getByText } = renderComponent();
+      const { getByTestId, getAllByText, getByText } = renderComponent();
 
       fireEvent.press(getByTestId("filter-sheet-sort-button"));
 
-      expect(getByText("Newest First")).toBeTruthy();
+      // "Newest First" appears twice: in button and in dropdown, so use getAllByText
+      expect(getAllByText("Newest First").length).toBeGreaterThanOrEqual(1);
       expect(getByText("Oldest First")).toBeTruthy();
       expect(getByText("Name A-Z")).toBeTruthy();
       expect(getByText("Name Z-A")).toBeTruthy();

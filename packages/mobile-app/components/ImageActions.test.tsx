@@ -5,14 +5,47 @@
 
 // Mock react-native-reanimated before any imports that might use it
 jest.mock("react-native-reanimated", () => {
+  const React = require("react");
   const { View } = require("react-native");
-  return {
-    default: {
-      View: View,
-      call: jest.fn(),
+
+  // Create a proper Animated.View mock
+  const AnimatedView = React.forwardRef(
+    (
+      props: {
+        testID?: string;
+        style?: object;
+        children?: React.ReactNode;
+        pointerEvents?: string;
+      },
+      ref: React.Ref<typeof View>,
+    ) => {
+      return React.createElement(View, { ...props, ref });
     },
-    View: View,
-    useSharedValue: jest.fn((initial) => ({ value: initial })),
+  );
+  AnimatedView.displayName = "AnimatedView";
+
+  // Create a shared value that can be assigned to
+  const createSharedValue = (initial: number) => {
+    let currentValue = initial;
+    return {
+      get value() {
+        return currentValue;
+      },
+      set value(newValue: number) {
+        currentValue = newValue;
+      },
+    };
+  };
+
+  return {
+    __esModule: true,
+    default: {
+      View: AnimatedView,
+      call: jest.fn(),
+      createAnimatedComponent: (component: React.ComponentType) => component,
+    },
+    View: AnimatedView,
+    useSharedValue: (initial: number) => createSharedValue(initial),
     useAnimatedStyle: jest.fn(() => ({})),
     withTiming: jest.fn((value) => value),
     withSpring: jest.fn((value) => value),
@@ -33,16 +66,18 @@ jest.mock("react-native-reanimated", () => {
 });
 
 // Mock react-native-safe-area-context
-jest.mock("react-native-safe-area-context", () => ({
-  SafeAreaProvider: ({ children }: { children: React.ReactNode; }) => children,
-  SafeAreaView: ({ children }: { children: React.ReactNode; }) => children,
-  useSafeAreaInsets: jest.fn(() => ({
-    top: 44,
-    right: 0,
-    bottom: 34,
-    left: 0,
-  })),
-}));
+jest.mock("react-native-safe-area-context", () => {
+  return {
+    SafeAreaProvider: ({ children }: { children: unknown; }) => children,
+    SafeAreaView: ({ children }: { children: unknown; }) => children,
+    useSafeAreaInsets: () => ({
+      top: 44,
+      right: 0,
+      bottom: 34,
+      left: 0,
+    }),
+  };
+});
 
 import { fireEvent, render } from "@testing-library/react-native";
 import React from "react";

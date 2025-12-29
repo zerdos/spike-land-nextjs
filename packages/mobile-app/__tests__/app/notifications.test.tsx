@@ -2,6 +2,69 @@
  * Tests for Notifications Screen
  */
 
+// Mock tamagui.config before any component imports
+jest.mock("@/tamagui.config", () => ({}));
+
+// Mock safe area insets
+jest.mock("react-native-safe-area-context", () => ({
+  SafeAreaProvider: ({ children }: { children: React.ReactNode; }) => children,
+  SafeAreaView: ({ children }: { children: React.ReactNode; }) => children,
+  useSafeAreaInsets: () => ({ top: 44, right: 0, bottom: 34, left: 0 }),
+}));
+
+// Mock Tamagui lucide icons - proper React component mocks
+jest.mock("@tamagui/lucide-icons", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  const MockIcon = (props: any) => React.createElement(View, { testID: props.testID });
+  return {
+    Bell: MockIcon,
+    CheckCheck: MockIcon,
+    Inbox: MockIcon,
+    CheckCircle: MockIcon,
+    Coins: MockIcon,
+    Megaphone: MockIcon,
+    Trash2: MockIcon,
+  };
+});
+
+// Mock expo-router with Stack.Screen that renders headerRight
+jest.mock("expo-router", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+
+  const mockRouter = {
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    canGoBack: jest.fn(() => true),
+    navigate: jest.fn(),
+  };
+
+  // Stack.Screen that renders headerRight if provided
+  const StackScreen = ({ options }: { options?: { headerRight?: () => React.ReactNode; }; }) => {
+    if (options?.headerRight) {
+      return React.createElement(View, { testID: "stack-screen-header" }, options.headerRight());
+    }
+    return null;
+  };
+
+  return {
+    router: mockRouter,
+    useRouter: jest.fn(() => mockRouter),
+    useLocalSearchParams: jest.fn(() => ({})),
+    useSegments: jest.fn(() => []),
+    usePathname: jest.fn(() => "/"),
+    Link: ({ children }: { children: React.ReactNode; }) => children,
+    Stack: {
+      Screen: StackScreen,
+    },
+    Tabs: {
+      Screen: ({ children }: { children?: React.ReactNode; }) => children,
+    },
+  };
+});
+
 // Mock NotificationItem component BEFORE importing the screen
 // This prevents loading react-native-reanimated from the component
 jest.mock("@/components/NotificationItem", () => {
@@ -52,11 +115,9 @@ jest.mock("@/services/notifications", () => ({
 import NotificationsScreen from "@/app/notifications";
 import * as notificationsService from "@/services/notifications";
 import type { NotificationType, ServerNotification } from "@/services/notifications";
-import config from "@/tamagui.config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";
-import { TamaguiProvider } from "tamagui";
 
 // ============================================================================
 // Test Helpers
@@ -101,7 +162,7 @@ function renderWithProviders(
   return {
     ...render(
       <QueryClientProvider client={queryClient}>
-        <TamaguiProvider config={config}>{component}</TamaguiProvider>
+        {component}
       </QueryClientProvider>,
     ),
     queryClient,
@@ -296,9 +357,8 @@ describe("NotificationsScreen", () => {
       });
 
       await waitFor(() => {
-        expect(mockNotificationsService.markNotificationAsRead).toHaveBeenCalledWith(
-          "notif-1",
-        );
+        expect(mockNotificationsService.markNotificationAsRead).toHaveBeenCalled();
+        expect(mockNotificationsService.markNotificationAsRead.mock.calls[0][0]).toBe("notif-1");
       });
     });
 

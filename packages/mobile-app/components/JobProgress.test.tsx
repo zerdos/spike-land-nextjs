@@ -4,7 +4,6 @@
 
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import React from "react";
-import { View } from "react-native";
 import { TamaguiProvider } from "tamagui";
 import config from "../tamagui.config";
 import { JobProgress, JobProgressProps } from "./JobProgress";
@@ -15,10 +14,12 @@ import { JobProgress, JobProgressProps } from "./JobProgress";
 
 // Mock missing Tamagui lucide icons (AlertCircle, Zap)
 jest.mock("@tamagui/lucide-icons", () => {
-  const MockIcon = (props: { testID?: string; }) => {
-    const { View: RNView } = require("react-native");
-    return RNView(props);
-  };
+  const React = require("react");
+  const { View } = require("react-native");
+  const MockIcon = React.forwardRef((props: { testID?: string; }, ref: unknown) =>
+    React.createElement(View, { ...props, ref })
+  );
+  MockIcon.displayName = "MockIcon";
   return {
     AlertCircle: MockIcon,
     Check: MockIcon,
@@ -31,18 +32,38 @@ jest.mock("@tamagui/lucide-icons", () => {
 
 // Mock tamagui with Circle component
 jest.mock("tamagui", () => {
-  const { View: RNView, Text: RNText, Pressable, TextInput } = require("react-native");
+  const React = require("react");
+  const { View, Text, Pressable, TextInput } = require("react-native");
 
   // Create a Button mock that supports Button.Icon and Button.Text
+  const ButtonIcon = React.forwardRef((props: { children?: React.ReactNode; }, ref: unknown) =>
+    React.createElement(View, { ...props, ref })
+  );
+  ButtonIcon.displayName = "ButtonIcon";
+
+  const ButtonText = React.forwardRef((props: { children?: React.ReactNode; }, ref: unknown) =>
+    React.createElement(Text, { ...props, ref })
+  );
+  ButtonText.displayName = "ButtonText";
+
   const ButtonMock = Object.assign(
-    (props: { children?: React.ReactNode; onPress?: () => void; testID?: string; }) => {
-      return Pressable(props);
-    },
+    React.forwardRef(
+      (
+        props: { children?: React.ReactNode; onPress?: () => void; testID?: string; },
+        ref: unknown,
+      ) => React.createElement(Pressable, { ...props, ref }),
+    ),
     {
-      Icon: ({ children }: { children?: React.ReactNode; }) => RNView({ children }),
-      Text: ({ children }: { children?: React.ReactNode; }) => RNText({ children }),
+      Icon: ButtonIcon,
+      Text: ButtonText,
     },
   );
+  ButtonMock.displayName = "Button";
+
+  const SpinnerMock = React.forwardRef((props: { testID?: string; }, ref: unknown) =>
+    React.createElement(View, { ...props, ref })
+  );
+  SpinnerMock.displayName = "Spinner";
 
   return {
     styled: jest.fn((component) => component),
@@ -60,17 +81,17 @@ jest.mock("tamagui", () => {
       lg: true,
     })),
     // Component mocks
-    View: RNView,
-    Text: RNText,
-    Stack: RNView,
-    XStack: RNView,
-    YStack: RNView,
-    ZStack: RNView,
+    View,
+    Text,
+    Stack: View,
+    XStack: View,
+    YStack: View,
+    ZStack: View,
     Button: ButtonMock,
     Input: TextInput,
-    Label: RNText,
-    Circle: RNView,
-    Spinner: (props: { testID?: string; }) => RNView(props),
+    Label: Text,
+    Circle: View,
+    Spinner: SpinnerMock,
     getTokens: jest.fn(() => ({
       color: {},
       space: {},

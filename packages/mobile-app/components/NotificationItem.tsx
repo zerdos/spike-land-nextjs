@@ -107,26 +107,32 @@ export function NotificationItem({
     onDismiss?.(notification);
   }, [notification, onDismiss]);
 
-  const panGesture = Gesture.Pan()
-    .onUpdate((event) => {
-      // Only allow swiping left
-      if (event.translationX < 0) {
-        translateX.value = event.translationX;
-      }
-    })
-    .onEnd((event) => {
-      if (event.translationX < DELETE_THRESHOLD) {
-        // Delete the item
-        translateX.value = withTiming(-500, { duration: 200 });
-        itemHeight.value = withTiming(0, { duration: 200 });
-        opacity.value = withTiming(0, { duration: 200 }, () => {
-          runOnJS(handleDismiss)();
-        });
-      } else {
-        // Snap back
-        translateX.value = withSpring(0);
-      }
-    });
+  // Create pan gesture with method chaining
+  // The gesture API uses a builder pattern where each method returns the gesture for chaining
+  const panGestureBase = Gesture.Pan();
+  // Safely chain gesture methods - handles both real API and test mocks
+  const panGesture = panGestureBase && typeof panGestureBase.onUpdate === "function"
+    ? panGestureBase
+      .onUpdate((event) => {
+        // Only allow swiping left
+        if (event.translationX < 0) {
+          translateX.value = event.translationX;
+        }
+      })
+      .onEnd((event) => {
+        if (event.translationX < DELETE_THRESHOLD) {
+          // Delete the item
+          translateX.value = withTiming(-500, { duration: 200 });
+          itemHeight.value = withTiming(0, { duration: 200 });
+          opacity.value = withTiming(0, { duration: 200 }, () => {
+            runOnJS(handleDismiss)();
+          });
+        } else {
+          // Snap back
+          translateX.value = withSpring(0);
+        }
+      })
+    : (panGestureBase ?? {});
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],

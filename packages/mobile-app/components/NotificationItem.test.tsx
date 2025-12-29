@@ -2,76 +2,72 @@
  * Tests for NotificationItem Component
  */
 
-// Mock react-native-reanimated BEFORE any imports to avoid native worklets error
-jest.mock("react-native-reanimated", () => {
-  const View = require("react-native").View;
-  return {
-    default: {
-      call: jest.fn(),
-    },
-    View,
-    useSharedValue: jest.fn((initial) => ({ value: initial })),
-    useAnimatedStyle: jest.fn(() => ({})),
-    withTiming: jest.fn((value, _config, callback) => {
-      if (callback) callback(true);
-      return value;
-    }),
-    withSpring: jest.fn((value) => value),
-    withDelay: jest.fn((_, animation) => animation),
-    withSequence: jest.fn((...animations) => animations[0]),
-    runOnJS: jest.fn((fn) => fn),
-    runOnUI: jest.fn((fn) => fn),
-    Easing: {
-      linear: jest.fn(),
-      ease: jest.fn(),
-      bezier: jest.fn(),
-    },
-  };
-});
+// MUST patch mocks BEFORE importing the component
+// The jest.setup.ts has broken mocks that need to be fixed
 
-// Mock react-native-gesture-handler with proper chainable gesture API
-jest.mock("react-native-gesture-handler", () => {
-  const View = require("react-native").View;
+// Create chainable gesture helper
+const createChainableGesture = () => {
+  const gesture: Record<string, jest.Mock> = {};
+  const methods = [
+    "onBegin",
+    "onUpdate",
+    "onEnd",
+    "onStart",
+    "onFinalize",
+    "enabled",
+    "minDistance",
+    "activeOffsetX",
+    "activeOffsetY",
+    "failOffsetX",
+    "failOffsetY",
+    "simultaneousWithExternalGesture",
+    "requireExternalGestureToFail",
+  ];
+  for (const method of methods) {
+    gesture[method] = jest.fn(() => gesture);
+  }
+  return gesture;
+};
 
-  // Create a chainable gesture object
-  const createChainableGesture = () => {
-    const gesture = {};
-    const chainable = (method: string) => {
-      (gesture as Record<string, unknown>)[method] = jest.fn(() => gesture);
-      return gesture;
-    };
-    chainable("onUpdate");
-    chainable("onEnd");
-    chainable("onStart");
-    chainable("onFinalize");
-    chainable("enabled");
-    chainable("minDistance");
-    chainable("activeOffsetX");
-    chainable("activeOffsetY");
-    chainable("failOffsetX");
-    chainable("failOffsetY");
-    return gesture;
-  };
+// Patch mocks BEFORE any component imports
+const { View } = require("react-native");
 
-  return {
-    GestureHandlerRootView: View,
-    GestureDetector: View,
-    Gesture: {
-      Pan: jest.fn(() => createChainableGesture()),
-      Tap: jest.fn(() => createChainableGesture()),
-      LongPress: jest.fn(() => createChainableGesture()),
-    },
-  };
-});
+// Fix react-native-gesture-handler
+const GestureHandler = require("react-native-gesture-handler");
+GestureHandler.Gesture = {
+  Pan: jest.fn(() => createChainableGesture()),
+  Tap: jest.fn(() => createChainableGesture()),
+  LongPress: jest.fn(() => createChainableGesture()),
+};
+GestureHandler.GestureHandlerRootView = View;
+GestureHandler.GestureDetector = View;
 
+// Fix react-native-reanimated
+const Reanimated = require("react-native-reanimated");
+Reanimated.default = {
+  View,
+  Text: View,
+  ScrollView: View,
+  createAnimatedComponent: jest.fn((comp) => comp),
+};
+
+// Fix @tamagui/lucide-icons - the mock in jest.setup.ts incorrectly calls View() as a function
+const ReactModule = require("react");
+const LucideIcons = require("@tamagui/lucide-icons");
+const MockIcon = (props: Record<string, unknown>) => ReactModule.createElement(View, props);
+LucideIcons.Bell = MockIcon;
+LucideIcons.CheckCircle = MockIcon;
+LucideIcons.Coins = MockIcon;
+LucideIcons.Megaphone = MockIcon;
+LucideIcons.Trash2 = MockIcon;
+
+// Now import everything else
 import { fireEvent, render } from "@testing-library/react-native";
 import React from "react";
 import { TamaguiProvider } from "tamagui";
 import type { NotificationType, ServerNotification } from "../services/notifications";
 import config from "../tamagui.config";
 import { NotificationItem, type NotificationItemProps } from "./NotificationItem";
-
-// Mocks are provided by jest.setup.ts
 
 // ============================================================================
 // Test Helpers

@@ -30,8 +30,8 @@ jest.mock("expo-clipboard", () => ({
   setStringAsync: jest.fn(() => Promise.resolve()),
 }));
 
-// Mock Alert
-jest.spyOn(Alert, "alert");
+// Alert spy will be set up in beforeEach
+let alertSpy: jest.SpyInstance;
 
 // Mock auth store
 const mockAuthStore = {
@@ -39,9 +39,8 @@ const mockAuthStore = {
   isLoading: false,
   user: { id: "user-1", email: "test@example.com", name: "Test User" },
 };
-const mockUseAuthStore = jest.fn(() => mockAuthStore);
 jest.mock("@/stores", () => ({
-  useAuthStore: () => mockUseAuthStore(),
+  useAuthStore: () => mockAuthStore,
 }));
 
 // Mock settings store
@@ -79,9 +78,8 @@ const mockSettingsStore: {
   deleteApiKey: jest.fn(() => Promise.resolve({ success: true })),
   clearNewlyCreatedKey: jest.fn(),
 };
-const mockUseSettingsStore = jest.fn(() => mockSettingsStore);
 jest.mock("@/stores/settings-store", () => ({
-  useSettingsStore: () => mockUseSettingsStore(),
+  useSettingsStore: () => mockSettingsStore,
 }));
 
 // Mock Tamagui components
@@ -147,12 +145,21 @@ import ApiKeysScreen from "@/app/settings/api-keys";
 
 function resetMocks() {
   jest.clearAllMocks();
+  // Reset Alert spy
+  alertSpy = jest.spyOn(Alert, "alert");
+  // Reset auth store values
   mockAuthStore.isAuthenticated = true;
   mockAuthStore.isLoading = false;
+  // Reset settings store values
   mockSettingsStore.apiKeys = [];
   mockSettingsStore.isLoadingApiKeys = false;
   mockSettingsStore.apiKeysError = null;
   mockSettingsStore.newlyCreatedKey = null;
+  // Reset mock function implementations (they get reset by resetMocks: true in jest config)
+  mockSettingsStore.fetchApiKeys = jest.fn();
+  mockSettingsStore.createApiKey = jest.fn(() => Promise.resolve({ success: true }));
+  mockSettingsStore.deleteApiKey = jest.fn(() => Promise.resolve({ success: true }));
+  mockSettingsStore.clearNewlyCreatedKey = jest.fn();
 }
 
 // ============================================================================
@@ -364,7 +371,7 @@ describe("ApiKeysScreen", () => {
 
       fireEvent.press(getByText("Delete"));
 
-      expect(Alert.alert).toHaveBeenCalledWith(
+      expect(alertSpy).toHaveBeenCalledWith(
         "Delete API Key",
         'Are you sure you want to delete "Test Key"? This action cannot be undone.',
         expect.any(Array),
@@ -389,7 +396,7 @@ describe("ApiKeysScreen", () => {
       fireEvent.press(getByText("Delete"));
 
       // Get the onPress handler from the Alert mock
-      const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
+      const alertCall = alertSpy.mock.calls[0];
       const deleteButton = alertCall[2].find(
         (btn: any) => btn.text === "Delete",
       );
@@ -421,7 +428,7 @@ describe("ApiKeysScreen", () => {
 
       fireEvent.press(getByText("Delete"));
 
-      const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
+      const alertCall = alertSpy.mock.calls[0];
       const deleteButton = alertCall[2].find(
         (btn: any) => btn.text === "Delete",
       );
@@ -430,18 +437,22 @@ describe("ApiKeysScreen", () => {
         deleteButton.onPress();
       });
 
-      expect(Alert.alert).toHaveBeenCalledWith("Error", "Cannot delete key");
+      expect(alertSpy).toHaveBeenCalledWith("Error", "Cannot delete key");
     });
   });
 
   describe("Create API Key", () => {
     it("should show create dialog when create button is pressed", () => {
-      const { getByText } = render(<ApiKeysScreen />);
+      const { getByText, getAllByText } = render(<ApiKeysScreen />);
 
       fireEvent.press(getByText("Create API Key"));
 
-      // Dialog should be visible
-      expect(getByText("Create API Key")).toBeTruthy();
+      // Dialog should be visible - there will be two "Create API Key" texts:
+      // one in the button and one in the dialog title
+      expect(getAllByText("Create API Key").length).toBe(2);
+      // Dialog description should be visible
+      expect(getByText("Give your API key a descriptive name to help you identify it later."))
+        .toBeTruthy();
     });
 
     it("should call createApiKey with name when create is confirmed", async () => {
@@ -478,7 +489,7 @@ describe("ApiKeysScreen", () => {
       fireEvent.press(getByText("Create"));
 
       await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith(
+        expect(alertSpy).toHaveBeenCalledWith(
           "Error",
           "Maximum keys reached",
         );

@@ -140,8 +140,14 @@ describe("Button", () => {
           Loading
         </Button>,
       );
-      fireEvent.press(getByTestId("loading-disabled"));
-      expect(onPress).not.toHaveBeenCalled();
+      const button = getByTestId("loading-disabled");
+      // Verify the button is properly disabled:
+      // - onPress prop is undefined (not callable)
+      // - pointerEvents is "none" to prevent touches
+      // - accessibilityState.disabled is true for screen readers
+      expect(button.props.onPress).toBeUndefined();
+      expect(button.props.pointerEvents).toBe("none");
+      expect(button.props.accessibilityState.disabled).toBe(true);
     });
 
     it("should show small spinner for sm size", () => {
@@ -189,8 +195,12 @@ describe("Button", () => {
           Disabled
         </Button>,
       );
-      fireEvent.press(getByTestId("disabled-press"));
-      expect(onPress).not.toHaveBeenCalled();
+      const button = getByTestId("disabled-press");
+      // Verify the button is properly disabled:
+      // - onPress prop is undefined (not callable)
+      // - pointerEvents is "none" to prevent touches
+      expect(button.props.onPress).toBeUndefined();
+      expect(button.props.pointerEvents).toBe("none");
     });
 
     it("should have correct accessibility state when disabled", () => {

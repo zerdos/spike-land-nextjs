@@ -29,6 +29,31 @@ describe("useImageShare", () => {
     (Sharing.isAvailableAsync as jest.Mock).mockResolvedValue(true);
     (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: "granted" });
     (MediaLibrary.getAlbumAsync as jest.Mock).mockResolvedValue(null);
+    (MediaLibrary.createAssetAsync as jest.Mock).mockResolvedValue({
+      id: "test-asset-id",
+      uri: "file:///photos/test-image.jpg",
+      mediaType: "photo",
+      width: 1920,
+      height: 1080,
+    });
+    (MediaLibrary.createAlbumAsync as jest.Mock).mockResolvedValue({
+      id: "test-album-id",
+      title: "Spike Land",
+    });
+    // Reset FileSystem mocks to default implementations
+    (FileSystem.createDownloadResumable as jest.Mock).mockImplementation(() => ({
+      downloadAsync: jest.fn().mockResolvedValue({
+        uri: "file:///cache/test-image.jpg",
+      }),
+      pauseAsync: jest.fn(),
+      resumeAsync: jest.fn(),
+    }));
+    (FileSystem.downloadAsync as jest.Mock).mockResolvedValue({
+      uri: "file:///cache/test-image.jpg",
+      status: 200,
+      headers: {},
+    });
+    (FileSystem.deleteAsync as jest.Mock).mockResolvedValue(undefined);
   });
 
   // ==========================================================================
@@ -520,27 +545,48 @@ describe("useImageShare", () => {
     });
 
     it("should set loading state during copy", async () => {
-      mockGetShareLink.mockResolvedValue({
-        data: {
-          shareUrl: "https://spike.land/s/abc123",
-          shareToken: "abc123",
-          expiresAt: null,
-        },
-        error: null,
-        status: 200,
+      // Use a promise that we control to verify loading state
+      let resolveShareLink: (value: {
+        data: { shareUrl: string; shareToken: string; expiresAt: null; };
+        error: null;
+        status: number;
+      }) => void;
+      const shareLinkPromise = new Promise<{
+        data: { shareUrl: string; shareToken: string; expiresAt: null; };
+        error: null;
+        status: number;
+      }>((resolve) => {
+        resolveShareLink = resolve;
       });
+
+      mockGetShareLink.mockReturnValue(shareLinkPromise);
 
       const { result } = renderHook(() => useImageShare());
 
-      const copyPromise = result.current.copyLink("img-123");
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(true);
-        expect(result.current.currentOperation).toBe("copy");
+      // Start copy within act
+      let copyResultPromise: Promise<boolean>;
+      await act(async () => {
+        copyResultPromise = result.current.copyLink("img-123");
+        // Wait for initial state updates
+        await Promise.resolve();
       });
 
+      // Check loading state is set
+      expect(result.current.isLoading).toBe(true);
+      expect(result.current.currentOperation).toBe("copy");
+
+      // Complete the operation
       await act(async () => {
-        await copyPromise;
+        resolveShareLink!({
+          data: {
+            shareUrl: "https://spike.land/s/abc123",
+            shareToken: "abc123",
+            expiresAt: null,
+          },
+          error: null,
+          status: 200,
+        });
+        await copyResultPromise!;
       });
 
       expect(result.current.isLoading).toBe(false);

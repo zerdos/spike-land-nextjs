@@ -27,21 +27,35 @@ jest.mock("../services/storage", () => ({
 // Mock API client
 const mockApiResponses: Record<string, unknown> = {};
 
-const mockListApiKeys = jest.fn();
-const mockCreateApiKey = jest.fn();
-const mockDeleteApiKey = jest.fn();
-const mockGetPreferences = jest.fn();
-const mockUpdatePreferences = jest.fn();
-const mockDeleteAccount = jest.fn();
-
 jest.mock("../services/api/settings", () => ({
-  listApiKeys: mockListApiKeys,
-  createApiKey: mockCreateApiKey,
-  deleteApiKey: mockDeleteApiKey,
-  getPreferences: mockGetPreferences,
-  updatePreferences: mockUpdatePreferences,
-  deleteAccount: mockDeleteAccount,
+  listApiKeys: jest.fn(() =>
+    Promise.resolve(mockApiResponses.listApiKeys || { data: null, error: null, status: 200 })
+  ),
+  createApiKey: jest.fn(() =>
+    Promise.resolve(mockApiResponses.createApiKey || { data: null, error: null, status: 200 })
+  ),
+  deleteApiKey: jest.fn(() =>
+    Promise.resolve(mockApiResponses.deleteApiKey || { data: null, error: null, status: 200 })
+  ),
+  getPreferences: jest.fn(() =>
+    Promise.resolve(mockApiResponses.getPreferences || { data: null, error: null, status: 200 })
+  ),
+  updatePreferences: jest.fn(() =>
+    Promise.resolve(mockApiResponses.updatePreferences || { data: null, error: null, status: 200 })
+  ),
+  deleteAccount: jest.fn(() =>
+    Promise.resolve(mockApiResponses.deleteAccount || { data: null, error: null, status: 200 })
+  ),
 }));
+
+// Get references to the mocked functions after import
+import * as settingsApi from "../services/api/settings";
+const mockListApiKeys = settingsApi.listApiKeys as jest.Mock;
+const mockCreateApiKey = settingsApi.createApiKey as jest.Mock;
+const mockDeleteApiKey = settingsApi.deleteApiKey as jest.Mock;
+const mockGetPreferences = settingsApi.getPreferences as jest.Mock;
+const mockUpdatePreferences = settingsApi.updatePreferences as jest.Mock;
+const mockDeleteAccount = settingsApi.deleteAccount as jest.Mock;
 
 function setupDefaultMockImplementations() {
   mockListApiKeys.mockImplementation(() =>
@@ -221,8 +235,7 @@ describe("useSettingsStore", () => {
     });
 
     it("should handle exception during initialization", async () => {
-      const settingsApi = require("../services/api/settings");
-      settingsApi.getPreferences.mockRejectedValueOnce(new Error("Network error"));
+      mockGetPreferences.mockRejectedValueOnce(new Error("Network error"));
 
       await act(async () => {
         await useSettingsStore.getState().initialize();
@@ -307,8 +320,7 @@ describe("useSettingsStore", () => {
     });
 
     it("should handle exception during update", async () => {
-      const settingsApi = require("../services/api/settings");
-      settingsApi.updatePreferences.mockRejectedValueOnce(new Error("Network error"));
+      mockUpdatePreferences.mockRejectedValueOnce(new Error("Network error"));
 
       const initialValue = useSettingsStore.getState().notifications.pushNotifications;
 
@@ -392,8 +404,7 @@ describe("useSettingsStore", () => {
     });
 
     it("should handle exception during privacy update", async () => {
-      const settingsApi = require("../services/api/settings");
-      settingsApi.updatePreferences.mockRejectedValueOnce(new Error("Network error"));
+      mockUpdatePreferences.mockRejectedValueOnce(new Error("Network error"));
 
       const initialValue = useSettingsStore.getState().privacy.publicProfile;
 
@@ -495,8 +506,7 @@ describe("useSettingsStore", () => {
     });
 
     it("should handle exception during fetch", async () => {
-      const settingsApi = require("../services/api/settings");
-      settingsApi.listApiKeys.mockRejectedValueOnce(new Error("Network error"));
+      mockListApiKeys.mockRejectedValueOnce(new Error("Network error"));
 
       await act(async () => {
         await useSettingsStore.getState().fetchApiKeys();
@@ -517,8 +527,7 @@ describe("useSettingsStore", () => {
         status: 200,
       };
 
-      const settingsApi = require("../services/api/settings");
-      settingsApi.listApiKeys.mockImplementationOnce(() => {
+      mockListApiKeys.mockImplementationOnce(() => {
         loadingStateDuringFetch = useSettingsStore.getState().isLoadingApiKeys;
         return Promise.resolve(mockApiResponses.listApiKeys);
       });
@@ -583,8 +592,7 @@ describe("useSettingsStore", () => {
     });
 
     it("should handle exception during create", async () => {
-      const settingsApi = require("../services/api/settings");
-      settingsApi.createApiKey.mockRejectedValueOnce(new Error("Network error"));
+      mockCreateApiKey.mockRejectedValueOnce(new Error("Network error"));
 
       let result;
       await act(async () => {
@@ -714,8 +722,7 @@ describe("useSettingsStore", () => {
     });
 
     it("should handle exception during delete", async () => {
-      const settingsApi = require("../services/api/settings");
-      settingsApi.deleteApiKey.mockRejectedValueOnce(new Error("Network error"));
+      mockDeleteApiKey.mockRejectedValueOnce(new Error("Network error"));
 
       let result;
       await act(async () => {
@@ -812,8 +819,7 @@ describe("useSettingsStore", () => {
     });
 
     it("should handle exception during delete account", async () => {
-      const settingsApi = require("../services/api/settings");
-      settingsApi.deleteAccount.mockRejectedValueOnce(new Error("Network error"));
+      mockDeleteAccount.mockRejectedValueOnce(new Error("Network error"));
 
       let result;
       await act(async () => {
@@ -856,8 +862,7 @@ describe("useSettingsStore", () => {
         status: 200,
       };
 
-      const settingsApi = require("../services/api/settings");
-      settingsApi.deleteAccount.mockImplementationOnce(() => {
+      mockDeleteAccount.mockImplementationOnce(() => {
         loadingStateDuringDelete = useSettingsStore.getState().isDeletingAccount;
         return Promise.resolve(mockApiResponses.deleteAccount);
       });

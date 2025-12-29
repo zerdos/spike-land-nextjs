@@ -81,11 +81,6 @@ describe("UserManagementPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockPush.mockClear();
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   describe("Loading State", () => {
@@ -182,12 +177,14 @@ describe("UserManagementPage", () => {
     });
 
     it("should display join dates", async () => {
-      const { getByText } = render(<UserManagementPage />, {
+      const { getAllByText } = render(<UserManagementPage />, {
         wrapper: createWrapper(),
       });
 
       await waitFor(() => {
-        expect(getByText(/Joined:/)).toBeTruthy();
+        // Each user has a join date, so we expect multiple elements
+        const joinedElements = getAllByText(/Joined:/);
+        expect(joinedElements.length).toBe(3);
       });
     });
   });
@@ -212,6 +209,10 @@ describe("UserManagementPage", () => {
     });
 
     it("should call API with search query after debounce", async () => {
+      // This test validates the debounce behavior - after typing in the search input,
+      // the API should be called with the search term once the debounce timer expires.
+      // Since the component uses setTimeout for debouncing, we verify the API gets called
+      // with the search term by waiting for React Query to refetch.
       mockAdminApi.getUsers.mockResolvedValue({
         data: { users: [mockUsers[0]] },
         error: null,
@@ -222,6 +223,7 @@ describe("UserManagementPage", () => {
         wrapper: createWrapper(),
       });
 
+      // Wait for initial load
       await waitFor(() => {
         expect(getByPlaceholderText("Search by email or name...")).toBeTruthy();
       });
@@ -229,14 +231,13 @@ describe("UserManagementPage", () => {
       const searchInput = getByPlaceholderText("Search by email or name...");
       fireEvent.changeText(searchInput, "admin");
 
-      // Fast forward debounce timer
-      act(() => {
-        jest.advanceTimersByTime(500);
-      });
-
-      await waitFor(() => {
-        expect(mockAdminApi.getUsers).toHaveBeenCalledWith("admin");
-      });
+      // Wait for the debounced search to trigger an API call
+      await waitFor(
+        () => {
+          expect(mockAdminApi.getUsers).toHaveBeenCalledWith("admin");
+        },
+        { timeout: 2000 },
+      );
     });
 
     it("should update search query on input change", async () => {

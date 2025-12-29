@@ -3,6 +3,115 @@
  * Tests for the full-screen image viewer with sharing and download
  */
 
+// Override the react-native-gesture-handler mock from jest.setup.ts with proper Gesture API
+jest.mock("react-native-gesture-handler", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { View } = require("react-native");
+
+  // Create a chainable gesture object that supports the fluent API pattern
+  const createChainableGesture = () => {
+    const gesture: Record<string, jest.Mock> = {};
+    const methods = [
+      "onBegin",
+      "onUpdate",
+      "onEnd",
+      "onStart",
+      "onFinalize",
+      "onTouchesDown",
+      "onTouchesMove",
+      "onTouchesUp",
+      "onTouchesCancelled",
+      "enabled",
+      "minDistance",
+      "activeOffsetX",
+      "activeOffsetY",
+      "failOffsetX",
+      "failOffsetY",
+      "simultaneousWithExternalGesture",
+      "requireExternalGestureToFail",
+      "numberOfTaps",
+    ];
+
+    for (const method of methods) {
+      gesture[method] = jest.fn(() => gesture);
+    }
+
+    return gesture;
+  };
+
+  return {
+    GestureHandlerRootView: View,
+    GestureDetector: View,
+    Gesture: {
+      Pan: jest.fn(() => createChainableGesture()),
+      Tap: jest.fn(() => createChainableGesture()),
+      LongPress: jest.fn(() => createChainableGesture()),
+      Pinch: jest.fn(() => createChainableGesture()),
+      Rotation: jest.fn(() => createChainableGesture()),
+      Fling: jest.fn(() => createChainableGesture()),
+      Force: jest.fn(() => createChainableGesture()),
+      Native: jest.fn(() => createChainableGesture()),
+      Manual: jest.fn(() => createChainableGesture()),
+      Race: jest.fn((...gestures: unknown[]) => gestures[0]),
+      Simultaneous: jest.fn((...gestures: unknown[]) => gestures[0]),
+      Exclusive: jest.fn((...gestures: unknown[]) => gestures[0]),
+    },
+    State: {
+      UNDETERMINED: 0,
+      FAILED: 1,
+      BEGAN: 2,
+      CANCELLED: 3,
+      ACTIVE: 4,
+      END: 5,
+    },
+    Directions: {
+      RIGHT: 1,
+      LEFT: 2,
+      UP: 4,
+      DOWN: 8,
+    },
+    Swipeable: View,
+    DrawerLayout: View,
+    ScrollView: View,
+    FlatList: View,
+    gestureHandlerRootHOC: jest.fn((component: unknown) => component),
+  };
+});
+
+// Mock react-native-worklets BEFORE any other imports
+jest.mock("react-native-worklets", () => ({
+  useWorklet: jest.fn(),
+  createWorklet: jest.fn(),
+  runOnUI: jest.fn((fn) => fn),
+  runOnJS: jest.fn((fn) => fn),
+}));
+
+// Mock react-native-reanimated BEFORE importing the component
+jest.mock("react-native-reanimated", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { View } = require("react-native");
+  return {
+    default: {
+      View,
+      call: jest.fn(),
+    },
+    View,
+    useSharedValue: jest.fn((initial) => ({ value: initial })),
+    useAnimatedStyle: jest.fn(() => ({})),
+    withTiming: jest.fn((value) => value),
+    withSpring: jest.fn((value) => value),
+    withDelay: jest.fn((_, animation) => animation),
+    withSequence: jest.fn((...animations) => animations[0]),
+    runOnJS: jest.fn((fn) => fn),
+    runOnUI: jest.fn((fn) => fn),
+    Easing: {
+      linear: jest.fn(),
+      ease: jest.fn(),
+      bezier: jest.fn(),
+    },
+  };
+});
+
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
@@ -82,37 +191,72 @@ jest.mock("@/components/ShareSheet", () => ({
   },
 }));
 
-// Mock react-native-gesture-handler
-jest.mock("react-native-gesture-handler", () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { View } = require("react-native");
-  return {
-    GestureHandlerRootView: View,
-    GestureDetector: View,
-    Gesture: {
-      Pan: jest.fn(() => ({
-        onUpdate: jest.fn().mockReturnThis(),
-        onEnd: jest.fn().mockReturnThis(),
-      })),
-      Tap: jest.fn(() => ({
-        numberOfTaps: jest.fn().mockReturnThis(),
-        onEnd: jest.fn().mockReturnThis(),
-      })),
-      Pinch: jest.fn(() => ({
-        onUpdate: jest.fn().mockReturnThis(),
-        onEnd: jest.fn().mockReturnThis(),
-      })),
-      Exclusive: jest.fn(),
-      Simultaneous: jest.fn(),
-    },
-  };
-});
+// Note: react-native-gesture-handler is unmocked at the top of the file
+// to use the proper __mocks__/react-native-gesture-handler.ts with Gesture.Pinch support
+
+// Import the mocked gesture handler to verify and update its mocks if needed
+import * as GestureHandler from "react-native-gesture-handler";
 
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockUseLocalSearchParams = useLocalSearchParams as jest.MockedFunction<
   typeof useLocalSearchParams
 >;
 const mockUseGalleryStore = useGalleryStore as jest.MockedFunction<typeof useGalleryStore>;
+
+// Create a helper to make chainable gesture mocks at runtime
+const createRuntimeChainableGesture = () => {
+  const gesture: Record<string, jest.Mock> = {};
+  const methods = [
+    "onBegin",
+    "onUpdate",
+    "onEnd",
+    "onStart",
+    "onFinalize",
+    "onTouchesDown",
+    "onTouchesMove",
+    "onTouchesUp",
+    "onTouchesCancelled",
+    "enabled",
+    "minDistance",
+    "activeOffsetX",
+    "activeOffsetY",
+    "failOffsetX",
+    "failOffsetY",
+    "simultaneousWithExternalGesture",
+    "requireExternalGestureToFail",
+    "numberOfTaps",
+  ];
+
+  for (const method of methods) {
+    gesture[method] = jest.fn(() => gesture);
+  }
+
+  return gesture;
+};
+
+// Fix the Gesture mock if it's missing Pinch or other methods
+beforeAll(() => {
+  const Gesture = GestureHandler.Gesture as Record<string, jest.Mock>;
+  if (!Gesture.Pinch || typeof Gesture.Pinch !== "function") {
+    Gesture.Pinch = jest.fn(() => createRuntimeChainableGesture());
+  }
+  if (!Gesture.Pan || typeof Gesture.Pan !== "function") {
+    Gesture.Pan = jest.fn(() => createRuntimeChainableGesture());
+  }
+  if (!Gesture.Tap || typeof Gesture.Tap !== "function") {
+    Gesture.Tap = jest.fn(() => createRuntimeChainableGesture());
+  }
+  if (!Gesture.Exclusive || typeof Gesture.Exclusive !== "function") {
+    Gesture.Exclusive = jest.fn((...gestures: unknown[]) =>
+      gestures[0] || createRuntimeChainableGesture()
+    );
+  }
+  if (!Gesture.Simultaneous || typeof Gesture.Simultaneous !== "function") {
+    Gesture.Simultaneous = jest.fn((...gestures: unknown[]) =>
+      gestures[0] || createRuntimeChainableGesture()
+    );
+  }
+});
 
 describe("CanvasScreen", () => {
   const mockRouter = {

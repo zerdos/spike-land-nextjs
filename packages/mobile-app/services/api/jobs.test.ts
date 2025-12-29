@@ -217,19 +217,14 @@ describe("pollJobUntilComplete", () => {
 
     const pollPromise = pollJobUntilComplete(options);
 
-    // First poll - PENDING (flush all microtasks)
-    await jest.runAllTicksAsync();
-    expect(onProgress).toHaveBeenCalledWith(pendingJob);
-
-    // Advance timer for second poll
-    await jest.advanceTimersByTimeAsync(1000);
-    expect(onProgress).toHaveBeenCalledWith(processingJob);
-
-    // Advance timer for third poll
-    await jest.advanceTimersByTimeAsync(1000);
+    // Run all pending timers and promises to completion
+    await jest.runAllTimersAsync();
 
     const result = await pollPromise;
 
+    expect(onProgress).toHaveBeenCalledWith(pendingJob);
+    expect(onProgress).toHaveBeenCalledWith(processingJob);
+    expect(onProgress).toHaveBeenCalledWith(completedJob);
     expect(result).toEqual(completedJob);
     expect(onComplete).toHaveBeenCalledWith(completedJob);
     expect(onError).not.toHaveBeenCalled();
@@ -322,7 +317,8 @@ describe("pollJobUntilComplete", () => {
   });
 
   it("should timeout after specified duration", async () => {
-    jest.useFakeTimers({ advanceTimers: true });
+    // Re-enable fake timers with Date.now() mocking
+    jest.useFakeTimers();
 
     const onError = jest.fn();
 
@@ -337,19 +333,19 @@ describe("pollJobUntilComplete", () => {
       timeout: 3000,
     };
 
-    const pollPromise = pollJobUntilComplete(options);
+    // Run all timers to trigger timeout and wait for promise to reject
+    let rejectedError: Error | undefined;
+    const pollPromise = pollJobUntilComplete(options).catch((err) => {
+      rejectedError = err;
+    });
 
-    // First poll starts immediately
-    await jest.runAllTicksAsync();
+    // Advance past timeout - jest fake timers will advance Date.now() too
+    await jest.runAllTimersAsync();
 
-    // Advance past timeout - need to go through multiple poll cycles
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(1000);
+    await pollPromise;
 
-    await expect(pollPromise).rejects.toThrow("Job polling timed out");
-
+    expect(rejectedError).toBeDefined();
+    expect(rejectedError?.message).toBe("Job polling timed out");
     expect(onError).toHaveBeenCalledWith("Job polling timed out");
   });
 
