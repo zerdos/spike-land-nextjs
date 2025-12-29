@@ -4,6 +4,30 @@
  */
 
 // ============================================================================
+// Timer Globals - MUST BE FIRST (for testing-library)
+// ============================================================================
+
+// Ensure global timers are available (required by @testing-library/react-native)
+if (typeof global.setTimeout === "undefined") {
+  global.setTimeout = setTimeout;
+}
+if (typeof global.clearTimeout === "undefined") {
+  global.clearTimeout = clearTimeout;
+}
+if (typeof global.setInterval === "undefined") {
+  global.setInterval = setInterval;
+}
+if (typeof global.clearInterval === "undefined") {
+  global.clearInterval = clearInterval;
+}
+if (typeof global.setImmediate === "undefined") {
+  global.setImmediate = setImmediate || ((fn: () => void) => setTimeout(fn, 0));
+}
+if (typeof global.clearImmediate === "undefined") {
+  global.clearImmediate = clearImmediate || ((id: number) => clearTimeout(id));
+}
+
+// ============================================================================
 // Browser API Mocks - MUST BE FIRST (before any imports)
 // ============================================================================
 

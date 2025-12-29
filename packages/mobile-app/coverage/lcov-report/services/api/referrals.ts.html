@@ -23,27 +23,27 @@
         </h1>
         <div class="clearfix">
           <div class="fl pad1y space-right2">
-            <span class="strong">0% </span>
+            <span class="strong">100% </span>
             <span class="quiet">Statements</span>
-            <span class="fraction">0/11</span>
+            <span class="fraction">11/11</span>
           </div>
 
           <div class="fl pad1y space-right2">
-            <span class="strong">0% </span>
+            <span class="strong">100% </span>
             <span class="quiet">Branches</span>
-            <span class="fraction">0/6</span>
+            <span class="fraction">6/6</span>
           </div>
 
           <div class="fl pad1y space-right2">
-            <span class="strong">0% </span>
+            <span class="strong">100% </span>
             <span class="quiet">Functions</span>
-            <span class="fraction">0/5</span>
+            <span class="fraction">5/5</span>
           </div>
 
           <div class="fl pad1y space-right2">
-            <span class="strong">0% </span>
+            <span class="strong">100% </span>
             <span class="quiet">Lines</span>
-            <span class="fraction">0/9</span>
+            <span class="fraction">9/9</span>
           </div>
         </div>
         <p class="quiet">
@@ -57,7 +57,7 @@
           </div>
         </template>
       </div>
-      <div class="status-line low"></div>
+      <div class="status-line high"></div>
       <pre
       >
 <table class="coverage">
@@ -224,7 +224,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -233,22 +233,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -258,8 +243,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -270,7 +259,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -328,34 +328,34 @@ export interface ValidateReferralResponse {
 /**
  * Get current user's referral code and link
  */
-export async function <span class="fstat-no" title="function not covered" >getReferralCode(</span>): Promise&lt;
+export async function getReferralCode(): Promise&lt;
   ApiResponse&lt;ReferralCodeResponse&gt;
 &gt; {
-<span class="cstat-no" title="statement not covered" >  return apiClient.get&lt;ReferralCodeResponse&gt;("/api/referral/link");</span>
+  return apiClient.get&lt;ReferralCodeResponse&gt;("/api/referral/link");
 }
 &nbsp;
 /**
  * Get referral statistics
  */
-export async function <span class="fstat-no" title="function not covered" >getReferralStats(</span>): Promise&lt;
+export async function getReferralStats(): Promise&lt;
   ApiResponse&lt;ReferralStatsResponse&gt;
 &gt; {
-<span class="cstat-no" title="statement not covered" >  return apiClient.get&lt;ReferralStatsResponse&gt;("/api/referral/stats");</span>
+  return apiClient.get&lt;ReferralStatsResponse&gt;("/api/referral/stats");
 }
 &nbsp;
 /**
  * Get list of referred users
  */
-export async function <span class="fstat-no" title="function not covered" >getReferredUsers(</span>params?: {
+export async function getReferredUsers(params?: {
   page?: number;
   limit?: number;
 }): Promise&lt;ApiResponse&lt;ReferredUsersResponse&gt;&gt; {
-  const searchParams = <span class="cstat-no" title="statement not covered" >new URLSearchParams();</span>
-<span class="cstat-no" title="statement not covered" >  if (params?.page) <span class="cstat-no" title="statement not covered" >searchParams.set("page", String(params.page));</span></span>
-<span class="cstat-no" title="statement not covered" >  if (params?.limit) <span class="cstat-no" title="statement not covered" >searchParams.set("limit", String(params.limit));</span></span>
+  const searchParams = new URLSearchParams();
+  if (params?.page) searchParams.set("page", String(params.page));
+  if (params?.limit) searchParams.set("limit", String(params.limit));
 &nbsp;
-  const query = <span class="cstat-no" title="statement not covered" >searchParams.toString();</span>
-<span class="cstat-no" title="statement not covered" >  return apiClient.get&lt;ReferredUsersResponse&gt;(</span>
+  const query = searchParams.toString();
+  return apiClient.get&lt;ReferredUsersResponse&gt;(
     `/api/referral/users${query ? `?${query}` : ""}`,
   );
 }
@@ -363,10 +363,10 @@ export async function <span class="fstat-no" title="function not covered" >getRe
 /**
  * Validate a referral code (for use during signup)
  */
-export async function <span class="fstat-no" title="function not covered" >validateReferralCode(</span>
+export async function validateReferralCode(
   code: string,
 ): Promise&lt;ApiResponse&lt;ValidateReferralResponse&gt;&gt; {
-<span class="cstat-no" title="statement not covered" >  return apiClient.post&lt;ValidateReferralResponse&gt;("/api/referral/validate", {</span>
+  return apiClient.post&lt;ValidateReferralResponse&gt;("/api/referral/validate", {
     code,
   });
 }
@@ -374,10 +374,10 @@ export async function <span class="fstat-no" title="function not covered" >valid
 /**
  * Apply referral code during signup
  */
-export async function <span class="fstat-no" title="function not covered" >applyReferralCode(</span>
+export async function applyReferralCode(
   code: string,
 ): Promise&lt;ApiResponse&lt;{ success: boolean; tokensGranted: number; }&gt;&gt; {
-<span class="cstat-no" title="statement not covered" >  return apiClient.post&lt;{ success: boolean; tokensGranted: number; }&gt;(</span>
+  return apiClient.post&lt;{ success: boolean; tokensGranted: number; }&gt;(
     "/api/referral/apply",
     { code },
   );
@@ -391,7 +391,7 @@ export async function <span class="fstat-no" title="function not covered" >apply
     <div class="footer quiet pad2 space-top1 center small">
       Code coverage generated by
       <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-      at 2025-12-28T19:45:28.215Z
+      at 2025-12-28T20:00:06.308Z
     </div>
     <script src="../../prettify.js"></script>
     <script>
