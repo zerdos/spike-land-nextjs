@@ -65,7 +65,7 @@ describe("Tabs Component", () => {
       expect(list).toHaveClass(
         "relative",
         "inline-flex",
-        "h-11",
+        "h-16",
         "items-center",
         "justify-center",
         "rounded-xl",
