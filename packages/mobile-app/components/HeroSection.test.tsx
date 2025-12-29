@@ -34,16 +34,16 @@ describe("HeroSection", () => {
       expect(screen.getByTestId("hero")).toBeTruthy();
     });
 
-    it("renders the main title with 'AI Photo'", () => {
+    it("renders the main title with 'Old Photos'", () => {
       render(<HeroSection testID="hero" />);
       expect(screen.getByTestId("hero-title")).toBeTruthy();
-      expect(screen.getByText(/AI Photo/)).toBeTruthy();
+      expect(screen.getByText(/Old Photos/)).toBeTruthy();
     });
 
     it("renders the subtitle text", () => {
       render(<HeroSection testID="hero" />);
       expect(screen.getByTestId("hero-subtitle")).toBeTruthy();
-      expect(screen.getByText(/Transform old, blurry photos/)).toBeTruthy();
+      expect(screen.getByText(/iPhone 4 photos deserve iPhone 16/)).toBeTruthy();
     });
 
     it("renders the CTA button", () => {
@@ -59,6 +59,12 @@ describe("HeroSection", () => {
       // So we verify the button exists and has accessible content
       expect(ctaButton).toBeTruthy();
       expect(ctaButton.props.accessible).toBe(true);
+    });
+
+    it("renders the See Examples button", () => {
+      render(<HeroSection testID="hero" />);
+      const examplesButton = screen.getByTestId("hero-examples");
+      expect(examplesButton).toBeTruthy();
     });
   });
 
@@ -82,6 +88,26 @@ describe("HeroSection", () => {
       expect(onStartEnhancing).toHaveBeenCalledTimes(1);
       expect(router.push).not.toHaveBeenCalled();
     });
+
+    it("calls router.push to gallery when See Examples is pressed without callback", () => {
+      render(<HeroSection testID="hero" />);
+      const examplesButton = screen.getByTestId("hero-examples");
+
+      fireEvent.press(examplesButton);
+
+      expect(router.push).toHaveBeenCalledWith("/gallery");
+    });
+
+    it("calls onSeeExamples callback when provided and See Examples is pressed", () => {
+      const onSeeExamples = jest.fn();
+      render(<HeroSection testID="hero" onSeeExamples={onSeeExamples} />);
+      const examplesButton = screen.getByTestId("hero-examples");
+
+      fireEvent.press(examplesButton);
+
+      expect(onSeeExamples).toHaveBeenCalledTimes(1);
+      expect(router.push).not.toHaveBeenCalled();
+    });
   });
 
   describe("styling", () => {
@@ -101,6 +127,7 @@ describe("HeroSection", () => {
       expect(screen.getByTestId("hero-title")).toBeTruthy();
       expect(screen.getByTestId("hero-subtitle")).toBeTruthy();
       expect(screen.getByTestId("hero-cta")).toBeTruthy();
+      expect(screen.getByTestId("hero-examples")).toBeTruthy();
     });
   });
 
@@ -108,7 +135,7 @@ describe("HeroSection", () => {
     it("renders correctly without testID prop", () => {
       render(<HeroSection />);
       // Should render without crashing - verify by checking title text
-      expect(screen.getByText(/AI Photo/)).toBeTruthy();
+      expect(screen.getByText(/Old Photos/)).toBeTruthy();
     });
   });
 });

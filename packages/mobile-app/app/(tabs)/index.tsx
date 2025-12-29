@@ -197,8 +197,8 @@ function BeforeAfterSection() {
         beforeImageUrl={SAMPLE_IMAGES.beforeUrl}
         afterImageUrl={SAMPLE_IMAGES.afterUrl}
         height={200}
-        beforeLabel="Original"
-        afterLabel="Enhanced"
+        beforeLabel="Before"
+        afterLabel="After"
         testID="before-after-slider"
       />
     </YStack>
@@ -391,7 +391,7 @@ export default function HomeScreen() {
   }, [fetchBalance, fetchRecentImages]);
 
   return (
-    <View flex={1} backgroundColor="$background">
+    <View flex={1} backgroundColor="#08080C">
       <ScrollView
         refreshControl={
           <RefreshControl

@@ -132,6 +132,7 @@ jest.mock("react-native-gesture-handler", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const View = require("react-native").View;
   return {
+    GestureHandlerRootView: View,
     Swipeable: View,
     DrawerLayout: View,
     State: {},
