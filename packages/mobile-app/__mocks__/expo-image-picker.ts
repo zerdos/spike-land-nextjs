@@ -61,8 +61,8 @@ export interface ImagePickerOptions {
   presentationStyle?: "fullScreen" | "pageSheet" | "formSheet" | "overFullScreen";
 }
 
-export interface CameraPermissionResponse extends PermissionResponse {}
-export interface MediaLibraryPermissionResponse extends PermissionResponse {}
+export type CameraPermissionResponse = PermissionResponse;
+export type MediaLibraryPermissionResponse = PermissionResponse;
 
 // Default mock image result
 const defaultImageResult: ImagePickerSuccessResult = {

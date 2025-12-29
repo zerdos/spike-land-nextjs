@@ -13,7 +13,7 @@ export const __ExpoImportMetaRegistry = {
 // Mock runtime
 export const runtime = {
   native: {
-    require: jest.fn((id: string) => {
+    require: jest.fn((_id: string) => {
       // Return empty module for any require
       return {};
     }),

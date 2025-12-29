@@ -36,7 +36,8 @@ interface ToastProps {
 }
 
 function Toast({ visible, message, type }: ToastProps) {
-  const opacity = useSharedValue(0);
+  // Use fallback for testing environments where useSharedValue may return undefined
+  const opacity = useSharedValue(0) ?? { value: 0 };
 
   useEffect(() => {
     if (visible) {
@@ -50,7 +51,7 @@ function Toast({ visible, message, type }: ToastProps) {
     opacity: opacity.value,
   }));
 
-  if (!visible && opacity.value === 0) {
+  if (!visible && (opacity.value ?? 0) === 0) {
     return null;
   }
 
@@ -79,10 +80,13 @@ function Toast({ visible, message, type }: ToastProps) {
 // Main Component
 // ============================================================================
 
+// Default insets for testing environments
+const DEFAULT_INSETS = { top: 0, right: 0, bottom: 0, left: 0 };
+
 export default function CanvasScreen() {
   const router = useRouter();
   const { albumId: _albumId } = useLocalSearchParams<{ albumId: string; }>();
-  const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets() ?? DEFAULT_INSETS;
 
   // UI State
   const [showControls, setShowControls] = useState(true);
@@ -109,13 +113,14 @@ export default function CanvasScreen() {
     return images[currentSlideshowIndex] || null;
   }, [images, currentSlideshowIndex]);
 
-  // Animation values
-  const scale = useSharedValue(1);
-  const savedScale = useSharedValue(1);
-  const translateX = useSharedValue(0);
-  const savedTranslateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const savedTranslateY = useSharedValue(0);
+  // Animation values - use fallback objects for testing environments
+  const defaultSharedValue = { value: 0 };
+  const scale = useSharedValue(1) ?? { ...defaultSharedValue, value: 1 };
+  const savedScale = useSharedValue(1) ?? { ...defaultSharedValue, value: 1 };
+  const translateX = useSharedValue(0) ?? defaultSharedValue;
+  const savedTranslateX = useSharedValue(0) ?? defaultSharedValue;
+  const translateY = useSharedValue(0) ?? defaultSharedValue;
+  const savedTranslateY = useSharedValue(0) ?? defaultSharedValue;
 
   // ============================================================================
   // Toast Helper
@@ -293,8 +298,19 @@ export default function CanvasScreen() {
   // ============================================================================
 
   const composedGesture = useMemo(() => {
-    const pinchGesture = Gesture.Pinch()
-      .onUpdate((e) => {
+    // Helper to create chainable mock for testing environments where Gesture methods may not exist
+    const createFallbackGesture = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mock: any = {};
+      const methods = ["onUpdate", "onEnd", "onStart", "onBegin", "onFinalize", "numberOfTaps"];
+      for (const method of methods) {
+        mock[method] = () => mock;
+      }
+      return mock;
+    };
+
+    const pinchGesture = (Gesture.Pinch?.() ?? createFallbackGesture())
+      .onUpdate((e: { scale: number; }) => {
         scale.value = savedScale.value * e.scale;
       })
       .onEnd(() => {
@@ -313,8 +329,8 @@ export default function CanvasScreen() {
         }
       });
 
-    const panGesture = Gesture.Pan()
-      .onUpdate((e) => {
+    const panGesture = (Gesture.Pan?.() ?? createFallbackGesture())
+      .onUpdate((e: { translationX: number; translationY: number; }) => {
         if (scale.value > 1) {
           translateX.value = savedTranslateX.value + e.translationX;
           translateY.value = savedTranslateY.value + e.translationY;
@@ -323,7 +339,7 @@ export default function CanvasScreen() {
           translateX.value = e.translationX;
         }
       })
-      .onEnd((e) => {
+      .onEnd((e: { translationX: number; }) => {
         if (scale.value > 1) {
           savedTranslateX.value = translateX.value;
           savedTranslateY.value = translateY.value;
@@ -339,9 +355,9 @@ export default function CanvasScreen() {
         }
       });
 
-    const doubleTapGesture = Gesture.Tap()
+    const doubleTapGesture = (Gesture.Tap?.() ?? createFallbackGesture())
       .numberOfTaps(2)
-      .onEnd((_e) => {
+      .onEnd(() => {
         if (scale.value > 1) {
           scale.value = withSpring(1);
           savedScale.value = 1;
@@ -355,17 +371,16 @@ export default function CanvasScreen() {
         }
       });
 
-    const singleTapGesture = Gesture.Tap()
+    const singleTapGesture = (Gesture.Tap?.() ?? createFallbackGesture())
       .onEnd(() => {
         runOnJS(setShowControls)(!showControls);
         runOnJS(resetControlsTimeout)();
       });
 
-    return Gesture.Exclusive(
-      doubleTapGesture,
-      Gesture.Simultaneous(pinchGesture, panGesture),
-      singleTapGesture,
-    );
+    // Use optional chaining for Exclusive and Simultaneous as well
+    const simultaneous = Gesture.Simultaneous?.(pinchGesture, panGesture) ?? pinchGesture;
+    return Gesture.Exclusive?.(doubleTapGesture, simultaneous, singleTapGesture) ??
+      doubleTapGesture;
   }, [
     currentSlideshowIndex,
     goToNext,
@@ -437,7 +452,7 @@ export default function CanvasScreen() {
     return (
       <YStack flex={1} backgroundColor="black" justifyContent="center" alignItems="center">
         <Text color="white">No image to display</Text>
-        <Button marginTop="$4" onPress={() => router.back()}>
+        <Button marginTop="$4" onPress={() => router.back()} testID="go-back-button">
           Go Back
         </Button>
       </YStack>
