@@ -89,26 +89,26 @@ describe("Card", () => {
       expect(getByTestId("interactive-card")).toBeTruthy();
     });
 
-    it("should call onPress when interactive and pressed", () => {
-      const onPress = jest.fn();
+    it("should call onPressCard when interactive and pressed", () => {
+      const onPressCard = jest.fn();
       const { getByTestId } = renderWithProvider(
-        <Card testID="press-card" interactive onPress={onPress}>
+        <Card testID="press-card" interactive onPressCard={onPressCard}>
           <CardContent>Pressable</CardContent>
         </Card>,
       );
       fireEvent.press(getByTestId("press-card"));
-      expect(onPress).toHaveBeenCalledTimes(1);
+      expect(onPressCard).toHaveBeenCalledTimes(1);
     });
 
-    it("should not call onPress when not interactive", () => {
-      const onPress = jest.fn();
+    it("should not call onPressCard when not interactive", () => {
+      const onPressCard = jest.fn();
       const { getByTestId } = renderWithProvider(
-        <Card testID="non-interactive" onPress={onPress}>
+        <Card testID="non-interactive" onPressCard={onPressCard}>
           <CardContent>Not Interactive</CardContent>
         </Card>,
       );
       fireEvent.press(getByTestId("non-interactive"));
-      expect(onPress).not.toHaveBeenCalled();
+      expect(onPressCard).not.toHaveBeenCalled();
     });
 
     it("should have button role when interactive", () => {

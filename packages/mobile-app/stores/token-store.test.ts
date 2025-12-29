@@ -80,21 +80,39 @@ function resetStore() {
 // Tests
 // ============================================================================
 
+// Use fake timers for all tests in this file
+beforeAll(() => {
+  jest.useFakeTimers();
+});
+
+afterAll(() => {
+  jest.useRealTimers();
+});
+
 describe("useTokenStore", () => {
   beforeEach(() => {
+    // 1. Clear all pending timers from previous tests
+    jest.clearAllTimers();
+    // 2. Clear all mock call history
     jest.clearAllMocks();
+    // 3. Reset mock implementations to defaults
+    mockCalculateRegeneratedTokens.mockReturnValue(0);
+    mockGetTimeUntilNextRegen.mockReturnValue(3600000);
+    // 4. Reset the store state
     resetStore();
-    // Reset timer mocks
-    jest.useFakeTimers();
+    // 5. Stop any timer that might be running from a previous test (via module-level regenInterval)
+    act(() => {
+      useTokenStore.getState().stopRegenTimer();
+    });
   });
 
   afterEach(() => {
-    // Clean up any running intervals
-    const { result } = renderHook(() => useTokenStore());
+    // Clean up any running intervals (module-level regenInterval)
     act(() => {
-      result.current.stopRegenTimer();
+      useTokenStore.getState().stopRegenTimer();
     });
-    jest.useRealTimers();
+    // Clear all fake timers
+    jest.clearAllTimers();
   });
 
   describe("initial state", () => {
@@ -247,12 +265,26 @@ describe("useTokenStore", () => {
       const { result } = renderHook(() => useTokenStore());
       const startRegenTimerSpy = jest.spyOn(result.current, "startRegenTimer");
 
+      // eslint-disable-next-line no-console
+      console.log("Timer count before fetchBalance:", jest.getTimerCount());
+
       await act(async () => {
         await result.current.fetchBalance();
       });
 
+      // eslint-disable-next-line no-console
+      console.log("Timer count after fetchBalance:", jest.getTimerCount());
+
       // The timer should have been started
       expect(startRegenTimerSpy).toHaveBeenCalled();
+
+      // Clean up the timer started by fetchBalance
+      act(() => {
+        result.current.stopRegenTimer();
+      });
+
+      // eslint-disable-next-line no-console
+      console.log("Timer count after stopRegenTimer:", jest.getTimerCount());
     });
 
     it("should not start regen timer if balance equals max", async () => {
@@ -516,14 +548,58 @@ describe("useTokenStore", () => {
 
       const { result } = renderHook(() => useTokenStore());
 
-      act(() => {
-        result.current.startRegenTimer();
+      // Clear any calls from beforeEach
+      mockGetTimeUntilNextRegen.mockClear();
+
+      // Check state before starting timer
+      const stateBefore = useTokenStore.getState();
+      // eslint-disable-next-line no-console
+      console.log("State before startRegenTimer:", {
+        balance: stateBefore.balance,
+        maxBalance: stateBefore.maxBalance,
+        lastRegeneration: stateBefore.lastRegeneration,
       });
+
+      // Spy on setInterval and clearInterval to verify they're being called
+      const setIntervalSpy = jest.spyOn(global, "setInterval");
+      const clearIntervalSpy = jest.spyOn(global, "clearInterval");
+
+      // Spy on the actual startRegenTimer function
+      const startRegenTimerSpy = jest.spyOn(result.current, "startRegenTimer");
+
+      act(() => {
+        const returnValue = result.current.startRegenTimer();
+        // eslint-disable-next-line no-console
+        console.log("startRegenTimer return value:", returnValue);
+      });
+
+      // eslint-disable-next-line no-console
+      console.log("startRegenTimerSpy was called:", startRegenTimerSpy.mock.calls.length, "times");
+      // eslint-disable-next-line no-console
+      console.log(
+        "clearInterval was called:",
+        clearIntervalSpy.mock.calls.length,
+        "times with:",
+        clearIntervalSpy.mock.calls,
+      );
+
+      // eslint-disable-next-line no-console
+      console.log("setInterval was called:", setIntervalSpy.mock.calls.length, "times");
+
+      // Check how many pending timers exist
+      const timerCount = jest.getTimerCount();
+      // eslint-disable-next-line no-console
+      console.log("Timer count after starting:", timerCount);
 
       // Timer should be running - advance time to trigger interval
       act(() => {
         jest.advanceTimersByTime(1000);
       });
+
+      // eslint-disable-next-line no-console
+      console.log("mockGetTimeUntilNextRegen calls:", mockGetTimeUntilNextRegen.mock.calls.length);
+
+      setIntervalSpy.mockRestore();
 
       // The timer callback was executed (getTimeUntilNextRegen was called)
       expect(mockGetTimeUntilNextRegen).toHaveBeenCalled();
@@ -651,8 +727,7 @@ describe("useTokenStore", () => {
         });
       });
 
-      const sharedModule = require("@spike-npm-land/shared");
-      sharedModule.calculateRegeneratedTokens.mockReturnValue(5);
+      mockCalculateRegeneratedTokens.mockReturnValue(5);
 
       const { result } = renderHook(() => useTokenStore());
 
@@ -677,8 +752,7 @@ describe("useTokenStore", () => {
         });
       });
 
-      const sharedModule = require("@spike-npm-land/shared");
-      sharedModule.calculateRegeneratedTokens.mockReturnValue(1);
+      mockCalculateRegeneratedTokens.mockReturnValue(1);
 
       const { result } = renderHook(() => useTokenStore());
 
@@ -717,15 +791,14 @@ describe("useTokenStore", () => {
       });
 
       // Timer should be stopped - advancing time should not trigger updates
-      const sharedModule = require("@spike-npm-land/shared");
-      sharedModule.getTimeUntilNextRegen.mockClear();
+      mockGetTimeUntilNextRegen.mockClear();
 
       act(() => {
         jest.advanceTimersByTime(5000);
       });
 
       // getTimeUntilNextRegen should not be called after stopping
-      expect(sharedModule.getTimeUntilNextRegen).not.toHaveBeenCalled();
+      expect(mockGetTimeUntilNextRegen).not.toHaveBeenCalled();
     });
 
     it("should be safe to call when no timer is running", () => {

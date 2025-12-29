@@ -21,7 +21,7 @@
  * </Card>
  *
  * // Interactive card
- * <Card interactive onPress={() => {}}>
+ * <Card interactive onPressCard={() => {}}>
  *   <CardContent>Pressable card</CardContent>
  * </Card>
  */
@@ -158,7 +158,7 @@ export type CardVariant = "default" | "glass" | "elevated";
 
 type CardFrameProps = GetProps<typeof CardFrame>;
 
-export interface CardProps extends CardFrameProps {
+export interface CardProps extends Omit<CardFrameProps, "onPress"> {
   /** Card style variant */
   variant?: CardVariant;
   /** Whether the card is interactive (pressable) */
@@ -168,7 +168,7 @@ export interface CardProps extends CardFrameProps {
   /** Card content */
   children: React.ReactNode;
   /** Press handler (only works when interactive) */
-  onPress?: () => void;
+  onPressCard?: () => void;
   /** Accessibility label */
   accessibilityLabel?: string;
   /** Test ID for testing */
@@ -222,17 +222,24 @@ export const Card: React.FC<CardProps> = ({
   interactive = false,
   fullWidth = false,
   children,
-  onPress,
+  onPressCard,
   accessibilityLabel,
   testID,
   ...props
 }) => {
+  // Wrap onPressCard to guard against non-interactive state
+  const handlePress = () => {
+    if (interactive && onPressCard) {
+      onPressCard();
+    }
+  };
+
   return (
     <CardFrame
       variant={variant}
       interactive={interactive}
       fullWidth={fullWidth}
-      onPress={interactive ? onPress : undefined}
+      onPress={interactive ? handlePress : undefined}
       accessible={interactive}
       accessibilityRole={interactive ? "button" : undefined}
       accessibilityLabel={accessibilityLabel}

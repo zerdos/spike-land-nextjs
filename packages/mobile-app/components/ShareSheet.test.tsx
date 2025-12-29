@@ -5,16 +5,22 @@
 
 // Mock react-native-reanimated BEFORE any imports
 jest.mock("react-native-reanimated", () => {
-  const { View } = require("react-native");
+  const RN = require("react-native");
+  const AnimatedMock = {
+    View: RN.View,
+    Text: RN.Text,
+    Image: RN.Image,
+    ScrollView: RN.ScrollView,
+    FlatList: RN.FlatList,
+    call: jest.fn(),
+    createAnimatedComponent: (component: unknown) => component,
+    addWhitelistedNativeProps: jest.fn(),
+    Value: jest.fn(),
+    event: jest.fn(),
+  };
   return {
-    default: {
-      call: jest.fn(),
-      createAnimatedComponent: (component: unknown) => component,
-      addWhitelistedNativeProps: jest.fn(),
-      Value: jest.fn(),
-      event: jest.fn(),
-      View: View,
-    },
+    __esModule: true,
+    default: AnimatedMock,
     useSharedValue: (initial: number) => ({ value: initial }),
     useAnimatedStyle: jest.fn(() => ({})),
     withTiming: jest.fn((value) => value),
@@ -27,9 +33,6 @@ jest.mock("react-native-reanimated", () => {
       linear: jest.fn(),
       ease: jest.fn(),
       bezier: jest.fn(),
-    },
-    Animated: {
-      View: View,
     },
   };
 });
@@ -45,6 +48,97 @@ jest.mock("react-native-safe-area-context", () => ({
     left: 0,
   }),
 }));
+
+// Mock tamagui with proper Button that wraps children in Text
+jest.mock("tamagui", () => {
+  const RN = require("react-native");
+  const React = require("react");
+
+  // Custom Button component that wraps string children in Text
+  const MockButton = ({
+    children,
+    onPress,
+    disabled,
+    ...props
+  }: {
+    children?: React.ReactNode;
+    onPress?: () => void;
+    disabled?: boolean;
+  }) => {
+    return React.createElement(
+      RN.Pressable,
+      { onPress, disabled, ...props },
+      typeof children === "string"
+        ? React.createElement(RN.Text, null, children)
+        : children,
+    );
+  };
+
+  return {
+    styled: jest.fn((component: unknown) => component),
+    createTamagui: jest.fn(() => ({})),
+    TamaguiProvider: ({ children }: { children: React.ReactNode; }) => children,
+    Theme: ({ children }: { children: React.ReactNode; }) => children,
+    useTheme: jest.fn(() => ({
+      background: { val: "#ffffff" },
+      color: { val: "#000000" },
+    })),
+    useMedia: jest.fn(() => ({
+      xs: false,
+      sm: false,
+      md: false,
+      lg: true,
+    })),
+    View: RN.View,
+    Text: RN.Text,
+    Stack: RN.View,
+    XStack: RN.View,
+    YStack: RN.View,
+    ZStack: RN.View,
+    Button: MockButton,
+    Input: RN.TextInput,
+    Label: RN.Text,
+    H1: RN.Text,
+    H2: RN.Text,
+    H3: RN.Text,
+    H4: RN.Text,
+    Paragraph: RN.Text,
+    Card: RN.View,
+    Separator: RN.View,
+    ScrollView: RN.View,
+    Sheet: {
+      Frame: RN.View,
+      Overlay: RN.View,
+      Handle: RN.View,
+      ScrollView: RN.View,
+    },
+    Dialog: {
+      Trigger: RN.Pressable,
+      Portal: RN.View,
+      Overlay: RN.View,
+      Content: RN.View,
+      Title: RN.Text,
+      Description: RN.Text,
+      Close: RN.Pressable,
+    },
+    Spinner: () => null,
+    Avatar: {
+      Image: RN.View,
+      Fallback: RN.Text,
+    },
+    Progress: Object.assign(RN.View, {
+      Indicator: RN.View,
+    }),
+    getTokens: jest.fn(() => ({
+      color: {},
+      space: {},
+      size: {},
+      radius: {},
+    })),
+    getToken: jest.fn(() => ""),
+    isWeb: false,
+  };
+});
 
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";

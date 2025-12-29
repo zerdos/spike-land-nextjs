@@ -7,27 +7,32 @@ import { act, renderHook, waitFor } from "@testing-library/react-native";
 import { getJobStatus } from "../services/api/jobs";
 import { useEnhancementJob } from "./useEnhancementJob";
 
+// Mock implementation functions (not using jest.fn so they don't get cleared)
+const getStageDescriptionImpl = (stage: string | null): string => {
+  const descriptions: Record<string, string> = {
+    ANALYZING: "Analyzing image...",
+    CROPPING: "Auto-cropping...",
+    PROMPTING: "Generating enhancement prompt...",
+    GENERATING: "Enhancing image...",
+  };
+  return descriptions[stage as string] || "Processing...";
+};
+
+const getStageProgressImpl = (stage: string | null): number => {
+  const progress: Record<string, number> = {
+    ANALYZING: 20,
+    CROPPING: 40,
+    PROMPTING: 60,
+    GENERATING: 80,
+  };
+  return progress[stage as string] || 10;
+};
+
 // Mock the jobs service
 jest.mock("../services/api/jobs", () => ({
   getJobStatus: jest.fn(),
-  getStageDescription: jest.fn((stage) => {
-    const descriptions: Record<string, string> = {
-      ANALYZING: "Analyzing image...",
-      CROPPING: "Auto-cropping...",
-      PROMPTING: "Generating enhancement prompt...",
-      GENERATING: "Enhancing image...",
-    };
-    return descriptions[stage as string] || "Processing...";
-  }),
-  getStageProgress: jest.fn((stage) => {
-    const progress: Record<string, number> = {
-      ANALYZING: 20,
-      CROPPING: 40,
-      PROMPTING: 60,
-      GENERATING: 80,
-    };
-    return progress[stage as string] || 10;
-  }),
+  getStageDescription: (stage: string | null) => getStageDescriptionImpl(stage),
+  getStageProgress: (stage: string | null) => getStageProgressImpl(stage),
 }));
 
 const mockedGetJobStatus = getJobStatus as jest.MockedFunction<typeof getJobStatus>;
@@ -62,9 +67,10 @@ const createMockJob = (overrides: Partial<ImageEnhancementJob> = {}): ImageEnhan
 // Tests
 // ============================================================================
 
-// Helper to flush all pending promises and timers
-const flushPromisesAndTimers = async () => {
-  await jest.runAllTimersAsync();
+// Helper to flush pending promises - advances timer by minimal amount to process promises
+const flushPromises = async () => {
+  // Advance by 0 to just let promises resolve
+  await jest.advanceTimersByTimeAsync(0);
 };
 
 describe("useEnhancementJob", () => {
@@ -111,7 +117,7 @@ describe("useEnhancementJob", () => {
       expect(result.current.isPolling).toBe(true);
 
       await act(async () => {
-        await flushPromisesAndTimers();
+        await flushPromises();
       });
 
       expect(result.current.job).toEqual(mockJob);
@@ -140,22 +146,23 @@ describe("useEnhancementJob", () => {
 
       const { result } = renderHook(() => useEnhancementJob("job-123", { pollInterval: 1000 }));
 
-      await waitFor(() => {
-        expect(result.current.job).toBeTruthy();
+      await act(async () => {
+        await flushPromises();
       });
 
+      expect(result.current.job).toBeTruthy();
       expect(mockedGetJobStatus).toHaveBeenCalledTimes(1);
 
       // Advance timer
       await act(async () => {
-        jest.advanceTimersByTime(1000);
+        await jest.advanceTimersByTimeAsync(1000);
       });
 
       expect(mockedGetJobStatus).toHaveBeenCalledTimes(2);
 
       // Advance timer again
       await act(async () => {
-        jest.advanceTimersByTime(1000);
+        await jest.advanceTimersByTimeAsync(1000);
       });
 
       expect(mockedGetJobStatus).toHaveBeenCalledTimes(3);
@@ -178,10 +185,11 @@ describe("useEnhancementJob", () => {
 
       const { result } = renderHook(() => useEnhancementJob("job-123", { onComplete }));
 
-      await waitFor(() => {
-        expect(result.current.isComplete).toBe(true);
+      await act(async () => {
+        await flushPromises();
       });
 
+      expect(result.current.isComplete).toBe(true);
       expect(result.current.status).toBe("COMPLETED");
       expect(result.current.progress).toBe(100);
       expect(result.current.statusMessage).toBe("Enhancement complete!");
@@ -207,10 +215,11 @@ describe("useEnhancementJob", () => {
 
       const { result } = renderHook(() => useEnhancementJob("job-123", { onError }));
 
-      await waitFor(() => {
-        expect(result.current.isFailed).toBe(true);
+      await act(async () => {
+        await flushPromises();
       });
 
+      expect(result.current.isFailed).toBe(true);
       expect(result.current.status).toBe("FAILED");
       expect(result.current.progress).toBe(0);
       expect(result.current.error).toBe("Enhancement failed");
@@ -230,10 +239,11 @@ describe("useEnhancementJob", () => {
 
       const { result } = renderHook(() => useEnhancementJob("job-123", { onError }));
 
-      await waitFor(() => {
-        expect(result.current.isFailed).toBe(true);
+      await act(async () => {
+        await flushPromises();
       });
 
+      expect(result.current.isFailed).toBe(true);
       expect(result.current.status).toBe("CANCELLED");
       expect(result.current.error).toBe("Job cancelled");
       expect(onError).toHaveBeenCalledWith("Job cancelled");
@@ -250,10 +260,11 @@ describe("useEnhancementJob", () => {
 
       const { result } = renderHook(() => useEnhancementJob("job-123", { onError }));
 
-      await waitFor(() => {
-        expect(result.current.error).toBe("Network error");
+      await act(async () => {
+        await flushPromises();
       });
 
+      expect(result.current.error).toBe("Network error");
       expect(result.current.isPolling).toBe(false);
       expect(onError).toHaveBeenCalledWith("Network error");
     });
@@ -269,10 +280,11 @@ describe("useEnhancementJob", () => {
 
       const { result } = renderHook(() => useEnhancementJob("job-123", { onError }));
 
-      await waitFor(() => {
-        expect(result.current.error).toBe("Job not found");
+      await act(async () => {
+        await flushPromises();
       });
 
+      expect(result.current.error).toBe("Job not found");
       expect(onError).toHaveBeenCalledWith("Job not found");
     });
   });
@@ -293,9 +305,11 @@ describe("useEnhancementJob", () => {
 
       renderHook(() => useEnhancementJob("job-123", { onProgress }));
 
-      await waitFor(() => {
-        expect(onProgress).toHaveBeenCalledWith(processingJob);
+      await act(async () => {
+        await flushPromises();
       });
+
+      expect(onProgress).toHaveBeenCalledWith(processingJob);
     });
 
     it("should update progress based on stage", async () => {
@@ -320,11 +334,14 @@ describe("useEnhancementJob", () => {
           status: 200,
         });
 
-        const { result } = renderHook(() => useEnhancementJob("job-123"));
+        const { result, unmount } = renderHook(() => useEnhancementJob("job-123"));
 
-        await waitFor(() => {
-          expect(result.current.progress).toBe(expectedProgress);
+        await act(async () => {
+          await flushPromises();
         });
+
+        expect(result.current.progress).toBe(expectedProgress);
+        unmount();
       }
     });
   });
@@ -396,9 +413,11 @@ describe("useEnhancementJob", () => {
 
       const { result } = renderHook(() => useEnhancementJob("job-123"));
 
-      await waitFor(() => {
-        expect(result.current.isFailed).toBe(true);
+      await act(async () => {
+        await flushPromises();
       });
+
+      expect(result.current.isFailed).toBe(true);
 
       // Update mock for retry
       const processingJob = createMockJob({ status: "PROCESSING" });
@@ -410,12 +429,10 @@ describe("useEnhancementJob", () => {
 
       await act(async () => {
         await result.current.retry();
+        await flushPromises();
       });
 
-      await waitFor(() => {
-        expect(result.current.status).toBe("PROCESSING");
-      });
-
+      expect(result.current.status).toBe("PROCESSING");
       expect(result.current.error).toBeNull();
     });
 
@@ -430,9 +447,11 @@ describe("useEnhancementJob", () => {
 
       const { result } = renderHook(() => useEnhancementJob("job-123"));
 
-      await waitFor(() => {
-        expect(result.current.job).toBeTruthy();
+      await act(async () => {
+        await flushPromises();
       });
+
+      expect(result.current.job).toBeTruthy();
 
       await act(async () => {
         result.current.reset();
@@ -459,16 +478,19 @@ describe("useEnhancementJob", () => {
         { initialProps: { jobId: "job-1" } },
       );
 
-      await waitFor(() => {
-        expect(result.current.job?.id).toBe("job-1");
+      await act(async () => {
+        await flushPromises();
       });
+
+      expect(result.current.job?.id).toBe("job-1");
 
       rerender({ jobId: "job-2" });
 
-      await waitFor(() => {
-        expect(result.current.job?.id).toBe("job-2");
+      await act(async () => {
+        await flushPromises();
       });
 
+      expect(result.current.job?.id).toBe("job-2");
       expect(result.current.isComplete).toBe(true);
     });
 
@@ -486,16 +508,19 @@ describe("useEnhancementJob", () => {
         { initialProps: { jobId: "job-123" as string | null } },
       );
 
-      await waitFor(() => {
-        expect(result.current.job).toBeTruthy();
+      await act(async () => {
+        await flushPromises();
       });
+
+      expect(result.current.job).toBeTruthy();
 
       rerender({ jobId: null });
 
-      await waitFor(() => {
-        expect(result.current.job).toBeNull();
+      await act(async () => {
+        await flushPromises();
       });
 
+      expect(result.current.job).toBeNull();
       expect(result.current.isPolling).toBe(false);
     });
   });

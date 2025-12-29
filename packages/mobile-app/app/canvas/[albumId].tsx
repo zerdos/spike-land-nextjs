@@ -289,82 +289,97 @@ export default function CanvasScreen() {
   ]);
 
   // ============================================================================
-  // Gestures
+  // Gestures - wrapped in useMemo to ensure proper gesture composition
   // ============================================================================
 
-  const pinchGesture = Gesture.Pinch()
-    .onUpdate((e) => {
-      scale.value = savedScale.value * e.scale;
-    })
-    .onEnd(() => {
-      if (scale.value < 1) {
-        scale.value = withSpring(1);
-        savedScale.value = 1;
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
-        savedTranslateX.value = 0;
-        savedTranslateY.value = 0;
-      } else if (scale.value > 4) {
-        scale.value = withSpring(4);
-        savedScale.value = 4;
-      } else {
-        savedScale.value = scale.value;
-      }
-    });
-
-  const panGesture = Gesture.Pan()
-    .onUpdate((e) => {
-      if (scale.value > 1) {
-        translateX.value = savedTranslateX.value + e.translationX;
-        translateY.value = savedTranslateY.value + e.translationY;
-      } else {
-        // Swipe to navigate
-        translateX.value = e.translationX;
-      }
-    })
-    .onEnd((e) => {
-      if (scale.value > 1) {
-        savedTranslateX.value = translateX.value;
-        savedTranslateY.value = translateY.value;
-      } else {
-        // Handle swipe navigation
-        const threshold = SCREEN_WIDTH * 0.3;
-        if (e.translationX > threshold && currentSlideshowIndex > 0) {
-          runOnJS(goToPrevious)();
-        } else if (e.translationX < -threshold && currentSlideshowIndex < images.length - 1) {
-          runOnJS(goToNext)();
+  const composedGesture = useMemo(() => {
+    const pinchGesture = Gesture.Pinch()
+      .onUpdate((e) => {
+        scale.value = savedScale.value * e.scale;
+      })
+      .onEnd(() => {
+        if (scale.value < 1) {
+          scale.value = withSpring(1);
+          savedScale.value = 1;
+          translateX.value = withSpring(0);
+          translateY.value = withSpring(0);
+          savedTranslateX.value = 0;
+          savedTranslateY.value = 0;
+        } else if (scale.value > 4) {
+          scale.value = withSpring(4);
+          savedScale.value = 4;
+        } else {
+          savedScale.value = scale.value;
         }
-        translateX.value = withSpring(0);
-      }
-    });
+      });
 
-  const doubleTapGesture = Gesture.Tap()
-    .numberOfTaps(2)
-    .onEnd((_e) => {
-      if (scale.value > 1) {
-        scale.value = withSpring(1);
-        savedScale.value = 1;
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
-        savedTranslateX.value = 0;
-        savedTranslateY.value = 0;
-      } else {
-        scale.value = withSpring(2);
-        savedScale.value = 2;
-      }
-    });
+    const panGesture = Gesture.Pan()
+      .onUpdate((e) => {
+        if (scale.value > 1) {
+          translateX.value = savedTranslateX.value + e.translationX;
+          translateY.value = savedTranslateY.value + e.translationY;
+        } else {
+          // Swipe to navigate
+          translateX.value = e.translationX;
+        }
+      })
+      .onEnd((e) => {
+        if (scale.value > 1) {
+          savedTranslateX.value = translateX.value;
+          savedTranslateY.value = translateY.value;
+        } else {
+          // Handle swipe navigation
+          const threshold = SCREEN_WIDTH * 0.3;
+          if (e.translationX > threshold && currentSlideshowIndex > 0) {
+            runOnJS(goToPrevious)();
+          } else if (e.translationX < -threshold && currentSlideshowIndex < images.length - 1) {
+            runOnJS(goToNext)();
+          }
+          translateX.value = withSpring(0);
+        }
+      });
 
-  const singleTapGesture = Gesture.Tap()
-    .onEnd(() => {
-      runOnJS(setShowControls)(!showControls);
-      runOnJS(resetControlsTimeout)();
-    });
+    const doubleTapGesture = Gesture.Tap()
+      .numberOfTaps(2)
+      .onEnd((_e) => {
+        if (scale.value > 1) {
+          scale.value = withSpring(1);
+          savedScale.value = 1;
+          translateX.value = withSpring(0);
+          translateY.value = withSpring(0);
+          savedTranslateX.value = 0;
+          savedTranslateY.value = 0;
+        } else {
+          scale.value = withSpring(2);
+          savedScale.value = 2;
+        }
+      });
 
-  const composedGesture = Gesture.Exclusive(
-    doubleTapGesture,
-    Gesture.Simultaneous(pinchGesture, panGesture),
-    singleTapGesture,
-  );
+    const singleTapGesture = Gesture.Tap()
+      .onEnd(() => {
+        runOnJS(setShowControls)(!showControls);
+        runOnJS(resetControlsTimeout)();
+      });
+
+    return Gesture.Exclusive(
+      doubleTapGesture,
+      Gesture.Simultaneous(pinchGesture, panGesture),
+      singleTapGesture,
+    );
+  }, [
+    currentSlideshowIndex,
+    goToNext,
+    goToPrevious,
+    images.length,
+    resetControlsTimeout,
+    savedScale,
+    savedTranslateX,
+    savedTranslateY,
+    scale,
+    showControls,
+    translateX,
+    translateY,
+  ]);
 
   // ============================================================================
   // Animated Styles

@@ -24,8 +24,8 @@ jest.mock("@expo/vector-icons", () => ({
   Ionicons: "Ionicons",
 }));
 
-// Mock Alert
-jest.spyOn(Alert, "alert");
+// Note: Alert.alert is mocked globally in jest.setup.ts
+// Individual tests that need to verify Alert calls should create their own spy
 
 // Mock auth store
 const mockAuthStore = {
@@ -66,8 +66,12 @@ const mockSettingsStore: {
   initialize: jest.fn(() => Promise.resolve()),
 };
 jest.mock("@/stores/settings-store", () => ({
-  useSettingsStore: jest.fn(() => mockSettingsStore),
+  useSettingsStore: jest.fn(),
 }));
+
+// Import the mocked store to configure it
+import { useSettingsStore } from "@/stores/settings-store";
+const mockUseSettingsStore = useSettingsStore as jest.Mock;
 
 // Mock Tamagui components
 jest.mock("tamagui", () => {
@@ -127,6 +131,12 @@ function resetMocks() {
   };
   mockSettingsStore.isSavingPreferences = false;
   mockSettingsStore.preferencesError = null;
+  mockSettingsStore.updateNotificationPreference = jest.fn(() => Promise.resolve());
+  mockSettingsStore.initialize = jest.fn(() => Promise.resolve());
+
+  // Configure mocks to return the mock store objects
+  mockUseAuthStore.mockReturnValue(mockAuthStore);
+  mockUseSettingsStore.mockReturnValue(mockSettingsStore);
 }
 
 // ============================================================================
@@ -199,9 +209,10 @@ describe("NotificationsScreen", () => {
     });
 
     it("should display push notifications toggle", () => {
-      const { getByText } = render(<NotificationsScreen />);
+      const { getAllByText, getByText } = render(<NotificationsScreen />);
 
-      expect(getByText("Push Notifications")).toBeTruthy();
+      // "Push Notifications" appears twice - once in Communication section and once in Notification Channels
+      expect(getAllByText("Push Notifications").length).toBeGreaterThanOrEqual(1);
       expect(
         getByText(
           "Get instant push notifications on your device for real-time updates.",
@@ -332,9 +343,10 @@ describe("NotificationsScreen", () => {
     });
 
     it("should display push notification channel info", () => {
-      const { getByText } = render(<NotificationsScreen />);
+      const { getAllByText, getByText } = render(<NotificationsScreen />);
 
-      expect(getByText("Push Notifications")).toBeTruthy();
+      // "Push Notifications" appears twice - once in Communication section and once in Notification Channels
+      expect(getAllByText("Push Notifications").length).toBeGreaterThanOrEqual(1);
       expect(getByText("Real-time alerts on your device")).toBeTruthy();
     });
 
@@ -365,15 +377,22 @@ describe("NotificationsScreen", () => {
   });
 
   describe("Error handling", () => {
-    it("should show alert when preferences error occurs", () => {
+    it("should show alert when preferences error occurs", async () => {
+      // Re-spy on Alert.alert for this test since it may be cleared by jest.clearAllMocks
+      const alertSpy = jest.spyOn(Alert, "alert");
+
       mockSettingsStore.preferencesError = "Failed to update preferences";
+      // Re-configure the mock to return the updated store with error
+      mockUseSettingsStore.mockReturnValue(mockSettingsStore);
 
       render(<NotificationsScreen />);
 
-      expect(Alert.alert).toHaveBeenCalledWith(
-        "Error",
-        "Failed to update preferences",
-      );
+      await waitFor(() => {
+        expect(alertSpy).toHaveBeenCalledWith(
+          "Error",
+          "Failed to update preferences",
+        );
+      });
     });
   });
 
@@ -406,9 +425,10 @@ describe("NotificationsScreen", () => {
     it("should reflect current push notifications state", () => {
       mockSettingsStore.notifications.pushNotifications = false;
 
-      const { getByText } = render(<NotificationsScreen />);
+      const { getAllByText } = render(<NotificationsScreen />);
 
-      expect(getByText("Push Notifications")).toBeTruthy();
+      // "Push Notifications" appears twice - once in Communication section and once in Notification Channels
+      expect(getAllByText("Push Notifications").length).toBeGreaterThanOrEqual(1);
     });
 
     it("should reflect current enhancement complete state", () => {

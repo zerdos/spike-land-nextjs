@@ -25,7 +25,7 @@
           <div class="fl pad1y space-right2">
             <span class="strong">0% </span>
             <span class="quiet">Statements</span>
-            <span class="fraction">0/163</span>
+            <span class="fraction">0/164</span>
           </div>
 
           <div class="fl pad1y space-right2">
@@ -37,13 +37,13 @@
           <div class="fl pad1y space-right2">
             <span class="strong">0% </span>
             <span class="quiet">Functions</span>
-            <span class="fraction">0/37</span>
+            <span class="fraction">0/38</span>
           </div>
 
           <div class="fl pad1y space-right2">
             <span class="strong">0% </span>
             <span class="quiet">Lines</span>
-            <span class="fraction">0/158</span>
+            <span class="fraction">0/159</span>
           </div>
         </div>
         <p class="quiet">
@@ -648,7 +648,22 @@
 <a name='L585'></a><a href='#L585'>585</a>
 <a name='L586'></a><a href='#L586'>586</a>
 <a name='L587'></a><a href='#L587'>587</a>
-<a name='L588'></a><a href='#L588'>588</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L588'></a><a href='#L588'>588</a>
+<a name='L589'></a><a href='#L589'>589</a>
+<a name='L590'></a><a href='#L590'>590</a>
+<a name='L591'></a><a href='#L591'>591</a>
+<a name='L592'></a><a href='#L592'>592</a>
+<a name='L593'></a><a href='#L593'>593</a>
+<a name='L594'></a><a href='#L594'>594</a>
+<a name='L595'></a><a href='#L595'>595</a>
+<a name='L596'></a><a href='#L596'>596</a>
+<a name='L597'></a><a href='#L597'>597</a>
+<a name='L598'></a><a href='#L598'>598</a>
+<a name='L599'></a><a href='#L599'>599</a>
+<a name='L600'></a><a href='#L600'>600</a>
+<a name='L601'></a><a href='#L601'>601</a>
+<a name='L602'></a><a href='#L602'>602</a>
+<a name='L603'></a><a href='#L603'>603</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -943,6 +958,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1011,6 +1027,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1526,82 +1556,97 @@ export default function <span class="fstat-no" title="function not covered" >Can
   ]);
 &nbsp;
   // ============================================================================
-  // Gestures
+  // Gestures - wrapped in useMemo to ensure proper gesture composition
   // ============================================================================
 &nbsp;
-  const pinchGesture = <span class="cstat-no" title="statement not covered" >Gesture.Pinch()</span>
-    .onUpdate(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; {
-<span class="cstat-no" title="statement not covered" >      scale.value = savedScale.value * e.scale;</span>
-    })
-    .onEnd(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
-<span class="cstat-no" title="statement not covered" >      if (scale.value &lt; 1) {</span>
-<span class="cstat-no" title="statement not covered" >        scale.value = withSpring(1);</span>
-<span class="cstat-no" title="statement not covered" >        savedScale.value = 1;</span>
-<span class="cstat-no" title="statement not covered" >        translateX.value = withSpring(0);</span>
-<span class="cstat-no" title="statement not covered" >        translateY.value = withSpring(0);</span>
-<span class="cstat-no" title="statement not covered" >        savedTranslateX.value = 0;</span>
-<span class="cstat-no" title="statement not covered" >        savedTranslateY.value = 0;</span>
-      } else <span class="cstat-no" title="statement not covered" >if (scale.value &gt; 4) {</span>
-<span class="cstat-no" title="statement not covered" >        scale.value = withSpring(4);</span>
-<span class="cstat-no" title="statement not covered" >        savedScale.value = 4;</span>
-      } else {
-<span class="cstat-no" title="statement not covered" >        savedScale.value = scale.value;</span>
-      }
-    });
-&nbsp;
-  const panGesture = <span class="cstat-no" title="statement not covered" >Gesture.Pan()</span>
-    .onUpdate(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; {
-<span class="cstat-no" title="statement not covered" >      if (scale.value &gt; 1) {</span>
-<span class="cstat-no" title="statement not covered" >        translateX.value = savedTranslateX.value + e.translationX;</span>
-<span class="cstat-no" title="statement not covered" >        translateY.value = savedTranslateY.value + e.translationY;</span>
-      } else {
-        // Swipe to navigate
-<span class="cstat-no" title="statement not covered" >        translateX.value = e.translationX;</span>
-      }
-    })
-    .onEnd(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; {
-<span class="cstat-no" title="statement not covered" >      if (scale.value &gt; 1) {</span>
-<span class="cstat-no" title="statement not covered" >        savedTranslateX.value = translateX.value;</span>
-<span class="cstat-no" title="statement not covered" >        savedTranslateY.value = translateY.value;</span>
-      } else {
-        // Handle swipe navigation
-        const threshold = <span class="cstat-no" title="statement not covered" >SCREEN_WIDTH * 0.3;</span>
-<span class="cstat-no" title="statement not covered" >        if (e.translationX &gt; threshold &amp;&amp; currentSlideshowIndex &gt; 0) {</span>
-<span class="cstat-no" title="statement not covered" >          runOnJS(goToPrevious)();</span>
-        } else <span class="cstat-no" title="statement not covered" >if (e.translationX &lt; -threshold &amp;&amp; currentSlideshowIndex &lt; images.length - 1) {</span>
-<span class="cstat-no" title="statement not covered" >          runOnJS(goToNext)();</span>
+  const composedGesture = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+    const pinchGesture = <span class="cstat-no" title="statement not covered" >Gesture.Pinch()</span>
+      .onUpdate(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; {
+<span class="cstat-no" title="statement not covered" >        scale.value = savedScale.value * e.scale;</span>
+      })
+      .onEnd(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >        if (scale.value &lt; 1) {</span>
+<span class="cstat-no" title="statement not covered" >          scale.value = withSpring(1);</span>
+<span class="cstat-no" title="statement not covered" >          savedScale.value = 1;</span>
+<span class="cstat-no" title="statement not covered" >          translateX.value = withSpring(0);</span>
+<span class="cstat-no" title="statement not covered" >          translateY.value = withSpring(0);</span>
+<span class="cstat-no" title="statement not covered" >          savedTranslateX.value = 0;</span>
+<span class="cstat-no" title="statement not covered" >          savedTranslateY.value = 0;</span>
+        } else <span class="cstat-no" title="statement not covered" >if (scale.value &gt; 4) {</span>
+<span class="cstat-no" title="statement not covered" >          scale.value = withSpring(4);</span>
+<span class="cstat-no" title="statement not covered" >          savedScale.value = 4;</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >          savedScale.value = scale.value;</span>
         }
-<span class="cstat-no" title="statement not covered" >        translateX.value = withSpring(0);</span>
-      }
-    });
+      });
 &nbsp;
-  const doubleTapGesture = <span class="cstat-no" title="statement not covered" >Gesture.Tap()</span>
-    .numberOfTaps(2)
-    .onEnd(<span class="fstat-no" title="function not covered" >(_</span>e) =&gt; {
-<span class="cstat-no" title="statement not covered" >      if (scale.value &gt; 1) {</span>
-<span class="cstat-no" title="statement not covered" >        scale.value = withSpring(1);</span>
-<span class="cstat-no" title="statement not covered" >        savedScale.value = 1;</span>
-<span class="cstat-no" title="statement not covered" >        translateX.value = withSpring(0);</span>
-<span class="cstat-no" title="statement not covered" >        translateY.value = withSpring(0);</span>
-<span class="cstat-no" title="statement not covered" >        savedTranslateX.value = 0;</span>
-<span class="cstat-no" title="statement not covered" >        savedTranslateY.value = 0;</span>
-      } else {
-<span class="cstat-no" title="statement not covered" >        scale.value = withSpring(2);</span>
-<span class="cstat-no" title="statement not covered" >        savedScale.value = 2;</span>
-      }
-    });
+    const panGesture = <span class="cstat-no" title="statement not covered" >Gesture.Pan()</span>
+      .onUpdate(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; {
+<span class="cstat-no" title="statement not covered" >        if (scale.value &gt; 1) {</span>
+<span class="cstat-no" title="statement not covered" >          translateX.value = savedTranslateX.value + e.translationX;</span>
+<span class="cstat-no" title="statement not covered" >          translateY.value = savedTranslateY.value + e.translationY;</span>
+        } else {
+          // Swipe to navigate
+<span class="cstat-no" title="statement not covered" >          translateX.value = e.translationX;</span>
+        }
+      })
+      .onEnd(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; {
+<span class="cstat-no" title="statement not covered" >        if (scale.value &gt; 1) {</span>
+<span class="cstat-no" title="statement not covered" >          savedTranslateX.value = translateX.value;</span>
+<span class="cstat-no" title="statement not covered" >          savedTranslateY.value = translateY.value;</span>
+        } else {
+          // Handle swipe navigation
+          const threshold = <span class="cstat-no" title="statement not covered" >SCREEN_WIDTH * 0.3;</span>
+<span class="cstat-no" title="statement not covered" >          if (e.translationX &gt; threshold &amp;&amp; currentSlideshowIndex &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >            runOnJS(goToPrevious)();</span>
+          } else <span class="cstat-no" title="statement not covered" >if (e.translationX &lt; -threshold &amp;&amp; currentSlideshowIndex &lt; images.length - 1) {</span>
+<span class="cstat-no" title="statement not covered" >            runOnJS(goToNext)();</span>
+          }
+<span class="cstat-no" title="statement not covered" >          translateX.value = withSpring(0);</span>
+        }
+      });
 &nbsp;
-  const singleTapGesture = <span class="cstat-no" title="statement not covered" >Gesture.Tap()</span>
-    .onEnd(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
-<span class="cstat-no" title="statement not covered" >      runOnJS(setShowControls)(!showControls);</span>
-<span class="cstat-no" title="statement not covered" >      runOnJS(resetControlsTimeout)();</span>
-    });
+    const doubleTapGesture = <span class="cstat-no" title="statement not covered" >Gesture.Tap()</span>
+      .numberOfTaps(2)
+      .onEnd(<span class="fstat-no" title="function not covered" >(_</span>e) =&gt; {
+<span class="cstat-no" title="statement not covered" >        if (scale.value &gt; 1) {</span>
+<span class="cstat-no" title="statement not covered" >          scale.value = withSpring(1);</span>
+<span class="cstat-no" title="statement not covered" >          savedScale.value = 1;</span>
+<span class="cstat-no" title="statement not covered" >          translateX.value = withSpring(0);</span>
+<span class="cstat-no" title="statement not covered" >          translateY.value = withSpring(0);</span>
+<span class="cstat-no" title="statement not covered" >          savedTranslateX.value = 0;</span>
+<span class="cstat-no" title="statement not covered" >          savedTranslateY.value = 0;</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >          scale.value = withSpring(2);</span>
+<span class="cstat-no" title="statement not covered" >          savedScale.value = 2;</span>
+        }
+      });
 &nbsp;
-  const composedGesture = <span class="cstat-no" title="statement not covered" >Gesture.Exclusive(</span>
-    doubleTapGesture,
-    Gesture.Simultaneous(pinchGesture, panGesture),
-    singleTapGesture,
-  );
+    const singleTapGesture = <span class="cstat-no" title="statement not covered" >Gesture.Tap()</span>
+      .onEnd(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >        runOnJS(setShowControls)(!showControls);</span>
+<span class="cstat-no" title="statement not covered" >        runOnJS(resetControlsTimeout)();</span>
+      });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return Gesture.Exclusive(</span>
+      doubleTapGesture,
+      Gesture.Simultaneous(pinchGesture, panGesture),
+      singleTapGesture,
+    );
+  }, [
+    currentSlideshowIndex,
+    goToNext,
+    goToPrevious,
+    images.length,
+    resetControlsTimeout,
+    savedScale,
+    savedTranslateX,
+    savedTranslateY,
+    scale,
+    showControls,
+    translateX,
+    translateY,
+  ]);
 &nbsp;
   // ============================================================================
   // Animated Styles
@@ -1831,7 +1876,7 @@ const styles = <span class="cstat-no" title="statement not covered" >StyleSheet.
     <div class="footer quiet pad2 space-top1 center small">
       Code coverage generated by
       <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-      at 2025-12-29T04:48:25.091Z
+      at 2025-12-29T05:04:53.764Z
     </div>
     <script src="../../prettify.js"></script>
     <script>

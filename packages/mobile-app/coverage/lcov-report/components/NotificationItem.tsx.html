@@ -25,13 +25,13 @@
           <div class="fl pad1y space-right2">
             <span class="strong">0% </span>
             <span class="quiet">Statements</span>
-            <span class="fraction">0/56</span>
+            <span class="fraction">0/57</span>
           </div>
 
           <div class="fl pad1y space-right2">
             <span class="strong">0% </span>
             <span class="quiet">Branches</span>
-            <span class="fraction">0/34</span>
+            <span class="fraction">0/40</span>
           </div>
 
           <div class="fl pad1y space-right2">
@@ -43,7 +43,7 @@
           <div class="fl pad1y space-right2">
             <span class="strong">0% </span>
             <span class="quiet">Lines</span>
-            <span class="fraction">0/54</span>
+            <span class="fraction">0/55</span>
           </div>
         </div>
         <p class="quiet">
@@ -332,7 +332,14 @@
 <a name='L269'></a><a href='#L269'>269</a>
 <a name='L270'></a><a href='#L270'>270</a>
 <a name='L271'></a><a href='#L271'>271</a>
-<a name='L272'></a><a href='#L272'>272</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L272'></a><a href='#L272'>272</a>
+<a name='L273'></a><a href='#L273'>273</a>
+<a name='L274'></a><a href='#L274'>274</a>
+<a name='L275'></a><a href='#L275'>275</a>
+<a name='L276'></a><a href='#L276'>276</a>
+<a name='L277'></a><a href='#L277'>277</a>
+<a name='L278'></a><a href='#L278'>278</a>
+<a name='L279'></a><a href='#L279'>279</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -441,7 +448,13 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -459,6 +472,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -712,26 +726,33 @@ export function <span class="fstat-no" title="function not covered" >Notificatio
 <span class="cstat-no" title="statement not covered" >    onDismiss?.(notification);</span>
   }, [notification, onDismiss]);
 &nbsp;
-  const panGesture = <span class="cstat-no" title="statement not covered" >Gesture.Pan()</span>
-    .onUpdate(<span class="fstat-no" title="function not covered" >(e</span>vent) =&gt; {
-      // Only allow swiping left
-<span class="cstat-no" title="statement not covered" >      if (event.translationX &lt; 0) {</span>
-<span class="cstat-no" title="statement not covered" >        translateX.value = event.translationX;</span>
-      }
-    })
-    .onEnd(<span class="fstat-no" title="function not covered" >(e</span>vent) =&gt; {
-<span class="cstat-no" title="statement not covered" >      if (event.translationX &lt; DELETE_THRESHOLD) {</span>
-        // Delete the item
-<span class="cstat-no" title="statement not covered" >        translateX.value = withTiming(-500, { duration: 200 });</span>
-<span class="cstat-no" title="statement not covered" >        itemHeight.value = withTiming(0, { duration: 200 });</span>
-<span class="cstat-no" title="statement not covered" >        opacity.value = withTiming(0, { duration: 200 }, <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >          runOnJS(handleDismiss)();</span>
-        });
-      } else {
-        // Snap back
-<span class="cstat-no" title="statement not covered" >        translateX.value = withSpring(0);</span>
-      }
-    });
+  // Create pan gesture with method chaining
+  // The gesture API uses a builder pattern where each method returns the gesture for chaining
+  const panGestureBase = <span class="cstat-no" title="statement not covered" >Gesture.Pan();</span>
+  // Safely chain gesture methods - handles both real API and test mocks
+  const panGesture =
+<span class="cstat-no" title="statement not covered" >    panGestureBase &amp;&amp; typeof panGestureBase.onUpdate === "function"</span>
+      ? panGestureBase
+          .onUpdate(<span class="fstat-no" title="function not covered" >(e</span>vent) =&gt; {
+            // Only allow swiping left
+<span class="cstat-no" title="statement not covered" >            if (event.translationX &lt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >              translateX.value = event.translationX;</span>
+            }
+          })
+          .onEnd(<span class="fstat-no" title="function not covered" >(e</span>vent) =&gt; {
+<span class="cstat-no" title="statement not covered" >            if (event.translationX &lt; DELETE_THRESHOLD) {</span>
+              // Delete the item
+<span class="cstat-no" title="statement not covered" >              translateX.value = withTiming(-500, { duration: 200 });</span>
+<span class="cstat-no" title="statement not covered" >              itemHeight.value = withTiming(0, { duration: 200 });</span>
+<span class="cstat-no" title="statement not covered" >              opacity.value = withTiming(0, { duration: 200 }, <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                runOnJS(handleDismiss)();</span>
+              });
+            } else {
+              // Snap back
+<span class="cstat-no" title="statement not covered" >              translateX.value = withSpring(0);</span>
+            }
+          })
+      : (panGestureBase ?? {});
 &nbsp;
   const animatedStyle = <span class="cstat-no" title="statement not covered" >useAnimatedStyle(<span class="fstat-no" title="function not covered" >()</span> =&gt; (<span class="cstat-no" title="statement not covered" >{</span></span>
     transform: [{ translateX: translateX.value }],
@@ -883,7 +904,7 @@ export default NotificationItem;
     <div class="footer quiet pad2 space-top1 center small">
       Code coverage generated by
       <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-      at 2025-12-29T04:48:25.045Z
+      at 2025-12-29T05:04:53.712Z
     </div>
     <script src="../prettify.js"></script>
     <script>

@@ -360,7 +360,9 @@ describe("ReferralsScreen", () => {
     it("should show 'Copied!' text after copying", async () => {
       const { getByTestId, getByText } = render(<ReferralsScreen />);
 
-      fireEvent.press(getByTestId("copy-code-button"));
+      await act(async () => {
+        fireEvent.press(getByTestId("copy-code-button"));
+      });
 
       await waitFor(() => {
         expect(getByText("Copied!")).toBeTruthy();
@@ -370,7 +372,9 @@ describe("ReferralsScreen", () => {
     it("should reset copied state after 2 seconds", async () => {
       const { getByTestId, getByText } = render(<ReferralsScreen />);
 
-      fireEvent.press(getByTestId("copy-code-button"));
+      await act(async () => {
+        fireEvent.press(getByTestId("copy-code-button"));
+      });
 
       await waitFor(() => {
         expect(getByText("Copied!")).toBeTruthy();
@@ -401,16 +405,19 @@ describe("ReferralsScreen", () => {
     });
 
     it("should show error alert when copy fails", async () => {
+      const alertSpy = jest.spyOn(Alert, "alert");
       mockedClipboard.setStringAsync.mockRejectedValue(
         new Error("Copy failed"),
       );
 
       const { getByTestId } = render(<ReferralsScreen />);
 
-      fireEvent.press(getByTestId("copy-code-button"));
+      await act(async () => {
+        fireEvent.press(getByTestId("copy-code-button"));
+      });
 
       await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith(
+        expect(alertSpy).toHaveBeenCalledWith(
           "Error",
           "Failed to copy code to clipboard",
         );
@@ -420,10 +427,11 @@ describe("ReferralsScreen", () => {
 
   describe("Referral Link Display", () => {
     it("should display referral URL", () => {
-      const { getByTestId, getByText } = render(<ReferralsScreen />);
+      const { getByTestId, getAllByText } = render(<ReferralsScreen />);
 
       expect(getByTestId("referral-url-display")).toBeTruthy();
-      expect(getByText("https://spike.land/ref/ABC123")).toBeTruthy();
+      // URL appears in both referral-url-display and share-buttons
+      expect(getAllByText("https://spike.land/ref/ABC123").length).toBeGreaterThan(0);
     });
 
     it("should display 'Loading...' when referral URL is null", () => {
@@ -576,11 +584,12 @@ describe("HowItWorks", () => {
   });
 
   it("should render how it works with correct steps", () => {
-    const { getByTestId, getByText } = render(<ReferralsScreen />);
+    const { getByTestId, getAllByText } = render(<ReferralsScreen />);
 
     expect(getByTestId("how-it-works")).toBeTruthy();
-    expect(getByText("Share Your Link")).toBeTruthy();
-    expect(getByText("Friend Signs Up")).toBeTruthy();
-    expect(getByText("Both Earn Tokens")).toBeTruthy();
+    // "Share Your Link" appears in both the card header and how-it-works step
+    expect(getAllByText("Share Your Link").length).toBeGreaterThan(0);
+    expect(getAllByText("Friend Signs Up").length).toBeGreaterThan(0);
+    expect(getAllByText("Both Earn Tokens").length).toBeGreaterThan(0);
   });
 });

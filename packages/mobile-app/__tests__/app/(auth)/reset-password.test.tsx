@@ -491,7 +491,11 @@ describe("ResetPasswordScreen", () => {
 
       fireEvent.changeText(passwordInput, "NewPassword123");
       fireEvent.changeText(confirmInput, "NewPassword123");
-      fireEvent.press(submitButton);
+
+      await act(async () => {
+        fireEvent.press(submitButton);
+        await Promise.resolve();
+      });
 
       await waitFor(() => {
         expect(screen.getByText("Token expired")).toBeTruthy();
@@ -516,7 +520,11 @@ describe("ResetPasswordScreen", () => {
 
       fireEvent.changeText(passwordInput, "NewPassword123");
       fireEvent.changeText(confirmInput, "NewPassword123");
-      fireEvent.press(submitButton);
+
+      await act(async () => {
+        fireEvent.press(submitButton);
+        await Promise.resolve();
+      });
 
       await waitFor(() => {
         expect(screen.getByText("Failed to reset password")).toBeTruthy();
@@ -544,7 +552,11 @@ describe("ResetPasswordScreen", () => {
 
       fireEvent.changeText(passwordInput, "NewPassword123");
       fireEvent.changeText(confirmInput, "NewPassword123");
-      fireEvent.press(submitButton);
+
+      await act(async () => {
+        fireEvent.press(submitButton);
+        await Promise.resolve();
+      });
 
       await waitFor(() => {
         expect(screen.getByTestId("go-to-signin-button")).toBeTruthy();

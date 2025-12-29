@@ -3,55 +3,6 @@
  * Ensures the image comparison slider renders correctly with gesture interactions
  */
 
-// Mock react-native-reanimated BEFORE importing the component
-// This overrides the mock in jest.setup.ts which tries to load the real mock module
-jest.mock("react-native-reanimated", () => {
-  const React = require("react");
-  const { View } = require("react-native");
-
-  // Create a mock Animated.View component that passes through props
-  const AnimatedView = React.forwardRef(
-    (
-      props: { testID?: string; style?: object; children?: React.ReactNode; },
-      ref: React.Ref<typeof View>,
-    ) => {
-      return React.createElement(View, { ...props, ref });
-    },
-  );
-  AnimatedView.displayName = "AnimatedView";
-
-  return {
-    __esModule: true,
-    default: {
-      call: jest.fn(),
-      createAnimatedComponent: (component: React.ComponentType) => component,
-      Value: jest.fn(),
-      event: jest.fn(),
-      add: jest.fn(),
-      eq: jest.fn(),
-      set: jest.fn(),
-      cond: jest.fn(),
-      interpolate: jest.fn(),
-      Extrapolate: { CLAMP: jest.fn() },
-      View: AnimatedView,
-    },
-    useSharedValue: jest.fn((initial) => ({ value: initial })),
-    useAnimatedStyle: jest.fn(() => ({})),
-    withTiming: jest.fn((value) => value),
-    withSpring: jest.fn((value) => value),
-    withDelay: jest.fn((_, animation) => animation),
-    withSequence: jest.fn((...animations) => animations[0]),
-    runOnJS: jest.fn((fn) => fn),
-    runOnUI: jest.fn((fn) => fn),
-    Easing: {
-      linear: jest.fn(),
-      ease: jest.fn(),
-      bezier: jest.fn(),
-    },
-    View: AnimatedView,
-  };
-});
-
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import { BeforeAfterSlider } from "./BeforeAfterSlider";

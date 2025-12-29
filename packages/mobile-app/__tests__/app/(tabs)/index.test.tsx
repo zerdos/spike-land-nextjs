@@ -14,6 +14,18 @@ jest.mock("@expo/vector-icons", () => {
   };
 });
 
+// Mock react-native-safe-area-context
+jest.mock("react-native-safe-area-context", () => ({
+  useSafeAreaInsets: jest.fn(() => ({
+    top: 44,
+    right: 0,
+    bottom: 34,
+    left: 0,
+  })),
+  SafeAreaProvider: ({ children }: { children: React.ReactNode; }) => children,
+  SafeAreaView: ({ children }: { children: React.ReactNode; }) => children,
+}));
+
 // Mock the stores
 jest.mock("@/stores", () => ({
   useTokenStore: jest.fn(() => ({
@@ -86,13 +98,106 @@ jest.mock("@/components/FeatureCard", () => ({
   ],
 }));
 
+// Override Tamagui Button mock to properly render text children
+jest.mock("tamagui", () => {
+  const { View, Text, Pressable, TextInput } = require("react-native");
+  return {
+    styled: jest.fn((component: unknown) => component),
+    createTamagui: jest.fn(() => ({})),
+    TamaguiProvider: ({ children }: { children: React.ReactNode; }) => children,
+    Theme: ({ children }: { children: React.ReactNode; }) => children,
+    useTheme: jest.fn(() => ({
+      background: { val: "#ffffff" },
+      color: { val: "#000000" },
+    })),
+    useMedia: jest.fn(() => ({
+      xs: false,
+      sm: false,
+      md: false,
+      lg: true,
+    })),
+    // Component mocks
+    View,
+    Text,
+    Stack: View,
+    XStack: View,
+    YStack: View,
+    ZStack: View,
+    Button: ({ children, onPress }: { children: React.ReactNode; onPress?: () => void; }) => (
+      <Pressable onPress={onPress}>
+        <Text>{children}</Text>
+      </Pressable>
+    ),
+    Input: TextInput,
+    Label: Text,
+    H1: Text,
+    H2: Text,
+    H3: Text,
+    H4: Text,
+    Paragraph: Text,
+    Card: View,
+    Separator: View,
+    ScrollView: View,
+    Sheet: {
+      Frame: View,
+      Overlay: View,
+      Handle: View,
+      ScrollView: View,
+    },
+    Dialog: {
+      Trigger: Pressable,
+      Portal: View,
+      Overlay: View,
+      Content: View,
+      Title: Text,
+      Description: Text,
+      Close: Pressable,
+    },
+    Spinner: () => null,
+    Avatar: {
+      Image: View,
+      Fallback: Text,
+    },
+    Progress: Object.assign(View, {
+      Indicator: View,
+    }),
+    getTokens: jest.fn(() => ({
+      color: {},
+      space: {},
+      size: {},
+      radius: {},
+    })),
+    getToken: jest.fn(() => ""),
+    isWeb: false,
+  };
+});
+
 // Import after mocks
 import HomeScreen from "@/app/(tabs)/index";
 import { useEnhancementStore, useTokenStore } from "@/stores";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 describe("HomeScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset store mocks to default values after clearAllMocks
+    (useTokenStore as jest.Mock).mockReturnValue({
+      balance: 10,
+      isLoading: false,
+      fetchBalance: jest.fn(),
+    });
+    (useEnhancementStore as jest.Mock).mockReturnValue({
+      recentImages: [],
+      isLoadingHistory: false,
+      fetchRecentImages: jest.fn(),
+    });
+    // Reset safe area insets mock
+    (useSafeAreaInsets as jest.Mock).mockReturnValue({
+      top: 44,
+      right: 0,
+      bottom: 34,
+      left: 0,
+    });
   });
 
   describe("rendering", () => {

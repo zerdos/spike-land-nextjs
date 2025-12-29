@@ -132,13 +132,11 @@ describe("FeatureCard", () => {
 
   describe("null color scheme", () => {
     beforeEach(() => {
-      const { useColorScheme } = require("react-native");
-      useColorScheme.mockReturnValue(null);
+      mockUseColorScheme.mockReturnValue(null);
     });
 
     afterEach(() => {
-      const { useColorScheme } = require("react-native");
-      useColorScheme.mockReturnValue("light");
+      mockUseColorScheme.mockReturnValue("light");
     });
 
     it("renders correctly when color scheme is null", () => {

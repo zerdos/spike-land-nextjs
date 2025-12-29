@@ -17,22 +17,32 @@ import { useAuthStore } from "@/stores";
 
 // Mock expo-router
 const mockReplace = jest.fn();
-jest.mock("expo-router", () => ({
-  Redirect: ({ href }: { href: string; }) => {
-    // Return a mock component that indicates redirect
-    const React = require("react");
-    return React.createElement("mock-redirect", { testID: "redirect", href });
-  },
-  Stack: {
-    Screen: ({ name, options }: { name: string; options: Record<string, unknown>; }) => {
-      const React = require("react");
-      return React.createElement("mock-screen", { testID: `screen-${name}`, ...options });
+jest.mock("expo-router", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+
+  // Create Stack component as a function that renders its children
+  const StackComponent = ({ children }: { children: React.ReactNode; }) => {
+    return React.createElement(View, { testID: "stack-container" }, children);
+  };
+
+  // Add Screen as a property on Stack
+  StackComponent.Screen = (
+    { name, options }: { name: string; options: Record<string, unknown>; },
+  ) => {
+    return React.createElement("mock-screen", { testID: `screen-${name}`, ...options });
+  };
+
+  return {
+    Redirect: ({ href }: { href: string; }) => {
+      return React.createElement("mock-redirect", { testID: "redirect", href });
     },
-  },
-  useRouter: () => ({
-    replace: mockReplace,
-  }),
-}));
+    Stack: StackComponent,
+    useRouter: () => ({
+      replace: mockReplace,
+    }),
+  };
+});
 
 // Mock the auth store
 jest.mock("@/stores", () => ({
@@ -56,9 +66,7 @@ describe("AdminLayout", () => {
       });
 
       const { getByText } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       expect(getByText("Checking permissions...")).toBeTruthy();
@@ -74,9 +82,7 @@ describe("AdminLayout", () => {
       });
 
       const { getByTestId } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       const redirect = getByTestId("redirect");
@@ -91,9 +97,7 @@ describe("AdminLayout", () => {
       });
 
       const { getByTestId } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       const redirect = getByTestId("redirect");
@@ -115,9 +119,7 @@ describe("AdminLayout", () => {
       });
 
       const { getByText } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       expect(getByText("Access Denied")).toBeTruthy();
@@ -139,9 +141,7 @@ describe("AdminLayout", () => {
       });
 
       const { getByText } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       const goBackLink = getByText("Go back to Home");
@@ -161,9 +161,7 @@ describe("AdminLayout", () => {
       });
 
       const { getByText } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       fireEvent.press(getByText("Go back to Home"));
@@ -185,9 +183,7 @@ describe("AdminLayout", () => {
       });
 
       const { queryByText, getByTestId } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       // Should not show access denied
@@ -210,9 +206,7 @@ describe("AdminLayout", () => {
       });
 
       const { queryByText, getByTestId } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       // Should not show access denied
@@ -235,9 +229,7 @@ describe("AdminLayout", () => {
       });
 
       const { getByTestId } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       expect(getByTestId("screen-index")).toBeTruthy();
@@ -265,9 +257,7 @@ describe("AdminLayout", () => {
 
     it("should set correct title for dashboard screen", () => {
       const { getByTestId } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       const dashboardScreen = getByTestId("screen-index");
@@ -276,9 +266,7 @@ describe("AdminLayout", () => {
 
     it("should set correct title for users screen", () => {
       const { getByTestId } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       const usersScreen = getByTestId("screen-users/index");
@@ -287,9 +275,7 @@ describe("AdminLayout", () => {
 
     it("should set correct title for user detail screen", () => {
       const { getByTestId } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       const userDetailScreen = getByTestId("screen-users/[userId]");
@@ -298,9 +284,7 @@ describe("AdminLayout", () => {
 
     it("should set correct title for jobs screen", () => {
       const { getByTestId } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       const jobsScreen = getByTestId("screen-jobs/index");
@@ -309,9 +293,7 @@ describe("AdminLayout", () => {
 
     it("should set correct title for vouchers screen", () => {
       const { getByTestId } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       const vouchersScreen = getByTestId("screen-vouchers/index");
@@ -320,9 +302,7 @@ describe("AdminLayout", () => {
 
     it("should set correct title for analytics screen", () => {
       const { getByTestId } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       const analyticsScreen = getByTestId("screen-analytics");
@@ -344,9 +324,7 @@ describe("AdminLayout", () => {
       });
 
       const { getByText } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       expect(getByText("Access Denied")).toBeTruthy();
@@ -365,9 +343,7 @@ describe("AdminLayout", () => {
       });
 
       const { getByText } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       expect(getByText("Access Denied")).toBeTruthy();
@@ -386,9 +362,7 @@ describe("AdminLayout", () => {
       });
 
       const { getByText } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       expect(getByText("Access Denied")).toBeTruthy();
@@ -407,9 +381,7 @@ describe("AdminLayout", () => {
       });
 
       const { getByText } = render(
-        <TestWrapper>
-          <AdminLayout />
-        </TestWrapper>,
+        <AdminLayout />,
       );
 
       expect(getByText("Access Denied")).toBeTruthy();

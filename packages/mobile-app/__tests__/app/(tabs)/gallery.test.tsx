@@ -14,35 +14,161 @@ import GalleryScreen from "@/app/(tabs)/gallery";
 // Mocks
 // ============================================================================
 
+// Mock Tamagui Lucide Icons - must come before tamagui mock
+jest.mock("@tamagui/lucide-icons", () => {
+  const mockReact = require("react");
+  const RN = require("react-native");
+  const MockIcon = () => mockReact.createElement(RN.View, { testID: "icon" });
+  return {
+    Calendar: MockIcon,
+    Check: MockIcon,
+    CheckSquare: MockIcon,
+    ChevronDown: MockIcon,
+    Filter: MockIcon,
+    FolderPlus: MockIcon,
+    Image: MockIcon,
+    MoreHorizontal: MockIcon,
+    RotateCcw: MockIcon,
+    Search: MockIcon,
+    Sparkles: MockIcon,
+    Square: MockIcon,
+    Trash2: MockIcon,
+    X: MockIcon,
+  };
+});
+
+// Mock child components used by GalleryScreen
+jest.mock("@/components/FilterSheet", () => {
+  const mockReact = require("react");
+  const RN = require("react-native");
+  return {
+    FilterSheet: ({ open, testID }: { open: boolean; testID?: string; }) =>
+      open
+        ? mockReact.createElement(RN.View, { testID: testID || "filter-sheet" })
+        : null,
+    __esModule: true,
+    default: ({ open, testID }: { open: boolean; testID?: string; }) =>
+      open
+        ? mockReact.createElement(RN.View, { testID: testID || "filter-sheet" })
+        : null,
+  };
+});
+
+jest.mock("@/components/gallery", () => {
+  const mockReact = require("react");
+  const RN = require("react-native");
+  return {
+    ImageGrid: ({
+      images,
+      ListHeaderComponent,
+      ListEmptyComponent,
+      onRefresh,
+      onLoadMore,
+    }: {
+      images: unknown[];
+      ListHeaderComponent?: unknown;
+      ListEmptyComponent?: unknown;
+      onRefresh: () => void;
+      onLoadMore: () => void;
+    }) =>
+      mockReact.createElement(
+        RN.View,
+        { testID: "image-grid" },
+        ListHeaderComponent,
+        images.length === 0 && ListEmptyComponent
+          ? ListEmptyComponent
+          : images.map((img: { id?: string; }, idx: number) =>
+            mockReact.createElement(RN.View, {
+              key: img?.id || idx,
+              testID: `image-${img?.id || idx}`,
+            })
+          ),
+      ),
+    __esModule: true,
+  };
+});
+
+jest.mock("@/components/SearchBar", () => {
+  const mockReact = require("react");
+  const RN = require("react-native");
+  return {
+    SearchBar: ({
+      value,
+      onChangeText,
+      testID,
+    }: {
+      value?: string;
+      onChangeText?: (text: string) => void;
+      testID?: string;
+    }) =>
+      mockReact.createElement(
+        RN.View,
+        { testID: testID || "search-bar" },
+        mockReact.createElement(RN.TextInput, {
+          testID: `${testID || "search-bar"}-input`,
+          value,
+          onChangeText,
+        }),
+      ),
+    __esModule: true,
+    default: ({
+      value,
+      onChangeText,
+      testID,
+    }: {
+      value?: string;
+      onChangeText?: (text: string) => void;
+      testID?: string;
+    }) =>
+      mockReact.createElement(
+        RN.View,
+        { testID: testID || "search-bar" },
+        mockReact.createElement(RN.TextInput, {
+          testID: `${testID || "search-bar"}-input`,
+          value,
+          onChangeText,
+        }),
+      ),
+  };
+});
+
 // Mock Tamagui with Popover subcomponents
 jest.mock("tamagui", () => {
+  const mockReact = require("react");
   const RN = require("react-native");
-  const MockPopover = Object.assign(
-    ({ children, open }: { children: React.ReactNode; open?: boolean; }) =>
-      React.createElement(RN.View, { testID: "popover" }, children),
-    {
-      Trigger: ({ children, asChild }: { children: React.ReactNode; asChild?: boolean; }) =>
-        React.createElement(RN.View, { testID: "popover-trigger" }, children),
-      Content: ({ children }: { children: React.ReactNode; }) =>
-        React.createElement(RN.View, { testID: "popover-content" }, children),
-    },
-  );
-  const MockSheet = Object.assign(
-    ({ children, open }: { children: React.ReactNode; open?: boolean; }) =>
-      open ? React.createElement(RN.View, { testID: "sheet" }, children) : null,
-    {
-      Frame: ({ children }: { children: React.ReactNode; }) =>
-        React.createElement(RN.View, { testID: "sheet-frame" }, children),
-      Overlay: () => React.createElement(RN.View, { testID: "sheet-overlay" }),
-      Handle: () => React.createElement(RN.View, { testID: "sheet-handle" }),
-      ScrollView: RN.View,
-    },
-  );
+
+  // Create wrapper components using require'd React
+  const mockPopoverRoot = ({ children }: { children: unknown; }) =>
+    mockReact.createElement(RN.View, { testID: "popover" }, children);
+  const mockPopoverTrigger = ({ children }: { children: unknown; }) =>
+    mockReact.createElement(RN.View, { testID: "popover-trigger" }, children);
+  const mockPopoverContent = ({ children }: { children: unknown; }) =>
+    mockReact.createElement(RN.View, { testID: "popover-content" }, children);
+
+  const MockPopover = Object.assign(mockPopoverRoot, {
+    Trigger: mockPopoverTrigger,
+    Content: mockPopoverContent,
+  });
+
+  const mockSheetRoot = ({ children, open }: { children: unknown; open?: boolean; }) =>
+    open ? mockReact.createElement(RN.View, { testID: "sheet" }, children) : null;
+  const mockSheetFrame = ({ children }: { children: unknown; }) =>
+    mockReact.createElement(RN.View, { testID: "sheet-frame" }, children);
+  const mockSheetOverlay = () => mockReact.createElement(RN.View, { testID: "sheet-overlay" });
+  const mockSheetHandle = () => mockReact.createElement(RN.View, { testID: "sheet-handle" });
+
+  const MockSheet = Object.assign(mockSheetRoot, {
+    Frame: mockSheetFrame,
+    Overlay: mockSheetOverlay,
+    Handle: mockSheetHandle,
+    ScrollView: RN.View,
+  });
+
   return {
-    styled: jest.fn((component: React.ComponentType) => component),
+    styled: jest.fn((component: unknown) => component),
     createTamagui: jest.fn(() => ({})),
-    TamaguiProvider: ({ children }: { children: React.ReactNode; }) => children,
-    Theme: ({ children }: { children: React.ReactNode; }) => children,
+    TamaguiProvider: ({ children }: { children: unknown; }) => children,
+    Theme: ({ children }: { children: unknown; }) => children,
     useTheme: jest.fn(() => ({
       background: { val: "#ffffff" },
       color: { val: "#000000" },
@@ -113,7 +239,7 @@ jest.mock("@/stores", () => ({
   useGalleryStore: (...args: unknown[]) => mockUseGalleryStore(...args),
 }));
 
-jest.spyOn(Alert, "alert");
+// Alert mock is set up in beforeEach to avoid being cleared
 
 const mockRouter = {
   push: jest.fn(),
@@ -236,12 +362,17 @@ const renderComponent = (storeOverrides = {}) => {
 // Tests
 // ============================================================================
 
+// Create a spy for Alert.alert that persists across tests
+const mockAlertAlert = jest.fn();
+
 describe("GalleryScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
     (useSafeAreaInsets as jest.Mock).mockReturnValue(mockInsets);
     jest.useFakeTimers();
+    // Set up Alert.alert mock
+    Alert.alert = mockAlertAlert;
   });
 
   afterEach(() => {
@@ -444,11 +575,11 @@ describe("GalleryScreen", () => {
 
   describe("Album Filter", () => {
     it("shows album popover when clicked", () => {
-      const { getByText, queryByText } = renderComponent();
+      const { getAllByText, getByText } = renderComponent();
 
-      // Click on All Photos
-      const albumButton = getByText("All Photos");
-      fireEvent.press(albumButton);
+      // Click on All Photos - there may be multiple, get the first one (in the button)
+      const allPhotosElements = getAllByText("All Photos");
+      fireEvent.press(allPhotosElements[0]);
 
       // Should show album options
       expect(getByText("Vacation")).toBeTruthy();
@@ -456,13 +587,13 @@ describe("GalleryScreen", () => {
 
     it("changes album filter when album selected", () => {
       const mockSetSelectedAlbum = jest.fn();
-      const { getByText } = renderComponent({
+      const { getAllByText, getByText } = renderComponent({
         setSelectedAlbum: mockSetSelectedAlbum,
       });
 
-      // Open album popover
-      const albumButton = getByText("All Photos");
-      fireEvent.press(albumButton);
+      // Open album popover - there may be multiple, get the first one (in the button)
+      const allPhotosElements = getAllByText("All Photos");
+      fireEvent.press(allPhotosElements[0]);
 
       // Select an album
       const vacationAlbum = getByText("Vacation");
@@ -478,7 +609,7 @@ describe("GalleryScreen", () => {
         error: "Failed to load images",
       });
 
-      expect(Alert.alert).toHaveBeenCalledWith(
+      expect(mockAlertAlert).toHaveBeenCalledWith(
         "Error",
         "Failed to load images",
         expect.any(Array),
@@ -493,7 +624,7 @@ describe("GalleryScreen", () => {
       });
 
       // Get the alert callback
-      const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
+      const alertCall = mockAlertAlert.mock.calls[0];
       const okButton = alertCall[2][0];
 
       // Press OK
@@ -525,7 +656,7 @@ describe("GalleryScreen", () => {
       const deleteButton = getByText("Delete");
       fireEvent.press(deleteButton);
 
-      expect(Alert.alert).toHaveBeenCalledWith(
+      expect(mockAlertAlert).toHaveBeenCalledWith(
         "Delete Images",
         expect.stringContaining("1 image"),
         expect.any(Array),
