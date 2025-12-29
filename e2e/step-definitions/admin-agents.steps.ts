@@ -42,6 +42,7 @@ Given(
           status: 200,
           contentType: "application/json",
           body: JSON.stringify({
+            julesAvailable: true,
             sessions: [
               {
                 id: "test-session-2",
@@ -52,6 +53,7 @@ Given(
                 planSummary: "This plan will fix the bug by...",
                 sourceRepo: "zerdos/spike-land-nextjs",
                 startingBranch: "main",
+                activityCount: 3,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
               },
@@ -119,11 +121,18 @@ Given(
 );
 
 Given("Jules API is configured", async function(this: CustomWorld) {
-  // Mock the jules configuration check
-  await this.page.route("**/api/admin/agents*", async (route) => {
-    const url = route.request().url();
-    if (!url.includes("/resources") && !url.includes("/git") && !url.includes("/github")) {
-      await route.continue();
+  // Mock the agents API to return julesAvailable: true
+  await this.page.route("**/api/admin/agents", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          julesAvailable: true,
+          sessions: [],
+          pagination: { total: 0, page: 1, limit: 20 },
+        }),
+      });
     } else {
       await route.continue();
     }

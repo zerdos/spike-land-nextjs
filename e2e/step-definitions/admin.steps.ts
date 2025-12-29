@@ -62,8 +62,8 @@ When(
   "I click {string} in the sidebar",
   async function(this: CustomWorld, linkText: string) {
     const sidebar = this.page.locator("aside");
-    // Use exact match to avoid matching partial text (e.g., "Brand" in "Pixel Brand Guidelines")
-    const link = sidebar.getByRole("link", { name: linkText, exact: true });
+    // Use text-based locator since accessible name may include emoji icons
+    const link = sidebar.locator("a").filter({ hasText: linkText });
     await expect(link).toBeVisible();
     await link.click();
     // Don't wait for load state here, let the next step handle it if needed

@@ -119,7 +119,7 @@ Feature: Admin Agents Dashboard
     Given the user is an admin
     And Jules API is configured
     When I visit "/admin/agents"
-    And I click "Create Session" button
+    And I click "New Task" button
     Then I should see the create session modal
     And the modal should have title field
     And the modal should have task field
@@ -128,7 +128,7 @@ Feature: Admin Agents Dashboard
     Given the user is an admin
     And Jules API is not configured
     When I visit "/admin/agents"
-    Then the "Create Session" button should be disabled or hidden
+    Then the "New Task" button should be disabled or hidden
 
   # Polling and Refresh Scenarios
   Scenario: Dashboard auto-refreshes session data
