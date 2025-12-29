@@ -267,8 +267,9 @@ Then(
   "I should see an error message for the voucher",
   async function(this: CustomWorld) {
     // Look for alert with error styling
+    // Match both mock ("has already been redeemed") and real API ("have already redeemed")
     const errorAlert = this.page.locator('[role="alert"]').filter({
-      hasText: /(Invalid|already been redeemed|error)/i,
+      hasText: /(Invalid|already.*redeem|error)/i,
     });
     await expect(errorAlert).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },

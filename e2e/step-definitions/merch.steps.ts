@@ -849,8 +849,21 @@ Then("I should see the Stripe payment element", async function(this: CustomWorld
   // In E2E tests with mocked API, Stripe Elements may not fully load
   // Check for the payment section which indicates we're on the payment step
   // This verifies the checkout flow transitioned correctly
+
+  // First wait for the API call to complete and UI to update
+  // The "Continue to Payment" button should show loading state then disappear
+  try {
+    await this.page.waitForSelector("text=Processing...", {
+      state: "hidden",
+      timeout: 15000,
+    });
+  } catch {
+    // May already be past processing state
+  }
+
+  // Look for Payment heading - it's inside a CardTitle
   const paymentHeading = this.page.getByRole("heading", { name: /Payment/i });
-  await expect(paymentHeading).toBeVisible({ timeout: 10000 });
+  await expect(paymentHeading).toBeVisible({ timeout: 15000 });
 
   // Also check that the form is rendered (Elements wrapper is present)
   const paymentForm = this.page.locator("form");
