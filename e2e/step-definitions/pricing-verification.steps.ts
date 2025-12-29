@@ -1,12 +1,17 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS, waitForPricingData } from "../support/helpers/retry-helper";
+import { TIMEOUTS } from "../support/helpers/retry-helper";
 import { CustomWorld } from "../support/world";
 
 When("I view the pricing page", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-  // Wait for pricing data to be fully rendered
-  await waitForPricingData(this.page, { timeout: TIMEOUTS.DEFAULT });
+  // Wait for DOM to be ready
+  await this.page.waitForLoadState("domcontentloaded");
+  // Wait for the token packages grid to be visible (more reliable than networkidle)
+  const packagesGrid = this.page.locator('[data-testid="token-packages-grid"]');
+  await expect(packagesGrid).toBeVisible({ timeout: TIMEOUTS.LONG });
+  // Wait for at least one package card to be visible
+  const packageCard = this.page.locator('[data-testid^="package-card-"]').first();
+  await expect(packageCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 When(
