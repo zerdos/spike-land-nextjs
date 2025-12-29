@@ -90,31 +90,31 @@ Then(
           // Package cards have data-testid="package-card-X" and the name is displayed in CardTitle
           // Look for a package card and check it has a visible package name
           const packageCard = this.page.locator('[data-testid^="package-card-"]').first();
-          await expect(packageCard).toBeVisible();
+          await expect(packageCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           // Verify the card contains a package name (Starter, Basic, Pro, or Power)
           const packageName = packageCard.getByText(/Starter|Basic|Pro|Power/i).first();
-          await expect(packageName).toBeVisible();
+          await expect(packageName).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           break;
         }
         case "token count": {
           const tokenCount = this.page.getByText(/\d+\s+tokens/i).first();
-          await expect(tokenCount).toBeVisible();
+          await expect(tokenCount).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           break;
         }
         case "price": {
           const price = this.page.getByText(/£\d+/i).first();
-          await expect(price).toBeVisible();
+          await expect(price).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           break;
         }
         case "price per token": {
           const pricePerToken = this.page.getByText(/£.*per token/i).first();
-          await expect(pricePerToken).toBeVisible();
+          await expect(pricePerToken).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           break;
         }
         case "buy button": {
           const buyButton = this.page.getByRole("button", { name: /buy now/i })
             .first();
-          await expect(buyButton).toBeVisible();
+          await expect(buyButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           break;
         }
       }
