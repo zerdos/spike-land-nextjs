@@ -3,6 +3,18 @@
  * Ensures all theme tokens, animations, and configuration are correctly set up
  */
 
+// Override tamagui mocks to return actual values for config testing
+jest.mock("tamagui", () => {
+  const actual = jest.requireActual("tamagui");
+  return {
+    ...actual,
+    // Use actual implementations for config creation functions
+    createTamagui: (config: Record<string, unknown>) => config,
+    createTokens: (tokens: Record<string, unknown>) => tokens,
+    createTheme: (theme: Record<string, unknown>) => theme,
+  };
+});
+
 import { borderRadius, colors, lightColorsHex, spacing } from "./constants/theme";
 import {
   animations,

@@ -4,18 +4,13 @@
  */
 
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import { Text, View } from "react-native";
+import * as ReactNative from "react-native";
+import { View } from "react-native";
 
 import { createFeatureCards, FeatureCard, type FeatureCardVariant } from "./FeatureCard";
 
-// Mock useColorScheme
-jest.mock("react-native", () => {
-  const RN = jest.requireActual("react-native");
-  return {
-    ...RN,
-    useColorScheme: jest.fn(() => "light"),
-  };
-});
+// Mock useColorScheme by spying on the module
+const mockUseColorScheme = jest.spyOn(ReactNative, "useColorScheme");
 
 describe("FeatureCard", () => {
   const MockIcon = () => <View testID="mock-icon" />;
@@ -29,6 +24,7 @@ describe("FeatureCard", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseColorScheme.mockReturnValue("light");
   });
 
   describe("rendering", () => {
@@ -100,13 +96,11 @@ describe("FeatureCard", () => {
 
   describe("dark mode", () => {
     beforeEach(() => {
-      const { useColorScheme } = require("react-native");
-      useColorScheme.mockReturnValue("dark");
+      mockUseColorScheme.mockReturnValue("dark");
     });
 
     afterEach(() => {
-      const { useColorScheme } = require("react-native");
-      useColorScheme.mockReturnValue("light");
+      mockUseColorScheme.mockReturnValue("light");
     });
 
     it("renders correctly in dark mode", () => {
@@ -127,8 +121,7 @@ describe("FeatureCard", () => {
 
   describe("light mode", () => {
     beforeEach(() => {
-      const { useColorScheme } = require("react-native");
-      useColorScheme.mockReturnValue("light");
+      mockUseColorScheme.mockReturnValue("light");
     });
 
     it("renders correctly in light mode", () => {

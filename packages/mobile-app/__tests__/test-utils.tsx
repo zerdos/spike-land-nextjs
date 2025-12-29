@@ -273,11 +273,20 @@ interface AllProvidersProps {
 
 /**
  * Wrapper component with all providers needed for testing
+ * Includes QueryClientProvider and TamaguiProvider
  */
 function AllProviders({ children, queryClient }: AllProvidersProps): ReactElement {
   const testQueryClient = queryClient ?? createTestQueryClient();
 
-  return <QueryClientProvider client={testQueryClient}>{children}</QueryClientProvider>;
+  // TamaguiProvider is mocked in jest.setup.ts, so this just passes through children
+  const { TamaguiProvider } = require("tamagui");
+  const config = require("../__mocks__/@tamagui/config").default;
+
+  return (
+    <QueryClientProvider client={testQueryClient}>
+      <TamaguiProvider config={config}>{children}</TamaguiProvider>
+    </QueryClientProvider>
+  );
 }
 
 // ============================================================================

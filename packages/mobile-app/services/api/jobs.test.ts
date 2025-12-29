@@ -217,18 +217,16 @@ describe("pollJobUntilComplete", () => {
 
     const pollPromise = pollJobUntilComplete(options);
 
-    // First poll - PENDING
-    await Promise.resolve();
+    // First poll - PENDING (flush all microtasks)
+    await jest.runAllTicksAsync();
     expect(onProgress).toHaveBeenCalledWith(pendingJob);
 
     // Advance timer for second poll
-    jest.advanceTimersByTime(1000);
-    await Promise.resolve();
+    await jest.advanceTimersByTimeAsync(1000);
     expect(onProgress).toHaveBeenCalledWith(processingJob);
 
     // Advance timer for third poll
-    jest.advanceTimersByTime(1000);
-    await Promise.resolve();
+    await jest.advanceTimersByTimeAsync(1000);
 
     const result = await pollPromise;
 
@@ -324,6 +322,8 @@ describe("pollJobUntilComplete", () => {
   });
 
   it("should timeout after specified duration", async () => {
+    jest.useFakeTimers({ advanceTimers: true });
+
     const onError = jest.fn();
 
     const pendingJob = createMockJob({ status: "PENDING" });
@@ -339,9 +339,14 @@ describe("pollJobUntilComplete", () => {
 
     const pollPromise = pollJobUntilComplete(options);
 
-    // Advance past timeout
-    jest.advanceTimersByTime(4000);
-    await Promise.resolve();
+    // First poll starts immediately
+    await jest.runAllTicksAsync();
+
+    // Advance past timeout - need to go through multiple poll cycles
+    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(1000);
 
     await expect(pollPromise).rejects.toThrow("Job polling timed out");
 

@@ -102,10 +102,11 @@ const defaultProps = {
 describe("ShareButtons Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
     mockedClipboard.setStringAsync.mockResolvedValue(true);
     mockedSharing.isAvailableAsync.mockResolvedValue(true);
     mockedSharing.shareAsync.mockResolvedValue(undefined);
+    (Linking.openURL as jest.Mock).mockResolvedValue(true);
+    (Linking.canOpenURL as jest.Mock).mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -179,11 +180,18 @@ describe("ShareButtons Component", () => {
     });
 
     it("should reset copied state after 2 seconds", async () => {
+      jest.useFakeTimers();
+      mockedClipboard.setStringAsync.mockImplementation(() => Promise.resolve(true));
+
       const { getByTestId, getByText } = render(
         <ShareButtons {...defaultProps} />,
       );
 
       fireEvent.press(getByTestId("copy-button"));
+
+      // Allow the promise to resolve
+      await Promise.resolve();
+      jest.runAllTimers();
 
       await waitFor(() => {
         expect(getByText("Copied!")).toBeTruthy();
@@ -621,11 +629,11 @@ describe("ShareButtons Component", () => {
         <ShareButtons {...defaultProps} referralUrl="" />,
       );
 
-      expect(getByTestId("copy-button").props.disabled).toBe(true);
-      expect(getByTestId("share-button").props.disabled).toBe(true);
-      expect(getByTestId("twitter-button").props.disabled).toBe(true);
-      expect(getByTestId("facebook-button").props.disabled).toBe(true);
-      expect(getByTestId("whatsapp-button").props.disabled).toBe(true);
+      expect(getByTestId("copy-button").props.accessibilityState?.disabled).toBe(true);
+      expect(getByTestId("share-button").props.accessibilityState?.disabled).toBe(true);
+      expect(getByTestId("twitter-button").props.accessibilityState?.disabled).toBe(true);
+      expect(getByTestId("facebook-button").props.accessibilityState?.disabled).toBe(true);
+      expect(getByTestId("whatsapp-button").props.accessibilityState?.disabled).toBe(true);
     });
   });
 });

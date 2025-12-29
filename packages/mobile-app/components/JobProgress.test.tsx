@@ -4,9 +4,83 @@
 
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import React from "react";
+import { View } from "react-native";
 import { TamaguiProvider } from "tamagui";
 import config from "../tamagui.config";
 import { JobProgress, JobProgressProps } from "./JobProgress";
+
+// ============================================================================
+// Local Mocks - Override missing icons and components from global mocks
+// ============================================================================
+
+// Mock missing Tamagui lucide icons (AlertCircle, Zap)
+jest.mock("@tamagui/lucide-icons", () => {
+  const MockIcon = (props: { testID?: string; }) => {
+    const { View: RNView } = require("react-native");
+    return RNView(props);
+  };
+  return {
+    AlertCircle: MockIcon,
+    Check: MockIcon,
+    Clock: MockIcon,
+    Image: MockIcon,
+    Sparkles: MockIcon,
+    Zap: MockIcon,
+  };
+});
+
+// Mock tamagui with Circle component
+jest.mock("tamagui", () => {
+  const { View: RNView, Text: RNText, Pressable, TextInput } = require("react-native");
+
+  // Create a Button mock that supports Button.Icon and Button.Text
+  const ButtonMock = Object.assign(
+    (props: { children?: React.ReactNode; onPress?: () => void; testID?: string; }) => {
+      return Pressable(props);
+    },
+    {
+      Icon: ({ children }: { children?: React.ReactNode; }) => RNView({ children }),
+      Text: ({ children }: { children?: React.ReactNode; }) => RNText({ children }),
+    },
+  );
+
+  return {
+    styled: jest.fn((component) => component),
+    createTamagui: jest.fn(() => ({})),
+    TamaguiProvider: ({ children }: { children: React.ReactNode; }) => children,
+    Theme: ({ children }: { children: React.ReactNode; }) => children,
+    useTheme: jest.fn(() => ({
+      background: { val: "#ffffff" },
+      color: { val: "#000000" },
+    })),
+    useMedia: jest.fn(() => ({
+      xs: false,
+      sm: false,
+      md: false,
+      lg: true,
+    })),
+    // Component mocks
+    View: RNView,
+    Text: RNText,
+    Stack: RNView,
+    XStack: RNView,
+    YStack: RNView,
+    ZStack: RNView,
+    Button: ButtonMock,
+    Input: TextInput,
+    Label: RNText,
+    Circle: RNView,
+    Spinner: (props: { testID?: string; }) => RNView(props),
+    getTokens: jest.fn(() => ({
+      color: {},
+      space: {},
+      size: {},
+      radius: {},
+    })),
+    getToken: jest.fn(() => ""),
+    isWeb: false,
+  };
+});
 
 // ============================================================================
 // Test Wrapper

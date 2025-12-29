@@ -5,7 +5,7 @@
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Alert } from "react-native";
+import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import GalleryScreen from "@/app/(tabs)/gallery";
@@ -13,6 +13,92 @@ import GalleryScreen from "@/app/(tabs)/gallery";
 // ============================================================================
 // Mocks
 // ============================================================================
+
+// Mock Tamagui with Popover subcomponents
+jest.mock("tamagui", () => {
+  const RN = require("react-native");
+  const MockPopover = Object.assign(
+    ({ children, open }: { children: React.ReactNode; open?: boolean; }) =>
+      React.createElement(RN.View, { testID: "popover" }, children),
+    {
+      Trigger: ({ children, asChild }: { children: React.ReactNode; asChild?: boolean; }) =>
+        React.createElement(RN.View, { testID: "popover-trigger" }, children),
+      Content: ({ children }: { children: React.ReactNode; }) =>
+        React.createElement(RN.View, { testID: "popover-content" }, children),
+    },
+  );
+  const MockSheet = Object.assign(
+    ({ children, open }: { children: React.ReactNode; open?: boolean; }) =>
+      open ? React.createElement(RN.View, { testID: "sheet" }, children) : null,
+    {
+      Frame: ({ children }: { children: React.ReactNode; }) =>
+        React.createElement(RN.View, { testID: "sheet-frame" }, children),
+      Overlay: () => React.createElement(RN.View, { testID: "sheet-overlay" }),
+      Handle: () => React.createElement(RN.View, { testID: "sheet-handle" }),
+      ScrollView: RN.View,
+    },
+  );
+  return {
+    styled: jest.fn((component: React.ComponentType) => component),
+    createTamagui: jest.fn(() => ({})),
+    TamaguiProvider: ({ children }: { children: React.ReactNode; }) => children,
+    Theme: ({ children }: { children: React.ReactNode; }) => children,
+    useTheme: jest.fn(() => ({
+      background: { val: "#ffffff" },
+      color: { val: "#000000" },
+    })),
+    useMedia: jest.fn(() => ({
+      xs: false,
+      sm: false,
+      md: false,
+      lg: true,
+    })),
+    View: RN.View,
+    Text: RN.Text,
+    Stack: RN.View,
+    XStack: RN.View,
+    YStack: RN.View,
+    ZStack: RN.View,
+    Button: RN.Pressable,
+    Input: RN.TextInput,
+    Label: RN.Text,
+    H1: RN.Text,
+    H2: RN.Text,
+    H3: RN.Text,
+    H4: RN.Text,
+    Paragraph: RN.Text,
+    Card: RN.View,
+    Separator: RN.View,
+    ScrollView: RN.View,
+    Popover: MockPopover,
+    Sheet: MockSheet,
+    Dialog: {
+      Trigger: RN.Pressable,
+      Portal: RN.View,
+      Overlay: RN.View,
+      Content: RN.View,
+      Title: RN.Text,
+      Description: RN.Text,
+      Close: RN.Pressable,
+    },
+    Spinner: () => null,
+    Avatar: {
+      Image: RN.View,
+      Fallback: RN.Text,
+    },
+    Progress: Object.assign(RN.View, {
+      Indicator: RN.View,
+    }),
+    getTokens: jest.fn(() => ({
+      color: {},
+      space: {},
+      size: {},
+      radius: {},
+    })),
+    getToken: jest.fn(() => ""),
+    isWeb: false,
+  };
+});
 
 jest.mock("expo-router", () => ({
   useRouter: jest.fn(),

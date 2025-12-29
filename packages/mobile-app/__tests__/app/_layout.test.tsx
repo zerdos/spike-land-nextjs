@@ -2,6 +2,30 @@
  * Tests for Root Layout
  */
 
+// ============================================================================
+// CRITICAL: Mock react-native-reanimated BEFORE any imports
+// This prevents WorkletsError from react-native-worklets initialization
+// ============================================================================
+
+jest.mock("react-native-reanimated", () => ({
+  default: {
+    call: () => {},
+  },
+  useSharedValue: jest.fn((initial) => ({ value: initial })),
+  useAnimatedStyle: jest.fn(() => ({})),
+  withTiming: jest.fn((value) => value),
+  withSpring: jest.fn((value) => value),
+  withDelay: jest.fn((_, animation) => animation),
+  withSequence: jest.fn((...animations) => animations[0]),
+  runOnJS: jest.fn((fn) => fn),
+  runOnUI: jest.fn((fn) => fn),
+  Easing: {
+    linear: jest.fn(),
+    ease: jest.fn(),
+    bezier: jest.fn(),
+  },
+}));
+
 import RootLayout from "@/app/_layout";
 import * as usePushNotificationsModule from "@/hooks/usePushNotifications";
 import { useAuthStore } from "@/stores";

@@ -5,11 +5,12 @@
 
 import AdminDashboard from "@/app/admin/index";
 import * as adminApi from "@/services/api/admin";
-import config from "@/tamagui.config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";
-import { TamaguiProvider } from "tamagui";
+
+// Mock tamagui.config before any component imports
+jest.mock("@/tamagui.config", () => ({}));
 
 // Mock expo-router
 const mockPush = jest.fn();
@@ -54,9 +55,7 @@ const createWrapper = () => {
   return function Wrapper({ children }: { children: React.ReactNode; }) {
     return (
       <QueryClientProvider client={queryClient}>
-        <TamaguiProvider config={config}>
-          {children}
-        </TamaguiProvider>
+        {children}
       </QueryClientProvider>
     );
   };

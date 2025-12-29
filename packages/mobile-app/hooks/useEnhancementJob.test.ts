@@ -62,6 +62,11 @@ const createMockJob = (overrides: Partial<ImageEnhancementJob> = {}): ImageEnhan
 // Tests
 // ============================================================================
 
+// Helper to flush all pending promises and timers
+const flushPromisesAndTimers = async () => {
+  await jest.runAllTimersAsync();
+};
+
 describe("useEnhancementJob", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -105,10 +110,11 @@ describe("useEnhancementJob", () => {
       expect(result.current.isLoading).toBe(true);
       expect(result.current.isPolling).toBe(true);
 
-      await waitFor(() => {
-        expect(result.current.job).toEqual(mockJob);
+      await act(async () => {
+        await flushPromisesAndTimers();
       });
 
+      expect(result.current.job).toEqual(mockJob);
       expect(result.current.status).toBe("PROCESSING");
       expect(result.current.stage).toBe("ANALYZING");
       expect(result.current.progress).toBe(20);

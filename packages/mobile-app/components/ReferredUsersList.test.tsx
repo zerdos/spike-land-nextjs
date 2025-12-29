@@ -478,8 +478,9 @@ describe("ReferredUsersList Component", () => {
       );
 
       const dateElement = getByTestId("user-date-date-user");
-      // Should contain "Joined" prefix and formatted date
-      expect(dateElement.props.children).toContain("Joined");
+      // Should contain "Joined " prefix and formatted date
+      // Note: children is an array ["Joined ", "formattedDate"] due to JSX interpolation
+      expect(dateElement.props.children).toContain("Joined ");
     });
   });
 

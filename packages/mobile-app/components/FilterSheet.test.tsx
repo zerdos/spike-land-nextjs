@@ -10,6 +10,107 @@ import type { ImageFilters, SortOption } from "../hooks/useImageSearch";
 import { FilterSheet, type FilterSheetProps } from "./FilterSheet";
 
 // ============================================================================
+// Additional Mock for Checkbox compound component
+// ============================================================================
+
+// Extend the tamagui mock to include Checkbox with Indicator subcomponent
+jest.mock("tamagui", () => {
+  const { View, Text, Pressable, TextInput, ScrollView } = require("react-native");
+  const React = require("react");
+
+  // Create Checkbox mock with Indicator subcomponent
+  const CheckboxComponent = React.forwardRef(
+    ({ children, testID, checked, onCheckedChange, ...props }: any, ref: any) => {
+      return React.createElement(
+        Pressable,
+        {
+          ref,
+          testID,
+          onPress: () => onCheckedChange && onCheckedChange(!checked),
+          accessibilityState: { checked: !!checked },
+          accessibilityRole: "checkbox",
+          ...props,
+        },
+        children,
+      );
+    },
+  );
+  CheckboxComponent.Indicator = View;
+
+  // Sheet mock with compound components
+  const SheetComponent = ({ children, open, ...props }: any) => {
+    if (!open) return null;
+    return React.createElement(View, props, children);
+  };
+  SheetComponent.Frame = View;
+  SheetComponent.Overlay = View;
+  SheetComponent.Handle = View;
+  SheetComponent.ScrollView = ScrollView;
+
+  return {
+    styled: jest.fn((component: any) => component),
+    createTamagui: jest.fn(() => ({})),
+    TamaguiProvider: ({ children }: { children: React.ReactNode; }) => children,
+    Theme: ({ children }: { children: React.ReactNode; }) => children,
+    useTheme: jest.fn(() => ({
+      background: { val: "#ffffff" },
+      color: { val: "#000000" },
+    })),
+    useMedia: jest.fn(() => ({
+      xs: false,
+      sm: false,
+      md: false,
+      lg: true,
+    })),
+    // Component mocks
+    View,
+    Text,
+    Stack: View,
+    XStack: View,
+    YStack: View,
+    ZStack: View,
+    Button: Pressable,
+    Input: TextInput,
+    Label: Text,
+    H1: Text,
+    H2: Text,
+    H3: Text,
+    H4: Text,
+    Paragraph: Text,
+    Card: View,
+    Separator: View,
+    ScrollView,
+    Sheet: SheetComponent,
+    Dialog: {
+      Trigger: Pressable,
+      Portal: View,
+      Overlay: View,
+      Content: View,
+      Title: Text,
+      Description: Text,
+      Close: Pressable,
+    },
+    Spinner: () => null,
+    Avatar: {
+      Image: View,
+      Fallback: Text,
+    },
+    Progress: Object.assign(View, {
+      Indicator: View,
+    }),
+    Checkbox: CheckboxComponent,
+    getTokens: jest.fn(() => ({
+      color: {},
+      space: {},
+      size: {},
+      radius: {},
+    })),
+    getToken: jest.fn(() => ""),
+    isWeb: false,
+  };
+});
+
+// ============================================================================
 // Test Helpers
 // ============================================================================
 

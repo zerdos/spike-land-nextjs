@@ -596,7 +596,7 @@ jest.mock("react-native-safe-area-context", () => ({
 }));
 
 // ============================================================================
-// React Native Partial Mocks (AppState, Linking)
+// React Native Partial Mocks (AppState, Linking, Alert, Share)
 // ============================================================================
 
 // Mock AppState for push notification tests
@@ -608,6 +608,15 @@ jest.spyOn(require("react-native").AppState, "addEventListener").mockReturnValue
 // Mock Linking for share tests
 jest.spyOn(require("react-native").Linking, "canOpenURL").mockResolvedValue(true);
 jest.spyOn(require("react-native").Linking, "openURL").mockResolvedValue(undefined);
+
+// Mock Alert for share tests and error dialogs
+jest.spyOn(require("react-native").Alert, "alert").mockImplementation(jest.fn());
+
+// Mock Share for native share functionality
+jest.spyOn(require("react-native").Share, "share").mockResolvedValue({
+  action: "sharedAction",
+  activityType: undefined,
+});
 
 // ============================================================================
 // Console Suppression

@@ -25,6 +25,10 @@ const mockGetShareLink = getShareLink as jest.MockedFunction<typeof getShareLink
 describe("useImageShare", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset mocks to default values
+    (Sharing.isAvailableAsync as jest.Mock).mockResolvedValue(true);
+    (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: "granted" });
+    (MediaLibrary.getAlbumAsync as jest.Mock).mockResolvedValue(null);
   });
 
   // ==========================================================================
@@ -227,6 +231,12 @@ describe("useImageShare", () => {
     });
 
     it("should set loading state during download", async () => {
+      // Use a promise that we control to verify loading state
+      let resolveDownload: (value: { uri: string; }) => void;
+      const downloadPromise = new Promise<{ uri: string; }>((resolve) => {
+        resolveDownload = resolve;
+      });
+
       mockGetDownloadUrl.mockResolvedValue({
         data: {
           downloadUrl: "https://example.com/image.jpg",
@@ -239,19 +249,29 @@ describe("useImageShare", () => {
         status: 200,
       });
 
-      const { result } = renderHook(() => useImageShare());
-
-      // Start download but don't await yet
-      const downloadPromise = result.current.downloadImage("img-123");
-
-      // Check loading state is set
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(true);
-        expect(result.current.currentOperation).toBe("download");
+      const mockDownloadResumable = FileSystem.createDownloadResumable as jest.Mock;
+      mockDownloadResumable.mockReturnValue({
+        downloadAsync: jest.fn().mockReturnValue(downloadPromise),
       });
 
+      const { result } = renderHook(() => useImageShare());
+
+      // Start download within act
+      let downloadResultPromise: Promise<boolean>;
       await act(async () => {
-        await downloadPromise;
+        downloadResultPromise = result.current.downloadImage("img-123");
+        // Wait for initial state updates
+        await Promise.resolve();
+      });
+
+      // Check loading state is set
+      expect(result.current.isLoading).toBe(true);
+      expect(result.current.currentOperation).toBe("download");
+
+      // Complete the download
+      await act(async () => {
+        resolveDownload!({ uri: "file:///cache/test-image.jpg" });
+        await downloadResultPromise!;
       });
 
       expect(result.current.isLoading).toBe(false);
@@ -292,9 +312,11 @@ describe("useImageShare", () => {
         await result.current.downloadImage("img-123");
       });
 
+      // When mimeType is "image/" the extension becomes empty, so fallback to "jpg"
+      // The file would be named "spike-image-img-123.jpg"
       expect(FileSystem.createDownloadResumable).toHaveBeenCalledWith(
         "https://example.com/image.jpg",
-        expect.stringContaining("spike-image-img-123"),
+        expect.stringMatching(/spike-image-img-123/),
         expect.any(Object),
         expect.any(Function),
       );
