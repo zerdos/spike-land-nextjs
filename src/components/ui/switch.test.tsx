@@ -327,7 +327,7 @@ describe("Switch Component", () => {
       const { container } = render(<Switch checked={true} />);
       const switchElement = container.querySelector('button[role="switch"]');
       expect(switchElement).toHaveClass(
-        "data-[state=checked]:shadow-glow-cyan",
+        "data-[state=checked]:shadow-glow-green",
       );
     });
   });
