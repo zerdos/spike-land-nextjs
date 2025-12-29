@@ -32,7 +32,6 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
   // Only fetch token balance for authenticated users
   const {
     balance,
-    isLowBalance,
     isLoading: isBalanceLoading,
     refetch: refetchBalance,
   } = useTokenBalance({
@@ -411,7 +410,34 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
             <div className="w-full overflow-hidden">
               <div className="flex gap-2 p-1 overflow-x-auto hide-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 <div className="min-w-full">
-                  <MixHistory />
+                  <MixHistory
+                    activeMix={activeJobId && image1 && image2
+                      ? {
+                        id: activeJobId,
+                        tier: effectiveTier,
+                        status: "PROCESSING",
+                        currentStage: null,
+                        resultUrl: null,
+                        resultWidth: null,
+                        resultHeight: null,
+                        createdAt: new Date().toISOString(),
+                        targetImage: {
+                          id: image1.id,
+                          name: image1.name,
+                          url: image1.url,
+                          width: image1.width,
+                          height: image1.height,
+                        },
+                        sourceImage: {
+                          id: image2.id,
+                          name: image2.name,
+                          url: image2.url,
+                          width: image2.width,
+                          height: image2.height,
+                        },
+                      }
+                      : null}
+                  />
                 </div>
               </div>
             </div>

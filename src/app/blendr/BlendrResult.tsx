@@ -32,7 +32,7 @@ type MixState =
 
 export function BlendrResult({
   activeJobId,
-  hasImages,
+  hasImages: _hasImages,
   onComplete,
   onError,
   onRetry,
