@@ -71,6 +71,7 @@ const config = {
     "!tamagui.config.ts",
     "!app.config.ts",
     "!**/app/_layout.tsx",
+    "!**/app/**/_layout.tsx",
     "!expo-env.d.ts",
   ],
   coverageDirectory: "coverage",

@@ -39,8 +39,9 @@ const mockAuthStore = {
   isLoading: false,
   user: { id: "user-1", email: "test@example.com", name: "Test User" },
 };
+const mockUseAuthStore = jest.fn(() => mockAuthStore);
 jest.mock("@/stores", () => ({
-  useAuthStore: jest.fn(() => mockAuthStore),
+  useAuthStore: () => mockUseAuthStore(),
 }));
 
 // Mock settings store
@@ -78,8 +79,9 @@ const mockSettingsStore: {
   deleteApiKey: jest.fn(() => Promise.resolve({ success: true })),
   clearNewlyCreatedKey: jest.fn(),
 };
+const mockUseSettingsStore = jest.fn(() => mockSettingsStore);
 jest.mock("@/stores/settings-store", () => ({
-  useSettingsStore: jest.fn(() => mockSettingsStore),
+  useSettingsStore: () => mockUseSettingsStore(),
 }));
 
 // Mock Tamagui components

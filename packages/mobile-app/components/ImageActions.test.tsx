@@ -3,7 +3,48 @@
  * Tests for the floating action bar component
  */
 
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+// Mock react-native-reanimated before any imports that might use it
+jest.mock("react-native-reanimated", () => {
+  const { View } = require("react-native");
+  return {
+    default: {
+      View: View,
+      call: jest.fn(),
+    },
+    View: View,
+    useSharedValue: jest.fn((initial) => ({ value: initial })),
+    useAnimatedStyle: jest.fn(() => ({})),
+    withTiming: jest.fn((value) => value),
+    withSpring: jest.fn((value) => value),
+    withDelay: jest.fn((_, animation) => animation),
+    withSequence: jest.fn((...animations) => animations[0]),
+    runOnJS: jest.fn((fn) => fn),
+    runOnUI: jest.fn((fn) => fn),
+    Easing: {
+      linear: jest.fn(),
+      ease: jest.fn(),
+      bezier: jest.fn(),
+    },
+    FadeIn: { duration: jest.fn(() => ({ delay: jest.fn() })) },
+    FadeOut: { duration: jest.fn(() => ({ delay: jest.fn() })) },
+    SlideInDown: { duration: jest.fn(() => ({ delay: jest.fn() })) },
+    SlideOutDown: { duration: jest.fn(() => ({ delay: jest.fn() })) },
+  };
+});
+
+// Mock react-native-safe-area-context
+jest.mock("react-native-safe-area-context", () => ({
+  SafeAreaProvider: ({ children }: { children: React.ReactNode; }) => children,
+  SafeAreaView: ({ children }: { children: React.ReactNode; }) => children,
+  useSafeAreaInsets: jest.fn(() => ({
+    top: 44,
+    right: 0,
+    bottom: 34,
+    left: 0,
+  })),
+}));
+
+import { fireEvent, render } from "@testing-library/react-native";
 import React from "react";
 
 import { ImageActions } from "./ImageActions";

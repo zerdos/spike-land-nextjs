@@ -5,7 +5,6 @@
 
 import AdminAnalyticsScreen from "@/app/admin/analytics/index";
 import * as adminApi from "@/services/api/admin";
-import config from "@/tamagui.config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";
@@ -29,7 +28,7 @@ const createWrapper = () => {
   return function Wrapper({ children }: { children: React.ReactNode; }) {
     return (
       <QueryClientProvider client={queryClient}>
-        <TamaguiProvider config={config}>
+        <TamaguiProvider config={{} as never}>
           {children}
         </TamaguiProvider>
       </QueryClientProvider>
@@ -150,7 +149,7 @@ describe("AdminAnalyticsScreen", () => {
     });
 
     it("should display new users and average daily signups", async () => {
-      const { getByText } = render(<AdminAnalyticsScreen />, {
+      const { getByText, getAllByText } = render(<AdminAnalyticsScreen />, {
         wrapper: createWrapper(),
       });
 
@@ -158,7 +157,8 @@ describe("AdminAnalyticsScreen", () => {
         expect(getByText("New Users (30d)")).toBeTruthy();
       });
 
-      expect(getByText("350")).toBeTruthy();
+      // 350 appears in multiple places (new users and daily signups data)
+      expect(getAllByText("350").length).toBeGreaterThan(0);
       expect(getByText("Avg Daily Signups")).toBeTruthy();
     });
 
@@ -744,7 +744,7 @@ describe("ChartBar Component", () => {
   });
 
   it("should render chart bars for daily signups", async () => {
-    const { getByText } = render(<AdminAnalyticsScreen />, {
+    const { getByText, getAllByText } = render(<AdminAnalyticsScreen />, {
       wrapper: createWrapper(),
     });
 
@@ -752,9 +752,9 @@ describe("ChartBar Component", () => {
       expect(getByText("Daily Signups")).toBeTruthy();
     });
 
-    // Check that values are displayed
+    // Check that values are displayed (10 appears multiple times - in new users count and signups data)
     expect(getByText("5")).toBeTruthy();
-    expect(getByText("10")).toBeTruthy();
+    expect(getAllByText("10").length).toBeGreaterThan(0);
   });
 });
 

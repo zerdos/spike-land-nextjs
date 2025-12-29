@@ -18,16 +18,49 @@ jest.mock("tamagui", () => {
 
   return {
     Button: (props: Record<string, unknown>) => {
-      const { children, onPress, testID, icon: Icon, disabled } = props;
+      const {
+        children,
+        onPress,
+        testID,
+        icon: Icon,
+        disabled,
+        "aria-label": ariaLabel,
+      } = props;
+      // Handle icon prop - it can be a component function or a JSX element
+      let iconElement = null;
+      if (Icon) {
+        if (MockReact.isValidElement(Icon)) {
+          // It's already a JSX element (e.g., <X size={16} />)
+          iconElement = Icon;
+        } else if (typeof Icon === "function") {
+          // It's a component function
+          iconElement = MockReact.createElement(Icon);
+        }
+      }
       return MockReact.createElement(
         TouchableOpacity,
-        { onPress, testID, disabled, accessibilityState: { disabled } },
-        Icon ? MockReact.createElement(Icon) : null,
+        {
+          onPress,
+          testID,
+          disabled,
+          accessibilityState: { disabled },
+          accessible: true,
+          accessibilityLabel: ariaLabel,
+        },
+        iconElement,
         children,
       );
     },
     Input: MockReact.forwardRef((props: Record<string, unknown>, ref: unknown) => {
-      const { testID, onChangeText, onSubmitEditing, value, editable } = props;
+      const {
+        testID,
+        onChangeText,
+        onSubmitEditing,
+        value,
+        editable,
+        placeholder,
+        "aria-label": ariaLabel,
+      } = props;
       return MockReact.createElement(TextInput, {
         ref,
         testID,
@@ -35,6 +68,8 @@ jest.mock("tamagui", () => {
         onSubmitEditing,
         value,
         editable,
+        placeholder,
+        accessibilityLabel: ariaLabel,
       });
     }),
     XStack: (props: Record<string, unknown>) => {

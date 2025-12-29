@@ -2,6 +2,68 @@
  * Tests for NotificationItem Component
  */
 
+// Mock react-native-reanimated BEFORE any imports to avoid native worklets error
+jest.mock("react-native-reanimated", () => {
+  const View = require("react-native").View;
+  return {
+    default: {
+      call: jest.fn(),
+    },
+    View,
+    useSharedValue: jest.fn((initial) => ({ value: initial })),
+    useAnimatedStyle: jest.fn(() => ({})),
+    withTiming: jest.fn((value, _config, callback) => {
+      if (callback) callback(true);
+      return value;
+    }),
+    withSpring: jest.fn((value) => value),
+    withDelay: jest.fn((_, animation) => animation),
+    withSequence: jest.fn((...animations) => animations[0]),
+    runOnJS: jest.fn((fn) => fn),
+    runOnUI: jest.fn((fn) => fn),
+    Easing: {
+      linear: jest.fn(),
+      ease: jest.fn(),
+      bezier: jest.fn(),
+    },
+  };
+});
+
+// Mock react-native-gesture-handler with proper chainable gesture API
+jest.mock("react-native-gesture-handler", () => {
+  const View = require("react-native").View;
+
+  // Create a chainable gesture object
+  const createChainableGesture = () => {
+    const gesture = {};
+    const chainable = (method: string) => {
+      (gesture as Record<string, unknown>)[method] = jest.fn(() => gesture);
+      return gesture;
+    };
+    chainable("onUpdate");
+    chainable("onEnd");
+    chainable("onStart");
+    chainable("onFinalize");
+    chainable("enabled");
+    chainable("minDistance");
+    chainable("activeOffsetX");
+    chainable("activeOffsetY");
+    chainable("failOffsetX");
+    chainable("failOffsetY");
+    return gesture;
+  };
+
+  return {
+    GestureHandlerRootView: View,
+    GestureDetector: View,
+    Gesture: {
+      Pan: jest.fn(() => createChainableGesture()),
+      Tap: jest.fn(() => createChainableGesture()),
+      LongPress: jest.fn(() => createChainableGesture()),
+    },
+  };
+});
+
 import { fireEvent, render } from "@testing-library/react-native";
 import React from "react";
 import { TamaguiProvider } from "tamagui";

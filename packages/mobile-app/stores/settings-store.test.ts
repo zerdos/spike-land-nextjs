@@ -26,26 +26,43 @@ jest.mock("../services/storage", () => ({
 
 // Mock API client
 const mockApiResponses: Record<string, unknown> = {};
+
+const mockListApiKeys = jest.fn();
+const mockCreateApiKey = jest.fn();
+const mockDeleteApiKey = jest.fn();
+const mockGetPreferences = jest.fn();
+const mockUpdatePreferences = jest.fn();
+const mockDeleteAccount = jest.fn();
+
 jest.mock("../services/api/settings", () => ({
-  listApiKeys: jest.fn(() =>
-    Promise.resolve(mockApiResponses.listApiKeys || { data: null, error: null, status: 200 })
-  ),
-  createApiKey: jest.fn((name: string) =>
-    Promise.resolve(mockApiResponses.createApiKey || { data: null, error: null, status: 200 })
-  ),
-  deleteApiKey: jest.fn(() =>
-    Promise.resolve(mockApiResponses.deleteApiKey || { data: null, error: null, status: 200 })
-  ),
-  getPreferences: jest.fn(() =>
-    Promise.resolve(mockApiResponses.getPreferences || { data: null, error: null, status: 200 })
-  ),
-  updatePreferences: jest.fn(() =>
-    Promise.resolve(mockApiResponses.updatePreferences || { data: null, error: null, status: 200 })
-  ),
-  deleteAccount: jest.fn(() =>
-    Promise.resolve(mockApiResponses.deleteAccount || { data: null, error: null, status: 200 })
-  ),
+  listApiKeys: mockListApiKeys,
+  createApiKey: mockCreateApiKey,
+  deleteApiKey: mockDeleteApiKey,
+  getPreferences: mockGetPreferences,
+  updatePreferences: mockUpdatePreferences,
+  deleteAccount: mockDeleteAccount,
 }));
+
+function setupDefaultMockImplementations() {
+  mockListApiKeys.mockImplementation(() =>
+    Promise.resolve(mockApiResponses.listApiKeys || { data: null, error: null, status: 200 })
+  );
+  mockCreateApiKey.mockImplementation(() =>
+    Promise.resolve(mockApiResponses.createApiKey || { data: null, error: null, status: 200 })
+  );
+  mockDeleteApiKey.mockImplementation(() =>
+    Promise.resolve(mockApiResponses.deleteApiKey || { data: null, error: null, status: 200 })
+  );
+  mockGetPreferences.mockImplementation(() =>
+    Promise.resolve(mockApiResponses.getPreferences || { data: null, error: null, status: 200 })
+  );
+  mockUpdatePreferences.mockImplementation(() =>
+    Promise.resolve(mockApiResponses.updatePreferences || { data: null, error: null, status: 200 })
+  );
+  mockDeleteAccount.mockImplementation(() =>
+    Promise.resolve(mockApiResponses.deleteAccount || { data: null, error: null, status: 200 })
+  );
+}
 
 // ============================================================================
 // Test Helpers
@@ -97,6 +114,7 @@ describe("useSettingsStore", () => {
     clearMockResponses();
     clearMockStorage();
     jest.clearAllMocks();
+    setupDefaultMockImplementations();
   });
 
   describe("initial state", () => {

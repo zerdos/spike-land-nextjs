@@ -2,7 +2,7 @@
  * Reset Password Screen Tests
  */
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 
@@ -263,9 +263,11 @@ describe("ResetPasswordScreen", () => {
       render(<ResetPasswordScreen />);
 
       await waitFor(() => {
-        expect(screen.getByText("Reset Password")).toBeTruthy();
+        expect(screen.getByTestId("new-password-input")).toBeTruthy();
       });
 
+      // Use getAllByText since "Reset Password" appears in both header and button
+      expect(screen.getAllByText("Reset Password").length).toBeGreaterThanOrEqual(1);
       expect(screen.getByTestId("new-password-input")).toBeTruthy();
       expect(screen.getByTestId("confirm-password-input")).toBeTruthy();
       expect(screen.getByTestId("submit-button")).toBeTruthy();
@@ -458,7 +460,12 @@ describe("ResetPasswordScreen", () => {
 
       fireEvent.changeText(passwordInput, "NewPassword123");
       fireEvent.changeText(confirmInput, "NewPassword123");
-      fireEvent.press(submitButton);
+
+      await act(async () => {
+        fireEvent.press(submitButton);
+        // Flush pending promises
+        await Promise.resolve();
+      });
 
       await waitFor(() => {
         expect(screen.getByText("Password Reset!")).toBeTruthy();

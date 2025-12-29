@@ -4,10 +4,16 @@
 
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
-import { PermissionStatus } from "expo-notifications";
 import { router } from "expo-router";
 import { Platform } from "react-native";
 import { apiClient } from "./api-client";
+
+// Define PermissionStatus values locally since the module is mocked
+const PermissionStatus = {
+  GRANTED: "granted",
+  DENIED: "denied",
+  UNDETERMINED: "undetermined",
+} as const;
 import {
   cancelAllNotifications,
   cancelNotification,

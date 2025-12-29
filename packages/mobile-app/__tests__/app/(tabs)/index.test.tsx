@@ -6,6 +6,14 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { router } from "expo-router";
 
+// Mock @expo/vector-icons before any imports that use it
+jest.mock("@expo/vector-icons", () => {
+  const { View } = require("react-native");
+  return {
+    Ionicons: View,
+  };
+});
+
 // Mock the stores
 jest.mock("@/stores", () => ({
   useTokenStore: jest.fn(() => ({

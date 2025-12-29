@@ -105,11 +105,6 @@ describe("VerifyEmailScreen", () => {
       user: null,
       refreshSession: mockRefreshSession,
     });
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   describe("Loading State", () => {

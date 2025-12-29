@@ -3,35 +3,7 @@
  * Provides controllable image picker behavior for testing
  */
 
-// Default mock image result
-const defaultImageResult = {
-  canceled: false,
-  assets: [
-    {
-      uri: "file:///test/image.jpg",
-      width: 1024,
-      height: 768,
-      type: "image" as const,
-      fileName: "test-image.jpg",
-      fileSize: 123456,
-      mimeType: "image/jpeg",
-      base64: undefined,
-      exif: undefined,
-      assetId: undefined,
-    },
-  ],
-};
-
-// Mock state for controlling test behavior
-let mockResult: ImagePickerResult = defaultImageResult;
-let mockPermissions: PermissionResponse = {
-  granted: true,
-  canAskAgain: true,
-  expires: "never",
-  status: PermissionStatus.GRANTED,
-};
-
-// Types
+// Types - Must be defined before use
 export enum MediaTypeOptions {
   All = "All",
   Images = "Images",
@@ -91,6 +63,34 @@ export interface ImagePickerOptions {
 
 export interface CameraPermissionResponse extends PermissionResponse {}
 export interface MediaLibraryPermissionResponse extends PermissionResponse {}
+
+// Default mock image result
+const defaultImageResult: ImagePickerSuccessResult = {
+  canceled: false,
+  assets: [
+    {
+      uri: "file:///test/image.jpg",
+      width: 1024,
+      height: 768,
+      type: "image" as const,
+      fileName: "test-image.jpg",
+      fileSize: 123456,
+      mimeType: "image/jpeg",
+      base64: undefined,
+      exif: undefined,
+      assetId: undefined,
+    },
+  ],
+};
+
+// Mock state for controlling test behavior
+let mockResult: ImagePickerResult = defaultImageResult;
+let mockPermissions: PermissionResponse = {
+  granted: true,
+  canAskAgain: true,
+  expires: "never",
+  status: PermissionStatus.GRANTED,
+};
 
 /**
  * Request camera permissions

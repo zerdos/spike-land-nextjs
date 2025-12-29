@@ -3,12 +3,17 @@
  * Tests for the admin access control and layout
  */
 
-import AdminLayout from "@/app/admin/_layout";
-import { useAuthStore } from "@/stores";
-import config from "@/tamagui.config";
 import { fireEvent, render } from "@testing-library/react-native";
 import React from "react";
-import { TamaguiProvider } from "tamagui";
+
+// Mock tamagui config before any imports that use it
+jest.mock("@/tamagui.config", () => ({
+  __esModule: true,
+  default: {},
+}));
+
+import AdminLayout from "@/app/admin/_layout";
+import { useAuthStore } from "@/stores";
 
 // Mock expo-router
 const mockReplace = jest.fn();
@@ -35,15 +40,6 @@ jest.mock("@/stores", () => ({
 }));
 
 const mockUseAuthStore = useAuthStore as jest.Mock;
-
-// Test wrapper with providers
-function TestWrapper({ children }: { children: React.ReactNode; }) {
-  return (
-    <TamaguiProvider config={config}>
-      {children}
-    </TamaguiProvider>
-  );
-}
 
 describe("AdminLayout", () => {
   beforeEach(() => {

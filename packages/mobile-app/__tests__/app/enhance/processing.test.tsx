@@ -2,16 +2,10 @@
  * Processing Screen Tests
  */
 
-import EnhancementProcessingScreen from "@/app/enhance/processing";
-import { useEnhancementJob } from "@/hooks/useEnhancementJob";
-import { useEnhancementStore } from "@/stores";
-import config from "@/tamagui.config";
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import { useRouter } from "expo-router";
 import React from "react";
-import { TamaguiProvider } from "tamagui";
 
-// Mock dependencies
+// Mock dependencies - must be before imports that use them
 jest.mock("expo-router", () => ({
   useRouter: jest.fn(),
 }));
@@ -33,19 +27,48 @@ jest.mock("@/stores", () => ({
   useEnhancementStore: jest.fn(),
 }));
 
+// Mock Tamagui components
+jest.mock("tamagui", () => {
+  const React = require("react");
+  const { View, Text, TouchableOpacity } = require("react-native");
+
+  return {
+    Button: ({ children, onPress, testID, ...props }: any) => (
+      <TouchableOpacity onPress={onPress} testID={testID}>
+        {typeof children === "string" ? <Text>{children}</Text> : children}
+      </TouchableOpacity>
+    ),
+    Text: ({ children, testID, ...props }: any) => <Text testID={testID}>{children}</Text>,
+    YStack: ({ children, testID, ...props }: any) => <View testID={testID}>{children}</View>,
+    XStack: ({ children, testID, ...props }: any) => <View testID={testID}>{children}</View>,
+    TamaguiProvider: ({ children }: any) => <>{children}</>,
+    createTamagui: jest.fn(() => ({})),
+    createTokens: jest.fn(() => ({})),
+  };
+});
+
 // Mock JobProgress component
 jest.mock("@/components/JobProgress", () => ({
-  JobProgress: ({ onRetry, ...props }: { onRetry?: () => void; }) => (
-    <mock-job-progress
-      testID="job-progress"
-      data-status={props.status}
-      data-progress={props.progress}
-      data-is-complete={props.isComplete}
-      data-is-failed={props.isFailed}
-      onPress={onRetry}
-    />
-  ),
+  JobProgress: ({ onRetry, ...props }: { onRetry?: () => void; }) => {
+    const React = require("react");
+    const { View } = require("react-native");
+    return (
+      <View
+        testID="job-progress"
+        data-status={props.status}
+        data-progress={props.progress}
+        data-is-complete={props.isComplete}
+        data-is-failed={props.isFailed}
+      />
+    );
+  },
 }));
+
+// Import after mocks
+import EnhancementProcessingScreen from "@/app/enhance/processing";
+import { useEnhancementJob } from "@/hooks/useEnhancementJob";
+import { useEnhancementStore } from "@/stores";
+import { useRouter } from "expo-router";
 
 const mockedUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockedUseEnhancementJob = useEnhancementJob as jest.MockedFunction<typeof useEnhancementJob>;
@@ -58,11 +81,7 @@ const mockedUseEnhancementStore = useEnhancementStore as jest.MockedFunction<
 // ============================================================================
 
 function renderWithProvider(component: React.ReactElement) {
-  return render(
-    <TamaguiProvider config={config}>
-      {component}
-    </TamaguiProvider>,
-  );
+  return render(component);
 }
 
 // ============================================================================

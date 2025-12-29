@@ -67,11 +67,15 @@ jest.mock("@/services/api/blog", () => ({
 
 jest.mock("@/components/BlogCard", () => ({
   BlogCard: (
-    { post, onPress, testID }: { post: { title: string; }; onPress: () => void; testID: string; },
+    { post, onPress, testID }: {
+      post: { title: string; slug: string; };
+      onPress: (post: { title: string; slug: string; }) => void;
+      testID: string;
+    },
   ) => {
     const { View, Text, Pressable } = require("react-native");
     return (
-      <Pressable testID={testID} onPress={onPress}>
+      <Pressable testID={testID} onPress={() => onPress(post)}>
         <View>
           <Text>{post.title}</Text>
         </View>

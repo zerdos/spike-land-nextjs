@@ -35,8 +35,10 @@ const mockAuthStore = {
   user: { id: "user-1", email: "test@example.com", name: "Test User" },
   signOut: jest.fn(() => Promise.resolve()),
 };
+
+const mockUseAuthStore = jest.fn(() => mockAuthStore);
 jest.mock("@/stores", () => ({
-  useAuthStore: jest.fn(() => mockAuthStore),
+  useAuthStore: () => mockUseAuthStore(),
 }));
 
 // Mock settings store

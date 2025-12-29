@@ -2,14 +2,44 @@
  * Tests for Notifications Screen
  */
 
-import NotificationsScreen from "@/app/notifications";
-import * as notificationsService from "@/services/notifications";
-import type { NotificationType, ServerNotification } from "@/services/notifications";
-import config from "@/tamagui.config";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
-import React from "react";
-import { TamaguiProvider } from "tamagui";
+// Mock NotificationItem component BEFORE importing the screen
+// This prevents loading react-native-reanimated from the component
+jest.mock("@/components/NotificationItem", () => {
+  const React = require("react");
+  const { View, Pressable, Text } = require("react-native");
+
+  const MockNotificationItem = ({
+    notification,
+    onPress,
+    onDismiss,
+    testID,
+  }: {
+    notification: { id: string; title: string; body: string; read: boolean; };
+    onPress?: (notification: any) => void;
+    onDismiss?: (notification: any) => void;
+    testID?: string;
+  }) => {
+    return (
+      <View testID={testID}>
+        <Pressable
+          testID={testID ? `${testID}-pressable` : undefined}
+          onPress={() => onPress?.(notification)}
+        >
+          <Text>{notification.title}</Text>
+          <Text>{notification.body}</Text>
+          {!notification.read && (
+            <View testID={testID ? `${testID}-unread-indicator` : undefined} />
+          )}
+        </Pressable>
+      </View>
+    );
+  };
+
+  return {
+    NotificationItem: MockNotificationItem,
+    default: MockNotificationItem,
+  };
+});
 
 // Override specific mocks for this test file
 jest.mock("@/services/notifications", () => ({
@@ -18,6 +48,15 @@ jest.mock("@/services/notifications", () => ({
   markAllNotificationsAsRead: jest.fn(),
   deleteNotification: jest.fn(),
 }));
+
+import NotificationsScreen from "@/app/notifications";
+import * as notificationsService from "@/services/notifications";
+import type { NotificationType, ServerNotification } from "@/services/notifications";
+import config from "@/tamagui.config";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import React from "react";
+import { TamaguiProvider } from "tamagui";
 
 // ============================================================================
 // Test Helpers

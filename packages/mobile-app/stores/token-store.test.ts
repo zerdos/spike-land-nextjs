@@ -16,9 +16,12 @@ jest.mock("../services/api/tokens", () => ({
 }));
 
 // Mock shared utilities
+const mockCalculateRegeneratedTokens = jest.fn(() => 0);
+const mockGetTimeUntilNextRegen = jest.fn(() => 3600000);
+
 jest.mock("@spike-npm-land/shared", () => ({
-  calculateRegeneratedTokens: jest.fn(() => 0),
-  getTimeUntilNextRegen: jest.fn(() => 3600000),
+  calculateRegeneratedTokens: (...args: unknown[]) => mockCalculateRegeneratedTokens(...args),
+  getTimeUntilNextRegen: (...args: unknown[]) => mockGetTimeUntilNextRegen(...args),
 }));
 
 // ============================================================================
@@ -523,8 +526,7 @@ describe("useTokenStore", () => {
       });
 
       // The timer callback was executed (getTimeUntilNextRegen was called)
-      const sharedModule = require("@spike-npm-land/shared");
-      expect(sharedModule.getTimeUntilNextRegen).toHaveBeenCalled();
+      expect(mockGetTimeUntilNextRegen).toHaveBeenCalled();
     });
 
     it("should clear existing timer before starting new one", () => {
@@ -590,8 +592,7 @@ describe("useTokenStore", () => {
       });
 
       // Mock to return tokens to add
-      const sharedModule = require("@spike-npm-land/shared");
-      sharedModule.calculateRegeneratedTokens.mockReturnValue(2);
+      mockCalculateRegeneratedTokens.mockReturnValue(2);
 
       const { result } = renderHook(() => useTokenStore());
 
@@ -616,11 +617,10 @@ describe("useTokenStore", () => {
         });
       });
 
-      const { result } = renderHook(() => useTokenStore());
-      const stopRegenTimerSpy = jest.spyOn(result.current, "stopRegenTimer");
+      // Mock to return 0 tokens since we're at max
+      mockCalculateRegeneratedTokens.mockReturnValue(0);
 
-      const sharedModule = require("@spike-npm-land/shared");
-      sharedModule.calculateRegeneratedTokens.mockReturnValue(0);
+      const { result } = renderHook(() => useTokenStore());
 
       act(() => {
         result.current.startRegenTimer();
@@ -630,7 +630,15 @@ describe("useTokenStore", () => {
         jest.advanceTimersByTime(1000);
       });
 
-      expect(stopRegenTimerSpy).toHaveBeenCalled();
+      // After the timer runs, balance should still be at max (10)
+      expect(result.current.balance).toBe(10);
+      // Timer should have been stopped (we can verify by advancing time and checking no further calls)
+      mockGetTimeUntilNextRegen.mockClear();
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
+      // No additional calls should happen since timer was stopped
+      expect(mockGetTimeUntilNextRegen).not.toHaveBeenCalled();
     });
 
     it("should not exceed max balance when adding tokens", () => {

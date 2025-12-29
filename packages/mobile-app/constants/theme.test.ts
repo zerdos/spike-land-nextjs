@@ -255,7 +255,12 @@ describe("theme constants", () => {
     });
 
     it("should have increasing values", () => {
-      const values = Object.values(spacing);
+      // Sort keys numerically since JavaScript object key order is not guaranteed
+      // for mixed integer and decimal keys
+      const sortedKeys = Object.keys(spacing)
+        .map(Number)
+        .sort((a, b) => a - b);
+      const values = sortedKeys.map((key) => spacing[key as keyof typeof spacing]);
       for (let i = 1; i < values.length; i++) {
         expect(values[i]).toBeGreaterThanOrEqual(values[i - 1] as number);
       }

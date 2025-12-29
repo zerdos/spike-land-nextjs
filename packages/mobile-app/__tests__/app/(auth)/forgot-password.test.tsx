@@ -99,11 +99,6 @@ describe("ForgotPasswordScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseRouter.mockReturnValue(mockRouter);
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   describe("Initial Render", () => {
