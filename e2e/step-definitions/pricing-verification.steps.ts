@@ -82,8 +82,13 @@ Then(
 
       switch (field.toLowerCase()) {
         case "name": {
-          const nameHeading = this.page.locator('[class*="CardTitle"]').first();
-          await expect(nameHeading).toBeVisible();
+          // Package cards have data-testid="package-card-X" and the name is displayed in CardTitle
+          // Look for a package card and check it has a visible package name
+          const packageCard = this.page.locator('[data-testid^="package-card-"]').first();
+          await expect(packageCard).toBeVisible();
+          // Verify the card contains a package name (Starter, Basic, Pro, or Power)
+          const packageName = packageCard.getByText(/Starter|Basic|Pro|Power/i).first();
+          await expect(packageName).toBeVisible();
           break;
         }
         case "token count": {
