@@ -1,7 +1,6 @@
 # API Reference
 
-> **Last Updated**: December 2025 **Status**: MVP Release **Base URL**:
-> `https://spike.land` (Production) or `http://localhost:3000` (Development)
+> **Last Updated**: December 2025 | **Status**: Production | **Base URL**: `https://spike.land` (Production) or `http://localhost:3000` (Development)
 
 ---
 
@@ -10,34 +9,39 @@
 1. [Authentication](#authentication)
 2. [Image Management](#image-management)
 3. [Image Enhancement](#image-enhancement)
-4. [Batch Operations](#batch-operations)
-5. [Albums](#albums)
-6. [Token Management](#token-management)
-7. [Voucher Management](#voucher-management)
-8. [Referral Program](#referral-program)
-9. [Admin Dashboard](#admin-dashboard)
-10. [Payment Processing](#payment-processing)
-11. [Error Handling](#error-handling)
-12. [Rate Limiting](#rate-limiting)
-13. [Marketing Dashboard](#marketing-dashboard)
+4. [Anonymous Image Operations](#anonymous-image-operations)
+5. [Batch Operations](#batch-operations)
+6. [Albums](#albums)
+7. [Enhancement Jobs](#enhancement-jobs)
+8. [Token Management](#token-management)
+9. [Tier Management](#tier-management)
+10. [Voucher Management](#voucher-management)
+11. [Referral Program](#referral-program)
+12. [MCP API (Model Context Protocol)](#mcp-api-model-context-protocol)
+13. [API Key Management](#api-key-management)
+14. [Payment Processing](#payment-processing)
+15. [Admin Dashboard](#admin-dashboard)
+16. [Marketing Dashboard](#marketing-dashboard)
+17. [System Reports](#system-reports)
+18. [Error Handling](#error-handling)
+19. [Rate Limiting](#rate-limiting)
 
 ---
 
 ## Authentication
 
-All protected endpoints require authentication via Bearer token (session cookie
-or JWT).
+All protected endpoints require authentication via session cookie (NextAuth.js) or Bearer token (API key for MCP endpoints).
 
 ### Authentication Methods
 
-1. **Session Cookie** (NextAuth.js)
+1. **Session Cookie** (NextAuth.js) - Web Application
    - Automatically set after login
    - Included in all requests to same domain
    - No manual token passing required
 
-2. **Bearer Token** (API requests)
+2. **API Key** (Bearer Token) - MCP API
    ```http
-   Authorization: Bearer {session_token}
+   Authorization: Bearer sk_live_...
    ```
 
 ### Login
@@ -48,8 +52,7 @@ Uses NextAuth.js multi-provider authentication:
 
 - GitHub OAuth
 - Google OAuth
-- Phone (Twilio) verification
-- Email verification (future)
+- Credentials (Email/Password)
 
 ---
 
@@ -57,11 +60,11 @@ Uses NextAuth.js multi-provider authentication:
 
 ### Upload Image
 
-Create a new image record in the system.
+Upload and automatically enhance an image in one operation.
 
 **Endpoint**: `POST /api/images/upload`
 
-**Authentication**: Required
+**Authentication**: Required (Session)
 
 **Content-Type**: `multipart/form-data`
 
@@ -69,7 +72,6 @@ Create a new image record in the system.
 
 ```http
 POST /api/images/upload HTTP/1.1
-Authorization: Bearer {session_token}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
 
 ------WebKitFormBoundary
@@ -77,15 +79,29 @@ Content-Disposition: form-data; name="file"; filename="photo.jpg"
 Content-Type: image/jpeg
 
 <binary image data>
+------WebKitFormBoundary
+Content-Disposition: form-data; name="albumId"
+
+album_abc123
 ------WebKitFormBoundary--
 ```
+
+**Request Fields**:
+
+| Field   | Type   | Required | Description                      |
+| ------- | ------ | -------- | -------------------------------- |
+| file    | File   | Yes      | Image file (max 25 MB)           |
+| albumId | string | No       | Album ID to associate image with |
+
+**Supported Formats**: JPEG, PNG, WebP, GIF, BMP
 
 **cURL Example**:
 
 ```bash
 curl -X POST http://localhost:3000/api/images/upload \
-  -H "Authorization: Bearer session_token" \
-  -F "file=@photo.jpg"
+  -H "Cookie: next-auth.session-token=..." \
+  -F "file=@photo.jpg" \
+  -F "albumId=album_abc123"
 ```
 
 **JavaScript Example**:
@@ -93,6 +109,7 @@ curl -X POST http://localhost:3000/api/images/upload \
 ```javascript
 const formData = new FormData();
 formData.append("file", fileInput.files[0]);
+formData.append("albumId", "album_abc123"); // Optional
 
 const response = await fetch("/api/images/upload", {
   method: "POST",
@@ -100,7 +117,8 @@ const response = await fetch("/api/images/upload", {
 });
 
 const data = await response.json();
-console.log(`Uploaded: ${data.image.id}`);
+console.log(`Image uploaded: ${data.image.id}`);
+console.log(`Enhancement job: ${data.enhancement.jobId}`);
 ```
 
 **Response (Success - 200)**:
@@ -116,27 +134,29 @@ console.log(`Uploaded: ${data.image.id}`);
     "height": 1440,
     "size": 2456832,
     "format": "jpeg"
+  },
+  "enhancement": {
+    "jobId": "job_abc123",
+    "tier": "TIER_1K",
+    "tokenCost": 2,
+    "newBalance": 98
   }
 }
 ```
 
-**Request Validation**:
-
-| Field | Type | Required | Constraints                  |
-| ----- | ---- | -------- | ---------------------------- |
-| file  | File | Yes      | Max 25 MB, supported formats |
-
-**Supported Formats**: JPEG, PNG, WebP, GIF, BMP
-
 **Error Responses**:
 
-| Status | Error                  | Description          | Solution                  |
-| ------ | ---------------------- | -------------------- | ------------------------- |
-| 400    | No file provided       | Request missing file | Include file in form data |
-| 401    | Unauthorized           | Not authenticated    | Login first               |
-| 413    | Payload too large      | File exceeds 25 MB   | Compress or split image   |
-| 415    | Unsupported media type | Format not supported | Convert to JPEG/PNG       |
-| 500    | Upload failed          | S3/R2 error          | Try again later           |
+| Status | Error               | Description                            | Solution                  |
+| ------ | ------------------- | -------------------------------------- | ------------------------- |
+| 400    | No file provided    | Request missing file                   | Include file in form data |
+| 400    | Invalid filename    | Filename contains invalid characters   | Use safe filename         |
+| 401    | Unauthorized        | Not authenticated                      | Login first               |
+| 402    | Insufficient tokens | Not enough tokens for auto-enhancement | Purchase tokens           |
+| 413    | Payload too large   | File exceeds 25 MB                     | Compress image            |
+| 429    | Too many requests   | Rate limit exceeded                    | Wait before retrying      |
+| 500    | Upload failed       | S3/R2 or processing error              | Try again later           |
+
+**Rate Limit**: 20 uploads per hour per user
 
 ---
 
@@ -146,7 +166,7 @@ Retrieve metadata and enhancement history for an image.
 
 **Endpoint**: `GET /api/images/{imageId}`
 
-**Authentication**: Required
+**Authentication**: Required (Session)
 
 **Path Parameters**:
 
@@ -158,7 +178,6 @@ Retrieve metadata and enhancement history for an image.
 
 ```http
 GET /api/images/clya1b2c3d4e5f6g7h8i9j0k1 HTTP/1.1
-Authorization: Bearer {session_token}
 ```
 
 **Response (Success - 200)**:
@@ -169,15 +188,17 @@ Authorization: Bearer {session_token}
   "image": {
     "id": "clya1b2c3d4e5f6g7h8i9j0k1",
     "name": "my-photo.jpg",
-    "description": "Optional description",
+    "description": null,
     "originalUrl": "https://r2-bucket.example.com/originals/user123/image-id.jpg",
     "originalWidth": 1920,
     "originalHeight": 1440,
     "originalSizeBytes": 2456832,
     "originalFormat": "jpeg",
     "isPublic": false,
+    "viewCount": 0,
     "createdAt": "2025-12-02T10:15:00Z",
-    "enhancementJobs": [
+    "updatedAt": "2025-12-02T10:15:00Z",
+    "jobs": [
       {
         "id": "job_001",
         "tier": "TIER_2K",
@@ -187,26 +208,23 @@ Authorization: Bearer {session_token}
         "enhancedWidth": 2048,
         "enhancedHeight": 1536,
         "enhancedSizeBytes": 3456789,
+        "errorMessage": null,
         "createdAt": "2025-12-02T10:30:00Z",
+        "processingStartedAt": "2025-12-02T10:30:05Z",
         "processingCompletedAt": "2025-12-02T10:35:00Z"
-      },
-      {
-        "id": "job_002",
-        "tier": "TIER_4K",
-        "status": "PROCESSING",
-        "tokensCost": 10,
-        "createdAt": "2025-12-02T10:40:00Z"
       }
     ]
   }
 }
 ```
 
-**Enhancement Job Status Values**:
+**Job Status Values**:
 
 - `PROCESSING`: Enhancement in progress
 - `COMPLETED`: Successfully enhanced
 - `FAILED`: Enhancement failed (tokens refunded)
+- `CANCELLED`: Job cancelled by user
+- `REFUNDED`: Job refunded
 
 **Error Responses**:
 
@@ -225,7 +243,7 @@ Permanently delete an image and all its enhancements.
 
 **Endpoint**: `DELETE /api/images/{imageId}`
 
-**Authentication**: Required
+**Authentication**: Required (Session)
 
 **Path Parameters**:
 
@@ -237,7 +255,6 @@ Permanently delete an image and all its enhancements.
 
 ```http
 DELETE /api/images/clya1b2c3d4e5f6g7h8i9j0k1 HTTP/1.1
-Authorization: Bearer {session_token}
 ```
 
 **Response (Success - 200)**:
@@ -245,7 +262,7 @@ Authorization: Bearer {session_token}
 ```json
 {
   "success": true,
-  "message": "Image deleted"
+  "message": "Image deleted successfully"
 }
 ```
 
@@ -260,108 +277,40 @@ Authorization: Bearer {session_token}
 
 ---
 
-## Batch Operations
+### Get All Images
 
-### Batch Upload Images
+List all images for the authenticated user.
 
-Upload multiple images in a single request.
+**Endpoint**: `GET /api/images`
 
-**Endpoint**: `POST /api/images/batch-upload`
+**Authentication**: Required (Session)
 
-**Authentication**: Required
+**Query Parameters**:
 
-**Content-Type**: `multipart/form-data`
-
-**Request**:
-
-```http
-POST /api/images/batch-upload HTTP/1.1
-Authorization: Bearer {session_token}
-Content-Type: multipart/form-data
-
-files: [file1.jpg, file2.jpg, file3.jpg]
-albumId: album_123 (optional)
-```
+| Parameter | Type   | Required | Default | Description                          |
+| --------- | ------ | -------- | ------- | ------------------------------------ |
+| limit     | number | No       | 20      | Number of images to return (max 100) |
+| offset    | number | No       | 0       | Pagination offset                    |
 
 **Response (Success - 200)**:
 
 ```json
 {
-  "success": true,
-  "uploaded": 3,
-  "failed": 0,
   "images": [
     {
       "id": "img_001",
       "name": "photo1.jpg",
-      "url": "https://r2-bucket.example.com/originals/user123/img_001.jpg",
-      "width": 1920,
-      "height": 1440
+      "originalUrl": "https://...",
+      "originalWidth": 1920,
+      "originalHeight": 1440,
+      "createdAt": "2025-12-02T10:00:00Z"
     }
-  ]
+  ],
+  "total": 150,
+  "limit": 20,
+  "offset": 0
 }
 ```
-
-**Error Responses**:
-
-| Status | Error             | Description                       |
-| ------ | ----------------- | --------------------------------- |
-| 400    | No files provided | Request missing files             |
-| 401    | Unauthorized      | Not authenticated                 |
-| 413    | Payload too large | Total files exceed size limit     |
-| 429    | Too many requests | Rate limit exceeded (20 per hour) |
-
----
-
-### Batch Enhance Images
-
-Enhance multiple images asynchronously.
-
-**Endpoint**: `POST /api/images/batch-enhance`
-
-**Authentication**: Required
-
-**Content-Type**: `application/json`
-
-**Request**:
-
-```http
-POST /api/images/batch-enhance HTTP/1.1
-Authorization: Bearer {session_token}
-Content-Type: application/json
-
-{
-  "imageIds": ["img_001", "img_002", "img_003"],
-  "tier": "TIER_2K"
-}
-```
-
-**Response (Success - 200)**:
-
-```json
-{
-  "success": true,
-  "batchId": "batch_enhance_abc123",
-  "totalCost": 15,
-  "imageCount": 3,
-  "jobs": [
-    {
-      "imageId": "img_001",
-      "jobId": "job_001",
-      "status": "PROCESSING"
-    }
-  ]
-}
-```
-
-**Error Responses**:
-
-| Status | Error               | Description                          |
-| ------ | ------------------- | ------------------------------------ |
-| 400    | No images provided  | imageIds array empty                 |
-| 401    | Unauthorized        | Not authenticated                    |
-| 402    | Insufficient tokens | Balance too low for all enhancements |
-| 429    | Too many requests   | Rate limit exceeded                  |
 
 ---
 
@@ -369,11 +318,11 @@ Content-Type: application/json
 
 ### Request Enhancement
 
-Start an image enhancement job.
+Start an image enhancement job with optional blend source.
 
 **Endpoint**: `POST /api/images/enhance`
 
-**Authentication**: Required
+**Authentication**: Required (Session)
 
 **Rate Limit**: 10 requests per minute per user
 
@@ -383,27 +332,65 @@ Start an image enhancement job.
 
 ```http
 POST /api/images/enhance HTTP/1.1
-Authorization: Bearer {session_token}
 Content-Type: application/json
 
 {
   "imageId": "clya1b2c3d4e5f6g7h8i9j0k1",
-  "tier": "TIER_2K"
+  "tier": "TIER_2K",
+  "blendSource": {
+    "imageId": "source_image_id"
+  }
 }
 ```
 
 **Request Body**:
 
-| Field   | Type   | Required | Options                   |
-| ------- | ------ | -------- | ------------------------- |
-| imageId | string | Yes      | Valid image ID            |
-| tier    | string | Yes      | TIER_1K, TIER_2K, TIER_4K |
+| Field       | Type   | Required | Description                                         |
+| ----------- | ------ | -------- | --------------------------------------------------- |
+| imageId     | string | Yes      | Valid image ID to enhance                           |
+| tier        | string | Yes      | Enhancement tier: FREE, TIER_1K, TIER_2K, TIER_4K   |
+| blendSource | object | No       | Source image for blending (imageId, url, or base64) |
+
+**Blend Source Options** (provide one of):
+
+```json
+{
+  "blendSource": {
+    "imageId": "img_123" // Reference existing image
+  }
+}
+```
+
+```json
+{
+  "blendSource": {
+    "url": "https://example.com/image.jpg" // Fetch from URL
+  }
+}
+```
+
+```json
+{
+  "blendSource": {
+    "base64": "iVBORw0KGgoAAAANS...", // Base64 encoded image
+    "mimeType": "image/png"
+  }
+}
+```
+
+**Enhancement Tiers and Costs**:
+
+| Tier    | Max Dimension | Token Cost | Model |
+| ------- | ------------- | ---------- | ----- |
+| FREE    | 1024px        | 0          | Nano  |
+| TIER_1K | 1024px        | 2          | Flash |
+| TIER_2K | 2048px        | 5          | Flash |
+| TIER_4K | 4096px        | 10         | Flash |
 
 **cURL Example**:
 
 ```bash
 curl -X POST http://localhost:3000/api/images/enhance \
-  -H "Authorization: Bearer session_token" \
   -H "Content-Type: application/json" \
   -d '{
     "imageId": "clya1b2c3d4e5f6g7h8i9j0k1",
@@ -451,15 +438,16 @@ console.log(`New Balance: ${result.newBalance}`);
 
 **Error Responses**:
 
-| Status | Error                   | Description            | Solution                          |
-| ------ | ----------------------- | ---------------------- | --------------------------------- |
-| 400    | Missing imageId or tier | Required field missing | Provide both fields               |
-| 400    | Invalid tier            | Tier not recognized    | Use TIER_1K, TIER_2K, or TIER_4K  |
-| 401    | Unauthorized            | Not authenticated      | Login first                       |
-| 402    | Insufficient tokens     | Balance too low        | Purchase tokens or redeem voucher |
-| 404    | Image not found         | Image ID invalid       | Check image ID and ownership      |
-| 429    | Too many requests       | Rate limit exceeded    | Wait before next request          |
-| 500    | Enhancement failed      | Processing error       | Try again or contact support      |
+| Status | Error                   | Description               | Solution                               |
+| ------ | ----------------------- | ------------------------- | -------------------------------------- |
+| 400    | Missing imageId or tier | Required field missing    | Provide both fields                    |
+| 400    | Invalid tier            | Tier not recognized       | Use FREE, TIER_1K, TIER_2K, or TIER_4K |
+| 400    | Blend image too large   | Blend source exceeds 20MB | Use smaller image                      |
+| 401    | Unauthorized            | Not authenticated         | Login first                            |
+| 402    | Insufficient tokens     | Balance too low           | Purchase tokens or redeem voucher      |
+| 404    | Image not found         | Image ID invalid          | Check image ID and ownership           |
+| 429    | Too many requests       | Rate limit exceeded       | Wait before next request               |
+| 500    | Enhancement failed      | Processing error          | Try again or contact support           |
 
 **Rate Limit Headers**:
 
@@ -472,23 +460,31 @@ Retry-After: 60
 
 ---
 
-### Get Enhancement Job Status
+## Anonymous Image Operations
 
-**Endpoint**: `GET /api/jobs/{jobId}`
+### Anonymous Upload
 
-**Authentication**: Required
+Upload an image without authentication (rate-limited by IP).
 
-**Path Parameters**:
+**Endpoint**: `POST /api/images/anonymous-upload`
 
-| Parameter | Type   | Description        |
-| --------- | ------ | ------------------ |
-| jobId     | string | Enhancement job ID |
+**Authentication**: None (rate-limited by IP)
+
+**Content-Type**: `multipart/form-data`
+
+**Rate Limit**: 5 uploads per hour per IP
 
 **Request**:
 
 ```http
-GET /api/jobs/job_enhancement_abc123 HTTP/1.1
-Authorization: Bearer {session_token}
+POST /api/images/anonymous-upload HTTP/1.1
+Content-Type: multipart/form-data
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="photo.jpg"
+
+<binary image data>
+------WebKitFormBoundary--
 ```
 
 **Response (Success - 200)**:
@@ -496,87 +492,116 @@ Authorization: Bearer {session_token}
 ```json
 {
   "success": true,
-  "job": {
-    "id": "job_enhancement_abc123",
-    "imageId": "clya1b2c3d4e5f6g7h8i9j0k1",
-    "tier": "TIER_2K",
-    "status": "COMPLETED",
-    "tokensCost": 5,
-    "enhancedUrl": "https://r2-bucket.example.com/enhanced/user123/image-id-2k.jpg",
-    "enhancedWidth": 2048,
-    "enhancedHeight": 1536,
-    "createdAt": "2025-12-02T10:30:00Z",
-    "processingCompletedAt": "2025-12-02T10:35:00Z"
+  "image": {
+    "id": "img_anonymous_123",
+    "name": "photo.jpg",
+    "url": "https://r2-bucket.example.com/...",
+    "width": 1920,
+    "height": 1440
   }
+}
+```
+
+**Note**: Anonymous images are automatically set to `isPublic: true` and do not auto-enhance. Use anonymous enhance endpoint separately.
+
+---
+
+### Anonymous Enhance
+
+Enhance an anonymously uploaded image (rate-limited by IP).
+
+**Endpoint**: `POST /api/images/anonymous-enhance`
+
+**Authentication**: None (rate-limited by IP)
+
+**Content-Type**: `application/json`
+
+**Rate Limit**: 3 enhancements per hour per IP
+
+**Request**:
+
+```json
+{
+  "imageId": "img_anonymous_123",
+  "tier": "FREE"
+}
+```
+
+**Note**: Anonymous enhancements are limited to the FREE tier only (no token cost).
+
+**Response (Success - 200)**:
+
+```json
+{
+  "success": true,
+  "jobId": "job_anon_123"
 }
 ```
 
 ---
 
-### Export Enhanced Image
+## Batch Operations
 
-Export an enhanced image in a specific format.
+### Batch Upload Images
 
-**Endpoint**: `POST /api/images/export`
+Upload multiple images in a single request.
 
-**Authentication**: Required
+**Endpoint**: `POST /api/images/batch-upload`
+
+**Authentication**: Required (Session)
+
+**Content-Type**: `multipart/form-data`
+
+**Rate Limit**: 20 files per hour
+
+**Request**:
+
+```http
+POST /api/images/batch-upload HTTP/1.1
+Content-Type: multipart/form-data
+
+files: [file1.jpg, file2.jpg, file3.jpg]
+albumId: album_123 (optional)
+```
+
+**Response (Success - 200)**:
+
+```json
+{
+  "success": true,
+  "uploaded": 3,
+  "failed": 0,
+  "images": [
+    {
+      "id": "img_001",
+      "name": "photo1.jpg",
+      "url": "https://r2-bucket.example.com/originals/user123/img_001.jpg",
+      "width": 1920,
+      "height": 1440
+    }
+  ]
+}
+```
+
+---
+
+### Batch Enhance Images
+
+Enhance multiple images asynchronously.
+
+**Endpoint**: `POST /api/images/batch-enhance`
+
+**Authentication**: Required (Session)
 
 **Content-Type**: `application/json`
 
 **Request**:
 
-```http
-POST /api/images/export HTTP/1.1
-Authorization: Bearer {session_token}
-Content-Type: application/json
-
-{
-  "jobId": "job_enhancement_abc123",
-  "format": "PNG"
-}
-```
-
-**Request Body**:
-
-| Field  | Type   | Required | Options         |
-| ------ | ------ | -------- | --------------- |
-| jobId  | string | Yes      | Valid job ID    |
-| format | string | Yes      | PNG, JPEG, WebP |
-
-**Response (Success - 200)**:
-
 ```json
 {
-  "success": true,
-  "downloadUrl": "https://r2-bucket.example.com/export/user123/image-id-2k.png",
-  "format": "PNG",
-  "size": 3456789
+  "imageIds": ["img_001", "img_002", "img_003"],
+  "tier": "TIER_2K"
 }
-```
-
-**Error Responses**:
-
-| Status | Error          | Description                     |
-| ------ | -------------- | ------------------------------- |
-| 400    | Invalid format | Format not in [PNG, JPEG, WebP] |
-| 401    | Unauthorized   | Not authenticated               |
-| 404    | Job not found  | Job ID doesn't exist            |
-
----
-
-### Get Image Version History
-
-Retrieve all enhancement versions for an image.
-
-**Endpoint**: `GET /api/images/{imageId}/versions`
-
-**Authentication**: Required
-
-**Request**:
-
-```http
-GET /api/images/clya1b2c3d4e5f6g7h8i9j0k1/versions HTTP/1.1
-Authorization: Bearer {session_token}
 ```
 
 **Response (Success - 200)**:
@@ -584,15 +609,14 @@ Authorization: Bearer {session_token}
 ```json
 {
   "success": true,
-  "imageId": "clya1b2c3d4e5f6g7h8i9j0k1",
-  "versions": [
+  "batchId": "batch_enhance_abc123",
+  "totalCost": 15,
+  "imageCount": 3,
+  "jobs": [
     {
+      "imageId": "img_001",
       "jobId": "job_001",
-      "tier": "TIER_2K",
-      "status": "COMPLETED",
-      "enhancedUrl": "https://r2-bucket.example.com/enhanced/user123/image-id-2k.jpg",
-      "createdAt": "2025-12-02T10:30:00Z",
-      "processingCompletedAt": "2025-12-02T10:35:00Z"
+      "status": "PROCESSING"
     }
   ]
 }
@@ -608,7 +632,7 @@ Create a new album for organizing images.
 
 **Endpoint**: `POST /api/albums`
 
-**Authentication**: Required
+**Authentication**: Required (Session)
 
 **Content-Type**: `application/json`
 
@@ -616,30 +640,83 @@ Create a new album for organizing images.
 
 ```http
 POST /api/albums HTTP/1.1
-Authorization: Bearer {session_token}
 Content-Type: application/json
 
 {
   "name": "Family Photos 2025",
   "description": "Summer vacation photos",
-  "isPublic": false
+  "privacy": "PRIVATE",
+  "defaultTier": "TIER_1K"
 }
 ```
+
+**Request Body**:
+
+| Field       | Type   | Required | Default | Description                                   |
+| ----------- | ------ | -------- | ------- | --------------------------------------------- |
+| name        | string | Yes      | -       | Album name (max 100 characters)               |
+| description | string | No       | null    | Album description                             |
+| privacy     | string | No       | PRIVATE | Privacy setting: PRIVATE, UNLISTED, or PUBLIC |
+| defaultTier | string | No       | TIER_1K | Default enhancement tier for uploaded images  |
 
 **Response (Success - 201)**:
 
 ```json
 {
-  "success": true,
   "album": {
     "id": "album_abc123",
     "name": "Family Photos 2025",
     "description": "Summer vacation photos",
-    "isPublic": false,
-    "imageCount": 0,
-    "shareLink": "https://spike.land/apps/pixel/albums/album_abc123/share/token_xyz",
+    "privacy": "PRIVATE",
+    "shareToken": null,
     "createdAt": "2025-12-02T10:00:00Z"
   }
+}
+```
+
+**Error Responses**:
+
+| Status | Error                   | Description                   |
+| ------ | ----------------------- | ----------------------------- |
+| 400    | Album name is required  | Missing name field            |
+| 400    | Album name too long     | Name exceeds 100 characters   |
+| 400    | Invalid privacy setting | Privacy not in allowed values |
+| 400    | Invalid default tier    | Tier not recognized           |
+| 401    | Unauthorized            | Not authenticated             |
+
+---
+
+### List Albums
+
+Get all albums for the authenticated user.
+
+**Endpoint**: `GET /api/albums`
+
+**Authentication**: Required (Session)
+
+**Response (Success - 200)**:
+
+```json
+{
+  "albums": [
+    {
+      "id": "album_abc123",
+      "name": "Family Photos 2025",
+      "description": "Summer vacation photos",
+      "privacy": "PRIVATE",
+      "coverImageId": null,
+      "imageCount": 5,
+      "previewImages": [
+        {
+          "id": "img_001",
+          "url": "https://...",
+          "name": "photo1.jpg"
+        }
+      ],
+      "createdAt": "2025-12-02T10:00:00Z",
+      "updatedAt": "2025-12-02T10:00:00Z"
+    }
+  ]
 }
 ```
 
@@ -651,70 +728,9 @@ Retrieve album information and images.
 
 **Endpoint**: `GET /api/albums/{albumId}`
 
-**Authentication**: Required
+**Authentication**: Required (Session)
 
-**Request**:
-
-```http
-GET /api/albums/album_abc123 HTTP/1.1
-Authorization: Bearer {session_token}
-```
-
-**Response (Success - 200)**:
-
-```json
-{
-  "success": true,
-  "album": {
-    "id": "album_abc123",
-    "name": "Family Photos 2025",
-    "imageCount": 5,
-    "createdAt": "2025-12-02T10:00:00Z",
-    "images": [
-      {
-        "id": "img_001",
-        "name": "photo1.jpg",
-        "originalUrl": "https://r2-bucket.example.com/originals/user123/img_001.jpg",
-        "enhancedVersions": 2
-      }
-    ]
-  }
-}
-```
-
----
-
-### Add Images to Album
-
-Add existing images to an album.
-
-**Endpoint**: `POST /api/albums/{albumId}/images`
-
-**Authentication**: Required
-
-**Content-Type**: `application/json`
-
-**Request**:
-
-```http
-POST /api/albums/album_abc123/images HTTP/1.1
-Authorization: Bearer {session_token}
-Content-Type: application/json
-
-{
-  "imageIds": ["img_001", "img_002"]
-}
-```
-
-**Response (Success - 200)**:
-
-```json
-{
-  "success": true,
-  "addedCount": 2,
-  "albumImageCount": 5
-}
-```
+**Response**: See Album structure above with full image list.
 
 ---
 
@@ -724,33 +740,16 @@ Update album name, description, or privacy settings.
 
 **Endpoint**: `PATCH /api/albums/{albumId}`
 
-**Authentication**: Required
+**Authentication**: Required (Session)
 
 **Content-Type**: `application/json`
 
 **Request**:
 
-```http
-PATCH /api/albums/album_abc123 HTTP/1.1
-Authorization: Bearer {session_token}
-Content-Type: application/json
-
-{
-  "name": "Updated Album Name",
-  "isPublic": true
-}
-```
-
-**Response (Success - 200)**:
-
 ```json
 {
-  "success": true,
-  "album": {
-    "id": "album_abc123",
-    "name": "Updated Album Name",
-    "isPublic": true
-  }
+  "name": "Updated Album Name",
+  "privacy": "PUBLIC"
 }
 ```
 
@@ -758,18 +757,11 @@ Content-Type: application/json
 
 ### Delete Album
 
-Permanently delete an album (images not deleted).
+Permanently delete an album (images are not deleted).
 
 **Endpoint**: `DELETE /api/albums/{albumId}`
 
-**Authentication**: Required
-
-**Request**:
-
-```http
-DELETE /api/albums/album_abc123 HTTP/1.1
-Authorization: Bearer {session_token}
-```
+**Authentication**: Required (Session)
 
 **Response (Success - 200)**:
 
@@ -777,6 +769,119 @@ Authorization: Bearer {session_token}
 {
   "success": true,
   "message": "Album deleted"
+}
+```
+
+---
+
+## Enhancement Jobs
+
+### Get Job Status
+
+Check the status of an enhancement job.
+
+**Endpoint**: `GET /api/jobs/{jobId}`
+
+**Authentication**: Required (Session) or None (for anonymous jobs, rate-limited by IP)
+
+**Path Parameters**:
+
+| Parameter | Type   | Description        |
+| --------- | ------ | ------------------ |
+| jobId     | string | Enhancement job ID |
+
+**Request**:
+
+```http
+GET /api/jobs/job_enhancement_abc123 HTTP/1.1
+```
+
+**Response (Success - 200)**:
+
+```json
+{
+  "id": "job_enhancement_abc123",
+  "status": "COMPLETED",
+  "tier": "TIER_2K",
+  "tokensCost": 5,
+  "enhancedUrl": "https://r2-bucket.example.com/enhanced/user123/image-id-2k.jpg",
+  "enhancedWidth": 2048,
+  "enhancedHeight": 1536,
+  "errorMessage": null,
+  "createdAt": "2025-12-02T10:30:00Z",
+  "processingStartedAt": "2025-12-02T10:30:05Z",
+  "processingCompletedAt": "2025-12-02T10:35:00Z",
+  "isAnonymous": false,
+  "image": {
+    "id": "clya1b2c3d4e5f6g7h8i9j0k1",
+    "name": "my-photo.jpg",
+    "originalUrl": "https://...",
+    "originalWidth": 1920,
+    "originalHeight": 1440
+  }
+}
+```
+
+**Job Status Values**:
+
+| Status     | Description             |
+| ---------- | ----------------------- |
+| PROCESSING | Enhancement in progress |
+| COMPLETED  | Successfully enhanced   |
+| FAILED     | Enhancement failed      |
+| CANCELLED  | Job cancelled by user   |
+| REFUNDED   | Tokens refunded         |
+
+---
+
+### Delete Job
+
+Delete a completed or failed job.
+
+**Endpoint**: `DELETE /api/jobs/{jobId}`
+
+**Authentication**: Required (Session)
+
+**Note**: Only jobs with status COMPLETED, FAILED, CANCELLED, or REFUNDED can be deleted.
+
+**Response (Success - 200)**:
+
+```json
+{
+  "success": true,
+  "message": "Job deleted successfully"
+}
+```
+
+---
+
+### Get Batch Job Status
+
+Check status of multiple jobs at once.
+
+**Endpoint**: `POST /api/jobs/batch-status`
+
+**Authentication**: Required (Session)
+
+**Request**:
+
+```json
+{
+  "jobIds": ["job_001", "job_002", "job_003"]
+}
+```
+
+**Response**:
+
+```json
+{
+  "jobs": [
+    {
+      "id": "job_001",
+      "status": "COMPLETED",
+      "enhancedUrl": "https://..."
+    }
+  ]
 }
 ```
 
@@ -790,13 +895,12 @@ Retrieve current token balance and statistics.
 
 **Endpoint**: `GET /api/tokens/balance`
 
-**Authentication**: Required
+**Authentication**: Required (Session)
 
 **Request**:
 
 ```http
 GET /api/tokens/balance HTTP/1.1
-Authorization: Bearer {session_token}
 ```
 
 **Response (Success - 200)**:
@@ -807,6 +911,8 @@ Authorization: Bearer {session_token}
   "lastRegeneration": "2025-12-02T10:30:00Z",
   "timeUntilNextRegenMs": 854000,
   "tokensAddedThisRequest": 1,
+  "tier": "FREE",
+  "maxBalance": 100,
   "stats": {
     "totalSpent": 50,
     "totalEarned": 145,
@@ -818,23 +924,21 @@ Authorization: Bearer {session_token}
 
 **Response Fields**:
 
-| Field                  | Type       | Description                                     |
-| ---------------------- | ---------- | ----------------------------------------------- |
-| balance                | number     | Current token balance                           |
-| lastRegeneration       | ISO string | Timestamp of last regeneration                  |
-| timeUntilNextRegenMs   | number     | Milliseconds until next +1 token                |
-| tokensAddedThisRequest | number     | Tokens added during this request (regeneration) |
-| stats                  | object     | Lifetime statistics                             |
-| stats.totalSpent       | number     | Tokens consumed (image enhancements)            |
-| stats.totalEarned      | number     | Tokens received (purchases, vouchers)           |
-| stats.totalRefunded    | number     | Tokens refunded (failed jobs)                   |
-| stats.transactionCount | number     | Total number of transactions                    |
+| Field                  | Type   | Description                                     |
+| ---------------------- | ------ | ----------------------------------------------- |
+| balance                | number | Current token balance                           |
+| lastRegeneration       | string | Timestamp of last regeneration (ISO 8601)       |
+| timeUntilNextRegenMs   | number | Milliseconds until next +1 token                |
+| tokensAddedThisRequest | number | Tokens added during this request (regeneration) |
+| tier                   | string | User's current tier                             |
+| maxBalance             | number | Maximum tokens for current tier                 |
+| stats                  | object | Lifetime statistics                             |
 
 **cURL Example**:
 
 ```bash
 curl http://localhost:3000/api/tokens/balance \
-  -H "Authorization: Bearer session_token"
+  -H "Cookie: next-auth.session-token=..."
 ```
 
 **JavaScript Example**:
@@ -844,17 +948,88 @@ const response = await fetch("/api/tokens/balance");
 const data = await response.json();
 
 console.log(`Balance: ${data.balance} tokens`);
-console.log(
-  `Next regeneration in: ${Math.ceil(data.timeUntilNextRegenMs / 1000)}s`,
-);
+console.log(`Next regeneration in: ${Math.ceil(data.timeUntilNextRegenMs / 1000)}s`);
 ```
 
-**Error Responses**:
+---
 
-| Status | Error           | Description       |
-| ------ | --------------- | ----------------- |
-| 401    | Unauthorized    | Not authenticated |
-| 500    | Failed to fetch | Database error    |
+## Tier Management
+
+### Get Tiers
+
+Retrieve all available tiers and user's current tier.
+
+**Endpoint**: `GET /api/tiers`
+
+**Authentication**: Required (Session)
+
+**Response (Success - 200)**:
+
+```json
+{
+  "tiers": [
+    {
+      "tier": "FREE",
+      "name": "Free",
+      "maxBalance": 100,
+      "regenRate": 3600000,
+      "regenAmount": 1,
+      "isCurrent": true
+    },
+    {
+      "tier": "STARTER",
+      "name": "Starter",
+      "maxBalance": 500,
+      "regenRate": 1800000,
+      "regenAmount": 2,
+      "isCurrent": false
+    }
+  ],
+  "currentTier": "FREE",
+  "canUpgrade": true,
+  "nextTier": {
+    "tier": "STARTER",
+    "name": "Starter",
+    "maxBalance": 500
+  }
+}
+```
+
+---
+
+### Upgrade Tier
+
+Upgrade to a higher tier (requires payment).
+
+**Endpoint**: `POST /api/tiers/upgrade`
+
+**Authentication**: Required (Session)
+
+**Request**:
+
+```json
+{
+  "targetTier": "STARTER"
+}
+```
+
+---
+
+### Downgrade Tier
+
+Downgrade to a lower tier.
+
+**Endpoint**: `POST /api/tiers/downgrade`
+
+**Authentication**: Required (Session)
+
+**Request**:
+
+```json
+{
+  "targetTier": "FREE"
+}
+```
 
 ---
 
@@ -908,14 +1083,6 @@ Content-Type: application/json
 }
 ```
 
-**cURL Example**:
-
-```bash
-curl -X POST http://localhost:3000/api/vouchers/validate \
-  -H "Content-Type: application/json" \
-  -d '{"code": "LAUNCH100"}'
-```
-
 **Error Responses**:
 
 | Status | Error                    | Description            |
@@ -925,7 +1092,6 @@ curl -X POST http://localhost:3000/api/vouchers/validate \
 | 400    | Voucher is inactive      | Status is INACTIVE     |
 | 400    | Voucher is expired       | Expiration date passed |
 | 400    | Voucher is depleted      | Max uses reached       |
-| 500    | Failed to validate       | Database error         |
 
 ---
 
@@ -935,15 +1101,16 @@ Redeem a voucher code to receive tokens.
 
 **Endpoint**: `POST /api/vouchers/redeem`
 
-**Authentication**: Required
+**Authentication**: Required (Session)
 
 **Content-Type**: `application/json`
+
+**Rate Limit**: 5 redemption attempts per hour per user
 
 **Request**:
 
 ```http
 POST /api/vouchers/redeem HTTP/1.1
-Authorization: Bearer {session_token}
 Content-Type: application/json
 
 {
@@ -974,20 +1141,18 @@ const result = await response.json();
 if (result.success) {
   console.log(`Redeemed! +${result.tokensGranted} tokens`);
   console.log(`New balance: ${result.newBalance}`);
-} else {
-  console.error(`Error: ${result.error}`);
 }
 ```
 
 **Error Responses**:
 
-| Status | Error                       | Description                       |
-| ------ | --------------------------- | --------------------------------- |
-| 400    | Voucher code is required    | Missing code field                |
-| 400    | You have already redeemed   | User already redeemed this code   |
-| 400    | (various validation errors) | See validate endpoint for details |
-| 401    | Authentication required     | Not logged in                     |
-| 500    | Failed to redeem            | Database error                    |
+| Status | Error                        | Description                           |
+| ------ | ---------------------------- | ------------------------------------- |
+| 400    | Voucher code is required     | Missing code field                    |
+| 400    | Invalid voucher code format  | Invalid format (must be alphanumeric) |
+| 400    | You have already redeemed    | User already redeemed this code       |
+| 401    | Authentication required      | Not logged in                         |
+| 429    | Too many redemption attempts | Rate limit exceeded                   |
 
 ---
 
@@ -999,14 +1164,7 @@ Generate a unique referral link for sharing.
 
 **Endpoint**: `GET /api/referral/link`
 
-**Authentication**: Required
-
-**Request**:
-
-```http
-GET /api/referral/link HTTP/1.1
-Authorization: Bearer {session_token}
-```
+**Authentication**: Required (Session)
 
 **Response (Success - 200)**:
 
@@ -1027,14 +1185,7 @@ View referral performance and earnings.
 
 **Endpoint**: `GET /api/referral/stats`
 
-**Authentication**: Required
-
-**Request**:
-
-```http
-GET /api/referral/stats HTTP/1.1
-Authorization: Bearer {session_token}
-```
+**Authentication**: Required (Session)
 
 **Response (Success - 200)**:
 
@@ -1059,230 +1210,282 @@ Authorization: Bearer {session_token}
 }
 ```
 
-**Error Responses**:
-
-| Status | Error        | Description       |
-| ------ | ------------ | ----------------- |
-| 401    | Unauthorized | Not authenticated |
-
 ---
 
-## Admin Dashboard
+## MCP API (Model Context Protocol)
 
-All admin endpoints require authentication with admin role.
+The MCP API provides programmatic access to image generation and modification via API keys.
 
-### Get User Analytics
+### Authentication
 
-Retrieve user growth and engagement metrics.
+All MCP endpoints require an API key in the Authorization header:
 
-**Endpoint**: `GET /api/admin/analytics/users`
+```http
+Authorization: Bearer sk_live_xxxxxxxxxxxxx
+```
 
-**Authentication**: Required (Admin role)
+### Generate Image
+
+Generate a new image from a text prompt.
+
+**Endpoint**: `POST /api/mcp/generate`
+
+**Authentication**: API Key (Bearer token)
+
+**Rate Limit**: 10 requests per minute
 
 **Request**:
 
-```http
-GET /api/admin/analytics/users?period=month HTTP/1.1
-Authorization: Bearer {admin_token}
+```json
+{
+  "prompt": "A serene mountain landscape at sunset",
+  "tier": "TIER_2K",
+  "negativePrompt": "blurry, low quality",
+  "aspectRatio": "16:9"
+}
 ```
+
+**Request Body**:
+
+| Field          | Type   | Required | Description                            |
+| -------------- | ------ | -------- | -------------------------------------- |
+| prompt         | string | Yes      | Text description (max 4000 characters) |
+| tier           | string | Yes      | Output tier: TIER_1K, TIER_2K, TIER_4K |
+| negativePrompt | string | No       | Things to avoid in the generation      |
+| aspectRatio    | string | No       | Aspect ratio (default: "1:1")          |
+
+**Supported Aspect Ratios**: 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
+
+**Token Costs**:
+
+| Tier    | Cost | Resolution |
+| ------- | ---- | ---------- |
+| TIER_1K | 2    | 1024px     |
+| TIER_2K | 5    | 2048px     |
+| TIER_4K | 10   | 4096px     |
+
+**Response (Success - 200)**:
+
+```json
+{
+  "success": true,
+  "jobId": "job_gen_abc123",
+  "tokensCost": 5,
+  "message": "Generation started. Poll /api/jobs/{jobId} for status."
+}
+```
+
+**cURL Example**:
+
+```bash
+curl -X POST https://spike.land/api/mcp/generate \
+  -H "Authorization: Bearer sk_live_xxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A serene mountain landscape at sunset",
+    "tier": "TIER_2K",
+    "aspectRatio": "16:9"
+  }'
+```
+
+---
+
+### Modify Image
+
+Modify an existing image with a text prompt.
+
+**Endpoint**: `POST /api/mcp/modify`
+
+**Authentication**: API Key (Bearer token)
+
+**Rate Limit**: 10 requests per minute
+
+**Request**:
+
+```json
+{
+  "prompt": "Make the sky more dramatic with storm clouds",
+  "tier": "TIER_2K",
+  "image": "base64_encoded_image_data",
+  "mimeType": "image/jpeg"
+}
+```
+
+**OR**
+
+```json
+{
+  "prompt": "Make the sky more dramatic with storm clouds",
+  "tier": "TIER_2K",
+  "imageUrl": "https://example.com/image.jpg"
+}
+```
+
+**Request Body**:
+
+| Field    | Type   | Required               | Description                                             |
+| -------- | ------ | ---------------------- | ------------------------------------------------------- |
+| prompt   | string | Yes                    | Modification instructions (max 4000 chars)              |
+| tier     | string | Yes                    | Output tier: TIER_1K, TIER_2K, TIER_4K                  |
+| image    | string | Conditional (or url)   | Base64 encoded image data                               |
+| imageUrl | string | Conditional (or image) | URL of image to fetch and modify                        |
+| mimeType | string | If using `image`       | MIME type: image/jpeg, image/png, image/webp, image/gif |
+
+**Image Size Limit**: 20 MB
+
+**Response (Success - 200)**:
+
+```json
+{
+  "success": true,
+  "jobId": "job_mod_abc123",
+  "tokensCost": 5,
+  "message": "Modification started. Poll /api/jobs/{jobId} for status."
+}
+```
+
+---
+
+### Get Balance
+
+Get the current token balance for the authenticated API key user.
+
+**Endpoint**: `GET /api/mcp/balance`
+
+**Authentication**: API Key (Bearer token)
+
+**Rate Limit**: 60 requests per minute
+
+**Response (Success - 200)**:
+
+```json
+{
+  "balance": 485,
+  "lastRegeneration": "2025-12-02T10:30:00Z"
+}
+```
+
+---
+
+### Get Job History
+
+Get recent jobs for the authenticated user.
+
+**Endpoint**: `GET /api/mcp/history`
+
+**Authentication**: API Key (Bearer token)
 
 **Query Parameters**:
 
-| Parameter | Type   | Required | Options                |
-| --------- | ------ | -------- | ---------------------- |
-| period    | string | No       | day, week, month, year |
+| Parameter | Type   | Required | Default | Description              |
+| --------- | ------ | -------- | ------- | ------------------------ |
+| limit     | number | No       | 20      | Number of jobs to return |
+| offset    | number | No       | 0       | Pagination offset        |
 
-**Response (Success - 200)**:
-
-```json
-{
-  "success": true,
-  "analytics": {
-    "totalUsers": 1250,
-    "newUsersThisPeriod": 145,
-    "activeUsers": 892,
-    "churnRate": 0.08,
-    "registrationTrend": [
-      {
-        "date": "2025-12-01",
-        "count": 25
-      }
-    ]
-  }
-}
-```
-
----
-
-### Get Token Analytics
-
-Retrieve token economy metrics.
-
-**Endpoint**: `GET /api/admin/analytics/tokens`
-
-**Authentication**: Required (Admin role)
-
-**Request**:
-
-```http
-GET /api/admin/analytics/tokens?period=month HTTP/1.1
-Authorization: Bearer {admin_token}
-```
-
-**Response (Success - 200)**:
+**Response**:
 
 ```json
 {
-  "success": true,
-  "analytics": {
-    "tokensGenerated": 15000,
-    "tokensPurchased": 8500,
-    "tokensConsumed": 12000,
-    "averageTokensPerUser": 42,
-    "revenue": 2847.50,
-    "topPackage": "professional_500"
-  }
-}
-```
-
----
-
-### Get System Health
-
-Check job queue and system status.
-
-**Endpoint**: `GET /api/admin/system/health`
-
-**Authentication**: Required (Admin role)
-
-**Request**:
-
-```http
-GET /api/admin/system/health HTTP/1.1
-Authorization: Bearer {admin_token}
-```
-
-**Response (Success - 200)**:
-
-```json
-{
-  "success": true,
-  "health": {
-    "status": "healthy",
-    "jobs": {
-      "pending": 12,
-      "processing": 8,
-      "completed": 1540,
-      "failed": 3
-    },
-    "failureRate": 0.19,
-    "averageProcessingTime": 15.3
-  }
-}
-```
-
----
-
-### Get Users (Search & Manage)
-
-Search and manage user accounts.
-
-**Endpoint**: `GET /api/admin/users`
-
-**Authentication**: Required (Admin role)
-
-**Query Parameters**:
-
-| Parameter | Type   | Required | Description                    |
-| --------- | ------ | -------- | ------------------------------ |
-| search    | string | No       | Search by email or name        |
-| role      | string | No       | Filter by user role            |
-| limit     | number | No       | Results per page (default: 20) |
-| offset    | number | No       | Pagination offset (default: 0) |
-
-**Request**:
-
-```http
-GET /api/admin/users?search=test@example.com&limit=10 HTTP/1.1
-Authorization: Bearer {admin_token}
-```
-
-**Response (Success - 200)**:
-
-```json
-{
-  "success": true,
-  "users": [
+  "jobs": [
     {
-      "id": "user_123",
-      "email": "test@example.com",
-      "name": "Test User",
-      "role": "USER",
-      "tokenBalance": 95,
-      "createdAt": "2025-12-01T10:00:00Z",
-      "lastActive": "2025-12-02T15:30:00Z"
+      "id": "job_123",
+      "type": "generation",
+      "status": "COMPLETED",
+      "tier": "TIER_2K",
+      "tokensCost": 5,
+      "prompt": "A serene mountain landscape",
+      "enhancedUrl": "https://...",
+      "createdAt": "2025-12-02T10:00:00Z"
     }
   ],
-  "pagination": {
-    "total": 1250,
-    "limit": 10,
-    "offset": 0
-  }
+  "total": 150,
+  "limit": 20,
+  "offset": 0
 }
 ```
 
 ---
 
-### Create Voucher
+## API Key Management
 
-Create a new promotional voucher.
+### List API Keys
 
-**Endpoint**: `POST /api/admin/vouchers`
+Get all API keys for the authenticated user.
 
-**Authentication**: Required (Admin role)
+**Endpoint**: `GET /api/settings/api-keys`
 
-**Content-Type**: `application/json`
+**Authentication**: Required (Session)
 
-**Request**:
+**Response (Success - 200)**:
 
-```http
-POST /api/admin/vouchers HTTP/1.1
-Authorization: Bearer {admin_token}
-Content-Type: application/json
-
+```json
 {
-  "code": "HOLIDAY50",
-  "type": "FIXED_TOKENS",
-  "value": 50,
-  "maxUses": 1000,
-  "expiresAt": "2025-12-31T23:59:59Z"
+  "apiKeys": [
+    {
+      "id": "key_abc123",
+      "name": "Production API Key",
+      "keyPrefix": "sk_live_abcd",
+      "lastUsedAt": "2025-12-02T10:30:00Z",
+      "isActive": true,
+      "createdAt": "2025-12-01T10:00:00Z"
+    }
+  ]
 }
 ```
 
-**Response (Success - 201)**:
+---
+
+### Create API Key
+
+Create a new API key.
+
+**Endpoint**: `POST /api/settings/api-keys`
+
+**Authentication**: Required (Session)
+
+**Request**:
+
+```json
+{
+  "name": "Production API Key"
+}
+```
+
+**Response (Success - 200)**:
+
+```json
+{
+  "apiKey": {
+    "id": "key_abc123",
+    "name": "Production API Key",
+    "key": "sk_live_xxxxxxxxxxxxxxxxxxxxxx",
+    "keyPrefix": "sk_live_abcd",
+    "createdAt": "2025-12-02T10:00:00Z"
+  },
+  "message": "API key created successfully. Make sure to copy the key now - it will not be shown again."
+}
+```
+
+**Limits**: Maximum 10 active API keys per user
+
+---
+
+### Revoke API Key
+
+Revoke an API key.
+
+**Endpoint**: `DELETE /api/settings/api-keys/{keyId}`
+
+**Authentication**: Required (Session)
+
+**Response (Success - 200)**:
 
 ```json
 {
   "success": true,
-  "voucher": {
-    "id": "voucher_abc123",
-    "code": "HOLIDAY50",
-    "type": "FIXED_TOKENS",
-    "value": 50,
-    "maxUses": 1000,
-    "currentUses": 0,
-    "status": "ACTIVE",
-    "expiresAt": "2025-12-31T23:59:59Z"
-  }
+  "message": "API key revoked successfully"
 }
 ```
-
-**Error Responses**:
-
-| Status | Error               | Description             |
-| ------ | ------------------- | ----------------------- |
-| 400    | Code already exists | Voucher code not unique |
-| 401    | Unauthorized        | Not admin               |
 
 ---
 
@@ -1294,17 +1497,13 @@ Create a Stripe checkout session to purchase tokens.
 
 **Endpoint**: `POST /api/stripe/checkout`
 
-**Authentication**: Required
+**Authentication**: Required (Session)
 
 **Content-Type**: `application/json`
 
 **Request**:
 
-```http
-POST /api/stripe/checkout HTTP/1.1
-Authorization: Bearer {session_token}
-Content-Type: application/json
-
+```json
 {
   "packageId": "professional_500",
   "mode": "payment"
@@ -1313,18 +1512,12 @@ Content-Type: application/json
 
 **Valid Package IDs**:
 
-- `starter_50` - 50 tokens for £2.99
-- `essential_150` - 150 tokens for £7.99
-- `professional_500` - 500 tokens for £19.99
-- `enterprise_2000` - 2000 tokens for £59.99
-
-**Request Body**:
-
-| Field     | Type   | Required    | Description                   |
-| --------- | ------ | ----------- | ----------------------------- |
-| packageId | string | Conditional | Required if mode=payment      |
-| mode      | string | Yes         | "payment" or "subscription"   |
-| planId    | string | Conditional | Required if mode=subscription |
+| Package ID       | Tokens | Price  |
+| ---------------- | ------ | ------ |
+| starter_50       | 50     | £2.99  |
+| essential_150    | 150    | £7.99  |
+| professional_500 | 500    | £19.99 |
+| enterprise_2000  | 2000   | £59.99 |
 
 **Response (Success - 200)**:
 
@@ -1352,34 +1545,19 @@ const data = await response.json();
 window.location.href = data.url; // Redirect to Stripe checkout
 ```
 
-**Error Responses**:
-
-| Status | Error               | Description                       |
-| ------ | ------------------- | --------------------------------- |
-| 400    | Package ID required | Missing packageId in payment mode |
-| 400    | Invalid package ID  | packageId not recognized          |
-| 401    | Unauthorized        | Not authenticated                 |
-| 500    | Failed to create    | Stripe API error                  |
-
 ---
 
 ### Create Checkout Session (Subscription)
 
-Create a Stripe checkout session to subscribe to token plan.
+Create a Stripe checkout session to subscribe to a token plan.
 
 **Endpoint**: `POST /api/stripe/checkout`
 
-**Authentication**: Required
-
-**Content-Type**: `application/json`
+**Authentication**: Required (Session)
 
 **Request**:
 
-```http
-POST /api/stripe/checkout HTTP/1.1
-Authorization: Bearer {session_token}
-Content-Type: application/json
-
+```json
 {
   "planId": "professional_100",
   "mode": "subscription"
@@ -1388,9 +1566,11 @@ Content-Type: application/json
 
 **Valid Plan IDs**:
 
-- `starter_20` - 20 tokens/month for £2.99
-- `professional_100` - 100 tokens/month for £9.99
-- `enterprise_500` - 500 tokens/month for £29.99
+| Plan ID          | Tokens/Month | Price/Month |
+| ---------------- | ------------ | ----------- |
+| starter_20       | 20           | £2.99       |
+| professional_100 | 100          | £9.99       |
+| enterprise_500   | 500          | £29.99      |
 
 **Response (Success - 200)**:
 
@@ -1402,15 +1582,357 @@ Content-Type: application/json
 }
 ```
 
-**Error Responses**:
+---
 
-| Status | Error                      | Description                          |
-| ------ | -------------------------- | ------------------------------------ |
-| 400    | Plan ID required           | Missing planId in subscription mode  |
-| 400    | Invalid plan ID            | planId not recognized                |
-| 400    | Active subscription exists | User already has active subscription |
-| 401    | Unauthorized               | Not authenticated                    |
-| 500    | Failed to create           | Stripe API error                     |
+## Admin Dashboard
+
+All admin endpoints require authentication with admin role.
+
+### Get Admin Dashboard
+
+Retrieve comprehensive admin dashboard metrics.
+
+**Endpoint**: `GET /api/admin/dashboard`
+
+**Authentication**: Required (Admin role)
+
+**Response (Success - 200)**:
+
+```json
+{
+  "users": {
+    "total": 1250,
+    "newToday": 15,
+    "activeToday": 342
+  },
+  "jobs": {
+    "total": 5000,
+    "pending": 10,
+    "processing": 5,
+    "completedToday": 245
+  },
+  "tokens": {
+    "inCirculation": 50000,
+    "spentToday": 1250,
+    "purchasedToday": 500
+  },
+  "revenue": {
+    "today": 125.50,
+    "month": 3847.25
+  }
+}
+```
+
+---
+
+### Get User List
+
+Search and manage user accounts.
+
+**Endpoint**: `GET /api/admin/users`
+
+**Authentication**: Required (Admin role)
+
+**Query Parameters**:
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| search    | string | No       | Search by email or name        |
+| role      | string | No       | Filter by user role            |
+| limit     | number | No       | Results per page (default: 20) |
+| offset    | number | No       | Pagination offset (default: 0) |
+
+**Response (Success - 200)**:
+
+```json
+{
+  "users": [
+    {
+      "id": "user_123",
+      "email": "test@example.com",
+      "name": "Test User",
+      "role": "USER",
+      "tokenBalance": 95,
+      "createdAt": "2025-12-01T10:00:00Z",
+      "lastActive": "2025-12-02T15:30:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 1250,
+    "limit": 20,
+    "offset": 0
+  }
+}
+```
+
+---
+
+### Create Voucher
+
+Create a new promotional voucher.
+
+**Endpoint**: `POST /api/admin/vouchers`
+
+**Authentication**: Required (Admin role)
+
+**Request**:
+
+```json
+{
+  "code": "HOLIDAY50",
+  "type": "FIXED_TOKENS",
+  "value": 50,
+  "maxUses": 1000,
+  "expiresAt": "2025-12-31T23:59:59Z"
+}
+```
+
+**Response (Success - 201)**:
+
+```json
+{
+  "success": true,
+  "voucher": {
+    "id": "voucher_abc123",
+    "code": "HOLIDAY50",
+    "type": "FIXED_TOKENS",
+    "value": 50,
+    "maxUses": 1000,
+    "currentUses": 0,
+    "status": "ACTIVE",
+    "expiresAt": "2025-12-31T23:59:59Z"
+  }
+}
+```
+
+---
+
+### Get Error Logs
+
+Retrieve error logs for debugging.
+
+**Endpoint**: `GET /api/admin/errors`
+
+**Authentication**: Required (Admin role)
+
+**Query Parameters**:
+
+| Parameter | Type   | Default | Description                |
+| --------- | ------ | ------- | -------------------------- |
+| limit     | number | 50      | Number of errors to return |
+| offset    | number | 0       | Pagination offset          |
+
+**Response**:
+
+```json
+{
+  "errors": [
+    {
+      "id": "error_123",
+      "type": "TypeError",
+      "message": "Cannot read property 'x' of undefined",
+      "file": "api/enhance.ts",
+      "line": 42,
+      "count": 15,
+      "lastOccurrence": "2025-12-02T10:30:00Z"
+    }
+  ],
+  "total": 250
+}
+```
+
+---
+
+## Marketing Dashboard
+
+The Marketing Dashboard allows administrators to connect and manage Facebook Ads and Google Ads accounts.
+
+### List Connected Accounts
+
+Retrieve all connected marketing accounts.
+
+**Endpoint**: `GET /api/admin/marketing/accounts`
+
+**Authentication**: Required (Admin role)
+
+**Response (Success - 200)**:
+
+```json
+{
+  "accounts": [
+    {
+      "id": "clm123abc",
+      "platform": "FACEBOOK",
+      "accountId": "act_123456789",
+      "accountName": "My Business Ad Account",
+      "isActive": true,
+      "tokenStatus": "valid",
+      "createdAt": "2025-12-01T10:00:00Z",
+      "updatedAt": "2025-12-02T15:30:00Z",
+      "expiresAt": "2026-02-01T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### Disconnect Account
+
+Remove a connected marketing account.
+
+**Endpoint**: `DELETE /api/admin/marketing/accounts`
+
+**Authentication**: Required (Admin role)
+
+**Request**:
+
+```json
+{
+  "accountId": "clm123abc"
+}
+```
+
+**Response (Success - 200)**:
+
+```json
+{
+  "success": true
+}
+```
+
+---
+
+### Get Marketing Campaigns
+
+Retrieve campaigns from all connected accounts.
+
+**Endpoint**: `GET /api/admin/marketing/campaigns`
+
+**Authentication**: Required (Admin role)
+
+**Query Parameters**:
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| platform  | string | No       | Filter: FACEBOOK or GOOGLE_ADS |
+| accountId | string | No       | Filter by specific account ID  |
+
+**Response (Success - 200)**:
+
+```json
+{
+  "campaigns": [
+    {
+      "id": "campaign_123",
+      "name": "Pixel Launch Campaign",
+      "status": "ACTIVE",
+      "platform": "FACEBOOK",
+      "accountId": "act_123456789",
+      "budget": 1000,
+      "spent": 450.50,
+      "impressions": 125000,
+      "clicks": 3200,
+      "conversions": 85
+    }
+  ],
+  "errors": []
+}
+```
+
+---
+
+## System Reports
+
+### Get System Report
+
+Generate a comprehensive system report with analytics from all sources.
+
+**Endpoint**: `GET /api/reports/system`
+
+**Authentication**: Required (Admin role, via session or API key)
+
+**Query Parameters**:
+
+| Parameter | Type   | Required | Default | Options                                                                    |
+| --------- | ------ | -------- | ------- | -------------------------------------------------------------------------- |
+| period    | string | No       | 30d     | 7d, 30d, 90d                                                               |
+| include   | string | No       | all     | Comma-separated: platform,users,tokens,health,marketing,errors,vercel,meta |
+| format    | string | No       | json    | json, summary                                                              |
+
+**Request**:
+
+```http
+GET /api/reports/system?period=7d&include=platform,users,errors HTTP/1.1
+Authorization: Bearer sk_live_xxxxx
+```
+
+**Response (Success - 200)**:
+
+```json
+{
+  "generatedAt": "2025-12-21T10:30:00.000Z",
+  "period": {
+    "start": "2025-12-14T10:30:00.000Z",
+    "end": "2025-12-21T10:30:00.000Z"
+  },
+  "platform": {
+    "totalUsers": 1000,
+    "adminCount": 5,
+    "totalEnhancements": 5000,
+    "jobStatus": {
+      "pending": 10,
+      "processing": 5,
+      "completed": 4900,
+      "failed": 85,
+      "active": 15
+    },
+    "tokensInCirculation": 50000,
+    "tokensSpent": 25000,
+    "activeVouchers": 3
+  },
+  "users": {
+    "totalUsers": 1000,
+    "newUsersLast7Days": 50,
+    "newUsersLast30Days": 200,
+    "activeUsersLast7Days": 300,
+    "activeUsersLast30Days": 600,
+    "authProviderBreakdown": [
+      { "provider": "google", "count": 600 },
+      { "provider": "github", "count": 300 }
+    ]
+  },
+  "errors": {
+    "last24Hours": 25,
+    "topErrorTypes": { "TypeError": 10, "NetworkError": 8 },
+    "topErrorFiles": { "api/enhance.ts": 15 }
+  },
+  "external": {
+    "vercelAnalytics": {
+      "pageViews": 10000,
+      "uniqueVisitors": 5000,
+      "topPages": [
+        { "path": "/", "views": 5000 }
+      ],
+      "countries": [
+        { "country": "US", "visitors": 2000 }
+      ],
+      "devices": { "desktop": 3000, "mobile": 1800, "tablet": 200 }
+    },
+    "metaAds": {
+      "campaigns": [],
+      "totalSpend": 1000,
+      "totalImpressions": 50000,
+      "totalClicks": 1000,
+      "totalConversions": 50,
+      "ctr": 2.0,
+      "cpc": 1.0
+    }
+  }
+}
+```
+
+**Cache**: Reports are cached for 5 minutes (Cache-Control: private, max-age=300)
 
 ---
 
@@ -1423,8 +1945,8 @@ All error responses follow this format:
 ```json
 {
   "error": "Human-readable error message",
-  "status": 400,
-  "timestamp": "2025-12-02T10:30:00Z"
+  "title": "Error Title",
+  "suggestion": "How to fix the error"
 }
 ```
 
@@ -1433,6 +1955,7 @@ All error responses follow this format:
 | Code | Meaning                | Common Cause                           |
 | ---- | ---------------------- | -------------------------------------- |
 | 200  | Success                | Request completed successfully         |
+| 201  | Created                | Resource created successfully          |
 | 400  | Bad Request            | Invalid parameters or validation error |
 | 401  | Unauthorized           | Missing or invalid authentication      |
 | 402  | Payment Required       | Insufficient tokens                    |
@@ -1442,6 +1965,14 @@ All error responses follow this format:
 | 415  | Unsupported Media Type | Invalid content type                   |
 | 429  | Too Many Requests      | Rate limit exceeded                    |
 | 500  | Server Error           | Internal server error                  |
+
+### Request ID Tracking
+
+All responses include a unique request ID in the `X-Request-ID` header for debugging:
+
+```http
+X-Request-ID: req_abc123xyz
+```
 
 ### Retry Strategy
 
@@ -1481,10 +2012,16 @@ async function retryWithBackoff(fn, maxRetries = 3) {
 | Resource            | Limit        | Window   |
 | ------------------- | ------------ | -------- |
 | Image Upload        | 20 files     | 1 hour   |
+| Anonymous Upload    | 5 files      | 1 hour   |
+| Anonymous Enhance   | 3 requests   | 1 hour   |
 | Image Enhancement   | 10 requests  | 1 minute |
 | Token Balance Check | 100 requests | 1 hour   |
 | Voucher Validation  | 50 requests  | 1 hour   |
 | Voucher Redemption  | 5 attempts   | 1 hour   |
+| MCP Generate        | 10 requests  | 1 minute |
+| MCP Modify          | 10 requests  | 1 minute |
+| MCP Balance Check   | 60 requests  | 1 minute |
+| General API         | 100 requests | 1 minute |
 
 ### Rate Limit Headers
 
@@ -1537,523 +2074,6 @@ async function fetchWithRateLimit(url, options = {}) {
 
 ---
 
-## Marketing Dashboard
-
-The Marketing Dashboard allows administrators to connect and manage Facebook Ads
-and Google Ads accounts for campaign tracking and analytics.
-
-### Facebook OAuth Flow
-
-#### Initiate Facebook Connection
-
-Starts the OAuth flow to connect Facebook Ad accounts.
-
-**Endpoint**: `GET /api/marketing/facebook/connect`
-
-**Authentication**: Required
-
-**Request**:
-
-```http
-GET /api/marketing/facebook/connect HTTP/1.1
-Authorization: Bearer {session_token}
-```
-
-**Response**: Redirects to Facebook OAuth consent page
-
-**Flow**:
-
-1. User is redirected to Facebook
-2. User grants permissions for Ad account access
-3. Facebook redirects back to callback URL
-4. Tokens are exchanged and accounts are saved
-
-**Error Responses**:
-
-| Status | Error        | Description       |
-| ------ | ------------ | ----------------- |
-| 401    | Unauthorized | Not authenticated |
-| 500    | Failed       | OAuth init failed |
-
----
-
-#### Facebook OAuth Callback
-
-Handles the OAuth callback from Facebook after user authorization.
-
-**Endpoint**: `GET /api/marketing/facebook/callback`
-
-**Authentication**: Required (via session)
-
-**Query Parameters**:
-
-| Parameter | Type   | Description                 |
-| --------- | ------ | --------------------------- |
-| code      | string | Authorization code from FB  |
-| state     | string | CSRF protection state token |
-| error     | string | Error code (if auth failed) |
-
-**Response**: Redirects to `/admin/marketing` with success or error message
-
-**Success Redirect**:
-
-```
-/admin/marketing?success=Connected 2 Facebook ad account(s)
-```
-
-**Error Redirect**:
-
-```
-/admin/marketing?error=No ad accounts found
-```
-
----
-
-### Google Ads OAuth Flow
-
-#### Initiate Google Ads Connection
-
-Starts the OAuth flow to connect Google Ads accounts.
-
-**Endpoint**: `GET /api/marketing/google/connect`
-
-**Authentication**: Required
-
-**Request**:
-
-```http
-GET /api/marketing/google/connect HTTP/1.1
-Authorization: Bearer {session_token}
-```
-
-**Response**: Redirects to Google OAuth consent page
-
-**Flow**:
-
-1. User is redirected to Google
-2. User grants permissions for Ads account access
-3. Google redirects back to callback URL
-4. Tokens are exchanged and accounts are saved
-
-**Error Responses**:
-
-| Status | Error        | Description       |
-| ------ | ------------ | ----------------- |
-| 401    | Unauthorized | Not authenticated |
-| 500    | Failed       | OAuth init failed |
-
----
-
-#### Google Ads OAuth Callback
-
-Handles the OAuth callback from Google after user authorization.
-
-**Endpoint**: `GET /api/marketing/google/callback`
-
-**Authentication**: Required (via session)
-
-**Query Parameters**:
-
-| Parameter | Type   | Description                    |
-| --------- | ------ | ------------------------------ |
-| code      | string | Authorization code from Google |
-| state     | string | CSRF protection state token    |
-| error     | string | Error code (if auth failed)    |
-
-**Response**: Redirects to `/admin/marketing` with success or error message
-
----
-
-### Marketing Accounts Management
-
-#### List Connected Accounts
-
-Retrieve all connected marketing accounts for the current admin user.
-
-**Endpoint**: `GET /api/admin/marketing/accounts`
-
-**Authentication**: Required (Admin role)
-
-**Request**:
-
-```http
-GET /api/admin/marketing/accounts HTTP/1.1
-Authorization: Bearer {admin_token}
-```
-
-**Response (Success - 200)**:
-
-```json
-{
-  "accounts": [
-    {
-      "id": "clm123abc",
-      "platform": "FACEBOOK",
-      "accountId": "act_123456789",
-      "accountName": "My Business Ad Account",
-      "isActive": true,
-      "tokenStatus": "valid",
-      "createdAt": "2025-12-01T10:00:00Z",
-      "updatedAt": "2025-12-02T15:30:00Z",
-      "expiresAt": "2026-02-01T10:00:00Z"
-    },
-    {
-      "id": "clm456def",
-      "platform": "GOOGLE_ADS",
-      "accountId": "123-456-7890",
-      "accountName": "My Google Ads Account",
-      "isActive": true,
-      "tokenStatus": "valid",
-      "createdAt": "2025-12-01T11:00:00Z",
-      "updatedAt": "2025-12-02T16:00:00Z",
-      "expiresAt": null
-    }
-  ]
-}
-```
-
-**Response Fields**:
-
-| Field       | Type   | Description                              |
-| ----------- | ------ | ---------------------------------------- |
-| id          | string | Internal account record ID               |
-| platform    | string | FACEBOOK or GOOGLE_ADS                   |
-| accountId   | string | Platform-specific account identifier     |
-| accountName | string | Human-readable account name              |
-| isActive    | bool   | Whether account is currently connected   |
-| tokenStatus | string | "valid" or "expired"                     |
-| createdAt   | string | When account was first connected         |
-| updatedAt   | string | Last token refresh or update             |
-| expiresAt   | string | When access token expires (null if none) |
-
-**Error Responses**:
-
-| Status | Error        | Description          |
-| ------ | ------------ | -------------------- |
-| 401    | Unauthorized | Not authenticated    |
-| 403    | Forbidden    | User is not an admin |
-| 500    | Failed       | Database error       |
-
----
-
-#### Disconnect Account
-
-Remove a connected marketing account (soft delete).
-
-**Endpoint**: `DELETE /api/admin/marketing/accounts`
-
-**Authentication**: Required (Admin role)
-
-**Content-Type**: `application/json`
-
-**Request**:
-
-```http
-DELETE /api/admin/marketing/accounts HTTP/1.1
-Authorization: Bearer {admin_token}
-Content-Type: application/json
-
-{
-  "accountId": "clm123abc"
-}
-```
-
-**Response (Success - 200)**:
-
-```json
-{
-  "success": true
-}
-```
-
-**Error Responses**:
-
-| Status | Error                  | Description              |
-| ------ | ---------------------- | ------------------------ |
-| 400    | Account ID is required | Missing accountId field  |
-| 401    | Unauthorized           | Not authenticated        |
-| 403    | Forbidden              | User is not an admin     |
-| 404    | Account not found      | Invalid or wrong account |
-| 500    | Failed to disconnect   | Database error           |
-
----
-
-### Marketing Campaigns
-
-#### List Campaigns
-
-Retrieve campaigns from all connected marketing accounts.
-
-**Endpoint**: `GET /api/admin/marketing/campaigns`
-
-**Authentication**: Required (Admin role)
-
-**Query Parameters**:
-
-| Parameter | Type   | Required | Description                    |
-| --------- | ------ | -------- | ------------------------------ |
-| platform  | string | No       | Filter: FACEBOOK or GOOGLE_ADS |
-| accountId | string | No       | Filter by specific account ID  |
-
-**Request**:
-
-```http
-GET /api/admin/marketing/campaigns?platform=FACEBOOK HTTP/1.1
-Authorization: Bearer {admin_token}
-```
-
-**Response (Success - 200)**:
-
-```json
-{
-  "campaigns": [
-    {
-      "id": "campaign_123",
-      "name": "Pixel Launch Campaign",
-      "status": "ACTIVE",
-      "platform": "FACEBOOK",
-      "accountId": "act_123456789",
-      "budget": 1000,
-      "spent": 450.50,
-      "impressions": 125000,
-      "clicks": 3200,
-      "conversions": 85
-    }
-  ],
-  "errors": [
-    {
-      "platform": "GOOGLE_ADS",
-      "accountId": "123-456-7890",
-      "error": "Failed to fetch campaigns for this account"
-    }
-  ]
-}
-```
-
-**Campaign Fields**:
-
-| Field       | Type   | Description                     |
-| ----------- | ------ | ------------------------------- |
-| id          | string | Platform campaign ID            |
-| name        | string | Campaign name                   |
-| status      | string | ACTIVE, PAUSED, COMPLETED, etc. |
-| platform    | string | FACEBOOK or GOOGLE_ADS          |
-| accountId   | string | Parent account ID               |
-| budget      | number | Total budget (currency units)   |
-| spent       | number | Amount spent so far             |
-| impressions | number | Total impressions               |
-| clicks      | number | Total clicks                    |
-| conversions | number | Total conversions               |
-
-**Error Responses**:
-
-| Status | Error        | Description          |
-| ------ | ------------ | -------------------- |
-| 401    | Unauthorized | Not authenticated    |
-| 403    | Forbidden    | User is not an admin |
-| 500    | Failed       | Internal error       |
-
----
-
-### Environment Variables
-
-Required environment variables for marketing integrations:
-
-#### Facebook Ads
-
-| Variable              | Description                   |
-| --------------------- | ----------------------------- |
-| FACEBOOK_APP_ID       | Facebook App ID               |
-| FACEBOOK_APP_SECRET   | Facebook App Secret           |
-| FACEBOOK_CALLBACK_URL | OAuth callback URL (optional) |
-
-#### Google Ads
-
-| Variable                   | Description                    |
-| -------------------------- | ------------------------------ |
-| GOOGLE_ADS_CLIENT_ID       | Google OAuth Client ID         |
-| GOOGLE_ADS_CLIENT_SECRET   | Google OAuth Client Secret     |
-| GOOGLE_ADS_DEVELOPER_TOKEN | Google Ads API Developer Token |
-| GOOGLE_ADS_CUSTOMER_ID     | Default Manager Account ID     |
-| GOOGLE_ADS_CALLBACK_URL    | OAuth callback URL (optional)  |
-
----
-
-## System Reports
-
-The System Reports API provides a unified endpoint for fetching analytics and
-metrics from multiple sources including internal database, Vercel Analytics, and
-Meta Marketing API.
-
-### Get System Report
-
-Generate a comprehensive system report with data from all configured sources.
-
-**Endpoint**: `GET /api/reports/system`
-
-**Authentication**: Required (Admin role, via session or API key)
-
-**Query Parameters**:
-
-| Parameter | Type   | Required | Options                                                                    |
-| --------- | ------ | -------- | -------------------------------------------------------------------------- |
-| period    | string | No       | 7d, 30d, 90d (default: 30d)                                                |
-| include   | string | No       | Comma-separated: platform,users,tokens,health,marketing,errors,vercel,meta |
-| format    | string | No       | json, summary (default: json)                                              |
-
-**Request**:
-
-```http
-GET /api/reports/system?period=7d&include=platform,users,errors HTTP/1.1
-Authorization: Bearer {admin_api_key}
-```
-
-**cURL Example**:
-
-```bash
-curl "https://spike.land/api/reports/system?period=30d" \
-  -H "Authorization: Bearer sk_live_xxxxx"
-```
-
-**Response (Success - 200)**:
-
-```json
-{
-  "generatedAt": "2025-12-21T10:30:00.000Z",
-  "period": {
-    "start": "2025-11-21T10:30:00.000Z",
-    "end": "2025-12-21T10:30:00.000Z"
-  },
-  "platform": {
-    "totalUsers": 1000,
-    "adminCount": 5,
-    "totalEnhancements": 5000,
-    "jobStatus": {
-      "pending": 10,
-      "processing": 5,
-      "completed": 4900,
-      "failed": 85,
-      "active": 15
-    },
-    "tokensInCirculation": 50000,
-    "tokensSpent": 25000,
-    "activeVouchers": 3
-  },
-  "users": {
-    "totalUsers": 1000,
-    "newUsersLast7Days": 50,
-    "newUsersLast30Days": 200,
-    "activeUsersLast7Days": 300,
-    "activeUsersLast30Days": 600,
-    "authProviderBreakdown": [
-      { "provider": "google", "count": 600 },
-      { "provider": "github", "count": 300 }
-    ]
-  },
-  "errors": {
-    "last24Hours": 25,
-    "topErrorTypes": { "TypeError": 10, "NetworkError": 8 },
-    "topErrorFiles": { "api/enhance.ts": 15 }
-  },
-  "external": {
-    "vercelAnalytics": {
-      "pageViews": 10000,
-      "uniqueVisitors": 5000,
-      "topPages": [
-        { "path": "/", "views": 5000 },
-        { "path": "/enhance", "views": 3000 }
-      ],
-      "countries": [
-        { "country": "US", "visitors": 2000 }
-      ],
-      "devices": { "desktop": 3000, "mobile": 1800, "tablet": 200 }
-    },
-    "metaAds": {
-      "campaigns": [
-        {
-          "id": "camp_123",
-          "name": "Launch Campaign",
-          "status": "ACTIVE",
-          "spend": 1000,
-          "impressions": 50000,
-          "clicks": 1000,
-          "conversions": 50
-        }
-      ],
-      "totalSpend": 1000,
-      "totalImpressions": 50000,
-      "totalClicks": 1000,
-      "totalConversions": 50,
-      "ctr": 2.0,
-      "cpc": 1.0
-    }
-  }
-}
-```
-
-**Summary Format Response**:
-
-```json
-{
-  "generatedAt": "2025-12-21T10:30:00.000Z",
-  "period": { "start": "2025-11-21", "end": "2025-12-21" },
-  "highlights": {
-    "totalUsers": 1000,
-    "activeUsersLast7Days": 300,
-    "totalEnhancements": 5000,
-    "pendingJobs": 10,
-    "failedJobs": 5,
-    "tokensInCirculation": 50000,
-    "errorsLast24Hours": 25,
-    "conversionRate": 2.0
-  },
-  "external": {
-    "vercelPageViews": 10000,
-    "metaTotalSpend": 1000
-  }
-}
-```
-
-**Report Sections**:
-
-| Section   | Description                                       |
-| --------- | ------------------------------------------------- |
-| platform  | Core metrics: users, jobs, tokens, vouchers       |
-| users     | User analytics: registrations, active users       |
-| tokens    | Token economics: revenue, circulation, sales      |
-| health    | System health: queue, failures, processing times  |
-| marketing | Marketing funnel: visitors, signups, conversions  |
-| errors    | Error summary: counts, top types, top files       |
-| vercel    | Vercel Analytics: page views, visitors, countries |
-| meta      | Meta/Facebook Ads: campaigns, spend, CTR          |
-
-**Environment Variables**:
-
-| Variable             | Required | Description                          |
-| -------------------- | -------- | ------------------------------------ |
-| VERCEL_ACCESS_TOKEN  | Optional | For Vercel Analytics data            |
-| VERCEL_TEAM_ID       | Optional | Team ID for team projects            |
-| FACEBOOK_MARKETING_* | Optional | For Meta Ads data (already existing) |
-
-**Error Responses**:
-
-| Status | Error                   | Description             |
-| ------ | ----------------------- | ----------------------- |
-| 401    | Authentication required | Missing or invalid auth |
-| 403    | Admin access required   | User is not an admin    |
-| 400    | Invalid query params    | Bad period/format value |
-| 500    | Failed to generate      | Internal server error   |
-
-**Cache Headers**:
-
-Reports are cached for 5 minutes:
-
-```http
-Cache-Control: private, max-age=300
-```
-
----
-
 ## Implementation Examples
 
 ### Complete Enhancement Workflow
@@ -2065,7 +2085,7 @@ async function enhanceImage(imageId, tier = "TIER_2K") {
     const balanceRes = await fetch("/api/tokens/balance");
     const balance = await balanceRes.json();
 
-    const tierCosts = { TIER_1K: 2, TIER_2K: 5, TIER_4K: 10 };
+    const tierCosts = { FREE: 0, TIER_1K: 2, TIER_2K: 5, TIER_4K: 10 };
     const cost = tierCosts[tier];
 
     if (balance.balance < cost) {
@@ -2100,13 +2120,13 @@ async function enhanceImage(imageId, tier = "TIER_2K") {
       const statusRes = await fetch(`/api/jobs/${job.jobId}`);
       const status = await statusRes.json();
 
-      if (status.job.status === "COMPLETED") {
-        console.log(`Enhancement complete: ${status.job.enhancedUrl}`);
+      if (status.status === "COMPLETED") {
+        console.log(`Enhancement complete: ${status.enhancedUrl}`);
         completed = true;
-        return status.job;
+        return status;
       }
 
-      if (status.job.status === "FAILED") {
+      if (status.status === "FAILED") {
         throw new Error("Enhancement failed");
       }
 
@@ -2121,4 +2141,101 @@ async function enhanceImage(imageId, tier = "TIER_2K") {
 }
 ```
 
+### MCP API Example
+
+```javascript
+const apiKey = "sk_live_xxxxxxxxxxxxx";
+
+async function generateImage(prompt) {
+  const response = await fetch("https://spike.land/api/mcp/generate", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      prompt,
+      tier: "TIER_2K",
+      aspectRatio: "16:9",
+    }),
+  });
+
+  const result = await response.json();
+  console.log(`Job ID: ${result.jobId}`);
+
+  // Poll for completion
+  while (true) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const statusRes = await fetch(`https://spike.land/api/jobs/${result.jobId}`, {
+      headers: { "Authorization": `Bearer ${apiKey}` },
+    });
+
+    const job = await statusRes.json();
+
+    if (job.status === "COMPLETED") {
+      console.log(`Image URL: ${job.enhancedUrl}`);
+      return job.enhancedUrl;
+    }
+
+    if (job.status === "FAILED") {
+      throw new Error("Generation failed");
+    }
+  }
+}
+```
+
 ---
+
+## Additional Notes
+
+### Security Features
+
+- **CSRF Protection**: All state-changing operations require valid session
+- **Rate Limiting**: IP-based for anonymous, user-based for authenticated
+- **Filename Validation**: Path traversal and hidden file protection
+- **Input Sanitization**: All user inputs are validated and sanitized
+- **API Key Encryption**: API keys are hashed before storage
+
+### Performance Characteristics
+
+- **Image Processing**: 15-60 seconds depending on tier
+- **Token Regeneration**: Every 15-60 minutes depending on tier
+- **Job Retention**: 30 days for completed jobs
+- **R2 Storage**: Multi-region replication for reliability
+
+### Environment Variables
+
+Required environment variables for full functionality:
+
+```bash
+# Database
+DATABASE_URL=postgresql://...
+
+# NextAuth
+NEXTAUTH_URL=https://spike.land
+NEXTAUTH_SECRET=...
+
+# Stripe
+STRIPE_SECRET_KEY=sk_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# R2 Storage
+R2_ACCOUNT_ID=...
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_BUCKET_NAME=...
+
+# Facebook Ads (optional)
+FACEBOOK_APP_ID=...
+FACEBOOK_APP_SECRET=...
+
+# Google Ads (optional)
+GOOGLE_ADS_CLIENT_ID=...
+GOOGLE_ADS_CLIENT_SECRET=...
+GOOGLE_ADS_DEVELOPER_TOKEN=...
+
+# Vercel Analytics (optional)
+VERCEL_ACCESS_TOKEN=...
+VERCEL_TEAM_ID=...
+```

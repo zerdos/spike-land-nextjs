@@ -1,7 +1,8 @@
 # API Changelog
 
-> **Last Updated**: December 2025 **Current API Version**: Unversioned (v1
-> implicit) **Status**: MVP Release
+> **Last Updated**: 2025-12-30
+> **Current API Version**: Unversioned (v1 implicit)
+> **Status**: Active Development
 
 All notable changes to the Spike Land API are documented in this file.
 
@@ -9,8 +10,7 @@ All notable changes to the Spike Land API are documented in this file.
 
 ## Format
 
-This changelog follows [Keep a Changelog](https://keepachangelog.com/) format
-with sections:
+This changelog follows [Keep a Changelog](https://keepachangelog.com/) format with sections:
 
 - **Breaking** - Changes requiring code updates
 - **Added** - New functionality
@@ -22,57 +22,207 @@ with sections:
 
 ---
 
-## [Unreleased]
+## [Unreleased] - 2025-12-30
 
 ### Added
 
-- **Batch Enhancement** - POST `/api/albums/{id}/enhance` for processing
-  multiple images
-  - Processes up to 50 images per request
-  - Returns job ID for async tracking
-  - Supports progress notifications via webhook
+- **AI Image Generation (MCP)** - POST `/api/mcp/generate`
+  - Generate images from text prompts using Google Gemini
+  - Support for three quality tiers (TIER_1K, TIER_2K, TIER_4K)
+  - Configurable aspect ratios: 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
+  - Negative prompt support for better control
+  - Token-based pricing (2, 5, 10 tokens respectively)
+  - Rate limiting: dedicated limits for generation endpoints
+  - Returns job ID for async status tracking
 
-- **Image Versions API** - GET `/api/images/{id}/versions`
-  - Retrieve enhancement history for single image
-  - Download previous versions
-  - Compare before/after metadata
+- **AI Image Modification (MCP)** - POST `/api/mcp/modify`
+  - Modify existing images with text prompts
+  - Accepts base64 image data or image URLs
+  - Supports JPEG, PNG, WebP, GIF formats
+  - Maximum image size: 20MB
+  - Same tier pricing as generation
+  - Automatic MIME type detection from URLs
 
-- **Album Export** - POST `/api/albums/{id}/export`
-  - Export images as ZIP file
-  - Supports multiple formats (JPEG, PNG, WebP)
-  - Includes metadata in export
+- **MCP Token Balance** - GET `/api/mcp/balance`
+  - Check current token balance for API key or session
+  - Returns available tokens and usage statistics
 
-- **Webhook Support** - POST `/api/webhooks`
-  - Register webhooks for batch operation events
-  - Supported events: `batch.completed`, `batch.failed`
-  - Manual retry capability
+- **MCP Transaction History** - GET `/api/mcp/history`
+  - View token consumption history
+  - Filter by date range and operation type
+
+- **Enhancement Pipelines** - `/api/pipelines`
+  - GET - List user's pipelines and public pipelines
+  - POST - Create custom enhancement pipelines
+  - Configurable analysis, cropping, prompting, and generation stages
+  - Support for PRIVATE, PUBLIC, and LINK (shareable) visibility
+  - Maximum 50 pipelines per user
+  - Pagination support (up to 100 items per page)
+
+- **Pipeline Detail Management** - `/api/pipelines/{id}`
+  - GET - Retrieve pipeline configuration
+  - PATCH - Update pipeline settings
+  - DELETE - Remove pipeline
+
+- **Reference Images for Pipelines** - POST `/api/pipelines/reference-images`
+  - Upload reference images for pipeline guidance
+  - Store in R2 storage with metadata
+
+- **Photo-to-Merch Platform**
+  - POST `/api/merch/checkout` - Create merch orders with Stripe
+  - GET/POST `/api/merch/cart` - Manage shopping cart
+  - GET/POST `/api/merch/orders` - Order management
+  - GET/POST `/api/merch/products` - Product catalog
+  - POST `/api/merch/webhooks/prodigi` - Prodigi fulfillment webhooks
+  - Delayed capture payment flow for print-on-demand
+  - UK and EU shipping support with free shipping thresholds
+  - Stripe Tax integration for automatic tax calculation
+
+- **Audio Mixer Platform** - POST `/api/audio/upload`
+  - Upload audio tracks (up to 500MB)
+  - Support for WAV, MP3, WebM, OGG, FLAC, AAC, M4A formats
+  - R2 storage integration for audio files
+  - Project-based organization
+
+- **Blog API (Mobile)**
+  - GET `/api/blog/posts` - List blog posts with filtering
+  - GET `/api/blog/posts/{slug}` - Get post by slug
+  - Support for category, tag, and featured filtering
+  - Pagination support
+  - Reading time estimation
+  - Designed for mobile app consumption
+
+- **Token Well Tier System** - GET `/api/tiers`
+  - Retrieve all available subscription tiers
+  - User's current tier information
+  - Upgrade/downgrade eligibility
+  - POST `/api/tiers/upgrade` - Upgrade to higher tier
+  - POST `/api/tiers/downgrade` - Downgrade tier
+  - GET `/api/tiers/check-upgrade-prompt` - Check if upgrade prompt should show
+
+- **Batch Enhancement** - POST `/api/images/batch-enhance`
+  - Process up to 20 images simultaneously
+  - Upfront token consumption for entire batch
+  - Vercel workflow integration for production
+  - Direct execution fallback for development
+  - Returns batch ID for tracking
+
+- **Parallel Enhancement** - POST `/api/images/parallel-enhance`
+  - Concurrent processing of multiple images
+  - Optimized for speed over batch operations
+
+- **Anonymous Operations**
+  - POST `/api/images/anonymous-upload` - Upload without authentication
+  - POST `/api/images/anonymous-enhance` - Enhance without account
+
+- **Admin Dashboard Enhancements**
+  - GET `/api/admin/jobs` - Unified jobs API (enhancement + MCP)
+  - Supports filtering by status, type, user
+  - Search by job ID or user email
+  - Job statistics and status counts
+  - POST `/api/admin/jobs/cleanup` - Clean up old jobs
+  - GET `/api/admin/errors` - Error tracking system
+  - GET `/api/admin/errors/stats` - Error analytics
+  - GET `/api/admin/agents` - Jules AI agent session management
+  - GET `/api/admin/agents/{sessionId}` - Agent session details
+  - GET `/api/admin/storage` - R2 storage analytics
+
+- **Marketing Integrations**
+  - POST `/api/marketing/facebook/connect` - Connect Facebook Ads account
+  - POST `/api/marketing/google/connect` - Connect Google Ads account
+  - GET `/api/admin/marketing/accounts` - List connected accounts
+  - GET `/api/admin/marketing/campaigns` - Campaign analytics
+  - POST `/api/admin/marketing/analytics/export` - Export analytics data
+  - GET `/api/cron/marketing-sync` - Scheduled campaign sync
+
+- **API Key Management**
+  - GET/POST `/api/settings/api-keys` - Manage user API keys
+  - DELETE `/api/settings/api-keys/{id}` - Revoke API key
+  - Support for API key authentication on MCP endpoints
+
+- **PhotoMix AI** - POST `/api/images/blend`
+  - Blend two images together
+  - GET `/api/jobs/mix-history` - View blend history
+
+- **Box Management** - `/api/boxes`
+  - GET - List user's boxes
+  - POST - Create new box
+  - GET/PATCH/DELETE `/api/boxes/{id}` - Box operations
+
+- **Mobile Authentication** - POST `/api/auth/mobile/signin`
+  - Dedicated sign-in endpoint for mobile apps
+  - Email-based authentication
+
+- **Email Validation** - POST `/api/auth/check-email`
+  - Check if email exists before signup
+
+- **Error Reporting** - POST `/api/errors/report`
+  - Client-side error reporting
+  - Structured error tracking
+
+- **Analytics & Tracking**
+  - POST `/api/tracking/pageview` - Track page views
+  - POST `/api/tracking/event` - Track custom events
+  - POST `/api/tracking/session` - Track user sessions
 
 ### Changed
 
-- **Token Consumption Tracking** - Token transactions now include `context`
-  field
-  - Allows tracking which operation consumed tokens
-  - Example: `context: "pixel_image_enhancement"`
-  - Non-breaking: field is optional in v1, required in v2
+- **Batch Enhancement Limit** - Reduced from 50 to 20 images per request
+  - Optimized for reliability and resource management
+  - Better error handling for smaller batches
 
-- **Rate Limiting Headers** - Enhanced response headers
-  - Added `X-RateLimit-Remaining` header
-  - Added `X-RateLimit-Reset` header
-  - Added `X-RateLimit-Limit` header
+- **Enhancement Job Queue** - Enhanced job management
+  - Added kill and rerun functionality for stuck jobs
+  - Improved retry logic with configurable max retries
+  - Better workflow run tracking
+
+- **Admin Dashboard** - Unified job listing
+  - Combined EnhancementJob and McpGenerationJob into single view
+  - Consistent response format across job types
+  - Enhanced filtering and pagination
+
+- **Image Upload** - Album-first workflow
+  - Images can now be uploaded without album (optional)
+  - Improved masonry layout for galleries
+  - Better view controls and sorting
+
+- **Rate Limiting** - Specialized configs per endpoint
+  - Dedicated rate limits for MCP generation vs modification
+  - More granular control over API usage
 
 ### Fixed
 
-- **Album Deletion** - Fixed issue where albums with 100+ images failed to
-  delete
-- **Token Balance Race Condition** - Concurrent enhancement requests no longer
-  cause balance inconsistency
-- **Image Upload** - EXIF orientation now correctly applied during upload
+- **Checkout Flow** - E2E test expectations
+  - Updated protected route redirect logic
+  - Fixed mock data for Stripe integration
+
+- **Database Queries** - Analytics column names
+  - Corrected SQL queries for user registration metrics
+  - Fixed overview API response format
+
+- **Image Error Logging** - POST `/api/logs/image-error`
+  - Better structured error capture
+  - Improved debugging capabilities
+
+- **Drag & Drop** - Auto-enhance on upload
+  - Fixed drag-drop file upload triggers
+  - Improved user experience
 
 ### Security
 
-- **API Key Rotation** - Implemented automatic API key rotation (30-day cycle)
-- **Rate Limiting** - Enhanced bot protection on public endpoints
-- **CORS** - Restricted to registered domains only
+- **API Key Authentication** - MCP endpoints support
+  - Bearer token authentication for headless clients
+  - Proper API key scope validation
+  - Usage tracking per API key
+
+- **R2 Storage** - Secure audio file uploads
+  - Validated file size limits (500MB max)
+  - Format validation for security
+  - Project ownership verification
+
+- **Admin Endpoints** - Enhanced authorization
+  - Consistent admin middleware usage
+  - Better error handling for unauthorized access
 
 ---
 
@@ -165,10 +315,10 @@ Initial public release of Spike Land API for Pixel image enhancement app.
 
 ### NextAuth.js Email Provider
 
-> **Deprecated**: December 2025 **Removed**: Expected June 2026
+> **Deprecated**: December 2025
+> **Removed**: Expected June 2026
 
-The email-based authentication provider will be removed in favor of passwordless
-authentication via magic links.
+The email-based authentication provider will be removed in favor of passwordless authentication via magic links.
 
 **Timeline**:
 
@@ -190,18 +340,27 @@ import MagicLink from "next-auth/providers/magic-link";
 
 ## Version Comparison Table
 
-| Feature                  | v1.0.0 | Unreleased | Notes        |
-| ------------------------ | ------ | ---------- | ------------ |
-| Single Image Enhancement | Yes    | Yes        | Core feature |
-| Batch Enhancement        | No     | Yes        | New          |
-| Album Support            | Yes    | Yes        | Stable       |
-| Token Auto-Regeneration  | Yes    | Yes        | Stable       |
-| Stripe Integration       | Yes    | Yes        | Stable       |
-| Referral Program         | Yes    | Yes        | Stable       |
-| Webhooks                 | No     | Yes        | New          |
-| Image Versions           | No     | Yes        | New          |
-| Album Export             | No     | Yes        | New          |
-| Admin Dashboard          | Yes    | Yes        | Stable       |
+| Feature                     | v1.0.0 | Unreleased | Notes                           |
+| --------------------------- | ------ | ---------- | ------------------------------- |
+| Single Image Enhancement    | Yes    | Yes        | Core feature                    |
+| Batch Enhancement           | No     | Yes        | New - up to 20 images           |
+| Parallel Enhancement        | No     | Yes        | New - concurrent processing     |
+| AI Image Generation (MCP)   | No     | Yes        | New - text-to-image             |
+| AI Image Modification (MCP) | No     | Yes        | New - prompt-based edits        |
+| Enhancement Pipelines       | No     | Yes        | New - customizable workflows    |
+| Album Support               | Yes    | Yes        | Stable                          |
+| Token Auto-Regeneration     | Yes    | Yes        | Stable                          |
+| Token Well Tiers            | No     | Yes        | New - subscription tiers        |
+| Stripe Integration          | Yes    | Yes        | Enhanced - merch support        |
+| Referral Program            | Yes    | Yes        | Stable                          |
+| Admin Dashboard             | Yes    | Yes        | Enhanced - unified jobs, errors |
+| API Key Authentication      | No     | Yes        | New - programmatic access       |
+| Photo-to-Merch Platform     | No     | Yes        | New - print-on-demand           |
+| Audio Mixer                 | No     | Yes        | New - audio file management     |
+| Blog API (Mobile)           | No     | Yes        | New - mobile app content        |
+| Anonymous Operations        | No     | Yes        | New - no-auth upload/enhance    |
+| Marketing Integrations      | No     | Yes        | New - Facebook/Google Ads       |
+| Analytics & Tracking        | No     | Yes        | New - pageview/event tracking   |
 
 ---
 
@@ -255,17 +414,23 @@ v2 Response (hypothetical flattening):
 
 ### Q1 2026 Roadmap
 
-- [ ] v1.1.0 - Webhook support and image versioning
-- [ ] v1.2.0 - Album export and batch operations
-- [ ] API key authentication (alternative to OAuth)
+- [x] API key authentication (alternative to OAuth) - **Completed Dec 2025**
+- [x] Batch operations - **Completed Dec 2025**
+- [x] MCP image generation/modification - **Completed Dec 2025**
+- [x] Enhancement pipelines - **Completed Dec 2025**
+- [ ] Image versioning system
+- [ ] Webhook support for async operations
+- [ ] Album export as ZIP
 - [ ] GraphQL API (alongside REST)
 
 ### Q2 2026 Roadmap
 
 - [ ] v2.0.0 - API redesign (if breaking changes needed)
-- [ ] SDK releases (Python, Go, Ruby)
+- [ ] SDK releases (Python, JavaScript/TypeScript, Go)
 - [ ] OpenAPI 3.1 specification
 - [ ] Sandbox environment with test data
+- [ ] WebSocket support for real-time updates
+- [ ] Enhanced rate limiting with quota management
 
 ---
 
@@ -295,6 +460,7 @@ Found a bug or inconsistency in the API?
 
 ## Document History
 
-| Version | Date     | Changes                      |
-| ------- | -------- | ---------------------------- |
-| 1.0     | Dec 2025 | Initial changelog for v1.0.0 |
+| Version | Date       | Changes                                                               |
+| ------- | ---------- | --------------------------------------------------------------------- |
+| 1.1     | 2025-12-30 | Comprehensive update with MCP APIs, pipelines, merch, audio, and more |
+| 1.0     | 2025-12-10 | Initial changelog for v1.0.0 release                                  |

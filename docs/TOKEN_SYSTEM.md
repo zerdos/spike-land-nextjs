@@ -1,271 +1,236 @@
 # Token System Documentation
 
-> **Last Updated**: December 2025 **Status**: MVP Release
+> **Last Updated**: December 2025 **Status**: Production
 
 ---
 
 ## Table of Contents
 
 1. [Token Overview](#token-overview)
-2. [Token Acquisition](#token-acquisition)
-3. [Token Packages](#token-packages)
-4. [Subscription Plans](#subscription-plans)
+2. [Token Tiers](#token-tiers)
+3. [Token Acquisition](#token-acquisition)
+4. [Token Consumption](#token-consumption)
 5. [Automatic Regeneration](#automatic-regeneration)
-6. [Token Balance & Consumption](#token-balance--consumption)
-7. [API Reference](#api-reference)
-8. [Transaction History](#transaction-history)
-9. [Token Pricing](#token-pricing)
+6. [Token Packages](#token-packages)
+7. [Tier Subscriptions](#tier-subscriptions)
+8. [Token Balance & Tracking](#token-balance--tracking)
+9. [API Reference](#api-reference)
+10. [Transaction Types](#transaction-types)
+11. [Implementation Architecture](#implementation-architecture)
 
 ---
 
 ## Token Overview
 
-**Tokens** are the primary currency on the Spike Land platform. Every Spike Land
-user has a single token balance that can be spent across any app on the
-platform. Apps built on Spike Land consume these platform tokens to provide
-premium features.
-
-Currently, the **Pixel** image enhancement app uses tokens to pay for AI-powered
-image enhancements. As more apps are added to the platform, they will all share
-this same token economy.
+**Tokens** are the primary currency on the Spike Land platform. Every Spike Land user has a single token balance that can be spent across any app on the platform.
 
 ### Key Characteristics
 
-- **Platform Currency**: Tokens belong to your Spike Land account, not to
-  individual apps
+- **Platform Currency**: Tokens belong to your Spike Land account, not to individual apps
 - **Cross-App Usage**: One token balance works across all apps on the platform
 - **Non-transferable**: Cannot be gifted between users
-- **Non-refundable**: Consumed tokens cannot be recovered (except on service
-  failure)
-- **Expiration**: Free regenerated tokens expire after 30 days if unused
+- **Tiered System**: Token well capacity and regeneration rates vary by subscription tier
+- **Automatic Regeneration**: Free tokens regenerate over time (1 token per 15 minutes)
 - **Account-Specific**: Each user maintains a single platform-wide token balance
 
-### Token Balance Limits
+### Token Use Cases
 
-- **Maximum Balance**: 100 tokens (applies to regenerated tokens only)
-- **Storage Duration**: Purchased tokens never expire; regenerated tokens expire
-  after 30 days
-- **Subscription Tokens**: Reset monthly, with optional rollover (up to max)
+Currently supported applications:
+
+- **Image Enhancement** (Pixel app): AI-powered image upscaling and enhancement
+- **MCP Image Generation**: Text-to-image generation via MCP API
+- **MCP Image Modification**: Image-to-image transformations via MCP API
+
+---
+
+## Token Tiers
+
+The platform uses a **Token Well** tier system where your subscription tier determines both your token regeneration capacity and the tokens granted on upgrade.
+
+### Tier Configuration
+
+| Tier     | Well Capacity | Monthly Price (GBP) | Regeneration Cap |
+| -------- | ------------- | ------------------- | ---------------- |
+| FREE     | 10 tokens     | £0.00               | 10               |
+| BASIC    | 20 tokens     | £5.00               | 20               |
+| STANDARD | 50 tokens     | £10.00              | 50               |
+| PREMIUM  | 100 tokens    | £20.00              | 100              |
+
+### How Tiers Work
+
+1. **Well Capacity**: Maximum tokens your account can hold through regeneration
+2. **Tier Upgrade**: When you upgrade, you receive tokens equal to your new tier's capacity
+3. **Monthly Billing**: Maintains your tier status but does NOT auto-refill tokens
+4. **Regeneration**: Tokens regenerate automatically up to your tier's capacity
+5. **Purchased Tokens**: Have no cap and accumulate on top of your tier capacity
+
+### Tier Upgrade Example
+
+- User on FREE tier (10 capacity) upgrades to STANDARD
+- Immediately receives 50 tokens (STANDARD capacity)
+- Can now regenerate up to 50 tokens automatically
+- Continues to pay £10/month to maintain STANDARD tier
+- Tokens earned through regeneration are capped at 50
+- Purchased tokens are unlimited and added on top
+
+### Tier Downgrade
+
+- User can schedule a downgrade to a lower tier
+- Downgrade takes effect at the end of current billing cycle
+- Existing token balance is preserved (not reduced)
+- New regeneration cap applies after downgrade
 
 ---
 
 ## Token Acquisition
 
-Users can acquire tokens through four primary mechanisms:
+Users can acquire tokens through five primary mechanisms:
 
 ### 1. Automatic Regeneration
 
-**Free tokens generated automatically**
+**Free tokens generated automatically based on your tier**
 
 - **Rate**: 1 token per 15 minutes
-- **Maximum**: 100 tokens max
-- **Expiration**: 30 days of inactivity
-- **Cost**: Free
+- **Maximum**: Varies by tier (10 for FREE, 20 for BASIC, 50 for STANDARD, 100 for PREMIUM)
+- **Cost**: Free (included with tier subscription)
 - **Automatic**: No user action required
 
-**Example Timeline**:
+**Example Timeline (FREE Tier)**:
 
-- Hour 0: Balance = 0
+- Hour 0:00: Balance = 0
 - Hour 0:15: Balance = 1
 - Hour 0:30: Balance = 2
-- ...
-- Hour 25:00: Balance = 100 (capped)
+- Hour 2:30: Balance = 10 (capped at FREE tier limit)
 
-**Use Case**: Casual users who want to try features without spending
+**Example Timeline (PREMIUM Tier)**:
 
-### 2. Voucher Redemption
+- Hour 0:00: Balance = 0
+- Hour 25:00: Balance = 100 (capped at PREMIUM tier limit)
 
-**Promotional codes providing bonus tokens**
+**Use Case**: Casual users who want to use features without purchasing
 
-Available Vouchers:
+### 2. Tier Subscriptions
 
-- **LAUNCH100**: 100 tokens (limited to 1000 uses)
-- **WELCOME50**: 50 tokens (unlimited)
-- **BETA25**: 25 tokens (limited to 500 uses)
+**Monthly recurring subscriptions that upgrade your token well capacity**
 
-**Redemption Rules**:
+**Available Tiers**:
 
-- One voucher per user (cannot redeem same code twice)
-- Vouchers can be combined (user can redeem LAUNCH100 and WELCOME50)
-- No expiration on active vouchers
-- Tokens added immediately upon redemption
+| Tier     | Capacity | Price/Month (GBP) | Upgrade Grant | Features                        |
+| -------- | -------- | ----------------- | ------------- | ------------------------------- |
+| BASIC    | 20       | £5.00             | 20 tokens     | 2x capacity vs FREE             |
+| STANDARD | 50       | £10.00            | 50 tokens     | 5x capacity vs FREE             |
+| PREMIUM  | 100      | £20.00            | 100 tokens    | 10x capacity vs FREE, Max regen |
 
-**Use Case**: New users, promotional campaigns, beta testing
+**Tier Features**:
 
-### 3. Stripe Purchases (One-Time)
+- **Instant Grant**: Receive full tier capacity immediately on upgrade
+- **Auto-Renewal**: Monthly billing until cancelled
+- **Regeneration Cap**: Your regeneration maximum equals tier capacity
+- **Upgrade Anytime**: Immediate tier upgrade with token grant
+- **Schedule Downgrade**: Downgrade takes effect next billing cycle
+- **Cancel Anytime**: Cancel subscription without penalty
 
-**Direct token purchases with credit/debit card**
+**Tier Lifecycle**:
+
+1. **Subscribe**: Choose tier on pricing page
+2. **Payment**: Stripe checkout processes payment
+3. **Tier Activated**: UserTokenBalance.tier updated
+4. **Tokens Granted**: Receive full tier capacity immediately
+5. **Monthly Billing**: Continues to maintain tier status
+6. **Regeneration**: Tokens auto-regenerate up to tier capacity
+
+### 3. One-Time Token Purchases
+
+**Direct token purchases with credit/debit card (unlimited balance)**
 
 **Available Packages**:
 
-| Package      | Tokens | Price (GBP) | Price/Token | Best For          |
-| ------------ | ------ | ----------- | ----------- | ----------------- |
-| Starter      | 50     | 2.99        | 0.06        | Single use        |
-| Essential    | 150    | 7.99        | 0.05        | Monthly usage     |
-| Professional | 500    | 19.99       | 0.04        | Heavy usage       |
-| Enterprise   | 2000   | 59.99       | 0.03        | Team/organization |
+| Package | Tokens | Price (GBP) | Price/Token | Best For       |
+| ------- | ------ | ----------- | ----------- | -------------- |
+| Starter | 10     | £2.99       | £0.30       | Quick top-up   |
+| Basic   | 50     | £9.99       | £0.20       | Occasional use |
+| Pro     | 150    | £24.99      | £0.17       | Regular use    |
+| Power   | 500    | £69.99      | £0.14       | Heavy use      |
 
 **Payment Details**:
 
-- Currency: British Pounds (GBP)
-- Payment Method: Credit/Debit card via Stripe
-- Processing: Instant (tokens credited immediately)
-- Refund: 30-day refund window via Stripe
-- Tokens purchased never expire
+- **Currency**: British Pounds (GBP)
+- **Payment Method**: Credit/Debit card via Stripe
+- **Processing**: Instant (tokens credited immediately)
+- **Balance Cap**: No cap on purchased tokens (accumulate unlimited)
+- **Expiration**: Purchased tokens never expire
+- **Refund**: 30-day refund window via Stripe
 
-**Use Case**: Users who want more tokens immediately
+**Use Case**: Users who need tokens immediately or want to stockpile
 
-### 4. Subscription Plans
+### 4. Voucher Redemption
 
-**Monthly recurring subscriptions with automatic token allocation**
+**Promotional codes providing bonus tokens**
 
-**Available Plans**:
+**Voucher Types**:
 
-| Plan         | Tokens/Month | Price/Month (GBP) | Rollover | Best For      |
-| ------------ | ------------ | ----------------- | -------- | ------------- |
-| Starter      | 20           | 2.99              | 20       | Casual users  |
-| Professional | 100          | 9.99              | 100      | Regular users |
-| Enterprise   | 500          | 29.99             | 250      | Power users   |
+- **FIXED_TOKENS**: Grant specific number of tokens (e.g., "WELCOME50")
+- **PERCENTAGE_BONUS**: Add percentage bonus to purchase
+- **SUBSCRIPTION_TRIAL**: Free trial of tier subscription
 
-**Subscription Features**:
+**Redemption Rules**:
 
-- **Auto-Renewal**: Monthly billing until cancelled
-- **Rollover**: Unused tokens carry over to next month (up to max)
-- **Pause**: Can pause subscription for up to 3 months
-- **Cancel**: Cancel anytime with access until billing period ends
-- **Upgrade**: Change plans mid-month (prorated)
-- **Downgrade**: Effective next billing cycle
+- One voucher per user per code (cannot redeem same code twice)
+- Multiple different vouchers can be combined
+- Tokens added immediately upon redemption
+- Rate limited to 5 attempts per hour
+- Voucher codes are case-insensitive alphanumeric
 
-**Rollover Example** (Professional Plan):
+**Use Case**: New users, promotional campaigns, partnerships
 
-- Month 1: Allocated 100, Used 30, Rollover = 70
-- Month 2: Allocated 100 + Rollover 70 = 170 (capped at 100)
-- Month 3: Allocated 100, Current = 170 total possible
+### 5. Admin Adjustments
 
----
+**Manual token grants by platform administrators**
 
-## Token Packages
-
-### One-Time Purchase Packages
-
-Tokens purchased through Stripe do not expire and accumulate in the user's
-balance.
-
-**Package Details**:
-
-```json
-{
-  "packages": [
-    {
-      "id": "starter_50",
-      "name": "Starter Pack",
-      "tokens": 50,
-      "priceGBP": 2.99,
-      "pricePerToken": 0.06,
-      "description": "Perfect for trying out features"
-    },
-    {
-      "id": "essential_150",
-      "name": "Essential Pack",
-      "tokens": 150,
-      "priceGBP": 7.99,
-      "pricePerToken": 0.05,
-      "description": "Great for regular usage"
-    },
-    {
-      "id": "professional_500",
-      "name": "Professional Pack",
-      "tokens": 500,
-      "priceGBP": 19.99,
-      "pricePerToken": 0.04,
-      "description": "Excellent value for heavy usage"
-    },
-    {
-      "id": "enterprise_2000",
-      "name": "Enterprise Pack",
-      "tokens": 2000,
-      "priceGBP": 59.99,
-      "pricePerToken": 0.03,
-      "description": "Best value for teams and organizations"
-    }
-  ]
-}
-```
-
-### Token Cost Examples
-
-**TIER_1K Enhancement (2 tokens)**:
-
-- Starter Pack: Can enhance 25 times
-- Essential Pack: Can enhance 75 times
-- Professional Pack: Can enhance 250 times
-- Enterprise Pack: Can enhance 1000 times
-
-**TIER_4K Enhancement (10 tokens)**:
-
-- Starter Pack: Can enhance 5 times
-- Essential Pack: Can enhance 15 times
-- Professional Pack: Can enhance 50 times
-- Enterprise Pack: Can enhance 200 times
+- Used for customer support
+- Compensation for service issues
+- Special promotions
+- Creates `EARN_ADMIN_ADJUSTMENT` transaction
 
 ---
 
-## Subscription Plans
+## Token Consumption
 
-### Plan Comparison
+Tokens are consumed when using platform features. All apps share the same token costs.
 
-```
-┌─────────────────┬──────────────┬──────────────┬────────────────┐
-│ Feature         │ Starter      │ Professional │ Enterprise     │
-├─────────────────┼──────────────┼──────────────┼────────────────┤
-│ Tokens/Month    │ 20           │ 100          │ 500            │
-│ Price/Month     │ £2.99        │ £9.99        │ £29.99         │
-│ Max Rollover    │ 20           │ 100          │ 250            │
-│ Auto-Renewal    │ Yes          │ Yes          │ Yes            │
-│ Pause Period    │ 3 months     │ 3 months     │ 3 months       │
-│ Support         │ Email        │ Priority     │ VIP            │
-├─────────────────┼──────────────┼──────────────┼────────────────┤
-│ Annual Cost     │ £35.88       │ £119.88      │ £359.88        │
-│ Monthly Value   │ 1-2x usage   │ 5x usage     │ 25x usage      │
-└─────────────────┴──────────────┴──────────────┴────────────────┘
-```
+### Enhancement Costs
 
-### Subscription Lifecycle
+**Image Enhancement Tiers**:
 
-**1. Purchase Flow**:
+| Enhancement Tier | Output Resolution | Token Cost | Use Case                     |
+| ---------------- | ----------------- | ---------- | ---------------------------- |
+| FREE             | 1024px max        | 0 tokens   | Testing with nano model      |
+| TIER_1K          | 1024px max        | 2 tokens   | Social media, web thumbnails |
+| TIER_2K          | 2048px max        | 5 tokens   | High-quality prints          |
+| TIER_4K          | 4096px max        | 10 tokens  | Professional, large prints   |
 
-- User selects plan on pricing page
-- Redirected to Stripe checkout
-- Payment processed immediately
-- Plan activated, first month's tokens credited
+### MCP Generation Costs
 
-**2. Active Subscription**:
+**Text-to-Image and Image Modification**:
 
-- Tokens credited automatically on renewal date
-- Unused tokens carry over (respecting max rollover)
-- Email receipt sent each month
-- Plan visible in account settings
+| Generation Tier | Output Resolution | Token Cost |
+| --------------- | ----------------- | ---------- |
+| FREE            | 1024px max        | 0 tokens   |
+| TIER_1K         | 1024px max        | 2 tokens   |
+| TIER_2K         | 2048px max        | 5 tokens   |
+| TIER_4K         | 4096px max        | 10 tokens  |
 
-**3. Pause Subscription**:
+### Other Platform Costs
 
-- User can pause for 1-3 months
-- No charges during pause period
-- Tokens not credited during pause
-- Can unpause anytime
+- **Box Creation**: Variable cost based on tier (future feature)
+- **Custom Enhancements**: Defined per feature
 
-**4. Cancel Subscription**:
+### Consumption Rules
 
-- Effective immediately
-- Access until end of billing cycle
-- Remaining tokens retained indefinitely
-- Can resubscribe anytime
-
-**5. Upgrade/Downgrade**:
-
-- Change plan in account settings
-- Prorated adjustment applied to next billing cycle
-- Current tokens not affected
-- New allocation rate applies immediately
+- **Pre-Check**: Balance verified before deduction
+- **Atomic**: Token consumption is transactional (all-or-nothing)
+- **Refundable**: Automatically refunded on service failure
+- **Tracked**: Every consumption creates a transaction record
 
 ---
 
@@ -273,125 +238,240 @@ balance.
 
 ### Regeneration Mechanics
 
-**Rate**: 1 token per 15 minutes
+**Core Parameters**:
 
-- Exact interval: 15 minutes (900 seconds)
-- Checked on each API call that requires tokens
+- **Interval**: 15 minutes (900 seconds)
+- **Amount**: 1 token per interval
+- **Cap**: Based on user's tier (FREE: 10, BASIC: 20, STANDARD: 50, PREMIUM: 100)
 
-**Calculation**:
+**Calculation Logic**:
 
+```typescript
+const timeSinceLastRegen = now - lastRegeneration;
+const intervalsElapsed = Math.floor(timeSinceLastRegen / 15 minutes);
+const tokensToAdd = Math.min(
+  intervalsElapsed * 1,
+  tierCapacity - currentBalance
+);
 ```
-tokensSinceLastRegen = floor((now - lastRegenTime) / 15min)
-newTokens = min(tokensSinceLastRegen, 100 - currentBalance)
-```
 
-**Example**:
+**Example (STANDARD Tier)**:
 
-- Current balance: 95
-- Last regeneration: 1 hour ago (4 × 15 min intervals)
-- Available tokens: 4
-- New balance: 95 + 4 = 99 (not 100, respects cap)
+- Current balance: 45
+- Last regeneration: 1 hour ago (4 intervals)
+- Available to regenerate: 4 tokens
+- New balance: 45 + 4 = 49 (respects tier cap of 50)
 
-### Storage Duration
+### Processing
 
-**Free Regenerated Tokens**:
+**On-Demand Regeneration**:
 
-- Expire after 30 days of inactivity
-- Inactivity = no API calls from user
-- Expiration is automatic (checked on each request)
-- Expiration applies to balance >= 100
+- Triggered on every `/api/tokens/balance` request
+- Calculated based on time elapsed since `lastRegeneration`
+- Updates `UserTokenBalance.balance` and `lastRegeneration`
+- Creates `EARN_REGENERATION` transaction
 
-**Purchased Tokens**:
+**Cron-Based Regeneration** (future):
 
-- Never expire
-- Always used first (FIFO)
-- Persist across subscription cycles
+- Batch processing for all users
+- Runs every 15 minutes
+- Reduces API load
 
-### Token Priority
+### Regeneration Priority
 
-Tokens are consumed in this order:
+Regeneration only applies to free tokens. Purchased tokens and tier grants are not subject to regeneration caps.
 
-1. **Purchased Tokens**: One-time purchases (never expire)
-2. **Subscription Tokens**: Current month's allocation
-3. **Regenerated Tokens**: Free tokens (expire after 30 days)
+**Token Priority Order**:
 
-Example balance composition:
-
-```json
-{
-  "totalBalance": 150,
-  "breakdown": {
-    "purchased": 50, // From stripe purchases
-    "subscription": 50, // Current month allocation
-    "regenerated": 50 // Free tokens (expire in 25 days)
-  }
-}
-```
+1. **Tier Capacity Tokens**: Tokens from tier upgrades
+2. **Purchased Tokens**: One-time purchases (never expire)
+3. **Regenerated Tokens**: Free auto-generated tokens (capped by tier)
 
 ---
 
-## Token Balance & Consumption
+## Token Packages
+
+### Package Definitions
+
+Packages defined in `/src/lib/stripe/client.ts`:
+
+```typescript
+export const TOKEN_PACKAGES = {
+  starter: { tokens: 10, price: 2.99, name: "Starter Pack" },
+  basic: { tokens: 50, price: 9.99, name: "Basic Pack" },
+  pro: { tokens: 150, price: 24.99, name: "Pro Pack" },
+  power: { tokens: 500, price: 69.99, name: "Power Pack" },
+} as const;
+```
+
+### Value Analysis
+
+**For TIER_1K Enhancement (2 tokens per image)**:
+
+| Package | Images | Cost Per Image |
+| ------- | ------ | -------------- |
+| Starter | 5      | £0.60          |
+| Basic   | 25     | £0.40          |
+| Pro     | 75     | £0.33          |
+| Power   | 250    | £0.28          |
+
+**For TIER_4K Enhancement (10 tokens per image)**:
+
+| Package | Images | Cost Per Image |
+| ------- | ------ | -------------- |
+| Starter | 1      | £2.99          |
+| Basic   | 5      | £2.00          |
+| Pro     | 15     | £1.67          |
+| Power   | 50     | £1.40          |
+
+### Purchase Flow
+
+1. User selects package on pricing page
+2. Redirected to Stripe checkout
+3. Payment processed via Stripe
+4. Webhook receives `checkout.session.completed` event
+5. Tokens credited to UserTokenBalance.balance
+6. Transaction record created with type `EARN_PURCHASE`
+7. StripePayment record created
+
+---
+
+## Tier Subscriptions
+
+### Tier Definitions
+
+Tiers defined in `/src/lib/tokens/tier-manager.ts`:
+
+```typescript
+export const TIER_CAPACITIES: Record<SubscriptionTier, number> = {
+  FREE: 10,
+  BASIC: 20,
+  STANDARD: 50,
+  PREMIUM: 100,
+} as const;
+
+export const TIER_PRICES_GBP: Record<SubscriptionTier, number> = {
+  FREE: 0,
+  BASIC: 5,
+  STANDARD: 10,
+  PREMIUM: 20,
+} as const;
+```
+
+### Subscription Lifecycle
+
+**1. Tier Upgrade**:
+
+- User selects tier on pricing page
+- Stripe processes payment
+- Webhook updates `UserTokenBalance.tier`
+- User receives tokens equal to tier capacity
+- Transaction created with type `EARN_PURCHASE`
+
+**2. Active Subscription**:
+
+- Monthly billing maintains tier status
+- Tokens regenerate up to tier capacity
+- No auto-refill on billing (only maintains tier)
+- Can purchase additional tokens anytime
+
+**3. Schedule Downgrade**:
+
+- User schedules downgrade to lower tier
+- Stored in `Subscription.downgradeTo`
+- Takes effect at `currentPeriodEnd`
+- Existing token balance preserved
+
+**4. Process Downgrade**:
+
+- Webhook triggers on billing cycle end
+- Updates `UserTokenBalance.tier` to `downgradeTo`
+- Clears `Subscription.downgradeTo`
+- No tokens deducted (balance preserved)
+- New regeneration cap applies
+
+**5. Cancel Subscription**:
+
+- User cancels subscription
+- Tier reverts to FREE at period end
+- Token balance preserved
+- Regeneration cap becomes 10
+
+---
+
+## Token Balance & Tracking
 
 ### Balance Query
 
 **Endpoint**: `GET /api/tokens/balance`
 
-**Authentication**: Required
+**Response Schema**:
 
-**Response**:
-
-```json
+```typescript
 {
-  "balance": 95,
-  "lastRegeneration": "2025-12-02T10:30:00Z",
-  "timeUntilNextRegenMs": 854000,
-  "tokensAddedThisRequest": 0,
-  "stats": {
-    "totalSpent": 50,
-    "totalEarned": 145,
-    "totalRefunded": 5,
-    "transactionCount": 12
+  balance: number; // Current token balance
+  lastRegeneration: string; // ISO timestamp of last regen
+  timeUntilNextRegenMs: number; // Milliseconds until next regen
+  tokensAddedThisRequest: number; // Tokens regenerated during this request
+  tier: SubscriptionTier; // Current subscription tier
+  maxBalance: number; // Tier capacity (regen cap)
+  stats: {
+    totalSpent: number; // Lifetime token consumption
+    totalEarned: number; // Lifetime token earnings
+    totalRefunded: number; // Lifetime refunds
+    transactionCount: number; // Total transactions
   }
 }
 ```
 
-**Field Explanations**:
-
-- `balance`: Current token balance
-- `lastRegeneration`: ISO timestamp of last automatic regeneration
-- `timeUntilNextRegenMs`: Milliseconds until next 1-token regeneration
-- `tokensAddedThisRequest`: Tokens regenerated during this request
-- `stats`: Lifetime transaction statistics
-
-### Consumption Tracking
-
-Each token consumption is logged with:
+**Example Response**:
 
 ```json
 {
-  "id": "txn_001",
-  "userId": "user_123",
-  "amount": 5,
-  "type": "CONSUME",
-  "source": "image_enhancement",
-  "sourceId": "job_123",
-  "metadata": {
-    "tier": "TIER_2K"
-  },
-  "balanceAfter": 90,
-  "createdAt": "2025-12-02T10:35:00Z"
+  "balance": 45,
+  "lastRegeneration": "2025-12-30T10:30:00Z",
+  "timeUntilNextRegenMs": 540000,
+  "tokensAddedThisRequest": 2,
+  "tier": "STANDARD",
+  "maxBalance": 50,
+  "stats": {
+    "totalSpent": 105,
+    "totalEarned": 150,
+    "totalRefunded": 10,
+    "transactionCount": 42
+  }
 }
 ```
 
-### Transaction Types
+### Token Transaction Model
 
-| Type              | Description                | Reversible             |
-| ----------------- | -------------------------- | ---------------------- |
-| CONSUME           | Token deducted for service | No                     |
-| EARN_BONUS        | Tokens from voucher        | No                     |
-| EARN_SUBSCRIPTION | Tokens from subscription   | No                     |
-| REFUND            | Tokens returned on failure | No (increases balance) |
-| PURCHASE          | Tokens from Stripe         | No                     |
+**Schema** (`TokenTransaction`):
+
+| Field        | Type                 | Description                           |
+| ------------ | -------------------- | ------------------------------------- |
+| id           | String               | Primary key (CUID)                    |
+| userId       | String               | Owner of transaction                  |
+| amount       | Int                  | Token amount (positive or negative)   |
+| type         | TokenTransactionType | Transaction type (see below)          |
+| source       | String?              | Source system (e.g., "stripe", "api") |
+| sourceId     | String?              | External reference ID                 |
+| balanceAfter | Int                  | Balance after transaction             |
+| metadata     | Json?                | Additional context                    |
+| createdAt    | DateTime             | Transaction timestamp                 |
+
+### User Token Balance Model
+
+**Schema** (`UserTokenBalance`):
+
+| Field            | Type             | Description                 |
+| ---------------- | ---------------- | --------------------------- |
+| id               | String           | Primary key (CUID)          |
+| userId           | String           | User ID (unique)            |
+| balance          | Int              | Current token balance       |
+| lastRegeneration | DateTime         | Last regeneration timestamp |
+| tier             | SubscriptionTier | Current subscription tier   |
+| createdAt        | DateTime         | Record creation timestamp   |
+| updatedAt        | DateTime         | Last update timestamp       |
 
 ---
 
@@ -401,40 +481,42 @@ Each token consumption is logged with:
 
 **Endpoint**: `GET /api/tokens/balance`
 
-**Authentication**: Required (Bearer token)
+**Authentication**: Required (session cookie)
 
 **Request**:
 
 ```http
 GET /api/tokens/balance HTTP/1.1
-Authorization: Bearer {session_token}
+Cookie: authjs.session-token=...
 ```
 
 **Response (Success - 200)**:
 
 ```json
 {
-  "balance": 95,
-  "lastRegeneration": "2025-12-02T10:30:00Z",
-  "timeUntilNextRegenMs": 854000,
-  "tokensAddedThisRequest": 1,
+  "balance": 45,
+  "lastRegeneration": "2025-12-30T10:30:00Z",
+  "timeUntilNextRegenMs": 540000,
+  "tokensAddedThisRequest": 2,
+  "tier": "STANDARD",
+  "maxBalance": 50,
   "stats": {
-    "totalSpent": 50,
-    "totalEarned": 145,
-    "totalRefunded": 5,
-    "transactionCount": 12
+    "totalSpent": 105,
+    "totalEarned": 150,
+    "totalRefunded": 10,
+    "transactionCount": 42
   }
 }
 ```
 
 **Error Responses**:
 
-| Status | Error           | Description                     |
-| ------ | --------------- | ------------------------------- |
-| 401    | Unauthorized    | User session invalid or missing |
-| 500    | Failed to fetch | Database error                  |
+| Status | Error           | Description             |
+| ------ | --------------- | ----------------------- |
+| 401    | Unauthorized    | User session invalid    |
+| 500    | Failed to fetch | Database or system erro |
 
-### Create Checkout Session (Purchase)
+### Create Checkout Session (Token Purchase)
 
 **Endpoint**: `POST /api/stripe/checkout`
 
@@ -444,21 +526,15 @@ Authorization: Bearer {session_token}
 
 ```http
 POST /api/stripe/checkout HTTP/1.1
-Authorization: Bearer {session_token}
 Content-Type: application/json
 
 {
-  "packageId": "professional_500",
+  "packageId": "pro",
   "mode": "payment"
 }
 ```
 
-**Valid Package IDs**:
-
-- `starter_50`
-- `essential_150`
-- `professional_500`
-- `enterprise_2000`
+**Valid Package IDs**: `starter`, `basic`, `pro`, `power`
 
 **Response (Success - 200)**:
 
@@ -479,30 +555,24 @@ Content-Type: application/json
 | 401    | Unauthorized        | User session invalid     |
 | 500    | Failed to create    | Stripe API error         |
 
-### Create Subscription Session
+### Upgrade Tier
 
-**Endpoint**: `POST /api/stripe/checkout`
+**Endpoint**: `POST /api/tiers/upgrade`
 
 **Authentication**: Required
 
 **Request**:
 
 ```http
-POST /api/stripe/checkout HTTP/1.1
-Authorization: Bearer {session_token}
+POST /api/tiers/upgrade HTTP/1.1
 Content-Type: application/json
 
 {
-  "planId": "professional_100",
-  "mode": "subscription"
+  "tier": "STANDARD"
 }
 ```
 
-**Valid Plan IDs**:
-
-- `starter_20`
-- `professional_100`
-- `enterprise_500`
+**Valid Tiers**: `BASIC`, `STANDARD`, `PREMIUM`
 
 **Response (Success - 200)**:
 
@@ -514,190 +584,334 @@ Content-Type: application/json
 }
 ```
 
-**Error Responses**:
+### Schedule Downgrade
 
-| Status | Error                      | Description                          |
-| ------ | -------------------------- | ------------------------------------ |
-| 400    | Plan ID required           | planId missing                       |
-| 400    | Invalid plan ID            | planId not recognized                |
-| 400    | Active subscription exists | User already has active subscription |
-| 401    | Unauthorized               | User session invalid                 |
-| 500    | Failed to create           | Stripe API error                     |
+**Endpoint**: `POST /api/tiers/downgrade`
 
----
+**Authentication**: Required
 
-## Transaction History
+**Request**:
 
-### Viewing Transaction History
+```http
+POST /api/tiers/downgrade HTTP/1.1
+Content-Type: application/json
 
-Users can view complete transaction history through the account dashboard:
-
-**Sample Transaction History**:
-
-```json
 {
-  "transactions": [
-    {
-      "id": "txn_001",
-      "type": "CONSUME",
-      "amount": 5,
-      "source": "image_enhancement",
-      "sourceId": "job_123",
-      "description": "Enhanced image at TIER_2K",
-      "balanceAfter": 90,
-      "createdAt": "2025-12-02T10:35:00Z"
-    },
-    {
-      "id": "txn_002",
-      "type": "EARN_BONUS",
-      "amount": 100,
-      "source": "voucher",
-      "sourceId": "voucher_launch100",
-      "description": "Redeemed voucher LAUNCH100",
-      "balanceAfter": 195,
-      "createdAt": "2025-12-02T09:00:00Z"
-    },
-    {
-      "id": "txn_003",
-      "type": "PURCHASE",
-      "amount": 150,
-      "source": "stripe",
-      "sourceId": "pi_1A2B3C4D5E6F",
-      "description": "Purchased Essential Pack (150 tokens)",
-      "balanceAfter": 95,
-      "createdAt": "2025-12-01T14:20:00Z"
-    },
-    {
-      "id": "txn_004",
-      "type": "REFUND",
-      "amount": 5,
-      "source": "enhancement_failure",
-      "sourceId": "job_456",
-      "description": "Refund for failed enhancement job",
-      "balanceAfter": 90,
-      "createdAt": "2025-12-01T12:15:00Z"
-    },
-    {
-      "id": "txn_005",
-      "type": "EARN_SUBSCRIPTION",
-      "amount": 100,
-      "source": "subscription",
-      "sourceId": "sub_A1B2C3D4",
-      "description": "Monthly subscription allocation",
-      "balanceAfter": 85,
-      "createdAt": "2025-12-01T00:00:00Z"
-    }
-  ],
-  "pagination": {
-    "page": 1,
-    "limit": 10,
-    "total": 45,
-    "totalPages": 5
-  }
+  "tier": "BASIC"
 }
 ```
 
-### Export Transaction History
+**Response (Success - 200)**:
 
-Users can export transaction history as:
-
-- CSV for spreadsheet analysis
-- JSON for archival
-- PDF for records
-
----
-
-## Token Pricing
-
-### Pricing Model
-
-**Tokens are the platform's universal currency** for premium features across all
-apps.
-
-### Current Token Costs (Pixel App)
-
-**Image Enhancement Costs**:
-
-| Enhancement Tier | Output Resolution | Token Cost |
-| ---------------- | ----------------- | ---------- |
-| TIER_1K          | 1024px max        | 2 tokens   |
-| TIER_2K          | 2048px max        | 5 tokens   |
-| TIER_4K          | 4096px max        | 10 tokens  |
-
-**Value Analysis**:
-
-For Professional Pack (500 tokens, £19.99):
-
-| Tier    | Images | Cost Per Image |
-| ------- | ------ | -------------- |
-| TIER_1K | 250    | 0.08p          |
-| TIER_2K | 100    | 0.20p          |
-| TIER_4K | 50     | 0.40p          |
-
-**Subscription Value** (Professional Plan, £9.99/month):
-
-| Usage Pattern                  | Images/Month | Cost Per Image |
-| ------------------------------ | ------------ | -------------- |
-| Light (10 images at TIER_1K)   | 10           | 1.00p          |
-| Regular (20 images at TIER_2K) | 20           | 0.50p          |
-| Heavy (50 images mixed)        | 50           | 0.20p          |
-
-### Discounts & Promotions
-
-**Introductory Offer**: New users receive WELCOME50 voucher (50 free tokens)
-
-**Bulk Discounts**:
-
-- Enterprise Pack offers 50% better value than Starter Pack
-- Annual subscription equivalent: £119.88 (Professional)
-
-**Seasonal Promotions**: Announced via email and dashboard
-
----
-
-## Implementation Files
-
-### Platform Token Infrastructure
-
-**Database Models** (Platform-Level):
-
-- `prisma/schema.prisma` - UserTokenBalance, TokenTransaction, Subscription
-- These models are platform infrastructure, not app-specific
-
-**Token Management** (Platform-Level):
-
-- `src/lib/tokens/balance-manager.ts` - Token operations (used by all apps)
-- `src/lib/tokens/regeneration.ts` - Automatic regeneration logic
-- `src/lib/tokens/costs.ts` - Cost configuration
-
-**API Endpoints** (Platform-Level):
-
-- `src/app/api/tokens/balance/route.ts` - Balance query (platform API)
-- `src/app/api/stripe/checkout/route.ts` - Payment session creation
-- `src/app/api/stripe/webhook/route.ts` - Stripe event handling
-
-**Frontend Components** (Shared):
-
-- `src/components/tokens/balance-display.tsx` - Balance widget
-- `src/components/tokens/purchase-modal.tsx` - Token purchase UI
-- `src/app/settings/tokens/page.tsx` - Token management page
-
-### How Apps Consume Tokens
-
-Apps on Spike Land consume tokens by calling `TokenBalanceManager`:
-
-```typescript
-// App requests token consumption
-await TokenBalanceManager.consumeTokens({
-  userId: user.id,
-  amount: tokenCost,
-  type: "SPEND_ENHANCEMENT",
-  source: "pixel_app",
-  sourceId: jobId,
-});
+```json
+{
+  "success": true,
+  "effectiveDate": "2025-01-30T00:00:00Z"
+}
 ```
 
-This architecture allows any future app to use the same token system.
+### Redeem Voucher
+
+**Endpoint**: `POST /api/vouchers/redeem`
+
+**Authentication**: Required
+
+**Rate Limit**: 5 attempts per hour per user
+
+**Request**:
+
+```http
+POST /api/vouchers/redeem HTTP/1.1
+Content-Type: application/json
+
+{
+  "code": "WELCOME50"
+}
+```
+
+**Response (Success - 200)**:
+
+```json
+{
+  "success": true,
+  "tokensGranted": 50,
+  "newBalance": 95
+}
+```
+
+**Error Responses**:
+
+| Status | Error                                    | Description                  |
+| ------ | ---------------------------------------- | ---------------------------- |
+| 400    | Voucher code not found                   | Invalid code                 |
+| 400    | This voucher is no longer active         | Voucher deactivated          |
+| 400    | This voucher has expired                 | Past expiration date         |
+| 400    | This voucher has reached its usage limit | Max redemptions reached      |
+| 400    | You have already redeemed this voucher   | User already used this code  |
+| 401    | Authentication required                  | User not logged in           |
+| 429    | Too many redemption attempts             | Rate limit exceeded (5/hour) |
+
+---
+
+## Transaction Types
+
+### Token Transaction Types
+
+Defined in `/prisma/schema.prisma`:
+
+```prisma
+enum TokenTransactionType {
+  EARN_REGENERATION      // Auto-regeneration (1 token per 15 min)
+  EARN_PURCHASE          // Token package purchase or tier upgrade
+  EARN_BONUS             // Voucher redemption
+  EARN_ADMIN_ADJUSTMENT  // Manual admin grant
+  SPEND_ENHANCEMENT      // Image enhancement consumption
+  SPEND_MCP_GENERATION   // MCP generation consumption
+  SPEND_BOX_CREATION     // Box creation (future)
+  REFUND                 // Refund for failed service
+}
+```
+
+### Transaction Examples
+
+**Regeneration**:
+
+```json
+{
+  "id": "txn_001",
+  "userId": "user_123",
+  "amount": 4,
+  "type": "EARN_REGENERATION",
+  "source": "auto_regeneration",
+  "sourceId": null,
+  "balanceAfter": 49,
+  "metadata": {
+    "intervalsElapsed": 4,
+    "timeSinceLastRegenMs": 3600000,
+    "tier": "STANDARD"
+  },
+  "createdAt": "2025-12-30T11:30:00Z"
+}
+```
+
+**Token Purchase**:
+
+```json
+{
+  "id": "txn_002",
+  "userId": "user_123",
+  "amount": 150,
+  "type": "EARN_PURCHASE",
+  "source": "stripe",
+  "sourceId": "cs_live_abc123",
+  "balanceAfter": 199,
+  "metadata": {
+    "packageId": "pro",
+    "sessionId": "cs_live_abc123",
+    "amountPaid": 2499
+  },
+  "createdAt": "2025-12-30T12:00:00Z"
+}
+```
+
+**Enhancement Consumption**:
+
+```json
+{
+  "id": "txn_003",
+  "userId": "user_123",
+  "amount": -5,
+  "type": "SPEND_ENHANCEMENT",
+  "source": "image_enhancement",
+  "sourceId": "job_abc123",
+  "balanceAfter": 194,
+  "metadata": {
+    "tier": "TIER_2K",
+    "imageId": "img_xyz789"
+  },
+  "createdAt": "2025-12-30T12:15:00Z"
+}
+```
+
+**Refund**:
+
+```json
+{
+  "id": "txn_004",
+  "userId": "user_123",
+  "amount": 5,
+  "type": "REFUND",
+  "source": "enhancement_failed",
+  "sourceId": "job_abc123",
+  "balanceAfter": 199,
+  "metadata": {
+    "reason": "Gemini API timeout",
+    "originalJobId": "job_abc123"
+  },
+  "createdAt": "2025-12-30T12:16:00Z"
+}
+```
+
+---
+
+## Implementation Architecture
+
+### Core Modules
+
+**Token Balance Manager** (`/src/lib/tokens/balance-manager.ts`):
+
+- `getBalance(userId)`: Get current balance and tier info
+- `hasEnoughTokens(userId, amount)`: Check if user can afford cost
+- `consumeTokens(params)`: Deduct tokens for service usage
+- `addTokens(params)`: Credit tokens (purchase, bonus, regen)
+- `refundTokens(userId, amount, sourceId, reason)`: Refund failed transactions
+- `processRegeneration(userId)`: Calculate and apply regeneration
+- `getTransactionHistory(userId, limit, offset)`: Query transaction log
+- `getConsumptionStats(userId)`: Aggregate spending/earning stats
+
+**Tier Manager** (`/src/lib/tokens/tier-manager.ts`):
+
+- `getTierInfo(tier)`: Get tier configuration
+- `getUserTier(userId)`: Get user's current tier
+- `getTierCapacity(tier)`: Get well capacity for tier
+- `getNextTier(currentTier)`: Get upgrade target
+- `canUpgradeTo(current, target)`: Validate upgrade path
+- `upgradeTier(userId, newTier)`: Process tier upgrade
+- `scheduleDowngrade(userId, targetTier)`: Schedule future downgrade
+- `processScheduledDowngrade(userId)`: Apply downgrade at period end
+- `shouldPromptUpgrade(userId)`: Check if upgrade prompt should show
+
+**Voucher Manager** (`/src/lib/vouchers/voucher-manager.ts`):
+
+- `validate(code, userId)`: Validate voucher without redeeming
+- `redeem(code, userId)`: Redeem voucher and credit tokens
+
+**Regeneration Service** (`/src/lib/tokens/regeneration.ts`):
+
+- `processUserRegeneration(userId)`: Process single user regeneration
+- `processAllUserRegenerations()`: Batch process all users (cron)
+- `getNextRegenerationTime(userId)`: Calculate next regen time
+- `getTimeUntilNextRegeneration(userId)`: Get milliseconds until next regen
+
+### Database Schema
+
+**UserTokenBalance**:
+
+```sql
+CREATE TABLE user_token_balances (
+  id               TEXT PRIMARY KEY,
+  userId           TEXT UNIQUE NOT NULL REFERENCES users(id),
+  balance          INTEGER NOT NULL DEFAULT 0,
+  lastRegeneration TIMESTAMP NOT NULL DEFAULT NOW(),
+  tier             TEXT NOT NULL DEFAULT 'FREE',
+  createdAt        TIMESTAMP NOT NULL DEFAULT NOW(),
+  updatedAt        TIMESTAMP NOT NULL DEFAULT NOW()
+);
+```
+
+**TokenTransaction**:
+
+```sql
+CREATE TABLE token_transactions (
+  id           TEXT PRIMARY KEY,
+  userId       TEXT NOT NULL REFERENCES users(id),
+  amount       INTEGER NOT NULL,
+  type         TEXT NOT NULL, -- TokenTransactionType enum
+  source       TEXT,
+  sourceId     TEXT,
+  balanceAfter INTEGER NOT NULL,
+  metadata     JSONB,
+  createdAt    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_token_transactions_userId ON token_transactions(userId);
+CREATE INDEX idx_token_transactions_type ON token_transactions(type);
+CREATE INDEX idx_token_transactions_createdAt ON token_transactions(createdAt);
+```
+
+**Subscription**:
+
+```sql
+CREATE TABLE subscriptions (
+  id                   TEXT PRIMARY KEY,
+  userId               TEXT UNIQUE NOT NULL REFERENCES users(id),
+  stripeSubscriptionId TEXT UNIQUE NOT NULL,
+  stripePriceId        TEXT NOT NULL,
+  status               TEXT NOT NULL,
+  tier                 TEXT NOT NULL, -- SubscriptionTier enum
+  currentPeriodStart   TIMESTAMP NOT NULL,
+  currentPeriodEnd     TIMESTAMP NOT NULL,
+  cancelAtPeriodEnd    BOOLEAN NOT NULL DEFAULT FALSE,
+  downgradeTo          TEXT, -- SubscriptionTier enum (nullable)
+  createdAt            TIMESTAMP NOT NULL DEFAULT NOW(),
+  updatedAt            TIMESTAMP NOT NULL DEFAULT NOW()
+);
+```
+
+### API Endpoints
+
+| Endpoint                 | Method | Purpose                        |
+| ------------------------ | ------ | ------------------------------ |
+| `/api/tokens/balance`    | GET    | Get current token balance      |
+| `/api/stripe/checkout`   | POST   | Create Stripe checkout session |
+| `/api/stripe/webhook`    | POST   | Handle Stripe webhook events   |
+| `/api/tiers/upgrade`     | POST   | Create tier upgrade checkout   |
+| `/api/tiers/downgrade`   | POST   | Schedule tier downgrade        |
+| `/api/vouchers/redeem`   | POST   | Redeem voucher code            |
+| `/api/vouchers/validate` | POST   | Validate voucher without using |
+
+### Stripe Webhook Events
+
+**Handled Events**:
+
+- `checkout.session.completed`: Credit tokens on purchase or activate tier
+- `invoice.paid`: Process subscription renewal (maintains tier)
+- `customer.subscription.updated`: Handle tier changes
+- `customer.subscription.deleted`: Revert tier to FREE
+
+### Transaction Flow
+
+**Token Purchase Flow**:
+
+1. User clicks "Buy Tokens" on pricing page
+2. Frontend calls `POST /api/stripe/checkout` with `packageId`
+3. Backend creates Stripe checkout session with metadata
+4. User completes payment on Stripe
+5. Stripe sends `checkout.session.completed` webhook
+6. Webhook handler:
+   - Validates signature
+   - Extracts userId and tokens from metadata
+   - Credits tokens via `TokenBalanceManager.addTokens()`
+   - Creates `EARN_PURCHASE` transaction
+   - Creates `StripePayment` record
+7. User sees updated balance on return to site
+
+**Tier Upgrade Flow**:
+
+1. User clicks "Upgrade to STANDARD" on tier page
+2. Frontend calls `POST /api/tiers/upgrade` with `tier: "STANDARD"`
+3. Backend creates Stripe subscription checkout
+4. User completes payment on Stripe
+5. Stripe sends `checkout.session.completed` webhook
+6. Webhook handler:
+   - Updates `UserTokenBalance.tier` to STANDARD
+   - Sets `UserTokenBalance.balance` to 50 (tier capacity)
+   - Creates `EARN_PURCHASE` transaction for 50 tokens
+   - Creates `Subscription` record
+7. User immediately has 50 tokens and STANDARD tier
+
+**Enhancement Flow**:
+
+1. User uploads image and selects TIER_2K (5 tokens)
+2. Frontend calls enhancement API
+3. Backend:
+   - Calls `TokenBalanceManager.hasEnoughTokens(userId, 5)`
+   - If insufficient: Returns 402 error with tier upgrade prompt
+   - If sufficient: Calls `TokenBalanceManager.consumeTokens()`
+   - Creates `ImageEnhancementJob` with `tokensCost: 5`
+   - Starts enhancement workflow
+4. On success: Job marked COMPLETED
+5. On failure: `TokenBalanceManager.refundTokens(userId, 5, jobId)`
 
 ---
 
@@ -705,31 +919,156 @@ This architecture allows any future app to use the same token system.
 
 ### For Users
 
-1. **Monitor Balance**: Check token balance regularly before enhancement
-2. **Plan Purchases**: Estimate monthly token needs and choose appropriate
-   package
-3. **Maximize Value**: Use subscriptions for regular usage (better value than
-   one-time purchases)
-4. **Use Vouchers**: Always redeem promotional vouchers before purchasing
-5. **Budget Wisely**: Regenerated tokens are free but limited to 100
+1. **Check Balance First**: Always verify sufficient balance before starting enhancements
+2. **Choose Right Tier**: Estimate monthly usage and select appropriate tier
+3. **Leverage Regeneration**: For casual use, free regeneration may be sufficient
+4. **Buy in Bulk**: Larger token packages offer better value per token
+5. **Upgrade for Capacity**: Tier upgrades grant immediate tokens plus higher regen cap
+6. **Monitor Transactions**: Review transaction history to track spending patterns
 
 ### For Developers
 
-1. **Balance Check**: Always verify sufficient balance before deducting tokens
-2. **Failure Handling**: Implement automatic refunds on processing failures
-3. **Rate Limiting**: Respect API rate limits to avoid suspension
-4. **Error Messages**: Display token costs clearly before user action
-5. **Webhook Handling**: Process Stripe webhooks for token credits
+1. **Always Use TokenBalanceManager**: Never manipulate UserTokenBalance directly
+2. **Atomic Operations**: All token operations use database transactions
+3. **Refund on Failure**: Always refund tokens if service fails after consumption
+4. **Validate Before Consume**: Check balance before deducting tokens
+5. **Log Metadata**: Include relevant context in transaction metadata
+6. **Handle Edge Cases**: Account for race conditions, network failures, webhook retries
+7. **Test with Stripe Test Mode**: Use test mode for development and staging
+
+### Security Considerations
+
+1. **Webhook Signature Verification**: Always verify Stripe webhook signatures
+2. **Rate Limiting**: Enforce rate limits on voucher redemption (5/hour)
+3. **Input Validation**: Validate all user inputs (voucher codes, package IDs)
+4. **Idempotency**: Handle duplicate webhook events (Stripe retries)
+5. **User Isolation**: Ensure users can only access their own token data
+6. **Audit Trail**: Maintain complete transaction history for auditing
 
 ---
 
-## Migration Guide (Free to Paid)
+## Migration Notes
 
-**For Existing Free Users**:
+### Historical Context
 
-1. **Free Tokens Continue**: 1 token per 15 minutes (max 100)
-2. **Try Before Buy**: Use free tokens to test features
-3. **Upgrade When Ready**: Purchase tokens or subscribe when needed
-4. **No Lock-in**: Cancel subscription anytime without penalty
+The token system has evolved through several iterations:
+
+1. **v1 (Initial)**: Simple balance with fixed regeneration cap of 100
+2. **v2 (Subscriptions)**: Added monthly subscription plans with token allocations
+3. **v3 (Current - Token Well Tiers)**: Replaced subscriptions with tier system where:
+   - Tier upgrades grant immediate tokens (not monthly)
+   - Monthly billing maintains tier status only
+   - Regeneration caps vary by tier
+   - Purchased tokens are unlimited
+
+### Breaking Changes from Previous Documentation
+
+- **Subscription Tokens**: No longer allocated monthly; tiers grant one-time capacity
+- **Rollover**: Removed (no monthly allocation to roll over)
+- **Max Balance**: Now per-tier instead of global 100 cap
+- **Token Packages**: Updated pricing and amounts
+- **Vouchers**: New types added (PERCENTAGE_BONUS, SUBSCRIPTION_TRIAL)
 
 ---
+
+## Troubleshooting
+
+### Common Issues
+
+**Issue**: "Insufficient tokens" error despite recent purchase
+
+- **Cause**: Webhook delay or failure
+- **Solution**: Check `/api/tokens/balance` for updated balance
+- **Admin Fix**: Manually verify Stripe payment and credit tokens
+
+**Issue**: Regeneration not working
+
+- **Cause**: Tier capacity already reached
+- **Solution**: Upgrade tier or purchase token package
+- **Check**: `/api/tokens/balance` shows `timeUntilNextRegenMs`
+
+**Issue**: Tier upgrade didn't grant tokens
+
+- **Cause**: Webhook processing failure
+- **Solution**: Check Stripe dashboard for webhook delivery status
+- **Admin Fix**: Manually process upgrade via `TierManager.upgradeTier()`
+
+**Issue**: Voucher redemption fails with "already redeemed"
+
+- **Cause**: User previously redeemed this voucher
+- **Solution**: Try different voucher code
+- **Check**: Database `voucher_redemptions` table
+
+### Debugging Tools
+
+**Check User Balance**:
+
+```typescript
+const balance = await TokenBalanceManager.getBalance(userId);
+console.log(balance);
+```
+
+**Check Transaction History**:
+
+```typescript
+const transactions = await TokenBalanceManager.getTransactionHistory(userId, 50);
+console.log(transactions);
+```
+
+**Check Tier Info**:
+
+```typescript
+const tier = await TierManager.getUserTier(userId);
+const info = TierManager.getTierInfo(tier);
+console.log(info);
+```
+
+**Manual Token Grant** (admin only):
+
+```typescript
+await TokenBalanceManager.addTokens({
+  userId,
+  amount: 100,
+  type: TokenTransactionType.EARN_ADMIN_ADJUSTMENT,
+  source: "admin_console",
+  metadata: { reason: "Compensation for service outage" },
+});
+```
+
+---
+
+## Appendix
+
+### Environment Variables
+
+Required for token system:
+
+```bash
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_TIER_BASIC=price_...
+STRIPE_PRICE_TIER_STANDARD=price_...
+STRIPE_PRICE_TIER_PREMIUM=price_...
+```
+
+### Related Documentation
+
+- [API Reference](./API_REFERENCE.md) - Complete API documentation
+- [Database Schema](./DATABASE_SCHEMA.md) - Full schema reference
+- [Business Structure](./BUSINESS_STRUCTURE.md) - Company information
+
+### Future Enhancements
+
+- [ ] Scheduled token grants (e.g., daily login bonus)
+- [ ] Token gifting between users
+- [ ] Team/organization token pools
+- [ ] Token expiration for promotional tokens
+- [ ] Tiered pricing based on usage volume
+- [ ] Token marketplace for unused tokens
+- [ ] Integration with additional payment providers
+
+---
+
+**Document Version**: 3.0
+**Last Reviewed**: 2025-12-30
+**Next Review**: 2026-01-30

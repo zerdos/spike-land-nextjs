@@ -5,10 +5,40 @@ Prisma ORM with PostgreSQL.
 
 ## Overview
 
-- **ORM**: Prisma 6.x
-- **Database**: PostgreSQL 14+
+- **ORM**: Prisma 7.2.x
+- **Database**: PostgreSQL 14+ (with connection pooling via @prisma/adapter-pg)
 - **Schema Location**: `/prisma/schema.prisma`
-- **Generated Client**: `/src/generated/prisma`
+- **Client Location**: `@prisma/client` (standard location)
+- **Connection Adapter**: @prisma/adapter-pg (for enhanced connection pooling)
+
+## Quick Start
+
+For developers who want to get the database running immediately:
+
+```bash
+# 1. Start PostgreSQL (Docker)
+docker run --name spike-land-postgres \
+  -e POSTGRES_PASSWORD=password \
+  -e POSTGRES_DB=spike_land \
+  -p 5432:5432 -d postgres:16-alpine
+
+# 2. Configure environment
+cp .env.example .env.local
+# Edit .env.local and set:
+# DATABASE_URL=postgresql://postgres:password@localhost:5432/spike_land
+# AUTH_SECRET=$(openssl rand -base64 32)
+
+# 3. Run migrations
+yarn db:migrate
+
+# 4. Seed development data (optional)
+yarn db:seed
+
+# 5. Start development server
+yarn dev
+```
+
+See sections below for detailed configuration, production setup, and troubleshooting.
 
 ## Table of Contents
 
@@ -17,8 +47,10 @@ Prisma ORM with PostgreSQL.
 3. [Production Database Options](#production-database-options)
 4. [Schema Overview](#schema-overview)
 5. [Running Migrations](#running-migrations)
-6. [Backup and Recovery](#backup-and-recovery)
-7. [Monitoring and Maintenance](#monitoring-and-maintenance)
+6. [Database Seeding](#database-seeding)
+7. [Backup and Recovery](#backup-and-recovery)
+8. [Monitoring and Maintenance](#monitoring-and-maintenance)
+9. [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
@@ -73,14 +105,16 @@ sudo -u postgres createdb spike_land
 1. Copy the example environment file:
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-2. Update the `DATABASE_URL` in `.env`:
+2. Update the `DATABASE_URL` in `.env.local`:
 
 ```env
 DATABASE_URL=postgresql://postgres:password@localhost:5432/spike_land?schema=public
 ```
+
+**Note**: The application uses `.env.local` for local development (which is gitignored). The `.env.example` file provides a template with all available configuration options.
 
 ## Production Database Options
 
@@ -103,11 +137,12 @@ DIRECT_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:54
 - Setup: https://railway.app/
 - Connection string provided in Railway dashboard
 
-#### 3. Neon
+#### 3. Neon (Current Setup)
 
 - Serverless PostgreSQL with branching
 - Free tier: 3GB storage
 - Setup: https://neon.tech/
+- **Note**: This is the database provider currently used by Spike Land. See the Neon MCP server integration for advanced database operations.
 
 #### 4. AWS RDS
 
@@ -116,116 +151,216 @@ DIRECT_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:54
 
 ### Connection Pooling for Production
 
+**Important**: Spike Land uses the `@prisma/adapter-pg` package for enhanced connection pooling, which provides better performance for serverless environments.
+
+The database connection is configured in `/src/lib/prisma.ts`:
+
+```typescript
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
+
+const connectionString = process.env.DATABASE_URL;
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({
+  adapter,
+  log: ["error", "warn"],
+});
+```
+
 For serverless/edge deployments (Vercel, AWS Lambda), use connection pooling:
 
 ```env
 # Pooled connection (for Prisma Client queries)
 DATABASE_URL=postgresql://user:password@host:6543/db?pgbouncer=true
 
-# Direct connection (for Prisma Migrate)
+# Direct connection (for Prisma Migrate - optional, only if using separate migration URL)
 DIRECT_URL=postgresql://user:password@host:5432/db
 ```
 
-Update `prisma/schema.prisma`:
+Current `prisma/schema.prisma` configuration:
 
 ```prisma
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  # DATABASE_URL is read from environment - no directUrl needed with adapter-pg
 }
 ```
+
+**Note**: The schema does not specify a `url` or `directUrl` in the datasource block because the connection is managed through the PrismaPg adapter, which provides superior connection pooling for serverless environments.
 
 ## Schema Overview
 
+The Spike Land database schema is extensive, supporting multiple platform features. Below are the core models. For the complete schema, see `/prisma/schema.prisma`.
+
 ### Core Models
 
-#### User Model (NextAuth Integration)
+#### User Model (NextAuth Integration + Extended Features)
+
+The User model is central to the platform, integrating with NextAuth for authentication and supporting various platform features:
 
 ```prisma
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                   String    @id @default(cuid())
+  name                 String?
+  email                String?   @unique
+  emailVerified        DateTime?
+  image                String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  stripeCustomerId     String?   @unique
+  role                 UserRole  @default(USER)
+  referralCode         String?   @unique
+  referredById         String?
+  referralCount        Int       @default(0)
+  passwordHash         String?   // For email/password authentication
 
-  accounts      Account[]
-  sessions      Session[]
-  apps          App[]
+  // Relations (selected examples)
+  accounts             Account[]
+  sessions             Session[]
+  enhancedImages       EnhancedImage[]
+  tokenBalance         UserTokenBalance?
+  subscription         Subscription?
+  // ... and many more relations
 }
 ```
 
-#### App Model (Core Platform Entity)
+**Key Features:**
 
-```prisma
-model App {
-  id          String    @id @default(cuid())
-  name        String
-  description String?
-  userId      String    # App owner
-  forkedFrom  String?   # Parent app (if forked)
-  status      AppStatus @default(DRAFT)
-  domain      String?   @unique
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+- **Stable User IDs**: User IDs are generated deterministically from email addresses using a salt (see Authentication section below)
+- **Multiple Auth Methods**: Supports OAuth (GitHub, Google, Facebook, Apple) and email/password
+- **Referral System**: Built-in referral tracking with codes and rewards
+- **Token System**: Integration with token balance and transactions
 
-  user               User                @relation(fields: [userId], references: [id])
-  parentApp          App?                @relation("AppForks", fields: [forkedFrom], references: [id])
-  forks              App[]               @relation("AppForks")
-  requirements       Requirement[]
-  monetizationModels MonetizationModel[]
+### Authentication and User ID Generation
+
+Spike Land implements a sophisticated authentication system with stable user IDs:
+
+#### Stable User IDs
+
+Unlike traditional NextAuth setups that generate random CUIDs, Spike Land creates **deterministic user IDs** based on email addresses:
+
+```typescript
+// From src/auth.config.ts
+function createStableUserId(email: string): string {
+  const salt = process.env.USER_ID_SALT || process.env.AUTH_SECRET;
+  // Creates a deterministic hash: user_<hash>
+  // Same email always gets the same ID
 }
 ```
 
-**App Statuses:**
+**Benefits:**
 
-- `DRAFT`: App under development
-- `ACTIVE`: Published and accessible
-- `ARCHIVED`: No longer active but preserved
-- `DELETED`: Soft deleted
+- Same user gets same ID across different OAuth providers (GitHub, Google, etc.)
+- Predictable IDs for testing and debugging
+- Consistent user identity even if switching login methods
 
-#### Requirement Model
+**Important Considerations:**
 
-```prisma
-model Requirement {
-  id          String              @id @default(cuid())
-  appId       String
-  description String              @db.Text
-  priority    RequirementPriority @default(MEDIUM)
-  status      RequirementStatus   @default(PENDING)
-  version     Int                 @default(1)
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+- `USER_ID_SALT` should **never be rotated** in production (would change all user IDs)
+- If user changes email at OAuth provider, they get a NEW user ID and lose access to previous data
+- This is intentional to maintain 1:1 email-to-identity relationship
 
-  app App @relation(fields: [appId], references: [id], onDelete: Cascade)
-}
+#### Required Environment Variables
+
+```env
+# Primary authentication secret (REQUIRED)
+AUTH_SECRET=<generate-with-openssl-rand-base64-32>
+
+# User ID salt (RECOMMENDED for production)
+# If not set, AUTH_SECRET is used as fallback
+# NEVER rotate this value after setting in production
+USER_ID_SALT=<generate-with-openssl-rand-base64-32>
+
+# OAuth Providers (configure as needed)
+GITHUB_ID=<your-github-oauth-client-id>
+GITHUB_SECRET=<your-github-oauth-client-secret>
+
+GOOGLE_ID=<your-google-oauth-client-id>
+GOOGLE_SECRET=<your-google-oauth-client-secret>
+
+AUTH_FACEBOOK_ID=<your-facebook-oauth-app-id>
+AUTH_FACEBOOK_SECRET=<your-facebook-oauth-app-secret>
 ```
 
-**Priority Levels:** LOW, MEDIUM, HIGH, CRITICAL **Status Types:** PENDING,
-IN_PROGRESS, COMPLETED, REJECTED
+See `.env.example` for complete OAuth setup instructions.
 
-#### MonetizationModel
+### Platform Feature Models
 
-```prisma
-model MonetizationModel {
-  id                   String                @id @default(cuid())
-  appId                String
-  type                 MonetizationType      @default(FREE)
-  price                Decimal?              @db.Decimal(10, 2)
-  subscriptionInterval SubscriptionInterval?
-  features             String[]
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
+The schema supports multiple platform features. Key model groups include:
 
-  app App @relation(fields: [appId], references: [id], onDelete: Cascade)
-}
-```
+#### Image Enhancement System
 
-**Monetization Types:** FREE, ONE_TIME, SUBSCRIPTION, FREEMIUM, USAGE_BASED
-**Subscription Intervals:** MONTHLY, QUARTERLY, YEARLY
+Core models for AI-powered image enhancement:
+
+- **EnhancedImage**: Stores uploaded and enhanced images
+- **ImageEnhancementJob**: Tracks enhancement jobs with status, tier, cost
+- **EnhancementPipeline**: Reusable enhancement configurations
+- **Album**: User photo albums with privacy settings
+- **AlbumImage**: Junction table linking images to albums
+
+**Enhancement Tiers**: FREE, TIER_1K (1024px), TIER_2K (2048px), TIER_4K (4096px)
+
+#### Token Economy
+
+- **UserTokenBalance**: User token balances and subscription tier
+- **TokenTransaction**: Token earn/spend history
+- **TokensPackage**: Purchasable token packages
+- **StripePayment**: Payment records
+
+**Token Transaction Types**: EARN_REGENERATION, EARN_PURCHASE, EARN_BONUS, SPEND_ENHANCEMENT, REFUND
+
+#### Subscription System
+
+- **Subscription**: User subscription records with Stripe integration
+- **SubscriptionPlan**: Available subscription plans
+
+**Subscription Tiers**: FREE, BASIC, STANDARD, PREMIUM
+
+#### Referral System
+
+- **Referral**: Referral tracking between users
+- **Voucher**: Promotional vouchers
+- **VoucherRedemption**: Voucher usage tracking
+
+#### Campaign Analytics
+
+- **VisitorSession**: Tracks visitor sessions with UTM parameters
+- **PageView**: Individual page views
+- **AnalyticsEvent**: Custom event tracking
+- **CampaignAttribution**: Links conversions to campaigns
+- **CampaignLink**: Maps UTM campaigns to platform campaign IDs
+
+#### Merch / Print-on-Demand
+
+- **MerchCategory**: Product categories
+- **MerchProduct**: Products with POD provider integration
+- **MerchVariant**: Product variants (sizes, colors)
+- **MerchCart**: Shopping carts
+- **MerchOrder**: Orders with shipping and payment tracking
+- **MerchShipment**: Shipment tracking
+
+#### Marketing Platform Integration
+
+- **MarketingAccount**: Connected Facebook/Google Ads accounts
+- **Platform support**: FACEBOOK, GOOGLE_ADS
+
+#### Browser Automation (Box System)
+
+- **Box**: Virtual browser instances
+- **BoxTier**: Pricing tiers for boxes
+- **BoxAction**: Box lifecycle actions
+- **AgentTask**: Automated browser tasks
+- **BoxMessage**: Agent conversation history
+
+#### Audio Mixer
+
+- **AudioMixerProject**: User audio projects
+- **AudioTrack**: Individual audio tracks with R2 storage
+
+#### External Agent Integration
+
+- **ExternalAgentSession**: Jules/Codex agent sessions
+- **AgentSessionActivity**: Agent activity logs
 
 ### NextAuth Required Models
 
@@ -250,10 +385,10 @@ Once you have a database configured:
 
 ```bash
 # Generate Prisma Client (types only, no DB changes)
-yarn prisma generate
+yarn db:generate
 
 # Create and apply initial migration
-yarn prisma migrate dev --name init
+yarn db:migrate
 
 # This will:
 # 1. Create migration files in prisma/migrations/
@@ -261,25 +396,42 @@ yarn prisma migrate dev --name init
 # 3. Generate Prisma Client with types
 ```
 
+**Available Database Scripts** (from `package.json`):
+
+```bash
+yarn db:generate        # Generate Prisma Client
+yarn db:migrate         # Create and apply migration (dev)
+yarn db:migrate:deploy  # Deploy migrations (production)
+yarn db:migrate:reset   # Reset database (WARNING: deletes all data)
+yarn db:push            # Push schema without migration (dev only)
+yarn db:seed            # Run seed script
+yarn db:seed-e2e        # Seed database for E2E tests
+yarn db:cleanup-e2e     # Clean up E2E test data
+yarn db:studio          # Open Prisma Studio GUI
+yarn db:validate        # Validate schema
+yarn db:format          # Format schema file
+```
+
 ### Development Workflow
 
 ```bash
 # After schema changes, create a new migration
-yarn prisma migrate dev --name descriptive_name
+yarn db:migrate
 
-# Examples:
-yarn prisma migrate dev --name add_app_status_index
-yarn prisma migrate dev --name add_requirement_priority
+# You'll be prompted to name the migration
+# Examples: add_user_role_field, create_merch_tables, etc.
 ```
 
 ### Production Migrations
 
 ```bash
 # Deploy migrations to production (non-interactive)
-yarn prisma migrate deploy
+yarn db:migrate:deploy
 
 # This should be run in CI/CD pipeline
 ```
+
+**Note**: The project uses a postinstall hook that automatically runs `yarn db:generate` after dependencies are installed, ensuring Prisma Client is always up-to-date.
 
 ### Migration Best Practices
 
@@ -582,32 +734,53 @@ VACUUM ANALYZE apps;
 
 **Prisma Connection Pool (Application Layer)**
 
-Update `prisma/schema.prisma`:
+Spike Land uses `@prisma/adapter-pg` for connection pooling. Current `prisma/schema.prisma`:
 
 ```prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
-generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["metrics"]
+datasource db {
+  provider = "postgresql"
+  # No url specified - managed by adapter in src/lib/prisma.ts
 }
+```
+
+The connection is configured in `/src/lib/prisma.ts`:
+
+```typescript
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
+
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL environment variable is required");
+}
+
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({
+  adapter,
+  log: ["error", "warn"],
+});
 ```
 
 **Environment Configuration:**
 
 ```env
-# Connection pool settings (append to DATABASE_URL)
-DATABASE_URL=postgresql://user:pass@host:5432/db?connection_limit=10&pool_timeout=20
+# Basic connection
+DATABASE_URL=postgresql://user:pass@host:5432/db
+
+# With PgBouncer (for serverless environments)
+DATABASE_URL=postgresql://user:pass@host:6543/db?pgbouncer=true
 ```
 
 **Recommended Pool Sizes:**
 
-- Development: 5-10 connections
-- Production (single instance): 10-20 connections
-- Production (serverless): Use external pooler (PgBouncer)
+- Development: Default (managed by adapter)
+- Production (single instance): Default (managed by adapter)
+- Production (serverless): Use external pooler (PgBouncer) with `@prisma/adapter-pg`
 
 **PgBouncer Configuration (Production)**
 
@@ -644,27 +817,36 @@ server_idle_timeout = 600
 
 **Prisma configuration for read replicas:**
 
+To implement read replicas, create separate Prisma Client instances:
+
 ```typescript
-// src/lib/prisma.ts
-import { PrismaClient } from "@/generated/prisma";
+// src/lib/prisma-read.ts (create this file)
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
 
-// Write operations (primary)
-export const prismaWrite = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-});
+const readConnectionString = process.env.DATABASE_READ_URL;
+if (!readConnectionString) {
+  throw new Error("DATABASE_READ_URL not configured");
+}
 
-// Read operations (replica)
+const adapter = new PrismaPg({ connectionString: readConnectionString });
 export const prismaRead = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_READ_URL,
-    },
-  },
+  adapter,
+  log: ["error", "warn"],
 });
+```
+
+Then use in your application:
+
+```typescript
+import prisma from "@/lib/prisma"; // Write operations
+import { prismaRead } from "@/lib/prisma-read"; // Read operations
+
+// Read from replica
+const users = await prismaRead.user.findMany();
+
+// Write to primary
+await prisma.user.create({ data: { ... } });
 ```
 
 ### Failover Procedures
@@ -845,17 +1027,97 @@ ORDER BY duration DESC;
 SELECT pg_cancel_backend(<pid>);
 ```
 
+## Database Seeding
+
+The project includes several seed scripts for different purposes:
+
+### Development Seeding
+
+```bash
+# Main seed script - creates basic data for development
+yarn db:seed
+
+# Seed vouchers specifically
+yarn db:seed-vouchers
+
+# Seed merch products
+yarn prisma db seed -- --file=prisma/seed-merch.ts
+
+# Seed box tiers
+yarn prisma db seed -- --file=prisma/seed-box-tiers.ts
+```
+
+### E2E Testing
+
+```bash
+# Seed database for E2E tests
+yarn db:seed-e2e
+
+# Clean up E2E test data
+yarn db:cleanup-e2e
+```
+
+**Important**: The E2E seed creates deterministic test data with known IDs. See `prisma/seed-e2e.ts` for details.
+
+### Seed Script Locations
+
+- `/prisma/seed.ts` - Main development seed
+- `/prisma/seed-enhanced.ts` - Enhanced seeding with additional data
+- `/prisma/seed-vouchers.ts` - Voucher codes
+- `/prisma/seed-merch.ts` - Merch products and categories
+- `/prisma/seed-box-tiers.ts` - Box pricing tiers
+- `/prisma/seed-e2e.ts` - E2E test data
+- `/prisma/cleanup-e2e.ts` - E2E cleanup
+
+## Environment Variables Summary
+
+Required variables for database setup:
+
+```env
+# Database Connection (REQUIRED)
+DATABASE_URL=postgresql://user:password@host:5432/database
+
+# Authentication (REQUIRED)
+AUTH_SECRET=<generate-with-openssl-rand-base64-32>
+
+# User ID Salt (RECOMMENDED for production)
+USER_ID_SALT=<generate-with-openssl-rand-base64-32>
+
+# OAuth Providers (configure as needed)
+GITHUB_ID=<your-github-client-id>
+GITHUB_SECRET=<your-github-secret>
+GOOGLE_ID=<your-google-client-id>
+GOOGLE_SECRET=<your-google-secret>
+AUTH_FACEBOOK_ID=<your-facebook-app-id>
+AUTH_FACEBOOK_SECRET=<your-facebook-secret>
+```
+
+See `.env.example` for the complete list of available configuration options.
+
 ## Additional Resources
 
 - **Prisma Documentation**: https://www.prisma.io/docs
+- **Prisma Adapter for PostgreSQL**: https://www.prisma.io/docs/orm/overview/databases/postgresql
 - **PostgreSQL Documentation**: https://www.postgresql.org/docs
-- **NextAuth.js Prisma Adapter**: https://next-auth.js.org/adapters/prisma
-- **Database Performance Tuning**:
-  https://wiki.postgresql.org/wiki/Performance_Optimization
+- **NextAuth.js Documentation**: https://next-auth.js.org/
+- **Neon Database**: https://neon.tech/docs
+- **Database Performance Tuning**: https://wiki.postgresql.org/wiki/Performance_Optimization
 
-## Support and Maintenance Contacts
+## Project-Specific Documentation
 
-- **Database Administrator**: [Contact Info]
-- **DevOps Team**: [Contact Info]
-- **On-Call Schedule**: [Link to schedule]
-- **Incident Response**: [Runbook link]
+- **Token System**: [docs/TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md)
+- **API Reference**: [docs/API_REFERENCE.md](./API_REFERENCE.md)
+- **Database Schema**: [docs/DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)
+- **Features Overview**: [docs/FEATURES.md](./FEATURES.md)
+
+## Support and Maintenance
+
+For issues or questions:
+
+1. Check the documentation in `/docs`
+2. Review the schema in `/prisma/schema.prisma`
+3. Check migration history in `/prisma/migrations`
+4. Use Prisma Studio for visual debugging: `yarn db:studio`
+
+**Database Administrator**: Contact via GitHub issues
+**Project Owner**: Zoltan Erdos (@zerdos)

@@ -1,7 +1,7 @@
 # Spike Land API Documentation
 
 This directory contains comprehensive API documentation for the Spike Land
-platform using OpenAPI 3.0 specification.
+platform.
 
 ## Overview
 
@@ -12,7 +12,73 @@ Spike Land is an AI-powered app platform where users can:
 - Participate in referral programs
 - Manage token economy and payments
 
-## Files
+## Quick Start
+
+**New to the API?** Start with [00_START_HERE.md](./00_START_HERE.md) - it will guide you to the right documentation based on your role.
+
+**Already know what you need?** See the [Documentation Files](#documentation-files) section below or jump to [INDEX.md](./INDEX.md) for detailed navigation.
+
+## What's in This Directory
+
+This directory contains **9 documentation files** covering:
+
+- **OpenAPI 3.0 Specification** (`openapi.yaml`) - Machine-readable API spec for SDK generation
+- **API Endpoint Documentation** - Detailed references for Albums and Images
+- **Integration Guides** - Code examples in TypeScript/JavaScript and cURL
+- **Getting Started Guides** - Role-based navigation and quick references
+- **Policies** - Token refund policy
+
+## Documentation Files
+
+### Core Documentation
+
+| File                                   | Description                                 | Audience          |
+| -------------------------------------- | ------------------------------------------- | ----------------- |
+| [00_START_HERE.md](./00_START_HERE.md) | Entry point with role-based navigation      | Everyone          |
+| [INDEX.md](./INDEX.md)                 | Complete documentation index and navigation | Everyone          |
+| [openapi.yaml](./openapi.yaml)         | OpenAPI 3.0 specification                   | Developers, Tools |
+
+### API Reference
+
+| File                                       | Description                                | Read Time |
+| ------------------------------------------ | ------------------------------------------ | --------- |
+| [ALBUM_ENDPOINTS.md](./ALBUM_ENDPOINTS.md) | Album management API reference             | 15 min    |
+| [IMAGE_ENDPOINTS.md](./IMAGE_ENDPOINTS.md) | Image upload and enhancement API reference | 15 min    |
+
+### Integration Guides
+
+| File                                           | Description                            | Read Time |
+| ---------------------------------------------- | -------------------------------------- | --------- |
+| [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) | Code examples and integration patterns | 30 min    |
+| [CURL_EXAMPLES.md](./CURL_EXAMPLES.md)         | cURL command examples for testing      | 20 min    |
+
+### Policies
+
+| File                                   | Description                                 |
+| -------------------------------------- | ------------------------------------------- |
+| [REFUND_POLICY.md](./REFUND_POLICY.md) | Token refund policy for failed enhancements |
+
+## Files Explained
+
+### 00_START_HERE.md
+
+Your entry point to the API documentation. This file:
+
+- Explains what the Spike Land API is
+- Provides role-based navigation (Frontend, Backend, QA, DevOps, PM)
+- Lists common questions with direct links to answers
+- Shows API features at a glance
+- Takes 5 minutes to read
+
+### INDEX.md
+
+Complete documentation index with:
+
+- All files listed with descriptions and line counts
+- Reading paths by role
+- Common task guidance
+- API statistics
+- Maintenance guidelines
 
 ### openapi.yaml
 
@@ -20,11 +86,13 @@ Complete OpenAPI 3.0 specification including:
 
 - Base structure and metadata
 - Security schemes (session auth & bearer tokens)
-- Common components and schemas
-- Reusable response objects and parameters
+- 25+ reusable schema definitions
+- Error response standards
+- Common parameters
+- Rate limiting documentation
+- Full server configuration
 
-This base specification is designed to be extended with individual endpoint
-definitions for each API route.
+This specification can be used for SDK generation, Swagger UI, and API testing tools.
 
 ## Using the OpenAPI Specification
 
@@ -355,13 +423,72 @@ curl https://spike.land/api/jobs/{jobId}/stream \
   -H "Authorization: Bearer session_token"
 ```
 
+### ALBUM_ENDPOINTS.md
+
+Detailed documentation for album operations:
+
+- List, create, update, delete albums
+- Album privacy levels (private, unlisted, public)
+- Batch enhancement of album images
+- Album sharing with share tokens
+- Complete request/response examples
+- Error handling and rate limiting
+
+### IMAGE_ENDPOINTS.md
+
+Complete REST API documentation for image management:
+
+- Single and batch image upload
+- Image enhancement (single tier and parallel)
+- Image retrieval with job status
+- Moving images between albums
+- Complete error handling
+- Rate limiting details
+- Code examples in JavaScript and cURL
+
+### INTEGRATION_GUIDE.md
+
+Developer-focused implementation guide with:
+
+- Authentication setup (session-based, bearer tokens, mobile)
+- Working TypeScript/JavaScript code examples
+- Common API patterns (token balance, enhancement, polling)
+- Error handling strategies
+- Rate limiting with retry logic
+- Type-safe API client implementation
+- Testing examples
+
+### CURL_EXAMPLES.md
+
+Quick reference for API testing:
+
+- Environment setup instructions
+- 40+ ready-to-use cURL commands
+- Examples for all major endpoints
+- Error response examples
+- Automation scripts
+- Performance measurement techniques
+- Troubleshooting guide
+
+### REFUND_POLICY.md
+
+Token refund policy documentation:
+
+- When automatic refunds occur
+- What qualifies for refunds
+- Technical implementation details
+- Monitoring and logging
+- Contact information for support
+
 ## Related Documentation
 
-- [API Reference](../API_REFERENCE.md) - Detailed endpoint documentation
-- [Token System](../TOKEN_SYSTEM.md) - Token economy details
-- [Image Enhancement](../IMAGE_ENHANCEMENT.md) - Enhancement pipeline
-- [Database Schema](../DATABASE_SCHEMA.md) - Data models
-- [Security Audit](../SECURITY_AUDIT_REPORT.md) - Security practices
+For additional context, see documentation in the parent directory:
+
+- [API_REFERENCE.md](../API_REFERENCE.md) - Detailed endpoint documentation
+- [TOKEN_SYSTEM.md](../TOKEN_SYSTEM.md) - Token economy details
+- [IMAGE_ENHANCEMENT.md](../IMAGE_ENHANCEMENT.md) - Enhancement pipeline
+- [DATABASE_SCHEMA.md](../DATABASE_SCHEMA.md) - Data models
+- [SECURITY_AUDIT_REPORT.md](../SECURITY_AUDIT_REPORT.md) - Security practices
 
 ## Support
 
