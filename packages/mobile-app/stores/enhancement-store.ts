@@ -6,7 +6,6 @@
 import type {
   EnhancedImage,
   EnhancementTier,
-  ImageEnhancementJob,
   JobStatus,
   PipelineStage,
 } from "@spike-npm-land/shared";
@@ -18,14 +17,7 @@ import { getJobStatus } from "../services/api/jobs";
 // Types
 // ============================================================================
 
-export interface EnhancementHistoryItem {
-  id: string;
-  image: EnhancedImage;
-  latestJob: ImageEnhancementJob | null;
-  createdAt: Date;
-}
-
-export interface CurrentJobState {
+interface CurrentJobState {
   id: string;
   status: JobStatus;
   stage: PipelineStage | null;
@@ -309,6 +301,3 @@ export const useEnhancementStore = create<EnhancementStore>((set, get) => ({
     set({ isPolling });
   },
 }));
-
-// Re-export types for external use
-export type { CurrentJobState, EnhancementActions, EnhancementState };
