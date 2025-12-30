@@ -373,7 +373,7 @@ export async function setBadgeCount(count: number): Promise<void> {
  * Clear the app badge
  */
 export async function clearBadge(): Promise<void> {
-  if (Platform.OS === "web") return;
+  if (Platform.OS === "web" || !Notifications) return;
   await Notifications.setBadgeCountAsync(0);
 }
 
@@ -381,6 +381,12 @@ export async function clearBadge(): Promise<void> {
  * Get the current badge count
  */
 export async function getBadgeCount(): Promise<number> {
-  if (Platform.OS === "web") return 0;
+  if (Platform.OS === "web" || !Notifications) return 0;
   return await Notifications.getBadgeCountAsync();
 }
+
+// Re-export Notifications module for hook usage (may be null in Expo Go)
+export { Notifications };
+
+// Re-export notification types for consumers
+export type { NotificationTypes };

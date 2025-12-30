@@ -3,13 +3,15 @@
  * Manages push notification registration, permissions, and incoming notifications
  */
 
-import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, type AppStateStatus, Platform } from "react-native";
 import {
   clearBadge,
   handleNotificationResponse,
+  isExpoGo,
+  Notifications,
+  type NotificationTypes,
   registerDeviceWithServer,
   registerForPushNotifications,
 } from "../services/notifications";
@@ -26,22 +28,28 @@ export interface UsePushNotificationsOptions {
   /** Whether to handle notification taps with navigation */
   handleNavigation?: boolean;
   /** Callback when a notification is received in foreground */
-  onNotificationReceived?: (notification: Notifications.Notification) => void;
+  onNotificationReceived?: (
+    notification: NotificationTypes.Notification,
+  ) => void;
   /** Callback when user taps on a notification */
-  onNotificationTapped?: (response: Notifications.NotificationResponse) => void;
+  onNotificationTapped?: (
+    response: NotificationTypes.NotificationResponse,
+  ) => void;
 }
 
 export interface UsePushNotificationsReturn {
   /** The Expo push token for this device */
   expoPushToken: string | null;
   /** The most recent notification received */
-  notification: Notifications.Notification | null;
+  notification: NotificationTypes.Notification | null;
   /** Whether the hook is currently loading (requesting permissions, etc.) */
   isLoading: boolean;
   /** Any error that occurred during setup */
   error: string | null;
   /** Whether push notifications are enabled */
   isEnabled: boolean;
+  /** Whether running in Expo Go (notifications unavailable) */
+  isExpoGo: boolean;
   /** Manually request push notification permissions */
   requestPermissions: () => Promise<string | null>;
   /** Clear the current notification state */
@@ -66,19 +74,23 @@ export function usePushNotifications(
   // State
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notification, setNotification] = useState<
-    Notifications.Notification | null
+    NotificationTypes.Notification | null
   >(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    isExpoGo
+      ? "Push notifications unavailable in Expo Go. Use a development build."
+      : null,
+  );
   const [isEnabled, setIsEnabled] = useState(false);
 
   // Refs for listeners
   const notificationListenerRef = useRef<
-    Notifications.EventSubscription | null
+    NotificationTypes.EventSubscription | null
   >(null);
-  const responseListenerRef = useRef<Notifications.EventSubscription | null>(
-    null,
-  );
+  const responseListenerRef = useRef<
+    NotificationTypes.EventSubscription | null
+  >(null);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
 
   // Request permissions and get push token
@@ -124,7 +136,7 @@ export function usePushNotifications(
 
   // Handle notification received in foreground
   const handleNotificationReceived = useCallback(
-    (receivedNotification: Notifications.Notification) => {
+    (receivedNotification: NotificationTypes.Notification) => {
       setNotification(receivedNotification);
       onNotificationReceived?.(receivedNotification);
     },
@@ -133,7 +145,7 @@ export function usePushNotifications(
 
   // Handle notification tap
   const handleNotificationTap = useCallback(
-    (response: Notifications.NotificationResponse) => {
+    (response: NotificationTypes.NotificationResponse) => {
       onNotificationTapped?.(response);
 
       if (handleNavigation) {
@@ -147,10 +159,10 @@ export function usePushNotifications(
   );
 
   // Check for initial notification (app opened from notification)
-  // This is only available on native platforms, not web
+  // This is only available on native platforms, not web or Expo Go
   useEffect(() => {
-    // Skip on web - push notifications are not available
-    if (Platform.OS === "web") {
+    // Skip on web or Expo Go - push notifications are not available
+    if (Platform.OS === "web" || isExpoGo || !Notifications) {
       return;
     }
 
@@ -165,24 +177,22 @@ export function usePushNotifications(
   }, [handleNotificationTap]);
 
   // Set up notification listeners
-  // These are only available on native platforms
+  // These are only available on native platforms, not Expo Go
   useEffect(() => {
-    // Skip on web - push notifications are not available
-    if (Platform.OS === "web") {
+    // Skip on web or Expo Go - push notifications are not available
+    if (Platform.OS === "web" || isExpoGo || !Notifications) {
       return;
     }
 
     // Foreground notification listener
-    notificationListenerRef.current = Notifications
-      .addNotificationReceivedListener(
-        handleNotificationReceived,
-      );
+    notificationListenerRef.current = Notifications.addNotificationReceivedListener(
+      handleNotificationReceived,
+    );
 
     // Notification tap listener
-    responseListenerRef.current = Notifications
-      .addNotificationResponseReceivedListener(
-        handleNotificationTap,
-      );
+    responseListenerRef.current = Notifications.addNotificationResponseReceivedListener(
+      handleNotificationTap,
+    );
 
     return () => {
       if (notificationListenerRef.current) {
@@ -195,9 +205,9 @@ export function usePushNotifications(
   }, [handleNotificationReceived, handleNotificationTap]);
 
   // Request permissions on mount if enabled
-  // Only on native platforms
+  // Only on native platforms, not Expo Go
   useEffect(() => {
-    if (Platform.OS === "web") {
+    if (Platform.OS === "web" || isExpoGo) {
       return;
     }
 
@@ -234,6 +244,7 @@ export function usePushNotifications(
     isLoading,
     error,
     isEnabled,
+    isExpoGo,
     requestPermissions,
     clearNotification,
   };

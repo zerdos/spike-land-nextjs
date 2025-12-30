@@ -15,6 +15,8 @@ jest.mock("../services/notifications", () => ({
   registerDeviceWithServer: jest.fn(),
   handleNotificationResponse: jest.fn(),
   clearBadge: jest.fn(),
+  isExpoGo: false, // Simulate development build
+  Notifications: require("expo-notifications"), // Re-export the mocked module
 }));
 
 // ============================================================================
@@ -117,6 +119,7 @@ describe("usePushNotifications", () => {
       expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBeNull();
       expect(result.current.isEnabled).toBe(false);
+      expect(result.current.isExpoGo).toBe(false);
     });
 
     it("requests permissions on mount when requestOnMount is true", async () => {

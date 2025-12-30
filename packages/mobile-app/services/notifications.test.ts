@@ -14,6 +14,22 @@ const PermissionStatus = {
   DENIED: "denied",
   UNDETERMINED: "undetermined",
 } as const;
+
+// Mock Constants to simulate development build (not Expo Go)
+jest.mock("expo-constants", () => ({
+  __esModule: true,
+  default: {
+    appOwnership: "standalone", // Not "expo" so notifications work
+    expoConfig: {
+      extra: {
+        eas: {
+          projectId: "test-project-id",
+        },
+      },
+    },
+  },
+}));
+
 import {
   cancelAllNotifications,
   cancelNotification,
@@ -22,6 +38,7 @@ import {
   fetchNotifications,
   getBadgeCount,
   handleNotificationResponse,
+  isExpoGo,
   markAllNotificationsAsRead,
   markNotificationAsRead,
   navigateFromNotification,
@@ -96,6 +113,13 @@ describe("notifications service", () => {
       value: "ios",
       writable: true,
       configurable: true,
+    });
+  });
+
+  describe("isExpoGo detection", () => {
+    it("isExpoGo is false in development build", () => {
+      // Our mock sets appOwnership to "standalone"
+      expect(isExpoGo).toBe(false);
     });
   });
 
