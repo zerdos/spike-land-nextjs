@@ -1,86 +1,109 @@
 # Spike Land API Versioning Strategy
 
-> **Last Updated**: December 2025 **Status**: MVP Release - No explicit
-> versioning yet **Document Version**: 1.0
+> **Last Updated**: December 30, 2025 **Status**: Hybrid Versioning - v1 for Agent API, unversioned for public endpoints **Document Version**: 2.0
 
 ## Table of Contents
 
 1. [Current Status](#current-status)
-2. [When Versioning Becomes Necessary](#when-versioning-becomes-necessary)
-3. [Versioning Approach](#versioning-approach)
-4. [What Constitutes Breaking Changes](#what-constitutes-breaking-changes)
-5. [Deprecation Policy](#deprecation-policy)
-6. [Migration Guidelines](#migration-guidelines)
-7. [Version Management](#version-management)
-8. [Current API Endpoints](#current-api-endpoints)
+2. [Versioning Approach](#versioning-approach)
+3. [What Constitutes Breaking Changes](#what-constitutes-breaking-changes)
+4. [Deprecation Policy](#deprecation-policy)
+5. [Migration Guidelines](#migration-guidelines)
+6. [Version Management](#version-management)
+7. [Current API Endpoints](#current-api-endpoints)
 
 ---
 
 ## Current Status
 
-**The Spike Land API currently operates without explicit version numbers.**
+**The Spike Land API uses a hybrid versioning approach:**
+
+- **Unversioned endpoints** (`/api/*`) - Core platform APIs for images, albums, tokens, etc.
+- **Versioned endpoints** (`/api/v1/*`) - Agent/MCP API for async coding tasks
 
 ### Current API Structure
 
-All endpoints are accessed at `/api/*` without a version prefix:
+#### Unversioned Endpoints (Platform APIs)
+
+Most platform endpoints operate without explicit version prefixes:
 
 ```
 GET    /api/images
 POST   /api/images/upload
-POST   /api/images/{id}/enhance
+POST   /api/images/enhance
 GET    /api/albums
 POST   /api/albums
 GET    /api/tokens/balance
-POST   /api/vouchers/apply
+POST   /api/vouchers/validate
+GET    /api/referral/stats
+POST   /api/mcp/generate
+GET    /api/health
 ```
 
-### Why No Explicit Versioning Currently?
+**Total unversioned routes**: ~126 endpoints across the platform
 
-1. **Early Stage Platform** - Pixel app is MVP with evolving requirements
-2. **Internal-First Development** - Built for controlled rollout
-3. **Flexibility** - Can ship improvements without version bumps
-4. **Simplicity** - Reduces complexity during rapid iteration
+#### Versioned Endpoints (Agent API v1)
 
----
-
-## When Versioning Becomes Necessary
-
-Explicit API versioning will be implemented when:
-
-1. **External API Availability** - Third-party developers integrate with Spike
-   Land API
-2. **Enterprise Customers** - B2B customers require stability guarantees
-3. **Breaking Changes Required** - Fundamental API redesigns needed
-4. **Multiple Product Versions** - Spike Land platform has multiple deployed
-   versions
-
-### Triggers for Versioning
+Agent/MCP integration uses explicit versioning:
 
 ```
-If (breaking_change_required AND external_consumers > 0) {
-  implement_versioning();
-  announce_deprecation_timeline();
-}
+GET    /api/v1/agent/tasks
+POST   /api/v1/agent/tasks
+POST   /api/v1/agent/heartbeat
 ```
+
+**Purpose**: These endpoints serve the Jules async coding agent feature and external MCP clients that require stable API contracts.
+
+### Why Hybrid Versioning?
+
+1. **Platform Evolution** - Core Spike Land APIs evolve rapidly during development
+2. **Internal-First** - Platform endpoints serve the web/mobile apps we control
+3. **External Stability** - Agent API consumed by external MCP clients (npm package `@spike-npm-land/mcp-server`)
+4. **Flexibility** - Unversioned endpoints can improve without migration overhead
+5. **Contracts Matter** - Versioned endpoints signal stability commitments to external integrators
 
 ---
 
 ## Versioning Approach
 
-### URL-Based Versioning (Adopted Strategy)
+### Current Implementation (Hybrid Strategy)
 
-When versioning becomes necessary, we will adopt **URL-based versioning**:
+Spike Land uses **selective URL-based versioning** based on API consumer type:
 
 ```
-/api/v1/images
-/api/v1/albums
-/api/v1/tokens
-
-/api/v2/images     (new version with breaking changes)
-/api/v2/albums
+/api/*          → Unversioned (platform APIs, internal use)
+/api/v1/*       → Version 1 (external agent APIs with stability guarantees)
+/api/v2/*       → Not yet implemented (future external APIs)
 ```
 
-### Why URL-Based Versioning?
+#### Decision Matrix: When to Version an Endpoint
+
+| Factor                 | Unversioned                  | Versioned (v1, v2...)        |
+| ---------------------- | ---------------------------- | ---------------------------- |
+| **Consumer**           | Internal (web/mobile app)    | External (MCP clients, SDKs) |
+| **Deployment Control** | We control all clients       | Third-party integrations     |
+| **Change Frequency**   | Frequent improvements        | Stability required           |
+| **Breaking Changes**   | Can coordinate updates       | Need migration period        |
+| **Documentation**      | Internal reference           | Public API contract          |
+| **Examples**           | `/api/images`, `/api/albums` | `/api/v1/agent/tasks`        |
+
+### When to Add Versioning to New Endpoints
+
+Implement explicit versioning when ANY of these conditions are met:
+
+1. **External SDK/Package** - Endpoint consumed by published npm packages (e.g., `@spike-npm-land/mcp-server`)
+2. **Third-Party Integrations** - External developers build against the API
+3. **Stability Guarantees** - Contractual commitments to API stability
+4. **Public Documentation** - API advertised for external consumption
+5. **B2B Customers** - Enterprise clients require predictable changes
+
+**Current example**: `/api/v1/agent/*` endpoints serve external MCP clients through the published npm package
+
+### URL-Based Versioning Details
+
+We use URL-based versioning (e.g., `/api/v1/agent/tasks`) rather than header-based or query parameter versioning.
+
+#### Why URL-Based Versioning?
 
 | Aspect        | URL-Based                       | Header-Based               | Query Param        |
 | ------------- | ------------------------------- | -------------------------- | ------------------ |
@@ -577,95 +600,272 @@ API changes are documented in multiple places for discoverability:
 
 ## Current API Endpoints
 
-### Endpoint Status Matrix
+### Endpoint Categories Overview
 
-| Resource     | Endpoint                    | Method | Status   | Notes                   |
-| ------------ | --------------------------- | ------ | -------- | ----------------------- |
-| **Images**   |                             |        |          |                         |
-|              | `/api/images`               | GET    | Stable   | List user images        |
-|              | `/api/images/upload`        | POST   | Stable   | Upload new image        |
-|              | `/api/images/{id}`          | GET    | Stable   | Get image details       |
-|              | `/api/images/{id}`          | DELETE | Stable   | Delete image            |
-|              | `/api/images/{id}/enhance`  | POST   | Stable   | Single enhancement      |
-|              | `/api/images/{id}/versions` | GET    | Stable   | Get enhancement history |
-| **Albums**   |                             |        |          |                         |
-|              | `/api/albums`               | GET    | Stable   | List user albums        |
-|              | `/api/albums`               | POST   | Stable   | Create album            |
-|              | `/api/albums/{id}`          | GET    | Stable   | Get album details       |
-|              | `/api/albums/{id}`          | PATCH  | Stable   | Update album            |
-|              | `/api/albums/{id}`          | DELETE | Stable   | Delete album            |
-|              | `/api/albums/{id}/enhance`  | POST   | Stable   | Batch enhance           |
-|              | `/api/albums/{id}/export`   | POST   | Stable   | Export images           |
-| **Tokens**   |                             |        |          |                         |
-|              | `/api/tokens/balance`       | GET    | Stable   | Get token balance       |
-|              | `/api/tokens/consume`       | POST   | Stable   | Consume tokens          |
-|              | `/api/tokens/history`       | GET    | Stable   | Transaction history     |
-| **Vouchers** |                             |        |          |                         |
-|              | `/api/vouchers/apply`       | POST   | Stable   | Apply voucher code      |
-|              | `/api/vouchers/validate`    | POST   | Stable   | Check voucher validity  |
-| **Referral** |                             |        |          |                         |
-|              | `/api/referral/link`        | GET    | Stable   | Get referral link       |
-|              | `/api/referral/stats`       | GET    | Stable   | Referral statistics     |
-| **Admin**    |                             |        |          |                         |
-|              | `/api/admin/*`              | *      | Internal | Admin-only, may change  |
-|              | `/api/admin/users`          | GET    | Internal | User management         |
-|              | `/api/admin/analytics`      | GET    | Internal | System analytics        |
+| Category      | Versioning  | Count | Purpose                               | Consumer        |
+| ------------- | ----------- | ----- | ------------------------------------- | --------------- |
+| **Images**    | Unversioned | ~15   | Image upload, enhancement, management | Web/Mobile apps |
+| **Albums**    | Unversioned | ~5    | Album CRUD, batch operations          | Web/Mobile apps |
+| **Gallery**   | Unversioned | ~2    | Public gallery browsing               | Web app         |
+| **Tokens**    | Unversioned | ~3    | Balance, consumption tracking         | Platform core   |
+| **Vouchers**  | Unversioned | ~2    | Voucher validation, redemption        | Platform core   |
+| **Referral**  | Unversioned | ~2    | Referral links and stats              | Web/Mobile apps |
+| **MCP**       | Unversioned | ~4    | AI image generation/modification      | Web app, CLI    |
+| **Jobs**      | Unversioned | ~5    | Async job tracking                    | Web/Mobile apps |
+| **Audio**     | Unversioned | ~2    | Audio upload/streaming                | Web app         |
+| **Boxes**     | Unversioned | ~5    | Container management                  | Web app         |
+| **Apps**      | Unversioned | ~2    | App management                        | Platform core   |
+| **Pipelines** | Unversioned | ~3    | Image processing pipelines            | Web app         |
+| **Blog**      | Unversioned | ~2    | Blog content                          | Web app         |
+| **Merch**     | Unversioned | ~7    | E-commerce functionality              | Web app         |
+| **Tiers**     | Unversioned | ~3    | Subscription tier management          | Web/Mobile apps |
+| **Tracking**  | Unversioned | ~3    | Analytics events                      | Web/Mobile apps |
+| **Settings**  | Unversioned | ~2    | User settings, API keys               | Web app         |
+| **Marketing** | Unversioned | ~4    | Google/Facebook integrations          | Admin           |
+| **Stripe**    | Unversioned | ~2    | Payment processing                    | Platform core   |
+| **Auth**      | Unversioned | ~4    | Authentication flows                  | Web/Mobile apps |
+| **Health**    | Unversioned | ~1    | System health checks                  | Monitoring      |
+| **Errors**    | Unversioned | ~2    | Error reporting                       | Web/Mobile apps |
+| **Reports**   | Unversioned | ~1    | System reports                        | Admin           |
+| **Cron**      | Unversioned | ~4    | Background jobs                       | System          |
+| **Admin**     | Unversioned | ~25   | Admin dashboard, analytics            | Admin panel     |
+| **Agent API** | **v1**      | ~2    | Jules async coding tasks              | External MCP    |
+
+**Total**: ~128 API endpoints
+
+### Versioned Endpoints (External APIs)
+
+#### Agent API v1
+
+Explicitly versioned for external consumption via MCP protocol:
+
+| Endpoint                  | Method | Purpose                       | Authentication | Stability                               |
+| ------------------------- | ------ | ----------------------------- | -------------- | --------------------------------------- |
+| `/api/v1/agent/tasks`     | GET    | Fetch pending tasks for agent | MCP API key    | Stable - No breaking changes without v2 |
+| `/api/v1/agent/tasks`     | POST   | Update task status/result     | MCP API key    | Stable - No breaking changes without v2 |
+| `/api/v1/agent/heartbeat` | POST   | Agent health check            | MCP API key    | Stable - No breaking changes without v2 |
+
+**External consumers**:
+
+- MCP clients via `@spike-npm-land/mcp-server` npm package
+- Jules async coding agent
+- Custom MCP integrations
+
+### Unversioned Endpoints (Platform APIs)
+
+Platform endpoints evolve without versioning as we control all consumers (our web/mobile apps).
+
+#### Key Examples
+
+| Resource   | Endpoint                       | Method   | Status   | Notes                                 |
+| ---------- | ------------------------------ | -------- | -------- | ------------------------------------- |
+| **Images** | `/api/images`                  | GET      | Active   | List user images with pagination      |
+|            | `/api/images/upload`           | POST     | Active   | Upload new image                      |
+|            | `/api/images/enhance`          | POST     | Active   | Single image enhancement              |
+|            | `/api/images/batch-enhance`    | POST     | Active   | Multiple image enhancement            |
+|            | `/api/images/parallel-enhance` | POST     | Active   | Parallel enhancement processing       |
+| **Albums** | `/api/albums`                  | GET/POST | Active   | Album CRUD operations                 |
+|            | `/api/albums/{id}/enhance`     | POST     | Active   | Batch enhance album images            |
+|            | `/api/albums/{id}/images`      | GET      | Active   | List album images                     |
+| **MCP**    | `/api/mcp/generate`            | POST     | Active   | AI image generation                   |
+|            | `/api/mcp/modify`              | POST     | Active   | AI image modification                 |
+|            | `/api/mcp/balance`             | GET      | Active   | Token balance check                   |
+|            | `/api/mcp/jobs/{jobId}`        | GET      | Active   | Job status polling                    |
+| **Admin**  | `/api/admin/*`                 | *        | Internal | Admin-only, may change without notice |
 
 ### Stability Guarantees
 
-**Stable** - Endpoints follow semantic versioning:
+#### Versioned APIs (v1, v2...)
 
-- Adding optional parameters: OK
-- Adding response fields: OK
-- Removing required fields: Requires v2
+**Strict Stability Contract** - Breaking changes require new version:
 
-**Internal** - Admin endpoints not guaranteed:
+- ✅ Can add optional parameters/fields
+- ✅ Can add new endpoints
+- ✅ Can improve performance
+- ❌ Cannot remove fields without v2
+- ❌ Cannot change response structure without v2
+- ❌ Cannot make optional fields required without v2
 
+**Deprecation timeline**: Minimum 6 months notice before sunset
+
+#### Unversioned APIs
+
+**Flexible Evolution** - Can change as needed:
+
+- ✅ Adding/removing fields (we control all clients)
+- ✅ Changing response structures (coordinated with app updates)
+- ✅ Improving APIs based on usage
+- ⚠️ Breaking changes coordinated with web/mobile app deployments
+- ⚠️ No external consumers to notify
+
+**Best practice**: Still avoid gratuitous breaking changes
+
+#### Internal APIs
+
+**Admin endpoints** (`/api/admin/*`):
+
+- No stability guarantees
 - May change without notice
-- No deprecation period
-- Use only for internal tooling
+- No deprecation period required
+- Used only by internal admin dashboard
 
 ---
 
 ## Future Considerations
 
-### API Maturity Indicators
+### When to Version Additional Endpoints
 
-The following signals indicate the API is ready for external release:
+Consider adding explicit versioning when:
 
-- [ ] All endpoints documented in OpenAPI/Swagger
-- [ ] SDK libraries published (JavaScript, Python, Go)
-- [ ] Authentication standardized (API keys / OAuth)
-- [ ] Rate limiting well-defined and enforced
-- [ ] Error handling standardized with error codes
-- [ ] Support contact established (api-support@spike.land)
-- [ ] SLA established (uptime, response time targets)
-- [ ] Version roadmap published
+1. **Publishing SDKs** - Creating client libraries for external developers
+2. **B2B Features** - Enterprise customers requiring API stability
+3. **Marketplace Integrations** - Third-party apps connecting to Spike Land
+4. **Public API Launch** - Opening platform to external developers
 
-### Versioning Complexity Matrix
+### Potential Future Versioned APIs
+
+| API Category                           | Timeline | Reason for Versioning                       |
+| -------------------------------------- | -------- | ------------------------------------------- |
+| **Image API** (`/api/v1/images/*`)     | TBD      | If external apps use image enhancement      |
+| **Token API** (`/api/v1/tokens/*`)     | TBD      | If third-party apps manage tokens           |
+| **Album API** (`/api/v1/albums/*`)     | TBD      | If external gallery integrations            |
+| **Webhook API** (`/api/v1/webhooks/*`) | TBD      | For event notifications to external systems |
+
+### Current Status: Agent API Only
+
+Currently, **only the Agent API** (`/api/v1/agent/*`) requires versioning because:
+
+- ✅ Published as npm package `@spike-npm-land/mcp-server`
+- ✅ External MCP clients depend on it
+- ✅ Breaking changes would affect unknown number of integrations
+- ✅ Follows MCP protocol standards
+
+All other APIs remain unversioned as we control all consumers (our web/mobile apps).
+
+---
+
+## Implementation Details
+
+### How Versioning Works in the Codebase
+
+Spike Land uses Next.js App Router file-based routing. API versioning is implemented through directory structure:
 
 ```
-If (external_developers = 0) {
-  strategy = "implicit_versioning" // Current approach
-  max_changes_per_release = "unlimited"
-  notification_required = false
-}
+src/app/api/
+├── images/                    # Unversioned platform endpoints
+│   ├── route.ts              # GET /api/images
+│   ├── upload/route.ts       # POST /api/images/upload
+│   ├── enhance/route.ts      # POST /api/images/enhance
+│   └── [id]/
+│       ├── route.ts          # GET/DELETE /api/images/{id}
+│       └── versions/route.ts # GET /api/images/{id}/versions
+│
+├── v1/                        # Versioned external APIs
+│   └── agent/
+│       ├── tasks/route.ts     # GET/POST /api/v1/agent/tasks
+│       └── heartbeat/route.ts # POST /api/v1/agent/heartbeat
+│
+├── albums/route.ts            # Unversioned
+├── tokens/balance/route.ts    # Unversioned
+└── health/route.ts            # Unversioned
+```
 
-If (external_developers > 0) {
-  strategy = "explicit_versioning" // Future approach
-  max_changes_per_release = "2-3 breaking changes"
-  notification_required = true
-  support_email = "api-support@spike.land"
+### No Middleware-Based Versioning
+
+Unlike some frameworks, Spike Land does **not** use middleware for version routing:
+
+- ❌ No `Accept-Version` header parsing
+- ❌ No version query parameters
+- ❌ No central version routing middleware
+
+Instead, versioning is explicit in the URL path via Next.js file structure.
+
+### Adding a New Versioned Endpoint
+
+To create a new versioned endpoint:
+
+```bash
+# 1. Create directory structure
+mkdir -p src/app/api/v1/new-feature
+
+# 2. Create route handler
+cat > src/app/api/v1/new-feature/route.ts << 'EOF'
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(req: NextRequest) {
+  return NextResponse.json({
+    version: "v1",
+    feature: "new-feature"
+  });
 }
+EOF
+
+# 3. Endpoint is now available at /api/v1/new-feature
+```
+
+### Authentication for Versioned APIs
+
+Agent API v1 uses MCP-specific authentication:
+
+```typescript
+// src/lib/mcp/auth.ts
+import { authenticateMcpRequest } from "@/lib/mcp/auth";
+
+export async function GET(req: NextRequest) {
+  const authResult = await authenticateMcpRequest(req);
+  if (!authResult.success) {
+    return NextResponse.json({ error: authResult.error }, { status: 401 });
+  }
+
+  // authResult.userId available for authorization
+}
+```
+
+Platform APIs use NextAuth session authentication:
+
+```typescript
+// Unversioned platform endpoints
+import { auth } from "@/auth";
+
+export async function GET(request: NextRequest) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // session.user.id available
+}
+```
+
+### Version Discovery
+
+Clients can discover API capabilities:
+
+```bash
+# Health check (unversioned)
+curl https://spike.land/api/health
+# {"status":"ok"}
+
+# Agent API v1 (versioned)
+curl https://spike.land/api/v1/agent/tasks?boxId=abc123 \
+  -H "Authorization: Bearer mcp_key_..."
+```
+
+Currently no version discovery endpoint, but could add:
+
+```
+GET /api/versions → { "current": "v1", "available": ["v1"], "deprecated": [] }
 ```
 
 ---
 
 ## Document History
 
-| Version | Date     | Author          | Changes                     |
-| ------- | -------- | --------------- | --------------------------- |
-| 1.0     | Dec 2025 | Spike Land Team | Initial versioning strategy |
+| Version | Date         | Author          | Changes                                                                                                                                                                                             |
+| ------- | ------------ | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.0     | Dec 30, 2025 | Spike Land Team | Updated to reflect hybrid versioning approach: v1 for Agent API, unversioned for platform APIs. Added comprehensive endpoint inventory (~128 endpoints). Documented actual implementation patterns. |
+| 1.0     | Dec 2025     | Spike Land Team | Initial versioning strategy (pre-implementation)                                                                                                                                                    |
 
 ---
 

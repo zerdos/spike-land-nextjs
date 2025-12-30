@@ -2,6 +2,31 @@
 
 Quick reference for testing API endpoints using cURL.
 
+## Quick Reference
+
+**Base URLs**:
+
+- Production: `https://spike.land/api`
+- Development: `http://localhost:3000/api`
+
+**Authentication Methods**:
+
+- **MCP Endpoints**: API Key (`Authorization: Bearer sk_live_...`)
+- **Web Endpoints**: Session Cookie (from browser)
+
+**Key MCP Endpoints**:
+
+- `POST /api/mcp/generate` - Generate image from text
+- `POST /api/mcp/modify` - Modify existing image
+- `GET /api/mcp/balance` - Check token balance
+- `GET /api/jobs/{jobId}` - Check job status
+
+**Token Costs**:
+
+- TIER_1K (1024px): 2 tokens
+- TIER_2K (2048px): 5 tokens
+- TIER_4K (4096px): 10 tokens
+
 ## Environment Setup
 
 ```bash
@@ -9,25 +34,32 @@ Quick reference for testing API endpoints using cURL.
 export API_BASE="https://spike.land/api"        # Production
 export API_BASE="http://localhost:3000/api"     # Development
 
-# Set your session token (from NextAuth.js)
-export SESSION_TOKEN="your_session_token_here"
+# Set your API key for MCP endpoints (get from /settings/api-keys)
+export API_KEY="sk_live_your_api_key_here"
 ```
 
 ## Authentication
 
-### Using Session Cookie (Automatic for Web)
+Spike Land supports two authentication methods:
+
+1. **Session-based authentication** - For web browser requests (cookies handled automatically)
+2. **API Key authentication** - For MCP endpoints and external integrations
+
+### Using API Key (Recommended for MCP)
 
 ```bash
-# No additional setup needed - cookies are included automatically
-curl -X GET $API_BASE/tokens/balance
+# All MCP endpoints use Bearer token authentication
+curl -X GET $API_BASE/mcp/balance \
+  -H "Authorization: Bearer $API_KEY"
 ```
 
-### Using Bearer Token
+### Using Session (Browser/Web UI)
 
 ```bash
-# Include token in Authorization header
+# Session cookies are sent automatically by the browser
+# For cURL testing, you can extract session cookies from browser dev tools
 curl -X GET $API_BASE/tokens/balance \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+  --cookie "next-auth.session-token=your_session_cookie"
 ```
 
 ## Health & Status
@@ -42,27 +74,24 @@ Response:
 
 ```json
 {
-  "status": "healthy",
-  "timestamp": "2025-12-12T15:45:00Z",
-  "version": "1.0.0",
-  "uptime": 3600
+  "status": "ok"
 }
 ```
 
-### Admin Dashboard (Requires Admin Role)
+### Admin Dashboard (Requires Admin Role & Session Auth)
 
 ```bash
 curl -X GET $API_BASE/admin/dashboard \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+  --cookie "next-auth.session-token=your_session_cookie"
 ```
 
 ## Token Management
 
-### Get Token Balance
+### Get Token Balance (Session Auth)
 
 ```bash
 curl -X GET $API_BASE/tokens/balance \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+  --cookie "next-auth.session-token=your_session_cookie"
 ```
 
 Response:
@@ -70,9 +99,11 @@ Response:
 ```json
 {
   "balance": 45,
-  "lastRegeneration": "2025-12-12T15:00:00Z",
+  "lastRegeneration": "2025-12-30T15:00:00Z",
   "timeUntilNextRegenMs": 900000,
   "tokensAddedThisRequest": 1,
+  "tier": "FREE",
+  "maxBalance": 50,
   "stats": {
     "totalSpent": 150,
     "totalEarned": 500,
@@ -82,11 +113,27 @@ Response:
 }
 ```
 
+### Get Token Balance (API Key - MCP)
+
+```bash
+curl -X GET $API_BASE/mcp/balance \
+  -H "Authorization: Bearer $API_KEY"
+```
+
+Response:
+
+```json
+{
+  "balance": 45,
+  "lastRegeneration": "2025-12-30T15:00:00Z"
+}
+```
+
 ### Validate Voucher
 
 ```bash
 curl -X POST $API_BASE/vouchers/validate \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
+  --cookie "next-auth.session-token=your_session_cookie" \
   -H "Content-Type: application/json" \
   -d '{
     "code": "WELCOME50"
@@ -97,20 +144,81 @@ curl -X POST $API_BASE/vouchers/validate \
 
 ```bash
 curl -X POST $API_BASE/vouchers/redeem \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
+  --cookie "next-auth.session-token=your_session_cookie" \
   -H "Content-Type: application/json" \
   -d '{
     "code": "WELCOME50"
   }'
 ```
 
+## API Key Management
+
+### List API Keys
+
+```bash
+curl -X GET $API_BASE/settings/api-keys \
+  --cookie "next-auth.session-token=your_session_cookie"
+```
+
+Response:
+
+```json
+{
+  "apiKeys": [
+    {
+      "id": "cuid123",
+      "name": "Production Key",
+      "keyPrefix": "sk_live",
+      "lastUsedAt": "2025-12-30T14:30:00Z",
+      "isActive": true,
+      "createdAt": "2025-12-20T10:00:00Z"
+    }
+  ]
+}
+```
+
+### Create API Key
+
+```bash
+curl -X POST $API_BASE/settings/api-keys \
+  --cookie "next-auth.session-token=your_session_cookie" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My API Key"
+  }'
+```
+
+Response:
+
+```json
+{
+  "apiKey": {
+    "id": "cuid123",
+    "name": "My API Key",
+    "key": "sk_live_abc123xyz789...",
+    "keyPrefix": "sk_live",
+    "createdAt": "2025-12-30T15:00:00Z"
+  },
+  "message": "API key created successfully. Make sure to copy the key now - it will not be shown again."
+}
+```
+
+**IMPORTANT**: Save the `key` value immediately - it will only be shown once!
+
+### Revoke API Key
+
+```bash
+curl -X DELETE $API_BASE/settings/api-keys/{keyId} \
+  --cookie "next-auth.session-token=your_session_cookie"
+```
+
 ## Image Management
 
-### Upload Image
+### Upload Image (Automatically Enhances with TIER_1K)
 
 ```bash
 curl -X POST $API_BASE/images/upload \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
+  --cookie "next-auth.session-token=your_session_cookie" \
   -F "file=@/path/to/image.jpg"
 ```
 
@@ -118,34 +226,55 @@ Response:
 
 ```json
 {
-  "id": "cuid123456789",
-  "userId": "cuid987654321",
-  "originalUrl": "https://storage.example.com/image.jpg",
-  "name": "image.jpg",
-  "mimeType": "image/jpeg",
-  "createdAt": "2025-12-12T14:30:00Z"
+  "success": true,
+  "image": {
+    "id": "cuid123456789",
+    "name": "image.jpg",
+    "url": "https://pub-xxx.r2.dev/original.jpg",
+    "width": 1920,
+    "height": 1080,
+    "size": 524288,
+    "format": "jpeg"
+  },
+  "enhancement": {
+    "jobId": "job_abc123",
+    "tier": "TIER_1K",
+    "tokenCost": 2,
+    "newBalance": 48
+  }
 }
+```
+
+**Note**: Upload automatically creates an enhancement job. Poll `/api/jobs/{jobId}` to check enhancement progress.
+
+### Upload to Album (Uses Album's Default Tier)
+
+```bash
+curl -X POST $API_BASE/images/upload \
+  --cookie "next-auth.session-token=your_session_cookie" \
+  -F "file=@/path/to/image.jpg" \
+  -F "albumId=cuid_album_123"
 ```
 
 ### Get Image Details
 
 ```bash
 curl -X GET $API_BASE/images/{imageId} \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+  --cookie "next-auth.session-token=your_session_cookie"
 ```
 
 ### Delete Image
 
 ```bash
 curl -X DELETE $API_BASE/images/{imageId} \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+  --cookie "next-auth.session-token=your_session_cookie"
 ```
 
 ### Get Image Versions
 
 ```bash
 curl -X GET $API_BASE/images/{imageId}/versions \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+  --cookie "next-auth.session-token=your_session_cookie"
 ```
 
 ## Image Enhancement
@@ -154,7 +283,7 @@ curl -X GET $API_BASE/images/{imageId}/versions \
 
 ```bash
 curl -X POST $API_BASE/images/enhance \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
+  --cookie "next-auth.session-token=your_session_cookie" \
   -H "Content-Type: application/json" \
   -d '{
     "imageId": "cuid123456789",
@@ -166,14 +295,48 @@ Response:
 
 ```json
 {
-  "id": "job_abc123",
-  "userId": "cuid987654321",
-  "imageId": "cuid123456789",
-  "tier": "TIER_2K",
-  "status": "PENDING",
-  "tokensCost": 5,
-  "createdAt": "2025-12-12T14:30:00Z"
+  "success": true,
+  "jobId": "job_abc123",
+  "tokenCost": 5,
+  "newBalance": 45
 }
+```
+
+**Token Costs**:
+
+- `TIER_1K` (1024px): 2 tokens
+- `TIER_2K` (2048px): 5 tokens
+- `TIER_4K` (4096px): 10 tokens
+
+### Enhance with Blend Source
+
+```bash
+curl -X POST $API_BASE/images/enhance \
+  --cookie "next-auth.session-token=your_session_cookie" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "imageId": "cuid123456789",
+    "tier": "TIER_2K",
+    "blendSource": {
+      "imageId": "cuid_source_image"
+    }
+  }'
+```
+
+Or with base64 image:
+
+```bash
+curl -X POST $API_BASE/images/enhance \
+  --cookie "next-auth.session-token=your_session_cookie" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "imageId": "cuid123456789",
+    "tier": "TIER_2K",
+    "blendSource": {
+      "base64": "iVBORw0KGgoAAAANSUhEUg...",
+      "mimeType": "image/png"
+    }
+  }'
 ```
 
 ### Batch Enhancement
@@ -225,7 +388,7 @@ curl -X POST $API_BASE/images/export \
 
 ```bash
 curl -X GET $API_BASE/jobs/{jobId} \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+  --cookie "next-auth.session-token=your_session_cookie"
 ```
 
 Response:
@@ -233,39 +396,54 @@ Response:
 ```json
 {
   "id": "job_abc123",
-  "userId": "cuid987654321",
-  "status": "PROCESSING",
-  "progress": 75,
+  "status": "COMPLETED",
+  "tier": "TIER_2K",
   "tokensCost": 5,
-  "updatedAt": "2025-12-12T14:35:00Z"
+  "enhancedUrl": "https://pub-xxx.r2.dev/enhanced.jpg",
+  "enhancedWidth": 2048,
+  "enhancedHeight": 1536,
+  "errorMessage": null,
+  "createdAt": "2025-12-30T14:30:00Z",
+  "processingStartedAt": "2025-12-30T14:30:01Z",
+  "processingCompletedAt": "2025-12-30T14:30:45Z",
+  "isAnonymous": false,
+  "image": {
+    "id": "cuid123",
+    "name": "photo.jpg",
+    "originalUrl": "https://pub-xxx.r2.dev/original.jpg",
+    "originalWidth": 1920,
+    "originalHeight": 1080
+  }
 }
 ```
+
+**Job Status Values**:
+
+- `PROCESSING` - Enhancement in progress
+- `COMPLETED` - Successfully enhanced
+- `FAILED` - Enhancement failed (check `errorMessage`)
+- `CANCELLED` - Job was cancelled
+- `REFUNDED` - Job failed and tokens were refunded
 
 ### Get Batch Job Status
 
 ```bash
 curl -X POST $API_BASE/jobs/batch-status \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
+  --cookie "next-auth.session-token=your_session_cookie" \
   -H "Content-Type: application/json" \
   -d '{
     "jobIds": ["job_1", "job_2", "job_3"]
   }'
 ```
 
-### Stream Job Progress
+### Delete Job
 
 ```bash
-# Uses Server-Sent Events (SSE)
-curl -X GET $API_BASE/jobs/{jobId}/stream \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+curl -X DELETE $API_BASE/jobs/{jobId} \
+  --cookie "next-auth.session-token=your_session_cookie"
 ```
 
-### Cancel Job
-
-```bash
-curl -X POST $API_BASE/jobs/{jobId}/cancel \
-  -H "Authorization: Bearer $SESSION_TOKEN"
-```
+**Note**: Only completed, failed, cancelled, or refunded jobs can be deleted.
 
 ## Albums
 
@@ -273,43 +451,75 @@ curl -X POST $API_BASE/jobs/{jobId}/cancel \
 
 ```bash
 curl -X GET $API_BASE/albums \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+  --cookie "next-auth.session-token=your_session_cookie"
 ```
 
 Response:
 
 ```json
-[
-  {
-    "id": "cuid123456789",
-    "userId": "cuid987654321",
-    "name": "Summer Photos 2025",
-    "description": "Vacation photos",
-    "privacy": "UNLISTED",
-    "imageCount": 42,
-    "createdAt": "2025-12-10T10:30:00Z"
-  }
-]
+{
+  "albums": [
+    {
+      "id": "cuid123456789",
+      "name": "Summer Photos 2025",
+      "description": "Vacation photos",
+      "privacy": "UNLISTED",
+      "coverImageId": null,
+      "imageCount": 42,
+      "previewImages": [
+        {
+          "id": "cuid_img1",
+          "url": "https://pub-xxx.r2.dev/img1.jpg",
+          "name": "beach.jpg"
+        }
+      ],
+      "createdAt": "2025-12-10T10:30:00Z",
+      "updatedAt": "2025-12-20T15:00:00Z"
+    }
+  ]
+}
 ```
 
 ### Create Album
 
 ```bash
 curl -X POST $API_BASE/albums \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
+  --cookie "next-auth.session-token=your_session_cookie" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Summer Vacation",
     "description": "Greece trip 2025",
-    "privacy": "UNLISTED"
+    "privacy": "UNLISTED",
+    "defaultTier": "TIER_2K"
   }'
+```
+
+**Privacy Options**:
+
+- `PRIVATE` - Only you can see it
+- `UNLISTED` - Anyone with the link can see it
+- `PUBLIC` - Visible in public gallery
+
+Response:
+
+```json
+{
+  "album": {
+    "id": "cuid_new_album",
+    "name": "Summer Vacation",
+    "description": "Greece trip 2025",
+    "privacy": "UNLISTED",
+    "shareToken": "abc123xyz",
+    "createdAt": "2025-12-30T15:00:00Z"
+  }
+}
 ```
 
 ### Update Album
 
 ```bash
 curl -X PUT $API_BASE/albums/{albumId} \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
+  --cookie "next-auth.session-token=your_session_cookie" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Summer Vacation 2025",
@@ -322,36 +532,7 @@ curl -X PUT $API_BASE/albums/{albumId} \
 
 ```bash
 curl -X DELETE $API_BASE/albums/{albumId} \
-  -H "Authorization: Bearer $SESSION_TOKEN"
-```
-
-### Add Images to Album
-
-```bash
-curl -X POST $API_BASE/albums/{albumId}/images \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "imageIds": ["cuid123", "cuid456", "cuid789"]
-  }'
-```
-
-### Get Album Images
-
-```bash
-curl -X GET "$API_BASE/albums/{albumId}/images?page=1&limit=20" \
-  -H "Authorization: Bearer $SESSION_TOKEN"
-```
-
-### Enhance All Album Images
-
-```bash
-curl -X POST $API_BASE/albums/{albumId}/enhance \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tier": "TIER_2K"
-  }'
+  --cookie "next-auth.session-token=your_session_cookie"
 ```
 
 ## Gallery
@@ -459,20 +640,161 @@ curl -X GET $API_BASE/apps/{appId} \
   -H "Authorization: Bearer $SESSION_TOKEN"
 ```
 
+## MCP (Model Context Protocol) Endpoints
+
+The MCP endpoints provide programmatic access to AI image generation and modification. All MCP endpoints require API key authentication.
+
+### Generate Image from Text Prompt
+
+```bash
+curl -X POST $API_BASE/mcp/generate \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A serene mountain landscape at sunset with golden light",
+    "tier": "TIER_2K",
+    "negativePrompt": "blurry, low quality, distorted",
+    "aspectRatio": "16:9"
+  }'
+```
+
+**Parameters**:
+
+- `prompt` (required): Text description of image to generate (max 4000 chars)
+- `tier` (required): `TIER_1K`, `TIER_2K`, or `TIER_4K`
+- `negativePrompt` (optional): Things to avoid
+- `aspectRatio` (optional): Default `1:1`. Supported: `1:1`, `3:2`, `2:3`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`
+
+**Token Costs**:
+
+- `TIER_1K`: 2 tokens
+- `TIER_2K`: 5 tokens
+- `TIER_4K`: 10 tokens
+
+Response:
+
+```json
+{
+  "success": true,
+  "jobId": "job_gen_abc123",
+  "tokensCost": 5,
+  "message": "Generation started. Poll /api/mcp/jobs/{jobId} for status."
+}
+```
+
+### Modify Existing Image
+
+```bash
+curl -X POST $API_BASE/mcp/modify \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Add vibrant colors and enhance lighting",
+    "tier": "TIER_2K",
+    "imageUrl": "https://example.com/image.jpg"
+  }'
+```
+
+**Parameters**:
+
+- `prompt` (required): Modification instructions (max 4000 chars)
+- `tier` (required): `TIER_1K`, `TIER_2K`, or `TIER_4K`
+- `imageUrl` (optional): URL of image to fetch and modify
+- `image` (optional): Base64-encoded image data
+- `mimeType` (required if using `image`): `image/jpeg`, `image/png`, `image/webp`, or `image/gif`
+
+**Note**: Either `imageUrl` or `image` must be provided. Maximum image size: 20MB.
+
+Using base64 image:
+
+```bash
+curl -X POST $API_BASE/mcp/modify \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Convert to black and white with high contrast",
+    "tier": "TIER_2K",
+    "image": "iVBORw0KGgoAAAANSUhEUg...",
+    "mimeType": "image/png"
+  }'
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "jobId": "job_mod_xyz789",
+  "tokensCost": 5,
+  "message": "Modification started. Poll /api/mcp/jobs/{jobId} for status."
+}
+```
+
+### Check Job Status (MCP)
+
+```bash
+curl -X GET $API_BASE/jobs/{jobId} \
+  -H "Authorization: Bearer $API_KEY"
+```
+
+**Note**: For MCP-generated jobs, you can use either the API key or anonymous access (no auth required for jobs created via MCP).
+
+### Get Token History (MCP)
+
+```bash
+curl -X GET $API_BASE/mcp/history \
+  -H "Authorization: Bearer $API_KEY"
+```
+
+Get transaction history for API key usage.
+
 ## Stripe Payments
 
-### Create Checkout Session
+### Create Checkout Session (Token Purchase)
 
 ```bash
 curl -X POST $API_BASE/stripe/checkout \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
+  --cookie "next-auth.session-token=your_session_cookie" \
   -H "Content-Type: application/json" \
   -d '{
-    "tokens": 100,
-    "successUrl": "https://spike.land/dashboard?session_id={CHECKOUT_SESSION_ID}",
-    "cancelUrl": "https://spike.land/dashboard"
+    "mode": "payment",
+    "packageId": "starter"
   }'
 ```
+
+**Available Packages** (see `/docs/TOKEN_SYSTEM.md` for current pricing):
+
+- `starter`: 100 tokens
+- `pro`: 500 tokens
+- `business`: 2000 tokens
+
+Response:
+
+```json
+{
+  "success": true,
+  "sessionId": "cs_live_...",
+  "url": "https://checkout.stripe.com/..."
+}
+```
+
+### Create Checkout Session (Subscription)
+
+```bash
+curl -X POST $API_BASE/stripe/checkout \
+  --cookie "next-auth.session-token=your_session_cookie" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "mode": "subscription",
+    "planId": "pro"
+  }'
+```
+
+**Available Plans**:
+
+- `hobby`: Monthly token allowance with regeneration
+- `pro`: Higher monthly allowance
+- `business`: Maximum monthly allowance
 
 Response:
 
@@ -489,44 +811,129 @@ Response:
 
 ```bash
 curl -X GET $API_BASE/tokens/balance
-# Response: 401 Unauthorized
-# {"error": "Unauthorized", "code": "UNAUTHORIZED"}
+```
+
+Response:
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+### Missing API Key (401)
+
+```bash
+curl -X POST $API_BASE/mcp/generate \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "test", "tier": "TIER_1K"}'
+```
+
+Response:
+
+```json
+{
+  "error": "Missing Authorization header"
+}
+```
+
+### Invalid API Key (401)
+
+```bash
+curl -X GET $API_BASE/mcp/balance \
+  -H "Authorization: Bearer invalid_key"
+```
+
+Response:
+
+```json
+{
+  "error": "Invalid API key"
+}
 ```
 
 ### Rate Limited (429)
 
 ```bash
-curl -X GET $API_BASE/images/enhance -H "Authorization: Bearer $SESSION_TOKEN" \
-  -w "\nHeaders:\nRetry-After: %{http_header Retry-After}\n"
-# Response: 429 Too Many Requests
-# Retry-After: 60
+curl -X POST $API_BASE/mcp/generate \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "test", "tier": "TIER_1K"}'
 ```
+
+Response (with retry header):
+
+```json
+{
+  "error": "Rate limit exceeded",
+  "retryAfter": 60
+}
+```
+
+Headers include: `Retry-After: 60`
 
 ### Validation Error (400)
 
 ```bash
 curl -X POST $API_BASE/albums \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
+  --cookie "next-auth.session-token=your_session_cookie" \
   -H "Content-Type: application/json" \
   -d '{
     "privacy": "INVALID"
   }'
-# Response: 400 Bad Request
-# {"error": "Invalid input", "code": "INVALID_INPUT"}
 ```
 
-### Insufficient Tokens (400)
+Response:
+
+```json
+{
+  "error": "Invalid privacy setting"
+}
+```
+
+### Insufficient Tokens (402)
 
 ```bash
 curl -X POST $API_BASE/images/enhance \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
+  --cookie "next-auth.session-token=your_session_cookie" \
   -H "Content-Type: application/json" \
   -d '{
     "imageId": "cuid123",
     "tier": "TIER_4K"
   }'
-# Response: 400 Bad Request
-# {"error": "Insufficient tokens", "code": "INSUFFICIENT_TOKENS", "needed": 10, "balance": 3}
+```
+
+Response:
+
+```json
+{
+  "error": "Insufficient tokens",
+  "title": "Payment required",
+  "suggestion": "Please add more tokens to continue.",
+  "required": 10
+}
+```
+
+### Image Too Large (400)
+
+```bash
+curl -X POST $API_BASE/mcp/modify \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "test",
+    "tier": "TIER_1K",
+    "image": "very_large_base64_string...",
+    "mimeType": "image/jpeg"
+  }'
+```
+
+Response:
+
+```json
+{
+  "error": "Image too large. Maximum size is 20MB"
+}
 ```
 
 ## Useful Tips
@@ -535,24 +942,24 @@ curl -X POST $API_BASE/images/enhance \
 
 ```bash
 # Show all headers
-curl -i -X GET $API_BASE/tokens/balance \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+curl -i -X GET $API_BASE/mcp/balance \
+  -H "Authorization: Bearer $API_KEY"
 
-# Show specific header
-curl -I -X GET $API_BASE/tokens/balance \
-  -H "Authorization: Bearer $SESSION_TOKEN" | grep "X-RateLimit"
+# Show specific header (rate limit info)
+curl -I -X GET $API_BASE/mcp/balance \
+  -H "Authorization: Bearer $API_KEY" | grep "X-RateLimit"
 ```
 
 ### Pretty Print JSON Responses
 
 ```bash
-# Using jq
-curl -s -X GET $API_BASE/tokens/balance \
-  -H "Authorization: Bearer $SESSION_TOKEN" | jq
+# Using jq (recommended)
+curl -s -X GET $API_BASE/mcp/balance \
+  -H "Authorization: Bearer $API_KEY" | jq
 
 # Using python
-curl -s -X GET $API_BASE/tokens/balance \
-  -H "Authorization: Bearer $SESSION_TOKEN" | python -m json.tool
+curl -s -X GET $API_BASE/mcp/balance \
+  -H "Authorization: Bearer $API_KEY" | python -m json.tool
 ```
 
 ### Follow Redirects
@@ -561,22 +968,35 @@ curl -s -X GET $API_BASE/tokens/balance \
 curl -L -X GET $API_BASE/some-endpoint
 ```
 
-### Save Response to File
+### Download Enhanced Image
 
 ```bash
-curl -X POST $API_BASE/images/export \
-  -H "Authorization: Bearer $SESSION_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"imageId": "cuid123", "format": "PNG"}' \
-  -o enhanced_image.png
+# Get job status and extract URL
+JOB_ID="job_abc123"
+ENHANCED_URL=$(curl -s -X GET $API_BASE/jobs/$JOB_ID \
+  -H "Authorization: Bearer $API_KEY" | jq -r '.enhancedUrl')
+
+# Download the enhanced image
+curl -o enhanced_image.jpg "$ENHANCED_URL"
 ```
 
 ### Measure Performance
 
 ```bash
 curl -w "Total time: %{time_total}s\n" \
-  -X GET $API_BASE/tokens/balance \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+  -X GET $API_BASE/mcp/balance \
+  -H "Authorization: Bearer $API_KEY"
+```
+
+### Save Request/Response for Debugging
+
+```bash
+# Save full request and response to file
+curl -v -X POST $API_BASE/mcp/generate \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "test", "tier": "TIER_1K"}' \
+  2>&1 | tee debug.log
 ```
 
 ## Automation Examples
@@ -588,67 +1008,128 @@ curl -w "Total time: %{time_total}s\n" \
 
 JOB_ID=$1
 API_BASE="http://localhost:3000/api"
-TOKEN=$SESSION_TOKEN
 
 while true; do
   STATUS=$(curl -s -X GET "$API_BASE/jobs/$JOB_ID" \
-    -H "Authorization: Bearer $TOKEN" | jq -r '.status')
+    -H "Authorization: Bearer $API_KEY" | jq -r '.status')
 
   echo "Job status: $STATUS"
 
   case $STATUS in
     COMPLETED)
       echo "Job completed!"
+      # Get the enhanced image URL
+      URL=$(curl -s -X GET "$API_BASE/jobs/$JOB_ID" \
+        -H "Authorization: Bearer $API_KEY" | jq -r '.enhancedUrl')
+      echo "Enhanced image: $URL"
       break
       ;;
     FAILED)
       echo "Job failed!"
+      ERROR=$(curl -s -X GET "$API_BASE/jobs/$JOB_ID" \
+        -H "Authorization: Bearer $API_KEY" | jq -r '.errorMessage')
+      echo "Error: $ERROR"
       exit 1
       ;;
-    CANCELLED)
-      echo "Job cancelled!"
+    REFUNDED)
+      echo "Job failed and tokens were refunded"
       exit 1
       ;;
     *)
-      echo "Waiting..."
+      echo "Waiting... (status: $STATUS)"
       sleep 2
       ;;
   esac
 done
 ```
 
-### Batch Enhancement with Progress
+### Generate and Download Image
 
 ```bash
 #!/bin/bash
 
-IMAGE_IDS=("cuid123" "cuid456" "cuid789")
 API_BASE="http://localhost:3000/api"
-TOKEN=$SESSION_TOKEN
 
-# Start batch enhancement
-RESPONSE=$(curl -s -X POST "$API_BASE/images/batch-enhance" \
-  -H "Authorization: Bearer $TOKEN" \
+# Step 1: Generate image
+echo "Generating image..."
+RESPONSE=$(curl -s -X POST "$API_BASE/mcp/generate" \
+  -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
-  -d "{\"imageIds\": [$(printf '"%s",' "${IMAGE_IDS[@]}" | sed 's/,$//')]}, \"tier\": \"TIER_2K\"}")
+  -d '{
+    "prompt": "A serene mountain landscape at sunset",
+    "tier": "TIER_2K",
+    "aspectRatio": "16:9"
+  }')
 
-JOB_IDS=$(echo $RESPONSE | jq -r '.jobIds[]')
+JOB_ID=$(echo $RESPONSE | jq -r '.jobId')
+echo "Job ID: $JOB_ID"
 
-# Monitor all jobs
-for JOB_ID in $JOB_IDS; do
-  echo "Monitoring job $JOB_ID..."
-  while true; do
-    STATUS=$(curl -s -X GET "$API_BASE/jobs/$JOB_ID" \
-      -H "Authorization: Bearer $TOKEN" | jq -r '.status')
-    if [ "$STATUS" = "COMPLETED" ]; then
-      echo "Job $JOB_ID completed!"
-      break
-    fi
-    sleep 1
-  done
+# Step 2: Wait for completion
+while true; do
+  STATUS=$(curl -s -X GET "$API_BASE/jobs/$JOB_ID" \
+    -H "Authorization: Bearer $API_KEY" | jq -r '.status')
+
+  if [ "$STATUS" = "COMPLETED" ]; then
+    break
+  elif [ "$STATUS" = "FAILED" ] || [ "$STATUS" = "REFUNDED" ]; then
+    echo "Generation failed"
+    exit 1
+  fi
+
+  echo "Status: $STATUS"
+  sleep 3
 done
 
-echo "All jobs completed!"
+# Step 3: Download the image
+ENHANCED_URL=$(curl -s -X GET "$API_BASE/jobs/$JOB_ID" \
+  -H "Authorization: Bearer $API_KEY" | jq -r '.enhancedUrl')
+
+echo "Downloading from: $ENHANCED_URL"
+curl -o generated_image.jpg "$ENHANCED_URL"
+echo "Image saved as generated_image.jpg"
+```
+
+### Modify Image with Polling
+
+```bash
+#!/bin/bash
+
+API_BASE="http://localhost:3000/api"
+IMAGE_PATH=$1
+
+# Convert image to base64
+IMAGE_BASE64=$(base64 -i "$IMAGE_PATH")
+
+# Start modification
+echo "Starting modification..."
+RESPONSE=$(curl -s -X POST "$API_BASE/mcp/modify" \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"prompt\": \"Enhance colors and add dramatic lighting\",
+    \"tier\": \"TIER_2K\",
+    \"image\": \"$IMAGE_BASE64\",
+    \"mimeType\": \"image/jpeg\"
+  }")
+
+JOB_ID=$(echo $RESPONSE | jq -r '.jobId')
+echo "Job ID: $JOB_ID"
+
+# Poll until complete
+while true; do
+  STATUS=$(curl -s -X GET "$API_BASE/jobs/$JOB_ID" | jq -r '.status')
+
+  if [ "$STATUS" = "COMPLETED" ]; then
+    URL=$(curl -s -X GET "$API_BASE/jobs/$JOB_ID" | jq -r '.enhancedUrl')
+    echo "Modified image: $URL"
+    curl -o modified.jpg "$URL"
+    echo "Downloaded to modified.jpg"
+    break
+  fi
+
+  echo "Status: $STATUS"
+  sleep 2
+done
 ```
 
 ## Troubleshooting
@@ -659,36 +1140,105 @@ echo "All jobs completed!"
 # Check if API is running
 curl http://localhost:3000/api/health
 
-# Check for CORS issues (in browser console, not cURL)
-curl -i -X OPTIONS http://localhost:3000/api/images/enhance
+# Should return: {"status":"ok"}
 ```
 
-### Invalid Token
+### Invalid API Key
 
 ```bash
-# Check token format
-echo $SESSION_TOKEN  # Should start with valid session identifier
+# Check API key format
+echo $API_KEY  # Should start with "sk_live_" or "sk_test_"
 
-# Test with valid token
-curl -X GET http://localhost:3000/api/tokens/balance \
-  -H "Authorization: Bearer $SESSION_TOKEN" -v
+# Test with verbose output
+curl -v -X GET http://localhost:3000/api/mcp/balance \
+  -H "Authorization: Bearer $API_KEY"
+
+# Check for common mistakes:
+# - Missing "Bearer " prefix
+# - Extra spaces in the key
+# - Using session cookie instead of API key
 ```
 
 ### Rate Limited Responses
 
 ```bash
 # Check rate limit headers
-curl -i -X GET $API_BASE/images/enhance \
-  -H "Authorization: Bearer $SESSION_TOKEN" | grep "X-RateLimit"
+curl -i -X GET $API_BASE/mcp/balance \
+  -H "Authorization: Bearer $API_KEY" | grep "Retry-After"
 
-# Wait specified time before retry
-WAIT=$(curl -i -X GET $API_BASE/tokens/balance \
-  -H "Authorization: Bearer $SESSION_TOKEN" 2>/dev/null | grep "Retry-After" | cut -d' ' -f2)
-echo "Waiting $WAIT seconds..."
-sleep $WAIT
+# Extract retry time and wait
+RESPONSE=$(curl -i -X GET $API_BASE/mcp/generate \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "test", "tier": "TIER_1K"}' 2>&1)
+
+RETRY_AFTER=$(echo "$RESPONSE" | grep -i "retry-after" | cut -d' ' -f2 | tr -d '\r')
+
+if [ ! -z "$RETRY_AFTER" ]; then
+  echo "Rate limited. Waiting $RETRY_AFTER seconds..."
+  sleep $RETRY_AFTER
+fi
+```
+
+### Job Stuck in PROCESSING
+
+```bash
+# Check job status with full details
+curl -s -X GET $API_BASE/jobs/{jobId} \
+  -H "Authorization: Bearer $API_KEY" | jq
+
+# Jobs typically complete in:
+# - TIER_1K: 10-30 seconds
+# - TIER_2K: 20-45 seconds
+# - TIER_4K: 30-60 seconds
+
+# If job is stuck for >5 minutes, contact support
+```
+
+### Base64 Encoding Issues
+
+```bash
+# Ensure proper base64 encoding (remove newlines)
+IMAGE_BASE64=$(base64 -w 0 image.jpg)  # Linux
+IMAGE_BASE64=$(base64 -i image.jpg)    # macOS
+
+# Test with small image first
+curl -X POST $API_BASE/mcp/modify \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"prompt\": \"test\",
+    \"tier\": \"TIER_1K\",
+    \"image\": \"$IMAGE_BASE64\",
+    \"mimeType\": \"image/jpeg\"
+  }"
 ```
 
 ---
 
-For more information, see [API Reference](../API_REFERENCE.md) and
-[Integration Guide](./INTEGRATION_GUIDE.md)
+## Related Documentation
+
+- [API Reference](../API_REFERENCE.md) - Complete API endpoint documentation
+- [Token System](../TOKEN_SYSTEM.md) - Token pricing and regeneration details
+- [Database Schema](../DATABASE_SCHEMA.md) - Database structure and relationships
+
+## Rate Limits
+
+Current rate limits (per user/API key):
+
+- **Image Upload**: 10 requests/minute
+- **Image Enhancement**: 20 requests/minute
+- **MCP Generate**: 10 requests/minute
+- **MCP Modify**: 10 requests/minute
+- **Job Status**: 60 requests/minute
+- **General**: 30 requests/minute
+
+See `/src/lib/rate-limiter.ts` for complete rate limit configuration.
+
+## Support
+
+- Documentation: [https://spike.land/docs](https://spike.land/docs)
+- Issues: [GitHub Issues](https://github.com/zerdos/spike-land-nextjs/issues)
+- Email: support@spike.land
+
+**Last Updated**: 2025-12-30

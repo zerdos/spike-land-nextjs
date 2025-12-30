@@ -45,7 +45,7 @@
 
 | Field                         | Value                                       |
 | ----------------------------- | ------------------------------------------- |
-| **Company Name**              | Spike Land Ltd                              |
+| **Company Name**              | SPIKE LAND LTD                              |
 | **Company Number**            | 16906682                                    |
 | **Application Reference**     | 112-184507                                  |
 | **Corporation Tax Reference** | BRCT00003618256                             |
@@ -62,10 +62,10 @@
 
 ### Phase 1: Company Formation (Days 1-2) ✅ SUBMITTED
 
-- [x] Check "Spike Land Ltd" availability at Companies House
+- [x] Check "SPIKE LAND LTD" availability at Companies House
 - [x] Register company online at gov.uk
 - [x] Provide required details:
-  - Company name: Spike Land Ltd
+  - Company name: SPIKE LAND LTD
   - Registered office address
   - Director details (Zoltan Erdos)
   - Shareholder details (1 share @ £1)
