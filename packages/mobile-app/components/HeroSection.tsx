@@ -6,7 +6,7 @@
 import { Sparkles } from "@tamagui/lucide-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { type Href, router } from "expo-router";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { Animated, Dimensions, StyleSheet } from "react-native";
 import { Button, H1, Paragraph, View, XStack, YStack } from "tamagui";
 
@@ -30,28 +30,6 @@ interface HeroSectionProps {
 export function HeroSection(
   { onStartEnhancing, onSeeExamples, testID }: HeroSectionProps,
 ) {
-  const gradientPosition = useRef(new Animated.Value(0)).current;
-
-  // Animate gradient background
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(gradientPosition, {
-          toValue: 1,
-          duration: 3000,
-          useNativeDriver: false,
-        }),
-        Animated.timing(gradientPosition, {
-          toValue: 0,
-          duration: 3000,
-          useNativeDriver: false,
-        }),
-      ]),
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [gradientPosition]);
-
   const handleStartEnhancing = useCallback(() => {
     if (onStartEnhancing) {
       onStartEnhancing();
@@ -68,31 +46,12 @@ export function HeroSection(
     }
   }, [onSeeExamples]);
 
-  // Interpolate gradient colors for animation effect
-  const gradientStartColor = gradientPosition.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [
-      "rgba(0, 100, 150, 0.3)",
-      "rgba(0, 150, 200, 0.4)",
-      "rgba(0, 100, 150, 0.3)",
-    ],
-  });
-
-  const gradientEndColor = gradientPosition.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [
-      "rgba(0, 50, 100, 0.2)",
-      "rgba(0, 100, 150, 0.3)",
-      "rgba(0, 50, 100, 0.2)",
-    ],
-  });
-
   return (
     <View testID={testID} style={styles.container}>
       {/* Animated Gradient Background */}
       <Animated.View style={styles.gradientContainer}>
         <LinearGradient
-          colors={["#001830", "#003060", "#001830"]}
+          colors={["#000000", "#0f172a", "#1e1b4b"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.gradient}
@@ -102,18 +61,12 @@ export function HeroSection(
           style={[
             styles.orb,
             styles.orbLeft,
-            {
-              backgroundColor: gradientStartColor,
-            },
           ]}
         />
         <Animated.View
           style={[
             styles.orb,
             styles.orbRight,
-            {
-              backgroundColor: gradientEndColor,
-            },
           ]}
         />
       </Animated.View>
@@ -122,74 +75,97 @@ export function HeroSection(
       <YStack
         paddingHorizontal="$5"
         paddingVertical="$8"
-        gap="$4"
+        gap="$5"
         alignItems="center"
         style={styles.content}
       >
-        {/* Main Title - Matching web: "Old Photos. New Life." */}
-        <H1
-          color="white"
-          textAlign="center"
-          fontSize="$9"
-          fontWeight="700"
-          lineHeight="$9"
-          testID={`${testID}-title`}
-        >
-          Old Photos.{"\n"}
-          <H1 color="#00E5FF" fontSize="$9" fontWeight="700">
+        {/* Main Title */}
+        <YStack gap="$1" alignItems="center">
+          <H1
+            color="white"
+            textAlign="center"
+            fontSize={48}
+            fontWeight="800"
+            lineHeight={56}
+            letterSpacing={-1}
+            testID={`${testID}-title`}
+          >
+            Old Photos.
+          </H1>
+          <H1
+            color="#38bdf8"
+            textAlign="center"
+            fontSize={48}
+            fontWeight="800"
+            lineHeight={56}
+            letterSpacing={-1}
+            style={{
+              textShadowColor: "rgba(56, 189, 248, 0.5)",
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: 20,
+            }}
+          >
             New Life.
           </H1>
-        </H1>
+        </YStack>
 
-        {/* Subtitle - Matching web copy */}
-        <Paragraph
-          color="$gray10"
-          textAlign="center"
-          fontSize="$4"
-          lineHeight="$5"
-          maxWidth={SCREEN_WIDTH * 0.85}
-          testID={`${testID}-subtitle`}
-        >
-          Your iPhone 4 photos deserve iPhone 16 quality. Restore faded memories in 60 seconds. No
-          skills needed.
-        </Paragraph>
-
-        {/* Secondary text */}
+        {/* Subtitle */}
         <Paragraph
           color="$gray11"
           textAlign="center"
-          fontSize="$3"
-          testID={`${testID}-free-text`}
+          fontSize="$5"
+          lineHeight="$7"
+          maxWidth={SCREEN_WIDTH * 0.9}
+          testID={`${testID}-subtitle`}
+          opacity={0.9}
         >
-          Free to try — no credit card required.
+          Your iPhone 4 photos deserve iPhone 16 quality. Restore faded memories in 60 seconds.
         </Paragraph>
 
-        {/* CTA Buttons - Matching web layout */}
-        <XStack gap="$3" marginTop="$4" flexWrap="wrap" justifyContent="center">
+        {/* Secondary text */}
+        <XStack alignItems="center" gap="$2" opacity={0.8}>
+          <Sparkles size={16} color="#fbbf24" />
+          <Paragraph
+            color="$gray11"
+            textAlign="center"
+            fontSize="$3"
+            fontWeight="500"
+            testID={`${testID}-free-text`}
+          >
+            Free to try — no credit card required
+          </Paragraph>
+        </XStack>
+
+        {/* CTA Buttons */}
+        <YStack gap="$4" marginTop="$6" width="100%" maxWidth={320}>
           <Button
-            size="$5"
-            backgroundColor="#00E5FF"
-            color="#001830"
+            size="$6"
+            backgroundColor="#3b82f6"
+            color="white"
             fontWeight="700"
-            borderRadius="$6"
+            borderRadius="$10"
             pressStyle={{
-              backgroundColor: "#00B8CC",
+              backgroundColor: "#2563eb",
               scale: 0.98,
             }}
+            shadowColor="#3b82f6"
+            shadowOffset={{ width: 0, height: 8 }}
+            shadowOpacity={0.4}
+            shadowRadius={16}
             onPress={handleStartEnhancing}
-            icon={<Sparkles size={20} color="#001830" />}
+            icon={<Sparkles size={24} color="white" />}
             testID={`${testID}-cta`}
           >
             Restore Your Photos
           </Button>
           <Button
-            size="$5"
-            backgroundColor="transparent"
+            size="$6"
+            backgroundColor="rgba(255, 255, 255, 0.05)"
             color="#ffffff"
             fontWeight="600"
-            borderRadius="$6"
+            borderRadius="$10"
             borderWidth={1}
-            borderColor="#ffffff"
+            borderColor="rgba(255, 255, 255, 0.2)"
             pressStyle={{
               backgroundColor: "rgba(255, 255, 255, 0.1)",
               scale: 0.98,
@@ -199,7 +175,7 @@ export function HeroSection(
           >
             See Examples
           </Button>
-        </XStack>
+        </YStack>
       </YStack>
     </View>
   );
@@ -208,7 +184,7 @@ export function HeroSection(
 const styles = StyleSheet.create({
   container: {
     position: "relative",
-    minHeight: 320,
+    minHeight: 480,
     overflow: "hidden",
   },
   gradientContainer: {
@@ -219,19 +195,27 @@ const styles = StyleSheet.create({
   },
   orb: {
     position: "absolute",
-    borderRadius: 200,
-    width: 200,
-    height: 200,
+    borderRadius: 300,
+    width: 300,
+    height: 300,
+    opacity: 0.6,
   },
   orbLeft: {
-    top: -50,
-    left: -50,
+    top: -80,
+    left: -80,
+    backgroundColor: "#7c3aed",
+    opacity: 0.25,
+    transform: [{ scale: 1.2 }],
   },
   orbRight: {
-    bottom: -30,
-    right: -30,
+    bottom: -50,
+    right: -50,
+    backgroundColor: "#2563eb",
+    opacity: 0.25,
+    transform: [{ scale: 1.5 }],
   },
   content: {
     zIndex: 1,
+    paddingTop: 80,
   },
 });

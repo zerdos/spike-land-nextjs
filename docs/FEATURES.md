@@ -1,7 +1,33 @@
 # Spike Land - Feature Documentation
 
-> **Last Updated**: December 2025 **Status**: Pixel App Complete (Phases 1-5) |
-> Platform Phase 2 Complete
+> **Last Updated**: December 2025 | **Status**: Pixel App Complete (Phases 1-5)
+> | Platform Phase 2 Complete
+
+---
+
+## Quick Reference
+
+| Field              | Value                                                          |
+| ------------------ | -------------------------------------------------------------- |
+| **Production URL** | [https://spike.land](https://spike.land)                       |
+| **Pixel App**      | [https://spike.land/apps/pixel](https://spike.land/apps/pixel) |
+| **Company**        | SPIKE LAND LTD (UK Company #16906682)                          |
+| **Status**         | All Pixel Phases Complete                                      |
+| **Mobile App**     | iOS, Android, Web (Expo)                                       |
+
+---
+
+## Related Documentation
+
+| Topic              | Document                                                          |
+| ------------------ | ----------------------------------------------------------------- |
+| Token System       | [TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md)                              |
+| API Reference      | [API_REFERENCE.md](./API_REFERENCE.md)                            |
+| Database Schema    | [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)                        |
+| Business Structure | [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md)                  |
+| Pixel Pipelines    | [PIXEL_PIPELINES.md](./PIXEL_PIPELINES.md)                        |
+| Mobile App         | [packages/mobile-app/README.md](../packages/mobile-app/README.md) |
+| User Guide         | [USER_GUIDE.md](./USER_GUIDE.md)                                  |
 
 ---
 
@@ -10,9 +36,12 @@
 1. [Platform Overview](#platform-overview)
 2. [Pixel - AI Image Enhancement App](#pixel---ai-image-enhancement-app)
 3. [Platform Features](#platform-features)
-4. [Roadmap & Future Plans](#roadmap--future-plans)
-5. [Technical Stack](#technical-stack)
-6. [Database Schema](#database-schema)
+4. [E-Commerce](#e-commerce)
+5. [Mobile App](#mobile-app-iosandroidweb)
+6. [Other Apps](#other-apps)
+7. [Roadmap & Future Plans](#roadmap--future-plans)
+8. [Technical Stack](#technical-stack)
+9. [Database Schema](#database-schema)
 
 ---
 
@@ -62,14 +91,17 @@ Pixel consumes tokens from the Spike Land platform token economy.
 
 ### Phase 3: Albums & Export ✅ Complete
 
-| Feature           | Status      | Description                      |
-| ----------------- | ----------- | -------------------------------- |
-| Album Management  | ✅ Complete | Create, edit, delete albums      |
-| Batch Upload      | ✅ Complete | Multiple image upload            |
-| Album Sharing     | ✅ Complete | Unlisted links with share tokens |
-| Export Formats    | ✅ Complete | JPEG, PNG, WebP support          |
-| Version History   | ✅ Complete | Track enhancement versions       |
-| Batch Enhancement | ✅ Complete | Queue processing                 |
+| Feature           | Status      | Description                         |
+| ----------------- | ----------- | ----------------------------------- |
+| Album Management  | ✅ Complete | Create, edit, delete albums         |
+| Batch Upload      | ✅ Complete | Multiple image upload               |
+| Album Sharing     | ✅ Complete | Unlisted links with share tokens    |
+| Export Formats    | ✅ Complete | JPEG, PNG, WebP support             |
+| Version History   | ✅ Complete | Track enhancement versions          |
+| Batch Enhancement | ✅ Complete | Queue processing                    |
+| PhotoMix          | ✅ Complete | Image mixing/blending capabilities  |
+| Pipelines         | ✅ Complete | Custom enhancement workflows        |
+| QR Code Sharing   | ✅ Complete | Generate QR codes for shared images |
 
 ### Phase 4: Referral Program ✅ Complete
 
@@ -94,6 +126,11 @@ Pixel consumes tokens from the Spike Land platform token economy.
 | Feedback System      | ✅ Complete | Bug reports and idea collection     |
 | Legal Pages          | ✅ Complete | Terms, Privacy, Contact             |
 | Email Infrastructure | ✅ Complete | Resend integration                  |
+| Email Campaigns      | ✅ Complete | Marketing email management          |
+| Marketing Funnels    | ✅ Complete | Campaign tracking & funnels         |
+| AI Agent Sessions    | ✅ Complete | AI agent session management         |
+| Sitemap Preview      | ✅ Complete | Visual sitemap inspection           |
+| Error Tracking       | ✅ Complete | Application error monitoring        |
 
 #### Admin Jobs Management Dashboard (NEW)
 
@@ -228,6 +265,9 @@ use.
 | NextAuth.js Integration | ✅ Complete | Multi-provider authentication framework |
 | GitHub OAuth            | ✅ Complete | Sign in with GitHub account             |
 | Google OAuth            | ✅ Complete | Sign in with Google account             |
+| Apple OAuth             | ✅ Complete | Sign in with Apple account              |
+| Facebook OAuth          | ✅ Complete | Sign in with Facebook account           |
+| Email/Password          | ✅ Complete | Traditional email authentication        |
 | Phone Authentication    | ✅ Complete | Twilio-based phone verification         |
 | Session Management      | ✅ Complete | Secure Prisma-based session storage     |
 | Protected Routes        | ✅ Complete | Route guards for authenticated pages    |
@@ -289,13 +329,15 @@ use.
 
 ### 5. UI/UX Foundation
 
-| Feature              | Status      | Description                 |
-| -------------------- | ----------- | --------------------------- |
-| shadcn/ui Components | ✅ Complete | Production-ready UI library |
-| Dark/Light Mode      | ✅ Complete | Theme toggle support        |
-| Responsive Design    | ✅ Complete | Mobile-first layouts        |
-| Loading Skeletons    | ✅ Complete | Graceful loading states     |
-| Cookie Consent       | ✅ Complete | GDPR-compliant consent      |
+| Feature              | Status      | Description                   |
+| -------------------- | ----------- | ----------------------------- |
+| shadcn/ui Components | ✅ Complete | Production-ready UI library   |
+| Dark/Light Mode      | ✅ Complete | Theme toggle support          |
+| Responsive Design    | ✅ Complete | Mobile-first layouts          |
+| Loading Skeletons    | ✅ Complete | Graceful loading states       |
+| Cookie Consent       | ✅ Complete | GDPR-compliant consent        |
+| User Profiles        | ✅ Complete | User settings and preferences |
+| API Keys Management  | ✅ Complete | Generate and manage API keys  |
 
 **Key Files:**
 
@@ -313,6 +355,79 @@ use.
 | CI/CD Pipeline          | ✅ Complete | GitHub Actions automation |
 | Vercel Deployment       | ✅ Complete | Production hosting        |
 | Claude Code Integration | ✅ Complete | AI-assisted development   |
+
+---
+
+## E-Commerce
+
+Spike Land includes a full e-commerce platform for merchandise.
+
+| Feature             | Status      | Description                           |
+| ------------------- | ----------- | ------------------------------------- |
+| Merch Store         | ✅ Complete | Product catalog with categories       |
+| Shopping Cart       | ✅ Complete | Add/remove items, quantity management |
+| Checkout Flow       | ✅ Complete | Stripe-powered checkout               |
+| Order Management    | ✅ Complete | Order history and status tracking     |
+| Prodigi Integration | ✅ Complete | Print-on-demand fulfillment           |
+| VAT Calculation     | ✅ Complete | EU VAT handling                       |
+| Shipping Zones      | ✅ Complete | UK/EU shipping configuration          |
+| Product Variants    | ✅ Complete | Size, color, and style options        |
+
+**Key Files:**
+
+- `src/app/merch/` - Merch store pages
+- `src/app/cart/` - Shopping cart
+- `src/app/checkout/` - Checkout flow
+
+---
+
+## Mobile App (iOS/Android/Web)
+
+Native mobile experience built with Expo and React Native.
+
+| Feature               | Status      | Description                        |
+| --------------------- | ----------- | ---------------------------------- |
+| Gallery & Enhancement | ✅ Complete | Full image enhancement workflow    |
+| Albums                | ✅ Complete | Album management on mobile         |
+| Blog                  | ✅ Complete | Blog posts and articles            |
+| Merch Store           | ✅ Complete | Browse and purchase merchandise    |
+| Token Management      | ✅ Complete | View balance, purchase tokens      |
+| Referral Program      | ✅ Complete | Share referral codes               |
+| Settings              | ✅ Complete | User preferences and notifications |
+| API Keys              | ✅ Complete | Manage API keys                    |
+| Cart & Checkout       | ✅ Complete | Mobile checkout experience         |
+| Admin Panel           | ✅ Complete | Users, jobs, vouchers, analytics   |
+| RevenueCat IAP        | ✅ Complete | In-app purchases for iOS/Android   |
+| Canvas/Image Editing  | ✅ Complete | Touch-friendly image editing       |
+| Voucher Redemption    | ✅ Complete | Redeem voucher codes               |
+| Push Notifications    | ✅ Complete | Expo notifications integration     |
+| Offline Support       | ✅ Complete | Queue actions when offline         |
+| Design System         | ✅ Complete | 17-section component storybook     |
+
+**Tech Stack:**
+
+- **Framework**: Expo 52, React Native 0.76
+- **Navigation**: Expo Router (file-based)
+- **UI**: Tamagui
+- **State**: Zustand, React Query
+
+**Key Files:**
+
+- `packages/mobile-app/` - Mobile app package
+- See [packages/mobile-app/README.md](../packages/mobile-app/README.md) for details
+
+---
+
+## Other Apps
+
+Additional applications on the Spike Land platform.
+
+| App           | Status      | Description                  |
+| ------------- | ----------- | ---------------------------- |
+| Audio Mixer   | ✅ Complete | Audio mixing capabilities    |
+| Music Creator | ✅ Complete | Music creation tools         |
+| Display       | ✅ Complete | Display/presentation apps    |
+| Blog          | ✅ Complete | Blog with posts and articles |
 
 ---
 

@@ -16,6 +16,7 @@ jest.mock("../services/notifications", () => ({
   handleNotificationResponse: jest.fn(),
   clearBadge: jest.fn(),
   isExpoGo: false, // Simulate development build
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   Notifications: require("expo-notifications"), // Re-export the mocked module
 }));
 
