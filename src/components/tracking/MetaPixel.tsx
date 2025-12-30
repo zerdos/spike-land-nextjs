@@ -8,7 +8,7 @@
  */
 "use client";
 
-import { hasConsent } from "@/lib/tracking/consent";
+import { CONSENT_CHANGED_EVENT, CONSENT_KEY, hasConsent } from "@/lib/tracking/consent";
 import Script from "next/script";
 import { useEffect, useState } from "react";
 
@@ -49,6 +49,32 @@ export function MetaPixel({ nonce }: MetaPixelProps) {
 
   useEffect(() => {
     setConsentGiven(hasConsent());
+  }, []);
+
+  // Listen for same-tab consent changes via custom event
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleConsentChange = () => {
+      setConsentGiven(hasConsent());
+    };
+
+    window.addEventListener(CONSENT_CHANGED_EVENT, handleConsentChange);
+    return () => window.removeEventListener(CONSENT_CHANGED_EVENT, handleConsentChange);
+  }, []);
+
+  // Sync across tabs using storage event
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === CONSENT_KEY) {
+        setConsentGiven(hasConsent());
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   if (!META_PIXEL_ID || !consentGiven) {

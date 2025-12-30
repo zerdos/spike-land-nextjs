@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { CONSENT_KEY, notifyConsentChanged } from "@/lib/tracking/consent";
 import { cn } from "@/lib/utils";
-
-const CONSENT_KEY = "cookie-consent";
 
 type ConsentValue = "accepted" | "declined" | null;
 
@@ -30,6 +29,7 @@ export function CookieConsent() {
       const stored = getStoredConsent();
       if (!stored) {
         setStoredConsent("accepted");
+        notifyConsentChanged();
       }
       setConsent("accepted");
       return;
@@ -47,12 +47,14 @@ export function CookieConsent() {
 
   const handleAccept = () => {
     setStoredConsent("accepted");
+    notifyConsentChanged();
     setConsent("accepted");
     setIsVisible(false);
   };
 
   const handleDecline = () => {
     setStoredConsent("declined");
+    notifyConsentChanged();
     setConsent("declined");
     setIsVisible(false);
   };
