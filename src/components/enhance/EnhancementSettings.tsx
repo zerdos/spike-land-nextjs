@@ -177,7 +177,7 @@ export function EnhancementSettings({
         <RadioGroup
           value={selectedTier}
           onValueChange={(value) => setSelectedTier(value as EnhancementTier)}
-          className="grid grid-cols-3 gap-3"
+          className="grid grid-cols-1 sm:grid-cols-3 gap-3"
         >
           {TIER_ORDER.map((tier) => {
             const info = TIER_DISPLAY_INFO[tier];
