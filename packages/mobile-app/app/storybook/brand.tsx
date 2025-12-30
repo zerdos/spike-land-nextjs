@@ -10,6 +10,7 @@ import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { PixelLogo, SpikeLandLogo } from "@/components/brand";
+import { Avatar, AvatarGroup } from "@/components/ui";
 import { borderRadius, colors, fontSize, spacing } from "@/constants/theme";
 
 const logoSizes = ["sm", "md", "lg", "xl"] as const;
@@ -131,6 +132,68 @@ export default function BrandPage() {
             <View style={styles.variantBadge}>
               <Text style={styles.variantBadgeText}>STACKED</Text>
             </View>
+          </View>
+        </View>
+      </View>
+
+      {/* User Identity Section */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <View style={[styles.headerIndicator, { backgroundColor: colors.accent }]} />
+          <View>
+            <Text style={styles.sectionTitle}>User Identity</Text>
+            <Text style={styles.sectionSubtitle}>
+              Avatar systems for representing users and automated agents across the platform.
+            </Text>
+          </View>
+        </View>
+
+        {/* Dynamic Sizing */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Dynamic Sizing</Text>
+          <Text style={styles.cardDescription}>Scale from small indicators to large headers.</Text>
+          <View style={styles.avatarRow}>
+            {[24, 32, 40, 48, 56].map((size, index) => (
+              <View key={size} style={styles.avatarItem}>
+                <Avatar
+                  src="https://github.com/zerdos.png"
+                  fallback="ZE"
+                  size={size}
+                  testID={`avatar-size-${size}`}
+                />
+                <Text style={styles.avatarLabel}>H-{[8, 10, 12, 16, 20][index]}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Fallback States */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Fallback States</Text>
+          <Text style={styles.cardDescription}>
+            Graceful degradation when images are unavailable.
+          </Text>
+          <View style={styles.avatarFallbackRow}>
+            <Avatar
+              fallback="ZE"
+              size={48}
+              fallbackStyle={{ backgroundColor: colors.primary }}
+              testID="avatar-fallback-primary"
+            />
+            <Avatar
+              fallback="SP"
+              size={48}
+              fallbackStyle={styles.gradientFallback}
+              testID="avatar-fallback-gradient"
+            />
+            <Avatar fallback="?" size={48} testID="avatar-fallback-unknown" />
+            <AvatarGroup size={40}>
+              <Avatar fallback="U1" size={40} />
+              <Avatar fallback="U2" size={40} />
+              <Avatar fallback="U3" size={40} />
+              <Avatar fallback="U4" size={40} />
+              <Avatar fallback="U5" size={40} />
+            </AvatarGroup>
           </View>
         </View>
       </View>
@@ -383,5 +446,31 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     color: colors.foreground,
     lineHeight: 20,
+  },
+  avatarRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "flex-end",
+    gap: spacing[4],
+  },
+  avatarItem: {
+    alignItems: "center",
+    gap: spacing[2],
+  },
+  avatarLabel: {
+    fontSize: 9,
+    color: colors.mutedForeground,
+    fontFamily: "monospace",
+    textTransform: "uppercase",
+    letterSpacing: -0.5,
+  },
+  avatarFallbackRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: spacing[4],
+  },
+  gradientFallback: {
+    backgroundColor: colors.pixelFuchsia,
   },
 });

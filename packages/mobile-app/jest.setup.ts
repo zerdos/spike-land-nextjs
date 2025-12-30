@@ -161,9 +161,33 @@ jest.mock("react-native-gesture-handler", () => {
     Directions: {},
     GestureDetector: View,
     Gesture: {
-      Pan: jest.fn(() => ({})),
-      Tap: jest.fn(() => ({})),
-      LongPress: jest.fn(() => ({})),
+      Pan: () => {
+        const gesture: Record<string, unknown> = {};
+        gesture.onUpdate = jest.fn(() => gesture);
+        gesture.onStart = jest.fn(() => gesture);
+        gesture.onEnd = jest.fn(() => gesture);
+        gesture.onBegin = jest.fn(() => gesture);
+        gesture.onFinalize = jest.fn(() => gesture);
+        gesture.onTouchesCancelled = jest.fn(() => gesture);
+        gesture.onTouchesDown = jest.fn(() => gesture);
+        gesture.onTouchesMove = jest.fn(() => gesture);
+        gesture.onTouchesUp = jest.fn(() => gesture);
+        return gesture;
+      },
+      Tap: () => {
+        const gesture: Record<string, unknown> = {};
+        gesture.onStart = jest.fn(() => gesture);
+        gesture.onEnd = jest.fn(() => gesture);
+        gesture.numberOfTaps = jest.fn(() => gesture);
+        return gesture;
+      },
+      LongPress: () => {
+        const gesture: Record<string, unknown> = {};
+        gesture.onStart = jest.fn(() => gesture);
+        gesture.onEnd = jest.fn(() => gesture);
+        gesture.minDuration = jest.fn(() => gesture);
+        return gesture;
+      },
     },
   };
 });
