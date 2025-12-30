@@ -1,9 +1,9 @@
 ---
 active: true
-iteration: 33
+iteration: 8
 max_iterations: 50
-completion_promise: null
-started_at: "2025-12-29T21:40:20Z"
+completion_promise: "DONE"
+started_at: "2025-12-29T23:20:27Z"
 ---
 
 Implement Storybook route in Expo mobile app.
@@ -27,7 +27,6 @@ Testing:
 
 - Use Playwright through Docker MCP to take screenshots
 - Compare screenshots against http://localhost:3000/
-- http://localhost:3000/storybook/brand - there are two brands - spike.land and Pixel - please make sure that you have the right, pixel perfect matching logo.
 - Test account: test@spike.land / password: test1234 (must work locally and in prod)
 
 Success criteria:
