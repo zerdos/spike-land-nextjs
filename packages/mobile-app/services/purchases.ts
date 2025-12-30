@@ -27,14 +27,12 @@ export interface TokenPackage {
   rcPackage: PurchasesPackage;
 }
 
-export interface PurchaseResult {
+interface PurchaseResult {
   success: boolean;
   error?: string;
   tokensAdded?: number;
   newBalance?: number;
 }
-
-export type TokenPackageId = keyof typeof REVENUECAT_PRODUCTS.TOKEN_PACKAGES;
 
 // ============================================================================
 // Configuration

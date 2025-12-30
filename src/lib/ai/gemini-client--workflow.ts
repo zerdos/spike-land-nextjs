@@ -144,17 +144,6 @@ export interface CropDimensions {
 }
 
 /**
- * Pixel-based crop region used for Sharp image processing.
- * Converted from CropDimensions percentages.
- */
-export interface CropRegionPixels {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
-
-/**
  * Detailed analysis result from vision model.
  * Provides structured information about image characteristics and defects.
  */

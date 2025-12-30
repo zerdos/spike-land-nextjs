@@ -45,7 +45,7 @@ export interface BlendSourceError {
 /**
  * Success result from blend source resolution
  */
-export interface BlendSourceSuccess {
+interface BlendSourceSuccess {
   success: true;
   data: BlendSourceResult;
 }
@@ -53,7 +53,7 @@ export interface BlendSourceSuccess {
 /**
  * Failure result from blend source resolution
  */
-export interface BlendSourceFailure {
+interface BlendSourceFailure {
   success: false;
   error: BlendSourceError;
 }

@@ -631,9 +631,16 @@ function CreateSessionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-session-title"
+    >
       <Card className="w-full max-w-lg p-6">
-        <h2 className="mb-4 text-xl font-semibold">Create New Jules Task</h2>
+        <h2 id="create-session-title" className="mb-4 text-xl font-semibold">
+          Create New Jules Task
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

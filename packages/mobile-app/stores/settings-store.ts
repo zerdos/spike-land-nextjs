@@ -20,19 +20,19 @@ import * as storage from "../services/storage";
 // Types
 // ============================================================================
 
-export interface NotificationPreferences {
+interface NotificationPreferences {
   emailNotifications: boolean;
   pushNotifications: boolean;
   enhancementCompleteNotifications: boolean;
   marketingNotifications: boolean;
 }
 
-export interface PrivacyPreferences {
+interface PrivacyPreferences {
   publicProfile: boolean;
   showActivity: boolean;
 }
 
-export interface ApiKeyWithFullKey extends ApiKey {
+interface ApiKeyWithFullKey extends ApiKey {
   key: string;
 }
 
@@ -104,7 +104,7 @@ interface SettingsActions {
   loadPersistedPreferences: () => Promise<void>;
 }
 
-export type SettingsStore = SettingsState & SettingsActions;
+type SettingsStore = SettingsState & SettingsActions;
 
 // ============================================================================
 // Storage Keys

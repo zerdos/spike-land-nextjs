@@ -10,14 +10,6 @@ import { apiClient, ApiResponse } from "../api-client";
 // ============================================================================
 
 /**
- * Blog post author information
- */
-export interface BlogAuthor {
-  name: string;
-  avatar?: string;
-}
-
-/**
  * Blog post data structure
  */
 export interface BlogPost {
