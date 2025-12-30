@@ -49,3 +49,6 @@ export {
   type InputSize,
   InputWrapper,
 } from "./Input";
+
+// Avatar component
+export { Avatar, AvatarGroup, type AvatarGroupProps, type AvatarProps } from "./Avatar";

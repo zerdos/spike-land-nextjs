@@ -14,6 +14,7 @@ import { Alert, Platform, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Spinner, Stack, Text, XStack, YStack } from "tamagui";
 
+import { ImageComparisonSlider, SplitPreview } from "@/components/blog";
 import { getBlogPost } from "@/services/api/blog";
 
 // ============================================================================
@@ -89,6 +90,17 @@ interface ContentRendererProps {
   content: string;
 }
 
+// Parse MDX component props from string like: originalUrl="..." enhancedUrl="..."
+function parseMdxProps(propsString: string): Record<string, string> {
+  const props: Record<string, string> = {};
+  const regex = /(\w+)="([^"]*)"/g;
+  let match;
+  while ((match = regex.exec(propsString)) !== null) {
+    props[match[1]] = match[2];
+  }
+  return props;
+}
+
 function ContentRenderer({ content }: ContentRendererProps) {
   // Simple markdown-like content rendering
   // In a production app, you might use a proper markdown renderer
@@ -98,6 +110,36 @@ function ContentRenderer({ content }: ContentRendererProps) {
     <YStack gap="$3" testID="blog-content">
       {paragraphs.map((paragraph, index) => {
         const trimmed = paragraph.trim();
+
+        // Handle SplitPreview component (multiline with URLs containing /)
+        const splitPreviewMatch = trimmed.match(/<SplitPreview\s+([\s\S]*?)\s*\/>/);
+        if (splitPreviewMatch) {
+          const props = parseMdxProps(splitPreviewMatch[1]);
+          return (
+            <SplitPreview
+              key={index}
+              originalUrl={props.originalUrl || ""}
+              enhancedUrl={props.enhancedUrl || ""}
+              originalLabel={props.originalLabel}
+              enhancedLabel={props.enhancedLabel}
+            />
+          );
+        }
+
+        // Handle ImageComparisonSlider component (multiline with URLs containing /)
+        const sliderMatch = trimmed.match(/<ImageComparisonSlider\s+([\s\S]*?)\s*\/>/);
+        if (sliderMatch) {
+          const props = parseMdxProps(sliderMatch[1]);
+          return (
+            <ImageComparisonSlider
+              key={index}
+              originalUrl={props.originalUrl || ""}
+              enhancedUrl={props.enhancedUrl || ""}
+              originalLabel={props.originalLabel}
+              enhancedLabel={props.enhancedLabel}
+            />
+          );
+        }
 
         // Handle headers
         if (trimmed.startsWith("### ")) {
