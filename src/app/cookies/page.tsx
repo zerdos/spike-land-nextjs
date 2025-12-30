@@ -30,10 +30,6 @@ export default function CookiePage() {
           <p className="text-muted-foreground text-lg">
             Last updated: {lastUpdated}
           </p>
-          <p className="text-muted-foreground mt-4">
-            This is a template for informational purposes. Consult with a qualified attorney for
-            legal advice specific to your situation.
-          </p>
         </div>
 
         {/* Table of Contents */}
