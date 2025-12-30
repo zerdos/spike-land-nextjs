@@ -71,11 +71,13 @@ describe("useReducedMotion", () => {
 
     const mockMediaQueryList = {
       matches: false,
-      addEventListener: vi.fn((event: string, handler: (e: MediaQueryListEvent) => void) => {
-        if (event === "change") {
-          changeHandler = handler;
-        }
-      }),
+      addEventListener: vi.fn(
+        (event: string, handler: (e: MediaQueryListEvent) => void) => {
+          if (event === "change") {
+            changeHandler = handler;
+          }
+        },
+      ),
       removeEventListener: vi.fn(),
     };
 
@@ -115,10 +117,16 @@ describe("useReducedMotion", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    expect(addEventListener).toHaveBeenCalledWith("change", expect.any(Function));
+    expect(addEventListener).toHaveBeenCalledWith(
+      "change",
+      expect.any(Function),
+    );
 
     unmount();
 
-    expect(removeEventListener).toHaveBeenCalledWith("change", expect.any(Function));
+    expect(removeEventListener).toHaveBeenCalledWith(
+      "change",
+      expect.any(Function),
+    );
   });
 });

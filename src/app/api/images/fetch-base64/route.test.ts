@@ -4,7 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
 
 // Mocks
-const mockSession = { user: { id: "user-123", email: "test@example.com" } } as Session;
+const mockSession = {
+  user: { id: "user-123", email: "test@example.com" },
+} as Session;
 vi.mock("@/auth", () => ({
   auth: vi.fn(() => Promise.resolve(mockSession)),
 }));
@@ -25,7 +27,9 @@ global.fetch = mockFetch;
 describe("/api/images/fetch-base64", () => {
   const allowedUrl = "https://pub-cf0adddb5752426a96ef090997e0da95.r2.dev/test-image.jpg";
   const mockImageData = new Uint8Array([0x66, 0x61, 0x6b, 0x65]).buffer; // "fake" as ArrayBuffer
-  const expectedBase64 = Buffer.from(new Uint8Array(mockImageData)).toString("base64");
+  const expectedBase64 = Buffer.from(new Uint8Array(mockImageData)).toString(
+    "base64",
+  );
 
   beforeEach(() => {
     vi.clearAllMocks();

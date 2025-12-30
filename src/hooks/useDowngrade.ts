@@ -31,7 +31,9 @@ interface DowngradeResult {
 export function useDowngrade() {
   const [isScheduling, setIsScheduling] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
-  const [scheduledDowngrade, setScheduledDowngrade] = useState<ScheduledDowngrade | null>(null);
+  const [scheduledDowngrade, setScheduledDowngrade] = useState<
+    ScheduledDowngrade | null
+  >(null);
   const [error, setError] = useState<Error | null>(null);
 
   /**
@@ -124,7 +126,9 @@ export function useDowngrade() {
     );
 
     if (fetchError) {
-      const err = fetchError instanceof Error ? fetchError : new Error("Network error");
+      const err = fetchError instanceof Error
+        ? fetchError
+        : new Error("Network error");
       setError(err);
       setIsCanceling(false);
       return { success: false, error: err.message };

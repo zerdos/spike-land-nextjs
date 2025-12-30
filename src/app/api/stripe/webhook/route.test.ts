@@ -1482,7 +1482,8 @@ describe("POST /api/stripe/webhook", () => {
             {
               price: { id: "price_123" },
               current_period_start: Math.floor(Date.now() / 1000),
-              current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+              current_period_end: Math.floor(Date.now() / 1000) +
+                30 * 24 * 60 * 60,
             },
           ],
         },
@@ -1555,7 +1556,9 @@ describe("POST /api/stripe/webhook", () => {
         },
       );
 
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       const response = await POST(request);
       const data = await response.json();
 
@@ -1595,7 +1598,9 @@ describe("POST /api/stripe/webhook", () => {
         },
       );
 
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       const response = await POST(request);
       const data = await response.json();
 
@@ -1615,7 +1620,8 @@ describe("POST /api/stripe/webhook", () => {
             {
               price: { id: "price_123" },
               current_period_start: Math.floor(Date.now() / 1000),
-              current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+              current_period_end: Math.floor(Date.now() / 1000) +
+                30 * 24 * 60 * 60,
             },
           ],
         },
@@ -1648,13 +1654,17 @@ describe("POST /api/stripe/webhook", () => {
         },
       );
 
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data.received).toBe(true);
-      expect(consoleSpy).toHaveBeenCalledWith("Invalid tier value: INVALID_TIER");
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Invalid tier value: INVALID_TIER",
+      );
       consoleSpy.mockRestore();
     });
 
@@ -1666,7 +1676,10 @@ describe("POST /api/stripe/webhook", () => {
             findUnique: vi.fn().mockResolvedValue({ balance: 50 }),
             create: vi.fn().mockResolvedValue({ balance: 0 }),
             update: vi.fn().mockResolvedValue({}),
-            upsert: vi.fn().mockResolvedValue({ balance: 100, tier: "PREMIUM" }),
+            upsert: vi.fn().mockResolvedValue({
+              balance: 100,
+              tier: "PREMIUM",
+            }),
           },
           tokenTransaction: {
             create: vi.fn().mockResolvedValue({}),
@@ -1684,7 +1697,8 @@ describe("POST /api/stripe/webhook", () => {
             {
               price: { id: "price_premium" },
               current_period_start: Math.floor(Date.now() / 1000),
-              current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+              current_period_end: Math.floor(Date.now() / 1000) +
+                30 * 24 * 60 * 60,
             },
           ],
         },

@@ -31,7 +31,11 @@ export async function POST(request: NextRequest) {
   if (analyzeError) {
     console.error("Error in test-gemini API:", analyzeError);
     return NextResponse.json(
-      { error: analyzeError instanceof Error ? analyzeError.message : "Unknown error" },
+      {
+        error: analyzeError instanceof Error
+          ? analyzeError.message
+          : "Unknown error",
+      },
       { status: 500 },
     );
   }

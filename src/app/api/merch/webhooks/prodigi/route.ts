@@ -93,7 +93,9 @@ export async function POST(request: NextRequest) {
       );
     }
   } else {
-    console.warn("PRODIGI_WEBHOOK_SECRET not configured - skipping signature verification");
+    console.warn(
+      "PRODIGI_WEBHOOK_SECRET not configured - skipping signature verification",
+    );
     if (process.env.NODE_ENV === "production") {
       return NextResponse.json(
         { error: "Webhook secret not configured" },
@@ -128,7 +130,10 @@ export async function POST(request: NextRequest) {
 
   if (existingEvent?.processed) {
     // Already processed this event
-    return NextResponse.json({ success: true, message: "Event already processed" });
+    return NextResponse.json({
+      success: true,
+      message: "Event already processed",
+    });
   }
 
   // Store the event

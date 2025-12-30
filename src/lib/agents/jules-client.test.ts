@@ -425,7 +425,9 @@ describe("jules-client", () => {
       process.env.JULES_API_KEY = "test-api-key";
       const { buildSourceName } = await import("./jules-client");
 
-      expect(buildSourceName("owner", "repo")).toBe("sources/github/owner/repo");
+      expect(buildSourceName("owner", "repo")).toBe(
+        "sources/github/owner/repo",
+      );
     });
   });
 

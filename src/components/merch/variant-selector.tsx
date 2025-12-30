@@ -26,7 +26,9 @@ export function VariantSelector({
   selectedVariantId,
   onSelect,
 }: VariantSelectorProps) {
-  const [selected, setSelected] = useState<string | undefined>(selectedVariantId);
+  const [selected, setSelected] = useState<string | undefined>(
+    selectedVariantId,
+  );
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-GB", {
@@ -106,7 +108,9 @@ export function VariantSelector({
     <div data-testid="variant-selector" className="space-y-4">
       {Object.entries(attributeGroups).map(([attributeKey, values]) => (
         <div key={attributeKey} className="space-y-2">
-          <label className="text-sm font-medium capitalize">{attributeKey}</label>
+          <label className="text-sm font-medium capitalize">
+            {attributeKey}
+          </label>
           <div className="flex flex-wrap gap-2">
             {Array.from(values).map((value) => {
               const matchingVariant = variants.find(
@@ -149,7 +153,10 @@ export function VariantSelector({
           <p className="text-sm text-muted-foreground">
             Total:{" "}
             <span className="font-semibold text-foreground">
-              {formatPrice(basePrice + (variants.find(v => v.id === selected)?.priceDelta || 0))}
+              {formatPrice(
+                basePrice +
+                  (variants.find((v) => v.id === selected)?.priceDelta || 0),
+              )}
             </span>
           </p>
         </div>

@@ -95,7 +95,9 @@ export default function CartPage() {
       await fetchCart();
       notifyCartUpdate();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update quantity");
+      setError(
+        err instanceof Error ? err.message : "Failed to update quantity",
+      );
     } finally {
       setUpdatingItemId(null);
     }
@@ -135,7 +137,8 @@ export default function CartPage() {
   };
 
   const getItemImageUrl = (item: CartItem) => {
-    return item.image?.originalUrl || item.uploadedImageUrl || item.product.mockupTemplate;
+    return item.image?.originalUrl || item.uploadedImageUrl ||
+      item.product.mockupTemplate;
   };
 
   if (isLoading) {
@@ -223,7 +226,9 @@ export default function CartPage() {
 
                     {/* Details */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold truncate">{item.product.name}</h3>
+                      <h3 className="font-semibold truncate">
+                        {item.product.name}
+                      </h3>
                       {item.variant && (
                         <p className="text-sm text-muted-foreground">
                           {item.variant.name}
@@ -263,7 +268,10 @@ export default function CartPage() {
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
-                        <span data-testid="cart-item-quantity" className="w-8 text-center">
+                        <span
+                          data-testid="cart-item-quantity"
+                          className="w-8 text-center"
+                        >
                           {item.quantity}
                         </span>
                         <Button
@@ -279,7 +287,10 @@ export default function CartPage() {
                       </div>
 
                       <p className="font-semibold">
-                        {formatPrice(itemPrice * item.quantity, item.product.currency)}
+                        {formatPrice(
+                          itemPrice * item.quantity,
+                          item.product.currency,
+                        )}
                       </p>
                     </div>
                   </div>
@@ -304,9 +315,11 @@ export default function CartPage() {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
                 <span data-testid="shipping-cost">
-                  {shippingCost === 0 ? <span className="text-green-600">FREE</span> : (
-                    formatPrice(shippingCost)
-                  )}
+                  {shippingCost === 0
+                    ? <span className="text-green-600">FREE</span>
+                    : (
+                      formatPrice(shippingCost)
+                    )}
                 </span>
               </div>
 

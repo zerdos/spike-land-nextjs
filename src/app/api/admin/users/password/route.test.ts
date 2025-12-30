@@ -62,7 +62,12 @@ describe("Password API Route", () => {
 
     // Default: authenticated admin user
     mockAuth.mockResolvedValue({
-      user: { id: "admin-user-id", email: "admin@test.com", name: "Admin", role: UserRole.ADMIN },
+      user: {
+        id: "admin-user-id",
+        email: "admin@test.com",
+        name: "Admin",
+        role: UserRole.ADMIN,
+      },
       expires: new Date(Date.now() + 86400000).toISOString(),
     });
 

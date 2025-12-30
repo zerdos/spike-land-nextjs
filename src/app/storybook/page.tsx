@@ -24,7 +24,11 @@ export default function StorybookPage() {
           const Icon = storybookIconMap[section.icon as keyof typeof storybookIconMap];
 
           return (
-            <Link key={section.id} href={`/storybook/${section.id}`} className="block group">
+            <Link
+              key={section.id}
+              href={`/storybook/${section.id}`}
+              className="block group"
+            >
               <Card className="h-full border-white/0 hover:border-primary/20 hover:scale-[1.01] shadow-lg transition-all duration-300">
                 <CardHeader className="p-5">
                   <div className="flex items-center gap-3">

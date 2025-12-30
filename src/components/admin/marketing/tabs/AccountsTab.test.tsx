@@ -58,7 +58,9 @@ describe("AccountsTab", () => {
 
     // Find the account row
     const accountName = screen.getByText("Test FB Account");
-    const accountRow = accountName.closest("div.flex.items-center.justify-between");
+    const accountRow = accountName.closest(
+      "div.flex.items-center.justify-between",
+    );
     expect(accountRow).toBeInTheDocument();
 
     // Find the delete button within that row

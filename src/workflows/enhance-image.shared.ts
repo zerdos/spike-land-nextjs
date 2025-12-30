@@ -346,7 +346,12 @@ export function validateEnhanceImageInput(input: EnhanceImageInput): void {
     throw new Error("Invalid originalR2Key: must be a non-empty string");
   }
 
-  const validTiers: EnhancementTier[] = ["FREE", "TIER_1K", "TIER_2K", "TIER_4K"];
+  const validTiers: EnhancementTier[] = [
+    "FREE",
+    "TIER_1K",
+    "TIER_2K",
+    "TIER_4K",
+  ];
   if (!validTiers.includes(input.tier)) {
     throw new Error(`Invalid tier: must be one of ${validTiers.join(", ")}`);
   }

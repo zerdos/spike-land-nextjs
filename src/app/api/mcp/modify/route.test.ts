@@ -195,7 +195,9 @@ describe("POST /api/mcp/modify", () => {
       const body = await response.json();
 
       expect(response.status).toBe(400);
-      expect(body.error).toBe("Either image (base64) or imageUrl must be provided");
+      expect(body.error).toBe(
+        "Either image (base64) or imageUrl must be provided",
+      );
     });
 
     it("should return 400 when mimeType is missing", async () => {

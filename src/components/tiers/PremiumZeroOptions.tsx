@@ -106,7 +106,10 @@ export function PremiumZeroOptions({
               <>
                 <RefreshCw className="h-5 w-5 text-primary animate-spin" />
                 <div className="text-center">
-                  <span className="font-medium text-primary" data-testid="regen-status">
+                  <span
+                    className="font-medium text-primary"
+                    data-testid="regen-status"
+                  >
                     Regenerating now...
                   </span>
                 </div>
@@ -116,8 +119,13 @@ export function PremiumZeroOptions({
               <>
                 <Clock className="h-5 w-5 text-muted-foreground" />
                 <div className="text-center">
-                  <span className="text-sm text-muted-foreground">Next refill in</span>
-                  <span className="font-semibold text-foreground" data-testid="time-remaining">
+                  <span className="text-sm text-muted-foreground">
+                    Next refill in
+                  </span>
+                  <span
+                    className="font-semibold text-foreground"
+                    data-testid="time-remaining"
+                  >
                     {formattedTime}
                   </span>
                 </div>

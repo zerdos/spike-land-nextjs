@@ -47,7 +47,11 @@ vi.mock("@/components/enhance/ComparisonViewToggle", () => ({
     originalUrl: string;
     enhancedUrl: string;
   }) => (
-    <div data-testid="comparison-view" data-original={originalUrl} data-enhanced={enhancedUrl}>
+    <div
+      data-testid="comparison-view"
+      data-original={originalUrl}
+      data-enhanced={enhancedUrl}
+    >
       Comparison View
     </div>
   ),
@@ -122,7 +126,11 @@ describe("MixDetailClient", () => {
     });
 
     it("does not render Download button when job is processing", () => {
-      render(<MixDetailClient job={createMockJob({ status: "PROCESSING", resultUrl: null })} />);
+      render(
+        <MixDetailClient
+          job={createMockJob({ status: "PROCESSING", resultUrl: null })}
+        />,
+      );
 
       expect(screen.queryByRole("button", { name: /Download/i })).not
         .toBeInTheDocument();

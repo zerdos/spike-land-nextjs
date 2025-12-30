@@ -15,7 +15,9 @@ import { useState } from "react";
 
 export default function EnhancePage() {
   // State for interactive examples
-  const [selectedTiers, setSelectedTiers] = useState<EnhancementTierType[]>(["TIER_1K"]);
+  const [selectedTiers, setSelectedTiers] = useState<EnhancementTierType[]>([
+    "TIER_1K",
+  ]);
 
   // Mock data
   const mockAlbum = {

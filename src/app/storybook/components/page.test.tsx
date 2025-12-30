@@ -11,7 +11,8 @@ describe("ComponentsPage", () => {
 
     it("should render usage guide", () => {
       render(<ComponentsPage />);
-      expect(screen.getByText(/Use these components to build consistent/i)).toBeInTheDocument();
+      expect(screen.getByText(/Use these components to build consistent/i))
+        .toBeInTheDocument();
     });
   });
 
@@ -24,7 +25,8 @@ describe("ComponentsPage", () => {
     it("should render inputs and controls", () => {
       render(<ComponentsPage />);
       expect(screen.getByText("Inputs & Controls")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("e.g. user@spike.land")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("e.g. user@spike.land"))
+        .toBeInTheDocument();
       expect(screen.getByText("Enable GPU")).toBeInTheDocument();
     });
 

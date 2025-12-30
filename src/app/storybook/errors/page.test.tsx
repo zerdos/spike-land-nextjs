@@ -21,7 +21,9 @@ describe("ErrorsPage", () => {
     expect(screen.getByText("Error Boundary")).toBeDefined();
 
     // Check for instruction text
-    expect(screen.getByText(/Click the button below to crash this part of the UI/i)).toBeDefined();
+    expect(
+      screen.getByText(/Click the button below to crash this part of the UI/i),
+    ).toBeDefined();
 
     // Check for trigger button
     expect(screen.getByRole("button", { name: "Trigger Error" })).toBeDefined();

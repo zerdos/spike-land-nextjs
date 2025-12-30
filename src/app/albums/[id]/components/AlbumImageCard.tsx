@@ -168,7 +168,9 @@ export const AlbumImageCard = memo(function AlbumImageCard({
       </div>
 
       <CardContent className="p-3">
-        <p className="text-sm font-medium truncate">{image.name || "Untitled"}</p>
+        <p className="text-sm font-medium truncate">
+          {image.name || "Untitled"}
+        </p>
         <p className="text-xs text-muted-foreground">
           {image.width} x {image.height}
         </p>

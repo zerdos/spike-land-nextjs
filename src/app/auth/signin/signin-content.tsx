@@ -68,8 +68,16 @@ function SignInContentInner() {
             <div className="mt-6 text-center space-y-4">
               <p className="text-xs text-muted-foreground">
                 By continuing you agree to{" "}
-                <Link href="/terms" className="underline hover:text-foreground">Terms</Link> &{" "}
-                <Link href="/privacy" className="underline hover:text-foreground">Privacy</Link>.
+                <Link href="/terms" className="underline hover:text-foreground">
+                  Terms
+                </Link>{" "}
+                &{" "}
+                <Link
+                  href="/privacy"
+                  className="underline hover:text-foreground"
+                >
+                  Privacy
+                </Link>.
               </p>
               <p className="text-xs text-muted-foreground/60 font-medium tracking-wide uppercase">
                 No spam. We never post to your accounts.

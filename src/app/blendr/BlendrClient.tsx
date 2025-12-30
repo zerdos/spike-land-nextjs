@@ -56,11 +56,14 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
   const effectiveTier = isAnonymous ? "FREE" : selectedTier;
   const tokenCost = ENHANCEMENT_COSTS[effectiveTier];
 
-  const canCreateMix = image1 !== null && image2 !== null && !activeJobId && !isCreatingMix;
-  const hasEnoughTokens = isAnonymous || tokenCost === 0 || balance >= tokenCost;
+  const canCreateMix = image1 !== null && image2 !== null && !activeJobId &&
+    !isCreatingMix;
+  const hasEnoughTokens = isAnonymous || tokenCost === 0 ||
+    balance >= tokenCost;
 
   // Check if we need to upload images first (both must be gallery images OR we handle uploads)
-  const hasUploadedImages = isAnonymous || image1?.type === "upload" || image2?.type === "upload";
+  const hasUploadedImages = isAnonymous || image1?.type === "upload" ||
+    image2?.type === "upload";
 
   const handleImage1Select = useCallback((image: SelectedImage) => {
     setImage1(image);
@@ -75,7 +78,15 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
   }, []);
 
   const handleSelectorSelect = useCallback(
-    (selectedImg: { id: string; url: string; name: string; width: number; height: number; }) => {
+    (
+      selectedImg: {
+        id: string;
+        url: string;
+        name: string;
+        width: number;
+        height: number;
+      },
+    ) => {
       const galleryImage: GalleryImage = {
         type: "gallery",
         id: selectedImg.id,
@@ -195,7 +206,14 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
       setIsCreatingMix(false);
       setNeedsUpload(false);
     }
-  }, [image1, image2, effectiveTier, isAnonymous, refetchBalance, hasUploadedImages]);
+  }, [
+    image1,
+    image2,
+    effectiveTier,
+    isAnonymous,
+    refetchBalance,
+    hasUploadedImages,
+  ]);
 
   const handleMixComplete = useCallback(
     (_result: MixResult) => {
@@ -241,7 +259,9 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
       <header className="relative z-10 p-4 pt-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary animate-pulse" />
-          <span className="font-bold text-lg tracking-tight text-white">spike.land</span>
+          <span className="font-bold text-lg tracking-tight text-white">
+            spike.land
+          </span>
         </div>
         <Button
           variant="ghost"
@@ -255,7 +275,9 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
 
       <main className="relative z-10 px-4 max-w-md mx-auto space-y-6 pt-4">
         <div className="space-y-1">
-          <h1 className="text-4xl font-bold tracking-tight text-white mb-6">Blendr</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-white mb-6">
+            Blendr
+          </h1>
         </div>
 
         {/* Inputs */}
@@ -265,7 +287,9 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
             image={image1}
             onImageSelect={handleImage1Select}
             onImageClear={handleClearImage1}
-            onOpenGallery={isAnonymous ? undefined : () => handleOpenGallery("image1")}
+            onOpenGallery={isAnonymous
+              ? undefined
+              : () => handleOpenGallery("image1")}
             disabled={activeJobId !== null}
           />
           <BlendrImageSlot
@@ -273,7 +297,9 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
             image={image2}
             onImageSelect={handleImage2Select}
             onImageClear={handleClearImage2}
-            onOpenGallery={isAnonymous ? undefined : () => handleOpenGallery("image2")}
+            onOpenGallery={isAnonymous
+              ? undefined
+              : () => handleOpenGallery("image2")}
             disabled={activeJobId !== null}
           />
         </div>
@@ -330,7 +356,9 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
                 <span
                   className={cn(
                     "font-medium text-sm",
-                    effectiveTier === "TIER_1K" ? "text-white" : "text-white/60",
+                    effectiveTier === "TIER_1K"
+                      ? "text-white"
+                      : "text-white/60",
                   )}
                 >
                   PRO: Nano Banana Pro (2 tokens)
@@ -359,7 +387,8 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
             "text-white",
           )}
           onClick={handleCreateMix}
-          disabled={!canCreateMix || (!isAnonymous && !hasEnoughTokens && effectiveTier !== "FREE")}
+          disabled={!canCreateMix ||
+            (!isAnonymous && !hasEnoughTokens && effectiveTier !== "FREE")}
         >
           {isCreatingMix
             ? (
@@ -452,9 +481,7 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
           onOpenChange={(open) => !open && setSelectorTarget(null)}
           onSelect={handleSelectorSelect}
           excludeImageId={selectorTarget === "image1"
-            ? image2?.type === "gallery"
-              ? image2.id
-              : undefined
+            ? image2?.type === "gallery" ? image2.id : undefined
             : image1?.type === "gallery"
             ? image1.id
             : undefined}

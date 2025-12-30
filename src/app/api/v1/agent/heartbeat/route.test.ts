@@ -306,7 +306,9 @@ describe("/api/v1/agent/heartbeat - POST", () => {
 
     // Override json() to simulate invalid JSON parsing error
     vi.spyOn(request, "json").mockRejectedValue(
-      new SyntaxError("Unexpected token 'n', \"not valid json\" is not valid JSON"),
+      new SyntaxError(
+        "Unexpected token 'n', \"not valid json\" is not valid JSON",
+      ),
     );
 
     const response = await POST(request);

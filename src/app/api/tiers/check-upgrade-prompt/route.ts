@@ -13,7 +13,9 @@ export async function GET() {
 
   if (authError) {
     console.error("Auth error:", authError);
-    return NextResponse.json({ error: "Authentication failed" }, { status: 500 });
+    return NextResponse.json({ error: "Authentication failed" }, {
+      status: 500,
+    });
   }
 
   if (!session?.user?.id) {

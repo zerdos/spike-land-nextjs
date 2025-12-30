@@ -214,7 +214,11 @@ describe("useUserAlbums", () => {
       const { result, rerender } = renderHook(
         ({ privacy }: { privacy?: "PRIVATE" | "UNLISTED" | "PUBLIC"; }) =>
           useUserAlbums({ privacy }),
-        { initialProps: { privacy: undefined as "PRIVATE" | "UNLISTED" | "PUBLIC" | undefined } },
+        {
+          initialProps: {
+            privacy: undefined as "PRIVATE" | "UNLISTED" | "PUBLIC" | undefined,
+          },
+        },
       );
 
       await waitFor(() => {
@@ -349,7 +353,11 @@ describe("useUserAlbums", () => {
       const { result, rerender } = renderHook(
         ({ privacy }: { privacy?: "PRIVATE" | "UNLISTED" | "PUBLIC"; }) =>
           useUserAlbums({ privacy }),
-        { initialProps: { privacy: undefined as "PRIVATE" | "UNLISTED" | "PUBLIC" | undefined } },
+        {
+          initialProps: {
+            privacy: undefined as "PRIVATE" | "UNLISTED" | "PUBLIC" | undefined,
+          },
+        },
       );
 
       await waitFor(() => {

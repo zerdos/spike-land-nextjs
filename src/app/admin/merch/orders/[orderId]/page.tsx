@@ -142,7 +142,10 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
   };
 
   const getStatusVariant = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    const variants: Record<
+      string,
+      "default" | "secondary" | "destructive" | "outline"
+    > = {
       PENDING: "outline",
       PAYMENT_PENDING: "outline",
       PAID: "secondary",
@@ -225,7 +228,10 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
             <CardContent>
               <div className="space-y-4">
                 {order.items.map((item) => (
-                  <div key={item.id} className="flex gap-4 p-4 rounded-lg bg-muted/50">
+                  <div
+                    key={item.id}
+                    className="flex gap-4 p-4 rounded-lg bg-muted/50"
+                  >
                     <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                       {item.imageUrl
                         ? (
@@ -264,7 +270,9 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{formatPrice(item.totalPrice)}</p>
+                      <p className="font-semibold">
+                        {formatPrice(item.totalPrice)}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         R2: {item.imageR2Key.slice(0, 20)}...
                       </p>
@@ -318,7 +326,12 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
                         <div className="text-right">
                           <Badge variant="outline">{shipment.status}</Badge>
                           {shipment.trackingUrl && (
-                            <Button asChild variant="link" size="sm" className="mt-2">
+                            <Button
+                              asChild
+                              variant="link"
+                              size="sm"
+                              className="mt-2"
+                            >
                               <a
                                 href={shipment.trackingUrl}
                                 target="_blank"
@@ -352,7 +365,9 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
                   >
                     <div className="w-2 h-2 rounded-full bg-primary mt-2" />
                     <div className="flex-1">
-                      <p className="font-medium">{event.type.replace(/_/g, " ")}</p>
+                      <p className="font-medium">
+                        {event.type.replace(/_/g, " ")}
+                      </p>
                       <p className="text-muted-foreground">
                         {formatDate(event.createdAt)}
                       </p>
@@ -382,9 +397,11 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
                 <span>
-                  {order.shippingCost === 0 ? <span className="text-green-600">FREE</span> : (
-                    formatPrice(order.shippingCost)
-                  )}
+                  {order.shippingCost === 0
+                    ? <span className="text-green-600">FREE</span>
+                    : (
+                      formatPrice(order.shippingCost)
+                    )}
                 </span>
               </div>
               {order.taxAmount > 0 && (

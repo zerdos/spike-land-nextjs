@@ -65,7 +65,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   if (adminError) {
     console.error("Admin check failed:", adminError);
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
     return NextResponse.json(

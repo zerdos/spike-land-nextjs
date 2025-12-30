@@ -41,7 +41,8 @@ describe("useHeroAnimation", () => {
 
       expect(result.current.isAnimating).toBe(false);
       expect(result.current.animationRef.current).toBeNull();
-      const styles = result.current.animationStyles as AnimationStylesWithCustomProps;
+      const styles = result.current
+        .animationStyles as AnimationStylesWithCustomProps;
       expect(styles["--hero-x"]).toBe("0px");
       expect(styles["--hero-y"]).toBe("0px");
       expect(styles["--hero-scale"]).toBe("1");
@@ -57,7 +58,8 @@ describe("useHeroAnimation", () => {
         })
       );
 
-      const styles = result.current.animationStyles as AnimationStylesWithCustomProps;
+      const styles = result.current
+        .animationStyles as AnimationStylesWithCustomProps;
       expect(styles["--hero-duration"]).toBe("500ms");
     });
 
@@ -70,7 +72,8 @@ describe("useHeroAnimation", () => {
         })
       );
 
-      const styles = result.current.animationStyles as AnimationStylesWithCustomProps;
+      const styles = result.current
+        .animationStyles as AnimationStylesWithCustomProps;
       expect(styles["--hero-duration"]).toBe("300ms");
     });
   });
@@ -210,7 +213,8 @@ describe("useHeroAnimation", () => {
         })
       );
 
-      const styles = result.current.animationStyles as AnimationStylesWithCustomProps;
+      const styles = result.current
+        .animationStyles as AnimationStylesWithCustomProps;
       expect(styles["--hero-x"]).toBe("0px");
       expect(styles["--hero-y"]).toBe("0px");
       expect(styles["--hero-scale"]).toBe("1");
@@ -225,7 +229,8 @@ describe("useHeroAnimation", () => {
         })
       );
 
-      const styles = result.current.animationStyles as AnimationStylesWithCustomProps;
+      const styles = result.current
+        .animationStyles as AnimationStylesWithCustomProps;
       expect(styles["--hero-x"]).toBe("0px");
       expect(styles["--hero-y"]).toBe("0px");
       expect(styles["--hero-scale"]).toBe("1");
@@ -291,7 +296,8 @@ describe("useHeroAnimation", () => {
       // Target center: (0 + 400/2, 0 + 300/2) = (200, 150)
       // Translation: (100 - 200, 100 - 150) = (-100, -50)
       // Scale: min(100/400, 100/300) = min(0.25, 0.333) = 0.25
-      const styles2 = result2.current.animationStyles as AnimationStylesWithCustomProps;
+      const styles2 = result2.current
+        .animationStyles as AnimationStylesWithCustomProps;
       expect(styles2["--hero-duration"]).toBe("300ms");
     });
 
@@ -330,7 +336,8 @@ describe("useHeroAnimation", () => {
           .current = mockElement;
       });
 
-      const styles = result.current.animationStyles as AnimationStylesWithCustomProps;
+      const styles = result.current
+        .animationStyles as AnimationStylesWithCustomProps;
       expect(styles["--hero-duration"]).toBe("300ms");
     });
   });

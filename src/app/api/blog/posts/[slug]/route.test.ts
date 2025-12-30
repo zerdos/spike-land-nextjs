@@ -30,7 +30,9 @@ vi.mock("@/lib/blog/get-posts", () => ({
 
 describe("GET /api/blog/posts/[slug]", () => {
   it("returns a single blog post", async () => {
-    const request = new Request("http://localhost:3000/api/blog/posts/test-post");
+    const request = new Request(
+      "http://localhost:3000/api/blog/posts/test-post",
+    );
     const response = await GET(request, {
       params: Promise.resolve({ slug: "test-post" }),
     });
@@ -43,7 +45,9 @@ describe("GET /api/blog/posts/[slug]", () => {
   });
 
   it("returns 404 for non-existent post", async () => {
-    const request = new Request("http://localhost:3000/api/blog/posts/not-found");
+    const request = new Request(
+      "http://localhost:3000/api/blog/posts/not-found",
+    );
     const response = await GET(request, {
       params: Promise.resolve({ slug: "not-found" }),
     });
@@ -54,17 +58,23 @@ describe("GET /api/blog/posts/[slug]", () => {
   });
 
   it("includes full content for single post", async () => {
-    const request = new Request("http://localhost:3000/api/blog/posts/test-post");
+    const request = new Request(
+      "http://localhost:3000/api/blog/posts/test-post",
+    );
     const response = await GET(request, {
       params: Promise.resolve({ slug: "test-post" }),
     });
     const data = await response.json();
 
-    expect(data.post.content).toBe("# Test Content\n\nThis is the post content.");
+    expect(data.post.content).toBe(
+      "# Test Content\n\nThis is the post content.",
+    );
   });
 
   it("transforms post data correctly", async () => {
-    const request = new Request("http://localhost:3000/api/blog/posts/test-post");
+    const request = new Request(
+      "http://localhost:3000/api/blog/posts/test-post",
+    );
     const response = await GET(request, {
       params: Promise.resolve({ slug: "test-post" }),
     });

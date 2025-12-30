@@ -84,7 +84,9 @@ describe("MarketingLayout", () => {
   });
 
   it("displays success notification from URL", () => {
-    mockSearchParams.mockReturnValue(new URLSearchParams("success=Operation+successful"));
+    mockSearchParams.mockReturnValue(
+      new URLSearchParams("success=Operation+successful"),
+    );
 
     render(
       <MarketingLayout initialData={mockMarketingData}>
@@ -96,7 +98,9 @@ describe("MarketingLayout", () => {
   });
 
   it("displays error notification from URL", () => {
-    mockSearchParams.mockReturnValue(new URLSearchParams("error=Operation+failed"));
+    mockSearchParams.mockReturnValue(
+      new URLSearchParams("error=Operation+failed"),
+    );
 
     render(
       <MarketingLayout initialData={mockMarketingData}>

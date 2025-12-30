@@ -27,7 +27,11 @@ describe("PipelineCard", () => {
   });
 
   it("shows System badge for system default pipelines", () => {
-    const systemPipeline = { ...mockPipeline, isSystemDefault: true, isOwner: false };
+    const systemPipeline = {
+      ...mockPipeline,
+      isSystemDefault: true,
+      isOwner: false,
+    };
     render(<PipelineCard pipeline={systemPipeline} />);
 
     expect(screen.getByText("System")).toBeInTheDocument();
@@ -37,7 +41,9 @@ describe("PipelineCard", () => {
     const onSelect = vi.fn();
     render(<PipelineCard pipeline={mockPipeline} onSelect={onSelect} />);
 
-    fireEvent.click(screen.getByText("Test Pipeline").closest("div[class*='relative']")!);
+    fireEvent.click(
+      screen.getByText("Test Pipeline").closest("div[class*='relative']")!,
+    );
     expect(onSelect).toHaveBeenCalledWith(mockPipeline);
   });
 
@@ -108,7 +114,11 @@ describe("PipelineCard", () => {
 
   it("does not show menu for system default pipelines if not owner", () => {
     // Usually users are not owners of system default.
-    const systemPipeline = { ...mockPipeline, isSystemDefault: true, isOwner: false };
+    const systemPipeline = {
+      ...mockPipeline,
+      isSystemDefault: true,
+      isOwner: false,
+    };
     render(<PipelineCard pipeline={systemPipeline} />);
 
     // The condition in code is: {(pipeline.isOwner || !pipeline.isSystemDefault) && (...)}

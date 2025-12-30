@@ -148,7 +148,8 @@ export default async function AdminMerchPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {metrics.pendingOrders + metrics.inProductionOrders + metrics.shippedOrders}
+              {metrics.pendingOrders + metrics.inProductionOrders +
+                metrics.shippedOrders}
             </div>
             <p className="text-xs text-muted-foreground">
               {metrics.pendingOrders} pending, {metrics.inProductionOrders} in production
@@ -206,7 +207,9 @@ export default async function AdminMerchPage() {
                   >
                     <div>
                       <div className="flex items-center gap-3">
-                        <span className="font-mono text-sm">{order.orderNumber}</span>
+                        <span className="font-mono text-sm">
+                          {order.orderNumber}
+                        </span>
                         <span
                           className={`text-xs px-2 py-1 rounded-full ${
                             getStatusColor(order.status)
@@ -221,7 +224,9 @@ export default async function AdminMerchPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{formatPrice(order.totalAmount)}</p>
+                      <p className="font-semibold">
+                        {formatPrice(order.totalAmount)}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {formatDate(order.createdAt)}
                       </p>

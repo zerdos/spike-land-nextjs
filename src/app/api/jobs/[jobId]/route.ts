@@ -84,7 +84,11 @@ export async function GET(
   if (jobCheckError) {
     console.error("Error checking job:", jobCheckError);
     return NextResponse.json(
-      { error: jobCheckError instanceof Error ? jobCheckError.message : "Failed to check job" },
+      {
+        error: jobCheckError instanceof Error
+          ? jobCheckError.message
+          : "Failed to check job",
+      },
       { status: 500 },
     );
   }

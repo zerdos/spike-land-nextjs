@@ -155,7 +155,8 @@ export function BlendrResult({
       {state.type === "processing" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-4">
           <div className="relative h-20 w-20 flex items-center justify-center">
-            <div className="absolute inset-0 animate-ping rounded-full bg-primary/20"></div>
+            <div className="absolute inset-0 animate-ping rounded-full bg-primary/20">
+            </div>
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
           <div className="space-y-2 text-center z-10">

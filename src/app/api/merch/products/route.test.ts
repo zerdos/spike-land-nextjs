@@ -50,7 +50,9 @@ describe("GET /api/merch/products", () => {
       },
     ];
 
-    vi.mocked(prisma.merchProduct.findMany).mockResolvedValue(mockProducts as any);
+    vi.mocked(prisma.merchProduct.findMany).mockResolvedValue(
+      mockProducts as any,
+    );
 
     const request = new NextRequest("http://localhost/api/merch/products");
     const response = await GET(request);
@@ -112,7 +114,9 @@ describe("GET /api/merch/products", () => {
       },
     ];
 
-    vi.mocked(prisma.merchProduct.findMany).mockResolvedValue(mockProducts as any);
+    vi.mocked(prisma.merchProduct.findMany).mockResolvedValue(
+      mockProducts as any,
+    );
 
     const request = new NextRequest(
       "http://localhost/api/merch/products?includeVariants=true",
@@ -149,7 +153,9 @@ describe("GET /api/merch/products", () => {
       category: {},
     });
 
-    vi.mocked(prisma.merchProduct.findMany).mockResolvedValue(mockProducts as any);
+    vi.mocked(prisma.merchProduct.findMany).mockResolvedValue(
+      mockProducts as any,
+    );
 
     const request = new NextRequest(
       "http://localhost/api/merch/products?limit=10",

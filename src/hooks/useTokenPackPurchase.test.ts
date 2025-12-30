@@ -54,7 +54,11 @@ describe("useTokenPackPurchase", () => {
     await act(async () => {
       resolvePromise!({
         ok: true,
-        json: () => Promise.resolve({ success: true, url: "https://checkout.stripe.com/test" }),
+        json: () =>
+          Promise.resolve({
+            success: true,
+            url: "https://checkout.stripe.com/test",
+          }),
       });
     });
   });
@@ -187,7 +191,11 @@ describe("useTokenPackPurchase", () => {
     it("sends correct request body", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ success: true, url: "https://checkout.stripe.com/test" }),
+        json: () =>
+          Promise.resolve({
+            success: true,
+            url: "https://checkout.stripe.com/test",
+          }),
       });
 
       const { result } = renderHook(() => useTokenPackPurchase());
@@ -210,7 +218,11 @@ describe("useTokenPackPurchase", () => {
         .mockRejectedValueOnce(new Error("First error"))
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ success: true, url: "https://checkout.stripe.com/test" }),
+          json: () =>
+            Promise.resolve({
+              success: true,
+              url: "https://checkout.stripe.com/test",
+            }),
         });
 
       const { result } = renderHook(() => useTokenPackPurchase());
@@ -246,7 +258,9 @@ describe("useTokenPackPurchase", () => {
         await result.current.purchaseAndRedirect("starter");
       });
 
-      expect(mockLocation.href).toBe("https://checkout.stripe.com/redirect-test");
+      expect(mockLocation.href).toBe(
+        "https://checkout.stripe.com/redirect-test",
+      );
     });
 
     it("does not redirect on failure", async () => {
@@ -292,7 +306,10 @@ describe("useTokenPackPurchase", () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () =>
-          Promise.resolve({ success: true, url: `https://checkout.stripe.com/${packageId}` }),
+          Promise.resolve({
+            success: true,
+            url: `https://checkout.stripe.com/${packageId}`,
+          }),
       });
 
       const { result } = renderHook(() => useTokenPackPurchase());

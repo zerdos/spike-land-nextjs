@@ -182,13 +182,18 @@ export default async function AdminProductsPage() {
                           </div>
                         </td>
                         <td className="py-4">
-                          <Badge variant="secondary">{product.categoryName}</Badge>
+                          <Badge variant="secondary">
+                            {product.categoryName}
+                          </Badge>
                         </td>
                         <td className="py-4 text-sm">{product.provider}</td>
                         <td className="py-4">
                           <div>
                             <p className="font-medium">
-                              {formatPrice(product.retailPrice, product.currency)}
+                              {formatPrice(
+                                product.retailPrice,
+                                product.currency,
+                              )}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               Cost: {formatPrice(product.basePrice, product.currency)}
@@ -197,17 +202,25 @@ export default async function AdminProductsPage() {
                         </td>
                         <td className="py-4">
                           <Badge
-                            variant={calculateMargin(product.basePrice, product.retailPrice) >= 40
+                            variant={calculateMargin(
+                                product.basePrice,
+                                product.retailPrice,
+                              ) >= 40
                               ? "default"
                               : "outline"}
                           >
-                            {calculateMargin(product.basePrice, product.retailPrice)}%
+                            {calculateMargin(
+                              product.basePrice,
+                              product.retailPrice,
+                            )}%
                           </Badge>
                         </td>
                         <td className="py-4">{product.variantCount}</td>
                         <td className="py-4">{product.orderCount}</td>
                         <td className="py-4">
-                          <Badge variant={product.isActive ? "default" : "secondary"}>
+                          <Badge
+                            variant={product.isActive ? "default" : "secondary"}
+                          >
                             {product.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </td>

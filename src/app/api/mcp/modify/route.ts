@@ -154,7 +154,10 @@ export async function POST(request: NextRequest) {
   }
 
   // Validate that either image or imageUrl is provided
-  if ((!image || typeof image !== "string") && (!imageUrl || typeof imageUrl !== "string")) {
+  if (
+    (!image || typeof image !== "string") &&
+    (!imageUrl || typeof imageUrl !== "string")
+  ) {
     return NextResponse.json(
       { error: "Either image (base64) or imageUrl must be provided" },
       { status: 400 },

@@ -91,7 +91,13 @@ describe("Card Components", () => {
     it("should apply default header classes", () => {
       render(<CardHeader data-testid="header">Content</CardHeader>);
       const header = screen.getByTestId("header");
-      expect(header).toHaveClass("flex", "flex-col", "space-y-2", "p-8", "md:p-7");
+      expect(header).toHaveClass(
+        "flex",
+        "flex-col",
+        "space-y-2",
+        "p-8",
+        "md:p-7",
+      );
     });
 
     it("should merge custom className", () => {
@@ -235,7 +241,13 @@ describe("Card Components", () => {
     it("should apply default footer classes", () => {
       render(<CardFooter data-testid="footer">Content</CardFooter>);
       const footer = screen.getByTestId("footer");
-      expect(footer).toHaveClass("flex", "items-center", "p-8", "md:p-7", "pt-0");
+      expect(footer).toHaveClass(
+        "flex",
+        "items-center",
+        "p-8",
+        "md:p-7",
+        "pt-0",
+      );
     });
 
     it("should merge custom className", () => {

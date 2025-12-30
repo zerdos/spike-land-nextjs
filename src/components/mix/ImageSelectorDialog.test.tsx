@@ -60,7 +60,9 @@ describe("ImageSelectorDialog", () => {
     expect(screen.getByText("Select Image")).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining("/api/images"));
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining("/api/images"),
+      );
     });
 
     await waitFor(() => {
@@ -72,7 +74,7 @@ describe("ImageSelectorDialog", () => {
   it("handles loading state", async () => {
     // Delay the response to check loading state
     fetchSpy.mockImplementationOnce(() =>
-      new Promise(resolve =>
+      new Promise((resolve) =>
         setTimeout(() =>
           resolve({
             ok: true,
@@ -109,8 +111,10 @@ describe("ImageSelectorDialog", () => {
     render(<ImageSelectorDialog {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Failed to load images. Please try again.")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Try Again" })).toBeInTheDocument();
+      expect(screen.getByText("Failed to load images. Please try again."))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Try Again" }))
+        .toBeInTheDocument();
     });
   });
 
@@ -124,7 +128,8 @@ describe("ImageSelectorDialog", () => {
 
     await waitFor(() => {
       expect(screen.getByText("No images found")).toBeInTheDocument();
-      expect(screen.getByText("Upload some images to your gallery first")).toBeInTheDocument();
+      expect(screen.getByText("Upload some images to your gallery first"))
+        .toBeInTheDocument();
     });
   });
 
@@ -163,7 +168,9 @@ describe("ImageSelectorDialog", () => {
 
     // Check fetch call for second page
     await waitFor(() => {
-      expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining("cursor=cursor-123"));
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining("cursor=cursor-123"),
+      );
     });
 
     // Wait for second page

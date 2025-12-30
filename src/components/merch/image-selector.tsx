@@ -156,7 +156,11 @@ export function ImageSelector({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button data-testid="image-selector" variant="outline" className="w-full h-auto p-4">
+        <Button
+          data-testid="image-selector"
+          variant="outline"
+          className="w-full h-auto p-4"
+        >
           {selectedImage
             ? (
               <div className="flex items-center gap-3">

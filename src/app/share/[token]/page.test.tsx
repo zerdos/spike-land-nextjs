@@ -201,7 +201,10 @@ describe("SharePage", () => {
         "Beautiful Sunset - Enhanced with Pixel",
       );
       // Type assertion to access OpenGraph-specific properties
-      const openGraph = metadata.openGraph as { type?: string; siteName?: string; } | undefined;
+      const openGraph = metadata.openGraph as {
+        type?: string;
+        siteName?: string;
+      } | undefined;
       expect(openGraph?.type).toBe("website");
       expect(openGraph?.siteName).toBe("Pixel - AI Image Enhancement");
       // Type assertion to access Twitter-specific properties

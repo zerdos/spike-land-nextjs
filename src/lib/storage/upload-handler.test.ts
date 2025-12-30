@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Create shared mock functions using vi.hoisted
-const { mockSharp, mockUploadToR2, mockMetadata, mockResize, mockWebp, mockToBuffer } = vi
+const {
+  mockSharp,
+  mockUploadToR2,
+  mockMetadata,
+  mockResize,
+  mockWebp,
+  mockToBuffer,
+} = vi
   .hoisted(() => {
     const mockMetadata = vi.fn();
     const mockResize = vi.fn();

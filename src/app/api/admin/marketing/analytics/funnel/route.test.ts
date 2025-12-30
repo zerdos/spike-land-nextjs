@@ -171,7 +171,9 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
         (async (args?: { where?: { conversionType?: string; }; }) => {
           const conversionType = args?.where?.conversionType;
           if (conversionType === "SIGNUP") {
-            return [{ userId: "u1" }, { userId: "u2" }, { userId: "u3" }] as unknown as never;
+            return [{ userId: "u1" }, { userId: "u2" }, {
+              userId: "u3",
+            }] as unknown as never;
           }
           if (conversionType === "ENHANCEMENT") {
             return [{ userId: "u1" }, { userId: "u2" }] as unknown as never;
@@ -226,8 +228,12 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
     });
 
     it("should handle zero visitors", async () => {
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as unknown as never);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as unknown as never);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue(
+        [] as unknown as never,
+      );
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(
+        [] as unknown as never,
+      );
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/funnel?startDate=2024-01-01&endDate=2024-01-31",
@@ -269,7 +275,9 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
         { visitorId: "v2" },
         { visitorId: "v3" },
       ] as unknown as never);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as unknown as never);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(
+        [] as unknown as never,
+      );
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/funnel?startDate=2024-01-01&endDate=2024-01-31",
@@ -345,8 +353,12 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
 
   describe("Filtering", () => {
     it("should filter by utmCampaign", async () => {
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as unknown as never);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as unknown as never);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue(
+        [] as unknown as never,
+      );
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(
+        [] as unknown as never,
+      );
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/funnel?startDate=2024-01-01&endDate=2024-01-31&utmCampaign=brand",
@@ -375,8 +387,12 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
     });
 
     it("should filter by platform", async () => {
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as unknown as never);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as unknown as never);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue(
+        [] as unknown as never,
+      );
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(
+        [] as unknown as never,
+      );
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/funnel?startDate=2024-01-01&endDate=2024-01-31&platform=google",
@@ -409,8 +425,12 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
     });
 
     it("should filter by both utmCampaign and platform", async () => {
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as unknown as never);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as unknown as never);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue(
+        [] as unknown as never,
+      );
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(
+        [] as unknown as never,
+      );
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/funnel?startDate=2024-01-01&endDate=2024-01-31&utmCampaign=brand&platform=google",
@@ -434,8 +454,12 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
 
   describe("Date range handling", () => {
     it("should include entire end day", async () => {
-      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue([] as unknown as never);
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([] as unknown as never);
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue(
+        [] as unknown as never,
+      );
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(
+        [] as unknown as never,
+      );
 
       const request = new NextRequest(
         "http://localhost/api/admin/marketing/analytics/funnel?startDate=2024-01-15&endDate=2024-01-15",
@@ -446,7 +470,8 @@ describe("GET /api/admin/marketing/analytics/funnel", () => {
       const sessionCall = vi.mocked(prisma.visitorSession.findMany).mock
         .calls[0]![0];
       const sessionStart = sessionCall?.where?.sessionStart;
-      const endDate = (typeof sessionStart === "object" && sessionStart && "lte" in sessionStart
+      const endDate = (typeof sessionStart === "object" && sessionStart &&
+          "lte" in sessionStart
         ? sessionStart.lte
         : null) as Date;
 

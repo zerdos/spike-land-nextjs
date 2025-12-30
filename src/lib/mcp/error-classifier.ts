@@ -406,7 +406,9 @@ export function classifyError(error: unknown): ClassifiedError {
 export function toMcpError(error: unknown): McpError {
   const classified = classifyError(error);
 
-  const originalMessage = error instanceof Error ? error.message : String(error);
+  const originalMessage = error instanceof Error
+    ? error.message
+    : String(error);
   const originalError = error instanceof Error ? error : undefined;
 
   return new McpError(

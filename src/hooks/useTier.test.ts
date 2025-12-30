@@ -86,7 +86,12 @@ describe("useTier", () => {
             ],
             currentTier: "FREE",
             canUpgrade: true,
-            nextTier: { tier: "BASIC", displayName: "Basic", wellCapacity: 20, priceGBP: 5 },
+            nextTier: {
+              tier: "BASIC",
+              displayName: "Basic",
+              wellCapacity: 20,
+              priceGBP: 5,
+            },
           }),
       })
       .mockResolvedValueOnce({
@@ -145,7 +150,9 @@ describe("useTier", () => {
     });
 
     expect(result.current.error).toBeInstanceOf(Error);
-    expect(result.current.error?.message).toBe("Failed to fetch tier information");
+    expect(result.current.error?.message).toBe(
+      "Failed to fetch tier information",
+    );
   });
 
   it("handles network error", async () => {
@@ -207,10 +214,20 @@ describe("useTier", () => {
           ok: true,
           json: () =>
             Promise.resolve({
-              tiers: [{ tier: "FREE", displayName: "Free", wellCapacity: 100, priceGBP: 0 }],
+              tiers: [{
+                tier: "FREE",
+                displayName: "Free",
+                wellCapacity: 100,
+                priceGBP: 0,
+              }],
               currentTier: "FREE",
               canUpgrade: true,
-              nextTier: { tier: "BASIC", displayName: "Basic", wellCapacity: 20, priceGBP: 5 },
+              nextTier: {
+                tier: "BASIC",
+                displayName: "Basic",
+                wellCapacity: 20,
+                priceGBP: 5,
+              },
             }),
         })
         .mockResolvedValueOnce({
@@ -220,7 +237,12 @@ describe("useTier", () => {
               showUpgradePrompt: true,
               isPremiumAtZero: false,
               currentTier: "FREE",
-              nextTier: { tier: "BASIC", displayName: "Basic", wellCapacity: 20, priceGBP: 5 },
+              nextTier: {
+                tier: "BASIC",
+                displayName: "Basic",
+                wellCapacity: 20,
+                priceGBP: 5,
+              },
             }),
         });
 
@@ -239,7 +261,12 @@ describe("useTier", () => {
           ok: true,
           json: () =>
             Promise.resolve({
-              tiers: [{ tier: "PREMIUM", displayName: "Premium", wellCapacity: 100, priceGBP: 20 }],
+              tiers: [{
+                tier: "PREMIUM",
+                displayName: "Premium",
+                wellCapacity: 100,
+                priceGBP: 20,
+              }],
               currentTier: "PREMIUM",
               canUpgrade: false,
               nextTier: null,
@@ -255,7 +282,12 @@ describe("useTier", () => {
               options: {
                 timeUntilNextRegen: 600000,
                 tokenPacks: [
-                  { id: "starter", name: "Starter Pack", tokens: 10, price: 2.99 },
+                  {
+                    id: "starter",
+                    name: "Starter Pack",
+                    tokens: 10,
+                    price: 2.99,
+                  },
                 ],
               },
             }),
@@ -270,7 +302,12 @@ describe("useTier", () => {
       expect(result.current.showUpgradePrompt).toBe(false);
       expect(result.current.premiumOptions).toEqual({
         timeUntilNextRegen: 600000,
-        tokenPacks: [{ id: "starter", name: "Starter Pack", tokens: 10, price: 2.99 }],
+        tokenPacks: [{
+          id: "starter",
+          name: "Starter Pack",
+          tokens: 10,
+          price: 2.99,
+        }],
       });
     });
 
@@ -395,7 +432,12 @@ describe("useTier", () => {
           ok: true,
           json: () =>
             Promise.resolve({
-              tiers: [{ tier: "FREE", displayName: "Free", wellCapacity: 100, priceGBP: 0 }],
+              tiers: [{
+                tier: "FREE",
+                displayName: "Free",
+                wellCapacity: 100,
+                priceGBP: 0,
+              }],
               currentTier: "FREE",
               canUpgrade: true,
               nextTier: null,
@@ -414,7 +456,12 @@ describe("useTier", () => {
           ok: true,
           json: () =>
             Promise.resolve({
-              tiers: [{ tier: "BASIC", displayName: "Basic", wellCapacity: 20, priceGBP: 5 }],
+              tiers: [{
+                tier: "BASIC",
+                displayName: "Basic",
+                wellCapacity: 20,
+                priceGBP: 5,
+              }],
               currentTier: "BASIC",
               canUpgrade: true,
               nextTier: null,
@@ -480,7 +527,11 @@ describe("useTier", () => {
       mockFetch.mockImplementation(
         createFetchMocks(
           { tiers: [], currentTier: "FREE", canUpgrade: true, nextTier: null },
-          { showUpgradePrompt: true, isPremiumAtZero: false, currentTier: "FREE" },
+          {
+            showUpgradePrompt: true,
+            isPremiumAtZero: false,
+            currentTier: "FREE",
+          },
         ),
       );
 
@@ -505,7 +556,12 @@ describe("useTier", () => {
             showUpgradePrompt: true,
             isPremiumAtZero: false,
             currentTier: "FREE",
-            nextTier: { tier: "BASIC", displayName: "Basic", wellCapacity: 20, priceGBP: 5 },
+            nextTier: {
+              tier: "BASIC",
+              displayName: "Basic",
+              wellCapacity: 20,
+              priceGBP: 5,
+            },
           },
         ),
       );

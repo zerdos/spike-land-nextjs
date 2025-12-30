@@ -241,7 +241,10 @@ export default function PricingPage() {
       </div>
 
       {/* Subscription Plans */}
-      <div className="max-w-6xl mx-auto mb-16" data-testid="subscription-tiers-section">
+      <div
+        className="max-w-6xl mx-auto mb-16"
+        data-testid="subscription-tiers-section"
+      >
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Crown className="h-6 w-6 text-amber-500" />
@@ -278,7 +281,9 @@ export default function PricingPage() {
                 {isAuthenticated
                   ? (
                     <Button asChild variant="outline">
-                      <Link href="/settings/subscription">Manage Your Subscription</Link>
+                      <Link href="/settings/subscription">
+                        Manage Your Subscription
+                      </Link>
                     </Button>
                   )
                   : (

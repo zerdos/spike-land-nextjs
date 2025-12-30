@@ -127,7 +127,9 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
               ? {
                 ...f,
                 status: "error" as const,
-                error: error instanceof Error ? error.message : "Processing failed",
+                error: error instanceof Error
+                  ? error.message
+                  : "Processing failed",
               }
               : f
           )
@@ -193,7 +195,9 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
       filesToUpload.forEach((fileStatus) => {
         if (fileStatus.processed) {
           // Create a new File from the processed blob with .webp extension
-          const extension = fileStatus.processed.mimeType === "image/webp" ? ".webp" : ".jpg";
+          const extension = fileStatus.processed.mimeType === "image/webp"
+            ? ".webp"
+            : ".jpg";
           const baseName = fileStatus.file.name.replace(/\.[^/.]+$/, "");
           const newFile = new File(
             [fileStatus.processed.blob],
@@ -456,7 +460,8 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
           <div className="flex gap-2">
             <Button
               onClick={uploadBatch}
-              disabled={isUploading || processingCount > 0 || pendingCount === 0}
+              disabled={isUploading || processingCount > 0 ||
+                pendingCount === 0}
               className="flex-1"
             >
               {isUploading

@@ -275,8 +275,10 @@ describe("ImageSelector", () => {
     fireEvent.click(screen.getByRole("button"));
 
     await waitFor(() => {
-      expect(screen.getByRole("tab", { name: "My Images" })).toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: "Upload New" })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: "My Images" }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: "Upload New" }))
+        .toBeInTheDocument();
     });
   });
 });

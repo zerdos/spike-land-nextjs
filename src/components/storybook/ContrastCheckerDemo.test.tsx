@@ -62,10 +62,14 @@ describe("ContrastCheckerDemo Component", () => {
     // AAA Normal (7) -> Fail
     // AAA Large (4.5) -> Fail
 
-    const aaLargeContainer = screen.getByText("WCAG AA (Large)").closest("div.p-3");
+    const aaLargeContainer = screen.getByText("WCAG AA (Large)").closest(
+      "div.p-3",
+    );
     expect(aaLargeContainer).toHaveTextContent("Pass");
 
-    const aaNormalContainer = screen.getByText("WCAG AA (Normal)").closest("div.p-3");
+    const aaNormalContainer = screen.getByText("WCAG AA (Normal)").closest(
+      "div.p-3",
+    );
     expect(aaNormalContainer).toHaveTextContent("Fail");
   });
 });

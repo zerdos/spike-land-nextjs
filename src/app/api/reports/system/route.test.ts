@@ -221,7 +221,10 @@ describe("GET /api/reports/system", () => {
 
       await GET(createRequest());
 
-      expect(generateSystemReport).toHaveBeenCalledWith("30d", expect.any(Array));
+      expect(generateSystemReport).toHaveBeenCalledWith(
+        "30d",
+        expect.any(Array),
+      );
     });
 
     it("should accept 7d period", async () => {
@@ -232,7 +235,10 @@ describe("GET /api/reports/system", () => {
 
       await GET(createRequest({ period: "7d" }));
 
-      expect(generateSystemReport).toHaveBeenCalledWith("7d", expect.any(Array));
+      expect(generateSystemReport).toHaveBeenCalledWith(
+        "7d",
+        expect.any(Array),
+      );
     });
 
     it("should accept 90d period", async () => {
@@ -243,7 +249,10 @@ describe("GET /api/reports/system", () => {
 
       await GET(createRequest({ period: "90d" }));
 
-      expect(generateSystemReport).toHaveBeenCalledWith("90d", expect.any(Array));
+      expect(generateSystemReport).toHaveBeenCalledWith(
+        "90d",
+        expect.any(Array),
+      );
     });
 
     it("should parse include parameter", async () => {
@@ -368,7 +377,9 @@ describe("GET /api/reports/system", () => {
 
       const response = await GET(createRequest());
 
-      expect(response.headers.get("Cache-Control")).toBe("private, max-age=300");
+      expect(response.headers.get("Cache-Control")).toBe(
+        "private, max-age=300",
+      );
       expect(response.headers.get("Content-Type")).toBe("application/json");
     });
 

@@ -44,9 +44,11 @@ describe("AlertDialog", () => {
     expect(dialog).toBeInTheDocument();
 
     expect(screen.getByText("Are you sure?")).toBeInTheDocument();
-    expect(screen.getByText("This action cannot be undone.")).toBeInTheDocument();
+    expect(screen.getByText("This action cannot be undone."))
+      .toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Continue" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Continue" }))
+      .toBeInTheDocument();
   });
 
   it("closes dialog when cancel is clicked", async () => {

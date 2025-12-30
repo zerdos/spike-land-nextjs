@@ -32,7 +32,9 @@ describe("EnhancePage", () => {
 
     // Check for component cards
     expect(screen.getByText("Image Comparison Slider")).toBeDefined();
-    expect(screen.getAllByText("Enhancement Settings").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Enhancement Settings").length).toBeGreaterThan(
+      0,
+    );
     expect(screen.getByText("Tier Selection Checkboxes")).toBeDefined();
     expect(screen.getByText("Batch Enhance Progress")).toBeDefined();
     expect(screen.getByText("Album Card")).toBeDefined();

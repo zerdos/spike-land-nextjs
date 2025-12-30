@@ -53,7 +53,8 @@ describe("UpgradePromptModal", () => {
           nextTier={mockBasicTier}
         />,
       );
-      expect(screen.queryByTestId("upgrade-prompt-modal")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("upgrade-prompt-modal")).not
+        .toBeInTheDocument();
     });
   });
 
@@ -67,7 +68,9 @@ describe("UpgradePromptModal", () => {
           nextTier={mockBasicTier}
         />,
       );
-      expect(screen.getByTestId("modal-title")).toHaveTextContent("You're out of tokens!");
+      expect(screen.getByTestId("modal-title")).toHaveTextContent(
+        "You're out of tokens!",
+      );
     });
 
     it("displays the description", () => {
@@ -165,7 +168,8 @@ describe("UpgradePromptModal", () => {
           nextTier={mockStandardTier}
         />,
       );
-      expect(screen.getByText("What you'll get with Standard:")).toBeInTheDocument();
+      expect(screen.getByText("What you'll get with Standard:"))
+        .toBeInTheDocument();
     });
 
     it("shows token capacity in benefits", () => {
@@ -217,7 +221,9 @@ describe("UpgradePromptModal", () => {
           onUpgrade={vi.fn()}
         />,
       );
-      expect(screen.getByTestId("upgrade-button")).toHaveTextContent("Upgrade to Basic");
+      expect(screen.getByTestId("upgrade-button")).toHaveTextContent(
+        "Upgrade to Basic",
+      );
     });
 
     it("shows price in upgrade button for paid tiers", () => {
@@ -230,7 +236,9 @@ describe("UpgradePromptModal", () => {
           onUpgrade={vi.fn()}
         />,
       );
-      expect(screen.getByTestId("upgrade-button")).toHaveTextContent("£10/month");
+      expect(screen.getByTestId("upgrade-button")).toHaveTextContent(
+        "£10/month",
+      );
     });
 
     it("does not show price for free tier", () => {
@@ -244,7 +252,9 @@ describe("UpgradePromptModal", () => {
           onUpgrade={vi.fn()}
         />,
       );
-      expect(screen.getByTestId("upgrade-button")).not.toHaveTextContent("/month");
+      expect(screen.getByTestId("upgrade-button")).not.toHaveTextContent(
+        "/month",
+      );
     });
 
     it("calls onUpgrade when clicked", () => {
@@ -274,7 +284,10 @@ describe("UpgradePromptModal", () => {
           isUpgrading={true}
         />,
       );
-      expect(screen.getByTestId("upgrade-button")).toHaveAttribute("aria-busy", "true");
+      expect(screen.getByTestId("upgrade-button")).toHaveAttribute(
+        "aria-busy",
+        "true",
+      );
     });
 
     it("disables upgrade button when isUpgrading", () => {
@@ -374,7 +387,9 @@ describe("UpgradePromptModal", () => {
         />,
       );
       // There are multiple badges - check at least one FREE badge exists
-      expect(screen.getAllByTestId("tier-badge").length).toBeGreaterThanOrEqual(2);
+      expect(screen.getAllByTestId("tier-badge").length).toBeGreaterThanOrEqual(
+        2,
+      );
     });
 
     it("displays next tier badge with icon", () => {

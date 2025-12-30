@@ -107,7 +107,10 @@ export default async function MerchPage() {
       </div>
 
       {categories.length > 0 && (
-        <div data-testid="category-filters" className="flex gap-2 mb-8 overflow-x-auto pb-2">
+        <div
+          data-testid="category-filters"
+          className="flex gap-2 mb-8 overflow-x-auto pb-2"
+        >
           <Link
             href="/merch"
             className="px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium whitespace-nowrap"

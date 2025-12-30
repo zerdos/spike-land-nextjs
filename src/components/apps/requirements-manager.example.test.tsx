@@ -7,16 +7,22 @@ describe("RequirementsManagerExample", () => {
     render(<RequirementsManagerExample />);
 
     // Based on HTML dump
-    expect(screen.getByRole("heading", { name: "My App Requirements" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "My App Requirements" }))
+      .toBeInTheDocument();
 
     // "Requirements" header inside the card
     expect(screen.getByText("Requirements")).toBeInTheDocument();
 
     // Check for description text
-    expect(screen.getByText("Manage app requirements with priorities and status tracking"))
+    expect(
+      screen.getByText(
+        "Manage app requirements with priorities and status tracking",
+      ),
+    )
       .toBeInTheDocument();
 
     // Check for item
-    expect(screen.getByText("User authentication with OAuth")).toBeInTheDocument();
+    expect(screen.getByText("User authentication with OAuth"))
+      .toBeInTheDocument();
   });
 });

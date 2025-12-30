@@ -26,7 +26,10 @@ describe("PremiumZeroOptions", () => {
     it("displays Premium tier badge", () => {
       render(<PremiumZeroOptions timeUntilNextRegen={600000} />);
       expect(screen.getByTestId("tier-badge")).toBeInTheDocument();
-      expect(screen.getByTestId("tier-badge")).toHaveAttribute("data-tier", "PREMIUM");
+      expect(screen.getByTestId("tier-badge")).toHaveAttribute(
+        "data-tier",
+        "PREMIUM",
+      );
     });
 
     it("displays title", () => {
@@ -36,12 +39,20 @@ describe("PremiumZeroOptions", () => {
 
     it("displays description", () => {
       render(<PremiumZeroOptions timeUntilNextRegen={600000} />);
-      expect(screen.getByText("Your Premium token well is temporarily empty")).toBeInTheDocument();
+      expect(screen.getByText("Your Premium token well is temporarily empty"))
+        .toBeInTheDocument();
     });
 
     it("applies custom className", () => {
-      render(<PremiumZeroOptions timeUntilNextRegen={600000} className="custom-class" />);
-      expect(screen.getByTestId("premium-zero-options")).toHaveClass("custom-class");
+      render(
+        <PremiumZeroOptions
+          timeUntilNextRegen={600000}
+          className="custom-class"
+        />,
+      );
+      expect(screen.getByTestId("premium-zero-options")).toHaveClass(
+        "custom-class",
+      );
     });
   });
 
@@ -77,12 +88,16 @@ describe("PremiumZeroOptions", () => {
 
     it("shows regenerating message when time is 0", () => {
       render(<PremiumZeroOptions timeUntilNextRegen={0} />);
-      expect(screen.getByTestId("regen-status")).toHaveTextContent("Regenerating now...");
+      expect(screen.getByTestId("regen-status")).toHaveTextContent(
+        "Regenerating now...",
+      );
     });
 
     it("shows regenerating message when time is negative", () => {
       render(<PremiumZeroOptions timeUntilNextRegen={-1000} />);
-      expect(screen.getByTestId("regen-status")).toHaveTextContent("Regenerating now...");
+      expect(screen.getByTestId("regen-status")).toHaveTextContent(
+        "Regenerating now...",
+      );
     });
 
     it("counts down over time", () => {
@@ -106,11 +121,15 @@ describe("PremiumZeroOptions", () => {
         vi.advanceTimersByTime(5000);
       });
 
-      expect(screen.getByTestId("regen-status")).toHaveTextContent("Regenerating now...");
+      expect(screen.getByTestId("regen-status")).toHaveTextContent(
+        "Regenerating now...",
+      );
     });
 
     it("updates when timeUntilNextRegen prop changes", () => {
-      const { rerender } = render(<PremiumZeroOptions timeUntilNextRegen={60000} />);
+      const { rerender } = render(
+        <PremiumZeroOptions timeUntilNextRegen={60000} />,
+      );
       expect(screen.getByTestId("time-remaining")).toHaveTextContent("1m");
 
       rerender(<PremiumZeroOptions timeUntilNextRegen={120000} />);
@@ -121,21 +140,30 @@ describe("PremiumZeroOptions", () => {
   describe("token packs", () => {
     it("displays token packs section when packs provided", () => {
       render(
-        <PremiumZeroOptions timeUntilNextRegen={600000} tokenPacks={mockTokenPacks} />,
+        <PremiumZeroOptions
+          timeUntilNextRegen={600000}
+          tokenPacks={mockTokenPacks}
+        />,
       );
       expect(screen.getByTestId("token-packs-section")).toBeInTheDocument();
     });
 
     it("displays 'Need tokens now?' heading", () => {
       render(
-        <PremiumZeroOptions timeUntilNextRegen={600000} tokenPacks={mockTokenPacks} />,
+        <PremiumZeroOptions
+          timeUntilNextRegen={600000}
+          tokenPacks={mockTokenPacks}
+        />,
       );
       expect(screen.getByText("Need tokens now?")).toBeInTheDocument();
     });
 
     it("renders all token packs", () => {
       render(
-        <PremiumZeroOptions timeUntilNextRegen={600000} tokenPacks={mockTokenPacks} />,
+        <PremiumZeroOptions
+          timeUntilNextRegen={600000}
+          tokenPacks={mockTokenPacks}
+        />,
       );
 
       expect(screen.getByTestId("pack-starter")).toBeInTheDocument();
@@ -145,7 +173,10 @@ describe("PremiumZeroOptions", () => {
 
     it("displays pack name", () => {
       render(
-        <PremiumZeroOptions timeUntilNextRegen={600000} tokenPacks={mockTokenPacks} />,
+        <PremiumZeroOptions
+          timeUntilNextRegen={600000}
+          tokenPacks={mockTokenPacks}
+        />,
       );
       expect(screen.getByText("Starter Pack")).toBeInTheDocument();
       expect(screen.getByText("Plus Pack")).toBeInTheDocument();
@@ -154,7 +185,10 @@ describe("PremiumZeroOptions", () => {
 
     it("displays pack tokens and price", () => {
       render(
-        <PremiumZeroOptions timeUntilNextRegen={600000} tokenPacks={mockTokenPacks} />,
+        <PremiumZeroOptions
+          timeUntilNextRegen={600000}
+          tokenPacks={mockTokenPacks}
+        />,
       );
       expect(screen.getByText("10 tokens - £2.99")).toBeInTheDocument();
       expect(screen.getByText("25 tokens - £5.99")).toBeInTheDocument();
@@ -195,7 +229,10 @@ describe("PremiumZeroOptions", () => {
 
     it("does not call onPurchasePack when not provided", () => {
       render(
-        <PremiumZeroOptions timeUntilNextRegen={600000} tokenPacks={mockTokenPacks} />,
+        <PremiumZeroOptions
+          timeUntilNextRegen={600000}
+          tokenPacks={mockTokenPacks}
+        />,
       );
 
       // Should not throw error when clicked without handler
@@ -205,7 +242,9 @@ describe("PremiumZeroOptions", () => {
 
   describe("no packs available", () => {
     it("shows no packs message when tokenPacks is empty", () => {
-      render(<PremiumZeroOptions timeUntilNextRegen={600000} tokenPacks={[]} />);
+      render(
+        <PremiumZeroOptions timeUntilNextRegen={600000} tokenPacks={[]} />,
+      );
       expect(screen.getByTestId("no-packs-message")).toBeInTheDocument();
     });
 
@@ -222,14 +261,19 @@ describe("PremiumZeroOptions", () => {
     });
 
     it("does not show packs section when no packs", () => {
-      render(<PremiumZeroOptions timeUntilNextRegen={600000} tokenPacks={[]} />);
-      expect(screen.queryByTestId("token-packs-section")).not.toBeInTheDocument();
+      render(
+        <PremiumZeroOptions timeUntilNextRegen={600000} tokenPacks={[]} />,
+      );
+      expect(screen.queryByTestId("token-packs-section")).not
+        .toBeInTheDocument();
     });
   });
 
   describe("timer cleanup", () => {
     it("cleans up interval on unmount", () => {
-      const { unmount } = render(<PremiumZeroOptions timeUntilNextRegen={60000} />);
+      const { unmount } = render(
+        <PremiumZeroOptions timeUntilNextRegen={60000} />,
+      );
 
       const clearIntervalSpy = vi.spyOn(globalThis, "clearInterval");
       unmount();

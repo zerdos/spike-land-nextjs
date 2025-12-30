@@ -199,7 +199,12 @@ describe("BatchUpload Component", () => {
 
   it("should upload batch successfully", async () => {
     const mockOnUploadComplete = vi.fn();
-    render(<BatchUpload albumId={TEST_ALBUM_ID} onUploadComplete={mockOnUploadComplete} />);
+    render(
+      <BatchUpload
+        albumId={TEST_ALBUM_ID}
+        onUploadComplete={mockOnUploadComplete}
+      />,
+    );
 
     const files = [
       new File(["test1"], "test1.png", { type: "image/png" }),
@@ -749,7 +754,12 @@ describe("BatchUpload Component", () => {
 
   it("should handle files not found in upload results", async () => {
     const mockOnUploadComplete = vi.fn();
-    render(<BatchUpload albumId={TEST_ALBUM_ID} onUploadComplete={mockOnUploadComplete} />);
+    render(
+      <BatchUpload
+        albumId={TEST_ALBUM_ID}
+        onUploadComplete={mockOnUploadComplete}
+      />,
+    );
 
     const files = [
       new File(["test1"], "test1.png", { type: "image/png" }),
@@ -940,7 +950,12 @@ describe("BatchUpload Component", () => {
 
   it("should not call onUploadComplete when no successful uploads", async () => {
     const mockOnUploadComplete = vi.fn();
-    render(<BatchUpload albumId={TEST_ALBUM_ID} onUploadComplete={mockOnUploadComplete} />);
+    render(
+      <BatchUpload
+        albumId={TEST_ALBUM_ID}
+        onUploadComplete={mockOnUploadComplete}
+      />,
+    );
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(
@@ -1054,8 +1069,12 @@ describe("BatchUpload Component", () => {
     global.FileReader = NoThumbnailFileReader as unknown as typeof FileReader;
 
     // Mock processImageForUpload to fail for this test
-    const { processImageForUpload } = await import("@/lib/images/browser-image-processor");
-    vi.mocked(processImageForUpload).mockRejectedValueOnce(new Error("Processing failed"));
+    const { processImageForUpload } = await import(
+      "@/lib/images/browser-image-processor"
+    );
+    vi.mocked(processImageForUpload).mockRejectedValueOnce(
+      new Error("Processing failed"),
+    );
 
     render(<BatchUpload albumId={TEST_ALBUM_ID} />);
 
@@ -1127,7 +1146,12 @@ describe("BatchUpload Component", () => {
 
   it("should handle upload with undefined results", async () => {
     const mockOnUploadComplete = vi.fn();
-    render(<BatchUpload albumId={TEST_ALBUM_ID} onUploadComplete={mockOnUploadComplete} />);
+    render(
+      <BatchUpload
+        albumId={TEST_ALBUM_ID}
+        onUploadComplete={mockOnUploadComplete}
+      />,
+    );
 
     const file = new File(["test"], "test.png", { type: "image/png" });
     const input = document.querySelector(

@@ -87,11 +87,15 @@ export default async function OrderConfirmationPage({
               </div>
               <div className="text-right">
                 <p className="text-muted-foreground">Total</p>
-                <p className="font-semibold">{formatPrice(order.totalAmount)}</p>
+                <p className="font-semibold">
+                  {formatPrice(order.totalAmount)}
+                </p>
               </div>
               <div className="text-left">
                 <p className="text-muted-foreground">Items</p>
-                <p>{order.itemCount} product{order.itemCount !== 1 ? "s" : ""}</p>
+                <p>
+                  {order.itemCount} product{order.itemCount !== 1 ? "s" : ""}
+                </p>
               </div>
               <div className="text-right">
                 <p className="text-muted-foreground">Status</p>

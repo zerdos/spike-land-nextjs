@@ -122,7 +122,8 @@ describe("MixShareQRCode", () => {
 
       // Should show collapsed state with QR icon button
       await waitFor(() => {
-        expect(screen.queryByTestId("qr-code-container")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("qr-code-container")).not
+          .toBeInTheDocument();
       });
     });
 
@@ -135,7 +136,8 @@ describe("MixShareQRCode", () => {
 
       // Wait for collapsed state
       await waitFor(() => {
-        expect(screen.queryByTestId("qr-code-container")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("qr-code-container")).not
+          .toBeInTheDocument();
       });
 
       // Click the QR icon button to expand
@@ -227,7 +229,9 @@ describe("MixShareQRCode", () => {
     });
 
     it("handles both clipboard API and execCommand failure gracefully", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       const mockExecCommand = vi.fn().mockImplementation(() => {
         throw new Error("execCommand failed");
       });

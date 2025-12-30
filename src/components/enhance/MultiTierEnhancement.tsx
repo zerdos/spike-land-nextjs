@@ -375,7 +375,10 @@ export function MultiTierEnhancement({
           onClick={handleEnhance}
           disabled={disabled || isProcessing || !hasSelectedTiers ||
             !hasEnoughTokens}
-          className={cn("w-full transition-all", isProcessing && "animate-pulse-cyan")}
+          className={cn(
+            "w-full transition-all",
+            isProcessing && "animate-pulse-cyan",
+          )}
           size="lg"
         >
           {isProcessing

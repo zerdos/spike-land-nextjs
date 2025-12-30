@@ -481,7 +481,8 @@ describe("GET /api/admin/marketing/analytics/overview", () => {
       const sessionStart = sessionCall?.where?.sessionStart;
       expect(sessionStart).toBeDefined();
 
-      const endDate = typeof sessionStart === "object" && sessionStart && "lte" in sessionStart
+      const endDate = typeof sessionStart === "object" && sessionStart &&
+          "lte" in sessionStart
         ? sessionStart.lte
         : sessionStart;
       expect(endDate).toBeInstanceOf(Date);

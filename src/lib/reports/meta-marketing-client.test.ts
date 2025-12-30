@@ -22,11 +22,12 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 // Mock FacebookMarketingClient - use vi.hoisted() so mocks are available when factory runs
-const { mockListCampaigns, mockGetCampaignMetrics, mockValidateToken } = vi.hoisted(() => ({
-  mockListCampaigns: vi.fn(),
-  mockGetCampaignMetrics: vi.fn(),
-  mockValidateToken: vi.fn(),
-}));
+const { mockListCampaigns, mockGetCampaignMetrics, mockValidateToken } = vi
+  .hoisted(() => ({
+    mockListCampaigns: vi.fn(),
+    mockGetCampaignMetrics: vi.fn(),
+    mockValidateToken: vi.fn(),
+  }));
 
 vi.mock("@/lib/marketing/facebook-client", () => ({
   // Use a regular function (not arrow) so it can be called with `new`

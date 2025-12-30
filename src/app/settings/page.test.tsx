@@ -514,7 +514,8 @@ describe("SettingsPage", () => {
 
       expect(screen.getByTestId("subscription-card")).toBeInTheDocument();
       expect(screen.getByText("Subscription")).toBeInTheDocument();
-      expect(screen.getByText("Manage your subscription plan and billing")).toBeInTheDocument();
+      expect(screen.getByText("Manage your subscription plan and billing"))
+        .toBeInTheDocument();
     });
 
     it("shows current tier badge", () => {

@@ -91,8 +91,12 @@ export function useBlendDragDrop(
 ): UseBlendDragDropReturn {
   const { onBlendStart, onBlendComplete, onBlendError } = options;
 
-  const [blendDragSourceId, setBlendDragSourceId] = useState<string | null>(null);
-  const [blendDropTargetId, setBlendDropTargetId] = useState<string | null>(null);
+  const [blendDragSourceId, setBlendDragSourceId] = useState<string | null>(
+    null,
+  );
+  const [blendDropTargetId, setBlendDropTargetId] = useState<string | null>(
+    null,
+  );
   const [blendingImageId, setBlendingImageId] = useState<string | null>(null);
 
   /**
@@ -210,7 +214,9 @@ export function useBlendDragDrop(
         );
 
         if (fetchError || !response.ok) {
-          const errorData = response ? await response.json().catch(() => ({})) : {};
+          const errorData = response
+            ? await response.json().catch(() => ({}))
+            : {};
           throw new Error(errorData.error || "Enhancement failed");
         }
 
@@ -220,7 +226,9 @@ export function useBlendDragDrop(
         }, 2000);
       } catch (error) {
         onBlendError?.(
-          error instanceof Error ? error : new Error("Blend enhancement failed"),
+          error instanceof Error
+            ? error
+            : new Error("Blend enhancement failed"),
         );
       } finally {
         setBlendingImageId(null);

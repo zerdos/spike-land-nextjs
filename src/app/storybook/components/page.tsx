@@ -79,24 +79,33 @@ export default function ComponentsPage() {
           <Card variant="default">
             <CardContent className="pt-6 text-center">
               <Badge className="mb-2">Default</Badge>
-              <p className="text-xs text-muted-foreground">Standard glass-1 with hover effects.</p>
+              <p className="text-xs text-muted-foreground">
+                Standard glass-1 with hover effects.
+              </p>
             </CardContent>
           </Card>
           <Card variant="solid">
             <CardContent className="pt-6 text-center">
               <Badge variant="secondary" className="mb-2">Solid</Badge>
-              <p className="text-xs text-muted-foreground">High-contrast opaque background.</p>
+              <p className="text-xs text-muted-foreground">
+                High-contrast opaque background.
+              </p>
             </CardContent>
           </Card>
           <Card variant="dashed">
             <CardContent className="pt-6 text-center">
               <Badge variant="outline" className="mb-2">Dashed</Badge>
-              <p className="text-xs text-muted-foreground">Placeholders or secondary actions.</p>
+              <p className="text-xs text-muted-foreground">
+                Placeholders or secondary actions.
+              </p>
             </CardContent>
           </Card>
           <Card variant="highlighted">
             <CardContent className="pt-6 text-center">
-              <Badge variant="outline" className="mb-2 border-primary/30 text-primary">
+              <Badge
+                variant="outline"
+                className="mb-2 border-primary/30 text-primary"
+              >
                 Highlighted
               </Badge>
               <p className="text-xs text-muted-foreground">
@@ -106,7 +115,10 @@ export default function ComponentsPage() {
           </Card>
           <Card variant="negative">
             <CardContent className="pt-6 text-center">
-              <Badge variant="outline" className="mb-2 border-slate-400 text-slate-600">
+              <Badge
+                variant="outline"
+                className="mb-2 border-slate-400 text-slate-600"
+              >
                 Negative
               </Badge>
               <p className="text-xs text-slate-500 font-medium font-mono uppercase tracking-tighter">
@@ -116,7 +128,10 @@ export default function ComponentsPage() {
           </Card>
           <Card variant="floating" className="transition-all">
             <CardContent className="pt-6 text-center">
-              <Badge variant="outline" className="mb-2 border-indigo-500/30 text-indigo-400">
+              <Badge
+                variant="outline"
+                className="mb-2 border-indigo-500/30 text-indigo-400"
+              >
                 Floating
               </Badge>
               <p className="text-xs text-muted-foreground">
@@ -126,7 +141,10 @@ export default function ComponentsPage() {
           </Card>
           <Card variant="magic" className="transition-all">
             <CardContent className="pt-6 py-10 text-center space-y-3">
-              <Badge variant="outline" className="border-primary/40 text-primary shadow-glow-cyan">
+              <Badge
+                variant="outline"
+                className="border-primary/40 text-primary shadow-glow-cyan"
+              >
                 Magic
               </Badge>
               <div className="space-y-1">
@@ -149,18 +167,26 @@ export default function ComponentsPage() {
           Integrated colors for high-energy layouts and semantic grouping.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <Card variant="blue" className="p-6 space-y-4 relative overflow-hidden group">
+          <Card
+            variant="blue"
+            className="p-6 space-y-4 relative overflow-hidden group"
+          >
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
             <div className="flex justify-between items-start relative z-10">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md transition-transform group-hover:scale-110">
                 <Twitter className="w-5 h-5 text-white" />
               </div>
-              <Badge variant="outline" className="text-white border-white/30 backdrop-blur-sm">
+              <Badge
+                variant="outline"
+                className="text-white border-white/30 backdrop-blur-sm"
+              >
                 Connect
               </Badge>
             </div>
             <div className="relative z-10">
-              <p className="text-base font-bold text-white drop-shadow-md">Twitter</p>
+              <p className="text-base font-bold text-white drop-shadow-md">
+                Twitter
+              </p>
               <p className="text-xs text-white/80 font-medium">@spike.land</p>
             </div>
             <Button
@@ -172,41 +198,61 @@ export default function ComponentsPage() {
             </Button>
           </Card>
 
-          <Card variant="green" className="p-6 space-y-4 relative overflow-hidden group">
+          <Card
+            variant="green"
+            className="p-6 space-y-4 relative overflow-hidden group"
+          >
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
             <div className="flex justify-between items-start relative z-10">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md transition-transform group-hover:scale-110">
                 <Music4 className="w-5 h-5 text-white" />
               </div>
-              <Badge variant="outline" className="text-white border-white/30 backdrop-blur-sm">
+              <Badge
+                variant="outline"
+                className="text-white border-white/30 backdrop-blur-sm"
+              >
                 Live Now
               </Badge>
             </div>
             <div className="relative z-10">
-              <p className="text-base font-bold text-white drop-shadow-md">Listening to...</p>
-              <p className="text-xs text-white/80 font-medium">Midnight City - M83</p>
+              <p className="text-base font-bold text-white drop-shadow-md">
+                Listening to...
+              </p>
+              <p className="text-xs text-white/80 font-medium">
+                Midnight City - M83
+              </p>
             </div>
             <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden relative z-10">
               <div className="h-full bg-white w-2/3" />
             </div>
           </Card>
 
-          <Card variant="pink" className="p-6 space-y-4 relative overflow-hidden group">
+          <Card
+            variant="pink"
+            className="p-6 space-y-4 relative overflow-hidden group"
+          >
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
             <div className="flex justify-between items-start relative z-10">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md transition-transform group-hover:scale-110">
                 <Instagram className="w-5 h-5 text-white" />
               </div>
-              <Badge variant="outline" className="text-white border-white/30 backdrop-blur-sm">
+              <Badge
+                variant="outline"
+                className="text-white border-white/30 backdrop-blur-sm"
+              >
                 News
               </Badge>
             </div>
             <div className="relative z-10">
-              <p className="text-base font-bold text-white drop-shadow-md">Dribbble.com</p>
-              <p className="text-xs text-white/80 font-medium">Pixel-Perfect Design</p>
+              <p className="text-base font-bold text-white drop-shadow-md">
+                Dribbble.com
+              </p>
+              <p className="text-xs text-white/80 font-medium">
+                Pixel-Perfect Design
+              </p>
             </div>
             <div className="flex -space-x-1 relative z-10">
-              {[1, 2, 3, 4].map(i => (
+              {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
                   className="w-7 h-7 rounded-full border-2 border-pink-500/50 bg-white/10 backdrop-blur-sm"
@@ -215,7 +261,10 @@ export default function ComponentsPage() {
             </div>
           </Card>
 
-          <Card variant="layers" className="p-6 space-y-4 relative overflow-hidden group">
+          <Card
+            variant="layers"
+            className="p-6 space-y-4 relative overflow-hidden group"
+          >
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
             <div className="flex justify-between items-start relative z-10">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md transition-transform group-hover:scale-110">
@@ -230,7 +279,9 @@ export default function ComponentsPage() {
               </Button>
             </div>
             <div className="relative z-10">
-              <p className="text-base font-bold text-white drop-shadow-md">vqw07's layers.</p>
+              <p className="text-base font-bold text-white drop-shadow-md">
+                vqw07's layers.
+              </p>
               <p className="text-xs text-white/60 font-medium">layers.to</p>
             </div>
             <div className="aspect-video bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-lg flex items-center justify-center border border-white/5 relative z-10">
@@ -240,22 +291,30 @@ export default function ComponentsPage() {
             </div>
           </Card>
 
-          <Card variant="fuchsia" className="p-6 space-y-4 relative overflow-hidden group">
+          <Card
+            variant="fuchsia"
+            className="p-6 space-y-4 relative overflow-hidden group"
+          >
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
             <div className="flex justify-between items-start relative z-10">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md transition-transform group-hover:scale-110">
                 <Instagram className="w-5 h-5 text-white" />
               </div>
-              <Badge variant="outline" className="text-white border-white/30 backdrop-blur-sm">
+              <Badge
+                variant="outline"
+                className="text-white border-white/30 backdrop-blur-sm"
+              >
                 Gallery
               </Badge>
             </div>
             <div className="relative z-10">
-              <p className="text-base font-bold text-white drop-shadow-md">Instagram</p>
+              <p className="text-base font-bold text-white drop-shadow-md">
+                Instagram
+              </p>
               <p className="text-xs text-white/80 font-medium">@spike_ai</p>
             </div>
             <div className="grid grid-cols-3 gap-2 relative z-10">
-              {[1, 2, 3].map(i => (
+              {[1, 2, 3].map((i) => (
                 <div
                   key={i}
                   className="aspect-square bg-white/10 rounded-md border border-white/10 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
@@ -266,19 +325,29 @@ export default function ComponentsPage() {
             </div>
           </Card>
 
-          <Card variant="orange" className="p-6 space-y-4 relative overflow-hidden group">
+          <Card
+            variant="orange"
+            className="p-6 space-y-4 relative overflow-hidden group"
+          >
             <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60 pointer-events-none" />
             <div className="flex justify-between items-start relative z-10">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md transition-transform group-hover:scale-110">
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
-              <Badge variant="outline" className="text-white border-white/30 backdrop-blur-sm">
+              <Badge
+                variant="outline"
+                className="text-white border-white/30 backdrop-blur-sm"
+              >
                 Latest
               </Badge>
             </div>
             <div className="relative z-10 h-20 flex flex-col justify-end">
-              <p className="text-base font-bold text-white drop-shadow-md">Substack.com</p>
-              <p className="text-xs text-white/80 font-medium">The AI Spark Newsletter</p>
+              <p className="text-base font-bold text-white drop-shadow-md">
+                Substack.com
+              </p>
+              <p className="text-xs text-white/80 font-medium">
+                The AI Spark Newsletter
+              </p>
             </div>
             <Button
               variant="default"
@@ -312,15 +381,27 @@ export default function ComponentsPage() {
                   <Input id="demo-input" placeholder="e.g. user@spike.land" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="demo-input-err" className="text-destructive">Error State</Label>
-                  <Input id="demo-input-err" variant="error" defaultValue="invalid-email" />
+                  <Label htmlFor="demo-input-err" className="text-destructive">
+                    Error State
+                  </Label>
+                  <Input
+                    id="demo-input-err"
+                    variant="error"
+                    defaultValue="invalid-email"
+                  />
                   <p className="text-[10px] text-destructive font-medium uppercase tracking-wider flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" /> Please enter a valid email.
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="demo-input-success" className="text-success">Success State</Label>
-                  <Input id="demo-input-success" variant="success" defaultValue="crypton_spike" />
+                  <Label htmlFor="demo-input-success" className="text-success">
+                    Success State
+                  </Label>
+                  <Input
+                    id="demo-input-success"
+                    variant="success"
+                    defaultValue="crypton_spike"
+                  />
                 </div>
               </div>
             </ComponentSample>
@@ -337,7 +418,10 @@ export default function ComponentsPage() {
           </div>
 
           <div className="space-y-10">
-            <ComponentSample title="Selections" description="Checkbox, Radio, and Switch controls.">
+            <ComponentSample
+              title="Selections"
+              description="Checkbox, Radio, and Switch controls."
+            >
               <div className="w-full max-w-sm space-y-10">
                 <div className="flex flex-wrap gap-10">
                   <div className="flex items-center space-x-3">
@@ -352,7 +436,10 @@ export default function ComponentsPage() {
 
                 <Separator className="opacity-10" />
 
-                <RadioGroup defaultValue="option-1" className="flex flex-row gap-8">
+                <RadioGroup
+                  defaultValue="option-1"
+                  className="flex flex-row gap-8"
+                >
                   <div className="flex items-center space-x-3">
                     <RadioGroupItem value="option-1" id="r1" />
                     <Label htmlFor="r1">Standard Enhancement</Label>
@@ -388,7 +475,9 @@ export default function ComponentsPage() {
                   <Label className="uppercase text-[10px] tracking-widest font-black opacity-60">
                     Quality Factor
                   </Label>
-                  <span className="text-xl font-black font-heading text-primary">85%</span>
+                  <span className="text-xl font-black font-heading text-primary">
+                    85%
+                  </span>
                 </div>
                 <Slider defaultValue={[85]} max={100} step={1} />
               </div>
@@ -526,7 +615,12 @@ export default function ComponentsPage() {
             title="Accordion"
             description="Collapsible sections for dense information."
           >
-            <Accordion type="single" collapsible defaultValue="item-1" className="w-full max-w-md">
+            <Accordion
+              type="single"
+              collapsible
+              defaultValue="item-1"
+              className="w-full max-w-md"
+            >
               <AccordionItem value="item-1" className="border-white/5">
                 <AccordionTrigger className="hover:text-primary">
                   System Requirements
@@ -536,7 +630,9 @@ export default function ComponentsPage() {
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-2" className="border-white/5">
-                <AccordionTrigger className="hover:text-primary">API Availability</AccordionTrigger>
+                <AccordionTrigger className="hover:text-primary">
+                  API Availability
+                </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-4">
                   Public API access is currently in closed beta for Enterprise partners.
                 </AccordionContent>
@@ -548,32 +644,50 @@ export default function ComponentsPage() {
 
       {/* Indicators */}
       <section className="space-y-8 pt-10 border-t border-white/5">
-        <h2 className="text-3xl font-bold font-heading">Indicators & Tooltips</h2>
+        <h2 className="text-3xl font-bold font-heading">
+          Indicators & Tooltips
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          <ComponentSample title="Badges" description="Small status or tag indicators.">
+          <ComponentSample
+            title="Badges"
+            description="Small status or tag indicators."
+          >
             <div className="flex flex-wrap gap-3">
               <Badge>Active</Badge>
               <Badge variant="secondary">In Progress</Badge>
               <Badge variant="success">Completed</Badge>
               <Badge variant="warning">Low Tokens</Badge>
               <Badge variant="outline">Verified</Badge>
-              <Badge variant="destructive" className="animate-pulse">Critical Error</Badge>
+              <Badge variant="destructive" className="animate-pulse">
+                Critical Error
+              </Badge>
             </div>
           </ComponentSample>
 
-          <ComponentSample title="Tooltips" description="Contextual info on hover.">
+          <ComponentSample
+            title="Tooltips"
+            description="Contextual info on hover."
+          >
             <TooltipProvider>
               <div className="flex gap-4">
                 <Tooltip defaultOpen>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full">?</Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full"
+                    >
+                      ?
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent className="glass-2 border-primary/20">
                     <p>Helpful information here</p>
                   </TooltipContent>
                 </Tooltip>
                 <div className="flex items-center gap-2 p-2 px-4 rounded-full bg-white/5 border border-white/10">
-                  <span className="text-xs text-muted-foreground">Privacy Mode</span>
+                  <span className="text-xs text-muted-foreground">
+                    Privacy Mode
+                  </span>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className="h-4 w-4 text-primary cursor-help" />

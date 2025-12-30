@@ -39,7 +39,10 @@ export async function GET(request: NextRequest) {
   }
 
   const searchParams = request.nextUrl.searchParams;
-  const state = (searchParams.get("state") || "open") as "open" | "closed" | "all";
+  const state = (searchParams.get("state") || "open") as
+    | "open"
+    | "closed"
+    | "all";
   const labels = searchParams.get("labels") || undefined;
   const limit = parseInt(searchParams.get("limit") || "20");
 

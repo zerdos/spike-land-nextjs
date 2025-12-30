@@ -70,7 +70,10 @@ export function UpgradePromptModal({
           <DialogTitle className="text-xl" data-testid="modal-title">
             You&apos;re out of tokens!
           </DialogTitle>
-          <DialogDescription className="text-base" data-testid="modal-description">
+          <DialogDescription
+            className="text-base"
+            data-testid="modal-description"
+          >
             Your token well is empty. Upgrade to get more capacity and faster regeneration.
           </DialogDescription>
         </DialogHeader>
@@ -104,7 +107,10 @@ export function UpgradePromptModal({
 
         {/* Benefits list */}
         {nextTier && (
-          <div className="rounded-lg bg-muted/50 p-4" data-testid="benefits-list">
+          <div
+            className="rounded-lg bg-muted/50 p-4"
+            data-testid="benefits-list"
+          >
             <h4 className="mb-2 text-sm font-medium">
               What you&apos;ll get with {nextTier.displayName}:
             </h4>

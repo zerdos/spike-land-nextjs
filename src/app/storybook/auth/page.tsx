@@ -80,7 +80,9 @@ export default function AuthPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium">No Name (Fallback Icon)</span>
+                <span className="text-sm font-medium">
+                  No Name (Fallback Icon)
+                </span>
                 <UserAvatar
                   user={{
                     name: null,

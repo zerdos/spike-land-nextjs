@@ -35,7 +35,9 @@ interface SubmitOrderResult {
  * Submit an order to the POD provider.
  * This should be called after payment is authorized.
  */
-export async function submitOrderToPod(orderId: string): Promise<SubmitOrderResult> {
+export async function submitOrderToPod(
+  orderId: string,
+): Promise<SubmitOrderResult> {
   // Fetch the order with all items
   const { data: order, error: fetchError } = await tryCatch(
     prisma.merchOrder.findUnique({
@@ -212,7 +214,9 @@ export async function updateOrderFromWebhook(
 
   const firstItem = items[0];
   if (!firstItem) {
-    console.warn(`No order items found for provider order ID: ${providerOrderId}`);
+    console.warn(
+      `No order items found for provider order ID: ${providerOrderId}`,
+    );
     return;
   }
 
@@ -237,7 +241,10 @@ export async function updateOrderFromWebhook(
     });
 
     // Create/update shipment if we have tracking info
-    if (trackingNumber && (orderStatus === "SHIPPED" || orderStatus === "DELIVERED")) {
+    if (
+      trackingNumber &&
+      (orderStatus === "SHIPPED" || orderStatus === "DELIVERED")
+    ) {
       const existingShipment = await tx.merchShipment.findFirst({
         where: { orderId, provider },
       });
@@ -250,7 +257,9 @@ export async function updateOrderFromWebhook(
             trackingUrl,
             carrier,
             status: orderStatus === "SHIPPED" ? "SHIPPED" : "DELIVERED",
-            shippedAt: orderStatus === "SHIPPED" ? new Date() : existingShipment.shippedAt,
+            shippedAt: orderStatus === "SHIPPED"
+              ? new Date()
+              : existingShipment.shippedAt,
             deliveredAt: orderStatus === "DELIVERED" ? new Date() : undefined,
           },
         });
@@ -297,9 +306,15 @@ function mapProviderStatusToOrderStatus(
   const statusLower = providerStatus.toLowerCase();
 
   if (statusLower.includes("cancel")) return "CANCELLED";
-  if (statusLower.includes("deliver") || statusLower === "complete") return "DELIVERED";
-  if (statusLower.includes("ship") || statusLower.includes("transit")) return "SHIPPED";
-  if (statusLower.includes("production") || statusLower.includes("print")) return "IN_PRODUCTION";
+  if (statusLower.includes("deliver") || statusLower === "complete") {
+    return "DELIVERED";
+  }
+  if (statusLower.includes("ship") || statusLower.includes("transit")) {
+    return "SHIPPED";
+  }
+  if (statusLower.includes("production") || statusLower.includes("print")) {
+    return "IN_PRODUCTION";
+  }
 
   return "SUBMITTED";
 }

@@ -112,23 +112,34 @@ export default async function OrdersPage() {
       <div className="space-y-4">
         {orders.map((order) => (
           <Link key={order.id} href={`/orders/${order.id}`}>
-            <Card data-testid="order-card" className="hover:shadow-md transition-shadow">
+            <Card
+              data-testid="order-card"
+              className="hover:shadow-md transition-shadow"
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                      <span data-testid="order-number" className="font-mono text-sm">
+                      <span
+                        data-testid="order-number"
+                        className="font-mono text-sm"
+                      >
                         {order.orderNumber}
                       </span>
                       <OrderStatusBadge status={order.status} />
                     </div>
 
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span data-testid="order-date">{formatDate(order.createdAt)}</span>
+                      <span data-testid="order-date">
+                        {formatDate(order.createdAt)}
+                      </span>
                       <span>
                         {order.itemCount} item{order.itemCount !== 1 ? "s" : ""}
                       </span>
-                      <span data-testid="order-total" className="font-semibold text-foreground">
+                      <span
+                        data-testid="order-total"
+                        className="font-semibold text-foreground"
+                      >
                         {formatPrice(order.totalAmount, order.currency)}
                       </span>
                     </div>

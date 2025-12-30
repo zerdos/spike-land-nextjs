@@ -28,7 +28,9 @@ describe("MDXComponents", () => {
 
   it("renders custom link correctly", () => {
     const LinkComponent = mdxComponents.a as any;
-    render(<LinkComponent href="https://example.com">External Link</LinkComponent>);
+    render(
+      <LinkComponent href="https://example.com">External Link</LinkComponent>,
+    );
     const link = screen.getByRole("link", { name: "External Link" });
     expect(link).toHaveAttribute("href", "https://example.com");
     expect(link).toHaveAttribute("target", "_blank");

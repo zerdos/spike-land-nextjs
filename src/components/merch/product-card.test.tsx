@@ -45,7 +45,9 @@ describe("ProductCard", () => {
   it("should link to product detail page", () => {
     render(<ProductCard product={mockProduct} />);
     const links = screen.getAllByRole("link");
-    expect(links.some((link) => link.getAttribute("href") === "/merch/prod_123")).toBe(
+    expect(
+      links.some((link) => link.getAttribute("href") === "/merch/prod_123"),
+    ).toBe(
       true,
     );
   });

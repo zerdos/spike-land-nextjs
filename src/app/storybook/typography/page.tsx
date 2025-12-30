@@ -91,22 +91,38 @@ export default function TypographyPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div className="space-y-4">
                 <div className="group flex flex-col pt-4 border-t border-white/5">
-                  <span className="text-[10px] font-mono text-primary mb-2">h3 / 30px / 600</span>
-                  <h3 className="text-3xl font-semibold font-heading">Core Components</h3>
+                  <span className="text-[10px] font-mono text-primary mb-2">
+                    h3 / 30px / 600
+                  </span>
+                  <h3 className="text-3xl font-semibold font-heading">
+                    Core Components
+                  </h3>
                 </div>
                 <div className="group flex flex-col pt-4 border-t border-white/5">
-                  <span className="text-[10px] font-mono text-primary mb-2">h4 / 24px / 600</span>
-                  <h4 className="text-2xl font-semibold font-heading">Interactive Elements</h4>
+                  <span className="text-[10px] font-mono text-primary mb-2">
+                    h4 / 24px / 600
+                  </span>
+                  <h4 className="text-2xl font-semibold font-heading">
+                    Interactive Elements
+                  </h4>
                 </div>
               </div>
               <div className="space-y-4">
                 <div className="group flex flex-col pt-4 border-t border-white/5">
-                  <span className="text-[10px] font-mono text-primary mb-2">h5 / 20px / 500</span>
-                  <h5 className="text-xl font-medium font-heading">Status Indicators</h5>
+                  <span className="text-[10px] font-mono text-primary mb-2">
+                    h5 / 20px / 500
+                  </span>
+                  <h5 className="text-xl font-medium font-heading">
+                    Status Indicators
+                  </h5>
                 </div>
                 <div className="group flex flex-col pt-4 border-t border-white/5">
-                  <span className="text-[10px] font-mono text-primary mb-2">h6 / 16px / 500</span>
-                  <h6 className="text-base font-medium font-heading">Inline Meta Data</h6>
+                  <span className="text-[10px] font-mono text-primary mb-2">
+                    h6 / 16px / 500
+                  </span>
+                  <h6 className="text-base font-medium font-heading">
+                    Inline Meta Data
+                  </h6>
                 </div>
               </div>
             </div>
@@ -134,7 +150,10 @@ export default function TypographyPage() {
             </div>
           </ComponentSample>
 
-          <ComponentSample title="State Colors" description="WCAG AA compliant semantic messaging.">
+          <ComponentSample
+            title="State Colors"
+            description="WCAG AA compliant semantic messaging."
+          >
             <div className="space-y-2">
               <p className="text-success font-semibold flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-success" /> System ready for deployment.

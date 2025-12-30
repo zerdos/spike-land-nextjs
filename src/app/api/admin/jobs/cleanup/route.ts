@@ -47,7 +47,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to cleanup stuck jobs",
-        details: adminError instanceof Error ? adminError.message : "Internal Server Error",
+        details: adminError instanceof Error
+          ? adminError.message
+          : "Internal Server Error",
       },
       { status: 500 },
     );

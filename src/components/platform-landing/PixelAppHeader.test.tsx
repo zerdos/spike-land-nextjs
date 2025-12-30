@@ -23,11 +23,17 @@ global.ResizeObserver = class ResizeObserver {
 
 describe("PixelAppHeader", () => {
   beforeEach(() => {
-    (useTokenBalance as any).mockReturnValue({ balance: 100, isLoading: false });
+    (useTokenBalance as any).mockReturnValue({
+      balance: 100,
+      isLoading: false,
+    });
   });
 
   it("renders correctly when unauthenticated", () => {
-    (useSession as any).mockReturnValue({ data: null, status: "unauthenticated" });
+    (useSession as any).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+    });
     render(<PixelAppHeader />);
 
     // Check for Sign In button (desktop)
@@ -54,14 +60,20 @@ describe("PixelAppHeader", () => {
       data: { user: { name: "Test User" } },
       status: "authenticated",
     });
-    (useTokenBalance as any).mockReturnValue({ balance: null, isLoading: true });
+    (useTokenBalance as any).mockReturnValue({
+      balance: null,
+      isLoading: true,
+    });
 
     render(<PixelAppHeader />);
     expect(screen.getByText("... tokens")).toBeInTheDocument();
   });
 
   it("opens mobile menu", () => {
-    (useSession as any).mockReturnValue({ data: null, status: "unauthenticated" });
+    (useSession as any).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+    });
     render(<PixelAppHeader />);
 
     const menuButton = screen.getByLabelText("Open menu");

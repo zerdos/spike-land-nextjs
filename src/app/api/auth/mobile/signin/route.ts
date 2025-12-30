@@ -55,7 +55,9 @@ async function createMobileToken(
   email: string,
 ): Promise<{ token: string; expiresAt: Date; }> {
   const secret = new TextEncoder().encode(process.env.AUTH_SECRET);
-  const expiresAt = new Date(Date.now() + TOKEN_EXPIRATION_DAYS * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(
+    Date.now() + TOKEN_EXPIRATION_DAYS * 24 * 60 * 60 * 1000,
+  );
 
   const token = await new SignJWT({ sub: userId, email })
     .setProtectedHeader({ alg: "HS256" })
@@ -178,7 +180,9 @@ export async function POST(request: NextRequest) {
   if (!user.passwordHash) {
     // User exists but has no password (OAuth-only account)
     return NextResponse.json(
-      { error: "This account uses social login. Please sign in with Google, Apple, or GitHub." },
+      {
+        error: "This account uses social login. Please sign in with Google, Apple, or GitHub.",
+      },
       { status: 401 },
     );
   }

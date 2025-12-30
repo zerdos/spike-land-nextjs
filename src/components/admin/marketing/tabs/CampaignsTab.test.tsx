@@ -42,7 +42,9 @@ describe("CampaignsTab", () => {
     fireEvent.click(visitorsHeader);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("sortField=visitors"));
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("sortField=visitors"),
+      );
     });
   });
 
@@ -80,7 +82,9 @@ describe("CampaignsTab", () => {
     fireEvent.click(screen.getByText("Next"));
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("page=2"));
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("page=2"),
+      );
     });
   });
 });

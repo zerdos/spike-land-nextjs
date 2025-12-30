@@ -312,9 +312,11 @@ export default async function OrderDetailPage({ params }: PageProps) {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
                 <span>
-                  {order.shippingCost === 0 ? <span className="text-green-600">FREE</span> : (
-                    formatPrice(order.shippingCost)
-                  )}
+                  {order.shippingCost === 0
+                    ? <span className="text-green-600">FREE</span>
+                    : (
+                      formatPrice(order.shippingCost)
+                    )}
                 </span>
               </div>
               {order.taxAmount > 0 && (

@@ -29,10 +29,14 @@ async function handleGetUserEnhancements(
 
   if (adminError) {
     console.error("Admin check failed:", adminError);
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 
   const { userId } = await params;

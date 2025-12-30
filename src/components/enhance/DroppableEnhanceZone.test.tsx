@@ -120,7 +120,9 @@ describe("DroppableEnhanceZone", () => {
       </DroppableEnhanceZone>,
     );
 
-    const file = new File(["dummy content"], "test.txt", { type: "text/plain" });
+    const file = new File(["dummy content"], "test.txt", {
+      type: "text/plain",
+    });
     const dropZone = screen.getByText("Content").parentElement!;
 
     fireEvent.drop(dropZone, {
@@ -155,7 +157,9 @@ describe("DroppableEnhanceZone", () => {
     });
 
     await waitFor(() => {
-      expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining("too large"));
+      expect(mockAlert).toHaveBeenCalledWith(
+        expect.stringContaining("too large"),
+      );
     });
     expect(onImageDrop).not.toHaveBeenCalled();
   });

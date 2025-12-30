@@ -187,7 +187,9 @@ export function ReferenceImageUpload({
         const processed = await processImageForUpload(pending.file);
 
         // Create a new File from the processed blob
-        const extension = processed.mimeType === "image/webp" ? ".webp" : ".jpg";
+        const extension = processed.mimeType === "image/webp"
+          ? ".webp"
+          : ".jpg";
         const baseName = pending.file.name.replace(/\.[^/.]+$/, "");
         const processedFile = new File(
           [processed.blob],

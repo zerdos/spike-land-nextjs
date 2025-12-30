@@ -39,15 +39,17 @@ describe("PipelineForm", () => {
     // There are two "Create Pipeline" texts: the heading and the button
     const elements = screen.getAllByText("Create Pipeline");
     expect(elements.length).toBeGreaterThanOrEqual(2);
-    expect(elements.some(el => el.tagName === "H2")).toBe(true);
+    expect(elements.some((el) => el.tagName === "H2")).toBe(true);
 
     expect(screen.getByLabelText("Name")).toHaveValue("");
     // Default tier 2K
-    expect(screen.getAllByText("2K (2048px) - 5 tokens")[0]).toBeInTheDocument();
+    expect(screen.getAllByText("2K (2048px) - 5 tokens")[0])
+      .toBeInTheDocument();
     // Default visibility PRIVATE
     expect(screen.getAllByText("Private (only you)")[0]).toBeInTheDocument();
 
-    expect(screen.getByRole("button", { name: "Create Pipeline" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Create Pipeline" }))
+      .toBeDisabled();
   });
 
   it("enables submit when name is filled", async () => {
@@ -57,7 +59,8 @@ describe("PipelineForm", () => {
     const nameInput = screen.getByLabelText("Name");
     await user.type(nameInput, "New Pipeline");
 
-    expect(screen.getByRole("button", { name: "Create Pipeline" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Create Pipeline" }))
+      .toBeEnabled();
   });
 
   it("handles form submission", async () => {
@@ -88,18 +91,23 @@ describe("PipelineForm", () => {
       generationConfig: SYSTEM_DEFAULT_PIPELINE.generation,
     };
 
-    render(<PipelineForm {...defaultProps} mode="edit" initialData={initialData} />);
+    render(
+      <PipelineForm {...defaultProps} mode="edit" initialData={initialData} />,
+    );
 
     expect(screen.getByText("Edit Pipeline")).toBeInTheDocument();
     expect(screen.getByLabelText("Name")).toHaveValue("Existing Pipeline");
-    expect(screen.getAllByText("4K (4096px) - 10 tokens")[0]).toBeInTheDocument();
-    expect(screen.getAllByText("Public (visible to all)")[0]).toBeInTheDocument();
+    expect(screen.getAllByText("4K (4096px) - 10 tokens")[0])
+      .toBeInTheDocument();
+    expect(screen.getAllByText("Public (visible to all)")[0])
+      .toBeInTheDocument();
 
     // Check for Reference Image Upload (only in edit mode with ID)
     // You need to go to Prompt tab to see it
     const user = userEvent.setup();
     await user.click(screen.getByText("Prompt"));
-    expect(await screen.findByTestId("reference-image-upload")).toBeInTheDocument();
+    expect(await screen.findByTestId("reference-image-upload"))
+      .toBeInTheDocument();
 
     expect(screen.getByRole("button", { name: "Save Changes" })).toBeEnabled();
   });
@@ -108,7 +116,9 @@ describe("PipelineForm", () => {
     const initialData = {
       name: "Base Pipeline",
     };
-    render(<PipelineForm {...defaultProps} mode="fork" initialData={initialData} />);
+    render(
+      <PipelineForm {...defaultProps} mode="fork" initialData={initialData} />,
+    );
 
     expect(screen.getByText("Fork Pipeline")).toBeInTheDocument();
     expect(screen.getByLabelText("Name")).toHaveValue("Base Pipeline (Copy)");

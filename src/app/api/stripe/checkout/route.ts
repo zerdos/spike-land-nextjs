@@ -96,7 +96,10 @@ async function processCheckout(request: NextRequest): Promise<NextResponse> {
     );
 
     if (updateError) {
-      console.error("Error updating user with Stripe customer ID:", updateError);
+      console.error(
+        "Error updating user with Stripe customer ID:",
+        updateError,
+      );
       return NextResponse.json({ error: "Failed to update user" }, {
         status: 500,
       });

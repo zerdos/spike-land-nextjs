@@ -136,7 +136,9 @@ function createErrorFromConsoleArgs(
     errorType = firstArg.name;
   } else {
     message = args
-      .map((arg) => (typeof arg === "object" ? JSON.stringify(arg) : String(arg)))
+      .map((
+        arg,
+      ) => (typeof arg === "object" ? JSON.stringify(arg) : String(arg)))
       .join(" ");
     stack = new Error().stack;
     errorType = "ConsoleError";

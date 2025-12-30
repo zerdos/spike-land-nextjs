@@ -13,10 +13,30 @@ const mockVariants = [
 ];
 
 const mockVariantsWithAttributes = [
-  { id: "v1", name: "Red/Small", priceDelta: 0, attributes: { color: "Red", size: "Small" } },
-  { id: "v2", name: "Red/Large", priceDelta: 5, attributes: { color: "Red", size: "Large" } },
-  { id: "v3", name: "Blue/Small", priceDelta: 0, attributes: { color: "Blue", size: "Small" } },
-  { id: "v4", name: "Blue/Large", priceDelta: 5, attributes: { color: "Blue", size: "Large" } },
+  {
+    id: "v1",
+    name: "Red/Small",
+    priceDelta: 0,
+    attributes: { color: "Red", size: "Small" },
+  },
+  {
+    id: "v2",
+    name: "Red/Large",
+    priceDelta: 5,
+    attributes: { color: "Red", size: "Large" },
+  },
+  {
+    id: "v3",
+    name: "Blue/Small",
+    priceDelta: 0,
+    attributes: { color: "Blue", size: "Small" },
+  },
+  {
+    id: "v4",
+    name: "Blue/Large",
+    priceDelta: 5,
+    attributes: { color: "Blue", size: "Large" },
+  },
 ];
 
 describe("VariantSelector", () => {

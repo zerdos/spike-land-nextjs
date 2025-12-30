@@ -167,7 +167,9 @@ export class FacebookMarketingClient implements IMarketingClient {
     );
 
     if (fetchError || !response) {
-      throw new Error(`Failed to exchange code: ${fetchError?.message || "Network error"}`);
+      throw new Error(
+        `Failed to exchange code: ${fetchError?.message || "Network error"}`,
+      );
     }
 
     if (!response.ok) {
@@ -180,7 +182,9 @@ export class FacebookMarketingClient implements IMarketingClient {
     const { data, error: jsonError } = await tryCatch(response.json());
 
     if (jsonError || !data) {
-      throw new Error(`Failed to exchange code: ${jsonError?.message || "Invalid response"}`);
+      throw new Error(
+        `Failed to exchange code: ${jsonError?.message || "Invalid response"}`,
+      );
     }
 
     // Exchange short-lived token for long-lived token
@@ -286,7 +290,10 @@ export class FacebookMarketingClient implements IMarketingClient {
       if (account.currency) {
         this.accountCurrencyCache.set(account.id, account.currency);
         // Also cache without act_ prefix for convenience
-        this.accountCurrencyCache.set(account.id.replace("act_", ""), account.currency);
+        this.accountCurrencyCache.set(
+          account.id.replace("act_", ""),
+          account.currency,
+        );
       }
     }
 
@@ -307,7 +314,9 @@ export class FacebookMarketingClient implements IMarketingClient {
    */
   private async getAccountCurrency(accountId: string): Promise<string> {
     // Normalize account ID
-    const normalizedId = accountId.startsWith("act_") ? accountId : `act_${accountId}`;
+    const normalizedId = accountId.startsWith("act_")
+      ? accountId
+      : `act_${accountId}`;
     const baseId = accountId.replace("act_", "");
 
     // Check cache first (both formats)

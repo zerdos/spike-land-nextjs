@@ -38,7 +38,9 @@ export async function GET() {
   );
 
   if (adminError) {
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
     return handleError(adminError, "Failed to fetch tracked paths:");
@@ -103,7 +105,9 @@ export async function POST(request: NextRequest) {
   );
 
   if (adminError) {
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
     return handleError(adminError, "Failed to create tracked path:");
@@ -153,7 +157,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (existing) {
-    return NextResponse.json({ error: "Path already tracked" }, { status: 409 });
+    return NextResponse.json({ error: "Path already tracked" }, {
+      status: 409,
+    });
   }
 
   // Create tracked path
@@ -209,7 +215,9 @@ export async function PATCH(request: NextRequest) {
   );
 
   if (adminError) {
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
     return handleError(adminError, "Failed to toggle visibility:");
@@ -301,7 +309,9 @@ export async function DELETE(request: NextRequest) {
   );
 
   if (adminError) {
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
     return handleError(adminError, "Failed to delete tracked path:");

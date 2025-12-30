@@ -409,7 +409,12 @@ export class GoogleAdsClient implements IMarketingClient {
     ]);
 
     return results.map((result) =>
-      this.mapCampaign(result.campaign, customerId, result.campaignBudget, currency)
+      this.mapCampaign(
+        result.campaign,
+        customerId,
+        result.campaignBudget,
+        currency,
+      )
     );
   }
 

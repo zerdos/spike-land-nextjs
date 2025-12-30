@@ -361,7 +361,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "test@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       expect(screen.getByText(/checking/i)).toBeInTheDocument();
     });
@@ -379,7 +381,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "TEST@EXAMPLE.COM",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       expect(mockFetch).toHaveBeenCalledWith("/api/auth/check-email", {
         method: "POST",
@@ -401,7 +405,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "test@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByText(/too many requests/i)).toBeInTheDocument();
@@ -421,7 +427,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "test@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByText(/an error occurred/i)).toBeInTheDocument();
@@ -445,7 +453,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "existing@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/enter your password/i))
@@ -468,7 +478,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "existing@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         const emailDisplay = screen.getByDisplayValue("existing@example.com");
@@ -489,7 +501,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "existing@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByRole("button", { name: /use different email/i }))
@@ -510,7 +524,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "existing@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByRole("button", { name: /use different email/i }))
@@ -553,7 +569,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "existing@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/enter your password/i))
@@ -599,7 +617,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "existing@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/enter your password/i))
@@ -639,7 +659,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "existing@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/enter your password/i))
@@ -683,7 +705,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "existing@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/enter your password/i))
@@ -732,7 +756,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "existing@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/enter your password/i))
@@ -770,7 +796,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "newuser@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/create a password/i))
@@ -795,7 +823,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "newuser@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/create a password/i))
@@ -858,7 +888,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "newuser@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/create a password/i))
@@ -916,7 +948,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "newuser@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/create a password/i))
@@ -981,7 +1015,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "newuser@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/create a password/i))
@@ -1029,7 +1065,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "newuser@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/create a password/i))
@@ -1091,7 +1129,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "NewUser@Example.COM",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/create a password/i))
@@ -1151,7 +1191,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "newuser@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/create a password/i))
@@ -1185,7 +1227,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "oauth@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(
@@ -1209,7 +1253,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "oauth@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByRole("button", { name: /use different email/i }))
@@ -1254,7 +1300,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "existing@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/enter your password/i))
@@ -1312,7 +1360,9 @@ describe("AuthButtons Component", () => {
         screen.getByPlaceholderText(/name@example.com/i),
         "newuser@example.com",
       );
-      await user.click(screen.getByRole("button", { name: /continue with email/i }));
+      await user.click(
+        screen.getByRole("button", { name: /continue with email/i }),
+      );
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/create a password/i))

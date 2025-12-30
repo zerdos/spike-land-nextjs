@@ -165,7 +165,9 @@ export async function POST(
     sharp(buffer).metadata(),
   );
 
-  if (sharpError || !metadata?.width || !metadata?.height || !metadata?.format) {
+  if (
+    sharpError || !metadata?.width || !metadata?.height || !metadata?.format
+  ) {
     return NextResponse.json(
       { success: false, error: "Invalid image format" },
       { status: 400 },

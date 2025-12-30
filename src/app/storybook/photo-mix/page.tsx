@@ -40,8 +40,12 @@ const tierStyles: Record<string, string> = {
 
 export default function PhotoMixPage() {
   const [slotImage1, setSlotImage1] = useState<SelectedImage | null>(null);
-  const [slotImage2, setSlotImage2] = useState<SelectedImage | null>(sampleGalleryImage);
-  const [slotImage3, setSlotImage3] = useState<SelectedImage | null>(sampleUploadImage);
+  const [slotImage2, setSlotImage2] = useState<SelectedImage | null>(
+    sampleGalleryImage,
+  );
+  const [slotImage3, setSlotImage3] = useState<SelectedImage | null>(
+    sampleUploadImage,
+  );
 
   return (
     <div className="space-y-12">
@@ -60,7 +64,9 @@ export default function PhotoMixPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <p className="text-sm text-muted-foreground mb-2">Empty State</p>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Empty State
+                </p>
                 <ImageSlot
                   label="Photo 1"
                   image={slotImage1}
@@ -70,7 +76,9 @@ export default function PhotoMixPage() {
                 />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-2">With Gallery Image</p>
+                <p className="text-sm text-muted-foreground mb-2">
+                  With Gallery Image
+                </p>
                 <ImageSlot
                   label="Photo 2"
                   image={slotImage2}
@@ -80,7 +88,9 @@ export default function PhotoMixPage() {
                 />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-2">With Uploaded Image</p>
+                <p className="text-sm text-muted-foreground mb-2">
+                  With Uploaded Image
+                </p>
                 <ImageSlot
                   label="Photo 3"
                   image={slotImage3}
@@ -91,7 +101,9 @@ export default function PhotoMixPage() {
               </div>
             </div>
             <div className="mt-6">
-              <p className="text-sm text-muted-foreground mb-2">Disabled State</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                Disabled State
+              </p>
               <div className="w-64">
                 <ImageSlot
                   label="Disabled Slot"
@@ -118,7 +130,9 @@ export default function PhotoMixPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Empty - No Images */}
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Empty (no images)</p>
+                <p className="text-sm text-muted-foreground">
+                  Empty (no images)
+                </p>
                 <Card className="relative overflow-hidden aspect-square">
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
                     <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center">
@@ -166,7 +180,9 @@ export default function PhotoMixPage() {
                     </div>
                     <div className="space-y-2 text-center">
                       <p className="text-sm font-medium">Mixing...</p>
-                      <p className="text-xs text-muted-foreground">Blending images</p>
+                      <p className="text-xs text-muted-foreground">
+                        Blending images
+                      </p>
                     </div>
                   </div>
                 </Card>
@@ -228,7 +244,9 @@ export default function PhotoMixPage() {
           <CardContent className="space-y-6">
             {/* Loading State */}
             <div>
-              <p className="text-sm text-muted-foreground mb-2">Loading State</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                Loading State
+              </p>
               <div className="space-y-3">
                 <h3 className="text-sm font-medium">History</h3>
                 <div className="flex items-center justify-center py-8">
@@ -252,7 +270,9 @@ export default function PhotoMixPage() {
 
             {/* With Items */}
             <div>
-              <p className="text-sm text-muted-foreground mb-2">With History Items</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                With History Items
+              </p>
               <div className="space-y-3">
                 <h3 className="text-sm font-medium">History</h3>
                 <div className="flex gap-4 overflow-x-auto pb-2">
@@ -280,8 +300,13 @@ export default function PhotoMixPage() {
                         </div>
                       </div>
                       <div className="px-2 pb-2 flex items-center justify-between gap-2">
-                        <span className="text-xs text-muted-foreground">{mix.date}</span>
-                        <Badge variant="outline" className={tierStyles[mix.tier]}>
+                        <span className="text-xs text-muted-foreground">
+                          {mix.date}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={tierStyles[mix.tier]}
+                        >
                           {mix.tier.replace("TIER_", "")}
                         </Badge>
                       </div>
@@ -305,7 +330,9 @@ export default function PhotoMixPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Expanded State */}
               <div>
-                <p className="text-sm text-muted-foreground mb-2">Expanded State</p>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Expanded State
+                </p>
                 <div className="inline-block">
                   <MixShareQRCode
                     shareUrl="https://spike.land/mix/example-123"
@@ -342,7 +369,10 @@ export default function PhotoMixPage() {
               </p>
               <p className="text-sm mt-2">
                 Visit the{" "}
-                <Link href="/apps/pixel/mix" className="text-primary hover:underline">
+                <Link
+                  href="/apps/pixel/mix"
+                  className="text-primary hover:underline"
+                >
                   PhotoMix App
                 </Link>{" "}
                 to see it in action.

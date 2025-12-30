@@ -28,7 +28,12 @@ interface BadgeProps
 {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
-  return <div className={cn("Badge", badgeVariants({ variant }), className)} {...props} />;
+  return (
+    <div
+      className={cn("Badge", badgeVariants({ variant }), className)}
+      {...props}
+    />
+  );
 }
 
 export { Badge };

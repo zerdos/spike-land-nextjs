@@ -76,13 +76,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 
   // Rate limiting based on anonymous status
-  let rateLimitResult: { isLimited: boolean; remaining: number; resetAt: number; } | null = null;
+  let rateLimitResult: {
+    isLimited: boolean;
+    remaining: number;
+    resetAt: number;
+  } | null = null;
 
   if (job.isAnonymous) {
     // For anonymous jobs, rate limit by IP
     const clientIP = getClientIP(request);
     const { data: result, error: rateLimitError } = await tryCatch(
-      checkRateLimit(`anonymous-download:${clientIP}`, rateLimitConfigs.anonymousDownload),
+      checkRateLimit(
+        `anonymous-download:${clientIP}`,
+        rateLimitConfigs.anonymousDownload,
+      ),
     );
     if (rateLimitError) {
       console.error("Rate limit check failed:", rateLimitError);
@@ -102,7 +109,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     // Rate limit by user ID
     const { data: result, error: rateLimitError } = await tryCatch(
-      checkRateLimit(`job-download:${session.user.id}`, rateLimitConfigs.general),
+      checkRateLimit(
+        `job-download:${session.user.id}`,
+        rateLimitConfigs.general,
+      ),
     );
     if (rateLimitError) {
       console.error("Rate limit check failed:", rateLimitError);

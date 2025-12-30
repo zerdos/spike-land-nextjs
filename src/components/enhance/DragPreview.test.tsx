@@ -122,7 +122,10 @@ describe("DragPreview Component", () => {
     });
 
     it("should show count badge for multiple images", () => {
-      const twoImages = mockImages.filter((img) => img !== undefined).slice(0, 2);
+      const twoImages = mockImages.filter((img) => img !== undefined).slice(
+        0,
+        2,
+      );
       render(
         <DragPreview
           images={twoImages}

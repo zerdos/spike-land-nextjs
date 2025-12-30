@@ -226,7 +226,9 @@ export function useImageReorder(
         originalOrderRef.current = newOrder;
         return { images: reorderedImages, newOrder };
       } catch (err) {
-        const error = err instanceof Error ? err : new Error("Failed to save image order");
+        const error = err instanceof Error
+          ? err
+          : new Error("Failed to save image order");
         onError?.(error);
         // Return null to indicate failure - caller should revert
         return null;

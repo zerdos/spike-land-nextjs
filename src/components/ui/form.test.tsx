@@ -21,7 +21,9 @@ const formSchema = z.object({
   }),
 });
 
-function TestForm({ onSubmit }: { onSubmit?: (values: z.infer<typeof formSchema>) => void; }) {
+function TestForm(
+  { onSubmit }: { onSubmit?: (values: z.infer<typeof formSchema>) => void; },
+) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -64,7 +66,8 @@ describe("Form", () => {
 
     expect(screen.getByText("Username")).toBeInTheDocument(); // Label
     expect(screen.getByPlaceholderText("shadcn")).toBeInTheDocument(); // Input
-    expect(screen.getByText("This is your public display name.")).toBeInTheDocument(); // Description
+    expect(screen.getByText("This is your public display name."))
+      .toBeInTheDocument(); // Description
     expect(screen.getByRole("button", { name: "Submit" })).toBeInTheDocument();
   });
 
@@ -76,7 +79,8 @@ describe("Form", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Username must be at least 2 characters.")).toBeInTheDocument();
+      expect(screen.getByText("Username must be at least 2 characters."))
+        .toBeInTheDocument();
     });
   });
 
@@ -120,6 +124,7 @@ describe("Form", () => {
     });
 
     // Error message should not be present
-    expect(screen.queryByText("Username must be at least 2 characters.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Username must be at least 2 characters.")).not
+      .toBeInTheDocument();
   });
 });

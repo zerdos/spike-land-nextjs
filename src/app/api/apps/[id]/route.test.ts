@@ -171,7 +171,9 @@ describe("PATCH /api/apps/[id]", () => {
       monetizationModels: [],
     };
 
-    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockExistingApp as unknown as App);
+    vi.mocked(prisma.app.findFirst).mockResolvedValue(
+      mockExistingApp as unknown as App,
+    );
     vi.mocked(prisma.app.update).mockResolvedValue(
       mockUpdatedApp as unknown as MockApp,
     );
@@ -290,7 +292,9 @@ describe("DELETE /api/apps/[id]", () => {
       status: "DRAFT",
     };
 
-    vi.mocked(prisma.app.findFirst).mockResolvedValue(mockExistingApp as unknown as App);
+    vi.mocked(prisma.app.findFirst).mockResolvedValue(
+      mockExistingApp as unknown as App,
+    );
     vi.mocked(prisma.app.update).mockResolvedValue({
       ...mockExistingApp,
       status: "DELETED",

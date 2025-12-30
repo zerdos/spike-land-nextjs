@@ -57,7 +57,10 @@ export function getPostBySlug(slug: string): BlogPost | null {
   const { data: parsed, error: parseError } = tryCatchSync(() => matter(fileContents));
 
   if (parseError) {
-    console.error(`Failed to parse frontmatter in ${slug}.mdx:`, parseError.message);
+    console.error(
+      `Failed to parse frontmatter in ${slug}.mdx:`,
+      parseError.message,
+    );
     return null;
   }
 
@@ -66,7 +69,10 @@ export function getPostBySlug(slug: string): BlogPost | null {
   const { data: stats, error: readingTimeError } = tryCatchSync(() => readingTime(content));
 
   if (readingTimeError) {
-    console.error(`Failed to calculate reading time for ${slug}.mdx:`, readingTimeError.message);
+    console.error(
+      `Failed to calculate reading time for ${slug}.mdx:`,
+      readingTimeError.message,
+    );
     return null;
   }
 

@@ -6,7 +6,10 @@ import { Link } from "./link";
 vi.mock("next-view-transitions", async () => {
   const React = await import("react");
   return {
-    Link: React.forwardRef(({ children, href, className, ...props }: any, ref: any) => (
+    Link: React.forwardRef((
+      { children, href, className, ...props }: any,
+      ref: any,
+    ) => (
       <a href={href} className={className} ref={ref} {...props}>
         {children}
       </a>

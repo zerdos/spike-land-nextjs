@@ -30,7 +30,9 @@ describe("pipeline-resolver", () => {
     vi.clearAllMocks();
     // Default mock for tryCatch - just execute the promise using the same pattern
     mockTryCatch.mockImplementation(
-      async <T>(promise: Promise<T>): Promise<{ data: T | null; error: Error | null; }> =>
+      async <T>(
+        promise: Promise<T>,
+      ): Promise<{ data: T | null; error: Error | null; }> =>
         promise.then(
           (data) => ({ data, error: null }),
           (error: Error) => ({ data: null, error }),

@@ -55,7 +55,9 @@ export function GitInfoPanel({ gitInfo, loading, error }: GitInfoPanelProps) {
           <CardTitle>Git Info</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-red-600 dark:text-red-400">Error: {error}</p>
+          <p className="text-sm text-red-600 dark:text-red-400">
+            Error: {error}
+          </p>
         </CardContent>
       </Card>
     );
@@ -68,7 +70,9 @@ export function GitInfoPanel({ gitInfo, loading, error }: GitInfoPanelProps) {
           <CardTitle>Git Info</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">No git data available</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            No git data available
+          </p>
         </CardContent>
       </Card>
     );
@@ -110,7 +114,9 @@ export function GitInfoPanel({ gitInfo, loading, error }: GitInfoPanelProps) {
           className="flex items-center justify-between"
         >
           <span className="text-sm">Changed files</span>
-          <Badge variant={gitInfo.uncommittedChanges > 0 ? "warning" : "secondary"}>
+          <Badge
+            variant={gitInfo.uncommittedChanges > 0 ? "warning" : "secondary"}
+          >
             {gitInfo.uncommittedChanges} modified
           </Badge>
         </div>

@@ -77,8 +77,12 @@ export default function ColorsPage() {
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <Label className="text-[10px] uppercase tracking-wider opacity-60">Cyan Glow</Label>
-                <Button className="w-full shadow-glow-cyan">Action Ready</Button>
+                <Label className="text-[10px] uppercase tracking-wider opacity-60">
+                  Cyan Glow
+                </Label>
+                <Button className="w-full shadow-glow-cyan">
+                  Action Ready
+                </Button>
               </div>
               <div className="space-y-3">
                 <Label className="text-[10px] uppercase tracking-wider opacity-60">
@@ -109,13 +113,19 @@ export default function ColorsPage() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-3xl -mr-16 -mt-16" />
               <div className="relative z-10 space-y-4">
                 <div className="p-4 rounded-xl glass-0 border-white/10">
-                  <p className="text-xs font-mono text-primary">tier-0 / blur-xs</p>
+                  <p className="text-xs font-mono text-primary">
+                    tier-0 / blur-xs
+                  </p>
                 </div>
                 <div className="p-4 rounded-xl glass-1 border-white/10 shadow-lg">
-                  <p className="text-xs font-mono text-primary">tier-1 / blur-md</p>
+                  <p className="text-xs font-mono text-primary">
+                    tier-1 / blur-md
+                  </p>
                 </div>
                 <div className="p-4 rounded-xl glass-2 border-white/10 shadow-2xl">
-                  <p className="text-xs font-mono text-primary">tier-2 / blur-xl</p>
+                  <p className="text-xs font-mono text-primary">
+                    tier-2 / blur-xl
+                  </p>
                 </div>
               </div>
             </div>

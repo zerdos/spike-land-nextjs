@@ -39,14 +39,16 @@ describe("MixResultCard", () => {
     render(<MixResultCard {...defaultProps} />);
 
     expect(screen.getByText("Select two images")).toBeInTheDocument();
-    expect(screen.getByText("Choose input photos to start")).toBeInTheDocument();
+    expect(screen.getByText("Choose input photos to start"))
+      .toBeInTheDocument();
   });
 
   it("renders empty state with images", () => {
     render(<MixResultCard {...defaultProps} hasImages={true} />);
 
     expect(screen.getByText("Ready to mix")).toBeInTheDocument();
-    expect(screen.getByText("Click 'Create Mix' to blend images")).toBeInTheDocument();
+    expect(screen.getByText("Click 'Create Mix' to blend images"))
+      .toBeInTheDocument();
   });
 
   it("renders processing state", () => {

@@ -25,7 +25,9 @@ export async function POST(request: NextRequest) {
 
   if (authError) {
     console.error("Auth error:", authError);
-    return NextResponse.json({ error: "Authentication failed" }, { status: 500 });
+    return NextResponse.json({ error: "Authentication failed" }, {
+      status: 500,
+    });
   }
 
   if (!session?.user?.id) {
@@ -37,7 +39,9 @@ export async function POST(request: NextRequest) {
   );
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const { targetTier } = body;
@@ -80,7 +84,9 @@ export async function DELETE() {
 
   if (authError) {
     console.error("Auth error:", authError);
-    return NextResponse.json({ error: "Authentication failed" }, { status: 500 });
+    return NextResponse.json({ error: "Authentication failed" }, {
+      status: 500,
+    });
   }
 
   if (!session?.user?.id) {

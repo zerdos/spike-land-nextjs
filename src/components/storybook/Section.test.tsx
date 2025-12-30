@@ -34,6 +34,7 @@ describe("Section Component", () => {
       </Section>,
     );
 
-    expect(screen.getByRole("heading", { name: "Test Title" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Test Title" }))
+      .toBeInTheDocument();
   });
 });

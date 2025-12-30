@@ -145,9 +145,7 @@ export function MixResultCard({
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">
-                {hasImages
-                  ? "Ready to mix"
-                  : "Select two images"}
+                {hasImages ? "Ready to mix" : "Select two images"}
               </p>
               <p className="text-xs text-muted-foreground/70">
                 {hasImages

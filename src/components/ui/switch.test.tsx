@@ -360,7 +360,9 @@ describe("Switch Component", () => {
         </form>,
       );
       const form = screen.getByTestId("test-form");
-      const switchElement = container.querySelector('button[role="switch"]') as HTMLElement;
+      const switchElement = container.querySelector(
+        'button[role="switch"]',
+      ) as HTMLElement;
       expect(form).toContainElement(switchElement);
     });
 
