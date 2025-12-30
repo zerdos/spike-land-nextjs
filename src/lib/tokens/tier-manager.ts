@@ -31,7 +31,7 @@ export const TIER_DISPLAY_NAMES: Record<SubscriptionTier, string> = {
 
 /**
  * Order of tiers for progressive upgrades
- * Users must upgrade sequentially through this list
+ * Users can upgrade to any higher tier (skipping allowed)
  */
 export const TIER_ORDER: SubscriptionTier[] = [
   SubscriptionTier.FREE,
@@ -69,6 +69,19 @@ interface PremiumZeroOptions {
 }
 
 export class TierManager {
+  /**
+   * Check if user can afford a cost with current balance
+   * Handles edge cases like negative cost or balance
+   */
+  static canAfford(balance: number, cost: number): boolean {
+    if (cost < 0) return true; // Or throw error? Logic says cost shouldn't be negative.
+    // Let's rely on caller or return true, but strictly cost >= 0 usually.
+    // Effectively: cost <= balance
+    if (cost === 0) return true;
+    if (balance < 0) return false;
+    return balance >= cost;
+  }
+
   /**
    * Validate userId is a non-empty string
    */
@@ -151,14 +164,16 @@ export class TierManager {
 
   /**
    * Check if upgrade from currentTier to targetTier is valid
-   * Upgrades must be sequential (e.g., FREE -> BASIC, not FREE -> PREMIUM)
+   * Allows upgrading to any higher tier (e.g., FREE -> PREMIUM is valid)
    */
   static canUpgradeTo(
     currentTier: SubscriptionTier,
     targetTier: SubscriptionTier,
   ): boolean {
-    const nextTier = this.getNextTier(currentTier);
-    return nextTier === targetTier;
+    const currentIndex = TIER_ORDER.indexOf(currentTier);
+    const targetIndex = TIER_ORDER.indexOf(targetTier);
+    // Allow upgrade to any higher tier
+    return targetIndex > currentIndex;
   }
 
   /**
@@ -224,10 +239,10 @@ export class TierManager {
 
         const currentTier = tokenBalance.tier as SubscriptionTier;
 
-        // Validate upgrade is allowed (must be sequential)
+        // Validate upgrade is allowed
         if (!this.canUpgradeTo(currentTier, newTier)) {
           throw new Error(
-            `Invalid upgrade path: ${currentTier} -> ${newTier}. Upgrades must be sequential.`,
+            `Invalid upgrade path: ${currentTier} -> ${newTier}.`,
           );
         }
 

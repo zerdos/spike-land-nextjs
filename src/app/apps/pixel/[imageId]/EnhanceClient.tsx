@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useInterval } from "@/hooks/useInterval";
 import { useJobStream } from "@/hooks/useJobStream";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
@@ -75,12 +76,40 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
     enhancementJobs: ImageEnhancementJob[];
   };
 
+  // Update image state when props change (e.g. after router.refresh())
+  // This ensures specific job updates from server are reflected in UI
+  useEffect(() => {
+    // We only merge if we're not currently streaming an active job to avoid overwriting smooth progress
+    // Or strictly sync: server is source of truth, except for currentStage which might be transient
+    // Let's merge: take server jobs, but preserve currentStage from local state if active
+    setImage((prev) => {
+      // If no change in ID/updatedAt, maybe skip? But let's be safe and sync.
+      // Actually, we want to respect optimistic updates too.
+      // But router.refresh() returns confirmed data.
+      return {
+        ...initialImage,
+        enhancementJobs: initialImage.enhancementJobs.map(serverJob => {
+          const localJob = prev.enhancementJobs.find(j => j.id === serverJob.id);
+          // Preserve currentStage from local state if it exists and status is still processing
+          if (
+            localJob?.currentStage &&
+            (serverJob.status === "PROCESSING" || serverJob.status === "PENDING")
+          ) {
+            return { ...serverJob, currentStage: localJob.currentStage };
+          }
+          return serverJob;
+        }),
+      };
+    });
+  }, [initialImage]);
+
   // Use SSE for real-time job status updates (replaces polling)
   const { job: streamJob } = useJobStream({
     jobId: activeJobId,
     onComplete: useCallback(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (completedJob: any) => {
+        // SSE complete - update local state immediately
         setImage((prev: ImageWithJobs) => ({
           ...prev,
           enhancementJobs: prev.enhancementJobs.map((
@@ -101,8 +130,10 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
         setActiveJobId(null);
         setSelectedVersionId(completedJob.id);
         refetchBalance();
+        // Trigger server refresh to ensure consistency
+        router.refresh();
       },
-      [refetchBalance],
+      [refetchBalance, router],
     ),
     onError: useCallback((errorMessage?: string) => {
       console.error("Enhancement failed:", errorMessage);
@@ -127,6 +158,19 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
       }));
     }
   }, [streamJob, activeJobId]);
+
+  // Poll for updates if ANY job is processing
+  // This handles parallel jobs that aren't the "active" one being streamed
+  const hasProcessingJobs = image.enhancementJobs.some(
+    j => j.status === "PROCESSING" || j.status === "PENDING",
+  );
+
+  useInterval(() => {
+    // Only refresh if we have processing jobs
+    if (hasProcessingJobs) {
+      router.refresh();
+    }
+  }, hasProcessingJobs ? 3000 : null);
 
   // Handle image drop for blending (file upload)
   const handleImageDrop = useCallback(

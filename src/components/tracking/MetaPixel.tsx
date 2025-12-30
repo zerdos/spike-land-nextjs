@@ -8,7 +8,9 @@
  */
 "use client";
 
+import { hasConsent } from "@/lib/tracking/consent";
 import Script from "next/script";
+import { useEffect, useState } from "react";
 
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
@@ -43,7 +45,13 @@ interface MetaPixelProps {
  * ```
  */
 export function MetaPixel({ nonce }: MetaPixelProps) {
-  if (!META_PIXEL_ID) {
+  const [consentGiven, setConsentGiven] = useState(false);
+
+  useEffect(() => {
+    setConsentGiven(hasConsent());
+  }, []);
+
+  if (!META_PIXEL_ID || !consentGiven) {
     return null;
   }
 

@@ -186,16 +186,16 @@ describe("TierManager", () => {
       ).toBe(true);
     });
 
-    it("should not allow upgrade from FREE to STANDARD (skipping)", () => {
+    it("should allow upgrade from FREE to STANDARD (skipping)", () => {
       expect(
         TierManager.canUpgradeTo(SubscriptionTier.FREE, SubscriptionTier.STANDARD),
-      ).toBe(false);
+      ).toBe(true);
     });
 
-    it("should not allow upgrade from FREE to PREMIUM (skipping)", () => {
+    it("should allow upgrade from FREE to PREMIUM (skipping)", () => {
       expect(
         TierManager.canUpgradeTo(SubscriptionTier.FREE, SubscriptionTier.PREMIUM),
-      ).toBe(false);
+      ).toBe(true);
     });
 
     it("should allow upgrade from BASIC to STANDARD", () => {
@@ -329,14 +329,14 @@ describe("TierManager", () => {
       expect(result.newBalance).toBe(20);
     });
 
-    it("should fail for invalid upgrade path", async () => {
+    it("should fail for invalid upgrade path (downgrade)", async () => {
       mockTransaction.mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => {
         const tx = {
           userTokenBalance: {
             findUnique: vi.fn().mockResolvedValue({
               userId: testUserId,
               balance: 50,
-              tier: SubscriptionTier.FREE,
+              tier: SubscriptionTier.PREMIUM,
             }),
           },
         };
@@ -345,7 +345,7 @@ describe("TierManager", () => {
 
       const result = await TierManager.upgradeTier(
         testUserId,
-        SubscriptionTier.PREMIUM, // Skip BASIC and STANDARD
+        SubscriptionTier.FREE, // Downgrade via upgradeTier should fail
       );
 
       expect(result.success).toBe(false);
@@ -632,6 +632,29 @@ describe("TierManager", () => {
       expect(result.currentTier).toBe(SubscriptionTier.FREE);
       expect(result.nextTier).toBe(null);
       expect(result.isPremiumAtZero).toBe(false);
+    });
+  });
+
+  describe("canAfford", () => {
+    it("should return true when balance is greater than cost", () => {
+      expect(TierManager.canAfford(100, 50)).toBe(true);
+    });
+
+    it("should return true when balance equals cost", () => {
+      expect(TierManager.canAfford(50, 50)).toBe(true);
+    });
+
+    it("should return false when balance is less than cost", () => {
+      expect(TierManager.canAfford(49, 50)).toBe(false);
+    });
+
+    it("should return true when cost is 0", () => {
+      expect(TierManager.canAfford(0, 0)).toBe(true);
+      expect(TierManager.canAfford(10, 0)).toBe(true);
+    });
+
+    it("should handle negative balance gracefully", () => {
+      expect(TierManager.canAfford(-10, 5)).toBe(false);
     });
   });
 });

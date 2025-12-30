@@ -28,6 +28,11 @@ vi.mock("next/script", () => ({
   ),
 }));
 
+// Mock consent module
+vi.mock("@/lib/tracking/consent", () => ({
+  hasConsent: vi.fn().mockReturnValue(true),
+}));
+
 describe("MetaPixel", () => {
   const originalEnv = process.env;
 
