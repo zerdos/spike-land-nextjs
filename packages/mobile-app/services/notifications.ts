@@ -5,10 +5,21 @@
 
 import Constants from "expo-constants";
 import * as Device from "expo-device";
-import * as Notifications from "expo-notifications";
+import type * as NotificationTypes from "expo-notifications";
 import { router } from "expo-router";
 import { Platform } from "react-native";
 import { apiClient } from "./api-client";
+
+// Detect Expo Go environment (SDK 53+ removed push notifications from Expo Go)
+export const isExpoGo = Constants.appOwnership === "expo";
+
+// Conditionally import expo-notifications (throws in Expo Go SDK 53+)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Notifications: typeof import("expo-notifications") | null = null;
+if (!isExpoGo && Platform.OS !== "web") {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Notifications = require("expo-notifications");
+}
 
 // ============================================================================
 // Types
@@ -50,8 +61,8 @@ export interface NotificationsListResponse {
 // Configuration
 // ============================================================================
 
-// Configure notification behavior (only on native platforms)
-if (Platform.OS !== "web") {
+// Configure notification behavior (only on native platforms, not in Expo Go)
+if (Platform.OS !== "web" && Notifications) {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
@@ -75,6 +86,14 @@ export async function registerForPushNotifications(): Promise<string | null> {
   // Push notifications are not available on web
   if (Platform.OS === "web") {
     console.warn("Push notifications are not available on web");
+    return null;
+  }
+
+  // Push notifications are not available in Expo Go (SDK 53+)
+  if (isExpoGo || !Notifications) {
+    console.warn(
+      "Push notifications are not available in Expo Go. Use a development build.",
+    );
     return null;
   }
 
@@ -158,9 +177,13 @@ export async function scheduleLocalNotification(
   body: string,
   data?: NotificationData,
 ): Promise<string> {
-  // Local notifications are not available on web
-  if (Platform.OS === "web") {
-    console.warn("Local notifications are not available on web");
+  // Local notifications are not available on web or in Expo Go
+  if (Platform.OS === "web" || !Notifications) {
+    if (isExpoGo) {
+      console.warn(
+        "Local notifications are not available in Expo Go. Use a development build.",
+      );
+    }
     return "";
   }
 
@@ -186,9 +209,8 @@ export async function scheduleDelayedNotification(
   delaySeconds: number,
   data?: NotificationData,
 ): Promise<string> {
-  // Local notifications are not available on web
-  if (Platform.OS === "web") {
-    console.warn("Local notifications are not available on web");
+  // Local notifications are not available on web or in Expo Go
+  if (Platform.OS === "web" || !Notifications) {
     return "";
   }
 
@@ -214,7 +236,7 @@ export async function scheduleDelayedNotification(
 export async function cancelNotification(
   notificationId: string,
 ): Promise<void> {
-  if (Platform.OS === "web") return;
+  if (Platform.OS === "web" || !Notifications) return;
   await Notifications.cancelScheduledNotificationAsync(notificationId);
 }
 
@@ -222,7 +244,7 @@ export async function cancelNotification(
  * Cancel all scheduled notifications
  */
 export async function cancelAllNotifications(): Promise<void> {
-  if (Platform.OS === "web") return;
+  if (Platform.OS === "web" || !Notifications) return;
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
@@ -235,7 +257,7 @@ export async function cancelAllNotifications(): Promise<void> {
  * Returns the route to navigate to, or null if no navigation needed
  */
 export function handleNotificationResponse(
-  response: Notifications.NotificationResponse,
+  response: NotificationTypes.NotificationResponse,
 ): string | null {
   const data = response.notification.request.content.data as
     | NotificationData
@@ -267,7 +289,7 @@ export function handleNotificationResponse(
  * Navigate based on notification response
  */
 export function navigateFromNotification(
-  response: Notifications.NotificationResponse,
+  response: NotificationTypes.NotificationResponse,
 ): void {
   const route = handleNotificationResponse(response);
   if (route) {
@@ -343,7 +365,7 @@ export async function deleteNotification(
  * Set the app badge count
  */
 export async function setBadgeCount(count: number): Promise<void> {
-  if (Platform.OS === "web") return;
+  if (Platform.OS === "web" || !Notifications) return;
   await Notifications.setBadgeCountAsync(count);
 }
 

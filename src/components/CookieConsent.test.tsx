@@ -2,9 +2,9 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CookieConsent } from "./CookieConsent";
+import { CONSENT_CHANGED_EVENT, CONSENT_KEY } from "@/lib/tracking/consent";
 
-const CONSENT_KEY = "cookie-consent";
+import { CookieConsent } from "./CookieConsent";
 
 describe("CookieConsent", () => {
   let originalNodeEnv: string | undefined;
@@ -41,6 +41,29 @@ describe("CookieConsent", () => {
 
       // Should not overwrite existing preference
       expect(localStorage.getItem(CONSENT_KEY)).toBe("declined");
+    });
+
+    it("should dispatch consent-changed event when auto-accepting", () => {
+      const eventHandler = vi.fn();
+      window.addEventListener(CONSENT_CHANGED_EVENT, eventHandler);
+
+      render(<CookieConsent />);
+
+      expect(eventHandler).toHaveBeenCalledTimes(1);
+
+      window.removeEventListener(CONSENT_CHANGED_EVENT, eventHandler);
+    });
+
+    it("should not dispatch event when consent already stored", () => {
+      localStorage.setItem(CONSENT_KEY, "accepted");
+      const eventHandler = vi.fn();
+      window.addEventListener(CONSENT_CHANGED_EVENT, eventHandler);
+
+      render(<CookieConsent />);
+
+      expect(eventHandler).not.toHaveBeenCalled();
+
+      window.removeEventListener(CONSENT_CHANGED_EVENT, eventHandler);
     });
   });
 
@@ -118,6 +141,32 @@ describe("CookieConsent", () => {
 
         expect(localStorage.getItem(CONSENT_KEY)).toBe("declined");
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      });
+
+      it("should dispatch consent-changed event when Accept is clicked", async () => {
+        const user = userEvent.setup();
+        const eventHandler = vi.fn();
+        window.addEventListener(CONSENT_CHANGED_EVENT, eventHandler);
+
+        render(<CookieConsent />);
+        await user.click(screen.getByRole("button", { name: "Accept" }));
+
+        expect(eventHandler).toHaveBeenCalledTimes(1);
+
+        window.removeEventListener(CONSENT_CHANGED_EVENT, eventHandler);
+      });
+
+      it("should dispatch consent-changed event when Decline is clicked", async () => {
+        const user = userEvent.setup();
+        const eventHandler = vi.fn();
+        window.addEventListener(CONSENT_CHANGED_EVENT, eventHandler);
+
+        render(<CookieConsent />);
+        await user.click(screen.getByRole("button", { name: "Decline" }));
+
+        expect(eventHandler).toHaveBeenCalledTimes(1);
+
+        window.removeEventListener(CONSENT_CHANGED_EVENT, eventHandler);
       });
     });
   });

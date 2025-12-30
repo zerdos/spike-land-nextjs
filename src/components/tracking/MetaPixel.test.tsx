@@ -4,8 +4,10 @@
  * Tests for the Meta Pixel tracking component.
  */
 
-import { render } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { hasConsent } from "@/lib/tracking/consent";
 
 // Mock next/script
 vi.mock("next/script", () => ({
@@ -31,6 +33,8 @@ vi.mock("next/script", () => ({
 // Mock consent module
 vi.mock("@/lib/tracking/consent", () => ({
   hasConsent: vi.fn().mockReturnValue(true),
+  CONSENT_KEY: "cookie-consent",
+  CONSENT_CHANGED_EVENT: "consent-changed",
 }));
 
 describe("MetaPixel", () => {
@@ -164,6 +168,151 @@ describe("MetaPixel", () => {
       const script = container.querySelector('script[id="meta-pixel"]');
       expect(script).toBeInTheDocument();
       expect(script).not.toHaveAttribute("nonce");
+    });
+  });
+
+  describe("reactive consent listening", () => {
+    beforeEach(() => {
+      process.env.NEXT_PUBLIC_META_PIXEL_ID = "1234567890123456";
+    });
+
+    describe("same-tab consent changes (custom event)", () => {
+      it("should render pixel when consent is granted after mount", async () => {
+        vi.mocked(hasConsent).mockReturnValue(false);
+
+        const { MetaPixel } = await import("./MetaPixel");
+        const { container, rerender } = render(<MetaPixel />);
+
+        // Initially no script
+        expect(
+          container.querySelector('script[id="meta-pixel"]'),
+        ).not.toBeInTheDocument();
+
+        // Simulate consent being granted
+        vi.mocked(hasConsent).mockReturnValue(true);
+
+        await act(async () => {
+          window.dispatchEvent(new CustomEvent("consent-changed"));
+        });
+
+        rerender(<MetaPixel />);
+        expect(
+          container.querySelector('script[id="meta-pixel"]'),
+        ).toBeInTheDocument();
+      });
+
+      it("should hide pixel when consent is revoked", async () => {
+        vi.mocked(hasConsent).mockReturnValue(true);
+
+        const { MetaPixel } = await import("./MetaPixel");
+        const { container, rerender } = render(<MetaPixel />);
+
+        // Initially renders
+        expect(
+          container.querySelector('script[id="meta-pixel"]'),
+        ).toBeInTheDocument();
+
+        // Simulate consent being revoked
+        vi.mocked(hasConsent).mockReturnValue(false);
+
+        await act(async () => {
+          window.dispatchEvent(new CustomEvent("consent-changed"));
+        });
+
+        rerender(<MetaPixel />);
+        expect(
+          container.querySelector('script[id="meta-pixel"]'),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    describe("cross-tab consent changes (storage event)", () => {
+      it("should sync consent when storage event is fired", async () => {
+        vi.mocked(hasConsent).mockReturnValue(false);
+
+        const { MetaPixel } = await import("./MetaPixel");
+        const { container, rerender } = render(<MetaPixel />);
+
+        expect(
+          container.querySelector('script[id="meta-pixel"]'),
+        ).not.toBeInTheDocument();
+
+        // Simulate cross-tab consent change
+        vi.mocked(hasConsent).mockReturnValue(true);
+
+        await act(async () => {
+          const storageEvent = new StorageEvent("storage", {
+            key: "cookie-consent",
+            newValue: "accepted",
+            oldValue: null,
+            storageArea: localStorage,
+          });
+          window.dispatchEvent(storageEvent);
+        });
+
+        rerender(<MetaPixel />);
+        expect(
+          container.querySelector('script[id="meta-pixel"]'),
+        ).toBeInTheDocument();
+      });
+
+      it("should ignore storage events for different keys", async () => {
+        vi.mocked(hasConsent).mockReturnValue(false);
+
+        const { MetaPixel } = await import("./MetaPixel");
+        const { container } = render(<MetaPixel />);
+
+        await act(async () => {
+          const storageEvent = new StorageEvent("storage", {
+            key: "other-key",
+            newValue: "some-value",
+            storageArea: localStorage,
+          });
+          window.dispatchEvent(storageEvent);
+        });
+
+        // Should still not render since hasConsent is still false
+        expect(
+          container.querySelector('script[id="meta-pixel"]'),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    describe("cleanup", () => {
+      it("should clean up event listeners on unmount", async () => {
+        const removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
+
+        const { MetaPixel } = await import("./MetaPixel");
+        const { unmount } = render(<MetaPixel />);
+
+        unmount();
+
+        expect(removeEventListenerSpy).toHaveBeenCalledWith(
+          "consent-changed",
+          expect.any(Function),
+        );
+        expect(removeEventListenerSpy).toHaveBeenCalledWith(
+          "storage",
+          expect.any(Function),
+        );
+
+        removeEventListenerSpy.mockRestore();
+      });
+    });
+  });
+
+  describe("consent not given", () => {
+    beforeEach(() => {
+      process.env.NEXT_PUBLIC_META_PIXEL_ID = "1234567890123456";
+    });
+
+    it("should not render when consent is not given", async () => {
+      vi.mocked(hasConsent).mockReturnValue(false);
+
+      const { MetaPixel } = await import("./MetaPixel");
+      const { container } = render(<MetaPixel />);
+
+      expect(container.innerHTML).toBe("");
     });
   });
 });
