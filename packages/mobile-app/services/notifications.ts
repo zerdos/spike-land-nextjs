@@ -3,6 +3,7 @@
  * Handles push notification registration, scheduling, and response handling
  */
 
+import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
@@ -107,7 +108,8 @@ export async function registerForPushNotifications(): Promise<string | null> {
 
   // Get the Expo push token
   try {
-    const projectId = process.env.EXPO_PUBLIC_PROJECT_ID;
+    const projectId = process.env.EXPO_PUBLIC_PROJECT_ID ??
+      Constants.expoConfig?.extra?.eas?.projectId;
     const tokenData = await Notifications.getExpoPushTokenAsync({
       projectId,
     });

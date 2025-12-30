@@ -31,6 +31,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a7f97eef-c049-4f0a-bfaf-489930884037"
+      }
+    },
+    "owner": "zerdos"
   }
 }
