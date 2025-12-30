@@ -1236,7 +1236,12 @@ A: You keep all tokens (purchased, earned, and subscription tokens). Tokens neve
 
 **"Unsupported format" error**
 
-- Solution: Use JPEG, PNG, WebP, GIF, or BMP format.
+- **Cause**: File type not supported
+- **Solution**:
+  - Convert to JPEG, PNG, WebP, GIF, or BMP
+  - Use online conversion tool or image editor
+  - Check file extension matches actual format
+  - Re-save from image editor in supported format
 
 **Upload takes forever**
 
@@ -1356,16 +1361,60 @@ A: You keep all tokens (purchased, earned, and subscription tokens). Tokens neve
 
 ## Contact & Support
 
-**Help Center**: [docs.spike.land](https://docs.spike.land) **Email Support**:
-support@spike.land **General Email**: hello@spike.land **Status Page**:
-[status.spike.land](https://status.spike.land)
+### Support Channels
+
+If you can't resolve your issue with this guide:
+
+**Documentation:**
+
+- Browse the [full documentation](https://spike.land/docs)
+- Check the [API Reference](/docs/API_REFERENCE.md)
+- Read the [Features documentation](/docs/FEATURES.md)
+- Review the [Pipeline documentation](/docs/PIXEL_PIPELINES.md)
+
+**Email Support:**
+
+- **General Support**: support@spike.land
+- **General Inquiries**: hello@spike.land
+- **Bug Reports**: Include error messages, screenshots, and steps to reproduce
+
+**Platform Information:**
+
+- **Status Updates**: [status.spike.land](https://status.spike.land) (future feature)
+- **Company**: SPIKE LAND LTD (UK Company #16906682)
+- **Website**: [spike.land](https://spike.land)
 
 **Response Times:**
 
-- During business hours (9 AM - 5 PM GMT): 2-4 hours
+- Business hours (9 AM - 5 PM GMT): 2-4 hours
 - Outside business hours: Next business day
-- Urgent issues: Contact hello@spike.land marked "URGENT"
+- Critical issues: Mark as urgent in subject line
 
 ---
 
-**Last Updated**: December 2025 **Version**: 1.0
+## Additional Resources
+
+### Platform Links
+
+- **Homepage**: [spike.land](https://spike.land)
+- **Pixel App**: [spike.land/apps/pixel](https://spike.land/apps/pixel)
+- **Token Management**: [spike.land/tokens](https://spike.land/tokens)
+- **Referral Program**: [spike.land/referrals](https://spike.land/referrals)
+- **Account Settings**: [spike.land/settings](https://spike.land/settings)
+- **Enhancement Pipelines**: [spike.land/apps/pixel/pipelines](https://spike.land/apps/pixel/pipelines)
+
+### Legal & Privacy
+
+- **Terms of Service**: [spike.land/terms](https://spike.land/terms)
+- **Privacy Policy**: [spike.land/privacy](https://spike.land/privacy)
+- **Cookie Policy**: [spike.land/cookies](https://spike.land/cookies)
+
+---
+
+**Last Updated**: December 30, 2025
+**Version**: 2.0 (Comprehensive update reflecting actual platform implementation)
+**Guide Status**: Production-ready, based on current codebase
+
+---
+
+_Thank you for using Spike Land! We're continuously improving the platform based on user feedback. If you have suggestions or feature requests, please reach out to hello@spike.land_
