@@ -82,7 +82,7 @@ import { fireEvent, render } from "@testing-library/react-native";
 import React from "react";
 import { TamaguiProvider } from "tamagui";
 import type { NotificationType, ServerNotification } from "../services/notifications";
-import config from "../tamagui.config";
+import { config } from "../tamagui.config";
 import { NotificationItem, type NotificationItemProps } from "./NotificationItem";
 
 // ============================================================================
