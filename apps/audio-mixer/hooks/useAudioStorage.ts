@@ -21,7 +21,11 @@ function generateId(): string {
 /**
  * Get OPFS path for a track
  */
-function getTrackPath(projectId: string, trackId: string, format: string): string {
+function getTrackPath(
+  projectId: string,
+  trackId: string,
+  format: string,
+): string {
   return `${AUDIO_MIXER_BASE_PATH}/projects/${projectId}/tracks/${trackId}.${format}`;
 }
 
@@ -85,13 +89,19 @@ async function getFileHandle(
 /**
  * Write data to a file in OPFS
  */
-async function writeFile(path: string, data: Uint8Array | string): Promise<void> {
+async function writeFile(
+  path: string,
+  data: Uint8Array | string,
+): Promise<void> {
   const handle = await getFileHandle(path, true);
   const writable = await handle.createWritable();
   // Convert Uint8Array to ArrayBuffer for FileSystemWriteChunkType compatibility
   const writeData: FileSystemWriteChunkType = typeof data === "string"
     ? data
-    : data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+    : data.buffer.slice(
+      data.byteOffset,
+      data.byteOffset + data.byteLength,
+    ) as ArrayBuffer;
   await writable.write(writeData);
   await writable.close();
 }
@@ -193,7 +203,11 @@ export function useAudioStorage() {
     ): Promise<StorageResult<SavedTrack>> => {
       try {
         const trackId = generateId();
-        const trackPath = getTrackPath(options.projectId, trackId, options.format);
+        const trackPath = getTrackPath(
+          options.projectId,
+          trackId,
+          options.format,
+        );
 
         // Write the audio file
         await writeFile(trackPath, audioData);
@@ -220,7 +234,9 @@ export function useAudioStorage() {
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : "Failed to save track",
+          error: error instanceof Error
+            ? error.message
+            : "Failed to save track",
         };
       }
     },
@@ -242,7 +258,9 @@ export function useAudioStorage() {
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : "Failed to load track",
+          error: error instanceof Error
+            ? error.message
+            : "Failed to load track",
         };
       }
     },
@@ -252,21 +270,26 @@ export function useAudioStorage() {
   /**
    * Delete a track from OPFS
    */
-  const deleteTrack = useCallback(async (track: SavedTrack): Promise<StorageResult> => {
-    try {
-      if (!track.opfsPath) {
-        return { success: false, error: "Track has no OPFS path" };
-      }
+  const deleteTrack = useCallback(
+    async (track: SavedTrack): Promise<StorageResult> => {
+      try {
+        if (!track.opfsPath) {
+          return { success: false, error: "Track has no OPFS path" };
+        }
 
-      await deleteFile(track.opfsPath);
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Failed to delete track",
-      };
-    }
-  }, []);
+        await deleteFile(track.opfsPath);
+        return { success: true };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error
+            ? error.message
+            : "Failed to delete track",
+        };
+      }
+    },
+    [],
+  );
 
   /**
    * Load audio data directly from an OPFS path
@@ -279,7 +302,9 @@ export function useAudioStorage() {
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : "Failed to load track from path",
+          error: error instanceof Error
+            ? error.message
+            : "Failed to load track from path",
         };
       }
     },
@@ -297,7 +322,9 @@ export function useAudioStorage() {
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : "Failed to save track to path",
+          error: error instanceof Error
+            ? error.message
+            : "Failed to save track to path",
         };
       }
     },
@@ -307,22 +334,27 @@ export function useAudioStorage() {
   /**
    * Save project metadata to OPFS
    */
-  const saveProject = useCallback(async (project: AudioProject): Promise<StorageResult> => {
-    try {
-      const metadataPath = getProjectMetadataPath(project.id);
+  const saveProject = useCallback(
+    async (project: AudioProject): Promise<StorageResult> => {
+      try {
+        const metadataPath = getProjectMetadataPath(project.id);
 
-      // Write metadata as JSON
-      const metadata = JSON.stringify(project, null, 2);
-      await writeFile(metadataPath, metadata);
+        // Write metadata as JSON
+        const metadata = JSON.stringify(project, null, 2);
+        await writeFile(metadataPath, metadata);
 
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Failed to save project",
-      };
-    }
-  }, []);
+        return { success: true };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error
+            ? error.message
+            : "Failed to save project",
+        };
+      }
+    },
+    [],
+  );
 
   /**
    * Load project metadata from OPFS
@@ -338,7 +370,9 @@ export function useAudioStorage() {
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : "Failed to load project",
+          error: error instanceof Error
+            ? error.message
+            : "Failed to load project",
         };
       }
     },
@@ -348,36 +382,43 @@ export function useAudioStorage() {
   /**
    * List all projects from OPFS
    */
-  const listProjects = useCallback(async (): Promise<StorageResult<AudioProject[]>> => {
-    try {
-      const projectDirs = await listDirectories(`${AUDIO_MIXER_BASE_PATH}/projects`);
+  const listProjects = useCallback(
+    async (): Promise<StorageResult<AudioProject[]>> => {
+      try {
+        const projectDirs = await listDirectories(
+          `${AUDIO_MIXER_BASE_PATH}/projects`,
+        );
 
-      const projects: AudioProject[] = [];
-      for (const projectId of projectDirs) {
-        try {
-          const metadataPath = getProjectMetadataPath(projectId);
-          const data = await readTextFile(metadataPath);
-          const project = JSON.parse(data) as AudioProject;
-          projects.push(project);
-        } catch {
-          // Skip corrupted metadata files
-          console.warn(`Failed to load project metadata for ${projectId}`);
+        const projects: AudioProject[] = [];
+        for (const projectId of projectDirs) {
+          try {
+            const metadataPath = getProjectMetadataPath(projectId);
+            const data = await readTextFile(metadataPath);
+            const project = JSON.parse(data) as AudioProject;
+            projects.push(project);
+          } catch {
+            // Skip corrupted metadata files
+            console.warn(`Failed to load project metadata for ${projectId}`);
+          }
         }
+
+        // Sort by updatedAt descending
+        projects.sort(
+          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+        );
+
+        return { success: true, data: projects };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error
+            ? error.message
+            : "Failed to list projects",
+        };
       }
-
-      // Sort by updatedAt descending
-      projects.sort(
-        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-      );
-
-      return { success: true, data: projects };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Failed to list projects",
-      };
-    }
-  }, []);
+    },
+    [],
+  );
 
   /**
    * Delete a project and all its tracks from OPFS
@@ -392,7 +433,9 @@ export function useAudioStorage() {
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : "Failed to delete project",
+          error: error instanceof Error
+            ? error.message
+            : "Failed to delete project",
         };
       }
     },
@@ -403,7 +446,10 @@ export function useAudioStorage() {
    * Create a new empty project
    */
   const createProject = useCallback(
-    async (name: string, description?: string): Promise<StorageResult<AudioProject>> => {
+    async (
+      name: string,
+      description?: string,
+    ): Promise<StorageResult<AudioProject>> => {
       try {
         const now = new Date().toISOString();
         const project: AudioProject = {
@@ -425,7 +471,9 @@ export function useAudioStorage() {
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : "Failed to create project",
+          error: error instanceof Error
+            ? error.message
+            : "Failed to create project",
         };
       }
     },

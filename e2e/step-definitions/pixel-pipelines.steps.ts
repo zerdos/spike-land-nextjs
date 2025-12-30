@@ -816,7 +816,9 @@ When("I visit my image detail page", async function(this: CustomWorld) {
 When(
   "I select the {string} pipeline",
   async function(this: CustomWorld, pipelineName: string) {
-    const pipelineSelector = this.page.locator('[data-testid="pipeline-selector"]')
+    const pipelineSelector = this.page.locator(
+      '[data-testid="pipeline-selector"]',
+    )
       .or(this.page.getByRole("combobox").filter({ hasText: /pipeline/i }));
     await pipelineSelector.click();
     await this.page.waitForTimeout(200);
@@ -831,7 +833,9 @@ When(
 
 // "I start enhancement"
 When("I start enhancement", async function(this: CustomWorld) {
-  const enhanceButton = this.page.getByRole("button", { name: /enhance|start/i });
+  const enhanceButton = this.page.getByRole("button", {
+    name: /enhance|start/i,
+  });
   await enhanceButton.click();
   await this.page.waitForTimeout(500);
 });

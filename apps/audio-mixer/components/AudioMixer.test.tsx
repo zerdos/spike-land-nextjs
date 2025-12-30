@@ -75,8 +75,14 @@ const mockPersistenceActions = {
 const mockAudioStorage = {
   checkSupport: vi.fn().mockResolvedValue(true),
   saveTrack: vi.fn().mockResolvedValue({ success: true }),
-  loadTrack: vi.fn().mockResolvedValue({ success: true, data: new Uint8Array() }),
-  loadTrackByPath: vi.fn().mockResolvedValue({ success: true, data: new Uint8Array() }),
+  loadTrack: vi.fn().mockResolvedValue({
+    success: true,
+    data: new Uint8Array(),
+  }),
+  loadTrackByPath: vi.fn().mockResolvedValue({
+    success: true,
+    data: new Uint8Array(),
+  }),
   saveTrackToPath: vi.fn().mockResolvedValue({ success: true }),
   deleteTrack: vi.fn().mockResolvedValue({ success: true }),
   saveProject: vi.fn().mockResolvedValue({ success: true }),
@@ -122,7 +128,9 @@ vi.mock("../hooks", () => ({
 }));
 
 vi.mock("../lib/audio-engine", () => ({
-  mixTracksToBlob: vi.fn().mockResolvedValue(new Blob(["audio"], { type: "audio/wav" })),
+  mixTracksToBlob: vi.fn().mockResolvedValue(
+    new Blob(["audio"], { type: "audio/wav" }),
+  ),
   blobToAudioBuffer: vi.fn().mockResolvedValue({ duration: 5 }),
   formatTime: (seconds: number) =>
     `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`,
@@ -159,7 +167,8 @@ describe("AudioMixer", () => {
       render(<AudioMixer />);
 
       expect(screen.getByText("Click to Start")).toBeInTheDocument();
-      expect(screen.getByText("Audio requires user interaction to play")).toBeInTheDocument();
+      expect(screen.getByText("Audio requires user interaction to play"))
+        .toBeInTheDocument();
     });
 
     it("shows keyboard shortcuts hint on splash screen", () => {
@@ -186,7 +195,9 @@ describe("AudioMixer", () => {
 
       expect(screen.getByText("Audio Mixer")).toBeInTheDocument();
       expect(
-        screen.getByText("Professional multi-track layering and recording studio in your browser"),
+        screen.getByText(
+          "Professional multi-track layering and recording studio in your browser",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -284,7 +295,9 @@ describe("AudioMixer", () => {
     it("handles file upload", async () => {
       await renderAudioMixer();
 
-      const fileInput = document.getElementById("audio-file-input") as HTMLInputElement;
+      const fileInput = document.getElementById(
+        "audio-file-input",
+      ) as HTMLInputElement;
       const file = new File(["audio"], "test.mp3", { type: "audio/mp3" });
 
       Object.defineProperty(fileInput, "files", {
@@ -302,7 +315,9 @@ describe("AudioMixer", () => {
     it("ignores non-audio files", async () => {
       await renderAudioMixer();
 
-      const fileInput = document.getElementById("audio-file-input") as HTMLInputElement;
+      const fileInput = document.getElementById(
+        "audio-file-input",
+      ) as HTMLInputElement;
       const file = new File(["text"], "test.txt", { type: "text/plain" });
 
       Object.defineProperty(fileInput, "files", {
@@ -417,32 +432,35 @@ describe("AudioMixer", () => {
         click: vi.fn(),
       };
 
-      const createElementSpy = vi.spyOn(document, "createElement").mockImplementation(
-        (tag: string) => {
-          if (tag === "a") {
-            return mockAnchor as unknown as HTMLAnchorElement;
-          }
-          return originalCreateElement(tag);
-        },
-      );
+      const createElementSpy = vi.spyOn(document, "createElement")
+        .mockImplementation(
+          (tag: string) => {
+            if (tag === "a") {
+              return mockAnchor as unknown as HTMLAnchorElement;
+            }
+            return originalCreateElement(tag);
+          },
+        );
 
-      const appendChildSpy = vi.spyOn(document.body, "appendChild").mockImplementation(
-        (node: Node) => {
-          if (node === (mockAnchor as unknown as Node)) {
-            return mockAnchor as unknown as Node;
-          }
-          return originalAppendChild(node);
-        },
-      );
+      const appendChildSpy = vi.spyOn(document.body, "appendChild")
+        .mockImplementation(
+          (node: Node) => {
+            if (node === (mockAnchor as unknown as Node)) {
+              return mockAnchor as unknown as Node;
+            }
+            return originalAppendChild(node);
+          },
+        );
 
-      const removeChildSpy = vi.spyOn(document.body, "removeChild").mockImplementation(
-        (node: Node) => {
-          if (node === (mockAnchor as unknown as Node)) {
-            return mockAnchor as unknown as Node;
-          }
-          return originalRemoveChild(node);
-        },
-      );
+      const removeChildSpy = vi.spyOn(document.body, "removeChild")
+        .mockImplementation(
+          (node: Node) => {
+            if (node === (mockAnchor as unknown as Node)) {
+              return mockAnchor as unknown as Node;
+            }
+            return originalRemoveChild(node);
+          },
+        );
 
       await renderAudioMixer();
 
@@ -576,7 +594,8 @@ describe("AudioMixer", () => {
       fireEvent.click(closeButton);
 
       await waitFor(() => {
-        expect(screen.queryByText("Keyboard Shortcuts")).not.toBeInTheDocument();
+        expect(screen.queryByText("Keyboard Shortcuts")).not
+          .toBeInTheDocument();
       });
     });
   });

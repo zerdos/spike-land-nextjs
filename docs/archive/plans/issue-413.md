@@ -2,7 +2,9 @@
 
 ## Summary
 
-The `api/images/enhance/route.ts` file (658 lines) has 5 sequential validation layers and dual code paths for blend source handling (~220 lines combined). This plan simplifies using Zod schemas and unified handlers.
+The `api/images/enhance/route.ts` file (658 lines) has 5 sequential validation
+layers and dual code paths for blend source handling (~220 lines combined). This
+plan simplifies using Zod schemas and unified handlers.
 
 ## Current Validation Layers
 
@@ -95,7 +97,8 @@ export function getExecutionMode(): "workflow" | "direct" {
 
 ## Questions
 
-1. **Backward Compatibility**: Change blend source format to discriminated union?
+1. **Backward Compatibility**: Change blend source format to discriminated
+   union?
 2. **Environment Variable**: Is `ENHANCEMENT_EXECUTION_MODE` acceptable?
 3. **Utilities Location**: `/src/lib/images/` vs `/src/lib/api/`?
 4. **Error Response Helper**: Generic or route-specific?

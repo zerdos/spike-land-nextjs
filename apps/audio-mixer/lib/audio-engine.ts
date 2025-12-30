@@ -7,7 +7,8 @@ import type { AudioTrack, WaveformOptions } from "../types";
 
 export function createAudioContext(): AudioContext {
   const AudioContextClass = window.AudioContext ||
-    (window as unknown as { webkitAudioContext: typeof AudioContext; }).webkitAudioContext;
+    (window as unknown as { webkitAudioContext: typeof AudioContext; })
+      .webkitAudioContext;
   return new AudioContextClass();
 }
 
@@ -23,7 +24,10 @@ export function createAnalyser(context: AudioContext): AnalyserNode {
   return analyser;
 }
 
-export async function loadAudioFile(context: AudioContext, file: File): Promise<AudioBuffer> {
+export async function loadAudioFile(
+  context: AudioContext,
+  file: File,
+): Promise<AudioBuffer> {
   const arrayBuffer = await file.arrayBuffer();
   return context.decodeAudioData(arrayBuffer);
 }
@@ -43,7 +47,10 @@ export function createTrackNodes(
   return { source, gainNode };
 }
 
-export function generateWaveformData(buffer: AudioBuffer, samples: number = 100): number[] {
+export function generateWaveformData(
+  buffer: AudioBuffer,
+  samples: number = 100,
+): number[] {
   const channelData = buffer.getChannelData(0);
   const blockSize = Math.floor(channelData.length / samples);
   const waveform: number[] = [];
@@ -144,7 +151,9 @@ export async function mixTracksToBlob(
       gainNode.connect(masterGain);
 
       // Calculate effective trim boundaries
-      const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
+      const effectiveTrimEnd = track.trimEnd > 0
+        ? track.trimEnd
+        : track.duration;
 
       // Use position (with delay fallback for backward compat)
       const trackPosition = track.position ?? track.delay ?? 0;
@@ -238,7 +247,10 @@ export function createRecorder(stream: MediaStream): MediaRecorder {
   return new MediaRecorder(stream, { mimeType });
 }
 
-export async function blobToAudioBuffer(context: AudioContext, blob: Blob): Promise<AudioBuffer> {
+export async function blobToAudioBuffer(
+  context: AudioContext,
+  blob: Blob,
+): Promise<AudioBuffer> {
   const arrayBuffer = await blob.arrayBuffer();
   return context.decodeAudioData(arrayBuffer);
 }

@@ -18,7 +18,9 @@ When("I view the pricing page", async function(this: CustomWorld) {
   const proCard = this.page.locator('[data-testid="package-card-pro"]');
   await expect(proCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   // Verify card has content (not just placeholder)
-  await expect(proCard.getByText(/Pro/i)).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(proCard.getByText(/Pro/i)).toBeVisible({
+    timeout: TIMEOUTS.DEFAULT,
+  });
 });
 
 When(
@@ -55,7 +57,9 @@ Then(
   "I should see {int} token pack options",
   async function(this: CustomWorld, count: number) {
     // Use data-testid for reliable selection
-    const packagesGrid = this.page.locator('[data-testid="token-packages-grid"]');
+    const packagesGrid = this.page.locator(
+      '[data-testid="token-packages-grid"]',
+    );
     await expect(packagesGrid).toBeVisible({ timeout: 10000 });
 
     // Count cards using data-testid pattern
@@ -96,10 +100,13 @@ Then(
         case "name": {
           // Package cards have data-testid="package-card-X" and the name is displayed in CardTitle
           // Look for a package card and check it has a visible package name
-          const packageCard = this.page.locator('[data-testid^="package-card-"]').first();
+          const packageCard = this.page.locator(
+            '[data-testid^="package-card-"]',
+          ).first();
           await expect(packageCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           // Verify the card contains a package name (Starter, Basic, Pro, or Power)
-          const packageName = packageCard.getByText(/Starter|Basic|Pro|Power/i).first();
+          const packageName = packageCard.getByText(/Starter|Basic|Pro|Power/i)
+            .first();
           await expect(packageName).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
           break;
         }
@@ -115,7 +122,9 @@ Then(
         }
         case "price per token": {
           const pricePerToken = this.page.getByText(/£.*per token/i).first();
-          await expect(pricePerToken).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+          await expect(pricePerToken).toBeVisible({
+            timeout: TIMEOUTS.DEFAULT,
+          });
           break;
         }
         case "buy button": {
@@ -181,7 +190,9 @@ Then(
   async function(this: CustomWorld) {
     // Stripe checkout initiated - verify one-time payment mode
     // Wait for navigation to Stripe checkout
-    await this.page.waitForURL(/stripe|checkout|payment/i, { timeout: TIMEOUTS.LONG });
+    await this.page.waitForURL(/stripe|checkout|payment/i, {
+      timeout: TIMEOUTS.LONG,
+    });
     // Verify we're in a checkout context (URL or page state)
     const url = this.page.url();
     expect(url).toMatch(/stripe|checkout|payment/i);
@@ -274,7 +285,9 @@ Then(
   "I should be redirected to the sign-in page",
   async function(this: CustomWorld) {
     // Wait for redirect to sign-in page
-    await this.page.waitForURL(/auth\/signin|callbackUrl/, { timeout: TIMEOUTS.LONG });
+    await this.page.waitForURL(/auth\/signin|callbackUrl/, {
+      timeout: TIMEOUTS.LONG,
+    });
     const url = this.page.url();
     const isSignInPage = url.includes("/auth/signin") ||
       url.includes("/?callbackUrl");
@@ -287,7 +300,9 @@ Then(
   async function(this: CustomWorld, dataTable) {
     const rows = dataTable.hashes();
     // Use data-testid for reliable selection
-    const starterCard = this.page.locator('[data-testid="package-card-starter"]');
+    const starterCard = this.page.locator(
+      '[data-testid="package-card-starter"]',
+    );
     await expect(starterCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
     for (const row of rows) {

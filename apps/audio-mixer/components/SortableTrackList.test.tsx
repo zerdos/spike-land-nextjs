@@ -189,7 +189,9 @@ describe("SortableTrackList", () => {
 
   it("calls onDelayChange with track id and delay when provided", () => {
     const onDelayChange = vi.fn();
-    render(<SortableTrackList {...defaultProps} onDelayChange={onDelayChange} />);
+    render(
+      <SortableTrackList {...defaultProps} onDelayChange={onDelayChange} />,
+    );
 
     const delayButtons = screen.getAllByText("Delay");
     fireEvent.click(delayButtons[1]!);

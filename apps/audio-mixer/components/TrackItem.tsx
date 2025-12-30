@@ -42,8 +42,12 @@ export function TrackItem({
   const trimmedDuration = Math.max(0, effectiveTrimEnd - track.trimStart);
 
   // Normalize trim values to 0-1 for waveform display
-  const normalizedTrimStart = track.duration > 0 ? track.trimStart / track.duration : 0;
-  const normalizedTrimEnd = track.duration > 0 ? effectiveTrimEnd / track.duration : 1;
+  const normalizedTrimStart = track.duration > 0
+    ? track.trimStart / track.duration
+    : 0;
+  const normalizedTrimEnd = track.duration > 0
+    ? effectiveTrimEnd / track.duration
+    : 1;
 
   const handleTrimStartChange = (normalizedValue: number) => {
     const trimStartSeconds = normalizedValue * track.duration;
@@ -80,7 +84,9 @@ export function TrackItem({
           </span>
           {track.delay !== 0 && (
             <span className="text-blue-400 text-sm">
-              {track.delay > 0 ? `+${track.delay.toFixed(1)}s` : `${track.delay.toFixed(1)}s`}
+              {track.delay > 0
+                ? `+${track.delay.toFixed(1)}s`
+                : `${track.delay.toFixed(1)}s`}
             </span>
           )}
         </div>
@@ -119,7 +125,9 @@ export function TrackItem({
           className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-colors"
           aria-label={track.isPlaying ? "Stop" : "Play"}
         >
-          {track.isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          {track.isPlaying
+            ? <Pause className="w-4 h-4" />
+            : <Play className="w-4 h-4" />}
         </button>
 
         {/* Mute/Unmute */}
@@ -132,7 +140,9 @@ export function TrackItem({
           }`}
           aria-label={track.muted ? "Unmute" : "Mute"}
         >
-          {track.muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          {track.muted
+            ? <VolumeX className="w-4 h-4" />
+            : <Volume2 className="w-4 h-4" />}
         </button>
 
         {/* Solo */}
@@ -181,7 +191,9 @@ export function TrackItem({
               aria-label="Track delay"
             />
             <span className="text-gray-400 text-sm w-12 text-right">
-              {track.delay > 0 ? `+${track.delay.toFixed(1)}` : track.delay.toFixed(1)}s
+              {track.delay > 0
+                ? `+${track.delay.toFixed(1)}`
+                : track.delay.toFixed(1)}s
             </span>
           </div>
         )}

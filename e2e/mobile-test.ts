@@ -90,7 +90,8 @@ async function testViewport(
       const sliderElement = await comparisonSlider.elementHandle();
       if (sliderElement) {
         const hasTouch = await page.evaluate((el: Element) => {
-          return el && typeof (el as HTMLElement)["ontouchstart"] !== "undefined";
+          return el &&
+            typeof (el as HTMLElement)["ontouchstart"] !== "undefined";
         }, sliderElement);
 
         if (!hasTouch) {

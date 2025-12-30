@@ -2,7 +2,9 @@
 
 ## Summary
 
-Improve the Tabs component to provide clearer visual distinction between active and inactive states for mobile users. Current implementation has subtle animated background indicator but lacks sufficient text contrast.
+Improve the Tabs component to provide clearer visual distinction between active
+and inactive states for mobile users. Current implementation has subtle animated
+background indicator but lacks sufficient text contrast.
 
 ## Current Implementation Analysis
 

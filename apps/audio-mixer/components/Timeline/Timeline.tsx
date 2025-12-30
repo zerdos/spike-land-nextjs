@@ -113,7 +113,8 @@ export function Timeline({
     (e: React.MouseEvent) => {
       // Only handle clicks on the background, not on tracks
       if (
-        e.target !== e.currentTarget && (e.target as HTMLElement).closest("[data-timeline-track]")
+        e.target !== e.currentTarget &&
+        (e.target as HTMLElement).closest("[data-timeline-track]")
       ) {
         return;
       }
@@ -274,7 +275,9 @@ export function Timeline({
                 <Plus className="w-8 h-8 opacity-20" />
               </div>
               <p className="font-medium">No tracks in project</p>
-              <p className="text-sm opacity-60">Add audio files or record to get started</p>
+              <p className="text-sm opacity-60">
+                Add audio files or record to get started
+              </p>
             </div>
           )}
         </div>

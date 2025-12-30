@@ -120,9 +120,12 @@ Optimize mobile experience by addressing five key areas:
 
 ## Questions
 
-1. **Glass opacity trade-off**: 18% → 85% is nearly opaque. Middle ground (60-70%)?
-2. **Bottom sheet vs side drawer**: All navigation use bottom sheets consistently?
-3. **Checkbox/Radio sizing**: Touch wrapper (larger hit area, smaller visual) vs scaling visible element?
+1. **Glass opacity trade-off**: 18% → 85% is nearly opaque. Middle ground
+   (60-70%)?
+2. **Bottom sheet vs side drawer**: All navigation use bottom sheets
+   consistently?
+3. **Checkbox/Radio sizing**: Touch wrapper (larger hit area, smaller visual) vs
+   scaling visible element?
 4. **Size variants**: Add `size="touch"` instead of changing defaults?
 
 ## Critical Files

@@ -2,7 +2,9 @@
 
 ## Summary
 
-Create comprehensive `docs/TESTING_STRATEGY.md` documenting the testing infrastructure, conventions, and best practices. Project has ~456 test files with 80%+ coverage requirements.
+Create comprehensive `docs/TESTING_STRATEGY.md` documenting the testing
+infrastructure, conventions, and best practices. Project has ~456 test files
+with 80%+ coverage requirements.
 
 ## Testing Overview
 
@@ -83,8 +85,9 @@ Create comprehensive `docs/TESTING_STRATEGY.md` documenting the testing infrastr
 
 ### Best Practices
 
-**DO**: Test alongside implementation, descriptive names, mock externals, use data-testid
-**DON'T**: Test implementation details, rely on test order, use .spec.ts, skip without documenting
+**DO**: Test alongside implementation, descriptive names, mock externals, use
+data-testid **DON'T**: Test implementation details, rely on test order, use
+.spec.ts, skip without documenting
 
 ## Implementation Steps
 

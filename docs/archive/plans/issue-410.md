@@ -2,9 +2,13 @@
 
 ## Summary
 
-GitHub Issue #410 requests extracting the 25+ useState hooks from `AlbumDetailClient.tsx` into 5 reusable custom hooks. The goal is to improve code maintainability, testability, and reusability while maintaining 100% test coverage.
+GitHub Issue #410 requests extracting the 25+ useState hooks from
+`AlbumDetailClient.tsx` into 5 reusable custom hooks. The goal is to improve
+code maintainability, testability, and reusability while maintaining 100% test
+coverage.
 
-**Note**: The issue mentions 27 useState hooks, but analysis identified 25 useState calls (plus 1 call to existing `useZoomLevel` hook).
+**Note**: The issue mentions 27 useState hooks, but analysis identified 25
+useState calls (plus 1 call to existing `useZoomLevel` hook).
 
 ## Hook Grouping Analysis
 
@@ -26,12 +30,14 @@ GitHub Issue #410 requests extracting the 25+ useState hooks from `AlbumDetailCl
 ### 1. `useAlbumData(albumId: string)`
 
 - Album fetching, CRUD operations, settings state
-- Returns: album, isLoading, error, showSettings, isSaving, copied, editState, saveSettings, deleteAlbum
+- Returns: album, isLoading, error, showSettings, isSaving, copied, editState,
+  saveSettings, deleteAlbum
 
 ### 2. `useImageSelection(images: AlbumImage[])`
 
 - Selection mode and selected images set
-- Returns: isSelectionMode, selectedImages, toggleSelectAll, toggleImageSelection, exitSelectionMode
+- Returns: isSelectionMode, selectedImages, toggleSelectAll,
+  toggleImageSelection, exitSelectionMode
 
 ### 3. `useImageReorder(albumId: string)`
 
@@ -107,7 +113,8 @@ src/app/albums/[id]/
 
 ## Questions
 
-1. **Hook Count Discrepancy**: Issue mentions 27 hooks, found 25. Proceed with 25?
+1. **Hook Count Discrepancy**: Issue mentions 27 hooks, found 25. Proceed with
+   25?
 2. **QR Sheet State**: Keep in component or add to useAlbumData?
 3. **View Controls**: Combine displayType + useZoomLevel into useViewControls?
 4. **Location**: Local to album page or promoted to `src/hooks/`?

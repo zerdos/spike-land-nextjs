@@ -35,9 +35,15 @@ describe("useAudioContext", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(createAudioContext).mockReturnValue(mockContext as unknown as AudioContext);
-    vi.mocked(createMasterGain).mockReturnValue(mockMasterGain as unknown as GainNode);
-    vi.mocked(createAnalyser).mockReturnValue(mockAnalyser as unknown as AnalyserNode);
+    vi.mocked(createAudioContext).mockReturnValue(
+      mockContext as unknown as AudioContext,
+    );
+    vi.mocked(createMasterGain).mockReturnValue(
+      mockMasterGain as unknown as GainNode,
+    );
+    vi.mocked(createAnalyser).mockReturnValue(
+      mockAnalyser as unknown as AnalyserNode,
+    );
   });
 
   afterEach(() => {
@@ -71,7 +77,9 @@ describe("useAudioContext", () => {
       ...mockContext,
       state: "suspended",
     };
-    vi.mocked(createAudioContext).mockReturnValue(suspendedContext as unknown as AudioContext);
+    vi.mocked(createAudioContext).mockReturnValue(
+      suspendedContext as unknown as AudioContext,
+    );
 
     const { result } = renderHook(() => useAudioContext());
 

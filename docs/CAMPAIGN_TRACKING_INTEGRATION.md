@@ -1,25 +1,30 @@
 # Campaign Analytics Tracking Integration
 
-This document explains how to integrate the SessionTracker component and useTracking hook for campaign analytics.
+This document explains how to integrate the SessionTracker component and
+useTracking hook for campaign analytics.
 
 ## Overview
 
 The campaign tracking system provides:
 
 - **Session tracking**: Automatic visitor and session management
-- **UTM parameter capture**: Captures UTM params on landing (utm_source, utm_medium, utm_campaign, etc.)
-- **Click ID tracking**: Captures gclid (Google) and fbclid (Facebook) for attribution
+- **UTM parameter capture**: Captures UTM params on landing (utm_source,
+  utm_medium, utm_campaign, etc.)
+- **Click ID tracking**: Captures gclid (Google) and fbclid (Facebook) for
+  attribution
 - **Page view tracking**: Automatic tracking of SPA route changes
 - **Scroll depth tracking**: Tracks 25%, 50%, 75%, 100% scroll milestones
 - **Time on page tracking**: Tracks 30s, 60s, 180s engagement milestones
-- **Conversion tracking**: Manual tracking of signup, enhancement, and purchase conversions
+- **Conversion tracking**: Manual tracking of signup, enhancement, and purchase
+  conversions
 - **User linking**: Automatically links anonymous sessions to users on login
 
 ## Installation
 
 ### Step 1: Add SessionTracker to Layout
 
-Add the `SessionTracker` component to your root layout. It should be placed inside the `<body>` tag, after the `SessionProvider` from next-auth.
+Add the `SessionTracker` component to your root layout. It should be placed
+inside the `<body>` tag, after the `SessionProvider` from next-auth.
 
 ```tsx
 // src/app/layout.tsx
@@ -50,7 +55,8 @@ export default function RootLayout({
 
 - The component must be inside `SessionProvider` to track user authentication
 - The component renders nothing (returns null) - no UI impact
-- Tracking only occurs if user has accepted cookies (`localStorage.getItem("cookie-consent") === "accepted"`)
+- Tracking only occurs if user has accepted cookies
+  (`localStorage.getItem("cookie-consent") === "accepted"`)
 
 ### Step 2: Use the Tracking Hook
 
@@ -186,9 +192,11 @@ if (isTrackingEnabled()) {
 
 The tracking system respects user privacy:
 
-1. **Cookie Consent Required**: No tracking occurs unless `localStorage.getItem("cookie-consent") === "accepted"`
+1. **Cookie Consent Required**: No tracking occurs unless
+   `localStorage.getItem("cookie-consent") === "accepted"`
 2. **No PII Collection**: Only anonymous visitor IDs, no personal data
-3. **Session-based**: Session IDs are stored in sessionStorage (cleared on tab close)
+3. **Session-based**: Session IDs are stored in sessionStorage (cleared on tab
+   close)
 4. **Visitor IDs**: Stored in localStorage for returning visitor recognition
 
 ## Database Schema
@@ -219,8 +227,10 @@ All endpoints are rate-limited and validate input with Zod schemas.
 
 ### Tracking not working
 
-1. Check cookie consent: `localStorage.getItem("cookie-consent")` should be `"accepted"`
-2. Check session exists: `sessionStorage.getItem("spike_session_id")` should have a value
+1. Check cookie consent: `localStorage.getItem("cookie-consent")` should be
+   `"accepted"`
+2. Check session exists: `sessionStorage.getItem("spike_session_id")` should
+   have a value
 3. Check browser console for `[Tracking]` warnings
 
 ### Events not being recorded
@@ -231,4 +241,6 @@ All endpoints are rate-limited and validate input with Zod schemas.
 
 ### UTM params not captured
 
-UTM params are only captured on the initial landing page. Subsequent SPA navigations do not re-capture params. This prevents overwriting the original attribution source.
+UTM params are only captured on the initial landing page. Subsequent SPA
+navigations do not re-capture params. This prevents overwriting the original
+attribution source.

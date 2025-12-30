@@ -48,7 +48,9 @@ describe("useAudioRecording", () => {
       mimeType: "audio/webm",
     };
 
-    vi.mocked(createRecorder).mockReturnValue(mockMediaRecorder as unknown as MediaRecorder);
+    vi.mocked(createRecorder).mockReturnValue(
+      mockMediaRecorder as unknown as MediaRecorder,
+    );
     vi.mocked(blobToAudioBuffer).mockResolvedValue(mockBuffer);
 
     // Mock navigator.mediaDevices
@@ -223,9 +225,10 @@ describe("useAudioRecording", () => {
   });
 
   it("handles getUserMedia error", async () => {
-    (navigator.mediaDevices.getUserMedia as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error("Permission denied"),
-    );
+    (navigator.mediaDevices.getUserMedia as ReturnType<typeof vi.fn>)
+      .mockRejectedValue(
+        new Error("Permission denied"),
+      );
 
     const { result } = renderHook(() => useAudioRecording());
 

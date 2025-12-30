@@ -204,7 +204,9 @@ Then(
     await select.click();
     // Use exact match pattern to avoid "Free" matching "Freemium"
     const optionPattern = new RegExp(`^${option}\\s*-`, "i");
-    const optionElement = this.page.getByRole("option", { name: optionPattern });
+    const optionElement = this.page.getByRole("option", {
+      name: optionPattern,
+    });
     await expect(optionElement).toBeVisible({ timeout: TIMEOUTS.SHORT });
     // Close dropdown by pressing Escape
     await this.page.keyboard.press("Escape");
@@ -398,7 +400,9 @@ Then(
     // If indicator exists, verify it contains text
     // If no indicator UI element exists, the test passes if localStorage was saved
     try {
-      await expect(indicator.first()).toContainText(text, { timeout: TIMEOUTS.SHORT });
+      await expect(indicator.first()).toContainText(text, {
+        timeout: TIMEOUTS.SHORT,
+      });
     } catch {
       // Fallback: verify draft is in localStorage (which is the actual behavior being tested)
       const draft = await this.page.evaluate(() => {

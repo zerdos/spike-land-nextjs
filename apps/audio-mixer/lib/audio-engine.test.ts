@@ -192,7 +192,11 @@ describe("audio-engine", () => {
     it("creates source and gain nodes for a track", () => {
       const context = createAudioContext();
       const mockBuffer = { duration: 10 } as AudioBuffer;
-      const result = createTrackNodes(context, mockGainNode as unknown as GainNode, mockBuffer);
+      const result = createTrackNodes(
+        context,
+        mockGainNode as unknown as GainNode,
+        mockBuffer,
+      );
 
       expect(context.createBufferSource).toHaveBeenCalled();
       expect(context.createGain).toHaveBeenCalled();
@@ -325,7 +329,9 @@ describe("audio-engine", () => {
         getChannelData: vi.fn(() => channelData),
       };
 
-      mockOfflineContextInstance.startRendering.mockResolvedValue(mockRenderedBuffer);
+      mockOfflineContextInstance.startRendering.mockResolvedValue(
+        mockRenderedBuffer,
+      );
 
       const context = createAudioContext();
       const tracks = [
@@ -358,7 +364,9 @@ describe("audio-engine", () => {
 
       // Reset mock
       mockOfflineContextInstance.createBufferSource.mockClear();
-      mockOfflineContextInstance.startRendering.mockResolvedValue(mockRenderedBuffer);
+      mockOfflineContextInstance.startRendering.mockResolvedValue(
+        mockRenderedBuffer,
+      );
 
       const context = createAudioContext();
       const tracks = [
@@ -370,10 +378,15 @@ describe("audio-engine", () => {
         },
       ];
 
-      await mixTracksToBlob(context, tracks as Parameters<typeof mixTracksToBlob>[1], 1);
+      await mixTracksToBlob(
+        context,
+        tracks as Parameters<typeof mixTracksToBlob>[1],
+        1,
+      );
 
       // Source should not be created for muted track
-      expect(mockOfflineContextInstance.createBufferSource).not.toHaveBeenCalled();
+      expect(mockOfflineContextInstance.createBufferSource).not
+        .toHaveBeenCalled();
     });
   });
 

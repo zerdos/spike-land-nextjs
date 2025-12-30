@@ -72,7 +72,9 @@ Then(
     const button = this.page
       .getByRole("button", { name: new RegExp(buttonText, "i") })
       .and(this.page.locator(":not([data-nextjs-dev-tools-button])"));
-    const link = this.page.getByRole("link", { name: new RegExp(buttonText, "i") });
+    const link = this.page.getByRole("link", {
+      name: new RegExp(buttonText, "i"),
+    });
 
     const element = button.or(link);
     await expect(element.first()).toBeVisible();
@@ -248,7 +250,8 @@ When(
 
     const filter = (await selectTrigger.isVisible()) ? selectTrigger : combobox;
     await filter.click();
-    await this.page.locator('[role="option"]').filter({ hasText: type }).click();
+    await this.page.locator('[role="option"]').filter({ hasText: type })
+      .click();
   },
 );
 
@@ -261,14 +264,17 @@ When("I confirm the deletion", async function(this: CustomWorld) {
 });
 
 // Common PENDING status badge check
-Then("PENDING status badge should be yellow", async function(this: CustomWorld) {
-  const badge = this.page
-    .locator('[class*="Badge"]')
-    .filter({ hasText: "PENDING" })
-    .first();
-  const className = await badge.getAttribute("class");
-  expect(className).toContain("yellow");
-});
+Then(
+  "PENDING status badge should be yellow",
+  async function(this: CustomWorld) {
+    const badge = this.page
+      .locator('[class*="Badge"]')
+      .filter({ hasText: "PENDING" })
+      .first();
+    const className = await badge.getAttribute("class");
+    expect(className).toContain("yellow");
+  },
+);
 
 // Common FAILED status badge check
 Then("FAILED status badge should be red", async function(this: CustomWorld) {
@@ -365,7 +371,9 @@ Then(
 // Common date range picker check
 Then("I should see date range picker", async function(this: CustomWorld) {
   const picker = this.page
-    .locator('[class*="DatePicker"], [class*="date-picker"], input[type="date"]')
+    .locator(
+      '[class*="DatePicker"], [class*="date-picker"], input[type="date"]',
+    )
     .or(this.page.getByRole("button", { name: /date|calendar/i }));
   await expect(picker.first()).toBeVisible();
 });
@@ -470,7 +478,8 @@ Given(
   "I have {int} tokens",
   async function(this: CustomWorld, tokenCount: number) {
     // Store the desired token count for use by subsequent steps
-    (this as CustomWorld & { desiredTokenBalance?: number; }).desiredTokenBalance = tokenCount;
+    (this as CustomWorld & { desiredTokenBalance?: number; })
+      .desiredTokenBalance = tokenCount;
     (this as CustomWorld & { tokenBalance?: number; }).tokenBalance = tokenCount;
     // Set up the mock
     await mockTokenBalance(this, tokenCount);
@@ -483,7 +492,8 @@ Given(
   "I have at least {int} tokens",
   async function(this: CustomWorld, minTokens: number) {
     await mockTokenBalance(this, minTokens + 10);
-    (this as CustomWorld & { desiredTokenBalance?: number; }).desiredTokenBalance = minTokens + 10;
+    (this as CustomWorld & { desiredTokenBalance?: number; })
+      .desiredTokenBalance = minTokens + 10;
   },
 );
 
@@ -562,10 +572,13 @@ Then("my tokens should be refunded", async function(this: CustomWorld) {
 
 // "the enhance button should be disabled" - consolidated from
 // image-enhancement.steps.ts, batch-enhancement.steps.ts
-Then("the enhance button should be disabled", async function(this: CustomWorld) {
-  const button = this.page.getByRole("button", { name: /enhance|start/i });
-  await expect(button).toBeDisabled();
-});
+Then(
+  "the enhance button should be disabled",
+  async function(this: CustomWorld) {
+    const button = this.page.getByRole("button", { name: /enhance|start/i });
+    await expect(button).toBeDisabled();
+  },
+);
 
 // "the selected version should be highlighted" - consolidated from
 // image-enhancement.steps.ts, pixel-image-detail.steps.ts
@@ -762,16 +775,21 @@ Then(
 // ======= PHASE 3: MISSING STEP DEFINITIONS =======
 
 // "I am viewing the album gallery page" - navigate to album gallery
-Given("I am viewing the album gallery page", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/canvas`);
-  await this.page.waitForLoadState("networkidle");
-});
+Given(
+  "I am viewing the album gallery page",
+  async function(this: CustomWorld) {
+    await this.page.goto(`${this.baseUrl}/canvas`);
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
 // "the album should show {int} image" - singular variant
 Then(
   "the album should show {int} image",
   async function(this: CustomWorld, count: number) {
-    const images = this.page.locator('[role="gridcell"], [data-testid*="image"]');
+    const images = this.page.locator(
+      '[role="gridcell"], [data-testid*="image"]',
+    );
     await expect(images).toHaveCount(count, { timeout: 10000 });
   },
 );
@@ -781,7 +799,9 @@ Then(
   "the album should still show {int} image",
   async function(this: CustomWorld, count: number) {
     await this.page.waitForTimeout(500);
-    const images = this.page.locator('[role="gridcell"], [data-testid*="image"]');
+    const images = this.page.locator(
+      '[role="gridcell"], [data-testid*="image"]',
+    );
     await expect(images).toHaveCount(count, { timeout: 10000 });
   },
 );
@@ -847,7 +867,9 @@ When(
   async function(this: CustomWorld, filterName: string) {
     const filter = this.page.getByRole("button", {
       name: new RegExp(filterName, "i"),
-    }).or(this.page.locator(`[data-testid="${filterName.toLowerCase()}-filter"]`));
+    }).or(
+      this.page.locator(`[data-testid="${filterName.toLowerCase()}-filter"]`),
+    );
     await filter.first().click();
     await this.page.waitForTimeout(300);
   },
@@ -858,7 +880,9 @@ Given(
   "I have selected {int} images",
   async function(this: CustomWorld, count: number) {
     // Click on the specified number of images to select them
-    const images = this.page.locator('[role="gridcell"], [data-testid*="image"]');
+    const images = this.page.locator(
+      '[role="gridcell"], [data-testid*="image"]',
+    );
     const availableCount = await images.count();
     const selectCount = Math.min(count, availableCount);
 

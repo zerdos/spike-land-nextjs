@@ -474,7 +474,10 @@ describe("monitorStreamHealth", () => {
     monitorStreamHealth(mockStream, onInactive);
 
     // Get the event handler
-    const addEventListenerCall = track.addEventListener.mock.calls[0] as [string, () => void];
+    const addEventListenerCall = track.addEventListener.mock.calls[0] as [
+      string,
+      () => void,
+    ];
     const handler = addEventListenerCall[1];
 
     // Trigger the handler

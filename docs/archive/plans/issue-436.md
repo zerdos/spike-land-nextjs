@@ -2,7 +2,9 @@
 
 ## Summary
 
-Provision a Neon serverless PostgreSQL database for E2E testing. Currently 314 scenarios tagged `@requires-db` are skipped in CI because no test database exists.
+Provision a Neon serverless PostgreSQL database for E2E testing. Currently 314
+scenarios tagged `@requires-db` are skipped in CI because no test database
+exists.
 
 ## Current Database Setup
 
@@ -95,7 +97,8 @@ e2e-db:
 ## Questions
 
 1. **Neon Account**: New account or use existing?
-2. **Database Branching**: New branch per CI run (better isolation) or single persistent branch?
+2. **Database Branching**: New branch per CI run (better isolation) or single
+   persistent branch?
 3. **Test Data Scope**: Comprehensive seed (slower) vs flexible scenarios?
 4. **Parallel Execution**: Investigate per-scenario transactions later?
 5. **Production Protection**: Add safeguards to prevent running against prod DB?

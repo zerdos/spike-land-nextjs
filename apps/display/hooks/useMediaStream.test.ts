@@ -228,7 +228,9 @@ describe("useMediaStream", () => {
 
   it("should toggle audio track", async () => {
     const audioTrack = { enabled: true };
-    mockGetAudioTracks.mockReturnValue([audioTrack] as unknown as MediaStreamTrack[]);
+    mockGetAudioTracks.mockReturnValue(
+      [audioTrack] as unknown as MediaStreamTrack[],
+    );
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
@@ -243,7 +245,9 @@ describe("useMediaStream", () => {
 
   it("should toggle audio track without explicit enabled value", async () => {
     const audioTrack = { enabled: true };
-    mockGetAudioTracks.mockReturnValue([audioTrack] as unknown as MediaStreamTrack[]);
+    mockGetAudioTracks.mockReturnValue(
+      [audioTrack] as unknown as MediaStreamTrack[],
+    );
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
@@ -258,7 +262,9 @@ describe("useMediaStream", () => {
 
   it("should toggle video track", async () => {
     const videoTrack = { enabled: true };
-    mockGetVideoTracks.mockReturnValue([videoTrack] as unknown as MediaStreamTrack[]);
+    mockGetVideoTracks.mockReturnValue(
+      [videoTrack] as unknown as MediaStreamTrack[],
+    );
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
@@ -276,7 +282,9 @@ describe("useMediaStream", () => {
 
   it("should check if audio track is enabled", async () => {
     const audioTrack = { enabled: true };
-    mockGetAudioTracks.mockReturnValue([audioTrack] as unknown as MediaStreamTrack[]);
+    mockGetAudioTracks.mockReturnValue(
+      [audioTrack] as unknown as MediaStreamTrack[],
+    );
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
@@ -290,7 +298,9 @@ describe("useMediaStream", () => {
 
   it("should check if video track is enabled", async () => {
     const videoTrack = { enabled: false };
-    mockGetVideoTracks.mockReturnValue([videoTrack] as unknown as MediaStreamTrack[]);
+    mockGetVideoTracks.mockReturnValue(
+      [videoTrack] as unknown as MediaStreamTrack[],
+    );
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 
@@ -316,7 +326,9 @@ describe("useMediaStream", () => {
     vi.mocked(getDisplayMediaStream).mockResolvedValue(newStream);
 
     const oldVideoTrack = { stop: vi.fn() };
-    mockGetVideoTracks.mockReturnValue([oldVideoTrack] as unknown as MediaStreamTrack[]);
+    mockGetVideoTracks.mockReturnValue(
+      [oldVideoTrack] as unknown as MediaStreamTrack[],
+    );
 
     const { result } = renderHook(() => useMediaStream("peer-123"));
 

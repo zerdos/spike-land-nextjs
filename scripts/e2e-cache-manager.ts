@@ -45,9 +45,16 @@ const GLOBAL_DEPENDENCIES = [
 const STEP_DEFINITION_DIR = "e2e/step-definitions";
 
 const PROJECT_ROOT = process.cwd();
-const CACHE_DIR = process.env.E2E_CACHE_DIR || path.join(PROJECT_ROOT, ".e2e-cache");
+const CACHE_DIR = process.env.E2E_CACHE_DIR ||
+  path.join(PROJECT_ROOT, ".e2e-cache");
 const CACHE_PATH = path.join(CACHE_DIR, "e2e-cache.json");
-const COVERAGE_PATH = path.join(PROJECT_ROOT, "e2e", "reports", "coverage", "coverage-final.json");
+const COVERAGE_PATH = path.join(
+  PROJECT_ROOT,
+  "e2e",
+  "reports",
+  "coverage",
+  "coverage-final.json",
+);
 const DEBUG = process.env.DEBUG === "true";
 
 function log(message: string): void {
@@ -83,7 +90,10 @@ function saveCache(cache: E2ECache): void {
 
 function getCurrentCommit(): string {
   try {
-    return execSync("git rev-parse HEAD", { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] })
+    return execSync("git rev-parse HEAD", {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    })
       .trim();
   } catch {
     return "unknown";
@@ -92,7 +102,9 @@ function getCurrentCommit(): string {
 
 function getFileHash(filePath: string): string {
   try {
-    const fullPath = path.isAbsolute(filePath) ? filePath : path.join(PROJECT_ROOT, filePath);
+    const fullPath = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(PROJECT_ROOT, filePath);
     const content = readFileSync(fullPath, "utf-8");
     return createHash("sha256").update(content).digest("hex").slice(0, 16);
   } catch {
@@ -263,7 +275,12 @@ function listFeaturesToRun(): string[] {
 
   for (const featurePath of allFeatures) {
     const entry = cache.entries[featurePath];
-    const { needsRun, reason } = featureNeedsRun(featurePath, entry, changedFiles, changedSteps);
+    const { needsRun, reason } = featureNeedsRun(
+      featurePath,
+      entry,
+      changedFiles,
+      changedSteps,
+    );
 
     if (needsRun) {
       featuresToRun.push(featurePath);
@@ -287,7 +304,9 @@ function updateCacheFromCoverage(): void {
   // Try to load coverage data
   if (!existsSync(COVERAGE_PATH)) {
     console.log("No coverage file found at", COVERAGE_PATH);
-    console.log("Run E2E tests with E2E_COVERAGE=true to generate coverage data.");
+    console.log(
+      "Run E2E tests with E2E_COVERAGE=true to generate coverage data.",
+    );
     return;
   }
 
@@ -360,10 +379,13 @@ function showStats(): void {
   console.log(`Total feature files: ${allFeatures.length}`);
   console.log(`Cached entries: ${cachedCount}`);
   console.log(`Features to run: ${featuresToRun.length}`);
-  console.log(`Features skippable: ${allFeatures.length - featuresToRun.length}`);
+  console.log(
+    `Features skippable: ${allFeatures.length - featuresToRun.length}`,
+  );
   console.log(
     `\nCache hit rate: ${
-      (((allFeatures.length - featuresToRun.length) / allFeatures.length) * 100).toFixed(1)
+      (((allFeatures.length - featuresToRun.length) / allFeatures.length) * 100)
+        .toFixed(1)
     }%`,
   );
 
@@ -422,14 +444,22 @@ switch (command) {
     console.error("Usage: e2e-cache-manager <command>");
     console.error("");
     console.error("Commands:");
-    console.error("  list-features-to-run  Returns JSON array of features needing execution");
-    console.error("  should-skip-all       Exit 0 if all cached, exit 1 if features needed");
-    console.error("  get-feature-filter    Feature file paths for cucumber CLI");
+    console.error(
+      "  list-features-to-run  Returns JSON array of features needing execution",
+    );
+    console.error(
+      "  should-skip-all       Exit 0 if all cached, exit 1 if features needed",
+    );
+    console.error(
+      "  get-feature-filter    Feature file paths for cucumber CLI",
+    );
     console.error("  update-cache          Update cache from coverage report");
     console.error("  stats                 Show cache statistics");
     console.error("");
     console.error("Environment:");
-    console.error("  E2E_CACHE_DIR         Cache directory (default: .e2e-cache)");
+    console.error(
+      "  E2E_CACHE_DIR         Cache directory (default: .e2e-cache)",
+    );
     console.error("  DEBUG=true            Enable debug logging");
     process.exit(1);
   }

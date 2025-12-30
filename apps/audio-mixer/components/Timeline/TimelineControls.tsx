@@ -102,7 +102,11 @@ export function TimelineControls({
             className="px-3 py-1.5 text-xs bg-white/5 text-gray-300 rounded-xl border border-white/10 focus:outline-none focus:border-primary/50 transition-colors font-mono"
           >
             {SNAP_GRID_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value} className="bg-gray-900">
+              <option
+                key={option.value}
+                value={option.value}
+                className="bg-gray-900"
+              >
                 {option.label}
               </option>
             ))}

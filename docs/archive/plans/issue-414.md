@@ -2,7 +2,9 @@
 
 ## Summary
 
-The `generation-service.ts` file (843 lines) contains a `classifyError` function (lines 23-89) that uses regex/string matching on error messages. This is fragile because error messages can change without notice.
+The `generation-service.ts` file (843 lines) contains a `classifyError` function
+(lines 23-89) that uses regex/string matching on error messages. This is fragile
+because error messages can change without notice.
 
 ## Current Regex Patterns
 
@@ -65,7 +67,8 @@ export function classifyUpstreamError(error: Error): ClassifiedError {
 ### Phase 2: Extract Common Job Handling (Medium Risk)
 
 1. Create `/src/lib/mcp/job-handler.ts`
-2. Merge duplicate `handleGenerationJobFailure` and `handleModificationJobFailure`
+2. Merge duplicate `handleGenerationJobFailure` and
+   `handleModificationJobFailure`
 3. Parameterize job type-specific behavior
 
 ### Phase 3: State Machine (Medium Risk)

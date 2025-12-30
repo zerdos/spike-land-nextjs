@@ -13,8 +13,8 @@ get started:
 
 ### Step 1: Sign Up (10 seconds)
 
-Go to [spike.land/apps/pixel](https://spike.land/apps/pixel) and click "Sign Up".
-Use Google or GitHub for instant account creation.
+Go to [spike.land/apps/pixel](https://spike.land/apps/pixel) and click "Sign
+Up". Use Google or GitHub for instant account creation.
 
 ### Step 2: Get Your Free Tokens
 

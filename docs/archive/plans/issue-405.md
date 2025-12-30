@@ -2,15 +2,19 @@
 
 ## Summary
 
-The issue reports that production secrets were found "exposed" in `.env.local`. However, upon thorough investigation:
+The issue reports that production secrets were found "exposed" in `.env.local`.
+However, upon thorough investigation:
 
 **CRITICAL FINDING: The secrets are NOT exposed in git history.**
 
 The `.env.local` file:
 
-1. Is properly listed in `.gitignore` (line 43: `.env*` and line 58: `.env*.local`)
-2. Has NEVER been committed to git history (verified by searching for actual secret values)
-3. Only `.env.example` and `.env.local.example` are tracked (containing placeholder values, not real secrets)
+1. Is properly listed in `.gitignore` (line 43: `.env*` and line 58:
+   `.env*.local`)
+2. Has NEVER been committed to git history (verified by searching for actual
+   secret values)
+3. Only `.env.example` and `.env.local.example` are tracked (containing
+   placeholder values, not real secrets)
 
 ## Current State Analysis
 
@@ -104,10 +108,13 @@ If the user confirms secrets were exposed through another channel:
 
 ## Questions for User
 
-1. **How were the secrets "exposed"?** My investigation shows `.env.local` has never been committed to git.
+1. **How were the secrets "exposed"?** My investigation shows `.env.local` has
+   never been committed to git.
 2. **Has unauthorized access been confirmed?**
-3. **Timeline priority**: Given Stripe LIVE keys are present, should Stripe rotation be prioritized?
-4. **Session invalidation**: Rotating `AUTH_SECRET` will log out all users. Is this acceptable?
+3. **Timeline priority**: Given Stripe LIVE keys are present, should Stripe
+   rotation be prioritized?
+4. **Session invalidation**: Rotating `AUTH_SECRET` will log out all users. Is
+   this acceptable?
 
 ## Files Created/Modified
 
@@ -121,9 +128,11 @@ If the user confirms secrets were exposed through another channel:
 
 ## Critical Files
 
-- `/Users/z/Developer/spike-land-nextjs/.gitignore` - Verify env exclusion patterns
+- `/Users/z/Developer/spike-land-nextjs/.gitignore` - Verify env exclusion
+  patterns
 - `/Users/z/Developer/spike-land-nextjs/.env.example` - Template reference
-- `/Users/z/Developer/spike-land-nextjs/src/auth.config.ts` - Uses AUTH_SECRET, OAuth credentials
+- `/Users/z/Developer/spike-land-nextjs/src/auth.config.ts` - Uses AUTH_SECRET,
+  OAuth credentials
 - `/Users/z/Developer/spike-land-nextjs/src/lib/prisma.ts` - Uses DATABASE_URL
 
 ## Commits

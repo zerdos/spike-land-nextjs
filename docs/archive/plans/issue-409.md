@@ -61,7 +61,8 @@ Requires significant architectural decisions:
 1. **Token Encryption**: What encryption key management strategy?
 2. **Docker Containers**: What target infrastructure?
 3. **Agent Communication**: HTTP polling, WebSocket, SSE, or message queue?
-4. **Priority Confirmation**: Do currency fixes first while container system is designed?
+4. **Priority Confirmation**: Do currency fixes first while container system is
+   designed?
 
 ## Critical Files
 

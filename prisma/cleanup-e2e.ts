@@ -27,13 +27,18 @@ config({ path: ".env.local" });
  */
 
 // Use DATABASE_URL_E2E if available, otherwise fall back to DATABASE_URL
-const connectionString = process.env.DATABASE_URL_E2E || process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL_E2E ||
+  process.env.DATABASE_URL;
 if (!connectionString) {
-  throw new Error("DATABASE_URL_E2E or DATABASE_URL environment variable is required");
+  throw new Error(
+    "DATABASE_URL_E2E or DATABASE_URL environment variable is required",
+  );
 }
 
 // Production database protection - prevent accidental cleanup of production
-if (connectionString.includes("production") || connectionString.includes("prod-")) {
+if (
+  connectionString.includes("production") || connectionString.includes("prod-")
+) {
   throw new Error(
     "SAFETY: Refusing to cleanup what appears to be a production database. " +
       "Use DATABASE_URL_E2E for test databases only.",
@@ -160,7 +165,9 @@ async function cleanup() {
       },
     },
   });
-  console.log(`Deleted ${deletedGalleryItems.count} test featured gallery items`);
+  console.log(
+    `Deleted ${deletedGalleryItems.count} test featured gallery items`,
+  );
 
   // 12. Delete test MCP generation jobs
   const deletedMcpJobs = await prisma.mcpGenerationJob.deleteMany({

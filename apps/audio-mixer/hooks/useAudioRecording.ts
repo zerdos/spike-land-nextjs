@@ -53,7 +53,8 @@ export function useAudioRecording() {
 
       // Update duration timer
       timerRef.current = window.setInterval(() => {
-        const elapsed = (Date.now() - startTimeRef.current - pausedDurationRef.current) / 1000;
+        const elapsed = (Date.now() - startTimeRef.current - pausedDurationRef.current) /
+          1000;
         setState((prev) => ({ ...prev, duration: elapsed }));
       }, 100);
 
@@ -91,7 +92,8 @@ export function useAudioRecording() {
       // Update timer
       timerRef.current = window.setInterval(() => {
         pausedDurationRef.current += Date.now() - pauseTime;
-        const elapsed = (Date.now() - startTimeRef.current - pausedDurationRef.current) / 1000;
+        const elapsed = (Date.now() - startTimeRef.current - pausedDurationRef.current) /
+          1000;
         setState((prev) => ({ ...prev, duration: elapsed }));
       }, 100);
 

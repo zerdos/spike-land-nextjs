@@ -2,7 +2,8 @@
 
 ## Summary
 
-This tech debt issue addresses the extensive use of `as any` type assertions across the codebase.
+This tech debt issue addresses the extensive use of `as any` type assertions
+across the codebase.
 
 **Analysis Results:**
 
@@ -12,7 +13,9 @@ This tech debt issue addresses the extensive use of `as any` type assertions acr
 - **Production Files**: Only 2 instances found
 - **Scripts**: 2 instances in `vitest-coverage-mapper-reporter.ts`
 
-The vast majority of `as any` usage is in test files, primarily for mocking Prisma models, auth sessions, and API responses. The ESLint configuration already has `@typescript-eslint/no-explicit-any: "off"` for test files.
+The vast majority of `as any` usage is in test files, primarily for mocking
+Prisma models, auth sessions, and API responses. The ESLint configuration
+already has `@typescript-eslint/no-explicit-any: "off"` for test files.
 
 ## File Categorization
 
@@ -20,7 +23,8 @@ The vast majority of `as any` usage is in test files, primarily for mocking Pris
 
 Only 1 file has `as any` in production code:
 
-- `/scripts/vitest-coverage-mapper-reporter.ts` (Lines 149-150) - Vitest internal APIs
+- `/scripts/vitest-coverage-mapper-reporter.ts` (Lines 149-150) - Vitest
+  internal APIs
 
 ### Category 2: Test Files - Prisma Mock Pattern (60%+ of instances)
 
@@ -41,7 +45,9 @@ Files that mock custom hooks.
 ```typescript
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 
-const createMockJob = (overrides: Partial<MockEnhancementJob> = {}): MockEnhancementJob => ({
+const createMockJob = (
+  overrides: Partial<MockEnhancementJob> = {},
+): MockEnhancementJob => ({
   id: "job-1",
   // ... all required fields
   ...overrides,
@@ -51,7 +57,9 @@ const createMockJob = (overrides: Partial<MockEnhancementJob> = {}): MockEnhance
 ### Pattern 2: Typed Session Mock Factory
 
 ```typescript
-const createMockSession = (overrides: Partial<MockSession["user"]> = {}): MockSession => ({
+const createMockSession = (
+  overrides: Partial<MockSession["user"]> = {},
+): MockSession => ({
   user: { id: "user-123", role: "USER", ...overrides },
   expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
 });
@@ -87,8 +95,10 @@ Priority order by instance count, starting with highest impact files.
 
 ## Questions
 
-1. **Test Coverage Goal**: Should we aim for 0 `as any` in test files, or is "minimize and justify" acceptable?
-2. **Migration Strategy**: Migrate all at once, or incrementally with lint warning phase?
+1. **Test Coverage Goal**: Should we aim for 0 `as any` in test files, or is
+   "minimize and justify" acceptable?
+2. **Migration Strategy**: Migrate all at once, or incrementally with lint
+   warning phase?
 3. **Mock Factory Location**: `src/test-utils/` or co-located with modules?
 
 ## Critical Files

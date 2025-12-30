@@ -4,7 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ClientPage from "./ClientPage";
 
 // Mock PeerJS - Support multiple peer instances
-type MockFn<T extends (...args: never[]) => unknown> = ReturnType<typeof vi.fn<T>> & T;
+type MockFn<T extends (...args: never[]) => unknown> =
+  & ReturnType<typeof vi.fn<T>>
+  & T;
 
 interface MockPeerInstance {
   on: MockFn<(event: string, handler: (arg?: unknown) => void) => void>;

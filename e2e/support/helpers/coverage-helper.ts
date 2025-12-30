@@ -325,7 +325,8 @@ function createProgressBar(pct: number, width = 20): string {
   const filled = Math.round((pct / 100) * width);
   const empty = width - filled;
   const color = getCoverageColor(pct);
-  return color + "█".repeat(filled) + colors.dim + "░".repeat(empty) + colors.reset;
+  return color + "█".repeat(filled) + colors.dim + "░".repeat(empty) +
+    colors.reset;
 }
 
 interface FileCoverageStats {
@@ -509,7 +510,7 @@ function generateConsoleSummary(coverage: IstanbulCoverageMap): void {
   console.log("");
 
   // Files needing attention (< 50% coverage)
-  const needsWork = fileStats.filter(f => f.stmtPct < 50);
+  const needsWork = fileStats.filter((f) => f.stmtPct < 50);
   if (needsWork.length > 0) {
     console.log(
       `${colors.bold}${colors.red}⚠️  Files Needing Attention (< 50% coverage)${colors.reset}`,
@@ -517,31 +518,41 @@ function generateConsoleSummary(coverage: IstanbulCoverageMap): void {
     console.log(`${"─".repeat(66)}`);
     for (const stat of needsWork) {
       console.log(`   ${colors.dim}${stat.readableName}${colors.reset}`);
-      console.log(`   ${createProgressBar(stat.stmtPct, 30)} ${formatPct(stat.stmtPct)}`);
+      console.log(
+        `   ${createProgressBar(stat.stmtPct, 30)} ${formatPct(stat.stmtPct)}`,
+      );
     }
     console.log("");
   }
 
   // Files with moderate coverage (50-79%)
-  const moderate = fileStats.filter(f => f.stmtPct >= 50 && f.stmtPct < 80);
+  const moderate = fileStats.filter((f) => f.stmtPct >= 50 && f.stmtPct < 80);
   if (moderate.length > 0) {
-    console.log(`${colors.bold}${colors.yellow}📈 Moderate Coverage (50-79%)${colors.reset}`);
+    console.log(
+      `${colors.bold}${colors.yellow}📈 Moderate Coverage (50-79%)${colors.reset}`,
+    );
     console.log(`${"─".repeat(66)}`);
     for (const stat of moderate) {
       console.log(`   ${colors.dim}${stat.readableName}${colors.reset}`);
-      console.log(`   ${createProgressBar(stat.stmtPct, 30)} ${formatPct(stat.stmtPct)}`);
+      console.log(
+        `   ${createProgressBar(stat.stmtPct, 30)} ${formatPct(stat.stmtPct)}`,
+      );
     }
     console.log("");
   }
 
   // Files with good coverage (>= 80%)
-  const good = fileStats.filter(f => f.stmtPct >= 80);
+  const good = fileStats.filter((f) => f.stmtPct >= 80);
   if (good.length > 0) {
-    console.log(`${colors.bold}${colors.green}✅ Good Coverage (≥ 80%)${colors.reset}`);
+    console.log(
+      `${colors.bold}${colors.green}✅ Good Coverage (≥ 80%)${colors.reset}`,
+    );
     console.log(`${"─".repeat(66)}`);
     for (const stat of good) {
       console.log(`   ${colors.dim}${stat.readableName}${colors.reset}`);
-      console.log(`   ${createProgressBar(stat.stmtPct, 30)} ${formatPct(stat.stmtPct)}`);
+      console.log(
+        `   ${createProgressBar(stat.stmtPct, 30)} ${formatPct(stat.stmtPct)}`,
+      );
     }
     console.log("");
   }
@@ -552,7 +563,11 @@ function generateConsoleSummary(coverage: IstanbulCoverageMap): void {
     : totalStmtPct >= 60
     ? colors.yellow
     : colors.red;
-  const statusIcon = totalStmtPct >= 80 ? "✅" : totalStmtPct >= 60 ? "📈" : "⚠️";
+  const statusIcon = totalStmtPct >= 80
+    ? "✅"
+    : totalStmtPct >= 60
+    ? "📈"
+    : "⚠️";
   console.log(
     `${colors.bold}${colors.cyan}─────────────────────────────────────────────────────────────────${colors.reset}`,
   );

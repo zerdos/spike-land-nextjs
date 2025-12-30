@@ -8,7 +8,8 @@ async function mockSession(
   user: { name: string; email: string; image?: string; role?: string; } | null,
 ) {
   // Infer role from email if not provided
-  const role = user?.role || (user?.email?.startsWith("admin@") ? "ADMIN" : "USER");
+  const role = user?.role ||
+    (user?.email?.startsWith("admin@") ? "ADMIN" : "USER");
 
   const sessionData = user
     ? {
@@ -423,12 +424,17 @@ Then(
     // Use getByRole for better reliability - searches for headings with specific text
     // Falls back to text-based search if no heading role found
     const headingByRole = this.page.getByRole("heading", { name: headingText });
-    const headingByText = this.page.locator("h1, h2, h3, h4, h5, h6, .font-bold", {
-      hasText: headingText,
-    });
+    const headingByText = this.page.locator(
+      "h1, h2, h3, h4, h5, h6, .font-bold",
+      {
+        hasText: headingText,
+      },
+    );
 
     // Try role-based first, then fall back to text-based
-    const heading = (await headingByRole.count()) > 0 ? headingByRole : headingByText;
+    const heading = (await headingByRole.count()) > 0
+      ? headingByRole
+      : headingByText;
     await expect(heading.first()).toBeVisible({ timeout: 15000 });
   },
 );
@@ -438,7 +444,9 @@ Then(
   async function(this: CustomWorld, text: string) {
     // Use .first() to handle cases where text appears in multiple elements (e.g., nav link and heading)
     // Use longer timeout for flaky CI environment
-    await expect(this.page.getByText(text).first()).toBeVisible({ timeout: 15000 });
+    await expect(this.page.getByText(text).first()).toBeVisible({
+      timeout: 15000,
+    });
   },
 );
 

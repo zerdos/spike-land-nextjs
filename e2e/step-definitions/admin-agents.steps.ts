@@ -218,7 +218,9 @@ Given("the agents API returns an error", async function(this: CustomWorld) {
 // ======= When Steps =======
 
 When("I expand the session card", async function(this: CustomWorld) {
-  const expandButton = this.page.getByRole("button", { name: /expand|show more|details/i })
+  const expandButton = this.page.getByRole("button", {
+    name: /expand|show more|details/i,
+  })
     .or(this.page.locator("[data-testid='session-expand']"));
   if (await expandButton.isVisible()) {
     await expandButton.first().click();
@@ -228,10 +230,13 @@ When("I expand the session card", async function(this: CustomWorld) {
 
 // ======= Then Steps =======
 
-Then("I should see status overview section", async function(this: CustomWorld) {
-  const statusCards = this.page.locator("[class*='Card']");
-  await expect(statusCards.first()).toBeVisible({ timeout: 10000 });
-});
+Then(
+  "I should see status overview section",
+  async function(this: CustomWorld) {
+    const statusCards = this.page.locator("[class*='Card']");
+    await expect(statusCards.first()).toBeVisible({ timeout: 10000 });
+  },
+);
 
 Then(
   "I should see {string} status card",
@@ -254,7 +259,11 @@ Then(
 Then("I should see the session card", async function(this: CustomWorld) {
   const sessionCard = this.page.locator("[data-testid*='session']")
     .or(this.page.locator("[class*='session-card']"))
-    .or(this.page.locator("[class*='Card']").filter({ hasText: /session|jules/i }));
+    .or(
+      this.page.locator("[class*='Card']").filter({
+        hasText: /session|jules/i,
+      }),
+    );
   await expect(sessionCard.first()).toBeVisible({ timeout: 10000 });
 });
 
@@ -281,7 +290,9 @@ Then(
 Then(
   "I should see {string} button on the session card",
   async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", { name: new RegExp(buttonText, "i") });
+    const button = this.page.getByRole("button", {
+      name: new RegExp(buttonText, "i"),
+    });
     await expect(button.first()).toBeVisible({ timeout: 5000 });
   },
 );
@@ -316,12 +327,15 @@ Then(
   },
 );
 
-Then("I should see MCP server status items", async function(this: CustomWorld) {
-  const mcpStatus = this.page.getByText(/mcp|playwright|docker/i);
-  // MCP servers may or may not be visible depending on configuration
-  const isVisible = await mcpStatus.first().isVisible().catch(() => false);
-  expect(isVisible || true).toBe(true); // Pass if visible or not configured
-});
+Then(
+  "I should see MCP server status items",
+  async function(this: CustomWorld) {
+    const mcpStatus = this.page.getByText(/mcp|playwright|docker/i);
+    // MCP servers may or may not be visible depending on configuration
+    const isVisible = await mcpStatus.first().isVisible().catch(() => false);
+    expect(isVisible || true).toBe(true); // Pass if visible or not configured
+  },
+);
 
 Then("I should see current branch name", async function(this: CustomWorld) {
   const branchInfo = this.page.getByText(/branch|main|feature/i)
@@ -329,11 +343,14 @@ Then("I should see current branch name", async function(this: CustomWorld) {
   await expect(branchInfo.first()).toBeVisible({ timeout: 10000 });
 });
 
-Then("I should see changed files information", async function(this: CustomWorld) {
-  const changedFiles = this.page.getByText(/changed|files|modified/i)
-    .or(this.page.locator("[data-testid*='changes']"));
-  await expect(changedFiles.first()).toBeVisible({ timeout: 5000 });
-});
+Then(
+  "I should see changed files information",
+  async function(this: CustomWorld) {
+    const changedFiles = this.page.getByText(/changed|files|modified/i)
+      .or(this.page.locator("[data-testid*='changes']"));
+    await expect(changedFiles.first()).toBeVisible({ timeout: 5000 });
+  },
+);
 
 Then("I should see ahead\\/behind status", async function(this: CustomWorld) {
   const syncStatus = this.page.getByText(/ahead|behind|up to date|sync/i);
@@ -367,15 +384,20 @@ Then(
 Then(
   "I should see GitHub configuration required message",
   async function(this: CustomWorld) {
-    const configMessage = this.page.getByText(/not configured|set.*token|github.*required/i);
+    const configMessage = this.page.getByText(
+      /not configured|set.*token|github.*required/i,
+    );
     await expect(configMessage.first()).toBeVisible({ timeout: 5000 });
   },
 );
 
-Then("I should see the create session modal", async function(this: CustomWorld) {
-  const modal = this.page.locator('[role="dialog"]');
-  await expect(modal).toBeVisible({ timeout: 5000 });
-});
+Then(
+  "I should see the create session modal",
+  async function(this: CustomWorld) {
+    const modal = this.page.locator('[role="dialog"]');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+  },
+);
 
 Then("the modal should have title field", async function(this: CustomWorld) {
   const titleField = this.page.locator('[role="dialog"]')
@@ -394,7 +416,9 @@ Then("the modal should have task field", async function(this: CustomWorld) {
 Then(
   "the {string} button should be disabled or hidden",
   async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", { name: new RegExp(buttonText, "i") });
+    const button = this.page.getByRole("button", {
+      name: new RegExp(buttonText, "i"),
+    });
     const isVisible = await button.isVisible().catch(() => false);
     if (isVisible) {
       await expect(button).toBeDisabled();
@@ -403,18 +427,24 @@ Then(
   },
 );
 
-Then("the dashboard should poll for updates", async function(this: CustomWorld) {
-  // Verify polling is configured by checking for timestamp or refresh indicator
-  const timestamp = this.page.getByText(/updated|refreshed|ago/i)
-    .or(this.page.locator("[data-testid*='timestamp']"));
-  await expect(timestamp.first()).toBeVisible({ timeout: 10000 });
-});
+Then(
+  "the dashboard should poll for updates",
+  async function(this: CustomWorld) {
+    // Verify polling is configured by checking for timestamp or refresh indicator
+    const timestamp = this.page.getByText(/updated|refreshed|ago/i)
+      .or(this.page.locator("[data-testid*='timestamp']"));
+    await expect(timestamp.first()).toBeVisible({ timeout: 10000 });
+  },
+);
 
-Then("the timestamp should update periodically", async function(this: CustomWorld) {
-  // Verify timestamp exists - actual update verification would require waiting
-  const timestamp = this.page.getByText(/updated|refreshed|ago|just now/i);
-  await expect(timestamp.first()).toBeVisible({ timeout: 5000 });
-});
+Then(
+  "the timestamp should update periodically",
+  async function(this: CustomWorld) {
+    // Verify timestamp exists - actual update verification would require waiting
+    const timestamp = this.page.getByText(/updated|refreshed|ago|just now/i);
+    await expect(timestamp.first()).toBeVisible({ timeout: 5000 });
+  },
+);
 
 Then(
   "I should see {string} link in the sidebar",
@@ -426,7 +456,9 @@ Then(
 );
 
 Then("I should see a retry option", async function(this: CustomWorld) {
-  const retryButton = this.page.getByRole("button", { name: /retry|try again|refresh/i });
+  const retryButton = this.page.getByRole("button", {
+    name: /retry|try again|refresh/i,
+  });
   await expect(retryButton.first()).toBeVisible({ timeout: 5000 });
 });
 
@@ -434,7 +466,9 @@ Then(
   "I should see loading indicators while data loads",
   async function(this: CustomWorld) {
     // Loading indicators may be brief, so we check if they existed or content loaded
-    const loadingIndicator = this.page.locator('[class*="loading"], [class*="spinner"]')
+    const loadingIndicator = this.page.locator(
+      '[class*="loading"], [class*="spinner"]',
+    )
       .or(this.page.getByText(/loading/i));
     const content = this.page.locator('[class*="Card"]');
 

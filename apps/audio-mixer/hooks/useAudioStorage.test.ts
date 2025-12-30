@@ -30,14 +30,15 @@ function createMockFileHandle(path: string) {
         arrayBuffer: () =>
           Promise.resolve(
             data instanceof Uint8Array
-              ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)
+              ? data.buffer.slice(
+                data.byteOffset,
+                data.byteOffset + data.byteLength,
+              )
               : new TextEncoder().encode(data as string).buffer,
           ),
         text: () =>
           Promise.resolve(
-            data instanceof Uint8Array
-              ? new TextDecoder().decode(data)
-              : data,
+            data instanceof Uint8Array ? new TextDecoder().decode(data) : data,
           ),
       };
     }),
@@ -60,13 +61,15 @@ function createMockDirectoryHandle(path: string) {
         return createMockDirectoryHandle(childPath);
       },
     ),
-    getFileHandle: vi.fn().mockImplementation((name: string, { create } = { create: false }) => {
-      const filePath = path ? `${path}/${name}` : name;
-      if (!create && !mockFileSystem.has(filePath)) {
-        throw new Error("File not found");
-      }
-      return createMockFileHandle(filePath);
-    }),
+    getFileHandle: vi.fn().mockImplementation(
+      (name: string, { create } = { create: false }) => {
+        const filePath = path ? `${path}/${name}` : name;
+        if (!create && !mockFileSystem.has(filePath)) {
+          throw new Error("File not found");
+        }
+        return createMockFileHandle(filePath);
+      },
+    ),
     removeEntry: vi.fn().mockImplementation((name: string) => {
       const entryPath = path ? `${path}/${name}` : name;
       // Remove file
@@ -110,7 +113,9 @@ describe("useAudioStorage", () => {
     Object.defineProperty(globalThis, "navigator", {
       value: {
         storage: {
-          getDirectory: vi.fn().mockResolvedValue(createMockDirectoryHandle("")),
+          getDirectory: vi.fn().mockResolvedValue(
+            createMockDirectoryHandle(""),
+          ),
         },
       },
       writable: true,
@@ -160,7 +165,9 @@ describe("useAudioStorage", () => {
         duration: 10,
       };
 
-      let saveResult: { success: boolean; data?: SavedTrack; } = { success: false };
+      let saveResult: { success: boolean; data?: SavedTrack; } = {
+        success: false,
+      };
       await act(async () => {
         saveResult = await result.current.saveTrack(audioData, options);
       });
@@ -227,7 +234,9 @@ describe("useAudioStorage", () => {
         createdAt: new Date().toISOString(),
       };
 
-      let deleteResult: { success: boolean; error?: string; } = { success: false };
+      let deleteResult: { success: boolean; error?: string; } = {
+        success: false,
+      };
       await act(async () => {
         deleteResult = await result.current.deleteTrack(track);
       });
@@ -264,9 +273,14 @@ describe("useAudioStorage", () => {
     it("creates a new empty project", async () => {
       const { result } = renderHook(() => useAudioStorage());
 
-      let createResult: { success: boolean; data?: AudioProject; } = { success: false };
+      let createResult: { success: boolean; data?: AudioProject; } = {
+        success: false,
+      };
       await act(async () => {
-        createResult = await result.current.createProject("New Project", "Description");
+        createResult = await result.current.createProject(
+          "New Project",
+          "Description",
+        );
       });
 
       expect(createResult.success).toBe(true);
@@ -281,7 +295,9 @@ describe("useAudioStorage", () => {
     it("returns empty array when no projects exist", async () => {
       const { result } = renderHook(() => useAudioStorage());
 
-      let listResult: { success: boolean; data?: AudioProject[]; } = { success: false };
+      let listResult: { success: boolean; data?: AudioProject[]; } = {
+        success: false,
+      };
       await act(async () => {
         listResult = await result.current.listProjects();
       });
@@ -301,7 +317,9 @@ describe("useAudioStorage", () => {
       });
 
       // Then delete it (this will fail because the mock doesn't fully track the directory)
-      let deleteResult: { success: boolean; error?: string; } = { success: false };
+      let deleteResult: { success: boolean; error?: string; } = {
+        success: false,
+      };
       await act(async () => {
         deleteResult = await result.current.deleteProject("project-123");
       });

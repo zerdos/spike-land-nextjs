@@ -22,11 +22,14 @@ Then(
   },
 );
 
-Then("the page should display error details", async function(this: CustomWorld) {
-  // Check for Alert component with error info
-  const alert = this.page.locator('[role="alert"]');
-  await expect(alert.first()).toBeVisible();
-});
+Then(
+  "the page should display error details",
+  async function(this: CustomWorld) {
+    // Check for Alert component with error info
+    const alert = this.page.locator('[role="alert"]');
+    await expect(alert.first()).toBeVisible();
+  },
+);
 
 Then(
   "the error page should have recovery options",

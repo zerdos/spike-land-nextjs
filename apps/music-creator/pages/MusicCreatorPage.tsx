@@ -39,13 +39,16 @@ export default function MusicCreatorPage() {
       if (recordingTimerRef.current) {
         clearInterval(recordingTimerRef.current);
       }
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state === "recording"
+      ) {
         mediaRecorderRef.current.stop();
-        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+        mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
       }
 
       // Cleanup tracks
-      tracksRef.current.forEach(track => {
+      tracksRef.current.forEach((track) => {
         track.audioElement.pause();
         URL.revokeObjectURL(track.url);
       });
@@ -67,32 +70,35 @@ export default function MusicCreatorPage() {
       audioElement: audio,
     };
 
-    setTracks(prev => [...prev, newTrack]);
+    setTracks((prev) => [...prev, newTrack]);
   }, []);
 
   // Handle file upload
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      addTrack(file.name, file);
-    }
-    // Reset input
-    if (event.target) event.target.value = "";
-  }, [addTrack]);
+  const handleFileUpload = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        addTrack(file.name, file);
+      }
+      // Reset input
+      if (event.target) event.target.value = "";
+    },
+    [addTrack],
+  );
 
   // Playback Logic
   const playAll = useCallback(() => {
-    tracksRef.current.forEach(track => {
+    tracksRef.current.forEach((track) => {
       track.audioElement.currentTime = 0; // Simple start from beginning
       if (!track.isMuted) {
-        track.audioElement.play().catch(e => console.error("Play error", e));
+        track.audioElement.play().catch((e) => console.error("Play error", e));
       }
     });
     setIsPlaying(true);
   }, []);
 
   const stopAll = useCallback(() => {
-    tracksRef.current.forEach(track => {
+    tracksRef.current.forEach((track) => {
       track.audioElement.pause();
       track.audioElement.currentTime = 0;
     });
@@ -118,7 +124,7 @@ export default function MusicCreatorPage() {
         addTrack(`Recording ${new Date().toLocaleTimeString()}`, blob);
 
         // Stop all tracks in the stream
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorder.start();
@@ -133,7 +139,7 @@ export default function MusicCreatorPage() {
       }
 
       recordingTimerRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
+        setRecordingTime((prev) => prev + 1);
       }, 1000);
     } catch (err) {
       console.error("Error accessing microphone:", err);
@@ -167,31 +173,31 @@ export default function MusicCreatorPage() {
 
   // Track Controls
   const toggleMute = useCallback((id: string) => {
-    const track = tracksRef.current.find(t => t.id === id);
+    const track = tracksRef.current.find((t) => t.id === id);
     if (track) {
       track.audioElement.muted = !track.isMuted;
     }
 
-    setTracks(prev => prev.map(t => t.id === id ? { ...t, isMuted: !t.isMuted } : t));
+    setTracks((prev) => prev.map((t) => t.id === id ? { ...t, isMuted: !t.isMuted } : t));
   }, []);
 
   const setVolume = useCallback((id: string, volume: number) => {
-    const track = tracksRef.current.find(t => t.id === id);
+    const track = tracksRef.current.find((t) => t.id === id);
     if (track) {
       track.audioElement.volume = volume;
     }
 
-    setTracks(prev => prev.map(t => t.id === id ? { ...t, volume } : t));
+    setTracks((prev) => prev.map((t) => t.id === id ? { ...t, volume } : t));
   }, []);
 
   const removeTrack = useCallback((id: string) => {
-    const trackToRemove = tracksRef.current.find(t => t.id === id);
+    const trackToRemove = tracksRef.current.find((t) => t.id === id);
     if (trackToRemove) {
       trackToRemove.audioElement.pause();
       URL.revokeObjectURL(trackToRemove.url);
     }
 
-    setTracks(prev => prev.filter(t => t.id !== id));
+    setTracks((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   // Update loop for progress bar (optional, kept simple for now)
@@ -201,7 +207,9 @@ export default function MusicCreatorPage() {
     <div className="container mx-auto p-8 pt-24 max-w-4xl">
       <div className="mb-8 text-center">
         <h1 className="text-4xl font-bold mb-2">Music Creator</h1>
-        <p className="text-muted-foreground">Layer tracks, record your voice, and make music.</p>
+        <p className="text-muted-foreground">
+          Layer tracks, record your voice, and make music.
+        </p>
       </div>
 
       <div className="grid gap-6">
@@ -246,7 +254,10 @@ export default function MusicCreatorPage() {
                 ref={fileInputRef}
                 onChange={handleFileUpload}
               />
-              <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
+              <Button
+                variant="secondary"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 <Upload className="mr-2 h-4 w-4" />
                 Add Track
               </Button>
@@ -262,7 +273,7 @@ export default function MusicCreatorPage() {
             </div>
           )}
 
-          {tracks.map(track => (
+          {tracks.map((track) => (
             <Card key={track.id} className="overflow-hidden">
               <CardContent className="p-4 flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center">
@@ -270,7 +281,9 @@ export default function MusicCreatorPage() {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold truncate" title={track.name}>{track.name}</h3>
+                  <h3 className="font-semibold truncate" title={track.name}>
+                    {track.name}
+                  </h3>
                   <p className="text-xs text-muted-foreground">Audio Track</p>
                 </div>
 

@@ -2,9 +2,11 @@
 
 ## Summary
 
-Issue #411 identifies duplicate stream processing logic in `gemini-client.ts` (1,180 lines):
+Issue #411 identifies duplicate stream processing logic in `gemini-client.ts`
+(1,180 lines):
 
-- Lines 757-881: Stream processing with chunk buffering in `enhanceImageWithGemini()`
+- Lines 757-881: Stream processing with chunk buffering in
+  `enhanceImageWithGemini()`
 - Lines 1051-1180: Nearly identical `processGeminiStream()` function
 - 9 nested conditionals in `buildDynamicEnhancementPrompt`
 

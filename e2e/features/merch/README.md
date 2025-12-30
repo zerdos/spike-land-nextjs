@@ -4,7 +4,8 @@ Comprehensive end-to-end tests for the Photo-to-Merch platform purchase flow.
 
 ## Overview
 
-This test suite validates the complete user journey from browsing products to viewing order history:
+This test suite validates the complete user journey from browsing products to
+viewing order history:
 
 1. **Product Browsing** - Catalog viewing, category filtering, product details
 2. **Shopping Cart** - Add to cart, quantity management, free shipping logic
@@ -47,7 +48,8 @@ e2e/
    yarn dev
    ```
 
-2. **Ensure merch feature is implemented** with required data-testid attributes (see `MERCH_TEST_IDS.md`)
+2. **Ensure merch feature is implemented** with required data-testid attributes
+   (see `MERCH_TEST_IDS.md`)
 
 3. **Set up test data**: Products, categories, and test images
 
@@ -112,7 +114,8 @@ Given I have placed an order with 3 items
 Given I have multiple orders
 ```
 
-**Note**: These currently use test data placeholders. Real implementation will need:
+**Note**: These currently use test data placeholders. Real implementation will
+need:
 
 - Database seeding, OR
 - Full checkout flow execution, OR
@@ -152,9 +155,7 @@ Tests use Stripe test mode. Recommended test cards:
 | 4000 0027 6000 3184 | 3D Secure | Requires authentication |
 | 4000 0000 0000 0002 | Decline   | Card declined           |
 
-CVV: Any 3 digits
-Expiry: Any future date
-ZIP: Any 5 digits
+CVV: Any 3 digits Expiry: Any future date ZIP: Any 5 digits
 
 ## Key Scenarios
 
@@ -192,7 +193,8 @@ ZIP: Any 5 digits
 
 ## Implementation Status
 
-⚠️ **Important**: The merch feature pages and components are not yet implemented.
+⚠️ **Important**: The merch feature pages and components are not yet
+implemented.
 
 When implementing the merch feature, refer to:
 
@@ -242,4 +244,5 @@ When adding new merch features:
 
 ## Questions?
 
-See the main [E2E Testing README](/e2e/README.md) for general E2E testing guidance.
+See the main [E2E Testing README](/e2e/README.md) for general E2E testing
+guidance.

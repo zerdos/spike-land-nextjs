@@ -54,8 +54,11 @@ describe("useAudioTracks", () => {
       gainNode: mockGainNode as unknown as GainNode,
     });
 
-    (mockContext.createBufferSource as ReturnType<typeof vi.fn>).mockReturnValue(mockSource);
-    (mockContext.createGain as ReturnType<typeof vi.fn>).mockReturnValue(mockGainNode);
+    (mockContext.createBufferSource as ReturnType<typeof vi.fn>)
+      .mockReturnValue(mockSource);
+    (mockContext.createGain as ReturnType<typeof vi.fn>).mockReturnValue(
+      mockGainNode,
+    );
   });
 
   afterEach(() => {
@@ -251,7 +254,11 @@ describe("useAudioTracks", () => {
     });
 
     act(() => {
-      result.current.playTrack(result.current.tracks[0]!.id, mockContext, mockMasterGain);
+      result.current.playTrack(
+        result.current.tracks[0]!.id,
+        mockContext,
+        mockMasterGain,
+      );
     });
 
     act(() => {

@@ -2,7 +2,9 @@
 
 ## Summary
 
-This plan creates an interactive setup script (`scripts/setup.sh`) that automates the developer onboarding process, reducing setup time from 15-20 minutes to approximately 5 minutes.
+This plan creates an interactive setup script (`scripts/setup.sh`) that
+automates the developer onboarding process, reducing setup time from 15-20
+minutes to approximately 5 minutes.
 
 ## Current Manual Setup Process
 

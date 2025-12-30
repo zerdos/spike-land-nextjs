@@ -303,10 +303,12 @@ When("I upload a valid image file", async function(this: CustomWorld) {
   // Wait for upload response or loading state to appear
   // One of these conditions should be met for a successful upload
   const uploadResult = await Promise.race([
-    this.page.waitForResponse((resp) => resp.url().includes("/api/images")).then(() =>
-      "response" as const
-    ),
-    this.page.waitForSelector(".animate-spin", { state: "visible", timeout: TIMEOUTS.DEFAULT })
+    this.page.waitForResponse((resp) => resp.url().includes("/api/images"))
+      .then(() => "response" as const),
+    this.page.waitForSelector(".animate-spin", {
+      state: "visible",
+      timeout: TIMEOUTS.DEFAULT,
+    })
       .then(
         () => "spinner" as const,
       ),
@@ -334,8 +336,12 @@ When(
     });
 
     // Wait for error message to appear - use explicit wait with proper timeout
-    const errorSelector = this.page.locator(".text-destructive, [role='alert']");
-    await expect(errorSelector.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    const errorSelector = this.page.locator(
+      ".text-destructive, [role='alert']",
+    );
+    await expect(errorSelector.first()).toBeVisible({
+      timeout: TIMEOUTS.DEFAULT,
+    });
   },
 );
 
@@ -355,8 +361,12 @@ When(
     });
 
     // Wait for error message to appear - use explicit wait with proper timeout
-    const errorSelector = this.page.locator(".text-destructive, [role='alert']");
-    await expect(errorSelector.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    const errorSelector = this.page.locator(
+      ".text-destructive, [role='alert']",
+    );
+    await expect(errorSelector.first()).toBeVisible({
+      timeout: TIMEOUTS.DEFAULT,
+    });
   },
 );
 
@@ -380,10 +390,13 @@ When("I start uploading an image", async function(this: CustomWorld) {
       state: "visible",
       timeout: TIMEOUTS.SHORT,
     }).then(() => "spinner" as const),
-    this.page.waitForSelector('[data-testid="uploading-text"], :text("Uploading")', {
-      state: "visible",
-      timeout: TIMEOUTS.SHORT,
-    }).then(() => "text" as const),
+    this.page.waitForSelector(
+      '[data-testid="uploading-text"], :text("Uploading")',
+      {
+        state: "visible",
+        timeout: TIMEOUTS.SHORT,
+      },
+    ).then(() => "text" as const),
     // If neither appears quickly, upload may have completed
     this.page.waitForTimeout(TIMEOUTS.SHORT / 2).then(() => "timeout" as const),
   ]);
@@ -787,13 +800,16 @@ Then("I should see an empty images list", async function(this: CustomWorld) {
   }
 });
 
-Then("I should see an empty albums message", async function(this: CustomWorld) {
-  // Check for the empty albums message in the album management UI
-  const emptyState = this.page.getByText(/no albums yet/i).or(
-    this.page.getByText(/create one to organize/i),
-  );
-  await expect(emptyState).toBeVisible();
-});
+Then(
+  "I should see an empty albums message",
+  async function(this: CustomWorld) {
+    // Check for the empty albums message in the album management UI
+    const emptyState = this.page.getByText(/no albums yet/i).or(
+      this.page.getByText(/create one to organize/i),
+    );
+    await expect(emptyState).toBeVisible();
+  },
+);
 
 Then(
   "my token balance should decrease to {int} tokens",

@@ -2,7 +2,10 @@
 
 ## Summary
 
-Add "Continue with Apple" button to the authentication page at `/auth/signin`. Apple OAuth provider is already configured in backend (`auth.config.ts`), so this task focuses on adding the Apple button to the frontend `AuthButtons` component.
+Add "Continue with Apple" button to the authentication page at `/auth/signin`.
+Apple OAuth provider is already configured in backend (`auth.config.ts`), so
+this task focuses on adding the Apple button to the frontend `AuthButtons`
+component.
 
 ## Current Auth Implementation
 
@@ -14,7 +17,8 @@ Add "Continue with Apple" button to the authentication page at `/auth/signin`. A
 
 ### Frontend
 
-- `/src/components/auth/auth-buttons.tsx`: Currently has Google and GitHub buttons
+- `/src/components/auth/auth-buttons.tsx`: Currently has Google and GitHub
+  buttons
 - Pattern: `signIn("provider", { callbackUrl: getCallbackUrl() })`
 - Button styling: `variant="outline"` with `bg-card hover:bg-card/80`
 
@@ -67,8 +71,8 @@ Insert after GitHub button (lines 473-481). Order: Google, GitHub, Apple
 
 ### Step 3: Update OAuth-Only Message
 
-Update message in `renderOAuthOnlyStep()` to include Apple:
-"This account was created with Google, Apple, Facebook, or GitHub..."
+Update message in `renderOAuthOnlyStep()` to include Apple: "This account was
+created with Google, Apple, Facebook, or GitHub..."
 
 ### Step 4: Add Tests
 
@@ -82,22 +86,28 @@ it("should render Apple social button", () => {
 it("should call signIn with apple", async () => {
   const user = userEvent.setup();
   render(<AuthButtons />);
-  await user.click(screen.getByRole("button", { name: /continue with apple/i }));
+  await user.click(
+    screen.getByRole("button", { name: /continue with apple/i }),
+  );
   expect(signIn).toHaveBeenCalledWith("apple", { callbackUrl: "/apps/pixel" });
 });
 
 it("should have correct Apple button styling", () => {
   render(<AuthButtons />);
-  const appleButton = screen.getByRole("button", { name: /continue with apple/i });
+  const appleButton = screen.getByRole("button", {
+    name: /continue with apple/i,
+  });
   expect(appleButton).toHaveClass("bg-black", "text-white");
 });
 ```
 
 ## Questions
 
-1. **Button Order**: Apple third (after GitHub) or second (between Google and GitHub)?
+1. **Button Order**: Apple third (after GitHub) or second (between Google and
+   GitHub)?
 2. **Light Mode Variant**: Should button switch to white in light mode?
-3. **Facebook Button**: Backend has Facebook configured but no frontend button - add alongside Apple?
+3. **Facebook Button**: Backend has Facebook configured but no frontend button -
+   add alongside Apple?
 
 ## Critical Files
 

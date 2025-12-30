@@ -38,13 +38,18 @@ config({ path: ".env.local" });
  */
 
 // Use DATABASE_URL_E2E if available, otherwise fall back to DATABASE_URL
-const connectionString = process.env.DATABASE_URL_E2E || process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL_E2E ||
+  process.env.DATABASE_URL;
 if (!connectionString) {
-  throw new Error("DATABASE_URL_E2E or DATABASE_URL environment variable is required");
+  throw new Error(
+    "DATABASE_URL_E2E or DATABASE_URL environment variable is required",
+  );
 }
 
 // Production database protection - prevent accidental seeding of production
-if (connectionString.includes("production") || connectionString.includes("prod-")) {
+if (
+  connectionString.includes("production") || connectionString.includes("prod-")
+) {
   throw new Error(
     "SAFETY: Refusing to seed what appears to be a production database. " +
       "Use DATABASE_URL_E2E for test databases only.",
@@ -226,11 +231,31 @@ async function main() {
   console.log("Created second test user:", secondUser.id);
 
   // 8. Create enhancement jobs in various states
-  const jobStatuses: { id: string; status: JobStatus; tier: EnhancementTier; }[] = [
-    { id: "e2e-job-pending", status: JobStatus.PENDING, tier: EnhancementTier.TIER_1K },
-    { id: "e2e-job-processing", status: JobStatus.PROCESSING, tier: EnhancementTier.TIER_2K },
-    { id: "e2e-job-completed", status: JobStatus.COMPLETED, tier: EnhancementTier.TIER_4K },
-    { id: "e2e-job-failed", status: JobStatus.FAILED, tier: EnhancementTier.TIER_1K },
+  const jobStatuses: {
+    id: string;
+    status: JobStatus;
+    tier: EnhancementTier;
+  }[] = [
+    {
+      id: "e2e-job-pending",
+      status: JobStatus.PENDING,
+      tier: EnhancementTier.TIER_1K,
+    },
+    {
+      id: "e2e-job-processing",
+      status: JobStatus.PROCESSING,
+      tier: EnhancementTier.TIER_2K,
+    },
+    {
+      id: "e2e-job-completed",
+      status: JobStatus.COMPLETED,
+      tier: EnhancementTier.TIER_4K,
+    },
+    {
+      id: "e2e-job-failed",
+      status: JobStatus.FAILED,
+      tier: EnhancementTier.TIER_1K,
+    },
   ];
 
   for (const jobConfig of jobStatuses) {
@@ -250,19 +275,29 @@ async function main() {
         status: jobConfig.status,
         geminiPrompt: `E2E test enhancement job in ${jobConfig.status} state`,
         geminiModel: "gemini-2.0-flash-preview-image-generation",
-        processingStartedAt: jobConfig.status !== JobStatus.PENDING ? new Date() : null,
-        processingCompletedAt: jobConfig.status === JobStatus.COMPLETED ? new Date() : null,
+        processingStartedAt: jobConfig.status !== JobStatus.PENDING
+          ? new Date()
+          : null,
+        processingCompletedAt: jobConfig.status === JobStatus.COMPLETED
+          ? new Date()
+          : null,
         enhancedUrl: jobConfig.status === JobStatus.COMPLETED
           ? "https://placehold.co/2048x1536/333/white?text=Enhanced"
           : null,
-        enhancedR2Key: jobConfig.status === JobStatus.COMPLETED ? "e2e-test/enhanced-1.jpg" : null,
+        enhancedR2Key: jobConfig.status === JobStatus.COMPLETED
+          ? "e2e-test/enhanced-1.jpg"
+          : null,
         enhancedWidth: jobConfig.status === JobStatus.COMPLETED ? 2048 : null,
         enhancedHeight: jobConfig.status === JobStatus.COMPLETED ? 1536 : null,
-        errorMessage: jobConfig.status === JobStatus.FAILED ? "E2E test failure message" : null,
+        errorMessage: jobConfig.status === JobStatus.FAILED
+          ? "E2E test failure message"
+          : null,
       },
     });
   }
-  console.log("Created 4 enhancement jobs (PENDING, PROCESSING, COMPLETED, FAILED)");
+  console.log(
+    "Created 4 enhancement jobs (PENDING, PROCESSING, COMPLETED, FAILED)",
+  );
 
   // 9. Create API keys for MCP tests
   const apiKeyPlaintext = "e2e-test-api-key-12345";
@@ -541,7 +576,9 @@ async function main() {
 
     console.log("Created 3 test orders (PENDING, PAID, SHIPPED)");
   } else {
-    console.log("Skipping order creation - run seed-merch.ts first to create products");
+    console.log(
+      "Skipping order creation - run seed-merch.ts first to create products",
+    );
   }
 
   console.log("\nE2E seed completed successfully!");
