@@ -1,6 +1,6 @@
 import { ENHANCEMENT_COSTS } from "@/lib/stripe/client";
 import { tryCatch } from "@/lib/try-catch";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface TokenBalanceResponse {
   balance: number;
@@ -73,9 +73,13 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   // Track last fetch time for debouncing focus refreshes
-  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
+  const lastFetchTimeRef = useRef<number>(0);
 
   const fetchBalance = useCallback(async () => {
+    // Prevent multiple simultaneous fetches if already loading and less than 1s passed
+    // But we need to allow manual refetch even if loading?
+    // actually, let's just stick to the debounce logic
+
     setIsLoading(true);
 
     const { data: response, error: fetchError } = await tryCatch(
@@ -131,7 +135,7 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
       setStats(data.stats);
     }
     setError(null);
-    setLastFetchTime(Date.now());
+    lastFetchTimeRef.current = Date.now();
     setIsLoading(false);
   }, []);
 
@@ -146,7 +150,7 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
     const handleFocus = () => {
       // Only fetch if more than FOCUS_DEBOUNCE_MS has passed since last fetch
       const now = Date.now();
-      if (now - lastFetchTime >= FOCUS_DEBOUNCE_MS) {
+      if (now - lastFetchTimeRef.current >= FOCUS_DEBOUNCE_MS) {
         fetchBalance();
       }
     };
@@ -155,7 +159,7 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
     return () => {
       window.removeEventListener("focus", handleFocus);
     };
-  }, [options?.autoRefreshOnFocus, fetchBalance, lastFetchTime]);
+  }, [options?.autoRefreshOnFocus, fetchBalance]);
 
   // Compute if balance is low (< 10) or critical (< 5)
   const isLowBalance = balance < LOW_BALANCE_THRESHOLD;

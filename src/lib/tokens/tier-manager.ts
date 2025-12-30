@@ -70,6 +70,19 @@ interface PremiumZeroOptions {
 
 export class TierManager {
   /**
+   * Check if user can afford a cost with current balance
+   * Handles edge cases like negative cost or balance
+   */
+  static canAfford(balance: number, cost: number): boolean {
+    if (cost < 0) return true; // Or throw error? Logic says cost shouldn't be negative.
+    // Let's rely on caller or return true, but strictly cost >= 0 usually.
+    // Effectively: cost <= balance
+    if (cost === 0) return true;
+    if (balance < 0) return false;
+    return balance >= cost;
+  }
+
+  /**
    * Validate userId is a non-empty string
    */
   private static validateUserId(userId: string): void {

@@ -634,4 +634,27 @@ describe("TierManager", () => {
       expect(result.isPremiumAtZero).toBe(false);
     });
   });
+
+  describe("canAfford", () => {
+    it("should return true when balance is greater than cost", () => {
+      expect(TierManager.canAfford(100, 50)).toBe(true);
+    });
+
+    it("should return true when balance equals cost", () => {
+      expect(TierManager.canAfford(50, 50)).toBe(true);
+    });
+
+    it("should return false when balance is less than cost", () => {
+      expect(TierManager.canAfford(49, 50)).toBe(false);
+    });
+
+    it("should return true when cost is 0", () => {
+      expect(TierManager.canAfford(0, 0)).toBe(true);
+      expect(TierManager.canAfford(10, 0)).toBe(true);
+    });
+
+    it("should handle negative balance gracefully", () => {
+      expect(TierManager.canAfford(-10, 5)).toBe(false);
+    });
+  });
 });
