@@ -36,8 +36,11 @@ Given("there is an active Jules session", async function(this: CustomWorld) {
 Given(
   "there is a Jules session awaiting plan approval",
   async function(this: CustomWorld) {
-    await this.page.route("**/api/admin/agents*", async (route) => {
-      if (route.request().method() === "GET") {
+    // Mock the main agents API endpoint - be specific to avoid matching sub-routes
+    await this.page.route("**/api/admin/agents", async (route) => {
+      const url = new URL(route.request().url());
+      // Only mock exact /api/admin/agents path, not sub-routes
+      if (url.pathname === "/api/admin/agents" && route.request().method() === "GET") {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
@@ -59,6 +62,7 @@ Given(
               },
             ],
             pagination: { total: 1, page: 1, limit: 20 },
+            statusCounts: { AWAITING_PLAN_APPROVAL: 1 },
           }),
         });
       } else {
@@ -141,12 +145,30 @@ Given("Jules API is configured", async function(this: CustomWorld) {
 
 Given("Jules API is not configured", async function(this: CustomWorld) {
   await this.page.route("**/api/admin/agents", async (route) => {
+    const url = new URL(route.request().url());
+    // Only mock exact /api/admin/agents path
+    if (url.pathname !== "/api/admin/agents") {
+      await route.continue();
+      return;
+    }
     if (route.request().method() === "POST") {
       await route.fulfill({
         status: 503,
         contentType: "application/json",
         body: JSON.stringify({
           error: "Jules API is not configured. Set JULES_API_KEY environment variable.",
+        }),
+      });
+    } else if (route.request().method() === "GET") {
+      // Return julesAvailable: false so the button is not rendered
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          julesAvailable: false,
+          sessions: [],
+          pagination: { total: 0, page: 1, limit: 20 },
+          statusCounts: {},
         }),
       });
     } else {
@@ -416,14 +438,19 @@ Then("the modal should have task field", async function(this: CustomWorld) {
 Then(
   "the {string} button should be disabled or hidden",
   async function(this: CustomWorld, buttonText: string) {
+    // Wait for the page to stabilize after loading
+    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForTimeout(500);
+
     const button = this.page.getByRole("button", {
       name: new RegExp(buttonText, "i"),
     });
     const isVisible = await button.isVisible().catch(() => false);
     if (isVisible) {
+      // Button is visible, check if it's disabled
       await expect(button).toBeDisabled();
     }
-    // If not visible, that's also acceptable (hidden)
+    // If not visible, that's acceptable (hidden) - the test passes
   },
 );
 
