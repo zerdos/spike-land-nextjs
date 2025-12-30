@@ -8,7 +8,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React, { useState } from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 
@@ -29,9 +29,8 @@ export function SplitPreview({
   originalLabel = "Before",
   enhancedLabel = "After",
 }: SplitPreviewProps) {
-  const [containerWidth, setContainerWidth] = useState(
-    Dimensions.get("window").width - spacing[4] * 2,
-  );
+  // Initialize to a reasonable default; onLayout will update with actual width
+  const [containerWidth, setContainerWidth] = useState(300);
   const sliderPosition = useSharedValue(0.5);
 
   const panGesture = Gesture.Pan()

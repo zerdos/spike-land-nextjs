@@ -77,17 +77,26 @@ export function AvatarGroup({ children, max = 4, size = 40 }: AvatarGroupProps) 
 
   return (
     <View style={styles.group}>
-      {visibleChildren.map((child, index) => (
-        <View
-          key={index}
-          style={[
-            styles.groupItem,
-            { marginLeft: index > 0 ? -(size * 0.3) : 0, zIndex: visibleChildren.length - index },
-          ]}
-        >
-          {child}
-        </View>
-      ))}
+      {visibleChildren.map((child, index) => {
+        // Clone child Avatar elements and inject size prop if not already set
+        const childWithSize = React.isValidElement(child)
+          ? React.cloneElement(child as React.ReactElement<AvatarProps>, {
+            size: (child as React.ReactElement<AvatarProps>).props?.size ?? size,
+          })
+          : child;
+
+        return (
+          <View
+            key={index}
+            style={[
+              styles.groupItem,
+              { marginLeft: index > 0 ? -(size * 0.3) : 0, zIndex: visibleChildren.length - index },
+            ]}
+          >
+            {childWithSize}
+          </View>
+        );
+      })}
       {remainingCount > 0 && (
         <View
           style={[

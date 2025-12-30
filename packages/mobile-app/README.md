@@ -129,6 +129,7 @@ packages/mobile-app/
 │
 ├── components/             # Reusable UI components
 │   ├── brand/              # Brand logos (PixelLogo, SpikeLandLogo)
+│   ├── blog/               # Blog components (SplitPreview, ImageComparisonSlider)
 │   ├── ui/                 # Base UI components (Button, Card, Input, Avatar)
 │   ├── gallery/            # Gallery-specific components
 │   └── enhancement/        # Enhancement-related components
