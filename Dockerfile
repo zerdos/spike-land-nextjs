@@ -226,8 +226,8 @@ COPY --link --from=dep-context /app/packages/ ./packages/
 COPY --link --from=dep-context /app/prisma ./prisma
 
 # Copy built application and dependencies
-COPY --link --from=build /app/.next ./.next
-COPY --link --from=build /app/public ./public
+# COPY --link --from=build /app/.next ./.next
+# COPY --link --from=build /app/public ./public
 COPY --link --from=deps /app/node_modules ./node_modules
 
 # Copy source files needed for E2E
