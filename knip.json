@@ -54,13 +54,10 @@
         "__mocks__/**"
       ],
       "ignoreDependencies": [
-        "@babel/core",
-        "expo-camera",
         "zod"
       ]
     },
     "packages/shared": {
-      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
       "ignore": ["dist/**"]
     }

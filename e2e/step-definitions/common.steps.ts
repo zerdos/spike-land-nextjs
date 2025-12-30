@@ -833,7 +833,7 @@ Given(
           name: albumName,
           images: Array.from({ length: imageCount }, (_, i) => ({
             id: `image-${i + 1}`,
-            url: `https://placehold.co/600x400?text=Image${i + 1}`,
+            url: `https://placehold.co/600x400.png?text=Image${i + 1}`,
           })),
         }),
       });

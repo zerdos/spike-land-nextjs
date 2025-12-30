@@ -39,7 +39,7 @@ export function isVercelEnvironment(): boolean {
 /**
  * Result from starting an enhancement
  */
-export interface EnhancementStartResult {
+interface EnhancementStartResult {
   success: true;
   workflowRunId?: string;
 }
@@ -47,7 +47,7 @@ export interface EnhancementStartResult {
 /**
  * Error result from starting an enhancement
  */
-export interface EnhancementStartError {
+interface EnhancementStartError {
   success: false;
   error: string;
 }

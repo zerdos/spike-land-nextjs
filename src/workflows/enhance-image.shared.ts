@@ -54,7 +54,7 @@ export enum WorkflowStage {
  * - retryable: Whether transient failures should be retried
  * - defaultBehavior: What to do when error occurs (if recoverable)
  */
-export interface ErrorBoundaryConfig {
+interface ErrorBoundaryConfig {
   /** Stage this configuration applies to */
   stage: WorkflowStage;
   /** Whether the workflow can continue after this error */

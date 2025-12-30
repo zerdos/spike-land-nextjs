@@ -3,7 +3,7 @@
  * Handles token balance, purchases, and transactions
  */
 
-import type { SubscriptionTier, TokensPackage, TokenTransaction } from "@spike-npm-land/shared";
+import type { SubscriptionTier, TokenTransaction } from "@spike-npm-land/shared";
 import { apiClient, ApiResponse } from "../api-client";
 
 // ============================================================================
@@ -23,10 +23,6 @@ export interface TokenHistoryResponse {
   total: number;
   page: number;
   limit: number;
-}
-
-export interface TokenPackagesResponse {
-  packages: TokensPackage[];
 }
 
 export interface RedeemVoucherResponse {
@@ -66,15 +62,6 @@ export async function getTokenHistory(params?: {
 }
 
 /**
- * Get available token packages
- */
-export async function getTokenPackages(): Promise<
-  ApiResponse<TokenPackagesResponse>
-> {
-  return apiClient.get<TokenPackagesResponse>("/api/tokens/packages");
-}
-
-/**
  * Redeem a voucher code
  */
 export async function redeemVoucher(
@@ -83,20 +70,4 @@ export async function redeemVoucher(
   return apiClient.post<RedeemVoucherResponse>("/api/vouchers/redeem", {
     code,
   });
-}
-
-/**
- * Validate a voucher code without redeeming
- */
-export async function validateVoucher(code: string): Promise<
-  ApiResponse<{
-    valid: boolean;
-    type: string;
-    value: number;
-  }>
-> {
-  return apiClient.post<{ valid: boolean; type: string; value: number; }>(
-    "/api/vouchers/validate",
-    { code },
-  );
 }
