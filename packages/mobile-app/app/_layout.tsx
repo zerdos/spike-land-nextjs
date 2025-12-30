@@ -13,7 +13,7 @@ import { useColorScheme } from "@/components/useColorScheme";
 import { colors } from "@/constants/theme";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 import { useAuthStore } from "../stores";
-import config from "../tamagui.config";
+import { config } from "../tamagui.config";
 
 /**
  * Custom dark theme matching the web app's design system
