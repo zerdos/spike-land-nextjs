@@ -69,7 +69,7 @@ export function PlatformHeader() {
             </SheetTrigger>
             <SheetContent
               side="bottom"
-              className="rounded-t-[2rem] border-t border-primary/20 bg-background/95 backdrop-blur-xl h-[60vh]"
+              className="rounded-t-[2rem] border-t border-primary/20 bg-background/95 backdrop-blur-xl h-[60vh] z-[60]"
             >
               <VisuallyHidden>
                 <SheetTitle>Navigation Menu</SheetTitle>

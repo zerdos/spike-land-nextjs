@@ -94,7 +94,7 @@ export default async function RootLayout({
                 <SessionTracker />
               </Suspense>
             </SessionProvider>
-            <Toaster />
+            <Toaster toastOptions={{ className: "z-[100]" }} />
             <CookieConsent />
           </ThemeProvider>
         </ViewTransitions>
