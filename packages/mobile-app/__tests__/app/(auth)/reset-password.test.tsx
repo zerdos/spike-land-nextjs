@@ -53,14 +53,24 @@ jest.mock("tamagui", () => {
       ReactMod.createElement(
         Pressable,
         { onPress: disabled ? undefined : onPress, testID, ...props },
-        typeof children === "string" ? ReactMod.createElement(RNText, null, children) : children,
+        typeof children === "string"
+          ? ReactMod.createElement(RNText, null, children)
+          : children,
       ),
     Card: ({ children, ...props }: { children?: React.ReactNode; }) =>
       ReactMod.createElement(View, props, children),
     H2: ({ children, ...props }: { children?: React.ReactNode; }) =>
       ReactMod.createElement(RNText, props, children),
     Input: (
-      { value, onChangeText, placeholder, testID, onSubmitEditing, _id, ...props }: {
+      {
+        value,
+        onChangeText,
+        placeholder,
+        testID,
+        onSubmitEditing,
+        _id,
+        ...props
+      }: {
         value?: string;
         onChangeText?: (text: string) => void;
         placeholder?: string;
@@ -176,7 +186,9 @@ describe("ResetPasswordScreen", () => {
 
       fireEvent.press(screen.getByTestId("request-new-link-button"));
 
-      expect(mockRouter.replace).toHaveBeenCalledWith("/(auth)/forgot-password");
+      expect(mockRouter.replace).toHaveBeenCalledWith(
+        "/(auth)/forgot-password",
+      );
     });
 
     it("should allow going back to sign in from error state", async () => {
@@ -205,7 +217,8 @@ describe("ResetPasswordScreen", () => {
       });
 
       // Use getAllByText since "Reset Password" appears in both header and button
-      expect(screen.getAllByText("Reset Password").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Reset Password").length)
+        .toBeGreaterThanOrEqual(1);
       expect(screen.getByTestId("new-password-input")).toBeTruthy();
       expect(screen.getByTestId("confirm-password-input")).toBeTruthy();
       expect(screen.getByTestId("submit-button")).toBeTruthy();
@@ -231,7 +244,8 @@ describe("ResetPasswordScreen", () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Password must be at least 8 characters")).toBeTruthy();
+        expect(screen.getByText("Password must be at least 8 characters"))
+          .toBeTruthy();
       });
     });
 
@@ -253,7 +267,8 @@ describe("ResetPasswordScreen", () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Password must contain an uppercase letter")).toBeTruthy();
+        expect(screen.getByText("Password must contain an uppercase letter"))
+          .toBeTruthy();
       });
     });
 
@@ -275,7 +290,8 @@ describe("ResetPasswordScreen", () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Password must contain a lowercase letter")).toBeTruthy();
+        expect(screen.getByText("Password must contain a lowercase letter"))
+          .toBeTruthy();
       });
     });
 
@@ -341,13 +357,15 @@ describe("ResetPasswordScreen", () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Password must be at least 8 characters")).toBeTruthy();
+        expect(screen.getByText("Password must be at least 8 characters"))
+          .toBeTruthy();
       });
 
       fireEvent.changeText(passwordInput, "s");
 
       await waitFor(() => {
-        expect(screen.queryByText("Password must be at least 8 characters")).toBeNull();
+        expect(screen.queryByText("Password must be at least 8 characters"))
+          .toBeNull();
       });
     });
   });
@@ -375,7 +393,10 @@ describe("ResetPasswordScreen", () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(mockAuthService.resetPassword).toHaveBeenCalledWith("valid-token", "NewPassword123");
+        expect(mockAuthService.resetPassword).toHaveBeenCalledWith(
+          "valid-token",
+          "NewPassword123",
+        );
       });
     });
 

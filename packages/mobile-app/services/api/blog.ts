@@ -98,7 +98,9 @@ export async function getBlogPost(
 /**
  * Get featured blog posts
  */
-export async function getFeaturedPosts(): Promise<ApiResponse<BlogPostsResponse>> {
+export async function getFeaturedPosts(): Promise<
+  ApiResponse<BlogPostsResponse>
+> {
   return getBlogPosts({ featured: true });
 }
 

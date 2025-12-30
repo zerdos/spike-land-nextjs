@@ -40,7 +40,9 @@ interface SourceButtonProps {
   disabled?: boolean;
 }
 
-function SourceButton({ icon, title, subtitle, onPress, disabled }: SourceButtonProps) {
+function SourceButton(
+  { icon, title, subtitle, onPress, disabled }: SourceButtonProps,
+) {
   return (
     <Card
       elevate
@@ -114,7 +116,9 @@ function ImagePreview({ image, onRemove }: ImagePreviewProps) {
         </Text>
         <Text fontSize="$2" color="$gray10">
           {image.width} x {image.height}px
-          {image.fileSize ? ` - ${(image.fileSize / 1024 / 1024).toFixed(1)} MB` : ""}
+          {image.fileSize
+            ? ` - ${(image.fileSize / 1024 / 1024).toFixed(1)} MB`
+            : ""}
         </Text>
       </YStack>
     </YStack>
@@ -127,7 +131,9 @@ function ImagePreview({ image, onRemove }: ImagePreviewProps) {
 
 export default function UploadScreen() {
   const insets = useSafeAreaInsets();
-  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
+  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(
+    null,
+  );
 
   const { setCurrentImage } = useEnhancementStore();
   const {
@@ -272,7 +278,11 @@ export default function UploadScreen() {
                       borderRadius="$10"
                       padding="$4"
                     >
-                      <Ionicons name="image-outline" size={48} color="#6B7280" />
+                      <Ionicons
+                        name="image-outline"
+                        size={48}
+                        color="#6B7280"
+                      />
                     </View>
                     <Paragraph textAlign="center" color="$gray11">
                       Select an image from your camera or photo library to enhance
@@ -300,7 +310,11 @@ export default function UploadScreen() {
                   {/* Supported formats info */}
                   <Card backgroundColor="$gray2" padding="$3" marginTop="$2">
                     <XStack alignItems="center" gap="$2">
-                      <Ionicons name="information-circle-outline" size={18} color="#6B7280" />
+                      <Ionicons
+                        name="information-circle-outline"
+                        size={18}
+                        color="#6B7280"
+                      />
                       <Text fontSize="$2" color="$gray10">
                         Supports JPEG, PNG, and WebP up to 50MB
                       </Text>

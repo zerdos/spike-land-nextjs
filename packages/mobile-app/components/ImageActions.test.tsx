@@ -167,7 +167,11 @@ describe("ImageActions", () => {
     it("should not call onDownload when downloading", () => {
       const onDownload = jest.fn();
       const { getByTestId } = render(
-        <ImageActions {...defaultProps} onDownload={onDownload} isDownloading={true} />,
+        <ImageActions
+          {...defaultProps}
+          onDownload={onDownload}
+          isDownloading={true}
+        />,
       );
 
       fireEvent.press(getByTestId("image-action-download"));
@@ -189,7 +193,11 @@ describe("ImageActions", () => {
     it("should not call onDelete when deleting", () => {
       const onDelete = jest.fn();
       const { getByTestId } = render(
-        <ImageActions {...defaultProps} onDelete={onDelete} isDeleting={true} />,
+        <ImageActions
+          {...defaultProps}
+          onDelete={onDelete}
+          isDeleting={true}
+        />,
       );
 
       fireEvent.press(getByTestId("image-action-delete"));

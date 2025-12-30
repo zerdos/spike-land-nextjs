@@ -33,11 +33,14 @@ describe("rm", () => {
     mockDirectoryHandle.removeEntry = vi.fn().mockRejectedValue(
       new Error("NotFoundError: File not found"),
     );
-    await expect(rm("/nonexistent.txt", { force: true })).resolves.toBeUndefined();
+    await expect(rm("/nonexistent.txt", { force: true })).resolves
+      .toBeUndefined();
   });
 
   it("should throw error when file not found and force option is false", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     mockDirectoryHandle.removeEntry = vi.fn().mockRejectedValue(
       new Error("File not found"),
     );

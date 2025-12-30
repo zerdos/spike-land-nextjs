@@ -21,8 +21,12 @@ describe("appendFile", () => {
   });
 
   it("should create file if it doesn't exist", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(
+      () => {},
+    );
 
     await appendFile("/new-append.txt", "new content");
     expect(mockDirectoryHandle.getFileHandle).toHaveBeenCalledWith(

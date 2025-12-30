@@ -204,11 +204,15 @@ export function notImplementedError(methodName: string): Error {
 /**
  * Create a Stats-like object from OPFS file info
  */
-export function createStats(entry: FileSystemFileEntry | FileSystemDirectoryEntry): Stats {
+export function createStats(
+  entry: FileSystemFileEntry | FileSystemDirectoryEntry,
+): Stats {
   const isFile = entry.kind === "file";
   const isDirectory = entry.kind === "directory";
   const size = isFile ? (entry as FileSystemFileEntry).size : 0;
-  const mtime = isFile ? new Date((entry as FileSystemFileEntry).lastModified) : new Date();
+  const mtime = isFile
+    ? new Date((entry as FileSystemFileEntry).lastModified)
+    : new Date();
 
   return {
     isFile: () => isFile,
@@ -248,7 +252,9 @@ export function createBigIntStats(
   const isFile = entry.kind === "file";
   const isDirectory = entry.kind === "directory";
   const size = isFile ? BigInt((entry as FileSystemFileEntry).size) : BigInt(0);
-  const mtime = isFile ? new Date((entry as FileSystemFileEntry).lastModified) : new Date();
+  const mtime = isFile
+    ? new Date((entry as FileSystemFileEntry).lastModified)
+    : new Date();
   const mtimeNs = BigInt(mtime.getTime()) * BigInt(1000000);
 
   return {
@@ -287,7 +293,11 @@ export function createBigIntStats(
 /**
  * Create a Dirent-like object
  */
-export function createDirent(name: string, isFile: boolean, parentPath: string): Dirent {
+export function createDirent(
+  name: string,
+  isFile: boolean,
+  parentPath: string,
+): Dirent {
   return {
     name,
     parentPath,

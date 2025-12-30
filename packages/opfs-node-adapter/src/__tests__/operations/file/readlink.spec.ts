@@ -45,7 +45,9 @@ describe("readlink", () => {
   });
 
   it("should handle options parameter but still throw error", async () => {
-    await expect(readlink("/path", { encoding: "utf8" })).rejects.toThrow("ENOTSUP");
+    await expect(readlink("/path", { encoding: "utf8" })).rejects.toThrow(
+      "ENOTSUP",
+    );
     await expect(readlink("/path", "utf8")).rejects.toThrow("ENOTSUP");
     await expect(readlink("/path", null)).rejects.toThrow("ENOTSUP");
   });
@@ -60,7 +62,9 @@ describe("readlink", () => {
       expect(errnoError.code).toBe("ENOTSUP");
       expect(errnoError.syscall).toBe("readlink");
       expect(errnoError.path).toBe(testPath);
-      expect(errnoError.message).toBe(`ENOTSUP: operation not supported, readlink '${testPath}'`);
+      expect(errnoError.message).toBe(
+        `ENOTSUP: operation not supported, readlink '${testPath}'`,
+      );
     }
   });
 });

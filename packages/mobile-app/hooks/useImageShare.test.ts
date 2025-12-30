@@ -19,15 +19,21 @@ jest.mock("../services/api/images", () => ({
   getShareLink: jest.fn(),
 }));
 
-const mockGetDownloadUrl = getDownloadUrl as jest.MockedFunction<typeof getDownloadUrl>;
-const mockGetShareLink = getShareLink as jest.MockedFunction<typeof getShareLink>;
+const mockGetDownloadUrl = getDownloadUrl as jest.MockedFunction<
+  typeof getDownloadUrl
+>;
+const mockGetShareLink = getShareLink as jest.MockedFunction<
+  typeof getShareLink
+>;
 
 describe("useImageShare", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset mocks to default values
     (Sharing.isAvailableAsync as jest.Mock).mockResolvedValue(true);
-    (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: "granted" });
+    (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: "granted",
+    });
     (MediaLibrary.getAlbumAsync as jest.Mock).mockResolvedValue(null);
     (MediaLibrary.createAssetAsync as jest.Mock).mockResolvedValue({
       id: "test-asset-id",
@@ -41,13 +47,15 @@ describe("useImageShare", () => {
       title: "Spike Land",
     });
     // Reset FileSystem mocks to default implementations
-    (FileSystem.createDownloadResumable as jest.Mock).mockImplementation(() => ({
-      downloadAsync: jest.fn().mockResolvedValue({
-        uri: "file:///cache/test-image.jpg",
+    (FileSystem.createDownloadResumable as jest.Mock).mockImplementation(
+      () => ({
+        downloadAsync: jest.fn().mockResolvedValue({
+          uri: "file:///cache/test-image.jpg",
+        }),
+        pauseAsync: jest.fn(),
+        resumeAsync: jest.fn(),
       }),
-      pauseAsync: jest.fn(),
-      resumeAsync: jest.fn(),
-    }));
+    );
     (FileSystem.downloadAsync as jest.Mock).mockResolvedValue({
       uri: "file:///cache/test-image.jpg",
       status: 200,
@@ -94,7 +102,8 @@ describe("useImageShare", () => {
     });
 
     it("should handle permission denied", async () => {
-      const mockRequestPermissions = MediaLibrary.requestPermissionsAsync as jest.Mock;
+      const mockRequestPermissions = MediaLibrary
+        .requestPermissionsAsync as jest.Mock;
       mockRequestPermissions.mockResolvedValueOnce({ status: "denied" });
 
       const alertSpy = jest.spyOn(Alert, "alert");
@@ -107,7 +116,9 @@ describe("useImageShare", () => {
       });
 
       expect(permissionResult!).toBe(false);
-      expect(onError).toHaveBeenCalledWith("Permission to access media library was denied");
+      expect(onError).toHaveBeenCalledWith(
+        "Permission to access media library was denied",
+      );
       expect(alertSpy).toHaveBeenCalledWith(
         "Permission Required",
         expect.any(String),
@@ -116,8 +127,11 @@ describe("useImageShare", () => {
     });
 
     it("should handle permission request error", async () => {
-      const mockRequestPermissions = MediaLibrary.requestPermissionsAsync as jest.Mock;
-      mockRequestPermissions.mockRejectedValueOnce(new Error("Permission error"));
+      const mockRequestPermissions = MediaLibrary
+        .requestPermissionsAsync as jest.Mock;
+      mockRequestPermissions.mockRejectedValueOnce(
+        new Error("Permission error"),
+      );
 
       const onError = jest.fn();
       const { result } = renderHook(() => useImageShare({ onError }));
@@ -185,7 +199,8 @@ describe("useImageShare", () => {
     });
 
     it("should handle permission denied during download", async () => {
-      const mockRequestPermissions = MediaLibrary.requestPermissionsAsync as jest.Mock;
+      const mockRequestPermissions = MediaLibrary
+        .requestPermissionsAsync as jest.Mock;
       mockRequestPermissions.mockResolvedValueOnce({ status: "denied" });
 
       const { result } = renderHook(() => useImageShare());
@@ -212,7 +227,8 @@ describe("useImageShare", () => {
         status: 200,
       });
 
-      const mockDownloadResumable = FileSystem.createDownloadResumable as jest.Mock;
+      const mockDownloadResumable = FileSystem
+        .createDownloadResumable as jest.Mock;
       mockDownloadResumable.mockReturnValue({
         downloadAsync: jest.fn().mockResolvedValue(null),
       });
@@ -243,7 +259,10 @@ describe("useImageShare", () => {
       });
 
       const mockGetAlbum = MediaLibrary.getAlbumAsync as jest.Mock;
-      mockGetAlbum.mockResolvedValueOnce({ id: "existing-album", title: "Spike Land" });
+      mockGetAlbum.mockResolvedValueOnce({
+        id: "existing-album",
+        title: "Spike Land",
+      });
 
       const { result } = renderHook(() => useImageShare());
 
@@ -274,7 +293,8 @@ describe("useImageShare", () => {
         status: 200,
       });
 
-      const mockDownloadResumable = FileSystem.createDownloadResumable as jest.Mock;
+      const mockDownloadResumable = FileSystem
+        .createDownloadResumable as jest.Mock;
       mockDownloadResumable.mockReturnValue({
         downloadAsync: jest.fn().mockReturnValue(downloadPromise),
       });
@@ -392,7 +412,9 @@ describe("useImageShare", () => {
       });
 
       expect(shareResult!).toBe(false);
-      expect(onError).toHaveBeenCalledWith("Sharing is not available on this device");
+      expect(onError).toHaveBeenCalledWith(
+        "Sharing is not available on this device",
+      );
     });
 
     it("should handle API error during share", async () => {
@@ -439,7 +461,9 @@ describe("useImageShare", () => {
       });
 
       expect(shareResult!).toBe(false);
-      expect(onError).toHaveBeenCalledWith("Failed to download image for sharing");
+      expect(onError).toHaveBeenCalledWith(
+        "Failed to download image for sharing",
+      );
     });
 
     it("should handle exception during share", async () => {
@@ -506,7 +530,9 @@ describe("useImageShare", () => {
 
       expect(copyResult!).toBe(true);
       expect(mockGetShareLink).toHaveBeenCalledWith("img-123");
-      expect(Clipboard.setStringAsync).toHaveBeenCalledWith("https://spike.land/s/abc123");
+      expect(Clipboard.setStringAsync).toHaveBeenCalledWith(
+        "https://spike.land/s/abc123",
+      );
       expect(onLinkCopied).toHaveBeenCalledWith("https://spike.land/s/abc123");
     });
 

@@ -79,7 +79,9 @@ interface DatePickerButtonProps {
   testID?: string;
 }
 
-function DatePickerButton({ label, value, onPress, testID }: DatePickerButtonProps) {
+function DatePickerButton(
+  { label, value, onPress, testID }: DatePickerButtonProps,
+) {
   const displayValue = value
     ? value.toLocaleDateString("en-US", {
       year: "numeric",
@@ -158,15 +160,18 @@ export function FilterSheet({
   }, []);
 
   // Handle date change
-  const handleDateChange = useCallback((field: keyof DateRange, date: Date | null) => {
-    setLocalFilters((prev) => ({
-      ...prev,
-      dateRange: {
-        ...prev.dateRange,
-        [field]: date,
-      },
-    }));
-  }, []);
+  const handleDateChange = useCallback(
+    (field: keyof DateRange, date: Date | null) => {
+      setLocalFilters((prev) => ({
+        ...prev,
+        dateRange: {
+          ...prev.dateRange,
+          [field]: date,
+        },
+      }));
+    },
+    [],
+  );
 
   // Handle sort change
   const handleSortChange = useCallback((newSortBy: SortOption) => {
@@ -180,7 +185,14 @@ export function FilterSheet({
     onSortChange(localSortBy);
     onApply();
     onOpenChange(false);
-  }, [localFilters, localSortBy, onFiltersChange, onSortChange, onApply, onOpenChange]);
+  }, [
+    localFilters,
+    localSortBy,
+    onFiltersChange,
+    onSortChange,
+    onApply,
+    onOpenChange,
+  ]);
 
   // Handle reset
   const handleReset = useCallback(() => {
@@ -311,11 +323,17 @@ export function FilterSheet({
                       chromeless
                       onPress={() => handleSortChange(option.value)}
                       testID={`${testID}-sort-option-${option.value}`}
-                      backgroundColor={localSortBy === option.value ? "$blue2" : "transparent"}
+                      backgroundColor={localSortBy === option.value
+                        ? "$blue2"
+                        : "transparent"}
                       justifyContent="flex-start"
                       borderRadius={0}
                     >
-                      <XStack flex={1} justifyContent="space-between" alignItems="center">
+                      <XStack
+                        flex={1}
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
                         <Text>{option.label}</Text>
                         {localSortBy === option.value && <Check size={16} color="$blue10" />}
                       </XStack>
@@ -349,7 +367,9 @@ export function FilterSheet({
                 : (
                   <YStack gap="$2">
                     {albums.map((album) => {
-                      const isChecked = localFilters.albumIds.includes(album.id);
+                      const isChecked = localFilters.albumIds.includes(
+                        album.id,
+                      );
                       return (
                         <XStack
                           key={album.id}

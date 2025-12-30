@@ -76,7 +76,9 @@ export function ImageGrid({
 
   // Render a row of images
   const renderRow = useCallback(
-    ({ item: rowImages, index: rowIndex }: ListRenderItemInfo<EnhancedImage[]>) => (
+    (
+      { item: rowImages, index: rowIndex }: ListRenderItemInfo<EnhancedImage[]>,
+    ) => (
       <Stack
         flexDirection="row"
         key={`row-${rowIndex}`}
@@ -106,7 +108,15 @@ export function ImageGrid({
           ))}
       </Stack>
     ),
-    [selectedImageIds, isSelectionMode, onImagePress, onImageLongPress, columns, spacing, itemSize],
+    [
+      selectedImageIds,
+      isSelectionMode,
+      onImagePress,
+      onImageLongPress,
+      columns,
+      spacing,
+      itemSize,
+    ],
   );
 
   // Key extractor for rows

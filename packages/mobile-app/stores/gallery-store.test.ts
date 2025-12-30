@@ -22,7 +22,9 @@ jest.mock("../services/api/images", () => ({
   batchEnhanceImages: jest.fn(),
 }));
 
-const mockGetImages = imagesApi.getImages as jest.MockedFunction<typeof imagesApi.getImages>;
+const mockGetImages = imagesApi.getImages as jest.MockedFunction<
+  typeof imagesApi.getImages
+>;
 
 // ============================================================================
 // Test Data
@@ -246,7 +248,9 @@ describe("Gallery Store", () => {
 
         const state = useGalleryStore.getState();
         expect(state.filters.albumIds).toEqual(["album-1"]);
-        expect(state.filters.dateRange.startDate).toEqual(new Date("2024-01-01"));
+        expect(state.filters.dateRange.startDate).toEqual(
+          new Date("2024-01-01"),
+        );
       });
 
       it("resets pagination when filters change", async () => {

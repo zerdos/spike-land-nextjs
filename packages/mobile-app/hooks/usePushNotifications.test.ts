@@ -60,7 +60,9 @@ function createMockNotificationResponse(): Notifications.NotificationResponse {
 // ============================================================================
 
 describe("usePushNotifications", () => {
-  let notificationReceivedCallback: ((n: Notifications.Notification) => void) | null = null;
+  let notificationReceivedCallback:
+    | ((n: Notifications.Notification) => void)
+    | null = null;
   let notificationResponseCallback:
     | ((r: Notifications.NotificationResponse) => void)
     | null = null;
@@ -70,32 +72,43 @@ describe("usePushNotifications", () => {
     jest.clearAllMocks();
 
     // Mock AppState.addEventListener to return a subscription with remove method
-    jest.spyOn(AppState, "addEventListener").mockImplementation((event, callback) => {
-      if (event === "change") {
-        _appStateCallback = callback as (state: string) => void;
-      }
-      return { remove: jest.fn() };
-    });
-
-    // Capture the callbacks when listeners are added
-    mockNotifications.addNotificationReceivedListener.mockImplementation((callback) => {
-      notificationReceivedCallback = callback;
-      return { remove: jest.fn() } as unknown as Notifications.EventSubscription;
-    });
-
-    mockNotifications.addNotificationResponseReceivedListener.mockImplementation(
-      (callback) => {
-        notificationResponseCallback = callback;
-        return { remove: jest.fn() } as unknown as Notifications.EventSubscription;
+    jest.spyOn(AppState, "addEventListener").mockImplementation(
+      (event, callback) => {
+        if (event === "change") {
+          _appStateCallback = callback as (state: string) => void;
+        }
+        return { remove: jest.fn() };
       },
     );
+
+    // Capture the callbacks when listeners are added
+    mockNotifications.addNotificationReceivedListener.mockImplementation(
+      (callback) => {
+        notificationReceivedCallback = callback;
+        return {
+          remove: jest.fn(),
+        } as unknown as Notifications.EventSubscription;
+      },
+    );
+
+    mockNotifications.addNotificationResponseReceivedListener
+      .mockImplementation(
+        (callback) => {
+          notificationResponseCallback = callback;
+          return {
+            remove: jest.fn(),
+          } as unknown as Notifications.EventSubscription;
+        },
+      );
 
     mockNotifications.getLastNotificationResponseAsync.mockResolvedValue(null);
   });
 
   describe("initialization", () => {
     it("initializes with correct default state", async () => {
-      mockNotificationsService.registerForPushNotifications.mockResolvedValue(null);
+      mockNotificationsService.registerForPushNotifications.mockResolvedValue(
+        null,
+      );
 
       const { result } = renderHook(() => usePushNotifications({ requestOnMount: false }));
 
@@ -118,13 +131,15 @@ describe("usePushNotifications", () => {
         expect(result.current.expoPushToken).toBe("ExponentPushToken[test]");
       });
 
-      expect(mockNotificationsService.registerForPushNotifications).toHaveBeenCalled();
+      expect(mockNotificationsService.registerForPushNotifications)
+        .toHaveBeenCalled();
     });
 
     it("does not request permissions on mount when requestOnMount is false", async () => {
       const { result } = renderHook(() => usePushNotifications({ requestOnMount: false }));
 
-      expect(mockNotificationsService.registerForPushNotifications).not.toHaveBeenCalled();
+      expect(mockNotificationsService.registerForPushNotifications).not
+        .toHaveBeenCalled();
       expect(result.current.expoPushToken).toBeNull();
     });
   });
@@ -149,7 +164,9 @@ describe("usePushNotifications", () => {
     });
 
     it("sets error when registration fails", async () => {
-      mockNotificationsService.registerForPushNotifications.mockResolvedValue(null);
+      mockNotificationsService.registerForPushNotifications.mockResolvedValue(
+        null,
+      );
 
       const { result } = renderHook(() => usePushNotifications({ requestOnMount: false }));
 
@@ -186,16 +203,20 @@ describe("usePushNotifications", () => {
       mockNotificationsService.registerDeviceWithServer.mockResolvedValue(true);
 
       const { result } = renderHook(() =>
-        usePushNotifications({ requestOnMount: false, registerWithServer: true })
+        usePushNotifications({
+          requestOnMount: false,
+          registerWithServer: true,
+        })
       );
 
       await act(async () => {
         await result.current.requestPermissions();
       });
 
-      expect(mockNotificationsService.registerDeviceWithServer).toHaveBeenCalledWith(
-        "ExponentPushToken[test]",
-      );
+      expect(mockNotificationsService.registerDeviceWithServer)
+        .toHaveBeenCalledWith(
+          "ExponentPushToken[test]",
+        );
     });
 
     it("does not register with server when registerWithServer is false", async () => {
@@ -204,14 +225,18 @@ describe("usePushNotifications", () => {
       );
 
       const { result } = renderHook(() =>
-        usePushNotifications({ requestOnMount: false, registerWithServer: false })
+        usePushNotifications({
+          requestOnMount: false,
+          registerWithServer: false,
+        })
       );
 
       await act(async () => {
         await result.current.requestPermissions();
       });
 
-      expect(mockNotificationsService.registerDeviceWithServer).not.toHaveBeenCalled();
+      expect(mockNotificationsService.registerDeviceWithServer).not
+        .toHaveBeenCalled();
     });
 
     it("sets isLoading during permission request", async () => {
@@ -249,8 +274,10 @@ describe("usePushNotifications", () => {
     it("sets up notification listeners on mount", () => {
       renderHook(() => usePushNotifications({ requestOnMount: false }));
 
-      expect(mockNotifications.addNotificationReceivedListener).toHaveBeenCalled();
-      expect(mockNotifications.addNotificationResponseReceivedListener).toHaveBeenCalled();
+      expect(mockNotifications.addNotificationReceivedListener)
+        .toHaveBeenCalled();
+      expect(mockNotifications.addNotificationResponseReceivedListener)
+        .toHaveBeenCalled();
     });
 
     it("removes listeners on unmount", () => {
@@ -258,17 +285,21 @@ describe("usePushNotifications", () => {
       mockNotifications.addNotificationReceivedListener.mockReturnValue({
         remove: mockRemove,
       } as unknown as Notifications.EventSubscription);
-      mockNotifications.addNotificationResponseReceivedListener.mockReturnValue({
-        remove: mockRemove,
-      } as unknown as Notifications.EventSubscription);
+      mockNotifications.addNotificationResponseReceivedListener.mockReturnValue(
+        {
+          remove: mockRemove,
+        } as unknown as Notifications.EventSubscription,
+      );
 
       const { unmount } = renderHook(() => usePushNotifications({ requestOnMount: false }));
 
       unmount();
 
       // Verify listeners were set up (and thus would be removed)
-      expect(mockNotifications.addNotificationReceivedListener).toHaveBeenCalled();
-      expect(mockNotifications.addNotificationResponseReceivedListener).toHaveBeenCalled();
+      expect(mockNotifications.addNotificationReceivedListener)
+        .toHaveBeenCalled();
+      expect(mockNotifications.addNotificationResponseReceivedListener)
+        .toHaveBeenCalled();
     });
 
     it("updates notification state when notification is received", async () => {
@@ -303,7 +334,9 @@ describe("usePushNotifications", () => {
     });
 
     it("navigates when notification is tapped and handleNavigation is true", async () => {
-      mockNotificationsService.handleNotificationResponse.mockReturnValue("/(tabs)/gallery");
+      mockNotificationsService.handleNotificationResponse.mockReturnValue(
+        "/(tabs)/gallery",
+      );
 
       renderHook(() =>
         usePushNotifications({
@@ -322,7 +355,9 @@ describe("usePushNotifications", () => {
     });
 
     it("does not navigate when handleNavigation is false", async () => {
-      mockNotificationsService.handleNotificationResponse.mockReturnValue("/(tabs)/gallery");
+      mockNotificationsService.handleNotificationResponse.mockReturnValue(
+        "/(tabs)/gallery",
+      );
 
       renderHook(() =>
         usePushNotifications({
@@ -363,8 +398,12 @@ describe("usePushNotifications", () => {
   describe("initial notification handling", () => {
     it("handles initial notification when app is opened from notification", async () => {
       const mockResponse = createMockNotificationResponse();
-      mockNotifications.getLastNotificationResponseAsync.mockResolvedValue(mockResponse);
-      mockNotificationsService.handleNotificationResponse.mockReturnValue("/notifications");
+      mockNotifications.getLastNotificationResponseAsync.mockResolvedValue(
+        mockResponse,
+      );
+      mockNotificationsService.handleNotificationResponse.mockReturnValue(
+        "/notifications",
+      );
 
       renderHook(() =>
         usePushNotifications({
@@ -379,7 +418,9 @@ describe("usePushNotifications", () => {
     });
 
     it("does not navigate when there is no initial notification", async () => {
-      mockNotifications.getLastNotificationResponseAsync.mockResolvedValue(null);
+      mockNotifications.getLastNotificationResponseAsync.mockResolvedValue(
+        null,
+      );
 
       renderHook(() =>
         usePushNotifications({
@@ -427,10 +468,12 @@ describe("usePushNotifications", () => {
 
     it("clears badge when app becomes active", async () => {
       let appStateCallback: ((state: string) => void) | null = null;
-      (AppState.addEventListener as jest.Mock).mockImplementation((_, callback) => {
-        appStateCallback = callback;
-        return { remove: jest.fn() };
-      });
+      (AppState.addEventListener as jest.Mock).mockImplementation(
+        (_, callback) => {
+          appStateCallback = callback;
+          return { remove: jest.fn() };
+        },
+      );
 
       // Set initial state to background
       Object.defineProperty(AppState, "currentState", {
@@ -488,17 +531,24 @@ describe("usePushNotifications", () => {
       mockNotificationsService.registerForPushNotifications.mockResolvedValue(
         "ExponentPushToken[test]",
       );
-      mockNotificationsService.registerDeviceWithServer.mockResolvedValue(false);
+      mockNotificationsService.registerDeviceWithServer.mockResolvedValue(
+        false,
+      );
 
       const { result } = renderHook(() =>
-        usePushNotifications({ requestOnMount: false, registerWithServer: true })
+        usePushNotifications({
+          requestOnMount: false,
+          registerWithServer: true,
+        })
       );
 
       await act(async () => {
         await result.current.requestPermissions();
       });
 
-      expect(consoleSpy).toHaveBeenCalledWith("Failed to register device with server");
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Failed to register device with server",
+      );
       consoleSpy.mockRestore();
     });
   });

@@ -36,15 +36,23 @@ const OAUTH_PROVIDERS: Array<{
 ];
 
 // Password validation
-function validatePassword(password: string): { valid: boolean; message: string; } {
+function validatePassword(
+  password: string,
+): { valid: boolean; message: string; } {
   if (password.length < 8) {
     return { valid: false, message: "Password must be at least 8 characters" };
   }
   if (!/[A-Z]/.test(password)) {
-    return { valid: false, message: "Password must contain an uppercase letter" };
+    return {
+      valid: false,
+      message: "Password must contain an uppercase letter",
+    };
   }
   if (!/[a-z]/.test(password)) {
-    return { valid: false, message: "Password must contain a lowercase letter" };
+    return {
+      valid: false,
+      message: "Password must contain a lowercase letter",
+    };
   }
   if (!/[0-9]/.test(password)) {
     return { valid: false, message: "Password must contain a number" };
@@ -127,7 +135,16 @@ export default function SignUpScreen() {
     if (success) {
       router.replace("/(tabs)");
     }
-  }, [name, email, password, confirmPassword, referralCode, signUp, clearError, router]);
+  }, [
+    name,
+    email,
+    password,
+    confirmPassword,
+    referralCode,
+    signUp,
+    clearError,
+    router,
+  ]);
 
   return (
     <KeyboardAvoidingView
@@ -138,7 +155,12 @@ export default function SignUpScreen() {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <YStack flex={1} justifyContent="center" padding="$4" backgroundColor="$background">
+        <YStack
+          flex={1}
+          justifyContent="center"
+          padding="$4"
+          backgroundColor="$background"
+        >
           <Card
             elevate
             size="$4"
@@ -182,13 +204,15 @@ export default function SignUpScreen() {
                     pressStyle={{ backgroundColor: "$gray4" }}
                     onPress={() => handleOAuthSignIn(provider.id)}
                     disabled={isLoading}
-                    icon={isLoading ? <ActivityIndicator size="small" /> : (
-                      <Ionicons
-                        name={provider.icon}
-                        size={20}
-                        color={provider.color}
-                      />
-                    )}
+                    icon={isLoading
+                      ? <ActivityIndicator size="small" />
+                      : (
+                        <Ionicons
+                          name={provider.icon}
+                          size={20}
+                          color={provider.color}
+                        />
+                      )}
                   >
                     <Text fontWeight="500">Continue with {provider.name}</Text>
                   </Button>
@@ -274,7 +298,11 @@ export default function SignUpScreen() {
 
                 {/* Confirm Password */}
                 <YStack space="$1">
-                  <Label htmlFor="confirmPassword" fontSize="$2" color="$gray11">
+                  <Label
+                    htmlFor="confirmPassword"
+                    fontSize="$2"
+                    color="$gray11"
+                  >
                     Confirm Password
                   </Label>
                   <Input
@@ -306,7 +334,11 @@ export default function SignUpScreen() {
                     )
                     : (
                       <>
-                        <Label htmlFor="referralCode" fontSize="$2" color="$gray11">
+                        <Label
+                          htmlFor="referralCode"
+                          fontSize="$2"
+                          color="$gray11"
+                        >
                           Referral Code (optional)
                         </Label>
                         <Input
@@ -329,7 +361,9 @@ export default function SignUpScreen() {
                   onPress={handleSignUp}
                   disabled={isLoading}
                   marginTop="$2"
-                  icon={isLoading ? <ActivityIndicator size="small" color="white" /> : undefined}
+                  icon={isLoading
+                    ? <ActivityIndicator size="small" color="white" />
+                    : undefined}
                 >
                   <Text color="white" fontWeight="600">
                     Create Account
@@ -341,7 +375,11 @@ export default function SignUpScreen() {
               <XStack justifyContent="center" space="$2" marginTop="$4">
                 <Text color="$gray11">Already have an account?</Text>
                 <Link href="/(auth)/signin" asChild>
-                  <Text color="$blue10" fontWeight="600" pressStyle={{ opacity: 0.7 }}>
+                  <Text
+                    color="$blue10"
+                    fontWeight="600"
+                    pressStyle={{ opacity: 0.7 }}
+                  >
                     Sign in
                   </Text>
                 </Link>

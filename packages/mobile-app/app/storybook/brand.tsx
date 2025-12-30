@@ -17,7 +17,10 @@ const logoSizes = ["sm", "md", "lg", "xl"] as const;
 
 export default function BrandPage() {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Brand Identity</Text>
@@ -30,7 +33,11 @@ export default function BrandPage() {
       {/* AI Spark / Pixel Logo Section */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <View style={[styles.headerIndicator, { backgroundColor: colors.primary }]} />
+          <View
+            style={[styles.headerIndicator, {
+              backgroundColor: colors.primary,
+            }]}
+          />
           <View>
             <Text style={styles.sectionTitle}>AI Spark Logo</Text>
             <Text style={styles.sectionSubtitle}>
@@ -42,7 +49,9 @@ export default function BrandPage() {
         {/* Pixel Logo Sizes */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Sizes & Scale</Text>
-          <Text style={styles.cardDescription}>Universal logo sizes for varying contexts.</Text>
+          <Text style={styles.cardDescription}>
+            Universal logo sizes for varying contexts.
+          </Text>
           <View style={styles.logoRow}>
             {logoSizes.map((size) => (
               <View key={size} style={styles.logoItem}>
@@ -60,7 +69,9 @@ export default function BrandPage() {
         {/* Pixel Logo Variants */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Structural Variants</Text>
-          <Text style={styles.cardDescription}>Layout options for different requirements.</Text>
+          <Text style={styles.cardDescription}>
+            Layout options for different requirements.
+          </Text>
 
           <View style={styles.variantRow}>
             <PixelLogo size="md" variant="horizontal" />
@@ -88,7 +99,9 @@ export default function BrandPage() {
       {/* spike.land Platform Logo Section */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <View style={[styles.headerIndicator, { backgroundColor: "#FBBF24" }]} />
+          <View
+            style={[styles.headerIndicator, { backgroundColor: "#FBBF24" }]}
+          />
           <View>
             <Text style={styles.sectionTitle}>spike.land Platform Logo</Text>
             <Text style={styles.sectionSubtitle}>
@@ -100,7 +113,9 @@ export default function BrandPage() {
         {/* spike.land Logo Sizes */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Platform Scale</Text>
-          <Text style={styles.cardDescription}>Consistent sizing with the tool identity.</Text>
+          <Text style={styles.cardDescription}>
+            Consistent sizing with the tool identity.
+          </Text>
           <View style={styles.logoRow}>
             {logoSizes.map((size) => (
               <View key={size} style={styles.logoItem}>
@@ -118,7 +133,9 @@ export default function BrandPage() {
         {/* spike.land Logo Variants */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Platform Layouts</Text>
-          <Text style={styles.cardDescription}>Optimized for headers and banners.</Text>
+          <Text style={styles.cardDescription}>
+            Optimized for headers and banners.
+          </Text>
 
           <View style={styles.variantRow}>
             <SpikeLandLogo size="md" variant="horizontal" />
@@ -127,7 +144,9 @@ export default function BrandPage() {
             </View>
           </View>
 
-          <View style={[styles.variantRow, styles.stackedRow, styles.warningBg]}>
+          <View
+            style={[styles.variantRow, styles.stackedRow, styles.warningBg]}
+          >
             <SpikeLandLogo size="lg" variant="stacked" />
             <View style={styles.variantBadge}>
               <Text style={styles.variantBadgeText}>STACKED</Text>
@@ -139,7 +158,9 @@ export default function BrandPage() {
       {/* User Identity Section */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <View style={[styles.headerIndicator, { backgroundColor: colors.accent }]} />
+          <View
+            style={[styles.headerIndicator, { backgroundColor: colors.accent }]}
+          />
           <View>
             <Text style={styles.sectionTitle}>User Identity</Text>
             <Text style={styles.sectionSubtitle}>
@@ -151,7 +172,9 @@ export default function BrandPage() {
         {/* Dynamic Sizing */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Dynamic Sizing</Text>
-          <Text style={styles.cardDescription}>Scale from small indicators to large headers.</Text>
+          <Text style={styles.cardDescription}>
+            Scale from small indicators to large headers.
+          </Text>
           <View style={styles.avatarRow}>
             {[24, 32, 40, 48, 56].map((size, index) => (
               <View key={size} style={styles.avatarItem}>
@@ -161,7 +184,9 @@ export default function BrandPage() {
                   size={size}
                   testID={`avatar-size-${size}`}
                 />
-                <Text style={styles.avatarLabel}>H-{[8, 10, 12, 16, 20][index]}</Text>
+                <Text style={styles.avatarLabel}>
+                  H-{[8, 10, 12, 16, 20][index]}
+                </Text>
               </View>
             ))}
           </View>
@@ -201,16 +226,24 @@ export default function BrandPage() {
       {/* Brand Colors Section */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <View style={[styles.headerIndicator, { backgroundColor: colors.pixelFuchsia }]} />
+          <View
+            style={[styles.headerIndicator, {
+              backgroundColor: colors.pixelFuchsia,
+            }]}
+          />
           <View>
             <Text style={styles.sectionTitle}>Brand Colors</Text>
-            <Text style={styles.sectionSubtitle}>Core palette for the design system.</Text>
+            <Text style={styles.sectionSubtitle}>
+              Core palette for the design system.
+            </Text>
           </View>
         </View>
 
         <View style={styles.card}>
           <View style={styles.colorRow}>
-            <View style={[styles.colorSwatch, { backgroundColor: colors.primary }]} />
+            <View
+              style={[styles.colorSwatch, { backgroundColor: colors.primary }]}
+            />
             <View style={styles.colorInfo}>
               <Text style={styles.colorName}>Pixel Cyan</Text>
               <Text style={styles.colorValue}>#00E5FF</Text>
@@ -218,7 +251,11 @@ export default function BrandPage() {
           </View>
 
           <View style={styles.colorRow}>
-            <View style={[styles.colorSwatch, { backgroundColor: colors.pixelFuchsia }]} />
+            <View
+              style={[styles.colorSwatch, {
+                backgroundColor: colors.pixelFuchsia,
+              }]}
+            />
             <View style={styles.colorInfo}>
               <Text style={styles.colorName}>Pixel Fuchsia</Text>
               <Text style={styles.colorValue}>#FF00FF</Text>
@@ -226,7 +263,9 @@ export default function BrandPage() {
           </View>
 
           <View style={styles.colorRow}>
-            <View style={[styles.colorSwatch, { backgroundColor: "#FBBF24" }]} />
+            <View
+              style={[styles.colorSwatch, { backgroundColor: "#FBBF24" }]}
+            />
             <View style={styles.colorInfo}>
               <Text style={styles.colorName}>Spike Amber</Text>
               <Text style={styles.colorValue}>#FBBF24</Text>
@@ -238,38 +277,66 @@ export default function BrandPage() {
       {/* Usage Guidelines */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <View style={[styles.headerIndicator, { backgroundColor: colors.success }]} />
+          <View
+            style={[styles.headerIndicator, {
+              backgroundColor: colors.success,
+            }]}
+          />
           <View>
             <Text style={styles.sectionTitle}>Usage Guidelines</Text>
-            <Text style={styles.sectionSubtitle}>Best practices for brand consistency.</Text>
+            <Text style={styles.sectionSubtitle}>
+              Best practices for brand consistency.
+            </Text>
           </View>
         </View>
 
         <View style={styles.card}>
           <View style={styles.guidelineItem}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.success}
+            />
             <Text style={styles.guidelineText}>
               The AI Spark logo represents transformation and digital intelligence
             </Text>
           </View>
           <View style={styles.guidelineItem}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.success}
+            />
             <Text style={styles.guidelineText}>
               Maintain clear space around the logo equivalent to the center spark size
             </Text>
           </View>
           <View style={styles.guidelineItem}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.success}
+            />
             <Text style={styles.guidelineText}>
               Use the horizontal variant for navigation bars and wide headers
             </Text>
           </View>
           <View style={styles.guidelineItem}>
-            <Ionicons name="close-circle" size={20} color={colors.destructive} />
-            <Text style={styles.guidelineText}>Don't alter the logo colors or proportions</Text>
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={colors.destructive}
+            />
+            <Text style={styles.guidelineText}>
+              Don't alter the logo colors or proportions
+            </Text>
           </View>
           <View style={styles.guidelineItem}>
-            <Ionicons name="close-circle" size={20} color={colors.destructive} />
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={colors.destructive}
+            />
             <Text style={styles.guidelineText}>
               Don't place on low contrast backgrounds
             </Text>

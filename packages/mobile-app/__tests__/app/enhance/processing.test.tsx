@@ -71,7 +71,9 @@ import { useEnhancementStore } from "@/stores";
 import { useRouter } from "expo-router";
 
 const mockedUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
-const mockedUseEnhancementJob = useEnhancementJob as jest.MockedFunction<typeof useEnhancementJob>;
+const mockedUseEnhancementJob = useEnhancementJob as jest.MockedFunction<
+  typeof useEnhancementJob
+>;
 const mockedUseEnhancementStore = useEnhancementStore as jest.MockedFunction<
   typeof useEnhancementStore
 >;
@@ -144,7 +146,9 @@ describe("EnhancementProcessingScreen", () => {
       renderWithProvider(<EnhancementProcessingScreen />);
 
       expect(screen.getByTestId("processing-screen")).toBeTruthy();
-      expect(screen.getByTestId("processing-title")).toHaveTextContent("Enhancing...");
+      expect(screen.getByTestId("processing-title")).toHaveTextContent(
+        "Enhancing...",
+      );
     });
 
     it("should render JobProgress component", () => {
@@ -210,7 +214,9 @@ describe("EnhancementProcessingScreen", () => {
 
       renderWithProvider(<EnhancementProcessingScreen />);
 
-      expect(screen.getByTestId("processing-title")).toHaveTextContent("Enhancing...");
+      expect(screen.getByTestId("processing-title")).toHaveTextContent(
+        "Enhancing...",
+      );
     });
 
     it("should pass correct props to JobProgress", () => {
@@ -241,7 +247,9 @@ describe("EnhancementProcessingScreen", () => {
 
       renderWithProvider(<EnhancementProcessingScreen />);
 
-      expect(screen.getByTestId("processing-title")).toHaveTextContent("Enhancement Complete!");
+      expect(screen.getByTestId("processing-title")).toHaveTextContent(
+        "Enhancement Complete!",
+      );
     });
 
     it("should show view gallery button when complete", () => {
@@ -288,7 +296,9 @@ describe("EnhancementProcessingScreen", () => {
 
       renderWithProvider(<EnhancementProcessingScreen />);
 
-      expect(screen.getByTestId("processing-title")).toHaveTextContent("Enhancement Failed");
+      expect(screen.getByTestId("processing-title")).toHaveTextContent(
+        "Enhancement Failed",
+      );
     });
 
     it("should show go back button when failed", () => {
@@ -430,7 +440,10 @@ describe("EnhancementProcessingScreen", () => {
       if (capturedOnError) {
         capturedOnError("Enhancement failed");
 
-        expect(mockStoreActions.completeJob).toHaveBeenCalledWith(null, "Enhancement failed");
+        expect(mockStoreActions.completeJob).toHaveBeenCalledWith(
+          null,
+          "Enhancement failed",
+        );
       }
     });
   });

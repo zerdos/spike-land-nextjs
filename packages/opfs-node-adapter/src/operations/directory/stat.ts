@@ -17,7 +17,10 @@ export function stat(
   filePath: string,
   options: StatOptions & { bigint: true; },
 ): Promise<BigIntStats>;
-export function stat(filePath: string, options?: StatOptions): Promise<Stats | BigIntStats>;
+export function stat(
+  filePath: string,
+  options?: StatOptions,
+): Promise<Stats | BigIntStats>;
 export async function stat(
   filePath: string,
   options?: StatOptions,
@@ -32,7 +35,9 @@ export async function stat(
       return handleDirectory(rootHandle, "/");
     }
 
-    const { dirHandle, fileName } = await getDirectoryHandleAndFileName(filePath);
+    const { dirHandle, fileName } = await getDirectoryHandleAndFileName(
+      filePath,
+    );
 
     if (!fileName) {
       return handleDirectory(dirHandle, filePath);

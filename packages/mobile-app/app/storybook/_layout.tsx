@@ -168,28 +168,44 @@ function CustomDrawerContent({
   return (
     <View style={[styles.drawerContainer, { paddingTop: insets.top }]}>
       {/* Header */}
-      <Pressable style={styles.header} onPress={() => navigation.navigate("index")}>
+      <Pressable
+        style={styles.header}
+        onPress={() => navigation.navigate("index")}
+      >
         <Text style={styles.headerTitle}>Design System</Text>
         <Text style={styles.headerSubtitle}>spike.land design system</Text>
       </Pressable>
 
       {/* Overview Link */}
       <Pressable
-        style={[styles.navItem, currentRoute === "index" && styles.navItemActive]}
+        style={[
+          styles.navItem,
+          currentRoute === "index" && styles.navItemActive,
+        ]}
         onPress={() => navigation.navigate("index")}
       >
         <Ionicons
           name="compass-outline"
           size={18}
-          color={currentRoute === "index" ? colors.primary : colors.mutedForeground}
+          color={currentRoute === "index"
+            ? colors.primary
+            : colors.mutedForeground}
         />
-        <Text style={[styles.navItemText, currentRoute === "index" && styles.navItemTextActive]}>
+        <Text
+          style={[
+            styles.navItemText,
+            currentRoute === "index" && styles.navItemTextActive,
+          ]}
+        >
           Overview
         </Text>
       </Pressable>
 
       {/* Scrollable Navigation */}
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         {categories.map((category) => (
           <View key={category} style={styles.categoryContainer}>
             <Text style={styles.categoryTitle}>{category}</Text>
@@ -206,7 +222,12 @@ function CustomDrawerContent({
                     size={18}
                     color={isActive ? colors.primary : colors.mutedForeground}
                   />
-                  <Text style={[styles.navItemText, isActive && styles.navItemTextActive]}>
+                  <Text
+                    style={[
+                      styles.navItemText,
+                      isActive && styles.navItemTextActive,
+                    ]}
+                  >
                     {section.label}
                   </Text>
                 </Pressable>
@@ -237,7 +258,10 @@ export default function StorybookLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Drawer
         drawerContent={(props) => (
-          <CustomDrawerContent navigation={props.navigation} state={props.state} />
+          <CustomDrawerContent
+            navigation={props.navigation}
+            state={props.state}
+          />
         )}
         screenOptions={{
           headerStyle: {

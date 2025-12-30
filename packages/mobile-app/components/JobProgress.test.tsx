@@ -16,9 +16,10 @@ import { JobProgress, JobProgressProps } from "./JobProgress";
 jest.mock("@tamagui/lucide-icons", () => {
   const ReactMock = jest.requireActual("react");
   const RNMock = jest.requireActual("react-native");
-  const MockIcon = ReactMock.forwardRef((props: { testID?: string; }, ref: unknown) =>
-    ReactMock.createElement(RNMock.View, { ...props, ref })
-  );
+  const MockIcon = ReactMock.forwardRef((
+    props: { testID?: string; },
+    ref: unknown,
+  ) => ReactMock.createElement(RNMock.View, { ...props, ref }));
   MockIcon.displayName = "MockIcon";
   return {
     AlertCircle: MockIcon,
@@ -34,23 +35,34 @@ jest.mock("@tamagui/lucide-icons", () => {
 jest.mock("tamagui", () => {
   const ReactMock = jest.requireActual("react");
   const RNMock = jest.requireActual("react-native");
-  const { View: RNView, Text: RNText, Pressable: RNPressable, TextInput: RNTextInput } = RNMock;
+  const {
+    View: RNView,
+    Text: RNText,
+    Pressable: RNPressable,
+    TextInput: RNTextInput,
+  } = RNMock;
 
   // Create a Button mock that supports Button.Icon and Button.Text
-  const ButtonIcon = ReactMock.forwardRef((props: { children?: React.ReactNode; }, ref: unknown) =>
-    ReactMock.createElement(RNView, { ...props, ref })
-  );
+  const ButtonIcon = ReactMock.forwardRef((
+    props: { children?: React.ReactNode; },
+    ref: unknown,
+  ) => ReactMock.createElement(RNView, { ...props, ref }));
   ButtonIcon.displayName = "ButtonIcon";
 
-  const ButtonText = ReactMock.forwardRef((props: { children?: React.ReactNode; }, ref: unknown) =>
-    ReactMock.createElement(RNText, { ...props, ref })
-  );
+  const ButtonText = ReactMock.forwardRef((
+    props: { children?: React.ReactNode; },
+    ref: unknown,
+  ) => ReactMock.createElement(RNText, { ...props, ref }));
   ButtonText.displayName = "ButtonText";
 
   const ButtonMock = Object.assign(
     ReactMock.forwardRef(
       (
-        props: { children?: React.ReactNode; onPress?: () => void; testID?: string; },
+        props: {
+          children?: React.ReactNode;
+          onPress?: () => void;
+          testID?: string;
+        },
         ref: unknown,
       ) => ReactMock.createElement(RNPressable, { ...props, ref }),
     ),
@@ -61,9 +73,10 @@ jest.mock("tamagui", () => {
   );
   ButtonMock.displayName = "Button";
 
-  const SpinnerMock = ReactMock.forwardRef((props: { testID?: string; }, ref: unknown) =>
-    ReactMock.createElement(RNView, { ...props, ref })
-  );
+  const SpinnerMock = ReactMock.forwardRef((
+    props: { testID?: string; },
+    ref: unknown,
+  ) => ReactMock.createElement(RNView, { ...props, ref }));
   SpinnerMock.displayName = "Spinner";
 
   return {
@@ -189,7 +202,9 @@ describe("JobProgress", () => {
       );
 
       expect(screen.getByTestId("loading-spinner")).toBeTruthy();
-      expect(screen.getByTestId("status-text")).toHaveTextContent("Analyzing image...");
+      expect(screen.getByTestId("status-text")).toHaveTextContent(
+        "Analyzing image...",
+      );
     });
 
     it("should show progress percentage when processing", () => {
@@ -202,7 +217,9 @@ describe("JobProgress", () => {
         />,
       );
 
-      expect(screen.getByTestId("progress-percentage")).toHaveTextContent("50%");
+      expect(screen.getByTestId("progress-percentage")).toHaveTextContent(
+        "50%",
+      );
     });
 
     it("should show default message when statusMessage is empty", () => {
@@ -215,7 +232,9 @@ describe("JobProgress", () => {
         />,
       );
 
-      expect(screen.getByTestId("status-text")).toHaveTextContent("Processing...");
+      expect(screen.getByTestId("status-text")).toHaveTextContent(
+        "Processing...",
+      );
     });
   });
 
@@ -243,7 +262,9 @@ describe("JobProgress", () => {
         />,
       );
 
-      expect(screen.getByTestId("status-text")).toHaveTextContent("Enhancement Complete!");
+      expect(screen.getByTestId("status-text")).toHaveTextContent(
+        "Enhancement Complete!",
+      );
     });
 
     it("should not show progress percentage when complete", () => {
@@ -284,7 +305,9 @@ describe("JobProgress", () => {
         />,
       );
 
-      expect(screen.getByTestId("status-text")).toHaveTextContent("Enhancement Failed");
+      expect(screen.getByTestId("status-text")).toHaveTextContent(
+        "Enhancement Failed",
+      );
     });
 
     it("should show error message text", () => {
@@ -297,7 +320,9 @@ describe("JobProgress", () => {
         />,
       );
 
-      expect(screen.getByTestId("error-message")).toHaveTextContent("Network timeout");
+      expect(screen.getByTestId("error-message")).toHaveTextContent(
+        "Network timeout",
+      );
     });
 
     it("should not show error message when error is null", () => {
@@ -500,7 +525,9 @@ describe("JobProgress", () => {
       );
 
       expect(screen.getByTestId("error-icon")).toBeTruthy();
-      expect(screen.getByTestId("status-text")).toHaveTextContent("Enhancement Failed");
+      expect(screen.getByTestId("status-text")).toHaveTextContent(
+        "Enhancement Failed",
+      );
     });
   });
 

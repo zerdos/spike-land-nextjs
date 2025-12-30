@@ -40,7 +40,10 @@ const mockProducts = [
 
 export default function MerchPage() {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Merch</Text>
@@ -60,7 +63,11 @@ export default function MerchPage() {
           {mockProducts.map((product) => (
             <View key={product.id} style={styles.productCard}>
               <View style={styles.productImage}>
-                <Ionicons name="shirt-outline" size={48} color={colors.mutedForeground} />
+                <Ionicons
+                  name="shirt-outline"
+                  size={48}
+                  color={colors.mutedForeground}
+                />
               </View>
               <View style={styles.productInfo}>
                 <Text style={styles.productName}>{product.name}</Text>
@@ -105,7 +112,11 @@ export default function MerchPage() {
               <Text style={styles.sizeButtonText}>XS</Text>
             </Pressable>
             <Pressable style={[styles.sizeButton, styles.sizeButtonActive]}>
-              <Text style={[styles.sizeButtonText, styles.sizeButtonTextActive]}>S</Text>
+              <Text
+                style={[styles.sizeButtonText, styles.sizeButtonTextActive]}
+              >
+                S
+              </Text>
             </Pressable>
             <Pressable style={styles.sizeButton}>
               <Text style={styles.sizeButtonText}>M</Text>
@@ -117,7 +128,11 @@ export default function MerchPage() {
               <Text style={styles.sizeButtonText}>XL</Text>
             </Pressable>
             <Pressable style={[styles.sizeButton, styles.sizeButtonDisabled]}>
-              <Text style={[styles.sizeButtonText, styles.sizeButtonTextDisabled]}>XXL</Text>
+              <Text
+                style={[styles.sizeButtonText, styles.sizeButtonTextDisabled]}
+              >
+                XXL
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -134,9 +149,15 @@ export default function MerchPage() {
           <Text style={styles.colorLabel}>Color: Black</Text>
           <View style={styles.colorGrid}>
             <Pressable style={[styles.colorButton, styles.colorButtonActive]}>
-              <View style={[styles.colorSwatch, { backgroundColor: "#000000" }]} />
+              <View
+                style={[styles.colorSwatch, { backgroundColor: "#000000" }]}
+              />
               <View style={styles.colorCheck}>
-                <Ionicons name="checkmark" size={12} color={colors.foreground} />
+                <Ionicons
+                  name="checkmark"
+                  size={12}
+                  color={colors.foreground}
+                />
               </View>
             </Pressable>
             <Pressable style={styles.colorButton}>
@@ -149,10 +170,16 @@ export default function MerchPage() {
               />
             </Pressable>
             <Pressable style={styles.colorButton}>
-              <View style={[styles.colorSwatch, { backgroundColor: colors.primary }]} />
+              <View
+                style={[styles.colorSwatch, {
+                  backgroundColor: colors.primary,
+                }]}
+              />
             </Pressable>
             <Pressable style={styles.colorButton}>
-              <View style={[styles.colorSwatch, { backgroundColor: "#1A1A2E" }]} />
+              <View
+                style={[styles.colorSwatch, { backgroundColor: "#1A1A2E" }]}
+              />
             </Pressable>
           </View>
         </View>
@@ -189,7 +216,11 @@ export default function MerchPage() {
         <View style={styles.cartCard}>
           <View style={styles.cartItem}>
             <View style={styles.cartItemImage}>
-              <Ionicons name="shirt-outline" size={24} color={colors.mutedForeground} />
+              <Ionicons
+                name="shirt-outline"
+                size={24}
+                color={colors.mutedForeground}
+              />
             </View>
             <View style={styles.cartItemInfo}>
               <Text style={styles.cartItemName}>spike.land Classic Tee</Text>
@@ -213,7 +244,13 @@ export default function MerchPage() {
           </View>
           <Button
             fullWidth
-            iconRight={<Ionicons name="arrow-forward" size={18} color={colors.primaryForeground} />}
+            iconRight={
+              <Ionicons
+                name="arrow-forward"
+                size={18}
+                color={colors.primaryForeground}
+              />
+            }
           >
             Checkout
           </Button>

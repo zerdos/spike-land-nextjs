@@ -23,7 +23,9 @@ export async function rmdir(
     const normalizedPath = normalizePath(filePath);
     const pathParts = normalizedPath.split("/").filter((x) => x);
 
-    if (pathParts.length === 0) throw new Error("EPERM: Cannot remove root directory");
+    if (pathParts.length === 0) {
+      throw new Error("EPERM: Cannot remove root directory");
+    }
 
     const dirName = pathParts.pop();
     if (!dirName) throw new Error("ENOENT: Invalid directory path for rmdir");
@@ -31,7 +33,9 @@ export async function rmdir(
     let currentHandle = await navigator.storage.getDirectory();
 
     for (const part of pathParts) {
-      currentHandle = await currentHandle.getDirectoryHandle(part, { create: false });
+      currentHandle = await currentHandle.getDirectoryHandle(part, {
+        create: false,
+      });
     }
 
     await currentHandle.removeEntry(dirName, { recursive });

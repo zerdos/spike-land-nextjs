@@ -82,7 +82,9 @@ export const darkColors = {
 /**
  * Helper function to convert HSL object to CSS HSL string
  */
-export const hslToString = (color: { h: number; s: number; l: number; }): string => {
+export const hslToString = (
+  color: { h: number; s: number; l: number; },
+): string => {
   return `hsl(${color.h}, ${color.s}%, ${color.l}%)`;
 };
 
@@ -138,7 +140,9 @@ export const hslToHex = (h: number, s: number, l: number): string => {
 /**
  * Helper to create hex color from HSL object
  */
-export const colorToHex = (color: { h: number; s: number; l: number; }): string => {
+export const colorToHex = (
+  color: { h: number; s: number; l: number; },
+): string => {
   return hslToHex(color.h, color.s, color.l);
 };
 

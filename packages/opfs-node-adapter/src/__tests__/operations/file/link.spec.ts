@@ -11,7 +11,9 @@ describe("link", () => {
   });
 
   it("should throw ENOTSUP error", async () => {
-    await expect(link("/existing", "/new")).rejects.toThrow("ENOTSUP: operation not supported");
+    await expect(link("/existing", "/new")).rejects.toThrow(
+      "ENOTSUP: operation not supported",
+    );
   });
 
   it("should throw error with correct code property", async () => {

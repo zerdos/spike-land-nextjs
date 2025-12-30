@@ -35,13 +35,17 @@ jest.mock("../services/api/jobs", () => ({
   getStageProgress: (stage: string | null) => getStageProgressImpl(stage),
 }));
 
-const mockedGetJobStatus = getJobStatus as jest.MockedFunction<typeof getJobStatus>;
+const mockedGetJobStatus = getJobStatus as jest.MockedFunction<
+  typeof getJobStatus
+>;
 
 // ============================================================================
 // Test Data
 // ============================================================================
 
-const createMockJob = (overrides: Partial<ImageEnhancementJob> = {}): ImageEnhancementJob => ({
+const createMockJob = (
+  overrides: Partial<ImageEnhancementJob> = {},
+): ImageEnhancementJob => ({
   id: "job-123",
   imageId: "image-456",
   userId: "user-789",
@@ -103,7 +107,10 @@ describe("useEnhancementJob", () => {
 
   describe("auto polling", () => {
     it("should start polling automatically when jobId is provided", async () => {
-      const mockJob = createMockJob({ status: "PROCESSING", currentStage: "ANALYZING" });
+      const mockJob = createMockJob({
+        status: "PROCESSING",
+        currentStage: "ANALYZING",
+      });
 
       mockedGetJobStatus.mockResolvedValue({
         data: { job: mockJob },
@@ -403,7 +410,10 @@ describe("useEnhancementJob", () => {
     });
 
     it("should retry fetching with retry", async () => {
-      const failedJob = createMockJob({ status: "FAILED", errorMessage: "Error" });
+      const failedJob = createMockJob({
+        status: "FAILED",
+        errorMessage: "Error",
+      });
 
       mockedGetJobStatus.mockResolvedValue({
         data: { job: failedJob },
@@ -467,11 +477,23 @@ describe("useEnhancementJob", () => {
   describe("jobId changes", () => {
     it("should reset and start polling new job when jobId changes", async () => {
       const job1 = createMockJob({ id: "job-1", status: "PROCESSING" });
-      const job2 = createMockJob({ id: "job-2", status: "COMPLETED", enhancedUrl: "url" });
+      const job2 = createMockJob({
+        id: "job-2",
+        status: "COMPLETED",
+        enhancedUrl: "url",
+      });
 
       mockedGetJobStatus
-        .mockResolvedValueOnce({ data: { job: job1 }, error: null, status: 200 })
-        .mockResolvedValueOnce({ data: { job: job2 }, error: null, status: 200 });
+        .mockResolvedValueOnce({
+          data: { job: job1 },
+          error: null,
+          status: 200,
+        })
+        .mockResolvedValueOnce({
+          data: { job: job2 },
+          error: null,
+          status: 200,
+        });
 
       const { result, rerender } = renderHook(
         ({ jobId }) => useEnhancementJob(jobId),

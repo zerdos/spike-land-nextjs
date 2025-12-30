@@ -320,7 +320,11 @@ export default function SettingsScreen() {
               iconColor="#EC4899"
               title="Appearance"
               subtitle="Theme and display preferences"
-              onPress={() => Alert.alert("Coming Soon", "Appearance settings are coming soon!")}
+              onPress={() =>
+                Alert.alert(
+                  "Coming Soon",
+                  "Appearance settings are coming soon!",
+                )}
             />
             <Separator marginHorizontal="$3" />
             <SettingsRow
@@ -328,7 +332,11 @@ export default function SettingsScreen() {
               iconColor="#06B6D4"
               title="Language"
               subtitle="English (US)"
-              onPress={() => Alert.alert("Coming Soon", "Language settings are coming soon!")}
+              onPress={() =>
+                Alert.alert(
+                  "Coming Soon",
+                  "Language settings are coming soon!",
+                )}
             />
           </YStack>
         </Card>
@@ -350,7 +358,11 @@ export default function SettingsScreen() {
               iconColor="#6366F1"
               title="Security"
               subtitle="Password and authentication"
-              onPress={() => Alert.alert("Coming Soon", "Security settings are coming soon!")}
+              onPress={() =>
+                Alert.alert(
+                  "Coming Soon",
+                  "Security settings are coming soon!",
+                )}
             />
           </YStack>
         </Card>

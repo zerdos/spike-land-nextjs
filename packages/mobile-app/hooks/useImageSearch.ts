@@ -9,7 +9,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // Types
 // ============================================================================
 
-export type SortOption = "newest" | "oldest" | "name_asc" | "name_desc" | "size_asc" | "size_desc";
+export type SortOption =
+  | "newest"
+  | "oldest"
+  | "name_asc"
+  | "name_desc"
+  | "size_asc"
+  | "size_desc";
 
 export interface DateRange {
   /** Start date (inclusive) */
@@ -162,7 +168,9 @@ function formatDateToIso(date: Date | null): string | undefined {
 // Hook Implementation
 // ============================================================================
 
-export function useImageSearch(options: UseImageSearchOptions = {}): UseImageSearchReturn {
+export function useImageSearch(
+  options: UseImageSearchOptions = {},
+): UseImageSearchReturn {
   const {
     initialQuery = "",
     initialFilters = {},
@@ -270,7 +278,9 @@ export function useImageSearch(options: UseImageSearchOptions = {}): UseImageSea
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.albumIds.length > 0) count++;
-    if (filters.dateRange.startDate !== null || filters.dateRange.endDate !== null) count++;
+    if (
+      filters.dateRange.startDate !== null || filters.dateRange.endDate !== null
+    ) count++;
     return count;
   }, [filters]);
 

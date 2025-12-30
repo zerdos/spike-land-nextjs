@@ -47,12 +47,18 @@ describe("FeatureCard", () => {
     it("renders the description", () => {
       render(<FeatureCard {...defaultProps} />);
       expect(screen.getByTestId("feature-card-description")).toBeTruthy();
-      expect(screen.getByText("This is a test feature description")).toBeTruthy();
+      expect(screen.getByText("This is a test feature description"))
+        .toBeTruthy();
     });
   });
 
   describe("variants", () => {
-    const variants: FeatureCardVariant[] = ["purple", "yellow", "blue", "green"];
+    const variants: FeatureCardVariant[] = [
+      "purple",
+      "yellow",
+      "blue",
+      "green",
+    ];
 
     variants.forEach((variant) => {
       it(`renders with ${variant} variant`, () => {
@@ -115,7 +121,8 @@ describe("FeatureCard", () => {
 
     it("renders description in dark mode", () => {
       render(<FeatureCard {...defaultProps} />);
-      expect(screen.getByText("This is a test feature description")).toBeTruthy();
+      expect(screen.getByText("This is a test feature description"))
+        .toBeTruthy();
     });
   });
 

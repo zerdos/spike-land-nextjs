@@ -35,7 +35,10 @@ export function SplitPreview({
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
-      const newPosition = Math.max(0.1, Math.min(0.9, event.x / containerWidth));
+      const newPosition = Math.max(
+        0.1,
+        Math.min(0.9, event.x / containerWidth),
+      );
       sliderPosition.value = newPosition;
     });
 
@@ -79,7 +82,11 @@ export function SplitPreview({
             transition={300}
           />
           <View style={[styles.label, styles.labelLeft]}>
-            <Ionicons name="image-outline" size={12} color={colors.mutedForeground} />
+            <Ionicons
+              name="image-outline"
+              size={12}
+              color={colors.mutedForeground}
+            />
             <Text style={styles.labelText}>{originalLabel}</Text>
           </View>
         </View>
@@ -90,7 +97,11 @@ export function SplitPreview({
         <Animated.View style={[styles.sliderContainer, sliderStyle]}>
           <View style={styles.sliderLine} />
           <View style={styles.sliderThumb}>
-            <Ionicons name="swap-horizontal" size={16} color={colors.foreground} />
+            <Ionicons
+              name="swap-horizontal"
+              size={16}
+              color={colors.foreground}
+            />
           </View>
           <View style={styles.sliderLine} />
         </Animated.View>

@@ -37,7 +37,9 @@ const createMockVariant = (overrides = {}) => ({
   ...overrides,
 });
 
-const createMockCartItem = (overrides: Partial<CartItemWithDetails> = {}): CartItemWithDetails => ({
+const createMockCartItem = (
+  overrides: Partial<CartItemWithDetails> = {},
+): CartItemWithDetails => ({
   id: "item-1",
   cartId: "cart-1",
   productId: "product-1",
@@ -58,7 +60,9 @@ const createMockCart = (items: CartItemWithDetails[] = []): Cart => ({
   itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
   subtotal: items.reduce(
     (sum, item) =>
-      sum + (item.product.retailPrice + (item.variant?.priceDelta ?? 0)) * item.quantity,
+      sum +
+      (item.product.retailPrice + (item.variant?.priceDelta ?? 0)) *
+        item.quantity,
     0,
   ),
 });
@@ -242,7 +246,11 @@ describe("useCartStore", () => {
       const newItem = createMockCartItem({
         id: "item-2",
         productId: "product-2",
-        product: createMockProduct({ id: "product-2", name: "New Product", retailPrice: 29.99 }),
+        product: createMockProduct({
+          id: "product-2",
+          name: "New Product",
+          retailPrice: 29.99,
+        }),
         quantity: 2,
       });
 
@@ -292,7 +300,9 @@ describe("useCartStore", () => {
         result.current.addItem(sameItem);
       });
 
-      expect(result.current.cart?.items[0].quantity).toBe(MAX_QUANTITY_PER_ITEM);
+      expect(result.current.cart?.items[0].quantity).toBe(
+        MAX_QUANTITY_PER_ITEM,
+      );
     });
 
     it("should do nothing if cart is null", () => {
@@ -384,7 +394,9 @@ describe("useCartStore", () => {
     });
 
     it("should treat items with different uploadedImageUrl as separate items", () => {
-      const existingItem = createMockCartItem({ uploadedImageUrl: "https://example.com/img1.jpg" });
+      const existingItem = createMockCartItem({
+        uploadedImageUrl: "https://example.com/img1.jpg",
+      });
       const mockCart = createMockCart([existingItem]);
 
       act(() => {
@@ -417,7 +429,9 @@ describe("useCartStore", () => {
       const { result } = renderHook(() => useCartStore());
 
       act(() => {
-        result.current.addItem(createMockCartItem({ id: "item-2", productId: "product-2" }));
+        result.current.addItem(
+          createMockCartItem({ id: "item-2", productId: "product-2" }),
+        );
       });
 
       expect(result.current.lastUpdated).toBe(now);
@@ -536,7 +550,11 @@ describe("useCartStore", () => {
 
     it("should not change other items when updating one item", () => {
       const item1 = createMockCartItem({ id: "item-1", quantity: 2 });
-      const item2 = createMockCartItem({ id: "item-2", productId: "product-2", quantity: 3 });
+      const item2 = createMockCartItem({
+        id: "item-2",
+        productId: "product-2",
+        quantity: 3,
+      });
       const mockCart = createMockCart([item1, item2]);
 
       act(() => {
@@ -558,7 +576,10 @@ describe("useCartStore", () => {
   describe("removeItem", () => {
     it("should remove item from cart", () => {
       const item1 = createMockCartItem({ id: "item-1" });
-      const item2 = createMockCartItem({ id: "item-2", productId: "product-2" });
+      const item2 = createMockCartItem({
+        id: "item-2",
+        productId: "product-2",
+      });
       const mockCart = createMockCart([item1, item2]);
 
       act(() => {
@@ -589,7 +610,11 @@ describe("useCartStore", () => {
 
     it("should recalculate itemCount after removal", () => {
       const item1 = createMockCartItem({ id: "item-1", quantity: 2 });
-      const item2 = createMockCartItem({ id: "item-2", productId: "product-2", quantity: 3 });
+      const item2 = createMockCartItem({
+        id: "item-2",
+        productId: "product-2",
+        quantity: 3,
+      });
       const mockCart = createMockCart([item1, item2]);
 
       act(() => {
@@ -716,7 +741,11 @@ describe("useCartStore", () => {
   describe("getItemCount", () => {
     it("should return correct item count", () => {
       const item1 = createMockCartItem({ quantity: 2 });
-      const item2 = createMockCartItem({ id: "item-2", productId: "product-2", quantity: 3 });
+      const item2 = createMockCartItem({
+        id: "item-2",
+        productId: "product-2",
+        quantity: 3,
+      });
       const mockCart = createMockCart([item1, item2]);
 
       act(() => {
@@ -840,7 +869,9 @@ describe("Cart Utility Functions", () => {
     });
 
     it("should return default shipping when subtotal is below threshold", () => {
-      expect(calculateShippingCost(FREE_SHIPPING_THRESHOLD - 1)).toBe(DEFAULT_SHIPPING_COST);
+      expect(calculateShippingCost(FREE_SHIPPING_THRESHOLD - 1)).toBe(
+        DEFAULT_SHIPPING_COST,
+      );
       expect(calculateShippingCost(0)).toBe(DEFAULT_SHIPPING_COST);
     });
 

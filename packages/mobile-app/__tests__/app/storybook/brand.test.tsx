@@ -71,7 +71,9 @@ describe("BrandPage", () => {
     it("should render platform logo description", () => {
       const { getByText } = render(<BrandPage />);
       expect(
-        getByText(/The parent platform identity featuring a lightning bolt icon/),
+        getByText(
+          /The parent platform identity featuring a lightning bolt icon/,
+        ),
       ).toBeTruthy();
     });
 
@@ -128,7 +130,8 @@ describe("BrandPage", () => {
       expect(
         getByText(/Use the horizontal variant for navigation bars/),
       ).toBeTruthy();
-      expect(getByText(/Don't alter the logo colors or proportions/)).toBeTruthy();
+      expect(getByText(/Don't alter the logo colors or proportions/))
+        .toBeTruthy();
       expect(
         getByText(/Don't place on low contrast backgrounds/),
       ).toBeTruthy();

@@ -96,7 +96,9 @@ describe("useAuthStore", () => {
   describe("initialize", () => {
     it("should set authenticated state when user exists and session is valid", async () => {
       (authService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-      (authService.refreshSession as jest.Mock).mockResolvedValue(successAuthResult);
+      (authService.refreshSession as jest.Mock).mockResolvedValue(
+        successAuthResult,
+      );
 
       const { result } = renderHook(() => useAuthStore());
 
@@ -131,7 +133,9 @@ describe("useAuthStore", () => {
 
     it("should set unauthenticated state when session refresh fails", async () => {
       (authService.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-      (authService.refreshSession as jest.Mock).mockResolvedValue(errorAuthResult);
+      (authService.refreshSession as jest.Mock).mockResolvedValue(
+        errorAuthResult,
+      );
 
       const { result } = renderHook(() => useAuthStore());
 
@@ -161,7 +165,9 @@ describe("useAuthStore", () => {
     });
 
     it("should handle non-Error objects in initialization catch block", async () => {
-      (authService.getCurrentUser as jest.Mock).mockRejectedValue("String error");
+      (authService.getCurrentUser as jest.Mock).mockRejectedValue(
+        "String error",
+      );
 
       const { result } = renderHook(() => useAuthStore());
 
@@ -175,13 +181,17 @@ describe("useAuthStore", () => {
 
   describe("signInWithProvider", () => {
     it("should sign in successfully with Google provider", async () => {
-      (authService.signInWithProvider as jest.Mock).mockResolvedValue(successAuthResult);
+      (authService.signInWithProvider as jest.Mock).mockResolvedValue(
+        successAuthResult,
+      );
 
       const { result } = renderHook(() => useAuthStore());
 
       let success: boolean = false;
       await act(async () => {
-        success = await result.current.signInWithProvider("google" as AuthProvider);
+        success = await result.current.signInWithProvider(
+          "google" as AuthProvider,
+        );
       });
 
       expect(success).toBe(true);
@@ -193,13 +203,17 @@ describe("useAuthStore", () => {
     });
 
     it("should sign in successfully with Apple provider", async () => {
-      (authService.signInWithProvider as jest.Mock).mockResolvedValue(successAuthResult);
+      (authService.signInWithProvider as jest.Mock).mockResolvedValue(
+        successAuthResult,
+      );
 
       const { result } = renderHook(() => useAuthStore());
 
       let success: boolean = false;
       await act(async () => {
-        success = await result.current.signInWithProvider("apple" as AuthProvider);
+        success = await result.current.signInWithProvider(
+          "apple" as AuthProvider,
+        );
       });
 
       expect(success).toBe(true);
@@ -207,13 +221,17 @@ describe("useAuthStore", () => {
     });
 
     it("should sign in successfully with GitHub provider", async () => {
-      (authService.signInWithProvider as jest.Mock).mockResolvedValue(successAuthResult);
+      (authService.signInWithProvider as jest.Mock).mockResolvedValue(
+        successAuthResult,
+      );
 
       const { result } = renderHook(() => useAuthStore());
 
       let success: boolean = false;
       await act(async () => {
-        success = await result.current.signInWithProvider("github" as AuthProvider);
+        success = await result.current.signInWithProvider(
+          "github" as AuthProvider,
+        );
       });
 
       expect(success).toBe(true);
@@ -221,13 +239,17 @@ describe("useAuthStore", () => {
     });
 
     it("should handle sign in failure", async () => {
-      (authService.signInWithProvider as jest.Mock).mockResolvedValue(errorAuthResult);
+      (authService.signInWithProvider as jest.Mock).mockResolvedValue(
+        errorAuthResult,
+      );
 
       const { result } = renderHook(() => useAuthStore());
 
       let success: boolean = true;
       await act(async () => {
-        success = await result.current.signInWithProvider("google" as AuthProvider);
+        success = await result.current.signInWithProvider(
+          "google" as AuthProvider,
+        );
       });
 
       expect(success).toBe(false);
@@ -250,7 +272,9 @@ describe("useAuthStore", () => {
       // Start sign in (don't await)
       let signInPromise: Promise<boolean>;
       act(() => {
-        signInPromise = result.current.signInWithProvider("google" as AuthProvider);
+        signInPromise = result.current.signInWithProvider(
+          "google" as AuthProvider,
+        );
       });
 
       // Check loading state
@@ -269,13 +293,18 @@ describe("useAuthStore", () => {
 
   describe("signInWithCredentials", () => {
     it("should sign in successfully with email and password", async () => {
-      (authService.signInWithCredentials as jest.Mock).mockResolvedValue(successAuthResult);
+      (authService.signInWithCredentials as jest.Mock).mockResolvedValue(
+        successAuthResult,
+      );
 
       const { result } = renderHook(() => useAuthStore());
 
       let success: boolean = false;
       await act(async () => {
-        success = await result.current.signInWithCredentials("test@example.com", "password123");
+        success = await result.current.signInWithCredentials(
+          "test@example.com",
+          "password123",
+        );
       });
 
       expect(success).toBe(true);
@@ -297,7 +326,10 @@ describe("useAuthStore", () => {
 
       let success: boolean = true;
       await act(async () => {
-        success = await result.current.signInWithCredentials("wrong@example.com", "wrongpass");
+        success = await result.current.signInWithCredentials(
+          "wrong@example.com",
+          "wrongpass",
+        );
       });
 
       expect(success).toBe(false);
@@ -311,12 +343,17 @@ describe("useAuthStore", () => {
         useAuthStore.setState({ error: "Previous error" });
       });
 
-      (authService.signInWithCredentials as jest.Mock).mockResolvedValue(successAuthResult);
+      (authService.signInWithCredentials as jest.Mock).mockResolvedValue(
+        successAuthResult,
+      );
 
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await result.current.signInWithCredentials("test@example.com", "password123");
+        await result.current.signInWithCredentials(
+          "test@example.com",
+          "password123",
+        );
       });
 
       expect(result.current.error).toBeNull();
@@ -352,7 +389,11 @@ describe("useAuthStore", () => {
 
       let success: boolean = false;
       await act(async () => {
-        success = await result.current.signUp("new@example.com", "password123", "John Doe");
+        success = await result.current.signUp(
+          "new@example.com",
+          "password123",
+          "John Doe",
+        );
       });
 
       expect(success).toBe(true);
@@ -371,7 +412,12 @@ describe("useAuthStore", () => {
 
       let success: boolean = false;
       await act(async () => {
-        success = await result.current.signUp("new@example.com", "password123", "John", "REF123");
+        success = await result.current.signUp(
+          "new@example.com",
+          "password123",
+          "John",
+          "REF123",
+        );
       });
 
       expect(success).toBe(true);
@@ -393,7 +439,10 @@ describe("useAuthStore", () => {
 
       let success: boolean = true;
       await act(async () => {
-        success = await result.current.signUp("existing@example.com", "password123");
+        success = await result.current.signUp(
+          "existing@example.com",
+          "password123",
+        );
       });
 
       expect(success).toBe(false);
@@ -493,7 +542,9 @@ describe("useAuthStore", () => {
 
   describe("refreshSession", () => {
     it("should refresh session successfully", async () => {
-      (authService.refreshSession as jest.Mock).mockResolvedValue(successAuthResult);
+      (authService.refreshSession as jest.Mock).mockResolvedValue(
+        successAuthResult,
+      );
 
       const { result } = renderHook(() => useAuthStore());
 
@@ -507,7 +558,9 @@ describe("useAuthStore", () => {
     });
 
     it("should handle refresh session failure", async () => {
-      (authService.refreshSession as jest.Mock).mockResolvedValue(errorAuthResult);
+      (authService.refreshSession as jest.Mock).mockResolvedValue(
+        errorAuthResult,
+      );
 
       // Set initial authenticated state
       act(() => {
@@ -596,14 +649,18 @@ describe("useAuthStore", () => {
       // First attempt fails
       let success1: boolean;
       await act(async () => {
-        success1 = await result.current.signInWithProvider("google" as AuthProvider);
+        success1 = await result.current.signInWithProvider(
+          "google" as AuthProvider,
+        );
       });
       expect(success1!).toBe(false);
 
       // Second attempt succeeds
       let success2: boolean;
       await act(async () => {
-        success2 = await result.current.signInWithProvider("google" as AuthProvider);
+        success2 = await result.current.signInWithProvider(
+          "google" as AuthProvider,
+        );
       });
       expect(success2!).toBe(true);
       expect(result.current.isAuthenticated).toBe(true);
@@ -653,11 +710,15 @@ describe("useAuthStore", () => {
 
       let response: { success: boolean; error?: string; };
       await act(async () => {
-        response = await result.current.requestPasswordReset("test@example.com");
+        response = await result.current.requestPasswordReset(
+          "test@example.com",
+        );
       });
 
       expect(response!.success).toBe(true);
-      expect(authService.requestPasswordReset).toHaveBeenCalledWith("test@example.com");
+      expect(authService.requestPasswordReset).toHaveBeenCalledWith(
+        "test@example.com",
+      );
       expect(result.current.passwordResetLoading).toBe(false);
       expect(result.current.error).toBeNull();
     });
@@ -672,7 +733,9 @@ describe("useAuthStore", () => {
 
       let response: { success: boolean; error?: string; };
       await act(async () => {
-        response = await result.current.requestPasswordReset("unknown@example.com");
+        response = await result.current.requestPasswordReset(
+          "unknown@example.com",
+        );
       });
 
       expect(response!.success).toBe(false);
@@ -719,11 +782,17 @@ describe("useAuthStore", () => {
 
       let response: { success: boolean; error?: string; };
       await act(async () => {
-        response = await result.current.resetPassword("valid-token", "NewPass123");
+        response = await result.current.resetPassword(
+          "valid-token",
+          "NewPass123",
+        );
       });
 
       expect(response!.success).toBe(true);
-      expect(authService.resetPassword).toHaveBeenCalledWith("valid-token", "NewPass123");
+      expect(authService.resetPassword).toHaveBeenCalledWith(
+        "valid-token",
+        "NewPass123",
+      );
       expect(result.current.passwordResetLoading).toBe(false);
       expect(result.current.error).toBeNull();
     });
@@ -738,7 +807,10 @@ describe("useAuthStore", () => {
 
       let response: { success: boolean; error?: string; };
       await act(async () => {
-        response = await result.current.resetPassword("expired-token", "NewPass123");
+        response = await result.current.resetPassword(
+          "expired-token",
+          "NewPass123",
+        );
       });
 
       expect(response!.success).toBe(false);
@@ -855,7 +927,9 @@ describe("useAuthStore", () => {
       });
 
       expect(response!.success).toBe(true);
-      expect(authService.resendVerification).toHaveBeenCalledWith("user@example.com");
+      expect(authService.resendVerification).toHaveBeenCalledWith(
+        "user@example.com",
+      );
       expect(result.current.verificationLoading).toBe(false);
       expect(result.current.error).toBeNull();
     });

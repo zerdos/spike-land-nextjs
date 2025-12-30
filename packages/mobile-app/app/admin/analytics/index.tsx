@@ -31,7 +31,9 @@ interface StatCardProps {
   color?: string;
 }
 
-function StatCard({ title, value, subtitle, color = "$blue10" }: StatCardProps) {
+function StatCard(
+  { title, value, subtitle, color = "$blue10" }: StatCardProps,
+) {
   return (
     <Card elevate bordered padding="$3" flex={1} backgroundColor="$background">
       <YStack>
@@ -66,7 +68,10 @@ function DateRangeSelector({ selected, onSelect }: DateRangeSelectorProps) {
   return (
     <XStack gap="$2">
       {options.map(({ key, label }) => (
-        <TouchableOpacity key={key} onPress={() => onSelect(key)}>
+        <TouchableOpacity
+          key={key}
+          onPress={() => onSelect(key)}
+        >
           <View
             backgroundColor={selected === key ? "$blue10" : "$gray3"}
             paddingHorizontal="$3"
@@ -107,7 +112,12 @@ function ChartBar({ label, value, maxValue, color }: ChartBarProps) {
           {value.toLocaleString()}
         </Text>
       </XStack>
-      <View backgroundColor="$gray4" height={8} borderRadius="$1" overflow="hidden">
+      <View
+        backgroundColor="$gray4"
+        height={8}
+        borderRadius="$1"
+        overflow="hidden"
+      >
         <View
           backgroundColor={color}
           height="100%"
@@ -126,7 +136,10 @@ interface DailyChartProps {
 
 function DailyTokenChart({ data, title }: DailyChartProps) {
   const last7Days = data.slice(-7);
-  const maxValue = Math.max(...last7Days.flatMap((d) => [d.purchased, d.spent]), 1);
+  const maxValue = Math.max(
+    ...last7Days.flatMap((d) => [d.purchased, d.spent]),
+    1,
+  );
 
   return (
     <Card elevate bordered padding="$4" backgroundColor="$background">
@@ -136,13 +149,23 @@ function DailyTokenChart({ data, title }: DailyChartProps) {
 
       <XStack marginBottom="$3" gap="$3">
         <XStack alignItems="center" gap="$1">
-          <View width={12} height={12} backgroundColor="$green10" borderRadius="$1" />
+          <View
+            width={12}
+            height={12}
+            backgroundColor="$green10"
+            borderRadius="$1"
+          />
           <Text fontSize="$1" color="$gray10">
             Purchased
           </Text>
         </XStack>
         <XStack alignItems="center" gap="$1">
-          <View width={12} height={12} backgroundColor="$orange10" borderRadius="$1" />
+          <View
+            width={12}
+            height={12}
+            backgroundColor="$orange10"
+            borderRadius="$1"
+          />
           <Text fontSize="$1" color="$gray10">
             Spent
           </Text>
@@ -183,7 +206,9 @@ function DailyTokenChart({ data, title }: DailyChartProps) {
                         paddingLeft="$2"
                       >
                         <Text fontSize="$1" color="white" fontWeight="500">
-                          {day.purchased > 0 ? day.purchased.toLocaleString() : ""}
+                          {day.purchased > 0
+                            ? day.purchased.toLocaleString()
+                            : ""}
                         </Text>
                       </View>
                     </View>
@@ -290,7 +315,9 @@ function AuthProviderChart({ data }: AuthProviderChartProps) {
         )
         : (
           data.map((item, index) => {
-            const percentage = total > 0 ? ((item.count / total) * 100).toFixed(1) : "0";
+            const percentage = total > 0
+              ? ((item.count / total) * 100).toFixed(1)
+              : "0";
             const colors = ["$blue10", "$green10", "$purple10", "$orange10"];
             return (
               <XStack
@@ -480,11 +507,13 @@ export default function AdminAnalyticsScreen() {
             />
             <StatCard
               title="Active (30d)"
-              value={userAnalytics?.activeUsersLast30Days?.toLocaleString() || "0"}
+              value={userAnalytics?.activeUsersLast30Days?.toLocaleString() ||
+                "0"}
               subtitle={`${
                 userAnalytics?.totalUsers
                   ? Math.round(
-                    (userAnalytics.activeUsersLast30Days / userAnalytics.totalUsers) * 100,
+                    (userAnalytics.activeUsersLast30Days /
+                      userAnalytics.totalUsers) * 100,
                   )
                   : 0
               }% of total`}
@@ -499,9 +528,13 @@ export default function AdminAnalyticsScreen() {
             />
             <StatCard
               title="Avg Daily Signups"
-              value={userAnalytics?.dailySignups && userAnalytics.dailySignups.length > 0
+              value={userAnalytics?.dailySignups &&
+                  userAnalytics.dailySignups.length > 0
                 ? Math.round(
-                  userAnalytics.dailySignups.reduce((sum, d) => sum + d.count, 0) /
+                  userAnalytics.dailySignups.reduce(
+                    (sum, d) => sum + d.count,
+                    0,
+                  ) /
                     userAnalytics.dailySignups.length,
                 ).toString()
                 : "0"}
@@ -525,7 +558,8 @@ export default function AdminAnalyticsScreen() {
             />
             <StatCard
               title="Tokens in Circulation"
-              value={tokenAnalytics?.circulation?.total?.toLocaleString() || "0"}
+              value={tokenAnalytics?.circulation?.total?.toLocaleString() ||
+                "0"}
               subtitle={`Avg: ${tokenAnalytics?.circulation?.average?.toFixed(1) || "0"} per user`}
               color="$blue10"
             />
@@ -558,11 +592,17 @@ export default function AdminAnalyticsScreen() {
 
         {/* Token Types Breakdown */}
         <Card elevate bordered padding="$4" backgroundColor="$background">
-          <Text fontSize="$4" fontWeight="600" color="$gray12" marginBottom="$3">
+          <Text
+            fontSize="$4"
+            fontWeight="600"
+            color="$gray12"
+            marginBottom="$3"
+          >
             Token Transactions by Type
           </Text>
 
-          {(!tokenAnalytics?.tokensByType || tokenAnalytics.tokensByType.length === 0)
+          {(!tokenAnalytics?.tokensByType ||
+              tokenAnalytics.tokensByType.length === 0)
             ? (
               <Text color="$gray9" fontSize="$2">
                 No transaction data available

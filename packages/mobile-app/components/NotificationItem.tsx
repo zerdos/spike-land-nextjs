@@ -165,7 +165,9 @@ export function NotificationItem({
       <Animated.View style={containerAnimatedStyle} testID={testID}>
         <Stack flex={1} position="relative">
           {/* Delete Background */}
-          <Animated.View style={[styles.deleteBackground, deleteBackgroundStyle]}>
+          <Animated.View
+            style={[styles.deleteBackground, deleteBackgroundStyle]}
+          >
             <Stack
               flex={1}
               backgroundColor="$red9"

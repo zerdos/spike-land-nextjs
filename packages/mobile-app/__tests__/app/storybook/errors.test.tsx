@@ -47,7 +47,9 @@ describe("ErrorsPage", () => {
     it("should render 404 error message", () => {
       const { getByText } = render(<ErrorsPage />);
       expect(
-        getByText("The page you're looking for doesn't exist or has been moved."),
+        getByText(
+          "The page you're looking for doesn't exist or has been moved.",
+        ),
       ).toBeTruthy();
     });
 
@@ -196,7 +198,8 @@ describe("ErrorsPage", () => {
 
     it("should render Empty States section description", () => {
       const { getByText } = render(<ErrorsPage />);
-      expect(getByText("Helpful prompts when no data is available.")).toBeTruthy();
+      expect(getByText("Helpful prompts when no data is available."))
+        .toBeTruthy();
     });
 
     it("should render No Images Yet title", () => {
@@ -207,7 +210,9 @@ describe("ErrorsPage", () => {
     it("should render empty state message", () => {
       const { getByText } = render(<ErrorsPage />);
       expect(
-        getByText("Upload your first image to get started with AI enhancement."),
+        getByText(
+          "Upload your first image to get started with AI enhancement.",
+        ),
       ).toBeTruthy();
     });
 

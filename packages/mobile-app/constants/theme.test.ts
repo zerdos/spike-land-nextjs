@@ -404,7 +404,9 @@ describe("theme constants", () => {
       expect(animation.easing.easeIn).toBe("ease-in");
       expect(animation.easing.easeOut).toBe("ease-out");
       expect(animation.easing.easeInOut).toBe("ease-in-out");
-      expect(animation.easing.bounce).toBe("cubic-bezier(0.25, 0.1, 0.25, 1.5)");
+      expect(animation.easing.bounce).toBe(
+        "cubic-bezier(0.25, 0.1, 0.25, 1.5)",
+      );
     });
   });
 

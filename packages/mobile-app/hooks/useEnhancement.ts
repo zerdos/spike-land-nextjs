@@ -293,7 +293,9 @@ export function useEnhancement(): UseEnhancementReturn {
         fetchBalance();
         updateState({
           status: "failed",
-          error: pollError instanceof Error ? pollError.message : "Enhancement failed",
+          error: pollError instanceof Error
+            ? pollError.message
+            : "Enhancement failed",
           progress: 0,
           progressMessage: "",
         });
@@ -309,7 +311,14 @@ export function useEnhancement(): UseEnhancementReturn {
       });
       return false;
     }
-  }, [state, canAffordTier, getTierCost, deductTokens, fetchBalance, updateState]);
+  }, [
+    state,
+    canAffordTier,
+    getTierCost,
+    deductTokens,
+    fetchBalance,
+    updateState,
+  ]);
 
   /**
    * Cancel the current enhancement

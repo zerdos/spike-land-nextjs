@@ -12,11 +12,15 @@ describe("rename", () => {
   it("should rename a file", async () => {
     await rename("/test.txt", "/renamed.txt");
 
-    const sourceFileHandle = await mockDirectoryHandle.getFileHandle("test.txt");
+    const sourceFileHandle = await mockDirectoryHandle.getFileHandle(
+      "test.txt",
+    );
     const sourceFile = await sourceFileHandle.getFile();
     expect(sourceFile.text).toHaveBeenCalled();
 
-    const destFileHandle = await mockDirectoryHandle.getFileHandle("renamed.txt");
+    const destFileHandle = await mockDirectoryHandle.getFileHandle(
+      "renamed.txt",
+    );
     const writable = await destFileHandle.createWritable();
     expect(writable.write).toHaveBeenCalled();
 

@@ -11,7 +11,10 @@ import { borderRadius, colors, fontSize, glassMorphism, shadows, spacing } from 
 
 export default function SurfacesPage() {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Surfaces</Text>
@@ -27,15 +30,27 @@ export default function SurfacesPage() {
           Three levels of transparency for layered interfaces.
         </Text>
         <View style={styles.glassGrid}>
-          <View style={[styles.glassCard, { backgroundColor: glassMorphism.glass0 }]}>
+          <View
+            style={[styles.glassCard, {
+              backgroundColor: glassMorphism.glass0,
+            }]}
+          >
             <Text style={styles.glassLabel}>Glass 0</Text>
             <Text style={styles.glassValue}>5% opacity</Text>
           </View>
-          <View style={[styles.glassCard, { backgroundColor: glassMorphism.glass1 }]}>
+          <View
+            style={[styles.glassCard, {
+              backgroundColor: glassMorphism.glass1,
+            }]}
+          >
             <Text style={styles.glassLabel}>Glass 1</Text>
             <Text style={styles.glassValue}>8% opacity</Text>
           </View>
-          <View style={[styles.glassCard, { backgroundColor: glassMorphism.glass2 }]}>
+          <View
+            style={[styles.glassCard, {
+              backgroundColor: glassMorphism.glass2,
+            }]}
+          >
             <Text style={styles.glassLabel}>Glass 2</Text>
             <Text style={styles.glassValue}>12% opacity</Text>
           </View>
@@ -84,35 +99,51 @@ export default function SurfacesPage() {
         </Text>
         <View style={styles.radiusGrid}>
           <View style={styles.radiusItem}>
-            <View style={[styles.radiusBox, { borderRadius: borderRadius.none }]} />
+            <View
+              style={[styles.radiusBox, { borderRadius: borderRadius.none }]}
+            />
             <Text style={styles.radiusLabel}>None</Text>
           </View>
           <View style={styles.radiusItem}>
-            <View style={[styles.radiusBox, { borderRadius: borderRadius.sm }]} />
+            <View
+              style={[styles.radiusBox, { borderRadius: borderRadius.sm }]}
+            />
             <Text style={styles.radiusLabel}>SM (4px)</Text>
           </View>
           <View style={styles.radiusItem}>
-            <View style={[styles.radiusBox, { borderRadius: borderRadius.DEFAULT }]} />
+            <View
+              style={[styles.radiusBox, { borderRadius: borderRadius.DEFAULT }]}
+            />
             <Text style={styles.radiusLabel}>Default (8px)</Text>
           </View>
           <View style={styles.radiusItem}>
-            <View style={[styles.radiusBox, { borderRadius: borderRadius.md }]} />
+            <View
+              style={[styles.radiusBox, { borderRadius: borderRadius.md }]}
+            />
             <Text style={styles.radiusLabel}>MD (10px)</Text>
           </View>
           <View style={styles.radiusItem}>
-            <View style={[styles.radiusBox, { borderRadius: borderRadius.lg }]} />
+            <View
+              style={[styles.radiusBox, { borderRadius: borderRadius.lg }]}
+            />
             <Text style={styles.radiusLabel}>LG (14px)</Text>
           </View>
           <View style={styles.radiusItem}>
-            <View style={[styles.radiusBox, { borderRadius: borderRadius.xl }]} />
+            <View
+              style={[styles.radiusBox, { borderRadius: borderRadius.xl }]}
+            />
             <Text style={styles.radiusLabel}>XL (18px)</Text>
           </View>
           <View style={styles.radiusItem}>
-            <View style={[styles.radiusBox, { borderRadius: borderRadius["2xl"] }]} />
+            <View
+              style={[styles.radiusBox, { borderRadius: borderRadius["2xl"] }]}
+            />
             <Text style={styles.radiusLabel}>2XL (24px)</Text>
           </View>
           <View style={styles.radiusItem}>
-            <View style={[styles.radiusBox, { borderRadius: borderRadius.full }]} />
+            <View
+              style={[styles.radiusBox, { borderRadius: borderRadius.full }]}
+            />
             <Text style={styles.radiusLabel}>Full</Text>
           </View>
         </View>
@@ -127,9 +158,15 @@ export default function SurfacesPage() {
         <View style={styles.cardGrid}>
           <View style={styles.cardDefault}>
             <Text style={styles.cardLabel}>Default</Text>
-            <Text style={styles.cardDescription}>Standard card with border</Text>
+            <Text style={styles.cardDescription}>
+              Standard card with border
+            </Text>
           </View>
-          <View style={[styles.cardDefault, { backgroundColor: glassMorphism.glassCard }]}>
+          <View
+            style={[styles.cardDefault, {
+              backgroundColor: glassMorphism.glassCard,
+            }]}
+          >
             <Text style={styles.cardLabel}>Glass</Text>
             <Text style={styles.cardDescription}>Transparent glass effect</Text>
           </View>

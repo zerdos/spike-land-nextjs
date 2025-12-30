@@ -39,7 +39,9 @@ class FileHandleImpl {
    * Read the entire file
    * Node.js signature: readFile([options])
    */
-  readFile(options?: { encoding?: null; flag?: string; } | null): Promise<Buffer>;
+  readFile(
+    options?: { encoding?: null; flag?: string; } | null,
+  ): Promise<Buffer>;
   readFile(
     options: { encoding: BufferEncoding; flag?: string; } | BufferEncoding,
   ): Promise<string>;
@@ -53,7 +55,9 @@ class FileHandleImpl {
       const file = await this.fileHandle.getFile();
       const content = await file.text();
 
-      const encoding = typeof options === "string" ? options : options?.encoding;
+      const encoding = typeof options === "string"
+        ? options
+        : options?.encoding;
 
       if (encoding === null || encoding === undefined) {
         return Buffer.from(content);
@@ -103,7 +107,9 @@ class FileHandleImpl {
   ): Promise<void> {
     const doAppendFile = async () => {
       const existingContent = await this.readFile();
-      const appendContent = typeof data === "string" ? data : new TextDecoder().decode(data);
+      const appendContent = typeof data === "string"
+        ? data
+        : new TextDecoder().decode(data);
       await this.writeFile(existingContent + appendContent, options);
     };
 
@@ -119,7 +125,9 @@ class FileHandleImpl {
    * @throws Not implemented (OPFS doesn't support permissions)
    */
   async chmod(_mode: Mode): Promise<void> {
-    const error = new Error("ENOTSUP: operation not supported, chmod") as NodeJS.ErrnoException;
+    const error = new Error(
+      "ENOTSUP: operation not supported, chmod",
+    ) as NodeJS.ErrnoException;
     error.code = "ENOTSUP";
     error.syscall = "fchmod";
     throw error;
@@ -194,7 +202,9 @@ class FileHandleImpl {
    * @throws Not implemented (OPFS doesn't support ownership)
    */
   async chown(_uid: number, _gid: number): Promise<void> {
-    const error = new Error("ENOTSUP: operation not supported, chown") as NodeJS.ErrnoException;
+    const error = new Error(
+      "ENOTSUP: operation not supported, chown",
+    ) as NodeJS.ErrnoException;
     error.code = "ENOTSUP";
     error.syscall = "fchown";
     throw error;
@@ -301,7 +311,9 @@ class FileHandleImpl {
     _atime: string | number | Date,
     _mtime: string | number | Date,
   ): Promise<void> {
-    const error = new Error("ENOTSUP: operation not supported, utimes") as NodeJS.ErrnoException;
+    const error = new Error(
+      "ENOTSUP: operation not supported, utimes",
+    ) as NodeJS.ErrnoException;
     error.code = "ENOTSUP";
     error.syscall = "futimes";
     throw error;
@@ -525,6 +537,8 @@ export async function open(
     console.error(`Error opening file ${path}:`, error);
     throw error;
   }
-  if (!fileHandle) throw new Error(`ENOENT: Opening file ${path} returned no handle`);
+  if (!fileHandle) {
+    throw new Error(`ENOENT: Opening file ${path} returned no handle`);
+  }
   return fileHandle;
 }

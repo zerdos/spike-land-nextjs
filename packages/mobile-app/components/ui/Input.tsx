@@ -237,7 +237,10 @@ export const Input = forwardRef<TextInput, InputProps>(
     return (
       <InputContainer testID={testID}>
         {label && (
-          <InputLabel testID={testID ? `${testID}-label` : undefined} accessibilityRole="text">
+          <InputLabel
+            testID={testID ? `${testID}-label` : undefined}
+            accessibilityRole="text"
+          >
             {label}
           </InputLabel>
         )}
@@ -283,7 +286,10 @@ export const Input = forwardRef<TextInput, InputProps>(
           )}
         </InputWrapper>
         {showHelperText && (
-          <InputHelperText hasError={hasError} testID={testID ? `${testID}-helper` : undefined}>
+          <InputHelperText
+            hasError={hasError}
+            testID={testID ? `${testID}-helper` : undefined}
+          >
             {error || helperText}
           </InputHelperText>
         )}

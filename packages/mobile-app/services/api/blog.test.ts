@@ -81,7 +81,9 @@ describe("Blog API Service", () => {
 
       await getBlogPosts({ limit: 10 });
 
-      expect(mockApiClient.get).toHaveBeenCalledWith("/api/blog/posts?limit=10");
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        "/api/blog/posts?limit=10",
+      );
     });
 
     it("should fetch blog posts with category parameter", async () => {
@@ -111,7 +113,9 @@ describe("Blog API Service", () => {
 
       await getBlogPosts({ tag: "react" });
 
-      expect(mockApiClient.get).toHaveBeenCalledWith("/api/blog/posts?tag=react");
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        "/api/blog/posts?tag=react",
+      );
     });
 
     it("should fetch blog posts with featured parameter", async () => {

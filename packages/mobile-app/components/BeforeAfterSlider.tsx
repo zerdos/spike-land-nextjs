@@ -17,7 +17,9 @@ const DEFAULT_SLIDER_WIDTH = SCREEN_WIDTH - 32;
  * Helper to safely chain gesture methods (for test environment compatibility)
  * In test environments, gesture methods may return incomplete objects
  */
-type GestureType = ReturnType<typeof Gesture.Pan> | ReturnType<typeof Gesture.Tap>;
+type GestureType =
+  | ReturnType<typeof Gesture.Pan>
+  | ReturnType<typeof Gesture.Tap>;
 type ChainableMethod = "onBegin" | "onUpdate" | "onFinalize" | "onEnd";
 
 function safeChain<T extends GestureType>(
@@ -25,8 +27,14 @@ function safeChain<T extends GestureType>(
   method: ChainableMethod,
   callback: (event: { x: number; }) => void,
 ): T {
-  if (gesture && typeof (gesture as Record<string, unknown>)[method] === "function") {
-    return (gesture as Record<string, (cb: (event: { x: number; }) => void) => T>)[method](
+  if (
+    gesture &&
+    typeof (gesture as Record<string, unknown>)[method] === "function"
+  ) {
+    return (gesture as Record<
+      string,
+      (cb: (event: { x: number; }) => void) => T
+    >)[method](
       callback,
     );
   }

@@ -31,8 +31,12 @@ jest.mock("@expo/vector-icons", () => ({
 jest.mock("@/stores");
 jest.mock("@/stores/settings-store");
 
-const mockedUseAuthStore = useAuthStore as jest.MockedFunction<typeof useAuthStore>;
-const mockedUseSettingsStore = useSettingsStore as jest.MockedFunction<typeof useSettingsStore>;
+const mockedUseAuthStore = useAuthStore as jest.MockedFunction<
+  typeof useAuthStore
+>;
+const mockedUseSettingsStore = useSettingsStore as jest.MockedFunction<
+  typeof useSettingsStore
+>;
 
 // Mock Tamagui components
 jest.mock("tamagui", () => {
@@ -190,7 +194,8 @@ describe("PrivacyScreen", () => {
       const { getByText } = render(<PrivacyScreen />);
 
       expect(getByText("Sign in required")).toBeTruthy();
-      expect(getByText("Please sign in to manage your privacy settings")).toBeTruthy();
+      expect(getByText("Please sign in to manage your privacy settings"))
+        .toBeTruthy();
     });
 
     it("should navigate to sign in when button is pressed", () => {
@@ -319,7 +324,8 @@ describe("PrivacyScreen", () => {
       fireEvent.press(getByText("Delete Account"));
 
       // Dialog should be visible
-      expect(getByText("This action is permanent and cannot be undone.")).toBeTruthy();
+      expect(getByText("This action is permanent and cannot be undone."))
+        .toBeTruthy();
     });
   });
 
@@ -329,8 +335,10 @@ describe("PrivacyScreen", () => {
 
       fireEvent.press(getByText("Delete Account"));
 
-      expect(getByText("This action is permanent and cannot be undone.")).toBeTruthy();
-      expect(getByText("All your data will be permanently deleted, including:")).toBeTruthy();
+      expect(getByText("This action is permanent and cannot be undone."))
+        .toBeTruthy();
+      expect(getByText("All your data will be permanently deleted, including:"))
+        .toBeTruthy();
       expect(getByText("- All enhanced images")).toBeTruthy();
       expect(getByText("- Your token balance")).toBeTruthy();
       expect(getByText("- API keys and integrations")).toBeTruthy();
@@ -431,7 +439,8 @@ describe("PrivacyScreen", () => {
 
       fireEvent.press(getByText("Delete Account"));
 
-      expect(getByText("This action is permanent and cannot be undone.")).toBeTruthy();
+      expect(getByText("This action is permanent and cannot be undone."))
+        .toBeTruthy();
 
       fireEvent.press(getByText("Cancel"));
 
@@ -486,7 +495,9 @@ describe("PrivacyScreen", () => {
 
       // Verify the error is set correctly in the mock store
       // The actual Alert behavior is handled by useEffect which is difficult to test in isolation
-      expect(mockSettingsStore.preferencesError).toBe("Failed to update preferences");
+      expect(mockSettingsStore.preferencesError).toBe(
+        "Failed to update preferences",
+      );
     });
 
     it("should have delete account error available when error occurs", () => {
@@ -495,7 +506,9 @@ describe("PrivacyScreen", () => {
       render(<PrivacyScreen />);
 
       // Verify the error is set correctly in the mock store
-      expect(mockSettingsStore.deleteAccountError).toBe("Account deletion failed");
+      expect(mockSettingsStore.deleteAccountError).toBe(
+        "Account deletion failed",
+      );
     });
   });
 

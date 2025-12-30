@@ -103,7 +103,9 @@ function RootLayoutNav() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <TamaguiProvider config={config} defaultTheme={colorScheme}>
-          <ThemeProvider value={colorScheme === "dark" ? SpikeLandDarkTheme : DefaultTheme}>
+          <ThemeProvider
+            value={colorScheme === "dark" ? SpikeLandDarkTheme : DefaultTheme}
+          >
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="modal" options={{ presentation: "modal" }} />

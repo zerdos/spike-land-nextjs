@@ -241,7 +241,9 @@ describe("useTokenStore", () => {
     });
 
     it("should handle non-Error objects in fetch catch block", async () => {
-      (tokensApi.getTokenBalance as jest.Mock).mockRejectedValue("String error");
+      (tokensApi.getTokenBalance as jest.Mock).mockRejectedValue(
+        "String error",
+      );
 
       const { result } = renderHook(() => useTokenStore());
 
@@ -436,7 +438,11 @@ describe("useTokenStore", () => {
       });
 
       (tokensApi.redeemVoucher as jest.Mock).mockResolvedValue({
-        data: { success: true, tokensGranted: 10, newBalance: 15 } as RedeemVoucherResponse,
+        data: {
+          success: true,
+          tokensGranted: 10,
+          newBalance: 15,
+        } as RedeemVoucherResponse,
         error: null,
       });
 

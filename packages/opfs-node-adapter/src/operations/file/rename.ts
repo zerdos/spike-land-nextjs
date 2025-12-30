@@ -20,7 +20,10 @@ export async function rename(oldPath: string, newPath: string): Promise<void> {
   const { error: fileRenameError } = await tryCatch(doRenameFile());
 
   if (fileRenameError) {
-    console.warn(`Renaming ${oldPath} as file failed, trying as directory:`, fileRenameError);
+    console.warn(
+      `Renaming ${oldPath} as file failed, trying as directory:`,
+      fileRenameError,
+    );
     const doRenameDirectory = async () => {
       const { readdir, mkdir, rmdir } = await import("../directory");
       const entries = await readdir(oldPath);
@@ -41,7 +44,10 @@ export async function rename(oldPath: string, newPath: string): Promise<void> {
             await mkdir(destPath);
             const subEntries = await readdir(sourcePath);
             for (const subEntry of subEntries) {
-              await rename(`${sourcePath}/${subEntry}`, `${destPath}/${subEntry}`);
+              await rename(
+                `${sourcePath}/${subEntry}`,
+                `${destPath}/${subEntry}`,
+              );
             }
             await rmdir(sourcePath);
           }

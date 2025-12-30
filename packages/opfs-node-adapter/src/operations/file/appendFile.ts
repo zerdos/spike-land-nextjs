@@ -17,22 +17,35 @@ export async function appendFile(
 ): Promise<void> {
   const doAppend = async () => {
     let existingContent = "";
-    const { data: readData, error: readError } = await tryCatch(readFile(filePath, "utf8"));
+    const { data: readData, error: readError } = await tryCatch(
+      readFile(filePath, "utf8"),
+    );
     if (readError) {
-      console.warn(`File ${filePath} not found or unreadable for append, creating new file.`);
+      console.warn(
+        `File ${filePath} not found or unreadable for append, creating new file.`,
+      );
     } else {
       existingContent = readData || "";
     }
 
-    const appendContent = typeof data === "string" ? data : new TextDecoder().decode(data);
+    const appendContent = typeof data === "string"
+      ? data
+      : new TextDecoder().decode(data);
     await writeFile(filePath, existingContent + appendContent);
   };
 
   const { error } = await tryCatch(doAppend());
   if (error) {
-    console.warn(`Initial append failed for ${filePath}, attempting direct write:`, error);
-    const contentToWrite = typeof data === "string" ? data : new TextDecoder().decode(data);
-    const { error: directWriteError } = await tryCatch(writeFile(filePath, contentToWrite));
+    console.warn(
+      `Initial append failed for ${filePath}, attempting direct write:`,
+      error,
+    );
+    const contentToWrite = typeof data === "string"
+      ? data
+      : new TextDecoder().decode(data);
+    const { error: directWriteError } = await tryCatch(
+      writeFile(filePath, contentToWrite),
+    );
     if (directWriteError) {
       console.error(
         `Direct write also failed for ${filePath} after append attempt:`,

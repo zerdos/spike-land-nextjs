@@ -86,9 +86,17 @@ describe("notifications service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset Device.isDevice to default true
-    Object.defineProperty(Device, "isDevice", { value: true, writable: true, configurable: true });
+    Object.defineProperty(Device, "isDevice", {
+      value: true,
+      writable: true,
+      configurable: true,
+    });
     // Reset Platform.OS to default ios
-    Object.defineProperty(Platform, "OS", { value: "ios", writable: true, configurable: true });
+    Object.defineProperty(Platform, "OS", {
+      value: "ios",
+      writable: true,
+      configurable: true,
+    });
   });
 
   describe("registerForPushNotifications", () => {
@@ -184,13 +192,14 @@ describe("notifications service", () => {
 
       await registerForPushNotifications();
 
-      expect(mockNotifications.setNotificationChannelAsync).toHaveBeenCalledWith(
-        "default",
-        expect.objectContaining({
-          name: "Default",
-          importance: Notifications.AndroidImportance.MAX,
-        }),
-      );
+      expect(mockNotifications.setNotificationChannelAsync)
+        .toHaveBeenCalledWith(
+          "default",
+          expect.objectContaining({
+            name: "Default",
+            importance: Notifications.AndroidImportance.MAX,
+          }),
+        );
     });
 
     it("returns null when getExpoPushTokenAsync fails", async () => {
@@ -258,7 +267,9 @@ describe("notifications service", () => {
 
   describe("scheduleLocalNotification", () => {
     it("schedules immediate notification with correct parameters", async () => {
-      mockNotifications.scheduleNotificationAsync.mockResolvedValue("notif-123");
+      mockNotifications.scheduleNotificationAsync.mockResolvedValue(
+        "notif-123",
+      );
 
       const result = await scheduleLocalNotification(
         "Test Title",
@@ -279,7 +290,9 @@ describe("notifications service", () => {
     });
 
     it("schedules notification without data", async () => {
-      mockNotifications.scheduleNotificationAsync.mockResolvedValue("notif-456");
+      mockNotifications.scheduleNotificationAsync.mockResolvedValue(
+        "notif-456",
+      );
 
       const result = await scheduleLocalNotification("Title", "Body");
 
@@ -298,7 +311,9 @@ describe("notifications service", () => {
 
   describe("scheduleDelayedNotification", () => {
     it("schedules notification with time interval trigger", async () => {
-      mockNotifications.scheduleNotificationAsync.mockResolvedValue("delayed-123");
+      mockNotifications.scheduleNotificationAsync.mockResolvedValue(
+        "delayed-123",
+      );
 
       const result = await scheduleDelayedNotification(
         "Delayed Title",
@@ -327,9 +342,10 @@ describe("notifications service", () => {
     it("cancels a specific scheduled notification", async () => {
       await cancelNotification("notif-to-cancel");
 
-      expect(mockNotifications.cancelScheduledNotificationAsync).toHaveBeenCalledWith(
-        "notif-to-cancel",
-      );
+      expect(mockNotifications.cancelScheduledNotificationAsync)
+        .toHaveBeenCalledWith(
+          "notif-to-cancel",
+        );
     });
   });
 
@@ -337,7 +353,8 @@ describe("notifications service", () => {
     it("cancels all scheduled notifications", async () => {
       await cancelAllNotifications();
 
-      expect(mockNotifications.cancelAllScheduledNotificationsAsync).toHaveBeenCalled();
+      expect(mockNotifications.cancelAllScheduledNotificationsAsync)
+        .toHaveBeenCalled();
     });
   });
 
@@ -446,7 +463,9 @@ describe("notifications service", () => {
 
       const result = await fetchNotifications(1, 20);
 
-      expect(mockApiClient.get).toHaveBeenCalledWith("/api/notifications?page=1&limit=20");
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        "/api/notifications?page=1&limit=20",
+      );
       expect(result).toEqual(mockNotificationsData);
     });
 
@@ -471,7 +490,9 @@ describe("notifications service", () => {
 
       await fetchNotifications();
 
-      expect(mockApiClient.get).toHaveBeenCalledWith("/api/notifications?page=1&limit=20");
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        "/api/notifications?page=1&limit=20",
+      );
     });
   });
 
@@ -485,7 +506,9 @@ describe("notifications service", () => {
 
       const result = await markNotificationAsRead("notif-123");
 
-      expect(mockApiClient.patch).toHaveBeenCalledWith("/api/notifications/notif-123/read");
+      expect(mockApiClient.patch).toHaveBeenCalledWith(
+        "/api/notifications/notif-123/read",
+      );
       expect(result).toBe(true);
     });
 
@@ -512,7 +535,9 @@ describe("notifications service", () => {
 
       const result = await markAllNotificationsAsRead();
 
-      expect(mockApiClient.post).toHaveBeenCalledWith("/api/notifications/mark-all-read");
+      expect(mockApiClient.post).toHaveBeenCalledWith(
+        "/api/notifications/mark-all-read",
+      );
       expect(result).toBe(true);
     });
 
@@ -539,7 +564,9 @@ describe("notifications service", () => {
 
       const result = await deleteNotification("notif-to-delete");
 
-      expect(mockApiClient.delete).toHaveBeenCalledWith("/api/notifications/notif-to-delete");
+      expect(mockApiClient.delete).toHaveBeenCalledWith(
+        "/api/notifications/notif-to-delete",
+      );
       expect(result).toBe(true);
     });
 

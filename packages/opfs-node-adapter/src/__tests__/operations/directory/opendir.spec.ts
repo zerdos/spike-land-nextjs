@@ -181,13 +181,17 @@ describe("opendir", () => {
 
   it("should throw error for readSync", async () => {
     const dir = await opendir("/");
-    expect(() => dir.readSync()).toThrow("readSync is not supported in async OPFS context");
+    expect(() => dir.readSync()).toThrow(
+      "readSync is not supported in async OPFS context",
+    );
     await dir.close();
   });
 
   it("should throw error for closeSync", async () => {
     const dir = await opendir("/");
-    expect(() => dir.closeSync()).toThrow("closeSync is not supported in async OPFS context");
+    expect(() => dir.closeSync()).toThrow(
+      "closeSync is not supported in async OPFS context",
+    );
     await dir.close();
   });
 

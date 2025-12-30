@@ -21,7 +21,9 @@ interface StatCardProps {
   color?: string;
 }
 
-function StatCard({ title, value, subtitle, color = "$blue10" }: StatCardProps) {
+function StatCard(
+  { title, value, subtitle, color = "$blue10" }: StatCardProps,
+) {
   return (
     <Card
       elevate
@@ -178,7 +180,9 @@ export default function AdminDashboard() {
         <Text color="$gray10" fontSize="$2" textAlign="center">
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>
-        <TouchableOpacity onPress={() => refetch()}>
+        <TouchableOpacity
+          onPress={() => refetch()}
+        >
           <Text color="$blue10" marginTop="$4">
             Try Again
           </Text>
@@ -251,9 +255,11 @@ export default function AdminDashboard() {
                 count={stats?.jobStatus?.failed || 0}
               />
             </XStack>
-            {(stats?.jobStatus?.pending || 0) + (stats?.jobStatus?.processing || 0) > 0 && (
+            {(stats?.jobStatus?.pending || 0) +
+                    (stats?.jobStatus?.processing || 0) > 0 && (
               <Paragraph marginTop="$3" fontSize="$2" color="$blue10">
-                {(stats?.jobStatus?.pending || 0) + (stats?.jobStatus?.processing || 0)} active jobs
+                {(stats?.jobStatus?.pending || 0) +
+                  (stats?.jobStatus?.processing || 0)} active jobs
               </Paragraph>
             )}
           </Card>
@@ -298,7 +304,9 @@ export default function AdminDashboard() {
 
         {/* Last Updated */}
         <Text fontSize="$1" color="$gray9" textAlign="center" marginTop="$2">
-          Last updated: {stats?.timestamp ? new Date(stats.timestamp).toLocaleTimeString() : "N/A"}
+          Last updated: {stats?.timestamp
+            ? new Date(stats.timestamp).toLocaleTimeString()
+            : "N/A"}
         </Text>
       </YStack>
     </ScrollView>

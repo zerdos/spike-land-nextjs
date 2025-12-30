@@ -37,7 +37,9 @@ jest.mock("tamagui", () => {
       <RNText {...props}>{children}</RNText>
     ),
     XStack: (
-      { children, onPress, ...props }: React.PropsWithChildren<{ onPress?: () => void; }>,
+      { children, onPress, ...props }: React.PropsWithChildren<
+        { onPress?: () => void; }
+      >,
     ) => (
       <View {...props} onTouchEnd={onPress}>
         {children}

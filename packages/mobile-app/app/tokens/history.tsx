@@ -125,7 +125,9 @@ function FilterButtons({ activeFilter, onFilterChange }: FilterButtonsProps) {
           theme={activeFilter === filter.key ? "blue" : "gray"}
           variant={activeFilter === filter.key ? "outlined" : "outlined"}
           onPress={() => onFilterChange(filter.key)}
-          backgroundColor={activeFilter === filter.key ? "$blue3" : "transparent"}
+          backgroundColor={activeFilter === filter.key
+            ? "$blue3"
+            : "transparent"}
         >
           {filter.label}
         </Button>

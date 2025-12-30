@@ -135,7 +135,9 @@ export function ShareButtons({
         onShareSuccess?.();
       }
     } catch (error) {
-      const err = error instanceof Error ? error : new Error("Twitter share failed");
+      const err = error instanceof Error
+        ? error
+        : new Error("Twitter share failed");
       onShareError?.(err);
       Alert.alert("Error", "Failed to open Twitter");
     }
@@ -149,7 +151,9 @@ export function ShareButtons({
       await Linking.openURL(facebookUrl);
       onShareSuccess?.();
     } catch (error) {
-      const err = error instanceof Error ? error : new Error("Facebook share failed");
+      const err = error instanceof Error
+        ? error
+        : new Error("Facebook share failed");
       onShareError?.(err);
       Alert.alert("Error", "Failed to open Facebook");
     }
@@ -176,7 +180,9 @@ export function ShareButtons({
         onShareSuccess?.();
       }
     } catch (error) {
-      const err = error instanceof Error ? error : new Error("WhatsApp share failed");
+      const err = error instanceof Error
+        ? error
+        : new Error("WhatsApp share failed");
       onShareError?.(err);
       Alert.alert("Error", "Failed to open WhatsApp");
     }

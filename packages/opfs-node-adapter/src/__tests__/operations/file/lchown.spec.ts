@@ -46,14 +46,20 @@ describe("lchown", () => {
 
   it("should throw for different uid and gid values", async () => {
     await expect(lchown("/test/file.txt", 0, 0)).rejects.toThrow("ENOTSUP");
-    await expect(lchown("/test/file.txt", 1001, 1001)).rejects.toThrow("ENOTSUP");
+    await expect(lchown("/test/file.txt", 1001, 1001)).rejects.toThrow(
+      "ENOTSUP",
+    );
   });
 
   it("should throw for absolute paths", async () => {
-    await expect(lchown("/absolute/path/file.txt", 1000, 1000)).rejects.toThrow("ENOTSUP");
+    await expect(lchown("/absolute/path/file.txt", 1000, 1000)).rejects.toThrow(
+      "ENOTSUP",
+    );
   });
 
   it("should throw for relative paths", async () => {
-    await expect(lchown("relative/path/file.txt", 1000, 1000)).rejects.toThrow("ENOTSUP");
+    await expect(lchown("relative/path/file.txt", 1000, 1000)).rejects.toThrow(
+      "ENOTSUP",
+    );
   });
 });

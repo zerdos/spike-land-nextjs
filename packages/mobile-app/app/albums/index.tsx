@@ -93,7 +93,12 @@ export default function AlbumsListScreen() {
         />
       </Stack>
     ),
-    [getAlbumImageCount, getCoverImageUrl, handleAlbumPress, handleAlbumLongPress],
+    [
+      getAlbumImageCount,
+      getCoverImageUrl,
+      handleAlbumPress,
+      handleAlbumLongPress,
+    ],
   );
 
   // Key extractor

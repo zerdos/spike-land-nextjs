@@ -30,7 +30,9 @@ describe("PixelLogo", () => {
     it("renders text for all sizes", () => {
       const sizes = ["sm", "md", "lg", "xl"] as const;
       for (const size of sizes) {
-        const { unmount } = render(<PixelLogo size={size} variant="horizontal" />);
+        const { unmount } = render(
+          <PixelLogo size={size} variant="horizontal" />,
+        );
         expect(screen.getByText("pixel")).toBeTruthy();
         unmount();
       }
@@ -72,7 +74,9 @@ describe("SpikeLandLogo", () => {
     it("renders text for all sizes", () => {
       const sizes = ["sm", "md", "lg", "xl"] as const;
       for (const size of sizes) {
-        const { unmount } = render(<SpikeLandLogo size={size} variant="horizontal" />);
+        const { unmount } = render(
+          <SpikeLandLogo size={size} variant="horizontal" />,
+        );
         expect(screen.getByText("spike.land")).toBeTruthy();
         unmount();
       }

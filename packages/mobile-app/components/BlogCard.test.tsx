@@ -156,7 +156,11 @@ describe("BlogCard", () => {
     };
 
     render(
-      <BlogCard post={postWithNoTags} onPress={mockOnPress} testID="blog-card" />,
+      <BlogCard
+        post={postWithNoTags}
+        onPress={mockOnPress}
+        testID="blog-card"
+      />,
     );
 
     expect(screen.queryByText("#react")).toBeNull();
@@ -224,7 +228,11 @@ describe("BlogCard", () => {
     };
 
     render(
-      <BlogCard post={postWithNoImage} onPress={mockOnPress} testID="blog-card" />,
+      <BlogCard
+        post={postWithNoImage}
+        onPress={mockOnPress}
+        testID="blog-card"
+      />,
     );
 
     // Image component should still be rendered

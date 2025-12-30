@@ -209,7 +209,9 @@ export interface UserAnalytics {
 /**
  * Get dashboard statistics
  */
-export async function getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
+export async function getDashboardStats(): Promise<
+  ApiResponse<DashboardStats>
+> {
   return apiClient.get<DashboardStats>("/api/admin/dashboard");
 }
 
@@ -346,7 +348,9 @@ export async function getJobs(
   if (params.search) searchParams.set("search", params.search);
 
   const queryString = searchParams.toString();
-  const url = queryString ? `/api/admin/jobs?${queryString}` : "/api/admin/jobs";
+  const url = queryString
+    ? `/api/admin/jobs?${queryString}`
+    : "/api/admin/jobs";
 
   return apiClient.get<JobsListResponse>(url);
 }

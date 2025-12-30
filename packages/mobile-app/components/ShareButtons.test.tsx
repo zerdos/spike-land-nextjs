@@ -17,7 +17,9 @@ jest.mock("expo-sharing");
 // Mock Tamagui components
 jest.mock("tamagui", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Text: RNText, TouchableOpacity, View: RNView } = require("react-native");
+  const { Text: RNText, TouchableOpacity, View: RNView } = require(
+    "react-native",
+  );
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ReactMod = require("react");
 
@@ -608,11 +610,16 @@ describe("ShareButtons Component", () => {
         <ShareButtons {...defaultProps} referralUrl="" />,
       );
 
-      expect(getByTestId("copy-button").props.accessibilityState?.disabled).toBe(true);
-      expect(getByTestId("share-button").props.accessibilityState?.disabled).toBe(true);
-      expect(getByTestId("twitter-button").props.accessibilityState?.disabled).toBe(true);
-      expect(getByTestId("facebook-button").props.accessibilityState?.disabled).toBe(true);
-      expect(getByTestId("whatsapp-button").props.accessibilityState?.disabled).toBe(true);
+      expect(getByTestId("copy-button").props.accessibilityState?.disabled)
+        .toBe(true);
+      expect(getByTestId("share-button").props.accessibilityState?.disabled)
+        .toBe(true);
+      expect(getByTestId("twitter-button").props.accessibilityState?.disabled)
+        .toBe(true);
+      expect(getByTestId("facebook-button").props.accessibilityState?.disabled)
+        .toBe(true);
+      expect(getByTestId("whatsapp-button").props.accessibilityState?.disabled)
+        .toBe(true);
     });
   });
 });

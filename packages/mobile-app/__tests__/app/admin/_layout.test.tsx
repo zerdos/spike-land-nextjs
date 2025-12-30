@@ -32,7 +32,10 @@ jest.mock("expo-router", () => {
   StackComponent.Screen = (
     { name, options }: { name: string; options: Record<string, unknown>; },
   ) => {
-    return React.createElement("mock-screen", { testID: `screen-${name}`, ...options });
+    return React.createElement("mock-screen", {
+      testID: `screen-${name}`,
+      ...options,
+    });
   };
 
   return {

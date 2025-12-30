@@ -112,7 +112,9 @@ function ContentRenderer({ content }: ContentRendererProps) {
         const trimmed = paragraph.trim();
 
         // Handle SplitPreview component (multiline with URLs containing /)
-        const splitPreviewMatch = trimmed.match(/<SplitPreview\s+([\s\S]*?)\s*\/>/);
+        const splitPreviewMatch = trimmed.match(
+          /<SplitPreview\s+([\s\S]*?)\s*\/>/,
+        );
         if (splitPreviewMatch) {
           const props = parseMdxProps(splitPreviewMatch[1]);
           return (
@@ -127,7 +129,9 @@ function ContentRenderer({ content }: ContentRendererProps) {
         }
 
         // Handle ImageComparisonSlider component (multiline with URLs containing /)
-        const sliderMatch = trimmed.match(/<ImageComparisonSlider\s+([\s\S]*?)\s*\/>/);
+        const sliderMatch = trimmed.match(
+          /<ImageComparisonSlider\s+([\s\S]*?)\s*\/>/,
+        );
         if (sliderMatch) {
           const props = parseMdxProps(sliderMatch[1]);
           return (
@@ -210,7 +214,10 @@ function ContentRenderer({ content }: ContentRendererProps) {
 
         // Handle code blocks
         if (trimmed.startsWith("```")) {
-          const codeContent = trimmed.replace(/```\w*\n?/g, "").replace(/```$/, "");
+          const codeContent = trimmed.replace(/```\w*\n?/g, "").replace(
+            /```$/,
+            "",
+          );
           return (
             <Stack
               key={index}
@@ -222,7 +229,9 @@ function ContentRenderer({ content }: ContentRendererProps) {
               <Text
                 fontSize="$3"
                 color="$gray11"
-                style={{ fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}
+                style={{
+                  fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+                }}
               >
                 {codeContent}
               </Text>
@@ -322,10 +331,16 @@ export default function BlogDetailScreen() {
           });
         } else {
           await navigator.clipboard.writeText(message);
-          Alert.alert("Link Copied", "The blog post link has been copied to your clipboard.");
+          Alert.alert(
+            "Link Copied",
+            "The blog post link has been copied to your clipboard.",
+          );
         }
       } else {
-        Alert.alert("Share Not Available", "Sharing is not available on this device.");
+        Alert.alert(
+          "Share Not Available",
+          "Sharing is not available on this device.",
+        );
       }
     } catch (err) {
       // User cancelled or error occurred
@@ -401,9 +416,7 @@ export default function BlogDetailScreen() {
           <Stack width={44} />
         </XStack>
         <ErrorState
-          error={error instanceof Error
-            ? error.message
-            : "Post not found"}
+          error={error instanceof Error ? error.message : "Post not found"}
           onBack={handleBack}
         />
       </YStack>

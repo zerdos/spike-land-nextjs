@@ -128,7 +128,9 @@ export function ImageThumbnail({
             alignItems="center"
             justifyContent="center"
           >
-            {isSelected ? <Check size={14} color="white" /> : <Circle size={14} color="$gray8" />}
+            {isSelected
+              ? <Check size={14} color="white" />
+              : <Circle size={14} color="$gray8" />}
           </XStack>
         )}
 

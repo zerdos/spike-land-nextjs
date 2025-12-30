@@ -1,6 +1,7 @@
 # Spike Land Mobile App
 
-React Native mobile application for Spike Land's AI photo enhancement platform, built with Expo.
+React Native mobile application for Spike Land's AI photo enhancement platform,
+built with Expo.
 
 ## Overview
 
@@ -185,7 +186,8 @@ packages/mobile-app/
 
 ## Testing
 
-The mobile app has comprehensive test coverage using Jest and `@testing-library/react-native`.
+The mobile app has comprehensive test coverage using Jest and
+`@testing-library/react-native`.
 
 ### Test Structure
 
@@ -408,7 +410,9 @@ cd packages/shared && yarn build
 
 ## Design System Storybook
 
-The mobile app includes a comprehensive design system storybook at `/storybook` route, mirroring the web app's storybook at [localhost:3000/storybook](http://localhost:3000/storybook/components).
+The mobile app includes a comprehensive design system storybook at `/storybook`
+route, mirroring the web app's storybook at
+[localhost:3000/storybook](http://localhost:3000/storybook/components).
 
 ### Accessing the Storybook
 
@@ -435,7 +439,8 @@ yarn web
 | Features   | Merch, PhotoMix                     |
 | Systems    | Auth, Errors                        |
 
-Each section demonstrates React Native components with proper styling matching the spike.land design system.
+Each section demonstrates React Native components with proper styling matching
+the spike.land design system.
 
 ---
 

@@ -16,7 +16,9 @@ describe("readFile", () => {
   });
 
   it("should throw error for non-existent file", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     mockDirectoryHandle.getFileHandle = vi.fn().mockRejectedValue(
       new Error("Not found"),

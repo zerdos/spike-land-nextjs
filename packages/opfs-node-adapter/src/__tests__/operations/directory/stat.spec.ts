@@ -22,7 +22,9 @@ describe("stat", () => {
   });
 
   it("should throw for non-existent path", async () => {
-    mockDirectoryHandle.getFileHandle = vi.fn().mockRejectedValue(new Error("Not found"));
+    mockDirectoryHandle.getFileHandle = vi.fn().mockRejectedValue(
+      new Error("Not found"),
+    );
 
     await expect(stat("/nonexistent")).rejects.toThrow("ENOENT");
 

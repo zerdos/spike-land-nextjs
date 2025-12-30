@@ -48,14 +48,21 @@ describe("Images API Service", () => {
     it("should upload an image with default tier", async () => {
       const mockResponse = {
         data: {
-          image: { id: "img-123", originalUrl: "https://example.com/image.jpg" },
+          image: {
+            id: "img-123",
+            originalUrl: "https://example.com/image.jpg",
+          },
         },
         error: null,
         status: 200,
       };
       mockApiClient.uploadFile.mockResolvedValue(mockResponse);
 
-      const file = { uri: "file://test.jpg", name: "test.jpg", type: "image/jpeg" };
+      const file = {
+        uri: "file://test.jpg",
+        name: "test.jpg",
+        type: "image/jpeg",
+      };
       const result = await uploadImage(file);
 
       expect(mockApiClient.uploadFile).toHaveBeenCalledWith(
@@ -69,14 +76,21 @@ describe("Images API Service", () => {
     it("should upload an image with specified tier", async () => {
       const mockResponse = {
         data: {
-          image: { id: "img-123", originalUrl: "https://example.com/image.jpg" },
+          image: {
+            id: "img-123",
+            originalUrl: "https://example.com/image.jpg",
+          },
         },
         error: null,
         status: 200,
       };
       mockApiClient.uploadFile.mockResolvedValue(mockResponse);
 
-      const file = { uri: "file://test.jpg", name: "test.jpg", type: "image/jpeg" };
+      const file = {
+        uri: "file://test.jpg",
+        name: "test.jpg",
+        type: "image/jpeg",
+      };
       const result = await uploadImage(file, "TIER_4K");
 
       expect(mockApiClient.uploadFile).toHaveBeenCalledWith(
@@ -100,7 +114,10 @@ describe("Images API Service", () => {
       const params = { imageId: "img-123", tier: "TIER_2K" as const };
       const result = await enhanceImage(params);
 
-      expect(mockApiClient.post).toHaveBeenCalledWith("/api/images/enhance", params);
+      expect(mockApiClient.post).toHaveBeenCalledWith(
+        "/api/images/enhance",
+        params,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -120,7 +137,10 @@ describe("Images API Service", () => {
       };
       const result = await enhanceImage(params);
 
-      expect(mockApiClient.post).toHaveBeenCalledWith("/api/images/enhance", params);
+      expect(mockApiClient.post).toHaveBeenCalledWith(
+        "/api/images/enhance",
+        params,
+      );
       expect(result).toEqual(mockResponse);
     });
   });
@@ -177,7 +197,11 @@ describe("Images API Service", () => {
       };
       mockApiClient.get.mockResolvedValue(mockResponse);
 
-      const result = await getImages({ page: 2, limit: 10, albumId: "album-123" });
+      const result = await getImages({
+        page: 2,
+        limit: 10,
+        albumId: "album-123",
+      });
 
       expect(mockApiClient.get).toHaveBeenCalledWith(
         "/api/images?page=2&limit=10&albumId=album-123",
@@ -195,7 +219,9 @@ describe("Images API Service", () => {
 
       const result = await getImages({ albumId: "album-123" });
 
-      expect(mockApiClient.get).toHaveBeenCalledWith("/api/images?albumId=album-123");
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        "/api/images?albumId=album-123",
+      );
       expect(result).toEqual(mockResponse);
     });
   });
@@ -203,7 +229,9 @@ describe("Images API Service", () => {
   describe("getImage", () => {
     it("should get a single image by ID", async () => {
       const mockResponse = {
-        data: { image: { id: "img-123", originalUrl: "https://example.com/img.jpg" } },
+        data: {
+          image: { id: "img-123", originalUrl: "https://example.com/img.jpg" },
+        },
         error: null,
         status: 200,
       };
@@ -235,7 +263,10 @@ describe("Images API Service", () => {
   describe("shareImage", () => {
     it("should create a share link for an image", async () => {
       const mockResponse = {
-        data: { shareToken: "token-123", shareUrl: "https://spike.land/share/token-123" },
+        data: {
+          shareToken: "token-123",
+          shareUrl: "https://spike.land/share/token-123",
+        },
         error: null,
         status: 200,
       };
@@ -243,7 +274,9 @@ describe("Images API Service", () => {
 
       const result = await shareImage("img-123");
 
-      expect(mockApiClient.post).toHaveBeenCalledWith("/api/images/img-123/share");
+      expect(mockApiClient.post).toHaveBeenCalledWith(
+        "/api/images/img-123/share",
+      );
       expect(result).toEqual(mockResponse);
     });
   });
@@ -269,7 +302,9 @@ describe("Images API Service", () => {
 
       const result = await getDownloadUrl("img-123");
 
-      expect(mockApiClient.get).toHaveBeenCalledWith("/api/images/img-123/download");
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        "/api/images/img-123/download",
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -303,7 +338,9 @@ describe("Images API Service", () => {
 
       const result = await getShareLink("img-123");
 
-      expect(mockApiClient.post).toHaveBeenCalledWith("/api/images/img-123/share");
+      expect(mockApiClient.post).toHaveBeenCalledWith(
+        "/api/images/img-123/share",
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -353,7 +390,9 @@ describe("Images API Service", () => {
 
       const result = await createAlbum({ name: "New Album" });
 
-      expect(mockApiClient.post).toHaveBeenCalledWith("/api/albums", { name: "New Album" });
+      expect(mockApiClient.post).toHaveBeenCalledWith("/api/albums", {
+        name: "New Album",
+      });
       expect(result).toEqual(mockResponse);
     });
 

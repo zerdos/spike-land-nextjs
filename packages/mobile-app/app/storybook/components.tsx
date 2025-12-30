@@ -25,7 +25,10 @@ export default function ComponentsPage() {
   const [switchValue, setSwitchValue] = useState(false);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>UI Components</Text>
@@ -137,7 +140,13 @@ export default function ComponentsPage() {
             <Input
               label="With Icon"
               placeholder="Search..."
-              iconLeft={<Ionicons name="search" size={18} color={colors.mutedForeground} />}
+              iconLeft={
+                <Ionicons
+                  name="search"
+                  size={18}
+                  color={colors.mutedForeground}
+                />
+              }
               testID="icon-input"
             />
           </View>
@@ -220,18 +229,30 @@ export default function ComponentsPage() {
 
         <View style={styles.alertsContainer}>
           <View style={[styles.alert, styles.alertInfo]}>
-            <Ionicons name="information-circle" size={20} color={colors.primary} />
+            <Ionicons
+              name="information-circle"
+              size={20}
+              color={colors.primary}
+            />
             <View style={styles.alertContent}>
               <Text style={styles.alertTitle}>System Update</Text>
-              <Text style={styles.alertMessage}>A new version is available for download.</Text>
+              <Text style={styles.alertMessage}>
+                A new version is available for download.
+              </Text>
             </View>
           </View>
 
           <View style={[styles.alert, styles.alertSuccess]}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.success}
+            />
             <View style={styles.alertContent}>
               <Text style={styles.alertTitle}>Success</Text>
-              <Text style={styles.alertMessage}>Your changes have been saved.</Text>
+              <Text style={styles.alertMessage}>
+                Your changes have been saved.
+              </Text>
             </View>
           </View>
 
@@ -239,15 +260,23 @@ export default function ComponentsPage() {
             <Ionicons name="warning" size={20} color={colors.warning} />
             <View style={styles.alertContent}>
               <Text style={styles.alertTitle}>Low Credits</Text>
-              <Text style={styles.alertMessage}>You have less than 50 tokens remaining.</Text>
+              <Text style={styles.alertMessage}>
+                You have less than 50 tokens remaining.
+              </Text>
             </View>
           </View>
 
           <View style={[styles.alert, styles.alertDestructive]}>
-            <Ionicons name="alert-circle" size={20} color={colors.destructive} />
+            <Ionicons
+              name="alert-circle"
+              size={20}
+              color={colors.destructive}
+            />
             <View style={styles.alertContent}>
               <Text style={styles.alertTitle}>Error</Text>
-              <Text style={styles.alertMessage}>The AI model failed to initialize.</Text>
+              <Text style={styles.alertMessage}>
+                The AI model failed to initialize.
+              </Text>
             </View>
           </View>
         </View>

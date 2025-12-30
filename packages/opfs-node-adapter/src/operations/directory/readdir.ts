@@ -27,7 +27,8 @@ export async function readdir(
   filePath: string,
   options?: ReaddirOptions | BufferEncoding | null,
 ): Promise<string[] | Dirent[]> {
-  const withFileTypes = typeof options === "object" && options?.withFileTypes === true;
+  const withFileTypes = typeof options === "object" &&
+    options?.withFileTypes === true;
 
   const doReaddir = async () => {
     const { dirHandle } = await getDirectoryHandleAndFileName(filePath);

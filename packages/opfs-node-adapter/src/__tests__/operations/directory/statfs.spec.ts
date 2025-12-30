@@ -181,7 +181,9 @@ describe("statfs", () => {
       configurable: true,
     });
 
-    await expect(statfs("/")).rejects.toThrow("OPFS adapter: Storage API is not available");
+    await expect(statfs("/")).rejects.toThrow(
+      "OPFS adapter: Storage API is not available",
+    );
   });
 
   it("should throw error when navigator is not available", async () => {
@@ -191,7 +193,9 @@ describe("statfs", () => {
       configurable: true,
     });
 
-    await expect(statfs("/")).rejects.toThrow("OPFS adapter: Storage API is not available");
+    await expect(statfs("/")).rejects.toThrow(
+      "OPFS adapter: Storage API is not available",
+    );
   });
 
   it("should ignore the path parameter", async () => {

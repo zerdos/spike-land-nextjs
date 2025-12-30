@@ -125,7 +125,9 @@ jest.mock(
 // ============================================================================
 
 const mockUseFonts = useFonts as jest.MockedFunction<typeof useFonts>;
-const mockUseAuthStore = useAuthStore as jest.MockedFunction<typeof useAuthStore>;
+const mockUseAuthStore = useAuthStore as jest.MockedFunction<
+  typeof useAuthStore
+>;
 const mockUsePushNotifications = usePushNotificationsModule
   .usePushNotifications as jest.MockedFunction<
     typeof usePushNotificationsModule.usePushNotifications

@@ -51,11 +51,15 @@ export interface UseImageShareReturn {
 // Hook Implementation
 // ============================================================================
 
-export function useImageShare(options: UseImageShareOptions = {}): UseImageShareReturn {
+export function useImageShare(
+  options: UseImageShareOptions = {},
+): UseImageShareReturn {
   const { onDownloadComplete, onShareComplete, onLinkCopied, onError } = options;
 
   const [isLoading, setIsLoading] = useState(false);
-  const [currentOperation, setCurrentOperation] = useState<"share" | "download" | "copy" | null>(
+  const [currentOperation, setCurrentOperation] = useState<
+    "share" | "download" | "copy" | null
+  >(
     null,
   );
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -91,7 +95,9 @@ export function useImageShare(options: UseImageShareOptions = {}): UseImageShare
 
       return true;
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Failed to request permissions";
+      const errorMsg = err instanceof Error
+        ? err.message
+        : "Failed to request permissions";
       setError(errorMsg);
       onError?.(errorMsg);
       return false;
@@ -143,7 +149,8 @@ export function useImageShare(options: UseImageShareOptions = {}): UseImageShare
           {},
           (progress) => {
             const percent = Math.round(
-              (progress.totalBytesWritten / progress.totalBytesExpectedToWrite) * 100,
+              (progress.totalBytesWritten /
+                progress.totalBytesExpectedToWrite) * 100,
             );
             setDownloadProgress(percent);
           },
@@ -235,7 +242,10 @@ export function useImageShare(options: UseImageShareOptions = {}): UseImageShare
         const fileUri = `${FileSystem.cacheDirectory}${localFileName}`;
 
         // Download the file to cache for sharing
-        const downloadResult = await FileSystem.downloadAsync(downloadUrl, fileUri);
+        const downloadResult = await FileSystem.downloadAsync(
+          downloadUrl,
+          fileUri,
+        );
 
         if (!downloadResult || downloadResult.status !== 200) {
           const errorMsg = "Failed to download image for sharing";
@@ -306,7 +316,9 @@ export function useImageShare(options: UseImageShareOptions = {}): UseImageShare
 
         return true;
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Failed to copy link";
+        const errorMsg = err instanceof Error
+          ? err.message
+          : "Failed to copy link";
         setError(errorMsg);
         onError?.(errorMsg);
         setIsLoading(false);

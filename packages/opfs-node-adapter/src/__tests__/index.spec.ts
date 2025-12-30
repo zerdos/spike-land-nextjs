@@ -85,7 +85,9 @@ describe("opfs-node-adapter", () => {
 
   describe("ENOTSUP operations should throw proper errors", () => {
     it("link should throw ENOTSUP error", async () => {
-      await expect(FS.link("/src", "/dest")).rejects.toThrow("ENOTSUP: operation not supported");
+      await expect(FS.link("/src", "/dest")).rejects.toThrow(
+        "ENOTSUP: operation not supported",
+      );
     });
 
     it("symlink should throw ENOTSUP error", async () => {
@@ -95,11 +97,15 @@ describe("opfs-node-adapter", () => {
     });
 
     it("readlink should throw ENOTSUP error", async () => {
-      await expect(FS.readlink("/path")).rejects.toThrow("ENOTSUP: operation not supported");
+      await expect(FS.readlink("/path")).rejects.toThrow(
+        "ENOTSUP: operation not supported",
+      );
     });
 
     it("chmod should throw ENOTSUP error", async () => {
-      await expect(FS.chmod("/path", 0o755)).rejects.toThrow("ENOTSUP: operation not supported");
+      await expect(FS.chmod("/path", 0o755)).rejects.toThrow(
+        "ENOTSUP: operation not supported",
+      );
     });
 
     it("chown should throw ENOTSUP error", async () => {
@@ -109,7 +115,9 @@ describe("opfs-node-adapter", () => {
     });
 
     it("lchmod should throw ENOTSUP error", async () => {
-      await expect(FS.lchmod("/path", 0o755)).rejects.toThrow("ENOTSUP: operation not supported");
+      await expect(FS.lchmod("/path", 0o755)).rejects.toThrow(
+        "ENOTSUP: operation not supported",
+      );
     });
 
     it("lchown should throw ENOTSUP error", async () => {

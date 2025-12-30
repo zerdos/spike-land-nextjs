@@ -49,7 +49,9 @@ export async function cp(
 
     if (destStat) {
       if (errorOnExist) {
-        throw new Error(`EEXIST: file already exists, cp '${source}' -> '${destination}'`);
+        throw new Error(
+          `EEXIST: file already exists, cp '${source}' -> '${destination}'`,
+        );
       }
       if (!force) {
         return;

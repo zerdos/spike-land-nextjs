@@ -111,7 +111,11 @@ export default function CreateAlbumScreen() {
         </YStack>
 
         {/* Create Button */}
-        <YStack paddingHorizontal="$4" paddingBottom={insets.bottom + 16} marginTop="auto">
+        <YStack
+          paddingHorizontal="$4"
+          paddingBottom={insets.bottom + 16}
+          marginTop="auto"
+        >
           <Button
             size="$5"
             theme="active"

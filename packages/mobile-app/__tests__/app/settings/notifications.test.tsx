@@ -78,7 +78,13 @@ jest.mock("tamagui", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react");
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { View, Text, TouchableOpacity, Switch: RNSwitch, ScrollView: RNScrollView } = require(
+  const {
+    View,
+    Text,
+    TouchableOpacity,
+    Switch: RNSwitch,
+    ScrollView: RNScrollView,
+  } = require(
     "react-native",
   );
 
@@ -214,7 +220,9 @@ describe("NotificationsScreen", () => {
       const { getAllByText, getByText } = render(<NotificationsScreen />);
 
       // "Push Notifications" appears twice - once in Communication section and once in Notification Channels
-      expect(getAllByText("Push Notifications").length).toBeGreaterThanOrEqual(1);
+      expect(getAllByText("Push Notifications").length).toBeGreaterThanOrEqual(
+        1,
+      );
       expect(
         getByText(
           "Get instant push notifications on your device for real-time updates.",
@@ -230,10 +238,11 @@ describe("NotificationsScreen", () => {
         );
       });
 
-      expect(mockSettingsStore.updateNotificationPreference).toHaveBeenCalledWith(
-        "emailNotifications",
-        false,
-      );
+      expect(mockSettingsStore.updateNotificationPreference)
+        .toHaveBeenCalledWith(
+          "emailNotifications",
+          false,
+        );
     });
 
     it("should call updateNotificationPreference when push toggle is changed", async () => {
@@ -244,10 +253,11 @@ describe("NotificationsScreen", () => {
         );
       });
 
-      expect(mockSettingsStore.updateNotificationPreference).toHaveBeenCalledWith(
-        "pushNotifications",
-        true,
-      );
+      expect(mockSettingsStore.updateNotificationPreference)
+        .toHaveBeenCalledWith(
+          "pushNotifications",
+          true,
+        );
     });
   });
 
@@ -277,10 +287,11 @@ describe("NotificationsScreen", () => {
         );
       });
 
-      expect(mockSettingsStore.updateNotificationPreference).toHaveBeenCalledWith(
-        "enhancementCompleteNotifications",
-        false,
-      );
+      expect(mockSettingsStore.updateNotificationPreference)
+        .toHaveBeenCalledWith(
+          "enhancementCompleteNotifications",
+          false,
+        );
     });
   });
 
@@ -320,10 +331,11 @@ describe("NotificationsScreen", () => {
         );
       });
 
-      expect(mockSettingsStore.updateNotificationPreference).toHaveBeenCalledWith(
-        "marketingNotifications",
-        true,
-      );
+      expect(mockSettingsStore.updateNotificationPreference)
+        .toHaveBeenCalledWith(
+          "marketingNotifications",
+          true,
+        );
     });
   });
 
@@ -348,7 +360,9 @@ describe("NotificationsScreen", () => {
       const { getAllByText, getByText } = render(<NotificationsScreen />);
 
       // "Push Notifications" appears twice - once in Communication section and once in Notification Channels
-      expect(getAllByText("Push Notifications").length).toBeGreaterThanOrEqual(1);
+      expect(getAllByText("Push Notifications").length).toBeGreaterThanOrEqual(
+        1,
+      );
       expect(getByText("Real-time alerts on your device")).toBeTruthy();
     });
 
@@ -430,7 +444,9 @@ describe("NotificationsScreen", () => {
       const { getAllByText } = render(<NotificationsScreen />);
 
       // "Push Notifications" appears twice - once in Communication section and once in Notification Channels
-      expect(getAllByText("Push Notifications").length).toBeGreaterThanOrEqual(1);
+      expect(getAllByText("Push Notifications").length).toBeGreaterThanOrEqual(
+        1,
+      );
     });
 
     it("should reflect current enhancement complete state", () => {

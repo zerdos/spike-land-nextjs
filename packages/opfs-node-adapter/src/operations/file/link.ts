@@ -5,7 +5,10 @@ import type { LinkErrnoException } from "../../types";
  * Node.js signature: link(existingPath, newPath)
  * @throws ENOTSUP - Hard links are not supported in OPFS
  */
-export async function link(existingPath: string, newPath: string): Promise<void> {
+export async function link(
+  existingPath: string,
+  newPath: string,
+): Promise<void> {
   const error = new Error(
     `ENOTSUP: operation not supported, link '${existingPath}' -> '${newPath}'`,
   ) as LinkErrnoException;

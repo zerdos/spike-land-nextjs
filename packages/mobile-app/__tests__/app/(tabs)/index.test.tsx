@@ -102,13 +102,37 @@ jest.mock("@/components/FeatureCard", () => {
   const RN = require("react-native");
   return {
     FeatureCard: ({ title, testID }: { title: string; testID?: string; }) => {
-      return React.createElement(RN.View, { testID }, React.createElement(RN.Text, null, title));
+      return React.createElement(
+        RN.View,
+        { testID },
+        React.createElement(RN.Text, null, title),
+      );
     },
     createFeatureCards: () => [
-      { icon: null, title: "60-Second Magic", description: "Fast", variant: "purple" },
-      { icon: null, title: "Print-Ready 4K", description: "Quality", variant: "yellow" },
-      { icon: null, title: "Batch Albums", description: "Batch", variant: "blue" },
-      { icon: null, title: "Free Tokens", description: "Free", variant: "green" },
+      {
+        icon: null,
+        title: "60-Second Magic",
+        description: "Fast",
+        variant: "purple",
+      },
+      {
+        icon: null,
+        title: "Print-Ready 4K",
+        description: "Quality",
+        variant: "yellow",
+      },
+      {
+        icon: null,
+        title: "Batch Albums",
+        description: "Batch",
+        variant: "blue",
+      },
+      {
+        icon: null,
+        title: "Free Tokens",
+        description: "Free",
+        variant: "green",
+      },
     ],
   };
 });
@@ -141,8 +165,17 @@ jest.mock("tamagui", () => {
     XStack: RN.View,
     YStack: RN.View,
     ZStack: RN.View,
-    Button: ({ children, onPress }: { children: React.ReactNode; onPress?: () => void; }) =>
-      React.createElement(RN.Pressable, { onPress }, React.createElement(RN.Text, null, children)),
+    Button: (
+      { children, onPress }: {
+        children: React.ReactNode;
+        onPress?: () => void;
+      },
+    ) =>
+      React.createElement(
+        RN.Pressable,
+        { onPress },
+        React.createElement(RN.Text, null, children),
+      ),
     Input: RN.TextInput,
     Label: RN.Text,
     H1: RN.Text,

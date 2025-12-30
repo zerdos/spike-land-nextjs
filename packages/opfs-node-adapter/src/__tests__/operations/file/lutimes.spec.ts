@@ -10,9 +10,10 @@ describe("lutimes", () => {
   });
 
   it("should throw ENOTSUP error", async () => {
-    await expect(lutimes("/test/file.txt", new Date(), new Date())).rejects.toThrow(
-      "ENOTSUP: operation not supported, lutimes '/test/file.txt'",
-    );
+    await expect(lutimes("/test/file.txt", new Date(), new Date())).rejects
+      .toThrow(
+        "ENOTSUP: operation not supported, lutimes '/test/file.txt'",
+      );
   });
 
   it("should throw error with correct code property", async () => {
@@ -52,7 +53,9 @@ describe("lutimes", () => {
     ];
 
     for (const { atime, mtime } of tests) {
-      await expect(lutimes("/test/file", atime, mtime)).rejects.toThrow("ENOTSUP");
+      await expect(lutimes("/test/file", atime, mtime)).rejects.toThrow(
+        "ENOTSUP",
+      );
     }
   });
 });

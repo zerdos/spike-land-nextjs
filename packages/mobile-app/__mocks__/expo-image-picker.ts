@@ -46,7 +46,9 @@ export interface ImagePickerSuccessResult {
   assets: ImagePickerAsset[];
 }
 
-export type ImagePickerResult = ImagePickerCanceledResult | ImagePickerSuccessResult;
+export type ImagePickerResult =
+  | ImagePickerCanceledResult
+  | ImagePickerSuccessResult;
 
 export interface ImagePickerOptions {
   mediaTypes?: MediaTypeOptions;
@@ -58,7 +60,11 @@ export interface ImagePickerOptions {
   allowsMultipleSelection?: boolean;
   selectionLimit?: number;
   videoMaxDuration?: number;
-  presentationStyle?: "fullScreen" | "pageSheet" | "formSheet" | "overFullScreen";
+  presentationStyle?:
+    | "fullScreen"
+    | "pageSheet"
+    | "formSheet"
+    | "overFullScreen";
 }
 
 export type CameraPermissionResponse = PermissionResponse;
@@ -95,7 +101,9 @@ let mockPermissions: PermissionResponse = {
 /**
  * Request camera permissions
  */
-export async function requestCameraPermissionsAsync(): Promise<CameraPermissionResponse> {
+export async function requestCameraPermissionsAsync(): Promise<
+  CameraPermissionResponse
+> {
   return mockPermissions;
 }
 
@@ -111,14 +119,18 @@ export async function requestMediaLibraryPermissionsAsync(): Promise<
 /**
  * Get camera permissions
  */
-export async function getCameraPermissionsAsync(): Promise<CameraPermissionResponse> {
+export async function getCameraPermissionsAsync(): Promise<
+  CameraPermissionResponse
+> {
   return mockPermissions;
 }
 
 /**
  * Get media library permissions
  */
-export async function getMediaLibraryPermissionsAsync(): Promise<MediaLibraryPermissionResponse> {
+export async function getMediaLibraryPermissionsAsync(): Promise<
+  MediaLibraryPermissionResponse
+> {
   return mockPermissions;
 }
 
@@ -154,7 +166,9 @@ export function __setMockResult(result: ImagePickerResult): void {
 /**
  * Set mock permissions (test utility)
  */
-export function __setMockPermissions(permissions: Partial<PermissionResponse>): void {
+export function __setMockPermissions(
+  permissions: Partial<PermissionResponse>,
+): void {
   mockPermissions = {
     ...mockPermissions,
     ...permissions,

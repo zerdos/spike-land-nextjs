@@ -42,9 +42,15 @@ jest.mock("expo-router", () => {
   };
 
   // Stack.Screen that renders headerRight if provided
-  const StackScreen = ({ options }: { options?: { headerRight?: () => React.ReactNode; }; }) => {
+  const StackScreen = (
+    { options }: { options?: { headerRight?: () => React.ReactNode; }; },
+  ) => {
     if (options?.headerRight) {
-      return React.createElement(View, { testID: "stack-screen-header" }, options.headerRight());
+      return React.createElement(
+        View,
+        { testID: "stack-screen-header" },
+        options.headerRight(),
+      );
     }
     return null;
   };
@@ -242,7 +248,8 @@ describe("NotificationsScreen", () => {
       });
 
       await waitFor(() => {
-        expect(mockNotificationsService.fetchNotifications).toHaveBeenCalledTimes(2);
+        expect(mockNotificationsService.fetchNotifications)
+          .toHaveBeenCalledTimes(2);
       });
     });
   });
@@ -350,15 +357,19 @@ describe("NotificationsScreen", () => {
 
       const { findByTestId } = renderWithProviders(<NotificationsScreen />);
 
-      const notificationPressable = await findByTestId("notification-0-pressable");
+      const notificationPressable = await findByTestId(
+        "notification-0-pressable",
+      );
 
       await act(async () => {
         fireEvent.press(notificationPressable);
       });
 
       await waitFor(() => {
-        expect(mockNotificationsService.markNotificationAsRead).toHaveBeenCalled();
-        expect(mockNotificationsService.markNotificationAsRead.mock.calls[0][0]).toBe("notif-1");
+        expect(mockNotificationsService.markNotificationAsRead)
+          .toHaveBeenCalled();
+        expect(mockNotificationsService.markNotificationAsRead.mock.calls[0][0])
+          .toBe("notif-1");
       });
     });
 
@@ -371,13 +382,16 @@ describe("NotificationsScreen", () => {
 
       const { findByTestId } = renderWithProviders(<NotificationsScreen />);
 
-      const notificationPressable = await findByTestId("notification-0-pressable");
+      const notificationPressable = await findByTestId(
+        "notification-0-pressable",
+      );
 
       await act(async () => {
         fireEvent.press(notificationPressable);
       });
 
-      expect(mockNotificationsService.markNotificationAsRead).not.toHaveBeenCalled();
+      expect(mockNotificationsService.markNotificationAsRead).not
+        .toHaveBeenCalled();
     });
   });
 
@@ -409,7 +423,9 @@ describe("NotificationsScreen", () => {
         total: 2,
         unreadCount: 2,
       });
-      mockNotificationsService.markAllNotificationsAsRead.mockResolvedValue(true);
+      mockNotificationsService.markAllNotificationsAsRead.mockResolvedValue(
+        true,
+      );
 
       const { findByTestId } = renderWithProviders(<NotificationsScreen />);
 
@@ -420,7 +436,8 @@ describe("NotificationsScreen", () => {
       });
 
       await waitFor(() => {
-        expect(mockNotificationsService.markAllNotificationsAsRead).toHaveBeenCalled();
+        expect(mockNotificationsService.markAllNotificationsAsRead)
+          .toHaveBeenCalled();
       });
     });
   });
@@ -447,7 +464,9 @@ describe("NotificationsScreen", () => {
         unreadCount: 0,
       });
 
-      const { findByTestId, getByTestId } = renderWithProviders(<NotificationsScreen />);
+      const { findByTestId, getByTestId } = renderWithProviders(
+        <NotificationsScreen />,
+      );
 
       await findByTestId("notifications-list");
 
@@ -463,7 +482,8 @@ describe("NotificationsScreen", () => {
 
       await waitFor(() => {
         // Initial fetch + refresh fetch
-        expect(mockNotificationsService.fetchNotifications).toHaveBeenCalledTimes(2);
+        expect(mockNotificationsService.fetchNotifications)
+          .toHaveBeenCalledTimes(2);
       });
     });
   });
@@ -512,7 +532,9 @@ describe("NotificationsScreen", () => {
         queryClient,
       );
 
-      const notificationPressable = await findByTestId("notification-0-pressable");
+      const notificationPressable = await findByTestId(
+        "notification-0-pressable",
+      );
 
       await act(async () => {
         fireEvent.press(notificationPressable);
@@ -568,7 +590,9 @@ describe("NotificationsScreen", () => {
 
       expect(cachedData?.total).toBe(1);
       expect(cachedData?.notifications.length).toBe(1);
-      expect(mockNotificationsService.deleteNotification).toHaveBeenCalledWith("notif-1");
+      expect(mockNotificationsService.deleteNotification).toHaveBeenCalledWith(
+        "notif-1",
+      );
     });
   });
 

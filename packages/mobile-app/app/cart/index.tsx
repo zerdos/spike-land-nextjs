@@ -257,7 +257,10 @@ function EmptyCart() {
       <Paragraph textAlign="center" color="$gray10" marginBottom="$4">
         Browse our merch collection and add some products!
       </Paragraph>
-      <Button theme="blue" onPress={() => router.push("/(tabs)/merch")}>
+      <Button
+        theme="blue"
+        onPress={() => router.push("/(tabs)/merch")}
+      >
         Browse Products
       </Button>
     </YStack>
@@ -282,7 +285,9 @@ function LoadingState() {
 export default function CartScreen() {
   const queryClient = useQueryClient();
   const { cart, setCart, setLoading, setError } = useCartStore();
-  const [updatingItemId, setUpdatingItemId] = React.useState<string | null>(null);
+  const [updatingItemId, setUpdatingItemId] = React.useState<string | null>(
+    null,
+  );
 
   // Fetch cart
   const cartQuery = useQuery({
@@ -303,11 +308,20 @@ export default function CartScreen() {
     if (cartQuery.error) {
       setError(cartQuery.error.message);
     }
-  }, [cartQuery.data, cartQuery.isLoading, cartQuery.error, setCart, setLoading, setError]);
+  }, [
+    cartQuery.data,
+    cartQuery.isLoading,
+    cartQuery.error,
+    setCart,
+    setLoading,
+    setError,
+  ]);
 
   // Update quantity mutation
   const updateQuantityMutation = useMutation({
-    mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number; }) => {
+    mutationFn: async (
+      { itemId, quantity }: { itemId: string; quantity: number; },
+    ) => {
       setUpdatingItemId(itemId);
       const response = await updateCartItem(itemId, quantity);
       if (response.error) throw new Error(response.error);

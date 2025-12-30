@@ -48,7 +48,9 @@ jest.mock("tamagui", () => {
       ReactMod.createElement(
         Pressable,
         { onPress: disabled ? undefined : onPress, testID, ...props },
-        typeof children === "string" ? ReactMod.createElement(RNText, null, children) : children,
+        typeof children === "string"
+          ? ReactMod.createElement(RNText, null, children)
+          : children,
       ),
     Card: ({ children, ...props }: { children?: React.ReactNode; }) =>
       ReactMod.createElement(View, props, children),
@@ -118,7 +120,9 @@ describe("ForgotPasswordScreen", () => {
     it("should render the description text", () => {
       render(<ForgotPasswordScreen />);
 
-      expect(screen.getByText(/Enter your email address and we'll send you a link/)).toBeTruthy();
+      expect(
+        screen.getByText(/Enter your email address and we'll send you a link/),
+      ).toBeTruthy();
     });
 
     it("should render back to sign in link", () => {
@@ -136,7 +140,8 @@ describe("ForgotPasswordScreen", () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Please enter your email address")).toBeTruthy();
+        expect(screen.getByText("Please enter your email address"))
+          .toBeTruthy();
       });
     });
 
@@ -150,7 +155,8 @@ describe("ForgotPasswordScreen", () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Please enter a valid email address")).toBeTruthy();
+        expect(screen.getByText("Please enter a valid email address"))
+          .toBeTruthy();
       });
     });
 
@@ -164,14 +170,16 @@ describe("ForgotPasswordScreen", () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Please enter your email address")).toBeTruthy();
+        expect(screen.getByText("Please enter your email address"))
+          .toBeTruthy();
       });
 
       // Type to clear error
       fireEvent.changeText(emailInput, "t");
 
       await waitFor(() => {
-        expect(screen.queryByText("Please enter your email address")).toBeNull();
+        expect(screen.queryByText("Please enter your email address"))
+          .toBeNull();
       });
     });
   });
@@ -192,7 +200,9 @@ describe("ForgotPasswordScreen", () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(mockAuthService.requestPasswordReset).toHaveBeenCalledWith("test@example.com");
+        expect(mockAuthService.requestPasswordReset).toHaveBeenCalledWith(
+          "test@example.com",
+        );
       });
     });
 
@@ -269,7 +279,9 @@ describe("ForgotPasswordScreen", () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(mockAuthService.requestPasswordReset).toHaveBeenCalledWith("test@example.com");
+        expect(mockAuthService.requestPasswordReset).toHaveBeenCalledWith(
+          "test@example.com",
+        );
       });
     });
   });
@@ -360,7 +372,9 @@ describe("ForgotPasswordScreen", () => {
       fireEvent(emailInput, "submitEditing");
 
       await waitFor(() => {
-        expect(mockAuthService.requestPasswordReset).toHaveBeenCalledWith("test@example.com");
+        expect(mockAuthService.requestPasswordReset).toHaveBeenCalledWith(
+          "test@example.com",
+        );
       });
     });
   });

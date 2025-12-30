@@ -42,7 +42,9 @@ describe("Input", () => {
     });
 
     it("should render with value", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="value-input" value="Test value" />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="value-input" value="Test value" />,
+      );
       const input = getByTestId("value-input-input");
       expect(input.props.value).toBe("Test value");
     });
@@ -57,17 +59,23 @@ describe("Input", () => {
     });
 
     it("should not render label when not provided", () => {
-      const { queryByTestId } = renderWithProvider(<Input testID="no-label-input" />);
+      const { queryByTestId } = renderWithProvider(
+        <Input testID="no-label-input" />,
+      );
       expect(queryByTestId("no-label-input-label")).toBeNull();
     });
 
     it("should display correct label text", () => {
-      const { getByText } = renderWithProvider(<Input label="Username" testID="label-text" />);
+      const { getByText } = renderWithProvider(
+        <Input label="Username" testID="label-text" />,
+      );
       expect(getByText("Username")).toBeTruthy();
     });
 
     it("should have text accessibility role on label", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="label-role" label="Label" />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="label-role" label="Label" />,
+      );
       const label = getByTestId("label-role-label");
       expect(label.props.accessibilityRole).toBe("text");
     });
@@ -89,13 +97,19 @@ describe("Input", () => {
     });
 
     it("should apply error styling to wrapper", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="error-style" error="Error" />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="error-style" error="Error" />,
+      );
       expect(getByTestId("error-style-wrapper")).toBeTruthy();
     });
 
     it("should prioritize error over helper text", () => {
       const { getByText, queryByText } = renderWithProvider(
-        <Input testID="priority" error="Error message" helperText="Helper text" />,
+        <Input
+          testID="priority"
+          error="Error message"
+          helperText="Helper text"
+        />,
       );
       expect(getByText("Error message")).toBeTruthy();
       expect(queryByText("Helper text")).toBeNull();
@@ -118,41 +132,55 @@ describe("Input", () => {
     });
 
     it("should not show helper text when not provided", () => {
-      const { queryByTestId } = renderWithProvider(<Input testID="no-helper" />);
+      const { queryByTestId } = renderWithProvider(
+        <Input testID="no-helper" />,
+      );
       expect(queryByTestId("no-helper-helper")).toBeNull();
     });
   });
 
   describe("sizes", () => {
     it("should render small size", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="sm-input" size="sm" />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="sm-input" size="sm" />,
+      );
       expect(getByTestId("sm-input-wrapper")).toBeTruthy();
     });
 
     it("should render medium size (default)", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="md-input" size="md" />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="md-input" size="md" />,
+      );
       expect(getByTestId("md-input-wrapper")).toBeTruthy();
     });
 
     it("should render large size", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="lg-input" size="lg" />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="lg-input" size="lg" />,
+      );
       expect(getByTestId("lg-input-wrapper")).toBeTruthy();
     });
 
     it("should apply correct font size for sm", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="sm-font" size="sm" />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="sm-font" size="sm" />,
+      );
       const input = getByTestId("sm-font-input");
       expect(input.props.style.fontSize).toBe(14); // fontSize.sm
     });
 
     it("should apply correct font size for md", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="md-font" size="md" />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="md-font" size="md" />,
+      );
       const input = getByTestId("md-font-input");
       expect(input.props.style.fontSize).toBe(16); // fontSize.base
     });
 
     it("should apply correct font size for lg", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="lg-font" size="lg" />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="lg-font" size="lg" />,
+      );
       const input = getByTestId("lg-font-input");
       expect(input.props.style.fontSize).toBe(18); // fontSize.lg
     });
@@ -160,18 +188,24 @@ describe("Input", () => {
 
   describe("disabled state", () => {
     it("should apply disabled styles", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="disabled-input" disabled />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="disabled-input" disabled />,
+      );
       expect(getByTestId("disabled-input-wrapper")).toBeTruthy();
     });
 
     it("should not be editable when disabled", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="not-editable" disabled />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="not-editable" disabled />,
+      );
       const input = getByTestId("not-editable-input");
       expect(input.props.editable).toBe(false);
     });
 
     it("should have disabled accessibility state", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="disabled-a11y" disabled />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="disabled-a11y" disabled />,
+      );
       const input = getByTestId("disabled-a11y-input");
       expect(input.props.accessibilityState.disabled).toBe(true);
     });
@@ -188,7 +222,10 @@ describe("Input", () => {
 
     it("should render right icon", () => {
       const { getByTestId } = renderWithProvider(
-        <Input testID="right-icon" iconRight={<MockIcon testID="mock-right" />} />,
+        <Input
+          testID="right-icon"
+          iconRight={<MockIcon testID="mock-right" />}
+        />,
       );
       expect(getByTestId("right-icon-icon-right")).toBeTruthy();
       expect(getByTestId("mock-right")).toBeTruthy();
@@ -219,7 +256,9 @@ describe("Input", () => {
 
     it("should call onBlur when blurred", () => {
       const onBlur = jest.fn();
-      const { getByTestId } = renderWithProvider(<Input testID="blur-handler" onBlur={onBlur} />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="blur-handler" onBlur={onBlur} />,
+      );
       const input = getByTestId("blur-handler-input");
       fireEvent(input, "focus");
       fireEvent(input, "blur");
@@ -227,13 +266,17 @@ describe("Input", () => {
     });
 
     it("should handle focus without callback", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="no-focus-handler" />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="no-focus-handler" />,
+      );
       // Should not throw
       fireEvent(getByTestId("no-focus-handler-input"), "focus");
     });
 
     it("should handle blur without callback", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="no-blur-handler" />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="no-blur-handler" />,
+      );
       // Should not throw
       fireEvent(getByTestId("no-blur-handler-input"), "focus");
       fireEvent(getByTestId("no-blur-handler-input"), "blur");
@@ -253,7 +296,9 @@ describe("Input", () => {
 
   describe("accessibility", () => {
     it("should use label as accessibility label when provided", () => {
-      const { getByTestId } = renderWithProvider(<Input testID="a11y-label" label="Email" />);
+      const { getByTestId } = renderWithProvider(
+        <Input testID="a11y-label" label="Email" />,
+      );
       const input = getByTestId("a11y-label-input");
       expect(input.props.accessibilityLabel).toBe("Email");
     });
@@ -292,7 +337,12 @@ describe("Input", () => {
   describe("additional TextInput props", () => {
     it("should pass through additional props", () => {
       const { getByTestId } = renderWithProvider(
-        <Input testID="props-input" secureTextEntry maxLength={100} autoCapitalize="none" />,
+        <Input
+          testID="props-input"
+          secureTextEntry
+          maxLength={100}
+          autoCapitalize="none"
+        />,
       );
       const input = getByTestId("props-input-input");
       expect(input.props.secureTextEntry).toBe(true);
@@ -309,7 +359,9 @@ describe("Styled component exports", () => {
     });
 
     it("should render as standalone component", () => {
-      const { getByTestId } = renderWithProvider(<InputContainer testID="input-container" />);
+      const { getByTestId } = renderWithProvider(
+        <InputContainer testID="input-container" />,
+      );
       expect(getByTestId("input-container")).toBeTruthy();
     });
   });
@@ -320,7 +372,9 @@ describe("Styled component exports", () => {
     });
 
     it("should render as standalone component", () => {
-      const { getByText } = renderWithProvider(<InputLabel>Label Text</InputLabel>);
+      const { getByText } = renderWithProvider(
+        <InputLabel>Label Text</InputLabel>,
+      );
       expect(getByText("Label Text")).toBeTruthy();
     });
   });
@@ -331,7 +385,9 @@ describe("Styled component exports", () => {
     });
 
     it("should render as standalone component", () => {
-      const { getByTestId } = renderWithProvider(<InputWrapper testID="input-wrapper" />);
+      const { getByTestId } = renderWithProvider(
+        <InputWrapper testID="input-wrapper" />,
+      );
       expect(getByTestId("input-wrapper")).toBeTruthy();
     });
   });
@@ -342,7 +398,9 @@ describe("Styled component exports", () => {
     });
 
     it("should render as standalone component", () => {
-      const { getByText } = renderWithProvider(<InputHelperText>Helper Text</InputHelperText>);
+      const { getByText } = renderWithProvider(
+        <InputHelperText>Helper Text</InputHelperText>,
+      );
       expect(getByText("Helper Text")).toBeTruthy();
     });
 
@@ -367,7 +425,9 @@ describe("Styled component exports", () => {
     });
 
     it("should render as standalone component", () => {
-      const { getByTestId } = renderWithProvider(<IconContainer testID="icon-container" />);
+      const { getByTestId } = renderWithProvider(
+        <IconContainer testID="icon-container" />,
+      );
       expect(getByTestId("icon-container")).toBeTruthy();
     });
   });

@@ -21,7 +21,13 @@ import {
 // Types
 // ============================================================================
 
-export type SortOption = "newest" | "oldest" | "name_asc" | "name_desc" | "size_asc" | "size_desc";
+export type SortOption =
+  | "newest"
+  | "oldest"
+  | "name_asc"
+  | "name_desc"
+  | "size_asc"
+  | "size_desc";
 
 export interface DateRange {
   startDate: Date | null;
@@ -313,7 +319,9 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
     set((state) => ({
       images: state.images.filter((img) => img.id !== imageId),
       totalImages: state.totalImages - 1,
-      selectedImageIds: new Set([...state.selectedImageIds].filter((id) => id !== imageId)),
+      selectedImageIds: new Set(
+        [...state.selectedImageIds].filter((id) => id !== imageId),
+      ),
     }));
 
     return true;
@@ -436,7 +444,9 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
 
     set((state) => ({
       albums: state.albums.filter((album) => album.id !== albumId),
-      selectedAlbumId: state.selectedAlbumId === albumId ? null : state.selectedAlbumId,
+      selectedAlbumId: state.selectedAlbumId === albumId
+        ? null
+        : state.selectedAlbumId,
     }));
 
     return true;
@@ -472,7 +482,9 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
   toggleSelectionMode: () => {
     set((state) => ({
       isSelectionMode: !state.isSelectionMode,
-      selectedImageIds: state.isSelectionMode ? new Set() : state.selectedImageIds,
+      selectedImageIds: state.isSelectionMode
+        ? new Set()
+        : state.selectedImageIds,
     }));
   },
 

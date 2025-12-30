@@ -20,7 +20,10 @@ export default function ButtonsPage() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Buttons</Text>
@@ -106,7 +109,13 @@ export default function ButtonsPage() {
         <View style={styles.card}>
           <View style={styles.buttonRow}>
             <Button
-              iconLeft={<Ionicons name="add" size={18} color={colors.primaryForeground} />}
+              iconLeft={
+                <Ionicons
+                  name="add"
+                  size={18}
+                  color={colors.primaryForeground}
+                />
+              }
             >
               Add Item
             </Button>
@@ -114,7 +123,13 @@ export default function ButtonsPage() {
           <View style={styles.buttonRow}>
             <Button
               variant="outline"
-              iconRight={<Ionicons name="arrow-forward" size={18} color={colors.foreground} />}
+              iconRight={
+                <Ionicons
+                  name="arrow-forward"
+                  size={18}
+                  color={colors.foreground}
+                />
+              }
             >
               Next Step
             </Button>
@@ -122,7 +137,13 @@ export default function ButtonsPage() {
           <View style={styles.buttonRow}>
             <Button
               variant="destructive"
-              iconLeft={<Ionicons name="trash" size={18} color={colors.destructiveForeground} />}
+              iconLeft={
+                <Ionicons
+                  name="trash"
+                  size={18}
+                  color={colors.destructiveForeground}
+                />
+              }
             >
               Delete
             </Button>
@@ -147,25 +168,41 @@ export default function ButtonsPage() {
         <Text style={styles.sectionTitle}>Usage Guidelines</Text>
         <View style={styles.guidelinesCard}>
           <View style={styles.guidelineItem}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.success}
+            />
             <Text style={styles.guidelineText}>
               Use primary buttons for main actions
             </Text>
           </View>
           <View style={styles.guidelineItem}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.success}
+            />
             <Text style={styles.guidelineText}>
               Limit one primary button per view
             </Text>
           </View>
           <View style={styles.guidelineItem}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.success}
+            />
             <Text style={styles.guidelineText}>
               Use destructive variant for dangerous actions
             </Text>
           </View>
           <View style={styles.guidelineItem}>
-            <Ionicons name="close-circle" size={20} color={colors.destructive} />
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={colors.destructive}
+            />
             <Text style={styles.guidelineText}>
               Avoid using multiple button styles together
             </Text>

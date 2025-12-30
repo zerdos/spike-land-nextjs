@@ -42,18 +42,54 @@ function BlogCardSkeleton() {
       {/* Content skeleton */}
       <YStack padding="$3" gap="$2">
         {/* Title skeleton */}
-        <Stack height={24} width="80%" backgroundColor="$gray4" borderRadius="$2" />
-        <Stack height={24} width="60%" backgroundColor="$gray4" borderRadius="$2" />
+        <Stack
+          height={24}
+          width="80%"
+          backgroundColor="$gray4"
+          borderRadius="$2"
+        />
+        <Stack
+          height={24}
+          width="60%"
+          backgroundColor="$gray4"
+          borderRadius="$2"
+        />
 
         {/* Excerpt skeleton */}
-        <Stack height={16} width="100%" backgroundColor="$gray4" borderRadius="$2" marginTop="$2" />
-        <Stack height={16} width="90%" backgroundColor="$gray4" borderRadius="$2" />
-        <Stack height={16} width="70%" backgroundColor="$gray4" borderRadius="$2" />
+        <Stack
+          height={16}
+          width="100%"
+          backgroundColor="$gray4"
+          borderRadius="$2"
+          marginTop="$2"
+        />
+        <Stack
+          height={16}
+          width="90%"
+          backgroundColor="$gray4"
+          borderRadius="$2"
+        />
+        <Stack
+          height={16}
+          width="70%"
+          backgroundColor="$gray4"
+          borderRadius="$2"
+        />
 
         {/* Meta skeleton */}
         <XStack gap="$3" marginTop="$2">
-          <Stack height={14} width={80} backgroundColor="$gray4" borderRadius="$2" />
-          <Stack height={14} width={60} backgroundColor="$gray4" borderRadius="$2" />
+          <Stack
+            height={14}
+            width={80}
+            backgroundColor="$gray4"
+            borderRadius="$2"
+          />
+          <Stack
+            height={14}
+            width={60}
+            backgroundColor="$gray4"
+            borderRadius="$2"
+          />
         </XStack>
       </YStack>
     </Stack>

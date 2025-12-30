@@ -140,8 +140,16 @@ describe("cp", () => {
         .mockRejectedValueOnce(new Error("ENOENT"));
 
       vi.mocked(readdir).mockResolvedValue([
-        { name: "file1.txt", isFile: () => true, isDirectory: () => false } as Dirent,
-        { name: "file2.txt", isFile: () => true, isDirectory: () => false } as Dirent,
+        {
+          name: "file1.txt",
+          isFile: () => true,
+          isDirectory: () => false,
+        } as Dirent,
+        {
+          name: "file2.txt",
+          isFile: () => true,
+          isDirectory: () => false,
+        } as Dirent,
       ] as never);
       vi.mocked(readFile).mockResolvedValue("content" as never);
       vi.mocked(mkdir).mockResolvedValue(undefined);
@@ -165,11 +173,23 @@ describe("cp", () => {
 
       vi.mocked(readdir)
         .mockResolvedValueOnce([
-          { name: "file1.txt", isFile: () => true, isDirectory: () => false } as Dirent,
-          { name: "nested", isFile: () => false, isDirectory: () => true } as Dirent,
+          {
+            name: "file1.txt",
+            isFile: () => true,
+            isDirectory: () => false,
+          } as Dirent,
+          {
+            name: "nested",
+            isFile: () => false,
+            isDirectory: () => true,
+          } as Dirent,
         ] as never)
         .mockResolvedValueOnce([
-          { name: "file2.txt", isFile: () => true, isDirectory: () => false } as Dirent,
+          {
+            name: "file2.txt",
+            isFile: () => true,
+            isDirectory: () => false,
+          } as Dirent,
         ] as never);
 
       vi.mocked(readFile).mockResolvedValue("content" as never);
@@ -181,7 +201,10 @@ describe("cp", () => {
       expect(mkdir).toHaveBeenCalledWith("dest", { recursive: true });
       expect(mkdir).toHaveBeenCalledWith("dest/nested", { recursive: true });
       expect(writeFile).toHaveBeenCalledWith("dest/file1.txt", "content");
-      expect(writeFile).toHaveBeenCalledWith("dest/nested/file2.txt", "content");
+      expect(writeFile).toHaveBeenCalledWith(
+        "dest/nested/file2.txt",
+        "content",
+      );
     });
 
     it("should throw error when copying directory without recursive flag", async () => {
@@ -210,7 +233,11 @@ describe("cp", () => {
         .mockRejectedValueOnce(new Error("ENOENT"));
 
       vi.mocked(readdir).mockResolvedValue([
-        { name: "file.txt", isFile: () => true, isDirectory: () => false } as Dirent,
+        {
+          name: "file.txt",
+          isFile: () => true,
+          isDirectory: () => false,
+        } as Dirent,
       ] as never);
       vi.mocked(readFile).mockResolvedValue("content" as never);
       vi.mocked(mkdir).mockResolvedValue(undefined);
@@ -232,8 +259,16 @@ describe("cp", () => {
         .mockRejectedValueOnce(new Error("ENOENT"));
 
       vi.mocked(readdir).mockResolvedValue([
-        { name: "file1.txt", isFile: () => true, isDirectory: () => false } as Dirent,
-        { name: "file2.log", isFile: () => true, isDirectory: () => false } as Dirent,
+        {
+          name: "file1.txt",
+          isFile: () => true,
+          isDirectory: () => false,
+        } as Dirent,
+        {
+          name: "file2.log",
+          isFile: () => true,
+          isDirectory: () => false,
+        } as Dirent,
       ] as never);
       vi.mocked(readFile).mockResolvedValue("content" as never);
       vi.mocked(mkdir).mockResolvedValue(undefined);
@@ -246,7 +281,10 @@ describe("cp", () => {
 
       expect(writeFile).toHaveBeenCalledTimes(1);
       expect(writeFile).toHaveBeenCalledWith("dest/file1.txt", "content");
-      expect(writeFile).not.toHaveBeenCalledWith("dest/file2.log", expect.anything());
+      expect(writeFile).not.toHaveBeenCalledWith(
+        "dest/file2.log",
+        expect.anything(),
+      );
     });
 
     it("should skip entire directory when filter returns false for directory", async () => {
@@ -262,8 +300,16 @@ describe("cp", () => {
         } as Stats);
 
       vi.mocked(readdir).mockResolvedValueOnce([
-        { name: "include", isFile: () => false, isDirectory: () => true } as Dirent,
-        { name: "exclude", isFile: () => false, isDirectory: () => true } as Dirent,
+        {
+          name: "include",
+          isFile: () => false,
+          isDirectory: () => true,
+        } as Dirent,
+        {
+          name: "exclude",
+          isFile: () => false,
+          isDirectory: () => true,
+        } as Dirent,
       ] as never).mockResolvedValue([] as never);
       vi.mocked(mkdir).mockResolvedValue(undefined);
 
@@ -286,8 +332,16 @@ describe("cp", () => {
         .mockRejectedValueOnce(new Error("ENOENT"));
 
       vi.mocked(readdir).mockResolvedValue([
-        { name: "file1.txt", isFile: () => true, isDirectory: () => false } as Dirent,
-        { name: "file2.txt", isFile: () => true, isDirectory: () => false } as Dirent,
+        {
+          name: "file1.txt",
+          isFile: () => true,
+          isDirectory: () => false,
+        } as Dirent,
+        {
+          name: "file2.txt",
+          isFile: () => true,
+          isDirectory: () => false,
+        } as Dirent,
       ] as never);
       vi.mocked(readFile).mockResolvedValue("content" as never);
       vi.mocked(mkdir).mockResolvedValue(undefined);

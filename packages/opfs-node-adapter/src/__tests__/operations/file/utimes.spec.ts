@@ -10,9 +10,10 @@ describe("utimes", () => {
   });
 
   it("should throw ENOTSUP error", async () => {
-    await expect(utimes("/test/file.txt", new Date(), new Date())).rejects.toThrow(
-      "ENOTSUP: operation not supported, utimes '/test/file.txt'",
-    );
+    await expect(utimes("/test/file.txt", new Date(), new Date())).rejects
+      .toThrow(
+        "ENOTSUP: operation not supported, utimes '/test/file.txt'",
+      );
   });
 
   it("should throw error with correct code property", async () => {
@@ -53,7 +54,9 @@ describe("utimes", () => {
     ];
 
     for (const { atime, mtime } of testCases) {
-      await expect(utimes("/test.txt", atime, mtime)).rejects.toThrow("ENOTSUP");
+      await expect(utimes("/test.txt", atime, mtime)).rejects.toThrow(
+        "ENOTSUP",
+      );
     }
   });
 });

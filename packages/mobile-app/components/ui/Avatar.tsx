@@ -56,7 +56,13 @@ export function Avatar({
 
   return (
     <View
-      style={[styles.container, styles.fallback, containerStyle, style, fallbackStyle]}
+      style={[
+        styles.container,
+        styles.fallback,
+        containerStyle,
+        style,
+        fallbackStyle,
+      ]}
       testID={testID}
     >
       <Text style={[styles.fallbackText, { fontSize }]}>{fallback}</Text>
@@ -70,7 +76,9 @@ export interface AvatarGroupProps {
   size?: number;
 }
 
-export function AvatarGroup({ children, max = 4, size = 40 }: AvatarGroupProps) {
+export function AvatarGroup(
+  { children, max = 4, size = 40 }: AvatarGroupProps,
+) {
   const childArray = React.Children.toArray(children);
   const visibleChildren = childArray.slice(0, max);
   const remainingCount = childArray.length - max;
@@ -81,7 +89,8 @@ export function AvatarGroup({ children, max = 4, size = 40 }: AvatarGroupProps) 
         // Clone child Avatar elements and inject size prop if not already set
         const childWithSize = React.isValidElement(child)
           ? React.cloneElement(child as React.ReactElement<AvatarProps>, {
-            size: (child as React.ReactElement<AvatarProps>).props?.size ?? size,
+            size: (child as React.ReactElement<AvatarProps>).props?.size ??
+              size,
           })
           : child;
 
@@ -90,7 +99,10 @@ export function AvatarGroup({ children, max = 4, size = 40 }: AvatarGroupProps) 
             key={index}
             style={[
               styles.groupItem,
-              { marginLeft: index > 0 ? -(size * 0.3) : 0, zIndex: visibleChildren.length - index },
+              {
+                marginLeft: index > 0 ? -(size * 0.3) : 0,
+                zIndex: visibleChildren.length - index,
+              },
             ]}
           >
             {childWithSize}
@@ -110,7 +122,9 @@ export function AvatarGroup({ children, max = 4, size = 40 }: AvatarGroupProps) 
             },
           ]}
         >
-          <Text style={[styles.overflowText, { fontSize: size * 0.3 }]}>+{remainingCount}</Text>
+          <Text style={[styles.overflowText, { fontSize: size * 0.3 }]}>
+            +{remainingCount}
+          </Text>
         </View>
       )}
     </View>

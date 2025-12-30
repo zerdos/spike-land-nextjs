@@ -18,7 +18,9 @@ describe("ColorsPage", () => {
     it("should render the subtitle", () => {
       const { getByText } = render(<ColorsPage />);
       expect(
-        getByText("Color palette, brand colors, dark/light modes, glow effects"),
+        getByText(
+          "Color palette, brand colors, dark/light modes, glow effects",
+        ),
       ).toBeTruthy();
     });
   });
