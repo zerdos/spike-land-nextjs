@@ -55,15 +55,23 @@ export function calculatePasswordStrength(password: string): PasswordStrength {
 }
 
 // Password validation
-function validatePassword(password: string): { valid: boolean; message: string; } {
+function validatePassword(
+  password: string,
+): { valid: boolean; message: string; } {
   if (password.length < 8) {
     return { valid: false, message: "Password must be at least 8 characters" };
   }
   if (!/[A-Z]/.test(password)) {
-    return { valid: false, message: "Password must contain an uppercase letter" };
+    return {
+      valid: false,
+      message: "Password must contain an uppercase letter",
+    };
   }
   if (!/[a-z]/.test(password)) {
-    return { valid: false, message: "Password must contain a lowercase letter" };
+    return {
+      valid: false,
+      message: "Password must contain a lowercase letter",
+    };
   }
   if (!/[0-9]/.test(password)) {
     return { valid: false, message: "Password must contain a number" };
@@ -86,7 +94,9 @@ export default function ResetPasswordScreen() {
   // Validate token on mount
   useEffect(() => {
     if (!params.token) {
-      setError("Invalid or missing reset token. Please request a new password reset link.");
+      setError(
+        "Invalid or missing reset token. Please request a new password reset link.",
+      );
       setScreenState("error");
     } else {
       setScreenState("form");
@@ -145,7 +155,12 @@ export default function ResetPasswordScreen() {
   // Loading state
   if (screenState === "loading") {
     return (
-      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="$background">
+      <YStack
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        backgroundColor="$background"
+      >
         <ActivityIndicator size="large" color="#3B82F6" />
         <Paragraph color="$gray11" marginTop="$4">
           Validating reset link...
@@ -163,7 +178,12 @@ export default function ResetPasswordScreen() {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <YStack flex={1} justifyContent="center" padding="$4" backgroundColor="$background">
+        <YStack
+          flex={1}
+          justifyContent="center"
+          padding="$4"
+          backgroundColor="$background"
+        >
           <Card
             elevate
             size="$4"
@@ -184,7 +204,11 @@ export default function ResetPasswordScreen() {
                     justifyContent="center"
                     marginBottom="$2"
                   >
-                    <Ionicons name="lock-closed-outline" size={32} color="#3B82F6" />
+                    <Ionicons
+                      name="lock-closed-outline"
+                      size={32}
+                      color="#3B82F6"
+                    />
                   </YStack>
                   <H2 fontWeight="bold">Reset Password</H2>
                   <Paragraph color="$gray11" textAlign="center">
@@ -249,7 +273,11 @@ export default function ResetPasswordScreen() {
                           <Text fontSize="$1" color="$gray10">
                             Password strength:
                           </Text>
-                          <Text fontSize="$1" color={passwordStrength.color} fontWeight="500">
+                          <Text
+                            fontSize="$1"
+                            color={passwordStrength.color}
+                            fontWeight="500"
+                          >
                             {passwordStrength.label}
                           </Text>
                         </XStack>
@@ -259,7 +287,11 @@ export default function ResetPasswordScreen() {
 
                   {/* Confirm password input */}
                   <YStack space="$2">
-                    <Label htmlFor="confirmPassword" fontSize="$2" color="$gray11">
+                    <Label
+                      htmlFor="confirmPassword"
+                      fontSize="$2"
+                      color="$gray11"
+                    >
                       Confirm Password
                     </Label>
                     <Input
@@ -312,10 +344,18 @@ export default function ResetPasswordScreen() {
                   justifyContent="center"
                   marginBottom="$2"
                 >
-                  <Ionicons name="checkmark-circle-outline" size={40} color="#22C55E" />
+                  <Ionicons
+                    name="checkmark-circle-outline"
+                    size={40}
+                    color="#22C55E"
+                  />
                 </YStack>
                 <H2 fontWeight="bold" textAlign="center">Password Reset!</H2>
-                <Paragraph color="$gray11" textAlign="center" paddingHorizontal="$2">
+                <Paragraph
+                  color="$gray11"
+                  textAlign="center"
+                  paddingHorizontal="$2"
+                >
                   Your password has been successfully reset. You can now sign in with your new
                   password.
                 </Paragraph>
@@ -346,11 +386,20 @@ export default function ResetPasswordScreen() {
                   justifyContent="center"
                   marginBottom="$2"
                 >
-                  <Ionicons name="alert-circle-outline" size={40} color="#EF4444" />
+                  <Ionicons
+                    name="alert-circle-outline"
+                    size={40}
+                    color="#EF4444"
+                  />
                 </YStack>
                 <H2 fontWeight="bold" textAlign="center">Link Invalid</H2>
-                <Paragraph color="$gray11" textAlign="center" paddingHorizontal="$2">
-                  {error || "This password reset link is invalid or has expired."}
+                <Paragraph
+                  color="$gray11"
+                  textAlign="center"
+                  paddingHorizontal="$2"
+                >
+                  {error ||
+                    "This password reset link is invalid or has expired."}
                 </Paragraph>
 
                 <YStack space="$3" width="100%" marginTop="$4">

@@ -19,7 +19,9 @@ export async function readFile(
   options?: ReadFileOptions | BufferEncoding | null,
 ): Promise<string | Buffer> {
   const doRead = async () => {
-    const { dirHandle, fileName } = await getDirectoryHandleAndFileName(filePath);
+    const { dirHandle, fileName } = await getDirectoryHandleAndFileName(
+      filePath,
+    );
     if (!fileName) throw new Error("ENOENT: Invalid file path for readFile");
 
     const fileHandle = await dirHandle.getFileHandle(fileName);

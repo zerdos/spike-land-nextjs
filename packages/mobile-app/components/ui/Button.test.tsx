@@ -22,7 +22,9 @@ describe("Button", () => {
     });
 
     it("should render with testID", () => {
-      const { getByTestId } = renderWithProvider(<Button testID="test-button">Test</Button>);
+      const { getByTestId } = renderWithProvider(
+        <Button testID="test-button">Test</Button>,
+      );
       expect(getByTestId("test-button")).toBeTruthy();
     });
 
@@ -129,7 +131,9 @@ describe("Button", () => {
     });
 
     it("should not show text when loading", () => {
-      const { queryByText } = renderWithProvider(<Button loading>Hidden Text</Button>);
+      const { queryByText } = renderWithProvider(
+        <Button loading>Hidden Text</Button>,
+      );
       expect(queryByText("Hidden Text")).toBeNull();
     });
 
@@ -228,7 +232,10 @@ describe("Button", () => {
   describe("icons", () => {
     it("should render left icon", () => {
       const { getByTestId } = renderWithProvider(
-        <Button testID="icon-left-button" iconLeft={<ButtonText testID="left-icon">L</ButtonText>}>
+        <Button
+          testID="icon-left-button"
+          iconLeft={<ButtonText testID="left-icon">L</ButtonText>}
+        >
           With Left Icon
         </Button>,
       );
@@ -285,13 +292,17 @@ describe("Button", () => {
 
   describe("accessibility", () => {
     it("should have button role", () => {
-      const { getByTestId } = renderWithProvider(<Button testID="a11y-role">Accessible</Button>);
+      const { getByTestId } = renderWithProvider(
+        <Button testID="a11y-role">Accessible</Button>,
+      );
       const button = getByTestId("a11y-role");
       expect(button.props.accessibilityRole).toBe("button");
     });
 
     it("should use children as accessibility label for string children", () => {
-      const { getByTestId } = renderWithProvider(<Button testID="a11y-label">Submit Form</Button>);
+      const { getByTestId } = renderWithProvider(
+        <Button testID="a11y-label">Submit Form</Button>,
+      );
       const button = getByTestId("a11y-label");
       expect(button.props.accessibilityLabel).toBe("Submit Form");
     });
@@ -384,7 +395,9 @@ describe("ButtonFrame", () => {
   });
 
   it("should render as a standalone component", () => {
-    const { getByTestId } = renderWithProvider(<ButtonFrame testID="button-frame" />);
+    const { getByTestId } = renderWithProvider(
+      <ButtonFrame testID="button-frame" />,
+    );
     expect(getByTestId("button-frame")).toBeTruthy();
   });
 });

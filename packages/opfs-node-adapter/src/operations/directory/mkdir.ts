@@ -20,7 +20,9 @@ export async function mkdir(
     const pathParts = normalizedPath.split("/").filter((x) => x);
     const folderName = pathParts.pop();
 
-    if (!folderName) throw new Error("ENOENT: Invalid directory path for mkdir");
+    if (!folderName) {
+      throw new Error("ENOENT: Invalid directory path for mkdir");
+    }
 
     let currentHandle = await navigator.storage.getDirectory();
     let firstCreated: string | undefined;
@@ -34,9 +36,13 @@ export async function mkdir(
 
       if (error || !existingHandle) {
         if (!recursive) {
-          throw new Error(`ENOENT: no such file or directory, mkdir '${currentPath}'`);
+          throw new Error(
+            `ENOENT: no such file or directory, mkdir '${currentPath}'`,
+          );
         }
-        currentHandle = await currentHandle.getDirectoryHandle(part, { create: true });
+        currentHandle = await currentHandle.getDirectoryHandle(part, {
+          create: true,
+        });
         if (!firstCreated) firstCreated = currentPath;
       } else {
         currentHandle = existingHandle;

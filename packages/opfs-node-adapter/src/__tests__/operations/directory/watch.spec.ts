@@ -33,7 +33,9 @@ describe("watch", () => {
     const iterator = watcher[Symbol.asyncIterator]();
     const result = await Promise.race([
       iterator.next(),
-      new Promise<IteratorResult<{ eventType: string; filename: string | null; }>>(
+      new Promise<
+        IteratorResult<{ eventType: string; filename: string | null; }>
+      >(
         (resolve) => setTimeout(() => resolve({ done: true, value: undefined }), 100),
       ),
     ]);
@@ -60,7 +62,9 @@ describe("watch", () => {
     const iterator = watcher[Symbol.asyncIterator]();
     const result = await Promise.race([
       iterator.next(),
-      new Promise<IteratorResult<{ eventType: string; filename: string | null; }>>(
+      new Promise<
+        IteratorResult<{ eventType: string; filename: string | null; }>
+      >(
         (resolve) => setTimeout(() => resolve({ done: true, value: undefined }), 100),
       ),
     ]);
@@ -83,7 +87,9 @@ describe("watch", () => {
     const iterator = watcher[Symbol.asyncIterator]();
     const result = await Promise.race([
       iterator.next(),
-      new Promise<IteratorResult<{ eventType: string; filename: string | null; }>>(
+      new Promise<
+        IteratorResult<{ eventType: string; filename: string | null; }>
+      >(
         (resolve) => setTimeout(() => resolve({ done: true, value: undefined }), 100),
       ),
     ]);

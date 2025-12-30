@@ -27,7 +27,10 @@ jest.mock("./storage", () => ({
 jest.mock("expo-auth-session", () => ({
   makeRedirectUri: jest.fn(() => "spikeland://auth/callback"),
   AuthRequest: jest.fn().mockImplementation(() => ({
-    promptAsync: jest.fn().mockResolvedValue({ type: "success", params: { code: "test-code" } }),
+    promptAsync: jest.fn().mockResolvedValue({
+      type: "success",
+      params: { code: "test-code" },
+    }),
   })),
   ResponseType: {
     Code: "code",
@@ -85,7 +88,9 @@ describe("AuthService", () => {
         status: 404,
       });
 
-      const result = await authService.requestPasswordReset("unknown@example.com");
+      const result = await authService.requestPasswordReset(
+        "unknown@example.com",
+      );
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Email not found");
@@ -118,7 +123,10 @@ describe("AuthService", () => {
         status: 200,
       });
 
-      const result = await authService.resetPassword("valid-token", "NewPassword123");
+      const result = await authService.resetPassword(
+        "valid-token",
+        "NewPassword123",
+      );
 
       expect(result.success).toBe(true);
       expect(result.message).toBe("Password updated successfully");
@@ -135,7 +143,10 @@ describe("AuthService", () => {
         status: 200,
       });
 
-      const result = await authService.resetPassword("valid-token", "NewPassword123");
+      const result = await authService.resetPassword(
+        "valid-token",
+        "NewPassword123",
+      );
 
       expect(result.success).toBe(true);
       expect(result.message).toBe("Password reset successfully");
@@ -148,7 +159,10 @@ describe("AuthService", () => {
         status: 400,
       });
 
-      const result = await authService.resetPassword("invalid-token", "NewPassword123");
+      const result = await authService.resetPassword(
+        "invalid-token",
+        "NewPassword123",
+      );
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Invalid or expired token");
@@ -274,7 +288,9 @@ describe("AuthService", () => {
         status: 400,
       });
 
-      const result = await authService.resendVerification("verified@example.com");
+      const result = await authService.resendVerification(
+        "verified@example.com",
+      );
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Email already verified");

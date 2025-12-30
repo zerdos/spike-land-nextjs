@@ -107,7 +107,8 @@ describe("LoadingPage", () => {
 
     it("should render Skeleton List description", () => {
       const { getByText } = render(<LoadingPage />);
-      expect(getByText("List item placeholders for tabular data.")).toBeTruthy();
+      expect(getByText("List item placeholders for tabular data."))
+        .toBeTruthy();
     });
   });
 

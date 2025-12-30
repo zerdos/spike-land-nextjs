@@ -25,9 +25,18 @@ export default function FeedbackPage() {
 
   const showToast = (type: ToastType) => {
     const toastMessages: Record<ToastType, { title: string; message: string; }> = {
-      success: { title: "Success!", message: "Your changes have been saved." },
-      error: { title: "Error", message: "Something went wrong. Please try again." },
-      warning: { title: "Warning", message: "Your session will expire in 5 minutes." },
+      success: {
+        title: "Success!",
+        message: "Your changes have been saved.",
+      },
+      error: {
+        title: "Error",
+        message: "Something went wrong. Please try again.",
+      },
+      warning: {
+        title: "Warning",
+        message: "Your session will expire in 5 minutes.",
+      },
       info: { title: "Info", message: "New features are available!" },
     };
 
@@ -46,7 +55,11 @@ export default function FeedbackPage() {
   const getToastColors = (type: ToastType) => {
     switch (type) {
       case "success":
-        return { bg: `${colors.success}20`, border: colors.success, icon: colors.success };
+        return {
+          bg: `${colors.success}20`,
+          border: colors.success,
+          icon: colors.success,
+        };
       case "error":
         return {
           bg: `${colors.destructive}20`,
@@ -54,9 +67,17 @@ export default function FeedbackPage() {
           icon: colors.destructive,
         };
       case "warning":
-        return { bg: `${colors.warning}20`, border: colors.warning, icon: colors.warning };
+        return {
+          bg: `${colors.warning}20`,
+          border: colors.warning,
+          icon: colors.warning,
+        };
       case "info":
-        return { bg: `${colors.primary}20`, border: colors.primary, icon: colors.primary };
+        return {
+          bg: `${colors.primary}20`,
+          border: colors.primary,
+          icon: colors.primary,
+        };
     }
   };
 
@@ -75,7 +96,10 @@ export default function FeedbackPage() {
 
   return (
     <View style={styles.fullContainer}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Feedback</Text>
@@ -99,8 +123,16 @@ export default function FeedbackPage() {
               }]}
               onPress={() => showToast("success")}
             >
-              <Ionicons name="checkmark-circle" size={20} color={colors.success} />
-              <Text style={[styles.triggerButtonText, { color: colors.success }]}>Success</Text>
+              <Ionicons
+                name="checkmark-circle"
+                size={20}
+                color={colors.success}
+              />
+              <Text
+                style={[styles.triggerButtonText, { color: colors.success }]}
+              >
+                Success
+              </Text>
             </Pressable>
             <Pressable
               style={[styles.triggerButton, {
@@ -109,8 +141,18 @@ export default function FeedbackPage() {
               }]}
               onPress={() => showToast("error")}
             >
-              <Ionicons name="alert-circle" size={20} color={colors.destructive} />
-              <Text style={[styles.triggerButtonText, { color: colors.destructive }]}>Error</Text>
+              <Ionicons
+                name="alert-circle"
+                size={20}
+                color={colors.destructive}
+              />
+              <Text
+                style={[styles.triggerButtonText, {
+                  color: colors.destructive,
+                }]}
+              >
+                Error
+              </Text>
             </Pressable>
             <Pressable
               style={[styles.triggerButton, {
@@ -120,7 +162,11 @@ export default function FeedbackPage() {
               onPress={() => showToast("warning")}
             >
               <Ionicons name="warning" size={20} color={colors.warning} />
-              <Text style={[styles.triggerButtonText, { color: colors.warning }]}>Warning</Text>
+              <Text
+                style={[styles.triggerButtonText, { color: colors.warning }]}
+              >
+                Warning
+              </Text>
             </Pressable>
             <Pressable
               style={[styles.triggerButton, {
@@ -129,8 +175,16 @@ export default function FeedbackPage() {
               }]}
               onPress={() => showToast("info")}
             >
-              <Ionicons name="information-circle" size={20} color={colors.primary} />
-              <Text style={[styles.triggerButtonText, { color: colors.primary }]}>Info</Text>
+              <Ionicons
+                name="information-circle"
+                size={20}
+                color={colors.primary}
+              />
+              <Text
+                style={[styles.triggerButtonText, { color: colors.primary }]}
+              >
+                Info
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -149,7 +203,11 @@ export default function FeedbackPage() {
                 borderColor: `${colors.success}30`,
               }]}
             >
-              <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+              <Ionicons
+                name="checkmark-circle"
+                size={24}
+                color={colors.success}
+              />
               <View style={styles.alertContent}>
                 <Text style={styles.alertTitle}>Deployment Successful</Text>
                 <Text style={styles.alertMessage}>
@@ -164,7 +222,11 @@ export default function FeedbackPage() {
                 borderColor: `${colors.destructive}30`,
               }]}
             >
-              <Ionicons name="alert-circle" size={24} color={colors.destructive} />
+              <Ionicons
+                name="alert-circle"
+                size={24}
+                color={colors.destructive}
+              />
               <View style={styles.alertContent}>
                 <Text style={styles.alertTitle}>Critical Error</Text>
                 <Text style={styles.alertMessage}>
@@ -194,7 +256,11 @@ export default function FeedbackPage() {
                 borderColor: `${colors.primary}30`,
               }]}
             >
-              <Ionicons name="information-circle" size={24} color={colors.primary} />
+              <Ionicons
+                name="information-circle"
+                size={24}
+                color={colors.primary}
+              />
               <View style={styles.alertContent}>
                 <Text style={styles.alertTitle}>System Update</Text>
                 <Text style={styles.alertMessage}>
@@ -214,22 +280,38 @@ export default function FeedbackPage() {
 
           <View style={styles.semanticGrid}>
             <View style={styles.semanticCard}>
-              <View style={[styles.semanticSwatch, { backgroundColor: colors.success }]} />
+              <View
+                style={[styles.semanticSwatch, {
+                  backgroundColor: colors.success,
+                }]}
+              />
               <Text style={styles.semanticName}>Success</Text>
               <Text style={styles.semanticDesc}>Positive outcomes</Text>
             </View>
             <View style={styles.semanticCard}>
-              <View style={[styles.semanticSwatch, { backgroundColor: colors.destructive }]} />
+              <View
+                style={[styles.semanticSwatch, {
+                  backgroundColor: colors.destructive,
+                }]}
+              />
               <Text style={styles.semanticName}>Destructive</Text>
               <Text style={styles.semanticDesc}>Errors & danger</Text>
             </View>
             <View style={styles.semanticCard}>
-              <View style={[styles.semanticSwatch, { backgroundColor: colors.warning }]} />
+              <View
+                style={[styles.semanticSwatch, {
+                  backgroundColor: colors.warning,
+                }]}
+              />
               <Text style={styles.semanticName}>Warning</Text>
               <Text style={styles.semanticDesc}>Caution needed</Text>
             </View>
             <View style={styles.semanticCard}>
-              <View style={[styles.semanticSwatch, { backgroundColor: colors.primary }]} />
+              <View
+                style={[styles.semanticSwatch, {
+                  backgroundColor: colors.primary,
+                }]}
+              />
               <Text style={styles.semanticName}>Info</Text>
               <Text style={styles.semanticDesc}>Information</Text>
             </View>
@@ -250,7 +332,10 @@ export default function FeedbackPage() {
             </View>
             <View style={styles.progressBar}>
               <View
-                style={[styles.progressFill, { width: "65%", backgroundColor: colors.primary }]}
+                style={[styles.progressFill, {
+                  width: "65%",
+                  backgroundColor: colors.primary,
+                }]}
               />
             </View>
           </View>
@@ -258,11 +343,16 @@ export default function FeedbackPage() {
           <View style={styles.progressCard}>
             <View style={styles.progressRow}>
               <Text style={styles.progressLabel}>Upload Complete</Text>
-              <Text style={[styles.progressValue, { color: colors.success }]}>100%</Text>
+              <Text style={[styles.progressValue, { color: colors.success }]}>
+                100%
+              </Text>
             </View>
             <View style={styles.progressBar}>
               <View
-                style={[styles.progressFill, { width: "100%", backgroundColor: colors.success }]}
+                style={[styles.progressFill, {
+                  width: "100%",
+                  backgroundColor: colors.success,
+                }]}
               />
             </View>
           </View>
@@ -270,11 +360,18 @@ export default function FeedbackPage() {
           <View style={styles.progressCard}>
             <View style={styles.progressRow}>
               <Text style={styles.progressLabel}>Storage Used</Text>
-              <Text style={[styles.progressValue, { color: colors.destructive }]}>95%</Text>
+              <Text
+                style={[styles.progressValue, { color: colors.destructive }]}
+              >
+                95%
+              </Text>
             </View>
             <View style={styles.progressBar}>
               <View
-                style={[styles.progressFill, { width: "95%", backgroundColor: colors.destructive }]}
+                style={[styles.progressFill, {
+                  width: "95%",
+                  backgroundColor: colors.destructive,
+                }]}
               />
             </View>
           </View>
@@ -292,10 +389,17 @@ export default function FeedbackPage() {
               exiting={SlideOutRight}
               style={[
                 styles.toast,
-                { backgroundColor: toastColors.bg, borderColor: toastColors.border },
+                {
+                  backgroundColor: toastColors.bg,
+                  borderColor: toastColors.border,
+                },
               ]}
             >
-              <Ionicons name={getToastIcon(toast.type)} size={20} color={toastColors.icon} />
+              <Ionicons
+                name={getToastIcon(toast.type)}
+                size={20}
+                color={toastColors.icon}
+              />
               <View style={styles.toastContent}>
                 <Text style={styles.toastTitle}>{toast.title}</Text>
                 <Text style={styles.toastMessage}>{toast.message}</Text>

@@ -94,7 +94,9 @@ export function watch(
 
   const checkDirectory = async (dirPath: string) => {
     try {
-      const entries = (await readdir(dirPath, { withFileTypes: true })) as unknown as Dirent[];
+      const entries = (await readdir(dirPath, {
+        withFileTypes: true,
+      })) as unknown as Dirent[];
       const currentFiles = new Set<string>();
 
       for (const entry of entries) {
@@ -110,7 +112,10 @@ export function watch(
 
       // Check for deleted files
       for (const [path, snapshot] of fileSnapshots.entries()) {
-        if (path.startsWith(dirPath + "/") && !currentFiles.has(path) && snapshot.exists) {
+        if (
+          path.startsWith(dirPath + "/") && !currentFiles.has(path) &&
+          snapshot.exists
+        ) {
           fileSnapshots.set(path, getNonExistentSnapshot());
           emitEvent("rename", path);
         }

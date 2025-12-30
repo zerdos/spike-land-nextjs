@@ -71,7 +71,12 @@ function UserCard({ user, onPress }: UserCardProps) {
         <YStack gap="$2">
           <XStack justifyContent="space-between" alignItems="flex-start">
             <YStack flex={1} marginRight="$2">
-              <Text fontSize="$4" fontWeight="600" color="$gray12" numberOfLines={1}>
+              <Text
+                fontSize="$4"
+                fontWeight="600"
+                color="$gray12"
+                numberOfLines={1}
+              >
                 {user.name || "No name"}
               </Text>
               <Text fontSize="$2" color="$gray10" numberOfLines={1}>
@@ -225,7 +230,9 @@ export default function UserManagementPage() {
         <Text color="$gray10" fontSize="$2" textAlign="center">
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>
-        <TouchableOpacity onPress={() => refetch()}>
+        <TouchableOpacity
+          onPress={() => refetch()}
+        >
           <Text color="$blue10" marginTop="$4">
             Try Again
           </Text>
@@ -240,7 +247,12 @@ export default function UserManagementPage() {
       contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
       data={users || []}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <UserCard user={item} onPress={() => handleUserPress(item.id)} />}
+      renderItem={({ item }) => (
+        <UserCard
+          user={item}
+          onPress={() => handleUserPress(item.id)}
+        />
+      )}
       ListHeaderComponent={renderHeader}
       ListEmptyComponent={renderEmptyState}
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}

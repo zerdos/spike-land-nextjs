@@ -33,7 +33,10 @@ export default function StorybookIndexPage() {
   const categories = Object.keys(groupedSections);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Hero Section */}
       <View style={styles.heroSection}>
         <View style={styles.heroIcon}>
@@ -70,17 +73,29 @@ export default function StorybookIndexPage() {
             {groupedSections[category]?.map((section) => (
               <Pressable
                 key={section.id}
-                style={({ pressed }) => [styles.sectionCard, pressed && styles.sectionCardPressed]}
+                style={(
+                  { pressed },
+                ) => [styles.sectionCard, pressed && styles.sectionCardPressed]}
                 onPress={() => router.push(`/storybook/${section.id}` as never)}
               >
                 <View style={styles.sectionCardHeader}>
                   <View style={styles.sectionIconContainer}>
-                    <Ionicons name={section.icon} size={24} color={colors.primary} />
+                    <Ionicons
+                      name={section.icon}
+                      size={24}
+                      color={colors.primary}
+                    />
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.mutedForeground} />
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={colors.mutedForeground}
+                  />
                 </View>
                 <Text style={styles.sectionCardTitle}>{section.label}</Text>
-                <Text style={styles.sectionCardDescription}>{section.description}</Text>
+                <Text style={styles.sectionCardDescription}>
+                  {section.description}
+                </Text>
               </Pressable>
             ))}
           </View>
@@ -90,7 +105,9 @@ export default function StorybookIndexPage() {
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>spike.land Design System v1.2.0</Text>
-        <Text style={styles.footerSubtext}>Built with React Native + Expo + Tamagui</Text>
+        <Text style={styles.footerSubtext}>
+          Built with React Native + Expo + Tamagui
+        </Text>
       </View>
     </ScrollView>
   );

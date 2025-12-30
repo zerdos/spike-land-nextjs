@@ -84,7 +84,9 @@ export function useReferralStats(
         setCurrentPage(1);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load referral data");
+      setError(
+        err instanceof Error ? err.message : "Failed to load referral data",
+      );
     } finally {
       setIsLoading(false);
     }

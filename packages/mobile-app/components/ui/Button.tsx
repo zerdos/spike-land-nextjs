@@ -189,7 +189,12 @@ const ButtonText = styled(Text, {
 // TYPES
 // ============================================================================
 
-export type ButtonVariant = "primary" | "secondary" | "destructive" | "outline" | "ghost";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "ghost";
 export type ButtonSize = "sm" | "md" | "lg";
 
 type ButtonFrameProps = GetProps<typeof ButtonFrame>;

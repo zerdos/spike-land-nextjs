@@ -104,14 +104,17 @@ describe("StorybookIndexPage", () => {
       const { getByText } = render(<StorybookIndexPage />);
       expect(getByText("Colors")).toBeTruthy();
       expect(
-        getByText("Color palette, brand colors, dark/light modes, glow effects"),
+        getByText(
+          "Color palette, brand colors, dark/light modes, glow effects",
+        ),
       ).toBeTruthy();
     });
 
     it("should render Typography section card", () => {
       const { getByText } = render(<StorybookIndexPage />);
       expect(getByText("Typography")).toBeTruthy();
-      expect(getByText("Font families, heading scale, text colors")).toBeTruthy();
+      expect(getByText("Font families, heading scale, text colors"))
+        .toBeTruthy();
     });
 
     it("should render Buttons section card", () => {

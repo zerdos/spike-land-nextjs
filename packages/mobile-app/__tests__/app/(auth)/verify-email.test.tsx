@@ -52,7 +52,9 @@ jest.mock("tamagui", () => {
       ReactMod.createElement(
         Pressable,
         { onPress: disabled ? undefined : onPress, testID, ...props },
-        typeof children === "string" ? ReactMod.createElement(RNText, null, children) : children,
+        typeof children === "string"
+          ? ReactMod.createElement(RNText, null, children)
+          : children,
       ),
     Card: ({ children, ...props }: { children?: React.ReactNode; }) =>
       ReactMod.createElement(View, props, children),
@@ -302,7 +304,8 @@ describe("VerifyEmailScreen", () => {
       fireEvent.press(screen.getByTestId("send-verification-button"));
 
       await waitFor(() => {
-        expect(screen.getByText("Please enter your email address")).toBeTruthy();
+        expect(screen.getByText("Please enter your email address"))
+          .toBeTruthy();
       });
     });
 
@@ -320,7 +323,8 @@ describe("VerifyEmailScreen", () => {
       fireEvent.press(screen.getByTestId("send-verification-button"));
 
       await waitFor(() => {
-        expect(screen.getByText("Please enter a valid email address")).toBeTruthy();
+        expect(screen.getByText("Please enter a valid email address"))
+          .toBeTruthy();
       });
     });
 
@@ -342,7 +346,9 @@ describe("VerifyEmailScreen", () => {
       fireEvent.press(screen.getByTestId("send-verification-button"));
 
       await waitFor(() => {
-        expect(mockAuthService.resendVerification).toHaveBeenCalledWith("user@example.com");
+        expect(mockAuthService.resendVerification).toHaveBeenCalledWith(
+          "user@example.com",
+        );
       });
     });
 
@@ -364,7 +370,9 @@ describe("VerifyEmailScreen", () => {
       fireEvent.press(screen.getByTestId("send-verification-button"));
 
       await waitFor(() => {
-        expect(screen.getByText("Verification email sent! Please check your inbox.")).toBeTruthy();
+        expect(
+          screen.getByText("Verification email sent! Please check your inbox."),
+        ).toBeTruthy();
       });
     });
 
@@ -407,7 +415,8 @@ describe("VerifyEmailScreen", () => {
       fireEvent.press(screen.getByTestId("send-verification-button"));
 
       await waitFor(() => {
-        expect(screen.getByText("Failed to send verification email")).toBeTruthy();
+        expect(screen.getByText("Failed to send verification email"))
+          .toBeTruthy();
       });
     });
 
@@ -423,14 +432,16 @@ describe("VerifyEmailScreen", () => {
       fireEvent.press(screen.getByTestId("send-verification-button"));
 
       await waitFor(() => {
-        expect(screen.getByText("Please enter your email address")).toBeTruthy();
+        expect(screen.getByText("Please enter your email address"))
+          .toBeTruthy();
       });
 
       const emailInput = screen.getByTestId("email-input");
       fireEvent.changeText(emailInput, "t");
 
       await waitFor(() => {
-        expect(screen.queryByText("Please enter your email address")).toBeNull();
+        expect(screen.queryByText("Please enter your email address"))
+          .toBeNull();
       });
     });
 
@@ -452,13 +463,19 @@ describe("VerifyEmailScreen", () => {
       fireEvent.press(screen.getByTestId("send-verification-button"));
 
       await waitFor(() => {
-        expect(screen.getByText("Verification email sent! Please check your inbox.")).toBeTruthy();
+        expect(
+          screen.getByText("Verification email sent! Please check your inbox."),
+        ).toBeTruthy();
       });
 
       fireEvent.changeText(emailInput, "new@example.com");
 
       await waitFor(() => {
-        expect(screen.queryByText("Verification email sent! Please check your inbox.")).toBeNull();
+        expect(
+          screen.queryByText(
+            "Verification email sent! Please check your inbox.",
+          ),
+        ).toBeNull();
       });
     });
 
@@ -494,7 +511,9 @@ describe("VerifyEmailScreen", () => {
       fireEvent(emailInput, "submitEditing");
 
       await waitFor(() => {
-        expect(mockAuthService.resendVerification).toHaveBeenCalledWith("user@example.com");
+        expect(mockAuthService.resendVerification).toHaveBeenCalledWith(
+          "user@example.com",
+        );
       });
     });
 
@@ -516,7 +535,9 @@ describe("VerifyEmailScreen", () => {
       fireEvent.press(screen.getByTestId("send-verification-button"));
 
       await waitFor(() => {
-        expect(mockAuthService.resendVerification).toHaveBeenCalledWith("user@example.com");
+        expect(mockAuthService.resendVerification).toHaveBeenCalledWith(
+          "user@example.com",
+        );
       });
     });
   });

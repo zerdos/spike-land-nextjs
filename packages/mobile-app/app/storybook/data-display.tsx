@@ -25,7 +25,10 @@ export default function DataDisplayPage() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Data Display</Text>
@@ -45,8 +48,12 @@ export default function DataDisplayPage() {
           {/* Table Header */}
           <View style={styles.tableHeader}>
             <Text style={[styles.tableHeaderCell, styles.cellName]}>Name</Text>
-            <Text style={[styles.tableHeaderCell, styles.cellPrice]}>Price</Text>
-            <Text style={[styles.tableHeaderCell, styles.cellStatus]}>Status</Text>
+            <Text style={[styles.tableHeaderCell, styles.cellPrice]}>
+              Price
+            </Text>
+            <Text style={[styles.tableHeaderCell, styles.cellStatus]}>
+              Status
+            </Text>
           </View>
 
           {/* Table Body */}
@@ -58,19 +65,27 @@ export default function DataDisplayPage() {
                 index === tableData.length - 1 && styles.tableRowLast,
               ]}
             >
-              <Text style={[styles.tableCell, styles.cellName]}>{row.name}</Text>
-              <Text style={[styles.tableCell, styles.cellPrice]}>{row.price}</Text>
+              <Text style={[styles.tableCell, styles.cellName]}>
+                {row.name}
+              </Text>
+              <Text style={[styles.tableCell, styles.cellPrice]}>
+                {row.price}
+              </Text>
               <View style={[styles.cellStatus]}>
                 <View
                   style={[
                     styles.statusBadge,
-                    row.status === "Active" ? styles.statusActive : styles.statusLimited,
+                    row.status === "Active"
+                      ? styles.statusActive
+                      : styles.statusLimited,
                   ]}
                 >
                   <Text
                     style={[
                       styles.statusText,
-                      row.status === "Active" ? styles.statusTextActive : styles.statusTextLimited,
+                      row.status === "Active"
+                        ? styles.statusTextActive
+                        : styles.statusTextLimited,
                     ]}
                   >
                     {row.status}
@@ -93,7 +108,9 @@ export default function DataDisplayPage() {
           <View style={styles.codeBlock}>
             <Text style={styles.codeText}>sk-live-abc123xyz789...</Text>
             <Pressable
-              style={({ pressed }) => [styles.copyButton, pressed && styles.copyButtonPressed]}
+              style={(
+                { pressed },
+              ) => [styles.copyButton, pressed && styles.copyButtonPressed]}
               onPress={handleCopy}
             >
               <Ionicons
@@ -103,7 +120,11 @@ export default function DataDisplayPage() {
               />
             </Pressable>
           </View>
-          {copied && <Text style={styles.copiedText}>Copied to clipboard!</Text>}
+          {copied && (
+            <Text style={styles.copiedText}>
+              Copied to clipboard!
+            </Text>
+          )}
         </View>
       </View>
 
@@ -118,14 +139,20 @@ export default function DataDisplayPage() {
           <View style={styles.toggleGroup}>
             <Pressable style={[styles.toggleItem, styles.toggleItemActive]}>
               <Ionicons name="grid" size={18} color={colors.primary} />
-              <Text style={[styles.toggleText, styles.toggleTextActive]}>Grid</Text>
+              <Text style={[styles.toggleText, styles.toggleTextActive]}>
+                Grid
+              </Text>
             </Pressable>
             <Pressable style={styles.toggleItem}>
               <Ionicons name="list" size={18} color={colors.mutedForeground} />
               <Text style={styles.toggleText}>List</Text>
             </Pressable>
             <Pressable style={styles.toggleItem}>
-              <Ionicons name="albums" size={18} color={colors.mutedForeground} />
+              <Ionicons
+                name="albums"
+                size={18}
+                color={colors.mutedForeground}
+              />
               <Text style={styles.toggleText}>Cards</Text>
             </Pressable>
           </View>

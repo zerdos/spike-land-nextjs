@@ -54,7 +54,9 @@ interface RoleSelectorProps {
   isLoading: boolean;
 }
 
-function RoleSelector({ currentRole, onRoleChange, isLoading }: RoleSelectorProps) {
+function RoleSelector(
+  { currentRole, onRoleChange, isLoading }: RoleSelectorProps,
+) {
   const roles: UserRole[] = ["USER", "ADMIN", "SUPER_ADMIN"];
 
   return (
@@ -171,7 +173,10 @@ export default function UserDetailPage() {
       Alert.alert("Success", "User role updated successfully");
     },
     onError: (error) => {
-      Alert.alert("Error", error instanceof Error ? error.message : "Failed to update role");
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Failed to update role",
+      );
     },
   });
 
@@ -191,7 +196,10 @@ export default function UserDetailPage() {
       Alert.alert("Success", `New balance: ${data?.newBalance} tokens`);
     },
     onError: (error) => {
-      Alert.alert("Error", error instanceof Error ? error.message : "Failed to adjust tokens");
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Failed to adjust tokens",
+      );
     },
   });
 
@@ -211,7 +219,10 @@ export default function UserDetailPage() {
       ]);
     },
     onError: (error) => {
-      Alert.alert("Error", error instanceof Error ? error.message : "Failed to delete user");
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Failed to delete user",
+      );
     },
   });
 
@@ -284,7 +295,9 @@ export default function UserDetailPage() {
         <Text color="$gray10" fontSize="$2" textAlign="center">
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>
-        <TouchableOpacity onPress={() => refetch()}>
+        <TouchableOpacity
+          onPress={() => refetch()}
+        >
           <Text color="$blue10" marginTop="$4">
             Try Again
           </Text>
@@ -362,7 +375,10 @@ export default function UserDetailPage() {
             <H4 marginBottom="$3" color="$gray12">
               Statistics
             </H4>
-            <InfoRow label="Images Enhanced" value={user.imageCount?.toString()} />
+            <InfoRow
+              label="Images Enhanced"
+              value={user.imageCount?.toString()}
+            />
           </Card>
 
           {/* Recent Transactions */}

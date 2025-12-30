@@ -15,19 +15,35 @@ describe("Avatar", () => {
     });
 
     it("applies custom size", () => {
-      render(<Avatar src="https://example.com/avatar.png" size={60} testID="avatar" />);
+      render(
+        <Avatar
+          src="https://example.com/avatar.png"
+          size={60}
+          testID="avatar"
+        />,
+      );
       const avatar = screen.getByTestId("avatar");
       expect(avatar.props.style).toEqual(
-        expect.arrayContaining([expect.objectContaining({ width: 60, height: 60 })]),
+        expect.arrayContaining([
+          expect.objectContaining({ width: 60, height: 60 }),
+        ]),
       );
     });
 
     it("shows fallback when image fails to load", () => {
-      render(<Avatar src="https://example.com/broken.png" fallback="AB" testID="avatar" />);
+      render(
+        <Avatar
+          src="https://example.com/broken.png"
+          fallback="AB"
+          testID="avatar"
+        />,
+      );
 
       // Find the image and trigger onError
       const container = screen.getByTestId("avatar");
-      const image = container.findByProps({ accessibilityLabel: "User avatar" });
+      const image = container.findByProps({
+        accessibilityLabel: "User avatar",
+      });
 
       // Trigger the error
       fireEvent(image, "error");
@@ -58,7 +74,9 @@ describe("Avatar", () => {
       );
       const avatar = screen.getByTestId("avatar");
       expect(avatar.props.style).toEqual(
-        expect.arrayContaining([expect.objectContaining({ backgroundColor: "red" })]),
+        expect.arrayContaining([
+          expect.objectContaining({ backgroundColor: "red" }),
+        ]),
       );
     });
   });
@@ -68,7 +86,9 @@ describe("Avatar", () => {
       render(<Avatar fallback="X" testID="avatar" />);
       const avatar = screen.getByTestId("avatar");
       expect(avatar.props.style).toEqual(
-        expect.arrayContaining([expect.objectContaining({ width: 40, height: 40 })]),
+        expect.arrayContaining([
+          expect.objectContaining({ width: 40, height: 40 }),
+        ]),
       );
     });
 

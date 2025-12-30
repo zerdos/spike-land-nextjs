@@ -1,6 +1,7 @@
 # @spike-npm-land/shared
 
-Shared TypeScript types, constants, validations, and utilities for Spike Land's web and mobile applications.
+Shared TypeScript types, constants, validations, and utilities for Spike Land's
+web and mobile applications.
 
 ## Overview
 
@@ -9,13 +10,15 @@ This package provides cross-platform code sharing between:
 - **Web App** (Next.js 15)
 - **Mobile App** (Expo/React Native)
 
-By extracting common code into this shared package, we ensure type safety and consistent behavior across all platforms.
+By extracting common code into this shared package, we ensure type safety and
+consistent behavior across all platforms.
 
 ---
 
 ## Installation
 
-This package is part of the monorepo workspace. It's automatically available to other packages.
+This package is part of the monorepo workspace. It's automatically available to
+other packages.
 
 ```typescript
 // In web app or mobile app
@@ -53,7 +56,13 @@ type UserRole = "USER" | "ADMIN" | "SUPER_ADMIN";
 type EnhancementTier = "FREE" | "TIER_1K" | "TIER_2K" | "TIER_4K";
 
 // Job processing status
-type JobStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "REFUNDED" | "CANCELLED";
+type JobStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "FAILED"
+  | "REFUNDED"
+  | "CANCELLED";
 
 // Album privacy settings
 type AlbumPrivacy = "PRIVATE" | "UNLISTED" | "PUBLIC";

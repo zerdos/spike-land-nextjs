@@ -15,18 +15,24 @@ export async function access(filePath: string, _mode?: number): Promise<void> {
       return;
     }
 
-    const { dirHandle, fileName } = await getDirectoryHandleAndFileName(filePath);
+    const { dirHandle, fileName } = await getDirectoryHandleAndFileName(
+      filePath,
+    );
 
     if (!fileName) {
       return;
     }
 
-    const { data: fileHandle } = await tryCatch(dirHandle.getFileHandle(fileName));
+    const { data: fileHandle } = await tryCatch(
+      dirHandle.getFileHandle(fileName),
+    );
     if (fileHandle) {
       return;
     }
 
-    const { data: subDirHandle } = await tryCatch(dirHandle.getDirectoryHandle(fileName));
+    const { data: subDirHandle } = await tryCatch(
+      dirHandle.getDirectoryHandle(fileName),
+    );
     if (subDirHandle) {
       return;
     }

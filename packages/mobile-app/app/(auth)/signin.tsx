@@ -29,8 +29,13 @@ type AuthStep = "email" | "password";
 
 export default function SignInScreen() {
   const router = useRouter();
-  const { signInWithProvider, signInWithCredentials, isLoading, error, clearError } =
-    useAuthStore();
+  const {
+    signInWithProvider,
+    signInWithCredentials,
+    isLoading,
+    error,
+    clearError,
+  } = useAuthStore();
 
   // Form state
   const [step, setStep] = useState<AuthStep>("email");
@@ -137,7 +142,12 @@ export default function SignInScreen() {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <YStack flex={1} justifyContent="center" padding="$4" backgroundColor="#08080C">
+        <YStack
+          flex={1}
+          justifyContent="center"
+          padding="$4"
+          backgroundColor="#08080C"
+        >
           <Card
             elevate
             size="$4"
@@ -193,11 +203,15 @@ export default function SignInScreen() {
                             <Ionicons
                               name={provider.icon}
                               size={20}
-                              color={provider.id === "apple" ? "#FFFFFF" : provider.color}
+                              color={provider.id === "apple"
+                                ? "#FFFFFF"
+                                : provider.color}
                             />
                           )}
                       >
-                        <Text fontWeight="500" color="white">Continue with {provider.name}</Text>
+                        <Text fontWeight="500" color="white">
+                          Continue with {provider.name}
+                        </Text>
                       </Button>
                     ))}
                   </YStack>
@@ -248,7 +262,11 @@ export default function SignInScreen() {
                   <XStack justifyContent="center" space="$2" marginTop="$4">
                     <Text color="#8b949e">Don't have an account?</Text>
                     <Link href="/(auth)/signup" asChild>
-                      <Text color="#00E5FF" fontWeight="600" pressStyle={{ opacity: 0.7 }}>
+                      <Text
+                        color="#00E5FF"
+                        fontWeight="600"
+                        pressStyle={{ opacity: 0.7 }}
+                      >
                         Sign up
                       </Text>
                     </Link>
@@ -304,7 +322,11 @@ export default function SignInScreen() {
                   {/* Forgot password link */}
                   <XStack justifyContent="center" marginTop="$2">
                     <Link href="/(auth)/forgot-password" asChild>
-                      <Text color="#00E5FF" fontWeight="500" pressStyle={{ opacity: 0.7 }}>
+                      <Text
+                        color="#00E5FF"
+                        fontWeight="500"
+                        pressStyle={{ opacity: 0.7 }}
+                      >
                         Forgot password?
                       </Text>
                     </Link>

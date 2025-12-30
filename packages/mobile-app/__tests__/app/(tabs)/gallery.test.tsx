@@ -47,10 +47,14 @@ jest.mock("@/components/FilterSheet", () => {
   const RN = require("react-native");
   return {
     FilterSheet: ({ open, testID }: { open: boolean; testID?: string; }) =>
-      open ? React.createElement(RN.View, { testID: testID || "filter-sheet" }) : null,
+      open
+        ? React.createElement(RN.View, { testID: testID || "filter-sheet" })
+        : null,
     __esModule: true,
     default: ({ open, testID }: { open: boolean; testID?: string; }) =>
-      open ? React.createElement(RN.View, { testID: testID || "filter-sheet" }) : null,
+      open
+        ? React.createElement(RN.View, { testID: testID || "filter-sheet" })
+        : null,
   };
 });
 
@@ -156,8 +160,9 @@ jest.mock("tamagui", () => {
     Content: mockPopoverContent,
   });
 
-  const mockSheetRoot = ({ children, open }: { children: unknown; open?: boolean; }) =>
-    open ? React.createElement(RN.View, { testID: "sheet" }, children) : null;
+  const mockSheetRoot = (
+    { children, open }: { children: unknown; open?: boolean; },
+  ) => open ? React.createElement(RN.View, { testID: "sheet" }, children) : null;
   const mockSheetFrame = ({ children }: { children: unknown; }) =>
     React.createElement(RN.View, { testID: "sheet-frame" }, children);
   const mockSheetOverlay = () => React.createElement(RN.View, { testID: "sheet-overlay" });

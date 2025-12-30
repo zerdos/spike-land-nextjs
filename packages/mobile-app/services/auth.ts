@@ -147,7 +147,9 @@ class AuthService {
       if (result.type !== "success") {
         return {
           success: false,
-          error: result.type === "cancel" ? "Authentication cancelled" : "Authentication failed",
+          error: result.type === "cancel"
+            ? "Authentication cancelled"
+            : "Authentication failed",
         };
       }
 
@@ -163,7 +165,10 @@ class AuthService {
       });
 
       if (response.error || !response.data) {
-        return { success: false, error: response.error || "Authentication failed" };
+        return {
+          success: false,
+          error: response.error || "Authentication failed",
+        };
       }
 
       // Store session
@@ -387,7 +392,9 @@ class AuthService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to send reset email",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to send reset email",
       };
     }
   }
@@ -415,7 +422,9 @@ class AuthService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to reset password",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to reset password",
       };
     }
   }
@@ -440,7 +449,9 @@ class AuthService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to verify email",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to verify email",
       };
     }
   }
@@ -465,7 +476,9 @@ class AuthService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to send verification email",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to send verification email",
       };
     }
   }

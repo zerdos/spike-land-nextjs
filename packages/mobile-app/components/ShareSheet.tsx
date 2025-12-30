@@ -120,7 +120,10 @@ export function ShareSheet({
       translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
     } else {
       opacity.value = withTiming(0, { duration: 200 });
-      translateY.value = withSpring(SHEET_HEIGHT, { damping: 20, stiffness: 200 });
+      translateY.value = withSpring(SHEET_HEIGHT, {
+        damping: 20,
+        stiffness: 200,
+      });
     }
   }, [visible, opacity, translateY]);
 
@@ -195,15 +198,24 @@ export function ShareSheet({
     <>
       {/* Backdrop */}
       <Animated.View style={[styles.backdrop, backdropStyle]}>
-        <Pressable style={styles.backdropPressable} onPress={handleBackdropPress} />
+        <Pressable
+          style={styles.backdropPressable}
+          onPress={handleBackdropPress}
+        />
       </Animated.View>
 
       {/* Sheet */}
       <Animated.View
-        style={[styles.sheet, sheetStyle, { paddingBottom: insets.bottom + 16 }]}
+        style={[styles.sheet, sheetStyle, {
+          paddingBottom: insets.bottom + 16,
+        }]}
       >
         {/* Header */}
-        <XStack justifyContent="space-between" alignItems="center" paddingHorizontal="$4">
+        <XStack
+          justifyContent="space-between"
+          alignItems="center"
+          paddingHorizontal="$4"
+        >
           <H4>Share Image</H4>
           <Button
             size="$3"
@@ -250,9 +262,17 @@ export function ShareSheet({
           </Button>
 
           {/* Download Progress */}
-          {currentOperation === "download" && isLoading && downloadProgress > 0 && (
-            <Progress value={downloadProgress} backgroundColor="$gray4" height={4}>
-              <Progress.Indicator animation="bouncy" backgroundColor="$blue10" />
+          {currentOperation === "download" && isLoading &&
+            downloadProgress > 0 && (
+            <Progress
+              value={downloadProgress}
+              backgroundColor="$gray4"
+              height={4}
+            >
+              <Progress.Indicator
+                animation="bouncy"
+                backgroundColor="$blue10"
+              />
             </Progress>
           )}
 
@@ -261,12 +281,16 @@ export function ShareSheet({
             <Button
               size="$5"
               variant="outlined"
-              icon={currentOperation === "share" && isLoading ? Loader2 : Share2}
+              icon={currentOperation === "share" && isLoading
+                ? Loader2
+                : Share2}
               onPress={handleShare}
               disabled={isLoading}
               opacity={isLoading && currentOperation !== "share" ? 0.5 : 1}
             >
-              {currentOperation === "share" && isLoading ? "Sharing..." : "Share via..."}
+              {currentOperation === "share" && isLoading
+                ? "Sharing..."
+                : "Share via..."}
             </Button>
           )}
 

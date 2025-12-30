@@ -25,7 +25,9 @@ export const EnhanceImageRequestSchema = z.object({
 });
 
 export const BatchEnhanceRequestSchema = z.object({
-  imageIds: z.array(z.string().min(1)).min(1).max(IMAGE_CONSTRAINTS.MAX_BATCH_SIZE),
+  imageIds: z.array(z.string().min(1)).min(1).max(
+    IMAGE_CONSTRAINTS.MAX_BATCH_SIZE,
+  ),
   tier: EnhancementTierSchema,
 });
 

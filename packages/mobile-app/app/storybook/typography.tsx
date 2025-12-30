@@ -11,7 +11,10 @@ import { borderRadius, colors, fontSize, fontWeight, spacing } from "@/constants
 
 export default function TypographyPage() {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Typography</Text>
@@ -38,27 +41,39 @@ export default function TypographyPage() {
         <Text style={styles.sectionTitle}>Font Sizes</Text>
         <View style={styles.card}>
           <View style={styles.fontSizeRow}>
-            <Text style={[styles.sizeLabel, { fontSize: fontSize.xs }]}>XS (12px)</Text>
+            <Text style={[styles.sizeLabel, { fontSize: fontSize.xs }]}>
+              XS (12px)
+            </Text>
             <Text style={styles.sizeValue}>fontSize.xs</Text>
           </View>
           <View style={styles.fontSizeRow}>
-            <Text style={[styles.sizeLabel, { fontSize: fontSize.sm }]}>SM (14px)</Text>
+            <Text style={[styles.sizeLabel, { fontSize: fontSize.sm }]}>
+              SM (14px)
+            </Text>
             <Text style={styles.sizeValue}>fontSize.sm</Text>
           </View>
           <View style={styles.fontSizeRow}>
-            <Text style={[styles.sizeLabel, { fontSize: fontSize.base }]}>Base (16px)</Text>
+            <Text style={[styles.sizeLabel, { fontSize: fontSize.base }]}>
+              Base (16px)
+            </Text>
             <Text style={styles.sizeValue}>fontSize.base</Text>
           </View>
           <View style={styles.fontSizeRow}>
-            <Text style={[styles.sizeLabel, { fontSize: fontSize.lg }]}>LG (18px)</Text>
+            <Text style={[styles.sizeLabel, { fontSize: fontSize.lg }]}>
+              LG (18px)
+            </Text>
             <Text style={styles.sizeValue}>fontSize.lg</Text>
           </View>
           <View style={styles.fontSizeRow}>
-            <Text style={[styles.sizeLabel, { fontSize: fontSize.xl }]}>XL (20px)</Text>
+            <Text style={[styles.sizeLabel, { fontSize: fontSize.xl }]}>
+              XL (20px)
+            </Text>
             <Text style={styles.sizeValue}>fontSize.xl</Text>
           </View>
           <View style={styles.fontSizeRow}>
-            <Text style={[styles.sizeLabel, { fontSize: fontSize["2xl"] }]}>2XL (24px)</Text>
+            <Text style={[styles.sizeLabel, { fontSize: fontSize["2xl"] }]}>
+              2XL (24px)
+            </Text>
             <Text style={styles.sizeValue}>fontSize["2xl"]</Text>
           </View>
         </View>
@@ -68,13 +83,27 @@ export default function TypographyPage() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Font Weights</Text>
         <View style={styles.card}>
-          <Text style={[styles.weightSample, { fontWeight: fontWeight.normal }]}>Normal (400)</Text>
-          <Text style={[styles.weightSample, { fontWeight: fontWeight.medium }]}>Medium (500)</Text>
-          <Text style={[styles.weightSample, { fontWeight: fontWeight.semibold }]}>
+          <Text
+            style={[styles.weightSample, { fontWeight: fontWeight.normal }]}
+          >
+            Normal (400)
+          </Text>
+          <Text
+            style={[styles.weightSample, { fontWeight: fontWeight.medium }]}
+          >
+            Medium (500)
+          </Text>
+          <Text
+            style={[styles.weightSample, { fontWeight: fontWeight.semibold }]}
+          >
             Semibold (600)
           </Text>
-          <Text style={[styles.weightSample, { fontWeight: fontWeight.bold }]}>Bold (700)</Text>
-          <Text style={[styles.weightSample, { fontWeight: fontWeight.extrabold }]}>
+          <Text style={[styles.weightSample, { fontWeight: fontWeight.bold }]}>
+            Bold (700)
+          </Text>
+          <Text
+            style={[styles.weightSample, { fontWeight: fontWeight.extrabold }]}
+          >
             Extra Bold (800)
           </Text>
         </View>

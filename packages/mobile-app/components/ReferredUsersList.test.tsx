@@ -10,7 +10,9 @@ import { ReferredUser, ReferredUsersList } from "./ReferredUsersList";
 // Mock Tamagui components
 jest.mock("tamagui", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Text: RNText, TouchableOpacity, View: RNView } = require("react-native");
+  const { Text: RNText, TouchableOpacity, View: RNView } = require(
+    "react-native",
+  );
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ReactMod = require("react");
 

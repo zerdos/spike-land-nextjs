@@ -55,7 +55,9 @@ export default function NotificationsScreen() {
     onMutate: async (notificationId) => {
       // Optimistic update
       await queryClient.cancelQueries({ queryKey: ["notifications"] });
-      const previousData = queryClient.getQueryData<NotificationsData>(["notifications"]);
+      const previousData = queryClient.getQueryData<NotificationsData>([
+        "notifications",
+      ]);
 
       if (previousData) {
         queryClient.setQueryData<NotificationsData>(["notifications"], {
@@ -81,13 +83,18 @@ export default function NotificationsScreen() {
     mutationFn: markAllNotificationsAsRead,
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["notifications"] });
-      const previousData = queryClient.getQueryData<NotificationsData>(["notifications"]);
+      const previousData = queryClient.getQueryData<NotificationsData>([
+        "notifications",
+      ]);
 
       if (previousData) {
         queryClient.setQueryData<NotificationsData>(["notifications"], {
           ...previousData,
           unreadCount: 0,
-          notifications: previousData.notifications.map((n) => ({ ...n, read: true })),
+          notifications: previousData.notifications.map((n) => ({
+            ...n,
+            read: true,
+          })),
         });
       }
 
@@ -105,7 +112,9 @@ export default function NotificationsScreen() {
     mutationFn: deleteNotification,
     onMutate: async (notificationId) => {
       await queryClient.cancelQueries({ queryKey: ["notifications"] });
-      const previousData = queryClient.getQueryData<NotificationsData>(["notifications"]);
+      const previousData = queryClient.getQueryData<NotificationsData>([
+        "notifications",
+      ]);
 
       if (previousData) {
         const notification = previousData.notifications.find((n) => n.id === notificationId);

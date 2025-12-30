@@ -146,7 +146,11 @@ describe("Card", () => {
   describe("accessibility", () => {
     it("should use custom accessibility label", () => {
       const { getByTestId } = renderWithProvider(
-        <Card testID="a11y-card" interactive accessibilityLabel="Custom Card Label">
+        <Card
+          testID="a11y-card"
+          interactive
+          accessibilityLabel="Custom Card Label"
+        >
           <CardContent>Accessible</CardContent>
         </Card>,
       );
@@ -203,12 +207,16 @@ describe("CardTitle", () => {
   });
 
   it("should render with testID", () => {
-    const { getByTestId } = renderWithProvider(<CardTitle testID="card-title">Title</CardTitle>);
+    const { getByTestId } = renderWithProvider(
+      <CardTitle testID="card-title">Title</CardTitle>,
+    );
     expect(getByTestId("card-title")).toBeTruthy();
   });
 
   it("should have header accessibility role", () => {
-    const { getByTestId } = renderWithProvider(<CardTitle testID="title-role">Title</CardTitle>);
+    const { getByTestId } = renderWithProvider(
+      <CardTitle testID="title-role">Title</CardTitle>,
+    );
     const title = getByTestId("title-role");
     expect(title.props.accessibilityRole).toBe("header");
   });
@@ -309,7 +317,9 @@ describe("Styled frame exports", () => {
     });
 
     it("should render as standalone component", () => {
-      const { getByTestId } = renderWithProvider(<CardFrame testID="card-frame" />);
+      const { getByTestId } = renderWithProvider(
+        <CardFrame testID="card-frame" />,
+      );
       expect(getByTestId("card-frame")).toBeTruthy();
     });
   });
@@ -320,7 +330,9 @@ describe("Styled frame exports", () => {
     });
 
     it("should render as standalone component", () => {
-      const { getByTestId } = renderWithProvider(<CardHeaderFrame testID="header-frame" />);
+      const { getByTestId } = renderWithProvider(
+        <CardHeaderFrame testID="header-frame" />,
+      );
       expect(getByTestId("header-frame")).toBeTruthy();
     });
   });
@@ -331,7 +343,9 @@ describe("Styled frame exports", () => {
     });
 
     it("should render as standalone component", () => {
-      const { getByText } = renderWithProvider(<CardTitleText>Title Text</CardTitleText>);
+      const { getByText } = renderWithProvider(
+        <CardTitleText>Title Text</CardTitleText>,
+      );
       expect(getByText("Title Text")).toBeTruthy();
     });
   });
@@ -355,7 +369,9 @@ describe("Styled frame exports", () => {
     });
 
     it("should render as standalone component", () => {
-      const { getByTestId } = renderWithProvider(<CardContentFrame testID="content-frame" />);
+      const { getByTestId } = renderWithProvider(
+        <CardContentFrame testID="content-frame" />,
+      );
       expect(getByTestId("content-frame")).toBeTruthy();
     });
   });
@@ -366,7 +382,9 @@ describe("Styled frame exports", () => {
     });
 
     it("should render as standalone component", () => {
-      const { getByTestId } = renderWithProvider(<CardFooterFrame testID="footer-frame" />);
+      const { getByTestId } = renderWithProvider(
+        <CardFooterFrame testID="footer-frame" />,
+      );
       expect(getByTestId("footer-frame")).toBeTruthy();
     });
   });

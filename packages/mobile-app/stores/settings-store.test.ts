@@ -35,22 +35,37 @@ const mockApiResponses: Record<string, unknown> = {};
 
 jest.mock("../services/api/settings", () => ({
   listApiKeys: jest.fn(() =>
-    Promise.resolve(mockApiResponses.listApiKeys || { data: null, error: null, status: 200 })
+    Promise.resolve(
+      mockApiResponses.listApiKeys || { data: null, error: null, status: 200 },
+    )
   ),
   createApiKey: jest.fn(() =>
-    Promise.resolve(mockApiResponses.createApiKey || { data: null, error: null, status: 200 })
+    Promise.resolve(
+      mockApiResponses.createApiKey || { data: null, error: null, status: 200 },
+    )
   ),
   deleteApiKey: jest.fn(() =>
-    Promise.resolve(mockApiResponses.deleteApiKey || { data: null, error: null, status: 200 })
+    Promise.resolve(
+      mockApiResponses.deleteApiKey || { data: null, error: null, status: 200 },
+    )
   ),
   getPreferences: jest.fn(() =>
-    Promise.resolve(mockApiResponses.getPreferences || { data: null, error: null, status: 200 })
+    Promise.resolve(
+      mockApiResponses.getPreferences ||
+        { data: null, error: null, status: 200 },
+    )
   ),
   updatePreferences: jest.fn(() =>
-    Promise.resolve(mockApiResponses.updatePreferences || { data: null, error: null, status: 200 })
+    Promise.resolve(
+      mockApiResponses.updatePreferences ||
+        { data: null, error: null, status: 200 },
+    )
   ),
   deleteAccount: jest.fn(() =>
-    Promise.resolve(mockApiResponses.deleteAccount || { data: null, error: null, status: 200 })
+    Promise.resolve(
+      mockApiResponses.deleteAccount ||
+        { data: null, error: null, status: 200 },
+    )
   ),
 }));
 
@@ -65,22 +80,37 @@ const mockDeleteAccount = settingsApi.deleteAccount as jest.Mock;
 
 function setupDefaultMockImplementations() {
   mockListApiKeys.mockImplementation(() =>
-    Promise.resolve(mockApiResponses.listApiKeys || { data: null, error: null, status: 200 })
+    Promise.resolve(
+      mockApiResponses.listApiKeys || { data: null, error: null, status: 200 },
+    )
   );
   mockCreateApiKey.mockImplementation(() =>
-    Promise.resolve(mockApiResponses.createApiKey || { data: null, error: null, status: 200 })
+    Promise.resolve(
+      mockApiResponses.createApiKey || { data: null, error: null, status: 200 },
+    )
   );
   mockDeleteApiKey.mockImplementation(() =>
-    Promise.resolve(mockApiResponses.deleteApiKey || { data: null, error: null, status: 200 })
+    Promise.resolve(
+      mockApiResponses.deleteApiKey || { data: null, error: null, status: 200 },
+    )
   );
   mockGetPreferences.mockImplementation(() =>
-    Promise.resolve(mockApiResponses.getPreferences || { data: null, error: null, status: 200 })
+    Promise.resolve(
+      mockApiResponses.getPreferences ||
+        { data: null, error: null, status: 200 },
+    )
   );
   mockUpdatePreferences.mockImplementation(() =>
-    Promise.resolve(mockApiResponses.updatePreferences || { data: null, error: null, status: 200 })
+    Promise.resolve(
+      mockApiResponses.updatePreferences ||
+        { data: null, error: null, status: 200 },
+    )
   );
   mockDeleteAccount.mockImplementation(() =>
-    Promise.resolve(mockApiResponses.deleteAccount || { data: null, error: null, status: 200 })
+    Promise.resolve(
+      mockApiResponses.deleteAccount ||
+        { data: null, error: null, status: 200 },
+    )
   );
 }
 
@@ -292,7 +322,10 @@ describe("useSettingsStore", () => {
       };
 
       await act(async () => {
-        await useSettingsStore.getState().updateNotificationPreference("emailNotifications", false);
+        await useSettingsStore.getState().updateNotificationPreference(
+          "emailNotifications",
+          false,
+        );
       });
 
       const state = useSettingsStore.getState();
@@ -356,7 +389,10 @@ describe("useSettingsStore", () => {
         );
       });
 
-      expect(useSettingsStore.getState().notifications.enhancementCompleteNotifications).toBe(
+      expect(
+        useSettingsStore.getState().notifications
+          .enhancementCompleteNotifications,
+      ).toBe(
         false,
       );
 
@@ -367,7 +403,8 @@ describe("useSettingsStore", () => {
         );
       });
 
-      expect(useSettingsStore.getState().notifications.marketingNotifications).toBe(true);
+      expect(useSettingsStore.getState().notifications.marketingNotifications)
+        .toBe(true);
     });
   });
 
@@ -380,7 +417,10 @@ describe("useSettingsStore", () => {
       };
 
       await act(async () => {
-        await useSettingsStore.getState().updatePrivacyPreference("publicProfile", true);
+        await useSettingsStore.getState().updatePrivacyPreference(
+          "publicProfile",
+          true,
+        );
       });
 
       const state = useSettingsStore.getState();
@@ -399,7 +439,10 @@ describe("useSettingsStore", () => {
       const initialValue = useSettingsStore.getState().privacy.showActivity;
 
       await act(async () => {
-        await useSettingsStore.getState().updatePrivacyPreference("showActivity", !initialValue);
+        await useSettingsStore.getState().updatePrivacyPreference(
+          "showActivity",
+          !initialValue,
+        );
       });
 
       const state = useSettingsStore.getState();
@@ -414,7 +457,10 @@ describe("useSettingsStore", () => {
       const initialValue = useSettingsStore.getState().privacy.publicProfile;
 
       await act(async () => {
-        await useSettingsStore.getState().updatePrivacyPreference("publicProfile", !initialValue);
+        await useSettingsStore.getState().updatePrivacyPreference(
+          "publicProfile",
+          !initialValue,
+        );
       });
 
       const state = useSettingsStore.getState();
@@ -433,10 +479,15 @@ describe("useSettingsStore", () => {
       };
 
       await act(async () => {
-        await useSettingsStore.getState().updatePreference("emailNotifications", false);
+        await useSettingsStore.getState().updatePreference(
+          "emailNotifications",
+          false,
+        );
       });
 
-      expect(useSettingsStore.getState().notifications.emailNotifications).toBe(false);
+      expect(useSettingsStore.getState().notifications.emailNotifications).toBe(
+        false,
+      );
     });
 
     it("should route privacy preferences correctly", async () => {
@@ -447,7 +498,10 @@ describe("useSettingsStore", () => {
       };
 
       await act(async () => {
-        await useSettingsStore.getState().updatePreference("publicProfile", true);
+        await useSettingsStore.getState().updatePreference(
+          "publicProfile",
+          true,
+        );
       });
 
       expect(useSettingsStore.getState().privacy.publicProfile).toBe(true);
@@ -683,7 +737,9 @@ describe("useSettingsStore", () => {
 
       let result;
       await act(async () => {
-        result = await useSettingsStore.getState().deleteApiKey("key-to-delete");
+        result = await useSettingsStore.getState().deleteApiKey(
+          "key-to-delete",
+        );
       });
 
       const state = useSettingsStore.getState();
@@ -917,7 +973,9 @@ describe("useSettingsStore", () => {
     });
 
     it("should handle storage errors gracefully", async () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = jest.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       mockSetItemAsync.mockRejectedValueOnce(new Error("Storage full"));
 
@@ -980,7 +1038,9 @@ describe("useSettingsStore", () => {
     });
 
     it("should handle storage errors and use defaults", async () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = jest.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       mockGetItemAsync.mockRejectedValue(new Error("Storage error"));
 

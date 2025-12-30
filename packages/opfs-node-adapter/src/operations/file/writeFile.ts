@@ -8,10 +8,14 @@ export async function writeFile(
   _options?: WriteFileOptions | BufferEncoding | null,
 ): Promise<void> {
   const doWrite = async () => {
-    const { dirHandle, fileName } = await getDirectoryHandleAndFileName(filePath);
+    const { dirHandle, fileName } = await getDirectoryHandleAndFileName(
+      filePath,
+    );
     if (!fileName) throw new Error("ENOENT: Invalid file path for writeFile");
 
-    const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+    const fileHandle = await dirHandle.getFileHandle(fileName, {
+      create: true,
+    });
     const writable = await fileHandle.createWritable();
 
     let content: string | ArrayBuffer;

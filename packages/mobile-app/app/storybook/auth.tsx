@@ -18,7 +18,10 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Auth</Text>
@@ -40,7 +43,9 @@ export default function AuthPage() {
               <Ionicons name="diamond" size={24} color={colors.primary} />
             </View>
             <Text style={styles.authTitle}>Welcome back</Text>
-            <Text style={styles.authSubtitle}>Sign in to your spike.land account</Text>
+            <Text style={styles.authSubtitle}>
+              Sign in to your spike.land account
+            </Text>
           </View>
 
           <View style={styles.formFields}>
@@ -131,7 +136,9 @@ export default function AuthPage() {
               <Text style={styles.avatarText}>JD</Text>
             </View>
             <View style={[styles.avatar, styles.avatarXl]}>
-              <Text style={[styles.avatarText, { fontSize: fontSize.xl }]}>JD</Text>
+              <Text style={[styles.avatarText, { fontSize: fontSize.xl }]}>
+                JD
+              </Text>
             </View>
           </View>
 
@@ -139,19 +146,31 @@ export default function AuthPage() {
           <View style={styles.avatarRow}>
             <View style={styles.avatarWrapper}>
               <View style={[styles.avatar, styles.avatarMd]}>
-                <Ionicons name="person" size={20} color={colors.mutedForeground} />
+                <Ionicons
+                  name="person"
+                  size={20}
+                  color={colors.mutedForeground}
+                />
               </View>
               <View style={[styles.statusDot, styles.statusOnline]} />
             </View>
             <View style={styles.avatarWrapper}>
               <View style={[styles.avatar, styles.avatarMd]}>
-                <Ionicons name="person" size={20} color={colors.mutedForeground} />
+                <Ionicons
+                  name="person"
+                  size={20}
+                  color={colors.mutedForeground}
+                />
               </View>
               <View style={[styles.statusDot, styles.statusAway]} />
             </View>
             <View style={styles.avatarWrapper}>
               <View style={[styles.avatar, styles.avatarMd]}>
-                <Ionicons name="person" size={20} color={colors.mutedForeground} />
+                <Ionicons
+                  name="person"
+                  size={20}
+                  color={colors.mutedForeground}
+                />
               </View>
               <View style={[styles.statusDot, styles.statusOffline]} />
             </View>
@@ -178,21 +197,41 @@ export default function AuthPage() {
           </View>
           <View style={styles.userMenuDivider} />
           <Pressable style={styles.userMenuItem}>
-            <Ionicons name="person-outline" size={18} color={colors.foreground} />
+            <Ionicons
+              name="person-outline"
+              size={18}
+              color={colors.foreground}
+            />
             <Text style={styles.userMenuItemText}>Profile</Text>
           </Pressable>
           <Pressable style={styles.userMenuItem}>
-            <Ionicons name="settings-outline" size={18} color={colors.foreground} />
+            <Ionicons
+              name="settings-outline"
+              size={18}
+              color={colors.foreground}
+            />
             <Text style={styles.userMenuItemText}>Settings</Text>
           </Pressable>
           <Pressable style={styles.userMenuItem}>
-            <Ionicons name="wallet-outline" size={18} color={colors.foreground} />
+            <Ionicons
+              name="wallet-outline"
+              size={18}
+              color={colors.foreground}
+            />
             <Text style={styles.userMenuItemText}>Tokens</Text>
           </Pressable>
           <View style={styles.userMenuDivider} />
           <Pressable style={styles.userMenuItem}>
-            <Ionicons name="log-out-outline" size={18} color={colors.destructive} />
-            <Text style={[styles.userMenuItemText, { color: colors.destructive }]}>Sign Out</Text>
+            <Ionicons
+              name="log-out-outline"
+              size={18}
+              color={colors.destructive}
+            />
+            <Text
+              style={[styles.userMenuItemText, { color: colors.destructive }]}
+            >
+              Sign Out
+            </Text>
           </Pressable>
         </View>
       </View>
@@ -206,8 +245,16 @@ export default function AuthPage() {
 
         <View style={styles.statesCard}>
           <View style={styles.stateItem}>
-            <View style={[styles.stateIcon, { backgroundColor: `${colors.success}15` }]}>
-              <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+            <View
+              style={[styles.stateIcon, {
+                backgroundColor: `${colors.success}15`,
+              }]}
+            >
+              <Ionicons
+                name="checkmark-circle"
+                size={24}
+                color={colors.success}
+              />
             </View>
             <View style={styles.stateInfo}>
               <Text style={styles.stateTitle}>Authenticated</Text>
@@ -215,7 +262,11 @@ export default function AuthPage() {
             </View>
           </View>
           <View style={styles.stateItem}>
-            <View style={[styles.stateIcon, { backgroundColor: `${colors.warning}15` }]}>
+            <View
+              style={[styles.stateIcon, {
+                backgroundColor: `${colors.warning}15`,
+              }]}
+            >
               <Ionicons name="time" size={24} color={colors.warning} />
             </View>
             <View style={styles.stateInfo}>
@@ -224,8 +275,16 @@ export default function AuthPage() {
             </View>
           </View>
           <View style={styles.stateItem}>
-            <View style={[styles.stateIcon, { backgroundColor: `${colors.destructive}15` }]}>
-              <Ionicons name="close-circle" size={24} color={colors.destructive} />
+            <View
+              style={[styles.stateIcon, {
+                backgroundColor: `${colors.destructive}15`,
+              }]}
+            >
+              <Ionicons
+                name="close-circle"
+                size={24}
+                color={colors.destructive}
+              />
             </View>
             <View style={styles.stateInfo}>
               <Text style={styles.stateTitle}>Unauthenticated</Text>

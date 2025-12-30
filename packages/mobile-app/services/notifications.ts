@@ -14,7 +14,10 @@ import { apiClient } from "./api-client";
 // Types
 // ============================================================================
 
-export type NotificationType = "enhancement_complete" | "token_low" | "marketing";
+export type NotificationType =
+  | "enhancement_complete"
+  | "token_low"
+  | "marketing";
 
 export interface NotificationData {
   type: NotificationType;
@@ -208,7 +211,9 @@ export async function scheduleDelayedNotification(
 /**
  * Cancel a scheduled notification
  */
-export async function cancelNotification(notificationId: string): Promise<void> {
+export async function cancelNotification(
+  notificationId: string,
+): Promise<void> {
   if (Platform.OS === "web") return;
   await Notifications.cancelScheduledNotificationAsync(notificationId);
 }
@@ -232,7 +237,9 @@ export async function cancelAllNotifications(): Promise<void> {
 export function handleNotificationResponse(
   response: Notifications.NotificationResponse,
 ): string | null {
-  const data = response.notification.request.content.data as NotificationData | undefined;
+  const data = response.notification.request.content.data as
+    | NotificationData
+    | undefined;
 
   if (!data) {
     return null;
@@ -294,7 +301,9 @@ export async function fetchNotifications(
 /**
  * Mark a notification as read
  */
-export async function markNotificationAsRead(notificationId: string): Promise<boolean> {
+export async function markNotificationAsRead(
+  notificationId: string,
+): Promise<boolean> {
   const response = await apiClient.patch<{ success: boolean; }>(
     `/api/notifications/${notificationId}/read`,
   );
@@ -316,7 +325,9 @@ export async function markAllNotificationsAsRead(): Promise<boolean> {
 /**
  * Delete a notification
  */
-export async function deleteNotification(notificationId: string): Promise<boolean> {
+export async function deleteNotification(
+  notificationId: string,
+): Promise<boolean> {
   const response = await apiClient.delete<{ success: boolean; }>(
     `/api/notifications/${notificationId}`,
   );

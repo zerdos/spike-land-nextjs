@@ -294,7 +294,9 @@ describe("glob", () => {
 
   it("should return empty array on error", async () => {
     const mockError = new Error("Test error");
-    vi.spyOn(mockNavigator.storage, "getDirectory").mockRejectedValueOnce(mockError);
+    vi.spyOn(mockNavigator.storage, "getDirectory").mockRejectedValueOnce(
+      mockError,
+    );
 
     const results = await glob("*.txt");
     expect(results).toEqual([]);

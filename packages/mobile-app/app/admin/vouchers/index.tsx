@@ -561,7 +561,9 @@ export default function VoucherManagementPage() {
   });
 
   const handleToggleStatus = (voucher: Voucher) => {
-    const newStatus: VoucherStatus = voucher.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
+    const newStatus: VoucherStatus = voucher.status === "ACTIVE"
+      ? "DISABLED"
+      : "ACTIVE";
     Alert.alert(
       "Change Status",
       `Are you sure you want to ${
@@ -594,7 +596,11 @@ export default function VoucherManagementPage() {
 
   const renderHeader = () => (
     <YStack paddingVertical="$3">
-      <XStack justifyContent="space-between" alignItems="center" marginBottom="$4">
+      <XStack
+        justifyContent="space-between"
+        alignItems="center"
+        marginBottom="$4"
+      >
         <H4 color="$gray12">Vouchers</H4>
         <TouchableOpacity onPress={() => setShowCreateModal(true)}>
           <View
@@ -651,7 +657,9 @@ export default function VoucherManagementPage() {
         <Text color="$gray10" fontSize="$2" textAlign="center">
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>
-        <TouchableOpacity onPress={() => refetch()}>
+        <TouchableOpacity
+          onPress={() => refetch()}
+        >
           <Text color="$blue10" marginTop="$4">
             Try Again
           </Text>

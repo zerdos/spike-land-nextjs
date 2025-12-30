@@ -8,7 +8,9 @@ import { getDirectoryHandleAndFileName } from "../../utils";
  */
 export async function unlink(filePath: string): Promise<void> {
   const doUnlink = async () => {
-    const { dirHandle, fileName } = await getDirectoryHandleAndFileName(filePath);
+    const { dirHandle, fileName } = await getDirectoryHandleAndFileName(
+      filePath,
+    );
     if (!fileName) throw new Error("ENOENT: Invalid file path for unlink");
     await dirHandle.removeEntry(fileName);
   };

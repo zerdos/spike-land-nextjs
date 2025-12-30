@@ -34,13 +34,17 @@ interface AuthActions {
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
   clearError: () => void;
-  requestPasswordReset: (email: string) => Promise<{ success: boolean; error?: string; }>;
+  requestPasswordReset: (
+    email: string,
+  ) => Promise<{ success: boolean; error?: string; }>;
   resetPassword: (
     token: string,
     newPassword: string,
   ) => Promise<{ success: boolean; error?: string; }>;
   verifyEmail: (token: string) => Promise<{ success: boolean; error?: string; }>;
-  resendVerification: (email: string) => Promise<{ success: boolean; error?: string; }>;
+  resendVerification: (
+    email: string,
+  ) => Promise<{ success: boolean; error?: string; }>;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -117,7 +121,12 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
 
   signUp: async (email, password, name, referralCode) => {
     set({ isLoading: true, error: null });
-    const result = await authService.signUp(email, password, name, referralCode);
+    const result = await authService.signUp(
+      email,
+      password,
+      name,
+      referralCode,
+    );
     set({
       user: result.user || null,
       isAuthenticated: result.success,

@@ -87,7 +87,9 @@ jest.mock("tamagui", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react");
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { View, Text, TextInput, TouchableOpacity, Modal } = require("react-native");
+  const { View, Text, TextInput, TouchableOpacity, Modal } = require(
+    "react-native",
+  );
 
   return {
     Button: ({ children, onPress, disabled, icon, ...props }: any) => (
@@ -453,7 +455,11 @@ describe("ApiKeysScreen", () => {
       // one in the button and one in the dialog title
       expect(getAllByText("Create API Key").length).toBe(2);
       // Dialog description should be visible
-      expect(getByText("Give your API key a descriptive name to help you identify it later."))
+      expect(
+        getByText(
+          "Give your API key a descriptive name to help you identify it later.",
+        ),
+      )
         .toBeTruthy();
     });
 
@@ -471,7 +477,9 @@ describe("ApiKeysScreen", () => {
       fireEvent.press(getByText("Create"));
 
       await waitFor(() => {
-        expect(mockSettingsStore.createApiKey).toHaveBeenCalledWith("My New Key");
+        expect(mockSettingsStore.createApiKey).toHaveBeenCalledWith(
+          "My New Key",
+        );
       });
     });
 
@@ -550,7 +558,9 @@ describe("ApiKeysScreen", () => {
       fireEvent.press(getByText("Copy Key"));
 
       await waitFor(() => {
-        expect(Clipboard.setStringAsync).toHaveBeenCalledWith("sk_full_key_value");
+        expect(Clipboard.setStringAsync).toHaveBeenCalledWith(
+          "sk_full_key_value",
+        );
       });
     });
 

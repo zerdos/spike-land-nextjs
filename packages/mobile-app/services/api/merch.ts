@@ -132,7 +132,9 @@ export async function getProduct(
 /**
  * Get all categories
  */
-export async function getCategories(): Promise<ApiResponse<CategoriesResponse>> {
+export async function getCategories(): Promise<
+  ApiResponse<CategoriesResponse>
+> {
   return apiClient.get<CategoriesResponse>("/api/merch/categories");
 }
 

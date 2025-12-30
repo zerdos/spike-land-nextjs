@@ -108,7 +108,9 @@ describe("TypographyPage", () => {
     it("should render paragraph example", () => {
       const { getByText } = render(<TypographyPage />);
       expect(
-        getByText(/The spike\.land design system uses a carefully crafted typography scale/),
+        getByText(
+          /The spike\.land design system uses a carefully crafted typography scale/,
+        ),
       ).toBeTruthy();
     });
   });

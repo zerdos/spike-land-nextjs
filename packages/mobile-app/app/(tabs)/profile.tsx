@@ -58,7 +58,12 @@ export default function ProfileScreen() {
   // Loading state
   if (isLoading) {
     return (
-      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="#08080C">
+      <YStack
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        backgroundColor="#08080C"
+      >
         <ActivityIndicator size="large" color="#00E5FF" />
         <Text marginTop="$4" color="#8b949e">
           Loading...
@@ -70,7 +75,12 @@ export default function ProfileScreen() {
   // Not authenticated state
   if (!isAuthenticated || !user) {
     return (
-      <YStack flex={1} justifyContent="center" padding="$4" backgroundColor="#08080C">
+      <YStack
+        flex={1}
+        justifyContent="center"
+        padding="$4"
+        backgroundColor="#08080C"
+      >
         <Card
           elevate
           size="$4"
@@ -114,7 +124,14 @@ export default function ProfileScreen() {
   return (
     <YStack flex={1} backgroundColor="#08080C">
       {/* User Info Card */}
-      <Card margin="$4" elevate size="$4" bordered backgroundColor="#0d1117" borderColor="#21262d">
+      <Card
+        margin="$4"
+        elevate
+        size="$4"
+        bordered
+        backgroundColor="#0d1117"
+        borderColor="#21262d"
+      >
         <XStack padding="$4" space="$4" alignItems="center">
           <Avatar circular size="$8">
             {user.image
@@ -243,7 +260,11 @@ export default function ProfileScreen() {
             alignItems="center"
             pressStyle={{ backgroundColor: "#161b22" }}
           >
-            <Ionicons name="information-circle-outline" size={24} color="#8b949e" />
+            <Ionicons
+              name="information-circle-outline"
+              size={24}
+              color="#8b949e"
+            />
             <Text flex={1} fontSize="$4" color="white">
               About
             </Text>

@@ -413,7 +413,8 @@ describe("ReferralsScreen", () => {
 
       expect(getByTestId("referral-url-display")).toBeTruthy();
       // URL appears in both referral-url-display and share-buttons
-      expect(getAllByText("https://spike.land/ref/ABC123").length).toBeGreaterThan(0);
+      expect(getAllByText("https://spike.land/ref/ABC123").length)
+        .toBeGreaterThan(0);
     });
 
     it("should display 'Loading...' when referral URL is null", () => {

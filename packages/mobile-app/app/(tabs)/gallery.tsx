@@ -161,7 +161,14 @@ export default function GalleryScreen() {
         });
       }
     },
-    [isSelectionMode, toggleImageSelection, images, startSlideshow, router, selectedAlbumId],
+    [
+      isSelectionMode,
+      toggleImageSelection,
+      images,
+      startSlideshow,
+      router,
+      selectedAlbumId,
+    ],
   );
 
   // Handle image long press
@@ -243,7 +250,12 @@ export default function GalleryScreen() {
   // Header component with search bar, filters, and album filter
   const ListHeaderComponent = useMemo(
     () => (
-      <YStack paddingHorizontal="$3" paddingTop="$2" paddingBottom="$3" gap="$3">
+      <YStack
+        paddingHorizontal="$3"
+        paddingTop="$2"
+        paddingBottom="$3"
+        gap="$3"
+      >
         {/* Search Bar Row */}
         <XStack alignItems="center" gap="$2">
           <YStack flex={1}>
@@ -264,7 +276,10 @@ export default function GalleryScreen() {
             testID="gallery-filter-button"
           >
             <YStack>
-              <Filter size={20} color={activeFilterCount > 0 ? "$blue10" : "$gray10"} />
+              <Filter
+                size={20}
+                color={activeFilterCount > 0 ? "$blue10" : "$gray10"}
+              />
               {activeFilterCount > 0 && (
                 <YStack
                   position="absolute"
@@ -345,7 +360,9 @@ export default function GalleryScreen() {
                   chromeless
                   justifyContent="flex-start"
                   onPress={() => handleAlbumSelect(album.id)}
-                  backgroundColor={selectedAlbumId === album.id ? "$blue2" : "transparent"}
+                  backgroundColor={selectedAlbumId === album.id
+                    ? "$blue2"
+                    : "transparent"}
                 >
                   <Text numberOfLines={1}>{album.name}</Text>
                 </Button>
@@ -420,7 +437,9 @@ export default function GalleryScreen() {
                   chromeless
                   circular
                   icon={selectionCount === images.length ? Square : CheckSquare}
-                  onPress={selectionCount === images.length ? clearSelection : selectAllImages}
+                  onPress={selectionCount === images.length
+                    ? clearSelection
+                    : selectAllImages}
                 />
               </XStack>
             </>
@@ -564,7 +583,11 @@ export default function GalleryScreen() {
                 size="$4"
                 onPress={() => handleBatchEnhance("TIER_1K")}
               >
-                <XStack flex={1} justifyContent="space-between" alignItems="center">
+                <XStack
+                  flex={1}
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
                   <Text>1K (1024px)</Text>
                   <Text color="$gray10">2 tokens/image</Text>
                 </XStack>
@@ -574,7 +597,11 @@ export default function GalleryScreen() {
                 size="$4"
                 onPress={() => handleBatchEnhance("TIER_2K")}
               >
-                <XStack flex={1} justifyContent="space-between" alignItems="center">
+                <XStack
+                  flex={1}
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
                   <Text>2K (2048px)</Text>
                   <Text color="$gray10">5 tokens/image</Text>
                 </XStack>
@@ -584,7 +611,11 @@ export default function GalleryScreen() {
                 size="$4"
                 onPress={() => handleBatchEnhance("TIER_4K")}
               >
-                <XStack flex={1} justifyContent="space-between" alignItems="center">
+                <XStack
+                  flex={1}
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
                   <Text>4K (4096px)</Text>
                   <Text color="$gray10">10 tokens/image</Text>
                 </XStack>

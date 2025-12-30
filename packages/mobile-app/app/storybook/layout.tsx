@@ -12,7 +12,10 @@ import { borderRadius, colors, fontSize, spacing } from "@/constants/theme";
 
 export default function LayoutPage() {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Layout</Text>
@@ -146,7 +149,9 @@ export default function LayoutPage() {
           {[1, 2, 3, 4, 6, 8].map((scale) => (
             <View key={scale} style={styles.spacingRow}>
               <View
-                style={[styles.spacingBox, { width: spacing[scale as keyof typeof spacing] }]}
+                style={[styles.spacingBox, {
+                  width: spacing[scale as keyof typeof spacing],
+                }]}
               />
               <Text style={styles.spacingLabel}>
                 spacing[{scale}] = {spacing[scale as keyof typeof spacing]}px

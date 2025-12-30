@@ -12,29 +12,60 @@ import { borderRadius, colors, fontSize, spacing } from "@/constants/theme";
 
 const colorPalette = {
   brand: [
-    { name: "Pixel Cyan", hex: colors.primary, description: "Primary brand accent" },
-    { name: "Pixel Fuchsia", hex: colors.pixelFuchsia, description: "Secondary accent" },
+    {
+      name: "Pixel Cyan",
+      hex: colors.primary,
+      description: "Primary brand accent",
+    },
+    {
+      name: "Pixel Fuchsia",
+      hex: colors.pixelFuchsia,
+      description: "Secondary accent",
+    },
   ],
   semantic: [
-    { name: "Success", hex: colors.success, description: "Positive actions & states" },
-    { name: "Warning", hex: colors.warning, description: "Cautionary information" },
-    { name: "Destructive", hex: colors.destructive, description: "Errors & deletions" },
+    {
+      name: "Success",
+      hex: colors.success,
+      description: "Positive actions & states",
+    },
+    {
+      name: "Warning",
+      hex: colors.warning,
+      description: "Cautionary information",
+    },
+    {
+      name: "Destructive",
+      hex: colors.destructive,
+      description: "Errors & deletions",
+    },
   ],
   surfaces: [
-    { name: "Background", hex: colors.background, description: "Main background" },
+    {
+      name: "Background",
+      hex: colors.background,
+      description: "Main background",
+    },
     { name: "Card", hex: colors.card, description: "Elevated surfaces" },
     { name: "Muted", hex: colors.muted, description: "Subtle backgrounds" },
   ],
   text: [
     { name: "Foreground", hex: colors.foreground, description: "Primary text" },
-    { name: "Muted Foreground", hex: colors.mutedForeground, description: "Secondary text" },
+    {
+      name: "Muted Foreground",
+      hex: colors.mutedForeground,
+      description: "Secondary text",
+    },
     { name: "Border", hex: colors.border, description: "Dividers & outlines" },
   ],
 };
 
 export default function ColorsPage() {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Colors</Text>
@@ -52,7 +83,9 @@ export default function ColorsPage() {
         <View style={styles.colorGrid}>
           {colorPalette.brand.map((color) => (
             <View key={color.name} style={styles.colorCard}>
-              <View style={[styles.colorSwatch, { backgroundColor: color.hex }]} />
+              <View
+                style={[styles.colorSwatch, { backgroundColor: color.hex }]}
+              />
               <View style={styles.colorInfo}>
                 <Text style={styles.colorName}>{color.name}</Text>
                 <Text style={styles.colorHex}>{color.hex}</Text>
@@ -72,7 +105,9 @@ export default function ColorsPage() {
         <View style={styles.colorGrid}>
           {colorPalette.semantic.map((color) => (
             <View key={color.name} style={styles.colorCard}>
-              <View style={[styles.colorSwatch, { backgroundColor: color.hex }]} />
+              <View
+                style={[styles.colorSwatch, { backgroundColor: color.hex }]}
+              />
               <View style={styles.colorInfo}>
                 <Text style={styles.colorName}>{color.name}</Text>
                 <Text style={styles.colorHex}>{color.hex}</Text>
@@ -93,7 +128,9 @@ export default function ColorsPage() {
           {colorPalette.surfaces.map((color) => (
             <View key={color.name} style={styles.colorCard}>
               <View
-                style={[styles.colorSwatch, styles.surfaceSwatch, { backgroundColor: color.hex }]}
+                style={[styles.colorSwatch, styles.surfaceSwatch, {
+                  backgroundColor: color.hex,
+                }]}
               />
               <View style={styles.colorInfo}>
                 <Text style={styles.colorName}>{color.name}</Text>
@@ -115,7 +152,9 @@ export default function ColorsPage() {
           {colorPalette.text.map((color) => (
             <View key={color.name} style={styles.colorCard}>
               <View
-                style={[styles.colorSwatch, styles.surfaceSwatch, { backgroundColor: color.hex }]}
+                style={[styles.colorSwatch, styles.surfaceSwatch, {
+                  backgroundColor: color.hex,
+                }]}
               />
               <View style={styles.colorInfo}>
                 <Text style={styles.colorName}>{color.name}</Text>

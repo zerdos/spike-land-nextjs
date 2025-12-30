@@ -30,7 +30,9 @@ describe("PhotoMixPage", () => {
     it("should render Layer Stack description", () => {
       const { getByText } = render(<PhotoMixPage />);
       expect(
-        getByText("Manage multiple image layers with drag-and-drop reordering."),
+        getByText(
+          "Manage multiple image layers with drag-and-drop reordering.",
+        ),
       ).toBeTruthy();
     });
 

@@ -153,7 +153,11 @@ export function BlogCard({ post, onPress, testID }: BlogCardProps) {
             {/* Reading Time */}
             <XStack gap="$1" alignItems="center">
               <Clock size={14} color="$gray9" />
-              <Text fontSize="$2" color="$gray9" testID={`${testID}-reading-time`}>
+              <Text
+                fontSize="$2"
+                color="$gray9"
+                testID={`${testID}-reading-time`}
+              >
                 {post.readingTime}
               </Text>
             </XStack>

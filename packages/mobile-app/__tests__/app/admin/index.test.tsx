@@ -34,7 +34,11 @@ jest.mock("react-native", () => {
       children?: React.ReactNode;
     },
   ) => (
-    <RN.View testID="refresh-control" data-refreshing={refreshing} onPress={onRefresh}>
+    <RN.View
+      testID="refresh-control"
+      data-refreshing={refreshing}
+      onPress={onRefresh}
+    >
       {children}
     </RN.View>
   );
@@ -398,7 +402,8 @@ describe("AdminDashboard", () => {
       });
 
       await waitFor(() => {
-        expect(getByText("Search and manage users, roles, tokens")).toBeTruthy();
+        expect(getByText("Search and manage users, roles, tokens"))
+          .toBeTruthy();
         // "23 active jobs" appears in both Job Status section and Quick Actions
         const activeJobsElements = getAllByText("23 active jobs");
         expect(activeJobsElements.length).toBeGreaterThanOrEqual(1);

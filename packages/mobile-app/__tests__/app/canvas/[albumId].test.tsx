@@ -259,7 +259,10 @@ jest.mock("@/components/ShareSheet", () => ({
         >
           <Text>Complete Download</Text>
         </Pressable>
-        <Pressable testID="share-sheet-error" onPress={() => onError?.("Test error")}>
+        <Pressable
+          testID="share-sheet-error"
+          onPress={() => onError?.("Test error")}
+        >
           <Text>Trigger Error</Text>
         </Pressable>
       </View>
@@ -303,13 +306,18 @@ const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockUseLocalSearchParams = useLocalSearchParams as jest.MockedFunction<
   typeof useLocalSearchParams
 >;
-const mockUseGalleryStore = useGalleryStore as jest.MockedFunction<typeof useGalleryStore>;
+const mockUseGalleryStore = useGalleryStore as jest.MockedFunction<
+  typeof useGalleryStore
+>;
 
 // Reset and re-establish mocks before each test
 // This is needed because resetMocks: true in jest.config clears the implementations
 beforeEach(() => {
   // Re-establish Gesture Handler mocks
-  const Gesture = GestureHandler.Gesture as unknown as Record<string, jest.Mock>;
+  const Gesture = GestureHandler.Gesture as unknown as Record<
+    string,
+    jest.Mock
+  >;
 
   if (Gesture.Pinch) {
     (Gesture.Pinch as jest.Mock).mockImplementation(() => createChainableGesture());
@@ -332,7 +340,9 @@ beforeEach(() => {
   }
 
   // Re-establish Reanimated mocks
-  (Reanimated.useSharedValue as jest.Mock).mockImplementation((initial: number) => ({
+  (Reanimated.useSharedValue as jest.Mock).mockImplementation((
+    initial: number,
+  ) => ({
     value: initial,
   }));
   (Reanimated.useAnimatedStyle as jest.Mock).mockImplementation(() => ({}));
@@ -520,7 +530,9 @@ describe("CanvasScreen", () => {
 
       // Get the delete callback from the alert
       const alertCall = alertSpy.mock.calls[0];
-      const buttons = alertCall[2] as Array<{ text: string; onPress?: () => void; }>;
+      const buttons = alertCall[2] as Array<
+        { text: string; onPress?: () => void; }
+      >;
       const deleteButton = buttons.find((b) => b.text === "Delete");
 
       await waitFor(async () => {
@@ -544,7 +556,9 @@ describe("CanvasScreen", () => {
       fireEvent.press(getByTestId("action-delete"));
 
       const alertCall = alertSpy.mock.calls[0];
-      const buttons = alertCall[2] as Array<{ text: string; onPress?: () => void; }>;
+      const buttons = alertCall[2] as Array<
+        { text: string; onPress?: () => void; }
+      >;
       const deleteButton = buttons.find((b) => b.text === "Delete");
 
       await waitFor(async () => {
@@ -567,7 +581,9 @@ describe("CanvasScreen", () => {
       fireEvent.press(getByTestId("action-delete"));
 
       const alertCall = alertSpy.mock.calls[0];
-      const buttons = alertCall[2] as Array<{ text: string; onPress?: () => void; }>;
+      const buttons = alertCall[2] as Array<
+        { text: string; onPress?: () => void; }
+      >;
       const deleteButton = buttons.find((b) => b.text === "Delete");
 
       await waitFor(async () => {
@@ -579,7 +595,9 @@ describe("CanvasScreen", () => {
     });
 
     it("should handle delete exception", async () => {
-      const removeImage = jest.fn().mockRejectedValue(new Error("Delete failed"));
+      const removeImage = jest.fn().mockRejectedValue(
+        new Error("Delete failed"),
+      );
       mockUseGalleryStore.mockReturnValue({
         ...defaultStoreState,
         removeImage,
@@ -591,7 +609,9 @@ describe("CanvasScreen", () => {
       fireEvent.press(getByTestId("action-delete"));
 
       const alertCall = alertSpy.mock.calls[0];
-      const buttons = alertCall[2] as Array<{ text: string; onPress?: () => void; }>;
+      const buttons = alertCall[2] as Array<
+        { text: string; onPress?: () => void; }
+      >;
       const deleteButton = buttons.find((b) => b.text === "Delete");
 
       await waitFor(async () => {
@@ -631,7 +651,9 @@ describe("CanvasScreen", () => {
       fireEvent.press(getByTestId("action-delete"));
 
       const alertCall = alertSpy.mock.calls[0];
-      const buttons = alertCall[2] as Array<{ text: string; onPress?: () => void; }>;
+      const buttons = alertCall[2] as Array<
+        { text: string; onPress?: () => void; }
+      >;
       const deleteButton = buttons.find((b) => b.text === "Delete");
 
       await waitFor(async () => {

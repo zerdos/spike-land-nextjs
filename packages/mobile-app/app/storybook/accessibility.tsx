@@ -12,7 +12,10 @@ import { borderRadius, colors, fontSize, spacing } from "@/constants/theme";
 
 export default function AccessibilityPage() {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Accessibility</Text>
@@ -35,9 +38,15 @@ export default function AccessibilityPage() {
             </View>
             <View style={styles.complianceInfo}>
               <Text style={styles.complianceLabel}>Color Contrast</Text>
-              <Text style={styles.complianceDesc}>All text meets 4.5:1 contrast ratio</Text>
+              <Text style={styles.complianceDesc}>
+                All text meets 4.5:1 contrast ratio
+              </Text>
             </View>
-            <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={24}
+              color={colors.success}
+            />
           </View>
           <View style={styles.complianceItem}>
             <View style={[styles.badge, styles.badgePass]}>
@@ -45,9 +54,15 @@ export default function AccessibilityPage() {
             </View>
             <View style={styles.complianceInfo}>
               <Text style={styles.complianceLabel}>Touch Targets</Text>
-              <Text style={styles.complianceDesc}>Minimum 44x44 pixel touch targets</Text>
+              <Text style={styles.complianceDesc}>
+                Minimum 44x44 pixel touch targets
+              </Text>
             </View>
-            <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={24}
+              color={colors.success}
+            />
           </View>
           <View style={styles.complianceItem}>
             <View style={[styles.badge, styles.badgePass]}>
@@ -55,9 +70,15 @@ export default function AccessibilityPage() {
             </View>
             <View style={styles.complianceInfo}>
               <Text style={styles.complianceLabel}>Focus Indicators</Text>
-              <Text style={styles.complianceDesc}>Visible focus states for all controls</Text>
+              <Text style={styles.complianceDesc}>
+                Visible focus states for all controls
+              </Text>
             </View>
-            <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={24}
+              color={colors.success}
+            />
           </View>
         </View>
       </View>
@@ -71,35 +92,57 @@ export default function AccessibilityPage() {
 
         <View style={styles.contrastGrid}>
           <View style={styles.contrastCard}>
-            <View style={[styles.contrastSample, { backgroundColor: colors.background }]}>
+            <View
+              style={[styles.contrastSample, {
+                backgroundColor: colors.background,
+              }]}
+            >
               <Text style={{ color: colors.foreground }}>Aa</Text>
             </View>
             <Text style={styles.contrastLabel}>Text on Background</Text>
             <View style={styles.contrastRatio}>
               <Text style={styles.ratioValue}>15.8:1</Text>
-              <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+              <Ionicons
+                name="checkmark-circle"
+                size={16}
+                color={colors.success}
+              />
             </View>
           </View>
 
           <View style={styles.contrastCard}>
-            <View style={[styles.contrastSample, { backgroundColor: colors.primary }]}>
+            <View
+              style={[styles.contrastSample, {
+                backgroundColor: colors.primary,
+              }]}
+            >
               <Text style={{ color: colors.primaryForeground }}>Aa</Text>
             </View>
             <Text style={styles.contrastLabel}>Text on Primary</Text>
             <View style={styles.contrastRatio}>
               <Text style={styles.ratioValue}>8.2:1</Text>
-              <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+              <Ionicons
+                name="checkmark-circle"
+                size={16}
+                color={colors.success}
+              />
             </View>
           </View>
 
           <View style={styles.contrastCard}>
-            <View style={[styles.contrastSample, { backgroundColor: colors.card }]}>
+            <View
+              style={[styles.contrastSample, { backgroundColor: colors.card }]}
+            >
               <Text style={{ color: colors.mutedForeground }}>Aa</Text>
             </View>
             <Text style={styles.contrastLabel}>Muted on Card</Text>
             <View style={styles.contrastRatio}>
               <Text style={styles.ratioValue}>4.6:1</Text>
-              <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+              <Ionicons
+                name="checkmark-circle"
+                size={16}
+                color={colors.success}
+              />
             </View>
           </View>
         </View>
@@ -119,7 +162,9 @@ export default function AccessibilityPage() {
             </View>
             <View style={styles.touchInfo}>
               <Text style={styles.touchLabel}>Minimum (44px)</Text>
-              <Text style={styles.touchDesc}>Required for buttons and icons</Text>
+              <Text style={styles.touchDesc}>
+                Required for buttons and icons
+              </Text>
             </View>
           </View>
           <View style={styles.touchRow}>
@@ -128,7 +173,9 @@ export default function AccessibilityPage() {
             </View>
             <View style={styles.touchInfo}>
               <Text style={styles.touchLabel}>Comfortable (48px)</Text>
-              <Text style={styles.touchDesc}>Recommended for primary actions</Text>
+              <Text style={styles.touchDesc}>
+                Recommended for primary actions
+              </Text>
             </View>
           </View>
           <View style={styles.touchRow}>
@@ -153,13 +200,19 @@ export default function AccessibilityPage() {
         <View style={styles.rolesCard}>
           <View style={styles.roleItem}>
             <View style={styles.roleCode}>
-              <Text style={styles.roleCodeText}>accessibilityRole="button"</Text>
+              <Text style={styles.roleCodeText}>
+                accessibilityRole="button"
+              </Text>
             </View>
-            <Text style={styles.roleDesc}>Interactive elements that perform actions</Text>
+            <Text style={styles.roleDesc}>
+              Interactive elements that perform actions
+            </Text>
           </View>
           <View style={styles.roleItem}>
             <View style={styles.roleCode}>
-              <Text style={styles.roleCodeText}>accessibilityRole="header"</Text>
+              <Text style={styles.roleCodeText}>
+                accessibilityRole="header"
+              </Text>
             </View>
             <Text style={styles.roleDesc}>Section titles and headings</Text>
           </View>
@@ -184,37 +237,61 @@ export default function AccessibilityPage() {
 
         <View style={styles.guidelinesCard}>
           <View style={styles.guidelineItem}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.success}
+            />
             <Text style={styles.guidelineText}>
               Always provide accessibilityLabel for icons and images
             </Text>
           </View>
           <View style={styles.guidelineItem}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.success}
+            />
             <Text style={styles.guidelineText}>
               Use semantic heading levels in proper order
             </Text>
           </View>
           <View style={styles.guidelineItem}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.success}
+            />
             <Text style={styles.guidelineText}>
               Ensure focus order follows visual layout
             </Text>
           </View>
           <View style={styles.guidelineItem}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={colors.success}
+            />
             <Text style={styles.guidelineText}>
               Provide text alternatives for non-text content
             </Text>
           </View>
           <View style={styles.guidelineItem}>
-            <Ionicons name="close-circle" size={20} color={colors.destructive} />
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={colors.destructive}
+            />
             <Text style={styles.guidelineText}>
               Don't rely solely on color to convey meaning
             </Text>
           </View>
           <View style={styles.guidelineItem}>
-            <Ionicons name="close-circle" size={20} color={colors.destructive} />
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={colors.destructive}
+            />
             <Text style={styles.guidelineText}>
               Don't disable zoom or text scaling
             </Text>

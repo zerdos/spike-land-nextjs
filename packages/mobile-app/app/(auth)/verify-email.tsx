@@ -22,7 +22,9 @@ export default function VerifyEmailScreen() {
   // State
   const [screenState, setScreenState] = useState<ScreenState>("loading");
   const [error, setError] = useState<string | null>(null);
-  const [resendEmail, setResendEmail] = useState(params.email || user?.email || "");
+  const [resendEmail, setResendEmail] = useState(
+    params.email || user?.email || "",
+  );
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
 
@@ -90,8 +92,17 @@ export default function VerifyEmailScreen() {
   // Loading state while verifying
   if (screenState === "loading") {
     return (
-      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="$background">
-        <ActivityIndicator size="large" color="#3B82F6" testID="loading-indicator" />
+      <YStack
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        backgroundColor="$background"
+      >
+        <ActivityIndicator
+          size="large"
+          color="#3B82F6"
+          testID="loading-indicator"
+        />
         <Paragraph color="$gray11" marginTop="$4">
           Verifying your email...
         </Paragraph>
@@ -100,7 +111,12 @@ export default function VerifyEmailScreen() {
   }
 
   return (
-    <YStack flex={1} justifyContent="center" padding="$4" backgroundColor="$background">
+    <YStack
+      flex={1}
+      justifyContent="center"
+      padding="$4"
+      backgroundColor="$background"
+    >
       <Card
         elevate
         size="$4"
@@ -119,10 +135,18 @@ export default function VerifyEmailScreen() {
               justifyContent="center"
               marginBottom="$2"
             >
-              <Ionicons name="checkmark-circle-outline" size={40} color="#22C55E" />
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={40}
+                color="#22C55E"
+              />
             </YStack>
             <H2 fontWeight="bold" textAlign="center">Email Verified!</H2>
-            <Paragraph color="$gray11" textAlign="center" paddingHorizontal="$2">
+            <Paragraph
+              color="$gray11"
+              textAlign="center"
+              paddingHorizontal="$2"
+            >
               Your email has been successfully verified. You can now access all features of your
               account.
             </Paragraph>
@@ -156,7 +180,11 @@ export default function VerifyEmailScreen() {
               <Ionicons name="alert-circle-outline" size={40} color="#EF4444" />
             </YStack>
             <H2 fontWeight="bold" textAlign="center">Verification Failed</H2>
-            <Paragraph color="$gray11" textAlign="center" paddingHorizontal="$2">
+            <Paragraph
+              color="$gray11"
+              textAlign="center"
+              paddingHorizontal="$2"
+            >
               {error || "This verification link is invalid or has expired."}
             </Paragraph>
 

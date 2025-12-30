@@ -227,19 +227,34 @@ class ApiClient {
     return this.request<T>(endpoint, { ...options, method: "GET" });
   }
 
-  post<T>(endpoint: string, body?: unknown, options?: Omit<RequestOptions, "method" | "body">) {
+  post<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, "method" | "body">,
+  ) {
     return this.request<T>(endpoint, { ...options, method: "POST", body });
   }
 
-  put<T>(endpoint: string, body?: unknown, options?: Omit<RequestOptions, "method" | "body">) {
+  put<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, "method" | "body">,
+  ) {
     return this.request<T>(endpoint, { ...options, method: "PUT", body });
   }
 
-  delete<T>(endpoint: string, options?: Omit<RequestOptions, "method" | "body">) {
+  delete<T>(
+    endpoint: string,
+    options?: Omit<RequestOptions, "method" | "body">,
+  ) {
     return this.request<T>(endpoint, { ...options, method: "DELETE" });
   }
 
-  patch<T>(endpoint: string, body?: unknown, options?: Omit<RequestOptions, "method" | "body">) {
+  patch<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, "method" | "body">,
+  ) {
     return this.request<T>(endpoint, { ...options, method: "PATCH", body });
   }
 }

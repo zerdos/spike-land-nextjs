@@ -19,7 +19,10 @@ export default function ModalsPage() {
 
   return (
     <View style={styles.fullContainer}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Modals</Text>
@@ -50,7 +53,10 @@ export default function ModalsPage() {
           </Text>
 
           <View style={styles.card}>
-            <Button variant="destructive" onPress={() => setAlertModalVisible(true)}>
+            <Button
+              variant="destructive"
+              onPress={() => setAlertModalVisible(true)}
+            >
               Delete Item
             </Button>
           </View>
@@ -92,22 +98,54 @@ export default function ModalsPage() {
 
             {menuVisible && (
               <View style={styles.menuDropdown}>
-                <Pressable style={styles.menuItem} onPress={() => setMenuVisible(false)}>
-                  <Ionicons name="create-outline" size={18} color={colors.foreground} />
+                <Pressable
+                  style={styles.menuItem}
+                  onPress={() => setMenuVisible(false)}
+                >
+                  <Ionicons
+                    name="create-outline"
+                    size={18}
+                    color={colors.foreground}
+                  />
                   <Text style={styles.menuItemText}>Edit</Text>
                 </Pressable>
-                <Pressable style={styles.menuItem} onPress={() => setMenuVisible(false)}>
-                  <Ionicons name="copy-outline" size={18} color={colors.foreground} />
+                <Pressable
+                  style={styles.menuItem}
+                  onPress={() => setMenuVisible(false)}
+                >
+                  <Ionicons
+                    name="copy-outline"
+                    size={18}
+                    color={colors.foreground}
+                  />
                   <Text style={styles.menuItemText}>Duplicate</Text>
                 </Pressable>
-                <Pressable style={styles.menuItem} onPress={() => setMenuVisible(false)}>
-                  <Ionicons name="share-outline" size={18} color={colors.foreground} />
+                <Pressable
+                  style={styles.menuItem}
+                  onPress={() => setMenuVisible(false)}
+                >
+                  <Ionicons
+                    name="share-outline"
+                    size={18}
+                    color={colors.foreground}
+                  />
                   <Text style={styles.menuItemText}>Share</Text>
                 </Pressable>
                 <View style={styles.menuDivider} />
-                <Pressable style={styles.menuItem} onPress={() => setMenuVisible(false)}>
-                  <Ionicons name="trash-outline" size={18} color={colors.destructive} />
-                  <Text style={[styles.menuItemText, { color: colors.destructive }]}>Delete</Text>
+                <Pressable
+                  style={styles.menuItem}
+                  onPress={() => setMenuVisible(false)}
+                >
+                  <Ionicons
+                    name="trash-outline"
+                    size={18}
+                    color={colors.destructive}
+                  />
+                  <Text
+                    style={[styles.menuItemText, { color: colors.destructive }]}
+                  >
+                    Delete
+                  </Text>
                 </Pressable>
               </View>
             )}
@@ -124,11 +162,17 @@ export default function ModalsPage() {
           <View style={styles.anatomyCard}>
             <View style={styles.anatomyHeader}>
               <View style={styles.anatomyIcon}>
-                <Ionicons name="information-circle" size={24} color={colors.primary} />
+                <Ionicons
+                  name="information-circle"
+                  size={24}
+                  color={colors.primary}
+                />
               </View>
               <View>
                 <Text style={styles.anatomyTitle}>Dialog Title</Text>
-                <Text style={styles.anatomySubtitle}>Optional subtitle or description</Text>
+                <Text style={styles.anatomySubtitle}>
+                  Optional subtitle or description
+                </Text>
               </View>
             </View>
             <View style={styles.anatomyBody}>
@@ -190,10 +234,16 @@ export default function ModalsPage() {
               This action cannot be undone. This will permanently delete the item from your account.
             </Text>
             <View style={styles.alertFooter}>
-              <Button variant="outline" onPress={() => setAlertModalVisible(false)}>
+              <Button
+                variant="outline"
+                onPress={() => setAlertModalVisible(false)}
+              >
                 Cancel
               </Button>
-              <Button variant="destructive" onPress={() => setAlertModalVisible(false)}>
+              <Button
+                variant="destructive"
+                onPress={() => setAlertModalVisible(false)}
+              >
                 Delete
               </Button>
             </View>
@@ -209,26 +259,50 @@ export default function ModalsPage() {
         onRequestClose={() => setSheetVisible(false)}
       >
         <View style={styles.sheetOverlay}>
-          <Pressable style={styles.sheetBackdrop} onPress={() => setSheetVisible(false)} />
+          <Pressable
+            style={styles.sheetBackdrop}
+            onPress={() => setSheetVisible(false)}
+          />
           <View style={styles.sheetContent}>
             <View style={styles.sheetHandle} />
             <Text style={styles.sheetTitle}>Share Image</Text>
             <View style={styles.sheetOptions}>
-              <Pressable style={styles.sheetOption} onPress={() => setSheetVisible(false)}>
+              <Pressable
+                style={styles.sheetOption}
+                onPress={() => setSheetVisible(false)}
+              >
                 <View style={styles.sheetOptionIcon}>
-                  <Ionicons name="download-outline" size={24} color={colors.primary} />
+                  <Ionicons
+                    name="download-outline"
+                    size={24}
+                    color={colors.primary}
+                  />
                 </View>
                 <Text style={styles.sheetOptionText}>Download</Text>
               </Pressable>
-              <Pressable style={styles.sheetOption} onPress={() => setSheetVisible(false)}>
+              <Pressable
+                style={styles.sheetOption}
+                onPress={() => setSheetVisible(false)}
+              >
                 <View style={styles.sheetOptionIcon}>
-                  <Ionicons name="copy-outline" size={24} color={colors.primary} />
+                  <Ionicons
+                    name="copy-outline"
+                    size={24}
+                    color={colors.primary}
+                  />
                 </View>
                 <Text style={styles.sheetOptionText}>Copy Link</Text>
               </Pressable>
-              <Pressable style={styles.sheetOption} onPress={() => setSheetVisible(false)}>
+              <Pressable
+                style={styles.sheetOption}
+                onPress={() => setSheetVisible(false)}
+              >
                 <View style={styles.sheetOptionIcon}>
-                  <Ionicons name="share-social-outline" size={24} color={colors.primary} />
+                  <Ionicons
+                    name="share-social-outline"
+                    size={24}
+                    color={colors.primary}
+                  />
                 </View>
                 <Text style={styles.sheetOptionText}>Share to...</Text>
               </Pressable>

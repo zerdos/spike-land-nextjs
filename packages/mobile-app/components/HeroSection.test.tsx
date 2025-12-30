@@ -43,7 +43,8 @@ describe("HeroSection", () => {
     it("renders the subtitle text", () => {
       render(<HeroSection testID="hero" />);
       expect(screen.getByTestId("hero-subtitle")).toBeTruthy();
-      expect(screen.getByText(/iPhone 4 photos deserve iPhone 16/)).toBeTruthy();
+      expect(screen.getByText(/iPhone 4 photos deserve iPhone 16/))
+        .toBeTruthy();
     });
 
     it("renders the CTA button", () => {

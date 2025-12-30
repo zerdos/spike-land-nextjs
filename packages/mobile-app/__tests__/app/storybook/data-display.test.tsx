@@ -78,7 +78,9 @@ describe("DataDisplayPage", () => {
     it("should render Copy Button description", () => {
       const { getByText } = render(<DataDisplayPage />);
       expect(
-        getByText("One-click copy functionality for code snippets and API keys."),
+        getByText(
+          "One-click copy functionality for code snippets and API keys.",
+        ),
       ).toBeTruthy();
     });
 

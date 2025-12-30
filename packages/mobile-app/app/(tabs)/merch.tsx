@@ -62,7 +62,9 @@ function CategoryFilter({
           key={category.id}
           size="$3"
           theme={selectedCategory === category.slug ? "active" : undefined}
-          backgroundColor={selectedCategory === category.slug ? "$blue10" : "$gray4"}
+          backgroundColor={selectedCategory === category.slug
+            ? "$blue10"
+            : "$gray4"}
           color={selectedCategory === category.slug ? "white" : "$gray11"}
           onPress={() => onSelectCategory(category.slug)}
           borderRadius="$10"
@@ -81,7 +83,9 @@ function ProductCard({ product }: { product: ProductWithDetails; }) {
   }, [product.id]);
 
   const minVariantPrice = useMemo(() => {
-    if (!product.variants || product.variants.length === 0) return product.retailPrice;
+    if (!product.variants || product.variants.length === 0) {
+      return product.retailPrice;
+    }
     const minDelta = Math.min(...product.variants.map((v) => v.priceDelta));
     return product.retailPrice + minDelta;
   }, [product]);

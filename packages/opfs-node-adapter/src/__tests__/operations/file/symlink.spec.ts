@@ -48,9 +48,13 @@ describe("symlink", () => {
   });
 
   it("should throw error regardless of type parameter", async () => {
-    await expect(symlink("/target", "/path", "file")).rejects.toThrow("ENOTSUP");
+    await expect(symlink("/target", "/path", "file")).rejects.toThrow(
+      "ENOTSUP",
+    );
     await expect(symlink("/target", "/path", "dir")).rejects.toThrow("ENOTSUP");
-    await expect(symlink("/target", "/path", "junction")).rejects.toThrow("ENOTSUP");
+    await expect(symlink("/target", "/path", "junction")).rejects.toThrow(
+      "ENOTSUP",
+    );
     await expect(symlink("/target", "/path", null)).rejects.toThrow("ENOTSUP");
   });
 });

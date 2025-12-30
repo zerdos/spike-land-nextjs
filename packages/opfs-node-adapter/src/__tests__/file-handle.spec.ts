@@ -20,7 +20,9 @@ describe("FileHandle", () => {
         expect.fail("chmod should have thrown an error");
       } catch (error) {
         const errnoException = error as NodeJS.ErrnoException;
-        expect(errnoException.message).toBe("ENOTSUP: operation not supported, chmod");
+        expect(errnoException.message).toBe(
+          "ENOTSUP: operation not supported, chmod",
+        );
         expect(errnoException.code).toBe("ENOTSUP");
         expect(errnoException.syscall).toBe("fchmod");
       }
@@ -36,7 +38,9 @@ describe("FileHandle", () => {
         expect.fail("chown should have thrown an error");
       } catch (error) {
         const errnoException = error as NodeJS.ErrnoException;
-        expect(errnoException.message).toBe("ENOTSUP: operation not supported, chown");
+        expect(errnoException.message).toBe(
+          "ENOTSUP: operation not supported, chown",
+        );
         expect(errnoException.code).toBe("ENOTSUP");
         expect(errnoException.syscall).toBe("fchown");
       }
@@ -52,7 +56,9 @@ describe("FileHandle", () => {
         expect.fail("utimes should have thrown an error");
       } catch (error) {
         const errnoException = error as NodeJS.ErrnoException;
-        expect(errnoException.message).toBe("ENOTSUP: operation not supported, utimes");
+        expect(errnoException.message).toBe(
+          "ENOTSUP: operation not supported, utimes",
+        );
         expect(errnoException.code).toBe("ENOTSUP");
         expect(errnoException.syscall).toBe("futimes");
       }
@@ -66,7 +72,9 @@ describe("FileHandle", () => {
         expect.fail("utimes should have thrown an error");
       } catch (error) {
         const errnoException = error as NodeJS.ErrnoException;
-        expect(errnoException.message).toBe("ENOTSUP: operation not supported, utimes");
+        expect(errnoException.message).toBe(
+          "ENOTSUP: operation not supported, utimes",
+        );
         expect(errnoException.code).toBe("ENOTSUP");
         expect(errnoException.syscall).toBe("futimes");
       }
@@ -80,7 +88,9 @@ describe("FileHandle", () => {
         expect.fail("utimes should have thrown an error");
       } catch (error) {
         const errnoException = error as NodeJS.ErrnoException;
-        expect(errnoException.message).toBe("ENOTSUP: operation not supported, utimes");
+        expect(errnoException.message).toBe(
+          "ENOTSUP: operation not supported, utimes",
+        );
         expect(errnoException.code).toBe("ENOTSUP");
         expect(errnoException.syscall).toBe("futimes");
       }
@@ -166,7 +176,9 @@ describe("FileHandle", () => {
         if (value) chunks.push(value);
       }
 
-      const result = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
+      const result = new Uint8Array(
+        chunks.reduce((acc, chunk) => acc + chunk.length, 0),
+      );
       let offset = 0;
       for (const chunk of chunks) {
         result.set(chunk, offset);
@@ -240,7 +252,9 @@ describe("FileHandle", () => {
         expect.fail("Should have thrown an error");
       } catch (error) {
         const err = error as NodeJS.ErrnoException;
-        expect(err.message).toBe("ENOTSUP: operation not supported, createReadStream");
+        expect(err.message).toBe(
+          "ENOTSUP: operation not supported, createReadStream",
+        );
         expect(err.code).toBe("ENOTSUP");
         expect(err.syscall).toBe("createReadStream");
       }
@@ -259,7 +273,9 @@ describe("FileHandle", () => {
         expect.fail("Should have thrown an error");
       } catch (error) {
         const err = error as NodeJS.ErrnoException;
-        expect(err.message).toBe("ENOTSUP: operation not supported, createReadStream");
+        expect(err.message).toBe(
+          "ENOTSUP: operation not supported, createReadStream",
+        );
         expect(err.code).toBe("ENOTSUP");
         expect(err.syscall).toBe("createReadStream");
       }
@@ -275,7 +291,9 @@ describe("FileHandle", () => {
         expect.fail("Should have thrown an error");
       } catch (error) {
         const err = error as NodeJS.ErrnoException;
-        expect(err.message).toBe("ENOTSUP: operation not supported, createWriteStream");
+        expect(err.message).toBe(
+          "ENOTSUP: operation not supported, createWriteStream",
+        );
         expect(err.code).toBe("ENOTSUP");
         expect(err.syscall).toBe("createWriteStream");
       }
@@ -294,7 +312,9 @@ describe("FileHandle", () => {
         expect.fail("Should have thrown an error");
       } catch (error) {
         const err = error as NodeJS.ErrnoException;
-        expect(err.message).toBe("ENOTSUP: operation not supported, createWriteStream");
+        expect(err.message).toBe(
+          "ENOTSUP: operation not supported, createWriteStream",
+        );
         expect(err.code).toBe("ENOTSUP");
         expect(err.syscall).toBe("createWriteStream");
       }
@@ -336,7 +356,9 @@ describe("FileHandle", () => {
           text: vi.fn().mockResolvedValue("Initial content here"),
           arrayBuffer: vi
             .fn()
-            .mockResolvedValue(new TextEncoder().encode("Initial content here").buffer),
+            .mockResolvedValue(
+              new TextEncoder().encode("Initial content here").buffer,
+            ),
         }),
         createWritable: vi.fn().mockResolvedValue({
           write: vi.fn().mockResolvedValue(undefined),
@@ -416,7 +438,9 @@ describe("FileHandle", () => {
           type: "text/plain",
           lastModified: Date.now(),
           text: vi.fn().mockResolvedValue(fileContent),
-          arrayBuffer: vi.fn().mockResolvedValue(new TextEncoder().encode(fileContent).buffer),
+          arrayBuffer: vi.fn().mockResolvedValue(
+            new TextEncoder().encode(fileContent).buffer,
+          ),
         }),
         createWritable: vi.fn().mockResolvedValue({
           write: vi.fn().mockResolvedValue(undefined),
@@ -450,7 +474,9 @@ describe("FileHandle", () => {
           type: "text/plain",
           lastModified: Date.now(),
           text: vi.fn().mockResolvedValue(fileContent),
-          arrayBuffer: vi.fn().mockResolvedValue(new TextEncoder().encode(fileContent).buffer),
+          arrayBuffer: vi.fn().mockResolvedValue(
+            new TextEncoder().encode(fileContent).buffer,
+          ),
         }),
         createWritable: vi.fn().mockResolvedValue({
           write: vi.fn().mockResolvedValue(undefined),
@@ -482,7 +508,9 @@ describe("FileHandle", () => {
           type: "text/plain",
           lastModified: Date.now(),
           text: vi.fn().mockResolvedValue(fileContent),
-          arrayBuffer: vi.fn().mockResolvedValue(new TextEncoder().encode(fileContent).buffer),
+          arrayBuffer: vi.fn().mockResolvedValue(
+            new TextEncoder().encode(fileContent).buffer,
+          ),
         }),
         createWritable: vi.fn().mockResolvedValue({
           write: vi.fn().mockResolvedValue(undefined),
@@ -513,7 +541,9 @@ describe("FileHandle", () => {
           type: "text/plain",
           lastModified: Date.now(),
           text: vi.fn().mockResolvedValue(fileContent),
-          arrayBuffer: vi.fn().mockResolvedValue(new TextEncoder().encode(fileContent).buffer),
+          arrayBuffer: vi.fn().mockResolvedValue(
+            new TextEncoder().encode(fileContent).buffer,
+          ),
         }),
         createWritable: vi.fn().mockResolvedValue({
           write: vi.fn().mockResolvedValue(undefined),
@@ -573,7 +603,9 @@ describe("FileHandle", () => {
           type: "text/plain",
           lastModified: Date.now(),
           text: vi.fn().mockResolvedValue(fileContent),
-          arrayBuffer: vi.fn().mockResolvedValue(new TextEncoder().encode(fileContent).buffer),
+          arrayBuffer: vi.fn().mockResolvedValue(
+            new TextEncoder().encode(fileContent).buffer,
+          ),
         }),
         createWritable: vi.fn().mockResolvedValue({
           write: vi.fn().mockResolvedValue(undefined),

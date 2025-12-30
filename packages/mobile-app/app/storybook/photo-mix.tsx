@@ -29,7 +29,10 @@ export default function PhotoMixPage() {
   }));
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>PhotoMix</Text>
@@ -54,7 +57,11 @@ export default function PhotoMixPage() {
               <Text style={styles.layerName}>Background</Text>
               <Text style={styles.layerType}>Base Layer</Text>
             </View>
-            <Ionicons name="lock-closed" size={18} color={colors.mutedForeground} />
+            <Ionicons
+              name="lock-closed"
+              size={18}
+              color={colors.mutedForeground}
+            />
           </View>
           <View style={[styles.layer, styles.layerActive]}>
             <View style={styles.layerPreview}>
@@ -92,7 +99,11 @@ export default function PhotoMixPage() {
               <Ionicons name="image" size={32} color={colors.primary} />
             </View>
             <Animated.View style={[styles.blendLayer2, overlayStyle]}>
-              <Ionicons name="color-wand" size={32} color={colors.pixelFuchsia} />
+              <Ionicons
+                name="color-wand"
+                size={32}
+                color={colors.pixelFuchsia}
+              />
             </Animated.View>
           </View>
           <View style={styles.blendModes}>
@@ -240,7 +251,9 @@ export default function PhotoMixPage() {
               <Ionicons name="image-outline" size={24} color={colors.primary} />
               <View>
                 <Text style={styles.exportFormatName}>PNG</Text>
-                <Text style={styles.exportFormatDesc}>Lossless with transparency</Text>
+                <Text style={styles.exportFormatDesc}>
+                  Lossless with transparency
+                </Text>
               </View>
             </View>
             <View style={[styles.formatBadge, styles.formatBadgeActive]}>
@@ -249,26 +262,42 @@ export default function PhotoMixPage() {
           </View>
           <View style={styles.exportFormat}>
             <View style={styles.exportFormatInfo}>
-              <Ionicons name="image-outline" size={24} color={colors.mutedForeground} />
+              <Ionicons
+                name="image-outline"
+                size={24}
+                color={colors.mutedForeground}
+              />
               <View>
                 <Text style={styles.exportFormatName}>JPEG</Text>
-                <Text style={styles.exportFormatDesc}>Compressed, smaller size</Text>
+                <Text style={styles.exportFormatDesc}>
+                  Compressed, smaller size
+                </Text>
               </View>
             </View>
           </View>
           <View style={styles.exportFormat}>
             <View style={styles.exportFormatInfo}>
-              <Ionicons name="code-outline" size={24} color={colors.mutedForeground} />
+              <Ionicons
+                name="code-outline"
+                size={24}
+                color={colors.mutedForeground}
+              />
               <View>
                 <Text style={styles.exportFormatName}>WebP</Text>
-                <Text style={styles.exportFormatDesc}>Modern format, best quality</Text>
+                <Text style={styles.exportFormatDesc}>
+                  Modern format, best quality
+                </Text>
               </View>
             </View>
           </View>
           <Button
             fullWidth
             iconLeft={
-              <Ionicons name="download-outline" size={18} color={colors.primaryForeground} />
+              <Ionicons
+                name="download-outline"
+                size={18}
+                color={colors.primaryForeground}
+              />
             }
           >
             Export Image

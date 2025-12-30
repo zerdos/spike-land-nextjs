@@ -39,9 +39,14 @@ export default function CheckoutScreen() {
         <Separator marginVertical="$3" />
 
         {items.map((item: CartItemWithDetails) => (
-          <YStack key={`${item.product.id}-${item.variantId}`} marginBottom="$2">
+          <YStack
+            key={`${item.product.id}-${item.variantId}`}
+            marginBottom="$2"
+          >
             <Text>{item.product.name} x {item.quantity}</Text>
-            <Text color="$gray10">£{(getItemPrice(item) * item.quantity).toFixed(2)}</Text>
+            <Text color="$gray10">
+              £{(getItemPrice(item) * item.quantity).toFixed(2)}
+            </Text>
           </YStack>
         ))}
 

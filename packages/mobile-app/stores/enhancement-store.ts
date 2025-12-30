@@ -164,7 +164,9 @@ export const useEnhancementStore = create<EnhancementStore>((set, get) => ({
     } catch (error) {
       set({
         isLoadingHistory: false,
-        historyError: error instanceof Error ? error.message : "Failed to fetch images",
+        historyError: error instanceof Error
+          ? error.message
+          : "Failed to fetch images",
       });
     }
   },

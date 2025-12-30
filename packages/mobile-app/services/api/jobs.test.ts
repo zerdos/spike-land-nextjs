@@ -34,7 +34,9 @@ const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>;
 // Test Data
 // ============================================================================
 
-const createMockJob = (overrides: Partial<ImageEnhancementJob> = {}): ImageEnhancementJob => ({
+const createMockJob = (
+  overrides: Partial<ImageEnhancementJob> = {},
+): ImageEnhancementJob => ({
   id: "job-123",
   imageId: "image-456",
   userId: "user-789",
@@ -107,7 +109,10 @@ describe("getBatchJobStatus", () => {
   });
 
   it("should fetch batch job statuses successfully", async () => {
-    const mockJobs = [createMockJob({ id: "job-1" }), createMockJob({ id: "job-2" })];
+    const mockJobs = [
+      createMockJob({ id: "job-1" }),
+      createMockJob({ id: "job-2" }),
+    ];
     const mockResponse: BatchJobStatusResponse = { jobs: mockJobs };
 
     mockedApiClient.post.mockResolvedValue({
@@ -118,9 +123,12 @@ describe("getBatchJobStatus", () => {
 
     const result = await getBatchJobStatus(["job-1", "job-2"]);
 
-    expect(mockedApiClient.post).toHaveBeenCalledWith("/api/jobs/batch-status", {
-      jobIds: ["job-1", "job-2"],
-    });
+    expect(mockedApiClient.post).toHaveBeenCalledWith(
+      "/api/jobs/batch-status",
+      {
+        jobIds: ["job-1", "job-2"],
+      },
+    );
     expect(result.data?.jobs).toHaveLength(2);
     expect(result.error).toBeNull();
   });
@@ -136,9 +144,12 @@ describe("getBatchJobStatus", () => {
 
     const result = await getBatchJobStatus([]);
 
-    expect(mockedApiClient.post).toHaveBeenCalledWith("/api/jobs/batch-status", {
-      jobIds: [],
-    });
+    expect(mockedApiClient.post).toHaveBeenCalledWith(
+      "/api/jobs/batch-status",
+      {
+        jobIds: [],
+      },
+    );
     expect(result.data?.jobs).toHaveLength(0);
   });
 });
@@ -161,7 +172,9 @@ describe("cancelJob", () => {
 
     const result = await cancelJob("job-123");
 
-    expect(mockedApiClient.post).toHaveBeenCalledWith("/api/jobs/job-123/cancel");
+    expect(mockedApiClient.post).toHaveBeenCalledWith(
+      "/api/jobs/job-123/cancel",
+    );
     expect(result.data?.success).toBe(true);
     expect(result.error).toBeNull();
   });
@@ -196,16 +209,31 @@ describe("pollJobUntilComplete", () => {
     const onError = jest.fn();
 
     const pendingJob = createMockJob({ status: "PENDING" });
-    const processingJob = createMockJob({ status: "PROCESSING", currentStage: "ANALYZING" });
+    const processingJob = createMockJob({
+      status: "PROCESSING",
+      currentStage: "ANALYZING",
+    });
     const completedJob = createMockJob({
       status: "COMPLETED",
       enhancedUrl: "https://example.com/enhanced.jpg",
     });
 
     mockedApiClient.get
-      .mockResolvedValueOnce({ data: { job: pendingJob }, error: null, status: 200 })
-      .mockResolvedValueOnce({ data: { job: processingJob }, error: null, status: 200 })
-      .mockResolvedValueOnce({ data: { job: completedJob }, error: null, status: 200 });
+      .mockResolvedValueOnce({
+        data: { job: pendingJob },
+        error: null,
+        status: 200,
+      })
+      .mockResolvedValueOnce({
+        data: { job: processingJob },
+        error: null,
+        status: 200,
+      })
+      .mockResolvedValueOnce({
+        data: { job: completedJob },
+        error: null,
+        status: 200,
+      });
 
     const options: PollJobOptions = {
       jobId: "job-123",
@@ -235,9 +263,16 @@ describe("pollJobUntilComplete", () => {
     const onComplete = jest.fn();
     const onError = jest.fn();
 
-    const failedJob = createMockJob({ status: "FAILED", errorMessage: "Enhancement failed" });
+    const failedJob = createMockJob({
+      status: "FAILED",
+      errorMessage: "Enhancement failed",
+    });
 
-    mockedApiClient.get.mockResolvedValue({ data: { job: failedJob }, error: null, status: 200 });
+    mockedApiClient.get.mockResolvedValue({
+      data: { job: failedJob },
+      error: null,
+      status: 200,
+    });
 
     const options: PollJobOptions = {
       jobId: "job-123",
@@ -247,7 +282,9 @@ describe("pollJobUntilComplete", () => {
       interval: 1000,
     };
 
-    await expect(pollJobUntilComplete(options)).rejects.toThrow("Enhancement failed");
+    await expect(pollJobUntilComplete(options)).rejects.toThrow(
+      "Enhancement failed",
+    );
 
     expect(onProgress).toHaveBeenCalledWith(failedJob);
     expect(onError).toHaveBeenCalledWith("Enhancement failed");
@@ -271,7 +308,9 @@ describe("pollJobUntilComplete", () => {
       interval: 1000,
     };
 
-    await expect(pollJobUntilComplete(options)).rejects.toThrow("Job cancelled");
+    await expect(pollJobUntilComplete(options)).rejects.toThrow(
+      "Job cancelled",
+    );
 
     expect(onError).toHaveBeenCalledWith("Job cancelled");
   });
@@ -291,7 +330,9 @@ describe("pollJobUntilComplete", () => {
       interval: 1000,
     };
 
-    await expect(pollJobUntilComplete(options)).rejects.toThrow("Network error");
+    await expect(pollJobUntilComplete(options)).rejects.toThrow(
+      "Network error",
+    );
 
     expect(onError).toHaveBeenCalledWith("Network error");
   });
@@ -311,7 +352,9 @@ describe("pollJobUntilComplete", () => {
       interval: 1000,
     };
 
-    await expect(pollJobUntilComplete(options)).rejects.toThrow("Job not found");
+    await expect(pollJobUntilComplete(options)).rejects.toThrow(
+      "Job not found",
+    );
 
     expect(onError).toHaveBeenCalledWith("Job not found");
   });
@@ -324,7 +367,11 @@ describe("pollJobUntilComplete", () => {
 
     const pendingJob = createMockJob({ status: "PENDING" });
 
-    mockedApiClient.get.mockResolvedValue({ data: { job: pendingJob }, error: null, status: 200 });
+    mockedApiClient.get.mockResolvedValue({
+      data: { job: pendingJob },
+      error: null,
+      status: 200,
+    });
 
     const options: PollJobOptions = {
       jobId: "job-123",
@@ -403,7 +450,9 @@ describe("getStageDescription", () => {
   });
 
   it("should return correct description for PROMPTING stage", () => {
-    expect(getStageDescription("PROMPTING")).toBe("Generating enhancement prompt...");
+    expect(getStageDescription("PROMPTING")).toBe(
+      "Generating enhancement prompt...",
+    );
   });
 
   it("should return correct description for GENERATING stage", () => {
@@ -415,7 +464,9 @@ describe("getStageDescription", () => {
   });
 
   it("should return default description for unknown stage", () => {
-    expect(getStageDescription("UNKNOWN" as PipelineStage)).toBe("Processing...");
+    expect(getStageDescription("UNKNOWN" as PipelineStage)).toBe(
+      "Processing...",
+    );
   });
 });
 

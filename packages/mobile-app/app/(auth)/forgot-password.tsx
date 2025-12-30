@@ -64,7 +64,12 @@ export default function ForgotPasswordScreen() {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <YStack flex={1} justifyContent="center" padding="$4" backgroundColor="$background">
+        <YStack
+          flex={1}
+          justifyContent="center"
+          padding="$4"
+          backgroundColor="$background"
+        >
           <Card
             elevate
             size="$4"
@@ -147,7 +152,11 @@ export default function ForgotPasswordScreen() {
                     <XStack justifyContent="center" space="$2" marginTop="$4">
                       <Ionicons name="arrow-back" size={16} color="#6B7280" />
                       <Link href="/(auth)/signin" asChild>
-                        <Text color="$blue10" fontWeight="600" pressStyle={{ opacity: 0.7 }}>
+                        <Text
+                          color="$blue10"
+                          fontWeight="600"
+                          pressStyle={{ opacity: 0.7 }}
+                        >
                           Back to Sign In
                         </Text>
                       </Link>
@@ -170,8 +179,14 @@ export default function ForgotPasswordScreen() {
                     >
                       <Ionicons name="mail-outline" size={40} color="#22C55E" />
                     </YStack>
-                    <H2 fontWeight="bold" textAlign="center">Check Your Email</H2>
-                    <Paragraph color="$gray11" textAlign="center" paddingHorizontal="$2">
+                    <H2 fontWeight="bold" textAlign="center">
+                      Check Your Email
+                    </H2>
+                    <Paragraph
+                      color="$gray11"
+                      textAlign="center"
+                      paddingHorizontal="$2"
+                    >
                       We've sent a password reset link to{" "}
                       <Text fontWeight="600" color="$gray12">{email}</Text>. Please check your inbox
                       and follow the instructions.
@@ -189,7 +204,11 @@ export default function ForgotPasswordScreen() {
                         Back to Sign In
                       </Button>
 
-                      <Paragraph color="$gray10" fontSize="$2" textAlign="center">
+                      <Paragraph
+                        color="$gray10"
+                        fontSize="$2"
+                        textAlign="center"
+                      >
                         Didn't receive the email? Check your spam folder or{" "}
                         <Text
                           color="$blue10"

@@ -80,7 +80,10 @@ export default function TokenPackagesScreen() {
             ],
           );
         } else if (result.error !== "Purchase cancelled") {
-          Alert.alert("Purchase Failed", result.error || "Unknown error occurred");
+          Alert.alert(
+            "Purchase Failed",
+            result.error || "Unknown error occurred",
+          );
         }
       } catch (err) {
         Alert.alert(
@@ -108,10 +111,16 @@ export default function TokenPackagesScreen() {
           );
           refetchBalance();
         } else {
-          Alert.alert("No Purchases Found", "No previous purchases to restore.");
+          Alert.alert(
+            "No Purchases Found",
+            "No previous purchases to restore.",
+          );
         }
       } else {
-        Alert.alert("Restore Failed", result.error || "Failed to restore purchases");
+        Alert.alert(
+          "Restore Failed",
+          result.error || "Failed to restore purchases",
+        );
       }
     } catch (err) {
       Alert.alert(
@@ -196,7 +205,11 @@ export default function TokenPackagesScreen() {
               bordered
               padding="$5"
               borderWidth={pkg.tokens >= 150 ? 2 : 1}
-              borderColor={pkg.tokens >= 500 ? "$green8" : pkg.tokens >= 150 ? "$blue8" : "$gray6"}
+              borderColor={pkg.tokens >= 500
+                ? "$green8"
+                : pkg.tokens >= 150
+                ? "$blue8"
+                : "$gray6"}
             >
               {/* Badge */}
               <View
@@ -272,7 +285,11 @@ export default function TokenPackagesScreen() {
                 {/* Purchase Button */}
                 <Button
                   size="$5"
-                  theme={pkg.tokens >= 500 ? "green" : pkg.tokens >= 150 ? "blue" : "gray"}
+                  theme={pkg.tokens >= 500
+                    ? "green"
+                    : pkg.tokens >= 150
+                    ? "blue"
+                    : "gray"}
                   disabled={isPurchasing !== null}
                   onPress={() => handlePurchase(pkg)}
                   marginTop="$2"

@@ -182,7 +182,9 @@ class PurchasesService {
       }
 
       // Make the purchase through RevenueCat
-      const { customerInfo: _customerInfo } = await Purchases.purchasePackage(pkg.rcPackage);
+      const { customerInfo: _customerInfo } = await Purchases.purchasePackage(
+        pkg.rcPackage,
+      );
 
       // Verify the purchase with our backend
       const verifyResult = await this.verifyPurchase(
@@ -213,7 +215,9 @@ class PurchasesService {
         return { success: false, error: "Purchase cancelled" };
       }
 
-      const errorMessage = error instanceof Error ? error.message : "Purchase failed";
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Purchase failed";
       console.error("Purchase failed:", error);
       return { success: false, error: errorMessage };
     }
@@ -246,7 +250,10 @@ class PurchasesService {
       });
 
       if (response.error || !response.data) {
-        return { success: false, error: response.error || "Verification failed" };
+        return {
+          success: false,
+          error: response.error || "Verification failed",
+        };
       }
 
       return {
@@ -295,7 +302,9 @@ class PurchasesService {
         restored: response.data?.restored || 0,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Restore failed";
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Restore failed";
       console.error("Restore purchases failed:", error);
       return { success: false, restored: 0, error: errorMessage };
     }

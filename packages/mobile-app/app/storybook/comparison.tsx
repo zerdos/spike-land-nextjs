@@ -12,7 +12,9 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-na
 import { borderRadius, colors, fontSize, spacing } from "@/constants/theme";
 
 export default function ComparisonPage() {
-  const [viewMode, setViewMode] = useState<"slider" | "side-by-side" | "overlay">("slider");
+  const [viewMode, setViewMode] = useState<
+    "slider" | "side-by-side" | "overlay"
+  >("slider");
   const sliderPosition = useSharedValue(0.5);
 
   const leftImageStyle = useAnimatedStyle(() => ({
@@ -20,7 +22,10 @@ export default function ComparisonPage() {
   }));
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Comparison</Text>
@@ -38,43 +43,71 @@ export default function ComparisonPage() {
 
         <View style={styles.toggleContainer}>
           <Pressable
-            style={[styles.toggleButton, viewMode === "slider" && styles.toggleButtonActive]}
+            style={[
+              styles.toggleButton,
+              viewMode === "slider" && styles.toggleButtonActive,
+            ]}
             onPress={() => setViewMode("slider")}
           >
             <Ionicons
               name="swap-horizontal"
               size={18}
-              color={viewMode === "slider" ? colors.primary : colors.mutedForeground}
+              color={viewMode === "slider"
+                ? colors.primary
+                : colors.mutedForeground}
             />
-            <Text style={[styles.toggleText, viewMode === "slider" && styles.toggleTextActive]}>
+            <Text
+              style={[
+                styles.toggleText,
+                viewMode === "slider" && styles.toggleTextActive,
+              ]}
+            >
               Slider
             </Text>
           </Pressable>
           <Pressable
-            style={[styles.toggleButton, viewMode === "side-by-side" && styles.toggleButtonActive]}
+            style={[
+              styles.toggleButton,
+              viewMode === "side-by-side" && styles.toggleButtonActive,
+            ]}
             onPress={() => setViewMode("side-by-side")}
           >
             <Ionicons
               name="albums"
               size={18}
-              color={viewMode === "side-by-side" ? colors.primary : colors.mutedForeground}
+              color={viewMode === "side-by-side"
+                ? colors.primary
+                : colors.mutedForeground}
             />
             <Text
-              style={[styles.toggleText, viewMode === "side-by-side" && styles.toggleTextActive]}
+              style={[
+                styles.toggleText,
+                viewMode === "side-by-side" && styles.toggleTextActive,
+              ]}
             >
               Side by Side
             </Text>
           </Pressable>
           <Pressable
-            style={[styles.toggleButton, viewMode === "overlay" && styles.toggleButtonActive]}
+            style={[
+              styles.toggleButton,
+              viewMode === "overlay" && styles.toggleButtonActive,
+            ]}
             onPress={() => setViewMode("overlay")}
           >
             <Ionicons
               name="layers"
               size={18}
-              color={viewMode === "overlay" ? colors.primary : colors.mutedForeground}
+              color={viewMode === "overlay"
+                ? colors.primary
+                : colors.mutedForeground}
             />
-            <Text style={[styles.toggleText, viewMode === "overlay" && styles.toggleTextActive]}>
+            <Text
+              style={[
+                styles.toggleText,
+                viewMode === "overlay" && styles.toggleTextActive,
+              ]}
+            >
               Overlay
             </Text>
           </Pressable>
@@ -101,7 +134,11 @@ export default function ComparisonPage() {
           <Animated.View style={[styles.beforeImageClip, leftImageStyle]}>
             <View style={styles.imageContainer}>
               <View style={[styles.imagePlaceholder, styles.beforeImage]}>
-                <Ionicons name="image" size={32} color={colors.mutedForeground} />
+                <Ionicons
+                  name="image"
+                  size={32}
+                  color={colors.mutedForeground}
+                />
                 <Text style={styles.imageLabel}>Original</Text>
               </View>
             </View>
@@ -111,7 +148,11 @@ export default function ComparisonPage() {
           <View style={styles.sliderHandle}>
             <View style={styles.sliderLine} />
             <View style={styles.sliderThumb}>
-              <Ionicons name="swap-horizontal" size={20} color={colors.foreground} />
+              <Ionicons
+                name="swap-horizontal"
+                size={20}
+                color={colors.foreground}
+              />
             </View>
             <View style={styles.sliderLine} />
           </View>

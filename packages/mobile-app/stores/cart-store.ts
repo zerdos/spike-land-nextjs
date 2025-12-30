@@ -11,7 +11,10 @@ import { create } from "zustand";
 // ============================================================================
 
 export interface CartItemWithDetails extends MerchCartItem {
-  product: Pick<MerchProduct, "id" | "name" | "retailPrice" | "currency" | "mockupTemplate">;
+  product: Pick<
+    MerchProduct,
+    "id" | "name" | "retailPrice" | "currency" | "mockupTemplate"
+  >;
   variant: Pick<MerchVariant, "id" | "name" | "priceDelta"> | null;
   imageUrl: string | null;
 }
@@ -100,7 +103,13 @@ export const useCartStore = create<CartStore>((set, get) => ({
       // Update quantity
       updatedItems = cart.items.map((i, idx) =>
         idx === existingIndex
-          ? { ...i, quantity: Math.min(i.quantity + item.quantity, MAX_QUANTITY_PER_ITEM) }
+          ? {
+            ...i,
+            quantity: Math.min(
+              i.quantity + item.quantity,
+              MAX_QUANTITY_PER_ITEM,
+            ),
+          }
           : i
       );
     } else {

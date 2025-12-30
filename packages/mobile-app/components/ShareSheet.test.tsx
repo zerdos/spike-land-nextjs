@@ -160,7 +160,9 @@ jest.mock("react-native/Libraries/Linking/Linking", () => ({
   openURL: jest.fn().mockResolvedValue(undefined),
 }));
 
-const mockUseImageShare = useImageShare as jest.MockedFunction<typeof useImageShare>;
+const mockUseImageShare = useImageShare as jest.MockedFunction<
+  typeof useImageShare
+>;
 
 describe("ShareSheet", () => {
   const defaultMockHook = {

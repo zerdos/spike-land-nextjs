@@ -80,7 +80,10 @@ function TypeFilter({ selected, onSelect, counts }: TypeFilterProps) {
   return (
     <XStack gap="$2" marginBottom="$4">
       {types.map(({ key, label }) => (
-        <TouchableOpacity key={key} onPress={() => onSelect(key)}>
+        <TouchableOpacity
+          key={key}
+          onPress={() => onSelect(key)}
+        >
           <View
             backgroundColor={selected === key ? "$purple10" : "$gray3"}
             paddingHorizontal="$3"
@@ -188,7 +191,12 @@ function JobCard({ job, onRetry, isRetrying }: JobCardProps) {
             <Text fontSize="$1" color="$gray9" numberOfLines={1}>
               {job.id.slice(0, 16)}...
             </Text>
-            <Text fontSize="$3" color="$gray11" numberOfLines={1} marginTop="$1">
+            <Text
+              fontSize="$3"
+              color="$gray11"
+              numberOfLines={1}
+              marginTop="$1"
+            >
               {job.userEmail || "Unknown user"}
             </Text>
           </YStack>
@@ -244,7 +252,11 @@ function JobCard({ job, onRetry, isRetrying }: JobCardProps) {
         )}
 
         {/* Timestamps and actions */}
-        <XStack justifyContent="space-between" alignItems="center" marginTop="$2">
+        <XStack
+          justifyContent="space-between"
+          alignItems="center"
+          marginTop="$2"
+        >
           <Text fontSize="$1" color="$gray9">
             {new Date(job.createdAt).toLocaleString()}
           </Text>
@@ -404,7 +416,9 @@ export default function JobQueuePage() {
         <Text color="$gray10" fontSize="$2" textAlign="center">
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>
-        <TouchableOpacity onPress={() => refetch()}>
+        <TouchableOpacity
+          onPress={() => refetch()}
+        >
           <Text color="$blue10" marginTop="$4">
             Try Again
           </Text>

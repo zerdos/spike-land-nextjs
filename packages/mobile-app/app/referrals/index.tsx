@@ -184,7 +184,13 @@ function ReferralLinkCard({
 
 function HeroSection() {
   return (
-    <Card elevate bordered padding="$5" backgroundColor="$blue2" testID="hero-section">
+    <Card
+      elevate
+      bordered
+      padding="$5"
+      backgroundColor="$blue2"
+      testID="hero-section"
+    >
       <YStack alignItems="center" gap="$3">
         <H1 size="$8" textAlign="center">
           Earn {REFERRAL_CONFIG.TOKENS_PER_REFERRAL} Tokens

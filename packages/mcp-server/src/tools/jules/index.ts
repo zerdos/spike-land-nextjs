@@ -213,7 +213,9 @@ Use this to:
 export async function handleJulesToolCall(
   name: string,
   args: unknown,
-): Promise<{ content: Array<{ type: string; text: string; }>; isError?: boolean; }> {
+): Promise<
+  { content: Array<{ type: string; text: string; }>; isError?: boolean; }
+> {
   if (!isJulesAvailable()) {
     return {
       content: [
@@ -394,7 +396,9 @@ export async function handleJulesToolCall(
         };
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = error instanceof Error
+      ? error.message
+      : "Unknown error";
     return {
       content: [{ type: "text", text: `Error: ${errorMessage}` }],
       isError: true,

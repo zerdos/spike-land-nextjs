@@ -53,27 +53,29 @@ jest.mock("tamagui", () => {
         children,
       );
     },
-    Input: ReactMod.forwardRef((props: Record<string, unknown>, ref: unknown) => {
-      const {
-        testID,
-        onChangeText,
-        onSubmitEditing,
-        value,
-        editable,
-        placeholder,
-        "aria-label": ariaLabel,
-      } = props;
-      return ReactMod.createElement(TextInput, {
-        ref,
-        testID,
-        onChangeText,
-        onSubmitEditing,
-        value,
-        editable,
-        placeholder,
-        accessibilityLabel: ariaLabel,
-      });
-    }),
+    Input: ReactMod.forwardRef(
+      (props: Record<string, unknown>, ref: unknown) => {
+        const {
+          testID,
+          onChangeText,
+          onSubmitEditing,
+          value,
+          editable,
+          placeholder,
+          "aria-label": ariaLabel,
+        } = props;
+        return ReactMod.createElement(TextInput, {
+          ref,
+          testID,
+          onChangeText,
+          onSubmitEditing,
+          value,
+          editable,
+          placeholder,
+          accessibilityLabel: ariaLabel,
+        });
+      },
+    ),
     XStack: (props: Record<string, unknown>) => {
       const { children, testID } = props;
       return ReactMod.createElement(View, { testID }, children);

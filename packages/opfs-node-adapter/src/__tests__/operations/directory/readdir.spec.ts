@@ -35,7 +35,9 @@ describe("readdir", () => {
   it("should return empty array on error", async () => {
     // Mock an error by making getDirectoryHandleAndFileName fail
     const mockError = new Error("Test error");
-    vi.spyOn(mockNavigator.storage, "getDirectory").mockRejectedValueOnce(mockError);
+    vi.spyOn(mockNavigator.storage, "getDirectory").mockRejectedValueOnce(
+      mockError,
+    );
 
     const entries = await readdir("/nonexistent");
     expect(Array.isArray(entries)).toBe(true);

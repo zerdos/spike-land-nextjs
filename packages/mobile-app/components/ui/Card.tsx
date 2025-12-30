@@ -272,14 +272,18 @@ export const CardTitle: React.FC<CardTitleProps> = ({ children, testID }) => {
 /**
  * Card description
  */
-export const CardDescription: React.FC<CardDescriptionProps> = ({ children, testID }) => {
+export const CardDescription: React.FC<CardDescriptionProps> = (
+  { children, testID },
+) => {
   return <CardDescriptionText testID={testID}>{children}</CardDescriptionText>;
 };
 
 /**
  * Card content section
  */
-export const CardContent: React.FC<CardContentProps> = ({ children, testID }) => {
+export const CardContent: React.FC<CardContentProps> = (
+  { children, testID },
+) => {
   return <CardContentFrame testID={testID}>{children}</CardContentFrame>;
 };
 

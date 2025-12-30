@@ -186,7 +186,9 @@ interface EnhancementProgressProps {
   onCancel: () => void;
 }
 
-function EnhancementProgress({ progress, message, onCancel }: EnhancementProgressProps) {
+function EnhancementProgress(
+  { progress, message, onCancel }: EnhancementProgressProps,
+) {
   return (
     <Card elevate bordered padding="$5" marginHorizontal="$4">
       <YStack alignItems="center" gap="$4">
@@ -251,7 +253,8 @@ export default function SelectTierScreen() {
     canAffordTier,
   } = useEnhancement();
 
-  const isProcessing = status === "uploading" || status === "enhancing" || status === "polling";
+  const isProcessing = status === "uploading" || status === "enhancing" ||
+    status === "polling";
 
   const handleTierSelect = useCallback((tier: SelectableTier) => {
     setSelectedTier(tier);
@@ -289,7 +292,10 @@ export default function SelectTierScreen() {
     });
 
     if (!uploaded) {
-      Alert.alert("Upload Failed", error || "Failed to upload image. Please try again.");
+      Alert.alert(
+        "Upload Failed",
+        error || "Failed to upload image. Please try again.",
+      );
       return;
     }
 
@@ -453,7 +459,11 @@ export default function SelectTierScreen() {
                       Enhancement Cost
                     </Text>
                     <XStack alignItems="center" gap="$1">
-                      <Ionicons name="wallet-outline" size={16} color="#EAB308" />
+                      <Ionicons
+                        name="wallet-outline"
+                        size={16}
+                        color="#EAB308"
+                      />
                       <Text fontSize="$4" fontWeight="700">
                         {totalCost} tokens
                       </Text>
@@ -462,7 +472,11 @@ export default function SelectTierScreen() {
 
                   {!canAfford && (
                     <XStack alignItems="center" gap="$1" marginTop="$2">
-                      <Ionicons name="warning-outline" size={14} color="#EF4444" />
+                      <Ionicons
+                        name="warning-outline"
+                        size={14}
+                        color="#EF4444"
+                      />
                       <Text fontSize="$2" color="$red10">
                         You need {totalCost - balance} more tokens
                       </Text>

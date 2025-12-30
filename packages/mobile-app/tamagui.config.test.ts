@@ -355,7 +355,9 @@ describe("tamagui.config", () => {
     });
 
     it("should have brand animations (bouncy, lazy)", () => {
-      expect(expectedAnimations.bouncy).toBe("200ms cubic-bezier(0.25, 0.1, 0.25, 1.5)");
+      expect(expectedAnimations.bouncy).toBe(
+        "200ms cubic-bezier(0.25, 0.1, 0.25, 1.5)",
+      );
       expect(expectedAnimations.lazy).toBe("300ms ease-out");
     });
 
@@ -573,7 +575,9 @@ describe("tamagui.config", () => {
     it("should have color (text) values", () => {
       expect(expectedLightTheme.color).toBe(lightColorsHex.foreground);
       expect(expectedLightTheme.colorHover).toBe(lightColorsHex.foreground);
-      expect(expectedLightTheme.colorPress).toBe(lightColorsHex.mutedForeground);
+      expect(expectedLightTheme.colorPress).toBe(
+        lightColorsHex.mutedForeground,
+      );
       expect(expectedLightTheme.colorFocus).toBe(lightColorsHex.foreground);
       expect(expectedLightTheme.colorTransparent).toBe("transparent");
     });
@@ -582,11 +586,15 @@ describe("tamagui.config", () => {
       expect(expectedLightTheme.borderColor).toBe(lightColorsHex.border);
       expect(expectedLightTheme.borderColorHover).toBe(lightColorsHex.primary);
       expect(expectedLightTheme.borderColorFocus).toBe(lightColorsHex.ring);
-      expect(expectedLightTheme.borderColorPress).toBe(lightColorsHex.secondary);
+      expect(expectedLightTheme.borderColorPress).toBe(
+        lightColorsHex.secondary,
+      );
     });
 
     it("should have placeholder color", () => {
-      expect(expectedLightTheme.placeholderColor).toBe(lightColorsHex.mutedForeground);
+      expect(expectedLightTheme.placeholderColor).toBe(
+        lightColorsHex.mutedForeground,
+      );
     });
 
     it("should have semantic colors", () => {

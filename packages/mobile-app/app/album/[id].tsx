@@ -266,7 +266,10 @@ export default function AlbumDetailScreen() {
     return (
       <YStack flex={1} alignItems="center" justifyContent="center" padding="$6">
         <Text fontSize="$5" color="$gray10">Album not found</Text>
-        <Button marginTop="$4" onPress={() => router.back()}>
+        <Button
+          marginTop="$4"
+          onPress={() => router.back()}
+        >
           <ArrowLeft size={16} />
           <Text>Go Back</Text>
         </Button>
@@ -315,7 +318,9 @@ export default function AlbumDetailScreen() {
                   chromeless
                   circular
                   icon={selectionCount === images.length ? Square : CheckSquare}
-                  onPress={selectionCount === images.length ? clearSelection : selectAllImages}
+                  onPress={selectionCount === images.length
+                    ? clearSelection
+                    : selectAllImages}
                 />
               </XStack>
             </>
@@ -339,7 +344,10 @@ export default function AlbumDetailScreen() {
                   icon={Plus}
                   onPress={() => {
                     // TODO: Add images to album
-                    Alert.alert("Coming Soon", "Add images feature coming soon");
+                    Alert.alert(
+                      "Coming Soon",
+                      "Add images feature coming soon",
+                    );
                   }}
                 />
 
@@ -381,7 +389,10 @@ export default function AlbumDetailScreen() {
                         onPress={() => {
                           setShowOptionsMenu(false);
                           // TODO: Album settings
-                          Alert.alert("Coming Soon", "Album settings coming soon");
+                          Alert.alert(
+                            "Coming Soon",
+                            "Album settings coming soon",
+                          );
                         }}
                       >
                         <Settings size={16} />
@@ -485,7 +496,11 @@ export default function AlbumDetailScreen() {
                 size="$4"
                 onPress={() => handleBatchEnhance("TIER_1K")}
               >
-                <XStack flex={1} justifyContent="space-between" alignItems="center">
+                <XStack
+                  flex={1}
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
                   <Text>1K (1024px)</Text>
                   <Text color="$gray10">2 tokens/image</Text>
                 </XStack>
@@ -495,7 +510,11 @@ export default function AlbumDetailScreen() {
                 size="$4"
                 onPress={() => handleBatchEnhance("TIER_2K")}
               >
-                <XStack flex={1} justifyContent="space-between" alignItems="center">
+                <XStack
+                  flex={1}
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
                   <Text>2K (2048px)</Text>
                   <Text color="$gray10">5 tokens/image</Text>
                 </XStack>
@@ -505,7 +524,11 @@ export default function AlbumDetailScreen() {
                 size="$4"
                 onPress={() => handleBatchEnhance("TIER_4K")}
               >
-                <XStack flex={1} justifyContent="space-between" alignItems="center">
+                <XStack
+                  flex={1}
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
                   <Text>4K (4096px)</Text>
                   <Text color="$gray10">10 tokens/image</Text>
                 </XStack>

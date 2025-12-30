@@ -13,7 +13,10 @@ import { borderRadius, colors, fontSize, spacing } from "@/constants/theme";
 
 export default function ErrorsPage() {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Errors</Text>
@@ -49,8 +52,16 @@ export default function ErrorsPage() {
         </Text>
 
         <View style={styles.errorCard}>
-          <View style={[styles.errorIconCircle, { backgroundColor: `${colors.destructive}15` }]}>
-            <Ionicons name="alert-circle" size={48} color={colors.destructive} />
+          <View
+            style={[styles.errorIconCircle, {
+              backgroundColor: `${colors.destructive}15`,
+            }]}
+          >
+            <Ionicons
+              name="alert-circle"
+              size={48}
+              color={colors.destructive}
+            />
           </View>
           <Text style={styles.errorTitle}>Server Error</Text>
           <Text style={styles.errorMessage}>
@@ -71,14 +82,26 @@ export default function ErrorsPage() {
         </Text>
 
         <View style={styles.errorCard}>
-          <View style={[styles.errorIconCircle, { backgroundColor: `${colors.warning}15` }]}>
+          <View
+            style={[styles.errorIconCircle, {
+              backgroundColor: `${colors.warning}15`,
+            }]}
+          >
             <Ionicons name="cloud-offline" size={48} color={colors.warning} />
           </View>
           <Text style={styles.errorTitle}>No Connection</Text>
           <Text style={styles.errorMessage}>
             Please check your internet connection and try again.
           </Text>
-          <Button iconLeft={<Ionicons name="refresh" size={18} color={colors.primaryForeground} />}>
+          <Button
+            iconLeft={
+              <Ionicons
+                name="refresh"
+                size={18}
+                color={colors.primaryForeground}
+              />
+            }
+          >
             Retry Connection
           </Button>
         </View>
@@ -99,8 +122,14 @@ export default function ErrorsPage() {
                 <Text style={styles.validationValue}>invalid-email</Text>
               </View>
               <View style={styles.validationError}>
-                <Ionicons name="close-circle" size={14} color={colors.destructive} />
-                <Text style={styles.validationErrorText}>Please enter a valid email address</Text>
+                <Ionicons
+                  name="close-circle"
+                  size={14}
+                  color={colors.destructive}
+                />
+                <Text style={styles.validationErrorText}>
+                  Please enter a valid email address
+                </Text>
               </View>
             </View>
           </View>
@@ -112,7 +141,11 @@ export default function ErrorsPage() {
                 <Text style={styles.validationValue}>weak</Text>
               </View>
               <View style={styles.validationError}>
-                <Ionicons name="close-circle" size={14} color={colors.destructive} />
+                <Ionicons
+                  name="close-circle"
+                  size={14}
+                  color={colors.destructive}
+                />
                 <Text style={styles.validationErrorText}>
                   Password must be at least 8 characters
                 </Text>
@@ -125,11 +158,21 @@ export default function ErrorsPage() {
               <Text style={styles.validationLabel}>Username</Text>
               <View style={styles.validationInputSuccess}>
                 <Text style={styles.validationValue}>spike_user</Text>
-                <Ionicons name="checkmark-circle" size={18} color={colors.success} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={18}
+                  color={colors.success}
+                />
               </View>
               <View style={styles.validationSuccess}>
-                <Ionicons name="checkmark-circle" size={14} color={colors.success} />
-                <Text style={styles.validationSuccessText}>Username is available</Text>
+                <Ionicons
+                  name="checkmark-circle"
+                  size={14}
+                  color={colors.success}
+                />
+                <Text style={styles.validationSuccessText}>
+                  Username is available
+                </Text>
               </View>
             </View>
           </View>
@@ -164,7 +207,13 @@ export default function ErrorsPage() {
           <View style={styles.boundaryActions}>
             <Button
               variant="outline"
-              iconLeft={<Ionicons name="copy-outline" size={18} color={colors.foreground} />}
+              iconLeft={
+                <Ionicons
+                  name="copy-outline"
+                  size={18}
+                  color={colors.foreground}
+                />
+              }
             >
               Copy Error
             </Button>
@@ -181,14 +230,20 @@ export default function ErrorsPage() {
         </Text>
 
         <View style={styles.emptyCard}>
-          <View style={[styles.emptyIcon, { backgroundColor: `${colors.primary}15` }]}>
+          <View
+            style={[styles.emptyIcon, {
+              backgroundColor: `${colors.primary}15`,
+            }]}
+          >
             <Ionicons name="images-outline" size={32} color={colors.primary} />
           </View>
           <Text style={styles.emptyTitle}>No Images Yet</Text>
           <Text style={styles.emptyMessage}>
             Upload your first image to get started with AI enhancement.
           </Text>
-          <Button iconLeft={<Ionicons name="add" size={18} color={colors.primaryForeground} />}>
+          <Button
+            iconLeft={<Ionicons name="add" size={18} color={colors.primaryForeground} />}
+          >
             Upload Image
           </Button>
         </View>

@@ -37,7 +37,12 @@ const SAMPLE_IMAGES = {
 };
 
 // Pre-generate feature cards data
-const FEATURE_CARDS = createFeatureCards({ Clock, Image: ImageIcon, Layers, Coins });
+const FEATURE_CARDS = createFeatureCards({
+  Clock,
+  Image: ImageIcon,
+  Layers,
+  Coins,
+});
 
 // ============================================================================
 // Token Balance Card Component
@@ -62,11 +67,13 @@ function TokenBalanceCard() {
         <XStack alignItems="center" gap="$2">
           <Ionicons name="wallet-outline" size={24} color="#EAB308" />
           <YStack>
-            {isLoading ? <Spinner size="small" /> : (
-              <Text fontSize="$6" fontWeight="700">
-                {balance} tokens
-              </Text>
-            )}
+            {isLoading
+              ? <Spinner size="small" />
+              : (
+                <Text fontSize="$6" fontWeight="700">
+                  {balance} tokens
+                </Text>
+              )}
             <Text fontSize="$2" color="$gray10">
               Available balance
             </Text>
@@ -284,7 +291,9 @@ interface RecentEnhancementItemProps {
   createdAt: Date;
 }
 
-function RecentEnhancementItem({ id, imageUrl, name, createdAt }: RecentEnhancementItemProps) {
+function RecentEnhancementItem(
+  { id, imageUrl, name, createdAt }: RecentEnhancementItemProps,
+) {
   const handlePress = useCallback(() => {
     router.push(`/enhance/${id}` as Href);
   }, [id]);
@@ -344,7 +353,11 @@ function RecentEnhancementsSection() {
 
   return (
     <YStack marginTop="$6">
-      <XStack justifyContent="space-between" alignItems="center" paddingHorizontal="$4">
+      <XStack
+        justifyContent="space-between"
+        alignItems="center"
+        paddingHorizontal="$4"
+      >
         <H4>Recent Enhancements</H4>
         <Button
           size="$2"

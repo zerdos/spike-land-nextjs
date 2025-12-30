@@ -94,32 +94,36 @@ export function useImagePicker(
   /**
    * Request media library permissions
    */
-  const requestMediaLibraryPermission = useCallback(async (): Promise<boolean> => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  const requestMediaLibraryPermission = useCallback(
+    async (): Promise<boolean> => {
+      const { status } = await ImagePicker
+        .requestMediaLibraryPermissionsAsync();
 
-    if (status !== "granted") {
-      Alert.alert(
-        "Photo Library Permission Required",
-        "Please enable photo library access in your device settings to select photos.",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Open Settings",
-            onPress: () => {
-              if (Platform.OS === "ios") {
-                Linking.openURL("app-settings:");
-              } else {
-                Linking.openSettings();
-              }
+      if (status !== "granted") {
+        Alert.alert(
+          "Photo Library Permission Required",
+          "Please enable photo library access in your device settings to select photos.",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Open Settings",
+              onPress: () => {
+                if (Platform.OS === "ios") {
+                  Linking.openURL("app-settings:");
+                } else {
+                  Linking.openSettings();
+                }
+              },
             },
-          },
-        ],
-      );
-      return false;
-    }
+          ],
+        );
+        return false;
+      }
 
-    return true;
-  }, []);
+      return true;
+    },
+    [],
+  );
 
   /**
    * Convert ImagePicker result to SelectedImage format
@@ -144,94 +148,105 @@ export function useImagePicker(
   /**
    * Pick images from gallery
    */
-  const pickFromGallery = useCallback(async (): Promise<SelectedImage[] | null> => {
-    setError(null);
-    setIsLoading(true);
+  const pickFromGallery = useCallback(
+    async (): Promise<SelectedImage[] | null> => {
+      setError(null);
+      setIsLoading(true);
 
-    try {
-      const hasPermission = await requestMediaLibraryPermission();
-      if (!hasPermission) {
+      try {
+        const hasPermission = await requestMediaLibraryPermission();
+        if (!hasPermission) {
+          setIsLoading(false);
+          return null;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ["images"],
+          allowsMultipleSelection: mergedOptions.allowsMultipleSelection,
+          selectionLimit: mergedOptions.maxSelections,
+          quality: mergedOptions.quality,
+          allowsEditing: mergedOptions.allowsEditing &&
+            !mergedOptions.allowsMultipleSelection,
+          exif: false,
+        });
+
+        if (result.canceled || !result.assets || result.assets.length === 0) {
+          setIsLoading(false);
+          return null;
+        }
+
+        const images = result.assets.map(convertToSelectedImage);
+        setSelectedImages((prev) => [...prev, ...images]);
+        setIsLoading(false);
+
+        return images;
+      } catch (err) {
+        const errorMessage = err instanceof Error
+          ? err.message
+          : "Failed to pick images";
+        setError(errorMessage);
         setIsLoading(false);
         return null;
       }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
-        allowsMultipleSelection: mergedOptions.allowsMultipleSelection,
-        selectionLimit: mergedOptions.maxSelections,
-        quality: mergedOptions.quality,
-        allowsEditing: mergedOptions.allowsEditing && !mergedOptions.allowsMultipleSelection,
-        exif: false,
-      });
-
-      if (result.canceled || !result.assets || result.assets.length === 0) {
-        setIsLoading(false);
-        return null;
-      }
-
-      const images = result.assets.map(convertToSelectedImage);
-      setSelectedImages((prev) => [...prev, ...images]);
-      setIsLoading(false);
-
-      return images;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to pick images";
-      setError(errorMessage);
-      setIsLoading(false);
-      return null;
-    }
-  }, [
-    requestMediaLibraryPermission,
-    convertToSelectedImage,
-    mergedOptions.allowsMultipleSelection,
-    mergedOptions.maxSelections,
-    mergedOptions.quality,
-    mergedOptions.allowsEditing,
-  ]);
+    },
+    [
+      requestMediaLibraryPermission,
+      convertToSelectedImage,
+      mergedOptions.allowsMultipleSelection,
+      mergedOptions.maxSelections,
+      mergedOptions.quality,
+      mergedOptions.allowsEditing,
+    ],
+  );
 
   /**
    * Capture image from camera
    */
-  const pickFromCamera = useCallback(async (): Promise<SelectedImage | null> => {
-    setError(null);
-    setIsLoading(true);
+  const pickFromCamera = useCallback(
+    async (): Promise<SelectedImage | null> => {
+      setError(null);
+      setIsLoading(true);
 
-    try {
-      const hasPermission = await requestCameraPermission();
-      if (!hasPermission) {
+      try {
+        const hasPermission = await requestCameraPermission();
+        if (!hasPermission) {
+          setIsLoading(false);
+          return null;
+        }
+
+        const result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ["images"],
+          quality: mergedOptions.quality,
+          allowsEditing: mergedOptions.allowsEditing,
+          exif: false,
+        });
+
+        if (result.canceled || !result.assets || result.assets.length === 0) {
+          setIsLoading(false);
+          return null;
+        }
+
+        const image = convertToSelectedImage(result.assets[0]);
+        setSelectedImages((prev) => [...prev, image]);
+        setIsLoading(false);
+
+        return image;
+      } catch (err) {
+        const errorMessage = err instanceof Error
+          ? err.message
+          : "Failed to capture image";
+        setError(errorMessage);
         setIsLoading(false);
         return null;
       }
-
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ["images"],
-        quality: mergedOptions.quality,
-        allowsEditing: mergedOptions.allowsEditing,
-        exif: false,
-      });
-
-      if (result.canceled || !result.assets || result.assets.length === 0) {
-        setIsLoading(false);
-        return null;
-      }
-
-      const image = convertToSelectedImage(result.assets[0]);
-      setSelectedImages((prev) => [...prev, image]);
-      setIsLoading(false);
-
-      return image;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to capture image";
-      setError(errorMessage);
-      setIsLoading(false);
-      return null;
-    }
-  }, [
-    requestCameraPermission,
-    convertToSelectedImage,
-    mergedOptions.quality,
-    mergedOptions.allowsEditing,
-  ]);
+    },
+    [
+      requestCameraPermission,
+      convertToSelectedImage,
+      mergedOptions.quality,
+      mergedOptions.allowsEditing,
+    ],
+  );
 
   /**
    * Clear all selected images

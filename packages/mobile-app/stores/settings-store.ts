@@ -86,7 +86,9 @@ interface SettingsActions {
   // API Keys
   fetchApiKeys: () => Promise<void>;
   createApiKey: (name: string) => Promise<{ success: boolean; error?: string; }>;
-  deleteApiKey: (keyId: string) => Promise<{ success: boolean; error?: string; }>;
+  deleteApiKey: (
+    keyId: string,
+  ) => Promise<{ success: boolean; error?: string; }>;
   clearNewlyCreatedKey: () => void;
 
   // Account
@@ -189,7 +191,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     } catch (error) {
       set({
         isLoadingPreferences: false,
-        preferencesError: error instanceof Error ? error.message : "Failed to load preferences",
+        preferencesError: error instanceof Error
+          ? error.message
+          : "Failed to load preferences",
       });
     }
   },
@@ -222,7 +226,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       set({
         notifications: previousNotifications,
         isSavingPreferences: false,
-        preferencesError: error instanceof Error ? error.message : "Failed to update preference",
+        preferencesError: error instanceof Error
+          ? error.message
+          : "Failed to update preference",
       });
     }
   },
@@ -255,7 +261,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       set({
         privacy: previousPrivacy,
         isSavingPreferences: false,
-        preferencesError: error instanceof Error ? error.message : "Failed to update preference",
+        preferencesError: error instanceof Error
+          ? error.message
+          : "Failed to update preference",
       });
     }
   },
@@ -297,7 +305,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     } catch (error) {
       set({
         isLoadingApiKeys: false,
-        apiKeysError: error instanceof Error ? error.message : "Failed to fetch API keys",
+        apiKeysError: error instanceof Error
+          ? error.message
+          : "Failed to fetch API keys",
       });
     }
   },
@@ -334,7 +344,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to create API key",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to create API key",
       };
     }
   },
@@ -358,7 +370,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to delete API key",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to delete API key",
       };
     }
   },
@@ -387,7 +401,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       set({ isDeletingAccount: false, deleteAccountError: null });
       return { success: true };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete account";
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Failed to delete account";
       set({
         isDeletingAccount: false,
         deleteAccountError: errorMessage,
@@ -431,9 +447,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       const notifications = notificationsJson
         ? JSON.parse(notificationsJson)
         : DEFAULT_NOTIFICATIONS;
-      const privacy = privacyJson
-        ? JSON.parse(privacyJson)
-        : DEFAULT_PRIVACY;
+      const privacy = privacyJson ? JSON.parse(privacyJson) : DEFAULT_PRIVACY;
 
       set({ notifications, privacy });
     } catch (error) {

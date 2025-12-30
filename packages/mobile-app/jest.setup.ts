@@ -220,7 +220,10 @@ jest.mock("expo-constants", () => ({
 jest.mock("expo-auth-session", () => ({
   makeRedirectUri: jest.fn(() => "spikeland://auth/callback"),
   AuthRequest: jest.fn().mockImplementation(() => ({
-    promptAsync: jest.fn().mockResolvedValue({ type: "success", params: { code: "test-code" } }),
+    promptAsync: jest.fn().mockResolvedValue({
+      type: "success",
+      params: { code: "test-code" },
+    }),
   })),
   ResponseType: {
     Code: "code",
@@ -304,7 +307,10 @@ jest.mock("expo-clipboard", () => ({
 
 // expo-notifications mock
 jest.mock("expo-notifications", () => ({
-  getExpoPushTokenAsync: jest.fn().mockResolvedValue({ data: "test-push-token", type: "expo" }),
+  getExpoPushTokenAsync: jest.fn().mockResolvedValue({
+    data: "test-push-token",
+    type: "expo",
+  }),
   getPermissionsAsync: jest.fn().mockResolvedValue({
     status: "granted",
     expires: "never",
@@ -320,7 +326,9 @@ jest.mock("expo-notifications", () => ({
   setNotificationHandler: jest.fn(),
   setNotificationChannelAsync: jest.fn().mockResolvedValue(null),
   addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
-  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  addNotificationResponseReceivedListener: jest.fn(() => ({
+    remove: jest.fn(),
+  })),
   removeNotificationSubscription: jest.fn(),
   getLastNotificationResponseAsync: jest.fn().mockResolvedValue(null),
   scheduleNotificationAsync: jest.fn().mockResolvedValue("notification-id"),
@@ -624,19 +632,26 @@ jest.mock("react-native-safe-area-context", () => ({
 // Mock AppState for push notification tests
 const mockAppStateSubscription = { remove: jest.fn() };
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-jest.spyOn(require("react-native").AppState, "addEventListener").mockReturnValue(
-  mockAppStateSubscription,
-);
+jest.spyOn(require("react-native").AppState, "addEventListener")
+  .mockReturnValue(
+    mockAppStateSubscription,
+  );
 
 // Mock Linking for share tests
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-jest.spyOn(require("react-native").Linking, "canOpenURL").mockResolvedValue(true);
+jest.spyOn(require("react-native").Linking, "canOpenURL").mockResolvedValue(
+  true,
+);
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-jest.spyOn(require("react-native").Linking, "openURL").mockResolvedValue(undefined);
+jest.spyOn(require("react-native").Linking, "openURL").mockResolvedValue(
+  undefined,
+);
 
 // Mock Alert for share tests and error dialogs
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-jest.spyOn(require("react-native").Alert, "alert").mockImplementation(jest.fn());
+jest.spyOn(require("react-native").Alert, "alert").mockImplementation(
+  jest.fn(),
+);
 
 // Mock Share for native share functionality
 // eslint-disable-next-line @typescript-eslint/no-require-imports

@@ -27,7 +27,9 @@ interface HeroSectionProps {
   testID?: string;
 }
 
-export function HeroSection({ onStartEnhancing, onSeeExamples, testID }: HeroSectionProps) {
+export function HeroSection(
+  { onStartEnhancing, onSeeExamples, testID }: HeroSectionProps,
+) {
   const gradientPosition = useRef(new Animated.Value(0)).current;
 
   // Animate gradient background
@@ -69,12 +71,20 @@ export function HeroSection({ onStartEnhancing, onSeeExamples, testID }: HeroSec
   // Interpolate gradient colors for animation effect
   const gradientStartColor = gradientPosition.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: ["rgba(0, 100, 150, 0.3)", "rgba(0, 150, 200, 0.4)", "rgba(0, 100, 150, 0.3)"],
+    outputRange: [
+      "rgba(0, 100, 150, 0.3)",
+      "rgba(0, 150, 200, 0.4)",
+      "rgba(0, 100, 150, 0.3)",
+    ],
   });
 
   const gradientEndColor = gradientPosition.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: ["rgba(0, 50, 100, 0.2)", "rgba(0, 100, 150, 0.3)", "rgba(0, 50, 100, 0.2)"],
+    outputRange: [
+      "rgba(0, 50, 100, 0.2)",
+      "rgba(0, 100, 150, 0.3)",
+      "rgba(0, 50, 100, 0.2)",
+    ],
   });
 
   return (

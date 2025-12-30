@@ -14,7 +14,11 @@ const createMockComponent = (
 ) => {
   const MockComponent = React.forwardRef(
     (props: Record<string, unknown>, ref: React.ForwardedRef<unknown>) => {
-      return React.createElement(Component, { ...props, ref, testID: props.testID || name });
+      return React.createElement(Component, {
+        ...props,
+        ref,
+        testID: props.testID || name,
+      });
     },
   );
   MockComponent.displayName = name;
@@ -40,12 +44,30 @@ export const Heading = createMockComponent(
   "Heading",
   Text as React.ComponentType<Record<string, unknown>>,
 );
-export const H1 = createMockComponent("H1", Text as React.ComponentType<Record<string, unknown>>);
-export const H2 = createMockComponent("H2", Text as React.ComponentType<Record<string, unknown>>);
-export const H3 = createMockComponent("H3", Text as React.ComponentType<Record<string, unknown>>);
-export const H4 = createMockComponent("H4", Text as React.ComponentType<Record<string, unknown>>);
-export const H5 = createMockComponent("H5", Text as React.ComponentType<Record<string, unknown>>);
-export const H6 = createMockComponent("H6", Text as React.ComponentType<Record<string, unknown>>);
+export const H1 = createMockComponent(
+  "H1",
+  Text as React.ComponentType<Record<string, unknown>>,
+);
+export const H2 = createMockComponent(
+  "H2",
+  Text as React.ComponentType<Record<string, unknown>>,
+);
+export const H3 = createMockComponent(
+  "H3",
+  Text as React.ComponentType<Record<string, unknown>>,
+);
+export const H4 = createMockComponent(
+  "H4",
+  Text as React.ComponentType<Record<string, unknown>>,
+);
+export const H5 = createMockComponent(
+  "H5",
+  Text as React.ComponentType<Record<string, unknown>>,
+);
+export const H6 = createMockComponent(
+  "H6",
+  Text as React.ComponentType<Record<string, unknown>>,
+);
 export const Label = createMockComponent(
   "Label",
   Text as React.ComponentType<Record<string, unknown>>,
@@ -125,7 +147,9 @@ export const useMedia = jest.fn(() => ({
 export const useThemeName = jest.fn(() => "dark");
 
 // Styling utilities
-export const styled = (Component: React.ComponentType<Record<string, unknown>>) => {
+export const styled = (
+  Component: React.ComponentType<Record<string, unknown>>,
+) => {
   const StyledComponent = React.forwardRef(
     (props: Record<string, unknown>, ref: React.ForwardedRef<unknown>) => {
       return React.createElement(Component, { ...props, ref });

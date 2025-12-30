@@ -12,7 +12,9 @@ describe("copyFile", () => {
   it("should copy a file", async () => {
     await copyFile("/test.txt", "/copy.txt");
 
-    const sourceFileHandle = await mockDirectoryHandle.getFileHandle("test.txt");
+    const sourceFileHandle = await mockDirectoryHandle.getFileHandle(
+      "test.txt",
+    );
     const sourceFile = await sourceFileHandle.getFile();
     expect(sourceFile.text).toHaveBeenCalled();
 

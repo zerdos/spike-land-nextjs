@@ -26,22 +26,36 @@ export default function PricingScreen() {
       <YStack gap="$4" flex={1}>
         <Card padding="$4" bordered>
           <Text fontSize="$6" fontWeight="600">Free Tier</Text>
-          <Text color="$gray10" marginTop="$2">10 tokens/day with regeneration</Text>
+          <Text color="$gray10" marginTop="$2">
+            10 tokens/day with regeneration
+          </Text>
           <Button marginTop="$4" disabled>Current Plan</Button>
         </Card>
 
         <Card padding="$4" bordered>
           <Text fontSize="$6" fontWeight="600">Pro</Text>
-          <Text color="$gray10" marginTop="$2">50 tokens/day + priority processing</Text>
-          <Button marginTop="$4" theme="active" onPress={() => router.push("/tokens/packages")}>
+          <Text color="$gray10" marginTop="$2">
+            50 tokens/day + priority processing
+          </Text>
+          <Button
+            marginTop="$4"
+            theme="active"
+            onPress={() => router.push("/tokens/packages")}
+          >
             Upgrade
           </Button>
         </Card>
 
         <Card padding="$4" bordered>
           <Text fontSize="$6" fontWeight="600">Enterprise</Text>
-          <Text color="$gray10" marginTop="$2">Unlimited tokens + API access</Text>
-          <Button marginTop="$4" theme="active" onPress={() => router.push("/tokens/packages")}>
+          <Text color="$gray10" marginTop="$2">
+            Unlimited tokens + API access
+          </Text>
+          <Button
+            marginTop="$4"
+            theme="active"
+            onPress={() => router.push("/tokens/packages")}
+          >
             Contact Sales
           </Button>
         </Card>

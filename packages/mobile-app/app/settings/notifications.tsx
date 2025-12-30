@@ -114,7 +114,10 @@ export default function NotificationsScreen() {
 
   const handleEnhancementCompleteChange = useCallback(
     async (value: boolean) => {
-      await updateNotificationPreference("enhancementCompleteNotifications", value);
+      await updateNotificationPreference(
+        "enhancementCompleteNotifications",
+        value,
+      );
     },
     [updateNotificationPreference],
   );

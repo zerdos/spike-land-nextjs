@@ -241,7 +241,12 @@ function TokensDisplay({ value, animationDuration }: TokensDisplayProps) {
   const animatedValue = useAnimatedCounter(value, animationDuration);
 
   return (
-    <H3 color="$purple10" fontSize="$7" fontWeight="700" testID="tokens-earned-value">
+    <H3
+      color="$purple10"
+      fontSize="$7"
+      fontWeight="700"
+      testID="tokens-earned-value"
+    >
       {animatedValue}
     </H3>
   );

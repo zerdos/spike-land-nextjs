@@ -186,9 +186,18 @@ export type JobStatus =
   | "FAILED"
   | "REFUNDED"
   | "CANCELLED";
-export type PipelineStage = "ANALYZING" | "CROPPING" | "PROMPTING" | "GENERATING";
+export type PipelineStage =
+  | "ANALYZING"
+  | "CROPPING"
+  | "PROMPTING"
+  | "GENERATING";
 export type SubscriptionTier = "FREE" | "BASIC" | "STANDARD" | "PREMIUM";
-export type SubscriptionStatus = "ACTIVE" | "CANCELED" | "PAST_DUE" | "UNPAID" | "TRIALING";
+export type SubscriptionStatus =
+  | "ACTIVE"
+  | "CANCELED"
+  | "PAST_DUE"
+  | "UNPAID"
+  | "TRIALING";
 export type AlbumPrivacy = "PRIVATE" | "UNLISTED" | "PUBLIC";
 export type TokenTransactionType =
   | "EARN_REGENERATION"
@@ -200,7 +209,11 @@ export type TokenTransactionType =
   | "REFUND";
 export type ReferralStatus = "PENDING" | "COMPLETED" | "INVALID";
 export type McpJobType = "GENERATE" | "MODIFY";
-export type GalleryCategory = "PORTRAIT" | "LANDSCAPE" | "PRODUCT" | "ARCHITECTURE";
+export type GalleryCategory =
+  | "PORTRAIT"
+  | "LANDSCAPE"
+  | "PRODUCT"
+  | "ARCHITECTURE";
 
 // ============================================================================
 // Interfaces

@@ -90,7 +90,10 @@ function VariantSelector({
                     {variant.name}
                   </Text>
                   {variant.priceDelta !== 0 && (
-                    <Text fontSize="$2" color={isSelected ? "white" : "$gray10"}>
+                    <Text
+                      fontSize="$2"
+                      color={isSelected ? "white" : "$gray10"}
+                    >
                       {variant.priceDelta > 0 ? "+" : ""}
                       {formatPrice(variant.priceDelta, currency)}
                     </Text>
@@ -218,7 +221,9 @@ function ImageSelector({
             />
             <YStack flex={1}>
               <Text fontWeight="bold">
-                {selectedImage.type === "enhanced" ? "Enhanced Image" : "Uploaded Image"}
+                {selectedImage.type === "enhanced"
+                  ? "Enhanced Image"
+                  : "Uploaded Image"}
               </Text>
               <Text fontSize="$2" color="$gray10">
                 {selectedImage.width} x {selectedImage.height}
@@ -335,7 +340,9 @@ export default function ProductDetailScreen() {
   const [selectedVariant, setSelectedVariant] = useState<
     Pick<MerchVariant, "id" | "name" | "priceDelta" | "attributes"> | null
   >(null);
-  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
+  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(
+    null,
+  );
   const [customText, setCustomText] = useState("");
 
   // Fetch product
@@ -366,8 +373,12 @@ export default function ProductDetailScreen() {
       const response = await addToCart({
         productId: productQuery.data.id,
         variantId: selectedVariant?.id,
-        imageId: selectedImage.type === "enhanced" ? selectedImage.imageId : undefined,
-        uploadedImageUrl: selectedImage.type === "upload" ? selectedImage.imageUrl : undefined,
+        imageId: selectedImage.type === "enhanced"
+          ? selectedImage.imageId
+          : undefined,
+        uploadedImageUrl: selectedImage.type === "upload"
+          ? selectedImage.imageUrl
+          : undefined,
         quantity: 1,
         customText: customText.trim() || undefined,
       });

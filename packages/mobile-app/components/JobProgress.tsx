@@ -89,7 +89,10 @@ const SIZE_CONFIG = {
 // Helper Functions
 // ============================================================================
 
-function getStageIndex(stage: PipelineStage | null, status: JobStatus | null): number {
+function getStageIndex(
+  stage: PipelineStage | null,
+  status: JobStatus | null,
+): number {
   if (status === "COMPLETED") return 3;
   if (status === "FAILED" || status === "CANCELLED") return -1;
 
@@ -105,7 +108,11 @@ function getStageIndex(stage: PipelineStage | null, status: JobStatus | null): n
   }
 }
 
-function getStatusColor(status: JobStatus | null, isFailed: boolean, isComplete: boolean): string {
+function getStatusColor(
+  status: JobStatus | null,
+  isFailed: boolean,
+  isComplete: boolean,
+): string {
   if (isComplete) return "$green10";
   if (isFailed) return "$red10";
   if (status === "PROCESSING") return "$blue10";
@@ -237,7 +244,8 @@ function ProgressSteps(
       {STAGES.map((stage, index) => {
         const Icon = stage.icon;
         const isActive = index === currentStageIndex;
-        const isDone = index < currentStageIndex || (isComplete && index === STAGES.length - 1);
+        const isDone = index < currentStageIndex ||
+          (isComplete && index === STAGES.length - 1);
         const isError = isFailed && index === currentStageIndex;
 
         let backgroundColor = "$gray4";
@@ -319,9 +327,21 @@ export function JobProgress({
         isFailed={isFailed}
       >
         {isComplete
-          ? <Check size={sizeConfig.iconSize} color="white" testID="complete-icon" />
+          ? (
+            <Check
+              size={sizeConfig.iconSize}
+              color="white"
+              testID="complete-icon"
+            />
+          )
           : isFailed
-          ? <AlertCircle size={sizeConfig.iconSize} color="white" testID="error-icon" />
+          ? (
+            <AlertCircle
+              size={sizeConfig.iconSize}
+              color="white"
+              testID="error-icon"
+            />
+          )
           : <Spinner size="large" color="white" testID="loading-spinner" />}
       </AnimatedProgressCircle>
 

@@ -19,7 +19,11 @@ import { borderRadius, colors, fontSize, spacing } from "@/constants/theme";
 
 // Skeleton component with shimmer animation
 function Skeleton(
-  { width, height, style }: { width: number | string; height: number; style?: object; },
+  { width, height, style }: {
+    width: number | string;
+    height: number;
+    style?: object;
+  },
 ) {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
@@ -63,7 +67,10 @@ function Skeleton(
 
 export default function LoadingPage() {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Loading</Text>
@@ -125,11 +132,16 @@ export default function LoadingPage() {
         <View style={styles.progressCard}>
           <View style={styles.progressRow}>
             <Text style={styles.progressLabel}>Complete</Text>
-            <Text style={[styles.progressValue, { color: colors.success }]}>100%</Text>
+            <Text style={[styles.progressValue, { color: colors.success }]}>
+              100%
+            </Text>
           </View>
           <View style={styles.progressBar}>
             <View
-              style={[styles.progressFill, { width: "100%", backgroundColor: colors.success }]}
+              style={[styles.progressFill, {
+                width: "100%",
+                backgroundColor: colors.success,
+              }]}
             />
           </View>
         </View>
@@ -144,7 +156,11 @@ export default function LoadingPage() {
 
         <View style={styles.skeletonCard}>
           <View style={styles.skeletonHeader}>
-            <Skeleton width={48} height={48} style={{ borderRadius: borderRadius.full }} />
+            <Skeleton
+              width={48}
+              height={48}
+              style={{ borderRadius: borderRadius.full }}
+            />
             <View style={styles.skeletonHeaderText}>
               <Skeleton width={120} height={16} />
               <Skeleton width={80} height={12} />
@@ -156,7 +172,11 @@ export default function LoadingPage() {
         </View>
 
         <View style={styles.skeletonCard}>
-          <Skeleton width="100%" height={180} style={{ borderRadius: borderRadius.lg }} />
+          <Skeleton
+            width="100%"
+            height={180}
+            style={{ borderRadius: borderRadius.lg }}
+          />
           <Skeleton width="80%" height={20} />
           <Skeleton width="100%" height={14} />
           <Skeleton width="40%" height={14} />
@@ -173,12 +193,20 @@ export default function LoadingPage() {
         <View style={styles.skeletonList}>
           {[1, 2, 3, 4].map((i) => (
             <View key={i} style={styles.skeletonListItem}>
-              <Skeleton width={40} height={40} style={{ borderRadius: borderRadius.md }} />
+              <Skeleton
+                width={40}
+                height={40}
+                style={{ borderRadius: borderRadius.md }}
+              />
               <View style={styles.skeletonListContent}>
                 <Skeleton width="70%" height={14} />
                 <Skeleton width="40%" height={12} />
               </View>
-              <Skeleton width={60} height={28} style={{ borderRadius: borderRadius.md }} />
+              <Skeleton
+                width={60}
+                height={28}
+                style={{ borderRadius: borderRadius.md }}
+              />
             </View>
           ))}
         </View>
@@ -195,7 +223,11 @@ export default function LoadingPage() {
           <View style={styles.circularItem}>
             <View style={styles.circularProgress}>
               <View style={styles.circularTrack} />
-              <View style={[styles.circularFill, { transform: [{ rotate: "90deg" }] }]} />
+              <View
+                style={[styles.circularFill, {
+                  transform: [{ rotate: "90deg" }],
+                }]}
+              />
               <View style={styles.circularInner}>
                 <Text style={styles.circularValue}>25%</Text>
               </View>
@@ -205,7 +237,11 @@ export default function LoadingPage() {
           <View style={styles.circularItem}>
             <View style={styles.circularProgress}>
               <View style={styles.circularTrack} />
-              <View style={[styles.circularFill, { transform: [{ rotate: "180deg" }] }]} />
+              <View
+                style={[styles.circularFill, {
+                  transform: [{ rotate: "180deg" }],
+                }]}
+              />
               <View style={styles.circularInner}>
                 <Text style={styles.circularValue}>50%</Text>
               </View>
@@ -217,7 +253,9 @@ export default function LoadingPage() {
               <View style={styles.circularTrack} />
               <View style={[styles.circularFill, styles.circularComplete]} />
               <View style={styles.circularInner}>
-                <Text style={[styles.circularValue, { color: colors.success }]}>100%</Text>
+                <Text style={[styles.circularValue, { color: colors.success }]}>
+                  100%
+                </Text>
               </View>
             </View>
             <Text style={styles.circularLabel}>Complete</Text>

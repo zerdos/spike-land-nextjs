@@ -105,8 +105,12 @@ export default function CanvasScreen() {
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Store state
-  const { images, slideshowIndex: currentSlideshowIndex, goToSlide, removeImage } =
-    useGalleryStore();
+  const {
+    images,
+    slideshowIndex: currentSlideshowIndex,
+    goToSlide,
+    removeImage,
+  } = useGalleryStore();
   const setCurrentSlideshowIndex = goToSlide;
 
   // Current image
@@ -127,43 +131,55 @@ export default function CanvasScreen() {
     rawScale,
     defaultSharedValue,
   ]);
-  const savedScale = useMemo(() => rawSavedScale ?? { ...defaultSharedValue, value: 1 }, [
-    rawSavedScale,
-    defaultSharedValue,
-  ]);
+  const savedScale = useMemo(
+    () => rawSavedScale ?? { ...defaultSharedValue, value: 1 },
+    [
+      rawSavedScale,
+      defaultSharedValue,
+    ],
+  );
   const translateX = useMemo(() => rawTranslateX ?? defaultSharedValue, [
     rawTranslateX,
     defaultSharedValue,
   ]);
-  const savedTranslateX = useMemo(() => rawSavedTranslateX ?? defaultSharedValue, [
-    rawSavedTranslateX,
-    defaultSharedValue,
-  ]);
+  const savedTranslateX = useMemo(
+    () => rawSavedTranslateX ?? defaultSharedValue,
+    [
+      rawSavedTranslateX,
+      defaultSharedValue,
+    ],
+  );
   const translateY = useMemo(() => rawTranslateY ?? defaultSharedValue, [
     rawTranslateY,
     defaultSharedValue,
   ]);
-  const savedTranslateY = useMemo(() => rawSavedTranslateY ?? defaultSharedValue, [
-    rawSavedTranslateY,
-    defaultSharedValue,
-  ]);
+  const savedTranslateY = useMemo(
+    () => rawSavedTranslateY ?? defaultSharedValue,
+    [
+      rawSavedTranslateY,
+      defaultSharedValue,
+    ],
+  );
 
   // ============================================================================
   // Toast Helper
   // ============================================================================
 
-  const showToast = useCallback((message: string, type: "success" | "error" = "success") => {
-    // Clear any existing toast timeout
-    if (toastTimeout.current) {
-      clearTimeout(toastTimeout.current);
-    }
+  const showToast = useCallback(
+    (message: string, type: "success" | "error" = "success") => {
+      // Clear any existing toast timeout
+      if (toastTimeout.current) {
+        clearTimeout(toastTimeout.current);
+      }
 
-    setToast({ visible: true, message, type });
+      setToast({ visible: true, message, type });
 
-    toastTimeout.current = setTimeout(() => {
-      setToast((prev) => ({ ...prev, visible: false }));
-    }, 3000);
-  }, []);
+      toastTimeout.current = setTimeout(() => {
+        setToast((prev) => ({ ...prev, visible: false }));
+      }, 3000);
+    },
+    [],
+  );
 
   // Cleanup toast timeout
   useEffect(() => {
@@ -234,7 +250,12 @@ export default function CanvasScreen() {
       setCurrentSlideshowIndex(currentSlideshowIndex + 1);
       resetControlsTimeout();
     }
-  }, [currentSlideshowIndex, images.length, setCurrentSlideshowIndex, resetControlsTimeout]);
+  }, [
+    currentSlideshowIndex,
+    images.length,
+    setCurrentSlideshowIndex,
+    resetControlsTimeout,
+  ]);
 
   // ============================================================================
   // Action Handlers
@@ -249,14 +270,17 @@ export default function CanvasScreen() {
     setShowShareSheet(false);
   }, []);
 
-  const handleShareComplete = useCallback((action: "share" | "download" | "copy") => {
-    const messages = {
-      share: "Image shared successfully!",
-      download: "Image saved to gallery!",
-      copy: "Link copied to clipboard!",
-    };
-    showToast(messages[action], "success");
-  }, [showToast]);
+  const handleShareComplete = useCallback(
+    (action: "share" | "download" | "copy") => {
+      const messages = {
+        share: "Image shared successfully!",
+        download: "Image saved to gallery!",
+        copy: "Link copied to clipboard!",
+      };
+      showToast(messages[action], "success");
+    },
+    [showToast],
+  );
 
   const handleShareError = useCallback((error: string) => {
     showToast(error, "error");
@@ -292,7 +316,9 @@ export default function CanvasScreen() {
                   router.back();
                 } else if (currentSlideshowIndex >= images.length - 1) {
                   // If we deleted the last image, go to the previous one
-                  setCurrentSlideshowIndex(Math.max(0, currentSlideshowIndex - 1));
+                  setCurrentSlideshowIndex(
+                    Math.max(0, currentSlideshowIndex - 1),
+                  );
                 }
               } else {
                 showToast("Failed to delete image", "error");
@@ -328,7 +354,14 @@ export default function CanvasScreen() {
     const createFallbackGesture = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mock: any = {};
-      const methods = ["onUpdate", "onEnd", "onStart", "onBegin", "onFinalize", "numberOfTaps"];
+      const methods = [
+        "onUpdate",
+        "onEnd",
+        "onStart",
+        "onBegin",
+        "onFinalize",
+        "numberOfTaps",
+      ];
       for (const method of methods) {
         mock[method] = () => mock;
       }
@@ -374,7 +407,10 @@ export default function CanvasScreen() {
           const threshold = SCREEN_WIDTH * 0.3;
           if (e.translationX > threshold && currentSlideshowIndex > 0) {
             runOnJS(goToPrevious)();
-          } else if (e.translationX < -threshold && currentSlideshowIndex < images.length - 1) {
+          } else if (
+            e.translationX < -threshold &&
+            currentSlideshowIndex < images.length - 1
+          ) {
             runOnJS(goToNext)();
           }
           translateX.value = withSpring(0);
@@ -404,8 +440,13 @@ export default function CanvasScreen() {
       });
 
     // Use optional chaining for Exclusive and Simultaneous as well
-    const simultaneous = Gesture.Simultaneous?.(pinchGesture, panGesture) ?? pinchGesture;
-    return Gesture.Exclusive?.(doubleTapGesture, simultaneous, singleTapGesture) ??
+    const simultaneous = Gesture.Simultaneous?.(pinchGesture, panGesture) ??
+      pinchGesture;
+    return Gesture.Exclusive?.(
+      doubleTapGesture,
+      simultaneous,
+      singleTapGesture,
+    ) ??
       doubleTapGesture;
   }, [
     currentSlideshowIndex,
@@ -476,9 +517,18 @@ export default function CanvasScreen() {
 
   if (!currentImage) {
     return (
-      <YStack flex={1} backgroundColor="black" justifyContent="center" alignItems="center">
+      <YStack
+        flex={1}
+        backgroundColor="black"
+        justifyContent="center"
+        alignItems="center"
+      >
         <Text color="white">No image to display</Text>
-        <Button marginTop="$4" onPress={() => router.back()} testID="go-back-button">
+        <Button
+          marginTop="$4"
+          onPress={() => router.back()}
+          testID="go-back-button"
+        >
           Go Back
         </Button>
       </YStack>
@@ -530,12 +580,18 @@ export default function CanvasScreen() {
 
         {/* Side Navigation */}
         {currentSlideshowIndex > 0 && (
-          <Pressable style={[styles.navButton, styles.navLeft]} onPress={goToPrevious}>
+          <Pressable
+            style={[styles.navButton, styles.navLeft]}
+            onPress={goToPrevious}
+          >
             <ChevronLeft size={32} color="white" />
           </Pressable>
         )}
         {currentSlideshowIndex < images.length - 1 && (
-          <Pressable style={[styles.navButton, styles.navRight]} onPress={goToNext}>
+          <Pressable
+            style={[styles.navButton, styles.navRight]}
+            onPress={goToNext}
+          >
             <ChevronRight size={32} color="white" />
           </Pressable>
         )}
@@ -554,11 +610,25 @@ export default function CanvasScreen() {
           gap="$4"
           backgroundColor="rgba(0,0,0,0.5)"
         >
-          <Button size="$3" chromeless circular icon={ZoomOut} color="white" onPress={zoomOut} />
+          <Button
+            size="$3"
+            chromeless
+            circular
+            icon={ZoomOut}
+            color="white"
+            onPress={zoomOut}
+          />
           <Text color="white" fontSize="$3">
             {Math.round(scale.value * 100)}%
           </Text>
-          <Button size="$3" chromeless circular icon={ZoomIn} color="white" onPress={zoomIn} />
+          <Button
+            size="$3"
+            chromeless
+            circular
+            icon={ZoomIn}
+            color="white"
+            onPress={zoomIn}
+          />
         </XStack>
       </Animated.View>
 

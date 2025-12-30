@@ -143,7 +143,8 @@ describe("NotificationItem", () => {
         <NotificationItem {...defaultProps} />,
       );
 
-      expect(getByText("Your image has been enhanced successfully.")).toBeTruthy();
+      expect(getByText("Your image has been enhanced successfully."))
+        .toBeTruthy();
     });
 
     it("shows unread indicator for unread notifications", () => {
@@ -182,7 +183,9 @@ describe("NotificationItem", () => {
       const { getByText } = renderWithProviders(
         <NotificationItem
           {...defaultProps}
-          notification={createMockNotification({ type: "enhancement_complete" })}
+          notification={createMockNotification({
+            type: "enhancement_complete",
+          })}
         />,
       );
 
@@ -242,7 +245,9 @@ describe("NotificationItem", () => {
         <NotificationItem {...defaultProps} notification={notification} />,
       );
 
-      expect(getByTestId("notification-item-timestamp").props.children).toBe("Just now");
+      expect(getByTestId("notification-item-timestamp").props.children).toBe(
+        "Just now",
+      );
     });
 
     it("shows minutes ago for notifications within an hour", () => {
@@ -255,7 +260,9 @@ describe("NotificationItem", () => {
         <NotificationItem {...defaultProps} notification={notification} />,
       );
 
-      expect(getByTestId("notification-item-timestamp").props.children).toBe("30m ago");
+      expect(getByTestId("notification-item-timestamp").props.children).toBe(
+        "30m ago",
+      );
     });
 
     it("shows hours ago for notifications within a day", () => {
@@ -268,7 +275,9 @@ describe("NotificationItem", () => {
         <NotificationItem {...defaultProps} notification={notification} />,
       );
 
-      expect(getByTestId("notification-item-timestamp").props.children).toBe("5h ago");
+      expect(getByTestId("notification-item-timestamp").props.children).toBe(
+        "5h ago",
+      );
     });
 
     it("shows days ago for notifications within a week", () => {
@@ -281,7 +290,9 @@ describe("NotificationItem", () => {
         <NotificationItem {...defaultProps} notification={notification} />,
       );
 
-      expect(getByTestId("notification-item-timestamp").props.children).toBe("3d ago");
+      expect(getByTestId("notification-item-timestamp").props.children).toBe(
+        "3d ago",
+      );
     });
 
     it("shows formatted date for older notifications", () => {

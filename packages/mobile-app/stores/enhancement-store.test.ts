@@ -26,13 +26,17 @@ jest.mock("../services/api/jobs", () => ({
 }));
 
 const mockedGetImages = getImages as jest.MockedFunction<typeof getImages>;
-const mockedGetJobStatus = getJobStatus as jest.MockedFunction<typeof getJobStatus>;
+const mockedGetJobStatus = getJobStatus as jest.MockedFunction<
+  typeof getJobStatus
+>;
 
 // ============================================================================
 // Test Data
 // ============================================================================
 
-const createMockImage = (overrides: Partial<EnhancedImage> = {}): EnhancedImage => ({
+const createMockImage = (
+  overrides: Partial<EnhancedImage> = {},
+): EnhancedImage => ({
   id: "image-123",
   userId: "user-456",
   name: "test-image.jpg",
@@ -50,7 +54,9 @@ const createMockImage = (overrides: Partial<EnhancedImage> = {}): EnhancedImage 
   ...overrides,
 });
 
-const createMockJob = (overrides: Partial<ImageEnhancementJob> = {}): ImageEnhancementJob => ({
+const createMockJob = (
+  overrides: Partial<ImageEnhancementJob> = {},
+): ImageEnhancementJob => ({
   id: "job-123",
   imageId: "image-456",
   userId: "user-789",
@@ -115,7 +121,10 @@ describe("useEnhancementStore", () => {
 
   describe("fetchRecentImages", () => {
     it("should fetch images successfully", async () => {
-      const mockImages = [createMockImage({ id: "img-1" }), createMockImage({ id: "img-2" })];
+      const mockImages = [
+        createMockImage({ id: "img-1" }),
+        createMockImage({ id: "img-2" }),
+      ];
 
       mockedGetImages.mockResolvedValue({
         data: {
@@ -566,7 +575,9 @@ describe("useEnhancementStore", () => {
       expect(result.current.currentJob?.id).toBe("job-456");
       expect(result.current.currentJob?.status).toBe("PENDING");
       expect(result.current.currentJob?.progress).toBe(0);
-      expect(result.current.currentJob?.statusMessage).toBe("Starting enhancement...");
+      expect(result.current.currentJob?.statusMessage).toBe(
+        "Starting enhancement...",
+      );
       expect(result.current.isPolling).toBe(true);
     });
   });
@@ -637,7 +648,9 @@ describe("useEnhancementStore", () => {
 
       expect(result.current.currentJob?.status).toBe("COMPLETED");
       expect(result.current.currentJob?.progress).toBe(100);
-      expect(result.current.currentJob?.resultUrl).toBe("https://example.com/enhanced.jpg");
+      expect(result.current.currentJob?.resultUrl).toBe(
+        "https://example.com/enhanced.jpg",
+      );
       expect(result.current.currentJob?.error).toBeNull();
       expect(result.current.currentJob?.completedAt).not.toBeNull();
       expect(result.current.isPolling).toBe(false);

@@ -145,7 +145,8 @@ describe("AccessibilityPage", () => {
     it("should render button role", () => {
       const { getByText } = render(<AccessibilityPage />);
       expect(getByText('accessibilityRole="button"')).toBeTruthy();
-      expect(getByText("Interactive elements that perform actions")).toBeTruthy();
+      expect(getByText("Interactive elements that perform actions"))
+        .toBeTruthy();
     });
 
     it("should render header role", () => {

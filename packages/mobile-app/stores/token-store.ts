@@ -27,7 +27,9 @@ interface TokenActions {
   updateBalance: (newBalance: number) => void;
   deductTokens: (amount: number) => void;
   addTokens: (amount: number) => void;
-  redeemVoucher: (code: string) => Promise<{ success: boolean; tokens?: number; error?: string; }>;
+  redeemVoucher: (
+    code: string,
+  ) => Promise<{ success: boolean; tokens?: number; error?: string; }>;
   startRegenTimer: () => void;
   stopRegenTimer: () => void;
 }
@@ -81,7 +83,9 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : "Failed to fetch balance",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to fetch balance",
       });
     }
   },
@@ -106,7 +110,10 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
     try {
       const response = await redeemVoucherApi(code);
       if (response.error || !response.data) {
-        return { success: false, error: response.error || "Failed to redeem voucher" };
+        return {
+          success: false,
+          error: response.error || "Failed to redeem voucher",
+        };
       }
 
       set({ balance: response.data.newBalance });
@@ -114,7 +121,9 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to redeem voucher",
+        error: error instanceof Error
+          ? error.message
+          : "Failed to redeem voucher",
       };
     }
   },

@@ -27,7 +27,9 @@ describe("opfs-node-adapter file operations", () => {
     });
 
     it("should throw error for non-existent file", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       mockDirectoryHandle.getFileHandle = vi.fn().mockRejectedValue(
         new Error("Not found"),
@@ -77,7 +79,9 @@ describe("opfs-node-adapter file operations", () => {
         { create: true },
       );
 
-      const fileHandle = await mockDirectoryHandle.getFileHandle("new-file.txt");
+      const fileHandle = await mockDirectoryHandle.getFileHandle(
+        "new-file.txt",
+      );
       const writable = await fileHandle.createWritable();
       expect(writable.write).toHaveBeenCalledWith("new content");
       expect(writable.close).toHaveBeenCalled();
@@ -100,12 +104,18 @@ describe("opfs-node-adapter file operations", () => {
 
       const fileHandle = await mockDirectoryHandle.getFileHandle("test.txt");
       const writable = await fileHandle.createWritable();
-      expect(writable.write).toHaveBeenCalledWith(existingContent + " appended");
+      expect(writable.write).toHaveBeenCalledWith(
+        existingContent + " appended",
+      );
     });
 
     it("should create file if it doesn't exist", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(
+        () => {},
+      );
 
       await appendFile("/new-append.txt", "new content");
       expect(mockDirectoryHandle.getFileHandle).toHaveBeenCalledWith(
@@ -133,11 +143,15 @@ describe("opfs-node-adapter file operations", () => {
     it("should copy a file", async () => {
       await copyFile("/test.txt", "/copy.txt");
 
-      const sourceFileHandle = await mockDirectoryHandle.getFileHandle("test.txt");
+      const sourceFileHandle = await mockDirectoryHandle.getFileHandle(
+        "test.txt",
+      );
       const sourceFile = await sourceFileHandle.getFile();
       expect(sourceFile.text).toHaveBeenCalled();
 
-      const destFileHandle = await mockDirectoryHandle.getFileHandle("copy.txt");
+      const destFileHandle = await mockDirectoryHandle.getFileHandle(
+        "copy.txt",
+      );
       const writable = await destFileHandle.createWritable();
       expect(writable.write).toHaveBeenCalled();
       expect(writable.close).toHaveBeenCalled();
@@ -148,11 +162,15 @@ describe("opfs-node-adapter file operations", () => {
     it("should rename a file", async () => {
       await rename("/test.txt", "/renamed.txt");
 
-      const sourceFileHandle = await mockDirectoryHandle.getFileHandle("test.txt");
+      const sourceFileHandle = await mockDirectoryHandle.getFileHandle(
+        "test.txt",
+      );
       const sourceFile = await sourceFileHandle.getFile();
       expect(sourceFile.text).toHaveBeenCalled();
 
-      const destFileHandle = await mockDirectoryHandle.getFileHandle("renamed.txt");
+      const destFileHandle = await mockDirectoryHandle.getFileHandle(
+        "renamed.txt",
+      );
       const writable = await destFileHandle.createWritable();
       expect(writable.write).toHaveBeenCalled();
 

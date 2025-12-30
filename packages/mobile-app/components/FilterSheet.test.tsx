@@ -65,7 +65,10 @@ jest.mock("tamagui", () => {
 
   // Create Checkbox mock with Indicator subcomponent
   const CheckboxComponent = ReactActual.forwardRef(
-    ({ children, testID, checked, onCheckedChange, ...props }: any, ref: any) => {
+    (
+      { children, testID, checked, onCheckedChange, ...props }: any,
+      ref: any,
+    ) => {
       return ReactActual.createElement(
         Pressable,
         {
@@ -679,7 +682,10 @@ describe("FilterSheet", () => {
       );
 
       // Check that local state matches props
-      expect(getByTestId("filter-sheet-album-album-1").props.accessibilityState?.checked).toBe(
+      expect(
+        getByTestId("filter-sheet-album-album-1").props.accessibilityState
+          ?.checked,
+      ).toBe(
         true,
       );
     });
