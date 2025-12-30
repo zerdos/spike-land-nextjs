@@ -3,22 +3,14 @@
  */
 
 // Core API client
-export { apiClient } from "./api-client";
-export type { ApiResponse, RequestOptions } from "./api-client";
+export type { ApiResponse } from "./api-client";
 
 // Authentication
 export { authService } from "./auth";
-export type {
-  AuthProvider,
-  AuthResult,
-  EmailVerificationResult,
-  PasswordResetResult,
-  SessionInfo,
-} from "./auth";
+export type { AuthProvider, AuthResult } from "./auth";
 
 // Push Notifications
 export {
-  cancelAllNotifications,
   cancelNotification,
   clearBadge,
   deleteNotification,
@@ -29,7 +21,6 @@ export {
   markNotificationAsRead,
   navigateFromNotification,
   registerDeviceWithServer,
-  registerForPushNotifications,
   scheduleDelayedNotification,
   scheduleLocalNotification,
   setBadgeCount,

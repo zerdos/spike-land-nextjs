@@ -52,18 +52,18 @@ export interface AuthResult {
   error?: string;
 }
 
-export interface SessionInfo {
+interface SessionInfo {
   user: User;
   expiresAt: string;
 }
 
-export interface PasswordResetResult {
+interface PasswordResetResult {
   success: boolean;
   message?: string;
   error?: string;
 }
 
-export interface EmailVerificationResult {
+interface EmailVerificationResult {
   success: boolean;
   message?: string;
   error?: string;

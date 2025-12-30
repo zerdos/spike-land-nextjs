@@ -15,7 +15,7 @@ export interface ApiResponse<T> {
   status: number;
 }
 
-export interface RequestOptions {
+interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   body?: unknown;
   headers?: Record<string, string>;

@@ -18,7 +18,6 @@ import type { ClassifiedError } from "./errors";
 const MAX_CONCURRENT_JOBS_PER_USER = 3;
 
 // Re-export error types for consumers
-export type { ClassifiedError } from "./errors";
 export { McpError, McpErrorCode } from "./errors";
 
 /**

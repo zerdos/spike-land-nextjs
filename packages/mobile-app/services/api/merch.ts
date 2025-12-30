@@ -5,14 +5,9 @@
 
 import type {
   AddToCartRequest,
-  CreateOrderRequest,
   MerchCategory,
-  MerchOrder,
-  MerchOrderItem,
-  MerchOrderStatus,
   MerchProduct,
   MerchVariant,
-  ShippingAddress,
 } from "@spike-npm-land/shared";
 import type { Cart } from "../../stores/cart-store";
 import { apiClient, ApiResponse } from "../api-client";
@@ -49,50 +44,6 @@ export interface AddToCartResponse {
 export interface UpdateCartItemResponse {
   success: boolean;
   cart: Cart;
-}
-
-export interface CheckoutInitResponse {
-  orderId: string;
-  orderNumber: string;
-  clientSecret: string;
-  summary: {
-    subtotal: number;
-    shipping: number;
-    shippingZone: string;
-    freeShippingThreshold: number;
-    total: number;
-    currency: string;
-    itemCount: number;
-  };
-}
-
-export interface OrderWithItems extends MerchOrder {
-  items: MerchOrderItemWithDetails[];
-  shippingAddress: ShippingAddress;
-  trackingNumber?: string;
-  trackingUrl?: string;
-}
-
-export interface MerchOrderItemWithDetails extends MerchOrderItem {
-  product: Pick<MerchProduct, "id" | "name" | "mockupTemplate">;
-  variant: Pick<MerchVariant, "id" | "name"> | null;
-}
-
-export interface OrdersResponse {
-  orders: OrderWithItems[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
-export interface ShippingRatesResponse {
-  rates: Array<{
-    id: string;
-    name: string;
-    cost: number;
-    estimatedDays: number;
-  }>;
-  freeShippingThreshold: number;
 }
 
 // ============================================================================
@@ -138,15 +89,6 @@ export async function getCategories(): Promise<
   return apiClient.get<CategoriesResponse>("/api/merch/categories");
 }
 
-/**
- * Get featured products
- */
-export async function getFeaturedProducts(): Promise<
-  ApiResponse<ProductListResponse>
-> {
-  return apiClient.get<ProductListResponse>("/api/merch/products/featured");
-}
-
 // ============================================================================
 // Cart API
 // ============================================================================
@@ -186,103 +128,6 @@ export async function removeCartItem(
   itemId: string,
 ): Promise<ApiResponse<{ success: boolean; }>> {
   return apiClient.delete<{ success: boolean; }>(`/api/merch/cart/${itemId}`);
-}
-
-/**
- * Clear cart
- */
-export async function clearCart(): Promise<ApiResponse<{ success: boolean; }>> {
-  return apiClient.delete<{ success: boolean; }>("/api/merch/cart");
-}
-
-// ============================================================================
-// Checkout API
-// ============================================================================
-
-/**
- * Get shipping rates for the current cart
- */
-export async function getShippingRates(
-  countryCode: string,
-): Promise<ApiResponse<ShippingRatesResponse>> {
-  return apiClient.get<ShippingRatesResponse>(
-    `/api/merch/shipping/rates?country=${countryCode}`,
-  );
-}
-
-/**
- * Initialize checkout and create order
- */
-export async function initializeCheckout(
-  request: CreateOrderRequest,
-): Promise<ApiResponse<CheckoutInitResponse>> {
-  return apiClient.post<CheckoutInitResponse>("/api/merch/checkout", {
-    shippingAddress: request.shippingAddress,
-    customerEmail: request.email,
-    customerPhone: request.phone,
-    notes: request.notes,
-  });
-}
-
-/**
- * Complete checkout with RevenueCat payment
- * Used for in-app purchases in the mobile app
- */
-export async function completeCheckoutWithIAP(
-  orderId: string,
-  purchaseToken: string,
-  productId: string,
-): Promise<ApiResponse<{ success: boolean; order: OrderWithItems; }>> {
-  return apiClient.post<{ success: boolean; order: OrderWithItems; }>(
-    `/api/merch/checkout/${orderId}/complete-iap`,
-    {
-      purchaseToken,
-      productId,
-    },
-  );
-}
-
-// ============================================================================
-// Orders API
-// ============================================================================
-
-/**
- * Get user's orders
- */
-export async function getOrders(params?: {
-  status?: MerchOrderStatus;
-  page?: number;
-  limit?: number;
-}): Promise<ApiResponse<OrdersResponse>> {
-  const searchParams = new URLSearchParams();
-  if (params?.status) searchParams.set("status", params.status);
-  if (params?.page) searchParams.set("page", String(params.page));
-  if (params?.limit) searchParams.set("limit", String(params.limit));
-
-  const query = searchParams.toString();
-  return apiClient.get<OrdersResponse>(
-    `/api/merch/orders${query ? `?${query}` : ""}`,
-  );
-}
-
-/**
- * Get a single order by ID
- */
-export async function getOrder(
-  orderId: string,
-): Promise<ApiResponse<OrderWithItems>> {
-  return apiClient.get<OrderWithItems>(`/api/merch/orders/${orderId}`);
-}
-
-/**
- * Cancel an order (only if still pending)
- */
-export async function cancelOrder(
-  orderId: string,
-): Promise<ApiResponse<{ success: boolean; }>> {
-  return apiClient.post<{ success: boolean; }>(
-    `/api/merch/orders/${orderId}/cancel`,
-  );
 }
 
 // ============================================================================

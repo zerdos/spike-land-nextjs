@@ -78,15 +78,23 @@ When(
     // Ensure sidebar is stable
     await expect(sidebar).toBeVisible();
 
-    // Use exact match to avoid matching partial text (e.g., "Brand" in "Pixel Brand Guidelines")
-    const link = sidebar.getByRole("link", { name: linkText, exact: true });
-    await expect(link).toBeVisible();
+    // Try exact match first, then fall back to partial match
+    // This handles cases like "← Back to App" where the link has an icon prefix
+    let link = sidebar.getByRole("link", { name: linkText, exact: true });
+    const exactVisible = await link.isVisible().catch(() => false);
+
+    if (!exactVisible) {
+      // Fall back to partial match for links with icons/prefixes
+      link = sidebar.locator("a").filter({ hasText: linkText });
+    }
+
+    await expect(link.first()).toBeVisible();
 
     // Wait for any potential animations or transitions
     await this.page.waitForTimeout(500);
 
     // Click and wait for navigation if it's a link
-    await link.click();
+    await link.first().click();
 
     // Note: We don't wait for URL change here as the next step usually verifies the page
   },

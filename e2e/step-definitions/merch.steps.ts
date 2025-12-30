@@ -66,7 +66,7 @@ async function mockCartWithItems(world: CustomWorld, itemCount: number = 1) {
     },
     image: {
       id: `e2e-image-${i + 1}`,
-      originalUrl: "https://placehold.co/600x400?text=Test+Image",
+      originalUrl: "https://placehold.co/600x400.png?text=Test+Image",
     },
     uploadedImageUrl: null,
   }));
@@ -437,7 +437,7 @@ async function mockCartWithQuantity(world: CustomWorld, quantity: number) {
     },
     image: {
       id: "e2e-image-1",
-      originalUrl: "https://placehold.co/600x400?text=Test+Image",
+      originalUrl: "https://placehold.co/600x400.png?text=Test+Image",
     },
     uploadedImageUrl: null,
   }];
@@ -724,7 +724,7 @@ Given(
                 variant: { id: "e2e-variant-1", name: "Medium", priceDelta: 0 },
                 image: {
                   id: "e2e-image-1",
-                  originalUrl: "https://placehold.co/600x400",
+                  originalUrl: "https://placehold.co/600x400.png",
                 },
                 uploadedImageUrl: null,
               }],
@@ -783,7 +783,7 @@ Given(
       variant: { id: `e2e-variant-${i + 1}`, name: "Medium", priceDelta: 0 },
       image: {
         id: `e2e-image-${i + 1}`,
-        originalUrl: "https://placehold.co/600x400",
+        originalUrl: "https://placehold.co/600x400.png",
       },
       uploadedImageUrl: null,
     }));

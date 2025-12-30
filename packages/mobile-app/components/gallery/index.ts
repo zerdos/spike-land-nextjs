@@ -4,4 +4,3 @@
 
 export { AlbumCard } from "./AlbumCard";
 export { ImageGrid } from "./ImageGrid";
-export { ImageThumbnail } from "./ImageThumbnail";
