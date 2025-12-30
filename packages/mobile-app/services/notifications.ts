@@ -14,7 +14,6 @@ import { apiClient } from "./api-client";
 export const isExpoGo = Constants.appOwnership === "expo";
 
 // Conditionally import expo-notifications (throws in Expo Go SDK 53+)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let Notifications: typeof import("expo-notifications") | null = null;
 if (!isExpoGo && Platform.OS !== "web") {
   // eslint-disable-next-line @typescript-eslint/no-require-imports

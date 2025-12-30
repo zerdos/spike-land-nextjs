@@ -404,7 +404,7 @@ export default function HomeScreen() {
   }, [fetchBalance, fetchRecentImages]);
 
   return (
-    <View flex={1} backgroundColor="#08080C">
+    <View flex={1} backgroundColor="#0f172a">
       <ScrollView
         refreshControl={
           <RefreshControl

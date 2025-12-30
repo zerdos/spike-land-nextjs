@@ -63,7 +63,7 @@ export function FeatureCard({
       bordered
       padding="$4"
       backgroundColor={isDark
-        ? "rgba(30, 30, 40, 0.6)"
+        ? "rgba(15, 23, 42, 0.6)" // Darker, bluer glass
         : "rgba(255, 255, 255, 0.8)"}
       borderColor={isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)"}
       borderRadius="$4"
@@ -161,10 +161,11 @@ const styles = StyleSheet.create({
   card: {
     // Glass morphism effect
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
     elevation: 4,
+    borderWidth: 1,
   },
   iconContainer: {
     shadowColor: "#000",
