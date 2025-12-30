@@ -8125,7 +8125,7 @@ __metadata:
     "@tamagui/font-inter": "npm:^1.142.0"
     "@tamagui/lucide-icons": "npm:^1.142.0"
     "@tamagui/shorthands": "npm:^1.142.0"
-    "@tanstack/react-query": "npm:^5.90.14"
+    "@tanstack/react-query": "npm:^5.90.15"
     "@testing-library/react-native": "npm:^13.3.3"
     "@types/jest": "npm:29.5.14"
     "@types/react": "npm:~19.1.10"
@@ -9982,21 +9982,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-core@npm:5.90.14":
-  version: 5.90.14
-  resolution: "@tanstack/query-core@npm:5.90.14"
-  checksum: 10c0/0f74cbf34bdd59d5ec0e138f1bb7566bf80d1b1c0f58b4ce45fe08fccdcbcf965d2e3327096644a45267d1e6178ea314f3a926aa598fcf0cbe6cdb7014327995
+"@tanstack/query-core@npm:5.90.15":
+  version: 5.90.15
+  resolution: "@tanstack/query-core@npm:5.90.15"
+  checksum: 10c0/8618a2002a25d0fbcfe4167918344aec1408a68dc641062b1045e3f47c46617bc0d5803758a49069ad46f8726802cb0a22f6cee4eb51838b8c4feb55e3fb8a05
   languageName: node
   linkType: hard
 
-"@tanstack/react-query@npm:^5.90.14":
-  version: 5.90.14
-  resolution: "@tanstack/react-query@npm:5.90.14"
+"@tanstack/react-query@npm:^5.90.15":
+  version: 5.90.15
+  resolution: "@tanstack/react-query@npm:5.90.15"
   dependencies:
-    "@tanstack/query-core": "npm:5.90.14"
+    "@tanstack/query-core": "npm:5.90.15"
   peerDependencies:
     react: ^18 || ^19
-  checksum: 10c0/edd0378d1b2425d5d2ebc67197378a7798ca422d91bc0312dfa574690d0f2b4ad310b00ed138e0184663c7662841982a552ccc61931166d18c041feb00d43456
+  checksum: 10c0/b661307a624d8566dd3d9c952a85e2036f96dce19347b4eeb96fdd4b4e32cfb2ae7a0f6e765c526a72a5635cf28f60e7b7abad17ce143f05382f845e0c5adaf4
   languageName: node
   linkType: hard
 
@@ -11489,27 +11489,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@workflow/astro@npm:4.0.0-beta.14":
-  version: 4.0.0-beta.14
-  resolution: "@workflow/astro@npm:4.0.0-beta.14"
+"@workflow/astro@npm:4.0.0-beta.15":
+  version: 4.0.0-beta.15
+  resolution: "@workflow/astro@npm:4.0.0-beta.15"
   dependencies:
     "@swc/core": "npm:1.15.3"
-    "@workflow/builders": "npm:4.0.1-beta.31"
+    "@workflow/builders": "npm:4.0.1-beta.32"
     "@workflow/rollup": "npm:4.0.0-beta.6"
     "@workflow/swc-plugin": "npm:4.0.1-beta.12"
     "@workflow/vite": "npm:4.0.0-beta.2"
     exsolve: "npm:^1.0.7"
     pathe: "npm:^2.0.3"
-  checksum: 10c0/32e7d384c897b19162219d9d3b0c39e6aa0cda8a541a58c72d2099bcb7d177ce171d17a34af6bcd75b2d5555bd76736d15603fe6351d23e5f1a178c0b25cfa6c
+  checksum: 10c0/f7a46d4073a3a54dc562895c32cda429044111753454ea9a1da8c069c61f6e6d9d985a9111b559ab7b783c2696b7f470c0520d42ec0b13ba2cd652802f1c3def
   languageName: node
   linkType: hard
 
-"@workflow/builders@npm:4.0.1-beta.31":
-  version: 4.0.1-beta.31
-  resolution: "@workflow/builders@npm:4.0.1-beta.31"
+"@workflow/builders@npm:4.0.1-beta.32":
+  version: 4.0.1-beta.32
+  resolution: "@workflow/builders@npm:4.0.1-beta.32"
   dependencies:
     "@swc/core": "npm:1.15.3"
-    "@workflow/core": "npm:4.0.1-beta.32"
+    "@workflow/core": "npm:4.0.1-beta.33"
     "@workflow/errors": "npm:4.0.1-beta.12"
     "@workflow/swc-plugin": "npm:4.0.1-beta.12"
     builtin-modules: "npm:5.0.0"
@@ -11519,25 +11519,25 @@ __metadata:
     esbuild: "npm:^0.25.11"
     find-up: "npm:7.0.0"
     tinyglobby: "npm:0.2.14"
-  checksum: 10c0/4abd0133fa7db4e2460c85d23fffebb938a286818bc770fa0ed6482b530cc67a20ca0d17b08bdf4ec292c20fee947143d8b653e3cdb52c7abb04f2733dc25ae0
+  checksum: 10c0/72fd182db44e80de030d9ec26db24ed6a9d4e379acd3bd4226e569f631ac6c6a016753fcf6c63442635a088427906be44e64eef03bc033f19dc8db5a5ec191a2
   languageName: node
   linkType: hard
 
-"@workflow/cli@npm:4.0.1-beta.38":
-  version: 4.0.1-beta.38
-  resolution: "@workflow/cli@npm:4.0.1-beta.38"
+"@workflow/cli@npm:4.0.1-beta.39":
+  version: 4.0.1-beta.39
+  resolution: "@workflow/cli@npm:4.0.1-beta.39"
   dependencies:
     "@oclif/core": "npm:4.0.0"
     "@oclif/plugin-help": "npm:6.2.31"
     "@swc/core": "npm:1.15.3"
-    "@workflow/builders": "npm:4.0.1-beta.31"
-    "@workflow/core": "npm:4.0.1-beta.32"
+    "@workflow/builders": "npm:4.0.1-beta.32"
+    "@workflow/core": "npm:4.0.1-beta.33"
     "@workflow/errors": "npm:4.0.1-beta.12"
     "@workflow/swc-plugin": "npm:4.0.1-beta.12"
     "@workflow/utils": "npm:4.0.1-beta.9"
     "@workflow/web": "npm:4.0.1-beta.22"
     "@workflow/world": "npm:4.0.1-beta.11"
-    "@workflow/world-local": "npm:4.0.1-beta.22"
+    "@workflow/world-local": "npm:4.0.1-beta.23"
     "@workflow/world-vercel": "npm:4.0.1-beta.24"
     boxen: "npm:8.0.1"
     builtin-modules: "npm:5.0.0"
@@ -11559,13 +11559,13 @@ __metadata:
   bin:
     wf: bin/run.js
     workflow: bin/run.js
-  checksum: 10c0/9c38bfeea07a7ddc88e53ee1f04b1666ead2f46c7e43b8150a794cff604cb102973cde5a9d2c2c246183cb4fc891d12fd1690303433d25f56f243c8adb1aec2f
+  checksum: 10c0/0b9bb37caa0fb41d7d65cd74aec1da04af10232e5452ae53e574745f982fa3476e235df184152a477e8dc8e7d58dc9fbf8875513092c2c08ed954cadc1850aa7
   languageName: node
   linkType: hard
 
-"@workflow/core@npm:4.0.1-beta.32":
-  version: 4.0.1-beta.32
-  resolution: "@workflow/core@npm:4.0.1-beta.32"
+"@workflow/core@npm:4.0.1-beta.33":
+  version: 4.0.1-beta.33
+  resolution: "@workflow/core@npm:4.0.1-beta.33"
   dependencies:
     "@aws-sdk/credential-provider-web-identity": "npm:3.609.0"
     "@jridgewell/trace-mapping": "npm:0.3.31"
@@ -11575,7 +11575,7 @@ __metadata:
     "@workflow/errors": "npm:4.0.1-beta.12"
     "@workflow/utils": "npm:4.0.1-beta.9"
     "@workflow/world": "npm:4.0.1-beta.11"
-    "@workflow/world-local": "npm:4.0.1-beta.22"
+    "@workflow/world-local": "npm:4.0.1-beta.23"
     "@workflow/world-vercel": "npm:4.0.1-beta.24"
     debug: "npm:4.4.3"
     devalue: "npm:5.6.0"
@@ -11589,7 +11589,7 @@ __metadata:
   peerDependenciesMeta:
     "@opentelemetry/api":
       optional: true
-  checksum: 10c0/4c7eadd83bb99e869392d37d21e4aff055e9d8f0174dd5a2e031aa6c98927804ca9373f38885b874174b849ed49a1bb082d533ebbdf6b420c6d23728033a5759
+  checksum: 10c0/f414b925c3cc113c7b348fd51e1b0091c535ec930c64aee5586cb3c5ede08caaf2bc7146be2b84a34806c5919bfe9ee39efe4f5ae27c1c9299e0fd5fafb69530
   languageName: node
   linkType: hard
 
@@ -11603,46 +11603,46 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@workflow/next@npm:4.0.1-beta.36":
-  version: 4.0.1-beta.36
-  resolution: "@workflow/next@npm:4.0.1-beta.36"
+"@workflow/next@npm:4.0.1-beta.37":
+  version: 4.0.1-beta.37
+  resolution: "@workflow/next@npm:4.0.1-beta.37"
   dependencies:
     "@swc/core": "npm:1.15.3"
-    "@workflow/builders": "npm:4.0.1-beta.31"
-    "@workflow/core": "npm:4.0.1-beta.32"
+    "@workflow/builders": "npm:4.0.1-beta.32"
+    "@workflow/core": "npm:4.0.1-beta.33"
     "@workflow/swc-plugin": "npm:4.0.1-beta.12"
   peerDependencies:
     next: ">13"
   peerDependenciesMeta:
     next:
       optional: true
-  checksum: 10c0/c51a2a0fa5dd4f2176b0a09f0db5965af08eee3c58484ac8e3f6e5ceee1ac19618a0a3031b3aa1552c9281bb75510059e6a0f961dc16ada1bdc5c2392ba67ec9
+  checksum: 10c0/404ca6ffa12ad54decd415a7e00959b819e26b2730790b41dd03a52f0faafebbcf65d5ef8be29023794477eaa36f85a9d1245b76fc96fe69e6c99e472d732748
   languageName: node
   linkType: hard
 
-"@workflow/nitro@npm:4.0.1-beta.35":
-  version: 4.0.1-beta.35
-  resolution: "@workflow/nitro@npm:4.0.1-beta.35"
+"@workflow/nitro@npm:4.0.1-beta.36":
+  version: 4.0.1-beta.36
+  resolution: "@workflow/nitro@npm:4.0.1-beta.36"
   dependencies:
     "@swc/core": "npm:1.15.3"
-    "@workflow/builders": "npm:4.0.1-beta.31"
-    "@workflow/core": "npm:4.0.1-beta.32"
+    "@workflow/builders": "npm:4.0.1-beta.32"
+    "@workflow/core": "npm:4.0.1-beta.33"
     "@workflow/rollup": "npm:4.0.0-beta.6"
     "@workflow/swc-plugin": "npm:4.0.1-beta.12"
     "@workflow/vite": "npm:4.0.0-beta.2"
     exsolve: "npm:1.0.7"
     pathe: "npm:2.0.3"
-  checksum: 10c0/b450b72cf3b5726681d8671050f82aed99615e2f8cd5f3c96c3cb9209cbad13f1eb0ea571ffb70b104325cf30218a75207f9013555b292cfb76d403ddffd61b2
+  checksum: 10c0/81cf533d98ab3fce890725b2a85ed9b390117a630b0aaf41bfecac5619c6c44705e51de96e5a1ff26ba73ae4b5ad0438292ff998917020b60dc032253c31862b
   languageName: node
   linkType: hard
 
-"@workflow/nuxt@npm:4.0.1-beta.24":
-  version: 4.0.1-beta.24
-  resolution: "@workflow/nuxt@npm:4.0.1-beta.24"
+"@workflow/nuxt@npm:4.0.1-beta.25":
+  version: 4.0.1-beta.25
+  resolution: "@workflow/nuxt@npm:4.0.1-beta.25"
   dependencies:
     "@nuxt/kit": "npm:4.2.0"
-    "@workflow/nitro": "npm:4.0.1-beta.35"
-  checksum: 10c0/2da042554a69e42579e86c3a7b160ac6cce48c986ad114fb4d49674ba9dbb4b57f15628168a546d8e7cc64f2622fdd2b67551356e76d0754ec4f300a2704570a
+    "@workflow/nitro": "npm:4.0.1-beta.36"
+  checksum: 10c0/c3ecd55e1712fd2cadbf43a43f5e10da1526c08dde39e14126aa2293a548766950828e162166eb2bda4f8b6c4db1e650fda97b41e1c3e68cdb1c059533b5cef5
   languageName: node
   linkType: hard
 
@@ -11657,19 +11657,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@workflow/sveltekit@npm:4.0.0-beta.29":
-  version: 4.0.0-beta.29
-  resolution: "@workflow/sveltekit@npm:4.0.0-beta.29"
+"@workflow/sveltekit@npm:4.0.0-beta.30":
+  version: 4.0.0-beta.30
+  resolution: "@workflow/sveltekit@npm:4.0.0-beta.30"
   dependencies:
     "@swc/core": "npm:1.15.3"
-    "@workflow/builders": "npm:4.0.1-beta.31"
+    "@workflow/builders": "npm:4.0.1-beta.32"
     "@workflow/rollup": "npm:4.0.0-beta.6"
     "@workflow/swc-plugin": "npm:4.0.1-beta.12"
     "@workflow/vite": "npm:4.0.0-beta.2"
     exsolve: "npm:^1.0.7"
     fs-extra: "npm:^11.3.2"
     pathe: "npm:^2.0.3"
-  checksum: 10c0/673e089e7a3b789d177c6e5e07a37c3886c4ed8d2ce1aa3509cd648ee964bd1bfa3c055712e7bb8815812c139ec369a96bba26971b095e4a030a17de6b60b2c2
+  checksum: 10c0/483cf809e642abd43eece9d868bbfd1f0715c09cf26f2c4defa529ae3aba79750da422896869c2e9c5696e361b552348a4854a59b8a9a172da7eb228ba134e58
   languageName: node
   linkType: hard
 
@@ -11718,9 +11718,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@workflow/world-local@npm:4.0.1-beta.22":
-  version: 4.0.1-beta.22
-  resolution: "@workflow/world-local@npm:4.0.1-beta.22"
+"@workflow/world-local@npm:4.0.1-beta.23":
+  version: 4.0.1-beta.23
+  resolution: "@workflow/world-local@npm:4.0.1-beta.23"
   dependencies:
     "@vercel/queue": "npm:0.0.0-alpha.33"
     "@workflow/errors": "npm:4.0.1-beta.12"
@@ -11735,7 +11735,7 @@ __metadata:
   peerDependenciesMeta:
     "@opentelemetry/api":
       optional: true
-  checksum: 10c0/66c6468d5d20ae54c44e67d45e8a012b631dc3c7192db920e22b397c70988a837b0c5d2c9c063183170a83a4f485b4f75a6c9a7ae8602032743cbaa3081f1b43
+  checksum: 10c0/0c5e4baaa4c191e1f40cc08ee3a6ad7108c0b16855710c4cd39498c8ddda9682c6b3ff7709367cbf697098946285667ea4f83fc2edc789f3effd46e9c504c09d
   languageName: node
   linkType: hard
 
@@ -27170,7 +27170,7 @@ __metadata:
     vercel: "npm:^50.1.3"
     vitest: "npm:^4.0.16"
     wait-on: "npm:^8.0.4"
-    workflow: "npm:4.0.1-beta.38"
+    workflow: "npm:4.0.1-beta.39"
     zod: "npm:^4.2.1"
   languageName: unknown
   linkType: soft
@@ -27734,19 +27734,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"workflow@npm:4.0.1-beta.38":
-  version: 4.0.1-beta.38
-  resolution: "workflow@npm:4.0.1-beta.38"
+"workflow@npm:4.0.1-beta.39":
+  version: 4.0.1-beta.39
+  resolution: "workflow@npm:4.0.1-beta.39"
   dependencies:
-    "@workflow/astro": "npm:4.0.0-beta.14"
-    "@workflow/cli": "npm:4.0.1-beta.38"
-    "@workflow/core": "npm:4.0.1-beta.32"
+    "@workflow/astro": "npm:4.0.0-beta.15"
+    "@workflow/cli": "npm:4.0.1-beta.39"
+    "@workflow/core": "npm:4.0.1-beta.33"
     "@workflow/errors": "npm:4.0.1-beta.12"
-    "@workflow/next": "npm:4.0.1-beta.36"
-    "@workflow/nitro": "npm:4.0.1-beta.35"
-    "@workflow/nuxt": "npm:4.0.1-beta.24"
+    "@workflow/next": "npm:4.0.1-beta.37"
+    "@workflow/nitro": "npm:4.0.1-beta.36"
+    "@workflow/nuxt": "npm:4.0.1-beta.25"
     "@workflow/rollup": "npm:4.0.0-beta.6"
-    "@workflow/sveltekit": "npm:4.0.0-beta.29"
+    "@workflow/sveltekit": "npm:4.0.0-beta.30"
     "@workflow/typescript-plugin": "npm:4.0.1-beta.4"
     ms: "npm:2.1.3"
   peerDependencies:
@@ -27757,7 +27757,7 @@ __metadata:
   bin:
     wf: bin/run.js
     workflow: bin/run.js
-  checksum: 10c0/f71217ab55902808abb031991e612d7abc7577c7bc45c1ffb99e06f0e4fe2f32c7a253bae2fa2adedc969d31404601fe7504f468189301a2a101bc4943e0c2b8
+  checksum: 10c0/982fe4f0299ec22373e3d8db32c96b9615ad4145264ec22fc710531b558ca1479a82442b11aefdc13a7297b80144e2130d2003f9cff2fa4add78e82b6229f82d
   languageName: node
   linkType: hard
 
