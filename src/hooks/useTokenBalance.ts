@@ -76,10 +76,6 @@ export function useTokenBalance(options?: { autoRefreshOnFocus?: boolean; }) {
   const lastFetchTimeRef = useRef<number>(0);
 
   const fetchBalance = useCallback(async () => {
-    // Prevent multiple simultaneous fetches if already loading and less than 1s passed
-    // But we need to allow manual refetch even if loading?
-    // actually, let's just stick to the debounce logic
-
     setIsLoading(true);
 
     const { data: response, error: fetchError } = await tryCatch(

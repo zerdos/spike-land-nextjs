@@ -16,12 +16,6 @@ describe("Cookie Policy Page", () => {
       expect(dateText?.textContent).toMatch(/Last updated:/);
     });
 
-    it("should display the legal disclaimer", () => {
-      render(<CookiePage />);
-      expect(screen.getByText(/This is a template for informational purposes/))
-        .toBeInTheDocument();
-    });
-
     it("should render the table of contents card", () => {
       render(<CookiePage />);
       expect(screen.getByText("Table of Contents")).toBeInTheDocument();

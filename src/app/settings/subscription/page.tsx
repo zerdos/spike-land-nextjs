@@ -155,16 +155,9 @@ export default function SubscriptionPage() {
         </Link>
         <h1 className="text-3xl font-bold tracking-tight">Subscription</h1>
         <p className="text-muted-foreground mt-2">
-          Manage your subscription and billings
+          Manage your subscription and billing
         </p>
       </div>
-
-      {/* Errors handled by toast, but kept inline if severe or persistent */}
-      {(tierError || upgradeError || downgradeError || purchaseError) && (
-        <div className="hidden">
-          {/* Errors are handled via toast now, keeping this structure if we need to revert or debug */}
-        </div>
-      )}
 
       {/* Current plan summary */}
       <Card className="mb-8" data-testid="current-plan-card">

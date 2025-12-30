@@ -31,7 +31,7 @@ export const TIER_DISPLAY_NAMES: Record<SubscriptionTier, string> = {
 
 /**
  * Order of tiers for progressive upgrades
- * Users must upgrade sequentially through this list
+ * Users can upgrade to any higher tier (skipping allowed)
  */
 export const TIER_ORDER: SubscriptionTier[] = [
   SubscriptionTier.FREE,
@@ -164,7 +164,7 @@ export class TierManager {
 
   /**
    * Check if upgrade from currentTier to targetTier is valid
-   * Upgrades must be sequential (e.g., FREE -> BASIC, not FREE -> PREMIUM)
+   * Allows upgrading to any higher tier (e.g., FREE -> PREMIUM is valid)
    */
   static canUpgradeTo(
     currentTier: SubscriptionTier,
