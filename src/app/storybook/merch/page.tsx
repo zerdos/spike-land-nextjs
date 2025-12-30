@@ -62,12 +62,42 @@ const sizeVariants = [
 ];
 
 const attributeVariants = [
-  { id: "attr-1", name: "Black / S", priceDelta: 0, attributes: { color: "Black", size: "S" } },
-  { id: "attr-2", name: "Black / M", priceDelta: 0, attributes: { color: "Black", size: "M" } },
-  { id: "attr-3", name: "Black / L", priceDelta: 2, attributes: { color: "Black", size: "L" } },
-  { id: "attr-4", name: "White / S", priceDelta: 0, attributes: { color: "White", size: "S" } },
-  { id: "attr-5", name: "White / M", priceDelta: 0, attributes: { color: "White", size: "M" } },
-  { id: "attr-6", name: "White / L", priceDelta: 2, attributes: { color: "White", size: "L" } },
+  {
+    id: "attr-1",
+    name: "Black / S",
+    priceDelta: 0,
+    attributes: { color: "Black", size: "S" },
+  },
+  {
+    id: "attr-2",
+    name: "Black / M",
+    priceDelta: 0,
+    attributes: { color: "Black", size: "M" },
+  },
+  {
+    id: "attr-3",
+    name: "Black / L",
+    priceDelta: 2,
+    attributes: { color: "Black", size: "L" },
+  },
+  {
+    id: "attr-4",
+    name: "White / S",
+    priceDelta: 0,
+    attributes: { color: "White", size: "S" },
+  },
+  {
+    id: "attr-5",
+    name: "White / M",
+    priceDelta: 0,
+    attributes: { color: "White", size: "M" },
+  },
+  {
+    id: "attr-6",
+    name: "White / L",
+    priceDelta: 2,
+    attributes: { color: "White", size: "L" },
+  },
 ];
 
 // All order statuses
@@ -169,7 +199,11 @@ export default function MerchPage() {
               <p className="text-sm font-medium mb-3">Without Icons</p>
               <div className="flex flex-wrap gap-3">
                 {orderStatuses.map((status) => (
-                  <OrderStatusBadge key={status} status={status} showIcon={false} />
+                  <OrderStatusBadge
+                    key={status}
+                    status={status}
+                    showIcon={false}
+                  />
                 ))}
               </div>
             </div>
@@ -244,7 +278,9 @@ export default function MerchPage() {
               </p>
               <p className="text-sm mt-2">
                 Visit the{" "}
-                <Link href="/merch" className="text-primary hover:underline">Merch Shop</Link>{" "}
+                <Link href="/merch" className="text-primary hover:underline">
+                  Merch Shop
+                </Link>{" "}
                 to see it in action.
               </p>
             </div>

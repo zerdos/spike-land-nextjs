@@ -461,22 +461,28 @@ export default function CheckoutPage() {
                       <span className="text-muted-foreground">
                         Subtotal ({summary.itemCount} items)
                       </span>
-                      <span data-testid="order-subtotal">{formatPrice(summary.subtotal)}</span>
+                      <span data-testid="order-subtotal">
+                        {formatPrice(summary.subtotal)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">
                         Shipping ({summary.shippingZone})
                       </span>
                       <span data-testid="shipping-cost">
-                        {summary.shipping === 0 ? <span className="text-green-600">FREE</span> : (
-                          formatPrice(summary.shipping)
-                        )}
+                        {summary.shipping === 0
+                          ? <span className="text-green-600">FREE</span>
+                          : (
+                            formatPrice(summary.shipping)
+                          )}
                       </span>
                     </div>
                     <Separator />
                     <div className="flex justify-between text-lg font-semibold">
                       <span>Total</span>
-                      <span data-testid="order-total">{formatPrice(summary.total)}</span>
+                      <span data-testid="order-total">
+                        {formatPrice(summary.total)}
+                      </span>
                     </div>
                   </>
                 )

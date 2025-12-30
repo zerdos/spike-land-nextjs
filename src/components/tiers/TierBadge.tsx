@@ -70,7 +70,9 @@ export function TierBadge({
 }: TierBadgeProps) {
   // Normalize tier to uppercase and validate
   const normalizedTier = (tier?.toUpperCase() || "FREE") as TierType;
-  const validTier = TIER_DISPLAY_NAMES[normalizedTier] ? normalizedTier : "FREE";
+  const validTier = TIER_DISPLAY_NAMES[normalizedTier]
+    ? normalizedTier
+    : "FREE";
 
   const styles = TIER_STYLES[validTier];
   const displayName = TIER_DISPLAY_NAMES[validTier];

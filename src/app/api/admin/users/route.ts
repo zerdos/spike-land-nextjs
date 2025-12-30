@@ -31,7 +31,9 @@ async function handleGetUsers(request: NextRequest): Promise<NextResponse> {
   );
 
   if (adminError) {
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
     return NextResponse.json(
@@ -187,7 +189,9 @@ async function handlePatchUser(request: NextRequest): Promise<NextResponse> {
   );
 
   if (adminError) {
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
     return NextResponse.json(
@@ -396,7 +400,9 @@ async function handleDeleteUser(request: NextRequest): Promise<NextResponse> {
   );
 
   if (adminError) {
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
     return NextResponse.json(

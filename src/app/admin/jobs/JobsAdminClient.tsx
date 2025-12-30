@@ -341,7 +341,8 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
       setShowModifyDialog(false);
 
       // Refresh jobs list
-      const status = STATUS_TABS.find((t) => t.key === activeTab)?.status ?? null;
+      const status = STATUS_TABS.find((t) => t.key === activeTab)?.status ??
+        null;
       fetchJobs(status, activeType, pagination.page, searchQuery);
     } catch (err) {
       setActionMessage({
@@ -678,7 +679,9 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                       originalUrl={selectedJob.inputUrl}
                       enhancedUrl={selectedJob.outputUrl}
                       originalLabel="Original"
-                      enhancedLabel={selectedJob.source === "mcp" ? "Generated" : "Enhanced"}
+                      enhancedLabel={selectedJob.source === "mcp"
+                        ? "Generated"
+                        : "Enhanced"}
                       width={selectedJob.outputWidth || 16}
                       height={selectedJob.outputHeight || 9}
                     />
@@ -829,7 +832,10 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                         size="sm"
                         onClick={() => {
                           navigator.clipboard.writeText(selectedJob.prompt!);
-                          setActionMessage({ type: "success", text: "Prompt copied!" });
+                          setActionMessage({
+                            type: "success",
+                            text: "Prompt copied!",
+                          });
                           setTimeout(() => setActionMessage(null), 2000);
                         }}
                       >
@@ -869,23 +875,34 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                   <div className="grid gap-1 text-xs font-mono">
                     <div className="flex justify-between">
                       <span className="text-neutral-500">Job</span>
-                      <span className="truncate max-w-[180px]" title={selectedJob.id}>
+                      <span
+                        className="truncate max-w-[180px]"
+                        title={selectedJob.id}
+                      >
                         {selectedJob.id}
                       </span>
                     </div>
                     {/* Enhancement-specific IDs */}
-                    {selectedJob.source === "enhancement" && selectedJob.imageId && (
+                    {selectedJob.source === "enhancement" &&
+                      selectedJob.imageId && (
                       <div className="flex justify-between">
                         <span className="text-neutral-500">Image</span>
-                        <span className="truncate max-w-[180px]" title={selectedJob.imageId}>
+                        <span
+                          className="truncate max-w-[180px]"
+                          title={selectedJob.imageId}
+                        >
                           {selectedJob.imageId}
                         </span>
                       </div>
                     )}
-                    {selectedJob.source === "enhancement" && selectedJob.workflowRunId && (
+                    {selectedJob.source === "enhancement" &&
+                      selectedJob.workflowRunId && (
                       <div className="flex justify-between">
                         <span className="text-neutral-500">Workflow</span>
-                        <span className="truncate max-w-[180px]" title={selectedJob.workflowRunId}>
+                        <span
+                          className="truncate max-w-[180px]"
+                          title={selectedJob.workflowRunId}
+                        >
                           {selectedJob.workflowRunId}
                         </span>
                       </div>
@@ -894,25 +911,34 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                     {selectedJob.source === "mcp" && selectedJob.apiKeyId && (
                       <div className="flex justify-between">
                         <span className="text-neutral-500">API Key</span>
-                        <span>{selectedJob.apiKeyName || selectedJob.apiKeyId}</span>
+                        <span>
+                          {selectedJob.apiKeyName || selectedJob.apiKeyId}
+                        </span>
                       </div>
                     )}
                     {selectedJob.source === "mcp" && selectedJob.inputR2Key && (
                       <div className="flex justify-between">
                         <span className="text-neutral-500">Input R2</span>
-                        <span className="truncate max-w-[180px]" title={selectedJob.inputR2Key}>
+                        <span
+                          className="truncate max-w-[180px]"
+                          title={selectedJob.inputR2Key}
+                        >
                           {selectedJob.inputR2Key}
                         </span>
                       </div>
                     )}
-                    {selectedJob.source === "mcp" && selectedJob.outputR2Key && (
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Output R2</span>
-                        <span className="truncate max-w-[180px]" title={selectedJob.outputR2Key}>
-                          {selectedJob.outputR2Key}
-                        </span>
-                      </div>
-                    )}
+                    {selectedJob.source === "mcp" && selectedJob.outputR2Key &&
+                      (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Output R2</span>
+                          <span
+                            className="truncate max-w-[180px]"
+                            title={selectedJob.outputR2Key}
+                          >
+                            {selectedJob.outputR2Key}
+                          </span>
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>
@@ -926,9 +952,11 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
           <DialogHeader>
             <DialogTitle>Modify & Run</DialogTitle>
             <DialogDescription>
-              Edit the prompt and create a new{" "}
-              {selectedJob?.mcpJobType === "MODIFY" ? "modification" : "generation"} job.
-              {selectedJob?.mcpJobType === "MODIFY" && " The original input image will be used."}
+              Edit the prompt and create a new {selectedJob?.mcpJobType === "MODIFY"
+                ? "modification"
+                : "generation"} job.
+              {selectedJob?.mcpJobType === "MODIFY" &&
+                " The original input image will be used."}
             </DialogDescription>
           </DialogHeader>
 

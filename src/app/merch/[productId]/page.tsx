@@ -54,7 +54,9 @@ async function getProduct(productId: string) {
   };
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: PageProps,
+): Promise<Metadata> {
   const { productId } = await params;
   const product = await getProduct(productId);
 

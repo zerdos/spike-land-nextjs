@@ -67,15 +67,20 @@ describe("BeforeAfterGalleryClient", () => {
     await waitFor(() => {
       // Check if the "All" tab is inactive
       expect(screen.getByText("All")).toHaveAttribute("data-state", "inactive");
-      expect(screen.getByText("Portrait")).toHaveAttribute("data-state", "active");
+      expect(screen.getByText("Portrait")).toHaveAttribute(
+        "data-state",
+        "active",
+      );
 
       // Check sliders
       const sliders = screen.getAllByTestId("comparison-slider");
       expect(sliders).toHaveLength(1);
-      expect(screen.getByText("Original: /orig1.jpg, Enhanced: /enh1.jpg")).toBeInTheDocument();
+      expect(screen.getByText("Original: /orig1.jpg, Enhanced: /enh1.jpg"))
+        .toBeInTheDocument();
     });
 
-    expect(screen.queryByText("Original: /orig2.jpg, Enhanced: /enh2.jpg")).not.toBeInTheDocument();
+    expect(screen.queryByText("Original: /orig2.jpg, Enhanced: /enh2.jpg")).not
+      .toBeInTheDocument();
   });
 
   it("renders correctly with empty items", () => {

@@ -60,13 +60,16 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
   const effectiveTier = isAnonymous ? "FREE" : selectedTier;
   const tokenCost = ENHANCEMENT_COSTS[effectiveTier];
 
-  const canCreateMix = image1 !== null && image2 !== null && !activeJobId && !isCreatingMix;
+  const canCreateMix = image1 !== null && image2 !== null && !activeJobId &&
+    !isCreatingMix;
   // FREE tier always has enough tokens (costs 0), anonymous users always have enough
-  const hasEnoughTokens = isAnonymous || tokenCost === 0 || balance >= tokenCost;
+  const hasEnoughTokens = isAnonymous || tokenCost === 0 ||
+    balance >= tokenCost;
 
   // Check if we need to upload images first (both must be gallery images OR we handle uploads)
   // For anonymous users, we always need to upload
-  const hasUploadedImages = isAnonymous || image1?.type === "upload" || image2?.type === "upload";
+  const hasUploadedImages = isAnonymous || image1?.type === "upload" ||
+    image2?.type === "upload";
 
   const handleImage1Select = useCallback((image: SelectedImage) => {
     setImage1(image);
@@ -81,7 +84,15 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
   }, []);
 
   const handleSelectorSelect = useCallback(
-    (selectedImg: { id: string; url: string; name: string; width: number; height: number; }) => {
+    (
+      selectedImg: {
+        id: string;
+        url: string;
+        name: string;
+        width: number;
+        height: number;
+      },
+    ) => {
       // Convert to GalleryImage type
       const galleryImage: GalleryImage = {
         type: "gallery",
@@ -210,7 +221,14 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
       setIsCreatingMix(false);
       setNeedsUpload(false);
     }
-  }, [image1, image2, effectiveTier, isAnonymous, refetchBalance, hasUploadedImages]);
+  }, [
+    image1,
+    image2,
+    effectiveTier,
+    isAnonymous,
+    refetchBalance,
+    hasUploadedImages,
+  ]);
 
   const handleMixComplete = useCallback(
     (_result: MixResult) => {
@@ -325,7 +343,9 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
               image={image1}
               onImageSelect={handleImage1Select}
               onImageClear={handleClearImage1}
-              onOpenGallery={isAnonymous ? undefined : () => handleOpenGallery("image1")}
+              onOpenGallery={isAnonymous
+                ? undefined
+                : () => handleOpenGallery("image1")}
               disabled={activeJobId !== null}
             />
             <ImageSlot
@@ -333,7 +353,9 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
               image={image2}
               onImageSelect={handleImage2Select}
               onImageClear={handleClearImage2}
-              onOpenGallery={isAnonymous ? undefined : () => handleOpenGallery("image2")}
+              onOpenGallery={isAnonymous
+                ? undefined
+                : () => handleOpenGallery("image2")}
               disabled={activeJobId !== null}
             />
           </div>
@@ -449,17 +471,23 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                     <span
                       className={cn(
                         "text-sm font-medium",
-                        effectiveTier === "FREE" ? "text-emerald-400" : "text-muted-foreground",
+                        effectiveTier === "FREE"
+                          ? "text-emerald-400"
+                          : "text-muted-foreground",
                       )}
                     >
                       Free Tier
                     </span>
-                    <span className="text-xs text-muted-foreground">Nano Quality</span>
+                    <span className="text-xs text-muted-foreground">
+                      Nano Quality
+                    </span>
                   </div>
                   <span
                     className={cn(
                       "text-sm font-semibold",
-                      effectiveTier === "FREE" ? "text-emerald-400" : "text-muted-foreground",
+                      effectiveTier === "FREE"
+                        ? "text-emerald-400"
+                        : "text-muted-foreground",
                     )}
                   >
                     0 tokens
@@ -478,23 +506,31 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
                       <Crown
                         className={cn(
                           "h-4 w-4",
-                          effectiveTier === "TIER_1K" ? "text-amber-500" : "text-muted-foreground",
+                          effectiveTier === "TIER_1K"
+                            ? "text-amber-500"
+                            : "text-muted-foreground",
                         )}
                       />
                       <span
                         className={cn(
                           "text-sm font-medium",
-                          effectiveTier === "TIER_1K" ? "text-amber-400" : "text-muted-foreground",
+                          effectiveTier === "TIER_1K"
+                            ? "text-amber-400"
+                            : "text-muted-foreground",
                         )}
                       >
                         Premium Tier
                       </span>
-                      <span className="text-xs text-muted-foreground">1K Quality</span>
+                      <span className="text-xs text-muted-foreground">
+                        1K Quality
+                      </span>
                     </div>
                     <span
                       className={cn(
                         "text-sm font-semibold",
-                        effectiveTier === "TIER_1K" ? "text-amber-400" : "text-muted-foreground",
+                        effectiveTier === "TIER_1K"
+                          ? "text-amber-400"
+                          : "text-muted-foreground",
                       )}
                     >
                       2 tokens
@@ -522,7 +558,8 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
               </div>
 
               {/* Only show "not enough tokens" for paid tiers - not for anonymous */}
-              {!isAnonymous && tokenCost > 0 && !hasEnoughTokens && !isBalanceLoading && (
+              {!isAnonymous && tokenCost > 0 && !hasEnoughTokens &&
+                !isBalanceLoading && (
                 <>
                   <Separator />
                   <div className="space-y-3">
@@ -561,9 +598,7 @@ export function PhotoMixClient({ isAnonymous = false }: PhotoMixClientProps) {
           onOpenChange={(open) => !open && setSelectorTarget(null)}
           onSelect={handleSelectorSelect}
           excludeImageId={selectorTarget === "image1"
-            ? image2?.type === "gallery"
-              ? image2.id
-              : undefined
+            ? image2?.type === "gallery" ? image2.id : undefined
             : image1?.type === "gallery"
             ? image1.id
             : undefined}

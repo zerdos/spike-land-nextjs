@@ -277,7 +277,9 @@ export async function POST(request: NextRequest) {
     if (createError || !blendSourceImage) {
       requestLogger.error(
         "Failed to create blend source image record",
-        createError instanceof Error ? createError : new Error("Failed to create record"),
+        createError instanceof Error
+          ? createError
+          : new Error("Failed to create record"),
         { targetImageId: imageId, uploadResult },
       );
       return NextResponse.json(
@@ -375,7 +377,9 @@ export async function POST(request: NextRequest) {
     if (bufferError || !arrayBuffer) {
       requestLogger.error(
         "Failed to read blend source image data",
-        bufferError instanceof Error ? bufferError : new Error("Buffer read failed"),
+        bufferError instanceof Error
+          ? bufferError
+          : new Error("Buffer read failed"),
         { sourceImageId: blendSource.imageId },
       );
       return NextResponse.json(

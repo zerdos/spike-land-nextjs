@@ -76,7 +76,9 @@ export async function POST(request: NextRequest, props: RouteParams) {
 
   if (dbError) {
     console.error("Failed to fetch session:", dbError);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, {
+      status: 500,
+    });
   }
 
   if (!dbSession) {

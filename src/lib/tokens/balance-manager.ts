@@ -78,7 +78,9 @@ export class TokenBalanceManager {
         });
 
         // Get initial capacity for FREE tier (default)
-        const initialCapacity = TierManager.getTierCapacity(SubscriptionTier.FREE);
+        const initialCapacity = TierManager.getTierCapacity(
+          SubscriptionTier.FREE,
+        );
 
         // Create initial token balance for new user
         balance = await tx.userTokenBalance.create({
@@ -178,7 +180,9 @@ export class TokenBalanceManager {
           });
 
           // Get initial capacity for FREE tier (default)
-          const initialCapacity = TierManager.getTierCapacity(SubscriptionTier.FREE);
+          const initialCapacity = TierManager.getTierCapacity(
+            SubscriptionTier.FREE,
+          );
 
           // Create initial balance with tier capacity
           tokenBalance = await tx.userTokenBalance.create({
@@ -320,7 +324,9 @@ export class TokenBalanceManager {
           });
 
           // Get initial capacity for FREE tier (default)
-          const initialCapacity = TierManager.getTierCapacity(SubscriptionTier.FREE);
+          const initialCapacity = TierManager.getTierCapacity(
+            SubscriptionTier.FREE,
+          );
 
           tokenBalance = await tx.userTokenBalance.create({
             data: {
@@ -438,7 +444,8 @@ export class TokenBalanceManager {
    * Returns number of tokens regenerated (0 if not due yet)
    */
   static async processRegeneration(userId: string): Promise<number> {
-    const { balance, lastRegeneration, tier, maxBalance } = await this.getBalance(userId);
+    const { balance, lastRegeneration, tier, maxBalance } = await this
+      .getBalance(userId);
 
     // Check if regeneration is due
     const now = new Date();

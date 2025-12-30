@@ -95,7 +95,10 @@ export const AlbumSettingsDialog = memo(function AlbumSettingsDialog({
           </div>
           <div className="grid gap-2">
             <Label htmlFor="edit-privacy">Privacy</Label>
-            <Select value={editForm.privacy} onValueChange={handlePrivacyChange}>
+            <Select
+              value={editForm.privacy}
+              onValueChange={handlePrivacyChange}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

@@ -108,7 +108,9 @@ export function validateEnhanceRequest(
     }
 
     const path = firstIssue.path.join(".");
-    const message = path ? `${path}: ${firstIssue.message}` : firstIssue.message;
+    const message = path
+      ? `${path}: ${firstIssue.message}`
+      : firstIssue.message;
 
     return {
       success: false,

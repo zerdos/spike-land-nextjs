@@ -597,8 +597,9 @@ describe("enhance-image.shared", () => {
           autoCropConfig: { enabled: true },
           promptConfig: { customInstructions: "Test" },
           generationConfig: { retryAttempts: 5 },
-        } as unknown as ReturnType<typeof prisma.enhancementPipeline.findUnique> extends
-          Promise<infer T> ? T
+        } as unknown as ReturnType<
+          typeof prisma.enhancementPipeline.findUnique
+        > extends Promise<infer T> ? T
           : never,
       );
 
@@ -633,8 +634,9 @@ describe("enhance-image.shared", () => {
           autoCropConfig: { enabled: false },
           promptConfig: null,
           generationConfig: null,
-        } as unknown as ReturnType<typeof prisma.enhancementPipeline.findUnique> extends
-          Promise<infer T> ? T
+        } as unknown as ReturnType<
+          typeof prisma.enhancementPipeline.findUnique
+        > extends Promise<infer T> ? T
           : never,
       );
 
@@ -953,19 +955,25 @@ describe("enhance-image.shared", () => {
           ),
         ).toBe(true);
         expect(
-          WorkflowStageError.isPermanentFailure(new Error("resource not found")),
+          WorkflowStageError.isPermanentFailure(
+            new Error("resource not found"),
+          ),
         ).toBe(true);
         expect(
           WorkflowStageError.isPermanentFailure(new Error("forbidden access")),
         ).toBe(true);
         expect(
-          WorkflowStageError.isPermanentFailure(new Error("unauthorized request")),
+          WorkflowStageError.isPermanentFailure(
+            new Error("unauthorized request"),
+          ),
         ).toBe(true);
       });
 
       it("should return false for transient error messages", () => {
         expect(
-          WorkflowStageError.isPermanentFailure(new Error("Connection timeout")),
+          WorkflowStageError.isPermanentFailure(
+            new Error("Connection timeout"),
+          ),
         ).toBe(false);
         expect(
           WorkflowStageError.isPermanentFailure(new Error("Network error")),
@@ -976,9 +984,10 @@ describe("enhance-image.shared", () => {
         expect(WorkflowStageError.isPermanentFailure("Invalid API key")).toBe(
           true,
         );
-        expect(WorkflowStageError.isPermanentFailure("Connection timeout")).toBe(
-          false,
-        );
+        expect(WorkflowStageError.isPermanentFailure("Connection timeout"))
+          .toBe(
+            false,
+          );
       });
     });
   });
@@ -1018,7 +1027,11 @@ describe("enhance-image.shared", () => {
     describe("recordSoftFailure", () => {
       it("should add warning with stage and message", () => {
         const context = createWorkflowContext("job-123");
-        recordSoftFailure(context, WorkflowStage.ANALYSIS, "Vision API timeout");
+        recordSoftFailure(
+          context,
+          WorkflowStage.ANALYSIS,
+          "Vision API timeout",
+        );
         expect(context.warnings).toHaveLength(1);
         expect(context.warnings[0]!.stage).toBe(WorkflowStage.ANALYSIS);
         expect(context.warnings[0]!.message).toBe("Vision API timeout");

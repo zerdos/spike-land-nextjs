@@ -54,7 +54,9 @@ export async function POST(req: Request) {
   const parseResult = createBoxSchema.safeParse(json);
 
   if (!parseResult.success) {
-    return new NextResponse(JSON.stringify(parseResult.error.flatten()), { status: 400 });
+    return new NextResponse(JSON.stringify(parseResult.error.flatten()), {
+      status: 400,
+    });
   }
 
   const body = parseResult.data;

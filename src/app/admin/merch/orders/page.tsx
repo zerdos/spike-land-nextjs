@@ -106,7 +106,10 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
   };
 
   const getStatusVariant = (orderStatus: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    const variants: Record<
+      string,
+      "default" | "secondary" | "destructive" | "outline"
+    > = {
       PENDING: "outline",
       PAYMENT_PENDING: "outline",
       PAID: "secondary",

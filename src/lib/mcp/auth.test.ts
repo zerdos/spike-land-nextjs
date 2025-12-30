@@ -144,7 +144,9 @@ describe("auth", () => {
     });
 
     it("should return error when validateApiKey throws an exception", async () => {
-      mockValidateApiKey.mockRejectedValue(new Error("Database connection failed"));
+      mockValidateApiKey.mockRejectedValue(
+        new Error("Database connection failed"),
+      );
 
       const request = createMockRequest({
         Authorization: "Bearer sk_test_validkey",

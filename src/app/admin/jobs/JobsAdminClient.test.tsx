@@ -120,7 +120,8 @@ describe("JobsAdminClient", () => {
 
     await waitFor(() => {
       // Check for status tabs (not type tabs)
-      expect(screen.getByRole("button", { name: /queue/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /queue/i }))
+        .toBeInTheDocument();
     });
 
     expect(screen.getByRole("button", { name: /queue/i })).toBeInTheDocument();

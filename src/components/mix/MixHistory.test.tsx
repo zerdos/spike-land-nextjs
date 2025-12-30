@@ -90,7 +90,8 @@ describe("MixHistory", () => {
 
     render(<MixHistory {...defaultProps} />);
 
-    expect(screen.getByText("No mixes yet. Create your first blend above.")).toBeInTheDocument();
+    expect(screen.getByText("No mixes yet. Create your first blend above."))
+      .toBeInTheDocument();
   });
 
   it("renders list of mixes", () => {

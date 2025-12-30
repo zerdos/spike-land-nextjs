@@ -8,7 +8,9 @@ interface ExtendedThemeProviderProps extends ThemeProviderProps {
   nonce?: string;
 }
 
-export function ThemeProvider({ children, nonce, ...props }: ExtendedThemeProviderProps) {
+export function ThemeProvider(
+  { children, nonce, ...props }: ExtendedThemeProviderProps,
+) {
   return (
     <NextThemesProvider nonce={nonce} {...props}>
       {children}

@@ -88,7 +88,10 @@ async function julesRequest<T>(
   const { data: json, error: jsonError } = await tryCatch(response.json());
 
   if (jsonError) {
-    return { data: null, error: `Failed to parse response: ${jsonError.message}` };
+    return {
+      data: null,
+      error: `Failed to parse response: ${jsonError.message}`,
+    };
   }
 
   if (!response.ok) {
@@ -118,7 +121,9 @@ export async function listSources(pageSize = 50, pageToken?: string): Promise<{
   if (pageToken) params.set("pageToken", pageToken);
 
   const query = params.toString();
-  return julesRequest<ListSourcesResponse>(`/sources${query ? `?${query}` : ""}`);
+  return julesRequest<ListSourcesResponse>(
+    `/sources${query ? `?${query}` : ""}`,
+  );
 }
 
 /**
@@ -146,7 +151,9 @@ export async function listSessions(pageSize = 20, pageToken?: string): Promise<{
   if (pageToken) params.set("pageToken", pageToken);
 
   const query = params.toString();
-  return julesRequest<ListSessionsResponse>(`/sessions${query ? `?${query}` : ""}`);
+  return julesRequest<ListSessionsResponse>(
+    `/sessions${query ? `?${query}` : ""}`,
+  );
 }
 
 /**
@@ -156,7 +163,9 @@ export async function getSession(
   sessionName: string,
 ): Promise<{ data: JulesSession | null; error: string | null; }> {
   validateSessionId(sessionName);
-  const name = sessionName.startsWith("sessions/") ? sessionName : `sessions/${sessionName}`;
+  const name = sessionName.startsWith("sessions/")
+    ? sessionName
+    : `sessions/${sessionName}`;
   return julesRequest<JulesSession>(`/${name}`);
 }
 
@@ -179,7 +188,9 @@ export async function approvePlan(
   sessionName: string,
 ): Promise<{ data: JulesSession | null; error: string | null; }> {
   validateSessionId(sessionName);
-  const name = sessionName.startsWith("sessions/") ? sessionName : `sessions/${sessionName}`;
+  const name = sessionName.startsWith("sessions/")
+    ? sessionName
+    : `sessions/${sessionName}`;
   return julesRequest<JulesSession>(`/${name}:approvePlan`, {
     method: "POST",
   });
@@ -193,7 +204,9 @@ export async function sendMessage(
   message: string,
 ): Promise<{ data: JulesSession | null; error: string | null; }> {
   validateSessionId(sessionName);
-  const name = sessionName.startsWith("sessions/") ? sessionName : `sessions/${sessionName}`;
+  const name = sessionName.startsWith("sessions/")
+    ? sessionName
+    : `sessions/${sessionName}`;
   return julesRequest<JulesSession>(`/${name}:sendMessage`, {
     method: "POST",
     body: JSON.stringify({ prompt: message }),
@@ -216,13 +229,17 @@ export async function listActivities(
   error: string | null;
 }> {
   validateSessionId(sessionName);
-  const name = sessionName.startsWith("sessions/") ? sessionName : `sessions/${sessionName}`;
+  const name = sessionName.startsWith("sessions/")
+    ? sessionName
+    : `sessions/${sessionName}`;
   const params = new URLSearchParams();
   if (pageSize) params.set("pageSize", String(pageSize));
   if (pageToken) params.set("pageToken", pageToken);
 
   const query = params.toString();
-  return julesRequest<ListActivitiesResponse>(`/${name}/activities${query ? `?${query}` : ""}`);
+  return julesRequest<ListActivitiesResponse>(
+    `/${name}/activities${query ? `?${query}` : ""}`,
+  );
 }
 
 /**

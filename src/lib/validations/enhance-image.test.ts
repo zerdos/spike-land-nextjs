@@ -199,7 +199,9 @@ describe("validateEnhanceRequest", () => {
     const result = validateEnhanceRequest(null);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.suggestion).toBe("Please check your request and try again.");
+      expect(result.suggestion).toBe(
+        "Please check your request and try again.",
+      );
     }
   });
 });

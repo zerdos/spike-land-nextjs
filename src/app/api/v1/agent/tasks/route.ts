@@ -38,7 +38,9 @@ export async function GET(req: NextRequest) {
 
   if (boxError) {
     console.error("Database error (box lookup):", boxError);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 
   if (!box) {
@@ -65,7 +67,9 @@ export async function GET(req: NextRequest) {
 
   if (tasksError) {
     console.error("Failed to fetch agent tasks:", tasksError);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 
   return NextResponse.json({ tasks });
@@ -107,7 +111,9 @@ export async function POST(req: NextRequest) {
 
   if (taskError) {
     console.error("Database error (task lookup):", taskError);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 
   if (!task) {
@@ -133,7 +139,9 @@ export async function POST(req: NextRequest) {
 
   if (updateError) {
     console.error("Failed to update agent task:", updateError);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 
   return NextResponse.json({ success: true, task: updatedTask });

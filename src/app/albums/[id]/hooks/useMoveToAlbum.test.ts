@@ -54,7 +54,8 @@ describe("useMoveToAlbum", () => {
 
       // Should exclude current album
       expect(result.current.allAlbums).toHaveLength(2);
-      expect(result.current.allAlbums.find((a) => a.id === "album-1")).toBeUndefined();
+      expect(result.current.allAlbums.find((a) => a.id === "album-1"))
+        .toBeUndefined();
     });
 
     it("should not open dialog with no selected images", async () => {

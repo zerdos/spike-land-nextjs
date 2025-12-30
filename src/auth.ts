@@ -405,7 +405,9 @@ async function getMockE2ESession() {
   let id = "test-user-id";
   if (email === "admin@example.com") {
     id = "admin-user-id";
-  } else if (email === "newuser@example.com" || email === "no-orders@example.com") {
+  } else if (
+    email === "newuser@example.com" || email === "no-orders@example.com"
+  ) {
     // User ID that has no orders in E2E seed data - for testing empty states
     id = "new-user-id";
   }

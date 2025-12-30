@@ -249,9 +249,15 @@ describe("resource-detector", () => {
       const result = await detectResources();
 
       expect(result.mcpServers).toHaveLength(3);
-      expect(result.mcpServers.find((s) => s.name === "playwright")?.type).toBe("stdio");
-      expect(result.mcpServers.find((s) => s.name === "docker")?.type).toBe("http");
-      expect(result.mcpServers.find((s) => s.name === "custom")?.type).toBe("websocket");
+      expect(result.mcpServers.find((s) => s.name === "playwright")?.type).toBe(
+        "stdio",
+      );
+      expect(result.mcpServers.find((s) => s.name === "docker")?.type).toBe(
+        "http",
+      );
+      expect(result.mcpServers.find((s) => s.name === "custom")?.type).toBe(
+        "websocket",
+      );
     });
 
     it("should detect partial configuration", async () => {

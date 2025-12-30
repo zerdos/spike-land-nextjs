@@ -54,7 +54,10 @@ export function UsageGuide({
         </div>
         <ul className="space-y-3 relative z-10">
           {dos.map((item, i) => (
-            <li key={i} className="text-sm text-foreground/90 flex gap-3 items-start">
+            <li
+              key={i}
+              className="text-sm text-foreground/90 flex gap-3 items-start"
+            >
               <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
               <span className="leading-snug">{item}</span>
             </li>
@@ -70,11 +73,16 @@ export function UsageGuide({
             <div className="p-1 rounded-full bg-destructive/10 border border-destructive/20">
               <X className="h-4 w-4" strokeWidth={3} />
             </div>
-            <h3 className="font-bold uppercase tracking-wider text-xs">Don't</h3>
+            <h3 className="font-bold uppercase tracking-wider text-xs">
+              Don't
+            </h3>
           </div>
           <ul className="space-y-3 relative z-10">
             {donts.map((item, i) => (
-              <li key={i} className="text-sm text-foreground/90 flex gap-3 items-start">
+              <li
+                key={i}
+                className="text-sm text-foreground/90 flex gap-3 items-start"
+              >
                 <X className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
                 <span className="leading-snug">{item}</span>
               </li>
@@ -132,7 +140,9 @@ export function ComponentSample({
           {title}
         </h3>
         {description && (
-          <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {description}
+          </p>
         )}
       </div>
       <div className="p-8 md:p-12 rounded-3xl border border-border/50 bg-background/50 backdrop-blur-sm flex items-center justify-center min-h-[200px] shadow-sm relative overflow-hidden transition-all duration-300 hover:shadow-md hover:border-primary/20">

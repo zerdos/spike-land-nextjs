@@ -87,7 +87,8 @@ describe("TierCard", () => {
 
     it("does not show current plan badge when isCurrent is false", () => {
       render(<TierCard tier={mockBasicTier} isCurrent={false} />);
-      expect(screen.queryByTestId("current-tier-badge")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("current-tier-badge")).not
+        .toBeInTheDocument();
     });
 
     it("shows current plan indicator when no actions available", () => {
@@ -125,14 +126,22 @@ describe("TierCard", () => {
   describe("upgrade functionality", () => {
     it("shows upgrade button when canUpgrade is true and onUpgrade provided", () => {
       const onUpgrade = vi.fn();
-      render(<TierCard tier={mockBasicTier} canUpgrade onUpgrade={onUpgrade} />);
+      render(
+        <TierCard tier={mockBasicTier} canUpgrade onUpgrade={onUpgrade} />,
+      );
       expect(screen.getByTestId("upgrade-button")).toBeInTheDocument();
       expect(screen.getByText("Upgrade to Basic")).toBeInTheDocument();
     });
 
     it("does not show upgrade button when canUpgrade is false", () => {
       const onUpgrade = vi.fn();
-      render(<TierCard tier={mockBasicTier} canUpgrade={false} onUpgrade={onUpgrade} />);
+      render(
+        <TierCard
+          tier={mockBasicTier}
+          canUpgrade={false}
+          onUpgrade={onUpgrade}
+        />,
+      );
       expect(screen.queryByTestId("upgrade-button")).not.toBeInTheDocument();
     });
 
@@ -143,7 +152,9 @@ describe("TierCard", () => {
 
     it("calls onUpgrade when upgrade button is clicked", () => {
       const onUpgrade = vi.fn();
-      render(<TierCard tier={mockBasicTier} canUpgrade onUpgrade={onUpgrade} />);
+      render(
+        <TierCard tier={mockBasicTier} canUpgrade onUpgrade={onUpgrade} />,
+      );
 
       fireEvent.click(screen.getByTestId("upgrade-button"));
       expect(onUpgrade).toHaveBeenCalledTimes(1);
@@ -152,17 +163,30 @@ describe("TierCard", () => {
     it("shows loading state when isUpgrading is true", () => {
       const onUpgrade = vi.fn();
       render(
-        <TierCard tier={mockBasicTier} canUpgrade onUpgrade={onUpgrade} isUpgrading />,
+        <TierCard
+          tier={mockBasicTier}
+          canUpgrade
+          onUpgrade={onUpgrade}
+          isUpgrading
+        />,
       );
 
       // Button has aria-busy when loading
-      expect(screen.getByTestId("upgrade-button")).toHaveAttribute("aria-busy", "true");
+      expect(screen.getByTestId("upgrade-button")).toHaveAttribute(
+        "aria-busy",
+        "true",
+      );
     });
 
     it("disables upgrade button when isUpgrading", () => {
       const onUpgrade = vi.fn();
       render(
-        <TierCard tier={mockBasicTier} canUpgrade onUpgrade={onUpgrade} isUpgrading />,
+        <TierCard
+          tier={mockBasicTier}
+          canUpgrade
+          onUpgrade={onUpgrade}
+          isUpgrading
+        />,
       );
 
       expect(screen.getByTestId("upgrade-button")).toBeDisabled();
@@ -172,14 +196,22 @@ describe("TierCard", () => {
   describe("downgrade functionality", () => {
     it("shows downgrade button when canDowngrade is true and onDowngrade provided", () => {
       const onDowngrade = vi.fn();
-      render(<TierCard tier={mockFreeTier} canDowngrade onDowngrade={onDowngrade} />);
+      render(
+        <TierCard tier={mockFreeTier} canDowngrade onDowngrade={onDowngrade} />,
+      );
       expect(screen.getByTestId("downgrade-button")).toBeInTheDocument();
       expect(screen.getByText("Downgrade to Free")).toBeInTheDocument();
     });
 
     it("does not show downgrade button when canDowngrade is false", () => {
       const onDowngrade = vi.fn();
-      render(<TierCard tier={mockFreeTier} canDowngrade={false} onDowngrade={onDowngrade} />);
+      render(
+        <TierCard
+          tier={mockFreeTier}
+          canDowngrade={false}
+          onDowngrade={onDowngrade}
+        />,
+      );
       expect(screen.queryByTestId("downgrade-button")).not.toBeInTheDocument();
     });
 
@@ -190,7 +222,9 @@ describe("TierCard", () => {
 
     it("calls onDowngrade when downgrade button is clicked", () => {
       const onDowngrade = vi.fn();
-      render(<TierCard tier={mockFreeTier} canDowngrade onDowngrade={onDowngrade} />);
+      render(
+        <TierCard tier={mockFreeTier} canDowngrade onDowngrade={onDowngrade} />,
+      );
 
       fireEvent.click(screen.getByTestId("downgrade-button"));
       expect(onDowngrade).toHaveBeenCalledTimes(1);
@@ -199,17 +233,30 @@ describe("TierCard", () => {
     it("shows loading state when isScheduling is true", () => {
       const onDowngrade = vi.fn();
       render(
-        <TierCard tier={mockFreeTier} canDowngrade onDowngrade={onDowngrade} isScheduling />,
+        <TierCard
+          tier={mockFreeTier}
+          canDowngrade
+          onDowngrade={onDowngrade}
+          isScheduling
+        />,
       );
 
       // Button has aria-busy when loading
-      expect(screen.getByTestId("downgrade-button")).toHaveAttribute("aria-busy", "true");
+      expect(screen.getByTestId("downgrade-button")).toHaveAttribute(
+        "aria-busy",
+        "true",
+      );
     });
 
     it("disables downgrade button when isScheduling", () => {
       const onDowngrade = vi.fn();
       render(
-        <TierCard tier={mockFreeTier} canDowngrade onDowngrade={onDowngrade} isScheduling />,
+        <TierCard
+          tier={mockFreeTier}
+          canDowngrade
+          onDowngrade={onDowngrade}
+          isScheduling
+        />,
       );
 
       expect(screen.getByTestId("downgrade-button")).toBeDisabled();
@@ -237,10 +284,16 @@ describe("TierCard", () => {
     it("does not show current plan indicator when actions are available", () => {
       const onUpgrade = vi.fn();
       render(
-        <TierCard tier={mockBasicTier} isCurrent canUpgrade onUpgrade={onUpgrade} />,
+        <TierCard
+          tier={mockBasicTier}
+          isCurrent
+          canUpgrade
+          onUpgrade={onUpgrade}
+        />,
       );
 
-      expect(screen.queryByTestId("current-plan-indicator")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("current-plan-indicator")).not
+        .toBeInTheDocument();
     });
   });
 
@@ -252,9 +305,11 @@ describe("TierCard", () => {
       [mockPremiumTier, "PREMIUM"],
     ])("renders %s tier correctly", (tier, expectedTier) => {
       render(<TierCard tier={tier} />);
-      expect(screen.getByTestId(`tier-card-${expectedTier}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`tier-card-${expectedTier}`))
+        .toBeInTheDocument();
       // Display name appears in both badge and title
-      expect(screen.getAllByText(tier.displayName).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText(tier.displayName).length)
+        .toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -280,7 +335,8 @@ describe("TierCard", () => {
 
     it("renders PREMIUM tier features", () => {
       render(<TierCard tier={mockPremiumTier} />);
-      expect(screen.getByText("Early access to new features")).toBeInTheDocument();
+      expect(screen.getByText("Early access to new features"))
+        .toBeInTheDocument();
       expect(screen.getByText("24/7 priority support")).toBeInTheDocument();
     });
   });

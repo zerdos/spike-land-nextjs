@@ -35,7 +35,9 @@ export async function POST(request: NextRequest) {
     request.json(),
   );
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const { targetTier } = body;
@@ -51,7 +53,9 @@ export async function POST(request: NextRequest) {
 
   if (tierError) {
     console.error("Error getting user tier:", tierError);
-    return NextResponse.json({ error: "Failed to get user tier" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to get user tier" }, {
+      status: 500,
+    });
   }
 
   // Convert string to enum for comparison
@@ -75,8 +79,12 @@ export async function POST(request: NextRequest) {
     tierConfig.priceGBP <= 0 ||
     !Number.isFinite(tierConfig.priceGBP)
   ) {
-    console.error(`Invalid price for tier ${targetTier}: ${tierConfig.priceGBP}`);
-    return NextResponse.json({ error: "Invalid tier configuration" }, { status: 500 });
+    console.error(
+      `Invalid price for tier ${targetTier}: ${tierConfig.priceGBP}`,
+    );
+    return NextResponse.json({ error: "Invalid tier configuration" }, {
+      status: 500,
+    });
   }
 
   // Get or create Stripe customer
@@ -89,7 +97,9 @@ export async function POST(request: NextRequest) {
 
   if (userError) {
     console.error("Error fetching user:", userError);
-    return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch user" }, {
+      status: 500,
+    });
   }
 
   let stripeCustomerId = user?.stripeCustomerId;
@@ -105,7 +115,9 @@ export async function POST(request: NextRequest) {
 
     if (customerError) {
       console.error("Error creating Stripe customer:", customerError);
-      return NextResponse.json({ error: "Failed to create customer" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to create customer" }, {
+        status: 500,
+      });
     }
 
     stripeCustomerId = customer.id;
@@ -120,7 +132,10 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       // Log but don't fail - the Stripe customer was created successfully
       // and we can still proceed with the checkout
-      console.error("Failed to save Stripe customer ID to database:", updateError);
+      console.error(
+        "Failed to save Stripe customer ID to database:",
+        updateError,
+      );
     }
   }
 

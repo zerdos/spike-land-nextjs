@@ -46,7 +46,9 @@ interface CheckoutRequest {
 
 function getShippingZone(countryCode: string): "UK" | "EU" | "ROW" {
   if (countryCode === "GB") return "UK";
-  if ((EU_COUNTRY_CODES as readonly string[]).includes(countryCode)) return "EU";
+  if ((EU_COUNTRY_CODES as readonly string[]).includes(countryCode)) {
+    return "EU";
+  }
   return "ROW";
 }
 
@@ -196,7 +198,11 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Shipping calculation failed" },
+      {
+        error: error instanceof Error
+          ? error.message
+          : "Shipping calculation failed",
+      },
       { status: 400 },
     );
   }

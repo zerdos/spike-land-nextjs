@@ -53,7 +53,9 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
           <Component
             className={cn(
               "h-4 w-4",
-              pathname === "/storybook" ? "text-primary" : "opacity-70 group-hover:opacity-100",
+              pathname === "/storybook"
+                ? "text-primary"
+                : "opacity-70 group-hover:opacity-100",
             )}
           />
           Overview
@@ -71,7 +73,9 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
             </h3>
             <div className="space-y-0.5">
               {groupedSections[category]?.map((section) => {
-                const Icon = storybookIconMap[section.icon as keyof typeof storybookIconMap];
+                const Icon = storybookIconMap[
+                  section.icon as keyof typeof storybookIconMap
+                ];
                 const isActive = pathname === `/storybook/${section.id}`;
 
                 return (
@@ -93,7 +97,9 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
                       <Icon
                         className={cn(
                           "h-4 w-4 transition-transform group-hover:scale-110",
-                          isActive ? "text-primary" : "opacity-60 group-hover:opacity-100",
+                          isActive
+                            ? "text-primary"
+                            : "opacity-60 group-hover:opacity-100",
                         )}
                       />
                     )}

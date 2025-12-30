@@ -11,7 +11,11 @@ describe("TypographyPage", () => {
 
     it("should render the page description", () => {
       render(<TypographyPage />);
-      expect(screen.getByText(/Our typography system is designed for maximum legibility/i))
+      expect(
+        screen.getByText(
+          /Our typography system is designed for maximum legibility/i,
+        ),
+      )
         .toBeInTheDocument();
     });
   });
@@ -43,16 +47,22 @@ describe("TypographyPage", () => {
 
     it("should render top level headings", () => {
       render(<TypographyPage />);
-      expect(screen.getByRole("heading", { name: /Ultimate Enhancement/i })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /System Performance/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Ultimate Enhancement/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /System Performance/i }))
+        .toBeInTheDocument();
     });
 
     it("should render section level headings", () => {
       render(<TypographyPage />);
-      expect(screen.getByRole("heading", { name: /Core Components/i })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /Interactive Elements/i })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /Status Indicators/i })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /Inline Meta Data/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Core Components/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Interactive Elements/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Status Indicators/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Inline Meta Data/i }))
+        .toBeInTheDocument();
     });
   });
 
@@ -65,12 +75,14 @@ describe("TypographyPage", () => {
     it("should display color examples", () => {
       render(<TypographyPage />);
       expect(screen.getByText("Primary Foreground")).toBeInTheDocument();
-      expect(screen.getByText(/Secondary Foreground \(Muted\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Secondary Foreground \(Muted\)/i))
+        .toBeInTheDocument();
     });
 
     it("should display state color examples", () => {
       render(<TypographyPage />);
-      expect(screen.getByText(/System ready for deployment/i)).toBeInTheDocument();
+      expect(screen.getByText(/System ready for deployment/i))
+        .toBeInTheDocument();
       expect(screen.getByText(/Token balance low/i)).toBeInTheDocument();
       expect(screen.getByText(/Critical engine failure/i)).toBeInTheDocument();
     });

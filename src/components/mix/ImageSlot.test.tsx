@@ -127,7 +127,9 @@ describe("ImageSlot", () => {
       mimeType: "image/webp",
     };
 
-    (imageProcessor.processImageForUpload as any).mockResolvedValue(processedImage);
+    (imageProcessor.processImageForUpload as any).mockResolvedValue(
+      processedImage,
+    );
 
     render(<ImageSlot {...defaultProps} />);
 
@@ -141,14 +143,16 @@ describe("ImageSlot", () => {
 
     // Should call onImageSelect
     await waitFor(() => {
-      expect(defaultProps.onImageSelect).toHaveBeenCalledWith(expect.objectContaining({
-        type: "upload",
-        name: "test.png",
-        url: "blob:test-url",
-        width: 800,
-        height: 600,
-        base64: "processedBase64",
-      }));
+      expect(defaultProps.onImageSelect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "upload",
+          name: "test.png",
+          url: "blob:test-url",
+          width: 800,
+          height: 600,
+          base64: "processedBase64",
+        }),
+      );
     });
   });
 
@@ -162,7 +166,9 @@ describe("ImageSlot", () => {
       mimeType: "image/webp",
     };
 
-    (imageProcessor.processImageForUpload as any).mockResolvedValue(processedImage);
+    (imageProcessor.processImageForUpload as any).mockResolvedValue(
+      processedImage,
+    );
 
     render(<ImageSlot {...defaultProps} />);
 
@@ -205,7 +211,9 @@ describe("ImageSlot", () => {
   });
 
   it("validates file type", async () => {
-    const file = new File(["dummy content"], "test.txt", { type: "text/plain" });
+    const file = new File(["dummy content"], "test.txt", {
+      type: "text/plain",
+    });
 
     render(<ImageSlot {...defaultProps} />);
 
@@ -223,7 +231,9 @@ describe("ImageSlot", () => {
 
   it("validates file size", async () => {
     const user = userEvent.setup();
-    const largeFile = new File(["a".repeat(1024)], "large.jpg", { type: "image/jpeg" });
+    const largeFile = new File(["a".repeat(1024)], "large.jpg", {
+      type: "image/jpeg",
+    });
     Object.defineProperty(largeFile, "size", { value: 21 * 1024 * 1024 });
 
     render(<ImageSlot {...defaultProps} />);
@@ -232,7 +242,9 @@ describe("ImageSlot", () => {
     await user.upload(fileInput, largeFile);
 
     await waitFor(() => {
-      expect(global.alert).toHaveBeenCalledWith(expect.stringContaining("Image file is too large"));
+      expect(global.alert).toHaveBeenCalledWith(
+        expect.stringContaining("Image file is too large"),
+      );
     });
     expect(imageProcessor.processImageForUpload).not.toHaveBeenCalled();
   });
@@ -243,7 +255,7 @@ describe("ImageSlot", () => {
 
     // Delay processing to allow checking loading state
     (imageProcessor.processImageForUpload as any).mockImplementation(() =>
-      new Promise(resolve =>
+      new Promise((resolve) =>
         setTimeout(() =>
           resolve({
             blob: new Blob(["processed"]),

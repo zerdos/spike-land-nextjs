@@ -5,12 +5,14 @@ import { CTASection } from "./CTASection";
 describe("CTASection Component", () => {
   it("should render the section heading", () => {
     render(<CTASection />);
-    expect(screen.getByText("Blend your photos. Create something new.")).toBeInTheDocument();
+    expect(screen.getByText("Blend your photos. Create something new."))
+      .toBeInTheDocument();
   });
 
   it("should render the section description", () => {
     render(<CTASection />);
-    expect(screen.getByText(/Combine two images into something unexpected/)).toBeInTheDocument();
+    expect(screen.getByText(/Combine two images into something unexpected/))
+      .toBeInTheDocument();
   });
 
   it("should render the CTA button", () => {

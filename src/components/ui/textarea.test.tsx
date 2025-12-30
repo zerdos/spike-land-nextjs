@@ -26,7 +26,10 @@ describe("Textarea", () => {
     render(<Textarea disabled />);
     const textarea = screen.getByRole("textbox");
     expect(textarea).toBeDisabled();
-    expect(textarea).toHaveClass("disabled:cursor-not-allowed", "disabled:opacity-50");
+    expect(textarea).toHaveClass(
+      "disabled:cursor-not-allowed",
+      "disabled:opacity-50",
+    );
   });
 
   it("handles user input", async () => {

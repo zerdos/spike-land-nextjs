@@ -116,7 +116,9 @@ export async function POST(request: NextRequest) {
 
   if (sessionError) {
     console.error("[Tracking] Session lookup error:", sessionError);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, {
+      status: 500,
+    });
   }
 
   if (!session) {

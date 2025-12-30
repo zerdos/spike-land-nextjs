@@ -106,12 +106,17 @@ export default function SettingsPage() {
               <CardContent className="space-y-6">
                 <div className="flex items-center space-x-4">
                   <Avatar className="h-20 w-20">
-                    <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
+                    <AvatarImage
+                      src={user?.image || ""}
+                      alt={user?.name || ""}
+                    />
                     <AvatarFallback>{userInitials}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">{user?.name}</h3>
-                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {user?.email}
+                    </p>
                   </div>
                 </div>
 
@@ -168,9 +173,15 @@ export default function SettingsPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground">Current plan:</span>
+                    <span className="text-sm text-muted-foreground">
+                      Current plan:
+                    </span>
                     {isTierLoading
-                      ? <span className="text-sm text-muted-foreground">Loading...</span>
+                      ? (
+                        <span className="text-sm text-muted-foreground">
+                          Loading...
+                        </span>
+                      )
                       : (
                         <TierBadge
                           tier={(currentTier as TierType) || "FREE"}
@@ -179,8 +190,14 @@ export default function SettingsPage() {
                         />
                       )}
                   </div>
-                  <Button asChild variant="outline" data-testid="manage-subscription-button">
-                    <Link href="/settings/subscription">Manage Subscription</Link>
+                  <Button
+                    asChild
+                    variant="outline"
+                    data-testid="manage-subscription-button"
+                  >
+                    <Link href="/settings/subscription">
+                      Manage Subscription
+                    </Link>
                   </Button>
                 </div>
               </CardContent>

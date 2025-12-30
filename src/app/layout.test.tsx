@@ -116,27 +116,37 @@ describe("RootLayout", () => {
   });
 
   it("should render Analytics component", async () => {
-    const { getByTestId } = render(await RootLayout({ children: <div>Test</div> }));
+    const { getByTestId } = render(
+      await RootLayout({ children: <div>Test</div> }),
+    );
     expect(getByTestId("analytics")).toBeInTheDocument();
   });
 
   it("should render SpeedInsights component", async () => {
-    const { getByTestId } = render(await RootLayout({ children: <div>Test</div> }));
+    const { getByTestId } = render(
+      await RootLayout({ children: <div>Test</div> }),
+    );
     expect(getByTestId("speed-insights")).toBeInTheDocument();
   });
 
   it("should render Toaster component", async () => {
-    const { getByTestId } = render(await RootLayout({ children: <div>Test</div> }));
+    const { getByTestId } = render(
+      await RootLayout({ children: <div>Test</div> }),
+    );
     expect(getByTestId("toaster")).toBeInTheDocument();
   });
 
   it("should render ConditionalHeader component for navigation", async () => {
-    const { getByTestId } = render(await RootLayout({ children: <div>Test</div> }));
+    const { getByTestId } = render(
+      await RootLayout({ children: <div>Test</div> }),
+    );
     expect(getByTestId("conditional-header")).toBeInTheDocument();
   });
 
   it("should render FeedbackButton component", async () => {
-    const { getByTestId } = render(await RootLayout({ children: <div>Test</div> }));
+    const { getByTestId } = render(
+      await RootLayout({ children: <div>Test</div> }),
+    );
     expect(getByTestId("feedback-button")).toBeInTheDocument();
   });
 });

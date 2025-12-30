@@ -81,7 +81,10 @@ export async function GET(request: NextRequest) {
 
   if (!queryResult.success) {
     return NextResponse.json(
-      { error: "Invalid query parameters", details: queryResult.error.flatten() },
+      {
+        error: "Invalid query parameters",
+        details: queryResult.error.flatten(),
+      },
       { status: 400 },
     );
   }
@@ -118,7 +121,9 @@ export async function GET(request: NextRequest) {
 
   if (dbError) {
     console.error("Failed to fetch agent sessions:", dbError);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, {
+      status: 500,
+    });
   }
 
   const [sessions, total, statusGroups] = result;
@@ -172,7 +177,9 @@ export async function POST(request: NextRequest) {
   // Check if Jules is available
   if (!isJulesAvailable()) {
     return NextResponse.json(
-      { error: "Jules API is not configured. Set JULES_API_KEY environment variable." },
+      {
+        error: "Jules API is not configured. Set JULES_API_KEY environment variable.",
+      },
       { status: 503 },
     );
   }

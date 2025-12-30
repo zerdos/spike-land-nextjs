@@ -57,7 +57,10 @@ vi.mock("@/lib/tokens/balance-manager", () => ({
 vi.mock("@/workflows/enhance-image.direct", () => ({
   enhanceImageDirect: vi
     .fn()
-    .mockResolvedValue({ success: true, enhancedUrl: "https://example.com/enhanced.jpg" }),
+    .mockResolvedValue({
+      success: true,
+      enhancedUrl: "https://example.com/enhanced.jpg",
+    }),
 }));
 
 vi.mock("@/workflows/enhance-image.workflow", () => ({

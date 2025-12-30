@@ -116,5 +116,7 @@ export interface PodProvider {
   /**
    * Cancel an order if still possible.
    */
-  cancelOrder?(providerOrderId: string): Promise<{ success: boolean; error?: string; }>;
+  cancelOrder?(
+    providerOrderId: string,
+  ): Promise<{ success: boolean; error?: string; }>;
 }

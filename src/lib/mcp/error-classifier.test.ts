@@ -145,7 +145,9 @@ describe("classifyError", () => {
     });
 
     it("should classify status 413 as INVALID_IMAGE", () => {
-      const error = new Error("Payload too large") as Error & { status: number; };
+      const error = new Error("Payload too large") as Error & {
+        status: number;
+      };
       error.status = 413;
 
       const result = classifyError(error);
@@ -153,7 +155,9 @@ describe("classifyError", () => {
     });
 
     it("should classify status 429 as RATE_LIMITED", () => {
-      const error = new Error("Too many requests") as Error & { status: number; };
+      const error = new Error("Too many requests") as Error & {
+        status: number;
+      };
       error.status = 429;
 
       const result = classifyError(error);

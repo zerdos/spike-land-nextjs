@@ -33,7 +33,9 @@ describe("GET /api/merch/orders/[id]", () => {
   it("should return 401 if not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost/api/merch/orders/order_1");
+    const request = new NextRequest(
+      "http://localhost/api/merch/orders/order_1",
+    );
 
     const response = await GET(request, {
       params: Promise.resolve({ id: "order_1" }),
@@ -81,7 +83,9 @@ describe("GET /api/merch/orders/[id]", () => {
       role: "USER",
     } as any);
 
-    const request = new NextRequest("http://localhost/api/merch/orders/order_1");
+    const request = new NextRequest(
+      "http://localhost/api/merch/orders/order_1",
+    );
 
     const response = await GET(request, {
       params: Promise.resolve({ id: "order_1" }),
@@ -174,7 +178,9 @@ describe("GET /api/merch/orders/[id]", () => {
       role: "USER",
     } as any);
 
-    const request = new NextRequest("http://localhost/api/merch/orders/order_1");
+    const request = new NextRequest(
+      "http://localhost/api/merch/orders/order_1",
+    );
 
     const response = await GET(request, {
       params: Promise.resolve({ id: "order_1" }),
@@ -216,7 +222,9 @@ describe("GET /api/merch/orders/[id]", () => {
       role: "ADMIN",
     } as any);
 
-    const request = new NextRequest("http://localhost/api/merch/orders/order_1");
+    const request = new NextRequest(
+      "http://localhost/api/merch/orders/order_1",
+    );
 
     const response = await GET(request, {
       params: Promise.resolve({ id: "order_1" }),
@@ -252,7 +260,9 @@ describe("GET /api/merch/orders/[id]", () => {
       role: "SUPER_ADMIN",
     } as any);
 
-    const request = new NextRequest("http://localhost/api/merch/orders/order_1");
+    const request = new NextRequest(
+      "http://localhost/api/merch/orders/order_1",
+    );
 
     const response = await GET(request, {
       params: Promise.resolve({ id: "order_1" }),
@@ -271,7 +281,9 @@ describe("GET /api/merch/orders/[id]", () => {
       new Error("Database error"),
     );
 
-    const request = new NextRequest("http://localhost/api/merch/orders/order_1");
+    const request = new NextRequest(
+      "http://localhost/api/merch/orders/order_1",
+    );
 
     const response = await GET(request, {
       params: Promise.resolve({ id: "order_1" }),
@@ -305,7 +317,9 @@ describe("GET /api/merch/orders/[id]", () => {
       role: "USER",
     } as any);
 
-    const request = new NextRequest("http://localhost/api/merch/orders/order_1");
+    const request = new NextRequest(
+      "http://localhost/api/merch/orders/order_1",
+    );
 
     await GET(request, {
       params: Promise.resolve({ id: "order_1" }),

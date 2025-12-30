@@ -87,7 +87,10 @@ export default function SubscriptionPage() {
   // Handle auth states
   if (status === "loading" || isTierLoading || isBalanceLoading) {
     return (
-      <div className="container mx-auto pt-24 pb-8 px-4" data-testid="loading-state">
+      <div
+        className="container mx-auto pt-24 pb-8 px-4"
+        data-testid="loading-state"
+      >
         <div className="flex items-center justify-center min-h-[400px]">
           <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
@@ -112,7 +115,9 @@ export default function SubscriptionPage() {
   };
 
   const handleDowngrade = async (tier: TierInfo) => {
-    const result = await scheduleDowngrade(tier.tier as "FREE" | "BASIC" | "STANDARD");
+    const result = await scheduleDowngrade(
+      tier.tier as "FREE" | "BASIC" | "STANDARD",
+    );
     if (result.success) {
       refetchTiers();
     }
@@ -144,11 +149,19 @@ export default function SubscriptionPage() {
     : null;
 
   return (
-    <div className="container mx-auto pt-24 pb-8 px-4 max-w-4xl" data-testid="subscription-page">
+    <div
+      className="container mx-auto pt-24 pb-8 px-4 max-w-4xl"
+      data-testid="subscription-page"
+    >
       {/* Header with back button */}
       <div className="mb-8">
         <Link href="/settings">
-          <Button variant="ghost" size="sm" className="mb-4" data-testid="back-button">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mb-4"
+            data-testid="back-button"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Settings
           </Button>
@@ -173,19 +186,25 @@ export default function SubscriptionPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 rounded-lg bg-muted/50">
-              <span className="text-sm text-muted-foreground">Token Balance</span>
+              <span className="text-sm text-muted-foreground">
+                Token Balance
+              </span>
               <p className="text-2xl font-bold" data-testid="token-balance">
                 {balance ?? 0}
               </p>
             </div>
             <div className="p-4 rounded-lg bg-muted/50">
-              <span className="text-sm text-muted-foreground">Token Capacity</span>
+              <span className="text-sm text-muted-foreground">
+                Token Capacity
+              </span>
               <p className="text-2xl font-bold" data-testid="well-capacity">
                 {currentTierInfo?.wellCapacity ?? 100}
               </p>
             </div>
             <div className="p-4 rounded-lg bg-muted/50">
-              <span className="text-sm text-muted-foreground">Monthly Price</span>
+              <span className="text-sm text-muted-foreground">
+                Monthly Price
+              </span>
               <p className="text-2xl font-bold" data-testid="monthly-price">
                 {currentTierInfo?.priceGBP
                   ? `£${currentTierInfo.priceGBP}`
@@ -198,7 +217,10 @@ export default function SubscriptionPage() {
 
       {/* Scheduled downgrade notice */}
       {scheduledDowngrade && (
-        <Card className="mb-8 border-yellow-500/30" data-testid="scheduled-downgrade-card">
+        <Card
+          className="mb-8 border-yellow-500/30"
+          data-testid="scheduled-downgrade-card"
+        >
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-yellow-400">
               <Calendar className="h-5 w-5" />
@@ -209,8 +231,11 @@ export default function SubscriptionPage() {
             <div>
               <p className="text-muted-foreground">
                 Your plan will change to{" "}
-                <TierBadge tier={scheduledDowngrade.targetTier as TierType} size="sm" /> on{" "}
-                {scheduledDowngrade.effectiveDate.toLocaleDateString()}
+                <TierBadge
+                  tier={scheduledDowngrade.targetTier as TierType}
+                  size="sm"
+                />{" "}
+                on {scheduledDowngrade.effectiveDate.toLocaleDateString()}
               </p>
             </div>
             <Button
@@ -260,8 +285,7 @@ export default function SubscriptionPage() {
                 canUpgrade={canUpgradeToTier}
                 canDowngrade={canDowngradeToTier && !scheduledDowngrade}
                 onUpgrade={() => handleUpgrade(tier)}
-                onDowngrade={() =>
-                  handleDowngrade(tier)}
+                onDowngrade={() => handleDowngrade(tier)}
                 isUpgrading={isUpgrading && selectedTier?.tier === tier.tier}
                 isScheduling={isScheduling}
               />

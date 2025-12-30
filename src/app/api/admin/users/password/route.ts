@@ -28,10 +28,14 @@ export async function POST(request: NextRequest) {
 
   if (adminError) {
     console.error("Admin check failed:", adminError);
-    if (adminError instanceof Error && adminError.message.includes("Forbidden")) {
+    if (
+      adminError instanceof Error && adminError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: adminError.message }, { status: 403 });
     }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 
   // Rate limit password set operations (5 per hour per admin)
@@ -124,7 +128,9 @@ export async function POST(request: NextRequest) {
 
   if (fetchError) {
     console.error("User lookup error:", fetchError);
-    if (fetchError instanceof Error && fetchError.message.includes("Forbidden")) {
+    if (
+      fetchError instanceof Error && fetchError.message.includes("Forbidden")
+    ) {
       return NextResponse.json({ error: fetchError.message }, { status: 403 });
     }
     return NextResponse.json(

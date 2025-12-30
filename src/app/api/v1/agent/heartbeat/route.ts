@@ -36,7 +36,9 @@ export async function POST(req: NextRequest) {
 
   if (dbError) {
     console.error("Database error:", dbError);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 
   if (!box) {
@@ -53,7 +55,9 @@ export async function POST(req: NextRequest) {
 
     if (updateError) {
       console.error("Failed to update box status:", updateError);
-      return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+      return NextResponse.json({ error: "Internal Server Error" }, {
+        status: 500,
+      });
     }
   }
 

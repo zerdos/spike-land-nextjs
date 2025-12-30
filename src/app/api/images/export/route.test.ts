@@ -4,7 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
 
 // Mocks
-const mockSession = { user: { id: "user-123", email: "test@example.com" } } as Session;
+const mockSession = {
+  user: { id: "user-123", email: "test@example.com" },
+} as Session;
 vi.mock("@/auth", () => ({
   auth: vi.fn(() => Promise.resolve(mockSession)),
 }));

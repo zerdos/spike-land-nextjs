@@ -56,7 +56,9 @@ export default function SurfacesPage() {
             <div className="p-2 bg-primary/10 rounded-lg">
               <Layers className="w-6 h-6 text-primary" />
             </div>
-            <h2 className="text-3xl font-bold font-heading">Glass Morphism Tiers</h2>
+            <h2 className="text-3xl font-bold font-heading">
+              Glass Morphism Tiers
+            </h2>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl">
             Our core depth system. The background below these cards helps verify the strength of the
@@ -77,8 +79,12 @@ export default function SurfacesPage() {
                 onClick={() => handleCopy("glass-0")}
               >
                 <span className="text-4xl font-bold opacity-20 mb-2">0</span>
-                <Badge variant="outline" className="mb-2 bg-black/20">Base / Recessed</Badge>
-                <p className="text-xs text-muted-foreground mb-4">Minimal blur (4px)</p>
+                <Badge variant="outline" className="mb-2 bg-black/20">
+                  Base / Recessed
+                </Badge>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Minimal blur (4px)
+                </p>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -104,11 +110,15 @@ export default function SurfacesPage() {
                 className="glass-1 h-48 rounded-2xl flex flex-col items-center justify-center p-6 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer border border-white/10"
                 onClick={() => handleCopy("glass-1")}
               >
-                <span className="text-4xl font-bold text-primary/40 mb-2">1</span>
+                <span className="text-4xl font-bold text-primary/40 mb-2">
+                  1
+                </span>
                 <Badge className="mb-2 bg-primary/20 text-primary border-primary/20 hover:bg-primary/30">
                   Standard
                 </Badge>
-                <p className="text-xs text-muted-foreground mb-4">Medium blur (8px)</p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Medium blur (8px)
+                </p>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -134,11 +144,15 @@ export default function SurfacesPage() {
                 className="glass-2 h-48 rounded-2xl flex flex-col items-center justify-center p-6 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-xl cursor-pointer border border-white/20"
                 onClick={() => handleCopy("glass-2")}
               >
-                <span className="text-4xl font-bold text-accent/40 mb-2">2</span>
+                <span className="text-4xl font-bold text-accent/40 mb-2">
+                  2
+                </span>
                 <Badge className="mb-2 bg-white/20 text-white border-white/20 hover:bg-white/30">
                   Interactive
                 </Badge>
-                <p className="text-xs text-muted-foreground mb-4">High blur (16px)</p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  High blur (16px)
+                </p>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -164,7 +178,9 @@ export default function SurfacesPage() {
 
       <section className="space-y-8 pt-12 border-t border-dashed border-white/5">
         <div className="space-y-4">
-          <h2 className="text-3xl font-bold font-heading">Shadow-based Surfaces</h2>
+          <h2 className="text-3xl font-bold font-heading">
+            Shadow-based Surfaces
+          </h2>
           <p className="text-lg text-muted-foreground max-w-2xl">
             Specialized shadows provide depth where transparency isn't enough.
           </p>
@@ -179,14 +195,18 @@ export default function SurfacesPage() {
               <div className="relative">
                 <div className="shadow-negative bg-black/20 rounded-xl p-4 flex items-center gap-3 border border-white/5 group transition-colors focus-within:border-primary/50">
                   <Search className="w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <span className="text-muted-foreground flex-1">Search documentation...</span>
+                  <span className="text-muted-foreground flex-1">
+                    Search documentation...
+                  </span>
                   <div className="text-xs bg-white/5 px-2 py-1 rounded text-muted-foreground">
                     ⌘K
                   </div>
                 </div>
               </div>
               <div className="shadow-negative bg-black/20 rounded-xl p-4 border border-white/5">
-                <p className="text-sm text-muted-foreground text-center">Recessed Panel Content</p>
+                <p className="text-sm text-muted-foreground text-center">
+                  Recessed Panel Content
+                </p>
               </div>
             </div>
           </ComponentSample>
@@ -202,7 +222,9 @@ export default function SurfacesPage() {
                 </div>
                 <div>
                   <h4 className="font-bold text-sm">Connection Restored</h4>
-                  <p className="text-xs text-muted-foreground">Your changes are saved.</p>
+                  <p className="text-xs text-muted-foreground">
+                    Your changes are saved.
+                  </p>
                 </div>
               </div>
             </div>
@@ -216,7 +238,9 @@ export default function SurfacesPage() {
             <div className="p-2 bg-purple-500/10 rounded-lg">
               <Sparkles className="w-6 h-6 text-purple-400" />
             </div>
-            <h2 className="text-3xl font-bold font-heading">Vibrant Aura Surfaces</h2>
+            <h2 className="text-3xl font-bold font-heading">
+              Vibrant Aura Surfaces
+            </h2>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl">
             Categories and brands are distinguished by their "Aura"—a combination of gradient glass
@@ -251,7 +275,9 @@ export default function SurfacesPage() {
 
       <section className="space-y-8 pt-12 border-t border-dashed border-white/5">
         <div className="space-y-4">
-          <h2 className="text-3xl font-bold font-heading">High-Fidelity Layers</h2>
+          <h2 className="text-3xl font-bold font-heading">
+            High-Fidelity Layers
+          </h2>
           <p className="text-lg text-muted-foreground max-w-2xl">
             Combining glass tiers and shadows for complex, realistic UI patterns.
           </p>
@@ -262,7 +288,10 @@ export default function SurfacesPage() {
             title="Settings Panel Example"
             description="A complex surface using glass-2, lists, and controls."
           >
-            <Card variant="layers" className="w-full max-w-md mx-auto shadow-2xl">
+            <Card
+              variant="layers"
+              className="w-full max-w-md mx-auto shadow-2xl"
+            >
               <CardHeader className="pb-4 border-b border-white/5">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Notifications</CardTitle>
@@ -274,15 +303,23 @@ export default function SurfacesPage() {
               <CardContent className="pt-6 space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <label className="text-sm font-medium text-white">Push Notifications</label>
-                    <p className="text-xs text-muted-foreground">Receive daily summaries</p>
+                    <label className="text-sm font-medium text-white">
+                      Push Notifications
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      Receive daily summaries
+                    </p>
                   </div>
                   <Switch defaultChecked />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <label className="text-sm font-medium text-white">Sound Effects</label>
-                    <p className="text-xs text-muted-foreground">Play sounds on action</p>
+                    <label className="text-sm font-medium text-white">
+                      Sound Effects
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      Play sounds on action
+                    </p>
                   </div>
                   <Switch />
                 </div>
@@ -311,7 +348,9 @@ export default function SurfacesPage() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-bold text-white line-clamp-1">Abstract Waves</p>
+                    <p className="text-sm font-bold text-white line-clamp-1">
+                      Abstract Waves
+                    </p>
                     <p className="text-[10px] uppercase tracking-wider text-white/60">
                       Digital Art
                     </p>

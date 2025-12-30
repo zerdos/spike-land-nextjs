@@ -18,19 +18,25 @@ describe("StorybookPage (Overview)", () => {
   describe("rendering", () => {
     it("should render the main branding", () => {
       render(<StorybookPage />);
-      expect(screen.getByRole("heading", { name: /spike\.land/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /spike\.land/i }))
+        .toBeInTheDocument();
     });
 
     it("should render the page description", () => {
       render(<StorybookPage />);
-      expect(screen.getByText(/design system & component library for ai-powered creative tools/i))
+      expect(
+        screen.getByText(
+          /design system & component library for ai-powered creative tools/i,
+        ),
+      )
         .toBeInTheDocument();
     });
 
     it("should render footer content", () => {
       render(<StorybookPage />);
       expect(screen.getByText(/stable version 1\.2\.0/i)).toBeInTheDocument();
-      expect(screen.getByText(/built for spike land platform/i)).toBeInTheDocument();
+      expect(screen.getByText(/built for spike land platform/i))
+        .toBeInTheDocument();
     });
   });
 

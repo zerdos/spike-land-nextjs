@@ -181,7 +181,9 @@ export function TierCard({
             data-testid="downgrade-button"
           >
             <ChevronDown className="h-4 w-4" />
-            {isScheduling ? "Scheduling..." : `Downgrade to ${tier.displayName}`}
+            {isScheduling
+              ? "Scheduling..."
+              : `Downgrade to ${tier.displayName}`}
           </Button>
         )}
 

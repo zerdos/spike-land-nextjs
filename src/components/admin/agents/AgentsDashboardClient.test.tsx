@@ -11,7 +11,11 @@ const mockResourcesData = {
       { name: "docker", type: "stdio", configured: false },
     ],
     database: { connected: true, provider: "postgresql" },
-    environment: { nodeEnv: "development", julesConfigured: true, githubConfigured: true },
+    environment: {
+      nodeEnv: "development",
+      julesConfigured: true,
+      githubConfigured: true,
+    },
   },
   checkedAt: "2023-01-01T12:00:00Z",
 };
@@ -24,7 +28,12 @@ const mockGitInfoData = {
   uncommittedChanges: 1,
   aheadBy: 2,
   behindBy: 0,
-  lastCommit: { hash: "abc1234", message: "test commit", author: "test", date: "2023-01-01" },
+  lastCommit: {
+    hash: "abc1234",
+    message: "test commit",
+    author: "test",
+    date: "2023-01-01",
+  },
   timestamp: "2023-01-01T12:00:00Z",
 };
 
@@ -134,7 +143,8 @@ describe("AgentsDashboardClient", () => {
     expect(screen.getByText("Completed")).toBeInTheDocument();
     expect(screen.getByText("Failed")).toBeInTheDocument();
     // Check for stats
-    expect(screen.getByText("2", { selector: ".text-cyan-600" })).toBeInTheDocument(); // Active count
+    expect(screen.getByText("2", { selector: ".text-cyan-600" }))
+      .toBeInTheDocument(); // Active count
   });
 
   it("renders agent sessions", () => {
@@ -200,7 +210,10 @@ describe("AgentsDashboardClient", () => {
     // Check that View PR button is rendered when PR URL is present
     expect(screen.getByText("View PR")).toBeInTheDocument();
     const viewPrLink = screen.getByText("View PR").closest("a");
-    expect(viewPrLink).toHaveAttribute("href", "https://github.com/owner/repo/pull/1");
+    expect(viewPrLink).toHaveAttribute(
+      "href",
+      "https://github.com/owner/repo/pull/1",
+    );
   });
 
   it("renders Resources panel with data", async () => {

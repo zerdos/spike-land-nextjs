@@ -108,7 +108,7 @@ export const createFetchMock = (responseMap: Record<string, unknown>) => {
   return vi.fn().mockImplementation((url) => {
     // Sort keys by length descending to match most specific path first
     const keys = Object.keys(responseMap).sort((a, b) => b.length - a.length);
-    const matchingKey = keys.find(key => url.toString().includes(key));
+    const matchingKey = keys.find((key) => url.toString().includes(key));
     if (matchingKey) {
       return Promise.resolve({
         ok: true,

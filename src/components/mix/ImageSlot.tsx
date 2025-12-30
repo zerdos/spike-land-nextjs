@@ -284,40 +284,46 @@ export function ImageSlot({
                 />
               </div>
 
-              {isDragOver ? <p className="text-sm text-primary font-medium">Drop image here</p> : (
-                <>
-                  <p className="text-sm text-muted-foreground text-center">
-                    Drag & drop an image
+              {isDragOver
+                ? (
+                  <p className="text-sm text-primary font-medium">
+                    Drop image here
                   </p>
-                  <div className="flex gap-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={disabled}
-                          className="text-xs"
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Select
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="center">
-                        <DropdownMenuItem onClick={handleUploadClick}>
-                          <Camera className="h-4 w-4 mr-2" />
-                          Upload from device
-                        </DropdownMenuItem>
-                        {onOpenGallery && (
-                          <DropdownMenuItem onClick={onOpenGallery}>
-                            <FolderOpen className="h-4 w-4 mr-2" />
-                            Choose from gallery
+                )
+                : (
+                  <>
+                    <p className="text-sm text-muted-foreground text-center">
+                      Drag & drop an image
+                    </p>
+                    <div className="flex gap-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={disabled}
+                            className="text-xs"
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Select
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="center">
+                          <DropdownMenuItem onClick={handleUploadClick}>
+                            <Camera className="h-4 w-4 mr-2" />
+                            Upload from device
                           </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </>
-              )}
+                          {onOpenGallery && (
+                            <DropdownMenuItem onClick={onOpenGallery}>
+                              <FolderOpen className="h-4 w-4 mr-2" />
+                              Choose from gallery
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </>
+                )}
             </div>
           )}
       </Card>

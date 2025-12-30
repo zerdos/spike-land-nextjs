@@ -11,7 +11,8 @@ describe("ButtonsPage", () => {
 
     it("should render the accessibility section", () => {
       render(<ButtonsPage />);
-      expect(screen.getByText(/Accessibility \(WCAG AA\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Accessibility \(WCAG AA\)/i))
+        .toBeInTheDocument();
     });
   });
 
@@ -29,9 +30,12 @@ describe("ButtonsPage", () => {
 
     it("should render all semantic variants", () => {
       render(<ButtonsPage />);
-      expect(screen.getByRole("button", { name: /delete project/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /publish changes/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /top up tokens/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /delete project/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /publish changes/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /top up tokens/i }))
+        .toBeInTheDocument();
     });
   });
 

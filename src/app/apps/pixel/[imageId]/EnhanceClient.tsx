@@ -88,12 +88,13 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
       // But router.refresh() returns confirmed data.
       return {
         ...initialImage,
-        enhancementJobs: initialImage.enhancementJobs.map(serverJob => {
-          const localJob = prev.enhancementJobs.find(j => j.id === serverJob.id);
+        enhancementJobs: initialImage.enhancementJobs.map((serverJob) => {
+          const localJob = prev.enhancementJobs.find((j) => j.id === serverJob.id);
           // Preserve currentStage from local state if it exists and status is still processing
           if (
             localJob?.currentStage &&
-            (serverJob.status === "PROCESSING" || serverJob.status === "PENDING")
+            (serverJob.status === "PROCESSING" ||
+              serverJob.status === "PENDING")
           ) {
             return { ...serverJob, currentStage: localJob.currentStage };
           }
@@ -162,7 +163,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
   // Poll for updates if ANY job is processing
   // This handles parallel jobs that aren't the "active" one being streamed
   const hasProcessingJobs = image.enhancementJobs.some(
-    j => j.status === "PROCESSING" || j.status === "PENDING",
+    (j) => j.status === "PROCESSING" || j.status === "PENDING",
   );
 
   useInterval(() => {
@@ -587,7 +588,9 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                     />
                   )}
                   {/* Show View Mix Details button for blend jobs */}
-                  {selectedVersion && (selectedVersion.isBlend || selectedVersion.sourceImageId) &&
+                  {selectedVersion &&
+                    (selectedVersion.isBlend ||
+                      selectedVersion.sourceImageId) &&
                     (
                       <Button
                         variant="outline"

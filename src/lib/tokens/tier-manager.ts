@@ -154,7 +154,9 @@ export class TierManager {
    * Get the previous tier for downgrades
    * Returns null if user is at FREE (lowest tier)
    */
-  static getPreviousTier(currentTier: SubscriptionTier): SubscriptionTier | null {
+  static getPreviousTier(
+    currentTier: SubscriptionTier,
+  ): SubscriptionTier | null {
     const currentIndex = TIER_ORDER.indexOf(currentTier);
     if (currentIndex <= 0) {
       return null;
@@ -293,7 +295,9 @@ export class TierManager {
     );
 
     if (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
       tierLogger.error(
         "Tier upgrade failed",
         error instanceof Error ? error : new Error(errorMessage),
@@ -330,10 +334,13 @@ export class TierManager {
           select: { tier: true },
         });
 
-        const currentTier = (tokenBalance?.tier as SubscriptionTier) ?? SubscriptionTier.FREE;
+        const currentTier = (tokenBalance?.tier as SubscriptionTier) ??
+          SubscriptionTier.FREE;
 
         if (!this.canDowngradeTo(currentTier, targetTier)) {
-          throw new Error(`Cannot downgrade from ${currentTier} to ${targetTier}`);
+          throw new Error(
+            `Cannot downgrade from ${currentTier} to ${targetTier}`,
+          );
         }
 
         const subscription = await tx.subscription.update({
@@ -351,7 +358,9 @@ export class TierManager {
     );
 
     if (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
       // Check if this is a validation error (not a database error)
       if (errorMessage.startsWith("Cannot downgrade")) {
         return {
@@ -359,7 +368,10 @@ export class TierManager {
           error: errorMessage,
         };
       }
-      logger.error("Failed to schedule downgrade", error, { userId, targetTier });
+      logger.error("Failed to schedule downgrade", error, {
+        userId,
+        targetTier,
+      });
       return {
         success: false,
         error: "Failed to schedule downgrade. Please try again.",
@@ -440,7 +452,9 @@ export class TierManager {
   /**
    * Check if user should be prompted to upgrade (balance = 0 and not Premium)
    */
-  static async shouldPromptUpgrade(userId: string): Promise<UpgradePromptResult> {
+  static async shouldPromptUpgrade(
+    userId: string,
+  ): Promise<UpgradePromptResult> {
     this.validateUserId(userId);
 
     const { data: tokenBalance, error } = await tryCatch(

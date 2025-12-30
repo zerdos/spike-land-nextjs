@@ -99,7 +99,9 @@ export function AgentsDashboardClient({ initialData }: Props) {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // New panel states
-  const [resourcesData, setResourcesData] = useState<ResourceStatus | null>(null);
+  const [resourcesData, setResourcesData] = useState<ResourceStatus | null>(
+    null,
+  );
   const [resourcesLoading, setResourcesLoading] = useState(true);
   const [resourcesError, setResourcesError] = useState<string | null>(null);
 
@@ -185,7 +187,12 @@ export function AgentsDashboardClient({ initialData }: Props) {
   }, []);
 
   const fetchAllData = useCallback(async () => {
-    await Promise.all([fetchData(), fetchResources(), fetchGitInfo(), fetchGitHub()]);
+    await Promise.all([
+      fetchData(),
+      fetchResources(),
+      fetchGitInfo(),
+      fetchGitHub(),
+    ]);
   }, [fetchData, fetchResources, fetchGitInfo, fetchGitHub]);
 
   // Initial fetch for all panel data
@@ -319,21 +326,29 @@ export function AgentsDashboardClient({ initialData }: Props) {
       {/* Status Overview */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="p-4">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">Total</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            Total
+          </p>
           <p className="mt-1 text-2xl font-bold">{data.pagination.total}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">Active</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            Active
+          </p>
           <p className="mt-1 text-2xl font-bold text-cyan-600">{activeCount}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">Completed</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            Completed
+          </p>
           <p className="mt-1 text-2xl font-bold text-green-600">
             {data.statusCounts.COMPLETED || 0}
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">Failed</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            Failed
+          </p>
           <p className="mt-1 text-2xl font-bold text-red-600">
             {data.statusCounts.FAILED || 0}
           </p>
@@ -367,7 +382,9 @@ export function AgentsDashboardClient({ initialData }: Props) {
           {data.sessions.length === 0
             ? (
               <Card className="p-8 text-center">
-                <p className="text-neutral-600 dark:text-neutral-400">No active agents</p>
+                <p className="text-neutral-600 dark:text-neutral-400">
+                  No active agents
+                </p>
                 {data.julesAvailable && (
                   <Button
                     variant="outline"
@@ -421,9 +438,12 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
     setIsApproving(true);
     setApproveError(null);
     try {
-      const response = await fetch(`/api/admin/agents/${session.id}/approve-plan`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `/api/admin/agents/${session.id}/approve-plan`,
+        {
+          method: "POST",
+        },
+      );
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error || "Failed to approve plan");
@@ -470,7 +490,9 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
           )}
           <div className="mt-2 flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
             {session.sourceRepo && (
-              <span>Repo: {session.sourceRepo.split("/").slice(-2).join("/")}</span>
+              <span>
+                Repo: {session.sourceRepo.split("/").slice(-2).join("/")}
+              </span>
             )}
             {session.startingBranch && <span>Branch: {session.startingBranch}</span>}
             <span>Activities: {session.activityCount}</span>
@@ -530,27 +552,37 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
           {session.errorMessage && (
             <div className="mb-4">
               <h4 className="text-sm font-medium text-red-600">Error</h4>
-              <p className="mt-1 text-sm text-red-500">{session.errorMessage}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {session.errorMessage}
+              </p>
             </div>
           )}
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-neutral-600 dark:text-neutral-400">External ID:</span>{" "}
+              <span className="text-neutral-600 dark:text-neutral-400">
+                External ID:
+              </span>{" "}
               <code className="text-xs">{session.externalId}</code>
             </div>
             <div>
-              <span className="text-neutral-600 dark:text-neutral-400">Created:</span>{" "}
+              <span className="text-neutral-600 dark:text-neutral-400">
+                Created:
+              </span>{" "}
               {new Date(session.createdAt).toLocaleString()}
             </div>
             {session.planApprovedAt && (
               <div>
-                <span className="text-neutral-600 dark:text-neutral-400">Plan Approved:</span>{" "}
+                <span className="text-neutral-600 dark:text-neutral-400">
+                  Plan Approved:
+                </span>{" "}
                 {new Date(session.planApprovedAt).toLocaleString()}
               </div>
             )}
             {session.outputBranch && (
               <div>
-                <span className="text-neutral-600 dark:text-neutral-400">Output Branch:</span>{" "}
+                <span className="text-neutral-600 dark:text-neutral-400">
+                  Output Branch:
+                </span>{" "}
                 {session.outputBranch}
               </div>
             )}

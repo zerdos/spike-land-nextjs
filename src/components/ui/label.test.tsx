@@ -37,6 +37,9 @@ describe("Label", () => {
     const label = screen.getByText("Test Label");
     // Verify default classes from cva
     expect(label).toHaveClass("text-sm", "font-medium", "leading-none");
-    expect(label).toHaveClass("peer-disabled:cursor-not-allowed", "peer-disabled:opacity-70");
+    expect(label).toHaveClass(
+      "peer-disabled:cursor-not-allowed",
+      "peer-disabled:opacity-70",
+    );
   });
 });

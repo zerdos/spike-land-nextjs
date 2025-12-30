@@ -56,7 +56,9 @@ interface ProductDetailProps {
 
 export function ProductDetail({ product }: ProductDetailProps) {
   const router = useRouter();
-  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
+  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(
+    null,
+  );
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(
     product.variants[0] ?? null,
   );
@@ -97,9 +99,15 @@ export function ProductDetail({ product }: ProductDetailProps) {
         body: JSON.stringify({
           productId: product.id,
           variantId: selectedVariant?.id,
-          imageId: selectedImage.type === "enhanced" ? selectedImage.imageId : undefined,
-          uploadedImageUrl: selectedImage.type === "upload" ? selectedImage.imageUrl : undefined,
-          uploadedImageR2Key: selectedImage.type === "upload" ? selectedImage.r2Key : undefined,
+          imageId: selectedImage.type === "enhanced"
+            ? selectedImage.imageId
+            : undefined,
+          uploadedImageUrl: selectedImage.type === "upload"
+            ? selectedImage.imageUrl
+            : undefined,
+          uploadedImageR2Key: selectedImage.type === "upload"
+            ? selectedImage.r2Key
+            : undefined,
           quantity: 1,
           customText: customText.trim() || undefined,
         }),
@@ -167,9 +175,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <Badge variant="secondary" className="mb-2">
               {product.category.name}
             </Badge>
-            <h1 data-testid="product-name" className="text-3xl font-bold">{product.name}</h1>
+            <h1 data-testid="product-name" className="text-3xl font-bold">
+              {product.name}
+            </h1>
             {product.description && (
-              <p className="mt-2 text-muted-foreground">{product.description}</p>
+              <p className="mt-2 text-muted-foreground">
+                {product.description}
+              </p>
             )}
           </div>
 

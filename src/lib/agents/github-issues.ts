@@ -93,11 +93,15 @@ async function githubRequest<T>(
   const { data: json, error: jsonError } = await tryCatch(response.json());
 
   if (jsonError) {
-    return { data: null, error: `Failed to parse response: ${jsonError.message}` };
+    return {
+      data: null,
+      error: `Failed to parse response: ${jsonError.message}`,
+    };
   }
 
   if (!response.ok) {
-    const message = (json as { message?: string; })?.message || `API error: ${response.status}`;
+    const message = (json as { message?: string; })?.message ||
+      `API error: ${response.status}`;
     return { data: null, error: message };
   }
 

@@ -54,7 +54,11 @@ describe("useTierUpgrade", () => {
     await act(async () => {
       resolvePromise!({
         ok: true,
-        json: () => Promise.resolve({ success: true, url: "https://checkout.stripe.com/test" }),
+        json: () =>
+          Promise.resolve({
+            success: true,
+            url: "https://checkout.stripe.com/test",
+          }),
       });
     });
   });
@@ -191,7 +195,11 @@ describe("useTierUpgrade", () => {
     it("sends correct request body", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ success: true, url: "https://checkout.stripe.com/test" }),
+        json: () =>
+          Promise.resolve({
+            success: true,
+            url: "https://checkout.stripe.com/test",
+          }),
       });
 
       const { result } = renderHook(() => useTierUpgrade());
@@ -214,7 +222,11 @@ describe("useTierUpgrade", () => {
         .mockRejectedValueOnce(new Error("First error"))
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ success: true, url: "https://checkout.stripe.com/test" }),
+          json: () =>
+            Promise.resolve({
+              success: true,
+              url: "https://checkout.stripe.com/test",
+            }),
         });
 
       const { result } = renderHook(() => useTierUpgrade());
@@ -250,7 +262,9 @@ describe("useTierUpgrade", () => {
         await result.current.upgradeAndRedirect("BASIC");
       });
 
-      expect(mockLocation.href).toBe("https://checkout.stripe.com/redirect-test");
+      expect(mockLocation.href).toBe(
+        "https://checkout.stripe.com/redirect-test",
+      );
     });
 
     it("does not redirect on failure", async () => {
@@ -288,7 +302,11 @@ describe("useTierUpgrade", () => {
     it("supports upgrading to BASIC tier", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ success: true, url: "https://checkout.stripe.com/basic" }),
+        json: () =>
+          Promise.resolve({
+            success: true,
+            url: "https://checkout.stripe.com/basic",
+          }),
       });
 
       const { result } = renderHook(() => useTierUpgrade());
@@ -308,7 +326,11 @@ describe("useTierUpgrade", () => {
     it("supports upgrading to STANDARD tier", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ success: true, url: "https://checkout.stripe.com/standard" }),
+        json: () =>
+          Promise.resolve({
+            success: true,
+            url: "https://checkout.stripe.com/standard",
+          }),
       });
 
       const { result } = renderHook(() => useTierUpgrade());
@@ -328,7 +350,11 @@ describe("useTierUpgrade", () => {
     it("supports upgrading to PREMIUM tier", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ success: true, url: "https://checkout.stripe.com/premium" }),
+        json: () =>
+          Promise.resolve({
+            success: true,
+            url: "https://checkout.stripe.com/premium",
+          }),
       });
 
       const { result } = renderHook(() => useTierUpgrade());

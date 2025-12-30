@@ -41,7 +41,11 @@ describe("useDowngrade", () => {
 
       const { result } = renderHook(() => useDowngrade());
 
-      let downgradeResult: { success: boolean; effectiveDate?: Date; message?: string; };
+      let downgradeResult: {
+        success: boolean;
+        effectiveDate?: Date;
+        message?: string;
+      };
       await act(async () => {
         downgradeResult = await result.current.scheduleDowngrade("FREE");
       });
@@ -266,7 +270,9 @@ describe("useDowngrade", () => {
       });
 
       expect(cancelResult!.success).toBe(true);
-      expect(cancelResult!.message).toBe("Scheduled downgrade has been canceled");
+      expect(cancelResult!.message).toBe(
+        "Scheduled downgrade has been canceled",
+      );
       expect(result.current.scheduledDowngrade).toBeNull();
       expect(result.current.isCanceling).toBe(false);
     });

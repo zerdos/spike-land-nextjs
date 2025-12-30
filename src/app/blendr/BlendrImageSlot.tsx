@@ -208,7 +208,8 @@ export function BlendrImageSlot({
         "group relative w-full h-32 rounded-2xl transition-all duration-300",
         "border border-white/10 overflow-hidden",
         "flex items-center justify-center cursor-pointer",
-        !image && "glass-1 hover:glass-2 hover:border-white/20 active:scale-[0.98]",
+        !image &&
+          "glass-1 hover:glass-2 hover:border-white/20 active:scale-[0.98]",
         isDragOver && "ring-2 ring-primary border-primary bg-primary/10",
         disabled && "opacity-50 cursor-not-allowed pointer-events-none",
         image && "bg-black/40 border-transparent",
@@ -258,7 +259,9 @@ export function BlendrImageSlot({
               {image.type === "upload"
                 ? <Upload className="h-3 w-3 text-white/70" />
                 : <FolderOpen className="h-3 w-3 text-white/70" />}
-              <span className="text-xs text-white/90 truncate max-w-[150px]">{image.name}</span>
+              <span className="text-xs text-white/90 truncate max-w-[150px]">
+                {image.name}
+              </span>
             </div>
           </>
         )

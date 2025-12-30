@@ -91,7 +91,9 @@ describe("get-posts", () => {
 
     it("returns slugs from mdx files", () => {
       vi.mocked(fs.readdirSync).mockReturnValue(
-        ["post-1.mdx", "post-2.mdx", "not-mdx.txt"] as unknown as ReturnType<typeof fs.readdirSync>,
+        ["post-1.mdx", "post-2.mdx", "not-mdx.txt"] as unknown as ReturnType<
+          typeof fs.readdirSync
+        >,
       );
 
       const slugs = getPostSlugs();
@@ -101,7 +103,9 @@ describe("get-posts", () => {
 
     it("filters out non-mdx files", () => {
       vi.mocked(fs.readdirSync).mockReturnValue(
-        ["post.mdx", "readme.md", "script.ts"] as unknown as ReturnType<typeof fs.readdirSync>,
+        ["post.mdx", "readme.md", "script.ts"] as unknown as ReturnType<
+          typeof fs.readdirSync
+        >,
       );
 
       const slugs = getPostSlugs();
@@ -110,7 +114,9 @@ describe("get-posts", () => {
     });
 
     it("returns empty array when readdirSync throws an error", () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       vi.mocked(fs.readdirSync).mockImplementation(() => {
         throw new Error("Permission denied");
       });
@@ -244,7 +250,9 @@ describe("get-posts", () => {
 
     it("returns posts sorted by date (newest first)", () => {
       vi.mocked(fs.readdirSync).mockReturnValue(
-        ["old-post.mdx", "new-post.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+        ["old-post.mdx", "new-post.mdx"] as unknown as ReturnType<
+          typeof fs.readdirSync
+        >,
       );
 
       // Mock different dates for each post
@@ -273,7 +281,9 @@ describe("get-posts", () => {
 
     it("filters out invalid posts", () => {
       vi.mocked(fs.readdirSync).mockReturnValue(
-        ["valid-post.mdx", "invalid-post.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+        ["valid-post.mdx", "invalid-post.mdx"] as unknown as ReturnType<
+          typeof fs.readdirSync
+        >,
       );
 
       // First call returns valid, second returns null
@@ -290,7 +300,9 @@ describe("get-posts", () => {
 
     it("filters out unlisted posts", () => {
       vi.mocked(fs.readdirSync).mockReturnValue(
-        ["listed-post.mdx", "unlisted-post.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+        ["listed-post.mdx", "unlisted-post.mdx"] as unknown as ReturnType<
+          typeof fs.readdirSync
+        >,
       );
 
       let callCount = 0;
@@ -318,7 +330,9 @@ describe("get-posts", () => {
 
     it("includes posts without listed field (defaults to true)", () => {
       vi.mocked(fs.readdirSync).mockReturnValue(
-        ["post-without-listed.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+        ["post-without-listed.mdx"] as unknown as ReturnType<
+          typeof fs.readdirSync
+        >,
       );
 
       vi.mocked(matter).mockReturnValue({
@@ -397,7 +411,9 @@ describe("get-posts", () => {
   describe("getFeaturedPosts", () => {
     it("returns only featured posts", () => {
       vi.mocked(fs.readdirSync).mockReturnValue(
-        ["featured.mdx", "not-featured.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+        ["featured.mdx", "not-featured.mdx"] as unknown as ReturnType<
+          typeof fs.readdirSync
+        >,
       );
 
       let callCount = 0;
@@ -423,7 +439,9 @@ describe("get-posts", () => {
   describe("getAllCategories", () => {
     it("returns unique categories sorted alphabetically", () => {
       vi.mocked(fs.readdirSync).mockReturnValue(
-        ["post1.mdx", "post2.mdx", "post3.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+        ["post1.mdx", "post2.mdx", "post3.mdx"] as unknown as ReturnType<
+          typeof fs.readdirSync
+        >,
       );
 
       let callCount = 0;
@@ -449,7 +467,9 @@ describe("get-posts", () => {
   describe("getAllTags", () => {
     it("returns unique tags sorted alphabetically", () => {
       vi.mocked(fs.readdirSync).mockReturnValue(
-        ["post1.mdx", "post2.mdx"] as unknown as ReturnType<typeof fs.readdirSync>,
+        ["post1.mdx", "post2.mdx"] as unknown as ReturnType<
+          typeof fs.readdirSync
+        >,
       );
 
       let callCount = 0;

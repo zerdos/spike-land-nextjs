@@ -372,7 +372,9 @@ describe("ImageBrowserDialog", () => {
     });
 
     // Click on first image and select enhancement
-    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0]!.closest("div")
+    const imageCards = screen.getAllByText(/enhancement\(s\)/)[0]!.closest(
+      "div",
+    )
       ?.parentElement;
     fireEvent.click(imageCards!);
 

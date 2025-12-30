@@ -420,7 +420,9 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                         </td>
                         <td className="px-4 py-3">
                           <Badge
-                            className={ERROR_TYPE_COLORS[error.errorType || "Error"] ||
+                            className={ERROR_TYPE_COLORS[
+                              error.errorType || "Error"
+                            ] ||
                               "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"}
                             variant="secondary"
                           >
@@ -591,7 +593,10 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => navigator.clipboard.writeText(selectedError.stack || "")}
+                      onClick={() =>
+                        navigator.clipboard.writeText(
+                          selectedError.stack || "",
+                        )}
                     >
                       Copy
                     </Button>

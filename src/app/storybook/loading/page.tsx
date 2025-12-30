@@ -128,7 +128,9 @@ export default function LoadingPage() {
               </div>
               <div className="flex flex-col items-center gap-2">
                 <div className="w-12 h-12 rounded-full animate-pulse-aura" />
-                <span className="text-xs text-muted-foreground">Pulse Aura</span>
+                <span className="text-xs text-muted-foreground">
+                  Pulse Aura
+                </span>
               </div>
             </div>
           </CardContent>

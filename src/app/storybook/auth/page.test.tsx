@@ -28,7 +28,9 @@ describe("AuthPage", () => {
     // Check for section title and description
     expect(screen.getByText("Authentication")).toBeDefined();
     expect(
-      screen.getByText("Components for handling user authentication and identity"),
+      screen.getByText(
+        "Components for handling user authentication and identity",
+      ),
     ).toBeDefined();
 
     // Check for component cards

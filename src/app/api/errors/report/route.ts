@@ -84,7 +84,9 @@ export async function POST(request: Request) {
         message: error.message.slice(0, 10000), // Limit message length
         stack: error.stack?.slice(0, 50000),
         sourceFile: error.sourceFile?.slice(0, 500),
-        sourceLine: typeof error.sourceLine === "number" ? error.sourceLine : undefined,
+        sourceLine: typeof error.sourceLine === "number"
+          ? error.sourceLine
+          : undefined,
         sourceColumn: typeof error.sourceColumn === "number"
           ? error.sourceColumn
           : undefined,
@@ -93,14 +95,20 @@ export async function POST(request: Request) {
         errorCode: error.errorCode?.slice(0, 100),
         route: error.route?.slice(0, 500),
         userId: error.userId?.slice(0, 100),
-        metadata: typeof error.metadata === "object" ? error.metadata : undefined,
+        metadata: typeof error.metadata === "object"
+          ? error.metadata
+          : undefined,
         timestamp: error.timestamp || new Date().toISOString(),
-        environment: error.environment === "BACKEND" ? "BACKEND" as const : "FRONTEND" as const,
+        environment: error.environment === "BACKEND"
+          ? "BACKEND" as const
+          : "FRONTEND" as const,
       };
 
       try {
         // Use environment from payload, default to FRONTEND
-        const env = sanitizedError.environment === "BACKEND" ? "BACKEND" : "FRONTEND";
+        const env = sanitizedError.environment === "BACKEND"
+          ? "BACKEND"
+          : "FRONTEND";
         await reportErrorToDatabase(sanitizedError, env);
         successCount++;
       } catch {

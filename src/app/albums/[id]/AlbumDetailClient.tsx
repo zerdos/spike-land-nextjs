@@ -136,7 +136,9 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
             ...prev,
             images: prev.images.filter((img) => !movedIds.includes(img.id)),
             imageCount: prev.imageCount - movedIds.length,
-            coverImageId: movedIds.includes(prev.coverImageId || "") ? null : prev.coverImageId,
+            coverImageId: movedIds.includes(prev.coverImageId || "")
+              ? null
+              : prev.coverImageId,
           }
           : null
       );
@@ -405,7 +407,10 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                 </p>
                 {/* View controls */}
                 <div className="hidden sm:flex items-center gap-4 border-l pl-4">
-                  <DisplayTypeSwitcher value={displayType} onChange={setDisplayType} />
+                  <DisplayTypeSwitcher
+                    value={displayType}
+                    onChange={setDisplayType}
+                  />
                   <ZoomSlider value={zoomLevel} onChange={setZoomLevel} />
                 </div>
               </div>
@@ -464,7 +469,8 @@ export function AlbumDetailClient({ albumId }: AlbumDetailClientProps) {
                     isDragOver={dragOverImageId === image.id}
                     isBlendDropTarget={blendDropTargetId === image.id}
                     isBlending={blendingImageId === image.id}
-                    showEnhancedBadge={!!image.enhancedUrl && displayType !== "original"}
+                    showEnhancedBadge={!!image.enhancedUrl &&
+                      displayType !== "original"}
                     draggable={album.isOwner && !isSelectionMode}
                     onDragStart={(e) => handleImageDragStart(e, image)}
                     onDragOver={(e) => handleImageDragOver(e, image.id)}

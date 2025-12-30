@@ -141,7 +141,8 @@ export async function processImageForUpload(
         const { naturalWidth, naturalHeight } = img;
 
         // Detect or use forced aspect ratio
-        const targetRatio = forceAspectRatio || detectAspectRatio(naturalWidth, naturalHeight);
+        const targetRatio = forceAspectRatio ||
+          detectAspectRatio(naturalWidth, naturalHeight);
 
         // Calculate crop dimensions
         const { cropX, cropY, cropWidth, cropHeight } = calculateCropDimensions(

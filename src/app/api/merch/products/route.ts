@@ -88,7 +88,9 @@ export async function POST(request: NextRequest) {
     }),
   );
 
-  if (userError || !user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+  if (
+    userError || !user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")
+  ) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

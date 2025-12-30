@@ -272,8 +272,12 @@ describe("POST /api/merch/checkout", () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       stripeCustomerId: "cus_123",
     } as any);
-    vi.mocked(prisma.merchOrder.create).mockResolvedValue({ id: "order_1" } as any);
-    vi.mocked(prisma.merchOrder.update).mockResolvedValue({ id: "order_1" } as any);
+    vi.mocked(prisma.merchOrder.create).mockResolvedValue(
+      { id: "order_1" } as any,
+    );
+    vi.mocked(prisma.merchOrder.update).mockResolvedValue(
+      { id: "order_1" } as any,
+    );
 
     mockStripePaymentIntents.create.mockResolvedValue({
       id: "pi_123",
@@ -332,8 +336,12 @@ describe("POST /api/merch/checkout", () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       stripeCustomerId: "cus_123",
     } as any);
-    vi.mocked(prisma.merchOrder.create).mockResolvedValue({ id: "order_1" } as any);
-    vi.mocked(prisma.merchOrder.update).mockResolvedValue({ id: "order_1" } as any);
+    vi.mocked(prisma.merchOrder.create).mockResolvedValue(
+      { id: "order_1" } as any,
+    );
+    vi.mocked(prisma.merchOrder.update).mockResolvedValue(
+      { id: "order_1" } as any,
+    );
 
     mockStripePaymentIntents.create.mockResolvedValue({
       id: "pi_123",
@@ -391,8 +399,12 @@ describe("POST /api/merch/checkout", () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       stripeCustomerId: "cus_123",
     } as any);
-    vi.mocked(prisma.merchOrder.create).mockResolvedValue({ id: "order_1" } as any);
-    vi.mocked(prisma.merchOrder.update).mockResolvedValue({ id: "order_1" } as any);
+    vi.mocked(prisma.merchOrder.create).mockResolvedValue(
+      { id: "order_1" } as any,
+    );
+    vi.mocked(prisma.merchOrder.update).mockResolvedValue(
+      { id: "order_1" } as any,
+    );
 
     mockStripePaymentIntents.create.mockResolvedValue({
       id: "pi_123",
@@ -455,8 +467,12 @@ describe("POST /api/merch/checkout", () => {
       client_secret: "secret",
     } as any);
 
-    vi.mocked(prisma.merchOrder.create).mockResolvedValue({ id: "order_1" } as any);
-    vi.mocked(prisma.merchOrder.update).mockResolvedValue({ id: "order_1" } as any);
+    vi.mocked(prisma.merchOrder.create).mockResolvedValue(
+      { id: "order_1" } as any,
+    );
+    vi.mocked(prisma.merchOrder.update).mockResolvedValue(
+      { id: "order_1" } as any,
+    );
 
     const request = new NextRequest("http://localhost/api/merch/checkout", {
       method: "POST",
@@ -547,7 +563,9 @@ describe("POST /api/merch/checkout", () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       stripeCustomerId: "cus_123",
     } as any);
-    vi.mocked(prisma.merchOrder.create).mockResolvedValue({ id: "order_1" } as any);
+    vi.mocked(prisma.merchOrder.create).mockResolvedValue(
+      { id: "order_1" } as any,
+    );
 
     mockStripePaymentIntents.create.mockRejectedValue(
       new Error("Stripe error"),
@@ -604,8 +622,12 @@ describe("POST /api/merch/checkout", () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       stripeCustomerId: "cus_123",
     } as any);
-    vi.mocked(prisma.merchOrder.create).mockResolvedValue({ id: "order_1" } as any);
-    vi.mocked(prisma.merchOrder.update).mockResolvedValue({ id: "order_1" } as any);
+    vi.mocked(prisma.merchOrder.create).mockResolvedValue(
+      { id: "order_1" } as any,
+    );
+    vi.mocked(prisma.merchOrder.update).mockResolvedValue(
+      { id: "order_1" } as any,
+    );
 
     mockStripePaymentIntents.create.mockResolvedValue({
       id: "pi_123",

@@ -121,7 +121,9 @@ describe("Order Service", () => {
         ],
       };
 
-      vi.mocked(prisma.merchOrder.findUnique).mockResolvedValue(mockOrder as any);
+      vi.mocked(prisma.merchOrder.findUnique).mockResolvedValue(
+        mockOrder as any,
+      );
       vi.mocked(prodigiProvider.createOrder).mockResolvedValue({
         success: true,
         providerOrderId: "ord_prodigi_123",
@@ -184,7 +186,9 @@ describe("Order Service", () => {
         ],
       };
 
-      vi.mocked(prisma.merchOrder.findUnique).mockResolvedValue(mockOrder as any);
+      vi.mocked(prisma.merchOrder.findUnique).mockResolvedValue(
+        mockOrder as any,
+      );
 
       const result = await submitOrderToPod("order_123");
 
@@ -216,7 +220,9 @@ describe("Order Service", () => {
         ],
       };
 
-      vi.mocked(prisma.merchOrder.findUnique).mockResolvedValue(mockOrder as any);
+      vi.mocked(prisma.merchOrder.findUnique).mockResolvedValue(
+        mockOrder as any,
+      );
       vi.mocked(prodigiProvider.createOrder).mockResolvedValue({
         success: false,
         error: "Invalid SKU",
@@ -268,7 +274,9 @@ describe("Order Service", () => {
         ],
       };
 
-      vi.mocked(prisma.merchOrder.findUnique).mockResolvedValue(mockOrder as any);
+      vi.mocked(prisma.merchOrder.findUnique).mockResolvedValue(
+        mockOrder as any,
+      );
       vi.mocked(prodigiProvider.createOrder).mockResolvedValue({
         success: true,
         providerOrderId: "ord_123",
@@ -308,7 +316,9 @@ describe("Order Service", () => {
         },
       ];
 
-      vi.mocked(prisma.merchOrderItem.findMany).mockResolvedValue(mockItems as any);
+      vi.mocked(prisma.merchOrderItem.findMany).mockResolvedValue(
+        mockItems as any,
+      );
 
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         const tx = {
@@ -340,7 +350,9 @@ describe("Order Service", () => {
         },
       ];
 
-      vi.mocked(prisma.merchOrderItem.findMany).mockResolvedValue(mockItems as any);
+      vi.mocked(prisma.merchOrderItem.findMany).mockResolvedValue(
+        mockItems as any,
+      );
 
       const mockTx = {
         merchOrderItem: { update: vi.fn() },
@@ -392,7 +404,9 @@ describe("Order Service", () => {
         shippedAt: new Date("2024-01-01"),
       };
 
-      vi.mocked(prisma.merchOrderItem.findMany).mockResolvedValue(mockItems as any);
+      vi.mocked(prisma.merchOrderItem.findMany).mockResolvedValue(
+        mockItems as any,
+      );
 
       const mockTx = {
         merchOrderItem: { update: vi.fn() },
@@ -460,13 +474,19 @@ describe("Order Service", () => {
         vi.clearAllMocks();
 
         const mockItems = [{ id: "item_1", order: { id: "order_123" } }];
-        vi.mocked(prisma.merchOrderItem.findMany).mockResolvedValue(mockItems as any);
+        vi.mocked(prisma.merchOrderItem.findMany).mockResolvedValue(
+          mockItems as any,
+        );
 
         const mockTx = {
           merchOrderItem: { update: vi.fn() },
           merchOrder: { update: vi.fn() },
           merchOrderEvent: { create: vi.fn() },
-          merchShipment: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
+          merchShipment: {
+            findFirst: vi.fn(),
+            create: vi.fn(),
+            update: vi.fn(),
+          },
         };
 
         vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
@@ -493,7 +513,9 @@ describe("Order Service", () => {
         },
       ];
 
-      vi.mocked(prisma.merchProduct.findMany).mockResolvedValue(mockProducts as any);
+      vi.mocked(prisma.merchProduct.findMany).mockResolvedValue(
+        mockProducts as any,
+      );
       vi.mocked(prodigiProvider.getQuote).mockResolvedValue({
         currency: "GBP",
         items: [
@@ -544,7 +566,9 @@ describe("Order Service", () => {
         },
       ];
 
-      vi.mocked(prisma.merchProduct.findMany).mockResolvedValue(mockProducts as any);
+      vi.mocked(prisma.merchProduct.findMany).mockResolvedValue(
+        mockProducts as any,
+      );
       vi.mocked(prodigiProvider.getQuote).mockResolvedValue({
         currency: "GBP",
         items: [

@@ -26,10 +26,22 @@ vi.mock("sonner", () => ({
 
 // Mock useTier hook
 const mockUseTier: {
-  tiers: Array<{ tier: string; displayName: string; wellCapacity: number; priceGBP: number; }>;
+  tiers: Array<
+    {
+      tier: string;
+      displayName: string;
+      wellCapacity: number;
+      priceGBP: number;
+    }
+  >;
   currentTier: string;
   canUpgrade: boolean;
-  nextTier: { tier: string; displayName: string; wellCapacity: number; priceGBP: number; } | null;
+  nextTier: {
+    tier: string;
+    displayName: string;
+    wellCapacity: number;
+    priceGBP: number;
+  } | null;
   showUpgradePrompt: boolean;
   isPremiumAtZero: boolean;
   premiumOptions: null;
@@ -42,12 +54,27 @@ const mockUseTier: {
   tiers: [
     { tier: "FREE", displayName: "Free", wellCapacity: 100, priceGBP: 0 },
     { tier: "BASIC", displayName: "Basic", wellCapacity: 20, priceGBP: 5 },
-    { tier: "STANDARD", displayName: "Standard", wellCapacity: 50, priceGBP: 10 },
-    { tier: "PREMIUM", displayName: "Premium", wellCapacity: 100, priceGBP: 20 },
+    {
+      tier: "STANDARD",
+      displayName: "Standard",
+      wellCapacity: 50,
+      priceGBP: 10,
+    },
+    {
+      tier: "PREMIUM",
+      displayName: "Premium",
+      wellCapacity: 100,
+      priceGBP: 20,
+    },
   ],
   currentTier: "FREE",
   canUpgrade: true,
-  nextTier: { tier: "BASIC", displayName: "Basic", wellCapacity: 20, priceGBP: 5 },
+  nextTier: {
+    tier: "BASIC",
+    displayName: "Basic",
+    wellCapacity: 20,
+    priceGBP: 5,
+  },
   showUpgradePrompt: false,
   isPremiumAtZero: false,
   premiumOptions: null,
@@ -180,7 +207,9 @@ describe("SubscriptionPage", () => {
       render(<SubscriptionPage />);
       expect(screen.getByTestId("current-plan-card")).toBeInTheDocument();
       // "Current Plan" appears in card header and tier badge
-      expect(screen.getAllByText("Current Plan").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Current Plan").length).toBeGreaterThanOrEqual(
+        1,
+      );
     });
 
     it("shows token balance", () => {
@@ -275,7 +304,12 @@ describe("SubscriptionPage - Premium user", () => {
     // Reset to defaults
     mockUseTier.currentTier = "FREE";
     mockUseTier.canUpgrade = true;
-    mockUseTier.nextTier = { tier: "BASIC", displayName: "Basic", wellCapacity: 20, priceGBP: 5 };
+    mockUseTier.nextTier = {
+      tier: "BASIC",
+      displayName: "Basic",
+      wellCapacity: 20,
+      priceGBP: 5,
+    };
     mockUseTokenBalance.tier = "FREE";
   });
 

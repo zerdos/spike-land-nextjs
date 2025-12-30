@@ -37,7 +37,9 @@ export function ImageUpload(
           try {
             const processed = await processImageForUpload(file);
             // Create a new File from the processed blob
-            const extension = processed.mimeType === "image/webp" ? ".webp" : ".jpg";
+            const extension = processed.mimeType === "image/webp"
+              ? ".webp"
+              : ".jpg";
             const baseName = file.name.replace(/\.[^/.]+$/, "");
             const newFile = new File(
               [processed.blob],
@@ -132,7 +134,11 @@ export function ImageUpload(
         </div>
 
         <h3 className="text-xl font-semibold mb-2 text-foreground">
-          {isProcessing ? "Processing..." : isUploading ? "Uploading..." : "Upload Images"}
+          {isProcessing
+            ? "Processing..."
+            : isUploading
+            ? "Uploading..."
+            : "Upload Images"}
         </h3>
 
         <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">

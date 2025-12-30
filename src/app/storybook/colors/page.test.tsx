@@ -59,15 +59,19 @@ describe("ColorsPage", () => {
 
     it("should render spike.land Fuchsia swatch", () => {
       render(<ColorsPage />);
-      expect(screen.getAllByText("spike.land Fuchsia").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("spike.land Fuchsia").length).toBeGreaterThan(
+        0,
+      );
     });
   });
 
   describe("demos", () => {
     it("should render glow buttons", () => {
       render(<ColorsPage />);
-      expect(screen.getByRole("button", { name: /action ready/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /priority focus/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /action ready/i }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /priority focus/i }))
+        .toBeInTheDocument();
     });
 
     it("should render glass elevation tiers", () => {

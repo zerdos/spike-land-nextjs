@@ -53,7 +53,10 @@ export default function BrandPage() {
                     <div className="p-3 rounded-xl glass-1 glass-edge min-w-[80px] flex items-center justify-center">
                       <PixelLogo size={size} />
                     </div>
-                    <Badge variant="outline" className="font-mono text-[10px] opacity-60">
+                    <Badge
+                      variant="outline"
+                      className="font-mono text-[10px] opacity-60"
+                    >
                       {size}
                     </Badge>
                   </div>
@@ -68,17 +71,23 @@ export default function BrandPage() {
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center gap-6 p-4 rounded-xl glass-1 glass-edge">
                   <PixelLogo size="md" variant="horizontal" />
-                  <Badge variant="secondary" className="ml-auto text-[10px]">HORIZONTAL</Badge>
+                  <Badge variant="secondary" className="ml-auto text-[10px]">
+                    HORIZONTAL
+                  </Badge>
                 </div>
                 <div className="flex items-center gap-6 p-4 rounded-xl glass-1 glass-edge">
                   <div className="h-12 w-12 flex items-center justify-center">
                     <PixelLogo size="lg" variant="icon" />
                   </div>
-                  <Badge variant="secondary" className="ml-auto text-[10px]">ICON ONLY</Badge>
+                  <Badge variant="secondary" className="ml-auto text-[10px]">
+                    ICON ONLY
+                  </Badge>
                 </div>
                 <div className="flex flex-col items-center gap-4 p-4 rounded-xl glass-1 glass-edge bg-gradient-to-br from-primary/5 to-accent/5">
                   <PixelLogo size="lg" variant="stacked" />
-                  <Badge variant="secondary" className="text-[10px]">STACKED MARK</Badge>
+                  <Badge variant="secondary" className="text-[10px]">
+                    STACKED MARK
+                  </Badge>
                 </div>
               </div>
             </ComponentSample>
@@ -109,7 +118,10 @@ export default function BrandPage() {
                     <div className="p-3 rounded-xl glass-1 glass-edge min-w-[80px] flex items-center justify-center">
                       <SpikeLandLogo size={size} />
                     </div>
-                    <Badge variant="outline" className="font-mono text-[10px] opacity-60">
+                    <Badge
+                      variant="outline"
+                      className="font-mono text-[10px] opacity-60"
+                    >
                       {size}
                     </Badge>
                   </div>
@@ -124,11 +136,15 @@ export default function BrandPage() {
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex items-center gap-6 p-4 rounded-xl glass-1 glass-edge">
                   <SpikeLandLogo size="md" variant="horizontal" />
-                  <Badge variant="secondary" className="ml-auto text-[10px]">HORIZONTAL</Badge>
+                  <Badge variant="secondary" className="ml-auto text-[10px]">
+                    HORIZONTAL
+                  </Badge>
                 </div>
                 <div className="flex items-center gap-6 p-4 rounded-xl glass-1 glass-edge bg-warning/5">
                   <SpikeLandLogo size="lg" variant="stacked" />
-                  <Badge variant="secondary" className="ml-auto text-[10px]">STACKED</Badge>
+                  <Badge variant="secondary" className="ml-auto text-[10px]">
+                    STACKED
+                  </Badge>
                 </div>
               </div>
             </ComponentSample>
@@ -156,8 +172,13 @@ export default function BrandPage() {
               <div className="flex flex-wrap items-center gap-6 p-4">
                 {[8, 10, 12, 16, 20].map((size) => (
                   <div key={size} className="flex flex-col items-center gap-2">
-                    <Avatar className={`h-${size} w-${size} border-2 border-white/10`}>
-                      <AvatarImage src="https://github.com/zerdos.png" alt="Z" />
+                    <Avatar
+                      className={`h-${size} w-${size} border-2 border-white/10`}
+                    >
+                      <AvatarImage
+                        src="https://github.com/zerdos.png"
+                        alt="Z"
+                      />
                       <AvatarFallback>ZE</AvatarFallback>
                     </Avatar>
                     <span className="font-mono text-[9px] opacity-50 uppercase tracking-tighter">
@@ -174,7 +195,9 @@ export default function BrandPage() {
             >
               <div className="flex flex-wrap items-center gap-6 p-4">
                 <Avatar className="h-12 w-12 border-2 border-white/10">
-                  <AvatarFallback className="bg-primary text-white text-xs">ZE</AvatarFallback>
+                  <AvatarFallback className="bg-primary text-white text-xs">
+                    ZE
+                  </AvatarFallback>
                 </Avatar>
                 <Avatar className="h-12 w-12 border-2 border-white/10">
                   <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-fuchsia-500 text-white text-xs font-bold">

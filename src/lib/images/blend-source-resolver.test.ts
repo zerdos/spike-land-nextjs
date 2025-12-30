@@ -97,7 +97,9 @@ describe("resolveBlendSource", () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.code).toBe("ACCESS_DENIED");
-        expect(result.error.message).toBe("Access denied to blend source image");
+        expect(result.error.message).toBe(
+          "Access denied to blend source image",
+        );
       }
     });
 

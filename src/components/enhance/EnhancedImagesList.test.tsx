@@ -95,9 +95,13 @@ vi.mock("@/components/ui/masonry-grid", () => ({
 }));
 
 type MockEnhancementJob = ImageEnhancementJob;
-type MockEnhancedImage = EnhancedImage & { enhancementJobs: MockEnhancementJob[]; };
+type MockEnhancedImage = EnhancedImage & {
+  enhancementJobs: MockEnhancementJob[];
+};
 
-const createMockJob = (overrides: Partial<MockEnhancementJob> = {}): MockEnhancementJob => ({
+const createMockJob = (
+  overrides: Partial<MockEnhancementJob> = {},
+): MockEnhancementJob => ({
   id: "job-1",
   imageId: "test-image-1",
   userId: "user-123",

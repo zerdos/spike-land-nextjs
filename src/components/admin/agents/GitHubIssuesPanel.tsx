@@ -84,7 +84,9 @@ export function GitHubIssuesPanel({
           <CardTitle>GitHub Issues</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-red-600 dark:text-red-400">Error: {error}</p>
+          <p className="text-sm text-red-600 dark:text-red-400">
+            Error: {error}
+          </p>
         </CardContent>
       </Card>
     );
@@ -97,7 +99,9 @@ export function GitHubIssuesPanel({
           <CardTitle>GitHub Issues</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">No GitHub data available</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            No GitHub data available
+          </p>
         </CardContent>
       </Card>
     );
@@ -113,7 +117,11 @@ export function GitHubIssuesPanel({
         <div data-testid="github-issues">
           <h4 className="mb-2 text-sm font-medium">Open Issues</h4>
           {data.issues.length === 0
-            ? <p className="text-sm text-neutral-600 dark:text-neutral-400">No open issues</p>
+            ? (
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                No open issues
+              </p>
+            )
             : (
               <ul className="space-y-1">
                 {data.issues.slice(0, 5).map((issue) => (
@@ -136,7 +144,11 @@ export function GitHubIssuesPanel({
         <div data-testid="github-workflows">
           <h4 className="mb-2 text-sm font-medium">Recent Workflow Runs</h4>
           {data.workflows.length === 0
-            ? <p className="text-sm text-neutral-600 dark:text-neutral-400">No workflow runs</p>
+            ? (
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                No workflow runs
+              </p>
+            )
             : (
               <ul className="space-y-2">
                 {data.workflows.slice(0, 5).map((workflow) => (

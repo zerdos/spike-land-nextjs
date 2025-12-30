@@ -42,7 +42,9 @@ export default function ButtonsPage() {
         <div className="flex flex-wrap gap-6 items-center">
           <Button variant="default">Primary Action</Button>
           <Button variant="default" size="lg">Large Action</Button>
-          <Button variant="default" className="shadow-glow-cyan">With Enhanced Glow</Button>
+          <Button variant="default" className="shadow-glow-cyan">
+            With Enhanced Glow
+          </Button>
         </div>
       </ComponentSample>
 
@@ -72,7 +74,9 @@ export default function ButtonsPage() {
           <Card className="glass-1">
             <CardContent className="pt-6 space-y-4">
               <Badge variant="outline">Outline</Badge>
-              <p className="text-sm text-muted-foreground">Low emphasis, subtle and clear.</p>
+              <p className="text-sm text-muted-foreground">
+                Low emphasis, subtle and clear.
+              </p>
               <Button variant="outline" className="w-full">Settings</Button>
             </CardContent>
           </Card>
@@ -83,7 +87,9 @@ export default function ButtonsPage() {
               <p className="text-sm text-muted-foreground">
                 Used for irreversible actions like deletion.
               </p>
-              <Button variant="destructive" className="w-full">Delete Project</Button>
+              <Button variant="destructive" className="w-full">
+                Delete Project
+              </Button>
             </CardContent>
           </Card>
 
@@ -93,7 +99,9 @@ export default function ButtonsPage() {
               <p className="text-sm text-muted-foreground">
                 Used for positive confirmation or saving.
               </p>
-              <Button variant="success" className="w-full">Publish Changes</Button>
+              <Button variant="success" className="w-full">
+                Publish Changes
+              </Button>
             </CardContent>
           </Card>
 
@@ -103,7 +111,9 @@ export default function ButtonsPage() {
               <p className="text-sm text-muted-foreground">
                 Used for cautionary actions or low balance.
               </p>
-              <Button variant="warning" className="w-full">Top Up Tokens</Button>
+              <Button variant="warning" className="w-full">
+                Top Up Tokens
+              </Button>
             </CardContent>
           </Card>
 

@@ -129,7 +129,12 @@ export function PlatformHeader() {
             )
             : (
               // SSR placeholder - matches visual appearance without Radix IDs
-              <Button variant="ghost" size="icon" aria-label="Open menu" className="md:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Open menu"
+                className="md:hidden"
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             )}

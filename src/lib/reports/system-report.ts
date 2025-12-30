@@ -204,7 +204,9 @@ async function fetchTokenMetrics(): Promise<TokenMetrics> {
   const [purchaseTransactions, tokenBalances, userCount] = await Promise.all([
     prisma.tokenTransaction.groupBy({
       by: ["type"],
-      where: { type: { in: ["EARN_REGENERATION", "EARN_PURCHASE", "EARN_BONUS"] } },
+      where: {
+        type: { in: ["EARN_REGENERATION", "EARN_PURCHASE", "EARN_BONUS"] },
+      },
       _sum: { amount: true },
       _count: { _all: true },
     }),
@@ -221,7 +223,9 @@ async function fetchTokenMetrics(): Promise<TokenMetrics> {
   // Estimate revenue from token purchases (simplified)
   // In real implementation, this would come from Stripe data
   const tokensInCirculation = tokenBalances._sum.balance ?? 0;
-  const averageTokensPerUser = userCount > 0 ? Math.round(tokensInCirculation / userCount) : 0;
+  const averageTokensPerUser = userCount > 0
+    ? Math.round(tokensInCirculation / userCount)
+    : 0;
 
   // Package sales (simplified - would need actual package tracking)
   const packageSales: PackageSales[] = [

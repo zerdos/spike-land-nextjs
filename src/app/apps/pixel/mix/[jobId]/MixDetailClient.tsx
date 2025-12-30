@@ -162,7 +162,9 @@ export function MixDetailClient({
       router.push(`/apps/pixel/mix/${result.jobId}`);
     } catch (error) {
       console.error("Retry failed:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to retry mix");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to retry mix",
+      );
       setIsRetrying(false);
     }
   }, [job.targetImage.id, job.sourceImage, job.tier, isAnonymousJob, router]);
@@ -257,7 +259,10 @@ export function MixDetailClient({
                     onValueChange={(v) => setActiveParent(v as ComparisonParent)}
                   >
                     <TabsList className="h-auto p-1">
-                      <TabsTrigger value="parent1" className="flex items-center gap-2 px-3 py-2">
+                      <TabsTrigger
+                        value="parent1"
+                        className="flex items-center gap-2 px-3 py-2"
+                      >
                         <Image
                           src={job.targetImage.url}
                           alt="Photo 1"
@@ -277,16 +282,25 @@ export function MixDetailClient({
                             <Image
                               src={job.resultUrl}
                               alt="Result"
-                              width={getThumbnailDimensions(job.resultWidth, job.resultHeight)
+                              width={getThumbnailDimensions(
+                                job.resultWidth,
+                                job.resultHeight,
+                              )
                                 .width}
-                              height={getThumbnailDimensions(job.resultWidth, job.resultHeight)
+                              height={getThumbnailDimensions(
+                                job.resultWidth,
+                                job.resultHeight,
+                              )
                                 .height}
                               className="rounded-sm object-contain"
                             />
                           )
                           : <span className="text-sm">Result</span>}
                       </TabsTrigger>
-                      <TabsTrigger value="parent2" className="flex items-center gap-2 px-3 py-2">
+                      <TabsTrigger
+                        value="parent2"
+                        className="flex items-center gap-2 px-3 py-2"
+                      >
                         <Image
                           src={job.sourceImage.url}
                           alt="Photo 2"
@@ -306,9 +320,15 @@ export function MixDetailClient({
                             <Image
                               src={job.resultUrl}
                               alt="Result"
-                              width={getThumbnailDimensions(job.resultWidth, job.resultHeight)
+                              width={getThumbnailDimensions(
+                                job.resultWidth,
+                                job.resultHeight,
+                              )
                                 .width}
-                              height={getThumbnailDimensions(job.resultWidth, job.resultHeight)
+                              height={getThumbnailDimensions(
+                                job.resultWidth,
+                                job.resultHeight,
+                              )
                                 .height}
                               className="rounded-sm object-contain"
                             />

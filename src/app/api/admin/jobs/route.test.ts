@@ -155,7 +155,9 @@ describe("Admin Jobs API", () => {
     });
 
     it("should return 403 if not admin", async () => {
-      vi.mocked(auth).mockResolvedValue(createMockSession({ id: VALID_USER_ID }));
+      vi.mocked(auth).mockResolvedValue(
+        createMockSession({ id: VALID_USER_ID }),
+      );
       vi.mocked(isAdminByUserId).mockResolvedValue(false);
 
       const request = new NextRequest("http://localhost/api/admin/jobs");
@@ -167,7 +169,9 @@ describe("Admin Jobs API", () => {
     });
 
     it("should return 500 if admin check throws an error", async () => {
-      vi.mocked(auth).mockResolvedValue(createMockSession({ id: VALID_USER_ID }));
+      vi.mocked(auth).mockResolvedValue(
+        createMockSession({ id: VALID_USER_ID }),
+      );
       vi.mocked(isAdminByUserId).mockRejectedValue(
         new Error("Database connection lost"),
       );
@@ -181,7 +185,9 @@ describe("Admin Jobs API", () => {
     });
 
     it("should return paginated jobs with default parameters", async () => {
-      vi.mocked(auth).mockResolvedValue(createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }));
+      vi.mocked(auth).mockResolvedValue(
+        createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }),
+      );
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
         [mockJob],
@@ -218,7 +224,9 @@ describe("Admin Jobs API", () => {
     });
 
     it("should filter by status", async () => {
-      vi.mocked(auth).mockResolvedValue(createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }));
+      vi.mocked(auth).mockResolvedValue(
+        createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }),
+      );
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
         [mockJob],
@@ -248,7 +256,9 @@ describe("Admin Jobs API", () => {
     });
 
     it("should return 400 for invalid status", async () => {
-      vi.mocked(auth).mockResolvedValue(createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }));
+      vi.mocked(auth).mockResolvedValue(
+        createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }),
+      );
 
       const request = new NextRequest(
         "http://localhost/api/admin/jobs?status=INVALID",
@@ -261,14 +271,21 @@ describe("Admin Jobs API", () => {
     });
 
     it("should handle pagination parameters", async () => {
-      vi.mocked(auth).mockResolvedValue(createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }));
+      vi.mocked(auth).mockResolvedValue(
+        createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }),
+      );
 
       // Create 25 mock jobs to test pagination
-      const mockJobs = Array.from({ length: 25 }, (_, i) =>
-        createMockEnhancementJob({
-          id: `job_${String(i).padStart(24, "0")}`,
-          createdAt: new Date(`2025-01-01T${String(i).padStart(2, "0")}:00:00Z`),
-        }));
+      const mockJobs = Array.from(
+        { length: 25 },
+        (_, i) =>
+          createMockEnhancementJob({
+            id: `job_${String(i).padStart(24, "0")}`,
+            createdAt: new Date(
+              `2025-01-01T${String(i).padStart(2, "0")}:00:00Z`,
+            ),
+          }),
+      );
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
         mockJobs,
@@ -298,15 +315,20 @@ describe("Admin Jobs API", () => {
     });
 
     it("should cap limit at 50", async () => {
-      vi.mocked(auth).mockResolvedValue(createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }));
+      vi.mocked(auth).mockResolvedValue(
+        createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }),
+      );
 
       // Create 60 mock jobs to test limit capping
-      const mockJobs = Array.from({ length: 60 }, (_, i) =>
-        createMockEnhancementJob({
-          id: `job_${String(i).padStart(24, "0")}`,
-          createdAt: new Date(Date.now() - i * 60000), // Each job 1 minute apart
-          updatedAt: new Date(Date.now() - i * 60000),
-        }));
+      const mockJobs = Array.from(
+        { length: 60 },
+        (_, i) =>
+          createMockEnhancementJob({
+            id: `job_${String(i).padStart(24, "0")}`,
+            createdAt: new Date(Date.now() - i * 60000), // Each job 1 minute apart
+            updatedAt: new Date(Date.now() - i * 60000),
+          }),
+      );
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
         mockJobs,
@@ -334,7 +356,9 @@ describe("Admin Jobs API", () => {
     });
 
     it("should handle search by job ID", async () => {
-      vi.mocked(auth).mockResolvedValue(createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }));
+      vi.mocked(auth).mockResolvedValue(
+        createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }),
+      );
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
         [mockJob],
@@ -369,7 +393,9 @@ describe("Admin Jobs API", () => {
     });
 
     it("should include job relations in response", async () => {
-      vi.mocked(auth).mockResolvedValue(createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }));
+      vi.mocked(auth).mockResolvedValue(
+        createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }),
+      );
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockResolvedValue(
         [mockJob],
@@ -397,7 +423,9 @@ describe("Admin Jobs API", () => {
     });
 
     it("should handle database errors", async () => {
-      vi.mocked(auth).mockResolvedValue(createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }));
+      vi.mocked(auth).mockResolvedValue(
+        createMockSession({ id: VALID_ADMIN_ID, role: "ADMIN" }),
+      );
 
       vi.mocked(prisma.imageEnhancementJob.findMany).mockRejectedValue(
         new Error("Database connection failed"),

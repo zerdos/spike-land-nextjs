@@ -42,7 +42,9 @@ describe("GET /api/blog/posts", () => {
   });
 
   it("returns paginated results", async () => {
-    const request = new Request("http://localhost:3000/api/blog/posts?page=1&limit=5");
+    const request = new Request(
+      "http://localhost:3000/api/blog/posts?page=1&limit=5",
+    );
     const response = await GET(request);
     const data = await response.json();
 

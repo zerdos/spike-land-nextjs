@@ -37,7 +37,9 @@ interface ResourcesPanelProps {
   error?: string | null;
 }
 
-export function ResourcesPanel({ resources, loading, error }: ResourcesPanelProps) {
+export function ResourcesPanel(
+  { resources, loading, error }: ResourcesPanelProps,
+) {
   if (loading) {
     return (
       <Card>
@@ -61,7 +63,9 @@ export function ResourcesPanel({ resources, loading, error }: ResourcesPanelProp
           <CardTitle>Resources</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-red-600 dark:text-red-400">Error: {error}</p>
+          <p className="text-sm text-red-600 dark:text-red-400">
+            Error: {error}
+          </p>
         </CardContent>
       </Card>
     );

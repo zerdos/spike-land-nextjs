@@ -109,7 +109,9 @@ function mapOrderRequest(request: PodOrderRequest): ProdigiOrderRequest {
 /**
  * Map Prodigi status to our internal status format
  */
-function mapOrderStatus(order: ProdigiOrderStatusResponse["order"]): PodOrderStatus | null {
+function mapOrderStatus(
+  order: ProdigiOrderStatusResponse["order"],
+): PodOrderStatus | null {
   if (!order) return null;
 
   // Find the first shipment with tracking info
@@ -143,7 +145,9 @@ function mapOrderStatus(order: ProdigiOrderStatusResponse["order"]): PodOrderSta
     trackingNumber: shipment?.tracking?.number,
     trackingUrl: shipment?.tracking?.url,
     carrier: shipment?.carrier?.name,
-    shippedAt: shipment?.dispatchDate ? new Date(shipment.dispatchDate) : undefined,
+    shippedAt: shipment?.dispatchDate
+      ? new Date(shipment.dispatchDate)
+      : undefined,
     items: order.items.map((item) => ({
       sku: item.sku,
       status: item.status,
@@ -175,7 +179,8 @@ export const prodigiProvider: PodProvider = {
     }
 
     return {
-      success: data.outcome === "Created" || data.outcome === "CreatedWithIssues",
+      success: data.outcome === "Created" ||
+        data.outcome === "CreatedWithIssues",
       providerOrderId: data.order.id,
       status: data.order.status.stage,
       error: data.outcome === "CreatedWithIssues"
@@ -290,11 +295,15 @@ export function validateImageForProduct(
   const errors: string[] = [];
 
   if (imageWidth < minWidth) {
-    errors.push(`Image width (${imageWidth}px) is less than required (${minWidth}px)`);
+    errors.push(
+      `Image width (${imageWidth}px) is less than required (${minWidth}px)`,
+    );
   }
 
   if (imageHeight < minHeight) {
-    errors.push(`Image height (${imageHeight}px) is less than required (${minHeight}px)`);
+    errors.push(
+      `Image height (${imageHeight}px) is less than required (${minHeight}px)`,
+    );
   }
 
   // Rough DPI estimation based on typical print sizes
