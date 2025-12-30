@@ -235,8 +235,12 @@ describe("useProjectPersistence", () => {
       actions.clearProject();
     });
 
-    expect(localStorage.removeItem).toHaveBeenCalledWith("audio-mixer-project-state");
-    expect(localStorage.removeItem).toHaveBeenCalledWith("audio-mixer-project-id");
+    expect(localStorage.removeItem).toHaveBeenCalledWith(
+      "audio-mixer-project-state",
+    );
+    expect(localStorage.removeItem).toHaveBeenCalledWith(
+      "audio-mixer-project-id",
+    );
   });
 
   it("createNewProject generates new ID and clears state", () => {
@@ -281,9 +285,10 @@ describe("useProjectPersistence", () => {
       actions.saveNow();
     });
 
-    const savedCall = (localStorage.setItem as ReturnType<typeof vi.fn>).mock.calls.find(
-      (call: string[]) => call[0] === "audio-mixer-project-state",
-    );
+    const savedCall = (localStorage.setItem as ReturnType<typeof vi.fn>).mock
+      .calls.find(
+        (call: string[]) => call[0] === "audio-mixer-project-state",
+      );
 
     expect(savedCall).toBeDefined();
     const savedData = JSON.parse(savedCall![1]);

@@ -174,8 +174,12 @@ export function SortableTrackList({
               onMuteToggle={() => onMuteToggle(track.id)}
               onSoloToggle={() => onSoloToggle(track.id)}
               onRemove={() => onRemove(track.id)}
-              onSeek={onSeek ? (progress) => onSeek(track.id, progress) : undefined}
-              onDelayChange={onDelayChange ? (delay) => onDelayChange(track.id, delay) : undefined}
+              onSeek={onSeek
+                ? (progress) => onSeek(track.id, progress)
+                : undefined}
+              onDelayChange={onDelayChange
+                ? (delay) => onDelayChange(track.id, delay)
+                : undefined}
               onTrimChange={onTrimChange
                 ? (start, end) => onTrimChange(track.id, start, end)
                 : undefined}

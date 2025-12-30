@@ -86,7 +86,9 @@ async function mockCartWithItems(world: CustomWorld, itemCount: number = 1) {
   const recalculateCart = (state: MockCartState) => {
     state.itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
     state.subtotal = state.items.reduce(
-      (sum, item) => sum + (item.product.retailPrice + item.variant.priceDelta) * item.quantity,
+      (sum, item) =>
+        sum +
+        (item.product.retailPrice + item.variant.priceDelta) * item.quantity,
       0,
     );
   };
@@ -188,11 +190,14 @@ export async function mockOrdersWithItems(
     currency: "GBP",
     createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
     itemCount: order.itemCount,
-    previewItems: Array.from({ length: Math.min(order.itemCount, 3) }, (_, j) => ({
-      id: `e2e-order-item-${i + 1}-${j + 1}`,
-      name: `Test Product ${j + 1}`,
-      imageUrl: null,
-    })),
+    previewItems: Array.from(
+      { length: Math.min(order.itemCount, 3) },
+      (_, j) => ({
+        id: `e2e-order-item-${i + 1}-${j + 1}`,
+        name: `Test Product ${j + 1}`,
+        imageUrl: null,
+      }),
+    ),
   }));
 
   // The orders page fetches data server-side via Prisma, so we need to mock at the page level
@@ -221,18 +226,22 @@ Then("I should see the category filters", async function(this: CustomWorld) {
 });
 
 When("I click on the first product card", async function(this: CustomWorld) {
-  const firstProduct = this.page.locator('[data-testid="product-card"]').first();
+  const firstProduct = this.page.locator('[data-testid="product-card"]')
+    .first();
   await expect(firstProduct).toBeVisible();
   await firstProduct.click();
   await this.page.waitForLoadState("networkidle");
 });
 
-Then("I should be on a product detail page", async function(this: CustomWorld) {
-  // URL should contain /merch/ followed by a product ID
-  await this.page.waitForURL(/\/merch\/[^/]+$/);
-  const url = this.page.url();
-  expect(url).toMatch(/\/merch\/[^/]+$/);
-});
+Then(
+  "I should be on a product detail page",
+  async function(this: CustomWorld) {
+    // URL should contain /merch/ followed by a product ID
+    await this.page.waitForURL(/\/merch\/[^/]+$/);
+    const url = this.page.url();
+    expect(url).toMatch(/\/merch\/[^/]+$/);
+  },
+);
 
 Then("I should see the product name", async function(this: CustomWorld) {
   const productName = this.page.locator('[data-testid="product-name"]');
@@ -248,12 +257,17 @@ Then("I should see the variant selector", async function(this: CustomWorld) {
   const variantSelector = this.page.locator('[data-testid="variant-selector"]');
   // Variant selector only appears if product has variants
   // Check with timeout, but don't fail if not present (product might not have variants)
-  const isVisible = await variantSelector.isVisible({ timeout: 3000 }).catch(() => false);
+  const isVisible = await variantSelector.isVisible({ timeout: 3000 }).catch(
+    () => false,
+  );
 
   if (!isVisible) {
     // Product doesn't have variants - this is acceptable, log it
     this.attach(
-      JSON.stringify({ variantSelectorVisible: false, reason: "Product has no variants" }),
+      JSON.stringify({
+        variantSelectorVisible: false,
+        reason: "Product has no variants",
+      }),
       "application/json",
     );
     // Verify we're on the product page instead
@@ -261,7 +275,10 @@ Then("I should see the variant selector", async function(this: CustomWorld) {
     await expect(productName).toBeVisible();
   } else {
     await expect(variantSelector).toBeVisible();
-    this.attach(JSON.stringify({ variantSelectorVisible: true }), "application/json");
+    this.attach(
+      JSON.stringify({ variantSelectorVisible: true }),
+      "application/json",
+    );
   }
 });
 
@@ -270,21 +287,28 @@ Then("I should see the image selector", async function(this: CustomWorld) {
   await expect(imageSelector).toBeVisible();
 });
 
-Then("I should see the product mockup image", async function(this: CustomWorld) {
-  const mockupImage = this.page.locator('[data-testid="product-mockup"]');
-  await expect(mockupImage).toBeVisible();
-});
+Then(
+  "I should see the product mockup image",
+  async function(this: CustomWorld) {
+    const mockupImage = this.page.locator('[data-testid="product-mockup"]');
+    await expect(mockupImage).toBeVisible();
+  },
+);
 
-Then("I should see minimum image requirements", async function(this: CustomWorld) {
-  // Match actual text format: "Min. 1024x1024px" (abbreviated, no colon)
-  const requirements = this.page.getByText(/Min\.\s*\d+\s*x\s*\d+\s*px/i);
-  await expect(requirements).toBeVisible();
-});
+Then(
+  "I should see minimum image requirements",
+  async function(this: CustomWorld) {
+    // Match actual text format: "Min. 1024x1024px" (abbreviated, no colon)
+    const requirements = this.page.getByText(/Min\.\s*\d+\s*x\s*\d+\s*px/i);
+    await expect(requirements).toBeVisible();
+  },
+);
 
 // ===== Shopping Cart Steps =====
 
 When("I select the first variant", async function(this: CustomWorld) {
-  const firstVariant = this.page.locator('[data-testid="variant-option"]').first();
+  const firstVariant = this.page.locator('[data-testid="variant-option"]')
+    .first();
   await expect(firstVariant).toBeVisible();
   await firstVariant.click();
   // Store variant ID for later use if needed
@@ -304,16 +328,22 @@ When("I select a test image", async function(this: CustomWorld) {
   }
 });
 
-Then("I should see the cart success message", async function(this: CustomWorld) {
-  const successMessage = this.page.getByText(/Added to cart/i);
-  await expect(successMessage).toBeVisible({ timeout: 10000 });
-});
+Then(
+  "I should see the cart success message",
+  async function(this: CustomWorld) {
+    const successMessage = this.page.getByText(/Added to cart/i);
+    await expect(successMessage).toBeVisible({ timeout: 10000 });
+  },
+);
 
-Then("the cart icon should show {int} item(s)", async function(this: CustomWorld, count: number) {
-  const cartBadge = this.page.locator('[data-testid="cart-badge"]');
-  await expect(cartBadge).toBeVisible({ timeout: 10000 });
-  await expect(cartBadge).toHaveText(count.toString());
-});
+Then(
+  "the cart icon should show {int} item(s)",
+  async function(this: CustomWorld, count: number) {
+    const cartBadge = this.page.locator('[data-testid="cart-badge"]');
+    await expect(cartBadge).toBeVisible({ timeout: 10000 });
+    await expect(cartBadge).toHaveText(count.toString());
+  },
+);
 
 Given("I have added a product to my cart", async function(this: CustomWorld) {
   // Navigate to merch page
@@ -321,7 +351,8 @@ Given("I have added a product to my cart", async function(this: CustomWorld) {
   await this.page.waitForLoadState("domcontentloaded");
 
   // Click first product
-  const firstProduct = this.page.locator('[data-testid="product-card"]').first();
+  const firstProduct = this.page.locator('[data-testid="product-card"]')
+    .first();
   await expect(firstProduct).toBeVisible({ timeout: 10000 });
   await firstProduct.click();
   await this.page.waitForLoadState("domcontentloaded");
@@ -330,7 +361,8 @@ Given("I have added a product to my cart", async function(this: CustomWorld) {
   await this.page.waitForURL(/\/merch\/[^/]+$/);
 
   // Select variant if available
-  const variantOption = this.page.locator('[data-testid="variant-option"]').first();
+  const variantOption = this.page.locator('[data-testid="variant-option"]')
+    .first();
   if (await variantOption.isVisible({ timeout: 2000 }).catch(() => false)) {
     await variantOption.click();
   }
@@ -345,7 +377,9 @@ Given("I have added a product to my cart", async function(this: CustomWorld) {
 
   // Check if there are test images available or switch to upload tab
   const testImage = this.page.locator('[data-testid="test-image"]').first();
-  const imageAvailable = await testImage.isVisible({ timeout: 3000 }).catch(() => false);
+  const imageAvailable = await testImage.isVisible({ timeout: 3000 }).catch(
+    () => false,
+  );
 
   if (!imageAvailable) {
     // Close dialog
@@ -354,7 +388,10 @@ Given("I have added a product to my cart", async function(this: CustomWorld) {
 
     // Mock the cart API since we can't add items via UI without test images
     await mockCartWithItems(this, 1);
-    this.attach(JSON.stringify({ cartMocked: true, itemCount: 1 }), "application/json");
+    this.attach(
+      JSON.stringify({ cartMocked: true, itemCount: 1 }),
+      "application/json",
+    );
     return;
   }
 
@@ -364,7 +401,9 @@ Given("I have added a product to my cart", async function(this: CustomWorld) {
   await this.page.waitForTimeout(500);
 
   // Add to cart
-  const addToCartButton = this.page.getByRole("button", { name: /Add to Cart/i });
+  const addToCartButton = this.page.getByRole("button", {
+    name: /Add to Cart/i,
+  });
   await expect(addToCartButton).toBeEnabled({ timeout: 5000 });
   await addToCartButton.click();
 
@@ -418,7 +457,9 @@ async function mockCartWithQuantity(world: CustomWorld, quantity: number) {
   const recalculateCart = (state: MockCartState) => {
     state.itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
     state.subtotal = state.items.reduce(
-      (sum, item) => sum + (item.product.retailPrice + item.variant.priceDelta) * item.quantity,
+      (sum, item) =>
+        sum +
+        (item.product.retailPrice + item.variant.priceDelta) * item.quantity,
       0,
     );
   };
@@ -501,82 +542,95 @@ async function mockCartWithQuantity(world: CustomWorld, quantity: number) {
   return cartState;
 }
 
-Given("I have added {int} products to my cart", async function(this: CustomWorld, count: number) {
-  // For quantity tests (e.g., decreasing from 2 to 1), create a single item with that quantity
-  // This ensures the decrease button is enabled (quantity > 1)
-  // Try to add the first product to check if test images are available
-  await this.page.goto(`${this.baseUrl}/merch`);
-  await this.page.waitForLoadState("domcontentloaded");
+Given(
+  "I have added {int} products to my cart",
+  async function(this: CustomWorld, count: number) {
+    // For quantity tests (e.g., decreasing from 2 to 1), create a single item with that quantity
+    // This ensures the decrease button is enabled (quantity > 1)
+    // Try to add the first product to check if test images are available
+    await this.page.goto(`${this.baseUrl}/merch`);
+    await this.page.waitForLoadState("domcontentloaded");
 
-  const firstProduct = this.page.locator('[data-testid="product-card"]').first();
-  await expect(firstProduct).toBeVisible({ timeout: 10000 });
-  await firstProduct.click();
-  await this.page.waitForLoadState("domcontentloaded");
-  await this.page.waitForURL(/\/merch\/[^/]+$/);
+    const firstProduct = this.page.locator('[data-testid="product-card"]')
+      .first();
+    await expect(firstProduct).toBeVisible({ timeout: 10000 });
+    await firstProduct.click();
+    await this.page.waitForLoadState("domcontentloaded");
+    await this.page.waitForURL(/\/merch\/[^/]+$/);
 
-  // Check if image selector has available images
-  const imageSelector = this.page.locator('[data-testid="image-selector"]');
-  await expect(imageSelector).toBeVisible({ timeout: 5000 });
-  await imageSelector.click();
-  await this.page.waitForTimeout(500);
+    // Check if image selector has available images
+    const imageSelector = this.page.locator('[data-testid="image-selector"]');
+    await expect(imageSelector).toBeVisible({ timeout: 5000 });
+    await imageSelector.click();
+    await this.page.waitForTimeout(500);
 
-  const testImage = this.page.locator('[data-testid="test-image"]').first();
-  const imageAvailable = await testImage.isVisible({ timeout: 3000 }).catch(() => false);
+    const testImage = this.page.locator('[data-testid="test-image"]').first();
+    const imageAvailable = await testImage.isVisible({ timeout: 3000 }).catch(
+      () => false,
+    );
 
-  if (!imageAvailable) {
-    // Close dialog and mock the cart with a single item having higher quantity
+    if (!imageAvailable) {
+      // Close dialog and mock the cart with a single item having higher quantity
+      await this.page.keyboard.press("Escape");
+      await this.page.waitForTimeout(300);
+
+      // Use specialized mock that creates a single item with quantity=count
+      // This ensures the decrease button is enabled for quantity adjustment tests
+      await mockCartWithQuantity(this, count);
+      this.attach(
+        JSON.stringify({ cartMocked: true, singleItemQuantity: count }),
+        "application/json",
+      );
+      return;
+    }
+
+    // Images are available, add products via UI
+    // First, close the current dialog
     await this.page.keyboard.press("Escape");
     await this.page.waitForTimeout(300);
 
-    // Use specialized mock that creates a single item with quantity=count
-    // This ensures the decrease button is enabled for quantity adjustment tests
-    await mockCartWithQuantity(this, count);
+    for (let i = 0; i < count; i++) {
+      if (i > 0) {
+        await this.page.goto(`${this.baseUrl}/merch`);
+        await this.page.waitForLoadState("domcontentloaded");
+
+        const product = this.page.locator('[data-testid="product-card"]')
+          .first();
+        await expect(product).toBeVisible({ timeout: 10000 });
+        await product.click();
+        await this.page.waitForLoadState("domcontentloaded");
+        await this.page.waitForURL(/\/merch\/[^/]+$/);
+      }
+
+      const variantOption = this.page.locator('[data-testid="variant-option"]')
+        .first();
+      if (await variantOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await variantOption.click();
+      }
+
+      const imgSelector = this.page.locator('[data-testid="image-selector"]');
+      await expect(imgSelector).toBeVisible({ timeout: 5000 });
+      await imgSelector.click();
+      await this.page.waitForTimeout(500);
+
+      const img = this.page.locator('[data-testid="test-image"]').first();
+      await img.click();
+      await this.page.waitForTimeout(500);
+
+      const addToCartButton = this.page.getByRole("button", {
+        name: /Add to Cart/i,
+      });
+      await expect(addToCartButton).toBeEnabled({ timeout: 5000 });
+      await addToCartButton.click();
+      await this.page.waitForTimeout(1500);
+    }
+
     this.attach(
-      JSON.stringify({ cartMocked: true, singleItemQuantity: count }),
+      JSON.stringify({ cartAddedViaUI: true, itemCount: count }),
       "application/json",
     );
-    return;
-  }
-
-  // Images are available, add products via UI
-  // First, close the current dialog
-  await this.page.keyboard.press("Escape");
-  await this.page.waitForTimeout(300);
-
-  for (let i = 0; i < count; i++) {
-    if (i > 0) {
-      await this.page.goto(`${this.baseUrl}/merch`);
-      await this.page.waitForLoadState("domcontentloaded");
-
-      const product = this.page.locator('[data-testid="product-card"]').first();
-      await expect(product).toBeVisible({ timeout: 10000 });
-      await product.click();
-      await this.page.waitForLoadState("domcontentloaded");
-      await this.page.waitForURL(/\/merch\/[^/]+$/);
-    }
-
-    const variantOption = this.page.locator('[data-testid="variant-option"]').first();
-    if (await variantOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await variantOption.click();
-    }
-
-    const imgSelector = this.page.locator('[data-testid="image-selector"]');
-    await expect(imgSelector).toBeVisible({ timeout: 5000 });
-    await imgSelector.click();
-    await this.page.waitForTimeout(500);
-
-    const img = this.page.locator('[data-testid="test-image"]').first();
-    await img.click();
-    await this.page.waitForTimeout(500);
-
-    const addToCartButton = this.page.getByRole("button", { name: /Add to Cart/i });
-    await expect(addToCartButton).toBeEnabled({ timeout: 5000 });
-    await addToCartButton.click();
-    await this.page.waitForTimeout(1500);
-  }
-
-  this.attach(JSON.stringify({ cartAddedViaUI: true, itemCount: count }), "application/json");
-});
+  },
+);
 
 Then("I should see the cart item", async function(this: CustomWorld) {
   const cartItem = this.page.locator('[data-testid="cart-item"]').first();
@@ -588,24 +642,39 @@ Then("I should see the order summary", async function(this: CustomWorld) {
   await expect(orderSummary).toBeVisible();
 });
 
-When("I click the increase quantity button", async function(this: CustomWorld) {
-  const increaseButton = this.page.locator('[data-testid="increase-quantity"]').first();
-  await expect(increaseButton).toBeVisible();
-  await increaseButton.click();
-  await this.page.waitForTimeout(500);
-});
+When(
+  "I click the increase quantity button",
+  async function(this: CustomWorld) {
+    const increaseButton = this.page.locator(
+      '[data-testid="increase-quantity"]',
+    ).first();
+    await expect(increaseButton).toBeVisible();
+    await increaseButton.click();
+    await this.page.waitForTimeout(500);
+  },
+);
 
-When("I click the decrease quantity button", async function(this: CustomWorld) {
-  const decreaseButton = this.page.locator('[data-testid="decrease-quantity"]').first();
-  await expect(decreaseButton).toBeVisible();
-  await decreaseButton.click();
-  await this.page.waitForTimeout(500);
-});
+When(
+  "I click the decrease quantity button",
+  async function(this: CustomWorld) {
+    const decreaseButton = this.page.locator(
+      '[data-testid="decrease-quantity"]',
+    ).first();
+    await expect(decreaseButton).toBeVisible();
+    await decreaseButton.click();
+    await this.page.waitForTimeout(500);
+  },
+);
 
-Then("the cart quantity should be {int}", async function(this: CustomWorld, expectedQty: number) {
-  const quantityDisplay = this.page.locator('[data-testid="cart-item-quantity"]').first();
-  await expect(quantityDisplay).toHaveText(expectedQty.toString());
-});
+Then(
+  "the cart quantity should be {int}",
+  async function(this: CustomWorld, expectedQty: number) {
+    const quantityDisplay = this.page.locator(
+      '[data-testid="cart-item-quantity"]',
+    ).first();
+    await expect(quantityDisplay).toHaveText(expectedQty.toString());
+  },
+);
 
 Then("the cart total should update", async function(this: CustomWorld) {
   // Just verify the total is visible and is a price format
@@ -616,136 +685,166 @@ Then("the cart total should update", async function(this: CustomWorld) {
 });
 
 When("I click the remove item button", async function(this: CustomWorld) {
-  const removeButton = this.page.locator('[data-testid="remove-cart-item"]').first();
+  const removeButton = this.page.locator('[data-testid="remove-cart-item"]')
+    .first();
   await expect(removeButton).toBeVisible();
   await removeButton.click();
   await this.page.waitForTimeout(500);
 });
 
-Given("I have added a product to my cart with value under {int} GBP", async function(
-  this: CustomWorld,
-  threshold: number,
-) {
-  // Mock cart with a value under the threshold
-  const priceUnderThreshold = Math.min(threshold - 5, 29.99);
+Given(
+  "I have added a product to my cart with value under {int} GBP",
+  async function(
+    this: CustomWorld,
+    threshold: number,
+  ) {
+    // Mock cart with a value under the threshold
+    const priceUnderThreshold = Math.min(threshold - 5, 29.99);
 
-  await this.page.route("**/api/merch/cart", async (route) => {
-    const method = route.request().method();
-    if (method === "GET") {
+    await this.page.route("**/api/merch/cart", async (route) => {
+      const method = route.request().method();
+      if (method === "GET") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            cart: {
+              id: "e2e-test-cart",
+              items: [{
+                id: "e2e-cart-item-1",
+                quantity: 1,
+                customText: null,
+                product: {
+                  id: "e2e-product-1",
+                  name: "Test Product",
+                  retailPrice: priceUnderThreshold,
+                  currency: "GBP",
+                  mockupTemplate: null,
+                },
+                variant: { id: "e2e-variant-1", name: "Medium", priceDelta: 0 },
+                image: {
+                  id: "e2e-image-1",
+                  originalUrl: "https://placehold.co/600x400",
+                },
+                uploadedImageUrl: null,
+              }],
+              itemCount: 1,
+              subtotal: priceUnderThreshold,
+            },
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    // Also mock user API
+    await this.page.route("**/api/user", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          cart: {
-            id: "e2e-test-cart",
-            items: [{
-              id: "e2e-cart-item-1",
-              quantity: 1,
-              customText: null,
-              product: {
-                id: "e2e-product-1",
-                name: "Test Product",
-                retailPrice: priceUnderThreshold,
-                currency: "GBP",
-                mockupTemplate: null,
-              },
-              variant: { id: "e2e-variant-1", name: "Medium", priceDelta: 0 },
-              image: { id: "e2e-image-1", originalUrl: "https://placehold.co/600x400" },
-              uploadedImageUrl: null,
-            }],
-            itemCount: 1,
-            subtotal: priceUnderThreshold,
-          },
+          id: "e2e-test-user",
+          email: "test@example.com",
+          name: "Test User",
         }),
       });
-    } else {
-      await route.continue();
-    }
-  });
-
-  // Also mock user API
-  await this.page.route("**/api/user", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ id: "e2e-test-user", email: "test@example.com", name: "Test User" }),
     });
-  });
 
-  this.attach(
-    JSON.stringify({ cartMocked: true, subtotal: priceUnderThreshold }),
-    "application/json",
-  );
-});
+    this.attach(
+      JSON.stringify({ cartMocked: true, subtotal: priceUnderThreshold }),
+      "application/json",
+    );
+  },
+);
 
-Given("I have added products to my cart with value over {int} GBP", async function(
-  this: CustomWorld,
-  threshold: number,
-) {
-  // Mock cart with total value over the threshold
-  const pricePerItem = 29.99;
-  const itemCount = Math.ceil((threshold + 5) / pricePerItem);
-  const subtotal = pricePerItem * itemCount;
+Given(
+  "I have added products to my cart with value over {int} GBP",
+  async function(
+    this: CustomWorld,
+    threshold: number,
+  ) {
+    // Mock cart with total value over the threshold
+    const pricePerItem = 29.99;
+    const itemCount = Math.ceil((threshold + 5) / pricePerItem);
+    const subtotal = pricePerItem * itemCount;
 
-  const items = Array.from({ length: itemCount }, (_, i) => ({
-    id: `e2e-cart-item-${i + 1}`,
-    quantity: 1,
-    customText: null,
-    product: {
-      id: `e2e-product-${i + 1}`,
-      name: `Test Product ${i + 1}`,
-      retailPrice: pricePerItem,
-      currency: "GBP",
-      mockupTemplate: null,
-    },
-    variant: { id: `e2e-variant-${i + 1}`, name: "Medium", priceDelta: 0 },
-    image: { id: `e2e-image-${i + 1}`, originalUrl: "https://placehold.co/600x400" },
-    uploadedImageUrl: null,
-  }));
+    const items = Array.from({ length: itemCount }, (_, i) => ({
+      id: `e2e-cart-item-${i + 1}`,
+      quantity: 1,
+      customText: null,
+      product: {
+        id: `e2e-product-${i + 1}`,
+        name: `Test Product ${i + 1}`,
+        retailPrice: pricePerItem,
+        currency: "GBP",
+        mockupTemplate: null,
+      },
+      variant: { id: `e2e-variant-${i + 1}`, name: "Medium", priceDelta: 0 },
+      image: {
+        id: `e2e-image-${i + 1}`,
+        originalUrl: "https://placehold.co/600x400",
+      },
+      uploadedImageUrl: null,
+    }));
 
-  await this.page.route("**/api/merch/cart", async (route) => {
-    const method = route.request().method();
-    if (method === "GET") {
+    await this.page.route("**/api/merch/cart", async (route) => {
+      const method = route.request().method();
+      if (method === "GET") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            cart: {
+              id: "e2e-test-cart",
+              items,
+              itemCount,
+              subtotal,
+            },
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    // Also mock user API
+    await this.page.route("**/api/user", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          cart: {
-            id: "e2e-test-cart",
-            items,
-            itemCount,
-            subtotal,
-          },
+          id: "e2e-test-user",
+          email: "test@example.com",
+          name: "Test User",
         }),
       });
-    } else {
-      await route.continue();
-    }
-  });
-
-  // Also mock user API
-  await this.page.route("**/api/user", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ id: "e2e-test-user", email: "test@example.com", name: "Test User" }),
     });
-  });
 
-  this.attach(JSON.stringify({ cartMocked: true, itemCount, subtotal }), "application/json");
-});
+    this.attach(
+      JSON.stringify({ cartMocked: true, itemCount, subtotal }),
+      "application/json",
+    );
+  },
+);
 
-Then("I should see the free shipping threshold message", async function(this: CustomWorld) {
-  const message = this.page.getByText(/Add.*more for free shipping/i);
-  await expect(message).toBeVisible();
-});
+Then(
+  "I should see the free shipping threshold message",
+  async function(this: CustomWorld) {
+    const message = this.page.getByText(/Add.*more for free shipping/i);
+    await expect(message).toBeVisible();
+  },
+);
 
-Then("I should see shipping cost in the summary", async function(this: CustomWorld) {
-  const shippingCost = this.page.locator('[data-testid="shipping-cost"]');
-  await expect(shippingCost).toBeVisible();
-  const costText = await shippingCost.textContent();
-  expect(costText).toMatch(/£\d+\.\d{2}/);
-});
+Then(
+  "I should see shipping cost in the summary",
+  async function(this: CustomWorld) {
+    const shippingCost = this.page.locator('[data-testid="shipping-cost"]');
+    await expect(shippingCost).toBeVisible();
+    const costText = await shippingCost.textContent();
+    expect(costText).toMatch(/£\d+\.\d{2}/);
+  },
+);
 
 Then(
   "the shipping cost should show as {string}",
@@ -778,120 +877,140 @@ When(
   },
 );
 
-When("I complete the shipping address form", async function(this: CustomWorld) {
-  // Wait for loading spinner to disappear before filling the form
-  await this.page
-    .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
-    .catch(() => {});
+When(
+  "I complete the shipping address form",
+  async function(this: CustomWorld) {
+    // Wait for loading spinner to disappear before filling the form
+    await this.page
+      .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
+      .catch(() => {});
 
-  // Mock the checkout API to return a valid response with clientSecret
-  // This enables the payment step to render
-  await this.page.route("**/api/merch/checkout", async (route) => {
-    const method = route.request().method();
-    if (method === "POST") {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          clientSecret: "pi_mock_secret_test",
-          orderId: "e2e-mock-order-id",
-          orderNumber: "SL-E2E-MOCK",
-          summary: {
-            subtotal: 29.99,
-            shipping: 4.99,
-            shippingZone: "UK",
-            freeShippingThreshold: 50,
-            total: 34.98,
-            currency: "GBP",
-            itemCount: 1,
-          },
-        }),
-      });
-    } else {
-      await route.continue();
-    }
-  });
+    // Mock the checkout API to return a valid response with clientSecret
+    // This enables the payment step to render
+    await this.page.route("**/api/merch/checkout", async (route) => {
+      const method = route.request().method();
+      if (method === "POST") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            clientSecret: "pi_mock_secret_test",
+            orderId: "e2e-mock-order-id",
+            orderNumber: "SL-E2E-MOCK",
+            summary: {
+              subtotal: 29.99,
+              shipping: 4.99,
+              shippingZone: "UK",
+              freeShippingThreshold: 50,
+              total: 34.98,
+              currency: "GBP",
+              itemCount: 1,
+            },
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
 
-  // Fill email field (required for checkout validation)
-  await this.page.fill('[id="email"]', "test@example.com");
+    // Fill email field (required for checkout validation)
+    await this.page.fill('[id="email"]', "test@example.com");
 
-  await this.page.fill('[id="name"]', "John Doe");
-  await this.page.fill('[id="line1"]', "123 Test Street");
-  await this.page.fill('[id="city"]', "London");
-  await this.page.fill('[id="postalCode"]', "SW1A 1AA");
-  await this.page.fill('[id="phone"]', "07700900000");
-});
+    await this.page.fill('[id="name"]', "John Doe");
+    await this.page.fill('[id="line1"]', "123 Test Street");
+    await this.page.fill('[id="city"]', "London");
+    await this.page.fill('[id="postalCode"]', "SW1A 1AA");
+    await this.page.fill('[id="phone"]', "07700900000");
+  },
+);
 
 Then("I should see the order subtotal", async function(this: CustomWorld) {
   const subtotal = this.page.locator('[data-testid="order-subtotal"]');
   await expect(subtotal).toBeVisible();
 });
 
-Then("I should see shipping information placeholder", async function(this: CustomWorld) {
-  const placeholder = this.page.getByText(/Complete shipping info/i);
-  await expect(placeholder).toBeVisible();
-});
+Then(
+  "I should see shipping information placeholder",
+  async function(this: CustomWorld) {
+    const placeholder = this.page.getByText(/Complete shipping info/i);
+    await expect(placeholder).toBeVisible();
+  },
+);
 
-Then("I should see the order summary with calculated shipping", async function(this: CustomWorld) {
-  const shippingCost = this.page.locator('[data-testid="shipping-cost"]');
-  await expect(shippingCost).toBeVisible();
+Then(
+  "I should see the order summary with calculated shipping",
+  async function(this: CustomWorld) {
+    const shippingCost = this.page.locator('[data-testid="shipping-cost"]');
+    await expect(shippingCost).toBeVisible();
 
-  const total = this.page.locator('[data-testid="order-total"]');
-  await expect(total).toBeVisible();
-});
+    const total = this.page.locator('[data-testid="order-total"]');
+    await expect(total).toBeVisible();
+  },
+);
 
-Then("I should see a checkout validation error", async function(this: CustomWorld) {
-  const errorAlert = this.page.locator('[role="alert"]');
-  await expect(errorAlert).toBeVisible();
-});
+Then(
+  "I should see a checkout validation error",
+  async function(this: CustomWorld) {
+    const errorAlert = this.page.locator('[role="alert"]');
+    await expect(errorAlert).toBeVisible();
+  },
+);
 
-Then("I should see the Stripe payment element", async function(this: CustomWorld) {
-  // In E2E tests with mocked API, Stripe Elements may not fully load
-  // Check for the payment section which indicates we're on the payment step
-  // This verifies the checkout flow transitioned correctly
+Then(
+  "I should see the Stripe payment element",
+  async function(this: CustomWorld) {
+    // In E2E tests with mocked API, Stripe Elements may not fully load
+    // Check for the payment section which indicates we're on the payment step
+    // This verifies the checkout flow transitioned correctly
 
-  // First wait for the API call to complete and UI to update
-  // The "Continue to Payment" button should show loading state then disappear
-  try {
-    await this.page.waitForSelector("text=Processing...", {
-      state: "hidden",
-      timeout: 15000,
-    });
-  } catch {
-    // May already be past processing state
-  }
+    // First wait for the API call to complete and UI to update
+    // The "Continue to Payment" button should show loading state then disappear
+    try {
+      await this.page.waitForSelector("text=Processing...", {
+        state: "hidden",
+        timeout: 15000,
+      });
+    } catch {
+      // May already be past processing state
+    }
 
-  // Look for Payment text - it's inside a CardTitle (which is a div, not a heading element)
-  const paymentTitle = this.page.getByText("Payment", { exact: true });
-  await expect(paymentTitle).toBeVisible({ timeout: 15000 });
-
-  // Also check that the form is rendered (Elements wrapper is present)
-  const paymentForm = this.page.locator("form");
-  await expect(paymentForm).toBeVisible({ timeout: 5000 });
-});
-
-Then("I should see payment security message", async function(this: CustomWorld) {
-  // Wait for payment step to be fully loaded
-  // The security message is rendered inside the CheckoutForm component
-  // With mocked clientSecret, Stripe Elements may show an error but the form structure should render
-  try {
-    const securityMessage = this.page.getByText(/securely processed by Stripe/i);
-    await expect(securityMessage).toBeVisible({ timeout: 10000 });
-  } catch {
-    // If security message is not visible (Stripe Elements failed to load),
-    // verify we're on the payment step at minimum
+    // Look for Payment text - it's inside a CardTitle (which is a div, not a heading element)
     const paymentTitle = this.page.getByText("Payment", { exact: true });
-    await expect(paymentTitle).toBeVisible({ timeout: 5000 });
-    this.attach(
-      JSON.stringify({
-        note:
-          "Security message not visible - Stripe Elements may not have fully loaded with mock clientSecret",
-        fallbackVerification: "Payment title visible",
-      }),
-      "application/json",
-    );
-  }
-});
+    await expect(paymentTitle).toBeVisible({ timeout: 15000 });
+
+    // Also check that the form is rendered (Elements wrapper is present)
+    const paymentForm = this.page.locator("form");
+    await expect(paymentForm).toBeVisible({ timeout: 5000 });
+  },
+);
+
+Then(
+  "I should see payment security message",
+  async function(this: CustomWorld) {
+    // Wait for payment step to be fully loaded
+    // The security message is rendered inside the CheckoutForm component
+    // With mocked clientSecret, Stripe Elements may show an error but the form structure should render
+    try {
+      const securityMessage = this.page.getByText(
+        /securely processed by Stripe/i,
+      );
+      await expect(securityMessage).toBeVisible({ timeout: 10000 });
+    } catch {
+      // If security message is not visible (Stripe Elements failed to load),
+      // verify we're on the payment step at minimum
+      const paymentTitle = this.page.getByText("Payment", { exact: true });
+      await expect(paymentTitle).toBeVisible({ timeout: 5000 });
+      this.attach(
+        JSON.stringify({
+          note:
+            "Security message not visible - Stripe Elements may not have fully loaded with mock clientSecret",
+          fallbackVerification: "Payment title visible",
+        }),
+        "application/json",
+      );
+    }
+  },
+);
 
 Then("I should see the lock icon", async function(this: CustomWorld) {
   // The lock icon is inside the Complete Order button in CheckoutForm
@@ -971,7 +1090,11 @@ Given(
     // Store expected item count for verification
     (this as CustomWorld & { expectedItemCount?: number; }).expectedItemCount = itemCount;
     this.attach(
-      JSON.stringify({ orderPlaced: true, itemCount, note: "Using seeded E2E data" }),
+      JSON.stringify({
+        orderPlaced: true,
+        itemCount,
+        note: "Using seeded E2E data",
+      }),
       "application/json",
     );
   },
@@ -979,21 +1102,26 @@ Given(
 
 Given("I have placed multiple orders", async function(this: CustomWorld) {
   // E2E seed creates 3 orders
-  (this as CustomWorld & { expectMultipleOrders?: boolean; }).expectMultipleOrders = true;
+  (this as CustomWorld & { expectMultipleOrders?: boolean; })
+    .expectMultipleOrders = true;
   this.attach(
     JSON.stringify({ multipleOrders: true, note: "Using seeded E2E data" }),
     "application/json",
   );
 });
 
-Given("I have an order with status {string}", async function(this: CustomWorld, status: string) {
-  // Store expected status for verification - we'll look for this specific status
-  (this as CustomWorld & { expectedOrderStatus?: string; }).expectedOrderStatus = status;
-  this.attach(
-    JSON.stringify({ orderStatus: status, note: "Using seeded E2E data" }),
-    "application/json",
-  );
-});
+Given(
+  "I have an order with status {string}",
+  async function(this: CustomWorld, status: string) {
+    // Store expected status for verification - we'll look for this specific status
+    (this as CustomWorld & { expectedOrderStatus?: string; })
+      .expectedOrderStatus = status;
+    this.attach(
+      JSON.stringify({ orderStatus: status, note: "Using seeded E2E data" }),
+      "application/json",
+    );
+  },
+);
 
 Then("I should see the order in the list", async function(this: CustomWorld) {
   const orderCard = this.page.locator('[data-testid="order-card"]').first();
@@ -1006,7 +1134,8 @@ Then("I should see the order number", async function(this: CustomWorld) {
 });
 
 Then("I should see the order status badge", async function(this: CustomWorld) {
-  const statusBadge = this.page.locator('[data-testid="order-status-badge"]').first();
+  const statusBadge = this.page.locator('[data-testid="order-status-badge"]')
+    .first();
   await expect(statusBadge).toBeVisible();
 });
 
@@ -1020,115 +1149,147 @@ Then("I should see the order total", async function(this: CustomWorld) {
   await expect(orderTotal).toBeVisible();
 });
 
-When("I click on the first order in the list", async function(this: CustomWorld) {
-  const firstOrder = this.page.locator('[data-testid="order-card"]').first();
-  await firstOrder.click();
-  await this.page.waitForLoadState("networkidle");
-});
+When(
+  "I click on the first order in the list",
+  async function(this: CustomWorld) {
+    const firstOrder = this.page.locator('[data-testid="order-card"]').first();
+    await firstOrder.click();
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 
-Then("I should be on the order detail page", async function(this: CustomWorld) {
-  await this.page.waitForURL(/\/orders\/[^/]+$/);
-  const url = this.page.url();
-  expect(url).toMatch(/\/orders\/[^/]+$/);
-});
+Then(
+  "I should be on the order detail page",
+  async function(this: CustomWorld) {
+    await this.page.waitForURL(/\/orders\/[^/]+$/);
+    const url = this.page.url();
+    expect(url).toMatch(/\/orders\/[^/]+$/);
+  },
+);
 
 Then("I should see the order details", async function(this: CustomWorld) {
   const orderDetails = this.page.locator('[data-testid="order-details"]');
   await expect(orderDetails).toBeVisible();
 });
 
-Then("I should see preview images for the order items", async function(this: CustomWorld) {
-  const previewImages = this.page.locator('[data-testid="order-preview-image"]');
-  await expect(previewImages.first()).toBeVisible();
-});
+Then(
+  "I should see preview images for the order items",
+  async function(this: CustomWorld) {
+    const previewImages = this.page.locator(
+      '[data-testid="order-preview-image"]',
+    );
+    await expect(previewImages.first()).toBeVisible();
+  },
+);
 
-Then("the orders should be sorted by date descending", async function(this: CustomWorld) {
-  // Verify first order is most recent by checking dates
-  const orderDates = this.page.locator('[data-testid="order-date"]');
-  const count = await orderDates.count();
+Then(
+  "the orders should be sorted by date descending",
+  async function(this: CustomWorld) {
+    // Verify first order is most recent by checking dates
+    const orderDates = this.page.locator('[data-testid="order-date"]');
+    const count = await orderDates.count();
 
-  if (count > 1) {
-    const firstDate = await orderDates.nth(0).textContent();
-    const secondDate = await orderDates.nth(1).textContent();
-    expect(firstDate).toBeTruthy();
-    expect(secondDate).toBeTruthy();
-  }
-});
-
-Then("each order should show its order number", async function(this: CustomWorld) {
-  const orderNumbers = this.page.locator('[data-testid="order-number"]');
-  const count = await orderNumbers.count();
-  expect(count).toBeGreaterThan(0);
-});
-
-Then("I should be redirected to the login page", async function(this: CustomWorld) {
-  // Wait for redirect to login/signin page
-  await this.page.waitForURL(/\/(login|auth\/signin)/, { timeout: 10000 });
-
-  // Verify we're on a login page by checking for auth indicators
-  const signInIndicators = [
-    this.page.getByRole("button", { name: /Continue with GitHub|Continue with Google/i }),
-    this.page.getByRole("button", { name: /Sign in/i }),
-    this.page.locator('input[type="email"]'),
-    this.page.getByText(/sign in|log in/i),
-  ];
-
-  // Wait for any of the indicators to be visible
-  let found = false;
-  for (const indicator of signInIndicators) {
-    if (await indicator.first().isVisible({ timeout: 2000 }).catch(() => false)) {
-      found = true;
-      break;
+    if (count > 1) {
+      const firstDate = await orderDates.nth(0).textContent();
+      const secondDate = await orderDates.nth(1).textContent();
+      expect(firstDate).toBeTruthy();
+      expect(secondDate).toBeTruthy();
     }
-  }
+  },
+);
 
-  if (!found) {
-    // If no indicators found, at least verify we're on the login URL
-    const url = this.page.url();
-    expect(url).toMatch(/\/(login|auth\/signin)/);
-  }
-});
+Then(
+  "each order should show its order number",
+  async function(this: CustomWorld) {
+    const orderNumbers = this.page.locator('[data-testid="order-number"]');
+    const count = await orderNumbers.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
 
-Then("I should see the {string} status badge", async function(this: CustomWorld, status: string) {
-  // Find an order with the specified status badge (not just the first order)
-  const statusBadges = this.page.locator('[data-testid="order-status-badge"]');
-  const count = await statusBadges.count();
+Then(
+  "I should be redirected to the login page",
+  async function(this: CustomWorld) {
+    // Wait for redirect to login/signin page
+    await this.page.waitForURL(/\/(login|auth\/signin)/, { timeout: 10000 });
 
-  let found = false;
-  for (let i = 0; i < count; i++) {
-    const badgeText = await statusBadges.nth(i).textContent();
-    if (badgeText?.toUpperCase().includes(status.toUpperCase())) {
-      found = true;
-      // Verify this specific badge is visible
-      await expect(statusBadges.nth(i)).toBeVisible();
-      break;
+    // Verify we're on a login page by checking for auth indicators
+    const signInIndicators = [
+      this.page.getByRole("button", {
+        name: /Continue with GitHub|Continue with Google/i,
+      }),
+      this.page.getByRole("button", { name: /Sign in/i }),
+      this.page.locator('input[type="email"]'),
+      this.page.getByText(/sign in|log in/i),
+    ];
+
+    // Wait for any of the indicators to be visible
+    let found = false;
+    for (const indicator of signInIndicators) {
+      if (
+        await indicator.first().isVisible({ timeout: 2000 }).catch(() => false)
+      ) {
+        found = true;
+        break;
+      }
     }
-  }
 
-  if (!found) {
-    // Fall back to checking first badge for better error message
-    const firstBadge = statusBadges.first();
-    await expect(firstBadge).toContainText(status, { ignoreCase: true });
-  }
-});
-
-Then("I should see {string} in the order summary", async function(this: CustomWorld, text: string) {
-  // Find an order card that contains the expected text
-  const orderCards = this.page.locator('[data-testid="order-card"]');
-  const count = await orderCards.count();
-
-  let found = false;
-  for (let i = 0; i < count; i++) {
-    const cardText = await orderCards.nth(i).textContent();
-    if (cardText?.toLowerCase().includes(text.toLowerCase())) {
-      found = true;
-      break;
+    if (!found) {
+      // If no indicators found, at least verify we're on the login URL
+      const url = this.page.url();
+      expect(url).toMatch(/\/(login|auth\/signin)/);
     }
-  }
+  },
+);
 
-  if (!found) {
-    // Fall back to checking first card for better error message
-    const firstCard = orderCards.first();
-    await expect(firstCard).toContainText(text);
-  }
-});
+Then(
+  "I should see the {string} status badge",
+  async function(this: CustomWorld, status: string) {
+    // Find an order with the specified status badge (not just the first order)
+    const statusBadges = this.page.locator(
+      '[data-testid="order-status-badge"]',
+    );
+    const count = await statusBadges.count();
+
+    let found = false;
+    for (let i = 0; i < count; i++) {
+      const badgeText = await statusBadges.nth(i).textContent();
+      if (badgeText?.toUpperCase().includes(status.toUpperCase())) {
+        found = true;
+        // Verify this specific badge is visible
+        await expect(statusBadges.nth(i)).toBeVisible();
+        break;
+      }
+    }
+
+    if (!found) {
+      // Fall back to checking first badge for better error message
+      const firstBadge = statusBadges.first();
+      await expect(firstBadge).toContainText(status, { ignoreCase: true });
+    }
+  },
+);
+
+Then(
+  "I should see {string} in the order summary",
+  async function(this: CustomWorld, text: string) {
+    // Find an order card that contains the expected text
+    const orderCards = this.page.locator('[data-testid="order-card"]');
+    const count = await orderCards.count();
+
+    let found = false;
+    for (let i = 0; i < count; i++) {
+      const cardText = await orderCards.nth(i).textContent();
+      if (cardText?.toLowerCase().includes(text.toLowerCase())) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      // Fall back to checking first card for better error message
+      const firstCard = orderCards.first();
+      await expect(firstCard).toContainText(text);
+    }
+  },
+);

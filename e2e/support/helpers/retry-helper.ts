@@ -402,7 +402,9 @@ export async function waitForPricingData(
     await page.waitForFunction(
       () => {
         // Look for Card elements with prices
-        const priceElements = document.querySelectorAll('[class*="Card"], [class*="card"]');
+        const priceElements = document.querySelectorAll(
+          '[class*="Card"], [class*="card"]',
+        );
         if (priceElements.length === 0) {
           // Fallback: look for any element with price formatting
           const pageText = document.body.textContent || "";

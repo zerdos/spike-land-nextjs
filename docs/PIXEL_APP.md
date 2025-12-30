@@ -1,8 +1,7 @@
 # Pixel - AI Image Enhancement App
 
-> **Last Updated**: December 2025
-> **Status**: Production
-> **App URL**: [spike.land/apps/pixel](https://spike.land/apps/pixel)
+> **Last Updated**: December 2025 **Status**: Production **App URL**:
+> [spike.land/apps/pixel](https://spike.land/apps/pixel)
 
 This document consolidates all Pixel app documentation into a single reference.
 
@@ -26,7 +25,8 @@ This document consolidates all Pixel app documentation into a single reference.
 ## Overview
 
 Pixel is an AI-powered image enhancement app that allows users to upload photos,
-enhance their quality using Google Gemini AI, and compare/export improved versions.
+enhance their quality using Google Gemini AI, and compare/export improved
+versions.
 
 ### Platform Integration
 
@@ -277,7 +277,10 @@ model UserTokenBalance {
 }
 ```
 
-For complete Pixel-specific schema documentation including extended models, see [archive/IMAGE_ENHANCEMENT_SCHEMA.md](./archive/IMAGE_ENHANCEMENT_SCHEMA.md). For core Spike Land platform schema (User, App, Requirement, MonetizationModel), see [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md).
+For complete Pixel-specific schema documentation including extended models, see
+[archive/IMAGE_ENHANCEMENT_SCHEMA.md](./archive/IMAGE_ENHANCEMENT_SCHEMA.md).
+For core Spike Land platform schema (User, App, Requirement, MonetizationModel),
+see [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md).
 
 ---
 

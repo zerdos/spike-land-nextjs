@@ -32,7 +32,9 @@ async function main() {
       console.log(`\nModel: ${m.name}`);
       console.log(`  Display Name: ${m.displayName || "N/A"}`);
       console.log(`  Description: ${m.description || "N/A"}`);
-      const supportedMethods = m.supportedGenerationMethods as string[] | undefined;
+      const supportedMethods = m.supportedGenerationMethods as
+        | string[]
+        | undefined;
       console.log(
         `  Supported Methods: ${supportedMethods?.join(", ") || "N/A"}`,
       );

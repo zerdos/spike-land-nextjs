@@ -79,7 +79,9 @@ Then(
 When("I click on the Pixel feature card", async function(this: CustomWorld) {
   // Click the "Get Started" link inside the featured apps section (#apps)
   const appsSection = this.page.locator("#apps");
-  const getStartedLink = appsSection.getByRole("link", { name: /get started/i });
+  const getStartedLink = appsSection.getByRole("link", {
+    name: /get started/i,
+  });
   await expect(getStartedLink).toBeVisible({ timeout: 10000 });
   await getStartedLink.click();
   await this.page.waitForLoadState("networkidle");

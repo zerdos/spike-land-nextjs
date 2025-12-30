@@ -110,7 +110,10 @@ export function AudioMixer() {
                 buffer = await context.decodeAudioData(arrayBuffer);
               }
             } catch (error) {
-              console.warn(`Failed to load audio for track ${track.name}:`, error);
+              console.warn(
+                `Failed to load audio for track ${track.name}:`,
+                error,
+              );
             }
           }
 
@@ -185,7 +188,10 @@ export function AudioMixer() {
             try {
               const arrayBuffer = await file.arrayBuffer();
               opfsPath = `audio-mixer/tracks/${Date.now()}-${file.name}`;
-              await audioStorage.saveTrackToPath(opfsPath, new Uint8Array(arrayBuffer));
+              await audioStorage.saveTrackToPath(
+                opfsPath,
+                new Uint8Array(arrayBuffer),
+              );
             } catch (error) {
               console.warn("Failed to save track to OPFS:", error);
               opfsPath = undefined;
@@ -229,7 +235,10 @@ export function AudioMixer() {
           opfsPath = `audio-mixer/recordings/${Date.now()}-${
             recordingName.replace(/\s+/g, "-")
           }.webm`;
-          await audioStorage.saveTrackToPath(opfsPath, new Uint8Array(arrayBuffer));
+          await audioStorage.saveTrackToPath(
+            opfsPath,
+            new Uint8Array(arrayBuffer),
+          );
         } catch (error) {
           console.warn("Failed to save recording to OPFS:", error);
           opfsPath = undefined;
@@ -313,7 +322,9 @@ export function AudioMixer() {
         if (hasSolo && !track.solo) return;
 
         const trackPosition = track.position ?? track.delay ?? 0;
-        const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
+        const effectiveTrimEnd = track.trimEnd > 0
+          ? track.trimEnd
+          : track.duration;
 
         // Position within track's timeline
         const timelinePosition = time - trackPosition;
@@ -359,8 +370,14 @@ export function AudioMixer() {
 
     try {
       const { context } = await audioContext.initialize();
-      const maxDuration = Math.max(...trackManager.tracks.map((t) => t.duration));
-      const blob = await mixTracksToBlob(context, trackManager.tracks, maxDuration);
+      const maxDuration = Math.max(
+        ...trackManager.tracks.map((t) => t.duration),
+      );
+      const blob = await mixTracksToBlob(
+        context,
+        trackManager.tracks,
+        maxDuration,
+      );
 
       // Download
       const url = URL.createObjectURL(blob);
@@ -442,7 +459,8 @@ export function AudioMixer() {
         const maxTime = Math.max(
           ...trackManager.tracks.map((t) => {
             const effectiveTrimEnd = t.trimEnd > 0 ? t.trimEnd : t.duration;
-            return (t.position ?? t.delay ?? 0) + effectiveTrimEnd - t.trimStart;
+            return (t.position ?? t.delay ?? 0) + effectiveTrimEnd -
+              t.trimStart;
           }),
           0,
         );
@@ -591,7 +609,9 @@ export function AudioMixer() {
       if (key === "g") {
         e.preventDefault();
         timeline.setSnapEnabled(!timeline.state.snapEnabled);
-        showToast(timeline.state.snapEnabled ? "Grid snap off" : "Grid snap on");
+        showToast(
+          timeline.state.snapEnabled ? "Grid snap off" : "Grid snap on",
+        );
         return;
       }
 
@@ -679,11 +699,15 @@ export function AudioMixer() {
                 <span>Saved</span>
               </Badge>
             )}
-            {!persistenceState.isSaving && persistenceState.hasUnsavedChanges && (
-              <Badge variant="outline" className="glass-1 border-white/10 text-yellow-400">
-                Unsaved changes
-              </Badge>
-            )}
+            {!persistenceState.isSaving && persistenceState.hasUnsavedChanges &&
+              (
+                <Badge
+                  variant="outline"
+                  className="glass-1 border-white/10 text-yellow-400"
+                >
+                  Unsaved changes
+                </Badge>
+              )}
           </div>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
             Professional multi-track layering and recording studio in your browser
@@ -695,7 +719,9 @@ export function AudioMixer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex flex-col gap-1">
               <h2 className="text-xl font-bold font-heading">Master Station</h2>
-              <p className="text-sm text-muted-foreground italic">Global output & monitoring</p>
+              <p className="text-sm text-muted-foreground italic">
+                Global output & monitoring
+              </p>
             </div>
             <div className="flex items-center gap-6">
               {/* Keyboard shortcuts button */}

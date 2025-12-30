@@ -2,7 +2,8 @@
 
 ## Summary
 
-Create `docs/SECRETS_SETUP.md` as single source of truth for all secrets and environment variables, consolidating information from:
+Create `docs/SECRETS_SETUP.md` as single source of truth for all secrets and
+environment variables, consolidating information from:
 
 - `.github/BRANCH_PROTECTION_SETUP.md`
 - `.github/workflows/README.md`
@@ -40,7 +41,8 @@ Create `docs/SECRETS_SETUP.md` as single source of truth for all secrets and env
 
 ### GitHub Actions
 
-- Required: DATABASE_URL, AUTH_SECRET, E2E_BYPASS_SECRET, VERCEL_TOKEN, GH_PAT_TOKEN
+- Required: DATABASE_URL, AUTH_SECRET, E2E_BYPASS_SECRET, VERCEL_TOKEN,
+  GH_PAT_TOKEN
 - CI workflows: ci-cd.yml, claude.yml, claude-code-review.yml
 - Optional: CODECOV_TOKEN, CLAUDE_CODE_OAUTH_TOKEN
 

@@ -130,7 +130,8 @@ DATABASE_URL=postgresql://user:pass@host:6543/db?pgbouncer=true
 DIRECT_URL=postgresql://user:pass@host:5432/db
 ```
 
-See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for detailed database configuration.
+See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for detailed database
+configuration.
 
 ### OAuth Providers
 
@@ -285,8 +286,8 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 TOKEN_ENCRYPTION_KEY=your-64-character-hex-key
 ```
 
-**IMPORTANT**: Do NOT rotate this key after tokens are stored - they will
-become unreadable.
+**IMPORTANT**: Do NOT rotate this key after tokens are stored - they will become
+unreadable.
 
 ---
 
@@ -321,7 +322,8 @@ secret**
   1. Go to https://github.com/settings/tokens?type=beta
   2. Create a fine-grained Personal Access Token
   3. Repository access: Select `zerdos/spike-land-nextjs`
-  4. Permissions: `Contents` (read/write), `Issues` (read/write), `Pull
+  4. Permissions: `Contents` (read/write), `Issues` (read/write),
+     `Pull
      requests` (read/write)
 
 ### Optional Secrets

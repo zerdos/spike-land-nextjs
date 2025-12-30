@@ -51,7 +51,8 @@ including models, relationships, and design decisions.
         for forks)                                          │
 ```
 
-(Note: This diagram shows a subset of the core tables. See below for all 55 tables.)
+(Note: This diagram shows a subset of the core tables. See below for all 55
+tables.)
 
 ## Models
 

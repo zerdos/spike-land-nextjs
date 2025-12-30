@@ -620,19 +620,24 @@ Then("I should see the success message", async function(this: CustomWorld) {
 #### Testing Navigation
 
 ```typescript
-When("I click the {string} link", async function(this: CustomWorld, linkText: string) {
-  const link = this.page.getByRole("link", { name: new RegExp(linkText, "i") });
-  const currentUrl = this.page.url();
+When(
+  "I click the {string} link",
+  async function(this: CustomWorld, linkText: string) {
+    const link = this.page.getByRole("link", {
+      name: new RegExp(linkText, "i"),
+    });
+    const currentUrl = this.page.url();
 
-  await link.first().click();
+    await link.first().click();
 
-  await this.page.waitForFunction(
-    (oldUrl) => window.location.href !== oldUrl,
-    currentUrl,
-    { timeout: 10000 },
-  );
-  await this.page.waitForLoadState("networkidle");
-});
+    await this.page.waitForFunction(
+      (oldUrl) => window.location.href !== oldUrl,
+      currentUrl,
+      { timeout: 10000 },
+    );
+    await this.page.waitForLoadState("networkidle");
+  },
+);
 ```
 
 ---
@@ -642,7 +647,8 @@ When("I click the {string} link", async function(this: CustomWorld, linkText: st
 ### DO
 
 - **Test alongside implementation**: Write tests as you develop features
-- **Use descriptive names**: Test names should describe the behavior being tested
+- **Use descriptive names**: Test names should describe the behavior being
+  tested
 - **Mock external dependencies**: Keep tests isolated and fast
 - **Use data-testid sparingly**: Prefer role-based queries when possible
 - **Test edge cases**: Empty states, error conditions, boundary values

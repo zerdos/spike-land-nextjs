@@ -17,7 +17,9 @@ When(
     // Extract callbackUrl from current URL before switching context
     const currentUrl = new URL(this.page.url());
     const encodedCallback = currentUrl.searchParams.get("callbackUrl");
-    const redirectUrl = encodedCallback ? decodeURIComponent(encodedCallback) : "/";
+    const redirectUrl = encodedCallback
+      ? decodeURIComponent(encodedCallback)
+      : "/";
 
     // Close current context (which has no bypass header for unauthenticated flow)
     await this.page.close();
@@ -62,7 +64,9 @@ When(
     // Extract callbackUrl from current URL before switching context
     const currentUrl = new URL(this.page.url());
     const encodedCallback = currentUrl.searchParams.get("callbackUrl");
-    const redirectUrl = encodedCallback ? decodeURIComponent(encodedCallback) : "/";
+    const redirectUrl = encodedCallback
+      ? decodeURIComponent(encodedCallback)
+      : "/";
 
     // Close current context (which has no bypass header for unauthenticated flow)
     await this.page.close();
@@ -135,13 +139,17 @@ When("my session expires", async function(this: CustomWorld) {
 When(
   "I attempt to access the following protected routes:",
   async function(this: CustomWorld, dataTable: { raw: () => string[][]; }) {
-    const routes = dataTable.raw().map((row) => row[0]).filter((r): r is string => !!r);
+    const routes = dataTable.raw().map((row) => row[0]).filter((
+      r,
+    ): r is string => !!r);
     this.attach(JSON.stringify({ routes }), "application/json");
 
     for (const route of routes) {
       await navigateToPath(this.page, this.baseUrl, route);
       // Wait for redirect to auth/signin page (proxy.ts line 228 redirects here)
-      await this.page.waitForURL((url) => url.pathname === "/auth/signin", { timeout: 10000 });
+      await this.page.waitForURL((url) => url.pathname === "/auth/signin", {
+        timeout: 10000,
+      });
 
       const currentUrl = await getCurrentUrl(this.page);
       const url = new URL(currentUrl);

@@ -185,12 +185,10 @@ When a rotation occurs, document it:
 ```markdown
 ## Credential Rotation - [DATE]
 
-**Credentials Rotated**: [List]
-**Reason**: [Scheduled/Incident/Offboarding]
-**Rotated By**: [Name]
-**Environments Updated**: [Production/Preview/Development/CI]
-**Verification**: [Passed/Issues]
-**Notes**: [Any issues or observations]
+**Credentials Rotated**: [List] **Reason**: [Scheduled/Incident/Offboarding]
+**Rotated By**: [Name] **Environments Updated**:
+[Production/Preview/Development/CI] **Verification**: [Passed/Issues] **Notes**:
+[Any issues or observations]
 ```
 
 ## Emergency Rotation

@@ -4,14 +4,19 @@ This document outlines security improvements implemented in the application.
 
 ## CSP Nonces
 
-We have implemented a nonce-based Content Security Policy (CSP) to strictly control which scripts can execute.
+We have implemented a nonce-based Content Security Policy (CSP) to strictly
+control which scripts can execute.
 
 ### Implementation
 
-- **Middleware**: A `src/middleware.ts` generates a cryptographically secure nonce for each request.
-- **CSP Header**: The `Content-Security-Policy` header is set dynamically in the middleware, including the `nonce-{value}` directive in `script-src`.
-- **Utility**: `src/lib/security/csp-nonce.ts` provides nonce generation (middleware safe).
-- **Server Utility**: `src/lib/security/csp-nonce-server.ts` provides nonce retrieval for server components.
+- **Middleware**: A `src/middleware.ts` generates a cryptographically secure
+  nonce for each request.
+- **CSP Header**: The `Content-Security-Policy` header is set dynamically in the
+  middleware, including the `nonce-{value}` directive in `script-src`.
+- **Utility**: `src/lib/security/csp-nonce.ts` provides nonce generation
+  (middleware safe).
+- **Server Utility**: `src/lib/security/csp-nonce-server.ts` provides nonce
+  retrieval for server components.
 
 ### Usage
 
@@ -33,7 +38,8 @@ export default async function Layout({ children }) {
 }
 ```
 
-Next.js automatically handles nonces for its internal scripts when the `x-nonce` header is present.
+Next.js automatically handles nonces for its internal scripts when the `x-nonce`
+header is present.
 
 ## Bcrypt Cost Factor
 
@@ -41,8 +47,10 @@ The bcrypt cost factor (salt rounds) has been increased from 10 to 12.
 
 ### Rationale
 
-- **NIST Recommendation**: Higher cost factors make brute-force and rainbow table attacks significantly slower.
-- **Performance**: A cost of 12 provides a good balance between security and server performance for login operations.
+- **NIST Recommendation**: Higher cost factors make brute-force and rainbow
+  table attacks significantly slower.
+- **Performance**: A cost of 12 provides a good balance between security and
+  server performance for login operations.
 
 ### Affected Areas
 

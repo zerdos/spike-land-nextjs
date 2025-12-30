@@ -340,7 +340,8 @@ Tasks:
 2. **Social Media Historian** (18-30) - TikTok/Instagram
 3. **iPhone Upgrader** (25-45) - Instagram/TikTok
 
-See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for full persona documentation.
+See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for full persona
+documentation.
 
 ---
 

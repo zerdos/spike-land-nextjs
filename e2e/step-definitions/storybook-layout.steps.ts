@@ -28,13 +28,16 @@ Then("I should see the desktop sidebar", async function(this: CustomWorld) {
   await expect(sidebar).toBeVisible({ timeout: 10000 });
 });
 
-Then("I should NOT see the desktop sidebar", async function(this: CustomWorld) {
-  // On mobile, the aside should not be visible (hidden via lg:flex)
-  const sidebar = this.page.locator("aside");
-  // The element exists but should be hidden
-  const isVisible = await sidebar.isVisible().catch(() => false);
-  expect(isVisible).toBe(false);
-});
+Then(
+  "I should NOT see the desktop sidebar",
+  async function(this: CustomWorld) {
+    // On mobile, the aside should not be visible (hidden via lg:flex)
+    const sidebar = this.page.locator("aside");
+    // The element exists but should be hidden
+    const isVisible = await sidebar.isVisible().catch(() => false);
+    expect(isVisible).toBe(false);
+  },
+);
 
 Then(
   "I should see {string} in the sidebar navigation",
@@ -52,7 +55,10 @@ Then(
     // Active links have class bg-primary/10 text-primary
     // Use exact match to find the specific navigation link
     const sidebar = this.page.locator("aside");
-    const activeLink = sidebar.getByRole("link", { name: sectionName, exact: true });
+    const activeLink = sidebar.getByRole("link", {
+      name: sectionName,
+      exact: true,
+    });
     await expect(activeLink).toBeVisible();
 
     // Check that it has the active styling class using Playwright's assertion

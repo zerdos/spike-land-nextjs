@@ -2,7 +2,8 @@
 
 ## Summary
 
-The `enhance-image.workflow.ts` file (693 lines) contains 10 tightly-coupled workflow steps with unclear error boundaries. Issues include:
+The `enhance-image.workflow.ts` file (693 lines) contains 10 tightly-coupled
+workflow steps with unclear error boundaries. Issues include:
 
 - Inconsistent error handling across steps
 - Vision model failures silently falling back to defaults
@@ -75,7 +76,8 @@ export enum WorkflowStage {
 ### Phase 1: Extract Utility Functions
 
 1. Create `/src/workflows/dimension-utils.ts`
-2. Add `validatePixelDimensions`, `validateCropRegion`, `calculatePaddingDimensions`
+2. Add `validatePixelDimensions`, `validateCropRegion`,
+   `calculatePaddingDimensions`
 
 ### Phase 2: Define Explicit Error Boundaries
 

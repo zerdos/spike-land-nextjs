@@ -2,7 +2,9 @@
 
 ## Summary
 
-The `AlbumDetailClient.tsx` file (1,287 lines) contains 25 useState hooks that should be extracted into custom hooks and components. This plan documents all hooks and proposes a refactoring strategy.
+The `AlbumDetailClient.tsx` file (1,287 lines) contains 25 useState hooks that
+should be extracted into custom hooks and components. This plan documents all
+hooks and proposes a refactoring strategy.
 
 ## All 25 useState Hooks (Lines 101-146)
 
@@ -33,7 +35,8 @@ The `AlbumDetailClient.tsx` file (1,287 lines) contains 25 useState hooks that s
 
 ### 6. Move to Album Dialog State (5 hooks)
 
-- `showMoveDialog`, `allAlbums`, `selectedTargetAlbum`, `isMoving`, `isLoadingAlbums`
+- `showMoveDialog`, `allAlbums`, `selectedTargetAlbum`, `isMoving`,
+  `isLoadingAlbums`
 
 ### 7. Other State (2 hooks)
 
@@ -88,9 +91,11 @@ The `AlbumDetailClient.tsx` file (1,287 lines) contains 25 useState hooks that s
 
 ## Questions
 
-1. **Hook Count Discrepancy**: Issue mentions 27 hooks, I found 25. Proceed with 25?
+1. **Hook Count Discrepancy**: Issue mentions 27 hooks, I found 25. Proceed with
+   25?
 2. **QR Sheet State**: Keep in component or add to `useAlbumData`?
-3. **View Controls**: Combine `displayType` + `zoomLevel` into `useViewControls`?
+3. **View Controls**: Combine `displayType` + `zoomLevel` into
+   `useViewControls`?
 4. **Location**: Local to album page or promoted to `src/hooks/`?
 
 ## Critical Files

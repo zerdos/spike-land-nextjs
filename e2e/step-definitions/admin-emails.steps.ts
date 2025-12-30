@@ -295,20 +295,23 @@ When(
   },
 );
 
-When("I click the Send Test button and expect success", async function(this: CustomWorld) {
-  // Ensure button is enabled before clicking
-  const button = this.page.getByRole("button", { name: "Send Test" });
-  await expect(button).toBeEnabled({ timeout: 10000 });
+When(
+  "I click the Send Test button and expect success",
+  async function(this: CustomWorld) {
+    // Ensure button is enabled before clicking
+    const button = this.page.getByRole("button", { name: "Send Test" });
+    await expect(button).toBeEnabled({ timeout: 10000 });
 
-  // Setup dialog handler BEFORE clicking
-  const dialogPromise = this.page.waitForEvent("dialog", { timeout: 15000 });
+    // Setup dialog handler BEFORE clicking
+    const dialogPromise = this.page.waitForEvent("dialog", { timeout: 15000 });
 
-  await button.click();
+    await button.click();
 
-  const dialog = await dialogPromise;
-  expect(dialog.message()).toContain("success");
-  await dialog.accept();
-});
+    const dialog = await dialogPromise;
+    expect(dialog.message()).toContain("success");
+    await dialog.accept();
+  },
+);
 When("I click the modal overlay", async function(this: CustomWorld) {
   // Click on the overlay (background)
   await this.page.locator(".fixed.inset-0.bg-black\\/50").click({

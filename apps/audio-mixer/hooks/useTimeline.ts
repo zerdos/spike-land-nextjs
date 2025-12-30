@@ -52,7 +52,9 @@ interface UseTimelineReturn {
   endScrub: () => void;
 }
 
-export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn {
+export function useTimeline(
+  options: UseTimelineOptions = {},
+): UseTimelineReturn {
   const {
     defaultZoom = DEFAULT_ZOOM,
     defaultSnapEnabled = true,
@@ -69,7 +71,9 @@ export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn
   });
 
   const animationRef = useRef<number | null>(null);
-  const animationStartRef = useRef<{ wallTime: number; playheadTime: number; } | null>(null);
+  const animationStartRef = useRef<
+    { wallTime: number; playheadTime: number; } | null
+  >(null);
   const scrubRef = useRef<
     {
       startX: number;
@@ -155,7 +159,8 @@ export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn
     const animate = () => {
       if (!animationStartRef.current) return;
 
-      const elapsed = (performance.now() - animationStartRef.current.wallTime) / 1000;
+      const elapsed = (performance.now() - animationStartRef.current.wallTime) /
+        1000;
       const newTime = animationStartRef.current.playheadTime + elapsed;
 
       setState((prev) => ({

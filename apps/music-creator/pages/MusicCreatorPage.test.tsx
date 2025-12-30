@@ -43,8 +43,12 @@ describe("MusicCreatorPage", () => {
     const user = userEvent.setup();
     const { container } = render(<MusicCreatorPage />);
 
-    const file = new File(["audio content"], "test-audio.mp3", { type: "audio/mp3" });
-    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(["audio content"], "test-audio.mp3", {
+      type: "audio/mp3",
+    });
+    const input = container.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
 
     await user.upload(input, file);
 

@@ -44,7 +44,9 @@ export function RecordingPanel({
         );
       }
     } catch {
-      setError("Failed to start recording. Please check microphone permissions.");
+      setError(
+        "Failed to start recording. Please check microphone permissions.",
+      );
     } finally {
       setIsStarting(false);
     }
@@ -89,7 +91,9 @@ export function RecordingPanel({
         className="p-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded transition-colors"
         aria-label={isPaused ? "Resume recording" : "Pause recording"}
       >
-        {isPaused ? <Circle className="w-4 h-4 fill-current" /> : <Pause className="w-4 h-4" />}
+        {isPaused
+          ? <Circle className="w-4 h-4 fill-current" />
+          : <Pause className="w-4 h-4" />}
       </button>
 
       {/* Stop (save) */}

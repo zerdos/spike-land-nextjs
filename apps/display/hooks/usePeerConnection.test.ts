@@ -346,7 +346,10 @@ describe("usePeerConnection", () => {
   });
 
   it("should send message to specific client", async () => {
-    Object.defineProperty(mockDataConnection, "open", { value: true, writable: true });
+    Object.defineProperty(mockDataConnection, "open", {
+      value: true,
+      writable: true,
+    });
 
     const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
 
@@ -364,7 +367,10 @@ describe("usePeerConnection", () => {
   });
 
   it("should not send message if connection is not open", async () => {
-    Object.defineProperty(mockDataConnection, "open", { value: false, writable: true });
+    Object.defineProperty(mockDataConnection, "open", {
+      value: false,
+      writable: true,
+    });
 
     const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
 
@@ -393,7 +399,10 @@ describe("usePeerConnection", () => {
       .mockReturnValueOnce(mockDataConnection as DataConnection)
       .mockReturnValueOnce(mockDataConnection2 as DataConnection);
 
-    Object.defineProperty(mockDataConnection, "open", { value: true, writable: true });
+    Object.defineProperty(mockDataConnection, "open", {
+      value: true,
+      writable: true,
+    });
 
     const { result } = renderHook(() => usePeerConnection(mockPeer as Peer));
 
@@ -413,7 +422,10 @@ describe("usePeerConnection", () => {
   });
 
   it("should disconnect from specific peer", async () => {
-    Object.defineProperty(mockDataConnection, "open", { value: true, writable: true });
+    Object.defineProperty(mockDataConnection, "open", {
+      value: true,
+      writable: true,
+    });
     const mockTrack = { stop: vi.fn() };
     const streamWithTracks = {
       getTracks: vi.fn(() => [mockTrack]),
@@ -690,7 +702,10 @@ describe("usePeerConnection", () => {
   });
 
   it("should disconnect all peers on unmount", async () => {
-    Object.defineProperty(mockDataConnection, "open", { value: true, writable: true });
+    Object.defineProperty(mockDataConnection, "open", {
+      value: true,
+      writable: true,
+    });
     const unmountMockTrack = { stop: vi.fn() };
     const streamWithTracks = {
       getTracks: vi.fn(() => [unmountMockTrack]),

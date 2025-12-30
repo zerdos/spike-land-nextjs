@@ -226,17 +226,20 @@ Then(
   },
 );
 
-Then("the page should have a main content area", async function(this: CustomWorld) {
-  // Check for main element, role="main", or any content container
-  // Some pages don't use semantic main but still have content
-  const mainElement = this.page.locator("main").or(
-    this.page.locator('[role="main"]'),
-  ).or(
-    // Fallback: check for content sections on landing page
-    this.page.locator("section").first(),
-  );
-  await expect(mainElement.first()).toBeVisible();
-});
+Then(
+  "the page should have a main content area",
+  async function(this: CustomWorld) {
+    // Check for main element, role="main", or any content container
+    // Some pages don't use semantic main but still have content
+    const mainElement = this.page.locator("main").or(
+      this.page.locator('[role="main"]'),
+    ).or(
+      // Fallback: check for content sections on landing page
+      this.page.locator("section").first(),
+    );
+    await expect(mainElement.first()).toBeVisible();
+  },
+);
 
 Then("the page should load custom fonts", async function(this: CustomWorld) {
   // Check that custom fonts are loaded (Geist, Montserrat)

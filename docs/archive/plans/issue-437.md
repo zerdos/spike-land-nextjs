@@ -2,7 +2,8 @@
 
 ## Summary
 
-Stabilize 47 flaky test scenarios (issue says 45) across 5 feature files. Root causes include:
+Stabilize 47 flaky test scenarios (issue says 45) across 5 feature files. Root
+causes include:
 
 - Missing waits for API responses before assertions
 - Fixed `waitForTimeout` instead of condition-based waits
@@ -29,7 +30,7 @@ Stabilize 47 flaky test scenarios (issue says 45) across 5 feature files. Root c
 await this.page.waitForTimeout(100);
 
 // GOOD
-await this.page.waitForResponse(resp => resp.url().includes("/api/..."));
+await this.page.waitForResponse((resp) => resp.url().includes("/api/..."));
 ```
 
 ### 2. Missing API response waits after button clicks
@@ -146,8 +147,10 @@ done
 
 ## Questions
 
-1. **localStorage Draft Feature**: `app-wizard-draft-persistence.feature` is `@skip` at feature level. Unblock as part of this issue?
-2. **Test Data Dependencies**: Add `data-testid` attributes to key UI elements (album dropdown, toast)?
+1. **localStorage Draft Feature**: `app-wizard-draft-persistence.feature` is
+   `@skip` at feature level. Unblock as part of this issue?
+2. **Test Data Dependencies**: Add `data-testid` attributes to key UI elements
+   (album dropdown, toast)?
 3. **Timeout Configuration**: Increase `TIMEOUTS.DEFAULT` from 5s/10s to 7s/15s?
 
 ## Critical Files

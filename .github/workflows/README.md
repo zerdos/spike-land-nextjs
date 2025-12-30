@@ -36,7 +36,8 @@ For complete secrets documentation including all environment variables, see:
 4. Click **New repository secret**
 5. Add each secret with its respective name and value
 
-For detailed setup instructions, see [docs/SECRETS_SETUP.md](../../docs/SECRETS_SETUP.md).
+For detailed setup instructions, see
+[docs/SECRETS_SETUP.md](../../docs/SECRETS_SETUP.md).
 
 ## Local Testing
 

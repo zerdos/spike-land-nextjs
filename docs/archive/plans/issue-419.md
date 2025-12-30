@@ -2,7 +2,8 @@
 
 ## Summary
 
-Create comprehensive `docs/DEPENDENCY_MANAGEMENT.md` covering dependency management practices including:
+Create comprehensive `docs/DEPENDENCY_MANAGEMENT.md` covering dependency
+management practices including:
 
 - Adding/removing packages with yarn
 - Dead code detection with Knip
@@ -39,7 +40,8 @@ From `.github/dependabot.yml`:
 
 ### Adding Dependencies
 
-1. Before adding: Check if functionality exists, evaluate package, consider alternatives
+1. Before adding: Check if functionality exists, evaluate package, consider
+   alternatives
 2. Installation: `yarn add <package>` or `yarn add -D <package>`
 3. Post-installation checklist: lint, build, test, update Knip if needed
 
@@ -59,11 +61,13 @@ From `.github/dependabot.yml`:
 
 - CI runs: `yarn npm audit --all --severity moderate`
 - Manual: `yarn npm audit --all`
-- Handling vulnerabilities: update package, use resolutions, document accepted risks
+- Handling vulnerabilities: update package, use resolutions, document accepted
+  risks
 
 ### Dependabot Workflow
 
-- Review checklist: CI passes, changelog review, bundle impact, manual verification
+- Review checklist: CI passes, changelog review, bundle impact, manual
+  verification
 - Merge criteria by update type (patch/minor/major/security)
 - Testing requirements
 

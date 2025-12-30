@@ -52,7 +52,9 @@ function drawWaveform(
   // Calculate which portion of the waveform to show
   const startRatio = Math.max(0, trimStart) / duration;
   const endRatio = (trimEnd > 0 ? trimEnd : duration) / duration;
-  const visibleDataLength = Math.floor(waveformData.length * (endRatio - startRatio));
+  const visibleDataLength = Math.floor(
+    waveformData.length * (endRatio - startRatio),
+  );
   const dataOffset = Math.floor(waveformData.length * startRatio);
 
   const barCount = Math.min(visibleDataLength, Math.floor(width / 3));
@@ -122,7 +124,9 @@ export function TimelineTrack({
 }: TimelineTrackProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dragMode, setDragMode] = useState<DragMode>(null);
-  const [isHoveringHandle, setIsHoveringHandle] = useState<"start" | "end" | null>(null);
+  const [isHoveringHandle, setIsHoveringHandle] = useState<
+    "start" | "end" | null
+  >(null);
 
   const startX = useRef(0);
   const startPosition = useRef(0);
@@ -133,7 +137,9 @@ export function TimelineTrack({
   const effectiveTrimStart = track.trimStart;
   const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
 
-  const silenceBefore = effectiveTrimStart < 0 ? Math.abs(effectiveTrimStart) : 0;
+  const silenceBefore = effectiveTrimStart < 0
+    ? Math.abs(effectiveTrimStart)
+    : 0;
   const actualAudioStart = Math.max(0, effectiveTrimStart);
   const actualAudioDuration = effectiveTrimEnd - actualAudioStart;
 
@@ -192,7 +198,14 @@ export function TimelineTrack({
       startTrimStart.current = track.trimStart;
       startTrimEnd.current = track.trimEnd > 0 ? track.trimEnd : track.duration;
     },
-    [track.position, track.delay, track.trimStart, track.trimEnd, track.duration, onSelect],
+    [
+      track.position,
+      track.delay,
+      track.trimStart,
+      track.trimEnd,
+      track.duration,
+      onSelect,
+    ],
   );
 
   useEffect(() => {
@@ -216,7 +229,10 @@ export function TimelineTrack({
         const newTrimEnd = startTrimEnd.current + deltaTime;
         const minTrimEnd = Math.max(0, startTrimStart.current) + 0.1;
         const maxTrimEnd = track.duration;
-        const clampedTrimEnd = Math.max(minTrimEnd, Math.min(maxTrimEnd, newTrimEnd));
+        const clampedTrimEnd = Math.max(
+          minTrimEnd,
+          Math.min(maxTrimEnd, newTrimEnd),
+        );
         const snappedTrimEnd = snapTime(clampedTrimEnd);
         onTrimChange(startTrimStart.current, snappedTrimEnd);
       }
@@ -233,14 +249,23 @@ export function TimelineTrack({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [dragMode, zoom, snapTime, onPositionChange, onTrimChange, track.duration]);
+  }, [
+    dragMode,
+    zoom,
+    snapTime,
+    onPositionChange,
+    onTrimChange,
+    track.duration,
+  ]);
 
   const silenceWidth = silenceBefore * zoom;
 
   return (
     <div
       className={`absolute rounded-xl transition-all duration-300 ${
-        isSelected ? "glass-edge shadow-glow-cyan-sm z-30" : "hover:shadow-lg z-20"
+        isSelected
+          ? "glass-edge shadow-glow-cyan-sm z-30"
+          : "hover:shadow-lg z-20"
       } ${track.muted ? "opacity-40 grayscale-[0.5]" : "opacity-100"}`}
       style={{
         left: `${trackLeft}px`,

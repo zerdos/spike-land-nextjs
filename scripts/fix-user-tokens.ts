@@ -18,7 +18,9 @@ async function main() {
 
   if (!email || !tokensArg) {
     console.error("Usage: npx tsx scripts/fix-user-tokens.ts <email> <tokens>");
-    console.error("Example: npx tsx scripts/fix-user-tokens.ts user@example.com 10");
+    console.error(
+      "Example: npx tsx scripts/fix-user-tokens.ts user@example.com 10",
+    );
     process.exit(1);
   }
 
@@ -83,7 +85,9 @@ async function main() {
   });
 
   console.log("\n✅ Tokens credited successfully!");
-  console.log(`User ${email} now has ${newBalance} tokens (was ${currentBalance})`);
+  console.log(
+    `User ${email} now has ${newBalance} tokens (was ${currentBalance})`,
+  );
 
   // Verify the update
   const finalBalance = await prisma.userTokenBalance.findUnique({

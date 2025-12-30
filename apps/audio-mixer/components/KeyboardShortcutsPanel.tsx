@@ -21,16 +21,32 @@ const SHORTCUTS: ShortcutItem[] = [
   { keys: ["End"], description: "Go to end", category: "Playback" },
   { keys: ["←"], description: "Seek backward 1s", category: "Playback" },
   { keys: ["→"], description: "Seek forward 1s", category: "Playback" },
-  { keys: ["Shift", "←"], description: "Seek backward 5s", category: "Playback" },
-  { keys: ["Shift", "→"], description: "Seek forward 5s", category: "Playback" },
+  {
+    keys: ["Shift", "←"],
+    description: "Seek backward 5s",
+    category: "Playback",
+  },
+  {
+    keys: ["Shift", "→"],
+    description: "Seek forward 5s",
+    category: "Playback",
+  },
 
   // Tracks
   { keys: ["↑"], description: "Select previous track", category: "Tracks" },
   { keys: ["↓"], description: "Select next track", category: "Tracks" },
   { keys: ["M"], description: "Mute selected track", category: "Tracks" },
   { keys: ["O"], description: "Solo selected track", category: "Tracks" },
-  { keys: ["Delete"], description: "Delete selected track", category: "Tracks" },
-  { keys: ["Backspace"], description: "Delete selected track", category: "Tracks" },
+  {
+    keys: ["Delete"],
+    description: "Delete selected track",
+    category: "Tracks",
+  },
+  {
+    keys: ["Backspace"],
+    description: "Delete selected track",
+    category: "Tracks",
+  },
 
   // Timeline
   { keys: ["=", "+"], description: "Zoom in", category: "Timeline" },
@@ -41,8 +57,16 @@ const SHORTCUTS: ShortcutItem[] = [
   // Volume
   { keys: ["["], description: "Decrease track volume", category: "Volume" },
   { keys: ["]"], description: "Increase track volume", category: "Volume" },
-  { keys: ["Shift", "["], description: "Decrease master volume", category: "Volume" },
-  { keys: ["Shift", "]"], description: "Increase master volume", category: "Volume" },
+  {
+    keys: ["Shift", "["],
+    description: "Decrease master volume",
+    category: "Volume",
+  },
+  {
+    keys: ["Shift", "]"],
+    description: "Increase master volume",
+    category: "Volume",
+  },
 
   // File
   { keys: ["⌘/Ctrl", "O"], description: "Open audio file", category: "File" },
@@ -59,7 +83,9 @@ interface KeyboardShortcutsPanelProps {
   onClose: () => void;
 }
 
-export function KeyboardShortcutsPanel({ isOpen, onClose }: KeyboardShortcutsPanelProps) {
+export function KeyboardShortcutsPanel(
+  { isOpen, onClose }: KeyboardShortcutsPanelProps,
+) {
   if (!isOpen) return null;
 
   // Group shortcuts by category
@@ -74,7 +100,14 @@ export function KeyboardShortcutsPanel({ isOpen, onClose }: KeyboardShortcutsPan
     {} as Record<string, ShortcutItem[]>,
   );
 
-  const categories = ["Playback", "Tracks", "Timeline", "Volume", "File", "General"];
+  const categories = [
+    "Playback",
+    "Tracks",
+    "Timeline",
+    "Volume",
+    "File",
+    "General",
+  ];
 
   return (
     <>
@@ -90,7 +123,9 @@ export function KeyboardShortcutsPanel({ isOpen, onClose }: KeyboardShortcutsPan
         <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800/80">
           <div className="flex items-center gap-2">
             <Keyboard className="w-5 h-5 text-purple-400" />
-            <h2 className="text-lg font-semibold text-white">Keyboard Shortcuts</h2>
+            <h2 className="text-lg font-semibold text-white">
+              Keyboard Shortcuts
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -114,7 +149,9 @@ export function KeyboardShortcutsPanel({ isOpen, onClose }: KeyboardShortcutsPan
                     key={index}
                     className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-gray-700/50 transition-colors"
                   >
-                    <span className="text-sm text-gray-300">{shortcut.description}</span>
+                    <span className="text-sm text-gray-300">
+                      {shortcut.description}
+                    </span>
                     <div className="flex items-center gap-1">
                       {shortcut.keys.map((key, keyIndex) => (
                         <span key={keyIndex} className="flex items-center">
@@ -122,7 +159,9 @@ export function KeyboardShortcutsPanel({ isOpen, onClose }: KeyboardShortcutsPan
                             {key}
                           </kbd>
                           {keyIndex < shortcut.keys.length - 1 && (
-                            <span className="text-gray-500 mx-0.5 text-xs">+</span>
+                            <span className="text-gray-500 mx-0.5 text-xs">
+                              +
+                            </span>
                           )}
                         </span>
                       ))}
@@ -137,8 +176,15 @@ export function KeyboardShortcutsPanel({ isOpen, onClose }: KeyboardShortcutsPan
         {/* Footer */}
         <div className="p-3 border-t border-gray-700 bg-gray-800/80">
           <p className="text-xs text-gray-500 text-center">
-            Press <kbd className="px-1 py-0.5 bg-gray-700 rounded text-gray-300">?</kbd> or{" "}
-            <kbd className="px-1 py-0.5 bg-gray-700 rounded text-gray-300">Esc</kbd> to close
+            Press{" "}
+            <kbd className="px-1 py-0.5 bg-gray-700 rounded text-gray-300">
+              ?
+            </kbd>{" "}
+            or{" "}
+            <kbd className="px-1 py-0.5 bg-gray-700 rounded text-gray-300">
+              Esc
+            </kbd>{" "}
+            to close
           </p>
         </div>
       </div>

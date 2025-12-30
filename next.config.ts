@@ -85,7 +85,9 @@ const nextConfig: NextConfig = {
     const corsHeaders = [
       {
         key: "Access-Control-Allow-Origin",
-        value: process.env.NODE_ENV === "development" ? "*" : "https://spike.land",
+        value: process.env.NODE_ENV === "development"
+          ? "*"
+          : "https://spike.land",
       },
       {
         key: "Access-Control-Allow-Methods",

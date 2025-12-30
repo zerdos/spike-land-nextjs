@@ -58,7 +58,9 @@ export function SelectedTrackPanel({
             </div>
           </div>
           <div className="text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest flex items-center gap-2">
-            <span className="text-primary/60">{formatTime(trimmedDuration)}</span>
+            <span className="text-primary/60">
+              {formatTime(trimmedDuration)}
+            </span>
             <span className="opacity-20">/</span>
             <span>{formatTime(track.duration)}</span>
           </div>
@@ -129,7 +131,11 @@ export function SelectedTrackPanel({
                 max={effectiveTrimEnd - 0.1}
                 step="0.1"
                 value={track.trimStart.toFixed(1)}
-                onChange={(e) => onTrimChange(parseFloat(e.target.value) || 0, effectiveTrimEnd)}
+                onChange={(e) =>
+                  onTrimChange(
+                    parseFloat(e.target.value) || 0,
+                    effectiveTrimEnd,
+                  )}
                 className="w-16 h-7 text-xs bg-black/40 text-primary font-mono font-bold rounded-lg border border-white/5 focus:outline-none focus:border-primary/50 text-center"
               />
             </div>
@@ -144,7 +150,10 @@ export function SelectedTrackPanel({
                 step="0.1"
                 value={effectiveTrimEnd.toFixed(1)}
                 onChange={(e) =>
-                  onTrimChange(track.trimStart, parseFloat(e.target.value) || track.duration)}
+                  onTrimChange(
+                    track.trimStart,
+                    parseFloat(e.target.value) || track.duration,
+                  )}
                 className="w-16 h-7 text-xs bg-black/40 text-primary font-mono font-bold rounded-lg border border-white/5 focus:outline-none focus:border-primary/50 text-center"
               />
             </div>

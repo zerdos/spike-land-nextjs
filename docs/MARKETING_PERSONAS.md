@@ -1,14 +1,14 @@
 # Marketing Personas - Pixel AI Photo Enhancement
 
-> **Last Updated**: December 2025
-> **Product**: Pixel by spike.land
-> **Primary Platforms**: Instagram, TikTok, Facebook
+> **Last Updated**: December 2025 **Product**: Pixel by spike.land **Primary
+> Platforms**: Instagram, TikTok, Facebook
 
 ---
 
 ## Priority Personas (Initial Campaign Focus)
 
-These 4 personas should be targeted first due to higher social media engagement and viral potential.
+These 4 personas should be targeted first due to higher social media engagement
+and viral potential.
 
 ---
 
@@ -51,7 +51,8 @@ These 4 personas should be targeted first due to higher social media engagement 
 
 **Ad Copy Variations**
 
-- "Restored my grandmother's wedding photo. She didn't stop hugging me for 10 minutes."
+- "Restored my grandmother's wedding photo. She didn't stop hugging me for 10
+  minutes."
 - "My grandad thought I was a wizard. All I did was upload his 1960s photos."
 - "The best gift I ever gave cost me 60 seconds and zero shipping."
 
@@ -206,7 +207,8 @@ These 4 personas should be targeted first due to higher social media engagement 
 **Ad Copy Variations**
 
 - "I enhanced my baby photos. I wasn't ready for the emotions."
-- "Found a box of photos at my mum's. Now I can finally see 5-year-old me clearly."
+- "Found a box of photos at my mum's. Now I can finally see 5-year-old me
+  clearly."
 - "This is what my childhood actually looked like. I'm not crying, you are."
 
 **Content Ideas**
@@ -528,5 +530,4 @@ Test these across all personas:
 
 ---
 
-_Document created: December 2025_
-_Next review: January 2026_
+_Document created: December 2025_ _Next review: January 2026_

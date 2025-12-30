@@ -66,7 +66,8 @@ export default class CoverageMapperReporter implements Reporter {
 
   constructor() {
     this.projectRoot = process.cwd();
-    this.cacheDir = process.env.TEST_CACHE_DIR || path.join(this.projectRoot, ".test-cache");
+    this.cacheDir = process.env.TEST_CACHE_DIR ||
+      path.join(this.projectRoot, ".test-cache");
     this.currentCommit = this.getCurrentCommit();
   }
 
@@ -76,7 +77,10 @@ export default class CoverageMapperReporter implements Reporter {
 
   private getCurrentCommit(): string {
     try {
-      return execSync("git rev-parse HEAD", { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] })
+      return execSync("git rev-parse HEAD", {
+        encoding: "utf-8",
+        stdio: ["pipe", "pipe", "pipe"],
+      })
         .trim();
     } catch {
       return "unknown";
@@ -85,7 +89,9 @@ export default class CoverageMapperReporter implements Reporter {
 
   private getFileHash(filePath: string): string {
     try {
-      const fullPath = path.isAbsolute(filePath) ? filePath : path.join(this.projectRoot, filePath);
+      const fullPath = path.isAbsolute(filePath)
+        ? filePath
+        : path.join(this.projectRoot, filePath);
       const content = readFileSync(fullPath, "utf-8");
       return createHash("sha256").update(content).digest("hex").slice(0, 16);
     } catch {

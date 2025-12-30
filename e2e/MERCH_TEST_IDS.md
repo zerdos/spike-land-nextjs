@@ -1,6 +1,7 @@
 # Merch E2E Test Data-TestID Reference
 
-This document outlines the required `data-testid` attributes for E2E testing of the merch purchase flow.
+This document outlines the required `data-testid` attributes for E2E testing of
+the merch purchase flow.
 
 ## Product Browsing
 
@@ -129,7 +130,8 @@ export function CartIcon() {
 
 ### Best Practices
 
-1. **Use semantic HTML first**: Prefer `getByRole`, `getByLabel`, `getByText` when possible
+1. **Use semantic HTML first**: Prefer `getByRole`, `getByLabel`, `getByText`
+   when possible
 2. **data-testid as fallback**: Use data-testid for complex dynamic elements
 3. **Consistent naming**: Use kebab-case for test IDs
 4. **Descriptive names**: Make test IDs self-documenting
@@ -191,7 +193,8 @@ await this.page.route("**/api/merch/cart", async (route) => {
 
 ## Missing Components
 
-**Note**: As of the creation of these E2E tests, the following components/pages do not exist yet:
+**Note**: As of the creation of these E2E tests, the following components/pages
+do not exist yet:
 
 - `/src/app/merch/page.tsx`
 - `/src/app/merch/[productId]/page.tsx`
@@ -203,7 +206,8 @@ await this.page.route("**/api/merch/cart", async (route) => {
 - `/src/components/merch/image-selector.tsx`
 - `/src/components/merch/variant-selector.tsx`
 
-When implementing these components, refer to this document for required test IDs.
+When implementing these components, refer to this document for required test
+IDs.
 
 ## Running Tests
 
@@ -235,6 +239,4 @@ Use Stripe test mode cards:
 - Requires authentication: `4000 0027 6000 3184`
 - Declined: `4000 0000 0000 0002`
 
-CVV: Any 3 digits
-Expiry: Any future date
-ZIP: Any valid format
+CVV: Any 3 digits Expiry: Any future date ZIP: Any valid format

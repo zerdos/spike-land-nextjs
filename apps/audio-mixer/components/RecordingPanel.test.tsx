@@ -81,16 +81,21 @@ describe("RecordingPanel", () => {
   });
 
   it("shows recording controls when recording", () => {
-    render(<RecordingPanel {...defaultProps} isRecording={true} duration={30} />);
+    render(
+      <RecordingPanel {...defaultProps} isRecording={true} duration={30} />,
+    );
 
     expect(screen.getByText("0:30")).toBeInTheDocument();
     expect(screen.getByLabelText("Pause recording")).toBeInTheDocument();
-    expect(screen.getByLabelText("Stop and save recording")).toBeInTheDocument();
+    expect(screen.getByLabelText("Stop and save recording"))
+      .toBeInTheDocument();
     expect(screen.getByText("Cancel")).toBeInTheDocument();
   });
 
   it("shows pulsing indicator when recording", () => {
-    const { container } = render(<RecordingPanel {...defaultProps} isRecording={true} />);
+    const { container } = render(
+      <RecordingPanel {...defaultProps} isRecording={true} />,
+    );
 
     const indicator = container.querySelector(".animate-pulse");
     expect(indicator).toBeInTheDocument();
@@ -117,7 +122,9 @@ describe("RecordingPanel", () => {
   });
 
   it("calls onResume when resume button is clicked while paused", () => {
-    render(<RecordingPanel {...defaultProps} isRecording={true} isPaused={true} />);
+    render(
+      <RecordingPanel {...defaultProps} isRecording={true} isPaused={true} />,
+    );
 
     const resumeButton = screen.getByLabelText("Resume recording");
     fireEvent.click(resumeButton);
@@ -144,7 +151,9 @@ describe("RecordingPanel", () => {
   });
 
   it("formats duration correctly", () => {
-    render(<RecordingPanel {...defaultProps} isRecording={true} duration={125} />);
+    render(
+      <RecordingPanel {...defaultProps} isRecording={true} duration={125} />,
+    );
 
     expect(screen.getByText("2:05")).toBeInTheDocument();
   });

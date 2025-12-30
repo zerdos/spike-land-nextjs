@@ -44,20 +44,29 @@ function tracksReducer(state: AudioTrack[], action: TrackAction): AudioTrack[] {
       return state.filter((track) => track.id !== action.payload);
     case "UPDATE_TRACK":
       return state.map((track) =>
-        track.id === action.payload.id ? { ...track, ...action.payload.updates } : track
+        track.id === action.payload.id
+          ? { ...track, ...action.payload.updates }
+          : track
       );
     case "SET_VOLUME":
       return state.map((track) =>
-        track.id === action.payload.id ? { ...track, volume: action.payload.volume } : track
+        track.id === action.payload.id
+          ? { ...track, volume: action.payload.volume }
+          : track
       );
     case "SET_PAN":
       return state.map((track) =>
-        track.id === action.payload.id ? { ...track, pan: action.payload.pan } : track
+        track.id === action.payload.id
+          ? { ...track, pan: action.payload.pan }
+          : track
       );
     case "SET_DELAY":
       return state.map((track) =>
         track.id === action.payload.id
-          ? { ...track, delay: Math.max(-5, Math.min(10, action.payload.delay)) }
+          ? {
+            ...track,
+            delay: Math.max(-5, Math.min(10, action.payload.delay)),
+          }
           : track
       );
     case "SET_POSITION":
@@ -73,7 +82,10 @@ function tracksReducer(state: AudioTrack[], action: TrackAction): AudioTrack[] {
             ...track,
             // Allow negative trimStart for lead-in silence (up to -30s)
             trimStart: Math.max(-30, action.payload.trimStart),
-            trimEnd: Math.min(track.duration || Infinity, action.payload.trimEnd),
+            trimEnd: Math.min(
+              track.duration || Infinity,
+              action.payload.trimEnd,
+            ),
           }
           : track
       );
@@ -91,7 +103,9 @@ function tracksReducer(state: AudioTrack[], action: TrackAction): AudioTrack[] {
       );
     case "STOP_TRACK":
       return state.map((track) =>
-        track.id === action.payload ? { ...track, isPlaying: false, currentTime: 0 } : track
+        track.id === action.payload
+          ? { ...track, isPlaying: false, currentTime: 0 }
+          : track
       );
     case "REORDER_TRACKS": {
       const orderMap = new Map(action.payload.map((id, index) => [id, index]));
@@ -256,9 +270,12 @@ export function useAudioTracks() {
     dispatch({ type: "SET_POSITION", payload: { id, position } });
   }, []);
 
-  const setTrim = useCallback((id: string, trimStart: number, trimEnd: number) => {
-    dispatch({ type: "SET_TRIM", payload: { id, trimStart, trimEnd } });
-  }, []);
+  const setTrim = useCallback(
+    (id: string, trimStart: number, trimEnd: number) => {
+      dispatch({ type: "SET_TRIM", payload: { id, trimStart, trimEnd } });
+    },
+    [],
+  );
 
   const reorderTracks = useCallback((newOrder: string[]) => {
     dispatch({ type: "REORDER_TRACKS", payload: newOrder });
@@ -298,7 +315,9 @@ export function useAudioTracks() {
       };
 
       // Calculate effective playback parameters with position and trim
-      const effectiveTrimEnd = track.trimEnd > 0 ? track.trimEnd : track.duration;
+      const effectiveTrimEnd = track.trimEnd > 0
+        ? track.trimEnd
+        : track.duration;
       const trackPosition = track.position ?? track.delay ?? 0;
 
       // Handle negative trimStart (lead-in silence)
@@ -331,11 +350,17 @@ export function useAudioTracks() {
       }
 
       // Calculate when to start
-      const startTime = Math.max(0, context.currentTime + trackPosition + scheduleDelay);
+      const startTime = Math.max(
+        0,
+        context.currentTime + trackPosition + scheduleDelay,
+      );
 
       source.start(startTime, playbackOffset, playbackDuration);
       sourceRefs.current.set(id, source);
-      startTimeRefs.current.set(id, context.currentTime - track.currentTime + trackPosition);
+      startTimeRefs.current.set(
+        id,
+        context.currentTime - track.currentTime + trackPosition,
+      );
 
       dispatch({ type: "PLAY_TRACK", payload: id });
     },

@@ -84,7 +84,8 @@ gh run rerun <RUN-ID> --failed
 ### When to Retry vs Investigate
 
 **Retry**: Network timeout, infrastructure issues, first-run flakiness
-**Investigate**: Same test fails consistently, coverage dropped, security audit failure
+**Investigate**: Same test fails consistently, coverage dropped, security audit
+failure
 
 ## Implementation Steps
 

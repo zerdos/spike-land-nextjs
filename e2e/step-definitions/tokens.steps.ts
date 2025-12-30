@@ -165,7 +165,9 @@ When(
     await expect(packageCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
     // Click the Buy Now button within this specific package card
-    const buyButton = packageCard.locator("button").filter({ hasText: /Buy Now/i });
+    const buyButton = packageCard.locator("button").filter({
+      hasText: /Buy Now/i,
+    });
     await expect(buyButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await buyButton.click();
 
