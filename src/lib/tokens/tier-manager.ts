@@ -157,8 +157,10 @@ export class TierManager {
     currentTier: SubscriptionTier,
     targetTier: SubscriptionTier,
   ): boolean {
-    const nextTier = this.getNextTier(currentTier);
-    return nextTier === targetTier;
+    const currentIndex = TIER_ORDER.indexOf(currentTier);
+    const targetIndex = TIER_ORDER.indexOf(targetTier);
+    // Allow upgrade to any higher tier
+    return targetIndex > currentIndex;
   }
 
   /**
@@ -224,10 +226,10 @@ export class TierManager {
 
         const currentTier = tokenBalance.tier as SubscriptionTier;
 
-        // Validate upgrade is allowed (must be sequential)
+        // Validate upgrade is allowed
         if (!this.canUpgradeTo(currentTier, newTier)) {
           throw new Error(
-            `Invalid upgrade path: ${currentTier} -> ${newTier}. Upgrades must be sequential.`,
+            `Invalid upgrade path: ${currentTier} -> ${newTier}.`,
           );
         }
 

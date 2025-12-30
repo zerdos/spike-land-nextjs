@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
+import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import SubscriptionPage from "./page";
 
@@ -13,6 +14,14 @@ vi.mock("next-auth/react", () => ({
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
   useSearchParams: () => new URLSearchParams(),
+}));
+
+// Mock sonner
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
 }));
 
 // Mock useTier hook
@@ -350,7 +359,10 @@ describe("SubscriptionPage - Errors", () => {
     mockUseTier.error = new Error("Failed to load tiers");
 
     render(<SubscriptionPage />);
-    expect(screen.getByTestId("error-message")).toHaveTextContent("Failed to load tiers");
+    expect(toast.error).toHaveBeenCalledWith(
+      expect.stringContaining("Failed to load tiers"),
+      expect.any(Object),
+    );
 
     mockUseTier.error = null;
   });
@@ -359,7 +371,10 @@ describe("SubscriptionPage - Errors", () => {
     mockUseTierUpgrade.error = new Error("Upgrade failed");
 
     render(<SubscriptionPage />);
-    expect(screen.getByTestId("error-message")).toHaveTextContent("Upgrade failed");
+    expect(toast.error).toHaveBeenCalledWith(
+      expect.stringContaining("Upgrade failed"),
+      expect.any(Object),
+    );
 
     mockUseTierUpgrade.error = null;
   });

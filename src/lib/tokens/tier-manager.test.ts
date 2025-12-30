@@ -186,16 +186,16 @@ describe("TierManager", () => {
       ).toBe(true);
     });
 
-    it("should not allow upgrade from FREE to STANDARD (skipping)", () => {
+    it("should allow upgrade from FREE to STANDARD (skipping)", () => {
       expect(
         TierManager.canUpgradeTo(SubscriptionTier.FREE, SubscriptionTier.STANDARD),
-      ).toBe(false);
+      ).toBe(true);
     });
 
-    it("should not allow upgrade from FREE to PREMIUM (skipping)", () => {
+    it("should allow upgrade from FREE to PREMIUM (skipping)", () => {
       expect(
         TierManager.canUpgradeTo(SubscriptionTier.FREE, SubscriptionTier.PREMIUM),
-      ).toBe(false);
+      ).toBe(true);
     });
 
     it("should allow upgrade from BASIC to STANDARD", () => {
@@ -329,14 +329,14 @@ describe("TierManager", () => {
       expect(result.newBalance).toBe(20);
     });
 
-    it("should fail for invalid upgrade path", async () => {
+    it("should fail for invalid upgrade path (downgrade)", async () => {
       mockTransaction.mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => {
         const tx = {
           userTokenBalance: {
             findUnique: vi.fn().mockResolvedValue({
               userId: testUserId,
               balance: 50,
-              tier: SubscriptionTier.FREE,
+              tier: SubscriptionTier.PREMIUM,
             }),
           },
         };
@@ -345,7 +345,7 @@ describe("TierManager", () => {
 
       const result = await TierManager.upgradeTier(
         testUserId,
-        SubscriptionTier.PREMIUM, // Skip BASIC and STANDARD
+        SubscriptionTier.FREE, // Downgrade via upgradeTier should fail
       );
 
       expect(result.success).toBe(false);

@@ -74,6 +74,16 @@ export default function SubscriptionPage() {
     }
   }, [searchParams, refetchTiers, refetchBalance]);
 
+  // Show error toasts
+  useEffect(() => {
+    const error = tierError || upgradeError || downgradeError || purchaseError;
+    if (error) {
+      toast.error(error.message || "An error occurred", {
+        description: "Please try again or contact support if the issue persists.",
+      });
+    }
+  }, [tierError, upgradeError, downgradeError, purchaseError]);
+
   // Handle auth states
   if (status === "loading" || isTierLoading || isBalanceLoading) {
     return (
@@ -145,18 +155,14 @@ export default function SubscriptionPage() {
         </Link>
         <h1 className="text-3xl font-bold tracking-tight">Subscription</h1>
         <p className="text-muted-foreground mt-2">
-          Manage your subscription and billing preferences
+          Manage your subscription and billings
         </p>
       </div>
 
-      {/* Errors */}
+      {/* Errors handled by toast, but kept inline if severe or persistent */}
       {(tierError || upgradeError || downgradeError || purchaseError) && (
-        <div
-          className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400"
-          data-testid="error-message"
-        >
-          {tierError?.message || upgradeError?.message || downgradeError?.message ||
-            purchaseError?.message}
+        <div className="hidden">
+          {/* Errors are handled via toast now, keeping this structure if we need to revert or debug */}
         </div>
       )}
 
@@ -180,7 +186,7 @@ export default function SubscriptionPage() {
               </p>
             </div>
             <div className="p-4 rounded-lg bg-muted/50">
-              <span className="text-sm text-muted-foreground">Well Capacity</span>
+              <span className="text-sm text-muted-foreground">Token Capacity</span>
               <p className="text-2xl font-bold" data-testid="well-capacity">
                 {currentTierInfo?.wellCapacity ?? 100}
               </p>

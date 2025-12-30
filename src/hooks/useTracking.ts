@@ -1,12 +1,12 @@
 "use client";
 
+import { hasConsent } from "@/lib/tracking/consent";
 import { tryCatch } from "@/lib/try-catch";
 import { useCallback } from "react";
 
 // Storage keys
 const VISITOR_ID_KEY = "spike_visitor_id";
 const SESSION_ID_KEY = "spike_session_id";
-const CONSENT_KEY = "cookie-consent";
 
 /**
  * Conversion types for tracking
@@ -30,30 +30,6 @@ type AllowedEventName =
   | "time_on_page_30s"
   | "time_on_page_60s"
   | "time_on_page_180s";
-
-/**
- * Check if user has given cookie consent
- */
-function hasConsent(): boolean {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem(CONSENT_KEY) === "accepted";
-}
-
-/**
- * Get the current session ID from sessionStorage
- */
-function getSessionId(): string | null {
-  if (typeof window === "undefined") return null;
-  return sessionStorage.getItem(SESSION_ID_KEY);
-}
-
-/**
- * Get the visitor ID from localStorage
- */
-function getVisitorId(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(VISITOR_ID_KEY);
-}
 
 /**
  * Custom hook for manual event tracking
@@ -93,7 +69,7 @@ export function useTracking() {
     ): Promise<void> => {
       if (!hasConsent()) return;
 
-      const sessionId = getSessionId();
+      const sessionId = sessionStorage.getItem(SESSION_ID_KEY);
       if (!sessionId) {
         console.warn("[Tracking] No active session for event tracking");
         return;
@@ -135,7 +111,7 @@ export function useTracking() {
     async (type: ConversionType, value?: number): Promise<void> => {
       if (!hasConsent()) return;
 
-      const sessionId = getSessionId();
+      const sessionId = sessionStorage.getItem(SESSION_ID_KEY);
       if (!sessionId) {
         console.warn("[Tracking] No active session for conversion tracking");
         return;
@@ -184,7 +160,7 @@ export function useTracking() {
     async (type: ConversionType): Promise<void> => {
       if (!hasConsent()) return;
 
-      const sessionId = getSessionId();
+      const sessionId = sessionStorage.getItem(SESSION_ID_KEY);
       if (!sessionId) {
         console.warn("[Tracking] No active session for conversion tracking");
         return;
@@ -227,21 +203,24 @@ export function useTracking() {
    * Get the current session ID
    */
   const getCurrentSessionId = useCallback((): string | null => {
-    return getSessionId();
+    if (typeof window === "undefined") return null;
+    return sessionStorage.getItem(SESSION_ID_KEY);
   }, []);
 
   /**
    * Get the visitor ID
    */
   const getCurrentVisitorId = useCallback((): string | null => {
-    return getVisitorId();
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(VISITOR_ID_KEY);
   }, []);
 
   /**
    * Check if tracking is enabled (consent given and session active)
    */
   const isTrackingEnabled = useCallback((): boolean => {
-    return hasConsent() && getSessionId() !== null;
+    if (typeof window === "undefined") return false;
+    return hasConsent() && sessionStorage.getItem(SESSION_ID_KEY) !== null;
   }, []);
 
   return {
