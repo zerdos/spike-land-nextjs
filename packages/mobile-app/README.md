@@ -128,7 +128,8 @@ packages/mobile-app/
 │   └── storybook/          # Design system storybook (17 sections)
 │
 ├── components/             # Reusable UI components
-│   ├── ui/                 # Base UI components
+│   ├── brand/              # Brand logos (PixelLogo, SpikeLandLogo)
+│   ├── ui/                 # Base UI components (Button, Card, Input, Avatar)
 │   ├── gallery/            # Gallery-specific components
 │   └── enhancement/        # Enhancement-related components
 │
