@@ -1,12 +1,12 @@
 ---
 active: true
-iteration: 2
+iteration: 8
 max_iterations: 50
 completion_promise: "DONE"
 started_at: "2025-12-29T23:20:27Z"
 ---
 
-Implement Implement Storybook route in Expo mobile app.
+Implement Storybook route in Expo mobile app.
 
 Requirements:
 

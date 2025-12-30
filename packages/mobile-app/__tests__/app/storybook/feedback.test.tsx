@@ -61,14 +61,18 @@ describe("FeedbackPage", () => {
 
     it("should show toast when Success button is pressed", async () => {
       jest.useFakeTimers();
-      const { getAllByText, queryByText } = render(<FeedbackPage />);
-      const successButtons = getAllByText("Success");
-      fireEvent.press(successButtons[0]);
-      await waitFor(() => {
-        expect(queryByText("Success!")).toBeTruthy();
-        expect(queryByText("Your changes have been saved.")).toBeTruthy();
-      });
-      jest.useRealTimers();
+      try {
+        const { getAllByText, queryByText } = render(<FeedbackPage />);
+        const successButtons = getAllByText("Success");
+        fireEvent.press(successButtons[0]);
+        jest.runAllTimers();
+        await waitFor(() => {
+          expect(queryByText("Success!")).toBeTruthy();
+          expect(queryByText("Your changes have been saved.")).toBeTruthy();
+        });
+      } finally {
+        jest.useRealTimers();
+      }
     });
   });
 
