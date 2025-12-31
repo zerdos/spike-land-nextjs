@@ -278,7 +278,7 @@ export default function NYECountdownClient() {
 
   return (
     <div
-      className={`relative flex min-h-screen flex-col items-center justify-center p-4 pt-[168px] overflow-hidden ${
+      className={`relative flex min-h-screen flex-col items-center justify-center p-2 sm:p-4 pt-[100px] sm:pt-[168px] pb-16 sm:pb-12 overflow-hidden ${
         isLastFiveSeconds ? "animate-screen-shake" : ""
       }`}
     >
@@ -855,8 +855,8 @@ export default function NYECountdownClient() {
         </div>
       </div>
 
-      {/* Viewer count badge with mood */}
-      <div className="absolute top-[168px] left-4 z-50 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-3 py-2">
+      {/* Viewer count badge with mood - hidden on mobile, shown on sm+ */}
+      <div className="absolute top-[168px] left-4 z-50 hidden sm:flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-3 py-2">
         <span className="text-lg">{moodEmoji}</span>
         <Eye className="h-4 w-4 text-cyan-400" />
         <span className="text-cyan-400 text-sm font-mono">
@@ -866,8 +866,8 @@ export default function NYECountdownClient() {
         <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
       </div>
 
-      {/* Controls */}
-      <div className="absolute top-[168px] right-4 z-50 flex gap-2">
+      {/* Controls - moved lower on mobile */}
+      <div className="absolute top-[168px] right-4 z-50 hidden sm:flex gap-2">
         <button
           onClick={() => setIsMuted(!isMuted)}
           className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:bg-white/10 hover:scale-110"
@@ -889,19 +889,19 @@ export default function NYECountdownClient() {
       </div>
 
       {/* Content Layer */}
-      <div className="z-10 flex flex-col items-center gap-8 text-center">
+      <div className="z-10 flex flex-col items-center gap-4 sm:gap-8 text-center px-2 sm:px-4">
         {!isComplete
           ? (
             <>
               {/* Epic animated title */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Sparkles
-                  className={`h-6 w-6 animate-pulse ${
+                  className={`h-4 w-4 sm:h-6 sm:w-6 animate-pulse flex-shrink-0 ${
                     isLastThirtySeconds ? "text-red-400" : "text-yellow-400"
                   }`}
                 />
                 <h1
-                  className={`text-2xl font-black tracking-[0.3em] bg-clip-text text-transparent sm:text-3xl md:text-5xl animate-gradient-x transition-all duration-500 ${
+                  className={`text-lg font-black tracking-[0.15em] sm:tracking-[0.3em] bg-clip-text text-transparent sm:text-3xl md:text-5xl animate-gradient-x transition-all duration-500 ${
                     isLastTenSeconds
                       ? "bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"
                       : isLastThirtySeconds
@@ -912,18 +912,48 @@ export default function NYECountdownClient() {
                   {isLastTenSeconds ? `${seconds}...` : "2026 COUNTDOWN"}
                 </h1>
                 <Sparkles
-                  className={`h-6 w-6 animate-pulse ${
+                  className={`h-4 w-4 sm:h-6 sm:w-6 animate-pulse flex-shrink-0 ${
                     isLastThirtySeconds ? "text-red-400" : "text-yellow-400"
                   }`}
                 />
               </div>
 
+              {/* Mobile: inline viewer count and controls */}
+              <div className="flex sm:hidden items-center justify-center gap-3 w-full">
+                <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-2 py-1">
+                  <span className="text-sm">{moodEmoji}</span>
+                  <Eye className="h-3 w-3 text-cyan-400" />
+                  <span className="text-cyan-400 text-xs font-mono">
+                    {viewerCount.toLocaleString()}
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                </div>
+                <button
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
+                  title={isMuted ? "Unmute" : "Mute"}
+                >
+                  {isMuted
+                    ? <VolumeX className="h-4 w-4 text-cyan-400" />
+                    : <Volume2 className="h-4 w-4 text-cyan-400" />}
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
+                  title="Share"
+                >
+                  {isCopied
+                    ? <Check className="h-4 w-4 text-green-400" />
+                    : <Share2 className="h-4 w-4 text-cyan-400" />}
+                </button>
+              </div>
+
               {/* Current local time display */}
               <div className="flex flex-col items-center">
-                <div className="text-cyan-400 font-mono text-lg sm:text-xl tracking-widest text-glow-cyan">
+                <div className="text-cyan-400 font-mono text-base sm:text-lg md:text-xl tracking-widest text-glow-cyan">
                   {currentTime}
                 </div>
-                <div className="text-cyan-300/40 text-xs mt-1">
+                <div className="text-cyan-300/40 text-[10px] sm:text-xs mt-0.5 sm:mt-1">
                   {timezone}
                 </div>
               </div>
@@ -938,9 +968,9 @@ export default function NYECountdownClient() {
               )}
 
               {/* Subtitle with heartbeat indicator */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <span
-                  className={`inline-block w-2 h-2 rounded-full ${
+                  className={`inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
                     hours < 1
                       ? "bg-red-500 animate-ping"
                       : hours < 3
@@ -948,11 +978,11 @@ export default function NYECountdownClient() {
                       : "bg-cyan-500 animate-pulse"
                   }`}
                 />
-                <p className="text-cyan-300/60 tracking-[0.2em] text-xs sm:text-sm uppercase">
+                <p className="text-cyan-300/60 tracking-[0.1em] sm:tracking-[0.2em] text-[10px] sm:text-xs uppercase">
                   The Most Epic New Year&apos;s Eve Ever
                 </p>
                 <span
-                  className={`inline-block w-2 h-2 rounded-full ${
+                  className={`inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
                     hours < 1
                       ? "bg-red-500 animate-ping"
                       : hours < 3
@@ -964,7 +994,7 @@ export default function NYECountdownClient() {
 
               {/* Countdown digits with glow container */}
               <div
-                className={`relative p-8 rounded-3xl transition-all duration-500 ${
+                className={`relative p-4 sm:p-8 rounded-2xl sm:rounded-3xl transition-all duration-500 ${
                   isLastTenSeconds ? "bg-red-500/10 border border-red-500/30" : ""
                 } ${isLastThirtySeconds ? "animate-heartbeat" : ""}`}
               >
@@ -984,7 +1014,15 @@ export default function NYECountdownClient() {
                 {/* Glow effect behind digits */}
                 <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-purple-500/5 rounded-3xl blur-xl" />
 
-                <div className="relative flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-10">
+                {/* Mobile: 2x2 grid layout */}
+                <div className="relative grid grid-cols-2 gap-3 sm:hidden">
+                  <CountdownDigit value={days} label="DAYS" />
+                  <CountdownDigit value={hours} label="HOURS" />
+                  <CountdownDigit value={minutes} label="MINUTES" />
+                  <CountdownDigit value={seconds} label="SECONDS" highlight={isLastTenSeconds} />
+                </div>
+                {/* Desktop: horizontal layout with colons */}
+                <div className="relative hidden sm:flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-10">
                   <CountdownDigit value={days} label="DAYS" />
                   <div className="flex items-center text-cyan-400/40 text-4xl font-thin self-start mt-8">
                     :
@@ -1002,8 +1040,8 @@ export default function NYECountdownClient() {
               </div>
 
               {/* Year Progress Bar */}
-              <div className="w-full max-w-md mt-4">
-                <div className="flex justify-between text-xs text-cyan-300/50 mb-2">
+              <div className="w-full max-w-md mt-2 sm:mt-4 px-2">
+                <div className="flex justify-between text-[10px] sm:text-xs text-cyan-300/50 mb-1 sm:mb-2">
                   <span>2025</span>
                   <span
                     className={`font-bold ${
@@ -1036,18 +1074,20 @@ export default function NYECountdownClient() {
               </div>
 
               {/* Hype Meter */}
-              <div className="w-full max-w-xs mt-2">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-white/40 text-xs uppercase tracking-widest">
+              <div className="w-full max-w-xs mt-1 sm:mt-2 px-2">
+                <div className="flex justify-between items-center mb-0.5 sm:mb-1">
+                  <span className="text-white/40 text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest">
                     Hype Level
                   </span>
                   <span
-                    className={`text-xs font-bold ${hypeLevel.level >= 75 ? "animate-pulse" : ""}`}
+                    className={`text-[10px] sm:text-xs font-bold ${
+                      hypeLevel.level >= 75 ? "animate-pulse" : ""
+                    }`}
                   >
                     {hypeLevel.label}
                   </span>
                 </div>
-                <div className="h-3 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm border border-white/5">
+                <div className="h-2 sm:h-3 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm border border-white/5">
                   <div
                     className={`h-full rounded-full transition-all duration-1000 bg-gradient-to-r ${hypeLevel.color} ${
                       hypeLevel.level >= 85 ? "animate-pulse" : ""
@@ -1060,11 +1100,13 @@ export default function NYECountdownClient() {
               {/* Total seconds remaining - dramatic counter */}
               {totalSecondsRemaining > 0 && totalSecondsRemaining < 86400 && (
                 <div className="text-center">
-                  <span className="text-cyan-300/40 text-xs uppercase tracking-widest">Only</span>
-                  <span className="mx-2 font-mono text-2xl sm:text-3xl font-bold text-cyan-400 text-glow-cyan">
+                  <span className="text-cyan-300/40 text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest">
+                    Only
+                  </span>
+                  <span className="mx-1 sm:mx-2 font-mono text-xl sm:text-2xl md:text-3xl font-bold text-cyan-400 text-glow-cyan">
                     {totalSecondsRemaining.toLocaleString()}
                   </span>
-                  <span className="text-cyan-300/40 text-xs uppercase tracking-widest">
+                  <span className="text-cyan-300/40 text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest">
                     seconds to 2026
                   </span>
                 </div>
@@ -1145,46 +1187,48 @@ export default function NYECountdownClient() {
               )}
 
               {/* Fun fact */}
-              <p className="text-purple-300/50 text-xs transition-opacity duration-500 max-w-sm">
+              <p className="text-purple-300/50 text-[10px] sm:text-xs transition-opacity duration-500 max-w-sm px-2">
                 {FUN_FACTS[factIndex]}
               </p>
 
               {/* Rotating inspirational quote */}
-              <p className="text-white/30 text-xs italic transition-opacity duration-500">
+              <p className="text-white/30 text-[10px] sm:text-xs italic transition-opacity duration-500 px-2">
                 &ldquo;{QUOTES[quoteIndex]}&rdquo;
               </p>
 
               {/* Next city to celebrate indicator */}
               {nextCityToCelebrate && (
-                <div className="flex items-center gap-3 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 border border-purple-400/30 rounded-full px-4 py-2">
-                  <span className="text-purple-300/60 text-xs uppercase tracking-widest">
+                <div className="flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 border border-purple-400/30 rounded-full px-3 sm:px-4 py-1.5 sm:py-2">
+                  <span className="text-purple-300/60 text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest">
                     Next up:
                   </span>
-                  <span className="text-2xl">{nextCityToCelebrate.emoji}</span>
-                  <span className="text-purple-300 font-bold">{nextCityToCelebrate.city}</span>
-                  <span className="text-pink-400 text-sm font-mono">
+                  <span className="text-lg sm:text-2xl">{nextCityToCelebrate.emoji}</span>
+                  <span className="text-purple-300 font-bold text-sm sm:text-base">
+                    {nextCityToCelebrate.city}
+                  </span>
+                  <span className="text-pink-400 text-xs sm:text-sm font-mono">
                     in {nextCityToCelebrate.timeUntil}
                   </span>
                 </div>
               )}
 
               {/* World Celebration Tracker */}
-              <div className="mt-6 w-full max-w-lg">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <span className="text-cyan-300/60 text-xs uppercase tracking-widest">
+              <div className="mt-3 sm:mt-6 w-full max-w-lg">
+                <div className="flex items-center justify-center gap-1 sm:gap-2 mb-2 sm:mb-3">
+                  <span className="text-cyan-300/60 text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest">
                     World Celebration Wave
                   </span>
                   {celebratedCount > 0 && (
-                    <span className="text-yellow-400 text-xs font-bold">
+                    <span className="text-yellow-400 text-[10px] sm:text-xs font-bold">
                       {celebratedCount}/{WORLD_CITIES.length} celebrating!
                     </span>
                   )}
                 </div>
-                <div className="flex flex-wrap justify-center gap-2">
+                <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
                   {worldCelebrationStatus.map((city) => (
                     <div
                       key={city.city}
-                      className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all duration-500 ${
+                      className={`flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs transition-all duration-500 ${
                         city.hasCelebrated
                           ? "bg-yellow-400/20 border border-yellow-400/40 text-yellow-300"
                           : "bg-white/5 border border-white/10 text-white/40"
@@ -1351,8 +1395,8 @@ export default function NYECountdownClient() {
       </div>
 
       {/* Footer */}
-      <div className="fixed bottom-4 left-0 right-0 text-center z-10 pointer-events-none">
-        <p className="text-white/20 text-xs">
+      <div className="fixed bottom-2 sm:bottom-4 left-0 right-0 text-center z-10 pointer-events-none">
+        <p className="text-white/30 text-[10px] sm:text-xs">
           Made with 💜 for the most epic NYE ever • spike.land
         </p>
       </div>
