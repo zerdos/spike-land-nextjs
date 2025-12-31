@@ -28,7 +28,6 @@ interface EnhancementSidebarProps {
   selectedVersionId: string | null;
   onSelectVersion: (id: string | null) => void;
   onEnhance: (tier: EnhancementTier) => Promise<void>;
-  isProcessing: boolean;
   balance: number;
   onBalanceRefresh: () => void;
 }
@@ -38,7 +37,6 @@ export function EnhancementSidebar({
   selectedVersionId,
   onSelectVersion,
   onEnhance,
-  isProcessing,
   balance,
   onBalanceRefresh,
 }: EnhancementSidebarProps) {
@@ -351,7 +349,6 @@ export function EnhancementSidebar({
                     ? (
                       <Button
                         onClick={() => onEnhance(tier)}
-                        disabled={isProcessing}
                         className="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20"
                         variant="secondary"
                       >

@@ -594,7 +594,6 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               selectedVersionId={selectedVersionId}
               onSelectVersion={setSelectedVersionId}
               onEnhance={handleEnhance}
-              isProcessing={activeJobId !== null}
               balance={balance}
               onBalanceRefresh={refetchBalance}
             />
