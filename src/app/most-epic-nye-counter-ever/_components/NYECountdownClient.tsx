@@ -80,6 +80,7 @@ export default function NYECountdownClient() {
   const isFinalCountdown = days === 0 && hours === 0 && minutes === 0 && seconds <= 60;
   const isLastThirtySeconds = isFinalCountdown && seconds <= 30 && seconds > 0;
   const isLastTenSeconds = isFinalCountdown && seconds <= 10 && seconds > 0;
+  const isLastFiveSeconds = isFinalCountdown && seconds <= 5 && seconds > 0;
 
   // Simulate viewer count (fun atmospheric effect) - surges during final countdown
   useEffect(() => {
@@ -276,7 +277,39 @@ export default function NYECountdownClient() {
   if (!hasStarted) return null;
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center p-4 overflow-hidden">
+    <div
+      className={`relative flex min-h-screen flex-col items-center justify-center p-4 overflow-hidden ${
+        isLastFiveSeconds ? "animate-screen-shake" : ""
+      }`}
+    >
+      {/* Lightning flash effect during final 10 seconds */}
+      {isLastTenSeconds && (
+        <>
+          <div
+            key={`lightning-${seconds}`}
+            className="fixed inset-0 pointer-events-none z-70 animate-lightning-flash"
+            style={{ background: "white" }}
+          />
+          {seconds <= 5 && (
+            <div
+              className="fixed inset-0 pointer-events-none z-70 animate-lightning-flash"
+              style={{ background: "white", animationDelay: "0.3s" }}
+            />
+          )}
+        </>
+      )}
+
+      {/* Bass drop visual at midnight - massive pulse */}
+      {isComplete && (
+        <div className="fixed inset-0 pointer-events-none z-80">
+          <div className="absolute inset-0 bg-white animate-bass-drop" />
+          <div
+            className="absolute inset-0 bg-gradient-to-b from-yellow-400 via-orange-500 to-red-600 animate-bass-drop"
+            style={{ animationDelay: "0.1s" }}
+          />
+        </div>
+      )}
+
       {/* Dramatic background shift - intensifying as countdown approaches */}
       {isFinalCountdown && (
         <div
