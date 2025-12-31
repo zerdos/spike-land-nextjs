@@ -46,8 +46,26 @@ function transformEnhancementJob(job: {
   geminiTemp: number | null;
   workflowRunId: string | null;
   imageId: string;
-  image: { name: string; originalUrl: string; };
+  image: {
+    name: string;
+    originalUrl: string;
+    originalWidth: number | null;
+    originalHeight: number | null;
+    originalFormat: string | null;
+    originalSizeBytes: number | null;
+  };
   user: { email: string | null; name: string | null; };
+  // New fields
+  analysisResult: unknown;
+  analysisSource: string | null;
+  wasCropped: boolean;
+  cropDimensions: unknown;
+  currentStage: string | null;
+  pipelineId: string | null;
+  isBlend: boolean;
+  sourceImageId: string | null;
+  sourceImage: { originalUrl: string; } | null;
+  isAnonymous: boolean;
 }): UnifiedJob {
   return {
     id: job.id,
@@ -76,6 +94,21 @@ function transformEnhancementJob(job: {
     geminiModel: job.geminiModel,
     geminiTemp: job.geminiTemp,
     workflowRunId: job.workflowRunId,
+    // New fields
+    analysisResult: job.analysisResult as UnifiedJob["analysisResult"],
+    analysisSource: job.analysisSource,
+    wasCropped: job.wasCropped,
+    cropDimensions: job.cropDimensions as UnifiedJob["cropDimensions"],
+    currentStage: job.currentStage,
+    pipelineId: job.pipelineId,
+    isBlend: job.isBlend,
+    sourceImageId: job.sourceImageId,
+    sourceImageUrl: job.sourceImage?.originalUrl ?? null,
+    originalWidth: job.image.originalWidth,
+    originalHeight: job.image.originalHeight,
+    originalFormat: job.image.originalFormat,
+    originalSizeBytes: job.image.originalSizeBytes,
+    isAnonymous: job.isAnonymous,
   };
 }
 
@@ -159,8 +192,18 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     prisma.imageEnhancementJob.findUnique({
       where: { id: jobId },
       include: {
-        image: { select: { name: true, originalUrl: true } },
+        image: {
+          select: {
+            name: true,
+            originalUrl: true,
+            originalWidth: true,
+            originalHeight: true,
+            originalFormat: true,
+            originalSizeBytes: true,
+          },
+        },
         user: { select: { email: true, name: true } },
+        sourceImage: { select: { originalUrl: true } },
       },
     }),
   );
