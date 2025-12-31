@@ -201,11 +201,27 @@ export default function NYECountdownClient() {
             <>
               {/* Epic animated title */}
               <div className="flex items-center gap-3">
-                <Sparkles className="h-6 w-6 text-yellow-400 animate-pulse" />
-                <h1 className="text-2xl font-black tracking-[0.3em] bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent sm:text-3xl md:text-5xl animate-gradient-x">
-                  2026 COUNTDOWN
+                <Sparkles
+                  className={`h-6 w-6 animate-pulse ${
+                    isLastThirtySeconds ? "text-red-400" : "text-yellow-400"
+                  }`}
+                />
+                <h1
+                  className={`text-2xl font-black tracking-[0.3em] bg-clip-text text-transparent sm:text-3xl md:text-5xl animate-gradient-x transition-all duration-500 ${
+                    isLastTenSeconds
+                      ? "bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"
+                      : isLastThirtySeconds
+                      ? "bg-gradient-to-r from-orange-400 via-red-400 to-pink-400"
+                      : "bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400"
+                  }`}
+                >
+                  {isLastTenSeconds ? `${seconds}...` : "2026 COUNTDOWN"}
                 </h1>
-                <Sparkles className="h-6 w-6 text-yellow-400 animate-pulse" />
+                <Sparkles
+                  className={`h-6 w-6 animate-pulse ${
+                    isLastThirtySeconds ? "text-red-400" : "text-yellow-400"
+                  }`}
+                />
               </div>
 
               {/* Current local time display */}
@@ -330,9 +346,14 @@ export default function NYECountdownClient() {
 
               {/* Final countdown message */}
               {isLastTenSeconds && (
-                <p className="text-2xl font-bold text-red-400 animate-pulse tracking-wider">
-                  🎆 GET READY! 🎆
-                </p>
+                <div className="flex flex-col items-center gap-4">
+                  <p className="text-2xl font-bold text-red-400 animate-pulse tracking-wider">
+                    🎆 GET READY! 🎆
+                  </p>
+                  <div className="text-8xl sm:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-orange-500 to-red-600 animate-heartbeat drop-shadow-[0_0_30px_rgba(255,100,0,0.8)]">
+                    {seconds}
+                  </div>
+                </div>
               )}
 
               {/* Dynamic message based on time */}
