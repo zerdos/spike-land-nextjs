@@ -107,6 +107,15 @@ export default function NYECountdownClient() {
       <Starfield />
       <ShootingStar />
 
+      {/* Aurora effect at top - GPU accelerated */}
+      <div className="fixed inset-x-0 top-0 h-64 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute inset-x-0 -top-20 h-48 bg-gradient-to-b from-cyan-500/20 via-purple-500/10 to-transparent blur-3xl animate-aurora" />
+        <div
+          className="absolute inset-x-0 -top-10 h-32 bg-gradient-to-b from-pink-500/15 via-cyan-500/10 to-transparent blur-2xl animate-aurora"
+          style={{ animationDelay: "-7s" }}
+        />
+      </div>
+
       {/* Ambient glow orbs - GPU accelerated, very subtle */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] animate-float-slow" />
@@ -150,7 +159,7 @@ export default function NYECountdownClient() {
               </div>
 
               {/* Current local time display */}
-              <div className="text-cyan-400/80 font-mono text-lg sm:text-xl tracking-widest">
+              <div className="text-cyan-400 font-mono text-lg sm:text-xl tracking-widest text-glow-cyan">
                 {currentTime}
               </div>
 
@@ -185,6 +194,9 @@ export default function NYECountdownClient() {
                   isLastTenSeconds ? "bg-red-500/10 border border-red-500/30" : ""
                 }`}
               >
+                {/* Pulse ring effect */}
+                <div className="absolute inset-0 rounded-3xl border border-cyan-500/20 animate-pulse-ring" />
+
                 {/* Glow effect behind digits */}
                 <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-purple-500/5 rounded-3xl blur-xl" />
 
