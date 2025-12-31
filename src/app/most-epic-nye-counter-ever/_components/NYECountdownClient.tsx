@@ -1122,14 +1122,18 @@ export default function NYECountdownClient() {
                   style={{ animationDelay: "-1s" }}
                 />
 
-                <div className="relative rounded-2xl border-4 border-yellow-400/60 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 px-8 py-6 shadow-[0_0_120px_rgba(234,179,8,0.7)] sm:px-16 sm:py-8 animate-heartbeat">
+                <div className="relative rounded-2xl border-4 border-yellow-400/60 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 px-8 py-6 shadow-[0_0_120px_rgba(234,179,8,0.7)] sm:px-16 sm:py-8 animate-heartbeat overflow-hidden">
+                  {/* Holographic shimmer overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-holographic-shimmer" />
                   <div className="flex items-center gap-4">
                     <Sparkles
                       className="h-10 w-10 text-white animate-spin"
                       style={{ animationDuration: "2s" }}
                     />
-                    <h1 className="text-5xl font-black tracking-tight text-white drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)] sm:text-7xl md:text-9xl">
+                    <h1 className="text-5xl font-black tracking-tight text-white drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)] sm:text-7xl md:text-9xl animate-text-shimmer bg-clip-text relative">
                       2026
+                      {/* Prismatic overlay */}
+                      <span className="absolute inset-0 bg-gradient-to-r from-red-400 via-yellow-300 via-green-400 via-cyan-400 via-blue-400 to-purple-400 opacity-30 mix-blend-overlay animate-rainbow-pulse" />
                     </h1>
                     <Sparkles
                       className="h-10 w-10 text-white animate-spin"
@@ -1139,8 +1143,52 @@ export default function NYECountdownClient() {
                 </div>
               </div>
 
-              <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400 tracking-widest sm:text-5xl animate-pulse">
+              {/* Victory firework starbursts */}
+              <div className="fixed inset-0 pointer-events-none z-90">
+                {[
+                  { top: "15%", left: "20%" },
+                  { top: "25%", right: "15%" },
+                  { top: "60%", left: "10%" },
+                  { top: "70%", right: "20%" },
+                  { top: "40%", left: "80%" },
+                ].map((pos, idx) => (
+                  <div
+                    key={`starburst-${idx}`}
+                    className="absolute animate-starburst"
+                    style={{ ...pos, animationDelay: `${idx * 0.4}s` }}
+                  >
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="absolute w-1 h-8 bg-gradient-to-t from-yellow-400 to-transparent origin-bottom"
+                        style={{ transform: `rotate(${i * 45}deg)` }}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+
+              {/* Floating 2026 numbers rising */}
+              <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={`float-2026-${i}`}
+                    className="absolute text-4xl sm:text-6xl font-black text-white/10 animate-float-2026"
+                    style={{
+                      left: `${5 + i * 12}%`,
+                      animationDelay: `${i * 0.5}s`,
+                      animationDuration: `${6 + (i % 3)}s`,
+                    }}
+                  >
+                    2026
+                  </div>
+                ))}
+              </div>
+
+              <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400 tracking-widest sm:text-5xl animate-pulse relative">
                 HAPPY NEW YEAR!
+                {/* Glow behind text */}
+                <span className="absolute inset-0 blur-lg bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400 opacity-50 -z-10" />
               </h2>
 
               {/* Celebration viewer count */}
