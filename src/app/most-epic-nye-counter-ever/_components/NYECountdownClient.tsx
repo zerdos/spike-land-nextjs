@@ -33,6 +33,7 @@ export default function NYECountdownClient() {
   const [isCopied, setIsCopied] = useState(false);
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState("");
+  const [timezone, setTimezone] = useState("");
 
   // Rotate quotes every 5 seconds
   useEffect(() => {
@@ -42,8 +43,12 @@ export default function NYECountdownClient() {
     return () => clearInterval(interval);
   }, []);
 
-  // Update current time display
+  // Update current time display and get timezone
   useEffect(() => {
+    // Get timezone name
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setTimezone(tz.replace(/_/g, " "));
+
     const updateTime = () => {
       setCurrentTime(new Date().toLocaleTimeString("en-US", {
         hour: "2-digit",
@@ -159,8 +164,13 @@ export default function NYECountdownClient() {
               </div>
 
               {/* Current local time display */}
-              <div className="text-cyan-400 font-mono text-lg sm:text-xl tracking-widest text-glow-cyan">
-                {currentTime}
+              <div className="flex flex-col items-center">
+                <div className="text-cyan-400 font-mono text-lg sm:text-xl tracking-widest text-glow-cyan">
+                  {currentTime}
+                </div>
+                <div className="text-cyan-300/40 text-xs mt-1">
+                  {timezone}
+                </div>
               </div>
 
               {/* Subtitle with heartbeat indicator */}
@@ -279,11 +289,27 @@ export default function NYECountdownClient() {
             <div className="animate-banner-appear flex flex-col items-center gap-8">
               {/* Epic celebration banner */}
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 blur-2xl opacity-50 animate-pulse" />
-                <div className="relative rounded-2xl border-4 border-yellow-400/50 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 px-8 py-6 shadow-[0_0_80px_rgba(234,179,8,0.5)] sm:px-16 sm:py-8">
-                  <h1 className="text-4xl font-black tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] sm:text-6xl md:text-8xl">
-                    🎉 2026 🎉
-                  </h1>
+                {/* Multiple glow layers for epic effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 blur-3xl opacity-40 animate-pulse scale-150" />
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 blur-2xl opacity-30 animate-pulse scale-125"
+                  style={{ animationDelay: "-0.5s" }}
+                />
+
+                <div className="relative rounded-2xl border-4 border-yellow-400/50 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 px-8 py-6 shadow-[0_0_100px_rgba(234,179,8,0.6)] sm:px-16 sm:py-8">
+                  <div className="flex items-center gap-4">
+                    <Sparkles
+                      className="h-8 w-8 text-white animate-spin"
+                      style={{ animationDuration: "3s" }}
+                    />
+                    <h1 className="text-4xl font-black tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] sm:text-6xl md:text-8xl">
+                      2026
+                    </h1>
+                    <Sparkles
+                      className="h-8 w-8 text-white animate-spin"
+                      style={{ animationDuration: "3s", animationDirection: "reverse" }}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -291,13 +317,21 @@ export default function NYECountdownClient() {
                 HAPPY NEW YEAR!
               </h2>
 
+              <div className="flex gap-2 text-4xl">
+                <span className="animate-bounce" style={{ animationDelay: "0s" }}>🎆</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.1s" }}>🎊</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>🥳</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.3s" }}>🎉</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>✨</span>
+              </div>
+
               <p className="max-w-md text-lg text-white/80 sm:text-xl">
-                🌟 The future is NOW! Welcome to 2026! 🌟
+                The future is NOW! Welcome to 2026!
               </p>
 
               <button
                 onClick={() => window.location.reload()}
-                className="mt-4 rounded-full border-2 border-yellow-400/50 bg-yellow-400/20 px-8 py-3 text-sm font-bold text-yellow-400 backdrop-blur-md transition-all hover:bg-yellow-400/30 hover:scale-105"
+                className="mt-4 rounded-full border-2 border-yellow-400/50 bg-yellow-400/20 px-8 py-3 text-sm font-bold text-yellow-400 backdrop-blur-md transition-all hover:bg-yellow-400/30 hover:scale-105 hover:shadow-[0_0_30px_rgba(234,179,8,0.4)]"
               >
                 🔄 Relive the Magic
               </button>
