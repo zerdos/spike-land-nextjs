@@ -53,6 +53,13 @@ export default function Confetti() {
       burst(e.clientX, e.clientY);
     };
 
+    const handleTouch = (e: TouchEvent) => {
+      // Handle multi-touch for extra fun!
+      Array.from(e.touches).forEach((touch) => {
+        burst(touch.clientX, touch.clientY);
+      });
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === "Space" || e.key === " ") {
         e.preventDefault();
@@ -62,9 +69,11 @@ export default function Confetti() {
     };
 
     window.addEventListener("mousedown", handleClick);
+    window.addEventListener("touchstart", handleTouch);
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("mousedown", handleClick);
+      window.removeEventListener("touchstart", handleTouch);
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [burst]);

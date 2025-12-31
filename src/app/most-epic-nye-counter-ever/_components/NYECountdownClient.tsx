@@ -213,6 +213,24 @@ export default function NYECountdownClient() {
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] animate-float-slow-reverse" />
       </div>
 
+      {/* Giant 2026 watermark - glows more as we approach midnight */}
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
+        <span
+          className={`text-[20vw] font-black tracking-tighter transition-opacity duration-1000 ${
+            isLastThirtySeconds
+              ? "text-white/10"
+              : hours === 0
+              ? "text-white/5"
+              : "text-white/[0.02]"
+          }`}
+          style={{
+            textShadow: isLastThirtySeconds ? "0 0 100px rgba(255,255,255,0.2)" : "none",
+          }}
+        >
+          2026
+        </span>
+      </div>
+
       {/* Viewer count badge with mood */}
       <div className="absolute top-4 left-4 z-50 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-3 py-2">
         <span className="text-lg">{moodEmoji}</span>
@@ -427,6 +445,10 @@ export default function NYECountdownClient() {
                     ? "🔥 Less than an hour! The excitement is building! 🔥"
                     : hours < 3
                     ? "⚡ Almost there! 2026 is just hours away! ⚡"
+                    : days > 0
+                    ? `🗓️ ${days} day${
+                      days > 1 ? "s" : ""
+                    } until the new year! Click or press SPACE for magic ✨`
                     : "✨ Click or press SPACE for magic ✨"}
                 </p>
               )}
