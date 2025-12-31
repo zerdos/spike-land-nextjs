@@ -1130,4 +1130,94 @@
     background: linear-gradient(to left, white, transparent);
     right: 100%;
   }
+
+  /* Aurora effect - CPU efficient with slow animation */
+  @keyframes aurora {
+    0%, 100% {
+      opacity: 0.3;
+      transform: translateX(-10%) scaleY(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: translateX(10%) scaleY(1.2);
+    }
+  }
+
+  .animate-aurora {
+    animation: aurora 15s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+
+  /* Heartbeat scale for urgency */
+  @keyframes heartbeat {
+    0%, 100% {
+      transform: scale(1);
+    }
+    15% {
+      transform: scale(1.05);
+    }
+    30% {
+      transform: scale(1);
+    }
+    45% {
+      transform: scale(1.03);
+    }
+  }
+
+  .animate-heartbeat {
+    animation: heartbeat 1s ease-in-out infinite;
+  }
+
+  /* Screen pulse for final countdown */
+  @keyframes screen-pulse {
+    0%, 100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .animate-screen-pulse {
+    animation: screen-pulse 1s ease-in-out infinite;
+  }
+
+  /* Pulse ring expanding effect */
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(1.1);
+      opacity: 0;
+    }
+  }
+
+  .animate-pulse-ring {
+    animation: pulse-ring 2s ease-out infinite;
+  }
+
+  /* Countdown ring rotation */
+  @keyframes countdown-ring {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-countdown-ring {
+    animation: countdown-ring 8s linear infinite;
+  }
+
+  .animate-countdown-ring-reverse {
+    animation: countdown-ring 12s linear infinite reverse;
+  }
+
+  /* Cyan text glow */
+  .text-glow-cyan {
+    text-shadow: 0 0 10px rgba(34, 211, 238, 0.5), 0 0 20px rgba(34, 211, 238, 0.3);
+  }
 }

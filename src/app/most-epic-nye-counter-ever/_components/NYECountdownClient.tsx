@@ -179,6 +179,28 @@ export default function NYECountdownClient() {
 
   const celebratedCount = worldCelebrationStatus.filter((c) => c.hasCelebrated).length;
 
+  // Find the next city to celebrate
+  const nextCityToCelebrate = useMemo(() => {
+    const utcMidnight2026 = new Date("2026-01-01T00:00:00Z").getTime();
+    const currentUtc = Date.now();
+
+    // Find the first city that hasn't celebrated yet
+    for (const city of WORLD_CITIES) {
+      const cityMidnight = utcMidnight2026 - city.offset * 60 * 60 * 1000;
+      if (currentUtc < cityMidnight) {
+        const timeUntil = cityMidnight - currentUtc;
+        const hoursUntil = Math.floor(timeUntil / (1000 * 60 * 60));
+        const minutesUntil = Math.floor((timeUntil % (1000 * 60 * 60)) / (1000 * 60));
+        return {
+          ...city,
+          timeUntil: hoursUntil > 0 ? `${hoursUntil}h ${minutesUntil}m` : `${minutesUntil}m`,
+        };
+      }
+    }
+    return null; // All cities have celebrated!
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seconds]);
+
   // Hype meter - increases as we get closer
   const hypeLevel = useMemo(() => {
     if (isComplete) {
@@ -397,6 +419,16 @@ export default function NYECountdownClient() {
                   isLastTenSeconds ? "bg-red-500/10 border border-red-500/30" : ""
                 } ${isLastThirtySeconds ? "animate-heartbeat" : ""}`}
               >
+                {/* Animated countdown rings - very subtle, GPU accelerated */}
+                <div className="absolute inset-[-20px] pointer-events-none">
+                  <div className="absolute inset-0 rounded-full border border-cyan-500/10 animate-countdown-ring" />
+                  <div className="absolute inset-[10px] rounded-full border border-purple-500/10 animate-countdown-ring-reverse" />
+                  <div
+                    className="absolute inset-[20px] rounded-full border border-pink-500/10 animate-countdown-ring"
+                    style={{ animationDuration: "15s" }}
+                  />
+                </div>
+
                 {/* Pulse ring effect */}
                 <div className="absolute inset-0 rounded-3xl border border-cyan-500/20 animate-pulse-ring" />
 
@@ -489,13 +521,36 @@ export default function NYECountdownClient() {
                 </div>
               )}
 
+              {/* Final minute dramatic message */}
+              {isFinalCountdown && !isLastTenSeconds && seconds > 0 && (
+                <div className="flex flex-col items-center gap-2">
+                  <p
+                    className={`text-lg font-bold tracking-wider ${
+                      isLastThirtySeconds ? "text-orange-400 animate-pulse" : "text-yellow-400"
+                    }`}
+                  >
+                    {isLastThirtySeconds ? "FINAL 30 SECONDS!" : "FINAL MINUTE!"}
+                  </p>
+                  <p className="text-white/50 text-sm">
+                    {isLastThirtySeconds
+                      ? "Get your champagne ready..."
+                      : "The moment is almost here..."}
+                  </p>
+                </div>
+              )}
+
               {/* Final countdown message */}
               {isLastTenSeconds && (
                 <div className="flex flex-col items-center gap-4">
                   <p className="text-2xl font-bold text-red-400 animate-pulse tracking-wider">
                     GET READY!
                   </p>
-                  <div className="text-8xl sm:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-orange-500 to-red-600 animate-heartbeat drop-shadow-[0_0_30px_rgba(255,100,0,0.8)]">
+                  <div
+                    className="text-8xl sm:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-orange-500 to-red-600 animate-heartbeat"
+                    style={{
+                      filter: `drop-shadow(0 0 ${30 + (10 - seconds) * 5}px rgba(255,100,0,0.8))`,
+                    }}
+                  >
                     {seconds}
                   </div>
                   <p className="text-3xl sm:text-4xl font-black text-white/80 tracking-widest animate-bounce">
@@ -510,6 +565,18 @@ export default function NYECountdownClient() {
                     {seconds === 2 && "TWO!"}
                     {seconds === 1 && "ONE!"}
                   </p>
+                  {/* Crowd cheer effect */}
+                  <div className="flex gap-1 text-2xl opacity-60">
+                    {Array.from({ length: Math.min(10, 11 - seconds) }).map((_, i) => (
+                      <span
+                        key={i}
+                        className="animate-bounce"
+                        style={{ animationDelay: `${i * 0.1}s` }}
+                      >
+                        {["🙌", "🎊", "👏", "🥳", "🎉"][i % 5]}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -537,6 +604,20 @@ export default function NYECountdownClient() {
               <p className="text-white/30 text-xs italic transition-opacity duration-500">
                 &ldquo;{QUOTES[quoteIndex]}&rdquo;
               </p>
+
+              {/* Next city to celebrate indicator */}
+              {nextCityToCelebrate && (
+                <div className="flex items-center gap-3 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 border border-purple-400/30 rounded-full px-4 py-2">
+                  <span className="text-purple-300/60 text-xs uppercase tracking-widest">
+                    Next up:
+                  </span>
+                  <span className="text-2xl">{nextCityToCelebrate.emoji}</span>
+                  <span className="text-purple-300 font-bold">{nextCityToCelebrate.city}</span>
+                  <span className="text-pink-400 text-sm font-mono">
+                    in {nextCityToCelebrate.timeUntil}
+                  </span>
+                </div>
+              )}
 
               {/* World Celebration Tracker */}
               <div className="mt-6 w-full max-w-lg">
