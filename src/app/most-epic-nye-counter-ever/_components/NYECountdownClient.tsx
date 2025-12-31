@@ -12,6 +12,18 @@ const QUOTES = [
   "Dream big, start now 🎯",
   "Your story continues... 📖",
   "Cheers to new adventures! 🥂",
+  "2026: Year of infinite potential 🌈",
+  "Leave the past, embrace the future 🦋",
+  "New chapter loading... 📚",
+];
+
+const FUN_FACTS = [
+  "🌍 Over 7 billion people will celebrate tonight!",
+  "🎆 Sydney's fireworks use 8.5 tons of explosives!",
+  "🔔 Times Square ball has 2,688 crystals!",
+  "🌐 Tonga celebrates first, Baker Island last!",
+  "🥂 500 million bottles of champagne tonight!",
+  "⏰ The first NYE was celebrated 4,000 years ago!",
 ];
 import Confetti from "./Confetti";
 import CountdownDigit from "./CountdownDigit";
@@ -32,9 +44,15 @@ export default function NYECountdownClient() {
   const [isMuted, setIsMuted] = useState(true);
   const [isCopied, setIsCopied] = useState(false);
   const [quoteIndex, setQuoteIndex] = useState(0);
+  const [factIndex, setFactIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState("");
   const [timezone, setTimezone] = useState("");
   const [viewerCount, setViewerCount] = useState(0);
+
+  // Calculate countdown phases - moved here to avoid initialization order issues
+  const isFinalCountdown = days === 0 && hours === 0 && minutes === 0 && seconds <= 60;
+  const isLastThirtySeconds = isFinalCountdown && seconds <= 30 && seconds > 0;
+  const isLastTenSeconds = isFinalCountdown && seconds <= 10 && seconds > 0;
 
   // Simulate viewer count (fun atmospheric effect) - surges during final countdown
   useEffect(() => {
@@ -67,6 +85,14 @@ export default function NYECountdownClient() {
     return () => clearInterval(interval);
   }, []);
 
+  // Rotate fun facts every 8 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFactIndex((prev) => (prev + 1) % FUN_FACTS.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Update current time display and get timezone
   useEffect(() => {
     // Get timezone name
@@ -85,11 +111,6 @@ export default function NYECountdownClient() {
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
-
-  // Calculate if we're in the final countdown (last 60 seconds)
-  const isFinalCountdown = days === 0 && hours === 0 && minutes === 0 && seconds <= 60;
-  const isLastThirtySeconds = isFinalCountdown && seconds <= 30 && seconds > 0;
-  const isLastTenSeconds = isFinalCountdown && seconds <= 10 && seconds > 0;
 
   // Calculate year progress (how much of 2025 has passed)
   const yearProgress = useMemo(() => {
@@ -409,6 +430,11 @@ export default function NYECountdownClient() {
                     : "✨ Click anywhere for a spark of magic ✨"}
                 </p>
               )}
+
+              {/* Fun fact */}
+              <p className="text-purple-300/50 text-xs transition-opacity duration-500 max-w-sm">
+                {FUN_FACTS[factIndex]}
+              </p>
 
               {/* Rotating inspirational quote */}
               <p className="text-white/30 text-xs italic transition-opacity duration-500">
