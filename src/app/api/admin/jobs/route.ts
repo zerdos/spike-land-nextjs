@@ -27,7 +27,7 @@ const VALID_STATUSES: JobStatus[] = [
 const VALID_TYPES: Array<JobSource | "all"> = ["all", "enhancement", "mcp"];
 
 /**
- * Transform enhancement job to unified format
+ * Transform enhancement job to unified format (list view - lightweight)
  */
 function transformEnhancementJob(job: {
   id: string;
@@ -51,6 +51,7 @@ function transformEnhancementJob(job: {
   geminiTemp: number | null;
   workflowRunId: string | null;
   imageId: string;
+  currentStage: string | null;
   image: { name: string; originalUrl: string; };
   user: { email: string | null; name: string | null; };
 }): UnifiedJob {
@@ -81,6 +82,7 @@ function transformEnhancementJob(job: {
     geminiModel: job.geminiModel,
     geminiTemp: job.geminiTemp,
     workflowRunId: job.workflowRunId,
+    currentStage: job.currentStage,
   };
 }
 
@@ -240,7 +242,7 @@ export async function GET(request: NextRequest) {
 
   const { data: queryResults, error: queryError } = await tryCatch(
     Promise.all([
-      // Enhancement jobs
+      // Enhancement jobs (with currentStage for progress tracking)
       includeEnhancement
         ? prisma.imageEnhancementJob.findMany({
           where: enhancementWhere,

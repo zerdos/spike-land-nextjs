@@ -59,4 +59,49 @@ export interface UnifiedJob {
   apiKeyName?: string | null;
   inputR2Key?: string | null;
   outputR2Key?: string | null;
+
+  // Analysis data (enhancement jobs only)
+  analysisResult?: {
+    mainSubject?: string;
+    imageStyle?: string;
+    defects?: {
+      isDark?: boolean;
+      isBlurry?: boolean;
+      hasNoise?: boolean;
+      hasVHSArtifacts?: boolean;
+      isLowResolution?: boolean;
+      isOverexposed?: boolean;
+      hasColorCast?: boolean;
+      colorCastType?: string;
+    };
+    lightingCondition?: string;
+    cropping?: {
+      isCroppingNeeded?: boolean;
+      suggestedCrop?: { left: number; top: number; right: number; bottom: number; };
+      cropReason?: string;
+    };
+  } | null;
+  analysisSource?: string | null;
+
+  // Crop data (enhancement jobs only)
+  wasCropped?: boolean;
+  cropDimensions?: { left: number; top: number; width: number; height: number; } | null;
+
+  // Pipeline (enhancement jobs only)
+  currentStage?: string | null;
+  pipelineId?: string | null;
+
+  // Blend mode (enhancement jobs only)
+  isBlend?: boolean;
+  sourceImageId?: string | null;
+  sourceImageUrl?: string | null;
+
+  // Original image metadata
+  originalWidth?: number | null;
+  originalHeight?: number | null;
+  originalFormat?: string | null;
+  originalSizeBytes?: number | null;
+
+  // Misc
+  isAnonymous?: boolean;
 }

@@ -161,6 +161,96 @@ export function EnhancementSidebar({
           <span className="text-xl font-bold">{balance}</span>
         </div>
 
+        {/* SECTION C: CREATE NEW ENHANCEMENT */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            Create New Enhancement
+          </h3>
+
+          <div className="space-y-3">
+            {allTiers.map((tier) => {
+              // Skip if already exists (success or processing)
+              // If failed, we might want to allow retry, but let's stick to "if not exists or failed" logic?
+              // The logic above used "jobsByTier" which prioritized success/processing.
+              // So if we have a job in jobsByTier that is NOT failed, we hide it.
+              // IF it is failed, we might show it again to retry?
+              // For simplicity: if it's in the list above as Ready or Processing, hide here.
+              const existingJob = jobsByTier.get(tier);
+              const isDoneOrActive = existingJob &&
+                existingJob.status !== "FAILED" &&
+                existingJob.status !== "CANCELLED";
+
+              if (isDoneOrActive) return null;
+
+              const info = TIER_INFO[tier];
+              const cost = info.cost;
+              const canAfford = balance >= cost;
+
+              return (
+                <div
+                  key={tier}
+                  className="p-4 rounded-xl border border-white/5 bg-white/5 space-y-3"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold text-foreground">
+                        {info.name} Tier
+                      </h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {info.description}
+                      </p>
+                    </div>
+                    <div className="px-2 py-1 rounded bg-background/50 border border-white/10 text-xs font-medium">
+                      {cost} Tokens
+                    </div>
+                  </div>
+
+                  {canAfford
+                    ? (
+                      <Button
+                        onClick={() => onEnhance(tier)}
+                        className="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20"
+                        variant="secondary"
+                      >
+                        <Sparkles className="mr-2 h-3 w-3" />
+                        Start {info.name} Enhancement
+                      </Button>
+                    )
+                    : (
+                      <div className="space-y-2">
+                        <Button
+                          disabled
+                          className="w-full opacity-50"
+                          variant="secondary"
+                        >
+                          Insufficient Tokens
+                        </Button>
+                        <PurchaseModal
+                          trigger={
+                            <span className="text-xs text-primary underline cursor-pointer block text-center">
+                              Get more tokens
+                            </span>
+                          }
+                          onPurchaseComplete={onBalanceRefresh}
+                        />
+                      </div>
+                    )}
+                </div>
+              );
+            })}
+
+            {/* If all tiers are done, show a message */}
+            {Array.from(jobsByTier.values()).filter((j) => j.status === "COMPLETED").length ===
+                allTiers.length && (
+              <div className="text-center p-4 text-muted-foreground text-sm italic">
+                All enhancement tiers completed!
+              </div>
+            )}
+          </div>
+        </div>
+
+        <Separator className="bg-border/50" />
+
         {/* SECTION A: VIEW & DOWNLOAD VERSIONS */}
         <div className="space-y-4">
           <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
@@ -296,96 +386,6 @@ export function EnhancementSidebar({
                 </div>
               );
             })}
-          </div>
-        </div>
-
-        <Separator className="bg-border/50" />
-
-        {/* SECTION C: CREATE NEW ENHANCEMENT */}
-        <div className="space-y-4">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Create New Enhancement
-          </h3>
-
-          <div className="space-y-3">
-            {allTiers.map((tier) => {
-              // Skip if already exists (success or processing)
-              // If failed, we might want to allow retry, but let's stick to "if not exists or failed" logic?
-              // The logic above used "jobsByTier" which prioritized success/processing.
-              // So if we have a job in jobsByTier that is NOT failed, we hide it.
-              // IF it is failed, we might show it again to retry?
-              // For simplicity: if it's in the list above as Ready or Processing, hide here.
-              const existingJob = jobsByTier.get(tier);
-              const isDoneOrActive = existingJob &&
-                existingJob.status !== "FAILED" &&
-                existingJob.status !== "CANCELLED";
-
-              if (isDoneOrActive) return null;
-
-              const info = TIER_INFO[tier];
-              const cost = info.cost;
-              const canAfford = balance >= cost;
-
-              return (
-                <div
-                  key={tier}
-                  className="p-4 rounded-xl border border-white/5 bg-white/5 space-y-3"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold text-foreground">
-                        {info.name} Tier
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {info.description}
-                      </p>
-                    </div>
-                    <div className="px-2 py-1 rounded bg-background/50 border border-white/10 text-xs font-medium">
-                      {cost} Tokens
-                    </div>
-                  </div>
-
-                  {canAfford
-                    ? (
-                      <Button
-                        onClick={() => onEnhance(tier)}
-                        className="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20"
-                        variant="secondary"
-                      >
-                        <Sparkles className="mr-2 h-3 w-3" />
-                        Start {info.name} Enhancement
-                      </Button>
-                    )
-                    : (
-                      <div className="space-y-2">
-                        <Button
-                          disabled
-                          className="w-full opacity-50"
-                          variant="secondary"
-                        >
-                          Insufficient Tokens
-                        </Button>
-                        <PurchaseModal
-                          trigger={
-                            <span className="text-xs text-primary underline cursor-pointer block text-center">
-                              Get more tokens
-                            </span>
-                          }
-                          onPurchaseComplete={onBalanceRefresh}
-                        />
-                      </div>
-                    )}
-                </div>
-              );
-            })}
-
-            {/* If all tiers are done, show a message */}
-            {Array.from(jobsByTier.values()).filter((j) => j.status === "COMPLETED").length ===
-                allTiers.length && (
-              <div className="text-center p-4 text-muted-foreground text-sm italic">
-                All enhancement tiers completed!
-              </div>
-            )}
           </div>
         </div>
       </CardContent>

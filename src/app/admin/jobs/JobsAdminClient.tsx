@@ -575,6 +575,11 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                       {" | "}
                       {job.userEmail}
                     </div>
+                    {job.status === "PROCESSING" && job.currentStage && (
+                      <div className="mt-1 text-xs text-blue-500">
+                        Stage: {job.currentStage}
+                      </div>
+                    )}
                     {job.status === "COMPLETED" && (
                       <div className="mt-1 text-xs text-green-600">
                         {formatDuration(
@@ -941,6 +946,242 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                       )}
                   </div>
                 </div>
+
+                {/* Original Image Info (enhancement jobs only) */}
+                {selectedJob.source === "enhancement" &&
+                  (selectedJob.originalWidth || selectedJob.originalHeight) && (
+                  <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                    <h3 className="mb-2 text-sm font-semibold">Original Image</h3>
+                    <div className="grid gap-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">Dimensions</span>
+                        <span>
+                          {selectedJob.originalWidth}x{selectedJob.originalHeight}
+                        </span>
+                      </div>
+                      {selectedJob.originalFormat && (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Format</span>
+                          <span>{selectedJob.originalFormat}</span>
+                        </div>
+                      )}
+                      {selectedJob.originalSizeBytes && (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Size</span>
+                          <span>{formatBytes(selectedJob.originalSizeBytes)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Processing Details (enhancement jobs only) */}
+                {selectedJob.source === "enhancement" && (
+                  <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                    <h3 className="mb-2 text-sm font-semibold">Processing Details</h3>
+                    <div className="grid gap-2 text-sm">
+                      {selectedJob.currentStage && (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Current Stage</span>
+                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                            {selectedJob.currentStage}
+                          </Badge>
+                        </div>
+                      )}
+                      {selectedJob.wasCropped !== undefined && (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Auto-Cropped</span>
+                          <span>{selectedJob.wasCropped ? "Yes" : "No"}</span>
+                        </div>
+                      )}
+                      {selectedJob.wasCropped && selectedJob.cropDimensions && (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Crop</span>
+                          <span className="text-xs font-mono">
+                            {selectedJob.cropDimensions.left},{selectedJob.cropDimensions.top} →
+                            {" "}
+                            {selectedJob.cropDimensions.width}x{selectedJob.cropDimensions.height}
+                          </span>
+                        </div>
+                      )}
+                      {selectedJob.isBlend !== undefined && (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Blend Mode</span>
+                          <span>{selectedJob.isBlend ? "Yes" : "No"}</span>
+                        </div>
+                      )}
+                      {selectedJob.isBlend && selectedJob.sourceImageUrl && (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Source Image</span>
+                          <a
+                            href={selectedJob.sourceImageUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline"
+                          >
+                            View Source
+                          </a>
+                        </div>
+                      )}
+                      {selectedJob.pipelineId && (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Pipeline</span>
+                          <span
+                            className="font-mono text-xs truncate max-w-[150px]"
+                            title={selectedJob.pipelineId}
+                          >
+                            {selectedJob.pipelineId}
+                          </span>
+                        </div>
+                      )}
+                      {selectedJob.isAnonymous !== undefined && (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Anonymous</span>
+                          <span>{selectedJob.isAnonymous ? "Yes" : "No"}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Analysis Results (enhancement jobs only) */}
+                {selectedJob.source === "enhancement" && selectedJob.analysisResult && (
+                  <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                    <h3 className="mb-2 text-sm font-semibold">AI Analysis</h3>
+                    <div className="space-y-3">
+                      {selectedJob.analysisSource && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-neutral-500">Model</span>
+                          <span className="font-mono text-xs">{selectedJob.analysisSource}</span>
+                        </div>
+                      )}
+                      {selectedJob.analysisResult.mainSubject && (
+                        <div className="text-sm">
+                          <span className="text-neutral-500">Subject:</span>
+                          <span>{selectedJob.analysisResult.mainSubject}</span>
+                        </div>
+                      )}
+                      {selectedJob.analysisResult.imageStyle && (
+                        <div className="text-sm">
+                          <span className="text-neutral-500">Style:</span>
+                          <Badge variant="outline" className="ml-1">
+                            {selectedJob.analysisResult.imageStyle}
+                          </Badge>
+                        </div>
+                      )}
+                      {selectedJob.analysisResult.lightingCondition && (
+                        <div className="text-sm">
+                          <span className="text-neutral-500">Lighting:</span>
+                          <span>{selectedJob.analysisResult.lightingCondition}</span>
+                        </div>
+                      )}
+                      {/* Detected Defects */}
+                      {selectedJob.analysisResult.defects && (
+                        <div className="space-y-1">
+                          <span className="text-sm text-neutral-500">Detected Issues:</span>
+                          <div className="flex flex-wrap gap-1">
+                            {selectedJob.analysisResult.defects.isDark && (
+                              <Badge
+                                variant="outline"
+                                className="bg-neutral-800 text-neutral-200 text-xs"
+                              >
+                                Dark
+                              </Badge>
+                            )}
+                            {selectedJob.analysisResult.defects.isBlurry && (
+                              <Badge
+                                variant="outline"
+                                className="bg-amber-100 text-amber-800 text-xs"
+                              >
+                                Blurry
+                              </Badge>
+                            )}
+                            {selectedJob.analysisResult.defects.hasNoise && (
+                              <Badge
+                                variant="outline"
+                                className="bg-orange-100 text-orange-800 text-xs"
+                              >
+                                Noisy
+                              </Badge>
+                            )}
+                            {selectedJob.analysisResult.defects.hasVHSArtifacts && (
+                              <Badge
+                                variant="outline"
+                                className="bg-purple-100 text-purple-800 text-xs"
+                              >
+                                VHS Artifacts
+                              </Badge>
+                            )}
+                            {selectedJob.analysisResult.defects.isLowResolution && (
+                              <Badge variant="outline" className="bg-red-100 text-red-800 text-xs">
+                                Low Res
+                              </Badge>
+                            )}
+                            {selectedJob.analysisResult.defects.isOverexposed && (
+                              <Badge
+                                variant="outline"
+                                className="bg-yellow-100 text-yellow-800 text-xs"
+                              >
+                                Overexposed
+                              </Badge>
+                            )}
+                            {selectedJob.analysisResult.defects.hasColorCast && (
+                              <Badge
+                                variant="outline"
+                                className="bg-pink-100 text-pink-800 text-xs"
+                              >
+                                Color Cast{selectedJob.analysisResult.defects.colorCastType
+                                  ? ` (${selectedJob.analysisResult.defects.colorCastType})`
+                                  : ""}
+                              </Badge>
+                            )}
+                            {!selectedJob.analysisResult.defects.isDark &&
+                              !selectedJob.analysisResult.defects.isBlurry &&
+                              !selectedJob.analysisResult.defects.hasNoise &&
+                              !selectedJob.analysisResult.defects.hasVHSArtifacts &&
+                              !selectedJob.analysisResult.defects.isLowResolution &&
+                              !selectedJob.analysisResult.defects.isOverexposed &&
+                              !selectedJob.analysisResult.defects.hasColorCast && (
+                              <Badge
+                                variant="outline"
+                                className="bg-green-100 text-green-800 text-xs"
+                              >
+                                No Issues Detected
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {/* Cropping Suggestion */}
+                      {selectedJob.analysisResult.cropping &&
+                        selectedJob.analysisResult.cropping.isCroppingNeeded && (
+                        <div className="space-y-1 text-sm">
+                          <span className="text-neutral-500">Crop Suggestion:</span>
+                          <p className="text-xs">
+                            {selectedJob.analysisResult.cropping.cropReason}
+                          </p>
+                          {selectedJob.analysisResult.cropping.suggestedCrop && (
+                            <p className="font-mono text-xs text-neutral-400">
+                              L:{selectedJob.analysisResult.cropping.suggestedCrop.left}%
+                              T:{selectedJob.analysisResult.cropping.suggestedCrop.top}%
+                              R:{selectedJob.analysisResult.cropping.suggestedCrop.right}%
+                              B:{selectedJob.analysisResult.cropping.suggestedCrop.bottom}%
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {/* Raw JSON (collapsed) */}
+                      <details className="text-xs">
+                        <summary className="cursor-pointer text-neutral-500 hover:text-neutral-300">
+                          View Raw Analysis JSON
+                        </summary>
+                        <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-neutral-100 p-2 dark:bg-neutral-800">
+                          {JSON.stringify(selectedJob.analysisResult, null, 2)}
+                        </pre>
+                      </details>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
         </Card>
