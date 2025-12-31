@@ -123,6 +123,8 @@ model App {
   forkedFrom         String?
   status             AppStatus           @default(DRAFT)
   domain             String?             @unique
+  codespaceId        String?             // ID of linked testing.spike.land codespace
+  codespaceUrl       String?             // Full URL to testing.spike.land/live/{codespaceId}
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   parentApp          App?                @relation("AppForks", fields: [forkedFrom], references: [id])
@@ -134,6 +136,7 @@ model App {
   @@index([userId])
   @@index([forkedFrom])
   @@index([status])
+  @@index([codespaceId])
   @@map("apps")
 }
 
