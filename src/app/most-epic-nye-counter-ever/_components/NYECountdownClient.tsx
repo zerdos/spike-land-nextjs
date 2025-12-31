@@ -2,10 +2,21 @@
 
 import { useCountdown } from "@/hooks/useCountdown";
 import { Check, Share2, Sparkles, Volume2, VolumeX } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+const QUOTES = [
+  "New year, new possibilities ✨",
+  "Every moment is a fresh beginning 🌟",
+  "The best is yet to come 🚀",
+  "Make it a year to remember 💫",
+  "Dream big, start now 🎯",
+  "Your story continues... 📖",
+  "Cheers to new adventures! 🥂",
+];
 import Confetti from "./Confetti";
 import CountdownDigit from "./CountdownDigit";
 import Fireworks from "./Fireworks";
+import ShootingStar from "./ShootingStar";
 import Starfield from "./Starfield";
 
 /**
@@ -20,10 +31,28 @@ export default function NYECountdownClient() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isCopied, setIsCopied] = useState(false);
+  const [quoteIndex, setQuoteIndex] = useState(0);
+
+  // Rotate quotes every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setQuoteIndex((prev) => (prev + 1) % QUOTES.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Calculate if we're in the final countdown (last 60 seconds)
   const isFinalCountdown = days === 0 && hours === 0 && minutes === 0 && seconds <= 60;
   const isLastTenSeconds = isFinalCountdown && seconds <= 10 && seconds > 0;
+
+  // Calculate year progress (how much of 2025 has passed)
+  const yearProgress = useMemo(() => {
+    const startOf2025 = new Date("2025-01-01T00:00:00").getTime();
+    const endOf2025 = new Date("2026-01-01T00:00:00").getTime();
+    const now = Date.now();
+    const progress = ((now - startOf2025) / (endOf2025 - startOf2025)) * 100;
+    return Math.min(100, Math.max(0, progress));
+  }, [seconds]); // Update when seconds change
 
   useEffect(() => {
     setHasStarted(true);
@@ -60,6 +89,7 @@ export default function NYECountdownClient() {
     <div className="relative flex min-h-screen flex-col items-center justify-center p-4 overflow-hidden">
       {/* Background Layer */}
       <Starfield />
+      <ShootingStar />
 
       {/* Ambient glow orbs - GPU accelerated, very subtle */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -103,10 +133,30 @@ export default function NYECountdownClient() {
                 <Sparkles className="h-6 w-6 text-yellow-400 animate-pulse" />
               </div>
 
-              {/* Subtitle */}
-              <p className="text-cyan-300/60 tracking-[0.2em] text-xs sm:text-sm uppercase">
-                The Most Epic New Year&apos;s Eve Ever
-              </p>
+              {/* Subtitle with heartbeat indicator */}
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-block w-2 h-2 rounded-full ${
+                    hours < 1
+                      ? "bg-red-500 animate-ping"
+                      : hours < 3
+                      ? "bg-yellow-500 animate-pulse"
+                      : "bg-cyan-500 animate-pulse"
+                  }`}
+                />
+                <p className="text-cyan-300/60 tracking-[0.2em] text-xs sm:text-sm uppercase">
+                  The Most Epic New Year&apos;s Eve Ever
+                </p>
+                <span
+                  className={`inline-block w-2 h-2 rounded-full ${
+                    hours < 1
+                      ? "bg-red-500 animate-ping"
+                      : hours < 3
+                      ? "bg-yellow-500 animate-pulse"
+                      : "bg-cyan-500 animate-pulse"
+                  }`}
+                />
+              </div>
 
               {/* Countdown digits with glow container */}
               <div
@@ -134,6 +184,40 @@ export default function NYECountdownClient() {
                 </div>
               </div>
 
+              {/* Year Progress Bar */}
+              <div className="w-full max-w-md mt-4">
+                <div className="flex justify-between text-xs text-cyan-300/50 mb-2">
+                  <span>2025</span>
+                  <span
+                    className={`font-bold ${
+                      yearProgress > 99.9 ? "text-yellow-400 animate-pulse" : "text-cyan-400"
+                    }`}
+                  >
+                    {yearProgress.toFixed(4)}% complete
+                  </span>
+                  <span>2026</span>
+                </div>
+                <div
+                  className={`h-2 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm ${
+                    yearProgress > 99.9 ? "shadow-[0_0_20px_rgba(234,179,8,0.4)]" : ""
+                  }`}
+                >
+                  <div
+                    className={`h-full rounded-full transition-all duration-1000 ${
+                      yearProgress > 99.9
+                        ? "bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 animate-pulse"
+                        : "bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"
+                    }`}
+                    style={{ width: `${yearProgress}%` }}
+                  />
+                </div>
+                {yearProgress > 99.9 && (
+                  <p className="text-center text-yellow-400/80 text-xs mt-2 animate-pulse">
+                    🔥 FINAL STRETCH! 🔥
+                  </p>
+                )}
+              </div>
+
               {/* Final countdown message */}
               {isLastTenSeconds && (
                 <p className="text-2xl font-bold text-red-400 animate-pulse tracking-wider">
@@ -141,12 +225,21 @@ export default function NYECountdownClient() {
                 </p>
               )}
 
-              {/* Regular message */}
+              {/* Dynamic message based on time */}
               {!isFinalCountdown && (
-                <p className="mt-4 max-w-md text-sm leading-relaxed text-cyan-300/40 sm:text-base">
-                  ✨ Click anywhere for a spark of magic ✨
+                <p className="mt-4 max-w-md text-sm leading-relaxed text-cyan-300/50 sm:text-base">
+                  {hours < 1
+                    ? "🔥 Less than an hour! The excitement is building! 🔥"
+                    : hours < 3
+                    ? "⚡ Almost there! 2026 is just hours away! ⚡"
+                    : "✨ Click anywhere for a spark of magic ✨"}
                 </p>
               )}
+
+              {/* Rotating inspirational quote */}
+              <p className="text-white/30 text-xs italic transition-opacity duration-500">
+                &ldquo;{QUOTES[quoteIndex]}&rdquo;
+              </p>
             </>
           )
           : (
