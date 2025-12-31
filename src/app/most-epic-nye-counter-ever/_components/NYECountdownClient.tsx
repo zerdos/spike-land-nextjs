@@ -427,7 +427,7 @@ export default function NYECountdownClient() {
                     ? "🔥 Less than an hour! The excitement is building! 🔥"
                     : hours < 3
                     ? "⚡ Almost there! 2026 is just hours away! ⚡"
-                    : "✨ Click anywhere for a spark of magic ✨"}
+                    : "✨ Click or press SPACE for magic ✨"}
                 </p>
               )}
 
@@ -480,6 +480,18 @@ export default function NYECountdownClient() {
                 <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>🥳</span>
                 <span className="animate-bounce" style={{ animationDelay: "0.3s" }}>🎉</span>
                 <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>✨</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.5s" }}>🍾</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.6s" }}>🌟</span>
+              </div>
+
+              {/* Celebration message */}
+              <div className="text-center space-y-2">
+                <p className="text-white/60 text-sm">
+                  You made it! Welcome to a brand new year of possibilities!
+                </p>
+                <p className="text-yellow-300/80 text-xs">
+                  🌍 Joining billions around the world in celebration 🌍
+                </p>
               </div>
 
               <p className="max-w-md text-lg text-white/80 sm:text-xl">
@@ -507,6 +519,13 @@ export default function NYECountdownClient() {
       {/* Cosmic dust at bottom - GPU accelerated */}
       <div className="fixed inset-x-0 bottom-0 h-32 pointer-events-none z-0 overflow-hidden">
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-purple-900/20 via-cyan-900/10 to-transparent blur-2xl animate-float-slow" />
+      </div>
+
+      {/* Footer */}
+      <div className="fixed bottom-4 left-0 right-0 text-center z-10 pointer-events-none">
+        <p className="text-white/20 text-xs">
+          Made with 💜 for the most epic NYE ever • spike.land
+        </p>
       </div>
 
       {/* Interactive Layers */}
