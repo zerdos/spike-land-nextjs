@@ -82,6 +82,7 @@ export default function NYECountdownClient() {
 
   // Calculate if we're in the final countdown (last 60 seconds)
   const isFinalCountdown = days === 0 && hours === 0 && minutes === 0 && seconds <= 60;
+  const isLastThirtySeconds = isFinalCountdown && seconds <= 30 && seconds > 0;
   const isLastTenSeconds = isFinalCountdown && seconds <= 10 && seconds > 0;
 
   // Calculate year progress (how much of 2025 has passed)
@@ -255,7 +256,7 @@ export default function NYECountdownClient() {
               <div
                 className={`relative p-8 rounded-3xl transition-all duration-500 ${
                   isLastTenSeconds ? "bg-red-500/10 border border-red-500/30" : ""
-                }`}
+                } ${isLastThirtySeconds ? "animate-heartbeat" : ""}`}
               >
                 {/* Pulse ring effect */}
                 <div className="absolute inset-0 rounded-3xl border border-cyan-500/20 animate-pulse-ring" />
@@ -404,6 +405,11 @@ export default function NYECountdownClient() {
             </div>
           )}
       </div>
+
+      {/* Screen pulse for final 30 seconds */}
+      {isLastThirtySeconds && (
+        <div className="fixed inset-0 pointer-events-none z-30 bg-red-500/10 animate-screen-pulse" />
+      )}
 
       {/* Vignette effect for dramatic atmosphere */}
       <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
