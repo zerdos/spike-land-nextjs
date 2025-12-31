@@ -32,12 +32,28 @@ export default function NYECountdownClient() {
   const [isMuted, setIsMuted] = useState(true);
   const [isCopied, setIsCopied] = useState(false);
   const [quoteIndex, setQuoteIndex] = useState(0);
+  const [currentTime, setCurrentTime] = useState("");
 
   // Rotate quotes every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setQuoteIndex((prev) => (prev + 1) % QUOTES.length);
     }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Update current time display
+  useEffect(() => {
+    const updateTime = () => {
+      setCurrentTime(new Date().toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      }));
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -131,6 +147,11 @@ export default function NYECountdownClient() {
                   2026 COUNTDOWN
                 </h1>
                 <Sparkles className="h-6 w-6 text-yellow-400 animate-pulse" />
+              </div>
+
+              {/* Current local time display */}
+              <div className="text-cyan-400/80 font-mono text-lg sm:text-xl tracking-widest">
+                {currentTime}
               </div>
 
               {/* Subtitle with heartbeat indicator */}
