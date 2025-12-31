@@ -26,6 +26,15 @@ const FUN_FACTS = [
   "The first NYE was celebrated 4,000 years ago!",
 ];
 
+const NEW_YEAR_WISHES = [
+  "May 2026 bring you joy and success!",
+  "Wishing you health, wealth, and happiness!",
+  "May all your dreams come true this year!",
+  "Here's to new beginnings and adventures!",
+  "May your year be filled with love and laughter!",
+  "Cheers to making 2026 your best year yet!",
+];
+
 // Major cities and their UTC offsets for world celebration tracker
 const WORLD_CITIES = [
   { city: "Samoa", offset: 14, emoji: "🏝️" },
@@ -62,6 +71,7 @@ export default function NYECountdownClient() {
   const [isCopied, setIsCopied] = useState(false);
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [factIndex, setFactIndex] = useState(0);
+  const [wishIndex, setWishIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState("");
   const [timezone, setTimezone] = useState("");
   const [viewerCount, setViewerCount] = useState(0);
@@ -106,6 +116,15 @@ export default function NYECountdownClient() {
     }, 8000);
     return () => clearInterval(interval);
   }, []);
+
+  // Rotate wishes every 4 seconds (for celebration mode)
+  useEffect(() => {
+    if (!isComplete) return;
+    const interval = setInterval(() => {
+      setWishIndex((prev) => (prev + 1) % NEW_YEAR_WISHES.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isComplete]);
 
   // Update current time display and get timezone
   useEffect(() => {
@@ -304,6 +323,39 @@ export default function NYECountdownClient() {
         >
           2026
         </span>
+      </div>
+
+      {/* Corner decorations - elegant and subtle */}
+      <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
+        {/* Top left corner */}
+        <div className="absolute top-8 left-8 opacity-30">
+          <div className="w-32 h-32 border-l-2 border-t-2 border-cyan-400/50 rounded-tl-3xl" />
+          <div className="absolute top-0 left-0 w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+        </div>
+        {/* Top right corner */}
+        <div className="absolute top-8 right-8 opacity-30">
+          <div className="w-32 h-32 border-r-2 border-t-2 border-purple-400/50 rounded-tr-3xl" />
+          <div
+            className="absolute top-0 right-0 w-2 h-2 bg-purple-400 rounded-full animate-pulse"
+            style={{ animationDelay: "0.5s" }}
+          />
+        </div>
+        {/* Bottom left corner */}
+        <div className="absolute bottom-8 left-8 opacity-30">
+          <div className="w-32 h-32 border-l-2 border-b-2 border-pink-400/50 rounded-bl-3xl" />
+          <div
+            className="absolute bottom-0 left-0 w-2 h-2 bg-pink-400 rounded-full animate-pulse"
+            style={{ animationDelay: "1s" }}
+          />
+        </div>
+        {/* Bottom right corner */}
+        <div className="absolute bottom-8 right-8 opacity-30">
+          <div className="w-32 h-32 border-r-2 border-b-2 border-yellow-400/50 rounded-br-3xl" />
+          <div
+            className="absolute bottom-0 right-0 w-2 h-2 bg-yellow-400 rounded-full animate-pulse"
+            style={{ animationDelay: "1.5s" }}
+          />
+        </div>
       </div>
 
       {/* Viewer count badge with mood */}
@@ -655,37 +707,51 @@ export default function NYECountdownClient() {
           )
           : (
             <div className="animate-banner-appear flex flex-col items-center gap-8">
+              {/* Celebration screen pulse */}
+              <div className="fixed inset-0 bg-gradient-to-b from-yellow-500/10 via-transparent to-orange-500/10 pointer-events-none animate-pulse" />
+
               {/* Epic celebration banner */}
               <div className="relative">
                 {/* Multiple glow layers for epic effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 blur-3xl opacity-40 animate-pulse scale-150" />
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 blur-3xl opacity-50 animate-pulse scale-150" />
                 <div
-                  className="absolute inset-0 bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 blur-2xl opacity-30 animate-pulse scale-125"
+                  className="absolute inset-0 bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 blur-2xl opacity-40 animate-pulse scale-125"
                   style={{ animationDelay: "-0.5s" }}
                 />
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 blur-xl opacity-30 animate-pulse scale-110"
+                  style={{ animationDelay: "-1s" }}
+                />
 
-                <div className="relative rounded-2xl border-4 border-yellow-400/50 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 px-8 py-6 shadow-[0_0_100px_rgba(234,179,8,0.6)] sm:px-16 sm:py-8">
+                <div className="relative rounded-2xl border-4 border-yellow-400/60 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 px-8 py-6 shadow-[0_0_120px_rgba(234,179,8,0.7)] sm:px-16 sm:py-8 animate-heartbeat">
                   <div className="flex items-center gap-4">
                     <Sparkles
-                      className="h-8 w-8 text-white animate-spin"
-                      style={{ animationDuration: "3s" }}
+                      className="h-10 w-10 text-white animate-spin"
+                      style={{ animationDuration: "2s" }}
                     />
-                    <h1 className="text-4xl font-black tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] sm:text-6xl md:text-8xl">
+                    <h1 className="text-5xl font-black tracking-tight text-white drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)] sm:text-7xl md:text-9xl">
                       2026
                     </h1>
                     <Sparkles
-                      className="h-8 w-8 text-white animate-spin"
-                      style={{ animationDuration: "3s", animationDirection: "reverse" }}
+                      className="h-10 w-10 text-white animate-spin"
+                      style={{ animationDuration: "2s", animationDirection: "reverse" }}
                     />
                   </div>
                 </div>
               </div>
 
-              <h2 className="text-2xl font-bold text-yellow-400 tracking-widest sm:text-4xl animate-bounce">
+              <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400 tracking-widest sm:text-5xl animate-pulse">
                 HAPPY NEW YEAR!
               </h2>
 
-              <div className="flex gap-2 text-4xl">
+              {/* Celebration viewer count */}
+              <div className="flex items-center gap-2 text-white/60 text-sm">
+                <Eye className="h-4 w-4" />
+                <span className="font-mono">{viewerCount.toLocaleString()}</span>
+                <span>people celebrating with you!</span>
+              </div>
+
+              <div className="flex gap-3 text-5xl">
                 <span className="animate-bounce" style={{ animationDelay: "0s" }}>🎆</span>
                 <span className="animate-bounce" style={{ animationDelay: "0.1s" }}>🎊</span>
                 <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>🥳</span>
@@ -702,6 +768,13 @@ export default function NYECountdownClient() {
                 </p>
                 <p className="text-yellow-300/80 text-xs">
                   Joining billions around the world in celebration
+                </p>
+              </div>
+
+              {/* Rotating New Year wishes */}
+              <div className="px-6 py-3 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
+                <p className="text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 font-medium transition-opacity duration-500">
+                  {NEW_YEAR_WISHES[wishIndex]}
                 </p>
               </div>
 
