@@ -537,6 +537,30 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                           Download Enhanced
                         </Button>
                       </div>
+
+                      {/* Secondary Actions (Share / Mix) */}
+                      <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border/50">
+                        {selectedVersion && (
+                          <div className="flex gap-3">
+                            <ShareButton
+                              imageId={image.id}
+                              shareToken={image.shareToken}
+                              imageName={image.name}
+                              className="flex-1 bg-background/50 border-input hover:bg-accent hover:text-accent-foreground border text-xs h-9"
+                            />
+                            {(selectedVersion.isBlend || selectedVersion.sourceImageId) && (
+                              <Button
+                                variant="outline"
+                                onClick={() => router.push(`/apps/pixel/mix/${selectedVersion.id}`)}
+                                className="flex-1 text-muted-foreground hover:text-foreground text-xs h-9"
+                              >
+                                <ExternalLink className="mr-2 h-3 w-3" />
+                                Mix Details
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </>
                   )
                   : (
@@ -597,33 +621,6 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               balance={balance}
               onBalanceRefresh={refetchBalance}
             />
-
-            {/* Secondary Actions */}
-            <div className="mt-4 space-y-3">
-              {/* Only show Share when there's a successful enhancement */}
-              {selectedVersion && selectedVersion.enhancedUrl && (
-                <ShareButton
-                  imageId={image.id}
-                  shareToken={image.shareToken}
-                  imageName={image.name}
-                  className="w-full bg-background/50 border-input hover:bg-accent hover:text-accent-foreground border"
-                />
-              )}
-              {/* Show View Mix Details button for blend jobs */}
-              {selectedVersion &&
-                (selectedVersion.isBlend ||
-                  selectedVersion.sourceImageId) &&
-                (
-                  <Button
-                    variant="ghost"
-                    onClick={() => router.push(`/apps/pixel/mix/${selectedVersion.id}`)}
-                    className="w-full text-muted-foreground hover:text-foreground"
-                  >
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    View Mix Details
-                  </Button>
-                )}
-            </div>
           </div>
         </div>
       </DroppableEnhanceZone>
