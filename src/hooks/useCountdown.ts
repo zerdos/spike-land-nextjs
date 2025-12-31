@@ -17,8 +17,10 @@ export interface CountdownTime {
  * @returns CountdownTime object containing days, hours, minutes, seconds and completion status
  */
 export function useCountdown(targetDate: Date): CountdownTime {
+  const targetTime = targetDate.getTime();
+
   const calculateTimeLeft = useCallback((): CountdownTime => {
-    const difference = targetDate.getTime() - new Date().getTime();
+    const difference = targetTime - new Date().getTime();
 
     if (difference <= 0) {
       return {
@@ -37,7 +39,7 @@ export function useCountdown(targetDate: Date): CountdownTime {
       seconds: Math.floor((difference / 1000) % 60),
       isComplete: false,
     };
-  }, [targetDate]);
+  }, [targetTime]);
 
   const [timeLeft, setTimeLeft] = useState<CountdownTime>(calculateTimeLeft());
 
@@ -52,7 +54,7 @@ export function useCountdown(targetDate: Date): CountdownTime {
   // Sync timeLeft if targetDate changes
   useEffect(() => {
     setTimeLeft(calculateTimeLeft());
-  }, [calculateTimeLeft]);
+  }, [calculateTimeLeft, targetTime]);
 
   return timeLeft;
 }

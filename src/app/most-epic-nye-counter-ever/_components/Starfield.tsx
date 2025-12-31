@@ -4,17 +4,19 @@ import { useMemo } from "react";
 
 /**
  * Animated deep space background with twinkling stars.
- * Uses useMemo to stabilize star positions on re-renders.
+ * Optimized for performance with reduced star count and GPU acceleration.
  */
 export default function Starfield() {
+  // Reduced from 160 to 50 stars for better performance
   const stars = useMemo(() => {
-    return Array.from({ length: 160 }).map((_, i) => ({
+    return Array.from({ length: 50 }).map((_, i) => ({
       id: i,
       size: Math.random() * 2 + 0.5,
       top: `${Math.random() * 100}%`,
       left: `${Math.random() * 100}%`,
-      delay: `${Math.random() * 10}s`,
-      duration: `${Math.random() * 5 + 3}s`,
+      // Longer animation duration = less CPU work
+      delay: `${Math.random() * 15}s`,
+      duration: `${Math.random() * 8 + 6}s`,
       opacity: Math.random() * 0.5 + 0.3,
     }));
   }, []);
@@ -27,12 +29,12 @@ export default function Starfield() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,#0a2e3a_0%,transparent_50%)] opacity-30" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,#2e0a1a_0%,transparent_50%)] opacity-30" />
 
-      {/* Twinkling Stars */}
-      <div className="stars-container absolute inset-0">
+      {/* Twinkling Stars - GPU accelerated */}
+      <div className="stars-container absolute inset-0 transform-gpu">
         {stars.map((star) => (
           <div
             key={star.id}
-            className="absolute rounded-full bg-white animate-twinkle"
+            className="absolute rounded-full bg-white animate-twinkle-slow"
             style={{
               width: `${star.size}px`,
               height: `${star.size}px`,
@@ -41,14 +43,11 @@ export default function Starfield() {
               opacity: star.opacity,
               animationDelay: star.delay,
               animationDuration: star.duration,
-              boxShadow: star.size > 1.5 ? `0 0 4px 1px white` : "none",
+              willChange: "opacity",
             }}
           />
         ))}
       </div>
-
-      {/* Drifting Nebula Particles (Subtle) */}
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay" />
     </div>
   );
 }
