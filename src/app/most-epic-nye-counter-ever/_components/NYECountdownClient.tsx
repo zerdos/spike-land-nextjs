@@ -277,6 +277,62 @@ export default function NYECountdownClient() {
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center p-4 overflow-hidden">
+      {/* Dramatic background shift - intensifying as countdown approaches */}
+      {isFinalCountdown && (
+        <div
+          className="fixed inset-0 pointer-events-none z-5 transition-all duration-1000"
+          style={{
+            background: isLastTenSeconds
+              ? "linear-gradient(180deg, rgba(239,68,68,0.15) 0%, rgba(234,88,12,0.1) 50%, rgba(0,0,0,0) 100%)"
+              : isLastThirtySeconds
+              ? "linear-gradient(180deg, rgba(249,115,22,0.1) 0%, rgba(217,70,239,0.05) 50%, rgba(0,0,0,0) 100%)"
+              : "linear-gradient(180deg, rgba(234,179,8,0.05) 0%, rgba(34,211,238,0.03) 50%, rgba(0,0,0,0) 100%)",
+          }}
+        />
+      )}
+
+      {/* Visual beat pulse - flashes on each second during final countdown */}
+      {isFinalCountdown && seconds > 0 && (
+        <div
+          key={seconds}
+          className="fixed inset-0 pointer-events-none z-40 animate-beat-flash"
+          style={{
+            background: isLastTenSeconds
+              ? "radial-gradient(circle at center, rgba(239,68,68,0.2) 0%, transparent 60%)"
+              : isLastThirtySeconds
+              ? "radial-gradient(circle at center, rgba(249,115,22,0.15) 0%, transparent 65%)"
+              : "radial-gradient(circle at center, rgba(234,179,8,0.08) 0%, transparent 70%)",
+          }}
+        />
+      )}
+
+      {/* Celebration explosion bursts */}
+      {isComplete && (
+        <>
+          <div className="fixed top-1/4 left-1/4 w-32 h-32 pointer-events-none z-20 animate-celebration-burst">
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-yellow-400/40 to-orange-500/40 blur-xl" />
+          </div>
+          <div
+            className="fixed top-1/3 right-1/4 w-24 h-24 pointer-events-none z-20 animate-celebration-burst"
+            style={{ animationDelay: "0.3s" }}
+          >
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-pink-400/40 to-purple-500/40 blur-xl" />
+          </div>
+          <div
+            className="fixed bottom-1/3 left-1/3 w-28 h-28 pointer-events-none z-20 animate-celebration-burst"
+            style={{ animationDelay: "0.6s" }}
+          >
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-cyan-400/40 to-blue-500/40 blur-xl" />
+          </div>
+          <div
+            className="fixed bottom-1/4 right-1/3 w-20 h-20 pointer-events-none z-20 animate-celebration-burst"
+            style={{ animationDelay: "0.9s" }}
+          >
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-green-400/40 to-teal-500/40 blur-xl" />
+          </div>
+        </>
+      )}
+
       {/* Intensifying border glow for final countdown */}
       {isLastThirtySeconds && (
         <div

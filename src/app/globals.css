@@ -1220,4 +1220,70 @@
   .text-glow-cyan {
     text-shadow: 0 0 10px rgba(34, 211, 238, 0.5), 0 0 20px rgba(34, 211, 238, 0.3);
   }
+
+  /* Beat flash - synced to seconds during countdown */
+  @keyframes beat-flash {
+    0% {
+      opacity: 0.8;
+    }
+    20% {
+      opacity: 0.4;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .animate-beat-flash {
+    animation: beat-flash 0.8s ease-out forwards;
+  }
+
+  /* Dramatic background shift - intensifying colors */
+  @keyframes bg-intensity-pulse {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  .animate-bg-intensity {
+    animation: bg-intensity-pulse 2s ease-in-out infinite;
+  }
+
+  /* Celebration explosion burst */
+  @keyframes celebration-burst {
+    0% {
+      transform: scale(0.5);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.5);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+
+  .animate-celebration-burst {
+    animation: celebration-burst 1.5s ease-out infinite;
+  }
+
+  /* Shimmer effect for celebration text */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  .animate-shimmer {
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+  }
 }
