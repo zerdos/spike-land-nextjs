@@ -98,6 +98,17 @@ export default function NYECountdownClient() {
     return days * 86400 + hours * 3600 + minutes * 60 + seconds;
   }, [days, hours, minutes, seconds]);
 
+  // Milestone messages for special moments
+  const milestoneMessage = useMemo(() => {
+    if (days === 0 && hours === 0 && minutes === 0 && seconds === 0) return null;
+    if (days === 0 && hours === 1 && minutes === 0 && seconds <= 5) return "🎯 ONE HOUR TO GO! 🎯";
+    if (days === 0 && hours === 0 && minutes === 30 && seconds <= 5) return "⏰ 30 MINUTES! ⏰";
+    if (days === 0 && hours === 0 && minutes === 10 && seconds <= 5) return "🔥 10 MINUTES! 🔥";
+    if (days === 0 && hours === 0 && minutes === 5 && seconds <= 5) return "⚡ 5 MINUTES! ⚡";
+    if (days === 0 && hours === 0 && minutes === 1 && seconds <= 5) return "🚀 ONE MINUTE! 🚀";
+    return null;
+  }, [days, hours, minutes, seconds]);
+
   useEffect(() => {
     setHasStarted(true);
   }, []);
@@ -205,6 +216,15 @@ export default function NYECountdownClient() {
                   {timezone}
                 </div>
               </div>
+
+              {/* Milestone alert */}
+              {milestoneMessage && (
+                <div className="animate-bounce bg-gradient-to-r from-yellow-500/20 via-orange-500/20 to-red-500/20 border border-yellow-400/50 rounded-full px-6 py-2">
+                  <span className="text-yellow-400 font-bold text-lg sm:text-xl tracking-wider">
+                    {milestoneMessage}
+                  </span>
+                </div>
+              )}
 
               {/* Subtitle with heartbeat indicator */}
               <div className="flex items-center gap-2">
