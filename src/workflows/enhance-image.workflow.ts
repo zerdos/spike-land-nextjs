@@ -37,6 +37,43 @@ import {
 
 export type { EnhanceImageInput };
 
+/**
+ * Ensures we have a proper Buffer after Vercel workflow serialization.
+ *
+ * When Buffers pass between workflow steps, Vercel may serialize them to JSON
+ * format: {type: "Buffer", data: [82, 73, ...]}. This function reconstitutes
+ * the proper Buffer from the serialized format.
+ *
+ * @param input - Either a proper Buffer or a serialized Buffer object
+ * @returns A proper Node.js Buffer
+ */
+function ensureBuffer(input: Buffer | { type: "Buffer"; data: number[]; } | unknown): Buffer {
+  // Already a proper Buffer
+  if (Buffer.isBuffer(input)) {
+    return input;
+  }
+
+  // Serialized Buffer format from Vercel workflows
+  if (
+    typeof input === "object" &&
+    input !== null &&
+    "type" in input &&
+    (input as { type: string; }).type === "Buffer" &&
+    "data" in input &&
+    Array.isArray((input as { data: unknown; }).data)
+  ) {
+    return Buffer.from((input as { data: number[]; }).data);
+  }
+
+  // If it's already a Uint8Array or ArrayBuffer, convert it
+  if (input instanceof Uint8Array) {
+    return Buffer.from(input);
+  }
+
+  // Fallback: try to create buffer from input (will throw if invalid)
+  throw new FatalError(`Invalid buffer format: ${typeof input}`);
+}
+
 interface ImageMetadata {
   width: number;
   height: number;
@@ -135,7 +172,9 @@ async function downloadOriginalImage(r2Key: string): Promise<Buffer> {
 async function getImageMetadata(imageBuffer: Buffer): Promise<ImageMetadata> {
   "use step";
 
-  const metadata = await sharp(imageBuffer).metadata();
+  // Reconstitute Buffer after workflow serialization
+  const buffer = ensureBuffer(imageBuffer);
+  const metadata = await sharp(buffer).metadata();
   const width = metadata.width || DEFAULT_IMAGE_DIMENSION;
   const height = metadata.height || DEFAULT_IMAGE_DIMENSION;
 
@@ -149,7 +188,7 @@ async function getImageMetadata(imageBuffer: Buffer): Promise<ImageMetadata> {
     width,
     height,
     mimeType,
-    imageBase64: imageBuffer.toString("base64"),
+    imageBase64: buffer.toString("base64"),
   };
 }
 
@@ -345,8 +384,11 @@ async function autoCropStep(
 }> {
   "use step";
 
+  // Reconstitute Buffer after workflow serialization
+  const buffer = ensureBuffer(imageBuffer);
+
   const noCropResult = {
-    buffer: imageBuffer,
+    buffer,
     width: originalWidth,
     height: originalHeight,
     wasCropped: false,
@@ -375,7 +417,7 @@ async function autoCropStep(
 
   const { data, error } = await tryCatch(
     performCropOperations(
-      imageBuffer,
+      buffer,
       cropRegion,
       originalR2Key,
       jobId,
@@ -411,8 +453,11 @@ async function padImageForGemini(
 ): Promise<string> {
   "use step";
 
+  // Reconstitute Buffer after workflow serialization
+  const buffer = ensureBuffer(imageBuffer);
+
   const maxDimension = Math.max(width, height);
-  const paddedBuffer = await sharp(imageBuffer)
+  const paddedBuffer = await sharp(buffer)
     .resize(maxDimension, maxDimension, {
       fit: "contain",
       background: PADDING_BACKGROUND,
@@ -488,8 +533,11 @@ async function processAndUpload(
 ): Promise<EnhancedResult> {
   "use step";
 
+  // Reconstitute Buffer after workflow serialization
+  const buffer = ensureBuffer(enhancedBuffer);
+
   // Get Gemini output dimensions
-  const geminiMetadata = await sharp(enhancedBuffer).metadata();
+  const geminiMetadata = await sharp(buffer).metadata();
   const geminiSize = geminiMetadata.width;
 
   if (!geminiSize) {
@@ -511,7 +559,7 @@ async function processAndUpload(
   );
 
   // Crop and resize
-  const finalBuffer = await sharp(enhancedBuffer)
+  const finalBuffer = await sharp(buffer)
     .extract({
       left: extractLeft,
       top: extractTop,

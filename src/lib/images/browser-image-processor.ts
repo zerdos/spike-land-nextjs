@@ -12,7 +12,7 @@
 import { type AspectRatio, detectAspectRatio, getAspectRatioValue } from "@/lib/ai/aspect-ratio";
 
 // Constants
-export const MAX_DIMENSION = 1024;
+export const MAX_DIMENSION = 4096;
 export const WEBP_QUALITY = 0.8;
 export const FALLBACK_FORMAT = "image/jpeg";
 export const FALLBACK_QUALITY = 0.85;

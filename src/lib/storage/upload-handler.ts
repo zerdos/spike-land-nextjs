@@ -21,7 +21,7 @@ interface ProcessImageResult {
   error?: string;
 }
 
-const MAX_DIMENSION = 1024; // Max 1024px resolution
+const MAX_DIMENSION = 4096; // Max 4K resolution
 const WEBP_QUALITY = 80; // WebP quality setting
 
 /**
