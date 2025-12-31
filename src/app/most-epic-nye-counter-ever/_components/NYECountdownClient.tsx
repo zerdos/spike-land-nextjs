@@ -534,6 +534,117 @@ export default function NYECountdownClient() {
         </div>
       )}
 
+      {/* Lens flare effect at midnight */}
+      {isComplete && (
+        <div className="fixed inset-0 pointer-events-none z-85 overflow-hidden">
+          {/* Main flare */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-radial from-white via-yellow-200/50 to-transparent blur-md animate-lens-flare" />
+          {/* Secondary flares */}
+          <div
+            className="absolute top-[40%] left-[60%] w-8 h-8 rounded-full bg-cyan-400/40 blur-sm animate-lens-flare"
+            style={{ animationDelay: "0.2s" }}
+          />
+          <div
+            className="absolute top-[60%] left-[35%] w-12 h-12 rounded-full bg-pink-400/30 blur-md animate-lens-flare"
+            style={{ animationDelay: "0.3s" }}
+          />
+          <div
+            className="absolute top-[30%] left-[45%] w-6 h-6 rounded-full bg-orange-400/40 blur-sm animate-lens-flare"
+            style={{ animationDelay: "0.4s" }}
+          />
+          {/* Anamorphic streak */}
+          <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent -translate-y-1/2 animate-lens-streak" />
+        </div>
+      )}
+
+      {/* Confetti cannons at corners */}
+      {isComplete && (
+        <div className="fixed inset-0 pointer-events-none z-65 overflow-hidden">
+          {/* Left cannon burst */}
+          {Array.from({ length: 15 }).map((_, i) => (
+            <div
+              key={`cannon-l-${i}`}
+              className="absolute bottom-0 left-0 animate-confetti-cannon-left"
+              style={{
+                animationDelay: `${i * 0.08}s`,
+              }}
+            >
+              <div
+                className="w-3 h-3 rounded-sm"
+                style={{
+                  background: ["#FFD700", "#FF6B6B", "#4ECDC4", "#A855F7", "#EC4899"][i % 5],
+                  transform: `rotate(${i * 25}deg)`,
+                }}
+              />
+            </div>
+          ))}
+          {/* Right cannon burst */}
+          {Array.from({ length: 15 }).map((_, i) => (
+            <div
+              key={`cannon-r-${i}`}
+              className="absolute bottom-0 right-0 animate-confetti-cannon-right"
+              style={{
+                animationDelay: `${i * 0.08}s`,
+              }}
+            >
+              <div
+                className="w-3 h-3 rounded-sm"
+                style={{
+                  background: ["#FFD700", "#00E5FF", "#FF00FF", "#00FF00", "#FF4500"][i % 5],
+                  transform: `rotate(${i * 25}deg)`,
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Electric surge during final 5 seconds */}
+      {isLastFiveSeconds && (
+        <div className="fixed inset-0 pointer-events-none z-55">
+          {/* Electric arcs */}
+          <svg className="absolute inset-0 w-full h-full">
+            <defs>
+              <filter id="electric-glow">
+                <feGaussianBlur stdDeviation="2" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <path
+                key={`arc-${i}`}
+                className="animate-electric-arc"
+                d={`M ${10 + i * 15}% 0 Q ${20 + i * 10}% 50% ${50}% 50% T ${90 - i * 10}% 100%`}
+                stroke={i % 2 === 0 ? "#00E5FF" : "#A855F7"}
+                strokeWidth="2"
+                fill="none"
+                filter="url(#electric-glow)"
+                style={{
+                  animationDelay: `${i * 0.1}s`,
+                  opacity: 0.7,
+                }}
+              />
+            ))}
+          </svg>
+          {/* Spark particles */}
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={`spark-${i}`}
+              className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-spark"
+              style={{
+                top: `${20 + (i * 10) % 60}%`,
+                left: `${10 + (i * 12) % 80}%`,
+                animationDelay: `${i * 0.15}s`,
+                boxShadow: "0 0 10px #00E5FF, 0 0 20px #00E5FF",
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Energy building effect - particles converging during final minute */}
       {isFinalCountdown && !isComplete && (
         <div className="fixed inset-0 pointer-events-none z-15 overflow-hidden">

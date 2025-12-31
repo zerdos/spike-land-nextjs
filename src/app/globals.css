@@ -1649,4 +1649,109 @@
   .animate-laser-beam {
     animation: laser-beam 0.5s linear forwards;
   }
+
+  /* Lens flare - cinematic light effect */
+  @keyframes lens-flare {
+    0% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+    100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+  }
+
+  .animate-lens-flare {
+    animation: lens-flare 1.5s ease-out forwards;
+  }
+
+  /* Lens streak - anamorphic horizontal flare */
+  @keyframes lens-streak {
+    0% {
+      opacity: 0;
+      transform: translateY(-50%) scaleX(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(-50%) scaleX(1.5);
+    }
+    100% {
+      opacity: 0.4;
+      transform: translateY(-50%) scaleX(1);
+    }
+  }
+
+  .animate-lens-streak {
+    animation: lens-streak 1s ease-out forwards;
+  }
+
+  /* Confetti cannon - left burst */
+  @keyframes confetti-cannon-left {
+    0% {
+      transform: translate(0, 0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(40vw, -60vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+
+  .animate-confetti-cannon-left {
+    animation: confetti-cannon-left 2s ease-out forwards;
+  }
+
+  /* Confetti cannon - right burst */
+  @keyframes confetti-cannon-right {
+    0% {
+      transform: translate(0, 0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-40vw, -60vh) rotate(-720deg);
+      opacity: 0;
+    }
+  }
+
+  .animate-confetti-cannon-right {
+    animation: confetti-cannon-right 2s ease-out forwards;
+  }
+
+  /* Electric arc - flickering lightning */
+  @keyframes electric-arc {
+    0%, 100% {
+      opacity: 0;
+    }
+    10%, 30%, 50%, 70%, 90% {
+      opacity: 0.8;
+    }
+    20%, 40%, 60%, 80% {
+      opacity: 0.3;
+    }
+  }
+
+  .animate-electric-arc {
+    animation: electric-arc 0.3s ease-in-out infinite;
+  }
+
+  /* Spark - random flickering particles */
+  @keyframes spark {
+    0%, 100% {
+      opacity: 0;
+      transform: scale(0);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.5);
+    }
+  }
+
+  .animate-spark {
+    animation: spark 0.2s ease-in-out infinite;
+  }
 }
