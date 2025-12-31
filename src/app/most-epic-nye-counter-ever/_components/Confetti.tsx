@@ -53,8 +53,20 @@ export default function Confetti() {
       burst(e.clientX, e.clientY);
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space" || e.key === " ") {
+        e.preventDefault();
+        // Burst from center of screen
+        burst(window.innerWidth / 2, window.innerHeight / 2);
+      }
+    };
+
     window.addEventListener("mousedown", handleClick);
-    return () => window.removeEventListener("mousedown", handleClick);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("mousedown", handleClick);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [burst]);
 
   return (
