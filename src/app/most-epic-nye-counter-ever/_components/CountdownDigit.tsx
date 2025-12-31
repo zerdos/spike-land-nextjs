@@ -18,15 +18,16 @@ function CountdownDigit({ value, label, highlight = false }: CountdownDigitProps
 
   // Trigger flip animation when value changes
   useEffect(() => {
-    if (value !== displayValue) {
-      setIsFlipping(true);
-      // Small delay to show flip animation
-      const timer = setTimeout(() => {
-        setDisplayValue(value);
-        setIsFlipping(false);
-      }, 150);
-      return () => clearTimeout(timer);
+    if (value === displayValue) {
+      return;
     }
+    setIsFlipping(true);
+    // Small delay to show flip animation
+    const timer = setTimeout(() => {
+      setDisplayValue(value);
+      setIsFlipping(false);
+    }, 150);
+    return () => clearTimeout(timer);
   }, [value, displayValue]);
 
   // Format to 2 digits, except for days which could be 3
