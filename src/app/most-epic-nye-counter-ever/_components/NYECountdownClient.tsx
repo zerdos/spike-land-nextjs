@@ -278,7 +278,7 @@ export default function NYECountdownClient() {
 
   return (
     <div
-      className={`relative flex min-h-screen flex-col items-center justify-center p-4 overflow-hidden ${
+      className={`relative flex min-h-screen flex-col items-center justify-center p-4 pt-[168px] overflow-hidden ${
         isLastFiveSeconds ? "animate-screen-shake" : ""
       }`}
     >
@@ -856,7 +856,7 @@ export default function NYECountdownClient() {
       </div>
 
       {/* Viewer count badge with mood */}
-      <div className="absolute top-4 left-4 z-50 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-3 py-2">
+      <div className="absolute top-[168px] left-4 z-50 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-3 py-2">
         <span className="text-lg">{moodEmoji}</span>
         <Eye className="h-4 w-4 text-cyan-400" />
         <span className="text-cyan-400 text-sm font-mono">
@@ -867,7 +867,7 @@ export default function NYECountdownClient() {
       </div>
 
       {/* Controls */}
-      <div className="absolute top-4 right-4 z-50 flex gap-2">
+      <div className="absolute top-[168px] right-4 z-50 flex gap-2">
         <button
           onClick={() => setIsMuted(!isMuted)}
           className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:bg-white/10 hover:scale-110"
