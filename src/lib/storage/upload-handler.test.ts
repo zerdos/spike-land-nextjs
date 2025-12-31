@@ -160,7 +160,7 @@ describe("upload-handler", () => {
       userId: "user-123",
     };
 
-    it("should successfully process and upload an image within 1024px limits", async () => {
+    it("should successfully process and upload an image within 4096px limits", async () => {
       const processedBuffer = Buffer.from("processed webp image");
       mockMetadata.mockResolvedValueOnce({
         width: 800,
@@ -187,11 +187,11 @@ describe("upload-handler", () => {
       expect(result.error).toBeUndefined();
     });
 
-    it("should resize wide image exceeding 1024px width", async () => {
+    it("should resize wide image exceeding 4096px width", async () => {
       const resizedBuffer = Buffer.from("resized image");
       mockMetadata.mockResolvedValueOnce({
-        width: 2048, // Exceeds MAX_DIMENSION (1024)
-        height: 1024,
+        width: 8192, // Exceeds MAX_DIMENSION (4096)
+        height: 4096,
         format: "png",
       });
       mockToBuffer.mockResolvedValueOnce(resizedBuffer);
@@ -204,19 +204,19 @@ describe("upload-handler", () => {
       const result = await processAndUploadImage(defaultParams);
 
       expect(result.success).toBe(true);
-      expect(result.width).toBe(1024); // MAX_DIMENSION
-      expect(result.height).toBe(512); // Maintains aspect ratio (2048/1024 = 2:1)
-      expect(mockResize).toHaveBeenCalledWith(1024, 512, {
+      expect(result.width).toBe(4096); // MAX_DIMENSION
+      expect(result.height).toBe(2048); // Maintains aspect ratio (8192/4096 = 2:1)
+      expect(mockResize).toHaveBeenCalledWith(4096, 2048, {
         fit: "inside",
         withoutEnlargement: true,
       });
     });
 
-    it("should resize tall image exceeding 1024px height", async () => {
+    it("should resize tall image exceeding 4096px height", async () => {
       const resizedBuffer = Buffer.from("resized image");
       mockMetadata.mockResolvedValueOnce({
-        width: 512,
-        height: 2048, // Exceeds MAX_DIMENSION (1024)
+        width: 2048,
+        height: 8192, // Exceeds MAX_DIMENSION (4096)
         format: "jpeg",
       });
       mockToBuffer.mockResolvedValueOnce(resizedBuffer);
@@ -229,15 +229,15 @@ describe("upload-handler", () => {
       const result = await processAndUploadImage(defaultParams);
 
       expect(result.success).toBe(true);
-      expect(result.width).toBe(256); // Maintains aspect ratio (512/2048 = 1:4, 1024/4 = 256)
-      expect(result.height).toBe(1024); // MAX_DIMENSION
-      expect(mockResize).toHaveBeenCalledWith(256, 1024, {
+      expect(result.width).toBe(1024); // Maintains aspect ratio (2048/8192 = 1:4, 4096/4 = 1024)
+      expect(result.height).toBe(4096); // MAX_DIMENSION
+      expect(mockResize).toHaveBeenCalledWith(1024, 4096, {
         fit: "inside",
         withoutEnlargement: true,
       });
     });
 
-    it("should process image within 1024px limits without changing dimensions", async () => {
+    it("should process image within 4096px limits without changing dimensions", async () => {
       const processedBuffer = Buffer.from("processed webp");
       mockMetadata.mockResolvedValueOnce({
         width: 800,
@@ -431,8 +431,8 @@ describe("upload-handler", () => {
           originalFilename: "photo.jpg",
           originalWidth: "2000",
           originalHeight: "2000",
-          processedWidth: "1024",
-          processedHeight: "1024",
+          processedWidth: "2000",
+          processedHeight: "2000",
         },
       });
     });
@@ -479,11 +479,11 @@ describe("upload-handler", () => {
       expect(result.sizeBytes).toBe(resizedBuffer.length);
     });
 
-    it("should handle square image exceeding 1024px", async () => {
+    it("should handle square image exceeding 4096px", async () => {
       const resizedBuffer = Buffer.from("resized");
       mockMetadata.mockResolvedValueOnce({
-        width: 2000,
-        height: 2000,
+        width: 6000,
+        height: 6000,
         format: "jpeg",
       });
       mockToBuffer.mockResolvedValueOnce(resizedBuffer);
@@ -496,15 +496,15 @@ describe("upload-handler", () => {
       const result = await processAndUploadImage(defaultParams);
 
       expect(result.success).toBe(true);
-      expect(result.width).toBe(1024);
-      expect(result.height).toBe(1024);
+      expect(result.width).toBe(4096);
+      expect(result.height).toBe(4096);
     });
 
-    it("should handle exactly 1024px image", async () => {
+    it("should handle exactly 4096px image", async () => {
       const processedBuffer = Buffer.from("processed");
       mockMetadata.mockResolvedValueOnce({
-        width: 1024,
-        height: 1024,
+        width: 4096,
+        height: 4096,
         format: "jpeg",
       });
       mockToBuffer.mockResolvedValueOnce(processedBuffer);
@@ -517,8 +517,8 @@ describe("upload-handler", () => {
       const result = await processAndUploadImage(defaultParams);
 
       expect(result.success).toBe(true);
-      expect(result.width).toBe(1024);
-      expect(result.height).toBe(1024);
+      expect(result.width).toBe(4096);
+      expect(result.height).toBe(4096);
       expect(result.format).toBe("webp");
     });
 
@@ -558,8 +558,8 @@ describe("upload-handler", () => {
     it("should handle panoramic image (very wide)", async () => {
       const resizedBuffer = Buffer.from("resized panorama");
       mockMetadata.mockResolvedValueOnce({
-        width: 4000, // Very wide panorama
-        height: 500,
+        width: 12000, // Very wide panorama exceeding MAX_DIMENSION
+        height: 1500,
         format: "jpeg",
       });
       mockToBuffer.mockResolvedValueOnce(resizedBuffer);
@@ -572,16 +572,16 @@ describe("upload-handler", () => {
       const result = await processAndUploadImage(defaultParams);
 
       expect(result.success).toBe(true);
-      expect(result.width).toBe(1024); // MAX_DIMENSION
-      // Height = 1024 / (4000/500) = 1024 / 8 = 128
-      expect(result.height).toBe(128);
+      expect(result.width).toBe(4096); // MAX_DIMENSION
+      // Height = 4096 / (12000/1500) = 4096 / 8 = 512
+      expect(result.height).toBe(512);
     });
 
     it("should handle very tall image (portrait)", async () => {
       const resizedBuffer = Buffer.from("resized portrait");
       mockMetadata.mockResolvedValueOnce({
-        width: 500,
-        height: 4000, // Very tall portrait
+        width: 1500,
+        height: 12000, // Very tall portrait exceeding MAX_DIMENSION
         format: "png",
       });
       mockToBuffer.mockResolvedValueOnce(resizedBuffer);
@@ -594,9 +594,9 @@ describe("upload-handler", () => {
       const result = await processAndUploadImage(defaultParams);
 
       expect(result.success).toBe(true);
-      expect(result.height).toBe(1024); // MAX_DIMENSION
-      // Width = 1024 * (500/4000) = 1024 * 0.125 = 128
-      expect(result.width).toBe(128);
+      expect(result.height).toBe(4096); // MAX_DIMENSION
+      // Width = 4096 * (1500/12000) = 4096 * 0.125 = 512
+      expect(result.width).toBe(512);
     });
 
     it("should generate unique r2Key with userId and imageId", async () => {
