@@ -93,6 +93,11 @@ export default function NYECountdownClient() {
     return Math.min(100, Math.max(0, progress));
   }, [seconds]); // Update when seconds change
 
+  // Calculate total seconds remaining
+  const totalSecondsRemaining = useMemo(() => {
+    return days * 86400 + hours * 3600 + minutes * 60 + seconds;
+  }, [days, hours, minutes, seconds]);
+
   useEffect(() => {
     setHasStarted(true);
   }, []);
@@ -288,6 +293,19 @@ export default function NYECountdownClient() {
                   </p>
                 )}
               </div>
+
+              {/* Total seconds remaining - dramatic counter */}
+              {totalSecondsRemaining > 0 && totalSecondsRemaining < 86400 && (
+                <div className="text-center">
+                  <span className="text-cyan-300/40 text-xs uppercase tracking-widest">Only</span>
+                  <span className="mx-2 font-mono text-2xl sm:text-3xl font-bold text-cyan-400 text-glow-cyan">
+                    {totalSecondsRemaining.toLocaleString()}
+                  </span>
+                  <span className="text-cyan-300/40 text-xs uppercase tracking-widest">
+                    seconds to 2026
+                  </span>
+                </div>
+              )}
 
               {/* Final countdown message */}
               {isLastTenSeconds && (
