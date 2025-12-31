@@ -384,6 +384,18 @@ export default function NYECountdownClient() {
                   <div className="text-8xl sm:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-orange-500 to-red-600 animate-heartbeat drop-shadow-[0_0_30px_rgba(255,100,0,0.8)]">
                     {seconds}
                   </div>
+                  <p className="text-3xl sm:text-4xl font-black text-white/80 tracking-widest animate-bounce">
+                    {seconds === 10 && "TEN!"}
+                    {seconds === 9 && "NINE!"}
+                    {seconds === 8 && "EIGHT!"}
+                    {seconds === 7 && "SEVEN!"}
+                    {seconds === 6 && "SIX!"}
+                    {seconds === 5 && "FIVE!"}
+                    {seconds === 4 && "FOUR!"}
+                    {seconds === 3 && "THREE!"}
+                    {seconds === 2 && "TWO!"}
+                    {seconds === 1 && "ONE!"}
+                  </p>
                 </div>
               )}
 
