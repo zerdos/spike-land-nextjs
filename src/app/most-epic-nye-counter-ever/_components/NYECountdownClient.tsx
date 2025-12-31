@@ -330,7 +330,72 @@ export default function NYECountdownClient() {
           >
             <div className="w-full h-full rounded-full bg-gradient-to-br from-green-400/40 to-teal-500/40 blur-xl" />
           </div>
+
+          {/* Shockwave effect at midnight - multiple expanding rings */}
+          <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-60">
+            <div className="w-4 h-4 rounded-full border-4 border-yellow-400 animate-shockwave" />
+            <div
+              className="absolute w-4 h-4 rounded-full border-4 border-orange-400 animate-shockwave"
+              style={{ animationDelay: "0.2s" }}
+            />
+            <div
+              className="absolute w-4 h-4 rounded-full border-4 border-red-400 animate-shockwave"
+              style={{ animationDelay: "0.4s" }}
+            />
+            <div
+              className="absolute w-4 h-4 rounded-full border-2 border-pink-400 animate-shockwave"
+              style={{ animationDelay: "0.6s" }}
+            />
+          </div>
+
+          {/* Floating celebration emojis - GPU accelerated */}
+          <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+            {["🎉", "🎊", "🥳", "✨", "🎆", "🍾", "🌟", "💫", "🎇", "🥂"].map((emoji, i) => (
+              <div
+                key={i}
+                className="absolute text-4xl animate-float-up"
+                style={{
+                  left: `${10 + i * 9}%`,
+                  animationDelay: `${i * 0.3}s`,
+                  animationDuration: `${4 + (i % 3)}s`,
+                }}
+              >
+                {emoji}
+              </div>
+            ))}
+          </div>
         </>
+      )}
+
+      {/* Energy building effect - particles converging during final minute */}
+      {isFinalCountdown && !isComplete && (
+        <div className="fixed inset-0 pointer-events-none z-15 overflow-hidden">
+          {/* Energy orbs converging toward center */}
+          <div
+            className="absolute w-3 h-3 rounded-full bg-cyan-400/60 blur-sm animate-energy-converge"
+            style={{ top: "10%", left: "5%" }}
+          />
+          <div
+            className="absolute w-2 h-2 rounded-full bg-purple-400/60 blur-sm animate-energy-converge"
+            style={{ top: "20%", right: "10%", animationDelay: "0.5s" }}
+          />
+          <div
+            className="absolute w-4 h-4 rounded-full bg-pink-400/50 blur-sm animate-energy-converge"
+            style={{ bottom: "15%", left: "15%", animationDelay: "1s" }}
+          />
+          <div
+            className="absolute w-2 h-2 rounded-full bg-yellow-400/60 blur-sm animate-energy-converge"
+            style={{ bottom: "25%", right: "5%", animationDelay: "1.5s" }}
+          />
+          <div
+            className="absolute w-3 h-3 rounded-full bg-orange-400/50 blur-sm animate-energy-converge"
+            style={{ top: "50%", left: "2%", animationDelay: "2s" }}
+          />
+          <div
+            className="absolute w-2 h-2 rounded-full bg-red-400/60 blur-sm animate-energy-converge"
+            style={{ top: "40%", right: "3%", animationDelay: "2.5s" }}
+          />
+        </div>
       )}
 
       {/* Intensifying border glow for final countdown */}
