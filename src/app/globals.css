@@ -1130,4 +1130,50 @@
     background: linear-gradient(to left, white, transparent);
     right: 100%;
   }
+
+  /* Aurora effect - CPU efficient with slow animation */
+  @keyframes aurora {
+    0%,
+    100% {
+      opacity: 0.3;
+      transform: translateX(-10%) scaleY(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: translateX(10%) scaleY(1.2);
+    }
+  }
+
+  .animate-aurora {
+    animation: aurora 15s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+
+  /* Pulse ring effect for countdown container */
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(1);
+      opacity: 0.3;
+    }
+    50% {
+      transform: scale(1.02);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.3;
+    }
+  }
+
+  .animate-pulse-ring {
+    animation: pulse-ring 4s ease-in-out infinite;
+  }
+
+  /* Glow text effect */
+  .text-glow-cyan {
+    text-shadow:
+      0 0 10px rgba(0, 229, 255, 0.5),
+      0 0 20px rgba(0, 229, 255, 0.3),
+      0 0 30px rgba(0, 229, 255, 0.2);
+  }
 }
