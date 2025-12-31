@@ -1863,4 +1863,116 @@
   .animate-chromatic-shift {
     animation: chromatic-shift 0.5s ease-in-out infinite;
   }
+
+  /* Slow spin for disco ball */
+  .animate-spin-slow {
+    animation: spin 8s linear infinite;
+  }
+
+  /* Disco beam - rotating light rays */
+  @keyframes disco-beam {
+    0%, 100% {
+      opacity: 0.3;
+      transform: rotate(var(--rotation, 0deg)) scaleY(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: rotate(var(--rotation, 0deg)) scaleY(1.2);
+    }
+  }
+
+  .animate-disco-beam {
+    animation: disco-beam 2s ease-in-out infinite;
+  }
+
+  /* Spotlight sweep - searchlight effect */
+  @keyframes spotlight-sweep {
+    0% {
+      transform: translateX(-50vw) rotate(-30deg);
+      opacity: 0;
+    }
+    20% {
+      opacity: 1;
+    }
+    80% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(150vw) rotate(30deg);
+      opacity: 0;
+    }
+  }
+
+  .animate-spotlight-sweep {
+    animation: spotlight-sweep 6s ease-in-out infinite;
+  }
+
+  /* Firework trail - shooting up */
+  @keyframes firework-trail {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-70vh);
+      opacity: 0;
+    }
+  }
+
+  .animate-firework-trail {
+    animation: firework-trail 2s ease-out infinite;
+  }
+
+  /* Firework explode - burst at top */
+  @keyframes firework-explode {
+    0% {
+      transform: translateX(-50%) scale(0);
+      opacity: 0;
+    }
+    50% {
+      transform: translateX(-50%) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(-50%) scale(2);
+      opacity: 0;
+    }
+  }
+
+  .animate-firework-explode {
+    animation: firework-explode 1s ease-out infinite;
+    animation-delay: 1s;
+  }
+
+  /* Party mode - color cycling background */
+  @keyframes party-mode {
+    0% {
+      background-color: rgba(255, 0, 0, 0.1);
+    }
+    16% {
+      background-color: rgba(255, 165, 0, 0.1);
+    }
+    33% {
+      background-color: rgba(255, 255, 0, 0.1);
+    }
+    50% {
+      background-color: rgba(0, 255, 0, 0.1);
+    }
+    66% {
+      background-color: rgba(0, 0, 255, 0.1);
+    }
+    83% {
+      background-color: rgba(128, 0, 128, 0.1);
+    }
+    100% {
+      background-color: rgba(255, 0, 0, 0.1);
+    }
+  }
+
+  .animate-party-mode {
+    animation: party-mode 3s linear infinite;
+  }
 }
