@@ -1,7 +1,7 @@
 "use client";
 
 import { useCountdown } from "@/hooks/useCountdown";
-import { Check, Share2, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { Check, Eye, Share2, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 const QUOTES = [
@@ -34,6 +34,24 @@ export default function NYECountdownClient() {
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState("");
   const [timezone, setTimezone] = useState("");
+  const [viewerCount, setViewerCount] = useState(0);
+
+  // Simulate viewer count (fun atmospheric effect)
+  useEffect(() => {
+    // Start with a random base
+    const baseViewers = 1247 + Math.floor(Math.random() * 500);
+    setViewerCount(baseViewers);
+
+    // Fluctuate viewers slightly every few seconds
+    const interval = setInterval(() => {
+      setViewerCount((prev) => {
+        const change = Math.floor(Math.random() * 20) - 8; // -8 to +11
+        return Math.max(1000, prev + change);
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Rotate quotes every 5 seconds
   useEffect(() => {
@@ -125,6 +143,16 @@ export default function NYECountdownClient() {
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] animate-float-slow" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] animate-float-slow-reverse" />
+      </div>
+
+      {/* Viewer count badge */}
+      <div className="absolute top-4 left-4 z-50 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-3 py-2">
+        <Eye className="h-4 w-4 text-cyan-400" />
+        <span className="text-cyan-400 text-sm font-mono">
+          {viewerCount.toLocaleString()}
+        </span>
+        <span className="text-cyan-300/50 text-xs">watching</span>
+        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
       </div>
 
       {/* Controls */}
@@ -337,6 +365,14 @@ export default function NYECountdownClient() {
               </button>
             </div>
           )}
+      </div>
+
+      {/* Vignette effect for dramatic atmosphere */}
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
+
+      {/* Cosmic dust at bottom - GPU accelerated */}
+      <div className="fixed inset-x-0 bottom-0 h-32 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-purple-900/20 via-cyan-900/10 to-transparent blur-2xl animate-float-slow" />
       </div>
 
       {/* Interactive Layers */}
