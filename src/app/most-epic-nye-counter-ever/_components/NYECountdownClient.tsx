@@ -75,12 +75,16 @@ export default function NYECountdownClient() {
   const [currentTime, setCurrentTime] = useState("");
   const [timezone, setTimezone] = useState("");
   const [viewerCount, setViewerCount] = useState(0);
+  const [showFinalHourBanner, setShowFinalHourBanner] = useState(false);
 
   // Calculate countdown phases
   const isFinalCountdown = days === 0 && hours === 0 && minutes === 0 && seconds <= 60;
   const isLastThirtySeconds = isFinalCountdown && seconds <= 30 && seconds > 0;
   const isLastTenSeconds = isFinalCountdown && seconds <= 10 && seconds > 0;
   const isLastFiveSeconds = isFinalCountdown && seconds <= 5 && seconds > 0;
+  const isOneHourLeft = days === 0 && hours === 1 && minutes === 0 && seconds <= 3;
+  const isThirtyMinutesLeft = days === 0 && hours === 0 && minutes === 30 && seconds <= 3;
+  const isFinalHour = days === 0 && hours === 0;
 
   // Simulate viewer count (fun atmospheric effect) - surges during final countdown
   useEffect(() => {
@@ -249,6 +253,16 @@ export default function NYECountdownClient() {
     setHasStarted(true);
   }, []);
 
+  // Show "Final Hour" banner when entering the last hour
+  useEffect(() => {
+    if (isFinalHour && !showFinalHourBanner && !isComplete && minutes === 59 && seconds >= 57) {
+      setShowFinalHourBanner(true);
+      // Hide after 4 seconds
+      const timer = setTimeout(() => setShowFinalHourBanner(false), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isFinalHour, showFinalHourBanner, isComplete, minutes, seconds]);
+
   useEffect(() => {
     if (isComplete) {
       setShowCelebration(true);
@@ -282,6 +296,69 @@ export default function NYECountdownClient() {
         isLastFiveSeconds ? "animate-screen-shake" : ""
       }`}
     >
+      {/* FINAL HOUR entering banner */}
+      {showFinalHourBanner && (
+        <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center">
+          <div className="animate-one-hour-burst text-center">
+            <div className="text-2xl sm:text-4xl font-black text-orange-400/80 tracking-[0.3em] mb-2">
+              ENTERING THE
+            </div>
+            <div className="text-6xl sm:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 tracking-wider">
+              FINAL HOUR
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-yellow-400/60 mt-4 tracking-widest">
+              THE COUNTDOWN IS ON
+            </div>
+          </div>
+          {/* Dramatic backdrop glow */}
+          <div className="absolute inset-0 bg-gradient-radial from-orange-500/20 via-transparent to-transparent" />
+        </div>
+      )}
+
+      {/* ONE HOUR milestone celebration - big moment! */}
+      {isOneHourLeft && (
+        <div className="fixed inset-0 pointer-events-none z-90 flex items-center justify-center">
+          <div className="animate-one-hour-burst">
+            <div className="text-6xl sm:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 animate-pulse tracking-wider">
+              1 HOUR!
+            </div>
+            <div className="absolute inset-0 bg-gradient-radial from-yellow-400/30 via-orange-500/10 to-transparent blur-3xl scale-150" />
+          </div>
+          {/* Firework rings */}
+          <div className="absolute w-32 h-32 rounded-full border-4 border-yellow-400/60 animate-shockwave" />
+          <div
+            className="absolute w-32 h-32 rounded-full border-4 border-orange-400/50 animate-shockwave"
+            style={{ animationDelay: "0.2s" }}
+          />
+          <div
+            className="absolute w-32 h-32 rounded-full border-4 border-red-400/40 animate-shockwave"
+            style={{ animationDelay: "0.4s" }}
+          />
+        </div>
+      )}
+
+      {/* 30 minutes milestone */}
+      {isThirtyMinutesLeft && (
+        <div className="fixed inset-0 pointer-events-none z-90 flex items-center justify-center">
+          <div className="animate-one-hour-burst">
+            <div className="text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-500 animate-pulse tracking-wider">
+              30 MINUTES!
+            </div>
+            <div className="absolute inset-0 bg-gradient-radial from-purple-400/30 via-cyan-500/10 to-transparent blur-3xl scale-150" />
+          </div>
+        </div>
+      )}
+
+      {/* Heartbeat pulse that syncs with seconds during final hour */}
+      {isFinalHour && !isComplete && (
+        <div className="fixed inset-0 pointer-events-none z-5">
+          <div
+            key={`heartbeat-${seconds}`}
+            className="absolute inset-0 bg-gradient-radial from-red-500/5 via-transparent to-transparent animate-heartbeat-sync"
+          />
+        </div>
+      )}
+
       {/* Lightning flash effect during final 10 seconds */}
       {isLastTenSeconds && (
         <>
@@ -789,14 +866,29 @@ export default function NYECountdownClient() {
       <Starfield />
       <ShootingStar />
 
-      {/* Aurora effect at top - GPU accelerated */}
+      {/* Aurora effect at top - GPU accelerated, intensifies during final hour */}
       <div className="fixed inset-x-0 top-0 h-64 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute inset-x-0 -top-20 h-48 bg-gradient-to-b from-cyan-500/20 via-purple-500/10 to-transparent blur-3xl animate-aurora" />
         <div
-          className="absolute inset-x-0 -top-10 h-32 bg-gradient-to-b from-pink-500/15 via-cyan-500/10 to-transparent blur-2xl animate-aurora"
+          className={`absolute inset-x-0 -top-20 h-48 blur-3xl animate-aurora transition-opacity duration-1000 ${
+            isFinalHour
+              ? "bg-gradient-to-b from-orange-500/30 via-red-500/15 to-transparent opacity-100"
+              : "bg-gradient-to-b from-cyan-500/20 via-purple-500/10 to-transparent opacity-100"
+          }`}
+        />
+        <div
+          className={`absolute inset-x-0 -top-10 h-32 blur-2xl animate-aurora transition-opacity duration-1000 ${
+            isFinalHour
+              ? "bg-gradient-to-b from-yellow-500/20 via-orange-500/10 to-transparent"
+              : "bg-gradient-to-b from-pink-500/15 via-cyan-500/10 to-transparent"
+          }`}
           style={{ animationDelay: "-7s" }}
         />
       </div>
+
+      {/* Final hour energy ring - pulses around the whole screen */}
+      {isFinalHour && !isComplete && (
+        <div className="fixed inset-4 pointer-events-none z-3 rounded-3xl border-2 border-orange-500/20 animate-pulse" />
+      )}
 
       {/* Ambient glow orbs - GPU accelerated, very subtle */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">

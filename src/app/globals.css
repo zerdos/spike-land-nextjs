@@ -1975,4 +1975,89 @@
   .animate-party-mode {
     animation: party-mode 3s linear infinite;
   }
+
+  /* One hour burst celebration */
+  @keyframes one-hour-burst {
+    0% {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+    30% {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+    70% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.1);
+      opacity: 0;
+    }
+  }
+
+  .animate-one-hour-burst {
+    animation: one-hour-burst 3s ease-out forwards;
+  }
+
+  /* Heartbeat sync with seconds */
+  @keyframes heartbeat-sync {
+    0% {
+      transform: scale(1);
+      opacity: 0.15;
+    }
+    15% {
+      transform: scale(1.03);
+      opacity: 0.25;
+    }
+    30% {
+      transform: scale(1);
+      opacity: 0.15;
+    }
+    45% {
+      transform: scale(1.02);
+      opacity: 0.2;
+    }
+    60%, 100% {
+      transform: scale(1);
+      opacity: 0.1;
+    }
+  }
+
+  .animate-heartbeat-sync {
+    animation: heartbeat-sync 1s ease-out;
+  }
+
+  /* Flip animation for countdown digits */
+  @keyframes flip-in {
+    0% {
+      transform: rotateX(-90deg) scale(0.9);
+      opacity: 0.5;
+    }
+    100% {
+      transform: rotateX(0deg) scale(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-flip-in {
+    animation: flip-in 0.15s ease-out;
+  }
+
+  /* Subtle shake for highlighted digits */
+  @keyframes shake-subtle {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-2px);
+    }
+    75% {
+      transform: translateX(2px);
+    }
+  }
+
+  .animate-shake-subtle {
+    animation: shake-subtle 0.5s ease-in-out infinite;
+  }
 }
