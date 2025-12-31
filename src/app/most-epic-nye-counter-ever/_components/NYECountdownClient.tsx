@@ -457,6 +457,83 @@ export default function NYECountdownClient() {
         </div>
       )}
 
+      {/* Times Square Ball Drop Animation */}
+      {isLastTenSeconds && (
+        <div className="fixed top-0 left-1/2 -translate-x-1/2 pointer-events-none z-35">
+          <div
+            className="relative animate-ball-drop"
+            style={{
+              animationDuration: `${seconds}s`,
+              animationPlayState: seconds > 0 ? "running" : "paused",
+            }}
+          >
+            {/* The Ball */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-yellow-300 via-yellow-400 to-orange-500 shadow-[0_0_60px_rgba(255,215,0,0.8),inset_0_0_20px_rgba(255,255,255,0.5)] animate-pulse">
+              {/* Crystal facets */}
+              <div className="absolute inset-2 rounded-full border border-white/30" />
+              <div className="absolute inset-4 rounded-full border border-white/20" />
+              <div className="absolute inset-1 rounded-full bg-gradient-to-tr from-transparent via-white/40 to-transparent" />
+            </div>
+            {/* Trail */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-32 bg-gradient-to-b from-yellow-400/60 to-transparent -z-10" />
+          </div>
+        </div>
+      )}
+
+      {/* Sound Bar Visualization */}
+      {isFinalCountdown && !isComplete && (
+        <div className="fixed bottom-0 left-0 right-0 h-24 pointer-events-none z-30 flex items-end justify-center gap-1 px-4">
+          {Array.from({ length: 32 }).map((_, i) => (
+            <div
+              key={`bar-${i}`}
+              className="w-2 sm:w-3 rounded-t-full animate-sound-bar"
+              style={{
+                height: `${20 + Math.sin(i * 0.5) * 30}%`,
+                background: `linear-gradient(to top, ${
+                  isLastTenSeconds
+                    ? "#ef4444"
+                    : isLastThirtySeconds
+                    ? "#f97316"
+                    : "#06b6d4"
+                }, transparent)`,
+                animationDelay: `${i * 0.05}s`,
+                animationDuration: `${0.3 + (i % 4) * 0.1}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Supernova explosion at midnight */}
+      {isComplete && (
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-75">
+          {/* Core explosion */}
+          <div className="absolute w-4 h-4 rounded-full bg-white animate-supernova" />
+          {/* Secondary ring */}
+          <div
+            className="absolute w-8 h-8 rounded-full border-4 border-yellow-300 animate-supernova"
+            style={{ animationDelay: "0.1s" }}
+          />
+          {/* Outer ring */}
+          <div
+            className="absolute w-12 h-12 rounded-full border-2 border-orange-400 animate-supernova"
+            style={{ animationDelay: "0.2s" }}
+          />
+          {/* Light rays */}
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div
+              key={`ray-${i}`}
+              className="absolute w-1 h-32 bg-gradient-to-t from-yellow-400 via-white to-transparent animate-supernova-ray"
+              style={{
+                transform: `rotate(${i * 30}deg)`,
+                transformOrigin: "bottom center",
+                animationDelay: `${i * 0.05}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Energy building effect - particles converging during final minute */}
       {isFinalCountdown && !isComplete && (
         <div className="fixed inset-0 pointer-events-none z-15 overflow-hidden">

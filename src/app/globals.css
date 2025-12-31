@@ -1564,4 +1564,89 @@
   .animate-rainbow-pulse {
     animation: rainbow-pulse 3s linear infinite;
   }
+
+  /* Ball drop - Times Square style */
+  @keyframes ball-drop {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(calc(50vh - 40px));
+    }
+  }
+
+  .animate-ball-drop {
+    animation: ball-drop 10s linear forwards;
+  }
+
+  /* Sound bar - music visualizer effect */
+  @keyframes sound-bar {
+    0%, 100% {
+      transform: scaleY(0.3);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-sound-bar {
+    animation: sound-bar 0.4s ease-in-out infinite;
+    transform-origin: bottom;
+  }
+
+  /* Supernova - expanding explosion */
+  @keyframes supernova {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      transform: scale(80);
+      opacity: 0;
+    }
+  }
+
+  .animate-supernova {
+    animation: supernova 1.5s ease-out forwards;
+  }
+
+  /* Supernova rays - shooting light beams */
+  @keyframes supernova-ray {
+    0% {
+      transform: rotate(var(--rotation, 0deg)) scaleY(0);
+      opacity: 1;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(var(--rotation, 0deg)) scaleY(3);
+      opacity: 0;
+    }
+  }
+
+  .animate-supernova-ray {
+    animation: supernova-ray 1s ease-out forwards;
+  }
+
+  /* Laser beam - horizontal shooting */
+  @keyframes laser-beam {
+    0% {
+      transform: translateX(-100vw);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100vw);
+      opacity: 0.5;
+    }
+  }
+
+  .animate-laser-beam {
+    animation: laser-beam 0.5s linear forwards;
+  }
 }
