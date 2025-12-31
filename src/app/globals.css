@@ -1176,4 +1176,38 @@
       0 0 20px rgba(0, 229, 255, 0.3),
       0 0 30px rgba(0, 229, 255, 0.2);
   }
+
+  /* Subtle shake animation for final countdown */
+  @keyframes shake-subtle {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-2px);
+    }
+    75% {
+      transform: translateX(2px);
+    }
+  }
+
+  .animate-shake-subtle {
+    animation: shake-subtle 0.5s ease-in-out infinite;
+  }
+
+  /* Countdown number flip animation */
+  @keyframes flip-in {
+    0% {
+      transform: perspective(400px) rotateX(90deg);
+      opacity: 0;
+    }
+    100% {
+      transform: perspective(400px) rotateX(0deg);
+      opacity: 1;
+    }
+  }
+
+  .animate-flip-in {
+    animation: flip-in 0.3s ease-out;
+  }
 }
