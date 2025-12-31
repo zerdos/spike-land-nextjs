@@ -619,6 +619,7 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               onSelectVersion={setSelectedVersionId}
               onEnhance={handleEnhance}
               balance={balance}
+              isBalanceLoading={isLoading}
               onBalanceRefresh={refetchBalance}
             />
           </div>
