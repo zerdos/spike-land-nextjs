@@ -1754,4 +1754,113 @@
   .animate-spark {
     animation: spark 0.2s ease-in-out infinite;
   }
+
+  /* Holographic shimmer - sweeping light effect */
+  @keyframes holographic-shimmer {
+    0% {
+      transform: translateX(-100%) skewX(-15deg);
+    }
+    100% {
+      transform: translateX(200%) skewX(-15deg);
+    }
+  }
+
+  .animate-holographic-shimmer {
+    animation: holographic-shimmer 2s ease-in-out infinite;
+  }
+
+  /* Text shimmer - subtle glow pulse */
+  @keyframes text-shimmer {
+    0%, 100% {
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 215, 0, 0.3);
+    }
+    50% {
+      text-shadow:
+        0 0 40px rgba(255, 255, 255, 0.8),
+        0 0 80px rgba(255, 215, 0, 0.5),
+        0 0 120px rgba(255, 100, 0, 0.3);
+    }
+  }
+
+  .animate-text-shimmer {
+    animation: text-shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* Starburst - firework explosion */
+  @keyframes starburst {
+    0% {
+      transform: scale(0) rotate(0deg);
+      opacity: 1;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      transform: scale(2) rotate(45deg);
+      opacity: 0;
+    }
+  }
+
+  .animate-starburst {
+    animation: starburst 1.5s ease-out infinite;
+  }
+
+  /* Float 2026 - rising numbers */
+  @keyframes float-2026 {
+    0% {
+      transform: translateY(100vh) rotate(-10deg);
+      opacity: 0;
+    }
+    20% {
+      opacity: 0.15;
+    }
+    80% {
+      opacity: 0.15;
+    }
+    100% {
+      transform: translateY(-20vh) rotate(10deg);
+      opacity: 0;
+    }
+  }
+
+  .animate-float-2026 {
+    animation: float-2026 8s ease-out infinite;
+  }
+
+  /* Victory glow - pulsing celebration */
+  @keyframes victory-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 100, 0, 0.3);
+    }
+    50% {
+      box-shadow:
+        0 0 60px rgba(255, 215, 0, 0.8),
+        0 0 100px rgba(255, 100, 0, 0.5),
+        0 0 140px rgba(255, 0, 100, 0.3);
+    }
+  }
+
+  .animate-victory-glow {
+    animation: victory-glow 1s ease-in-out infinite;
+  }
+
+  /* Chromatic shift - color separation effect */
+  @keyframes chromatic-shift {
+    0%, 100% {
+      text-shadow: -2px 0 #ff0000, 2px 0 #00ffff;
+    }
+    25% {
+      text-shadow: 2px 0 #ff0000, -2px 0 #00ffff;
+    }
+    50% {
+      text-shadow: -2px 2px #ff0000, 2px -2px #00ffff;
+    }
+    75% {
+      text-shadow: 2px -2px #ff0000, -2px 2px #00ffff;
+    }
+  }
+
+  .animate-chromatic-shift {
+    animation: chromatic-shift 0.5s ease-in-out infinite;
+  }
 }
