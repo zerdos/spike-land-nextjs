@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { EnhancementTier, JobStatus, TIER_INFO } from "@/types/enhancement";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
@@ -29,6 +30,7 @@ interface EnhancementSidebarProps {
   onSelectVersion: (id: string | null) => void;
   onEnhance: (tier: EnhancementTier) => Promise<void>;
   balance: number;
+  isBalanceLoading?: boolean;
   onBalanceRefresh: () => void;
 }
 
@@ -38,6 +40,7 @@ export function EnhancementSidebar({
   onSelectVersion,
   onEnhance,
   balance,
+  isBalanceLoading = false,
   onBalanceRefresh,
 }: EnhancementSidebarProps) {
   // --- 1. PREPARE DATA ---
@@ -158,7 +161,9 @@ export function EnhancementSidebar({
               Your Balance
             </span>
           </div>
-          <span className="text-xl font-bold">{balance}</span>
+          <span className="text-xl font-bold">
+            {isBalanceLoading ? <Skeleton className="h-7 w-16" /> : balance}
+          </span>
         </div>
 
         {/* SECTION C: CREATE NEW ENHANCEMENT */}
@@ -205,7 +210,18 @@ export function EnhancementSidebar({
                     </div>
                   </div>
 
-                  {canAfford
+                  {isBalanceLoading
+                    ? (
+                      <Button
+                        disabled
+                        className="w-full bg-primary/5 text-muted-foreground border border-primary/10"
+                        variant="secondary"
+                      >
+                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                        Loading...
+                      </Button>
+                    )
+                    : canAfford
                     ? (
                       <Button
                         onClick={() => onEnhance(tier)}
