@@ -397,7 +397,64 @@ export default function NYECountdownClient() {
               </div>
             ))}
           </div>
+
+          {/* Golden rain effect at midnight */}
+          <div className="fixed inset-0 pointer-events-none z-45 overflow-hidden">
+            {Array.from({ length: 30 }).map((_, i) => (
+              <div
+                key={`gold-${i}`}
+                className="absolute w-1 animate-golden-rain"
+                style={{
+                  left: `${(i * 3.5) % 100}%`,
+                  height: `${15 + (i % 4) * 10}px`,
+                  background: `linear-gradient(180deg, transparent, ${
+                    i % 3 === 0 ? "#FFD700" : i % 3 === 1 ? "#FFA500" : "#FF6B6B"
+                  })`,
+                  animationDelay: `${(i * 0.1) % 2}s`,
+                  animationDuration: `${1.5 + (i % 3) * 0.5}s`,
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Sparkle rain - tiny glitter particles */}
+          <div className="fixed inset-0 pointer-events-none z-55 overflow-hidden">
+            {Array.from({ length: 20 }).map((_, i) => (
+              <div
+                key={`sparkle-${i}`}
+                className="absolute w-1 h-1 rounded-full animate-sparkle-fall"
+                style={{
+                  left: `${(i * 5) % 100}%`,
+                  background: ["#FFD700", "#FFFFFF", "#00E5FF", "#FF69B4", "#9D4EDD"][i % 5],
+                  boxShadow: `0 0 6px ${
+                    ["#FFD700", "#FFFFFF", "#00E5FF", "#FF69B4", "#9D4EDD"][i % 5]
+                  }`,
+                  animationDelay: `${i * 0.15}s`,
+                }}
+              />
+            ))}
+          </div>
         </>
+      )}
+
+      {/* Time warp portal effect during final 10 seconds */}
+      {isLastTenSeconds && (
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-25">
+          <div className="relative">
+            {/* Rotating portal rings */}
+            <div className="absolute inset-0 w-[500px] h-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-purple-500/30 animate-portal-spin" />
+            <div
+              className="absolute inset-0 w-[400px] h-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-cyan-500/40 animate-portal-spin"
+              style={{ animationDirection: "reverse", animationDuration: "4s" }}
+            />
+            <div
+              className="absolute inset-0 w-[300px] h-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-pink-500/50 animate-portal-spin"
+              style={{ animationDuration: "2s" }}
+            />
+            {/* Portal center glow */}
+            <div className="absolute w-[200px] h-[200px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-white/20 via-purple-500/10 to-transparent blur-xl animate-pulse" />
+          </div>
+        </div>
       )}
 
       {/* Energy building effect - particles converging during final minute */}

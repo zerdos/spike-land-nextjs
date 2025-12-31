@@ -1475,4 +1475,93 @@
   .animate-zoom-pulse {
     animation: zoom-pulse 0.5s ease-in-out infinite;
   }
+
+  /* Golden rain - falling gold streaks */
+  @keyframes golden-rain {
+    0% {
+      transform: translateY(-100vh);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh);
+      opacity: 0;
+    }
+  }
+
+  .animate-golden-rain {
+    animation: golden-rain 2s linear infinite;
+  }
+
+  /* Sparkle fall - glitter particles falling */
+  @keyframes sparkle-fall {
+    0% {
+      transform: translateY(-20px) scale(0);
+      opacity: 0;
+    }
+    20% {
+      transform: translateY(20vh) scale(1);
+      opacity: 1;
+    }
+    80% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) scale(0.5);
+      opacity: 0;
+    }
+  }
+
+  .animate-sparkle-fall {
+    animation: sparkle-fall 3s ease-out infinite;
+  }
+
+  /* Portal spin - rotating rings for time warp effect */
+  @keyframes portal-spin {
+    0% {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+
+  .animate-portal-spin {
+    animation: portal-spin 6s linear infinite;
+  }
+
+  /* Warp speed stars - streaking effect */
+  @keyframes warp-speed {
+    0% {
+      transform: translateZ(0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateZ(200px) scale(2);
+      opacity: 0;
+    }
+  }
+
+  .animate-warp-speed {
+    animation: warp-speed 0.5s ease-in infinite;
+  }
+
+  /* Rainbow pulse - cycling colors */
+  @keyframes rainbow-pulse {
+    0% {
+      filter: hue-rotate(0deg);
+    }
+    100% {
+      filter: hue-rotate(360deg);
+    }
+  }
+
+  .animate-rainbow-pulse {
+    animation: rainbow-pulse 3s linear infinite;
+  }
 }
