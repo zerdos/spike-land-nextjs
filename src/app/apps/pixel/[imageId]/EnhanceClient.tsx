@@ -7,19 +7,18 @@ import {
 } from "@/components/enhance/DroppableEnhanceZone";
 import { EnhancementHistoryGrid } from "@/components/enhance/EnhancementHistoryGrid";
 import { EnhancementSettings } from "@/components/enhance/EnhancementSettings";
-import { ExportSelector } from "@/components/enhance/export-selector";
+import { EnhancementSidebar } from "@/components/enhance/EnhancementSidebar";
 import { ShareButton } from "@/components/enhance/ShareButton";
 import { PurchaseModal } from "@/components/tokens";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { useInterval } from "@/hooks/useInterval";
 import { useJobStream } from "@/hooks/useJobStream";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import type { EnhancementTier } from "@prisma/client";
-import { AlertTriangle, ArrowLeft, Coins, ExternalLink, Layers } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Coins, Download, ExternalLink, Layers } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -478,12 +477,67 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
               <CardContent>
                 {selectedVersion && selectedVersion.enhancedUrl
                   ? (
-                    <ComparisonViewToggle
-                      originalUrl={image.originalUrl}
-                      enhancedUrl={selectedVersion.enhancedUrl}
-                      width={image.originalWidth || 1024}
-                      height={image.originalHeight || 1024}
-                    />
+                    <>
+                      <ComparisonViewToggle
+                        originalUrl={image.originalUrl}
+                        enhancedUrl={selectedVersion.enhancedUrl}
+                        width={image.originalWidth || 1024}
+                        height={image.originalHeight || 1024}
+                      />
+                      <div className="flex justify-between mt-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            try {
+                              const response = await fetch(image.originalUrl);
+                              const blob = await response.blob();
+                              const blobUrl = window.URL.createObjectURL(blob);
+                              const link = document.createElement("a");
+                              link.href = blobUrl;
+                              link.download = `${image.name}-original.jpg`;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              window.URL.revokeObjectURL(blobUrl);
+                            } catch (error) {
+                              console.error("Download failed:", error);
+                              window.open(image.originalUrl, "_blank");
+                            }
+                          }}
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          Download Original
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            try {
+                              const response = await fetch(
+                                selectedVersion.enhancedUrl!,
+                              );
+                              const blob = await response.blob();
+                              const blobUrl = window.URL.createObjectURL(blob);
+                              const link = document.createElement("a");
+                              link.href = blobUrl;
+                              link.download = `${image.name}-enhanced.jpg`;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              window.URL.revokeObjectURL(blobUrl);
+                            } catch (error) {
+                              console.error("Download failed:", error);
+                              window.open(selectedVersion.enhancedUrl!, "_blank");
+                            }
+                          }}
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          Download Enhanced
+                        </Button>
+                      </div>
+                    </>
                   )
                   : (
                     <div className="relative aspect-video bg-muted rounded-md overflow-hidden">
@@ -535,75 +589,42 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
 
           {/* Right Column - Sidebar */}
           <div>
-            <Card>
-              <CardContent className="pt-6 space-y-6">
-                {/* Balance Display */}
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-sm font-medium">
-                    <Coins className="h-5 w-5 text-yellow-500" />
-                    Your Balance
-                  </span>
-                  <span className="text-lg font-bold">
-                    {isLoading ? "..." : `${balance} tokens`}
-                  </span>
-                </div>
+            <EnhancementSidebar
+              image={image}
+              selectedVersionId={selectedVersionId}
+              onSelectVersion={setSelectedVersionId}
+              onEnhance={handleEnhance}
+              isProcessing={activeJobId !== null}
+              balance={balance}
+              onBalanceRefresh={refetchBalance}
+            />
 
-                <Separator />
-
-                {/* Enhancement Settings */}
-                <EnhancementSettings
-                  onEnhance={handleEnhance}
-                  currentBalance={balance}
-                  isProcessing={activeJobId !== null}
-                  completedVersions={completedVersions.map((
-                    job: ImageEnhancementJob,
-                  ) => ({
-                    tier: job.tier,
-                    url: job.enhancedUrl || "",
-                  }))}
-                  onBalanceRefresh={refetchBalance}
-                  asCard={false}
+            {/* Secondary Actions */}
+            <div className="mt-4 space-y-3">
+              {/* Only show Share when there's a successful enhancement */}
+              {selectedVersion && selectedVersion.enhancedUrl && (
+                <ShareButton
+                  imageId={image.id}
+                  shareToken={image.shareToken}
+                  imageName={image.name}
+                  className="w-full bg-background/50 border-input hover:bg-accent hover:text-accent-foreground border"
                 />
-
-                <Separator />
-
-                {/* Actions */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium">Actions</h3>
-                  {selectedVersion && selectedVersion.enhancedUrl && (
-                    <ExportSelector
-                      imageId={selectedVersion.id}
-                      fileName={image.name}
-                      originalSizeBytes={selectedVersion.enhancedSizeBytes ||
-                        undefined}
-                    />
-                  )}
-                  {/* Only show Share when there's a successful enhancement */}
-                  {selectedVersion && selectedVersion.enhancedUrl && (
-                    <ShareButton
-                      imageId={image.id}
-                      shareToken={image.shareToken}
-                      imageName={image.name}
-                      className="w-full"
-                    />
-                  )}
-                  {/* Show View Mix Details button for blend jobs */}
-                  {selectedVersion &&
-                    (selectedVersion.isBlend ||
-                      selectedVersion.sourceImageId) &&
-                    (
-                      <Button
-                        variant="outline"
-                        onClick={() => router.push(`/apps/pixel/mix/${selectedVersion.id}`)}
-                        className="w-full"
-                      >
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        View Mix Details
-                      </Button>
-                    )}
-                </div>
-              </CardContent>
-            </Card>
+              )}
+              {/* Show View Mix Details button for blend jobs */}
+              {selectedVersion &&
+                (selectedVersion.isBlend ||
+                  selectedVersion.sourceImageId) &&
+                (
+                  <Button
+                    variant="ghost"
+                    onClick={() => router.push(`/apps/pixel/mix/${selectedVersion.id}`)}
+                    className="w-full text-muted-foreground hover:text-foreground"
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    View Mix Details
+                  </Button>
+                )}
+            </div>
           </div>
         </div>
       </DroppableEnhanceZone>

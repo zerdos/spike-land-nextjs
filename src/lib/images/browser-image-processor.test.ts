@@ -11,7 +11,7 @@ import {
 describe("browser-image-processor", () => {
   describe("constants", () => {
     it("should have correct MAX_DIMENSION", () => {
-      expect(MAX_DIMENSION).toBe(1024);
+      expect(MAX_DIMENSION).toBe(4096);
     });
 
     it("should have correct WEBP_QUALITY", () => {
