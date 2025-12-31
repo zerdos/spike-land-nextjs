@@ -971,3 +971,90 @@
     }
   }
 }
+
+@layer utilities {
+  /* NYE Countdown Animations */
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      text-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+    }
+    50% {
+      text-shadow: 0 0 40px rgba(34, 211, 238, 0.8), 0 0 60px rgba(34, 211, 238, 0.2);
+    }
+  }
+
+  @keyframes digit-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes confetti-fall {
+    0% {
+      transform: translateY(-10vh) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(110vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes firework-burst {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0;
+    }
+  }
+
+  @keyframes banner-appear {
+    0% {
+      transform: translateY(100px) scale(0.9) rotate(-2deg);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0) scale(1) rotate(0deg);
+      opacity: 1;
+    }
+  }
+
+  .animate-twinkle {
+    animation: twinkle linear infinite;
+  }
+  .animate-glow-pulse {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+  .animate-digit-pulse {
+    animation: digit-pulse 0.5s ease-out;
+  }
+  .animate-confetti-fall {
+    animation: confetti-fall linear forwards;
+  }
+  .animate-firework-burst {
+    animation: firework-burst 1s ease-out forwards;
+  }
+  .animate-banner-appear {
+    animation: banner-appear 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
