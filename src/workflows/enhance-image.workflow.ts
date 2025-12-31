@@ -312,9 +312,9 @@ async function downloadBlendSourceStep(
 async function performCropOperations(
   imageBuffer: Buffer,
   cropRegion: { left: number; top: number; width: number; height: number; },
-  originalR2Key: string,
+  _originalR2Key: string, // Kept for function signature compatibility, no longer used for upload
   jobId: string,
-  mimeType: string,
+  _mimeType: string, // Kept for function signature compatibility, no longer used for upload
 ): Promise<{
   buffer: Buffer;
   width: number;
@@ -331,13 +331,9 @@ async function performCropOperations(
   const newWidth = croppedMetadata.width || cropRegion.width;
   const newHeight = croppedMetadata.height || cropRegion.height;
 
-  // Upload cropped image back to R2 (overwrite original)
-  await uploadToR2({
-    key: originalR2Key,
-    buffer: croppedBuffer,
-    contentType: mimeType,
-    metadata: { cropped: "true", jobId },
-  });
+  // NOTE: We intentionally do NOT upload the cropped image back to R2.
+  // The original must be preserved for future enhancements with correct aspect ratio.
+  // The cropped buffer is only used in-memory for this enhancement.
 
   // Update job with crop info
   await prisma.imageEnhancementJob.update({
@@ -538,15 +534,17 @@ async function processAndUpload(
 
   // Get Gemini output dimensions
   const geminiMetadata = await sharp(buffer).metadata();
-  const geminiSize = geminiMetadata.width;
+  const geminiWidth = geminiMetadata.width;
+  const geminiHeight = geminiMetadata.height;
 
-  if (!geminiSize) {
+  if (!geminiWidth || !geminiHeight) {
     throw new FatalError("Failed to get Gemini output dimensions");
   }
 
   // Calculate crop region to restore original aspect ratio
   const { extractLeft, extractTop, extractWidth, extractHeight } = calculateCropRegion(
-    geminiSize,
+    geminiWidth,
+    geminiHeight,
     originalWidth,
     originalHeight,
   );
@@ -743,8 +741,12 @@ async function executeEnhancementWorkflow(
   // Step 2: Get image metadata (METADATA - recoverable, uses defaults)
   const metadata = await getImageMetadata(imageBuffer);
   recordStageSuccess(context, WorkflowStage.METADATA);
-  let currentWidth = metadata.width;
-  let currentHeight = metadata.height;
+  // Store ORIGINAL dimensions for final output calculations (aspect ratio preservation)
+  const originalWidth = metadata.width;
+  const originalHeight = metadata.height;
+  // Mutable dimensions for processing (may be modified by auto-crop)
+  let currentWidth = originalWidth;
+  let currentHeight = originalHeight;
 
   // Step 3: Analyze image with vision model (ANALYSIS - recoverable)
   const analysisResult = await analyzeImageStep(
@@ -794,12 +796,13 @@ async function executeEnhancementWorkflow(
   const modelToUse = getModelForTier(tier);
 
   // Step 7: Enhance with Gemini using dynamic prompt (ENHANCE - selective retry)
+  // Use ORIGINAL dimensions for aspect ratio preservation
   const enhancedBuffer = await enhanceWithGemini(
     paddedBase64,
     metadata.mimeType,
     TIER_TO_SIZE[tier],
-    currentWidth,
-    currentHeight,
+    originalWidth,
+    originalHeight,
     dynamicPrompt,
     sourceImageData ? [sourceImageData] : undefined,
     modelToUse,
@@ -809,11 +812,12 @@ async function executeEnhancementWorkflow(
   // === STAGE 4: POST-PROCESSING ===
 
   // Step 8: Post-process and upload (POST_PROCESS - retryable)
+  // Use ORIGINAL dimensions for correct aspect ratio in output
   const result = await processAndUpload(
     enhancedBuffer,
     tier,
-    currentWidth,
-    currentHeight,
+    originalWidth,
+    originalHeight,
     originalR2Key,
     jobId,
   );

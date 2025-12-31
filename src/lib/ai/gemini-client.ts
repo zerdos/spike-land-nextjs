@@ -1,6 +1,6 @@
 import { tryCatch } from "@/lib/try-catch";
 import { GoogleGenAI } from "@google/genai";
-import type { AspectRatio } from "./aspect-ratio";
+import { type AspectRatio, detectAspectRatio } from "./aspect-ratio";
 import type { AnalysisConfig, PromptConfig } from "./pipeline-types";
 
 /**
@@ -879,6 +879,11 @@ export async function enhanceImageWithGemini(
   // Use model from params if provided, otherwise use default
   const modelToUse = params.model || DEFAULT_MODEL;
 
+  // Detect aspect ratio from original dimensions to preserve orientation
+  const detectedAspectRatio = params.originalWidth && params.originalHeight
+    ? detectAspectRatio(params.originalWidth, params.originalHeight)
+    : undefined;
+
   // Build config based on model capabilities
   // gemini-2.5-flash-image doesn't support imageSize (always 1024px)
   // gemini-3-pro-image-preview supports imageSize
@@ -887,6 +892,12 @@ export async function enhanceImageWithGemini(
     ...(supportsImageSize(modelToUse) && {
       imageConfig: {
         imageSize: params.tier,
+        ...(detectedAspectRatio && { aspectRatio: detectedAspectRatio }),
+      },
+    }),
+    ...(!supportsImageSize(modelToUse) && detectedAspectRatio && {
+      imageConfig: {
+        aspectRatio: detectedAspectRatio,
       },
     }),
   };
@@ -935,7 +946,9 @@ export async function enhanceImageWithGemini(
     `Generating enhanced image with Gemini API using model: ${modelToUse}`,
   );
   console.log(
-    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}`,
+    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}, Aspect Ratio: ${
+      detectedAspectRatio || "auto"
+    }`,
   );
   console.log(`Timeout: ${GEMINI_TIMEOUT_MS / 1000}s`);
 

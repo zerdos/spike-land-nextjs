@@ -578,6 +578,7 @@ describe("gemini-client", () => {
             responseModalities: ["IMAGE", "TEXT"],
             imageConfig: {
               imageSize: "2K",
+              aspectRatio: "4:3", // Detected from 800x600 (4:3 ratio)
             },
           },
           contents: expect.arrayContaining([
