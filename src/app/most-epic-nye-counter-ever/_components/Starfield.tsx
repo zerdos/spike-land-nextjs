@@ -2,6 +2,21 @@
 
 import { useMemo } from "react";
 
+// Star colors - mostly white with rare colored stars
+const STAR_COLORS = [
+  "#FFFFFF",
+  "#FFFFFF",
+  "#FFFFFF",
+  "#FFFFFF",
+  "#FFFFFF", // 50% pure white
+  "#E8F4FF",
+  "#E8F4FF", // Light blue tint
+  "#FFF8E8",
+  "#FFF8E8", // Warm yellow tint
+  "#87CEEB", // Rare blue star
+  "#FFD700", // Rare gold star
+];
+
 /**
  * Animated deep space background with twinkling stars.
  * Optimized for performance with reduced star count and GPU acceleration.
@@ -18,6 +33,7 @@ export default function Starfield() {
       delay: `${Math.random() * 15}s`,
       duration: `${Math.random() * 8 + 6}s`,
       opacity: Math.random() * 0.5 + 0.3,
+      color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
     }));
   }, []);
 
@@ -34,7 +50,7 @@ export default function Starfield() {
         {stars.map((star) => (
           <div
             key={star.id}
-            className="absolute rounded-full bg-white animate-twinkle-slow"
+            className="absolute rounded-full animate-twinkle-slow"
             style={{
               width: `${star.size}px`,
               height: `${star.size}px`,
@@ -44,6 +60,10 @@ export default function Starfield() {
               animationDelay: star.delay,
               animationDuration: star.duration,
               willChange: "opacity",
+              backgroundColor: star.color,
+              boxShadow: star.color === "#87CEEB" || star.color === "#FFD700"
+                ? `0 0 ${star.size * 2}px ${star.color}`
+                : "none",
             }}
           />
         ))}
