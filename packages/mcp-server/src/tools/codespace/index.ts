@@ -341,17 +341,18 @@ export async function handleCodeSpaceToolCall(
         }
 
         const liveUrl = client.getLiveUrl(params.codespace_id);
+        const session = result.data?.session;
         let text = `**CodeSpace Details**\n\n`;
         text += `**ID:** ${result.data?.codeSpace}\n`;
         text += `**Hash:** ${result.data?.hash}\n`;
         text += `**Live URL:** ${liveUrl}\n`;
-        if (result.data?.createdAt) {
-          text += `**Created:** ${result.data.createdAt}\n`;
+        if (session?.createdAt) {
+          text += `**Created:** ${session.createdAt}\n`;
         }
-        if (result.data?.updatedAt) {
-          text += `**Updated:** ${result.data.updatedAt}\n`;
+        if (session?.updatedAt) {
+          text += `**Updated:** ${session.updatedAt}\n`;
         }
-        text += `\n**Source Code:**\n\`\`\`tsx\n${result.data?.code}\n\`\`\``;
+        text += `\n**Source Code:**\n\`\`\`tsx\n${session?.code}\n\`\`\``;
 
         return { content: [{ type: "text", text }] };
       }

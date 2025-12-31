@@ -45,12 +45,15 @@ interface RunResponse {
 }
 
 interface SessionResponse {
+  success: boolean;
   codeSpace: string;
-  code: string;
-  transpiled?: string;
   hash: string;
-  createdAt?: string;
-  updatedAt?: string;
+  session: {
+    code: string;
+    transpiled?: string;
+    createdAt?: string;
+    updatedAt?: string;
+  };
   error?: string;
 }
 
@@ -139,7 +142,7 @@ export class CodeSpaceClient {
     run = true,
   ): Promise<{ data: UpdateCodeResponse | null; error: string | null; }> {
     validateCodeSpaceId(codeSpaceId);
-    return this.request<UpdateCodeResponse>(`/api/${codeSpaceId}/code`, {
+    return this.request<UpdateCodeResponse>(`/live/${codeSpaceId}/api/code`, {
       method: "PUT",
       body: JSON.stringify({ code, run } as UpdateCodeRequest),
     });
@@ -152,7 +155,7 @@ export class CodeSpaceClient {
     codeSpaceId: string,
   ): Promise<{ data: RunResponse | null; error: string | null; }> {
     validateCodeSpaceId(codeSpaceId);
-    return this.request<RunResponse>(`/api/${codeSpaceId}/run`, {
+    return this.request<RunResponse>(`/live/${codeSpaceId}/api/run`, {
       method: "POST",
       body: JSON.stringify({}),
     });
@@ -166,7 +169,7 @@ export class CodeSpaceClient {
   ): Promise<{ data: { base64: string; mimeType: string; } | null; error: string | null; }> {
     validateCodeSpaceId(codeSpaceId);
     return this.request<{ base64: string; mimeType: string; }>(
-      `/api/${codeSpaceId}/screenshot`,
+      `/live/${codeSpaceId}/api/screenshot`,
     );
   }
 
@@ -177,7 +180,7 @@ export class CodeSpaceClient {
     codeSpaceId: string,
   ): Promise<{ data: SessionResponse | null; error: string | null; }> {
     validateCodeSpaceId(codeSpaceId);
-    return this.request<SessionResponse>(`/api/${codeSpaceId}/session`);
+    return this.request<SessionResponse>(`/live/${codeSpaceId}/api/session`);
   }
 
   /**
