@@ -1,8 +1,8 @@
 "use client";
 
 import { useCountdown } from "@/hooks/useCountdown";
-import { Check, Share2, Volume2, VolumeX } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Check, Share2, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import Confetti from "./Confetti";
 import CountdownDigit from "./CountdownDigit";
 import Fireworks from "./Fireworks";
@@ -10,16 +10,20 @@ import Starfield from "./Starfield";
 
 /**
  * Main client-side orchestrator for the NYE Countdown experience.
- * Manages the countdown state, interactive effects, and midnight transition.
+ * The most EPIC countdown ever created - CPU efficient!
  */
 export default function NYECountdownClient() {
-  const targetDate = new Date("2026-01-01T00:00:00");
+  const targetDate = useMemo(() => new Date("2026-01-01T00:00:00"), []);
   const { days, hours, minutes, seconds, isComplete } = useCountdown(targetDate);
 
   const [hasStarted, setHasStarted] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isCopied, setIsCopied] = useState(false);
+
+  // Calculate if we're in the final countdown (last 60 seconds)
+  const isFinalCountdown = days === 0 && hours === 0 && minutes === 0 && seconds <= 60;
+  const isLastTenSeconds = isFinalCountdown && seconds <= 10 && seconds > 0;
 
   useEffect(() => {
     setHasStarted(true);
@@ -53,15 +57,21 @@ export default function NYECountdownClient() {
   if (!hasStarted) return null;
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center p-4">
+    <div className="relative flex min-h-screen flex-col items-center justify-center p-4 overflow-hidden">
       {/* Background Layer */}
       <Starfield />
+
+      {/* Ambient glow orbs - GPU accelerated, very subtle */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] animate-float-slow" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] animate-float-slow-reverse" />
+      </div>
 
       {/* Controls */}
       <div className="absolute top-4 right-4 z-50 flex gap-2">
         <button
           onClick={() => setIsMuted(!isMuted)}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:bg-white/10"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:bg-white/10 hover:scale-110"
           title={isMuted ? "Unmute" : "Mute"}
         >
           {isMuted
@@ -70,7 +80,7 @@ export default function NYECountdownClient() {
         </button>
         <button
           onClick={handleShare}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:bg-white/10"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:bg-white/10 hover:scale-110"
           title="Share"
         >
           {isCopied
@@ -80,45 +90,90 @@ export default function NYECountdownClient() {
       </div>
 
       {/* Content Layer */}
-      <div className="z-10 flex flex-col items-center gap-12 text-center">
+      <div className="z-10 flex flex-col items-center gap-8 text-center">
         {!isComplete
           ? (
             <>
-              <h1 className="animate-glow-pulse text-2xl font-bold tracking-[0.4em] text-cyan-500/80 sm:text-3xl md:text-4xl">
-                EPIC NYE COUNTDOWN 2026
-              </h1>
-
-              <div className="flex flex-wrap justify-center gap-4 sm:gap-8 md:gap-12">
-                <CountdownDigit value={days} label="DAYS" />
-                <CountdownDigit value={hours} label="HOURS" />
-                <CountdownDigit value={minutes} label="MINUTES" />
-                <CountdownDigit value={seconds} label="SECONDS" />
+              {/* Epic animated title */}
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-6 w-6 text-yellow-400 animate-pulse" />
+                <h1 className="text-2xl font-black tracking-[0.3em] bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent sm:text-3xl md:text-5xl animate-gradient-x">
+                  2026 COUNTDOWN
+                </h1>
+                <Sparkles className="h-6 w-6 text-yellow-400 animate-pulse" />
               </div>
 
-              <p className="mt-8 max-w-lg text-sm leading-relaxed text-cyan-300/40 sm:text-base">
-                Preparing for the most spectacular transition in history.
-                <br />
-                Click anywhere for a spark of joy.
+              {/* Subtitle */}
+              <p className="text-cyan-300/60 tracking-[0.2em] text-xs sm:text-sm uppercase">
+                The Most Epic New Year&apos;s Eve Ever
               </p>
+
+              {/* Countdown digits with glow container */}
+              <div
+                className={`relative p-8 rounded-3xl transition-all duration-500 ${
+                  isLastTenSeconds ? "bg-red-500/10 border border-red-500/30" : ""
+                }`}
+              >
+                {/* Glow effect behind digits */}
+                <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-purple-500/5 rounded-3xl blur-xl" />
+
+                <div className="relative flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-10">
+                  <CountdownDigit value={days} label="DAYS" />
+                  <div className="flex items-center text-cyan-400/40 text-4xl font-thin self-start mt-8">
+                    :
+                  </div>
+                  <CountdownDigit value={hours} label="HOURS" />
+                  <div className="flex items-center text-cyan-400/40 text-4xl font-thin self-start mt-8">
+                    :
+                  </div>
+                  <CountdownDigit value={minutes} label="MINUTES" />
+                  <div className="flex items-center text-cyan-400/40 text-4xl font-thin self-start mt-8">
+                    :
+                  </div>
+                  <CountdownDigit value={seconds} label="SECONDS" highlight={isLastTenSeconds} />
+                </div>
+              </div>
+
+              {/* Final countdown message */}
+              {isLastTenSeconds && (
+                <p className="text-2xl font-bold text-red-400 animate-pulse tracking-wider">
+                  🎆 GET READY! 🎆
+                </p>
+              )}
+
+              {/* Regular message */}
+              {!isFinalCountdown && (
+                <p className="mt-4 max-w-md text-sm leading-relaxed text-cyan-300/40 sm:text-base">
+                  ✨ Click anywhere for a spark of magic ✨
+                </p>
+              )}
             </>
           )
           : (
             <div className="animate-banner-appear flex flex-col items-center gap-8">
-              <div className="rounded-full border-4 border-yellow-500/50 bg-gradient-to-b from-yellow-400 to-yellow-600 px-8 py-4 shadow-[0_0_50px_rgba(234,179,8,0.4)] sm:px-12 sm:py-6">
-                <h1 className="text-4xl font-black italic tracking-tighter text-white drop-shadow-lg sm:text-6xl md:text-8xl">
-                  HAPPY NEW YEAR 2026!
-                </h1>
+              {/* Epic celebration banner */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 blur-2xl opacity-50 animate-pulse" />
+                <div className="relative rounded-2xl border-4 border-yellow-400/50 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 px-8 py-6 shadow-[0_0_80px_rgba(234,179,8,0.5)] sm:px-16 sm:py-8">
+                  <h1 className="text-4xl font-black tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] sm:text-6xl md:text-8xl">
+                    🎉 2026 🎉
+                  </h1>
+                </div>
               </div>
 
-              <p className="max-w-md animate-pulse text-lg font-bold text-yellow-400 sm:text-xl">
-                THE FUTURE IS HERE. THE FUTURE IS BRIGHT.
+              <h2 className="text-2xl font-bold text-yellow-400 tracking-widest sm:text-4xl animate-bounce">
+                HAPPY NEW YEAR!
+              </h2>
+
+              <p className="max-w-md text-lg text-white/80 sm:text-xl">
+                🌟 The future is NOW! Welcome to 2026! 🌟
               </p>
 
               <button
                 onClick={() => window.location.reload()}
-                className="mt-4 rounded-full border border-white/20 bg-white/10 px-6 py-2 text-sm font-medium text-white backdrop-blur-md transition-all hover:bg-white/20"
+                className="mt-4 rounded-full border-2 border-yellow-400/50 bg-yellow-400/20 px-8 py-3 text-sm font-bold text-yellow-400 backdrop-blur-md transition-all hover:bg-yellow-400/30 hover:scale-105"
               >
-                Relive the Magic
+                🔄 Relive the Magic
               </button>
             </div>
           )}

@@ -28,24 +28,24 @@ const COLORS = [
 export default function Confetti() {
   const [pieces, setPieces] = useState<Piece[]>([]);
 
-  const burst = useCallback((x: number, y: number, count = 40) => {
+  const burst = useCallback((x: number, y: number, count = 15) => {
     const newPieces = Array.from({ length: count }).map((_, i) => ({
       id: Math.random() + i,
       x: x + (Math.random() - 0.5) * 50,
       y: y + (Math.random() - 0.5) * 50,
       color: COLORS[Math.floor(Math.random() * COLORS.length)] ?? "#FFFFFF",
-      delay: `${Math.random() * 0.2}s`,
+      delay: `${Math.random() * 0.15}s`,
       rotate: `${Math.random() * 360}deg`,
-      size: Math.random() * 8 + 4,
+      size: Math.random() * 6 + 4,
       shape: Math.random() > 0.5 ? "rect" : "circle",
     } as Piece));
 
     setPieces((prev) => [...prev, ...newPieces]);
 
-    // Cleanup after animation (approx 3s)
+    // Cleanup after animation
     setTimeout(() => {
       setPieces((prev) => prev.filter((p) => !newPieces.includes(p)));
-    }, 4000);
+    }, 3500);
   }, []);
 
   useEffect(() => {

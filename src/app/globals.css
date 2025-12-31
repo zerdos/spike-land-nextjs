@@ -973,16 +973,16 @@
 }
 
 @layer utilities {
-  /* NYE Countdown Animations */
-  @keyframes twinkle {
+  /* NYE Countdown Animations - Optimized for performance */
+
+  /* Slow twinkle animation - CPU efficient, opacity only */
+  @keyframes twinkle-slow {
     0%,
     100% {
       opacity: 0.3;
-      transform: scale(1);
     }
     50% {
-      opacity: 1;
-      transform: scale(1.2);
+      opacity: 0.8;
     }
   }
 
@@ -1039,17 +1039,18 @@
     }
   }
 
-  .animate-twinkle {
-    animation: twinkle linear infinite;
+  /* GPU-accelerated twinkle - uses will-change: opacity */
+  .animate-twinkle-slow {
+    animation: twinkle-slow 8s ease-in-out infinite;
   }
   .animate-glow-pulse {
-    animation: glow-pulse 3s ease-in-out infinite;
+    animation: glow-pulse 4s ease-in-out infinite;
   }
   .animate-digit-pulse {
-    animation: digit-pulse 0.5s ease-out;
+    animation: digit-pulse 0.3s ease-out;
   }
   .animate-confetti-fall {
-    animation: confetti-fall linear forwards;
+    animation: confetti-fall 3s linear forwards;
   }
   .animate-firework-burst {
     animation: firework-burst 1s ease-out forwards;
