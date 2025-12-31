@@ -1058,4 +1058,76 @@
   .animate-banner-appear {
     animation: banner-appear 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
+
+  /* Epic NYE - Floating orbs (GPU accelerated, subtle) */
+  @keyframes float-slow {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(20px, -30px) scale(1.1);
+    }
+  }
+
+  @keyframes float-slow-reverse {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(-20px, 30px) scale(1.1);
+    }
+  }
+
+  .animate-float-slow {
+    animation: float-slow 20s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .animate-float-slow-reverse {
+    animation: float-slow-reverse 25s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  /* Gradient text animation */
+  @keyframes gradient-x {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 4s ease infinite;
+  }
+
+  /* Shooting star - single element, very efficient */
+  @keyframes shooting-star {
+    0% {
+      transform: translate(0, 0) rotate(45deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(300px, 300px) rotate(45deg);
+      opacity: 0;
+    }
+  }
+
+  .animate-shooting-star {
+    animation: shooting-star linear forwards;
+    will-change: transform, opacity;
+  }
+
+  .animate-shooting-star::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(to left, white, transparent);
+    right: 100%;
+  }
 }
