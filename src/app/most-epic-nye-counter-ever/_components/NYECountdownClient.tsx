@@ -143,6 +143,17 @@ export default function NYECountdownClient() {
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center p-4 overflow-hidden">
+      {/* Intensifying border glow for final countdown */}
+      {isLastThirtySeconds && (
+        <div
+          className={`fixed inset-0 pointer-events-none z-50 border-4 ${
+            isLastTenSeconds
+              ? "border-red-500/60 shadow-[inset_0_0_100px_rgba(239,68,68,0.3)]"
+              : "border-orange-500/40 shadow-[inset_0_0_60px_rgba(249,115,22,0.2)]"
+          } animate-pulse`}
+        />
+      )}
+
       {/* Background Layer */}
       <Starfield />
       <ShootingStar />
