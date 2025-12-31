@@ -645,6 +645,104 @@ export default function NYECountdownClient() {
         </div>
       )}
 
+      {/* Disco ball with reflecting lights */}
+      {isComplete && (
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 pointer-events-none z-95">
+          {/* The disco ball */}
+          <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-gray-300 via-white to-gray-400 shadow-[0_0_40px_rgba(255,255,255,0.5)] animate-spin-slow">
+            {/* Facets */}
+            <div className="absolute inset-0 rounded-full overflow-hidden">
+              {Array.from({ length: 6 }).map((_, row) =>
+                Array.from({ length: 8 }).map((_, col) => (
+                  <div
+                    key={`facet-${row}-${col}`}
+                    className="absolute w-3 h-3 bg-gradient-to-br from-white/80 to-gray-300/60 border border-white/20"
+                    style={{
+                      top: `${10 + row * 14}%`,
+                      left: `${5 + col * 12}%`,
+                      transform: `rotate(${(row + col) * 15}deg)`,
+                    }}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+          {/* Reflecting light beams */}
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div
+              key={`beam-${i}`}
+              className="absolute top-10 left-10 w-1 h-[50vh] origin-top animate-disco-beam"
+              style={{
+                background: `linear-gradient(to bottom, ${
+                  ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"][i % 6]
+                }40, transparent)`,
+                transform: `rotate(${i * 30}deg)`,
+                animationDelay: `${i * 0.2}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Spotlight sweep during final countdown */}
+      {isFinalCountdown && !isComplete && (
+        <div className="fixed inset-0 pointer-events-none z-35 overflow-hidden">
+          <div
+            className="absolute w-[200px] h-[400px] bg-gradient-to-b from-white/20 via-white/5 to-transparent blur-2xl animate-spotlight-sweep"
+            style={{ transformOrigin: "top center" }}
+          />
+          <div
+            className="absolute w-[150px] h-[350px] bg-gradient-to-b from-cyan-400/15 via-cyan-400/5 to-transparent blur-xl animate-spotlight-sweep"
+            style={{ transformOrigin: "top center", animationDelay: "-3s" }}
+          />
+        </div>
+      )}
+
+      {/* Firework trails shooting up */}
+      {isComplete && (
+        <div className="fixed inset-0 pointer-events-none z-45 overflow-hidden">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={`trail-${i}`}
+              className="absolute bottom-0 animate-firework-trail"
+              style={{
+                left: `${10 + i * 15}%`,
+                animationDelay: `${i * 0.4}s`,
+              }}
+            >
+              {/* Trail */}
+              <div
+                className="w-1 h-24 rounded-full"
+                style={{
+                  background: `linear-gradient(to top, ${
+                    ["#FF6B6B", "#4ECDC4", "#FFE66D", "#A855F7", "#EC4899", "#06B6D4"][i]
+                  }, transparent)`,
+                  boxShadow: `0 0 10px ${
+                    ["#FF6B6B", "#4ECDC4", "#FFE66D", "#A855F7", "#EC4899", "#06B6D4"][i]
+                  }`,
+                }}
+              />
+              {/* Explosion at top */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 animate-firework-explode">
+                {Array.from({ length: 8 }).map((_, j) => (
+                  <div
+                    key={j}
+                    className="absolute w-1 h-4 origin-bottom"
+                    style={{
+                      background:
+                        ["#FF6B6B", "#4ECDC4", "#FFE66D", "#A855F7", "#EC4899", "#06B6D4"][
+                          i
+                        ],
+                      transform: `rotate(${j * 45}deg)`,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Energy building effect - particles converging during final minute */}
       {isFinalCountdown && !isComplete && (
         <div className="fixed inset-0 pointer-events-none z-15 overflow-hidden">
