@@ -36,22 +36,28 @@ export default function NYECountdownClient() {
   const [timezone, setTimezone] = useState("");
   const [viewerCount, setViewerCount] = useState(0);
 
-  // Simulate viewer count (fun atmospheric effect)
+  // Simulate viewer count (fun atmospheric effect) - surges during final countdown
   useEffect(() => {
     // Start with a random base
     const baseViewers = 1247 + Math.floor(Math.random() * 500);
     setViewerCount(baseViewers);
 
-    // Fluctuate viewers slightly every few seconds
+    // Fluctuate viewers - faster and bigger increases during final countdown
     const interval = setInterval(() => {
       setViewerCount((prev) => {
+        // Bigger surges during final moments
+        if (isFinalCountdown) {
+          return prev + Math.floor(Math.random() * 100) + 50; // +50 to +150
+        } else if (hours === 0 && minutes < 10) {
+          return prev + Math.floor(Math.random() * 30) + 10; // +10 to +40
+        }
         const change = Math.floor(Math.random() * 20) - 8; // -8 to +11
         return Math.max(1000, prev + change);
       });
-    }, 3000);
+    }, isFinalCountdown ? 500 : 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isFinalCountdown, hours, minutes]);
 
   // Rotate quotes every 5 seconds
   useEffect(() => {
@@ -109,6 +115,19 @@ export default function NYECountdownClient() {
     if (days === 0 && hours === 0 && minutes === 1 && seconds <= 5) return "🚀 ONE MINUTE! 🚀";
     return null;
   }, [days, hours, minutes, seconds]);
+
+  // Mood emoji based on time remaining
+  const moodEmoji = useMemo(() => {
+    if (isComplete) return "🎉";
+    if (isLastTenSeconds) return "🤯";
+    if (isLastThirtySeconds) return "😱";
+    if (isFinalCountdown) return "🔥";
+    if (hours === 0 && minutes < 10) return "⚡";
+    if (hours === 0) return "😮";
+    if (hours < 3) return "😃";
+    if (hours < 12) return "🙂";
+    return "😊";
+  }, [isComplete, isLastTenSeconds, isLastThirtySeconds, isFinalCountdown, hours, minutes]);
 
   useEffect(() => {
     setHasStarted(true);
@@ -173,13 +192,14 @@ export default function NYECountdownClient() {
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] animate-float-slow-reverse" />
       </div>
 
-      {/* Viewer count badge */}
+      {/* Viewer count badge with mood */}
       <div className="absolute top-4 left-4 z-50 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-3 py-2">
+        <span className="text-lg">{moodEmoji}</span>
         <Eye className="h-4 w-4 text-cyan-400" />
         <span className="text-cyan-400 text-sm font-mono">
           {viewerCount.toLocaleString()}
         </span>
-        <span className="text-cyan-300/50 text-xs">watching</span>
+        <span className="text-cyan-300/50 text-xs hidden sm:inline">watching</span>
         <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
       </div>
 
