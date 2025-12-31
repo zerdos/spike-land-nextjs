@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { appCreationSchema } from "@/lib/validations/app";
+import { appCodespaceLinkSchema, appCreationSchema } from "@/lib/validations/app";
 import type { MonetizationType, RequirementPriority, RequirementStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -117,20 +117,26 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
+  // Check if this is a codespace link request
+  const codespaceResult = appCodespaceLinkSchema.safeParse(body);
   const parseResult = appCreationSchema.partial().safeParse(body);
 
-  if (!parseResult.success) {
+  // Validate with either schema
+  if (!codespaceResult.success && !parseResult.success) {
     return NextResponse.json(
-      { error: "Validation error", details: parseResult.error.issues },
+      { error: "Validation error", details: parseResult.error?.issues },
       { status: 400 },
     );
   }
 
-  const validatedData = parseResult.data;
+  const validatedData = parseResult.success ? parseResult.data : {};
+  const codespaceData = codespaceResult.success ? codespaceResult.data : null;
 
   const updateData: {
     name?: string;
     description?: string;
+    codespaceId?: string;
+    codespaceUrl?: string;
     requirements?: {
       create: {
         description: string;
@@ -148,6 +154,12 @@ export async function PATCH(
   }
   if (validatedData.description !== undefined) {
     updateData.description = validatedData.description;
+  }
+  // Handle codespace linking
+  if (codespaceData?.codespaceId || validatedData.codespaceId) {
+    const codespaceId = codespaceData?.codespaceId || validatedData.codespaceId;
+    updateData.codespaceId = codespaceId;
+    updateData.codespaceUrl = `https://testing.spike.land/live/${codespaceId}`;
   }
 
   const { data: app, error: updateError } = await tryCatch(

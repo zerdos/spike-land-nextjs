@@ -35,6 +35,11 @@ export async function POST(request: NextRequest) {
 
   const validatedData = parseResult.data;
 
+  // Build codespace URL if codespaceId is provided
+  const codespaceUrl = validatedData.codespaceId
+    ? `https://testing.spike.land/live/${validatedData.codespaceId}`
+    : undefined;
+
   const { data: app, error: createError } = await tryCatch(
     prisma.app.create({
       data: {
@@ -42,6 +47,8 @@ export async function POST(request: NextRequest) {
         description: validatedData.description,
         userId: session.user.id,
         status: "DRAFT",
+        codespaceId: validatedData.codespaceId,
+        codespaceUrl,
         requirements: {
           create: {
             description: validatedData.requirements,

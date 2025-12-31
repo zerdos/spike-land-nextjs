@@ -28,6 +28,25 @@ export const appCreationSchema = z.object({
   monetizationModel: z.enum(MONETIZATION_MODELS, {
     message: "Please select a monetization model",
   }),
+  codespaceId: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      "Codespace ID can only contain letters, numbers, hyphens, and underscores",
+    )
+    .max(100)
+    .optional(),
+});
+
+// Schema for linking a codespace to an existing app (PATCH operation)
+export const appCodespaceLinkSchema = z.object({
+  codespaceId: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      "Codespace ID can only contain letters, numbers, hyphens, and underscores",
+    )
+    .max(100),
 });
 
 export type AppCreationFormData = z.infer<typeof appCreationSchema>;

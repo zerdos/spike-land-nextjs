@@ -30,6 +30,11 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { SpikeLandClient } from "./client.js";
+import {
+  getCodeSpaceTools,
+  handleCodeSpaceToolCall,
+  isCodeSpaceAvailable,
+} from "./tools/codespace/index.js";
 import { getJulesTools, handleJulesToolCall, isJulesAvailable } from "./tools/jules/index.js";
 
 // Supported aspect ratios
@@ -260,8 +265,8 @@ async function main() {
     },
   );
 
-  // Get all available tools (including Jules if configured)
-  const allTools = [...tools, ...getJulesTools()];
+  // Get all available tools (including Jules and CodeSpace if configured)
+  const allTools = [...tools, ...getJulesTools(), ...getCodeSpaceTools()];
 
   // Handle list tools request
   server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -475,6 +480,10 @@ Get more tokens at: https://spike.land/settings`,
           if (name.startsWith("jules_") && isJulesAvailable()) {
             return await handleJulesToolCall(name, args);
           }
+          // Check if it's a CodeSpace tool
+          if (name.startsWith("codespace_") && isCodeSpaceAvailable()) {
+            return await handleCodeSpaceToolCall(name, args);
+          }
           return {
             content: [
               {
@@ -508,6 +517,9 @@ Get more tokens at: https://spike.land/settings`,
   console.error("Spike Land MCP Server started");
   if (isJulesAvailable()) {
     console.error("Jules integration enabled (JULES_API_KEY detected)");
+  }
+  if (isCodeSpaceAvailable()) {
+    console.error("CodeSpace integration enabled (SPIKE_LAND_API_KEY detected)");
   }
 }
 
