@@ -76,9 +76,9 @@ async function updateJobStage(
 async function performCrop(
   imageBuffer: Buffer,
   cropRegion: { left: number; top: number; width: number; height: number; },
-  originalR2Key: string,
-  mimeType: string,
-  jobId: string,
+  _originalR2Key: string, // Kept for function signature compatibility, no longer used for upload
+  _mimeType: string, // Kept for function signature compatibility, no longer used for upload
+  _jobId: string, // Kept for function signature compatibility, no longer used for upload
   originalWidth: number,
   originalHeight: number,
 ): Promise<{
@@ -110,13 +110,9 @@ async function performCrop(
   const newWidth = sharpMetadata.width || originalWidth;
   const newHeight = sharpMetadata.height || originalHeight;
 
-  // Upload cropped image back to R2 (overwrite original)
-  await uploadToR2({
-    key: originalR2Key,
-    buffer: croppedBuffer,
-    contentType: mimeType,
-    metadata: { cropped: "true", jobId },
-  });
+  // NOTE: We intentionally do NOT upload the cropped image back to R2.
+  // The original must be preserved for future enhancements with correct aspect ratio.
+  // The cropped buffer is only used in-memory for this enhancement.
 
   console.log(
     `[Dev Enhancement] Auto-crop applied: ${cropRegion.width}x${cropRegion.height}`,
@@ -166,8 +162,12 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   // Step 2: Get image metadata
   console.log(`[Dev Enhancement] Getting image metadata`);
   const sharpMetadata = await sharp(imageBuffer).metadata();
-  let width = sharpMetadata.width || DEFAULT_IMAGE_DIMENSION;
-  let height = sharpMetadata.height || DEFAULT_IMAGE_DIMENSION;
+  // Store ORIGINAL dimensions for final output calculations (aspect ratio preservation)
+  const originalWidth = sharpMetadata.width || DEFAULT_IMAGE_DIMENSION;
+  const originalHeight = sharpMetadata.height || DEFAULT_IMAGE_DIMENSION;
+  // Mutable dimensions for processing (may be modified by auto-crop)
+  let width = originalWidth;
+  let height = originalHeight;
 
   const detectedFormat = sharpMetadata.format;
   const mimeType = detectedFormat
@@ -290,8 +290,8 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     imageData: paddedBase64,
     mimeType,
     tier: TIER_TO_SIZE[tier],
-    originalWidth: width,
-    originalHeight: height,
+    originalWidth: originalWidth, // Use ORIGINAL dimensions for aspect ratio preservation
+    originalHeight: originalHeight,
     promptOverride: dynamicPrompt,
     referenceImages: sourceImageData ? [sourceImageData] : undefined,
     model: modelToUse,
@@ -300,24 +300,30 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   // Step 8: Post-process and upload
   console.log(`[Dev Enhancement] Post-processing and uploading`);
   const geminiMetadata = await sharp(enhancedBuffer).metadata();
-  const geminiSize = geminiMetadata.width;
+  const geminiWidth = geminiMetadata.width;
+  const geminiHeight = geminiMetadata.height;
 
-  if (!geminiSize) {
+  if (!geminiWidth || !geminiHeight) {
     throw new Error("Failed to get Gemini output dimensions");
   }
 
-  // Calculate crop region to restore original aspect ratio
-  const { extractLeft, extractTop, extractWidth, extractHeight } = calculateCropRegion(
-    geminiSize,
-    width,
-    height,
+  console.log(
+    `[Dev Enhancement] Gemini output: ${geminiWidth}x${geminiHeight}, Original: ${originalWidth}x${originalHeight}`,
   );
 
-  // Calculate target dimensions based on tier
+  // Calculate crop region to restore original aspect ratio (use ORIGINAL dimensions)
+  const { extractLeft, extractTop, extractWidth, extractHeight } = calculateCropRegion(
+    geminiWidth,
+    geminiHeight,
+    originalWidth,
+    originalHeight,
+  );
+
+  // Calculate target dimensions based on tier (use ORIGINAL dimensions for correct aspect ratio)
   const { targetWidth, targetHeight } = calculateTargetDimensions(
     tier,
-    width,
-    height,
+    originalWidth,
+    originalHeight,
   );
 
   // Crop and resize

@@ -209,8 +209,20 @@ describe("enhance-image.shared", () => {
   });
 
   describe("calculateCropRegion", () => {
-    it("should handle square images (aspect ratio = 1)", () => {
-      const result = calculateCropRegion(1024, 512, 512);
+    it("should use full image when Gemini output matches target aspect ratio", () => {
+      // Gemini output 2048x1536 (4:3), target 4000x3000 (4:3)
+      const result = calculateCropRegion(2048, 1536, 4000, 3000);
+      expect(result).toEqual({
+        extractLeft: 0,
+        extractTop: 0,
+        extractWidth: 2048,
+        extractHeight: 1536,
+      });
+    });
+
+    it("should use full image for matching square images", () => {
+      // Gemini output 1024x1024 (1:1), target 512x512 (1:1)
+      const result = calculateCropRegion(1024, 1024, 512, 512);
       expect(result).toEqual({
         extractLeft: 0,
         extractTop: 0,
@@ -219,27 +231,28 @@ describe("enhance-image.shared", () => {
       });
     });
 
-    it("should handle landscape images (aspect ratio > 1)", () => {
-      // 2:1 aspect ratio
-      const result = calculateCropRegion(1024, 1000, 500);
+    it("should crop square Gemini output for landscape target", () => {
+      // Gemini output 1024x1024 (square), target 2:1 landscape
+      const result = calculateCropRegion(1024, 1024, 1000, 500);
       expect(result.extractLeft).toBe(0);
       expect(result.extractTop).toBeGreaterThan(0);
       expect(result.extractWidth).toBe(1024);
       expect(result.extractHeight).toBeLessThan(1024);
     });
 
-    it("should handle portrait images (aspect ratio < 1)", () => {
-      // 1:2 aspect ratio
-      const result = calculateCropRegion(1024, 500, 1000);
+    it("should crop square Gemini output for portrait target", () => {
+      // Gemini output 1024x1024 (square), target 1:2 portrait
+      const result = calculateCropRegion(1024, 1024, 500, 1000);
       expect(result.extractLeft).toBeGreaterThan(0);
       expect(result.extractTop).toBe(0);
       expect(result.extractWidth).toBeLessThan(1024);
       expect(result.extractHeight).toBe(1024);
     });
 
-    it("should center crop for landscape images", () => {
+    it("should center crop square output for landscape target", () => {
       const geminiSize = 2048;
-      const result = calculateCropRegion(geminiSize, 2000, 1000);
+      // Gemini output 2048x2048 (square), target 2:1 landscape
+      const result = calculateCropRegion(geminiSize, geminiSize, 2000, 1000);
 
       // For 2:1 aspect ratio, height should be halved
       const expectedHeight = Math.round(geminiSize / 2);
@@ -250,9 +263,10 @@ describe("enhance-image.shared", () => {
       expect(result.extractTop).toBe(expectedTop);
     });
 
-    it("should center crop for portrait images", () => {
+    it("should center crop square output for portrait target", () => {
       const geminiSize = 2048;
-      const result = calculateCropRegion(geminiSize, 1000, 2000);
+      // Gemini output 2048x2048 (square), target 1:2 portrait
+      const result = calculateCropRegion(geminiSize, geminiSize, 1000, 2000);
 
       // For 1:2 aspect ratio, width should be halved
       const expectedWidth = Math.round(geminiSize / 2);

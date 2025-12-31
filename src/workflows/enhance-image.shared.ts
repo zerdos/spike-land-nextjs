@@ -388,10 +388,17 @@ export function validateEnhanceImageInput(input: EnhanceImageInput): void {
 }
 
 /**
- * Calculate crop region to restore original aspect ratio from square Gemini output
+ * Calculate crop region to restore original aspect ratio from Gemini output.
+ * Handles both square and aspect-ratio-aware Gemini outputs.
+ *
+ * @param geminiWidth - Width of Gemini output
+ * @param geminiHeight - Height of Gemini output
+ * @param originalWidth - Original image width (for target aspect ratio)
+ * @param originalHeight - Original image height (for target aspect ratio)
  */
 export function calculateCropRegion(
-  geminiSize: number,
+  geminiWidth: number,
+  geminiHeight: number,
   originalWidth: number,
   originalHeight: number,
 ): {
@@ -400,22 +407,41 @@ export function calculateCropRegion(
   extractWidth: number;
   extractHeight: number;
 } {
-  const aspectRatio = originalWidth / originalHeight;
+  const targetAspectRatio = originalWidth / originalHeight;
+  const geminiAspectRatio = geminiWidth / geminiHeight;
 
+  // If Gemini output already matches target aspect ratio (within tolerance), use full image
+  const aspectRatioTolerance = 0.01;
+  if (Math.abs(geminiAspectRatio - targetAspectRatio) < aspectRatioTolerance) {
+    return {
+      extractLeft: 0,
+      extractTop: 0,
+      extractWidth: geminiWidth,
+      extractHeight: geminiHeight,
+    };
+  }
+
+  // Gemini output doesn't match target - need to crop to correct aspect ratio
   let extractLeft = 0;
   let extractTop = 0;
-  let extractWidth = geminiSize;
-  let extractHeight = geminiSize;
+  let extractWidth = geminiWidth;
+  let extractHeight = geminiHeight;
 
-  if (aspectRatio > 1) {
-    // Landscape: content is full width, centered vertically
-    extractHeight = Math.round(geminiSize / aspectRatio);
-    extractTop = Math.round((geminiSize - extractHeight) / 2);
+  if (targetAspectRatio > geminiAspectRatio) {
+    // Target is wider than Gemini output - crop height
+    extractHeight = Math.round(geminiWidth / targetAspectRatio);
+    extractTop = Math.round((geminiHeight - extractHeight) / 2);
   } else {
-    // Portrait/Square: content is full height, centered horizontally
-    extractWidth = Math.round(geminiSize * aspectRatio);
-    extractLeft = Math.round((geminiSize - extractWidth) / 2);
+    // Target is taller than Gemini output - crop width
+    extractWidth = Math.round(geminiHeight * targetAspectRatio);
+    extractLeft = Math.round((geminiWidth - extractWidth) / 2);
   }
+
+  // Ensure extraction region is within bounds
+  extractLeft = Math.max(0, Math.min(extractLeft, geminiWidth - 1));
+  extractTop = Math.max(0, Math.min(extractTop, geminiHeight - 1));
+  extractWidth = Math.min(extractWidth, geminiWidth - extractLeft);
+  extractHeight = Math.min(extractHeight, geminiHeight - extractTop);
 
   return { extractLeft, extractTop, extractWidth, extractHeight };
 }
