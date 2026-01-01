@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
         description: validatedData.description,
         userId: session.user.id,
         status: "DRAFT",
-        codespaceId: validatedData.codespaceId,
+        ...(validatedData.codespaceId && { codespaceId: validatedData.codespaceId }),
         codespaceUrl,
         requirements: {
           create: {

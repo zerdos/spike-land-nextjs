@@ -973,32 +973,6 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                   </div>
                 )}
 
-                {/* Prompt */}
-                {selectedJob.prompt && (
-                  <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
-                    <div className="mb-2 flex items-center justify-between">
-                      <h3 className="text-sm font-semibold">Prompt</h3>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          navigator.clipboard.writeText(selectedJob.prompt!);
-                          setActionMessage({
-                            type: "success",
-                            text: "Prompt copied!",
-                          });
-                          setTimeout(() => setActionMessage(null), 2000);
-                        }}
-                      >
-                        Copy
-                      </Button>
-                    </div>
-                    <pre className="max-h-32 overflow-y-auto whitespace-pre-wrap rounded-md bg-neutral-100 p-2 text-xs dark:bg-neutral-800">
-                      {selectedJob.prompt}
-                    </pre>
-                  </div>
-                )}
-
                 {/* Error Message */}
                 {selectedJob.errorMessage && (
                   <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">

@@ -255,12 +255,17 @@ export default function NYECountdownClient() {
 
   // Show "Final Hour" banner when entering the last hour
   useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
+
     if (isFinalHour && !showFinalHourBanner && !isComplete && minutes === 59 && seconds >= 57) {
       setShowFinalHourBanner(true);
       // Hide after 4 seconds
-      const timer = setTimeout(() => setShowFinalHourBanner(false), 4000);
-      return () => clearTimeout(timer);
+      timer = setTimeout(() => setShowFinalHourBanner(false), 4000);
     }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [isFinalHour, showFinalHourBanner, isComplete, minutes, seconds]);
 
   useEffect(() => {
