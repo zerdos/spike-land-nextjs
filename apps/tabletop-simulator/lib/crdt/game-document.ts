@@ -110,3 +110,105 @@ export function rollDice(doc: Y.Doc, diceId: string, seed: number) {
     }
   });
 }
+
+export function addDice(doc: Y.Doc, dice: DiceState) {
+  doc.transact(() => {
+    const diceList = getDiceArray(doc);
+    diceList.push([dice]);
+  });
+}
+
+export function settleDice(doc: Y.Doc, diceId: string, value: number) {
+  doc.transact(() => {
+    const diceList = getDiceArray(doc);
+    for (let i = 0; i < diceList.length; i++) {
+      if (diceList.get(i).id === diceId) {
+        const die = diceList.get(i);
+        const updated = {
+          ...die,
+          isRolling: false,
+          value,
+        };
+        diceList.delete(i, 1);
+        diceList.insert(i, [updated]);
+        break;
+      }
+    }
+  });
+}
+
+export function clearDice(doc: Y.Doc, diceId: string) {
+  doc.transact(() => {
+    const diceList = getDiceArray(doc);
+    for (let i = 0; i < diceList.length; i++) {
+      if (diceList.get(i).id === diceId) {
+        diceList.delete(i, 1);
+        break;
+      }
+    }
+  });
+}
+
+export function initializeDeck(doc: Y.Doc, cards: Card[]) {
+  doc.transact(() => {
+    const deckArray = getDeckArray(doc);
+    // Clear existing cards
+    if (deckArray.length > 0) {
+      deckArray.delete(0, deckArray.length);
+    }
+    // Add new cards
+    deckArray.push(cards);
+  });
+}
+
+export function updateDeck(doc: Y.Doc, cards: Card[]) {
+  doc.transact(() => {
+    const deckArray = getDeckArray(doc);
+    deckArray.delete(0, deckArray.length);
+    deckArray.push(cards);
+  });
+}
+
+export function drawCard(doc: Y.Doc, playerId: string): Card | null {
+  let drawnCard: Card | null = null;
+
+  doc.transact(() => {
+    const deckArray = getDeckArray(doc);
+    // Find first card not owned by anyone (in deck)
+    for (let i = 0; i < deckArray.length; i++) {
+      const card = deckArray.get(i);
+      if (card.ownerId === null) {
+        drawnCard = { ...card, ownerId: playerId };
+        deckArray.delete(i, 1);
+        deckArray.insert(i, [drawnCard]);
+        break;
+      }
+    }
+  });
+
+  return drawnCard;
+}
+
+export function playCard(
+  doc: Y.Doc,
+  cardId: string,
+  position: { x: number; y: number; z: number; },
+) {
+  doc.transact(() => {
+    const deckArray = getDeckArray(doc);
+    for (let i = 0; i < deckArray.length; i++) {
+      const card = deckArray.get(i);
+      if (card.id === cardId) {
+        const updated = {
+          ...card,
+          ownerId: null,
+          position,
+          faceUp: true,
+        };
+        deckArray.delete(i, 1);
+        deckArray.insert(i, [updated]);
+        break;
+      }
+    }
+  });
+}

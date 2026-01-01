@@ -1,6 +1,6 @@
 "use client";
-import Peer from "peerjs";
-import { useCallback, useState } from "react";
+import Peer, { MediaConnection } from "peerjs";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useGameMedia(
   peer: Peer | null,
@@ -8,11 +8,19 @@ export function useGameMedia(
 ) {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState<Map<string, MediaStream>>(new Map());
+  const activeCalls = useRef<Map<string, MediaConnection>>(new Map());
+  const localStreamRef = useRef<MediaStream | null>(null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    localStreamRef.current = localStream;
+  }, [localStream]);
 
   const enableMedia = useCallback(async (video: boolean = true, audio: boolean = true) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video, audio });
       setLocalStream(stream);
+      localStreamRef.current = stream;
       return stream;
     } catch (e) {
       console.error("Failed to get media", e);
@@ -23,18 +31,75 @@ export function useGameMedia(
   const callAll = useCallback(() => {
     if (!localStream || !peer) return;
 
-    // Naively call keys in connections map
-    // In real app, check if already called
-    connections.forEach((_: { dataConnection: unknown; }, peerId: string) => {
+    connections.forEach((_conn, peerId: string) => {
+      // Skip if already calling this peer
+      if (activeCalls.current.has(peerId)) return;
+
       const call = peer.call(peerId, localStream);
+      activeCalls.current.set(peerId, call);
+
       call.on("stream", (remoteStream: MediaStream) => {
         setRemoteStreams(prev => new Map(prev).set(peerId, remoteStream));
+      });
+
+      call.on("close", () => {
+        activeCalls.current.delete(peerId);
+        setRemoteStreams(prev => {
+          const next = new Map(prev);
+          next.delete(peerId);
+          return next;
+        });
       });
     });
   }, [localStream, peer, connections]);
 
-  // Also need to listen for incoming calls (should be in useGameRoom or here)
-  // peer.on('call', ...) -> answer
+  // Listen for incoming calls and auto-answer
+  useEffect(() => {
+    if (!peer) return;
+
+    const handleCall = (call: MediaConnection) => {
+      const peerId = call.peer;
+
+      // Answer with local stream if available
+      const stream = localStreamRef.current;
+      if (stream) {
+        call.answer(stream);
+      } else {
+        // Answer without stream for now, can add later
+        call.answer();
+      }
+
+      activeCalls.current.set(peerId, call);
+
+      call.on("stream", (remoteStream: MediaStream) => {
+        setRemoteStreams(prev => new Map(prev).set(peerId, remoteStream));
+      });
+
+      call.on("close", () => {
+        activeCalls.current.delete(peerId);
+        setRemoteStreams(prev => {
+          const next = new Map(prev);
+          next.delete(peerId);
+          return next;
+        });
+      });
+    };
+
+    peer.on("call", handleCall);
+
+    return () => {
+      peer.off("call", handleCall);
+    };
+  }, [peer]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    const calls = activeCalls.current;
+    return () => {
+      localStream?.getTracks().forEach(track => track.stop());
+      calls.forEach(call => call.close());
+    };
+  }, [localStream]);
 
   return { localStream, remoteStreams, enableMedia, callAll };
 }

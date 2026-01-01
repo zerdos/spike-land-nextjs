@@ -160,6 +160,7 @@ export async function proxy(request: NextRequest) {
     font-src 'self' https://vercel.live https://assets.vercel.com data:;
     frame-src 'self' https://vercel.live;
     connect-src 'self' https://*.r2.dev https://*.r2.cloudflarestorage.com https://generativelanguage.googleapis.com https://va.vercel-analytics.com https://vitals.vercel-insights.com https://www.facebook.com https://connect.facebook.net https://vercel.live wss://ws-us3.pusher.com wss://*.peerjs.com;
+    worker-src 'self' blob:;
     frame-ancestors 'self';
     base-uri 'self';
     form-action 'self';
