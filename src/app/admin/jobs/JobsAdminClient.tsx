@@ -170,6 +170,69 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
   const [modifiedPrompt, setModifiedPrompt] = useState("");
   const [modifyTier, setModifyTier] = useState<EnhancementTier>("TIER_1K");
 
+  // Timeline Helper Component
+  const JobTimeline = ({ job }: { job: Job; }) => {
+    const created = new Date(job.createdAt).getTime();
+    const started = job.processingStartedAt
+      ? new Date(job.processingStartedAt).getTime()
+      : null;
+    const completed = job.processingCompletedAt
+      ? new Date(job.processingCompletedAt).getTime()
+      : null;
+    const now = Date.now();
+
+    const queueDuration = started ? started - created : now - created;
+    const processDuration = started
+      ? (completed ? completed - started : now - started)
+      : 0;
+    const totalDuration = queueDuration + processDuration;
+
+    const queuePercent = (queueDuration / totalDuration) * 100;
+    const processPercent = (processDuration / totalDuration) * 100;
+
+    return (
+      <div className="space-y-2">
+        <h3 className="text-sm font-semibold text-neutral-500">Timeline</h3>
+        <div className="flex h-4 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+          <div
+            className="flex items-center justify-center bg-yellow-200 text-[10px] text-yellow-800"
+            style={{ width: `${queuePercent}%` }}
+            title={`Queued: ${
+              formatDuration(job.createdAt, job.processingStartedAt || new Date().toISOString())
+            }`}
+          >
+            {queuePercent > 10 && "Queue"}
+          </div>
+          {started && (
+            <div
+              className={`flex items-center justify-center text-[10px] ${
+                job.status === "FAILED"
+                  ? "bg-red-200 text-red-800"
+                  : job.status === "COMPLETED"
+                  ? "bg-green-200 text-green-800"
+                  : "animate-pulse bg-blue-200 text-blue-800"
+              }`}
+              style={{ width: `${processPercent}%` }}
+              title={`Processing: ${
+                formatDuration(
+                  job.processingStartedAt,
+                  job.processingCompletedAt || new Date().toISOString(),
+                )
+              }`}
+            >
+              {processPercent > 10 && "Process"}
+            </div>
+          )}
+        </div>
+        <div className="flex justify-between text-xs text-neutral-500">
+          <span>Created: {formatAbsoluteTime(job.createdAt)}</span>
+          {started && <span>Started: {formatAbsoluteTime(job.processingStartedAt!)}</span>}
+          {completed && <span>Completed: {formatAbsoluteTime(job.processingCompletedAt!)}</span>}
+        </div>
+      </div>
+    );
+  };
+
   const fetchJobs = useCallback(
     async (
       status: JobStatus | null,
@@ -713,6 +776,89 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                   </div>
                 )}
 
+                {/* Timeline */}
+                <JobTimeline job={selectedJob} />
+
+                {/* Input Images */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold text-neutral-500">
+                    Input Images
+                  </h3>
+                  <div className="flex gap-4">
+                    {/* Original Input */}
+                    {selectedJob.inputUrl && (
+                      <div className="group relative aspect-square w-32 overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-700">
+                        <Image
+                          src={selectedJob.inputUrl}
+                          alt="Input"
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                        <div className="absolute inset-x-0 bottom-0 bg-black/50 p-1 text-center text-[10px] text-white">
+                          Original
+                        </div>
+                      </div>
+                    )}
+                    {/* Blend Source Input */}
+                    {selectedJob.isBlend && selectedJob.sourceImageId && (
+                      <div className="group relative aspect-square w-32 overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-700">
+                        {/* Note: We'd ideally fetch the blend source URL here. For now assuming we might have it or just showing the ID */}
+                        <div className="flex h-full w-full items-center justify-center bg-neutral-100 dark:bg-neutral-800">
+                          <span className="text-xs text-neutral-500">
+                            Blend Source
+                          </span>
+                        </div>
+                        <div className="absolute inset-x-0 bottom-0 bg-blue-900/50 p-1 text-center text-[10px] text-white">
+                          Blend Source
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Final Prompt (Gemini Prompt) */}
+                {selectedJob.prompt && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-neutral-500">
+                      {selectedJob.source === "mcp" ? "User Prompt" : "Final Prompt"}
+                    </h3>
+                    <div className="relative rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs font-mono dark:border-neutral-700 dark:bg-neutral-900">
+                      <p className="whitespace-pre-wrap">
+                        {selectedJob.prompt}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-2 h-6 w-6"
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedJob.prompt!);
+                          setActionMessage({
+                            type: "success",
+                            text: "Prompt copied!",
+                          });
+                          setTimeout(() => setActionMessage(null), 2000);
+                        }}
+                      >
+                        <span className="sr-only">Copy</span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-3 w-3"
+                        >
+                          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                        </svg>
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Job Info Grid */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   {/* Source & Status */}
@@ -860,7 +1006,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                       Error
                     </h3>
                     <pre className="max-h-32 overflow-y-auto whitespace-pre-wrap rounded-md bg-red-50 p-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
-                    {selectedJob.errorMessage}
+                      {selectedJob.errorMessage}
                     </pre>
                   </div>
                 )}

@@ -790,13 +790,24 @@ async function executeEnhancementWorkflow(
   );
   recordStageSuccess(context, WorkflowStage.PAD);
 
-  // Build enhancement prompt based on analysis (blend or dynamic)
+  // Step 7: Build prompt and save to DB (PROMPTING)
   const dynamicPrompt = sourceImageData
     ? buildBlendEnhancementPrompt(analysisResult.structuredAnalysis)
     : buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
 
   // Get the appropriate model for this tier (FREE uses nano model, paid uses premium)
   const modelToUse = getModelForTier(tier);
+
+  // Save prompt to DB immediately so it's available for debugging even if generation fails
+  await prisma.imageEnhancementJob.update({
+    where: { id: jobId },
+    data: {
+      geminiPrompt: dynamicPrompt,
+      geminiModel: modelToUse,
+      currentStage: WorkflowStage.PROMPTING,
+    },
+  });
+  recordStageSuccess(context, WorkflowStage.PROMPTING);
 
   // Step 7: Enhance with Gemini using dynamic prompt (ENHANCE - selective retry)
   // Use ORIGINAL dimensions for aspect ratio preservation
