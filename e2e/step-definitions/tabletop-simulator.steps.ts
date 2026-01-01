@@ -31,5 +31,6 @@ Then("I should see the controls panel", async function(this: CustomWorld) {
 Then("I should see the video overlay", async function(this: CustomWorld) {
   // Video overlay might take time to mount/init peer
   // We check for the container
-  await expect(this.page.locator("video")).toBeAttached(); // Might not be visible if no stream
+  // Video overlay container is always rendered, but video elements depend on streams
+  await expect(this.page.locator(".fixed.top-4.right-4")).toBeVisible();
 });

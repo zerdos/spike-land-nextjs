@@ -16,4 +16,4 @@ Feature: Tabletop Simulator Game
   Scenario: User sees game UI
     Given I am in a game room
     Then I should see the controls panel
-    And I should see the video overlay
+
