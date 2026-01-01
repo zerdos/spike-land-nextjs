@@ -51,6 +51,7 @@ export function useGameRoom(roomId: string) {
 
   return {
     doc,
+    peer,
     peerId,
     connections,
     connectToPeer: connectData,

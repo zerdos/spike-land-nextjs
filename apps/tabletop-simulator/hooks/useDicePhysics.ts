@@ -1,18 +1,11 @@
 import { useFrame } from "@react-three/fiber";
+import { RapierRigidBody } from "@react-three/rapier";
 import { useEffect, useRef } from "react";
 import { simulateDiceRoll } from "../lib/physics/dice-simulation";
 import { DiceState } from "../types/dice";
 
 export function useDicePhysics(dice: DiceState, onSettle: (id: string, value: number) => void) {
-  const rigidBodyRef = useRef<
-    {
-      wakeUp: () => void;
-      applyImpulse: (impulse: { x: number; y: number; z: number; }, wake: boolean) => void;
-      applyTorqueImpulse: (torque: { x: number; y: number; z: number; }, wake: boolean) => void;
-      linvel: () => { x: number; y: number; z: number; };
-      angvel: () => { x: number; y: number; z: number; };
-    } | null
-  >(null);
+  const rigidBodyRef = useRef<RapierRigidBody | null>(null);
   const isRollingRef = useRef(false);
 
   useEffect(() => {

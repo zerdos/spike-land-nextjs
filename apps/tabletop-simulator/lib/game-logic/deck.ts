@@ -31,11 +31,14 @@ export function shuffleDeck(cards: Card[], seed: number): Card[] {
   // Fisher-Yates shuffle
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = rng.rangeInt(0, i);
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    const cardI = shuffled[i]!;
+    const cardJ = shuffled[j]!;
+    shuffled[i] = cardJ;
+    shuffled[j] = cardI;
 
     // Update z-index roughly to match stack order
-    shuffled[i].zIndex = i;
-    shuffled[j].zIndex = j;
+    shuffled[i]!.zIndex = i;
+    shuffled[j]!.zIndex = j;
   }
 
   return shuffled;

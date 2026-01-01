@@ -15,8 +15,12 @@ const GameScene = dynamic(
 );
 
 function GameUI() {
-  const { controls, media } = useGame();
+  const game = useGame();
   const [handOpen, setHandOpen] = useState(false);
+
+  if (!game) return null;
+
+  const { controls, media } = game;
 
   const handleDiceRoll = (type: string) => {
     // TODO: Wire up to CRDT rollDice function

@@ -6,6 +6,7 @@ import { useTouchControls } from "../../hooks/useTouchControls";
 
 interface GameContextValue {
   doc: ReturnType<typeof useGameRoom>["doc"];
+  peer: ReturnType<typeof useGameRoom>["peer"];
   peerId: string | null;
   connections: ReturnType<typeof useGameRoom>["connections"];
   connectToPeer: ReturnType<typeof useGameRoom>["connectToPeer"];
@@ -19,9 +20,7 @@ const GameContext = createContext<GameContextValue | null>(null);
 export function GameProvider({ roomId, children }: { roomId: string; children: ReactNode; }) {
   const room = useGameRoom(roomId);
   const controls = useTouchControls();
-  const media = useGameMedia(room.peerId, room.connections); // pass explicit peer? room.peerId used as key/id
-  // useGameMedia needs the actual peer object usually, which is inside room.
-  // We need to expose it from useGameRoom.
+  const media = useGameMedia(room.peer, room.connections);
 
   return (
     <GameContext.Provider value={{ ...room, controls, media }}>
