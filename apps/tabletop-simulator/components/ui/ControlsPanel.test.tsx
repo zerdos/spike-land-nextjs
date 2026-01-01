@@ -7,7 +7,6 @@ describe("ControlsPanel", () => {
     mode: "orbit" as const,
     onToggleMode: vi.fn(),
     onDiceRoll: vi.fn(),
-    onToggleHand: vi.fn(),
   };
 
   it("renders the controls panel", () => {
@@ -41,25 +40,19 @@ describe("ControlsPanel", () => {
     expect(onDiceRoll).toHaveBeenCalledWith("d6");
   });
 
-  it("calls onToggleHand when hand button is clicked", () => {
-    const onToggleHand = vi.fn();
-    render(<ControlsPanel {...defaultProps} onToggleHand={onToggleHand} />);
-
-    fireEvent.click(screen.getByText("🃏"));
-    expect(onToggleHand).toHaveBeenCalledTimes(1);
-  });
-
   it("has correct styling for orbit mode", () => {
     render(<ControlsPanel {...defaultProps} mode="orbit" />);
 
     const modeButton = screen.getByTestId("mode-toggle");
-    expect(modeButton.className).toContain("bg-gray-800");
+    // Orbit mode uses dark glass styling
+    expect(modeButton.className).toContain("bg-black/60");
   });
 
   it("has correct styling for interaction mode", () => {
     render(<ControlsPanel {...defaultProps} mode="interaction" />);
 
     const modeButton = screen.getByTestId("mode-toggle");
-    expect(modeButton.className).toContain("bg-blue-600");
+    // Interaction mode uses cyan styling
+    expect(modeButton.className).toContain("bg-cyan-500/80");
   });
 });

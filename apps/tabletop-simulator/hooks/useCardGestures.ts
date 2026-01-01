@@ -1,13 +1,18 @@
 import { ThreeEvent } from "@react-three/fiber";
 import { useDrag } from "@use-gesture/react";
+import { useRef } from "react";
 
 export function useCardGestures(
   id: string,
   onMove: (id: string, pos: { x: number; y: number; z: number; }) => void,
   onFlip: (id: string) => void,
+  onGrab?: (id: string) => void,
+  onRelease?: (id: string) => void,
 ) {
-  // Simple tap detection
-  const bind = useDrag(({ active, event, tap }) => {
+  // Track if we're currently grabbing to avoid duplicate calls
+  const isGrabbing = useRef(false);
+
+  const bind = useDrag(({ active, event, tap, first, last }) => {
     // Cast event to ThreeEvent to access 3D point
     const e = event as unknown as ThreeEvent<PointerEvent>;
     e.stopPropagation();
@@ -15,6 +20,18 @@ export function useCardGestures(
     if (tap) {
       onFlip(id);
       return;
+    }
+
+    // Handle grab on first drag frame
+    if (first && !isGrabbing.current) {
+      isGrabbing.current = true;
+      onGrab?.(id);
+    }
+
+    // Handle release on last drag frame
+    if (last && isGrabbing.current) {
+      isGrabbing.current = false;
+      onRelease?.(id);
     }
 
     if (active) {

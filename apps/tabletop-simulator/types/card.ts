@@ -7,6 +7,13 @@ export interface Vector3 {
   z: number;
 }
 
+// Visual feedback for multiplayer object grabbing
+export interface GrabbedByState {
+  playerId: string;
+  playerName: string;
+  playerColor: string;
+}
+
 export interface Card {
   id: string;
   suit: Suit;
@@ -16,6 +23,7 @@ export interface Card {
   position: Vector3;
   rotation: Vector3;
   zIndex: number;
+  grabbedBy?: GrabbedByState | null; // Who is currently grabbing this card
 }
 
 export interface DeckState {
