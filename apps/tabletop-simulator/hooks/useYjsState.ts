@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import * as Y from "yjs";
 import { getDeckArray, getDiceArray, getPlayersMap } from "../lib/crdt/game-document";
 import { Card } from "../types/card";
@@ -12,12 +12,24 @@ export interface GameStateSnapshot {
   players: Player[];
 }
 
-export function useYjsState(doc: Y.Doc | null): GameStateSnapshot {
+export function useYjsState(doc: Y.Doc | null, isSynced: boolean = false): GameStateSnapshot {
   const [state, setState] = useState<GameStateSnapshot>({
     cards: [],
     dice: [],
     players: [],
   });
+
+  const refreshState = useCallback(() => {
+    if (!doc) return;
+    const deckArray = getDeckArray(doc);
+    const diceArray = getDiceArray(doc);
+    const playersMap = getPlayersMap(doc);
+    setState({
+      cards: deckArray.toArray(),
+      dice: diceArray.toArray(),
+      players: Array.from(playersMap.values()),
+    });
+  }, [doc]);
 
   useEffect(() => {
     if (!doc) return;
@@ -26,28 +38,27 @@ export function useYjsState(doc: Y.Doc | null): GameStateSnapshot {
     const diceArray = getDiceArray(doc);
     const playersMap = getPlayersMap(doc);
 
-    const updateState = () => {
-      setState({
-        cards: deckArray.toArray(),
-        dice: diceArray.toArray(),
-        players: Array.from(playersMap.values()),
-      });
-    };
-
     // Initial state
-    updateState();
+    refreshState();
 
     // Subscribe to changes
-    deckArray.observe(updateState);
-    diceArray.observe(updateState);
-    playersMap.observe(updateState);
+    deckArray.observe(refreshState);
+    diceArray.observe(refreshState);
+    playersMap.observe(refreshState);
 
     return () => {
-      deckArray.unobserve(updateState);
-      diceArray.unobserve(updateState);
-      playersMap.unobserve(updateState);
+      deckArray.unobserve(refreshState);
+      diceArray.unobserve(refreshState);
+      playersMap.unobserve(refreshState);
     };
-  }, [doc]);
+  }, [doc, refreshState]);
+
+  // Re-read state when persistence sync completes
+  useEffect(() => {
+    if (isSynced) {
+      refreshState();
+    }
+  }, [isSynced, refreshState]);
 
   return state;
 }

@@ -1,7 +1,19 @@
 import { render } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DiceState } from "../../types/dice";
 import { Dice } from "./Dice";
+
+// Mock canvas context for tests
+beforeEach(() => {
+  const mockContext = {
+    fillStyle: "",
+    fillRect: vi.fn(),
+    beginPath: vi.fn(),
+    arc: vi.fn(),
+    fill: vi.fn(),
+  };
+  vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(mockContext as any);
+});
 
 // Mocks
 vi.mock("@react-three/rapier", () => ({

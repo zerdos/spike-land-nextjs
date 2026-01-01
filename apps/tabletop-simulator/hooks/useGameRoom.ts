@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { usePeer } from "./usePeer";
 import { usePeerConnection } from "./usePeerConnection";
 import { usePeerDataChannel } from "./usePeerDataChannel";
@@ -8,46 +8,69 @@ import { useYjsSync } from "./useYjsSync";
 export function useGameRoom(roomId: string) {
   const { doc, isSynced } = useYjsSync(roomId);
   const { peer, peerId } = usePeer();
-  const { connections, connectData } = usePeerConnection(peer);
 
-  const { handleIncomingData } = usePeerDataChannel(doc, connections);
+  // Track which peers we've sent full state to
+  const sentFullStateTo = useRef<Set<string>>(new Set());
 
-  // When we connect, we should ensure our data is processed
-  // But usePeerDataChannel effectively watches doc and connections.
+  // Get the data handler first so we can pass it to usePeerConnection
+  const { handleIncomingData, broadcastUpdate, sendFullState } = usePeerDataChannel(doc);
 
-  // We also need to listen to incoming data on the connections
+  // Wrap handleIncomingData to log and ignore peerId parameter
+  const onPeerData = useCallback((data: unknown) => {
+    handleIncomingData(data);
+  }, [handleIncomingData]);
+
+  // Pass the data handler directly to usePeerConnection
+  // This ensures the listener is attached immediately when connection opens
+  const { connections, connectData } = usePeerConnection(peer, onPeerData);
+
+  // Send full state when new peers connect
   useEffect(() => {
-    connections.forEach((conn) => {
-      if (conn.dataConnection) {
-        // Remove old listeners to avoid duplicates?
-        // Ideally usePeerDataChannel attaches a single handler or we attach it here.
-        // Since usePeerDataChannel returns `handleIncomingData`, we attach it here.
+    if (!doc || !isSynced) return;
 
-        // Check if listener attached? PeerJS event emitter doesn't easily dedup.
-        // Simplification: assume usePeerDataChannel attached it?
-        // No, usePeerDataChannel example I wrote above didn't attach to 'data' event of connection because connections was passed in.
-        // Modifying logic: We attach here.
-
-        conn.dataConnection.off("data");
-        conn.dataConnection.on("data", (data) => {
-          handleIncomingData(data);
-        });
+    // When connections change, check if we need to send full state to new peers
+    connections.forEach((conn, peerId) => {
+      if (conn.dataConnection?.open && !sentFullStateTo.current.has(peerId)) {
+        console.log(`[P2P] New peer connected: ${peerId}, sending full state`);
+        sendFullState(conn.dataConnection);
+        sentFullStateTo.current.add(peerId);
       }
     });
-  }, [connections, handleIncomingData]);
 
-  // Auto-join if roomId implies a host or we need to join known peers?
-  // For P2P, we need a signaling mechanism or manual "Connect to Peer ID".
-  // RoomID here might be just for local persistence key.
-  // We'll expose `connectToPeer` for the UI.
+    // Clean up tracking for disconnected peers
+    sentFullStateTo.current.forEach((peerId) => {
+      if (!connections.has(peerId)) {
+        sentFullStateTo.current.delete(peerId);
+      }
+    });
+  }, [connections, doc, isSynced, sendFullState]);
 
-  // Add self to game loop if new
+  // Broadcast local Yjs updates to all connected peers
+  useEffect(() => {
+    if (!doc) return;
+
+    const handleUpdate = (update: Uint8Array, origin: unknown) => {
+      if (origin !== "remote") {
+        console.log(
+          `[P2P] Broadcasting local update (${update.length} bytes) to ${connections.size} peers`,
+        );
+        broadcastUpdate(update, connections);
+      }
+    };
+
+    doc.on("update", handleUpdate);
+
+    return () => {
+      doc.off("update", handleUpdate);
+    };
+  }, [doc, connections, broadcastUpdate]);
+
+  // Log when ready
   useEffect(() => {
     if (isSynced && peerId) {
-      // Check if I exist in doc?
-      // addPlayer(doc, ...);
+      console.log(`[P2P] Synced and ready. Peer ID: ${peerId}`);
     }
-  }, [isSynced, peerId, doc]);
+  }, [isSynced, peerId]);
 
   return {
     doc,

@@ -6,10 +6,12 @@ interface ControlsPanelProps {
   onToggleMode: () => void;
   onDiceRoll: (type: string) => void;
   onToggleHand: () => void;
+  onToggleVideo?: () => void;
+  videoEnabled?: boolean;
 }
 
 export function ControlsPanel(
-  { mode, onToggleMode, onDiceRoll, onToggleHand }: ControlsPanelProps,
+  { mode, onToggleMode, onDiceRoll, onToggleHand, onToggleVideo, videoEnabled }: ControlsPanelProps,
 ) {
   return (
     <div
@@ -40,9 +42,24 @@ export function ControlsPanel(
       <button
         onClick={() => onDiceRoll("d6")}
         className="w-14 h-14 bg-red-700 rounded-full text-white font-bold shadow-lg hover:bg-red-600 active:scale-95 flex items-center justify-center"
+        title="Roll Dice"
       >
         🎲
       </button>
+
+      {onToggleVideo && (
+        <button
+          onClick={onToggleVideo}
+          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 ${
+            videoEnabled
+              ? "bg-green-600 text-white ring-2 ring-green-300"
+              : "bg-gray-800 text-gray-300"
+          }`}
+          title={videoEnabled ? "Turn off camera" : "Turn on camera"}
+        >
+          <span className="text-2xl">{videoEnabled ? "📹" : "🎥"}</span>
+        </button>
+      )}
     </div>
   );
 }
