@@ -164,7 +164,9 @@ function GameUI() {
     const timer = setTimeout(() => {
       if (gameState.cards.length === 0) {
         const cards = createStandardDeck();
-        initializeDeck(game.doc, cards);
+        // Shuffle the deck on initialization so cards aren't in suit order
+        const shuffledCards = shuffleDeck(cards, Date.now());
+        initializeDeck(game.doc, shuffledCards);
       }
       setDeckInitialized(true);
     }, 100);
