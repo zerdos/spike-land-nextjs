@@ -5,12 +5,12 @@ export function TableLighting() {
   return (
     <>
       {/* Increased ambient light for better base visibility */}
-      <ambientLight intensity={0.7} color="#ffffff" />
+      <ambientLight intensity={0.4} color="#ffffff" />
 
       {/* Main directional light with soft shadows */}
       <directionalLight
         position={[5, 12, 5]}
-        intensity={1.2}
+        intensity={0.5}
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}

@@ -16,87 +16,42 @@ const mockCard: Card = {
 
 describe("HandDrawer", () => {
   it("renders the hand drawer", () => {
-    render(
-      <HandDrawer
-        hand={[]}
-        isOpen={false}
-        onToggle={vi.fn()}
-      />,
-    );
+    render(<HandDrawer hand={[]} />);
 
     expect(screen.getByTestId("hand-drawer")).toBeDefined();
   });
 
-  it("shows hand count badge in toggle button when cards exist", () => {
+  it("shows hand count in header", () => {
     render(
-      <HandDrawer
-        hand={[mockCard, { ...mockCard, id: "c2" }]}
-        isOpen={false}
-        onToggle={vi.fn()}
-      />,
+      <HandDrawer hand={[mockCard, { ...mockCard, id: "c2" }]} />,
     );
 
-    // Count badge shows the number
-    expect(screen.getByText("2")).toBeDefined();
-  });
-
-  it("calls onToggle when toggle button is clicked", () => {
-    const onToggle = vi.fn();
-
-    render(
-      <HandDrawer
-        hand={[]}
-        isOpen={false}
-        onToggle={onToggle}
-      />,
-    );
-
-    fireEvent.click(screen.getByTestId("hand-toggle"));
-    expect(onToggle).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Your Hand (2)")).toBeDefined();
   });
 
   it("shows empty state message when hand is empty", () => {
-    render(
-      <HandDrawer
-        hand={[]}
-        isOpen={true}
-        onToggle={vi.fn()}
-      />,
-    );
+    render(<HandDrawer hand={[]} />);
 
-    expect(screen.getByText("Click on the deck to draw cards")).toBeDefined();
+    expect(screen.getByText("Draw cards from the deck to play")).toBeDefined();
   });
 
-  it("renders cards with suit symbols when open", () => {
-    render(
-      <HandDrawer
-        hand={[mockCard]}
-        isOpen={true}
-        onToggle={vi.fn()}
-      />,
-    );
+  it("renders cards with suit symbols", () => {
+    render(<HandDrawer hand={[mockCard]} />);
 
-    // Check for heart symbol (Unicode) - appears in card center
+    // Check for heart symbol (Unicode)
     expect(screen.getAllByText("\u2665").length).toBeGreaterThan(0);
   });
 
   it("calls onPlayCard when a card is clicked", () => {
     const onPlayCard = vi.fn();
 
-    render(
-      <HandDrawer
-        hand={[mockCard]}
-        isOpen={true}
-        onToggle={vi.fn()}
-        onPlayCard={onPlayCard}
-      />,
-    );
+    render(<HandDrawer hand={[mockCard]} onPlayCard={onPlayCard} />);
 
     fireEvent.click(screen.getByTestId(`hand-card-${mockCard.id}`));
     expect(onPlayCard).toHaveBeenCalledWith("c1");
   });
 
-  it("applies correct color classes for different suits", () => {
+  it("renders cards for different suits", () => {
     const cards: Card[] = [
       { ...mockCard, id: "c1", suit: "hearts" },
       { ...mockCard, id: "c2", suit: "diamonds" },
@@ -104,13 +59,7 @@ describe("HandDrawer", () => {
       { ...mockCard, id: "c4", suit: "spades" },
     ];
 
-    render(
-      <HandDrawer
-        hand={cards}
-        isOpen={true}
-        onToggle={vi.fn()}
-      />,
-    );
+    render(<HandDrawer hand={cards} />);
 
     // All 4 cards should be rendered
     expect(screen.getByTestId("hand-card-c1")).toBeDefined();
@@ -119,81 +68,11 @@ describe("HandDrawer", () => {
     expect(screen.getByTestId("hand-card-c4")).toBeDefined();
   });
 
-  it("adjusts height based on open state and cards", () => {
-    const { rerender } = render(
-      <HandDrawer
-        hand={[]}
-        isOpen={false}
-        onToggle={vi.fn()}
-      />,
-    );
+  it("displays card rank correctly", () => {
+    render(<HandDrawer hand={[mockCard]} />);
 
-    const drawer = screen.getByTestId("hand-drawer");
-    // Empty, closed = h-12
-    expect(drawer.className).toContain("h-12");
-
-    rerender(
-      <HandDrawer
-        hand={[mockCard]}
-        isOpen={false}
-        onToggle={vi.fn()}
-      />,
-    );
-
-    // Has cards, closed = h-16 (shows minimized cards)
-    expect(drawer.className).toContain("h-16");
-
-    rerender(
-      <HandDrawer
-        hand={[mockCard]}
-        isOpen={true}
-        onToggle={vi.fn()}
-      />,
-    );
-
-    // Open = h-32
-    expect(drawer.className).toContain("h-32");
-  });
-
-  it("shows minimized card badges when closed with cards", () => {
-    render(
-      <HandDrawer
-        hand={[mockCard, { ...mockCard, id: "c2" }]}
-        isOpen={false}
-        onToggle={vi.fn()}
-      />,
-    );
-
-    // Both full cards (hidden) and minimized view are in DOM
-    // Full cards have 1 symbol each (center), minimized has 1 each
-    // Total: 4 symbols for 2 cards
-    const suitSymbols = screen.getAllByText("\u2665");
-    expect(suitSymbols.length).toBe(4);
-  });
-
-  it("hides card container when closed", () => {
-    const { container, rerender } = render(
-      <HandDrawer
-        hand={[mockCard]}
-        isOpen={false}
-        onToggle={vi.fn()}
-      />,
-    );
-
-    // When closed, full cards should be hidden (opacity-0)
-    const cardsContainer = container.querySelector("[class*='opacity-0']");
-    expect(cardsContainer).not.toBeNull();
-
-    rerender(
-      <HandDrawer
-        hand={[mockCard]}
-        isOpen={true}
-        onToggle={vi.fn()}
-      />,
-    );
-
-    // When open, cards should be visible (opacity-100)
-    const visibleContainer = container.querySelector("[class*='opacity-100']");
-    expect(visibleContainer).not.toBeNull();
+    // Should show the rank 'A' multiple times (center and corners)
+    const ranks = screen.getAllByText("A");
+    expect(ranks.length).toBeGreaterThanOrEqual(1);
   });
 });

@@ -145,8 +145,25 @@ function GameUI() {
 
   const handleCardRelease = useCallback((id: string) => {
     if (!game?.doc) return;
+
+    // Find card to get current transform
+    const card = gameState.cards.find(c => c.id === id);
+    if (card) {
+      // Snap to table surface
+      // Keep X/Z position
+      // Snap Y to 0.01 (just above table) to prevent clipping
+      // Snap Rotation X to -PI/2 (flat)
+      // Keep Rotation Y (spin) but clean up slightly? No, keep it free.
+      // Reset Rotation Z to 0 (tilt)
+      moveCard(game.doc, id, { ...card.position, y: 0.01 }, {
+        x: -Math.PI / 2,
+        y: card.rotation.y,
+        z: 0,
+      });
+    }
+
     releaseCard(game.doc, id);
-  }, [game?.doc]);
+  }, [game?.doc, gameState.cards]);
 
   const handleDiceSettle = useCallback((id: string, value: number) => {
     if (!game?.doc) return;
@@ -318,15 +335,11 @@ function GameUI() {
         mode={ui.interactionMode}
         onToggleMode={ui.toggleMode}
         onDiceRoll={handleDiceRoll}
-        onToggleHand={ui.toggleHand}
         onToggleVideo={handleToggleVideo}
         videoEnabled={!!media.localStream}
-        handOpen={ui.handOpen}
       />
       <HandDrawer
         hand={handCards}
-        isOpen={ui.handOpen}
-        onToggle={ui.toggleHand}
         onPlayCard={handlePlayCard}
       />
     </>

@@ -391,52 +391,34 @@ Crucial for testing multi-client synchronization.
 
 ## 8. Transition Plan (v1.0 to v2.0)
 
-This section tracks progress from the initial prototype to the target architecture.
+This section addresses how to move from the current "50% implemented" state marked by manual peer ID exchange and disconnected components, to the target architecture.
 
-**Phase 1: The Networking Foundation (COMPLETE)**
+**Phase 1: The Networking Foundation (High Priority)**
 
-- [x] **Goal:** Replace manual Peer ID exchange with automatic discovery.
-- [x] PeerJS-based peer connections with URL parameter sharing (`?host=peerId`).
-- [x] Room URLs automatically include host peer ID for easy sharing.
-- [x] WebRTC data channels for Yjs state synchronization.
-- [x] Verify two clients can auto-connect in the same room URL.
+- [ ] **Goal:** Replace manual Peer ID exchange with automatic discovery.
+- [ ] Set up Next.js API route for Socket.io (or similar WebSocket solution).
+- [ ] Create `useSignaling` hook to connect to the namespace matching the roomId.
+- [ ] Refactor existing `usePeer` / `usePeerConnection` to listen to signaling events ("user-joined", "signal-offer", "signal-answer") instead of waiting for manual input.
+- [ ] Verify two clients can auto-connect in the same room URL.
 
-**Phase 2: Data Model Migration & Wiring (COMPLETE)**
+**Phase 2: Data Model Migration & Wiring (High Priority)**
 
-- [x] **Goal:** Connect the disconnected 3D components to a robust Yjs structure.
-- [x] `game-document.ts` with Y.Array-based card and dice state management.
-- [x] Standard 52-card deck initialization with shuffle support.
-- [x] `GameScene.tsx` renders cards based on Yjs state, filtering by owner.
-- [x] `Card.tsx` component with 3D mesh, HTML labels, and grab/release visuals.
+- [ ] **Goal:** Connect the disconnected 3D components to a robust Yjs structure.
+- [ ] Refactor `game-document.ts`: Replace top-level `Y.Array`s with `Y.Map`s for `cards` and `dice` as defined in Section 4.
+- [ ] Create the `Deck` zone concept: Initialize the `cards` map with 52 items set to `zone: 'deck'`.
+- [ ] Update `GameScene.tsx`: Instead of rendering placeholder components, iterate through `Array.from(cardsMap.values())`. Filter them: only render those where `zone === 'table'`.
+- [ ] Implement `CardObject.tsx`: A smart component that takes a `cardId`, looks up its state from the Y.Map, and renders the mesh at the synced position/rotation.
 
-**Phase 3: Interaction Implementation (COMPLETE)**
+**Phase 3: Interaction Implementation**
 
-- [x] **Goal:** Make things movable and playable.
-- [x] `useCardGestures` hook with @use-gesture for drag interactions.
-- [x] `drawCard(playerId)` and `playCard(cardId, position)` CRDT operations.
-- [x] 2D Hand HUD (`HandDrawer.tsx`) showing cards owned by local player.
-- [x] Click-to-play cards from hand back to table.
+- [ ] **Goal:** Make things movable and playable.
+- [ ] Implement `useObjectDrag` using `@use-gesture`. Connect drag-end events to update the card's position in the Y.Map.
+- [ ] Implement Hand Logic: Create functions for `drawCard(playerId)` that perform the CRDT transaction of changing a card's zone from 'deck' to player ID.
+- [ ] Implement the 2D Hand HUD: Render cards where `zone === localPlayerId`. Implement drag-from-HUD-to-3D-canvas to play cards back to the table.
 
-**Phase 4: Physics & Polish (COMPLETE)**
+**Phase 4: Physics & Polish**
 
-- [x] **Goal:** Fix dice and add visuals.
-- [x] Dice rolling with physics simulation and deterministic random seeds.
-- [x] Face value detection using quaternion rotation analysis.
-- [x] Procedural card textures (CSS-based face/back patterns).
-- [x] Procedural table felt texture with wooden border.
-
-**Phase 5: UI & UX Enhancements (COMPLETE)**
-
-- [x] Top App Bar with room code, connection status, player count.
-- [x] Right Sidebar with Players, Chat, and Library tabs.
-- [x] Mobile-optimized controls with large touch targets.
-- [x] Camera/Interaction mode toggle for mobile gesture conflicts.
-- [x] Visual locking feedback (glow, nameplate) when grabbing objects.
-- [x] Glass-morphism UI styling.
-
-**Remaining Items:**
-
-- [ ] Socket.io signaling server for improved peer discovery (currently uses PeerJS cloud).
-- [ ] Y.Map-based data model (currently uses Y.Array - functional but less optimal).
-- [ ] Zone-based card organization (deck/discard/table zones).
-- [ ] Drag-from-HUD-to-canvas for playing cards (currently click-to-play).
+- [ ] **Goal:** Fix dice and add visuals.
+- [ ] Finalize dice rolling workflow: Ensure the rolling client acts as authority and writes the final settled value to the Y.Doc to stop simulation on peers.
+- [ ] Implement face value detection math (quaternion to integer).
+- [ ] Apply textures to card meshes based on their suit/rank data.

@@ -1,4 +1,5 @@
 "use client";
+import { Environment } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 import { memo, Suspense } from "react";
@@ -85,6 +86,7 @@ export default function GameScene({
           </Physics>
           <TableLighting />
           <GameCamera mode={interactionMode} />
+          <Environment files="/textures/environment.jpg" background blur={0.5} />
         </Suspense>
       </Canvas>
     </div>

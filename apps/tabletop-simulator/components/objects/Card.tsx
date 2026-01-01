@@ -129,7 +129,7 @@ export function Card({ card, isOwner, onMove, onFlip, onGrab, onRelease }: CardP
   const { position, rotation } = useSpring({
     position: [card.position.x, card.position.y, card.position.z],
     rotation: [card.rotation.x, card.rotation.y, card.rotation.z],
-    config: { friction: 30, tension: 120, precision: 0.01 },
+    config: { friction: 50, tension: 120, precision: 0.01 },
   });
 
   const bind = useCardGestures(card.id, onMove, onFlip, onGrab, onRelease);
@@ -166,34 +166,31 @@ export function Card({ card, isOwner, onMove, onFlip, onGrab, onRelease }: CardP
       rotation={rotation as unknown as [number, number, number]}
       {...(gestureHandlers as Record<string, unknown>)}
     >
-      {/* Glow effect when grabbed - slightly larger mesh behind the card */}
-      {isGrabbed && (
-        <mesh position={[0, 0, -0.01]}>
-          <boxGeometry args={[2.7, 3.7, 0.02]} />
-          <meshBasicMaterial color={grabberColor} transparent opacity={0.6} />
-        </mesh>
-      )}
+      {/* Glow effect handled by emissive material on the card mesh itself now */}
 
       <mesh castShadow receiveShadow>
-        <boxGeometry args={[2.5, 3.5, 0.05]} />
-        {/* Card sides - tint with grabber color if grabbed */}
-        <meshStandardMaterial attach="material-0" color={isGrabbed ? grabberColor : "white"} />
-        <meshStandardMaterial attach="material-1" color={isGrabbed ? grabberColor : "white"} />
-        <meshStandardMaterial attach="material-2" color={isGrabbed ? grabberColor : "white"} />
-        <meshStandardMaterial attach="material-3" color={isGrabbed ? grabberColor : "white"} />
-        {/* Front face */}
+        {/* Thinner card geometry */}
+        <boxGeometry args={[2.5, 3.5, 0.01]} />
+        {/* Card sides - pure white cardboard look */}
+        <meshStandardMaterial attach="material-0" color={isGrabbed ? grabberColor : "#f5f5f5"} />
+        <meshStandardMaterial attach="material-1" color={isGrabbed ? grabberColor : "#f5f5f5"} />
+        <meshStandardMaterial attach="material-2" color={isGrabbed ? grabberColor : "#f5f5f5"} />
+        <meshStandardMaterial attach="material-3" color={isGrabbed ? grabberColor : "#f5f5f5"} />
+        {/* Front face - slightly warm white paper */}
         <meshStandardMaterial
           attach="material-4"
-          color={showFace ? "#fafafa" : "#880000"}
+          color={showFace ? "#fafafa" : "#ffffff"}
           emissive={isGrabbed ? grabberColor : "#000000"}
           emissiveIntensity={isGrabbed ? 0.15 : 0}
+          roughness={0.5}
         />
-        {/* Back face */}
+        {/* Back face - solid color or pattern base */}
         <meshStandardMaterial
           attach="material-5"
           color="#880000"
           emissive={isGrabbed ? grabberColor : "#000000"}
           emissiveIntensity={isGrabbed ? 0.15 : 0}
+          roughness={0.6}
         />
       </mesh>
 
