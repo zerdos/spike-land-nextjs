@@ -1,5 +1,6 @@
 "use client";
 import { RigidBody } from "@react-three/rapier";
+import { useMemo } from "react";
 import * as THREE from "three";
 import { useDicePhysics } from "../../hooks/useDicePhysics";
 import { DiceState } from "../../types/dice";
@@ -74,8 +75,8 @@ function createDiceMaterials(): THREE.MeshStandardMaterial[] {
 export function Dice({ state, onSettle }: DiceProps) {
   const { rigidBodyRef } = useDicePhysics(state, onSettle);
 
-  // Create materials once per component instance
-  const materials = createDiceMaterials();
+  // Create materials once per component instance (memoized to avoid recreating textures)
+  const materials = useMemo(() => createDiceMaterials(), []);
 
   return (
     <RigidBody

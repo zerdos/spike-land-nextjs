@@ -47,6 +47,7 @@ export function AudioMixer() {
   const [shortcutToast, setShortcutToast] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recordingStartTimeRef = useRef<number>(0);
 
   const audioContext = useAudioContext();
   const recording = useAudioRecording();
@@ -214,8 +215,9 @@ export function AudioMixer() {
   // Handle recording
   const handleStartRecording = useCallback(async () => {
     await handleInitialize();
+    recordingStartTimeRef.current = timeline.state.playheadTime;
     return recording.startRecording();
-  }, [handleInitialize, recording]);
+  }, [handleInitialize, recording, timeline.state.playheadTime]);
 
   const handleStopRecording = useCallback(async () => {
     const { context, masterGain } = await audioContext.initialize();
@@ -251,6 +253,7 @@ export function AudioMixer() {
         masterGain,
         recordingName,
         opfsPath,
+        recordingStartTimeRef.current,
       );
     }
   }, [audioContext, recording, trackManager, audioStorage]);
@@ -258,7 +261,7 @@ export function AudioMixer() {
   // Play all tracks
   const handlePlayAll = useCallback(async () => {
     const { context, masterGain } = await audioContext.initialize();
-    trackManager.playAllTracks(context, masterGain);
+    trackManager.playAllTracks(context, masterGain, timeline.state.playheadTime);
     setIsPlaying(true);
     // Start playhead animation from current position
     timeline.startPlayheadAnimation(timeline.state.playheadTime);
@@ -291,7 +294,7 @@ export function AudioMixer() {
         trackManager.stopAllTracks();
         audioContext.initialize().then(({ context, masterGain }) => {
           // Update currentTime on tracks before playing
-          trackManager.playAllTracks(context, masterGain);
+          trackManager.playAllTracks(context, masterGain, time);
           timeline.startPlayheadAnimation(time);
         });
       }

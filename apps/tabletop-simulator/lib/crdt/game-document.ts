@@ -1,12 +1,14 @@
 import * as Y from "yjs";
-import { Card } from "../../types/card";
-import { DiceState } from "../../types/dice";
-import { Player } from "../../types/game";
+import type { Card, GrabbedByState } from "../../types/card";
+import type { DiceState } from "../../types/dice";
+import type { Player } from "../../types/game";
+import type { GameMessage } from "../../types/message";
 
 export const GAME_DOC_KEYS = {
   PLAYERS: "players",
   DECK: "deck",
   DICE: "dice",
+  MESSAGES: "messages",
 };
 
 export function createGameDocument(): Y.Doc {
@@ -23,6 +25,10 @@ export function getDeckArray(doc: Y.Doc): Y.Array<Card> {
 
 export function getDiceArray(doc: Y.Doc): Y.Array<DiceState> {
   return doc.getArray(GAME_DOC_KEYS.DICE);
+}
+
+export function getMessagesArray(doc: Y.Doc): Y.Array<GameMessage> {
+  return doc.getArray(GAME_DOC_KEYS.MESSAGES);
 }
 
 export function addPlayer(doc: Y.Doc, player: Player) {
@@ -209,6 +215,94 @@ export function playCard(
         deckArray.insert(i, [updated]);
         break;
       }
+    }
+  });
+}
+
+// ============================================
+// Grabbing/Releasing functions for visual multiplayer feedback
+// ============================================
+
+export function grabCard(doc: Y.Doc, cardId: string, player: GrabbedByState) {
+  doc.transact(() => {
+    const deck = getDeckArray(doc);
+    for (let i = 0; i < deck.length; i++) {
+      const card = deck.get(i);
+      if (card.id === cardId) {
+        const updated = { ...card, grabbedBy: player };
+        deck.delete(i, 1);
+        deck.insert(i, [updated]);
+        break;
+      }
+    }
+  });
+}
+
+export function releaseCard(doc: Y.Doc, cardId: string) {
+  doc.transact(() => {
+    const deck = getDeckArray(doc);
+    for (let i = 0; i < deck.length; i++) {
+      const card = deck.get(i);
+      if (card.id === cardId) {
+        const updated = { ...card, grabbedBy: null };
+        deck.delete(i, 1);
+        deck.insert(i, [updated]);
+        break;
+      }
+    }
+  });
+}
+
+export function grabDice(doc: Y.Doc, diceId: string, player: GrabbedByState) {
+  doc.transact(() => {
+    const diceList = getDiceArray(doc);
+    for (let i = 0; i < diceList.length; i++) {
+      const die = diceList.get(i);
+      if (die.id === diceId) {
+        const updated = { ...die, grabbedBy: player };
+        diceList.delete(i, 1);
+        diceList.insert(i, [updated]);
+        break;
+      }
+    }
+  });
+}
+
+export function releaseDice(doc: Y.Doc, diceId: string) {
+  doc.transact(() => {
+    const diceList = getDiceArray(doc);
+    for (let i = 0; i < diceList.length; i++) {
+      const die = diceList.get(i);
+      if (die.id === diceId) {
+        const updated = { ...die, grabbedBy: null };
+        diceList.delete(i, 1);
+        diceList.insert(i, [updated]);
+        break;
+      }
+    }
+  });
+}
+
+// ============================================
+// Chat and event log functions
+// ============================================
+
+export function addMessage(doc: Y.Doc, message: GameMessage) {
+  doc.transact(() => {
+    const messages = getMessagesArray(doc);
+    messages.push([message]);
+    // Keep only last 100 messages to prevent unbounded growth
+    if (messages.length > 100) {
+      messages.delete(0, messages.length - 100);
+    }
+  });
+}
+
+export function clearMessages(doc: Y.Doc) {
+  doc.transact(() => {
+    const messages = getMessagesArray(doc);
+    if (messages.length > 0) {
+      messages.delete(0, messages.length);
     }
   });
 }

@@ -1,4 +1,5 @@
 "use client";
+import { Environment } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 import { memo, Suspense } from "react";
@@ -18,6 +19,8 @@ interface GameSceneProps {
   interactionMode?: "orbit" | "interaction";
   onCardMove: (id: string, position: { x: number; y: number; z: number; }) => void;
   onCardFlip: (id: string) => void;
+  onCardGrab?: (id: string) => void;
+  onCardRelease?: (id: string) => void;
   onDiceSettle: (id: string, value: number) => void;
   onDeckDraw: () => void;
   onDeckShuffle: () => void;
@@ -34,6 +37,8 @@ export default function GameScene({
   interactionMode = "orbit",
   onCardMove,
   onCardFlip,
+  onCardGrab,
+  onCardRelease,
   onDiceSettle,
   onDeckDraw,
   onDeckShuffle,
@@ -71,6 +76,8 @@ export default function GameScene({
                   isOwner={card.ownerId === playerId}
                   onMove={onCardMove}
                   onFlip={onCardFlip}
+                  onGrab={onCardGrab}
+                  onRelease={onCardRelease}
                 />
               ))}
 
@@ -79,6 +86,7 @@ export default function GameScene({
           </Physics>
           <TableLighting />
           <GameCamera mode={interactionMode} />
+          <Environment files="/textures/environment.jpg" background blur={0.5} />
         </Suspense>
       </Canvas>
     </div>

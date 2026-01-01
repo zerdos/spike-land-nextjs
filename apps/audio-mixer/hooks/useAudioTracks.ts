@@ -201,6 +201,7 @@ export function useAudioTracks() {
       masterGain: GainNode,
       name: string = "Recording",
       opfsPath?: string,
+      position: number = 0,
     ): Promise<void> => {
       const waveformData = generateWaveformData(buffer, 100);
       const { gainNode } = createTrackNodes(context, masterGain, buffer);
@@ -216,6 +217,7 @@ export function useAudioTracks() {
           type: "recording",
           opfsPath,
           trimEnd: buffer.duration,
+          position,
         },
       });
     },
@@ -286,7 +288,12 @@ export function useAudioTracks() {
   }, []);
 
   const playTrack = useCallback(
-    (id: string, context: AudioContext, masterGain: GainNode) => {
+    (
+      id: string,
+      context: AudioContext,
+      masterGain: GainNode,
+      startFromTime: number = 0,
+    ) => {
       const track = tracks.find((t) => t.id === id);
       if (!track?.buffer) return;
 
@@ -314,53 +321,89 @@ export function useAudioTracks() {
         sourceRefs.current.delete(id);
       };
 
-      // Calculate effective playback parameters with position and trim
+      const trackPosition = track.position ?? track.delay ?? 0;
       const effectiveTrimEnd = track.trimEnd > 0
         ? track.trimEnd
         : track.duration;
-      const trackPosition = track.position ?? track.delay ?? 0;
 
-      // Handle negative trimStart (lead-in silence)
-      let playbackOffset: number;
-      let playbackDuration: number;
-      let scheduleDelay: number;
+      // Calculate relative start time
+      // This is how far into the timeline play has started
+      // vs where the track sits on the timeline
+      const transform = startFromTime - trackPosition;
 
-      if (track.trimStart < 0) {
-        // Negative trimStart: add silence before audio
-        const silenceDuration = Math.abs(track.trimStart);
-        const currentTimeInTrack = track.currentTime;
+      // Check if the track has already finished playing at this point
+      // If we start playing at time X, and the track ends before X, skip it
+      const trackEnd = trackPosition + (effectiveTrimEnd - track.trimStart) +
+        (track.trimStart < 0 ? Math.abs(track.trimStart) : 0);
 
-        if (currentTimeInTrack < silenceDuration) {
-          // Still in the silence region - schedule audio to start after remaining silence
-          scheduleDelay = silenceDuration - currentTimeInTrack;
-          playbackOffset = 0;
-          playbackDuration = effectiveTrimEnd;
-        } else {
-          // Past the silence - start audio from offset
-          scheduleDelay = 0;
-          playbackOffset = currentTimeInTrack - silenceDuration;
-          playbackDuration = Math.max(0, effectiveTrimEnd - playbackOffset);
-        }
-      } else {
-        // Normal positive trimStart
-        scheduleDelay = 0;
-        playbackOffset = track.trimStart + track.currentTime;
-        const trimmedDuration = effectiveTrimEnd - track.trimStart;
-        playbackDuration = Math.max(0, trimmedDuration - track.currentTime);
+      if (startFromTime >= trackEnd) {
+        return;
       }
 
-      // Calculate when to start
-      const startTime = Math.max(
-        0,
-        context.currentTime + trackPosition + scheduleDelay,
-      );
+      // Handle playback scheduling
+      if (transform < 0) {
+        // Track starts in the future relative to the playhead
+        const waitTime = Math.abs(transform);
 
-      source.start(startTime, playbackOffset, playbackDuration);
+        if (track.trimStart < 0) {
+          // Negative trimStart (silence padding) logic
+          const silenceDuration = Math.abs(track.trimStart);
+          const totalPreDelay = waitTime + silenceDuration;
+
+          source.start(
+            context.currentTime + totalPreDelay,
+            0,
+            effectiveTrimEnd,
+          );
+        } else {
+          // Normal start
+          source.start(
+            context.currentTime + waitTime,
+            track.trimStart,
+            effectiveTrimEnd - track.trimStart,
+          );
+        }
+      } else {
+        // Track should have already started, so we start mid-way
+        // transform is positive here, meaning we are 'transform' seconds into the track
+
+        if (track.trimStart < 0) {
+          // Negative trimStart logic
+          const silenceDuration = Math.abs(track.trimStart);
+
+          if (transform < silenceDuration) {
+            // We are still within the silence period
+            const remainingSilence = silenceDuration - transform;
+            source.start(
+              context.currentTime + remainingSilence,
+              0,
+              effectiveTrimEnd,
+            );
+          } else {
+            // We are past the silence period, into the audio
+            const audioOffset = transform - silenceDuration;
+            source.start(
+              context.currentTime,
+              audioOffset,
+              effectiveTrimEnd - audioOffset,
+            );
+          }
+        } else {
+          // Normal start: we are `transform` seconds into the track
+          // So we offset the buffer usage by `track.trimStart + transform`
+          const startOffset = track.trimStart + transform;
+          source.start(
+            context.currentTime,
+            startOffset,
+            effectiveTrimEnd - startOffset,
+          );
+        }
+      }
+
       sourceRefs.current.set(id, source);
-      startTimeRefs.current.set(
-        id,
-        context.currentTime - track.currentTime + trackPosition,
-      );
+      // Store the timeline time when playback started, to calculate elapsed time later?
+      // Or just keep track of the offset
+      startTimeRefs.current.set(id, context.currentTime);
 
       dispatch({ type: "PLAY_TRACK", payload: id });
     },
@@ -388,14 +431,18 @@ export function useAudioTracks() {
   }, [tracks, stopTrack]);
 
   const playAllTracks = useCallback(
-    (context: AudioContext, masterGain: GainNode) => {
+    (
+      context: AudioContext,
+      masterGain: GainNode,
+      startFromTime: number = 0,
+    ) => {
       const hasSolo = tracks.some((t) => t.solo);
 
       tracks.forEach((track) => {
         if (track.buffer) {
           const shouldPlay = hasSolo ? track.solo : !track.muted;
           if (shouldPlay) {
-            playTrack(track.id, context, masterGain);
+            playTrack(track.id, context, masterGain, startFromTime);
           }
         }
       });

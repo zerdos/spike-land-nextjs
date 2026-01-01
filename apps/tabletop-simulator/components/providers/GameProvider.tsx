@@ -2,7 +2,7 @@
 import { createContext, ReactNode, useContext } from "react";
 import { useGameMedia } from "../../hooks/useGameMedia";
 import { useGameRoom } from "../../hooks/useGameRoom";
-import { useTouchControls } from "../../hooks/useTouchControls";
+import { UIState, useUIStore } from "../../stores/useUIStore";
 
 interface GameContextValue {
   doc: ReturnType<typeof useGameRoom>["doc"];
@@ -11,7 +11,7 @@ interface GameContextValue {
   connections: ReturnType<typeof useGameRoom>["connections"];
   connectToPeer: ReturnType<typeof useGameRoom>["connectToPeer"];
   isSynced: boolean;
-  controls: ReturnType<typeof useTouchControls>;
+  ui: UIState;
   media: ReturnType<typeof useGameMedia>;
 }
 
@@ -19,11 +19,11 @@ const GameContext = createContext<GameContextValue | null>(null);
 
 export function GameProvider({ roomId, children }: { roomId: string; children: ReactNode; }) {
   const room = useGameRoom(roomId);
-  const controls = useTouchControls();
+  const ui = useUIStore();
   const media = useGameMedia(room.peer, room.connections);
 
   return (
-    <GameContext.Provider value={{ ...room, controls, media }}>
+    <GameContext.Provider value={{ ...room, ui, media }}>
       {children}
     </GameContext.Provider>
   );
