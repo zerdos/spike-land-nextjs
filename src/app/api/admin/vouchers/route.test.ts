@@ -101,7 +101,7 @@ describe("Voucher Management API", () => {
           value: 100,
           maxUses: 10,
           currentUses: 5,
-          expiresAt: new Date("2025-12-31"),
+          expiresAt: new Date("2030-12-31"),
           status: VoucherStatus.ACTIVE,
           createdAt: new Date("2025-01-01"),
           redemptions: [{ userId: "u1" }, { userId: "u2" }],
@@ -189,7 +189,7 @@ describe("Voucher Management API", () => {
         type: VoucherType.FIXED_TOKENS,
         value: 50,
         maxUses: 10,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         status: VoucherStatus.ACTIVE,
       } as any);
 

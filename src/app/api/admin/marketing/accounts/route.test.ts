@@ -89,7 +89,7 @@ describe("Admin Marketing Accounts API", () => {
           isActive: true,
           createdAt: new Date("2025-01-01"),
           updatedAt: new Date("2025-01-02"),
-          expiresAt: new Date("2025-12-31"),
+          expiresAt: new Date("2030-12-31"),
         },
         {
           id: "acc2",
