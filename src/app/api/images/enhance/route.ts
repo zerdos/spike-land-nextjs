@@ -14,8 +14,8 @@ import type { EnhanceImageInput } from "@/workflows/enhance-image.shared";
 import { JobStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
-// Allow longer execution time for 4K image enhancements (5 minutes)
-export const maxDuration = 300;
+// Allow longer execution time for 4K image enhancements (10 minutes)
+export const maxDuration = 600;
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();

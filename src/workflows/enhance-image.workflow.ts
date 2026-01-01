@@ -35,6 +35,9 @@ import {
   WorkflowStage,
 } from "./enhance-image.shared";
 
+// Allow 10 minutes for 4K enhancements (Pro plan limit is usually 300s-900s)
+export const maxDuration = 600;
+
 export type { EnhanceImageInput };
 
 /**

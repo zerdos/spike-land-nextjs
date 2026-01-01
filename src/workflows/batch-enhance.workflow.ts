@@ -6,6 +6,9 @@ import { EnhancementTier, JobStatus } from "@prisma/client";
 import { FatalError } from "workflow";
 import { enhanceImage } from "./enhance-image.workflow";
 
+// Allow 15 minutes for batch enhancements (to handle sequential processing)
+export const maxDuration = 900;
+
 export interface BatchEnhanceInput {
   batchId: string;
   userId: string;

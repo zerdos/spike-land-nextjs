@@ -12,8 +12,8 @@ import { EnhancementTier, JobStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { start } from "workflow/api";
 
-// Allow longer execution time for parallel 4K image enhancements (5 minutes)
-export const maxDuration = 300;
+// Allow longer execution time for parallel 4K image enhancements (10 minutes)
+export const maxDuration = 600;
 
 // Check if we're running in Vercel environment
 function isVercelEnvironment(): boolean {
