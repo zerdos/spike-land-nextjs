@@ -28,8 +28,8 @@ export function HandDrawer({ hand, isOpen, onToggle, onPlayCard }: HandDrawerPro
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-30 transition-all duration-300 ${
-        isOpen ? "h-32" : hasCards ? "h-16" : "h-12"
+      className={`fixed bottom-0 left-0 right-0 transition-all duration-300 ${
+        isOpen ? "h-32 z-50" : hasCards ? "h-16 z-30" : "h-12 z-30"
       }`}
       data-testid="hand-drawer"
     >
