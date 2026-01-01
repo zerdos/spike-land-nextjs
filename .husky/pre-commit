@@ -1,5 +1,6 @@
 # Run code formatter
 yarn dprint
+yarn tsc 
 git add -u
 
 # Secret detection with gitleaks

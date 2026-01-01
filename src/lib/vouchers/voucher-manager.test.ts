@@ -65,7 +65,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 10,
         currentUses: 3,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -122,7 +122,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.INACTIVE,
         maxUses: 10,
         currentUses: 3,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -143,7 +143,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 10,
         currentUses: 10, // Fully used
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -164,7 +164,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 10,
         currentUses: 3,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [{ id: "redemption-1", userId: testUserId }],
       };
 
@@ -206,7 +206,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: null, // Unlimited
         currentUses: 50,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -227,7 +227,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 10,
         currentUses: 3,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -309,7 +309,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 10,
         currentUses: 3,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -333,7 +333,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 5,
         currentUses: 2,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -362,7 +362,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 5,
         currentUses: 4, // This redemption will make it 5
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -392,7 +392,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 10,
         currentUses: 3,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [{ id: "redemption-1", userId: testUserId }],
       };
 
@@ -415,7 +415,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 10,
         currentUses: 3,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -536,7 +536,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.INACTIVE,
         maxUses: 10,
         currentUses: 3,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -568,7 +568,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 10,
         currentUses: 10, // Fully used
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -600,7 +600,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 10,
         currentUses: 3,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -674,7 +674,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 10,
         currentUses: 3,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
@@ -737,7 +737,7 @@ describe("VoucherManager", () => {
         status: VoucherStatus.ACTIVE,
         maxUses: 10,
         currentUses: 3,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         redemptions: [],
       };
 
