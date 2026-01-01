@@ -34,6 +34,8 @@ export enum WorkflowStage {
   BLEND_SOURCE = "BLEND_SOURCE",
   /** Auto-cropping image based on analysis */
   CROP = "CROP",
+  /** Building dynamic enhancement prompt */
+  PROMPTING = "PROMPTING",
   /** Padding image to square for Gemini */
   PAD = "PAD",
   /** Enhancing image with Gemini AI */
@@ -102,6 +104,11 @@ export const ERROR_BOUNDARIES: Record<WorkflowStage, ErrorBoundaryConfig> = {
     isRecoverable: true,
     retryable: false,
     defaultBehavior: "Keep original image without cropping",
+  },
+  [WorkflowStage.PROMPTING]: {
+    stage: WorkflowStage.PROMPTING,
+    isRecoverable: false, // Prompt generation failure is critical
+    retryable: true,
   },
   [WorkflowStage.PAD]: {
     stage: WorkflowStage.PAD,
