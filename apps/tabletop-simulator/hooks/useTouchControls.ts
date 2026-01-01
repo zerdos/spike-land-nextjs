@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
 
-export type TouchMode = "camera" | "interaction";
+export type TouchMode = "orbit" | "interaction";
 
 export function useTouchControls() {
-  const [mode, setMode] = useState<TouchMode>("camera");
+  const [mode, setMode] = useState<TouchMode>("orbit");
 
-  const toggleMode = () => setMode(p => p === "camera" ? "interaction" : "camera");
+  const toggleMode = () => setMode(p => p === "orbit" ? "interaction" : "orbit");
 
   return { mode, toggleMode };
 }
