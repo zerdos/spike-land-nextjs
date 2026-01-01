@@ -79,9 +79,10 @@ describe("PlatformHero Component", () => {
     expect(gradientText).toHaveClass("text-gradient-primary");
   });
 
-  it("should have cyan glow on primary CTA button", () => {
+  it("should have shadow styling on primary CTA button", () => {
     const { container } = render(<PlatformHero />);
-    const ctaButton = container.querySelector(".shadow-glow-cyan");
+    // Default variant uses aurora-green shadow
+    const ctaButton = container.querySelector(".shadow-lg");
     expect(ctaButton).toBeInTheDocument();
   });
 

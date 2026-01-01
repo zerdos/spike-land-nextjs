@@ -13,7 +13,9 @@ describe("Button Component", () => {
   it("should apply default variant classes", () => {
     render(<Button>Default</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("bg-gradient-primary");
+    expect(button).toHaveClass("bg-gradient-to-r");
+    expect(button).toHaveClass("from-aurora-green");
+    expect(button).toHaveClass("to-aurora-teal");
   });
 
   it("should apply destructive variant", () => {
@@ -37,7 +39,7 @@ describe("Button Component", () => {
   it("should apply ghost variant", () => {
     render(<Button variant="ghost">Ghost</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("hover:bg-muted");
+    expect(button).toHaveClass("hover:bg-white/5");
   });
 
   it("should apply link variant", () => {
@@ -184,7 +186,9 @@ describe("Button Component", () => {
   describe("buttonVariants", () => {
     it("should generate default variant classes", () => {
       const classes = buttonVariants();
-      expect(classes).toContain("bg-gradient-primary");
+      expect(classes).toContain("bg-gradient-to-r");
+      expect(classes).toContain("from-aurora-green");
+      expect(classes).toContain("to-aurora-teal");
     });
 
     it("should generate variant-specific classes", () => {

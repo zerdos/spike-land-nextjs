@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Code } from "@/components/ui/code";
 import { Link } from "@/components/ui/link";
 import { BookOpen, Sparkles } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -20,8 +21,8 @@ export function PlatformHero() {
 
           {/* Subheadline */}
           <p className="mx-auto mb-6 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
-            Your iPhone 4 photos deserve iPhone 16 quality. Restore faded memories in 60 seconds. No
-            skills needed.
+            Your iPhone 4 photos deserve iPhone 16 quality. Restore <Code>memories.jpg</Code>{" "}
+            in 60 seconds. No skills needed.
           </p>
           <p className="mx-auto mb-12 text-base text-muted-foreground/80">
             Free to try — no credit card required.
@@ -32,7 +33,7 @@ export function PlatformHero() {
             <Button
               asChild
               size="lg"
-              className="text-lg font-semibold px-10 py-6 shadow-glow-cyan"
+              className="text-lg font-semibold px-10 py-6"
             >
               <Link href={pixelHref}>
                 <Sparkles className="mr-2 h-5 w-5" />

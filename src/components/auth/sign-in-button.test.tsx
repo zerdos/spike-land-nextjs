@@ -41,7 +41,10 @@ describe("SignInButton Component", () => {
   it("should apply default variant", () => {
     render(<SignInButton />);
     const button = screen.getByRole("button");
-    expect(button).toHaveClass("bg-gradient-primary");
+    // Default variant uses aurora gradient
+    expect(button).toHaveClass("bg-gradient-to-r");
+    expect(button).toHaveClass("from-aurora-green");
+    expect(button).toHaveClass("to-aurora-teal");
   });
 
   it("should call signIn without provider when clicked without provider prop", async () => {

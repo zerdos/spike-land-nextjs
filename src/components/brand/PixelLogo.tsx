@@ -118,7 +118,7 @@ export function PixelLogo({
               width={rectSize}
               height={rectSize}
               rx={cornerRadius}
-              className="fill-[hsl(var(--grid-inactive))]"
+              className="fill-white/10 transition-colors duration-300 hover:fill-white/20"
             />
           );
         })

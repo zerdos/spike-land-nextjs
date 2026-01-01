@@ -7,6 +7,7 @@ import {
   type EnhanceImageParams,
   enhanceImageWithGemini,
   GEMINI_TIMEOUT_MS,
+  generateAgentResponse,
   type GenerateImageParams,
   generateImageWithGemini,
   getModelForTier,
@@ -1872,6 +1873,104 @@ describe("gemini-client", () => {
 
     it("should return premium model for TIER_4K", () => {
       expect(getModelForTier("TIER_4K")).toBe("gemini-3-pro-image-preview");
+    });
+  });
+
+  describe("generateAgentResponse", () => {
+    beforeEach(() => {
+      process.env.GEMINI_API_KEY = "test-api-key";
+      resetGeminiClient();
+    });
+
+    afterEach(() => {
+      delete process.env.GEMINI_API_KEY;
+      mockGenerateContent.mockReset();
+    });
+
+    it("should generate a text response from messages", async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: "Hello! How can I help you today?",
+      });
+
+      const response = await generateAgentResponse({
+        messages: [{ role: "user", content: "Hi there!" }],
+      });
+
+      expect(response).toBe("Hello! How can I help you today?");
+      expect(mockGenerateContent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: "gemini-2.0-flash",
+          contents: [{ role: "user", parts: [{ text: "Hi there!" }] }],
+        }),
+      );
+    });
+
+    it("should include chat history in the request", async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: "I can help with Python!",
+      });
+
+      await generateAgentResponse({
+        messages: [
+          { role: "user", content: "What programming languages do you know?" },
+          { role: "model", content: "I know many languages!" },
+          { role: "user", content: "Tell me about Python" },
+        ],
+      });
+
+      expect(mockGenerateContent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: "What programming languages do you know?" }],
+            },
+            { role: "model", parts: [{ text: "I know many languages!" }] },
+            { role: "user", parts: [{ text: "Tell me about Python" }] },
+          ],
+        }),
+      );
+    });
+
+    it("should use custom system prompt if provided", async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: "Arrr matey!",
+      });
+
+      await generateAgentResponse({
+        messages: [{ role: "user", content: "Hello" }],
+        systemPrompt: "You are a pirate. Respond like one.",
+      });
+
+      expect(mockGenerateContent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          config: expect.objectContaining({
+            systemInstruction: "You are a pirate. Respond like one.",
+          }),
+        }),
+      );
+    });
+
+    it("should throw error when API call fails", async () => {
+      mockGenerateContent.mockRejectedValueOnce(new Error("API Error"));
+
+      await expect(
+        generateAgentResponse({
+          messages: [{ role: "user", content: "Hello" }],
+        }),
+      ).rejects.toThrow("Failed to generate agent response: API Error");
+    });
+
+    it("should throw error when response text is empty", async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: "",
+      });
+
+      await expect(
+        generateAgentResponse({
+          messages: [{ role: "user", content: "Hello" }],
+        }),
+      ).rejects.toThrow("No response text received from Gemini");
     });
   });
 });
