@@ -79,17 +79,18 @@ function GameUI() {
 
   // Initialize deck if empty (only once after sync is complete)
   useEffect(() => {
-    if (game?.doc && game.isSynced && !deckInitialized) {
-      // Small delay to ensure state has been refreshed from persistence
-      const timer = setTimeout(() => {
-        if (gameState.cards.length === 0) {
-          const cards = createStandardDeck();
-          initializeDeck(game.doc, cards);
-        }
-        setDeckInitialized(true);
-      }, 100);
-      return () => clearTimeout(timer);
+    if (!game?.doc || !game.isSynced || deckInitialized) {
+      return;
     }
+    // Small delay to ensure state has been refreshed from persistence
+    const timer = setTimeout(() => {
+      if (gameState.cards.length === 0) {
+        const cards = createStandardDeck();
+        initializeDeck(game.doc, cards);
+      }
+      setDeckInitialized(true);
+    }, 100);
+    return () => clearTimeout(timer);
   }, [game?.doc, game?.isSynced, gameState.cards.length, deckInitialized]);
 
   const handleDiceRoll = useCallback((type: string) => {
