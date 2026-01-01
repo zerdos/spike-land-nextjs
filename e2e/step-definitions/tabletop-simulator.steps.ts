@@ -1,14 +1,12 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "./world"; // Assuming world pattern
+import { CustomWorld } from "../support/world";
 
 Given("I am on the tabletop simulator page", async function(this: CustomWorld) {
   await this.page.goto("/apps/tabletop-simulator");
 });
 
-When('I click "Create New Room"', async function(this: CustomWorld) {
-  await this.page.click("text=Create New Room");
-});
+// Used generic "I click {string}" step from app-creation-flow.steps.ts
 
 Then("I should be redirected to a game room", async function(this: CustomWorld) {
   await this.page.waitForURL(/\/apps\/tabletop-simulator\/room\/.+/);
@@ -16,10 +14,6 @@ Then("I should be redirected to a game room", async function(this: CustomWorld) 
 
 When("I enter a room code {string}", async function(this: CustomWorld, code: string) {
   await this.page.fill('input[placeholder="Enter Room Code"]', code);
-});
-
-When('I click "Join"', async function(this: CustomWorld) {
-  await this.page.click("text=Join");
 });
 
 Then("I should be redirected to room {string}", async function(this: CustomWorld, code: string) {

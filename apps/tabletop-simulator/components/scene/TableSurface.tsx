@@ -1,5 +1,5 @@
 "use client";
-import { RigidBody } from "@react-three/rapier";
+import { CuboidCollider, RigidBody } from "@react-three/rapier";
 
 export function TableSurface() {
   return (
@@ -12,10 +12,10 @@ export function TableSurface() {
 
       {/* Invisible walls to keep dice on table */}
       <RigidBody type="fixed">
-        <cuboidCollider args={[6, 1, 0.1]} position={[0, 1, -6]} />
-        <cuboidCollider args={[6, 1, 0.1]} position={[0, 1, 6]} />
-        <cuboidCollider args={[0.1, 1, 6]} position={[-6, 1, 0]} />
-        <cuboidCollider args={[0.1, 1, 6]} position={[6, 1, 0]} />
+        <CuboidCollider args={[6, 1, 0.1]} position={[0, 1, -6]} />
+        <CuboidCollider args={[6, 1, 0.1]} position={[0, 1, 6]} />
+        <CuboidCollider args={[0.1, 1, 6]} position={[-6, 1, 0]} />
+        <CuboidCollider args={[0.1, 1, 6]} position={[6, 1, 0]} />
       </RigidBody>
     </RigidBody>
   );
