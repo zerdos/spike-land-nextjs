@@ -315,7 +315,7 @@ const defaultVoucher: Voucher = {
   value: 100,
   maxUses: 10,
   currentUses: 0,
-  expiresAt: new Date("2025-12-31"),
+  expiresAt: new Date("2030-12-31"),
   status: "ACTIVE" as VoucherStatus,
   metadata: null,
   createdAt: new Date("2024-01-01"),

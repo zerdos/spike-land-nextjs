@@ -89,7 +89,7 @@ describe("POST /api/vouchers/validate", () => {
       type: VoucherType.FIXED_TOKENS,
       value: 100,
       remainingUses: 7,
-      expiresAt: new Date("2025-12-31"),
+      expiresAt: new Date("2030-12-31"),
     };
 
     mockVoucherManager.validate.mockResolvedValue({
@@ -147,7 +147,7 @@ describe("POST /api/vouchers/validate", () => {
       type: VoucherType.FIXED_TOKENS,
       value: 75,
       remainingUses: 5,
-      expiresAt: new Date("2025-06-30"),
+      expiresAt: new Date("2030-06-30"),
     };
 
     mockVoucherManager.validate.mockResolvedValue({
@@ -270,7 +270,7 @@ describe("POST /api/vouchers/validate", () => {
       type: VoucherType.FIXED_TOKENS,
       value: 100,
       remainingUses: null,
-      expiresAt: new Date("2025-12-31"),
+      expiresAt: new Date("2030-12-31"),
     };
 
     mockVoucherManager.validate.mockResolvedValue({

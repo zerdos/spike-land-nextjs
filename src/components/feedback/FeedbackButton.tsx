@@ -117,7 +117,7 @@ export const FeedbackButton = memo(
       borderColorClass,
     }: {
       type: FeedbackType;
-      icon: React.ElementType;
+      icon: React.ComponentType<{ className?: string; }>;
       label: string;
       activeColorClass: string;
       borderColorClass: string;

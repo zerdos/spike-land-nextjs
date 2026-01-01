@@ -34,7 +34,7 @@ const statusConfig: Record<
   {
     label: string;
     variant: "default" | "secondary" | "destructive" | "outline";
-    icon: React.ElementType;
+    icon: React.ComponentType<{ className?: string; }>;
     color: string;
   }
 > = {

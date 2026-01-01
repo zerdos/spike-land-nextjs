@@ -167,7 +167,7 @@ describe("Marketing Types", () => {
       const tokenResponse: OAuthTokenResponse = {
         accessToken: "access_token_123",
         refreshToken: "refresh_token_456",
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date("2030-12-31"),
         tokenType: "Bearer",
         scope: "ads_read ads_management",
       };
