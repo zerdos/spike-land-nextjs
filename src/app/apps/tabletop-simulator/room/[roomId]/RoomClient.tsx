@@ -7,16 +7,21 @@ import {
   useGame,
 } from "../../../../../../apps/tabletop-simulator/components/providers/GameProvider";
 import { ControlsPanel } from "../../../../../../apps/tabletop-simulator/components/ui/ControlsPanel";
+import { GameSidebar } from "../../../../../../apps/tabletop-simulator/components/ui/GameSidebar";
 import { HandDrawer } from "../../../../../../apps/tabletop-simulator/components/ui/HandDrawer";
+import { TopAppBar } from "../../../../../../apps/tabletop-simulator/components/ui/TopAppBar";
 import { VideoOverlay } from "../../../../../../apps/tabletop-simulator/components/ui/VideoOverlay";
 import { useYjsState } from "../../../../../../apps/tabletop-simulator/hooks/useYjsState";
 import {
   addDice,
+  addMessage,
   drawCard,
   flipCard,
+  grabCard,
   initializeDeck,
   moveCard,
   playCard,
+  releaseCard,
   settleDice,
   updateDeck,
 } from "../../../../../../apps/tabletop-simulator/lib/crdt/game-document";
@@ -31,96 +36,8 @@ const GameScene = dynamic(
   { ssr: false, loading: () => <div className="text-white p-4">Loading 3D Engine...</div> },
 );
 
-// Game status panel showing players and game info
-interface GameStatusProps {
-  playerCount: number;
-  isSynced: boolean;
-  deckCount: number;
-  myHandCount: number;
-  otherPlayersHands: Map<string, number>;
-  peerId: string | null;
-}
-
-function GameStatusPanel(
-  { playerCount, isSynced, deckCount, myHandCount, otherPlayersHands, peerId }: GameStatusProps,
-) {
-  const [showDetails, setShowDetails] = useState(false);
-
-  const copyInviteLink = () => {
-    const url = new URL(window.location.href);
-    if (peerId) {
-      url.searchParams.set("host", peerId);
-    }
-    navigator.clipboard.writeText(url.toString());
-  };
-
-  return (
-    <div className="fixed top-4 right-4 z-50">
-      {/* Compact badge */}
-      <button
-        onClick={() => setShowDetails(!showDetails)}
-        className="bg-black/80 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-3 hover:bg-black/90 transition-colors"
-      >
-        <span
-          className={`w-2 h-2 rounded-full ${
-            isSynced ? "bg-green-500" : "bg-yellow-500 animate-pulse"
-          }`}
-        />
-        <span className="font-medium">
-          {playerCount} Player{playerCount > 1 ? "s" : ""}
-        </span>
-        <span className="text-gray-400">|</span>
-        <span className="text-gray-300">🃏 {deckCount}</span>
-        <span className="text-gray-400">|</span>
-        <span className="text-blue-300">✋ {myHandCount}</span>
-      </button>
-
-      {/* Expanded details */}
-      {showDetails && (
-        <div className="mt-2 bg-black/90 text-white p-3 rounded-lg text-sm min-w-[200px]">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-gray-400">Game Status</span>
-            <button
-              onClick={copyInviteLink}
-              className="text-xs bg-blue-600 hover:bg-blue-500 px-2 py-1 rounded"
-            >
-              Copy Invite Link
-            </button>
-          </div>
-
-          <div className="space-y-1">
-            <div className="flex justify-between">
-              <span className="text-gray-400">Deck:</span>
-              <span>{deckCount} cards</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">Your hand:</span>
-              <span className="text-blue-300">{myHandCount} cards</span>
-            </div>
-
-            {otherPlayersHands.size > 0 && (
-              <div className="pt-2 border-t border-gray-700 mt-2">
-                <div className="text-gray-400 mb-1">Other players:</div>
-                {Array.from(otherPlayersHands.entries()).map(([id, count]) => (
-                  <div key={id} className="flex justify-between text-xs">
-                    <span className="text-gray-500 truncate max-w-[100px]">
-                      {id.slice(0, 8)}...
-                    </span>
-                    <span className="text-green-300">{count} cards</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function GameUI() {
   const game = useGame();
-  const [handOpen, setHandOpen] = useState(false);
   const [deckInitialized, setDeckInitialized] = useState(false);
   const autoConnectAttempted = useRef(false);
 
@@ -141,7 +58,7 @@ function GameUI() {
       console.log(`[P2P] Auto-connecting to host: ${hostPeerId}`);
       game.connectToPeer(hostPeerId);
     }
-  }, [game?.peerId, game?.connectToPeer]);
+  }, [game, game?.peerId, game?.connectToPeer]);
 
   // Update URL with own peer ID so the link can be shared
   useEffect(() => {
@@ -204,6 +121,33 @@ function GameUI() {
     flipCard(game.doc, id);
   }, [game?.doc]);
 
+  const handleCardGrab = useCallback((id: string) => {
+    if (!game?.doc || !game.peerId) return;
+    const peerId = game.peerId;
+    // Use a player color based on peer ID hash
+    const colors = [
+      "#3B82F6",
+      "#10B981",
+      "#F59E0B",
+      "#EF4444",
+      "#8B5CF6",
+      "#EC4899",
+      "#06B6D4",
+      "#F97316",
+    ] as const;
+    const colorIndex = parseInt(peerId.slice(0, 4), 16) % colors.length;
+    grabCard(game.doc, id, {
+      playerId: peerId,
+      playerName: `Player ${peerId.slice(0, 4)}`,
+      playerColor: colors[colorIndex] ?? "#3B82F6",
+    });
+  }, [game?.doc, game?.peerId]);
+
+  const handleCardRelease = useCallback((id: string) => {
+    if (!game?.doc) return;
+    releaseCard(game.doc, id);
+  }, [game?.doc]);
+
   const handleDiceSettle = useCallback((id: string, value: number) => {
     if (!game?.doc) return;
     settleDice(game.doc, id, value);
@@ -251,15 +195,52 @@ function GameUI() {
     }
   }, [game?.media, game?.connections]);
 
+  // Handle sending chat messages
+  const handleSendMessage = useCallback((content: string) => {
+    if (!game?.doc || !game.peerId) return;
+    addMessage(game.doc, {
+      id: nanoid(),
+      type: "chat",
+      playerId: game.peerId,
+      playerName: `Player ${game.peerId.slice(0, 4)}`,
+      playerColor: "#3B82F6", // Default blue, could be dynamic
+      content,
+      timestamp: Date.now(),
+    });
+  }, [game?.doc, game?.peerId]);
+
+  // Handle spawning objects from library
+  const handleSpawnObject = useCallback((type: "deck" | "d6" | "d20" | "token") => {
+    if (!game?.doc || !game.peerId) return;
+
+    if (type === "deck") {
+      // Reset and shuffle deck
+      const cards = createStandardDeck();
+      const shuffled = shuffleDeck(cards, Date.now());
+      initializeDeck(game.doc, shuffled);
+    } else if (type === "d6" || type === "d20") {
+      const seed = Date.now();
+      const diceState = {
+        id: nanoid(),
+        type: type as DiceType,
+        value: 0,
+        position: { x: Math.random() * 2 - 1, y: 2, z: Math.random() * 2 - 1 },
+        rotation: { x: 0, y: 0, z: 0 },
+        isRolling: true,
+        seed,
+        ownerId: game.peerId,
+      };
+      addDice(game.doc, diceState);
+    }
+    // Token spawning can be added later
+  }, [game?.doc, game?.peerId]);
+
   if (!game) return null;
 
-  const { controls, media, peerId } = game;
+  const { ui, media, peerId } = game;
 
   // Get cards in player's hand
   const handCards = gameState.cards.filter(card => card.ownerId === peerId);
-
-  // Get cards in deck (not owned by anyone)
-  const deckCards = gameState.cards.filter(card => card.ownerId === null);
 
   // Calculate other players' hand counts
   const otherPlayersHands = new Map<string, number>();
@@ -270,43 +251,83 @@ function GameUI() {
     }
   });
 
+  // Build players list for sidebar
+  const players = [
+    {
+      id: peerId || "",
+      peerId: peerId || "",
+      name: `Player ${peerId?.slice(0, 4)}`,
+      cardCount: handCards.length,
+    },
+    ...Array.from(otherPlayersHands.entries()).map(([id, count]) => ({
+      id,
+      peerId: id,
+      name: `Player ${id.slice(0, 4)}`,
+      cardCount: count,
+    })),
+  ];
+
+  // Connection status
+  const connectionStatus = game.isSynced
+    ? "connected"
+    : game.connections.size > 0
+    ? "connecting"
+    : "disconnected";
+
   return (
     <>
       <GameScene
         cards={gameState.cards}
         dice={gameState.dice}
         playerId={peerId}
-        interactionMode={controls.mode}
+        interactionMode={ui.interactionMode}
         onCardMove={handleCardMove}
         onCardFlip={handleCardFlip}
+        onCardGrab={handleCardGrab}
+        onCardRelease={handleCardRelease}
         onDiceSettle={handleDiceSettle}
         onDeckDraw={handleDeckDraw}
         onDeckShuffle={handleDeckShuffle}
       />
+
+      {/* Top App Bar */}
+      <TopAppBar
+        roomCode={peerId || "---"}
+        connectionStatus={connectionStatus as "connected" | "connecting" | "disconnected"}
+        playerCount={game.connections.size + 1}
+        onSidebarToggle={ui.toggleSidebar}
+        isMobile={ui.isMobile}
+      />
+
+      {/* Right Sidebar */}
+      <GameSidebar
+        isOpen={ui.sidebarOpen}
+        onClose={() => ui.setSidebarOpen(false)}
+        activeTab={ui.sidebarTab}
+        onTabChange={ui.setSidebarTab}
+        players={players}
+        messages={gameState.messages}
+        localPlayerId={peerId}
+        onSendMessage={handleSendMessage}
+        onSpawnObject={handleSpawnObject}
+        isMobile={ui.isMobile}
+      />
+
       <VideoOverlay localStream={media.localStream} remoteStreams={media.remoteStreams} />
       <ControlsPanel
-        mode={controls.mode}
-        onToggleMode={controls.toggleMode}
+        mode={ui.interactionMode}
+        onToggleMode={ui.toggleMode}
         onDiceRoll={handleDiceRoll}
-        onToggleHand={() => setHandOpen(!handOpen)}
+        onToggleHand={ui.toggleHand}
         onToggleVideo={handleToggleVideo}
         videoEnabled={!!media.localStream}
+        handOpen={ui.handOpen}
       />
       <HandDrawer
         hand={handCards}
-        isOpen={handOpen}
-        onToggle={() => setHandOpen(!handOpen)}
+        isOpen={ui.handOpen}
+        onToggle={ui.toggleHand}
         onPlayCard={handlePlayCard}
-      />
-
-      {/* Game status panel */}
-      <GameStatusPanel
-        playerCount={game.connections.size + 1}
-        isSynced={game.isSynced}
-        deckCount={deckCards.length}
-        myHandCount={handCards.length}
-        otherPlayersHands={otherPlayersHands}
-        peerId={peerId}
       />
     </>
   );

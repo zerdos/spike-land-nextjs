@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { Card } from "../../types/card";
+import type { Card } from "../../types/card";
 import { HandDrawer } from "./HandDrawer";
 
 const mockCard: Card = {
@@ -27,7 +27,7 @@ describe("HandDrawer", () => {
     expect(screen.getByTestId("hand-drawer")).toBeDefined();
   });
 
-  it("shows hand count in toggle button", () => {
+  it("shows hand count badge in toggle button when cards exist", () => {
     render(
       <HandDrawer
         hand={[mockCard, { ...mockCard, id: "c2" }]}
@@ -36,7 +36,8 @@ describe("HandDrawer", () => {
       />,
     );
 
-    expect(screen.getByText("Hand (2)")).toBeDefined();
+    // Count badge shows the number
+    expect(screen.getByText("2")).toBeDefined();
   });
 
   it("calls onToggle when toggle button is clicked", () => {
@@ -66,7 +67,7 @@ describe("HandDrawer", () => {
     expect(screen.getByText("Click on the deck to draw cards")).toBeDefined();
   });
 
-  it("renders cards with suit symbols", () => {
+  it("renders cards with suit symbols when open", () => {
     render(
       <HandDrawer
         hand={[mockCard]}
@@ -75,10 +76,8 @@ describe("HandDrawer", () => {
       />,
     );
 
-    // Check for rank
-    expect(screen.getByText("A")).toBeDefined();
-    // Check for heart symbol (Unicode)
-    expect(screen.getByText("\u2665")).toBeDefined();
+    // Check for heart symbol (Unicode) - appears in card center
+    expect(screen.getAllByText("\u2665").length).toBeGreaterThan(0);
   });
 
   it("calls onPlayCard when a card is clicked", () => {
@@ -120,7 +119,7 @@ describe("HandDrawer", () => {
     expect(screen.getByTestId("hand-card-c4")).toBeDefined();
   });
 
-  it("translates drawer when open", () => {
+  it("adjusts height based on open state and cards", () => {
     const { rerender } = render(
       <HandDrawer
         hand={[]}
@@ -130,16 +129,71 @@ describe("HandDrawer", () => {
     );
 
     const drawer = screen.getByTestId("hand-drawer");
-    expect(drawer.className).toContain("translate-y-full");
+    // Empty, closed = h-12
+    expect(drawer.className).toContain("h-12");
 
     rerender(
       <HandDrawer
-        hand={[]}
+        hand={[mockCard]}
+        isOpen={false}
+        onToggle={vi.fn()}
+      />,
+    );
+
+    // Has cards, closed = h-16 (shows minimized cards)
+    expect(drawer.className).toContain("h-16");
+
+    rerender(
+      <HandDrawer
+        hand={[mockCard]}
         isOpen={true}
         onToggle={vi.fn()}
       />,
     );
 
-    expect(drawer.className).toContain("translate-y-0");
+    // Open = h-32
+    expect(drawer.className).toContain("h-32");
+  });
+
+  it("shows minimized card badges when closed with cards", () => {
+    render(
+      <HandDrawer
+        hand={[mockCard, { ...mockCard, id: "c2" }]}
+        isOpen={false}
+        onToggle={vi.fn()}
+      />,
+    );
+
+    // Both full cards (hidden) and minimized view are in DOM
+    // Full cards have 1 symbol each (center), minimized has 1 each
+    // Total: 4 symbols for 2 cards
+    const suitSymbols = screen.getAllByText("\u2665");
+    expect(suitSymbols.length).toBe(4);
+  });
+
+  it("hides card container when closed", () => {
+    const { container, rerender } = render(
+      <HandDrawer
+        hand={[mockCard]}
+        isOpen={false}
+        onToggle={vi.fn()}
+      />,
+    );
+
+    // When closed, full cards should be hidden (opacity-0)
+    const cardsContainer = container.querySelector("[class*='opacity-0']");
+    expect(cardsContainer).not.toBeNull();
+
+    rerender(
+      <HandDrawer
+        hand={[mockCard]}
+        isOpen={true}
+        onToggle={vi.fn()}
+      />,
+    );
+
+    // When open, cards should be visible (opacity-100)
+    const visibleContainer = container.querySelector("[class*='opacity-100']");
+    expect(visibleContainer).not.toBeNull();
   });
 });

@@ -18,6 +18,8 @@ interface GameSceneProps {
   interactionMode?: "orbit" | "interaction";
   onCardMove: (id: string, position: { x: number; y: number; z: number; }) => void;
   onCardFlip: (id: string) => void;
+  onCardGrab?: (id: string) => void;
+  onCardRelease?: (id: string) => void;
   onDiceSettle: (id: string, value: number) => void;
   onDeckDraw: () => void;
   onDeckShuffle: () => void;
@@ -34,6 +36,8 @@ export default function GameScene({
   interactionMode = "orbit",
   onCardMove,
   onCardFlip,
+  onCardGrab,
+  onCardRelease,
   onDiceSettle,
   onDeckDraw,
   onDeckShuffle,
@@ -71,6 +75,8 @@ export default function GameScene({
                   isOwner={card.ownerId === playerId}
                   onMove={onCardMove}
                   onFlip={onCardFlip}
+                  onGrab={onCardGrab}
+                  onRelease={onCardRelease}
                 />
               ))}
 

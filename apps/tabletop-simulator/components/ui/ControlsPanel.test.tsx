@@ -53,13 +53,18 @@ describe("ControlsPanel", () => {
     render(<ControlsPanel {...defaultProps} mode="orbit" />);
 
     const modeButton = screen.getByTestId("mode-toggle");
-    expect(modeButton.className).toContain("bg-gray-800");
+    // Orbit mode uses gray gradient
+    expect(modeButton.className).toContain("from-gray-700");
+    expect(modeButton.className).toContain("to-gray-800");
   });
 
   it("has correct styling for interaction mode", () => {
     render(<ControlsPanel {...defaultProps} mode="interaction" />);
 
     const modeButton = screen.getByTestId("mode-toggle");
-    expect(modeButton.className).toContain("bg-blue-600");
+    // Interaction mode uses cyan/blue gradient with ring
+    expect(modeButton.className).toContain("from-cyan-500");
+    expect(modeButton.className).toContain("to-blue-600");
+    expect(modeButton.className).toContain("ring-4");
   });
 });

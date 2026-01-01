@@ -308,4 +308,74 @@ describe("useAudioTracks", () => {
     expect(result.current.tracks[0]!.isPlaying).toBe(true);
     expect(result.current.tracks[1]!.isPlaying).toBe(false);
   });
+
+  describe("timeline synchronization", () => {
+    it("plays from offset when playhead is within track", async () => {
+      const { result } = renderHook(() => useAudioTracks());
+      const file = new File(["audio"], "test.mp3", { type: "audio/mp3" });
+
+      await act(async () => {
+        await result.current.addTrack(file, mockContext, mockMasterGain);
+      });
+
+      const trackId = result.current.tracks[0]!.id;
+
+      // Track is at 0s, length 10s. Start playing from 3s.
+      act(() => {
+        result.current.playTrack(trackId, mockContext, mockMasterGain, 3);
+      });
+
+      expect(mockSource.start).toHaveBeenCalledWith(
+        mockContext.currentTime, // starts immediately
+        3, // offset 3s
+        7, // duration 7s
+      );
+    });
+
+    it("plays with delay when playhead is before track", async () => {
+      const { result } = renderHook(() => useAudioTracks());
+      const file = new File(["audio"], "test.mp3", { type: "audio/mp3" });
+
+      await act(async () => {
+        await result.current.addTrack(file, mockContext, mockMasterGain);
+      });
+
+      const trackId = result.current.tracks[0]!.id;
+
+      // Move track to 5s
+      act(() => {
+        result.current.setPosition(trackId, 5);
+      });
+
+      // Start playing from 2s (3s before track starts)
+      act(() => {
+        result.current.playTrack(trackId, mockContext, mockMasterGain, 2);
+      });
+
+      expect(mockSource.start).toHaveBeenCalledWith(
+        mockContext.currentTime + 3, // starts after 3s delay
+        0, // offset 0
+        10, // full duration
+      );
+    });
+
+    it("does not play if playhead is after track end", async () => {
+      const { result } = renderHook(() => useAudioTracks());
+      const file = new File(["audio"], "test.mp3", { type: "audio/mp3" });
+
+      await act(async () => {
+        await result.current.addTrack(file, mockContext, mockMasterGain);
+      });
+
+      const trackId = result.current.tracks[0]!.id;
+
+      // Track ends at 10s. Start playing from 11s.
+      act(() => {
+        result.current.playTrack(trackId, mockContext, mockMasterGain, 11);
+      });
+
+      expect(mockSource.start).not.toHaveBeenCalled();
+      expect(result.current.tracks[0]!.isPlaying).toBe(false);
+    });
+  });
 });

@@ -1,4 +1,4 @@
-import { Vector3 } from "./card";
+import type { GrabbedByState, Vector3 } from "./card";
 
 export type DiceType = "d4" | "d6" | "d8" | "d10" | "d12" | "d20";
 
@@ -11,4 +11,5 @@ export interface DiceState {
   isRolling: boolean;
   seed: number; // For deterministic replay
   ownerId: string | null;
+  grabbedBy?: GrabbedByState | null; // Who is currently grabbing this dice
 }
