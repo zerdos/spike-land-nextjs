@@ -51,11 +51,11 @@ function supportsImageSize(model: string): boolean {
   return model === "gemini-3-pro-image-preview";
 }
 
-// Timeout for Gemini API requests (configurable via env, default 5 minutes)
-// 4K images can take up to 2 minutes based on observed successful jobs,
-// so 5 minutes provides a safe buffer while preventing indefinite hangs
+// Timeout for Gemini API requests (configurable via env, default 10 minutes)
+// 4K images can take up to 3-5 minutes or more depending on queue/complexity,
+// so 10 minutes provides a safe buffer while preventing indefinite hangs
 export const GEMINI_TIMEOUT_MS = parseInt(
-  process.env.GEMINI_TIMEOUT_MS || String(5 * 60 * 1000),
+  process.env.GEMINI_TIMEOUT_MS || String(10 * 60 * 1000),
   10,
 );
 
