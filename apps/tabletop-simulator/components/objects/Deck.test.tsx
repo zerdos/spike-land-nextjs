@@ -38,7 +38,6 @@ describe("Deck Component", () => {
   });
 
   it("calls onShuffle on context menu", () => {
-    const _onDraw = vi.fn();
     const onShuffle = vi.fn();
 
     // Simulate context menu action

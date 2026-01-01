@@ -29,16 +29,19 @@ describe("usePeerConnection", () => {
       open: true,
     };
 
-    mockPeer = {
-      on: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
-        if (event === "connection") {
-          // Store handler to trigger later
-          connectionHandlers.set("peer-connection", handler);
-        }
-      }),
+    const peer = {
+      on: vi.fn(),
       off: vi.fn(),
       connect: vi.fn().mockReturnValue(mockDataConnection),
     };
+    // Mock on() to store handlers and return the peer for chaining
+    peer.on.mockImplementation((event: string, handler: (...args: unknown[]) => void) => {
+      if (event === "connection") {
+        connectionHandlers.set("peer-connection", handler);
+      }
+      return peer;
+    });
+    mockPeer = peer;
   });
 
   it("returns empty connections initially", () => {

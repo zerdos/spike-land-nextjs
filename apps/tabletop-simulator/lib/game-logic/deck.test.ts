@@ -27,7 +27,7 @@ describe("Deck Logic", () => {
 
     expect(dealt).toHaveLength(5);
     expect(remaining).toHaveLength(47);
-    expect(dealt[0].ownerId).toBe("p1");
-    expect(remaining[0].ownerId).toBeNull();
+    expect(dealt[0]!.ownerId).toBe("p1");
+    expect(remaining[0]!.ownerId).toBeNull();
   });
 });

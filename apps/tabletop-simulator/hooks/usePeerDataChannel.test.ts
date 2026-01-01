@@ -150,7 +150,7 @@ describe("usePeerDataChannel", () => {
       });
 
       expect(mockConnection.send).toHaveBeenCalled();
-      const sentData = (mockConnection.send as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const sentData = (mockConnection.send as ReturnType<typeof vi.fn>).mock.calls[0]![0];
       expect(sentData).toBeInstanceOf(Uint8Array);
     });
 

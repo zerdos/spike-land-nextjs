@@ -53,7 +53,7 @@ describe("VideoOverlay", () => {
 
     const videos = container.querySelectorAll("video") as NodeListOf<HTMLVideoElement>;
     expect(videos).toHaveLength(1);
-    expect(videos[0].muted).toBe(true);
+    expect(videos[0]!.muted).toBe(true);
 
     // Check for "You" label
     expect(screen.getByText("You")).toBeDefined();

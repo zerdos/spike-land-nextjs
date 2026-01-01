@@ -1,7 +1,7 @@
 "use client";
 import { nanoid } from "nanoid";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   GameProvider,
   useGame,
@@ -31,40 +31,89 @@ const GameScene = dynamic(
   { ssr: false, loading: () => <div className="text-white p-4">Loading 3D Engine...</div> },
 );
 
-function ConnectToPeerForm({ onConnect }: { onConnect: (peerId: string) => void; }) {
-  const [remotePeerId, setRemotePeerId] = useState("");
-  const [connecting, setConnecting] = useState(false);
+// Game status panel showing players and game info
+interface GameStatusProps {
+  playerCount: number;
+  isSynced: boolean;
+  deckCount: number;
+  myHandCount: number;
+  otherPlayersHands: Map<string, number>;
+  peerId: string | null;
+}
 
-  const handleConnect = () => {
-    if (!remotePeerId.trim()) return;
-    setConnecting(true);
-    onConnect(remotePeerId.trim());
-    setTimeout(() => {
-      setConnecting(false);
-      setRemotePeerId("");
-    }, 1000);
+function GameStatusPanel(
+  { playerCount, isSynced, deckCount, myHandCount, otherPlayersHands, peerId }: GameStatusProps,
+) {
+  const [showDetails, setShowDetails] = useState(false);
+
+  const copyInviteLink = () => {
+    const url = new URL(window.location.href);
+    if (peerId) {
+      url.searchParams.set("host", peerId);
+    }
+    navigator.clipboard.writeText(url.toString());
   };
 
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-xs text-gray-400">Connect to peer:</label>
-      <div className="flex gap-1">
-        <input
-          type="text"
-          value={remotePeerId}
-          onChange={(e) => setRemotePeerId(e.target.value)}
-          placeholder="Enter peer ID"
-          className="flex-1 px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-500"
-          onKeyDown={(e) => e.key === "Enter" && handleConnect()}
+    <div className="fixed top-4 right-4 z-50">
+      {/* Compact badge */}
+      <button
+        onClick={() => setShowDetails(!showDetails)}
+        className="bg-black/80 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-3 hover:bg-black/90 transition-colors"
+      >
+        <span
+          className={`w-2 h-2 rounded-full ${
+            isSynced ? "bg-green-500" : "bg-yellow-500 animate-pulse"
+          }`}
         />
-        <button
-          onClick={handleConnect}
-          disabled={connecting || !remotePeerId.trim()}
-          className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 rounded"
-        >
-          {connecting ? "..." : "Join"}
-        </button>
-      </div>
+        <span className="font-medium">
+          {playerCount} Player{playerCount > 1 ? "s" : ""}
+        </span>
+        <span className="text-gray-400">|</span>
+        <span className="text-gray-300">🃏 {deckCount}</span>
+        <span className="text-gray-400">|</span>
+        <span className="text-blue-300">✋ {myHandCount}</span>
+      </button>
+
+      {/* Expanded details */}
+      {showDetails && (
+        <div className="mt-2 bg-black/90 text-white p-3 rounded-lg text-sm min-w-[200px]">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-gray-400">Game Status</span>
+            <button
+              onClick={copyInviteLink}
+              className="text-xs bg-blue-600 hover:bg-blue-500 px-2 py-1 rounded"
+            >
+              Copy Invite Link
+            </button>
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex justify-between">
+              <span className="text-gray-400">Deck:</span>
+              <span>{deckCount} cards</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Your hand:</span>
+              <span className="text-blue-300">{myHandCount} cards</span>
+            </div>
+
+            {otherPlayersHands.size > 0 && (
+              <div className="pt-2 border-t border-gray-700 mt-2">
+                <div className="text-gray-400 mb-1">Other players:</div>
+                {Array.from(otherPlayersHands.entries()).map(([id, count]) => (
+                  <div key={id} className="flex justify-between text-xs">
+                    <span className="text-gray-500 truncate max-w-[100px]">
+                      {id.slice(0, 8)}...
+                    </span>
+                    <span className="text-green-300">{count} cards</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -73,9 +122,38 @@ function GameUI() {
   const game = useGame();
   const [handOpen, setHandOpen] = useState(false);
   const [deckInitialized, setDeckInitialized] = useState(false);
+  const autoConnectAttempted = useRef(false);
 
   // Subscribe to Yjs state changes, pass isSynced to ensure refresh after persistence loads
   const gameState = useYjsState(game?.doc ?? null, game?.isSynced ?? false);
+
+  // Auto-connect to host peer from URL parameter
+  useEffect(() => {
+    if (!game?.peerId || !game.connectToPeer || autoConnectAttempted.current) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const hostPeerId = params.get("host");
+
+    if (hostPeerId && hostPeerId !== game.peerId) {
+      autoConnectAttempted.current = true;
+      console.log(`[P2P] Auto-connecting to host: ${hostPeerId}`);
+      game.connectToPeer(hostPeerId);
+    }
+  }, [game?.peerId, game?.connectToPeer]);
+
+  // Update URL with own peer ID so the link can be shared
+  useEffect(() => {
+    if (!game?.peerId) return;
+
+    const url = new URL(window.location.href);
+    // Only update if there's no host param or we are the first peer
+    if (!url.searchParams.has("host")) {
+      url.searchParams.set("host", game.peerId);
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [game?.peerId]);
 
   // Initialize deck if empty (only once after sync is complete)
   useEffect(() => {
@@ -178,6 +256,18 @@ function GameUI() {
   // Get cards in player's hand
   const handCards = gameState.cards.filter(card => card.ownerId === peerId);
 
+  // Get cards in deck (not owned by anyone)
+  const deckCards = gameState.cards.filter(card => card.ownerId === null);
+
+  // Calculate other players' hand counts
+  const otherPlayersHands = new Map<string, number>();
+  gameState.cards.forEach(card => {
+    if (card.ownerId && card.ownerId !== peerId) {
+      const current = otherPlayersHands.get(card.ownerId) ?? 0;
+      otherPlayersHands.set(card.ownerId, current + 1);
+    }
+  });
+
   return (
     <>
       <GameScene
@@ -207,76 +297,15 @@ function GameUI() {
         onPlayCard={handlePlayCard}
       />
 
-      {/* Connection status */}
-      <div className="fixed top-4 right-4 bg-black/80 text-white p-3 rounded-lg text-sm z-50 min-w-[220px] max-w-[280px]">
-        <div className="flex items-center gap-2">
-          <span
-            className={`w-2 h-2 rounded-full ${game.isSynced ? "bg-green-500" : "bg-yellow-500"}`}
-          />
-          <span className="font-medium">{game.isSynced ? "Ready to Play" : "Loading..."}</span>
-        </div>
-
-        {peerId && (
-          <div className="mt-2 p-2 bg-gray-900 rounded">
-            <div className="text-xs text-gray-400 mb-1">Your ID (share with others):</div>
-            <div className="flex items-center gap-2">
-              <code className="text-green-400 font-mono text-xs">{peerId}</code>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(peerId);
-                }}
-                className="px-2 py-0.5 text-xs bg-blue-600 hover:bg-blue-500 rounded"
-              >
-                Copy
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="mt-2 text-xs text-gray-400">
-          Deck: {gameState.cards.filter(c => c.ownerId === null).length} | Hand: {handCards.length}
-          {" "}
-          | Dice: {gameState.dice.length}
-        </div>
-
-        {/* Connected peers */}
-        <div className="mt-2 pt-2 border-t border-gray-600">
-          {game.connections.size > 0
-            ? (
-              <div>
-                <div className="text-xs text-green-400 font-medium mb-1">
-                  {game.connections.size} Player{game.connections.size > 1 ? "s" : ""} Connected
-                </div>
-                <div className="text-xs text-gray-500">
-                  {Array.from(game.connections.keys()).map(id => (
-                    <div key={id} className="truncate">• {id.slice(0, 12)}...</div>
-                  ))}
-                </div>
-              </div>
-            )
-            : (
-              <div className="text-xs text-yellow-400">
-                No other players connected
-              </div>
-            )}
-        </div>
-
-        {/* Connect to peer input */}
-        <div className="mt-2 pt-2 border-t border-gray-600">
-          <ConnectToPeerForm onConnect={game.connectToPeer} />
-        </div>
-
-        {/* Instructions when alone */}
-        {game.connections.size === 0 && (
-          <div className="mt-2 pt-2 border-t border-gray-600 text-xs text-gray-500">
-            To play with others:
-            <ol className="list-decimal ml-3 mt-1 space-y-0.5">
-              <li>Share your ID above</li>
-              <li>Or enter their ID below</li>
-            </ol>
-          </div>
-        )}
-      </div>
+      {/* Game status panel */}
+      <GameStatusPanel
+        playerCount={game.connections.size + 1}
+        isSynced={game.isSynced}
+        deckCount={deckCards.length}
+        myHandCount={handCards.length}
+        otherPlayersHands={otherPlayersHands}
+        peerId={peerId}
+      />
     </>
   );
 }

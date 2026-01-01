@@ -4,7 +4,11 @@ import type { Card as CardType } from "../../types/card";
 import { Card } from "./Card";
 
 // Mocks
-vi.mock("@react-three/drei", () => ({}));
+vi.mock("@react-three/drei", () => ({
+  Html: ({ children }: { children: React.ReactNode; }) => (
+    <div data-testid="card-html">{children}</div>
+  ),
+}));
 vi.mock("@react-spring/three", () => ({
   useSpring: () => ({ position: [], rotation: [] }),
   animated: { group: ({ children }: any) => <div data-testid="card-group">{children}</div> },

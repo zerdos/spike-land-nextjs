@@ -33,7 +33,7 @@ describe("useYjsState", () => {
     const { result } = renderHook(() => useYjsState(doc));
 
     expect(result.current.cards).toHaveLength(1);
-    expect(result.current.cards[0].id).toBe("c1");
+    expect(result.current.cards[0]!.id).toBe("c1");
   });
 
   it("updates when deck changes", () => {
