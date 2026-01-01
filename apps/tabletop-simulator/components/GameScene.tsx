@@ -49,12 +49,11 @@ export default function GameScene({
         shadows
         dpr={[1, 1.5]}
         camera={{ position: [0, 8, 8], fov: 45 }}
-        frameloop="demand"
         performance={{ min: 0.5 }}
       >
         <color attach="background" args={["#1a1a1a"]} />
         <Suspense fallback={null}>
-          <Physics gravity={[0, -9.81, 0]} timeStep={1 / 60}>
+          <Physics gravity={[0, -9.81, 0]} timeStep={1 / 60} debug={false}>
             <TableSurface />
 
             {/* Render deck */}

@@ -155,12 +155,12 @@ export async function proxy(request: NextRequest) {
   const cspHeader = `
     default-src 'self';
     img-src 'self' https://*.r2.dev https://*.r2.cloudflarestorage.com https://images.unsplash.com https://avatars.githubusercontent.com https://lh3.googleusercontent.com https://www.facebook.com https://platform-lookaside.fbsbx.com https://vercel.live https://vercel.com data: blob:;
-    script-src 'self' 'nonce-${nonce}' 'unsafe-eval' https://va.vercel-scripts.com https://connect.facebook.net https://vercel.live;
+    script-src 'self' 'nonce-${nonce}' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://va.vercel-scripts.com https://connect.facebook.net https://vercel.live;
     style-src 'self' 'unsafe-inline' https://vercel.live;
-    font-src 'self' https://vercel.live https://assets.vercel.com data:;
+    font-src 'self' https://vercel.live https://assets.vercel.com https://fonts.gstatic.com data:;
     frame-src 'self' https://vercel.live;
-    connect-src 'self' https://*.r2.dev https://*.r2.cloudflarestorage.com https://generativelanguage.googleapis.com https://va.vercel-analytics.com https://vitals.vercel-insights.com https://www.facebook.com https://connect.facebook.net https://vercel.live wss://ws-us3.pusher.com wss://*.peerjs.com;
-    worker-src 'self' blob:;
+    connect-src 'self' blob: data: https://*.r2.dev https://*.r2.cloudflarestorage.com https://generativelanguage.googleapis.com https://va.vercel-analytics.com https://vitals.vercel-insights.com https://www.facebook.com https://connect.facebook.net https://vercel.live https://fonts.gstatic.com https://fonts.googleapis.com wss://ws-us3.pusher.com wss://*.peerjs.com;
+    worker-src 'self' blob: data:;
     frame-ancestors 'self';
     base-uri 'self';
     form-action 'self';
