@@ -115,6 +115,12 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        aurora: {
+          green: "hsl(var(--aurora-green))",
+          teal: "hsl(var(--aurora-teal))",
+          lime: "hsl(var(--aurora-lime))",
+          yellow: "hsl(var(--aurora-yellow))",
+        },
       },
       textColor: {
         primary: "hsl(var(--primary-text))",

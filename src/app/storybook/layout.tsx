@@ -124,7 +124,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void; }) {
         </div>
         <p className="text-[9px] text-muted-foreground leading-snug opacity-50">
           Built for Spike Land Platform<br />
-          © 2024 spike.land
+          © 2026 spike.land
         </p>
       </div>
     </div>

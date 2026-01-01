@@ -156,13 +156,15 @@ export default function TypographyPage() {
           >
             <div className="space-y-2">
               <p className="text-success font-semibold flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-success" /> System ready for deployment.
+                <span className="w-2 h-2 rounded-full bg-success inline-block" />{" "}
+                System ready for deployment.
               </p>
               <p className="text-warning font-semibold flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-warning" /> Token balance low.
+                <span className="w-2 h-2 rounded-full bg-warning inline-block" /> Token balance low.
               </p>
               <p className="text-destructive font-semibold flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-destructive" /> Critical engine failure.
+                <span className="w-2 h-2 rounded-full bg-destructive inline-block" />{" "}
+                Critical engine failure.
               </p>
             </div>
           </ComponentSample>

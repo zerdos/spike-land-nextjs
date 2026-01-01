@@ -965,6 +965,73 @@ export function isGeminiConfigured(): boolean {
   return !!process.env.GEMINI_API_KEY;
 }
 
+// Agent Chat types and functions
+
+export interface ChatMessage {
+  role: "user" | "model";
+  content: string;
+}
+
+export interface GenerateAgentResponseParams {
+  messages: ChatMessage[];
+  systemPrompt?: string;
+}
+
+/**
+ * Generates a text response using Gemini for agent chat.
+ *
+ * @param params - Chat parameters including message history and optional system prompt
+ * @returns The generated text response
+ * @throws Error if API key is not configured or generation fails
+ */
+export async function generateAgentResponse(
+  params: GenerateAgentResponseParams,
+): Promise<string> {
+  const ai = getGeminiClient();
+
+  const defaultSystemPrompt =
+    `You are a helpful AI assistant running in a cloud development environment (Box).
+You help users with coding, debugging, system administration, and general questions.
+Be concise, helpful, and provide practical solutions.`;
+
+  const systemPrompt = params.systemPrompt || defaultSystemPrompt;
+
+  // Convert messages to Gemini format
+  const contents = params.messages.map((msg) => ({
+    role: msg.role === "user" ? "user" : "model",
+    parts: [{ text: msg.content }],
+  }));
+
+  const { data: response, error } = await tryCatch(
+    ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents,
+      config: {
+        systemInstruction: systemPrompt,
+        maxOutputTokens: 2048,
+        temperature: 0.7,
+      },
+    }),
+  );
+
+  if (error) {
+    console.error("[GEMINI_CHAT] Error generating response:", error);
+    throw new Error(
+      `Failed to generate agent response: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`,
+    );
+  }
+
+  const text = response?.text || "";
+
+  if (!text) {
+    throw new Error("No response text received from Gemini");
+  }
+
+  return text;
+}
+
 // MCP Generation types and functions
 
 export interface GenerateImageParams {

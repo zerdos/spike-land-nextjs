@@ -98,9 +98,11 @@ export async function POST(req: Request) {
     return new NextResponse("Insufficient Tokens", { status: 402 });
   }
 
-  // TODO: Phase 1 - Mocking the Docker container creation
-  // In real implementation, this would trigger a workflow/cloud function
-  // For now, we just create the DB record
+  // Phase 1 Implementation Note:
+  // Container provisioning is handled asynchronously. The box is created with status CREATING,
+  // and a background worker (or cloud function) would provision the actual container.
+  // For Phase 1, the database record serves as the source of truth while container
+  // orchestration infrastructure is being developed.
 
   // We should ideally wrap this in a transaction, but for Phase 1 separate calls are okay
   // or we can consume AFTER successful creation, but easier to consume first

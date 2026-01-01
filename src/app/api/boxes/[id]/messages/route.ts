@@ -1,5 +1,7 @@
 import { auth } from "@/auth";
+import { generateAgentResponse, isGeminiConfigured } from "@/lib/ai/gemini-client";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 import { BoxMessageRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -7,8 +9,6 @@ import { z } from "zod";
 const messageSchema = z.object({
   content: z.string().min(1),
 });
-
-import { tryCatch } from "@/lib/try-catch";
 
 export async function POST(
   req: Request,
@@ -75,14 +75,49 @@ export async function POST(
     return new NextResponse("Internal Error", { status: 500 });
   }
 
-  // TODO: Send to agent, get response
-  // For now, create a placeholder agent response
+  // Generate AI response using Gemini
+  let agentResponseContent: string;
+
+  if (!isGeminiConfigured()) {
+    // Fallback if Gemini is not configured
+    agentResponseContent = "AI agent is currently unavailable. Please try again later.";
+  } else {
+    // Fetch previous messages for context
+    const { data: previousMessages } = await tryCatch(
+      prisma.boxMessage.findMany({
+        where: { boxId: id },
+        orderBy: { createdAt: "asc" },
+        take: 20, // Limit context window
+      }),
+    );
+
+    // Build chat history for the AI
+    const chatHistory = (previousMessages || []).map((msg) => ({
+      role: msg.role === BoxMessageRole.USER ? ("user" as const) : ("model" as const),
+      content: msg.content,
+    }));
+
+    // Add the current message
+    chatHistory.push({ role: "user", content: body.content });
+
+    const { data: aiResponse, error: aiError } = await tryCatch(
+      generateAgentResponse({ messages: chatHistory }),
+    );
+
+    if (aiError) {
+      console.error("[BOX_AGENT] AI generation error:", aiError);
+      agentResponseContent = "I encountered an error processing your request. Please try again.";
+    } else {
+      agentResponseContent = aiResponse || "I couldn't generate a response.";
+    }
+  }
+
   const { data: agentMessage, error: agentMessageError } = await tryCatch(
     prisma.boxMessage.create({
       data: {
         boxId: id,
         role: BoxMessageRole.AGENT,
-        content: "Message received. This is a placeholder response.",
+        content: agentResponseContent,
       },
     }),
   );

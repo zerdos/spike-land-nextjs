@@ -23,6 +23,12 @@
   /* Ensure popover colors work in portaled content */
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
+
+  /* Aurora Colors - Explicitly define for v4 compatibility */
+  --color-aurora-green: hsl(var(--aurora-green));
+  --color-aurora-teal: hsl(var(--aurora-teal));
+  --color-aurora-lime: hsl(var(--aurora-lime));
+  --color-aurora-yellow: hsl(var(--aurora-yellow));
 }
 
 /**
@@ -47,58 +53,58 @@
     --font-montserrat:
       "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
-    /* Glass-morphism variables */
+    /* Glass-morphism variables - Refined for "Sleek/Tech" feel */
     --glass-blur-sm: 4px;
-    --glass-blur-md: 8px;
-    --glass-blur-lg: 16px;
-    --glass-blur-xl: 20px;
+    --glass-blur-md: 12px;
+    --glass-blur-lg: 24px;
+    --glass-blur-xl: 40px;
     --glass-blur: var(--glass-blur-md);
-    --glass-blur-mobile: 3px;
-    --glass-opacity-light: 0.85;
-    --glass-opacity-dark: 0.12;
-    --glass-opacity-dark-mobile: 0.7;
-    --shadow-opacity-light: 0.08;
-    --shadow-opacity-dark: 0.35;
+    --glass-blur-mobile: 6px;
+    --glass-opacity-light: 0.9;
+    --glass-opacity-dark: 0.15;
+    --glass-opacity-dark-mobile: 0.8;
+    --shadow-opacity-light: 0.05;
+    --shadow-opacity-dark: 0.4;
 
-    /* Light Mode - Pixel Brand */
-    --background: 210 20% 98%;
-    /* Slightly cooler, brighter grey #F8FAFB */
-    --foreground: 240 24% 9%;
-    /* Carbon Text #12121C */
+    /* Light Mode - Reserved/Clean */
+    --background: 0 0% 100%;
+    --foreground: 240 5% 10%;
+
     --card: 0 0% 100%;
-    /* Pure White for higher contrast #FFFFFF */
-    --card-foreground: 240 24% 9%;
-    /* Carbon Text */
+    --card-foreground: 240 5% 10%;
+
     --popover: 0 0% 100%;
-    /* Pure White */
-    --popover-foreground: 240 24% 9%;
-    /* Carbon Text */
-    --primary: 187 100% 45%;
-    /* Slightly deeper cyan for light mode */
+    --popover-foreground: 240 5% 10%;
+
+    --primary: 160 84% 39%;
+    /* Emerald */
     --primary-foreground: 0 0% 100%;
-    /* White for contrast on deep cyan */
-    --primary-text: 187 100% 25%;
-    /* Accessible Dark Teal for Light Mode Text */
-    --secondary: 240 38% 14%;
-    /* Surface Blue for accents */
+    --primary-text: 160 100% 25%;
+
+    --secondary: 240 4% 16%;
     --secondary-foreground: 0 0% 100%;
-    /* White */
-    --muted: 210 22% 97%;
-    /* Light Surface */
-    --muted-foreground: 240 25% 50%;
-    /* Darker muted */
-    --accent: 187 100% 50%;
-    /* Pixel Cyan */
-    --accent-foreground: 240 24% 9%;
-    /* Carbon Text */
+
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 173 80% 40%;
+    /* Teal */
+    --accent-foreground: 0 0% 100%;
+
     --destructive: 0 84% 60%;
-    /* Shifted towards vibrant Ruby-Red */
     --destructive-foreground: 0 0% 100%;
-    --border: 220 20% 88%;
-    /* Grid Grey */
-    --input: 220 20% 88%;
-    --ring: 187 100% 45%;
-    --radius: 0.875rem;
+
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 160 84% 39%;
+    --radius: 9999px;
+    /* Pill shape default */
+
+    /* Aurora Palette - Defined for usage */
+    --aurora-green: 160 84% 39%;
+    --aurora-teal: 173 80% 40%;
+    --aurora-lime: 84 81% 44%;
+    --aurora-yellow: 48 89% 47%;
 
     /* Semantic Colors - ADDED */
     --success: 145 75% 42%;
@@ -127,74 +133,58 @@
   }
 
   .dark {
-    /* Dark Mode - Pixel Brand (Default/Primary) */
-    --background: 240 45% 4%;
-    /* Darker background for contrast #08080C */
-    --foreground: 0 0% 100%;
-    /* Pure White */
-    --card: 220 30% 14%;
-    /* Dark surface lighter than background #181c25 */
+    /* Dark Mode - Aurora / Project Sonic */
+    --background: 0 0% 9.5%;
+    /* rgb(24, 24, 24) matches approx hsl(0, 0%, 9.4%) */
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 12%;
+    /* Slightly lighter than background */
     --card-foreground: 0 0% 98%;
-    /* Slightly off-white for body reading */
-    --popover: 220 30% 14%;
-    /* Surface Blue */
-    --popover-foreground: 0 0% 100%;
-    /* Pure White */
-    --primary: 187 100% 50%;
-    /* Pixel Cyan #00E5FF */
-    --primary-foreground: 240 45% 4%;
-    /* Dark Space for contrast */
-    --primary-text: 187 100% 50%;
-    /* Original Cyan for Dark Mode */
-    --secondary: 220 20% 25%;
-    /* Darker components */
-    --secondary-foreground: 0 0% 100%;
-    /* Pure White */
-    --muted: 220 30% 12%;
-    /* Focused Muted */
-    --muted-foreground: 220 15% 75%;
-    /* Brightened by ~5% for readability */
-    --accent: 187 100% 50%;
-    /* Pixel Cyan */
-    --accent-foreground: 240 45% 4%;
-    /* Dark Space */
 
-    /* Increased contrast for body reading - Target +10-15% */
-    --foreground: 0 0% 100%;
-    --card-foreground: 0 0% 100%;
-    --muted-foreground: 220 20% 90%;
-    /* Was 220 20% 85%, increased to 90% for mobile contrast */
+    --popover: 240 4% 8%;
+    --popover-foreground: 0 0% 98%;
 
-    /* Semantic Colors - Dark Optimized */
-    --success: 142 70% 50%;
-    --success-foreground: 240 45% 4%;
-    --warning: 38 92% 55%;
-    --warning-foreground: 240 45% 4%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --primary: 160 84% 39%;
+    /* Emerald */
+    --primary-foreground: 240 5% 4%;
+    --primary-text: 160 84% 39%;
 
-    --border: 220 20% 25%;
-    /* Card Border #3F4451 */
-    --input: 220 20% 25%;
-    --ring: 187 100% 50%;
-    /* Pixel Cyan */
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 173 80% 40%;
+    /* Teal */
+    --accent-foreground: 240 5% 4%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 160 84% 39%;
+
+    /* Semantic Colors */
+    --success: 150 90% 35%;
+    --success-foreground: 0 0% 100%;
+    --warning: 45 90% 45%;
+    --warning-foreground: 0 0% 0%;
 
     /* Brand-specific variables */
     --pixel-cyan: 187 100% 50%;
     --pixel-fuchsia: 320 90% 60%;
-    --grid-inactive: 220 30% 12%;
-
-    /* Dark Mode Palette - Enhanced */
-    --surface-blue: 220 30% 14%;
-    --border-dark: 220 20% 25%;
-    --border-item: 220 18% 32%;
+    --grid-inactive: 220 15% 25%;
+    /* Lighter than background for visibility */
 
     /* Chart Colors - Dark mode */
-    --chart-1: 187 100% 50%;
-    --chart-2: 145 75% 45%;
-    --chart-3: 38 92% 55%;
-    --chart-4: 240 38% 40%;
-    --chart-5: 350 85% 58%;
+    --chart-1: 160 84% 39%;
+    --chart-2: 173 80% 40%;
+    --chart-3: 84 81% 44%;
+    --chart-4: 48 89% 47%;
+    --chart-5: 220 14% 96%;
   }
 
   /* Global Styles */
@@ -233,18 +223,19 @@
     inset: 0;
     z-index: -1;
     background: hsl(0 0% 100%);
-    /* Clean White */
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
   }
 
-  /* Dark mode body - Deep Space gradient */
+  /* Dark mode body - Clean stylish background (No grid) */
   .dark body::before {
-    background: linear-gradient(
-      135deg,
-      hsl(240 55% 7%) 0%,
-      hsl(240 45% 10%) 50%,
-      hsl(240 55% 7%) 100%
-    );
+    background:
+      radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 60%),
+      hsl(var(--background));
+    background-image:
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"),
+      radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 60%),
+      hsl(var(--background));
+    background-size: 200px 200px, 100% 100%, 100% 100%;
+    /* Keep subtle noise + top spotlight for premium feel, but NO grid lines */
   }
 
   /* Heading typography - use Montserrat */
@@ -303,11 +294,7 @@
   /* Aura Surfaces: Vibrant, colorful glass variants with deep saturation and bloom glows */
   /* These are now mobile-first with simplified blurs */
   .glass-aura-blue {
-    background: linear-gradient(
-      135deg,
-      rgba(7, 89, 133, 0.6),
-      rgba(7, 89, 133, 0.3)
-    );
+    background: linear-gradient(135deg, rgba(7, 89, 133, 0.6), rgba(7, 89, 133, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -317,11 +304,7 @@
   }
 
   .glass-aura-green {
-    background: linear-gradient(
-      135deg,
-      rgba(20, 83, 45, 0.6),
-      rgba(20, 83, 45, 0.3)
-    );
+    background: linear-gradient(135deg, rgba(20, 83, 45, 0.6), rgba(20, 83, 45, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow: inset 0 1px 1px 0 rgba(34, 197, 94, 0.5), 0 10px 40px -10px rgba(34, 197, 94, 0.3);
@@ -329,11 +312,7 @@
   }
 
   .glass-aura-orange {
-    background: linear-gradient(
-      135deg,
-      rgba(124, 45, 18, 0.6),
-      rgba(124, 45, 18, 0.3)
-    );
+    background: linear-gradient(135deg, rgba(124, 45, 18, 0.6), rgba(124, 45, 18, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -343,11 +322,7 @@
   }
 
   .glass-aura-fuchsia {
-    background: linear-gradient(
-      135deg,
-      rgba(112, 26, 117, 0.6),
-      rgba(112, 26, 117, 0.3)
-    );
+    background: linear-gradient(135deg, rgba(112, 26, 117, 0.6), rgba(112, 26, 117, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -357,11 +332,7 @@
   }
 
   .glass-aura-pink {
-    background: linear-gradient(
-      135deg,
-      rgba(157, 23, 77, 0.6),
-      rgba(157, 23, 77, 0.3)
-    );
+    background: linear-gradient(135deg, rgba(157, 23, 77, 0.6), rgba(157, 23, 77, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -371,11 +342,7 @@
   }
 
   .glass-aura-purple {
-    background: linear-gradient(
-      135deg,
-      rgba(88, 28, 135, 0.6),
-      rgba(88, 28, 135, 0.3)
-    );
+    background: linear-gradient(135deg, rgba(88, 28, 135, 0.6), rgba(88, 28, 135, 0.3));
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -385,11 +352,7 @@
   }
 
   .glass-layers {
-    background: linear-gradient(
-      135deg,
-      rgba(24, 24, 27, 0.8),
-      rgba(24, 24, 27, 0.6)
-    );
+    background: linear-gradient(135deg, rgba(24, 24, 27, 0.8), rgba(24, 24, 27, 0.6));
     backdrop-filter: blur(var(--glass-blur-mobile));
     -webkit-backdrop-filter: blur(var(--glass-blur-mobile));
     box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.1), 0 20px 50px -10px rgba(0, 0, 0, 0.5);
@@ -495,35 +458,19 @@
 
   /* Gradient backgrounds for package cards - using HSL for consistency */
   .gradient-blue {
-    background: linear-gradient(
-      135deg,
-      hsl(217 91% 60%) 0%,
-      hsl(221 83% 53%) 100%
-    );
+    background: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(221 83% 53%) 100%);
   }
 
   .gradient-purple {
-    background: linear-gradient(
-      135deg,
-      hsl(258 90% 66%) 0%,
-      hsl(263 70% 50%) 100%
-    );
+    background: linear-gradient(135deg, hsl(258 90% 66%) 0%, hsl(263 70% 50%) 100%);
   }
 
   .gradient-pink {
-    background: linear-gradient(
-      135deg,
-      hsl(330 81% 60%) 0%,
-      hsl(338 78% 48%) 100%
-    );
+    background: linear-gradient(135deg, hsl(330 81% 60%) 0%, hsl(338 78% 48%) 100%);
   }
 
   .gradient-orange {
-    background: linear-gradient(
-      135deg,
-      hsl(25 95% 53%) 0%,
-      hsl(21 90% 48%) 100%
-    );
+    background: linear-gradient(135deg, hsl(25 95% 53%) 0%, hsl(21 90% 48%) 100%);
   }
 
   /* Theme-aware gradient text utility for hero headings */
@@ -541,19 +488,11 @@
 
   /* Gradient background utilities */
   .bg-gradient-primary {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--primary)),
-      hsl(var(--secondary))
-    );
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
   }
 
   .bg-gradient-accent {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--accent)),
-      hsl(var(--primary))
-    );
+    background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
   }
 
   .bg-gradient-hero {
@@ -615,35 +554,13 @@
       inset 0 1px 1px 0 rgba(0, 229, 255, 0.1);
   }
 
-  /* Grid background pattern for landing page */
+  /* Grid background pattern - REMOVED per user request for clean look */
   .bg-grid-pattern {
-    background-image:
-      linear-gradient(
-        to right,
-        hsl(var(--grid-inactive) / 0.3) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-      to bottom,
-      hsl(var(--grid-inactive) / 0.3) 1px,
-      transparent 1px
-    );
-    background-size: 40px 40px;
+    background-image: none;
   }
 
   .dark .bg-grid-pattern {
-    background-image:
-      linear-gradient(
-        to right,
-        hsl(var(--grid-inactive) / 0.5) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-      to bottom,
-      hsl(var(--grid-inactive) / 0.5) 1px,
-      transparent 1px
-    );
-    background-size: 40px 40px;
+    background-image: none;
   }
 
   /* Cyan pulse animation for loading and active states */
@@ -981,6 +898,7 @@
     100% {
       opacity: 0.3;
     }
+
     50% {
       opacity: 0.8;
     }
@@ -991,6 +909,7 @@
     100% {
       text-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
     }
+
     50% {
       text-shadow: 0 0 40px rgba(34, 211, 238, 0.8), 0 0 60px rgba(34, 211, 238, 0.2);
     }
@@ -1001,6 +920,7 @@
     100% {
       transform: scale(1);
     }
+
     50% {
       transform: scale(1.05);
     }
@@ -1011,6 +931,7 @@
       transform: translateY(-10vh) rotate(0deg);
       opacity: 1;
     }
+
     100% {
       transform: translateY(110vh) rotate(720deg);
       opacity: 0;
@@ -1022,6 +943,7 @@
       transform: scale(0);
       opacity: 1;
     }
+
     100% {
       transform: scale(1);
       opacity: 0;
@@ -1033,6 +955,7 @@
       transform: translateY(100px) scale(0.9) rotate(-2deg);
       opacity: 0;
     }
+
     100% {
       transform: translateY(0) scale(1) rotate(0deg);
       opacity: 1;
@@ -1043,36 +966,45 @@
   .animate-twinkle-slow {
     animation: twinkle-slow 8s ease-in-out infinite;
   }
+
   .animate-glow-pulse {
     animation: glow-pulse 4s ease-in-out infinite;
   }
+
   .animate-digit-pulse {
     animation: digit-pulse 0.3s ease-out;
   }
+
   .animate-confetti-fall {
     animation: confetti-fall 3s linear forwards;
   }
+
   .animate-firework-burst {
     animation: firework-burst 1s ease-out forwards;
   }
+
   .animate-banner-appear {
     animation: banner-appear 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   /* Epic NYE - Floating orbs (GPU accelerated, subtle) */
   @keyframes float-slow {
-    0%, 100% {
+    0%,
+    100% {
       transform: translate(0, 0) scale(1);
     }
+
     50% {
       transform: translate(20px, -30px) scale(1.1);
     }
   }
 
   @keyframes float-slow-reverse {
-    0%, 100% {
+    0%,
+    100% {
       transform: translate(0, 0) scale(1);
     }
+
     50% {
       transform: translate(-20px, 30px) scale(1.1);
     }
@@ -1090,9 +1022,11 @@
 
   /* Gradient text animation */
   @keyframes gradient-x {
-    0%, 100% {
+    0%,
+    100% {
       background-position: 0% 50%;
     }
+
     50% {
       background-position: 100% 50%;
     }
@@ -1109,6 +1043,7 @@
       transform: translate(0, 0) rotate(45deg);
       opacity: 1;
     }
+
     100% {
       transform: translate(300px, 300px) rotate(45deg);
       opacity: 0;
@@ -1133,10 +1068,12 @@
 
   /* Aurora effect - CPU efficient with slow animation */
   @keyframes aurora {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0.3;
       transform: translateX(-10%) scaleY(1);
     }
+
     50% {
       opacity: 0.6;
       transform: translateX(10%) scaleY(1.2);
@@ -1150,15 +1087,19 @@
 
   /* Heartbeat scale for urgency */
   @keyframes heartbeat {
-    0%, 100% {
+    0%,
+    100% {
       transform: scale(1);
     }
+
     15% {
       transform: scale(1.05);
     }
+
     30% {
       transform: scale(1);
     }
+
     45% {
       transform: scale(1.03);
     }
@@ -1170,9 +1111,11 @@
 
   /* Screen pulse for final countdown */
   @keyframes screen-pulse {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0;
     }
+
     50% {
       opacity: 1;
     }
@@ -1188,6 +1131,7 @@
       transform: scale(1);
       opacity: 0.5;
     }
+
     100% {
       transform: scale(1.1);
       opacity: 0;
@@ -1203,6 +1147,7 @@
     0% {
       transform: rotate(0deg);
     }
+
     100% {
       transform: rotate(360deg);
     }
@@ -1226,9 +1171,11 @@
     0% {
       opacity: 0.8;
     }
+
     20% {
       opacity: 0.4;
     }
+
     100% {
       opacity: 0;
     }
@@ -1240,9 +1187,11 @@
 
   /* Dramatic background shift - intensifying colors */
   @keyframes bg-intensity-pulse {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0.3;
     }
+
     50% {
       opacity: 0.6;
     }
@@ -1258,10 +1207,12 @@
       transform: scale(0.5);
       opacity: 1;
     }
+
     50% {
       transform: scale(1.5);
       opacity: 0.8;
     }
+
     100% {
       transform: scale(2);
       opacity: 0;
@@ -1277,6 +1228,7 @@
     0% {
       background-position: -200% center;
     }
+
     100% {
       background-position: 200% center;
     }
@@ -1293,6 +1245,7 @@
       transform: scale(1);
       opacity: 1;
     }
+
     100% {
       transform: scale(100);
       opacity: 0;
@@ -1309,12 +1262,15 @@
       transform: translateY(100vh) rotate(0deg);
       opacity: 0;
     }
+
     10% {
       opacity: 1;
     }
+
     90% {
       opacity: 1;
     }
+
     100% {
       transform: translateY(-20vh) rotate(360deg);
       opacity: 0;
@@ -1331,9 +1287,11 @@
       transform: translate(0, 0) scale(1);
       opacity: 0.6;
     }
+
     50% {
       opacity: 1;
     }
+
     100% {
       transform: translate(calc(50vw - 100%), calc(50vh - 100%)) scale(0);
       opacity: 0;
@@ -1346,10 +1304,12 @@
 
   /* Sparkle twinkle for extra magic */
   @keyframes sparkle {
-    0%, 100% {
+    0%,
+    100% {
       transform: scale(0) rotate(0deg);
       opacity: 0;
     }
+
     50% {
       transform: scale(1) rotate(180deg);
       opacity: 1;
@@ -1365,15 +1325,19 @@
     0% {
       opacity: 0.7;
     }
+
     10% {
       opacity: 0;
     }
+
     15% {
       opacity: 0.5;
     }
+
     20% {
       opacity: 0;
     }
+
     100% {
       opacity: 0;
     }
@@ -1385,30 +1349,39 @@
 
   /* Screen shake - dramatic shake effect */
   @keyframes screen-shake {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateX(0);
     }
+
     10% {
       transform: translateX(-4px) rotate(-0.5deg);
     }
+
     20% {
       transform: translateX(4px) rotate(0.5deg);
     }
+
     30% {
       transform: translateX(-3px) rotate(-0.3deg);
     }
+
     40% {
       transform: translateX(3px) rotate(0.3deg);
     }
+
     50% {
       transform: translateX(-2px);
     }
+
     60% {
       transform: translateX(2px);
     }
+
     70% {
       transform: translateX(-1px);
     }
+
     80% {
       transform: translateX(1px);
     }
@@ -1424,10 +1397,12 @@
       opacity: 1;
       transform: scale(1);
     }
+
     30% {
       opacity: 0.8;
       transform: scale(1.1);
     }
+
     100% {
       opacity: 0;
       transform: scale(1.2);
@@ -1440,18 +1415,22 @@
 
   /* Glitch text effect */
   @keyframes glitch {
-    0%, 100% {
+    0%,
+    100% {
       transform: translate(0);
       text-shadow: -2px 0 red, 2px 0 cyan;
     }
+
     25% {
       transform: translate(-2px, 1px);
       text-shadow: 2px 0 red, -2px 0 cyan;
     }
+
     50% {
       transform: translate(2px, -1px);
       text-shadow: -2px 0 cyan, 2px 0 red;
     }
+
     75% {
       transform: translate(-1px, 2px);
       text-shadow: 2px 0 cyan, -2px 0 red;
@@ -1464,9 +1443,11 @@
 
   /* Zoom pulse - dramatic zoom effect */
   @keyframes zoom-pulse {
-    0%, 100% {
+    0%,
+    100% {
       transform: scale(1);
     }
+
     50% {
       transform: scale(1.02);
     }
@@ -1482,12 +1463,15 @@
       transform: translateY(-100vh);
       opacity: 0;
     }
+
     10% {
       opacity: 1;
     }
+
     90% {
       opacity: 1;
     }
+
     100% {
       transform: translateY(100vh);
       opacity: 0;
@@ -1504,13 +1488,16 @@
       transform: translateY(-20px) scale(0);
       opacity: 0;
     }
+
     20% {
       transform: translateY(20vh) scale(1);
       opacity: 1;
     }
+
     80% {
       opacity: 1;
     }
+
     100% {
       transform: translateY(100vh) scale(0.5);
       opacity: 0;
@@ -1526,6 +1513,7 @@
     0% {
       transform: translate(-50%, -50%) rotate(0deg);
     }
+
     100% {
       transform: translate(-50%, -50%) rotate(360deg);
     }
@@ -1541,6 +1529,7 @@
       transform: translateZ(0) scale(1);
       opacity: 1;
     }
+
     100% {
       transform: translateZ(200px) scale(2);
       opacity: 0;
@@ -1556,6 +1545,7 @@
     0% {
       filter: hue-rotate(0deg);
     }
+
     100% {
       filter: hue-rotate(360deg);
     }
@@ -1570,6 +1560,7 @@
     0% {
       transform: translateY(0);
     }
+
     100% {
       transform: translateY(calc(50vh - 40px));
     }
@@ -1581,10 +1572,12 @@
 
   /* Sound bar - music visualizer effect */
   @keyframes sound-bar {
-    0%, 100% {
+    0%,
+    100% {
       transform: scaleY(0.3);
       opacity: 0.5;
     }
+
     50% {
       transform: scaleY(1);
       opacity: 1;
@@ -1602,9 +1595,11 @@
       transform: scale(1);
       opacity: 1;
     }
+
     50% {
       opacity: 1;
     }
+
     100% {
       transform: scale(80);
       opacity: 0;
@@ -1621,9 +1616,11 @@
       transform: rotate(var(--rotation, 0deg)) scaleY(0);
       opacity: 1;
     }
+
     50% {
       opacity: 1;
     }
+
     100% {
       transform: rotate(var(--rotation, 0deg)) scaleY(3);
       opacity: 0;
@@ -1640,6 +1637,7 @@
       transform: translateX(-100vw);
       opacity: 1;
     }
+
     100% {
       transform: translateX(100vw);
       opacity: 0.5;
@@ -1656,10 +1654,12 @@
       opacity: 0;
       transform: scale(0.5);
     }
+
     50% {
       opacity: 1;
       transform: scale(1.2);
     }
+
     100% {
       opacity: 0.6;
       transform: scale(1);
@@ -1676,10 +1676,12 @@
       opacity: 0;
       transform: translateY(-50%) scaleX(0);
     }
+
     50% {
       opacity: 1;
       transform: translateY(-50%) scaleX(1.5);
     }
+
     100% {
       opacity: 0.4;
       transform: translateY(-50%) scaleX(1);
@@ -1696,6 +1698,7 @@
       transform: translate(0, 0) rotate(0deg);
       opacity: 1;
     }
+
     100% {
       transform: translate(40vw, -60vh) rotate(720deg);
       opacity: 0;
@@ -1712,6 +1715,7 @@
       transform: translate(0, 0) rotate(0deg);
       opacity: 1;
     }
+
     100% {
       transform: translate(-40vw, -60vh) rotate(-720deg);
       opacity: 0;
@@ -1724,13 +1728,23 @@
 
   /* Electric arc - flickering lightning */
   @keyframes electric-arc {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0;
     }
-    10%, 30%, 50%, 70%, 90% {
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
       opacity: 0.8;
     }
-    20%, 40%, 60%, 80% {
+
+    20%,
+    40%,
+    60%,
+    80% {
       opacity: 0.3;
     }
   }
@@ -1741,10 +1755,12 @@
 
   /* Spark - random flickering particles */
   @keyframes spark {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0;
       transform: scale(0);
     }
+
     50% {
       opacity: 1;
       transform: scale(1.5);
@@ -1760,6 +1776,7 @@
     0% {
       transform: translateX(-100%) skewX(-15deg);
     }
+
     100% {
       transform: translateX(200%) skewX(-15deg);
     }
@@ -1771,9 +1788,11 @@
 
   /* Text shimmer - subtle glow pulse */
   @keyframes text-shimmer {
-    0%, 100% {
+    0%,
+    100% {
       text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 215, 0, 0.3);
     }
+
     50% {
       text-shadow:
         0 0 40px rgba(255, 255, 255, 0.8),
@@ -1792,9 +1811,11 @@
       transform: scale(0) rotate(0deg);
       opacity: 1;
     }
+
     50% {
       opacity: 1;
     }
+
     100% {
       transform: scale(2) rotate(45deg);
       opacity: 0;
@@ -1811,12 +1832,15 @@
       transform: translateY(100vh) rotate(-10deg);
       opacity: 0;
     }
+
     20% {
       opacity: 0.15;
     }
+
     80% {
       opacity: 0.15;
     }
+
     100% {
       transform: translateY(-20vh) rotate(10deg);
       opacity: 0;
@@ -1829,9 +1853,11 @@
 
   /* Victory glow - pulsing celebration */
   @keyframes victory-glow {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 100, 0, 0.3);
     }
+
     50% {
       box-shadow:
         0 0 60px rgba(255, 215, 0, 0.8),
@@ -1846,15 +1872,19 @@
 
   /* Chromatic shift - color separation effect */
   @keyframes chromatic-shift {
-    0%, 100% {
+    0%,
+    100% {
       text-shadow: -2px 0 #ff0000, 2px 0 #00ffff;
     }
+
     25% {
       text-shadow: 2px 0 #ff0000, -2px 0 #00ffff;
     }
+
     50% {
       text-shadow: -2px 2px #ff0000, 2px -2px #00ffff;
     }
+
     75% {
       text-shadow: 2px -2px #ff0000, -2px 2px #00ffff;
     }
@@ -1871,10 +1901,12 @@
 
   /* Disco beam - rotating light rays */
   @keyframes disco-beam {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0.3;
       transform: rotate(var(--rotation, 0deg)) scaleY(1);
     }
+
     50% {
       opacity: 0.7;
       transform: rotate(var(--rotation, 0deg)) scaleY(1.2);
@@ -1891,12 +1923,15 @@
       transform: translateX(-50vw) rotate(-30deg);
       opacity: 0;
     }
+
     20% {
       opacity: 1;
     }
+
     80% {
       opacity: 1;
     }
+
     100% {
       transform: translateX(150vw) rotate(30deg);
       opacity: 0;
@@ -1913,9 +1948,11 @@
       transform: translateY(0);
       opacity: 1;
     }
+
     70% {
       opacity: 1;
     }
+
     100% {
       transform: translateY(-70vh);
       opacity: 0;
@@ -1932,10 +1969,12 @@
       transform: translateX(-50%) scale(0);
       opacity: 0;
     }
+
     50% {
       transform: translateX(-50%) scale(1);
       opacity: 1;
     }
+
     100% {
       transform: translateX(-50%) scale(2);
       opacity: 0;
@@ -1952,21 +1991,27 @@
     0% {
       background-color: rgba(255, 0, 0, 0.1);
     }
+
     16% {
       background-color: rgba(255, 165, 0, 0.1);
     }
+
     33% {
       background-color: rgba(255, 255, 0, 0.1);
     }
+
     50% {
       background-color: rgba(0, 255, 0, 0.1);
     }
+
     66% {
       background-color: rgba(0, 0, 255, 0.1);
     }
+
     83% {
       background-color: rgba(128, 0, 128, 0.1);
     }
+
     100% {
       background-color: rgba(255, 0, 0, 0.1);
     }
@@ -1982,14 +2027,17 @@
       transform: scale(0.5);
       opacity: 0;
     }
+
     30% {
       transform: scale(1.2);
       opacity: 1;
     }
+
     70% {
       transform: scale(1);
       opacity: 1;
     }
+
     100% {
       transform: scale(1.1);
       opacity: 0;
@@ -2006,19 +2054,24 @@
       transform: scale(1);
       opacity: 0.15;
     }
+
     15% {
       transform: scale(1.03);
       opacity: 0.25;
     }
+
     30% {
       transform: scale(1);
       opacity: 0.15;
     }
+
     45% {
       transform: scale(1.02);
       opacity: 0.2;
     }
-    60%, 100% {
+
+    60%,
+    100% {
       transform: scale(1);
       opacity: 0.1;
     }
@@ -2034,6 +2087,7 @@
       transform: rotateX(-90deg) scale(0.9);
       opacity: 0.5;
     }
+
     100% {
       transform: rotateX(0deg) scale(1);
       opacity: 1;
@@ -2046,12 +2100,15 @@
 
   /* Subtle shake for highlighted digits */
   @keyframes shake-subtle {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateX(0);
     }
+
     25% {
       transform: translateX(-2px);
     }
+
     75% {
       transform: translateX(2px);
     }

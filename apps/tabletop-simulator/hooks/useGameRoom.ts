@@ -1,8 +1,9 @@
 "use client";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { usePeer } from "./usePeer";
 import { usePeerConnection } from "./usePeerConnection";
 import { usePeerDataChannel } from "./usePeerDataChannel";
+import { usePeerDiscovery } from "./usePeerDiscovery";
 import { useYjsSync } from "./useYjsSync";
 
 export function useGameRoom(roomId: string) {
@@ -23,6 +24,20 @@ export function useGameRoom(roomId: string) {
   // Pass the data handler directly to usePeerConnection
   // This ensures the listener is attached immediately when connection opens
   const { connections, connectData } = usePeerConnection(peer, onPeerData);
+
+  // Get set of connected peer IDs for discovery
+  const connectedPeerIds = useMemo(() => {
+    return new Set(connections.keys());
+  }, [connections]);
+
+  // Automatic peer discovery via API
+  usePeerDiscovery({
+    roomId,
+    peerId,
+    connectedPeers: connectedPeerIds,
+    onPeerDiscovered: connectData,
+    enabled: !!peer && !!peerId && isSynced,
+  });
 
   // Send full state when new peers connect
   useEffect(() => {
