@@ -15,12 +15,11 @@ const GameScene = dynamic(
 );
 
 function GameUI() {
-  const { controls, media, doc } = useGame(); // access exposed state
+  const { controls, media } = useGame();
   const [handOpen, setHandOpen] = useState(false);
 
-  // Wire up actions to updating doc
   const handleDiceRoll = (type: string) => {
-    // rollDice(doc, ...);
+    // TODO: Wire up to CRDT rollDice function
     console.log("Rolling", type);
   };
 

@@ -1,6 +1,5 @@
 "use client";
 import { useEffect } from "react";
-import { addPlayer } from "../lib/crdt/game-document";
 import { usePeer } from "./usePeer";
 import { usePeerConnection } from "./usePeerConnection";
 import { usePeerDataChannel } from "./usePeerDataChannel";

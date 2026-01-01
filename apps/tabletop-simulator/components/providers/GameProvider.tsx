@@ -4,7 +4,17 @@ import { useGameMedia } from "../../hooks/useGameMedia";
 import { useGameRoom } from "../../hooks/useGameRoom";
 import { useTouchControls } from "../../hooks/useTouchControls";
 
-const GameContext = createContext<any>(null);
+interface GameContextValue {
+  doc: ReturnType<typeof useGameRoom>["doc"];
+  peerId: string | null;
+  connections: ReturnType<typeof useGameRoom>["connections"];
+  connectToPeer: ReturnType<typeof useGameRoom>["connectToPeer"];
+  isSynced: boolean;
+  controls: ReturnType<typeof useTouchControls>;
+  media: ReturnType<typeof useGameMedia>;
+}
+
+const GameContext = createContext<GameContextValue | null>(null);
 
 export function GameProvider({ roomId, children }: { roomId: string; children: ReactNode; }) {
   const room = useGameRoom(roomId);

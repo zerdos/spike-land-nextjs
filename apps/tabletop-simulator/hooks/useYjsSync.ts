@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { IndexeddbPersistence } from "y-indexeddb";
-import * as Y from "yjs";
 import { createGameDocument } from "../lib/crdt/game-document";
 
 export function useYjsSync(roomId: string) {

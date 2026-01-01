@@ -1,7 +1,11 @@
 "use client";
+import Peer from "peerjs";
 import { useCallback, useState } from "react";
 
-export function useGameMedia(peer: any, connections: any) {
+export function useGameMedia(
+  peer: Peer | null,
+  connections: Map<string, { dataConnection: unknown; }>,
+) {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState<Map<string, MediaStream>>(new Map());
 
@@ -21,7 +25,7 @@ export function useGameMedia(peer: any, connections: any) {
 
     // Naively call keys in connections map
     // In real app, check if already called
-    connections.forEach((_: any, peerId: string) => {
+    connections.forEach((_: { dataConnection: unknown; }, peerId: string) => {
       const call = peer.call(peerId, localStream);
       call.on("stream", (remoteStream: MediaStream) => {
         setRemoteStreams(prev => new Map(prev).set(peerId, remoteStream));

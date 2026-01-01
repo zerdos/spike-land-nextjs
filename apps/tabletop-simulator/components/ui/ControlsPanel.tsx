@@ -12,9 +12,13 @@ export function ControlsPanel(
   { mode, onToggleMode, onDiceRoll, onToggleHand }: ControlsPanelProps,
 ) {
   return (
-    <div className="fixed bottom-6 left-6 flex flex-col gap-4 z-40 pointer-events-auto">
+    <div
+      className="fixed bottom-6 left-6 flex flex-col gap-4 z-40 pointer-events-auto"
+      data-testid="controls-panel"
+    >
       <button
         onClick={onToggleMode}
+        data-testid="mode-toggle"
         className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 ${
           mode === "interaction"
             ? "bg-blue-600 text-white ring-2 ring-blue-300"

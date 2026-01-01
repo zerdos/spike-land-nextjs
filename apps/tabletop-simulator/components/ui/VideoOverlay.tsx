@@ -26,7 +26,7 @@ interface VideoOverlayProps {
 
 export function VideoOverlay({ localStream, remoteStreams }: VideoOverlayProps) {
   return (
-    <div className="fixed top-4 right-4 flex flex-col gap-2 z-50">
+    <div className="fixed top-4 right-4 flex flex-col gap-2 z-50" data-testid="video-overlay">
       {localStream && (
         <div className="relative">
           <VideoPlayer stream={localStream} muted />

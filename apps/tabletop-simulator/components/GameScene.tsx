@@ -1,6 +1,6 @@
 "use client";
 import { Canvas } from "@react-three/fiber";
-import { Physics, RigidBody } from "@react-three/rapier";
+import { Physics } from "@react-three/rapier";
 import { Suspense } from "react";
 import type { GameState } from "../types/game";
 import { GameCamera } from "./scene/Camera";

@@ -1,6 +1,6 @@
 "use client";
 import Peer from "peerjs";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export function usePeer() {
   const [peer, setPeer] = useState<Peer | null>(null);

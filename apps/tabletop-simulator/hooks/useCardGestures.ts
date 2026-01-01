@@ -1,6 +1,5 @@
 import { ThreeEvent } from "@react-three/fiber";
 import { useDrag } from "@use-gesture/react";
-import { Vector3 } from "three";
 
 export function useCardGestures(
   id: string,
@@ -8,7 +7,7 @@ export function useCardGestures(
   onFlip: (id: string) => void,
 ) {
   // Simple tap detection
-  const bind = useDrag(({ active, movement: [x, y], timeStamp, event, tap }) => {
+  const bind = useDrag(({ active, event, tap }) => {
     // Cast event to ThreeEvent to access 3D point
     const e = event as unknown as ThreeEvent<PointerEvent>;
     e.stopPropagation();

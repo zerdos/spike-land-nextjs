@@ -1,11 +1,10 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import * as Y from "yjs";
 import { Card } from "../../types/card";
 import { Player } from "../../types/game";
 import {
   addPlayer,
   createGameDocument,
-  GAME_DOC_KEYS,
   getDeckArray,
   getPlayersMap,
   moveCard,

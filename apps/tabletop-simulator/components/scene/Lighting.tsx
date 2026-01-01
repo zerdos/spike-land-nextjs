@@ -1,5 +1,5 @@
 "use client";
-import { ContactShadows, Environment } from "@react-three/drei";
+import { ContactShadows } from "@react-three/drei";
 
 export function TableLighting() {
   return (

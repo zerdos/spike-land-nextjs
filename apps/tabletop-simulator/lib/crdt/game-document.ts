@@ -93,19 +93,20 @@ export function flipCard(doc: Y.Doc, cardId: string) {
 }
 
 export function rollDice(doc: Y.Doc, diceId: string, seed: number) {
-  const diceList = getDiceArray(doc);
-  // Similar search logic
-  for (let i = 0; i < diceList.length; i++) {
-    if (diceList.get(i).id === diceId) {
-      const die = diceList.get(i);
-      const updated = {
-        ...die,
-        isRolling: true,
-        seed,
-      };
-      diceList.delete(i, 1);
-      diceList.insert(i, [updated]);
-      break;
+  doc.transact(() => {
+    const diceList = getDiceArray(doc);
+    for (let i = 0; i < diceList.length; i++) {
+      if (diceList.get(i).id === diceId) {
+        const die = diceList.get(i);
+        const updated = {
+          ...die,
+          isRolling: true,
+          seed,
+        };
+        diceList.delete(i, 1);
+        diceList.insert(i, [updated]);
+        break;
+      }
     }
-  }
+  });
 }

@@ -1,6 +1,5 @@
 "use client";
 import { animated, useSpring } from "@react-spring/three";
-import * as THREE from "three";
 import { useCardGestures } from "../../hooks/useCardGestures";
 import { Card as CardType } from "../../types/card";
 
@@ -21,9 +20,14 @@ export function Card({ card, isOwner, onMove, onFlip }: CardProps) {
 
   const bind = useCardGestures(card.id, onMove, onFlip);
 
+  const gestureHandlers = bind();
+
   return (
-    // @ts-ignore
-    <animated.group position={position} rotation={rotation} {...bind()}>
+    <animated.group
+      position={position as unknown as [number, number, number]}
+      rotation={rotation as unknown as [number, number, number]}
+      {...(gestureHandlers as Record<string, unknown>)}
+    >
       <mesh castShadow receiveShadow>
         <boxGeometry args={[2.5, 3.5, 0.05]} />
         <meshStandardMaterial color="white" />

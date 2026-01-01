@@ -8,7 +8,7 @@ export function usePeerDataChannel(
 ) {
   // Listen for local updates and broadcast
   useEffect(() => {
-    const handleUpdate = (update: Uint8Array, origin: any) => {
+    const handleUpdate = (update: Uint8Array, origin: unknown) => {
       if (origin !== "remote") {
         connections.forEach((conn) => {
           if (conn.dataConnection?.open) {

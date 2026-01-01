@@ -25,12 +25,10 @@ Given("I am in a game room", async function(this: CustomWorld) {
 });
 
 Then("I should see the controls panel", async function(this: CustomWorld) {
-  await expect(this.page.locator('button[title="Switch to Interact Mode"]')).toBeVisible();
+  await expect(this.page.locator('[data-testid="controls-panel"]')).toBeVisible();
 });
 
 Then("I should see the video overlay", async function(this: CustomWorld) {
-  // Video overlay might take time to mount/init peer
-  // We check for the container
   // Video overlay container is always rendered, but video elements depend on streams
-  await expect(this.page.locator(".fixed.top-4.right-4")).toBeVisible();
+  await expect(this.page.locator('[data-testid="video-overlay"]')).toBeVisible();
 });
