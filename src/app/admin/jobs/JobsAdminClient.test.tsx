@@ -410,7 +410,7 @@ describe("JobsAdminClient", () => {
     }
 
     await waitFor(() => {
-      expect(screen.getByText("Prompt")).toBeInTheDocument();
+      expect(screen.getByText("Final Prompt")).toBeInTheDocument();
       expect(screen.getByText("Enhance this image to high resolution"))
         .toBeInTheDocument();
     });

@@ -262,6 +262,30 @@ async function saveAnalysisToDb(
 }
 
 /**
+ * Step 7: Save prompt and model to database before enhancement
+ *
+ * Error Boundary: PROMPTING (non-recoverable, retryable)
+ * - On failure: Error propagates, workflow retries
+ * - Persisting prompt before enhancement aids debugging if generation fails
+ */
+async function savePromptToDb(
+  jobId: string,
+  prompt: string,
+  model: string,
+): Promise<void> {
+  "use step";
+
+  await prisma.imageEnhancementJob.update({
+    where: { id: jobId },
+    data: {
+      geminiPrompt: prompt,
+      geminiModel: model,
+      currentStage: WorkflowStage.PROMPTING,
+    },
+  });
+}
+
+/**
  * Step 4b: Download and prepare blend source image for reference
  *
  * Error Boundary: BLEND_SOURCE (recoverable)
@@ -799,14 +823,7 @@ async function executeEnhancementWorkflow(
   const modelToUse = getModelForTier(tier);
 
   // Save prompt to DB immediately so it's available for debugging even if generation fails
-  await prisma.imageEnhancementJob.update({
-    where: { id: jobId },
-    data: {
-      geminiPrompt: dynamicPrompt,
-      geminiModel: modelToUse,
-      currentStage: WorkflowStage.PROMPTING,
-    },
-  });
+  await savePromptToDb(jobId, dynamicPrompt, modelToUse);
   recordStageSuccess(context, WorkflowStage.PROMPTING);
 
   // Step 7: Enhance with Gemini using dynamic prompt (ENHANCE - selective retry)
