@@ -786,8 +786,8 @@ describe("gemini-client", () => {
     });
 
     it("should have a reasonable timeout constant", () => {
-      // Verify the timeout constant exists and is set to 5 minutes
-      expect(GEMINI_TIMEOUT_MS).toBe(5 * 60 * 1000);
+      // Verify the timeout constant exists and is set to 10 minutes
+      expect(GEMINI_TIMEOUT_MS).toBe(10 * 60 * 1000);
     });
 
     it("should handle stream error during processing", async () => {
@@ -1592,9 +1592,9 @@ describe("gemini-client", () => {
     });
 
     it("should have timeout constant configured correctly", () => {
-      // Verify the timeout is set to 5 minutes (300 seconds)
-      expect(GEMINI_TIMEOUT_MS).toBe(5 * 60 * 1000);
-      expect(GEMINI_TIMEOUT_MS).toBe(300000);
+      // Verify the timeout is set to 10 minutes (600 seconds)
+      expect(GEMINI_TIMEOUT_MS).toBe(10 * 60 * 1000);
+      expect(GEMINI_TIMEOUT_MS).toBe(600000);
     });
 
     it("should timeout and reject for enhanceImageWithGemini when stream takes too long", async () => {

@@ -15,6 +15,7 @@ vi.mock("@/lib/auth/admin-middleware", () => ({
 }));
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
+  usePathname: vi.fn().mockReturnValue("/admin"),
 }));
 vi.mock("next/headers", () => ({
   headers: vi.fn().mockResolvedValue({
