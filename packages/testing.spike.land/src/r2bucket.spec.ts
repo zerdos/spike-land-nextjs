@@ -198,7 +198,13 @@ describe("R2BucketHandler", () => {
 
   describe("GET Request Handling", () => {
     it("should successfully retrieve object from R2 bucket", async () => {
-      const mockBody = new Blob(["test content"]);
+      // Use ReadableStream instead of Blob to match R2ObjectBody.body type
+      const mockBody = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("test content"));
+          controller.close();
+        },
+      });
       const mockR2Object: R2Object = {
         writeHttpMetadata: (headers: Headers) => {
           headers.set("X-Test-Header", "test-value");
