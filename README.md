@@ -23,11 +23,14 @@ pipeline.
 
 This project is a monorepo containing multiple packages:
 
-| Package                                 | Description                            | Documentation                                    |
-| --------------------------------------- | -------------------------------------- | ------------------------------------------------ |
-| **Web App** (`src/`)                    | Next.js 15 web application             | This README                                      |
-| **Mobile App** (`packages/mobile-app/`) | Expo/React Native mobile app           | [Mobile README](./packages/mobile-app/README.md) |
-| **Shared** (`packages/shared/`)         | Shared types, constants, and utilities | [Shared README](./packages/shared/README.md)     |
+| Package                                             | Description                             | Documentation                                             |
+| --------------------------------------------------- | --------------------------------------- | --------------------------------------------------------- |
+| **Web App** (`src/`)                                | Next.js 15 web application              | This README                                               |
+| **Code Editor** (`packages/code/`)                  | React code editor (Vite + Monaco)       | [Code README](./packages/code/README.md)                  |
+| **Backend Worker** (`packages/testing.spike.land/`) | Cloudflare Worker backend with MCP      | [Backend README](./packages/testing.spike.land/README.md) |
+| **Transpiler** (`packages/js.spike.land/`)          | Cloudflare Worker transpilation service | [Transpiler README](./packages/js.spike.land/README.md)   |
+| **Mobile App** (`packages/mobile-app/`)             | Expo/React Native mobile app            | [Mobile README](./packages/mobile-app/README.md)          |
+| **Shared** (`packages/shared/`)                     | Shared types, constants, and utilities  | [Shared README](./packages/shared/README.md)              |
 
 ### Cross-Platform Code Sharing
 

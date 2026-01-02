@@ -2,6 +2,16 @@ import { HTML, importMap, md5 } from "@spike-npm-land/code";
 import type { Code } from "../chatRoom";
 import { AiRoutes } from "./aiRoutes";
 
+/**
+ * Sanitizes a codeSpace parameter to prevent XSS attacks.
+ * Only allows alphanumeric characters, hyphens, and underscores.
+ */
+function sanitizeCodeSpace(codeSpace: string | null): string {
+  if (!codeSpace) return "empty";
+  // Only allow safe characters: alphanumeric, hyphens, underscores
+  return codeSpace.replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
 export class LiveRoutes {
   private aiRoutes: AiRoutes;
 
@@ -74,7 +84,7 @@ export class LiveRoutes {
     _request: Request,
     url: URL,
   ): Promise<Response> {
-    const codeSpace = url.searchParams.get("room");
+    const codeSpace = sanitizeCodeSpace(url.searchParams.get("room"));
 
     return new Response(
       `import { jsx as jsX } from "@emotion/react";
@@ -98,7 +108,7 @@ export class LiveRoutes {
     _request: Request,
     url: URL,
   ): Promise<Response> {
-    const codeSpace = url.searchParams.get("room");
+    const codeSpace = sanitizeCodeSpace(url.searchParams.get("room"));
     const origin: string = this.code.getOrigin();
 
     const code = `import App from "${origin}/live/${codeSpace}/index";
@@ -150,7 +160,7 @@ export class LiveRoutes {
     _request: Request,
     url: URL,
   ): Promise<Response> {
-    const codeSpace = url.searchParams.get("room");
+    const codeSpace = sanitizeCodeSpace(url.searchParams.get("room"));
     const origin: string = this.code.getOrigin();
 
     const code = `import App from "${origin}/live/${codeSpace}/index";
@@ -181,7 +191,7 @@ export class LiveRoutes {
     _request: Request,
     url: URL,
   ): Promise<Response> {
-    const codeSpace = url.searchParams.get("room");
+    const codeSpace = sanitizeCodeSpace(url.searchParams.get("room"));
     const origin: string = this.code.getOrigin();
     return fetch(
       `https://spike-land-renderer.spikeland.workers.dev/?url=${origin}/live/${codeSpace}/embed&now=${Date.now()}`,

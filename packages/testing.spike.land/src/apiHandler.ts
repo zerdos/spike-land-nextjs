@@ -1,6 +1,58 @@
 import { HTML } from "@spike-npm-land/code";
 import type Env from "./env";
 
+/**
+ * Validates a URL to prevent SSRF attacks.
+ * Blocks requests to internal/private IP ranges and metadata endpoints.
+ */
+function isAllowedUrl(urlString: string): boolean {
+  try {
+    const parsed = new URL(urlString);
+
+    // Block non-HTTP(S) protocols
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      return false;
+    }
+
+    const hostname = parsed.hostname.toLowerCase();
+
+    // Block localhost and loopback
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "[::1]" ||
+      hostname === "0.0.0.0"
+    ) {
+      return false;
+    }
+
+    // Block cloud metadata endpoints
+    if (hostname === "169.254.169.254" || hostname === "metadata.google.internal") {
+      return false;
+    }
+
+    // Block private IP ranges (RFC 1918)
+    const ipParts = hostname.split(".");
+    if (ipParts.length === 4) {
+      const firstOctet = parseInt(ipParts[0], 10);
+      const secondOctet = parseInt(ipParts[1], 10);
+
+      // 10.x.x.x
+      if (firstOctet === 10) return false;
+      // 172.16.x.x - 172.31.x.x
+      if (firstOctet === 172 && secondOctet >= 16 && secondOctet <= 31) return false;
+      // 192.168.x.x
+      if (firstOctet === 192 && secondOctet === 168) return false;
+      // 169.254.x.x (link-local)
+      if (firstOctet === 169 && secondOctet === 254) return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function handleApiRequest(
   path: string[],
   request: Request,
@@ -12,6 +64,12 @@ export async function handleApiRequest(
         const { url, options } = await request.json<
           { url: string; options: RequestInit; }
         >();
+
+        // Validate URL to prevent SSRF attacks
+        if (!isAllowedUrl(url)) {
+          return new Response("URL not allowed", { status: 403 });
+        }
+
         try {
           return await fetch(url, options) as unknown as Response;
         } catch (_error) {
