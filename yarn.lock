@@ -9930,10 +9930,14 @@ __metadata:
   resolution: "@spike-npm-land/transpile@workspace:packages/js.spike.land"
   dependencies:
     "@cloudflare/kv-asset-handler": "npm:0.4.1"
+    "@cloudflare/vitest-pool-workers": "npm:0.11.1"
     "@spike-npm-land/code": "npm:0.9.56"
+    "@vitest/runner": "npm:4.0.16"
+    "@vitest/snapshot": "npm:4.0.16"
     esbuild-wasm: "npm:0.27.2"
     rimraf: "npm:6.1.2"
     typescript: "npm:5.9.3"
+    vitest: "npm:4.0.16"
     wrangler: "npm:4.54.0"
   languageName: unknown
   linkType: soft
