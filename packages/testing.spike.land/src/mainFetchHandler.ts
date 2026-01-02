@@ -19,6 +19,12 @@ const securityHeaders: Record<string, string> = {
  * Adds security headers to a response.
  */
 function addSecurityHeaders(response: Response): Response {
+  // Skip WebSocket upgrade responses - they cannot be reconstructed
+  // and don't need security headers
+  if (response.status === 101) {
+    return response;
+  }
+
   const newHeaders = new Headers(response.headers);
   for (const [key, value] of Object.entries(securityHeaders)) {
     // Don't override if already set
