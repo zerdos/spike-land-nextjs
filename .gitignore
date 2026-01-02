@@ -60,3 +60,6 @@ e2e-reports/
 .wrangler/
 .env*.local
 prisma/generated/
+
+
+.Jules
