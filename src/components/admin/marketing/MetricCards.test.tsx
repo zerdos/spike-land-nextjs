@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { MetricCard, MetricCardData, MetricCards } from "./MetricCards";
+import type { MetricCardData } from "./MetricCards";
+import { MetricCard, MetricCards } from "./MetricCards";
 
 describe("MetricCard", () => {
   const baseMetric: MetricCardData = {

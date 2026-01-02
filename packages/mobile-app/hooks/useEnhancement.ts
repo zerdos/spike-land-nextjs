@@ -6,7 +6,8 @@
 import type { EnhancedImage, EnhancementTier, ImageEnhancementJob } from "@spike-npm-land/shared";
 import { ENHANCEMENT_COSTS } from "@spike-npm-land/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { enhanceImage, EnhanceImageParams, uploadImage } from "../services/api/images";
+import type { EnhanceImageParams } from "../services/api/images";
+import { enhanceImage, uploadImage } from "../services/api/images";
 import { getStageDescription, getStageProgress, pollJobUntilComplete } from "../services/api/jobs";
 import { useTokenStore } from "../stores/token-store";
 import type { SelectedImage } from "./useImagePicker";

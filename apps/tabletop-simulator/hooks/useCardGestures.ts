@@ -1,4 +1,4 @@
-import { ThreeEvent } from "@react-three/fiber";
+import type { ThreeEvent } from "@react-three/fiber";
 import { useDrag } from "@use-gesture/react";
 import { useRef } from "react";
 

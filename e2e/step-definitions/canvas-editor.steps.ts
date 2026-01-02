@@ -2,7 +2,7 @@ import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { TIMEOUTS } from "../support/helpers/retry-helper";
 import { CanvasEditorPage } from "../support/page-objects/CanvasEditorPage";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Test data for Canvas E2E tests
 const E2E_TEST_ALBUMS = {

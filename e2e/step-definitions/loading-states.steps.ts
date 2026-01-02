@@ -2,7 +2,7 @@ import { Given, Then } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import * as fs from "fs";
 import * as path from "path";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 Given("the loading components are implemented", function(this: CustomWorld) {
   // This is a given state - loading components exist in the codebase

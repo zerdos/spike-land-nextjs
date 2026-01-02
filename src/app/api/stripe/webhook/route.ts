@@ -2,9 +2,10 @@ import prisma from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe/client";
 import { attributeConversion } from "@/lib/tracking/attribution";
 import { tryCatch, tryCatchSync } from "@/lib/try-catch";
-import { SubscriptionTier } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
+import type { SubscriptionTier } from "@prisma/client";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import type Stripe from "stripe";
 
 // Maximum request body size for webhook (64KB should be plenty for Stripe events)
 const MAX_BODY_SIZE = 64 * 1024;

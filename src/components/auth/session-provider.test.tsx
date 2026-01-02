@@ -1,6 +1,6 @@
 import { UserRole } from "@prisma/client";
 import { render, screen } from "@testing-library/react";
-import { Session } from "next-auth";
+import type { Session } from "next-auth";
 import { SessionProvider as NextAuthSessionProvider } from "next-auth/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SessionProvider } from "./session-provider";

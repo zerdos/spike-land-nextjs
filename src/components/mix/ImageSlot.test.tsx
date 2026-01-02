@@ -2,7 +2,8 @@ import * as imageProcessor from "@/lib/images/browser-image-processor";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ImageSlot, SelectedImage } from "./ImageSlot";
+import type { SelectedImage } from "./ImageSlot";
+import { ImageSlot } from "./ImageSlot";
 
 // Mock the image processor
 vi.mock("@/lib/images/browser-image-processor", () => ({

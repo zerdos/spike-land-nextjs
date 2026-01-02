@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import * as Y from "yjs";
+import type * as Y from "yjs";
 import {
   getDeckArray,
   getDiceArray,

@@ -5,7 +5,7 @@
  * These tools are conditionally registered when JULES_API_KEY is set.
  */
 
-import { Tool } from "@modelcontextprotocol/sdk/types.js";
+import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { JulesClient } from "./client.js";
 

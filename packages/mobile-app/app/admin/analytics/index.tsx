@@ -7,12 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { RefreshControl, ScrollView, TouchableOpacity } from "react-native";
 import { Card, H4, Separator, Text, View, XStack, YStack } from "tamagui";
-import {
-  getTokenAnalytics,
-  getUserAnalytics,
-  TokenAnalytics,
-  UserAnalytics,
-} from "../../../services/api/admin";
+import type { TokenAnalytics, UserAnalytics } from "../../../services/api/admin";
+import { getTokenAnalytics, getUserAnalytics } from "../../../services/api/admin";
 
 // ============================================================================
 // Types

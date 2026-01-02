@@ -1,6 +1,6 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // E2E seeded test data - must match prisma/seed-e2e.ts
 // Share token used in feature files: e2e-share-token-123

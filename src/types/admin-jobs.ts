@@ -5,7 +5,7 @@
  * for the admin jobs management page.
  */
 
-import { EnhancementTier, JobStatus } from "@prisma/client";
+import type { EnhancementTier, JobStatus } from "@prisma/client";
 
 /**
  * Job source type - which table the job comes from

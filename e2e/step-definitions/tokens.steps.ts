@@ -6,7 +6,7 @@ import {
   waitForTextWithRetry,
   waitForTokenBalance,
 } from "../support/helpers/retry-helper";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Mock token balance API
 async function mockTokenBalanceApi(world: CustomWorld, balance: number) {

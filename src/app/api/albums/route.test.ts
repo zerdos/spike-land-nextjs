@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, Mock, vi } from "vitest";
+import type { Mock } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET, POST } from "./route";
 
 vi.mock("@/auth", () => ({

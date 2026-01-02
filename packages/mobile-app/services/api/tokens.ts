@@ -4,7 +4,8 @@
  */
 
 import type { SubscriptionTier, TokenTransaction } from "@spike-npm-land/shared";
-import { apiClient, ApiResponse } from "../api-client";
+import type { ApiResponse } from "../api-client";
+import { apiClient } from "../api-client";
 
 // ============================================================================
 // Types

@@ -12,7 +12,8 @@ import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { reorderItemsSchema, singleReorderSchema } from "@/lib/types/gallery";
 import { revalidateTag } from "next/cache";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 function handleError(

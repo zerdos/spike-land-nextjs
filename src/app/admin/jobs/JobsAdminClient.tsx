@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { JobSource, UnifiedJob } from "@/types/admin-jobs";
-import { EnhancementTier, JobStatus } from "@prisma/client";
+import type { EnhancementTier, JobStatus } from "@prisma/client";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 

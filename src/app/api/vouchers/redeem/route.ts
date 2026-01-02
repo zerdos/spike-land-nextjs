@@ -2,7 +2,8 @@ import { auth } from "@/auth";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
 import { VoucherManager } from "@/lib/vouchers/voucher-manager";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Voucher code validation: alphanumeric, max 50 chars
 const VOUCHER_CODE_REGEX = /^[A-Z0-9]+$/i;

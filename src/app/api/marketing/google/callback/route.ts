@@ -9,7 +9,8 @@ import { auth } from "@/auth";
 import { safeEncryptToken } from "@/lib/crypto/token-encryption";
 import { GoogleAdsClient } from "@/lib/marketing";
 import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import { tryCatch } from "@/lib/try-catch";
 

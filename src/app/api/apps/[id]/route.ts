@@ -3,7 +3,8 @@ import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { appCodespaceLinkSchema, appCreationSchema } from "@/lib/validations/app";
 import type { MonetizationType, RequirementPriority, RequirementStatus } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(
   _request: NextRequest,

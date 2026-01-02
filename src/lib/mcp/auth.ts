@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
 import { tryCatch } from "@/lib/try-catch";
-import { NextRequest } from "next/server";
-import { ApiKeyValidationResult, validateApiKey } from "./api-key-manager";
+import type { NextRequest } from "next/server";
+import type { ApiKeyValidationResult } from "./api-key-manager";
+import { validateApiKey } from "./api-key-manager";
 
 interface McpAuthResult {
   success: boolean;

@@ -11,7 +11,7 @@
  */
 
 import type { CropDimensions, CropRegionPixels } from "@/lib/ai/gemini-client";
-import { EnhancementTier } from "@prisma/client";
+import type { EnhancementTier } from "@prisma/client";
 
 // =============================================================================
 // ERROR BOUNDARY TYPES

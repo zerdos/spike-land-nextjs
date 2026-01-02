@@ -11,7 +11,8 @@
 
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const RETENTION_DAYS = 30;
 

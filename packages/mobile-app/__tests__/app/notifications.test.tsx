@@ -123,7 +123,7 @@ import * as notificationsService from "@/services/notifications";
 import type { NotificationType, ServerNotification } from "@/services/notifications";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
-import React from "react";
+import type React from "react";
 
 // ============================================================================
 // Test Helpers

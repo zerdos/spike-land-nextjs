@@ -8,7 +8,8 @@
 
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { AuditAction, Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+import { AuditAction } from "@prisma/client";
 
 type JsonValue = Prisma.JsonValue;
 

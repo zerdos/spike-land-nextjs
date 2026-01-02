@@ -5,7 +5,7 @@
 import prisma from "@/lib/prisma";
 import { createMockUser } from "@/test-utils";
 import { UserRole } from "@prisma/client";
-import { Session } from "next-auth";
+import type { Session } from "next-auth";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   isAdmin,

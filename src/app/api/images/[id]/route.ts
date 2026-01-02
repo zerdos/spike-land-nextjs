@@ -2,8 +2,9 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { deleteFromR2 } from "@/lib/storage/r2-client";
 import { tryCatch } from "@/lib/try-catch";
-import { EnhancementTier, JobStatus } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { EnhancementTier, JobStatus } from "@prisma/client";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(
   _request: NextRequest,

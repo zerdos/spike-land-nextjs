@@ -10,7 +10,7 @@ import { auth } from "@/auth";
 import { isAdminByUserId } from "@/lib/auth/admin-middleware";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { AdminSidebar } from "./AdminSidebar";
 
 export default async function AdminLayout({

@@ -25,7 +25,7 @@ vi.mock("@/lib/mcp/generation-service", () => ({
   getJobHistory: mockGetJobHistory,
 }));
 
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { GET } from "./route";
 
 // Helper to create mock NextRequest with URL and query params

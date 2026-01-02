@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import NYECountdownClient from "./_components/NYECountdownClient";
 
 export const metadata: Metadata = {

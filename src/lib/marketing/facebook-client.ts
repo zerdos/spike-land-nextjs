@@ -7,7 +7,7 @@
 
 import { tryCatch } from "@/lib/try-catch";
 
-import {
+import type {
   Campaign,
   CampaignMetrics,
   CampaignObjective,

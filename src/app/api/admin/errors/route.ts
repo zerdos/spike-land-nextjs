@@ -8,7 +8,7 @@ import { auth } from "@/auth";
 import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { ErrorEnvironment, Prisma } from "@prisma/client";
+import type { ErrorEnvironment, Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {

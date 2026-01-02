@@ -7,7 +7,8 @@ import {
 import prisma from "@/lib/prisma";
 import { uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import { EnhancementTier, getMcpGenerationCost } from "@/lib/tokens/costs";
+import type { EnhancementTier } from "@/lib/tokens/costs";
+import { getMcpGenerationCost } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, McpJobType } from "@prisma/client";
 import sharp from "sharp";

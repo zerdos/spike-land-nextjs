@@ -1,6 +1,6 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Click anchor links in table of contents
 When(

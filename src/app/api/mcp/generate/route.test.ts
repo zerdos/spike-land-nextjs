@@ -37,7 +37,7 @@ vi.mock("@/lib/tokens/costs", () => ({
   },
 }));
 
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { POST } from "./route";
 
 // Helper to create mock NextRequest with JSON body

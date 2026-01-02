@@ -14,7 +14,8 @@ import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { AttributionType } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const querySchema = z.object({

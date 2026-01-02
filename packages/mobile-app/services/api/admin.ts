@@ -3,7 +3,8 @@
  * Handles all admin-related API calls for the mobile app
  */
 
-import { apiClient, ApiResponse } from "../api-client";
+import type { ApiResponse } from "../api-client";
+import { apiClient } from "../api-client";
 
 // ============================================================================
 // Types

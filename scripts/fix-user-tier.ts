@@ -10,7 +10,8 @@
  *   npx tsx scripts/fix-user-tier.ts user@example.com PREMIUM
  */
 
-import { PrismaClient, SubscriptionTier } from "@prisma/client";
+import type { SubscriptionTier } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 

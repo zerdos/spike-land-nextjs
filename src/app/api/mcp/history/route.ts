@@ -2,8 +2,9 @@ import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { getJobHistory } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
-import { McpJobType } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { McpJobType } from "@prisma/client";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 /**
  * GET /api/mcp/history

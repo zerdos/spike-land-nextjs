@@ -11,7 +11,8 @@ import { checkRateLimit } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Email validation regex (RFC 5322 simplified)
 const EMAIL_REGEX =

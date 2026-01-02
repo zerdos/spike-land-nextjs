@@ -17,7 +17,8 @@
 
 import React from "react";
 import { ActivityIndicator } from "react-native";
-import { GetProps, Stack, styled, Text } from "tamagui";
+import type { GetProps } from "tamagui";
+import { Stack, styled, Text } from "tamagui";
 import { borderRadius, colors, spacing } from "../../constants/theme";
 
 // ============================================================================

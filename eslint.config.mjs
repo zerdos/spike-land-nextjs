@@ -58,6 +58,14 @@ const eslintConfig = tseslint.config(
           caughtErrorsIgnorePattern: "^_",
         },
       ],
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        {
+          prefer: "type-imports",
+          fixStyle: "separate-type-imports",
+          disallowTypeAnnotations: false,
+        },
+      ],
       // Next.js rules
       ...nextPlugin.configs.recommended.rules,
       ...nextPlugin.configs["core-web-vitals"].rules,

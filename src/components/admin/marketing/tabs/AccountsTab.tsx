@@ -10,10 +10,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Campaign } from "@/lib/marketing";
+import type { Campaign } from "@/lib/marketing";
 import { ExternalLink, RefreshCw, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { ConnectedAccount, useMarketingData } from "../MarketingLayout";
+import type { ConnectedAccount } from "../MarketingLayout";
+import { useMarketingData } from "../MarketingLayout";
 
 interface AccountsTabProps {
   className?: string;

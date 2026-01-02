@@ -1,4 +1,5 @@
-import { EnhancementTier, JobStatus } from "@prisma/client";
+import type { EnhancementTier } from "@prisma/client";
+import { JobStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Run } from "workflow/api";
 import {

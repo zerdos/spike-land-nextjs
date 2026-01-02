@@ -7,10 +7,12 @@
 import { auth } from "@/auth";
 import { isAdminByUserId } from "@/lib/auth/admin-middleware";
 import { safeDecryptToken } from "@/lib/crypto/token-encryption";
-import { Campaign, createMarketingClient, MarketingPlatform } from "@/lib/marketing";
+import type { Campaign, MarketingPlatform } from "@/lib/marketing";
+import { createMarketingClient } from "@/lib/marketing";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 async function fetchCampaignsForAccount(
   account: { platform: string; accountId: string; accessToken: string; },

@@ -13,7 +13,7 @@ import {
   goBack,
   navigateToPath,
 } from "../support/helpers/navigation-helper";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 When("I click the logo in the header", async function(this: CustomWorld) {
   const logo = this.page.locator(

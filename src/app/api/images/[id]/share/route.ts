@@ -2,7 +2,8 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { nanoid } from "nanoid";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function POST(
   _request: NextRequest,

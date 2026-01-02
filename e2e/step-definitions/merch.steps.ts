@@ -1,6 +1,7 @@
-import { DataTable, Given, Then, When } from "@cucumber/cucumber";
+import type { DataTable } from "@cucumber/cucumber";
+import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // ===== Helper Functions for E2E Mocking =====
 

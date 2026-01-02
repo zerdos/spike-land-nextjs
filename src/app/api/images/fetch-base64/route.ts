@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 /**
  * POST /api/images/fetch-base64

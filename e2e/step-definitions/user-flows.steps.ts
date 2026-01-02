@@ -1,7 +1,7 @@
 import { Then } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { assertButtonVisible } from "../support/helpers/assertion-helper";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 Then("I should see sign-in options", async function(this: CustomWorld) {
   await assertButtonVisible(this.page, "Continue with GitHub");

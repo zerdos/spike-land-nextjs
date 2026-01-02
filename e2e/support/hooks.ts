@@ -1,6 +1,6 @@
 import { After, AfterAll, Before, BeforeAll, setDefaultTimeout, Status } from "@cucumber/cucumber";
 import { generateCoverageReport, isCoverageEnabled } from "./helpers/coverage-helper";
-import { VideoWallWorld } from "./video-wall-world";
+import type { VideoWallWorld } from "./video-wall-world";
 import { CustomWorld } from "./world";
 
 // Increase default step timeout to 30 seconds for CI font loading

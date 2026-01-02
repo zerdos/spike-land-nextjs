@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // In-memory peer registry with automatic cleanup
 // In production, this should be replaced with Redis or similar

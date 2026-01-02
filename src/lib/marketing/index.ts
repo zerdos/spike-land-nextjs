@@ -10,7 +10,7 @@ export * from "./types";
 
 import { FacebookMarketingClient } from "./facebook-client";
 import { GoogleAdsClient } from "./google-ads-client";
-import { IMarketingClient, MarketingPlatform } from "./types";
+import type { IMarketingClient, MarketingPlatform } from "./types";
 
 /**
  * Create a marketing client for the specified platform

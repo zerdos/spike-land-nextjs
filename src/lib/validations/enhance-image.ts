@@ -1,4 +1,4 @@
-import { EnhancementTier } from "@prisma/client";
+import type { EnhancementTier } from "@prisma/client";
 import { z } from "zod";
 
 /**

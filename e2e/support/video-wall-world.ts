@@ -1,5 +1,7 @@
-import { IWorldOptions, setWorldConstructor, World } from "@cucumber/cucumber";
-import { Browser, BrowserContext, chromium, Page } from "@playwright/test";
+import type { IWorldOptions } from "@cucumber/cucumber";
+import { setWorldConstructor, World } from "@cucumber/cucumber";
+import type { Browser, BrowserContext, Page } from "@playwright/test";
+import { chromium } from "@playwright/test";
 import { startCoverage, stopCoverage } from "./helpers/coverage-helper";
 
 export interface ClientContext {
