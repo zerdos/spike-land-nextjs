@@ -24,8 +24,6 @@ export const StartWithPrompt: React.FC = () => {
         const file = item.getAsFile();
         if (file && images.length < 5) {
           try {
-            if (!file) return;
-            if (!file) return;
             const imageData = await processImage(file);
             setImages((prevImages: ImageData[]) => [...prevImages, imageData]);
           } catch (error) {

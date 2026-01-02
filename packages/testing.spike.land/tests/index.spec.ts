@@ -7,7 +7,7 @@ interface MockEnv {
   CODE: DurableObjectNamespace;
   KV: KVNamespace;
   R2: R2Bucket;
-  AI: any;
+  AI: Ai;
   ESBUILD: Fetcher;
 }
 
@@ -46,7 +46,7 @@ class MockDurableObjectId {
 
 // Mock Response with webSocket property
 class MockResponse extends Response {
-  override webSocket: any = null;
+  override webSocket: WebSocket | null = null;
 }
 
 describe("Hello World worker", () => {

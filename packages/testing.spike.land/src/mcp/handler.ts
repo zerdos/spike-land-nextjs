@@ -87,14 +87,14 @@ export class McpHandler {
         const mcpRequest: McpRequest = await request.json();
         const response = await this.handleMcpRequest(mcpRequest);
         return new Response(JSON.stringify(response), { headers: RESPONSE_HEADERS });
-      } catch (error) {
+      } catch (_error) {
         const errorResponse: McpResponse = {
           jsonrpc: "2.0",
           id: 0,
           error: {
             code: -32700,
             message: "Parse error",
-            data: error instanceof Error ? error.message : String(error),
+            data: "An error occurred while processing the request",
           },
         };
         return new Response(JSON.stringify(errorResponse), {
