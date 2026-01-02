@@ -21,16 +21,19 @@ documentation.
 
 **DO NOT duplicate content from these docs in this file. Link to them instead.**
 
-| Topic                      | Document                                                         |
-| -------------------------- | ---------------------------------------------------------------- |
-| Platform Vision & Features | [docs/FEATURES.md](./docs/FEATURES.md)                           |
-| API Reference              | [docs/API_REFERENCE.md](./docs/API_REFERENCE.md)                 |
-| Token System               | [docs/TOKEN_SYSTEM.md](./docs/TOKEN_SYSTEM.md)                   |
-| Database Schema            | [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md)             |
-| Database Setup             | [docs/DATABASE_SETUP.md](./docs/DATABASE_SETUP.md)               |
-| Development Setup          | [README.md](./README.md)                                         |
-| Mobile App                 | [packages/mobile-app/README.md](./packages/mobile-app/README.md) |
-| Shared Package             | [packages/shared/README.md](./packages/shared/README.md)         |
+| Topic                      | Document                                                                         |
+| -------------------------- | -------------------------------------------------------------------------------- |
+| Platform Vision & Features | [docs/FEATURES.md](./docs/FEATURES.md)                                           |
+| API Reference              | [docs/API_REFERENCE.md](./docs/API_REFERENCE.md)                                 |
+| Token System               | [docs/TOKEN_SYSTEM.md](./docs/TOKEN_SYSTEM.md)                                   |
+| Database Schema            | [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md)                             |
+| Database Setup             | [docs/DATABASE_SETUP.md](./docs/DATABASE_SETUP.md)                               |
+| Development Setup          | [README.md](./README.md)                                                         |
+| Mobile App                 | [packages/mobile-app/README.md](./packages/mobile-app/README.md)                 |
+| Shared Package             | [packages/shared/README.md](./packages/shared/README.md)                         |
+| Code Editor                | [packages/code/README.md](./packages/code/README.md)                             |
+| Backend Worker             | [packages/testing.spike.land/README.md](./packages/testing.spike.land/README.md) |
+| Transpiler Worker          | [packages/js.spike.land/README.md](./packages/js.spike.land/README.md)           |
 
 ---
 
@@ -303,6 +306,21 @@ yarn build            # Build shared package
 yarn dev              # Watch mode
 ```
 
+**Cloudflare Workers:**
+
+```bash
+# Code Editor Frontend (packages/code)
+cd packages/code && yarn dev          # Start Vite dev server
+cd packages/code && yarn test:run     # Run tests
+
+# Backend Worker (packages/testing.spike.land)
+cd packages/testing.spike.land && yarn dev      # Start worker locally
+cd packages/testing.spike.land && yarn test:unit # Run unit tests
+
+# Transpiler Worker (packages/js.spike.land)
+cd packages/js.spike.land && yarn dev           # Start worker locally
+```
+
 ### Tech Stack
 
 **Web App:**
@@ -331,6 +349,24 @@ spike-land-nextjs/
 │   └── lib/                  # Utilities
 │
 ├── packages/
+│   ├── code/                 # React code editor (Vite + Monaco)
+│   │   ├── src/@/            # Main source with shadcn/ui
+│   │   │   ├── components/   # Editor components
+│   │   │   ├── lib/          # Utilities and AI handlers
+│   │   │   └── workers/      # Web Workers (prettier, ata)
+│   │   └── src/workflows/    # AI workflow tools
+│   │
+│   ├── js.spike.land/        # Cloudflare Worker transpiler
+│   │   └── src/              # esbuild-based transpilation
+│   │
+│   ├── testing.spike.land/   # Backend Cloudflare Worker
+│   │   └── src/
+│   │       ├── mcp/          # MCP server implementation
+│   │       ├── routes/       # API routes (live, auth, AI)
+│   │       └── chatRoom.ts   # Durable Object (Code class)
+│   │
+│   ├── spike-land-renderer/  # Cloudflare Worker renderer
+│   │
 │   ├── mobile-app/           # Mobile app (Expo)
 │   │   ├── app/              # Expo Router pages
 │   │   ├── components/       # Mobile components
