@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "rm -rf packal",
+  "installCommand": "rm -rf packages && rm -rf yarn.lock && touch yarn.lock && yarn install",
   "buildCommand": "yarn build",
   "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]",
   "redirects": [
