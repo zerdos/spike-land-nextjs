@@ -115,7 +115,8 @@ When(
 
 When("I tap the mode toggle", async function(this: CustomWorld) {
   const toggle = this.page.locator('[data-testid="mode-toggle"]');
-  await toggle.tap();
+  // Use click() instead of tap() since it works universally
+  await toggle.click();
 });
 
 Then(
@@ -171,7 +172,8 @@ When("I click the hand toggle button", async function(this: CustomWorld) {
 
 When("I tap the hand button", async function(this: CustomWorld) {
   const handButton = this.page.locator('[data-testid="hand-toggle"]');
-  await handButton.tap();
+  // Use click() instead of tap() since it works universally
+  await handButton.click();
 });
 
 Then("the hand drawer should be visible", async function(this: CustomWorld) {
