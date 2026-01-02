@@ -4,6 +4,7 @@ import path from "path";
 
 export default defineWorkersConfig({
   test: {
+    name: "testing.spike.land",
     reporters: ["hanging-process", "dot"],
     include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     setupFiles: ["./vitest.setup.ts"],
