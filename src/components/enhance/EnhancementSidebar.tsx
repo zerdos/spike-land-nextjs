@@ -7,7 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { EnhancementTier, JobStatus, TIER_INFO } from "@/types/enhancement";
+import type { EnhancementTier, JobStatus } from "@/types/enhancement";
+import { TIER_INFO } from "@/types/enhancement";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import {
   AlertTriangle,

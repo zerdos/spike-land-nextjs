@@ -1,7 +1,7 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import * as path from "path";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Given steps
 // NOTE: "I am on the enhance page" step moved to common.steps.ts

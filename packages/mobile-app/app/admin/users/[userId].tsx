@@ -17,14 +17,8 @@ import {
   View as RNView,
 } from "react-native";
 import { Button, Card, H4, Paragraph, Separator, Text, View, XStack, YStack } from "tamagui";
-import {
-  adjustUserTokens,
-  AdminUserDetails,
-  deleteUser,
-  getUser,
-  updateUserRole,
-  UserRole,
-} from "../../../services/api/admin";
+import type { AdminUserDetails, UserRole } from "../../../services/api/admin";
+import { adjustUserTokens, deleteUser, getUser, updateUserRole } from "../../../services/api/admin";
 
 // ============================================================================
 // Components

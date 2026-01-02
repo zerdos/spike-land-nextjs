@@ -7,7 +7,7 @@ import {
   waitForTextWithRetry,
 } from "../support/helpers/retry-helper";
 import { AppCreationWizard } from "../support/page-objects/AppCreationWizard";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Helper to get or create page object
 function getWizard(world: CustomWorld): AppCreationWizard {

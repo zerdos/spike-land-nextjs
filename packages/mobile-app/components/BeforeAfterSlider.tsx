@@ -5,7 +5,8 @@
 
 import { Image } from "expo-image";
 import { useCallback, useState } from "react";
-import { Dimensions, LayoutChangeEvent, StyleSheet, View as RNView } from "react-native";
+import type { LayoutChangeEvent } from "react-native";
+import { Dimensions, StyleSheet, View as RNView } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { Card, Text, View } from "tamagui";

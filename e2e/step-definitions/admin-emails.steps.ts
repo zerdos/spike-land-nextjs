@@ -2,9 +2,10 @@
  * Step definitions for Admin Email Logs E2E tests
  */
 
-import { DataTable, Given, Then, When } from "@cucumber/cucumber";
+import type { DataTable } from "@cucumber/cucumber";
+import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Mock email data generator
 function createMockEmail(overrides: Partial<{

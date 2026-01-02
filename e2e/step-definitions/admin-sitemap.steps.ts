@@ -4,7 +4,7 @@
 
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Given steps
 Given("a sitemap route returns an error", async function(this: CustomWorld) {

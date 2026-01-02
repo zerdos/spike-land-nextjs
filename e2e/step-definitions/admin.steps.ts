@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Helper to mock admin status
 async function mockAdminStatus(world: CustomWorld, isAdmin: boolean) {

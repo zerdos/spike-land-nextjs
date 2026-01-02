@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { Card, Rank, Suit } from "../../types/card";
+import type { Card, Rank, Suit } from "../../types/card";
 import { DeterministicRandom } from "../physics/deterministic-random";
 
 const SUITS: Suit[] = ["hearts", "diamonds", "clubs", "spades"];

@@ -27,7 +27,8 @@
  */
 
 import React from "react";
-import { GetProps, Stack, styled, Text } from "tamagui";
+import type { GetProps } from "tamagui";
+import { Stack, styled, Text } from "tamagui";
 import { borderRadius, colors, glassMorphism, shadows, spacing } from "../../constants/theme";
 
 // ============================================================================

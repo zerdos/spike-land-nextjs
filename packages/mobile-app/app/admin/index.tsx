@@ -8,7 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { RefreshControl, ScrollView, TouchableOpacity } from "react-native";
 import { Card, H4, Paragraph, Separator, Text, View, XStack, YStack } from "tamagui";
-import { DashboardStats, getDashboardStats } from "../../services/api/admin";
+import type { DashboardStats } from "../../services/api/admin";
+import { getDashboardStats } from "../../services/api/admin";
 
 // ============================================================================
 // Components

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { BoxMessageRole, BoxStatus } from "@prisma/client";
+import type { BoxMessageRole } from "@prisma/client";
+import { BoxStatus } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 

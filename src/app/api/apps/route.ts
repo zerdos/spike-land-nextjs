@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { appCreationSchema } from "@/lib/validations/app";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import { tryCatch } from "@/lib/try-catch";
 

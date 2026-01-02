@@ -6,7 +6,7 @@
  * iterate on web applications in real-time.
  */
 
-import { Tool } from "@modelcontextprotocol/sdk/types.js";
+import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { CodeSpaceClient } from "./client.js";
 

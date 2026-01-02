@@ -1,6 +1,6 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 Then("I should see the navigation bar", async function(this: CustomWorld) {
   // The app uses an AuthHeader component (fixed top-right) instead of a traditional nav element

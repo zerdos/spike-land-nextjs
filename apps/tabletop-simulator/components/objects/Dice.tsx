@@ -3,7 +3,7 @@ import { RigidBody } from "@react-three/rapier";
 import { useMemo } from "react";
 import * as THREE from "three";
 import { useDicePhysics } from "../../hooks/useDicePhysics";
-import { DiceState } from "../../types/dice";
+import type { DiceState } from "../../types/dice";
 
 interface DiceProps {
   state: DiceState;

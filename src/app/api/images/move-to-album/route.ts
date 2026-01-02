@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // POST /api/images/move-to-album - Move images to an album
 export async function POST(request: NextRequest) {

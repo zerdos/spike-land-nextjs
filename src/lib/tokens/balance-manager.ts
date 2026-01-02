@@ -2,12 +2,8 @@ import { getUserFriendlyError } from "@/lib/errors/error-messages";
 import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import {
-  Prisma,
-  SubscriptionTier,
-  type TokenTransaction,
-  TokenTransactionType,
-} from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+import { SubscriptionTier, type TokenTransaction, TokenTransactionType } from "@prisma/client";
 import { TOKEN_REGENERATION_INTERVAL_MS, TOKENS_PER_REGENERATION } from "./constants";
 import { TierManager } from "./tier-manager";
 

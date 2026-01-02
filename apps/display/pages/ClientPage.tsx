@@ -17,7 +17,8 @@ import {
   ZoomIn,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import Peer, { MediaConnection } from "peerjs";
+import type { MediaConnection } from "peerjs";
+import Peer from "peerjs";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 type CameraFacingMode = "user" | "environment";

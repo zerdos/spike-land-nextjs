@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { BeforeAfterGalleryClient } from "./BeforeAfterGalleryClient";
-import { GalleryItem } from "./gallery-fallback-data";
+import type { GalleryItem } from "./gallery-fallback-data";
 
 // Mock dependencies
 vi.mock("@/components/enhance/ImageComparisonSlider", () => ({

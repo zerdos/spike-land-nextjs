@@ -8,7 +8,7 @@
  * - Properly identifies protected vs public paths
  */
 
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Use vi.hoisted to create the mock function before vi.mock runs

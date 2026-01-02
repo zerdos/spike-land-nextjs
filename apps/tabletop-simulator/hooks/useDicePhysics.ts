@@ -1,9 +1,9 @@
 import { useFrame } from "@react-three/fiber";
-import { RapierRigidBody } from "@react-three/rapier";
+import type { RapierRigidBody } from "@react-three/rapier";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { simulateDiceRoll } from "../lib/physics/dice-simulation";
-import { DiceState, DiceType } from "../types/dice";
+import type { DiceState, DiceType } from "../types/dice";
 
 // D6 face directions and their corresponding values
 // Standard die: opposite faces add to 7 (1-6, 2-5, 3-4)

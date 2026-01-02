@@ -6,7 +6,8 @@ import {
   MAX_API_KEYS_PER_USER,
 } from "@/lib/mcp/api-key-manager";
 import { tryCatch } from "@/lib/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // GET /api/settings/api-keys - List user's API keys
 export async function GET() {

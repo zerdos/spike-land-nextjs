@@ -5,7 +5,8 @@
 import { act, render, waitFor } from "@testing-library/react-native";
 import React from "react";
 
-import { ReferralStats, ReferralStatsData } from "./ReferralStats";
+import type { ReferralStatsData } from "./ReferralStats";
+import { ReferralStats } from "./ReferralStats";
 
 // Mock Tamagui components
 jest.mock("tamagui", () => ({

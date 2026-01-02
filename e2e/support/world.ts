@@ -1,5 +1,7 @@
-import { IWorldOptions, World } from "@cucumber/cucumber";
-import { Browser, BrowserContext, chromium, Page } from "@playwright/test";
+import type { IWorldOptions } from "@cucumber/cucumber";
+import { World } from "@cucumber/cucumber";
+import type { Browser, BrowserContext, Page } from "@playwright/test";
+import { chromium } from "@playwright/test";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";

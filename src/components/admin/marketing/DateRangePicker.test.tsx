@@ -1,11 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import {
-  DateRangePicker,
-  DateRangePreset,
-  formatDateForAPI,
-  getDateRangeFromPreset,
-} from "./DateRangePicker";
+import type { DateRangePreset } from "./DateRangePicker";
+import { DateRangePicker, formatDateForAPI, getDateRangeFromPreset } from "./DateRangePicker";
 
 describe("getDateRangeFromPreset", () => {
   it("returns 7 day range for 7d preset", () => {

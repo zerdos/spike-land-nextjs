@@ -6,7 +6,8 @@
 import type { ReferralStatus } from "@spike-npm-land/shared";
 import { CheckCircle, Clock, UserPlus, Users } from "@tamagui/lucide-icons";
 import React, { useCallback } from "react";
-import { FlatList, ListRenderItem, StyleSheet } from "react-native";
+import type { ListRenderItem } from "react-native";
+import { FlatList, StyleSheet } from "react-native";
 import { Button, Card, Paragraph, Text, View, XStack, YStack } from "tamagui";
 
 // ============================================================================

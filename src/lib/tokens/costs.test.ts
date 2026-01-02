@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ENHANCEMENT_COSTS, EnhancementTier, getEnhancementCost } from "./costs";
+import type { EnhancementTier } from "./costs";
+import { ENHANCEMENT_COSTS, getEnhancementCost } from "./costs";
 
 describe("Token Costs", () => {
   describe("ENHANCEMENT_COSTS constant", () => {

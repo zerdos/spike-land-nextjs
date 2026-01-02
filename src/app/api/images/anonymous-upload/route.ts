@@ -6,7 +6,8 @@ import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { processAndUploadImage } from "@/lib/storage/upload-handler";
 import { tryCatch } from "@/lib/try-catch";
 import { isSecureFilename } from "@/lib/upload/validation";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Allow longer execution time for image processing
 export const maxDuration = 120;

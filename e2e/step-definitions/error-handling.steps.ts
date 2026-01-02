@@ -1,7 +1,7 @@
 import { Then } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { assertTextVisible } from "../support/helpers/assertion-helper";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 Then("I should see an error page", async function(this: CustomWorld) {
   const errorPage = this.page.locator(

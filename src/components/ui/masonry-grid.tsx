@@ -1,7 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Children, ReactNode, useMemo } from "react";
+import type { ReactNode } from "react";
+import { Children, useMemo } from "react";
 
 // Zoom level constants for type safety and consistency
 export const ZOOM_LEVEL = {

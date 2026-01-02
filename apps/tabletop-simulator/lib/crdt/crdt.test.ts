@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import * as Y from "yjs";
-import { Card } from "../../types/card";
-import { DiceState } from "../../types/dice";
-import { Player } from "../../types/game";
+import type { Card } from "../../types/card";
+import type { DiceState } from "../../types/dice";
+import type { Player } from "../../types/game";
 import {
   addDice,
   addPlayer,

@@ -5,7 +5,8 @@ import type { TierSubscriptionId } from "@/lib/stripe/client";
 import { TierManager } from "@/lib/tokens/tier-manager";
 import { tryCatch } from "@/lib/try-catch";
 import { SubscriptionTier } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const MAX_BODY_SIZE = 10 * 1024;
 

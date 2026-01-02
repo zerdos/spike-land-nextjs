@@ -5,7 +5,8 @@
 
 import type { User } from "@spike-npm-land/shared";
 import { create } from "zustand";
-import { AuthProvider, authService } from "../services/auth";
+import type { AuthProvider } from "../services/auth";
+import { authService } from "../services/auth";
 
 // ============================================================================
 // Types

@@ -10,8 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { Box, BoxTier } from "@prisma/client";
-import { BoxActionType, BoxStatus } from "@prisma/client";
+import type { Box, BoxStatus, BoxTier } from "@prisma/client";
+import { BoxActionType } from "@prisma/client";
 import { Copy, Monitor, Play, RefreshCw, Square, Trash2 } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useState } from "react";

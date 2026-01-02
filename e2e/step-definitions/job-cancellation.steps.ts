@@ -1,6 +1,7 @@
 import { Given, Then, When } from "@cucumber/cucumber";
-import { expect, Route } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { Route } from "@playwright/test";
+import { expect } from "@playwright/test";
+import type { CustomWorld } from "../support/world";
 
 const mockImageId = "test-image-job-cancel";
 const mockJobId = "test-job-123";

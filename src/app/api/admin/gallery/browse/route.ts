@@ -10,7 +10,8 @@ import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { browseQuerySchema } from "@/lib/types/gallery";
 import { JobStatus } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import type { ZodError } from "zod";
 
 export async function GET(request: NextRequest) {

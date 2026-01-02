@@ -37,7 +37,7 @@ vi.mock("@/lib/tokens/costs", () => ({
   },
 }));
 
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { POST } from "./route";
 
 // Small test image in base64 (1x1 pixel PNG)

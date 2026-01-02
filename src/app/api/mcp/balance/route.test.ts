@@ -30,7 +30,7 @@ vi.mock("@/lib/tokens/balance-manager", () => ({
   TokenBalanceManager: mockTokenBalanceManager,
 }));
 
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { GET } from "./route";
 
 // Helper to create mock NextRequest

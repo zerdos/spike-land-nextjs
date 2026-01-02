@@ -7,7 +7,8 @@
 
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { AlbumPrivacy, EnhancementTier, JobStatus } from "@prisma/client";
+import type { EnhancementTier } from "@prisma/client";
+import { AlbumPrivacy, JobStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 const SUPER_ADMIN_EMAIL = "zolika84@gmail.com";

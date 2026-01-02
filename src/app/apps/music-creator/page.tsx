@@ -1,5 +1,5 @@
 import MusicCreatorPage from "@apps/music-creator/pages/MusicCreatorPage";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Music Creator - Layer and Record Audio",

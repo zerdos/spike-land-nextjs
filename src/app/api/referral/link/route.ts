@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
 import { assignReferralCodeToUser } from "@/lib/referral/code-generator";
 import { tryCatch } from "@/lib/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 /**
  * GET /api/referral/link

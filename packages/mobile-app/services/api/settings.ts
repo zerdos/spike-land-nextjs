@@ -3,7 +3,8 @@
  * Handles user settings, preferences, and API key management
  */
 
-import { apiClient, ApiResponse } from "../api-client";
+import type { ApiResponse } from "../api-client";
+import { apiClient } from "../api-client";
 
 // ============================================================================
 // Types

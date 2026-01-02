@@ -1,4 +1,4 @@
-import { DataConnection } from "peerjs";
+import type { DataConnection } from "peerjs";
 import { useCallback, useRef } from "react";
 import * as Y from "yjs";
 

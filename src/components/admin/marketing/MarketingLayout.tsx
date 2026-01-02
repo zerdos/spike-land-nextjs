@@ -13,7 +13,8 @@ import { Link } from "@/components/ui/link";
 import { cn } from "@/lib/utils";
 import { AlertCircle, CheckCircle, RefreshCw } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface ConnectedAccount {
   id: string;

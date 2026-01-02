@@ -1,9 +1,10 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { AlbumPrivacy } from "@prisma/client";
+import type { AlbumPrivacy } from "@prisma/client";
 import { nanoid } from "nanoid";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // GET /api/albums - List user's albums
 export async function GET() {

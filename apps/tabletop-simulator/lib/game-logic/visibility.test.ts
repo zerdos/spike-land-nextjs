@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Card } from "../../types/card";
+import type { Card } from "../../types/card";
 import { canPeekCard, isCardVisible } from "./visibility";
 
 const mockCard: Card = {

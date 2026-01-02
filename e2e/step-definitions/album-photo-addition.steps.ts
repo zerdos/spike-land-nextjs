@@ -1,7 +1,7 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { TIMEOUTS, waitForModalState } from "../support/helpers/retry-helper";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Mock data
 const mockImage = {

@@ -1,4 +1,4 @@
-import { Card } from "../../types/card";
+import type { Card } from "../../types/card";
 
 export function canPeekCard(card: Card, playerId: string): boolean {
   return card.ownerId === playerId;

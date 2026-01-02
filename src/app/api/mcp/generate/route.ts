@@ -6,9 +6,11 @@ import {
 import { authenticateMcpOrSession } from "@/lib/mcp/auth";
 import { createGenerationJob } from "@/lib/mcp/generation-service";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
-import { EnhancementTier, MCP_GENERATION_COSTS } from "@/lib/tokens/costs";
+import type { EnhancementTier } from "@/lib/tokens/costs";
+import { MCP_GENERATION_COSTS } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const VALID_TIERS: EnhancementTier[] = ["TIER_1K", "TIER_2K", "TIER_4K"];
 

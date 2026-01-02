@@ -14,8 +14,10 @@ import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { enhanceImageDirect } from "@/workflows/enhance-image.direct";
-import { EnhancementTier, JobStatus } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { EnhancementTier } from "@prisma/client";
+import { JobStatus } from "@prisma/client";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 interface RouteParams {
   params: Promise<{ jobId: string; }>;

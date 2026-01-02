@@ -12,7 +12,8 @@ import { validateBase64Size, validateEnhanceRequest } from "@/lib/validations/en
 import { handleEnhancementFailure, startEnhancement } from "@/lib/workflows/enhancement-executor";
 import type { EnhanceImageInput } from "@/workflows/enhance-image.shared";
 import { JobStatus } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Allow longer execution time for 4K image enhancements (10 minutes)
 export const maxDuration = 600;

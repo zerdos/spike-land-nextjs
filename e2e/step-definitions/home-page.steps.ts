@@ -1,6 +1,6 @@
 import { Given, Then } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 Given("I am on the home page", async function(this: CustomWorld) {
   await this.page.goto(this.baseUrl);

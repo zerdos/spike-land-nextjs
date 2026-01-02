@@ -1,6 +1,6 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Navigation
 When("I navigate to the settings page", async function(this: CustomWorld) {

@@ -4,15 +4,14 @@
  */
 
 import { create } from "zustand";
+import type { ApiKey, UserPreferences } from "../services/api/settings";
 import {
-  ApiKey,
   createApiKey as createApiKeyApi,
   deleteAccount as deleteAccountApi,
   deleteApiKey as deleteApiKeyApi,
   getPreferences as getPreferencesApi,
   listApiKeys as listApiKeysApi,
   updatePreferences as updatePreferencesApi,
-  UserPreferences,
 } from "../services/api/settings";
 import * as storage from "../services/storage";
 

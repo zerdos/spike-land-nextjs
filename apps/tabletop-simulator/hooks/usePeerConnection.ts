@@ -1,5 +1,6 @@
 "use client";
-import Peer, { DataConnection, MediaConnection } from "peerjs";
+import type { DataConnection, MediaConnection } from "peerjs";
+import type Peer from "peerjs";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type DataHandler = (data: unknown, peerId: string) => void;

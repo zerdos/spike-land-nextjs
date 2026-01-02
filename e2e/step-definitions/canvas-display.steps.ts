@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Test data for Canvas E2E tests
 interface CanvasTestContext {
