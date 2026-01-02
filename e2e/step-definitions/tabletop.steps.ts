@@ -11,6 +11,17 @@ Given(
   },
 );
 
+// Home page elements
+Then("I should see the create room button", async function(this: CustomWorld) {
+  const button = this.page.getByRole("button", { name: /create.*room/i });
+  await expect(button).toBeVisible();
+});
+
+Then("I should see the join room input", async function(this: CustomWorld) {
+  const input = this.page.getByPlaceholder(/enter room code/i);
+  await expect(input).toBeVisible();
+});
+
 Given("I am in a tabletop game room", async function(this: CustomWorld) {
   // Create a new room by visiting the app and clicking create
   await this.page.goto(`${this.baseUrl}/apps/tabletop-simulator`);

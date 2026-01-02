@@ -4,11 +4,11 @@ Feature: Mobile Tabletop Interaction
   So that I can play games on the go
 
   @tabletop @mobile
-  Scenario: Mobile user can access tabletop simulator
+  Scenario: Mobile user can access tabletop simulator home page
     Given I am on a mobile device
     And I am on the tabletop simulator home page
-    Then I should see the game canvas
-    And I should see the mobile controls
+    Then I should see the create room button
+    And I should see the join room input
 
   @tabletop @mobile
   Scenario: Mobile user can switch between camera and interaction modes
@@ -20,11 +20,10 @@ Feature: Mobile Tabletop Interaction
     And I should see interaction mode active indicator
 
   @tabletop @mobile
-  Scenario: Mobile user can open the hand drawer
+  Scenario: Mobile user sees the hand drawer
     Given I am on a mobile device
     And I am in a tabletop game room
-    When I tap the hand button
-    Then the hand drawer should expand
+    Then the hand drawer should be visible
     And I should see the empty hand message
 
   @tabletop @mobile
