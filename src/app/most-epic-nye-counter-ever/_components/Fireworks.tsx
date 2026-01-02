@@ -15,7 +15,9 @@ const COLORS = ["#00E5FF", "#FFD700", "#FF00FF", "#00FF00", "#FFFFFF"];
  * Fireworks system that launches random explosions.
  * Only active during celebration mode to save CPU resources.
  */
-export default function Fireworks({ isActive = false }: { isActive?: boolean; }) {
+export default function Fireworks(
+  { isActive = false }: { isActive?: boolean; },
+) {
   const [fireworks, setFireworks] = useState<Firework[]>([]);
 
   const launch = useCallback(() => {

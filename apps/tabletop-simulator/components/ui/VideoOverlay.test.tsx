@@ -51,7 +51,9 @@ describe("VideoOverlay", () => {
       <VideoOverlay localStream={mockStream} remoteStreams={new Map()} />,
     );
 
-    const videos = container.querySelectorAll("video") as NodeListOf<HTMLVideoElement>;
+    const videos = container.querySelectorAll("video") as NodeListOf<
+      HTMLVideoElement
+    >;
     expect(videos).toHaveLength(1);
     expect(videos[0]!.muted).toBe(true);
 
@@ -67,13 +69,17 @@ describe("VideoOverlay", () => {
       ["peer-5678", mockStream2],
     ]);
 
-    const { container } = render(<VideoOverlay localStream={null} remoteStreams={remoteStreams} />);
+    const { container } = render(
+      <VideoOverlay localStream={null} remoteStreams={remoteStreams} />,
+    );
 
-    const videos = container.querySelectorAll("video") as NodeListOf<HTMLVideoElement>;
+    const videos = container.querySelectorAll("video") as NodeListOf<
+      HTMLVideoElement
+    >;
     expect(videos).toHaveLength(2);
 
     // Remote streams should not be muted
-    videos.forEach(video => {
+    videos.forEach((video) => {
       expect(video.muted).toBe(false);
     });
 

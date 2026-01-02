@@ -6,7 +6,10 @@ export interface DiceSimulationResult {
   torque: { x: number; y: number; z: number; };
 }
 
-export function simulateDiceRoll(seed: number, _dieType: string = "d6"): DiceSimulationResult {
+export function simulateDiceRoll(
+  seed: number,
+  _dieType: string = "d6",
+): DiceSimulationResult {
   const rng = new DeterministicRandom(seed);
 
   const impulse = {

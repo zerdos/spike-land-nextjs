@@ -203,7 +203,8 @@ docs/
 
 ## Best Practices
 
-See [best-practices/](./best-practices/) for development guidelines and quick reference guides.
+See [best-practices/](./best-practices/) for development guidelines and quick
+reference guides.
 
 ### Core Development
 

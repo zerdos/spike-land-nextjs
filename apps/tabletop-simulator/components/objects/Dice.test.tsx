@@ -12,7 +12,9 @@ beforeEach(() => {
     arc: vi.fn(),
     fill: vi.fn(),
   };
-  vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(mockContext as any);
+  vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(
+    mockContext as any,
+  );
 });
 
 // Mocks

@@ -124,7 +124,9 @@ const GrabbedNameplate = memo(function GrabbedNameplate(
   );
 });
 
-export function Card({ card, isOwner, onMove, onFlip, onGrab, onRelease }: CardProps) {
+export function Card(
+  { card, isOwner, onMove, onFlip, onGrab, onRelease }: CardProps,
+) {
   // Animate position and rotation with optimized config
   const { position, rotation } = useSpring({
     position: [card.position.x, card.position.y, card.position.z],
@@ -172,10 +174,22 @@ export function Card({ card, isOwner, onMove, onFlip, onGrab, onRelease }: CardP
         {/* Thinner card geometry */}
         <boxGeometry args={[2.5, 3.5, 0.01]} />
         {/* Card sides - pure white cardboard look */}
-        <meshStandardMaterial attach="material-0" color={isGrabbed ? grabberColor : "#f5f5f5"} />
-        <meshStandardMaterial attach="material-1" color={isGrabbed ? grabberColor : "#f5f5f5"} />
-        <meshStandardMaterial attach="material-2" color={isGrabbed ? grabberColor : "#f5f5f5"} />
-        <meshStandardMaterial attach="material-3" color={isGrabbed ? grabberColor : "#f5f5f5"} />
+        <meshStandardMaterial
+          attach="material-0"
+          color={isGrabbed ? grabberColor : "#f5f5f5"}
+        />
+        <meshStandardMaterial
+          attach="material-1"
+          color={isGrabbed ? grabberColor : "#f5f5f5"}
+        />
+        <meshStandardMaterial
+          attach="material-2"
+          color={isGrabbed ? grabberColor : "#f5f5f5"}
+        />
+        <meshStandardMaterial
+          attach="material-3"
+          color={isGrabbed ? grabberColor : "#f5f5f5"}
+        />
         {/* Front face - slightly warm white paper */}
         <meshStandardMaterial
           attach="material-4"
@@ -197,7 +211,11 @@ export function Card({ card, isOwner, onMove, onFlip, onGrab, onRelease }: CardP
       {/* Card face label - only show if face up or owner */}
       {showFace && (
         <Html {...htmlProps}>
-          <CardFace rank={card.rank} suit={suitInfo.symbol} color={suitInfo.color} />
+          <CardFace
+            rank={card.rank}
+            suit={suitInfo.symbol}
+            color={suitInfo.color}
+          />
         </Html>
       )}
 

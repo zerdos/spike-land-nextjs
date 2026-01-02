@@ -1,9 +1,9 @@
 # Image Enhancement API Endpoints
 
-Complete REST API documentation for image management and AI-powered enhancement operations in Spike Land.
+Complete REST API documentation for image management and AI-powered enhancement
+operations in Spike Land.
 
-Last Updated: December 2025
-Status: Production Ready
+Last Updated: December 2025 Status: Production Ready
 
 ---
 
@@ -24,7 +24,8 @@ Status: Production Ready
 
 ## Authentication
 
-Most endpoints require authentication via NextAuth.js session cookie or Bearer token. Anonymous endpoints are available for public access.
+Most endpoints require authentication via NextAuth.js session cookie or Bearer
+token. Anonymous endpoints are available for public access.
 
 ### Session Cookie (Default)
 
@@ -43,13 +44,15 @@ Authorization: Bearer {api_key}
 The following endpoints do NOT require authentication:
 
 - `/api/images/anonymous-upload` - Upload images without account
-- `/api/images/anonymous-enhance` - Enhance images without account (FREE tier only)
+- `/api/images/anonymous-enhance` - Enhance images without account (FREE tier
+  only)
 
 ---
 
 ## Token System
 
-Image enhancements consume tokens from the user's balance. Token costs are consistent across all enhancement operations.
+Image enhancements consume tokens from the user's balance. Token costs are
+consistent across all enhancement operations.
 
 ### Enhancement Tiers & Costs
 
@@ -64,7 +67,8 @@ Image enhancements consume tokens from the user's balance. Token costs are consi
 
 - **Regeneration Rate**: 1 token per 15 minutes
 - **Maximum Balance**: 100 tokens
-- **Initial Balance**: New users start with tokens (see [TOKEN_SYSTEM.md](../TOKEN_SYSTEM.md))
+- **Initial Balance**: New users start with tokens (see
+  [TOKEN_SYSTEM.md](../TOKEN_SYSTEM.md))
 
 ### Token Operations
 
@@ -406,8 +410,7 @@ Authorization: Bearer {token}
 - `imageId` (required): ID of image to enhance
 - `tiers` (required): Array of 1-3 unique tiers
 
-**Atomic Transaction:**
-All operations happen in a single database transaction:
+**Atomic Transaction:** All operations happen in a single database transaction:
 
 1. Token balance checked
 2. Tokens consumed for all tiers
@@ -523,7 +526,9 @@ const response = await fetch("/api/images/batch-enhance", {
 });
 
 const result = await response.json();
-console.log(`Batch ${result.batchId} started with ${result.summary.total} images`);
+console.log(
+  `Batch ${result.batchId} started with ${result.summary.total} images`,
+);
 ```
 
 ### Polling Enhancement Status
@@ -625,8 +630,8 @@ Authorization: Bearer {api_key}
 - `negativePrompt` (optional): Things to avoid
 - `aspectRatio` (optional): Output aspect ratio (default: "1:1")
 
-**Supported Aspect Ratios:**
-`1:1`, `3:2`, `2:3`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`
+**Supported Aspect Ratios:** `1:1`, `3:2`, `2:3`, `3:4`, `4:3`, `4:5`, `5:4`,
+`9:16`, `16:9`, `21:9`
 
 **Success Response (200)**
 
@@ -921,7 +926,8 @@ Authorization: Bearer {token}
 
 ## Anonymous Access
 
-Anonymous endpoints allow image processing without authentication. All anonymous operations use the FREE tier (0 tokens).
+Anonymous endpoints allow image processing without authentication. All anonymous
+operations use the FREE tier (0 tokens).
 
 ### Anonymous Upload
 
@@ -1198,7 +1204,7 @@ async function enhanceImage() {
     const statusRes = await fetch(`/api/images/${image.id}`);
     const { image: imageData } = await statusRes.json();
 
-    const job = imageData.jobs.find(j => j.id === enhancement.jobId);
+    const job = imageData.jobs.find((j) => j.id === enhancement.jobId);
     console.log(`Job status: ${job.status}`);
 
     if (job.status === "COMPLETED") {
@@ -1404,22 +1410,27 @@ class SpikeMcpAPI {
 
 ### Upload Operations
 
-1. **Batch Uploads**: Use batch-upload for multiple images to reduce latency and ensure transactional consistency
-2. **File Validation**: Validate file size and format client-side before uploading
+1. **Batch Uploads**: Use batch-upload for multiple images to reduce latency and
+   ensure transactional consistency
+2. **File Validation**: Validate file size and format client-side before
+   uploading
 3. **Error Handling**: Handle partial failures in batch uploads gracefully
 4. **Token Management**: Check token balance before batch operations
 
 ### Enhancement Operations
 
-1. **Parallel Enhancement**: Use parallel-enhance to process multiple tiers simultaneously
+1. **Parallel Enhancement**: Use parallel-enhance to process multiple tiers
+   simultaneously
 2. **Poll for Status**: Implement exponential backoff when polling job status
-3. **Tier Selection**: Choose appropriate tier based on use case (preview vs production)
+3. **Tier Selection**: Choose appropriate tier based on use case (preview vs
+   production)
 4. **Blend Operations**: Validate blend source images before enhancement
 
 ### Performance Optimization
 
 1. **Rate Limit Management**: Implement retry logic with exponential backoff
-2. **Concurrent Requests**: Limit concurrent enhancement requests to avoid rate limits
+2. **Concurrent Requests**: Limit concurrent enhancement requests to avoid rate
+   limits
 3. **Job Monitoring**: Use batch status endpoints for efficient polling
 4. **Caching**: Cache image metadata to reduce API calls
 
@@ -1443,55 +1454,64 @@ class SpikeMcpAPI {
 
 ### Upload Issues
 
-**Q: I'm getting "File exceeds maximum size" errors**
-A: Ensure files are under 10MB. For batch uploads, total batch size must be under 50MB. Compress or resize images before uploading.
+**Q: I'm getting "File exceeds maximum size" errors** A: Ensure files are under
+10MB. For batch uploads, total batch size must be under 50MB. Compress or resize
+images before uploading.
 
-**Q: Batch upload shows partial failures**
-A: This is expected behavior. Check the `results` array for individual file status. Failed files include detailed error messages.
+**Q: Batch upload shows partial failures** A: This is expected behavior. Check
+the `results` array for individual file status. Failed files include detailed
+error messages.
 
-**Q: Upload succeeded but tokens weren't refunded on failure**
-A: Tokens are automatically refunded when upload processing fails, job creation fails, or workflow start fails. Check transaction history.
+**Q: Upload succeeded but tokens weren't refunded on failure** A: Tokens are
+automatically refunded when upload processing fails, job creation fails, or
+workflow start fails. Check transaction history.
 
 ### Enhancement Issues
 
-**Q: I'm getting "Insufficient tokens" errors**
-A: Check user's token balance and offer to purchase more tokens. Tokens regenerate automatically (1 per 15 min, max 100).
+**Q: I'm getting "Insufficient tokens" errors** A: Check user's token balance
+and offer to purchase more tokens. Tokens regenerate automatically (1 per 15
+min, max 100).
 
-**Q: Rate limit errors**
-A: Implement exponential backoff retry logic. Check `Retry-After` header for wait time.
+**Q: Rate limit errors** A: Implement exponential backoff retry logic. Check
+`Retry-After` header for wait time.
 
-**Q: Enhancement job stuck in PROCESSING**
-A: Jobs should complete within 1-5 minutes depending on tier. Check logs for timeout errors. Workflow may have failed silently.
+**Q: Enhancement job stuck in PROCESSING** A: Jobs should complete within 1-5
+minutes depending on tier. Check logs for timeout errors. Workflow may have
+failed silently.
 
-**Q: Parallel enhancement only started some jobs**
-A: Parallel enhancement is atomic - if any job fails to create, all jobs are rolled back and tokens are refunded. Check for validation errors.
+**Q: Parallel enhancement only started some jobs** A: Parallel enhancement is
+atomic - if any job fails to create, all jobs are rolled back and tokens are
+refunded. Check for validation errors.
 
 ### Blend Issues
 
-**Q: Blend source image not found**
-A: Verify the source image ID is correct and owned by the user. For anonymous blends, both images must belong to the anonymous user.
+**Q: Blend source image not found** A: Verify the source image ID is correct and
+owned by the user. For anonymous blends, both images must belong to the
+anonymous user.
 
-**Q: Base64 blend source too large**
-A: Maximum base64 size is 20MB. Compress or resize the blend source image before encoding.
+**Q: Base64 blend source too large** A: Maximum base64 size is 20MB. Compress or
+resize the blend source image before encoding.
 
 ### MCP API Issues
 
-**Q: MCP API returns 401 Unauthorized**
-A: Verify API key is valid and included in Authorization header. Check API key hasn't been revoked.
+**Q: MCP API returns 401 Unauthorized** A: Verify API key is valid and included
+in Authorization header. Check API key hasn't been revoked.
 
-**Q: Image generation fails with unclear error**
-A: Check prompt length (max 4000 chars), tier validity, and aspect ratio format. Verify token balance.
+**Q: Image generation fails with unclear error** A: Check prompt length (max
+4000 chars), tier validity, and aspect ratio format. Verify token balance.
 
-**Q: Image URL fetch fails in modify endpoint**
-A: Ensure image URL is publicly accessible and returns valid image MIME type. Check for CORS restrictions.
+**Q: Image URL fetch fails in modify endpoint** A: Ensure image URL is publicly
+accessible and returns valid image MIME type. Check for CORS restrictions.
 
 ### Database Issues
 
-**Q: Transaction failed in batch upload**
-A: All R2 files are automatically cleaned up on transaction failure. No manual cleanup needed. Check database logs for specific error.
+**Q: Transaction failed in batch upload** A: All R2 files are automatically
+cleaned up on transaction failure. No manual cleanup needed. Check database logs
+for specific error.
 
-**Q: Image deleted but files still in R2**
-A: Deletion follows R2-first strategy. If database deletion fails, R2 files are already gone. Manual cleanup not needed.
+**Q: Image deleted but files still in R2** A: Deletion follows R2-first
+strategy. If database deletion fails, R2 files are already gone. Manual cleanup
+not needed.
 
 ---
 

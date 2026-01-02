@@ -64,7 +64,8 @@ The Spike Land API supports multiple authentication methods:
 
 ### 1. Session-Based Authentication (Recommended for Web)
 
-NextAuth.js automatically manages session cookies. After login, all API requests include the session automatically:
+NextAuth.js automatically manages session cookies. After login, all API requests
+include the session automatically:
 
 ```typescript
 // No manual token management needed - cookies are automatic
@@ -117,7 +118,8 @@ yarn dev
 
 3. Access the API at `http://localhost:3000/api`
 
-For complete setup instructions, see the main [README.md](../../README.md#authentication-setup).
+For complete setup instructions, see the main
+[README.md](../../README.md#authentication-setup).
 
 ## Choose Your Path
 
@@ -128,7 +130,8 @@ Building a web app that uses the Spike Land API:
 1. Read: [README.md](./README.md) - Understand the API (5 min)
 2. Read: [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) - Implementation
    patterns (25 min)
-3. Check: [ALBUM_ENDPOINTS.md](./ALBUM_ENDPOINTS.md) & [IMAGE_ENDPOINTS.md](./IMAGE_ENDPOINTS.md) - Specific endpoints
+3. Check: [ALBUM_ENDPOINTS.md](./ALBUM_ENDPOINTS.md) &
+   [IMAGE_ENDPOINTS.md](./IMAGE_ENDPOINTS.md) - Specific endpoints
 4. Copy code examples and start building!
 
 **Total time to start**: 35 minutes
@@ -166,7 +169,8 @@ Deploying or monitoring the API:
 
 1. Read: [README.md](./README.md) - Architecture overview (5 min)
 2. Check: [../../README.md](../../README.md) - Deployment setup (15 min)
-3. Review: [../../docs/SECRETS_SETUP.md](../../docs/SECRETS_SETUP.md) - Environment variables
+3. Review: [../../docs/SECRETS_SETUP.md](../../docs/SECRETS_SETUP.md) -
+   Environment variables
 4. Reference: [openapi.yaml](./openapi.yaml) - Complete API specification
 5. Configure: Vercel deployment with cron jobs (see `vercel.json`)
 6. Monitor: `/api/health` endpoint and error tracking
@@ -183,7 +187,8 @@ Deploying or monitoring the API:
 Understanding the API design:
 
 1. Read: [README.md](./README.md) - Architecture overview (10 min)
-2. Review: [../API_REFERENCE.md](../API_REFERENCE.md) - Complete API catalog (30 min)
+2. Review: [../API_REFERENCE.md](../API_REFERENCE.md) - Complete API catalog (30
+   min)
 3. Check: [../FEATURES.md](../FEATURES.md) - Platform capabilities
 4. Reference: [openapi.yaml](./openapi.yaml) - Technical specification
 
@@ -206,11 +211,13 @@ Understanding the API design:
 
 ### How do I authenticate?
 
-See [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md#authentication) - Session-based or Bearer tokens
+See [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md#authentication) -
+Session-based or Bearer tokens
 
 ### What are tokens?
 
-See [../TOKEN_SYSTEM.md](../TOKEN_SYSTEM.md) - Complete token economy documentation
+See [../TOKEN_SYSTEM.md](../TOKEN_SYSTEM.md) - Complete token economy
+documentation
 
 ### How do I enhance an image?
 

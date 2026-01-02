@@ -6,7 +6,7 @@ describe("Deck Logic", () => {
     const deck = createStandardDeck();
     expect(deck).toHaveLength(52);
 
-    const clubs = deck.filter(c => c.suit === "clubs");
+    const clubs = deck.filter((c) => c.suit === "clubs");
     expect(clubs).toHaveLength(13);
   });
 

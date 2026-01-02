@@ -8,17 +8,20 @@ export function usePeerDataChannel(doc: Y.Doc | null) {
   const sentFullStateToRef = useRef<Set<string>>(new Set());
 
   // Broadcast an update to all connected peers
-  const broadcastUpdate = useCallback((update: Uint8Array, connections: ConnectionMap) => {
-    connections.forEach((conn, peerId) => {
-      if (conn.dataConnection?.open) {
-        try {
-          conn.dataConnection.send(update);
-        } catch (err) {
-          console.error(`[P2P] Failed to send update to ${peerId}:`, err);
+  const broadcastUpdate = useCallback(
+    (update: Uint8Array, connections: ConnectionMap) => {
+      connections.forEach((conn, peerId) => {
+        if (conn.dataConnection?.open) {
+          try {
+            conn.dataConnection.send(update);
+          } catch (err) {
+            console.error(`[P2P] Failed to send update to ${peerId}:`, err);
+          }
         }
-      }
-    });
-  }, []);
+      });
+    },
+    [],
+  );
 
   // Send full state to a specific peer (call when connection is established)
   const sendFullState = useCallback((connection: DataConnection) => {
@@ -31,7 +34,9 @@ export function usePeerDataChannel(doc: Y.Doc | null) {
     }
 
     const fullState = Y.encodeStateAsUpdate(doc);
-    console.log(`[P2P] Sending full state (${fullState.length} bytes) to ${peerId}`);
+    console.log(
+      `[P2P] Sending full state (${fullState.length} bytes) to ${peerId}`,
+    );
     try {
       connection.send(fullState);
       sentFullStateToRef.current.add(peerId);

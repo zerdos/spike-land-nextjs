@@ -1,18 +1,19 @@
 # Spike Land - User Guide
 
-> **Last Updated**: December 2025
-> **Platform**: [spike.land](https://spike.land)
+> **Last Updated**: December 2025 **Platform**: [spike.land](https://spike.land)
 > **Company**: SPIKE LAND LTD (UK Company #16906682)
 
 ---
 
 ## 🚀 Quick Start (60 Seconds to Your First Enhancement)
 
-Welcome to Spike Land! Here's the fastest way to get started with Pixel, our AI-powered image enhancement app:
+Welcome to Spike Land! Here's the fastest way to get started with Pixel, our
+AI-powered image enhancement app:
 
 ### Step 1: Sign Up (15 seconds)
 
-1. Visit [spike.land](https://spike.land) or go directly to [spike.land/apps/pixel](https://spike.land/apps/pixel)
+1. Visit [spike.land](https://spike.land) or go directly to
+   [spike.land/apps/pixel](https://spike.land/apps/pixel)
 2. Click "Sign In" in the header
 3. Choose your authentication method:
    - **GitHub OAuth**: Sign in with your GitHub account
@@ -20,7 +21,8 @@ Welcome to Spike Land! Here's the fastest way to get started with Pixel, our AI-
 
 ### Step 2: Automatic Free Tokens
 
-✨ **Your account automatically generates FREE tokens** - 1 token every 15 minutes, up to 100 tokens maximum.
+✨ **Your account automatically generates FREE tokens** - 1 token every 15
+minutes, up to 100 tokens maximum.
 
 **What you can do with free tokens:**
 
@@ -49,8 +51,10 @@ Welcome to Spike Land! Here's the fastest way to get started with Pixel, our AI-
 
 ### What Makes Pixel Special?
 
-- **AI-Powered Enhancement**: Uses Google Gemini AI to intelligently upscale and enhance images
-- **4-Stage Enhancement Pipeline**: Analysis → Auto-Crop → Smart Prompting → Generation
+- **AI-Powered Enhancement**: Uses Google Gemini AI to intelligently upscale and
+  enhance images
+- **4-Stage Enhancement Pipeline**: Analysis → Auto-Crop → Smart Prompting →
+  Generation
 - **Album Organization**: Keep your images organized in albums
 - **Multiple Quality Tiers**: Choose from FREE, TIER_1K, TIER_2K, or TIER_4K
 - **Custom Pipelines**: Create and customize your own enhancement workflows
@@ -82,23 +86,27 @@ Ready for more? Keep reading for the complete guide.
 
 ### Creating Your Account
 
-1. Visit [spike.land](https://spike.land) or go directly to the Pixel app at [spike.land/apps/pixel](https://spike.land/apps/pixel)
+1. Visit [spike.land](https://spike.land) or go directly to the Pixel app at
+   [spike.land/apps/pixel](https://spike.land/apps/pixel)
 2. Click **"Sign In"** in the header (top right)
 3. Choose your authentication method:
    - **GitHub OAuth**: Sign in with your GitHub account
    - **Google OAuth**: Sign in with your Google account
 4. You're automatically signed in - no email verification required
-5. Your account starts generating **1 free token every 15 minutes** (up to 100 tokens)
+5. Your account starts generating **1 free token every 15 minutes** (up to 100
+   tokens)
 
 ### Understanding the Interface
 
-After signing in, you'll be redirected to the **Pixel app homepage** (`/apps/pixel`):
+After signing in, you'll be redirected to the **Pixel app homepage**
+(`/apps/pixel`):
 
 **Header Elements:**
 
 - **Pixel Logo**: Brand logo with "AI Image Enhancement" subtitle
 - **Pipelines Button**: Access to enhancement pipeline configurations
-- **Token Display**: Shows your current token balance and time until next free token
+- **Token Display**: Shows your current token balance and time until next free
+  token
 
 **Main Content:**
 
@@ -118,8 +126,8 @@ Pixel accepts these image formats:
 | GIF    | Single-frame images    | Legacy support                        |
 | BMP    | Legacy formats         | Rare, full compatibility              |
 
-**Maximum File Size**: 25 MB per image
-**Upload Limit**: Up to 20 images can be uploaded at once
+**Maximum File Size**: 25 MB per image **Upload Limit**: Up to 20 images can be
+uploaded at once
 
 ---
 
@@ -234,7 +242,8 @@ Anytime**: Keep remaining tokens forever
 
 ### Token Costs (Pixel App)
 
-When you enhance an image in Pixel, the cost depends on the quality tier you choose:
+When you enhance an image in Pixel, the cost depends on the quality tier you
+choose:
 
 | Tier    | Max Resolution | Cost      | Use Case                        |
 | ------- | -------------- | --------- | ------------------------------- |
@@ -245,9 +254,11 @@ When you enhance an image in Pixel, the cost depends on the quality tier you cho
 
 **Important Notes:**
 
-- **FREE tier** uses a faster but lower-quality "nano" AI model - perfect for testing
+- **FREE tier** uses a faster but lower-quality "nano" AI model - perfect for
+  testing
 - **TIER_1K/2K/4K** use the full Google Gemini AI model for best results
-- All tiers use the same 4-stage enhancement pipeline (Analysis → Auto-Crop → Prompting → Generation)
+- All tiers use the same 4-stage enhancement pipeline (Analysis → Auto-Crop →
+  Prompting → Generation)
 
 **Token Calculation Examples:**
 
@@ -280,7 +291,8 @@ Your token balance is always visible in the header (top right corner). It shows:
 
 ### What are Albums?
 
-Albums are containers that organize your images. In Pixel, **all images must be uploaded to an album** - there's no standalone image upload. Albums help you:
+Albums are containers that organize your images. In Pixel, **all images must be
+uploaded to an album** - there's no standalone image upload. Albums help you:
 
 - Organize images by project, date, or category
 - Batch upload multiple images at once
@@ -391,8 +403,8 @@ Pixel offers four quality tiers to balance quality, speed, and cost:
 
 #### FREE Tier (0 tokens)
 
-**Maximum Output**: 1024px on longest side
-**AI Model**: Nano (faster, lower quality)
+**Maximum Output**: 1024px on longest side **AI Model**: Nano (faster, lower
+quality)
 
 **Best For:**
 
@@ -408,8 +420,7 @@ Pixel offers four quality tiers to balance quality, speed, and cost:
 
 #### TIER_1K (2 tokens)
 
-**Maximum Output**: 1024px on longest side
-**AI Model**: Full Google Gemini
+**Maximum Output**: 1024px on longest side **AI Model**: Full Google Gemini
 
 **Best For:**
 
@@ -425,8 +436,7 @@ Pixel offers four quality tiers to balance quality, speed, and cost:
 
 #### TIER_2K (5 tokens)
 
-**Maximum Output**: 2048px on longest side
-**AI Model**: Full Google Gemini
+**Maximum Output**: 2048px on longest side **AI Model**: Full Google Gemini
 
 **Best For:**
 
@@ -442,8 +452,7 @@ Pixel offers four quality tiers to balance quality, speed, and cost:
 
 #### TIER_4K (10 tokens)
 
-**Maximum Output**: 4096px on longest side
-**AI Model**: Full Google Gemini
+**Maximum Output**: 4096px on longest side **AI Model**: Full Google Gemini
 
 **Best For:**
 
@@ -525,9 +534,11 @@ Typical processing time: **10-45 seconds** depending on tier and server load
 
 1. **Start with FREE tier**: Test enhancement before spending tokens
 2. **Choose appropriate tier**: Don't overpay for resolution you don't need
-3. **Original quality matters**: Higher quality originals produce better enhancements
+3. **Original quality matters**: Higher quality originals produce better
+   enhancements
 4. **Aspect ratio preserved**: Original aspect ratio is always maintained
-5. **Use custom pipelines**: Configure enhancement behavior for specific use cases
+5. **Use custom pipelines**: Configure enhancement behavior for specific use
+   cases
 6. **Batch similar images**: Enhance similar photos together for consistency
 
 ### What the AI Enhances
@@ -565,7 +576,9 @@ Common failure reasons:
 
 ### What are Pipelines?
 
-Pipelines are reusable AI enhancement configurations that control how images are processed through the 4-stage enhancement workflow. Think of them as presets or recipes for different enhancement scenarios.
+Pipelines are reusable AI enhancement configurations that control how images are
+processed through the 4-stage enhancement workflow. Think of them as presets or
+recipes for different enhancement scenarios.
 
 **Why Use Pipelines?**
 
@@ -847,7 +860,8 @@ Images are exported in their original format or enhanced format:
 | PNG    | Large    | Lossless  | Good      | Excellent | Graphics, print |
 | WebP   | Smallest | Excellent | Very Good | Fair      | Modern web      |
 
-**Note**: The enhancement preserves the original format. If you upload a PNG, the enhanced version is also PNG. Same for JPEG, WebP, etc.
+**Note**: The enhancement preserves the original format. If you upload a PNG,
+the enhanced version is also PNG. Same for JPEG, WebP, etc.
 
 ### Sharing Images and Albums
 
@@ -882,14 +896,16 @@ Images are exported in their original format or enhanced format:
 
 ### Earn Tokens by Inviting Friends
 
-The referral program lets you earn bonus tokens by inviting friends to join Spike Land.
+The referral program lets you earn bonus tokens by inviting friends to join
+Spike Land.
 
 ### Rewards
 
-**You Get**: 50 tokens per successful referral
-**Your Friend Gets**: 50 tokens when they sign up
+**You Get**: 50 tokens per successful referral **Your Friend Gets**: 50 tokens
+when they sign up
 
-Both rewards are credited automatically once your friend verifies their email address.
+Both rewards are credited automatically once your friend verifies their email
+address.
 
 ### How to Access
 
@@ -933,8 +949,8 @@ The dashboard shows:
 - **Facebook**: Share to your timeline
 - **LinkedIn**: Share professionally
 
-**Manual Sharing:**
-Your referral link format: `https://spike.land?ref=YOUR_CODE`
+**Manual Sharing:** Your referral link format:
+`https://spike.land?ref=YOUR_CODE`
 
 **Best Places to Share:**
 
@@ -989,7 +1005,8 @@ To maintain system integrity:
 
 ## Account Settings
 
-Access your account settings at `/settings` or click your profile picture and select "Settings".
+Access your account settings at `/settings` or click your profile picture and
+select "Settings".
 
 ### Profile Tab
 
@@ -1130,99 +1147,127 @@ Access your account settings at `/settings` or click your profile picture and se
 
 ### General Questions
 
-**Q: Is Spike Land free to use?**
-A: Yes! Spike Land is free to sign up and use. Your account automatically generates 1 free token every 15 minutes (up to 100 tokens maximum). You can use the FREE tier (0 tokens) for unlimited enhancements, or use tokens for higher quality tiers. Additional tokens can be purchased, earned through referrals, or redeemed via vouchers.
+**Q: Is Spike Land free to use?** A: Yes! Spike Land is free to sign up and use.
+Your account automatically generates 1 free token every 15 minutes (up to 100
+tokens maximum). You can use the FREE tier (0 tokens) for unlimited
+enhancements, or use tokens for higher quality tiers. Additional tokens can be
+purchased, earned through referrals, or redeemed via vouchers.
 
-**Q: How long does image enhancement take?**
-A: Most enhancements complete in 10-45 seconds depending on the quality tier and server load. The process goes through 4 stages: Analysis (2-5s), Auto-Crop (1-3s), Prompting (1-2s), and Generation (10-35s).
+**Q: How long does image enhancement take?** A: Most enhancements complete in
+10-45 seconds depending on the quality tier and server load. The process goes
+through 4 stages: Analysis (2-5s), Auto-Crop (1-3s), Prompting (1-2s), and
+Generation (10-35s).
 
-**Q: What image formats do you support?**
-A: JPEG, PNG, WebP, GIF, and BMP. Maximum file size is 25 MB per image. You can upload up to 20 images at once.
+**Q: What image formats do you support?** A: JPEG, PNG, WebP, GIF, and BMP.
+Maximum file size is 25 MB per image. You can upload up to 20 images at once.
 
-**Q: Is my image data safe?**
-A: Yes! All data is encrypted at rest and in transit. We use Cloudflare R2 for secure cloud storage. Images are private by default. See our Privacy Policy at `/privacy` for complete details.
+**Q: Is my image data safe?** A: Yes! All data is encrypted at rest and in
+transit. We use Cloudflare R2 for secure cloud storage. Images are private by
+default. See our Privacy Policy at `/privacy` for complete details.
 
-**Q: What's the difference between Spike Land and Pixel?**
-A: Spike Land is the platform; Pixel is the AI image enhancement app that runs on Spike Land. Your Spike Land account and tokens work across all apps on the platform.
+**Q: What's the difference between Spike Land and Pixel?** A: Spike Land is the
+platform; Pixel is the AI image enhancement app that runs on Spike Land. Your
+Spike Land account and tokens work across all apps on the platform.
 
 ### Token Questions
 
-**Q: Do my auto-generated tokens expire?**
-A: Auto-generated tokens (1 per 15 minutes) are capped at 100. If you're inactive for 30 days, your token balance may be adjusted. Purchased tokens and referral tokens never expire.
+**Q: Do my auto-generated tokens expire?** A: Auto-generated tokens (1 per 15
+minutes) are capped at 100. If you're inactive for 30 days, your token balance
+may be adjusted. Purchased tokens and referral tokens never expire.
 
-**Q: Can I transfer tokens to a friend?**
-A: No, tokens are account-specific and cannot be transferred. However, you can use the referral program to give your friend 50 tokens when they sign up.
+**Q: Can I transfer tokens to a friend?** A: No, tokens are account-specific and
+cannot be transferred. However, you can use the referral program to give your
+friend 50 tokens when they sign up.
 
-**Q: Do purchased tokens expire?**
-A: No, purchased tokens never expire. Use them anytime at your own pace.
+**Q: Do purchased tokens expire?** A: No, purchased tokens never expire. Use
+them anytime at your own pace.
 
-**Q: What's the difference between FREE tier and TIER_1K?**
-A: Both output at 1024px resolution, but FREE tier uses a faster "nano" AI model with lower quality, while TIER_1K uses the full Google Gemini AI model with better results. FREE costs 0 tokens, TIER_1K costs 2 tokens.
+**Q: What's the difference between FREE tier and TIER_1K?** A: Both output at
+1024px resolution, but FREE tier uses a faster "nano" AI model with lower
+quality, while TIER_1K uses the full Google Gemini AI model with better results.
+FREE costs 0 tokens, TIER_1K costs 2 tokens.
 
-**Q: Can I pause my subscription?**
-A: Yes, you can pause your subscription through the subscription management page. No charges during pause, and you keep all existing tokens.
+**Q: Can I pause my subscription?** A: Yes, you can pause your subscription
+through the subscription management page. No charges during pause, and you keep
+all existing tokens.
 
 ### Enhancement Questions
 
-**Q: Are my images private?**
-A: Yes, all images and albums are private by default. Only you can access them unless you explicitly create and share a share link.
+**Q: Are my images private?** A: Yes, all images and albums are private by
+default. Only you can access them unless you explicitly create and share a share
+link.
 
-**Q: What happens if an enhancement fails?**
-A: Tokens are automatically refunded to your account immediately. You can retry the enhancement at no additional cost. Check the error message for why it failed.
+**Q: What happens if an enhancement fails?** A: Tokens are automatically
+refunded to your account immediately. You can retry the enhancement at no
+additional cost. Check the error message for why it failed.
 
-**Q: Can I enhance the same image multiple times?**
-A: Yes! You can enhance an image as many times as you want. Each enhancement is saved in the version history, and you can compare different tiers and pipelines.
+**Q: Can I enhance the same image multiple times?** A: Yes! You can enhance an
+image as many times as you want. Each enhancement is saved in the version
+history, and you can compare different tiers and pipelines.
 
-**Q: What quality can I expect?**
-A: Results depend on your original image quality and the tier you choose. Higher quality originals produce better enhancements. The AI uses Google Gemini for intelligent upscaling and enhancement. Try the FREE tier first to preview results.
+**Q: What quality can I expect?** A: Results depend on your original image
+quality and the tier you choose. Higher quality originals produce better
+enhancements. The AI uses Google Gemini for intelligent upscaling and
+enhancement. Try the FREE tier first to preview results.
 
-**Q: Can I customize how images are enhanced?**
-A: Yes! Use Enhancement Pipelines to customize the 4-stage process. Control analysis, auto-crop, prompting, and generation settings. Create custom pipelines or fork existing ones.
+**Q: Can I customize how images are enhanced?** A: Yes! Use Enhancement
+Pipelines to customize the 4-stage process. Control analysis, auto-crop,
+prompting, and generation settings. Create custom pipelines or fork existing
+ones.
 
 ### Album & Sharing Questions
 
-**Q: Why do I need to create an album before uploading?**
-A: Albums organize your images and make it easy to manage, share, and batch-enhance multiple images. All images must belong to an album.
+**Q: Why do I need to create an album before uploading?** A: Albums organize
+your images and make it easy to manage, share, and batch-enhance multiple
+images. All images must belong to an album.
 
-**Q: Can others edit my shared albums?**
-A: No, shared albums are view-only. Recipients cannot download, edit, or enhance images. You maintain full control.
+**Q: Can others edit my shared albums?** A: No, shared albums are view-only.
+Recipients cannot download, edit, or enhance images. You maintain full control.
 
-**Q: How long do share links work?**
-A: Share links work indefinitely until you delete the album or image. There's no expiration date.
+**Q: How long do share links work?** A: Share links work indefinitely until you
+delete the album or image. There's no expiration date.
 
-**Q: Can I make my albums public?**
-A: Currently albums can be Private (only you) or Unlisted (anyone with link). Public galleries are a future feature.
+**Q: Can I make my albums public?** A: Currently albums can be Private (only
+you) or Unlisted (anyone with link). Public galleries are a future feature.
 
-**Q: Can I password-protect shared albums?**
-A: Password protection for share links is a planned future feature. Currently, albums are protected by obscure share links.
+**Q: Can I password-protect shared albums?** A: Password protection for share
+links is a planned future feature. Currently, albums are protected by obscure
+share links.
 
 ### Referral Questions
 
-**Q: How do I earn referral tokens?**
-A: Share your unique referral link from the `/referrals` page. When a friend signs up using your link and verifies their email, you both receive 50 tokens.
+**Q: How do I earn referral tokens?** A: Share your unique referral link from
+the `/referrals` page. When a friend signs up using your link and verifies their
+email, you both receive 50 tokens.
 
-**Q: Is there a limit to referrals?**
-A: No limit! Refer as many friends as you like and earn 50 tokens for each successful referral.
+**Q: Is there a limit to referrals?** A: No limit! Refer as many friends as you
+like and earn 50 tokens for each successful referral.
 
-**Q: What if my friend already has an account?**
-A: Referral rewards only work for new sign-ups. Existing users cannot be referred.
+**Q: What if my friend already has an account?** A: Referral rewards only work
+for new sign-ups. Existing users cannot be referred.
 
-**Q: When do I receive referral tokens?**
-A: Tokens are credited immediately after your friend verifies their email address. Check the referrals dashboard to track status.
+**Q: When do I receive referral tokens?** A: Tokens are credited immediately
+after your friend verifies their email address. Check the referrals dashboard to
+track status.
 
 ### Payment & Billing Questions
 
-**Q: What payment methods do you accept?**
-A: We accept all major credit and debit cards (Visa, Mastercard, American Express, Discover, etc.) through Stripe payment processing.
+**Q: What payment methods do you accept?** A: We accept all major credit and
+debit cards (Visa, Mastercard, American Express, Discover, etc.) through Stripe
+payment processing.
 
-**Q: Is my payment information secure?**
-A: Yes, all payments are processed by Stripe, which is PCI-DSS Level 1 compliant (the highest security standard). Spike Land never stores your full credit card details.
+**Q: Is my payment information secure?** A: Yes, all payments are processed by
+Stripe, which is PCI-DSS Level 1 compliant (the highest security standard).
+Spike Land never stores your full credit card details.
 
-**Q: Can I get a refund?**
-A: Token purchases can be refunded within 30 days of purchase. Contact support@spike.land with your transaction details. Subscription cancellations are processed immediately, and you keep access until the end of your billing period.
+**Q: Can I get a refund?** A: Token purchases can be refunded within 30 days of
+purchase. Contact support@spike.land with your transaction details. Subscription
+cancellations are processed immediately, and you keep access until the end of
+your billing period.
 
-**Q: What happens to my tokens if I cancel my subscription?**
-A: You keep all tokens (purchased, earned, and subscription tokens). Tokens never expire, so you can use them anytime even after cancellation.
+**Q: What happens to my tokens if I cancel my subscription?** A: You keep all
+tokens (purchased, earned, and subscription tokens). Tokens never expire, so you
+can use them anytime even after cancellation.
 
 ---
 
@@ -1380,7 +1425,8 @@ If you can't resolve your issue with this guide:
 
 **Platform Information:**
 
-- **Status Updates**: [status.spike.land](https://status.spike.land) (future feature)
+- **Status Updates**: [status.spike.land](https://status.spike.land) (future
+  feature)
 - **Company**: SPIKE LAND LTD (UK Company #16906682)
 - **Website**: [spike.land](https://spike.land)
 
@@ -1401,7 +1447,8 @@ If you can't resolve your issue with this guide:
 - **Token Management**: [spike.land/tokens](https://spike.land/tokens)
 - **Referral Program**: [spike.land/referrals](https://spike.land/referrals)
 - **Account Settings**: [spike.land/settings](https://spike.land/settings)
-- **Enhancement Pipelines**: [spike.land/apps/pixel/pipelines](https://spike.land/apps/pixel/pipelines)
+- **Enhancement Pipelines**:
+  [spike.land/apps/pixel/pipelines](https://spike.land/apps/pixel/pipelines)
 
 ### Legal & Privacy
 
@@ -1411,10 +1458,12 @@ If you can't resolve your issue with this guide:
 
 ---
 
-**Last Updated**: December 30, 2025
-**Version**: 2.0 (Comprehensive update reflecting actual platform implementation)
-**Guide Status**: Production-ready, based on current codebase
+**Last Updated**: December 30, 2025 **Version**: 2.0 (Comprehensive update
+reflecting actual platform implementation) **Guide Status**: Production-ready,
+based on current codebase
 
 ---
 
-_Thank you for using Spike Land! We're continuously improving the platform based on user feedback. If you have suggestions or feature requests, please reach out to hello@spike.land_
+_Thank you for using Spike Land! We're continuously improving the platform based
+on user feedback. If you have suggestions or feature requests, please reach out
+to hello@spike.land_

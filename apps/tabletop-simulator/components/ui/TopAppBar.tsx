@@ -66,7 +66,9 @@ export function TopAppBar({
           {/* Connection status */}
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-black/60 backdrop-blur-md border border-white/10">
             <span className={`w-2 h-2 rounded-full ${statusColor}`} />
-            <span className="text-white/70 text-xs hidden sm:inline">{statusLabel}</span>
+            <span className="text-white/70 text-xs hidden sm:inline">
+              {statusLabel}
+            </span>
           </div>
 
           {/* Player count */}

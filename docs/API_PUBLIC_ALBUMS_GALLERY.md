@@ -439,7 +439,8 @@ export function PublicGalleryMobile() {
 - **Stale-while-revalidate**: 10 minutes (`stale-while-revalidate=600` - serves
   stale content while fetching fresh data)
 - **Client-side**: Browsers can cache according to Cache-Control headers
-- **Next.js revalidation**: 300 seconds (5 minutes) via `export const
+- **Next.js revalidation**: 300 seconds (5 minutes) via
+  `export const
   revalidate = 300`
 
 ## Implementation Details
@@ -448,8 +449,7 @@ export function PublicGalleryMobile() {
 
 The endpoint executes the following query logic:
 
-1. **Find Super Admin**: Queries the `User` table for email
-   `zolika84@gmail.com`
+1. **Find Super Admin**: Queries the `User` table for email `zolika84@gmail.com`
    - Selects only the `id` field for efficiency
    - Returns 404 if not found
 
@@ -556,8 +556,8 @@ The endpoint relies on these Prisma models:
 
 ### Query Optimization
 
-- **Eager Loading**: Uses Prisma `include` to fetch all related data in a
-  single database round-trip, avoiding N+1 query problems
+- **Eager Loading**: Uses Prisma `include` to fetch all related data in a single
+  database round-trip, avoiding N+1 query problems
 - **Selective Fields**: Super admin query selects only `id` field to minimize
   data transfer
 - **Ordered Fetching**: Albums ordered by `createdAt DESC` ensures newest
@@ -860,10 +860,14 @@ psql $DATABASE_URL -c "SELECT 1;"
 
 ## File Locations
 
-- **Route Handler**: `/Users/z/Developer/spike-land-nextjs/src/app/api/gallery/public-albums/route.ts`
-- **Unit Tests**: `/Users/z/Developer/spike-land-nextjs/src/app/api/gallery/public-albums/route.test.ts`
-- **Documentation**: `/Users/z/Developer/spike-land-nextjs/docs/API_PUBLIC_ALBUMS_GALLERY.md`
-- **Database Schema**: `/Users/z/Developer/spike-land-nextjs/prisma/schema.prisma`
+- **Route Handler**:
+  `/Users/z/Developer/spike-land-nextjs/src/app/api/gallery/public-albums/route.ts`
+- **Unit Tests**:
+  `/Users/z/Developer/spike-land-nextjs/src/app/api/gallery/public-albums/route.test.ts`
+- **Documentation**:
+  `/Users/z/Developer/spike-land-nextjs/docs/API_PUBLIC_ALBUMS_GALLERY.md`
+- **Database Schema**:
+  `/Users/z/Developer/spike-land-nextjs/prisma/schema.prisma`
 
 ## Changelog
 

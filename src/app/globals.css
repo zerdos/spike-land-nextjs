@@ -228,11 +228,19 @@
   /* Dark mode body - Clean stylish background (No grid) */
   .dark body::before {
     background:
-      radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 60%),
+      radial-gradient(
+        circle at 50% 0%,
+        rgba(255, 255, 255, 0.03) 0%,
+        transparent 60%
+      ),
       hsl(var(--background));
     background-image:
       url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"),
-      radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 60%),
+      radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 255, 255, 0.03) 0%,
+      transparent 60%
+    ),
       hsl(var(--background));
     background-size: 200px 200px, 100% 100%, 100% 100%;
     /* Keep subtle noise + top spotlight for premium feel, but NO grid lines */
@@ -294,7 +302,11 @@
   /* Aura Surfaces: Vibrant, colorful glass variants with deep saturation and bloom glows */
   /* These are now mobile-first with simplified blurs */
   .glass-aura-blue {
-    background: linear-gradient(135deg, rgba(7, 89, 133, 0.6), rgba(7, 89, 133, 0.3));
+    background: linear-gradient(
+      135deg,
+      rgba(7, 89, 133, 0.6),
+      rgba(7, 89, 133, 0.3)
+    );
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -304,7 +316,11 @@
   }
 
   .glass-aura-green {
-    background: linear-gradient(135deg, rgba(20, 83, 45, 0.6), rgba(20, 83, 45, 0.3));
+    background: linear-gradient(
+      135deg,
+      rgba(20, 83, 45, 0.6),
+      rgba(20, 83, 45, 0.3)
+    );
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow: inset 0 1px 1px 0 rgba(34, 197, 94, 0.5), 0 10px 40px -10px rgba(34, 197, 94, 0.3);
@@ -312,7 +328,11 @@
   }
 
   .glass-aura-orange {
-    background: linear-gradient(135deg, rgba(124, 45, 18, 0.6), rgba(124, 45, 18, 0.3));
+    background: linear-gradient(
+      135deg,
+      rgba(124, 45, 18, 0.6),
+      rgba(124, 45, 18, 0.3)
+    );
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -322,7 +342,11 @@
   }
 
   .glass-aura-fuchsia {
-    background: linear-gradient(135deg, rgba(112, 26, 117, 0.6), rgba(112, 26, 117, 0.3));
+    background: linear-gradient(
+      135deg,
+      rgba(112, 26, 117, 0.6),
+      rgba(112, 26, 117, 0.3)
+    );
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -332,7 +356,11 @@
   }
 
   .glass-aura-pink {
-    background: linear-gradient(135deg, rgba(157, 23, 77, 0.6), rgba(157, 23, 77, 0.3));
+    background: linear-gradient(
+      135deg,
+      rgba(157, 23, 77, 0.6),
+      rgba(157, 23, 77, 0.3)
+    );
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -342,7 +370,11 @@
   }
 
   .glass-aura-purple {
-    background: linear-gradient(135deg, rgba(88, 28, 135, 0.6), rgba(88, 28, 135, 0.3));
+    background: linear-gradient(
+      135deg,
+      rgba(88, 28, 135, 0.6),
+      rgba(88, 28, 135, 0.3)
+    );
     backdrop-filter: blur(var(--glass-blur-sm));
     -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     box-shadow:
@@ -352,7 +384,11 @@
   }
 
   .glass-layers {
-    background: linear-gradient(135deg, rgba(24, 24, 27, 0.8), rgba(24, 24, 27, 0.6));
+    background: linear-gradient(
+      135deg,
+      rgba(24, 24, 27, 0.8),
+      rgba(24, 24, 27, 0.6)
+    );
     backdrop-filter: blur(var(--glass-blur-mobile));
     -webkit-backdrop-filter: blur(var(--glass-blur-mobile));
     box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.1), 0 20px 50px -10px rgba(0, 0, 0, 0.5);
@@ -458,19 +494,35 @@
 
   /* Gradient backgrounds for package cards - using HSL for consistency */
   .gradient-blue {
-    background: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(221 83% 53%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(217 91% 60%) 0%,
+      hsl(221 83% 53%) 100%
+    );
   }
 
   .gradient-purple {
-    background: linear-gradient(135deg, hsl(258 90% 66%) 0%, hsl(263 70% 50%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(258 90% 66%) 0%,
+      hsl(263 70% 50%) 100%
+    );
   }
 
   .gradient-pink {
-    background: linear-gradient(135deg, hsl(330 81% 60%) 0%, hsl(338 78% 48%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(330 81% 60%) 0%,
+      hsl(338 78% 48%) 100%
+    );
   }
 
   .gradient-orange {
-    background: linear-gradient(135deg, hsl(25 95% 53%) 0%, hsl(21 90% 48%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(25 95% 53%) 0%,
+      hsl(21 90% 48%) 100%
+    );
   }
 
   /* Theme-aware gradient text utility for hero headings */
@@ -488,11 +540,19 @@
 
   /* Gradient background utilities */
   .bg-gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--secondary))
+    );
   }
 
   .bg-gradient-accent {
-    background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
+    background: linear-gradient(
+      135deg,
+      hsl(var(--accent)),
+      hsl(var(--primary))
+    );
   }
 
   .bg-gradient-hero {

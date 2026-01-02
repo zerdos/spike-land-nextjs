@@ -63,7 +63,9 @@ import Starfield from "./Starfield";
  */
 export default function NYECountdownClient() {
   const targetDate = useMemo(() => new Date("2026-01-01T00:00:00"), []);
-  const { days, hours, minutes, seconds, isComplete } = useCountdown(targetDate);
+  const { days, hours, minutes, seconds, isComplete } = useCountdown(
+    targetDate,
+  );
 
   const [hasStarted, setHasStarted] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -78,12 +80,15 @@ export default function NYECountdownClient() {
   const [showFinalHourBanner, setShowFinalHourBanner] = useState(false);
 
   // Calculate countdown phases
-  const isFinalCountdown = days === 0 && hours === 0 && minutes === 0 && seconds <= 60;
+  const isFinalCountdown = days === 0 && hours === 0 && minutes === 0 &&
+    seconds <= 60;
   const isLastThirtySeconds = isFinalCountdown && seconds <= 30 && seconds > 0;
   const isLastTenSeconds = isFinalCountdown && seconds <= 10 && seconds > 0;
   const isLastFiveSeconds = isFinalCountdown && seconds <= 5 && seconds > 0;
-  const isOneHourLeft = days === 0 && hours === 1 && minutes === 0 && seconds <= 3;
-  const isThirtyMinutesLeft = days === 0 && hours === 0 && minutes === 30 && seconds <= 3;
+  const isOneHourLeft = days === 0 && hours === 1 && minutes === 0 &&
+    seconds <= 3;
+  const isThirtyMinutesLeft = days === 0 && hours === 0 && minutes === 30 &&
+    seconds <= 3;
   const isFinalHour = days === 0 && hours === 0;
 
   // Simulate viewer count (fun atmospheric effect) - surges during final countdown
@@ -166,12 +171,24 @@ export default function NYECountdownClient() {
 
   // Milestone messages for special moments
   const milestoneMessage = useMemo(() => {
-    if (days === 0 && hours === 0 && minutes === 0 && seconds === 0) return null;
-    if (days === 0 && hours === 1 && minutes === 0 && seconds <= 5) return "🎯 ONE HOUR TO GO! 🎯";
-    if (days === 0 && hours === 0 && minutes === 30 && seconds <= 5) return "⏰ 30 MINUTES! ⏰";
-    if (days === 0 && hours === 0 && minutes === 10 && seconds <= 5) return "🔥 10 MINUTES! 🔥";
-    if (days === 0 && hours === 0 && minutes === 5 && seconds <= 5) return "⚡ 5 MINUTES! ⚡";
-    if (days === 0 && hours === 0 && minutes === 1 && seconds <= 5) return "🚀 ONE MINUTE! 🚀";
+    if (days === 0 && hours === 0 && minutes === 0 && seconds === 0) {
+      return null;
+    }
+    if (days === 0 && hours === 1 && minutes === 0 && seconds <= 5) {
+      return "🎯 ONE HOUR TO GO! 🎯";
+    }
+    if (days === 0 && hours === 0 && minutes === 30 && seconds <= 5) {
+      return "⏰ 30 MINUTES! ⏰";
+    }
+    if (days === 0 && hours === 0 && minutes === 10 && seconds <= 5) {
+      return "🔥 10 MINUTES! 🔥";
+    }
+    if (days === 0 && hours === 0 && minutes === 5 && seconds <= 5) {
+      return "⚡ 5 MINUTES! ⚡";
+    }
+    if (days === 0 && hours === 0 && minutes === 1 && seconds <= 5) {
+      return "🚀 ONE MINUTE! 🚀";
+    }
     return null;
   }, [days, hours, minutes, seconds]);
 
@@ -186,7 +203,14 @@ export default function NYECountdownClient() {
     if (hours < 3) return "😃";
     if (hours < 12) return "🙂";
     return "😊";
-  }, [isComplete, isLastTenSeconds, isLastThirtySeconds, isFinalCountdown, hours, minutes]);
+  }, [
+    isComplete,
+    isLastTenSeconds,
+    isLastThirtySeconds,
+    isFinalCountdown,
+    hours,
+    minutes,
+  ]);
 
   // Calculate which cities have already celebrated
   const worldCelebrationStatus = useMemo(() => {
@@ -214,10 +238,14 @@ export default function NYECountdownClient() {
       if (currentUtc < cityMidnight) {
         const timeUntil = cityMidnight - currentUtc;
         const hoursUntil = Math.floor(timeUntil / (1000 * 60 * 60));
-        const minutesUntil = Math.floor((timeUntil % (1000 * 60 * 60)) / (1000 * 60));
+        const minutesUntil = Math.floor(
+          (timeUntil % (1000 * 60 * 60)) / (1000 * 60),
+        );
         return {
           ...city,
-          timeUntil: hoursUntil > 0 ? `${hoursUntil}h ${minutesUntil}m` : `${minutesUntil}m`,
+          timeUntil: hoursUntil > 0
+            ? `${hoursUntil}h ${minutesUntil}m`
+            : `${minutesUntil}m`,
         };
       }
     }
@@ -228,26 +256,70 @@ export default function NYECountdownClient() {
   // Hype meter - increases as we get closer
   const hypeLevel = useMemo(() => {
     if (isComplete) {
-      return { level: 100, label: "MAXIMUM HYPE!", color: "from-yellow-400 to-orange-500" };
+      return {
+        level: 100,
+        label: "MAXIMUM HYPE!",
+        color: "from-yellow-400 to-orange-500",
+      };
     }
     if (isLastTenSeconds) {
-      return { level: 99, label: "LEGENDARY", color: "from-red-500 to-orange-500" };
+      return {
+        level: 99,
+        label: "LEGENDARY",
+        color: "from-red-500 to-orange-500",
+      };
     }
     if (isLastThirtySeconds) {
-      return { level: 95, label: "INSANE", color: "from-orange-500 to-yellow-500" };
+      return {
+        level: 95,
+        label: "INSANE",
+        color: "from-orange-500 to-yellow-500",
+      };
     }
-    if (isFinalCountdown) return { level: 85, label: "EPIC", color: "from-pink-500 to-purple-500" };
+    if (isFinalCountdown) {
+      return { level: 85, label: "EPIC", color: "from-pink-500 to-purple-500" };
+    }
     if (hours === 0 && minutes < 10) {
-      return { level: 75, label: "EXTREME", color: "from-purple-500 to-cyan-500" };
+      return {
+        level: 75,
+        label: "EXTREME",
+        color: "from-purple-500 to-cyan-500",
+      };
     }
-    if (hours === 0) return { level: 60, label: "HIGH", color: "from-cyan-500 to-blue-500" };
-    if (hours < 3) return { level: 45, label: "BUILDING", color: "from-blue-500 to-indigo-500" };
+    if (hours === 0) {
+      return { level: 60, label: "HIGH", color: "from-cyan-500 to-blue-500" };
+    }
+    if (hours < 3) {
+      return {
+        level: 45,
+        label: "BUILDING",
+        color: "from-blue-500 to-indigo-500",
+      };
+    }
     if (hours < 12) {
-      return { level: 30, label: "WARMING UP", color: "from-indigo-500 to-purple-500" };
+      return {
+        level: 30,
+        label: "WARMING UP",
+        color: "from-indigo-500 to-purple-500",
+      };
     }
-    if (days === 0) return { level: 20, label: "RISING", color: "from-purple-500 to-pink-500" };
+    if (days === 0) {
+      return {
+        level: 20,
+        label: "RISING",
+        color: "from-purple-500 to-pink-500",
+      };
+    }
     return { level: 10, label: "CALM", color: "from-gray-500 to-gray-600" };
-  }, [isComplete, isLastTenSeconds, isLastThirtySeconds, isFinalCountdown, hours, minutes, days]);
+  }, [
+    isComplete,
+    isLastTenSeconds,
+    isLastThirtySeconds,
+    isFinalCountdown,
+    hours,
+    minutes,
+    days,
+  ]);
 
   useEffect(() => {
     setHasStarted(true);
@@ -257,7 +329,10 @@ export default function NYECountdownClient() {
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
 
-    if (isFinalHour && !showFinalHourBanner && !isComplete && minutes === 59 && seconds >= 57) {
+    if (
+      isFinalHour && !showFinalHourBanner && !isComplete && minutes === 59 &&
+      seconds >= 57
+    ) {
       setShowFinalHourBanner(true);
       // Hide after 4 seconds
       timer = setTimeout(() => setShowFinalHourBanner(false), 4000);
@@ -465,7 +540,10 @@ export default function NYECountdownClient() {
 
           {/* Floating celebration emojis - GPU accelerated */}
           <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-            {["🎉", "🎊", "🥳", "✨", "🎆", "🍾", "🌟", "💫", "🎇", "🥂"].map((emoji, i) => (
+            {["🎉", "🎊", "🥳", "✨", "🎆", "🍾", "🌟", "💫", "🎇", "🥂"].map((
+              emoji,
+              i,
+            ) => (
               <div
                 key={i}
                 className="absolute text-4xl animate-float-up"
@@ -490,7 +568,11 @@ export default function NYECountdownClient() {
                   left: `${(i * 3.5) % 100}%`,
                   height: `${15 + (i % 4) * 10}px`,
                   background: `linear-gradient(180deg, transparent, ${
-                    i % 3 === 0 ? "#FFD700" : i % 3 === 1 ? "#FFA500" : "#FF6B6B"
+                    i % 3 === 0
+                      ? "#FFD700"
+                      : i % 3 === 1
+                      ? "#FFA500"
+                      : "#FF6B6B"
                   })`,
                   animationDelay: `${(i * 0.1) % 2}s`,
                   animationDuration: `${1.5 + (i % 3) * 0.5}s`,
@@ -507,9 +589,21 @@ export default function NYECountdownClient() {
                 className="absolute w-1 h-1 rounded-full animate-sparkle-fall"
                 style={{
                   left: `${(i * 5) % 100}%`,
-                  background: ["#FFD700", "#FFFFFF", "#00E5FF", "#FF69B4", "#9D4EDD"][i % 5],
+                  background: [
+                    "#FFD700",
+                    "#FFFFFF",
+                    "#00E5FF",
+                    "#FF69B4",
+                    "#9D4EDD",
+                  ][i % 5],
                   boxShadow: `0 0 6px ${
-                    ["#FFD700", "#FFFFFF", "#00E5FF", "#FF69B4", "#9D4EDD"][i % 5]
+                    [
+                      "#FFD700",
+                      "#FFFFFF",
+                      "#00E5FF",
+                      "#FF69B4",
+                      "#9D4EDD",
+                    ][i % 5]
                   }`,
                   animationDelay: `${i * 0.15}s`,
                 }}
@@ -654,7 +748,13 @@ export default function NYECountdownClient() {
               <div
                 className="w-3 h-3 rounded-sm"
                 style={{
-                  background: ["#FFD700", "#FF6B6B", "#4ECDC4", "#A855F7", "#EC4899"][i % 5],
+                  background: [
+                    "#FFD700",
+                    "#FF6B6B",
+                    "#4ECDC4",
+                    "#A855F7",
+                    "#EC4899",
+                  ][i % 5],
                   transform: `rotate(${i * 25}deg)`,
                 }}
               />
@@ -672,7 +772,13 @@ export default function NYECountdownClient() {
               <div
                 className="w-3 h-3 rounded-sm"
                 style={{
-                  background: ["#FFD700", "#00E5FF", "#FF00FF", "#00FF00", "#FF4500"][i % 5],
+                  background: [
+                    "#FFD700",
+                    "#00E5FF",
+                    "#FF00FF",
+                    "#00FF00",
+                    "#FF4500",
+                  ][i % 5],
                   transform: `rotate(${i * 25}deg)`,
                 }}
               />
@@ -756,7 +862,14 @@ export default function NYECountdownClient() {
               className="absolute top-10 left-10 w-1 h-[50vh] origin-top animate-disco-beam"
               style={{
                 background: `linear-gradient(to bottom, ${
-                  ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"][i % 6]
+                  [
+                    "#FF0000",
+                    "#00FF00",
+                    "#0000FF",
+                    "#FFFF00",
+                    "#FF00FF",
+                    "#00FFFF",
+                  ][i % 6]
                 }40, transparent)`,
                 transform: `rotate(${i * 30}deg)`,
                 animationDelay: `${i * 0.2}s`,
@@ -797,10 +910,24 @@ export default function NYECountdownClient() {
                 className="w-1 h-24 rounded-full"
                 style={{
                   background: `linear-gradient(to top, ${
-                    ["#FF6B6B", "#4ECDC4", "#FFE66D", "#A855F7", "#EC4899", "#06B6D4"][i]
+                    [
+                      "#FF6B6B",
+                      "#4ECDC4",
+                      "#FFE66D",
+                      "#A855F7",
+                      "#EC4899",
+                      "#06B6D4",
+                    ][i]
                   }, transparent)`,
                   boxShadow: `0 0 10px ${
-                    ["#FF6B6B", "#4ECDC4", "#FFE66D", "#A855F7", "#EC4899", "#06B6D4"][i]
+                    [
+                      "#FF6B6B",
+                      "#4ECDC4",
+                      "#FFE66D",
+                      "#A855F7",
+                      "#EC4899",
+                      "#06B6D4",
+                    ][i]
                   }`,
                 }}
               />
@@ -811,10 +938,16 @@ export default function NYECountdownClient() {
                     key={j}
                     className="absolute w-1 h-4 origin-bottom"
                     style={{
-                      background:
-                        ["#FF6B6B", "#4ECDC4", "#FFE66D", "#A855F7", "#EC4899", "#06B6D4"][
-                          i
-                        ],
+                      background: [
+                        "#FF6B6B",
+                        "#4ECDC4",
+                        "#FFE66D",
+                        "#A855F7",
+                        "#EC4899",
+                        "#06B6D4",
+                      ][
+                        i
+                      ],
                       transform: `rotate(${j * 45}deg)`,
                     }}
                   />
@@ -912,7 +1045,9 @@ export default function NYECountdownClient() {
               : "text-white/[0.02]"
           }`}
           style={{
-            textShadow: isLastThirtySeconds ? "0 0 100px rgba(255,255,255,0.2)" : "none",
+            textShadow: isLastThirtySeconds
+              ? "0 0 100px rgba(255,255,255,0.2)"
+              : "none",
           }}
         >
           2026
@@ -959,7 +1094,9 @@ export default function NYECountdownClient() {
         <span className="text-cyan-400 text-sm font-mono">
           {viewerCount.toLocaleString()}
         </span>
-        <span className="text-cyan-300/50 text-xs hidden sm:inline">watching</span>
+        <span className="text-cyan-300/50 text-xs hidden sm:inline">
+          watching
+        </span>
         <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
       </div>
 
@@ -1092,7 +1229,9 @@ export default function NYECountdownClient() {
               {/* Countdown digits with glow container */}
               <div
                 className={`relative p-4 sm:p-8 rounded-2xl sm:rounded-3xl transition-all duration-500 ${
-                  isLastTenSeconds ? "bg-red-500/10 border border-red-500/30" : ""
+                  isLastTenSeconds
+                    ? "bg-red-500/10 border border-red-500/30"
+                    : ""
                 } ${isLastThirtySeconds ? "animate-heartbeat" : ""}`}
               >
                 {/* Animated countdown rings - very subtle, GPU accelerated */}
@@ -1116,7 +1255,11 @@ export default function NYECountdownClient() {
                   <CountdownDigit value={days} label="DAYS" />
                   <CountdownDigit value={hours} label="HOURS" />
                   <CountdownDigit value={minutes} label="MINUTES" />
-                  <CountdownDigit value={seconds} label="SECONDS" highlight={isLastTenSeconds} />
+                  <CountdownDigit
+                    value={seconds}
+                    label="SECONDS"
+                    highlight={isLastTenSeconds}
+                  />
                 </div>
                 {/* Desktop: horizontal layout with colons */}
                 <div className="relative hidden sm:flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-10">
@@ -1132,7 +1275,11 @@ export default function NYECountdownClient() {
                   <div className="flex items-center text-cyan-400/40 text-4xl font-thin self-start mt-8">
                     :
                   </div>
-                  <CountdownDigit value={seconds} label="SECONDS" highlight={isLastTenSeconds} />
+                  <CountdownDigit
+                    value={seconds}
+                    label="SECONDS"
+                    highlight={isLastTenSeconds}
+                  />
                 </div>
               </div>
 
@@ -1142,7 +1289,9 @@ export default function NYECountdownClient() {
                   <span>2025</span>
                   <span
                     className={`font-bold ${
-                      yearProgress > 99.9 ? "text-yellow-400 animate-pulse" : "text-cyan-400"
+                      yearProgress > 99.9
+                        ? "text-yellow-400 animate-pulse"
+                        : "text-cyan-400"
                     }`}
                   >
                     {yearProgress.toFixed(4)}% complete
@@ -1151,7 +1300,9 @@ export default function NYECountdownClient() {
                 </div>
                 <div
                   className={`h-2 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm ${
-                    yearProgress > 99.9 ? "shadow-[0_0_20px_rgba(234,179,8,0.4)]" : ""
+                    yearProgress > 99.9
+                      ? "shadow-[0_0_20px_rgba(234,179,8,0.4)]"
+                      : ""
                   }`}
                 >
                   <div
@@ -1214,10 +1365,14 @@ export default function NYECountdownClient() {
                 <div className="flex flex-col items-center gap-2">
                   <p
                     className={`text-lg font-bold tracking-wider ${
-                      isLastThirtySeconds ? "text-orange-400 animate-pulse" : "text-yellow-400"
+                      isLastThirtySeconds
+                        ? "text-orange-400 animate-pulse"
+                        : "text-yellow-400"
                     }`}
                   >
-                    {isLastThirtySeconds ? "🔥 FINAL 30 SECONDS! 🔥" : "⏰ FINAL MINUTE! ⏰"}
+                    {isLastThirtySeconds
+                      ? "🔥 FINAL 30 SECONDS! 🔥"
+                      : "⏰ FINAL MINUTE! ⏰"}
                   </p>
                   <p className="text-white/50 text-sm">
                     {isLastThirtySeconds
@@ -1255,7 +1410,10 @@ export default function NYECountdownClient() {
                   </p>
                   {/* Crowd cheer effect */}
                   <div className="flex gap-1 text-2xl opacity-60">
-                    {Array.from({ length: Math.min(10, 11 - seconds) }).map((_, i) => (
+                    {Array.from({ length: Math.min(10, 11 - seconds) }).map((
+                      _,
+                      i,
+                    ) => (
                       <span
                         key={i}
                         className="animate-bounce"
@@ -1299,7 +1457,9 @@ export default function NYECountdownClient() {
                   <span className="text-purple-300/60 text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest">
                     Next up:
                   </span>
-                  <span className="text-lg sm:text-2xl">{nextCityToCelebrate.emoji}</span>
+                  <span className="text-lg sm:text-2xl">
+                    {nextCityToCelebrate.emoji}
+                  </span>
                   <span className="text-purple-300 font-bold text-sm sm:text-base">
                     {nextCityToCelebrate.city}
                   </span>
@@ -1376,7 +1536,10 @@ export default function NYECountdownClient() {
                     </h1>
                     <Sparkles
                       className="h-10 w-10 text-white animate-spin"
-                      style={{ animationDuration: "2s", animationDirection: "reverse" }}
+                      style={{
+                        animationDuration: "2s",
+                        animationDirection: "reverse",
+                      }}
                     />
                   </div>
                 </div>
@@ -1433,18 +1596,55 @@ export default function NYECountdownClient() {
               {/* Celebration viewer count */}
               <div className="flex items-center gap-2 text-white/60 text-sm">
                 <Eye className="h-4 w-4" />
-                <span className="font-mono">{viewerCount.toLocaleString()}</span>
+                <span className="font-mono">
+                  {viewerCount.toLocaleString()}
+                </span>
                 <span>people celebrating with you!</span>
               </div>
 
               <div className="flex gap-3 text-5xl">
-                <span className="animate-bounce" style={{ animationDelay: "0s" }}>🎆</span>
-                <span className="animate-bounce" style={{ animationDelay: "0.1s" }}>🎊</span>
-                <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>🥳</span>
-                <span className="animate-bounce" style={{ animationDelay: "0.3s" }}>🎉</span>
-                <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>✨</span>
-                <span className="animate-bounce" style={{ animationDelay: "0.5s" }}>🍾</span>
-                <span className="animate-bounce" style={{ animationDelay: "0.6s" }}>🌟</span>
+                <span
+                  className="animate-bounce"
+                  style={{ animationDelay: "0s" }}
+                >
+                  🎆
+                </span>
+                <span
+                  className="animate-bounce"
+                  style={{ animationDelay: "0.1s" }}
+                >
+                  🎊
+                </span>
+                <span
+                  className="animate-bounce"
+                  style={{ animationDelay: "0.2s" }}
+                >
+                  🥳
+                </span>
+                <span
+                  className="animate-bounce"
+                  style={{ animationDelay: "0.3s" }}
+                >
+                  🎉
+                </span>
+                <span
+                  className="animate-bounce"
+                  style={{ animationDelay: "0.4s" }}
+                >
+                  ✨
+                </span>
+                <span
+                  className="animate-bounce"
+                  style={{ animationDelay: "0.5s" }}
+                >
+                  🍾
+                </span>
+                <span
+                  className="animate-bounce"
+                  style={{ animationDelay: "0.6s" }}
+                >
+                  🌟
+                </span>
               </div>
 
               {/* Celebration message */}

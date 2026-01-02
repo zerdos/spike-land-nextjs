@@ -254,7 +254,7 @@ describe("Game Document CRDT", () => {
 
     // Card should still be in deck but owned by player
     const deck = getDeckArray(doc);
-    const playerCards = deck.toArray().filter(c => c.ownerId === "player1");
+    const playerCards = deck.toArray().filter((c) => c.ownerId === "player1");
     expect(playerCards.length).toBe(1);
   });
 

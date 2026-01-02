@@ -43,7 +43,10 @@ describe("usePeerDataChannel", () => {
       const testDoc = new Y.Doc();
       testDoc.getArray("test").push(["item"]);
       const update = Y.encodeStateAsUpdate(testDoc);
-      const buffer = update.buffer.slice(update.byteOffset, update.byteOffset + update.byteLength);
+      const buffer = update.buffer.slice(
+        update.byteOffset,
+        update.byteOffset + update.byteLength,
+      );
 
       act(() => {
         result.current.handleIncomingData(buffer);
@@ -54,26 +57,35 @@ describe("usePeerDataChannel", () => {
     });
 
     it("warns when doc is null", () => {
-      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(
+        () => {},
+      );
       const { result } = renderHook(() => usePeerDataChannel(null));
 
       act(() => {
         result.current.handleIncomingData(new Uint8Array([1, 2, 3]));
       });
 
-      expect(consoleWarn).toHaveBeenCalledWith("[P2P] Received data but doc is null");
+      expect(consoleWarn).toHaveBeenCalledWith(
+        "[P2P] Received data but doc is null",
+      );
       consoleWarn.mockRestore();
     });
 
     it("warns when receiving unexpected data type", () => {
-      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(
+        () => {},
+      );
       const { result } = renderHook(() => usePeerDataChannel(doc));
 
       act(() => {
         result.current.handleIncomingData("string data");
       });
 
-      expect(consoleWarn).toHaveBeenCalledWith("[P2P] Received unexpected data type:", "string");
+      expect(consoleWarn).toHaveBeenCalledWith(
+        "[P2P] Received unexpected data type:",
+        "string",
+      );
       consoleWarn.mockRestore();
     });
   });
@@ -100,7 +112,8 @@ describe("usePeerDataChannel", () => {
       });
 
       expect(mockConnection.send).toHaveBeenCalledWith(update);
-      expect(connections.get("peer2")?.dataConnection?.send).toHaveBeenCalledWith(update);
+      expect(connections.get("peer2")?.dataConnection?.send)
+        .toHaveBeenCalledWith(update);
     });
 
     it("skips connections that are not open", () => {

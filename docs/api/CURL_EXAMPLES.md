@@ -42,7 +42,8 @@ export API_KEY="sk_live_your_api_key_here"
 
 Spike Land supports two authentication methods:
 
-1. **Session-based authentication** - For web browser requests (cookies handled automatically)
+1. **Session-based authentication** - For web browser requests (cookies handled
+   automatically)
 2. **API Key authentication** - For MCP endpoints and external integrations
 
 ### Using API Key (Recommended for MCP)
@@ -245,7 +246,8 @@ Response:
 }
 ```
 
-**Note**: Upload automatically creates an enhancement job. Poll `/api/jobs/{jobId}` to check enhancement progress.
+**Note**: Upload automatically creates an enhancement job. Poll
+`/api/jobs/{jobId}` to check enhancement progress.
 
 ### Upload to Album (Uses Album's Default Tier)
 
@@ -642,7 +644,8 @@ curl -X GET $API_BASE/apps/{appId} \
 
 ## MCP (Model Context Protocol) Endpoints
 
-The MCP endpoints provide programmatic access to AI image generation and modification. All MCP endpoints require API key authentication.
+The MCP endpoints provide programmatic access to AI image generation and
+modification. All MCP endpoints require API key authentication.
 
 ### Generate Image from Text Prompt
 
@@ -663,7 +666,8 @@ curl -X POST $API_BASE/mcp/generate \
 - `prompt` (required): Text description of image to generate (max 4000 chars)
 - `tier` (required): `TIER_1K`, `TIER_2K`, or `TIER_4K`
 - `negativePrompt` (optional): Things to avoid
-- `aspectRatio` (optional): Default `1:1`. Supported: `1:1`, `3:2`, `2:3`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`
+- `aspectRatio` (optional): Default `1:1`. Supported: `1:1`, `3:2`, `2:3`,
+  `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`
 
 **Token Costs**:
 
@@ -701,9 +705,11 @@ curl -X POST $API_BASE/mcp/modify \
 - `tier` (required): `TIER_1K`, `TIER_2K`, or `TIER_4K`
 - `imageUrl` (optional): URL of image to fetch and modify
 - `image` (optional): Base64-encoded image data
-- `mimeType` (required if using `image`): `image/jpeg`, `image/png`, `image/webp`, or `image/gif`
+- `mimeType` (required if using `image`): `image/jpeg`, `image/png`,
+  `image/webp`, or `image/gif`
 
-**Note**: Either `imageUrl` or `image` must be provided. Maximum image size: 20MB.
+**Note**: Either `imageUrl` or `image` must be provided. Maximum image size:
+20MB.
 
 Using base64 image:
 
@@ -737,7 +743,8 @@ curl -X GET $API_BASE/jobs/{jobId} \
   -H "Authorization: Bearer $API_KEY"
 ```
 
-**Note**: For MCP-generated jobs, you can use either the API key or anonymous access (no auth required for jobs created via MCP).
+**Note**: For MCP-generated jobs, you can use either the API key or anonymous
+access (no auth required for jobs created via MCP).
 
 ### Get Token History (MCP)
 
@@ -1220,7 +1227,8 @@ curl -X POST $API_BASE/mcp/modify \
 
 - [API Reference](../API_REFERENCE.md) - Complete API endpoint documentation
 - [Token System](../TOKEN_SYSTEM.md) - Token pricing and regeneration details
-- [Database Schema](../DATABASE_SCHEMA.md) - Database structure and relationships
+- [Database Schema](../DATABASE_SCHEMA.md) - Database structure and
+  relationships
 
 ## Rate Limits
 

@@ -185,14 +185,16 @@ export function usePushNotifications(
     }
 
     // Foreground notification listener
-    notificationListenerRef.current = Notifications.addNotificationReceivedListener(
-      handleNotificationReceived,
-    );
+    notificationListenerRef.current = Notifications
+      .addNotificationReceivedListener(
+        handleNotificationReceived,
+      );
 
     // Notification tap listener
-    responseListenerRef.current = Notifications.addNotificationResponseReceivedListener(
-      handleNotificationTap,
-    );
+    responseListenerRef.current = Notifications
+      .addNotificationResponseReceivedListener(
+        handleNotificationTap,
+      );
 
     return () => {
       if (notificationListenerRef.current) {

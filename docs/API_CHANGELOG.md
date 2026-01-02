@@ -1,8 +1,7 @@
 # API Changelog
 
-> **Last Updated**: 2025-12-30
-> **Current API Version**: Unversioned (v1 implicit)
-> **Status**: Active Development
+> **Last Updated**: 2025-12-30 **Current API Version**: Unversioned (v1
+> implicit) **Status**: Active Development
 
 All notable changes to the Spike Land API are documented in this file.
 
@@ -10,7 +9,8 @@ All notable changes to the Spike Land API are documented in this file.
 
 ## Format
 
-This changelog follows [Keep a Changelog](https://keepachangelog.com/) format with sections:
+This changelog follows [Keep a Changelog](https://keepachangelog.com/) format
+with sections:
 
 - **Breaking** - Changes requiring code updates
 - **Added** - New functionality
@@ -29,7 +29,8 @@ This changelog follows [Keep a Changelog](https://keepachangelog.com/) format wi
 - **AI Image Generation (MCP)** - POST `/api/mcp/generate`
   - Generate images from text prompts using Google Gemini
   - Support for three quality tiers (TIER_1K, TIER_2K, TIER_4K)
-  - Configurable aspect ratios: 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
+  - Configurable aspect ratios: 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9,
+    21:9
   - Negative prompt support for better control
   - Token-based pricing (2, 5, 10 tokens respectively)
   - Rate limiting: dedicated limits for generation endpoints
@@ -315,10 +316,10 @@ Initial public release of Spike Land API for Pixel image enhancement app.
 
 ### NextAuth.js Email Provider
 
-> **Deprecated**: December 2025
-> **Removed**: Expected June 2026
+> **Deprecated**: December 2025 **Removed**: Expected June 2026
 
-The email-based authentication provider will be removed in favor of passwordless authentication via magic links.
+The email-based authentication provider will be removed in favor of passwordless
+authentication via magic links.
 
 **Timeline**:
 

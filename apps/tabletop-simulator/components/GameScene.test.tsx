@@ -80,7 +80,9 @@ describe("GameScene", () => {
       },
     ];
 
-    const { getAllByTestId } = render(<GameScene {...defaultProps} cards={cards} />);
+    const { getAllByTestId } = render(
+      <GameScene {...defaultProps} cards={cards} />,
+    );
     expect(getAllByTestId("card")).toHaveLength(1);
   });
 
@@ -98,7 +100,9 @@ describe("GameScene", () => {
       },
     ];
 
-    const { getAllByTestId } = render(<GameScene {...defaultProps} dice={dice} />);
+    const { getAllByTestId } = render(
+      <GameScene {...defaultProps} dice={dice} />,
+    );
     expect(getAllByTestId("dice")).toHaveLength(1);
   });
 });

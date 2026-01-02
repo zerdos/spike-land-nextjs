@@ -249,7 +249,9 @@ describe("usePeerDiscovery", () => {
       await vi.advanceTimersByTimeAsync(0);
     });
 
-    expect(consoleSpy).toHaveBeenCalledWith("[Discovery] Failed to register with server");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "[Discovery] Failed to register with server",
+    );
     expect(onPeerDiscovered).not.toHaveBeenCalled();
 
     unmount();

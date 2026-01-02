@@ -87,7 +87,8 @@ export class CodeSpaceClient {
 
   constructor(apiKey: string, baseUrl?: string) {
     this.apiKey = apiKey;
-    this.baseUrl = baseUrl || process.env.TESTING_SPIKE_LAND_URL || DEFAULT_BASE_URL;
+    this.baseUrl = baseUrl || process.env.TESTING_SPIKE_LAND_URL ||
+      DEFAULT_BASE_URL;
   }
 
   private async request<T>(
@@ -166,7 +167,9 @@ export class CodeSpaceClient {
    */
   async getScreenshot(
     codeSpaceId: string,
-  ): Promise<{ data: { base64: string; mimeType: string; } | null; error: string | null; }> {
+  ): Promise<
+    { data: { base64: string; mimeType: string; } | null; error: string | null; }
+  > {
     validateCodeSpaceId(codeSpaceId);
     return this.request<{ base64: string; mimeType: string; }>(
       `/live/${codeSpaceId}/api/screenshot`,
@@ -229,7 +232,9 @@ export class CodeSpaceClient {
   /**
    * List user's apps from spike.land
    */
-  async listApps(): Promise<{ data: AppResponse[] | null; error: string | null; }> {
+  async listApps(): Promise<
+    { data: AppResponse[] | null; error: string | null; }
+  > {
     return this.requestSpikeLand<AppResponse[]>("/api/apps");
   }
 
@@ -261,7 +266,9 @@ export class CodeSpaceClient {
   /**
    * Get a single app by ID
    */
-  async getApp(appId: string): Promise<{ data: AppResponse | null; error: string | null; }> {
+  async getApp(
+    appId: string,
+  ): Promise<{ data: AppResponse | null; error: string | null; }> {
     return this.requestSpikeLand<AppResponse>(`/api/apps/${appId}`);
   }
 }

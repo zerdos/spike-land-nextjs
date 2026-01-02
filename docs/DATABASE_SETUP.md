@@ -38,7 +38,8 @@ yarn db:seed
 yarn dev
 ```
 
-See sections below for detailed configuration, production setup, and troubleshooting.
+See sections below for detailed configuration, production setup, and
+troubleshooting.
 
 ## Table of Contents
 
@@ -114,7 +115,9 @@ cp .env.example .env.local
 DATABASE_URL=postgresql://postgres:password@localhost:5432/spike_land?schema=public
 ```
 
-**Note**: The application uses `.env.local` for local development (which is gitignored). The `.env.example` file provides a template with all available configuration options.
+**Note**: The application uses `.env.local` for local development (which is
+gitignored). The `.env.example` file provides a template with all available
+configuration options.
 
 ## Production Database Options
 
@@ -142,7 +145,8 @@ DIRECT_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:54
 - Serverless PostgreSQL with branching
 - Free tier: 3GB storage
 - Setup: https://neon.tech/
-- **Note**: This is the database provider currently used by Spike Land. See the Neon MCP server integration for advanced database operations.
+- **Note**: This is the database provider currently used by Spike Land. See the
+  Neon MCP server integration for advanced database operations.
 
 #### 4. AWS RDS
 
@@ -151,7 +155,9 @@ DIRECT_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:54
 
 ### Connection Pooling for Production
 
-**Important**: Spike Land uses the `@prisma/adapter-pg` package for enhanced connection pooling, which provides better performance for serverless environments.
+**Important**: Spike Land uses the `@prisma/adapter-pg` package for enhanced
+connection pooling, which provides better performance for serverless
+environments.
 
 The database connection is configured in `/src/lib/prisma.ts`:
 
@@ -186,17 +192,22 @@ datasource db {
 }
 ```
 
-**Note**: The schema does not specify a `url` or `directUrl` in the datasource block because the connection is managed through the PrismaPg adapter, which provides superior connection pooling for serverless environments.
+**Note**: The schema does not specify a `url` or `directUrl` in the datasource
+block because the connection is managed through the PrismaPg adapter, which
+provides superior connection pooling for serverless environments.
 
 ## Schema Overview
 
-The Spike Land database schema is extensive, supporting multiple platform features. Below are the core models. For the complete schema, see `/prisma/schema.prisma`.
+The Spike Land database schema is extensive, supporting multiple platform
+features. Below are the core models. For the complete schema, see
+`/prisma/schema.prisma`.
 
 ### Core Models
 
 #### User Model (NextAuth Integration + Extended Features)
 
-The User model is central to the platform, integrating with NextAuth for authentication and supporting various platform features:
+The User model is central to the platform, integrating with NextAuth for
+authentication and supporting various platform features:
 
 ```prisma
 model User {
@@ -226,18 +237,22 @@ model User {
 
 **Key Features:**
 
-- **Stable User IDs**: User IDs are generated deterministically from email addresses using a salt (see Authentication section below)
-- **Multiple Auth Methods**: Supports OAuth (GitHub, Google, Facebook, Apple) and email/password
+- **Stable User IDs**: User IDs are generated deterministically from email
+  addresses using a salt (see Authentication section below)
+- **Multiple Auth Methods**: Supports OAuth (GitHub, Google, Facebook, Apple)
+  and email/password
 - **Referral System**: Built-in referral tracking with codes and rewards
 - **Token System**: Integration with token balance and transactions
 
 ### Authentication and User ID Generation
 
-Spike Land implements a sophisticated authentication system with stable user IDs:
+Spike Land implements a sophisticated authentication system with stable user
+IDs:
 
 #### Stable User IDs
 
-Unlike traditional NextAuth setups that generate random CUIDs, Spike Land creates **deterministic user IDs** based on email addresses:
+Unlike traditional NextAuth setups that generate random CUIDs, Spike Land
+creates **deterministic user IDs** based on email addresses:
 
 ```typescript
 // From src/auth.config.ts
@@ -256,8 +271,10 @@ function createStableUserId(email: string): string {
 
 **Important Considerations:**
 
-- `USER_ID_SALT` should **never be rotated** in production (would change all user IDs)
-- If user changes email at OAuth provider, they get a NEW user ID and lose access to previous data
+- `USER_ID_SALT` should **never be rotated** in production (would change all
+  user IDs)
+- If user changes email at OAuth provider, they get a NEW user ID and lose
+  access to previous data
 - This is intentional to maintain 1:1 email-to-identity relationship
 
 #### Required Environment Variables
@@ -298,7 +315,8 @@ Core models for AI-powered image enhancement:
 - **Album**: User photo albums with privacy settings
 - **AlbumImage**: Junction table linking images to albums
 
-**Enhancement Tiers**: FREE, TIER_1K (1024px), TIER_2K (2048px), TIER_4K (4096px)
+**Enhancement Tiers**: FREE, TIER_1K (1024px), TIER_2K (2048px), TIER_4K
+(4096px)
 
 #### Token Economy
 
@@ -307,7 +325,8 @@ Core models for AI-powered image enhancement:
 - **TokensPackage**: Purchasable token packages
 - **StripePayment**: Payment records
 
-**Token Transaction Types**: EARN_REGENERATION, EARN_PURCHASE, EARN_BONUS, SPEND_ENHANCEMENT, REFUND
+**Token Transaction Types**: EARN_REGENERATION, EARN_PURCHASE, EARN_BONUS,
+SPEND_ENHANCEMENT, REFUND
 
 #### Subscription System
 
@@ -431,7 +450,9 @@ yarn db:migrate:deploy
 # This should be run in CI/CD pipeline
 ```
 
-**Note**: The project uses a postinstall hook that automatically runs `yarn db:generate` after dependencies are installed, ensuring Prisma Client is always up-to-date.
+**Note**: The project uses a postinstall hook that automatically runs
+`yarn db:generate` after dependencies are installed, ensuring Prisma Client is
+always up-to-date.
 
 ### Migration Best Practices
 
@@ -734,7 +755,8 @@ VACUUM ANALYZE apps;
 
 **Prisma Connection Pool (Application Layer)**
 
-Spike Land uses `@prisma/adapter-pg` for connection pooling. Current `prisma/schema.prisma`:
+Spike Land uses `@prisma/adapter-pg` for connection pooling. Current
+`prisma/schema.prisma`:
 
 ```prisma
 generator client {
@@ -780,7 +802,8 @@ DATABASE_URL=postgresql://user:pass@host:6543/db?pgbouncer=true
 
 - Development: Default (managed by adapter)
 - Production (single instance): Default (managed by adapter)
-- Production (serverless): Use external pooler (PgBouncer) with `@prisma/adapter-pg`
+- Production (serverless): Use external pooler (PgBouncer) with
+  `@prisma/adapter-pg`
 
 **PgBouncer Configuration (Production)**
 
@@ -1057,7 +1080,8 @@ yarn db:seed-e2e
 yarn db:cleanup-e2e
 ```
 
-**Important**: The E2E seed creates deterministic test data with known IDs. See `prisma/seed-e2e.ts` for details.
+**Important**: The E2E seed creates deterministic test data with known IDs. See
+`prisma/seed-e2e.ts` for details.
 
 ### Seed Script Locations
 
@@ -1097,11 +1121,13 @@ See `.env.example` for the complete list of available configuration options.
 ## Additional Resources
 
 - **Prisma Documentation**: https://www.prisma.io/docs
-- **Prisma Adapter for PostgreSQL**: https://www.prisma.io/docs/orm/overview/databases/postgresql
+- **Prisma Adapter for PostgreSQL**:
+  https://www.prisma.io/docs/orm/overview/databases/postgresql
 - **PostgreSQL Documentation**: https://www.postgresql.org/docs
 - **NextAuth.js Documentation**: https://next-auth.js.org/
 - **Neon Database**: https://neon.tech/docs
-- **Database Performance Tuning**: https://wiki.postgresql.org/wiki/Performance_Optimization
+- **Database Performance Tuning**:
+  https://wiki.postgresql.org/wiki/Performance_Optimization
 
 ## Project-Specific Documentation
 
@@ -1119,5 +1145,5 @@ For issues or questions:
 3. Check migration history in `/prisma/migrations`
 4. Use Prisma Studio for visual debugging: `yarn db:studio`
 
-**Database Administrator**: Contact via GitHub issues
-**Project Owner**: Zoltan Erdos (@zerdos)
+**Database Administrator**: Contact via GitHub issues **Project Owner**: Zoltan
+Erdos (@zerdos)

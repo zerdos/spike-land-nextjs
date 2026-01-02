@@ -50,7 +50,9 @@ export type { EnhanceImageInput };
  * @param input - Either a proper Buffer or a serialized Buffer object
  * @returns A proper Node.js Buffer
  */
-function ensureBuffer(input: Buffer | { type: "Buffer"; data: number[]; } | unknown): Buffer {
+function ensureBuffer(
+  input: Buffer | { type: "Buffer"; data: number[]; } | unknown,
+): Buffer {
   // Already a proper Buffer
   if (Buffer.isBuffer(input)) {
     return input;
