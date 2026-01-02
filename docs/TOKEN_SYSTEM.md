@@ -22,15 +22,20 @@
 
 ## Token Overview
 
-**Tokens** are the primary currency on the Spike Land platform. Every Spike Land user has a single token balance that can be spent across any app on the platform.
+**Tokens** are the primary currency on the Spike Land platform. Every Spike Land
+user has a single token balance that can be spent across any app on the
+platform.
 
 ### Key Characteristics
 
-- **Platform Currency**: Tokens belong to your Spike Land account, not to individual apps
+- **Platform Currency**: Tokens belong to your Spike Land account, not to
+  individual apps
 - **Cross-App Usage**: One token balance works across all apps on the platform
 - **Non-transferable**: Cannot be gifted between users
-- **Tiered System**: Token well capacity and regeneration rates vary by subscription tier
-- **Automatic Regeneration**: Free tokens regenerate over time (1 token per 15 minutes)
+- **Tiered System**: Token well capacity and regeneration rates vary by
+  subscription tier
+- **Automatic Regeneration**: Free tokens regenerate over time (1 token per 15
+  minutes)
 - **Account-Specific**: Each user maintains a single platform-wide token balance
 
 ### Token Use Cases
@@ -45,7 +50,9 @@ Currently supported applications:
 
 ## Token Tiers
 
-The platform uses a **Token Well** tier system where your subscription tier determines both your token regeneration capacity and the tokens granted on upgrade.
+The platform uses a **Token Well** tier system where your subscription tier
+determines both your token regeneration capacity and the tokens granted on
+upgrade.
 
 ### Tier Configuration
 
@@ -59,8 +66,10 @@ The platform uses a **Token Well** tier system where your subscription tier dete
 ### How Tiers Work
 
 1. **Well Capacity**: Maximum tokens your account can hold through regeneration
-2. **Tier Upgrade**: When you upgrade, you receive tokens equal to your new tier's capacity
-3. **Monthly Billing**: Maintains your tier status but does NOT auto-refill tokens
+2. **Tier Upgrade**: When you upgrade, you receive tokens equal to your new
+   tier's capacity
+3. **Monthly Billing**: Maintains your tier status but does NOT auto-refill
+   tokens
 4. **Regeneration**: Tokens regenerate automatically up to your tier's capacity
 5. **Purchased Tokens**: Have no cap and accumulate on top of your tier capacity
 
@@ -91,7 +100,8 @@ Users can acquire tokens through five primary mechanisms:
 **Free tokens generated automatically based on your tier**
 
 - **Rate**: 1 token per 15 minutes
-- **Maximum**: Varies by tier (10 for FREE, 20 for BASIC, 50 for STANDARD, 100 for PREMIUM)
+- **Maximum**: Varies by tier (10 for FREE, 20 for BASIC, 50 for STANDARD, 100
+  for PREMIUM)
 - **Cost**: Free (included with tier subscription)
 - **Automatic**: No user action required
 
@@ -196,7 +206,8 @@ Users can acquire tokens through five primary mechanisms:
 
 ## Token Consumption
 
-Tokens are consumed when using platform features. All apps share the same token costs.
+Tokens are consumed when using platform features. All apps share the same token
+costs.
 
 ### Enhancement Costs
 
@@ -242,7 +253,8 @@ Tokens are consumed when using platform features. All apps share the same token 
 
 - **Interval**: 15 minutes (900 seconds)
 - **Amount**: 1 token per interval
-- **Cap**: Based on user's tier (FREE: 10, BASIC: 20, STANDARD: 50, PREMIUM: 100)
+- **Cap**: Based on user's tier (FREE: 10, BASIC: 20, STANDARD: 50,
+  PREMIUM: 100)
 
 **Calculation Logic**:
 
@@ -279,7 +291,8 @@ const tokensToAdd = Math.min(
 
 ### Regeneration Priority
 
-Regeneration only applies to free tokens. Purchased tokens and tier grants are not subject to regeneration caps.
+Regeneration only applies to free tokens. Purchased tokens and tier grants are
+not subject to regeneration caps.
 
 **Token Priority Order**:
 
@@ -919,21 +932,28 @@ CREATE TABLE subscriptions (
 
 ### For Users
 
-1. **Check Balance First**: Always verify sufficient balance before starting enhancements
+1. **Check Balance First**: Always verify sufficient balance before starting
+   enhancements
 2. **Choose Right Tier**: Estimate monthly usage and select appropriate tier
-3. **Leverage Regeneration**: For casual use, free regeneration may be sufficient
+3. **Leverage Regeneration**: For casual use, free regeneration may be
+   sufficient
 4. **Buy in Bulk**: Larger token packages offer better value per token
-5. **Upgrade for Capacity**: Tier upgrades grant immediate tokens plus higher regen cap
-6. **Monitor Transactions**: Review transaction history to track spending patterns
+5. **Upgrade for Capacity**: Tier upgrades grant immediate tokens plus higher
+   regen cap
+6. **Monitor Transactions**: Review transaction history to track spending
+   patterns
 
 ### For Developers
 
-1. **Always Use TokenBalanceManager**: Never manipulate UserTokenBalance directly
+1. **Always Use TokenBalanceManager**: Never manipulate UserTokenBalance
+   directly
 2. **Atomic Operations**: All token operations use database transactions
-3. **Refund on Failure**: Always refund tokens if service fails after consumption
+3. **Refund on Failure**: Always refund tokens if service fails after
+   consumption
 4. **Validate Before Consume**: Check balance before deducting tokens
 5. **Log Metadata**: Include relevant context in transaction metadata
-6. **Handle Edge Cases**: Account for race conditions, network failures, webhook retries
+6. **Handle Edge Cases**: Account for race conditions, network failures, webhook
+   retries
 7. **Test with Stripe Test Mode**: Use test mode for development and staging
 
 ### Security Considerations
@@ -954,8 +974,10 @@ CREATE TABLE subscriptions (
 The token system has evolved through several iterations:
 
 1. **v1 (Initial)**: Simple balance with fixed regeneration cap of 100
-2. **v2 (Subscriptions)**: Added monthly subscription plans with token allocations
-3. **v3 (Current - Token Well Tiers)**: Replaced subscriptions with tier system where:
+2. **v2 (Subscriptions)**: Added monthly subscription plans with token
+   allocations
+3. **v3 (Current - Token Well Tiers)**: Replaced subscriptions with tier system
+   where:
    - Tier upgrades grant immediate tokens (not monthly)
    - Monthly billing maintains tier status only
    - Regeneration caps vary by tier
@@ -963,7 +985,8 @@ The token system has evolved through several iterations:
 
 ### Breaking Changes from Previous Documentation
 
-- **Subscription Tokens**: No longer allocated monthly; tiers grant one-time capacity
+- **Subscription Tokens**: No longer allocated monthly; tiers grant one-time
+  capacity
 - **Rollover**: Removed (no monthly allocation to roll over)
 - **Max Balance**: Now per-tier instead of global 100 cap
 - **Token Packages**: Updated pricing and amounts
@@ -1011,7 +1034,10 @@ console.log(balance);
 **Check Transaction History**:
 
 ```typescript
-const transactions = await TokenBalanceManager.getTransactionHistory(userId, 50);
+const transactions = await TokenBalanceManager.getTransactionHistory(
+  userId,
+  50,
+);
 console.log(transactions);
 ```
 
@@ -1069,6 +1095,5 @@ STRIPE_PRICE_TIER_PREMIUM=price_...
 
 ---
 
-**Document Version**: 3.0
-**Last Reviewed**: 2025-12-30
-**Next Review**: 2026-01-30
+**Document Version**: 3.0 **Last Reviewed**: 2025-12-30 **Next Review**:
+2026-01-30

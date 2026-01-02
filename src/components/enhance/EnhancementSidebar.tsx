@@ -296,9 +296,7 @@ export function EnhancementSidebar({
                   <p
                     className={cn(
                       "text-sm font-medium",
-                      isOriginalSelected
-                        ? "text-primary"
-                        : "text-foreground",
+                      isOriginalSelected ? "text-primary" : "text-foreground",
                     )}
                   >
                     Original Image
@@ -349,7 +347,8 @@ export function EnhancementSidebar({
                       : "bg-card border-border",
                     !isProcessingJob && !isFailed && !isSelected &&
                       "hover:border-primary/50 cursor-pointer",
-                    (isProcessingJob || isFailed) && "opacity-80 cursor-default",
+                    (isProcessingJob || isFailed) &&
+                      "opacity-80 cursor-default",
                   )}
                 >
                   <div className="flex items-center gap-3">

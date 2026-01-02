@@ -14,15 +14,19 @@ Spike Land is an AI-powered app platform where users can:
 
 ## Quick Start
 
-**New to the API?** Start with [00_START_HERE.md](./00_START_HERE.md) - it will guide you to the right documentation based on your role.
+**New to the API?** Start with [00_START_HERE.md](./00_START_HERE.md) - it will
+guide you to the right documentation based on your role.
 
-**Already know what you need?** See the [Documentation Files](#documentation-files) section below or jump to [INDEX.md](./INDEX.md) for detailed navigation.
+**Already know what you need?** See the
+[Documentation Files](#documentation-files) section below or jump to
+[INDEX.md](./INDEX.md) for detailed navigation.
 
 ## What's in This Directory
 
 This directory contains **9 documentation files** covering:
 
-- **OpenAPI 3.0 Specification** (`openapi.yaml`) - Machine-readable API spec for SDK generation
+- **OpenAPI 3.0 Specification** (`openapi.yaml`) - Machine-readable API spec for
+  SDK generation
 - **API Endpoint Documentation** - Detailed references for Albums and Images
 - **Integration Guides** - Code examples in TypeScript/JavaScript and cURL
 - **Getting Started Guides** - Role-based navigation and quick references
@@ -92,7 +96,8 @@ Complete OpenAPI 3.0 specification including:
 - Rate limiting documentation
 - Full server configuration
 
-This specification can be used for SDK generation, Swagger UI, and API testing tools.
+This specification can be used for SDK generation, Swagger UI, and API testing
+tools.
 
 ## Using the OpenAPI Specification
 

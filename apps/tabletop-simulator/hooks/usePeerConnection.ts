@@ -6,7 +6,13 @@ type DataHandler = (data: unknown, peerId: string) => void;
 
 export function usePeerConnection(peer: Peer | null, onData?: DataHandler) {
   const [connections, setConnections] = useState<
-    Map<string, { dataConnection: DataConnection | null; mediaConnection: MediaConnection | null; }>
+    Map<
+      string,
+      {
+        dataConnection: DataConnection | null;
+        mediaConnection: MediaConnection | null;
+      }
+    >
   >(new Map());
   const connectionsRef = useRef(connections);
   const onDataRef = useRef(onData);
@@ -20,38 +26,44 @@ export function usePeerConnection(peer: Peer | null, onData?: DataHandler) {
   }, [onData]);
 
   // Setup connection with data listener attached immediately
-  const setupConnection = useCallback((conn: DataConnection, peerId: string) => {
-    // Attach data listener IMMEDIATELY before adding to state
-    conn.on("data", (data) => {
-      console.log(
-        `[P2P] Received data from ${peerId}:`,
-        data instanceof Uint8Array ? `Uint8Array(${data.length})` : typeof data,
-      );
-      onDataRef.current?.(data, peerId);
-    });
+  const setupConnection = useCallback(
+    (conn: DataConnection, peerId: string) => {
+      // Attach data listener IMMEDIATELY before adding to state
+      conn.on("data", (data) => {
+        console.log(
+          `[P2P] Received data from ${peerId}:`,
+          data instanceof Uint8Array
+            ? `Uint8Array(${data.length})`
+            : typeof data,
+        );
+        onDataRef.current?.(data, peerId);
+      });
 
-    conn.on("close", () => {
-      console.log(`[P2P] Connection closed with ${peerId}`);
-      setConnections(prev => {
+      conn.on("close", () => {
+        console.log(`[P2P] Connection closed with ${peerId}`);
+        setConnections((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(peerId);
+          return newMap;
+        });
+      });
+
+      conn.on("error", (err) => {
+        console.error(`[P2P] Connection error with ${peerId}:`, err);
+      });
+
+      // Now add to state (this triggers effects in other hooks)
+      setConnections((prev) => {
         const newMap = new Map(prev);
-        newMap.delete(peerId);
+        const existing = newMap.get(peerId) ||
+          { dataConnection: null, mediaConnection: null };
+        newMap.set(peerId, { ...existing, dataConnection: conn });
         return newMap;
       });
-    });
-
-    conn.on("error", (err) => {
-      console.error(`[P2P] Connection error with ${peerId}:`, err);
-    });
-
-    // Now add to state (this triggers effects in other hooks)
-    setConnections(prev => {
-      const newMap = new Map(prev);
-      const existing = newMap.get(peerId) || { dataConnection: null, mediaConnection: null };
-      newMap.set(peerId, { ...existing, dataConnection: conn });
-      return newMap;
-    });
-    console.log(`[P2P] Connection established with ${peerId}`);
-  }, []);
+      console.log(`[P2P] Connection established with ${peerId}`);
+    },
+    [],
+  );
 
   // Connect to a peer (Data)
   const connectData = useCallback((remoteId: string) => {

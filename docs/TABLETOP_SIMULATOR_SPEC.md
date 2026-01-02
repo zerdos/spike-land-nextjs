@@ -2,18 +2,27 @@ This is a comprehensive rewriting and extension of the provided specification.
 
 **Key Extensions and Changes in this Version:**
 
-1. **Architectural Pivot (Networking):** The previous reliance on manual Peer ID exchange is replaced with a defined Signaling Server architecture using WebSockets within Next.js. This is critical for a usable UX.
-2. **Data Model Refactoring (CRDT Best Practices):** Shifted from monolithic arrays (`Y.Array<Card>`) to flat maps with unique IDs (`Y.Map<string, CardState>`). Player hands now only store arrays of Card IDs, not full card objects. This reduces data duplication and merge conflicts.
-3. **Feature Expansion:** Added concepts of "Zones" (Deck zone, Hand zone, Table zone, Discard zone) to structure the gameplay area better than just "on table" vs "in hand."
-4. **Transition Plan:** Added a specific section addressing how to move from the current 50% status to this new specification.
+1. **Architectural Pivot (Networking):** The previous reliance on manual Peer ID
+   exchange is replaced with a defined Signaling Server architecture using
+   WebSockets within Next.js. This is critical for a usable UX.
+2. **Data Model Refactoring (CRDT Best Practices):** Shifted from monolithic
+   arrays (`Y.Array<Card>`) to flat maps with unique IDs
+   (`Y.Map<string, CardState>`). Player hands now only store arrays of Card IDs,
+   not full card objects. This reduces data duplication and merge conflicts.
+3. **Feature Expansion:** Added concepts of "Zones" (Deck zone, Hand zone, Table
+   zone, Discard zone) to structure the gameplay area better than just "on
+   table" vs "in hand."
+4. **Transition Plan:** Added a specific section addressing how to move from the
+   current 50% status to this new specification.
 
 ---
 
 # Tabletop Simulator - Complete Specification (v2.0)
 
-> **Status:** Specification for Target Architecture (v2.0)
-> **Current Implementation State:** ~90% (v1.5 release). Core functionality complete, see Section 8 for remaining items.
-> **Target:** Robust, P2P multiplayer card & dice platform with seamless onboarding.
+> **Status:** Specification for Target Architecture (v2.0) **Current
+> Implementation State:** ~90% (v1.5 release). Core functionality complete, see
+> Section 8 for remaining items. **Target:** Robust, P2P multiplayer card & dice
+> platform with seamless onboarding.
 
 ---
 
@@ -34,14 +43,21 @@ This is a comprehensive rewriting and extension of the provided specification.
 
 ### 1.1 Product Vision
 
-A browser-based virtual tabletop focused on immediate accessibility and tactile feel. It allows users to instantiate standard game components (cards, dice) in a 3D space and interact with them physically in real-time with friends via WebRTC video and data channels.
+A browser-based virtual tabletop focused on immediate accessibility and tactile
+feel. It allows users to instantiate standard game components (cards, dice) in a
+3D space and interact with them physically in real-time with friends via WebRTC
+video and data channels.
 
 ### 1.2 Core Principles
 
-1. **P2P First:** Game state and video travel directly between clients to minimize latency and server costs.
-2. **Seamless Connection:** No manual exchange of technical IDs. Room URLs manage discovery automatically.
-3. **Tactile 3D:** Interactions should feel physical—throwing dice, flipping cards—driven by a physics engine, not just abstract data changes.
-4. **CRDT Truth:** The Yjs document is the single source of truth. The 3D scene is merely a reactive renderer of that state.
+1. **P2P First:** Game state and video travel directly between clients to
+   minimize latency and server costs.
+2. **Seamless Connection:** No manual exchange of technical IDs. Room URLs
+   manage discovery automatically.
+3. **Tactile 3D:** Interactions should feel physical—throwing dice, flipping
+   cards—driven by a physics engine, not just abstract data changes.
+4. **CRDT Truth:** The Yjs document is the single source of truth. The 3D scene
+   is merely a reactive renderer of that state.
 
 ### 1.3 User Journey (Revised)
 
@@ -84,7 +100,8 @@ sequenceDiagram
 
 ## 3. Architecture & Networking
 
-This revised architecture addresses the critical gap of peer discovery by introducing a lightweight signaling server integrated into the Next.js backend.
+This revised architecture addresses the critical gap of peer discovery by
+introducing a lightweight signaling server integrated into the Next.js backend.
 
 ### 3.1 Directory Structure (Revised)
 
@@ -126,7 +143,9 @@ src/
 
 ### 3.2 The Networking Stack Diagram
 
-The application uses a hybrid networking approach. A central server is used _only_ for initial discovery (signaling). Once peers connect, all game data and video flows directly between them.
+The application uses a hybrid networking approach. A central server is used
+_only_ for initial discovery (signaling). Once peers connect, all game data and
+video flows directly between them.
 
 ```
 [Next.js Server (Socket.io)]
@@ -141,7 +160,8 @@ The application uses a hybrid networking approach. A central server is used _onl
 
 ## 4. Data Models (CRDT Structure)
 
-The data model is refactored for CRDT efficiency. Instead of monolithic arrays, we use Maps with unique IDs to prevent index-based merge conflicts.
+The data model is refactored for CRDT efficiency. Instead of monolithic arrays,
+we use Maps with unique IDs to prevent index-based merge conflicts.
 
 ### 4.1 Root Document
 
@@ -217,10 +237,13 @@ export interface DiceState {
 
 ### 5.1 Room Lifecycle (Revised)
 
-1. **Host:** Landing page -> `POST /api/room` -> receives Room ID -> redirects to room url. Socket connects, joins room channel.
+1. **Host:** Landing page -> `POST /api/room` -> receives Room ID -> redirects
+   to room url. Socket connects, joins room channel.
 2. **Guest:** Opens URL. Socket connects, joins room channel.
-3. **Signaling:** Socket server notifies existing peers of new peer. They exchange WebRTC offers/answers via the socket server.
-4. **Sync:** Once WebRTC data channel opens, Yjs protocol performs initial sync. The 3D scene hydrates from the Y.Doc.
+3. **Signaling:** Socket server notifies existing peers of new peer. They
+   exchange WebRTC offers/answers via the socket server.
+4. **Sync:** Once WebRTC data channel opens, Yjs protocol performs initial sync.
+   The 3D scene hydrates from the Y.Doc.
 
 ### 5.2 Card System (Zones & Hands)
 
@@ -229,14 +252,20 @@ The concept of "Zones" governs card behavior.
 #### The "Deck" Zone
 
 - **Visual:** A stack of cards at a fixed table location.
-- **Logic:** Cards with `zone: 'deck'` and `faceUp: false`. They are stacked visually based on their Y.Map key order or a separate ordering array.
-- **Action - Shuffle:** A player clicks "Shuffle". The client generates a new random ordering for the cards currently in the 'deck' zone and updates the shared state. A brief animation plays.
+- **Logic:** Cards with `zone: 'deck'` and `faceUp: false`. They are stacked
+  visually based on their Y.Map key order or a separate ordering array.
+- **Action - Shuffle:** A player clicks "Shuffle". The client generates a new
+  random ordering for the cards currently in the 'deck' zone and updates the
+  shared state. A brief animation plays.
 
 #### The "Hand" Zone (Private)
 
-- **Visual:** A 2D UI drawer at the bottom of the screen, or 3D cards floating near the camera, visible only to the owner.
+- **Visual:** A 2D UI drawer at the bottom of the screen, or 3D cards floating
+  near the camera, visible only to the owner.
 - **Logic:** Cards where `zone === currentPlayerId`.
-- **Visibility Rule:** If a card's zone is a playerId, and that ID matches the local client's ID, render the card face. Otherwise, render a generic card back or hide it entirely (depending on desired level of secrecy).
+- **Visibility Rule:** If a card's zone is a playerId, and that ID matches the
+  local client's ID, render the card face. Otherwise, render a generic card back
+  or hide it entirely (depending on desired level of secrecy).
 
 #### Action: Drawing a Card
 
@@ -248,7 +277,8 @@ The concept of "Zones" governs card behavior.
 - Update card's `ownerId` to `currentPlayerId`.
 - Append card ID to player's `hand` array.
 
-4. **Reactive Render:** The card model disappears from the 3D deck stack and appears in the player's 2D Hand HUD.
+4. **Reactive Render:** The card model disappears from the 3D deck stack and
+   appears in the player's 2D Hand HUD.
 
 #### Action: Playing a Card (Drag & Drop)
 
@@ -261,7 +291,8 @@ The concept of "Zones" governs card behavior.
 - Remove card ID from player's `hand` array.
 - Set `position` to drop coordinates.
 
-4. **Reactive Render:** Card removed from 2D HUD, a new `CardObject` is instantiated in the 3D scene at the drop location.
+4. **Reactive Render:** Card removed from 2D HUD, a new `CardObject` is
+   instantiated in the 3D scene at the drop location.
 
 ### 5.3 Dice Physics & Synchronization
 
@@ -279,18 +310,26 @@ Dice represent a challenge because physics simulations must be synced.
 
 - The R3F scene detects a new entry in the dice map.
 - It instantiates a `DiceObject` with a Rapier rigid body.
-- Because `isRolling` is true, it applies a random initial impulse and torque (derived deterministically from the Dice ID or a provided seed to ensure everyone sees roughly the same throw direction, though exact path may vary slightly due to floating point differences).
+- Because `isRolling` is true, it applies a random initial impulse and torque
+  (derived deterministically from the Dice ID or a provided seed to ensure
+  everyone sees roughly the same throw direction, though exact path may vary
+  slightly due to floating point differences).
 
 4. **Simulation End (Authority Client):**
 
-- The client that initiated the roll (the "authority" for this specific dice) monitors the rigid body's velocity.
-- When velocity nears zero, it calculates the face value based on the final quaternion rotation ("up" vector dot product against face normals).
+- The client that initiated the roll (the "authority" for this specific dice)
+  monitors the rigid body's velocity.
+- When velocity nears zero, it calculates the face value based on the final
+  quaternion rotation ("up" vector dot product against face normals).
 
 5. **CRDT Finalize:**
 
-- The authority client updates the Y.Doc: `isRolling: false`, `resultValue: X`, final `position`/`rotation`.
+- The authority client updates the Y.Doc: `isRolling: false`, `resultValue: X`,
+  final `position`/`rotation`.
 
-6. **Reactive Settle:** Other clients see `isRolling: false`. They stop their physics simulation for that object and snap it to the final authoritative position/rotation defined in the Y.Doc to ensure uniform state.
+6. **Reactive Settle:** Other clients see `isRolling: false`. They stop their
+   physics simulation for that object and snap it to the final authoritative
+   position/rotation defined in the Y.Doc to ensure uniform state.
 
 ---
 
@@ -341,7 +380,8 @@ const moveCard = (cardId: string, newPos: Vector3) => {
 
 #### `useObjectSync(id, mapType)`
 
-Used by individual 3D objects to bind themselves to their Yjs state representation.
+Used by individual 3D objects to bind themselves to their Yjs state
+representation.
 
 ```typescript
 // Inside CardObject.tsx
@@ -366,59 +406,87 @@ Given the complexity of networked physics and state, testing is crucial.
 
 ### 7.1 Unit Tests (Jest/Vitest)
 
-Focus on deterministic logic and CRDT manipulations, mocking the network and 3D engine.
+Focus on deterministic logic and CRDT manipulations, mocking the network and 3D
+engine.
 
-- **Deck Logic:** Test shuffling algorithms with fixed seeds. Test dealing logic ensures cards move correctly between conceptual arrays.
-- **CRDT Schema:** Test that data can be written to and read from the Yjs maps correctly according to the TypeScript interfaces.
-- **Dice Math:** Test the function that takes a quaternion rotation and returns the correct dice face value for different dice types (d6, d20).
+- **Deck Logic:** Test shuffling algorithms with fixed seeds. Test dealing logic
+  ensures cards move correctly between conceptual arrays.
+- **CRDT Schema:** Test that data can be written to and read from the Yjs maps
+  correctly according to the TypeScript interfaces.
+- **Dice Math:** Test the function that takes a quaternion rotation and returns
+  the correct dice face value for different dice types (d6, d20).
 
 ### 7.2 Integration Tests (React Testing Library)
 
 Test the 2D UI components and hooks.
 
-- **Hand HUD:** Ensure cards added to a player's hand state render correctly in the 2D drawer.
-- **Room Hook:** Mock the signaling server and test that `useWebRTC` correctly attempts to initiate peer connections when signaling messages are received.
+- **Hand HUD:** Ensure cards added to a player's hand state render correctly in
+  the 2D drawer.
+- **Room Hook:** Mock the signaling server and test that `useWebRTC` correctly
+  attempts to initiate peer connections when signaling messages are received.
 
 ### 7.3 End-to-End Tests (Playwright)
 
 Crucial for testing multi-client synchronization.
 
-- **Scenario 1: Connection:** Spin up two browser contexts. Have Client A create a room. Have Client B join URL. Assert both clients report 2 peers connected.
-- **Scenario 2: Card Sync:** Client A drags a card. Assert Client B sees the card reach the same final coordinates.
-- **Scenario 3: Private Hands:** Client A draws a card. Assert Client A sees the card face. Assert Client B sees card removed from table but cannot see its face in the DOM (or sees a hidden placeholder).
+- **Scenario 1: Connection:** Spin up two browser contexts. Have Client A create
+  a room. Have Client B join URL. Assert both clients report 2 peers connected.
+- **Scenario 2: Card Sync:** Client A drags a card. Assert Client B sees the
+  card reach the same final coordinates.
+- **Scenario 3: Private Hands:** Client A draws a card. Assert Client A sees the
+  card face. Assert Client B sees card removed from table but cannot see its
+  face in the DOM (or sees a hidden placeholder).
 
 ---
 
 ## 8. Transition Plan (v1.0 to v2.0)
 
-This section addresses how to move from the current "50% implemented" state marked by manual peer ID exchange and disconnected components, to the target architecture.
+This section addresses how to move from the current "50% implemented" state
+marked by manual peer ID exchange and disconnected components, to the target
+architecture.
 
 **Phase 1: The Networking Foundation (High Priority)**
 
 - [ ] **Goal:** Replace manual Peer ID exchange with automatic discovery.
 - [ ] Set up Next.js API route for Socket.io (or similar WebSocket solution).
-- [ ] Create `useSignaling` hook to connect to the namespace matching the roomId.
-- [ ] Refactor existing `usePeer` / `usePeerConnection` to listen to signaling events ("user-joined", "signal-offer", "signal-answer") instead of waiting for manual input.
+- [ ] Create `useSignaling` hook to connect to the namespace matching the
+      roomId.
+- [ ] Refactor existing `usePeer` / `usePeerConnection` to listen to signaling
+      events ("user-joined", "signal-offer", "signal-answer") instead of waiting
+      for manual input.
 - [ ] Verify two clients can auto-connect in the same room URL.
 
 **Phase 2: Data Model Migration & Wiring (High Priority)**
 
-- [ ] **Goal:** Connect the disconnected 3D components to a robust Yjs structure.
-- [ ] Refactor `game-document.ts`: Replace top-level `Y.Array`s with `Y.Map`s for `cards` and `dice` as defined in Section 4.
-- [ ] Create the `Deck` zone concept: Initialize the `cards` map with 52 items set to `zone: 'deck'`.
-- [ ] Update `GameScene.tsx`: Instead of rendering placeholder components, iterate through `Array.from(cardsMap.values())`. Filter them: only render those where `zone === 'table'`.
-- [ ] Implement `CardObject.tsx`: A smart component that takes a `cardId`, looks up its state from the Y.Map, and renders the mesh at the synced position/rotation.
+- [ ] **Goal:** Connect the disconnected 3D components to a robust Yjs
+      structure.
+- [ ] Refactor `game-document.ts`: Replace top-level `Y.Array`s with `Y.Map`s
+      for `cards` and `dice` as defined in Section 4.
+- [ ] Create the `Deck` zone concept: Initialize the `cards` map with 52 items
+      set to `zone: 'deck'`.
+- [ ] Update `GameScene.tsx`: Instead of rendering placeholder components,
+      iterate through `Array.from(cardsMap.values())`. Filter them: only render
+      those where `zone === 'table'`.
+- [ ] Implement `CardObject.tsx`: A smart component that takes a `cardId`, looks
+      up its state from the Y.Map, and renders the mesh at the synced
+      position/rotation.
 
 **Phase 3: Interaction Implementation**
 
 - [ ] **Goal:** Make things movable and playable.
-- [ ] Implement `useObjectDrag` using `@use-gesture`. Connect drag-end events to update the card's position in the Y.Map.
-- [ ] Implement Hand Logic: Create functions for `drawCard(playerId)` that perform the CRDT transaction of changing a card's zone from 'deck' to player ID.
-- [ ] Implement the 2D Hand HUD: Render cards where `zone === localPlayerId`. Implement drag-from-HUD-to-3D-canvas to play cards back to the table.
+- [ ] Implement `useObjectDrag` using `@use-gesture`. Connect drag-end events to
+      update the card's position in the Y.Map.
+- [ ] Implement Hand Logic: Create functions for `drawCard(playerId)` that
+      perform the CRDT transaction of changing a card's zone from 'deck' to
+      player ID.
+- [ ] Implement the 2D Hand HUD: Render cards where `zone === localPlayerId`.
+      Implement drag-from-HUD-to-3D-canvas to play cards back to the table.
 
 **Phase 4: Physics & Polish**
 
 - [ ] **Goal:** Fix dice and add visuals.
-- [ ] Finalize dice rolling workflow: Ensure the rolling client acts as authority and writes the final settled value to the Y.Doc to stop simulation on peers.
+- [ ] Finalize dice rolling workflow: Ensure the rolling client acts as
+      authority and writes the final settled value to the Y.Doc to stop
+      simulation on peers.
 - [ ] Implement face value detection math (quaternion to integer).
 - [ ] Apply textures to card meshes based on their suit/rank data.

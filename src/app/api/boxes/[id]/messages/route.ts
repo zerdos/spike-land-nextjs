@@ -93,7 +93,9 @@ export async function POST(
 
     // Build chat history for the AI
     const chatHistory = (previousMessages || []).map((msg) => ({
-      role: msg.role === BoxMessageRole.USER ? ("user" as const) : ("model" as const),
+      role: msg.role === BoxMessageRole.USER
+        ? ("user" as const)
+        : ("model" as const),
       content: msg.content,
     }));
 

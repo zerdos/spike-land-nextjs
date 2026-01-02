@@ -12,7 +12,8 @@ export function usePeer() {
 
   useEffect(() => {
     // Generate a stable cache key for this component instance
-    const cacheKey = cacheKeyRef.current ?? Math.random().toString(36).substr(2, 9);
+    const cacheKey = cacheKeyRef.current ??
+      Math.random().toString(36).substr(2, 9);
     cacheKeyRef.current = cacheKey;
 
     // Check if we already have a peer for this key (Strict Mode re-mount)

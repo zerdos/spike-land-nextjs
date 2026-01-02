@@ -39,7 +39,9 @@ export interface UIState {
 
 export function useUIStore(): UIState {
   // Interaction mode
-  const [interactionMode, setInteractionMode] = useState<InteractionMode>("orbit");
+  const [interactionMode, setInteractionMode] = useState<InteractionMode>(
+    "orbit",
+  );
 
   // Sidebar
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -66,17 +68,17 @@ export function useUIStore(): UIState {
 
   // Mode toggle
   const toggleMode = useCallback(() => {
-    setInteractionMode(prev => prev === "orbit" ? "interaction" : "orbit");
+    setInteractionMode((prev) => prev === "orbit" ? "interaction" : "orbit");
   }, []);
 
   // Sidebar toggle
   const toggleSidebar = useCallback(() => {
-    setSidebarOpen(prev => !prev);
+    setSidebarOpen((prev) => !prev);
   }, []);
 
   // Hand toggle
   const toggleHand = useCallback(() => {
-    setHandOpen(prev => !prev);
+    setHandOpen((prev) => !prev);
   }, []);
 
   // Context menu functions

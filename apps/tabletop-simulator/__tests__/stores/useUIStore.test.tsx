@@ -4,7 +4,10 @@ import { useUIStore } from "../../stores/useUIStore";
 
 // Store original window properties
 const originalInnerWidth = window.innerWidth;
-const originalOntouchstart = Object.getOwnPropertyDescriptor(window, "ontouchstart");
+const originalOntouchstart = Object.getOwnPropertyDescriptor(
+  window,
+  "ontouchstart",
+);
 
 // Mock window.matchMedia
 const mockMatchMedia = vi.fn().mockImplementation(() => ({
@@ -27,7 +30,10 @@ describe("useUIStore", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset to desktop width
-    Object.defineProperty(window, "innerWidth", { writable: true, value: 1024 });
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      value: 1024,
+    });
     // Delete ontouchstart to simulate non-touch device
     // Using "in" operator, property must not exist
     delete (window as unknown as Record<string, unknown>).ontouchstart;
@@ -35,7 +41,10 @@ describe("useUIStore", () => {
 
   afterAll(() => {
     // Restore original values
-    Object.defineProperty(window, "innerWidth", { writable: true, value: originalInnerWidth });
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      value: originalInnerWidth,
+    });
     if (originalOntouchstart) {
       Object.defineProperty(window, "ontouchstart", originalOntouchstart);
     }
@@ -215,7 +224,10 @@ describe("useUIStore", () => {
   describe("mobile detection", () => {
     it("should detect non-mobile by default when window is wide", () => {
       // Ensure desktop setup - wide screen, no touch
-      Object.defineProperty(window, "innerWidth", { writable: true, value: 1024 });
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        value: 1024,
+      });
       delete (window as unknown as Record<string, unknown>).ontouchstart;
 
       const { result } = renderHook(() => useUIStore());
@@ -224,7 +236,10 @@ describe("useUIStore", () => {
 
     it("should detect mobile when window is narrow", () => {
       // Narrow screen triggers mobile regardless of touch
-      Object.defineProperty(window, "innerWidth", { writable: true, value: 600 });
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        value: 600,
+      });
       delete (window as unknown as Record<string, unknown>).ontouchstart;
 
       const { result } = renderHook(() => useUIStore());
@@ -233,7 +248,10 @@ describe("useUIStore", () => {
 
     it("should detect mobile when touch is supported", () => {
       // Touch support triggers mobile regardless of screen width
-      Object.defineProperty(window, "innerWidth", { writable: true, value: 1024 });
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        value: 1024,
+      });
       // Adding the property (even undefined) makes "in" operator return true
       Object.defineProperty(window, "ontouchstart", {
         writable: true,

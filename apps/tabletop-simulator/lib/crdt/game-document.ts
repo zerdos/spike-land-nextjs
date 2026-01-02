@@ -36,7 +36,11 @@ export function addPlayer(doc: Y.Doc, player: Player) {
   players.set(player.id, player);
 }
 
-export function updatePlayer(doc: Y.Doc, playerId: string, updates: Partial<Player>) {
+export function updatePlayer(
+  doc: Y.Doc,
+  playerId: string,
+  updates: Partial<Player>,
+) {
   const players = getPlayersMap(doc);
   const current = players.get(playerId);
   if (current) {

@@ -40,7 +40,10 @@ Given(
     await this.page.route("**/api/admin/agents", async (route) => {
       const url = new URL(route.request().url());
       // Only mock exact /api/admin/agents path, not sub-routes
-      if (url.pathname === "/api/admin/agents" && route.request().method() === "GET") {
+      if (
+        url.pathname === "/api/admin/agents" &&
+        route.request().method() === "GET"
+      ) {
         await route.fulfill({
           status: 200,
           contentType: "application/json",

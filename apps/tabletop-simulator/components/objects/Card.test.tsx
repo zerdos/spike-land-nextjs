@@ -11,7 +11,9 @@ vi.mock("@react-three/drei", () => ({
 }));
 vi.mock("@react-spring/three", () => ({
   useSpring: () => ({ position: [], rotation: [] }),
-  animated: { group: ({ children }: any) => <div data-testid="card-group">{children}</div> },
+  animated: {
+    group: ({ children }: any) => <div data-testid="card-group">{children}</div>,
+  },
 }));
 vi.mock("@use-gesture/react", () => ({
   useDrag: () => () => ({}),

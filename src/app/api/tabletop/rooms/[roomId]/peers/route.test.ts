@@ -17,7 +17,9 @@ function createMockRequest(
 }
 
 // Helper to create mock params
-function createMockParams(roomId: string): { params: Promise<{ roomId: string; }>; } {
+function createMockParams(
+  roomId: string,
+): { params: Promise<{ roomId: string; }>; } {
   return { params: Promise.resolve({ roomId }) };
 }
 

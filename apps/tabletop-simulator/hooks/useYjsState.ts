@@ -19,7 +19,10 @@ export interface GameStateSnapshot {
   messages: GameMessage[];
 }
 
-export function useYjsState(doc: Y.Doc | null, isSynced: boolean = false): GameStateSnapshot {
+export function useYjsState(
+  doc: Y.Doc | null,
+  isSynced: boolean = false,
+): GameStateSnapshot {
   const [state, setState] = useState<GameStateSnapshot>({
     cards: [],
     dice: [],

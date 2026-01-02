@@ -529,7 +529,10 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                               window.URL.revokeObjectURL(blobUrl);
                             } catch (error) {
                               console.error("Download failed:", error);
-                              window.open(selectedVersion.enhancedUrl!, "_blank");
+                              window.open(
+                                selectedVersion.enhancedUrl!,
+                                "_blank",
+                              );
                             }
                           }}
                         >
@@ -548,10 +551,14 @@ export function EnhanceClient({ image: initialImage }: EnhanceClientProps) {
                               imageName={image.name}
                               className="flex-1 bg-background/50 border-input hover:bg-accent hover:text-accent-foreground border text-xs h-9"
                             />
-                            {(selectedVersion.isBlend || selectedVersion.sourceImageId) && (
+                            {(selectedVersion.isBlend ||
+                              selectedVersion.sourceImageId) && (
                               <Button
                                 variant="outline"
-                                onClick={() => router.push(`/apps/pixel/mix/${selectedVersion.id}`)}
+                                onClick={() =>
+                                  router.push(
+                                    `/apps/pixel/mix/${selectedVersion.id}`,
+                                  )}
                                 className="flex-1 text-muted-foreground hover:text-foreground text-xs h-9"
                               >
                                 <ExternalLink className="mr-2 h-3 w-3" />

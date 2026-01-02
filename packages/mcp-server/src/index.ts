@@ -519,7 +519,9 @@ Get more tokens at: https://spike.land/settings`,
     console.error("Jules integration enabled (JULES_API_KEY detected)");
   }
   if (isCodeSpaceAvailable()) {
-    console.error("CodeSpace integration enabled (SPIKE_LAND_API_KEY detected)");
+    console.error(
+      "CodeSpace integration enabled (SPIKE_LAND_API_KEY detected)",
+    );
   }
 }
 

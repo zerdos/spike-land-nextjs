@@ -28,7 +28,10 @@ export function Deck({ count, onDraw, onShuffle }: DeckProps) {
           </mesh>
 
           {/* Top card back */}
-          <mesh position={[0, stackHeight + 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <mesh
+            position={[0, stackHeight + 0.001, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
             <planeGeometry args={[2.5, 3.5]} />
             <meshStandardMaterial color="#880000" />
             {/* Optional: Add same pattern detail as Card component if we extract it */}
@@ -36,7 +39,10 @@ export function Deck({ count, onDraw, onShuffle }: DeckProps) {
         </group>
       )}
       {/* Card count indicator floating above */}
-      <mesh position={[0, stackHeight + 0.5, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh
+        position={[0, stackHeight + 0.5, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
         <planeGeometry args={[0.8, 0.4]} />
         <meshBasicMaterial color="#000000" transparent opacity={0.5} />
       </mesh>

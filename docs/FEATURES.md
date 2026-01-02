@@ -1,6 +1,7 @@
 # Spike Land - Feature Documentation
 
-> **Last Updated**: December 30, 2025 | **Status**: Production Platform with Multiple Apps
+> **Last Updated**: December 30, 2025 | **Status**: Production Platform with
+> Multiple Apps
 
 ---
 
@@ -58,7 +59,9 @@
 
 ## Platform Overview
 
-**Spike Land** is an AI-powered app platform that democratizes software development by enabling anyone to create, modify, and deploy applications using natural language requirements and AI agents.
+**Spike Land** is an AI-powered app platform that democratizes software
+development by enabling anyone to create, modify, and deploy applications using
+natural language requirements and AI agents.
 
 ### Core Vision
 
@@ -70,7 +73,8 @@
 
 ### Current Status
 
-**Production Platform** - The platform is live and running multiple applications:
+**Production Platform** - The platform is live and running multiple
+applications:
 
 - **Pixel** - Flagship AI image enhancement app (all phases complete)
 - **Audio Mixer** - Multi-track audio mixing and recording
@@ -509,7 +513,8 @@ Native mobile experience built with Expo and React Native.
 **Key Files:**
 
 - `packages/mobile-app/` - Mobile app package
-- See [packages/mobile-app/README.md](../packages/mobile-app/README.md) for details
+- See [packages/mobile-app/README.md](../packages/mobile-app/README.md) for
+  details
 
 ---
 
@@ -554,7 +559,8 @@ Additional applications and features on the Spike Land platform.
 
 ## MCP Server Integration
 
-Spike Land provides an MCP (Model Context Protocol) server that integrates AI image generation and modification directly into Claude Desktop and Claude Code.
+Spike Land provides an MCP (Model Context Protocol) server that integrates AI
+image generation and modification directly into Claude Desktop and Claude Code.
 
 | Feature            | Status      | Description                                         |
 | ------------------ | ----------- | --------------------------------------------------- |
@@ -729,14 +735,9 @@ Advanced marketing tools for campaign management and social media integration.
 3. Real Estate Agent
 4. E-commerce Seller
 
-**Secondary Personas**:
-5. Family Memory Keeper
-6. Travel Blogger
-7. Vintage Photo Restorer
-8. Graphic Designer
-9. Event Photographer
-10. Small Business Owner
-11. Content Creator
+**Secondary Personas**: 5. Family Memory Keeper 6. Travel Blogger 7. Vintage
+Photo Restorer 8. Graphic Designer 9. Event Photographer 10. Small Business
+Owner 11. Content Creator
 
 **Database Models:**
 
@@ -1136,7 +1137,8 @@ Email infrastructure with Resend integration.
 
 ### Core Models
 
-See `prisma/schema.prisma` for the complete schema (54 models). Key models organized by feature:
+See `prisma/schema.prisma` for the complete schema (54 models). Key models
+organized by feature:
 
 #### Platform Infrastructure
 
@@ -1336,16 +1338,21 @@ For detailed development guidelines, see [CLAUDE.md](../CLAUDE.md).
 
 ### Developer
 
-- **GitHub**: [https://github.com/zerdos/spike-land-nextjs](https://github.com/zerdos/spike-land-nextjs)
+- **GitHub**:
+  [https://github.com/zerdos/spike-land-nextjs](https://github.com/zerdos/spike-land-nextjs)
 - **API Reference**: [docs/API_REFERENCE.md](./API_REFERENCE.md)
 - **Database Schema**: [docs/DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)
-- **Mobile App**: [packages/mobile-app/README.md](../packages/mobile-app/README.md)
-- **MCP Server**: [packages/mcp-server/README.md](../packages/mcp-server/README.md)
+- **Mobile App**:
+  [packages/mobile-app/README.md](../packages/mobile-app/README.md)
+- **MCP Server**:
+  [packages/mcp-server/README.md](../packages/mcp-server/README.md)
 
 ### Support
 
-- **Issues**: [GitHub Issues](https://github.com/zerdos/spike-land-nextjs/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/zerdos/spike-land-nextjs/discussions)
+- **Issues**:
+  [GitHub Issues](https://github.com/zerdos/spike-land-nextjs/issues)
+- **Discussions**:
+  [GitHub Discussions](https://github.com/zerdos/spike-land-nextjs/discussions)
 - **Email**: Support via contact form
 
 ---
@@ -1375,6 +1382,5 @@ For detailed development guidelines, see [CLAUDE.md](../CLAUDE.md).
 
 ---
 
-**Last Updated**: December 30, 2025
-**Documentation Version**: 2.0
-**Platform Status**: Production
+**Last Updated**: December 30, 2025 **Documentation Version**: 2.0 **Platform
+Status**: Production

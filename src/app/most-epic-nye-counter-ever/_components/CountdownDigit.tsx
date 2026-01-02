@@ -12,7 +12,9 @@ interface CountdownDigitProps {
  * A glass morphism card for displaying a countdown digit/unit.
  * Optimized for performance with memoization and reduced animations.
  */
-function CountdownDigit({ value, label, highlight = false }: CountdownDigitProps) {
+function CountdownDigit(
+  { value, label, highlight = false }: CountdownDigitProps,
+) {
   const [isFlipping, setIsFlipping] = useState(false);
   const [displayValue, setDisplayValue] = useState(value);
 
@@ -31,7 +33,9 @@ function CountdownDigit({ value, label, highlight = false }: CountdownDigitProps
   }, [value, displayValue]);
 
   // Format to 2 digits, except for days which could be 3
-  const formattedValue = label === "DAYS" ? displayValue : displayValue.toString().padStart(2, "0");
+  const formattedValue = label === "DAYS"
+    ? displayValue
+    : displayValue.toString().padStart(2, "0");
 
   return (
     <div

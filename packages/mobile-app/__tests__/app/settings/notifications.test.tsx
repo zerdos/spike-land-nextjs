@@ -78,7 +78,13 @@ jest.mock("tamagui", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react");
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { View, Text, TouchableOpacity, Switch: RNSwitch, ScrollView: RNScrollView } = require(
+  const {
+    View,
+    Text,
+    TouchableOpacity,
+    Switch: RNSwitch,
+    ScrollView: RNScrollView,
+  } = require(
     "react-native",
   );
 
