@@ -2,7 +2,6 @@ import type { Code } from "./chatRoom";
 import {
   AiRoutes,
   ApiRoutes,
-  AuthRoutes,
   CodeRoutes,
   DefaultRoutes,
   LiveRoutes,
@@ -21,7 +20,6 @@ export class RouteHandler {
   private websocketRoutes: WebsocketRoutes;
   private liveRoutes: LiveRoutes;
   private utilityRoutes: UtilityRoutes;
-  private authRoutes: AuthRoutes;
   private storageRoutes: StorageRoutes;
   private defaultRoutes: DefaultRoutes;
   private aiRoutes: AiRoutes;
@@ -33,7 +31,6 @@ export class RouteHandler {
     this.websocketRoutes = new WebsocketRoutes(this.code);
     this.liveRoutes = new LiveRoutes(this.code);
     this.utilityRoutes = new UtilityRoutes(this.code);
-    this.authRoutes = new AuthRoutes(this.code);
     this.storageRoutes = new StorageRoutes(this.code);
     this.defaultRoutes = new DefaultRoutes(this.code);
     this.aiRoutes = new AiRoutes(this.code);
@@ -101,9 +98,6 @@ export class RouteHandler {
       room: this.utilityRoutes.handleRoomRoute.bind(this.utilityRoutes),
       path: this.utilityRoutes.handlePathRoute.bind(this.utilityRoutes),
       env: this.utilityRoutes.handleEnvRoute.bind(this.utilityRoutes),
-
-      // Auth routes
-      my: this.authRoutes.handleMyCode.bind(this.authRoutes),
 
       // Storage routes
       hashCode: this.storageRoutes.handleHashCodeRoute.bind(this.storageRoutes),

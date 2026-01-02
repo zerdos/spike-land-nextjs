@@ -11,6 +11,9 @@ import { handleUnauthorizedRequest } from "./utils";
 const securityHeaders: Record<string, string> = {
   "X-Content-Type-Options": "nosniff",
   "X-XSS-Protection": "1; mode=block",
+  // Allow framing from spike.land domains - override any default X-Frame-Options
+  "Content-Security-Policy":
+    "frame-ancestors 'self' https://spike.land https://*.spike.land http://localhost:3000",
 };
 
 /**
@@ -24,6 +27,10 @@ function addSecurityHeaders(response: Response): Response {
   }
 
   const newHeaders = new Headers(response.headers);
+
+  // Remove X-Frame-Options if set - we use CSP frame-ancestors instead
+  newHeaders.delete("X-Frame-Options");
+
   for (const [key, value] of Object.entries(securityHeaders)) {
     // Don't override if already set
     if (!newHeaders.has(key)) {

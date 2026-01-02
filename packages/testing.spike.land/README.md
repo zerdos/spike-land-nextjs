@@ -21,8 +21,7 @@ services including AI integrations, and robust static asset hosting.
 ## Features
 
 - Real-time collaboration using Durable Objects
-- Static file serving with KV storage
-- Authentication with Clerk
+- Static file serving with
 - AI integrations (OpenAI, Anthropic, Whisper)
 - WebRTC TURN server
 - CMS functionality
@@ -74,7 +73,6 @@ Required environment variables:
 ```bash
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
-CLERK_SECRET_KEY=your_clerk_secret
 ```
 
 For local development, create a `.dev.vars` file with these variables.
@@ -127,7 +125,6 @@ For local development, create a `.dev.vars` file with these variables.
 ```bash
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
-CLERK_SECRET_KEY=your_clerk_secret
 ```
 
 2. Start local development server:
@@ -176,7 +173,6 @@ Common issues and solutions:
    - Verify KV access permissions
 
 3. **Authentication errors:**
-   - Check Clerk configuration
    - Verify JWT token format
 
 4. **Deployment failures:**

@@ -228,32 +228,6 @@ const main = {
       });
     }
 
-    if (request.url.includes("api/logged_in/")) {
-      const { verifyToken } = await import("@clerk/backend");
-
-      const verifyReqJWT = async (req: Request) => {
-        const token = req.headers.get("Authorization")?.split(" ")[1];
-        if (!token) {
-          throw new Error("No token provided");
-        }
-
-        const options = {}; // Declare the 'options' variable
-        const { payload, error } = await verifyToken(token, options);
-
-        if (error) {
-          throw new Error("Invalid token");
-        }
-
-        return payload;
-      };
-
-      const payload = await verifyReqJWT(request);
-      return new Response(JSON.stringify(payload), {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    }
     if (request.url.includes("openai")) {
       ctx.waitUntil(logger.log(`Request for ${request.url}`));
       return handleGPT4Request(request, env);

@@ -145,6 +145,10 @@ export default function AppWorkspacePage() {
               if (prev.some((m) => m.id === data.data.id)) return prev;
               return [...prev, data.data];
             });
+            // Reload iframe when agent responds
+            if (data.data.role === "AGENT") {
+              setIframeKey((prev) => prev + 1);
+            }
             break;
 
           case "status":
@@ -201,6 +205,27 @@ export default function AppWorkspacePage() {
       console.error("Failed to send message");
     } finally {
       setSendingMessage(false);
+    }
+  };
+
+  // Clear chat
+  const [clearingChat, setClearingChat] = useState(false);
+  const handleClearChat = async () => {
+    if (clearingChat) return;
+
+    setClearingChat(true);
+    try {
+      const response = await fetch(`/api/apps/${appId}/messages`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to clear chat");
+
+      setMessages([]);
+    } catch {
+      console.error("Failed to clear chat");
+    } finally {
+      setClearingChat(false);
     }
   };
 
@@ -288,10 +313,24 @@ export default function AppWorkspacePage() {
           {/* Chat Panel */}
           <Card className="flex flex-col h-[calc(100vh-200px)] min-h-[500px]">
             <CardHeader className="border-b">
-              <CardTitle className="text-lg">Chat</CardTitle>
-              <CardDescription>
-                Communicate with the AI agent to refine your app
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Chat</CardTitle>
+                  <CardDescription>
+                    Communicate with the AI agent to refine your app
+                  </CardDescription>
+                </div>
+                {messages.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClearChat}
+                    disabled={clearingChat || app.status === "ARCHIVED"}
+                  >
+                    {clearingChat ? "Clearing..." : "Clear Chat"}
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden p-0">
               {/* Messages */}

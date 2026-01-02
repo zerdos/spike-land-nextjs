@@ -52,7 +52,6 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.1",
     "@anthropic-ai/sdk": "0.71.2",
-    "@clerk/backend": "2.29.0",
     "@spike-npm-land/code": "0.9.56",
     "@types/node": "25.0.3",
     "ai": "^6.0.3",
