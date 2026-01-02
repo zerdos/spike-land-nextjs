@@ -104,7 +104,7 @@ const routeConfigs: RouteConfig[] = [
 
 export async function fakeServer(request: Request) {
   const { pathname: rawPathname } = new URL(request.url);
-  const pathname = rawPathname.replace("/live/", "/live/"); // Normalize path for codespace extraction
+  const pathname = rawPathname;
   const codeSpace = getCodeSpace(pathname);
   console.warn(
     "CodeSpace:",
@@ -296,7 +296,7 @@ async function handleSessionJson(
   // This condition seems to intend to re-fetch if it's NOT the first time for this codeSpace.
   // However, `initialisedSessions` is populated when `!cSessions[codeSpace]` is true in `fakeServer`.
   // If the goal is to always return the latest from the server for /session.json:
-  const sessionFetchPromise = fetch(request.url.replace("/live/", "/live/"))
+  const sessionFetchPromise = fetch(request.url)
     .then((r) => {
       if (!r.ok) {
         throw new Error(

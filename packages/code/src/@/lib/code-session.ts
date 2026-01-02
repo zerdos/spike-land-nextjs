@@ -394,7 +394,7 @@ export class Code implements ICode {
     // Check if transpiled code appears to be stale relative to the code
     // This is a heuristic - if the code changed but transpiled contains old content or is empty/default
     const hasStaleTranspiled = !newSession.transpiled ||
-      newSession.transpiled.includes("Write your code hee!") || // Default content
+      newSession.transpiled.includes("Write your code here!") || // Default content
       newSession.transpiled.includes("stdin_default") &&
         !newSession.code.includes("default"); // Generic transpiled but code changed
 
