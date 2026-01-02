@@ -21,11 +21,11 @@
   "devDependencies": {
     "@cloudflare/kv-asset-handler": "0.4.1",
     "@cloudflare/vitest-pool-workers": "0.11.1",
-    "@vitest/runner": "3.2.4",
-    "@vitest/snapshot": "3.2.4",
+    "@vitest/runner": "4.0.16",
+    "@vitest/snapshot": "4.0.16",
     "rimraf": "6.1.2",
     "typescript": "5.9.3",
-    "vitest": "3.2.4",
+    "vitest": "4.0.16",
     "wrangler": "4.54.0"
   },
   "dependencies": {
