@@ -9614,7 +9614,7 @@ __metadata:
     "@tailwindcss/postcss": "npm:4.1.18"
     "@tailwindcss/vite": "npm:4.1.18"
     "@tanstack/react-router": "npm:1.144.0"
-    "@tanstack/router-plugin": "npm:1.144.0"
+    "@tanstack/router-plugin": "npm:1.145.2"
     "@testing-library/dom": "npm:10.4.1"
     "@testing-library/jest-dom": "npm:6.9.1"
     "@testing-library/react": "npm:16.3.1"
@@ -11925,9 +11925,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/router-generator@npm:1.144.0":
-  version: 1.144.0
-  resolution: "@tanstack/router-generator@npm:1.144.0"
+"@tanstack/router-generator@npm:1.145.2":
+  version: 1.145.2
+  resolution: "@tanstack/router-generator@npm:1.145.2"
   dependencies:
     "@tanstack/router-core": "npm:1.144.0"
     "@tanstack/router-utils": "npm:1.143.11"
@@ -11937,13 +11937,13 @@ __metadata:
     source-map: "npm:^0.7.4"
     tsx: "npm:^4.19.2"
     zod: "npm:^3.24.2"
-  checksum: 10c9/78c13f5c0b22dd80c66208ff32043c696d75878997fe92e1a094ae7958875c8e2870e8b1e1f83de8e92cfb8c7944360069ff0ed478725f120cee53fd33c5ed64
+  checksum: 10c9/64cd3179d5faa3396e231838fce4adcb9cf64171742cd0cdb8df7777345485f6f8cbfdee388057d51eb55b230aa0646f8b4b38bda65d1107e48855350b628f6f
   languageName: node
   linkType: hard
 
-"@tanstack/router-plugin@npm:1.144.0":
-  version: 1.144.0
-  resolution: "@tanstack/router-plugin@npm:1.144.0"
+"@tanstack/router-plugin@npm:1.145.2":
+  version: 1.145.2
+  resolution: "@tanstack/router-plugin@npm:1.145.2"
   dependencies:
     "@babel/core": "npm:^7.28.5"
     "@babel/plugin-syntax-jsx": "npm:^7.27.1"
@@ -11952,7 +11952,7 @@ __metadata:
     "@babel/traverse": "npm:^7.28.5"
     "@babel/types": "npm:^7.28.5"
     "@tanstack/router-core": "npm:1.144.0"
-    "@tanstack/router-generator": "npm:1.144.0"
+    "@tanstack/router-generator": "npm:1.145.2"
     "@tanstack/router-utils": "npm:1.143.11"
     "@tanstack/virtual-file-routes": "npm:1.141.0"
     babel-dead-code-elimination: "npm:^1.0.11"
@@ -11976,7 +11976,7 @@ __metadata:
       optional: true
     webpack:
       optional: true
-  checksum: 10c9/b19f18a81ce4a9abe755b2864657f454f092e084768e3b841cb1296bc575010e24279cf54bf9bba9c296c1f3fd0eefc6c33140104bc7360c184f75f451c5fa67
+  checksum: 10c9/6971019c8115edde2c825813e0cc5dd3dd56f2596056293d5845646d5a869edd8d69087741e64422ffd3c74a3e00be87f63ba6bb351ded633fbb4db61a225e17
   languageName: node
   linkType: hard
 
