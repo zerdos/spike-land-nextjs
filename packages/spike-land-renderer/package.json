@@ -1,0 +1,34 @@
+{
+  "name": "@spike-npm-land/renderer",
+  "version": "0.9.56",
+  "type": "module",
+  "module": "dist/index.js",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "dev:remote": "wrangler dev --remote",
+    "build": "yarn clean",
+    "build:worker": "echo 'No build required - using direct deployment'",
+    "deploy:dev": "wrangler deploy",
+    "deploy:prod": "wrangler deploy",
+    "clean": "rimraf dist",
+    "types:check": "tsc --noEmit",
+    "types:generate": "wrangler types",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.11.1",
+    "@cloudflare/workers-types": "4.20251228.0",
+    "@types/node": "25.0.3",
+    "@vitest/runner": "4.0.16",
+    "@vitest/snapshot": "4.0.16",
+    "rimraf": "6.1.2",
+    "typescript": "5.9.3",
+    "vitest": "4.0.16",
+    "wrangler": "4.54.0"
+  },
+  "dependencies": {
+    "@cloudflare/puppeteer": "1.0.4"
+  }
+}
