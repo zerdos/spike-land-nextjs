@@ -5,26 +5,66 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   plugins: [react()],
   test: {
+    // Use projects for monorepo support (Vitest 3.2+)
+    projects: [
+      // Root project inline config
+      {
+        test: {
+          name: "root",
+          environment: "jsdom",
+          globals: true,
+          setupFiles: ["./vitest.setup.ts"],
+          include: ["src/**/*.{test,spec}.{ts,tsx}", "apps/**/*.{test,spec}.{ts,tsx}"],
+          exclude: [
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/fix-r2-versioning-cache/**",
+            "**/.git/**",
+          ],
+        },
+        resolve: {
+          alias: {
+            "@": path.resolve(__dirname, "./src"),
+            "@/components": path.resolve(__dirname, "./src/components"),
+            "@/ui": path.resolve(__dirname, "./src/components/ui"),
+            "@/lib": path.resolve(__dirname, "./src/lib"),
+            "@/utils": path.resolve(__dirname, "./src/lib/utils"),
+            "@/hooks": path.resolve(__dirname, "./src/hooks"),
+            "@apps": path.resolve(__dirname, "./apps"),
+            "@vercel/kv": path.resolve(__dirname, "./vitest.mock-vercel-kv.ts"),
+            "next-view-transitions": path.resolve(
+              __dirname,
+              "./vitest.mock-next-view-transitions.tsx",
+            ),
+            "next/server": path.resolve(__dirname, "./node_modules/next/server.js"),
+            "next/link": path.resolve(__dirname, "./node_modules/next/link.js"),
+            "next/image": path.resolve(__dirname, "./node_modules/next/image.js"),
+          },
+        },
+      },
+      // Package projects with their own vitest.config.ts
+      "./packages/code",
+      "./packages/js.spike.land",
+      "./packages/opfs-node-adapter",
+      "./packages/spike-land-renderer",
+      "./packages/testing.spike.land",
+    ],
+    name: "root",
     environment: "jsdom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
-    // Exclude git worktrees and mobile app (mobile-app uses Jest, not vitest)
+    include: ["src/**/*.{test,spec}.{ts,tsx}", "apps/**/*.{test,spec}.{ts,tsx}"],
+    // Exclude git worktrees, mobile app (uses Jest), and packages (have their own configs)
     exclude: [
       "**/node_modules/**",
       "**/dist/**",
       "**/fix-r2-versioning-cache/**",
       "**/.git/**",
-      "**/packages/mobile-app/**",
+      "**/packages/**",
     ],
     // Use forks pool for better memory isolation in CI
     // Each test file runs in separate process with fresh memory
     pool: "forks",
-    // poolOptions: {
-    //   forks: {
-    //     singleFork: false,
-    //     isolate: true,
-    //   },
-    // },
     // Enable file parallelism for faster execution
     fileParallelism: true,
     // Use reporter optimized for CI

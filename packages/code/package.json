@@ -224,6 +224,6 @@
     "url": "^0.11.4",
     "vite": "7.3.0",
     "vite-plugin-top-level-await": "1.6.0",
-    "vitest": "4.0.16"
+    "vitest": "3.2.4"
   }
 }
