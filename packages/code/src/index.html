@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base href="/" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spike.land</title>
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap"
+      as="style"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="preload"
+      href="/live/${codeSpace}/index.css"
+      as="style"
+    />
+    <link
+      href="/live/${codeSpace}/index.css"
+      rel="stylesheet"
+    />
+
+    <script type="importmap">
+    // IMPORTMAP
+    </script>
+    <script src="/@/workers/tw.worker.js"></script>
+  </head>
+  <style>
+  /* criticalCss */
+  </style>
+
+  <body>
+    <div id="embed">${html}</div>
+    <script type="module" src="/start.mjs"></script>
+  </body>
+</html>
