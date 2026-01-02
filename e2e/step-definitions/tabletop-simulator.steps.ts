@@ -36,10 +36,7 @@ Given("I am in a game room", async function(this: CustomWorld) {
   await this.page.goto("/apps/tabletop-simulator/room/test-room");
 });
 
-Then("I should see the controls panel", async function(this: CustomWorld) {
-  await expect(this.page.locator('[data-testid="controls-panel"]'))
-    .toBeVisible();
-});
+// "I should see the controls panel" step is defined in tabletop.steps.ts
 
 Then("I should see the video overlay", async function(this: CustomWorld) {
   // Video overlay container is always rendered, but video elements depend on streams
