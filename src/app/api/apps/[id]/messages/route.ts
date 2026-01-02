@@ -285,3 +285,65 @@ export async function POST(
 
   return NextResponse.json(message, { status: 201 });
 }
+
+/**
+ * DELETE /api/apps/[id]/messages
+ * Clear all messages for an app's chat thread
+ */
+export async function DELETE(
+  _request: NextRequest,
+  context: { params: Promise<{ id: string; }>; },
+) {
+  const { data: session, error: authError } = await tryCatch(auth());
+
+  if (authError || !session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data: params, error: paramsError } = await tryCatch(context.params);
+  if (paramsError) {
+    return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
+  }
+  const { id } = params;
+
+  // Verify user owns this app
+  const { data: app, error: appError } = await tryCatch(
+    prisma.app.findFirst({
+      where: {
+        id,
+        userId: session.user.id,
+        status: { not: "ARCHIVED" },
+      },
+      select: { id: true },
+    }),
+  );
+
+  if (appError) {
+    console.error("Error fetching app:", appError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  if (!app) {
+    return NextResponse.json({ error: "App not found" }, { status: 404 });
+  }
+
+  // Delete all messages for this app (attachments will be deleted via cascade)
+  const { error: deleteError } = await tryCatch(
+    prisma.appMessage.deleteMany({
+      where: { appId: id },
+    }),
+  );
+
+  if (deleteError) {
+    console.error("Error deleting messages:", deleteError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ success: true });
+}

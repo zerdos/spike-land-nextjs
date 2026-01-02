@@ -31,7 +31,6 @@ describe("R2BucketHandler", () => {
       OPENAI_API_KEY: "mock-key",
       ANTHROPIC_API_KEY: "mock-key",
       REPLICATE_API_TOKEN: "mock-token",
-      CLERK_SECRET_KEY: "mock-secret",
       CF_REAL_TURN_TOKEN: "mock-turn-token",
       AI: {
         aiGatewayLogId: "mock-log-id",

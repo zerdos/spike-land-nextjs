@@ -12,7 +12,6 @@ export interface Env {
   NPM_REGISTRY: string;
   REPLICATE_API_TOKEN: string;
   ANTHROPIC_API_KEY: string;
-  CLERK_SECRET_KEY: string;
   readonly caches: CloudflareCache;
 }
 
