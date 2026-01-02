@@ -167,11 +167,11 @@ export class RenderService {
   private htmlDecode(input: string): string {
     return input
       .split("><").join(">\n<")
-      .replace(/&amp;/g, "&")
       .replace(/&gt;/g, ">")
       .replace(/&lt;/g, "<")
       .replace(/&quot;/g, '"')
       .replace(/&apos;/g, "'")
-      .replace(/&nbsp;/g, " ");
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&");
   }
 }
