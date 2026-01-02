@@ -177,17 +177,18 @@ When("I tap the hand button", async function(this: CustomWorld) {
 Then("the hand drawer should be visible", async function(this: CustomWorld) {
   const drawer = this.page.locator('[data-testid="hand-drawer"]');
   await expect(drawer).toBeVisible();
-  // Check that it's in expanded state (h-32)
-  await expect(drawer).toHaveClass(/h-32/);
+  // Hand drawer has h-40 class (always visible as persistent HUD)
+  await expect(drawer).toHaveClass(/h-40/);
 });
 
 Then("the hand drawer should expand", async function(this: CustomWorld) {
   const drawer = this.page.locator('[data-testid="hand-drawer"]');
-  await expect(drawer).toHaveClass(/h-32/);
+  // Hand drawer is always visible with h-40
+  await expect(drawer).toHaveClass(/h-40/);
 });
 
 Then("I should see the empty hand message", async function(this: CustomWorld) {
-  const message = this.page.getByText("Click on the deck to draw cards");
+  const message = this.page.getByText("Draw cards from the deck to play");
   await expect(message).toBeVisible();
 });
 

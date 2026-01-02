@@ -31,9 +31,8 @@ Feature: Basic Tabletop Interaction
     Then the toggle button should show orbit mode active
 
   @tabletop
-  Scenario: User can open the hand drawer
+  Scenario: User sees the hand drawer
     Given I am in a tabletop game room
-    When I click the hand toggle button
     Then the hand drawer should be visible
     And I should see the empty hand message
 
