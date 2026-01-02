@@ -359,11 +359,14 @@ export function replacePreservingWhitespace(
       }
 
       // Skip extra whitespace in the original text that was normalized
+      const curr = text[i];
+      const next = i < text.length - 1 ? text[i + 1] : undefined;
       if (
-        i < text.length - 1 &&
-        /\s/.test(text[i] as string) && /\s/.test(text[i + 1] as string) &&
-        normalizeWhitespace((text[i] as string) + (text[i + 1] as string))
-            .length === 1
+        curr &&
+        next &&
+        /\s/.test(curr) &&
+        /\s/.test(next) &&
+        normalizeWhitespace(curr + next).length === 1
       ) {
         continue;
       }
