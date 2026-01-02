@@ -4,6 +4,7 @@ import { tryCatch } from "@/lib/try-catch";
 import { appStatusUpdateSchema } from "@/lib/validations/app";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { broadcastStatus } from "../messages/stream/route";
 
 /**
  * GET /api/apps/[id]/status
@@ -159,6 +160,9 @@ export async function PATCH(
       { status: 500 },
     );
   }
+
+  // Broadcast status change to connected clients
+  broadcastStatus(id, status, message || `User changed status to ${status}`);
 
   return NextResponse.json(updatedApp[0]);
 }

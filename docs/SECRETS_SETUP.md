@@ -62,7 +62,7 @@ yarn dev
 | TOKEN_ENCRYPTION_KEY     |  Yes  |     No     |   Yes   |    Optional    |
 | FACEBOOK_MARKETING_APP_* |  Yes  |     No     |   Yes   |    Optional    |
 | GOOGLE_ADS_*             |  Yes  |     No     |   Yes   |    Optional    |
-| KV_REST_API_*            |  Yes  |     No     |   Yes   |    Optional    |
+| UPSTASH_REDIS_REST_*     |  Yes  |     No     |   Yes   |    Optional    |
 
 ---
 
@@ -266,14 +266,14 @@ EMAIL_FROM=noreply@spike.land
 
 Get API key from: https://resend.com/api-keys
 
-#### Vercel KV (Rate Limiting)
+#### Upstash Redis (Rate Limiting & Message Queue)
 
 ```bash
-KV_REST_API_URL=https://your-kv-url.vercel-storage.com
-KV_REST_API_TOKEN=your-kv-token
+UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-upstash-token
 ```
 
-Get credentials from: https://vercel.com/dashboard (Storage > KV)
+Get credentials from: https://console.upstash.com/redis
 
 #### Token Encryption (Marketing OAuth)
 

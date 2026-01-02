@@ -56,7 +56,7 @@ describe("POST /api/apps", () => {
       name: "Test App",
       description: "Test Description for the app",
       userId: "user-1",
-      status: "DRAFT",
+      status: "PROMPTING",
       requirements: [
         {
           id: "req-1",

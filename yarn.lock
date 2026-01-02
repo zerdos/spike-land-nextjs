@@ -13276,7 +13276,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@upstash/redis@npm:^1.34.0, @upstash/redis@npm:^1.36.0":
+"@upstash/redis@npm:^1.36.0":
   version: 1.36.0
   resolution: "@upstash/redis@npm:1.36.0"
   dependencies:
@@ -13568,15 +13568,6 @@ __metadata:
     path-to-regexp: "npm:8.3.0"
     zod: "npm:3.22.4"
   checksum: 10c9/e417fe82e3120ea7b11dca19448e53de0f0ede909e7d77100cbbf5b3d6416c449ac709abe36c31625b3a8fd32d55371a44a7b80d711759a13e6647bef9c4fe8b
-  languageName: node
-  linkType: hard
-
-"@vercel/kv@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@vercel/kv@npm:3.0.0"
-  dependencies:
-    "@upstash/redis": "npm:^1.34.0"
-  checksum: 10c9/019354a89fb624017cefc2414d3d4c2897631ff2ec5fb066c8e3e5cea848750723ae22ac44cfff509e3aed6be7361db7e50b9097d7784427120b3ae9474e52fa
   languageName: node
   linkType: hard
 
@@ -32422,7 +32413,6 @@ __metadata:
     "@upstash/redis": "npm:^1.36.0"
     "@use-gesture/react": "npm:^10.3.1"
     "@vercel/analytics": "npm:^1.6.1"
-    "@vercel/kv": "npm:^3.0.0"
     "@vercel/speed-insights": "npm:^1.3.1"
     "@vitejs/plugin-react": "npm:^5.1.2"
     "@vitest/coverage-v8": "npm:^4.0.16"
