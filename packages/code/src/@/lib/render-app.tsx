@@ -19,12 +19,12 @@ import { ThemeProvider as NextThemesProvider } from "next-themes"; // Added next
 const htmlDecode = (input: string) => {
   return input
     .split("><").join(">\n<")
-    .replace(/&amp;/g, "&")
     .replace(/&gt;/g, ">")
     .replace(/&lt;/g, "<")
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
-    .replace(/&nbsp;/g, " ");
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&");
 };
 
 const toHtmlAndCss = async (
