@@ -152,7 +152,7 @@
     "next-themes": "0.4.6",
     "os-browserify": "^0.3.0",
     "path-browserify": "1.0.1",
-    "prettier": "3.7.4",
+    "prettier": "^3.7.4",
     "qrious": "4.0.2",
     "react": "19.2.3",
     "react-day-picker": "9.13.0",
