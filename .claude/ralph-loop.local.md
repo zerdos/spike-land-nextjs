@@ -1,5 +1,5 @@
 ---
-active: false
+active: true
 iteration: 5
 max_iterations: 50
 completion_promise: "SPIKE-DONE"
