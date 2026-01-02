@@ -91,7 +91,7 @@ describe("MainFetchHandler", () => {
 
       expect(handleErrors).toHaveBeenCalled();
       expect(handleFetchApi).toHaveBeenCalled();
-      expect(response).toBe(mockFetchApiResponse);
+      expect(response).toStrictEqual(mockFetchApiResponse);
     });
   });
 
@@ -119,7 +119,7 @@ describe("MainFetchHandler", () => {
         mockEnv,
         mockCtx,
       );
-      expect(response).toBe(mockFetchApiResponse);
+      expect(response).toStrictEqual(mockFetchApiResponse);
 
       // Clean up the route after test
       delete routes[testRoute as keyof typeof routes];
@@ -147,7 +147,7 @@ describe("MainFetchHandler", () => {
         mockEnv,
         mockCtx,
       );
-      expect(response).toBe(mockFetchApiResponse);
+      expect(response).toStrictEqual(mockFetchApiResponse);
     });
 
     it("should handle root path requests", async () => {
@@ -170,7 +170,7 @@ describe("MainFetchHandler", () => {
         mockEnv,
         mockCtx,
       );
-      expect(response).toBe(mockFetchApiResponse);
+      expect(response).toStrictEqual(mockFetchApiResponse);
 
       const routesCopy = { ...routes };
       delete (routesCopy as Record<string, string>)["/"];
