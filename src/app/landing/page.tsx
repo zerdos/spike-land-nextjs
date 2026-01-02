@@ -17,11 +17,19 @@ export default function LandingIndexPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-6 md:px-12 font-sans">
-      <div className="max-w-[1600px] mx-auto">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold mb-4 text-gray-900">Landing Page Gallery</h1>
-          <p className="text-xl text-gray-600">
+    <div className="min-h-screen py-24 px-6 md:px-12 font-sans relative overflow-hidden">
+      {/* Background effects */}
+      <div className="fixed inset-0 pointer-events-none z-[-1]">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/20 blur-[120px] rounded-full mix-blend-screen opacity-30" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/20 blur-[120px] rounded-full mix-blend-screen opacity-30" />
+      </div>
+
+      <div className="max-w-[1600px] mx-auto z-10 relative">
+        <div className="mb-16">
+          <h1 className="text-4xl md:text-6xl font-heading font-bold mb-6 text-foreground tracking-tight">
+            Landing Page <span className="text-gradient-primary">Gallery</span>
+          </h1>
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl font-light">
             A collection of "vibe coding" landing pages. Hover to interact, click title to view full
             page.
           </p>
@@ -31,34 +39,26 @@ export default function LandingIndexPage() {
           {pages.map((page) => (
             <div
               key={page.name}
-              className="group flex flex-col bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100"
+              className="group flex flex-col glass-card rounded-2xl overflow-hidden shadow-lg hover:shadow-glow-cyan/20 transition-all duration-300 border border-white/5"
             >
               {/* Header */}
-              <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white z-10 relative">
+              <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-sm z-10 relative">
                 <Link
                   href={page.path}
-                  className="flex items-center gap-2 font-bold text-lg text-gray-900 hover:text-blue-600 transition-colors"
+                  className="flex items-center gap-2 font-heading font-bold text-lg text-foreground hover:text-primary transition-colors"
                 >
                   {page.name}
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity text-blue-600">
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity text-primary translate-x-[-4px] group-hover:translate-x-0 duration-300">
                     ↗
                   </span>
                 </Link>
-                <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${page.color}`} />
+                <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${page.color} shadow-sm`} />
               </div>
 
               {/* Preview Container */}
-              <div className="relative w-full aspect-[16/10] overflow-hidden bg-gray-100">
+              <div className="relative w-full aspect-[16/10] overflow-hidden bg-black/40">
                 {/* Iframe Wrapper */}
-                {
-                  /*
-                   Scale calculation:
-                   We want 25% scale.
-                   So width and height should be 400% (100 / 0.25).
-                   Top-left origin.
-                */
-                }
-                <div className="absolute inset-0 w-[400%] h-[400%] origin-top-left scale-25 pointer-events-none select-none">
+                <div className="absolute inset-0 w-[400%] h-[400%] origin-top-left scale-25 pointer-events-none select-none grayscale group-hover:grayscale-0 transition-all duration-500 opacity-80 group-hover:opacity-100">
                   <iframe
                     src={page.path}
                     className="w-full h-full border-0"
@@ -68,10 +68,10 @@ export default function LandingIndexPage() {
                   />
                 </div>
 
-                {/* Overlay Link - makes the whole preview clickable */}
+                {/* Overlay Link */}
                 <Link
                   href={page.path}
-                  className="absolute inset-0 z-10 block"
+                  className="absolute inset-0 z-10 block ring-offset-2 focus:ring-2 ring-primary/50 outline-none rounded-b-2xl"
                   aria-label={`View ${page.name} page`}
                 />
               </div>
