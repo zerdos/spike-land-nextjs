@@ -10,8 +10,6 @@ import { handleUnauthorizedRequest } from "./utils";
  */
 const securityHeaders: Record<string, string> = {
   "X-Content-Type-Options": "nosniff",
-  "X-Frame-Options": "SAMEORIGIN",
-  "Referrer-Policy": "strict-origin-when-cross-origin",
   "X-XSS-Protection": "1; mode=block",
 };
 
