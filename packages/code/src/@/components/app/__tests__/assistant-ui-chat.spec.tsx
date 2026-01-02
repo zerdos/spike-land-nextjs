@@ -19,9 +19,12 @@ vi.mock("@assistant-ui/react", () => ({
 
 vi.mock("@assistant-ui/react-ai-sdk", () => ({
   useChatRuntime: vi.fn(),
-  AssistantChatTransport: vi.fn().mockImplementation(() => ({
-    // Mock transport implementation
-  })),
+  AssistantChatTransport: vi.fn().mockImplementation(function(
+    this: { api?: string; },
+    options?: { api?: string; },
+  ) {
+    this.api = options?.api;
+  }),
 }));
 
 vi.mock("@/components/assistant-ui/thread", () => ({
