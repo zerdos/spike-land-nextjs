@@ -5,6 +5,7 @@ import { enqueueMessage } from "@/lib/upstash";
 import { appMessageCreateSchema } from "@/lib/validations/app";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { broadcastMessage, broadcastStatus } from "./stream/route";
 
 /**
  * GET /api/apps/[id]/messages
@@ -246,6 +247,18 @@ export async function POST(
     );
   }
 
+  // Broadcast the new message to connected clients
+  broadcastMessage(id, {
+    id: message.id,
+    role: message.role,
+    content: message.content,
+    createdAt: message.createdAt,
+    attachments: message.attachments?.map((a) => ({
+      imageId: a.image.id,
+      url: a.image.originalUrl,
+    })),
+  });
+
   // Update app status to WAITING if it was PROMPTING
   if (app.status === "PROMPTING") {
     await tryCatch(
@@ -263,6 +276,8 @@ export async function POST(
         }),
       ]),
     );
+    // Broadcast status change
+    broadcastStatus(id, "WAITING", "User submitted initial prompt");
   }
 
   // Enqueue message for agent processing

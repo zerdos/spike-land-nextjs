@@ -1,6 +1,6 @@
 ---
 active: false
-iteration: 1
+iteration: 5
 max_iterations: 50
 completion_promise: "SPIKE-DONE"
 started_at: "2026-01-02T19:47:26Z"
