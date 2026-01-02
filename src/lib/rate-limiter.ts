@@ -1,11 +1,11 @@
 /**
- * Rate limiter with Vercel KV backend and in-memory fallback.
- * Uses Vercel KV for persistent, serverless-compatible rate limiting.
- * Falls back to in-memory storage if KV is unavailable (development/testing).
+ * Rate limiter with Upstash Redis backend and in-memory fallback.
+ * Uses Upstash Redis for persistent, serverless-compatible rate limiting.
+ * Falls back to in-memory storage if Redis is unavailable (development/testing).
  */
 
 import { tryCatch } from "@/lib/try-catch";
-import { kv } from "@vercel/kv";
+import { redis } from "@/lib/upstash";
 
 interface RateLimitEntry {
   count: number;

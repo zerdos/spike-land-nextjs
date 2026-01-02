@@ -117,14 +117,18 @@ model VerificationToken {
 
 model App {
   id                 String              @id @default(cuid())
-  name               String
-  description        String?
+  name               String // Auto-generated: descriptive-three-words format
+  slug               String?             @unique // URL-friendly name (same as codespaceId) - optional for migration
+  description        String? // AI-generated description
   userId             String
   forkedFrom         String?
-  status             AppStatus           @default(DRAFT)
+  status             AppBuildStatus      @default(PROMPTING) // Detailed build status
   domain             String?             @unique
-  codespaceId        String?             // ID of linked testing.spike.land codespace
-  codespaceUrl       String?             // Full URL to testing.spike.land/live/{codespaceId}
+  codespaceId        String?             @unique // ID of linked testing.spike.land codespace
+  codespaceUrl       String? // Full URL to testing.spike.land/live/{codespaceId}/
+  isCurated          Boolean             @default(false) // For public gallery display
+  isPublic           Boolean             @default(false) // Visibility setting
+  lastAgentActivity  DateTime? // For polling optimization
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   parentApp          App?                @relation("AppForks", fields: [forkedFrom], references: [id])
@@ -132,11 +136,17 @@ model App {
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   monetizationModels MonetizationModel[]
   requirements       Requirement[]
+  messages           AppMessage[] // Chat messages for this app
+  statusHistory      AppStatusHistory[] // Status change history
+  images             AppImage[] // Uploaded images for this app
 
   @@index([userId])
   @@index([forkedFrom])
   @@index([status])
   @@index([codespaceId])
+  @@index([isCurated, isPublic])
+  @@index([lastAgentActivity])
+  @@index([slug])
   @@map("apps")
 }
 
@@ -171,6 +181,80 @@ model MonetizationModel {
   @@index([appId])
   @@index([type])
   @@map("monetization_models")
+}
+
+// =============================================================================
+// App Chat & Status Models
+// =============================================================================
+
+// Chat message in an app's conversation thread
+model AppMessage {
+  id          String          @id @default(cuid())
+  appId       String
+  role        AppMessageRole // USER, AGENT, or SYSTEM
+  content     String // Markdown-supported message content
+  isRead      Boolean         @default(false) // For agent polling
+  metadata    Json? // Additional message data (e.g., tool calls, errors)
+  createdAt   DateTime        @default(now())
+  app         App             @relation(fields: [appId], references: [id], onDelete: Cascade)
+  attachments AppAttachment[] // Images attached to this message
+
+  @@index([appId, createdAt])
+  @@index([appId, isRead])
+  @@index([role, isRead]) // For efficient agent polling queries
+  @@map("app_messages")
+}
+
+// Status change history for audit trail
+model AppStatusHistory {
+  id        String         @id @default(cuid())
+  appId     String
+  status    AppBuildStatus
+  message   String? // Optional context about the status change
+  metadata  Json? // Additional data (e.g., error details for FAILED)
+  createdAt DateTime       @default(now())
+  app       App            @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@index([appId, createdAt])
+  @@map("app_status_history")
+}
+
+// Uploaded image for an app (with AI analysis)
+model AppImage {
+  id            String          @id @default(cuid())
+  appId         String
+  originalUrl   String // Public URL
+  r2Key         String // R2 storage key
+  width         Int
+  height        Int
+  sizeBytes     Int
+  format        String          @default("webp")
+  // AI Analysis results
+  tags          String[] // AI-generated tags
+  aiDescription String? // AI-generated description (max 1000 chars)
+  analysisJson  Json? // Full analysis result from vision model
+  createdAt     DateTime        @default(now())
+  app           App             @relation(fields: [appId], references: [id], onDelete: Cascade)
+  attachments   AppAttachment[] // Links to messages this image is attached to
+
+  @@index([appId])
+  @@index([appId, createdAt])
+  @@map("app_images")
+}
+
+// Junction table for message-image attachments
+model AppAttachment {
+  id        String     @id @default(cuid())
+  messageId String
+  imageId   String
+  createdAt DateTime   @default(now())
+  message   AppMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  image     AppImage   @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, imageId])
+  @@index([messageId])
+  @@index([imageId])
+  @@map("app_attachments")
 }
 
 model UserTokenBalance {
@@ -310,7 +394,7 @@ model ImageEnhancementJob {
   isBlend       Boolean        @default(false) // True when job uses blend enhancement (file upload or stored image)
 
   // Anonymous access - jobs created by non-logged-in users
-  isAnonymous   Boolean        @default(false) // True when job was created by anonymous user
+  isAnonymous Boolean @default(false) // True when job was created by anonymous user
 
   image                EnhancedImage         @relation(fields: [imageId], references: [id], onDelete: Cascade)
   user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -538,11 +622,32 @@ enum MarketingPlatform {
   GOOGLE_ADS
 }
 
+// Legacy status - kept for migration compatibility
 enum AppStatus {
   DRAFT
   ACTIVE
   ARCHIVED
   DELETED
+}
+
+// New detailed build status for agent-driven app development
+enum AppBuildStatus {
+  PROMPTING // User providing initial prompt
+  WAITING // Waiting for agent to pick up
+  DRAFTING // Agent drafting initial version
+  BUILDING // Agent implementing features
+  FINE_TUNING // Agent making refinements
+  TEST // Agent testing with Playwright
+  LIVE // Published and active
+  ARCHIVED // User archived
+  FAILED // Build failed
+}
+
+// Message role in app chat
+enum AppMessageRole {
+  USER // Message from user
+  AGENT // Message from AI agent
+  SYSTEM // System notification (status changes, etc.)
 }
 
 enum RequirementPriority {
@@ -594,6 +699,7 @@ enum TokenTransactionType {
   SPEND_ENHANCEMENT
   SPEND_MCP_GENERATION
   SPEND_BOX_CREATION
+  SPEND_APP_MESSAGE // Cost for sending a message in app chat
   REFUND
 }
 
@@ -1443,23 +1549,23 @@ model MerchWebhookEvent {
 
 // External Agent Session tracking (Jules, etc.)
 model ExternalAgentSession {
-  id              String              @id @default(cuid())
-  externalId      String              @unique // e.g., "sessions/abc123" from Jules
-  provider        AgentProvider       @default(JULES)
-  name            String // Task name/title
-  description     String? // Task description
-  status          ExternalAgentStatus
-  sourceRepo      String? // e.g., "sources/github/zerdos/spike-land-nextjs"
-  startingBranch  String? // e.g., "main"
-  outputBranch    String? // Branch created by agent
-  pullRequestUrl  String? // PR URL if created
-  planSummary     String? // Summary of agent's plan
-  planApprovedAt  DateTime?
-  lastActivityAt  DateTime?
-  errorMessage    String?
-  metadata        Json? // Additional provider-specific data
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id             String              @id @default(cuid())
+  externalId     String              @unique // e.g., "sessions/abc123" from Jules
+  provider       AgentProvider       @default(JULES)
+  name           String // Task name/title
+  description    String? // Task description
+  status         ExternalAgentStatus
+  sourceRepo     String? // e.g., "sources/github/zerdos/spike-land-nextjs"
+  startingBranch String? // e.g., "main"
+  outputBranch   String? // Branch created by agent
+  pullRequestUrl String? // PR URL if created
+  planSummary    String? // Summary of agent's plan
+  planApprovedAt DateTime?
+  lastActivityAt DateTime?
+  errorMessage   String?
+  metadata       Json? // Additional provider-specific data
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
   activities AgentSessionActivity[]
 
@@ -1469,13 +1575,13 @@ model ExternalAgentSession {
 }
 
 model AgentSessionActivity {
-  id         String               @id @default(cuid())
+  id         String   @id @default(cuid())
   sessionId  String
   externalId String? // Activity ID from provider
   type       String // e.g., "user_message", "plan_generated", "code_committed"
   content    String? // Activity content/description
   metadata   Json?
-  createdAt  DateTime             @default(now())
+  createdAt  DateTime @default(now())
 
   session ExternalAgentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 

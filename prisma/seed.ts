@@ -28,7 +28,7 @@ async function main() {
         name: "Todo App",
         description: "A simple todo application",
         userId: testUser.id,
-        status: "ACTIVE",
+        status: "LIVE",
         requirements: {
           create: [
             {
@@ -64,7 +64,7 @@ async function main() {
         name: "Note Taking App",
         description: "A feature-rich note taking application",
         userId: testUser.id,
-        status: "DRAFT",
+        status: "PROMPTING",
         requirements: {
           create: [
             {

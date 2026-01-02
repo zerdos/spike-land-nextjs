@@ -24,15 +24,31 @@ export default async function MyAppsPage() {
     where: {
       userId: session.user.id,
       status: {
-        not: "DELETED",
+        notIn: ["ARCHIVED"],
       },
     },
-    include: {
-      requirements: true,
-      monetizationModels: true,
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      status: true,
+      codespaceId: true,
+      codespaceUrl: true,
+      isCurated: true,
+      isPublic: true,
+      lastAgentActivity: true,
+      createdAt: true,
+      updatedAt: true,
+      _count: {
+        select: {
+          messages: true,
+          images: true,
+        },
+      },
     },
     orderBy: {
-      createdAt: "desc",
+      updatedAt: "desc",
     },
   });
 
@@ -140,68 +156,71 @@ export default async function MyAppsPage() {
                     variant="outline"
                     className="cursor-not-allowed opacity-50"
                   >
-                    Active ({apps.filter((app: { status: string; }) => app.status === "ACTIVE")
-                      .length})
+                    Live ({apps.filter((app) => app.status === "LIVE").length})
                   </Badge>
                   <Badge
                     variant="outline"
                     className="cursor-not-allowed opacity-50"
                   >
-                    Draft ({apps.filter((app: { status: string; }) => app.status === "DRAFT")
-                      .length})
+                    Building ({apps.filter((app) =>
+                      ["PROMPTING", "WAITING", "DRAFTING", "BUILDING", "FINE_TUNING", "TEST"]
+                        .includes(app.status)
+                    ).length})
                   </Badge>
                 </div>
               </div>
 
               {/* Grid Layout */}
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {apps.map((app: {
-                  id: string;
-                  name: string;
-                  description: string | null;
-                  status: string;
-                  createdAt: Date;
-                  requirements: Array<{ id: string; }>;
-                  monetizationModels: Array<{ id: string; type: string; }>;
-                }) => (
+                {apps.map((app) => (
                   <Card key={app.id} className="flex flex-col">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <CardTitle className="text-xl">{app.name}</CardTitle>
                         <Badge
-                          variant={app.status === "ACTIVE"
+                          variant={app.status === "LIVE"
                             ? "default"
+                            : app.status === "FAILED"
+                            ? "destructive"
                             : "secondary"}
                         >
-                          {app.status}
+                          {app.status.replace("_", " ")}
                         </Badge>
                       </div>
                       <CardDescription className="line-clamp-2">
-                        {app.description}
+                        {app.description || "No description yet"}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="flex-1">
                       <div className="space-y-2">
                         <div className="text-sm">
-                          <span className="font-semibold">Requirements:</span>{" "}
-                          {app.requirements.length}
+                          <span className="font-semibold">Messages:</span> {app._count.messages}
                         </div>
                         <div className="text-sm">
-                          <span className="font-semibold">Monetization:</span>{" "}
-                          {app.monetizationModels[0]?.type || "N/A"}
+                          <span className="font-semibold">Images:</span> {app._count.images}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Created {new Date(app.createdAt).toLocaleDateString()}
+                          Updated {new Date(app.updatedAt).toLocaleDateString()}
                         </div>
                       </div>
                     </CardContent>
                     <CardFooter className="flex gap-2">
-                      <Button variant="outline" className="flex-1" size="sm">
-                        View
-                      </Button>
-                      <Button variant="default" className="flex-1" size="sm">
-                        Edit
-                      </Button>
+                      <Link href={`/my-apps/${app.id}`} className="flex-1">
+                        <Button variant="outline" className="w-full" size="sm">
+                          View
+                        </Button>
+                      </Link>
+                      {app.codespaceUrl && (
+                        <Link
+                          href={app.codespaceUrl}
+                          target="_blank"
+                          className="flex-1"
+                        >
+                          <Button variant="default" className="w-full" size="sm">
+                            Preview
+                          </Button>
+                        </Link>
+                      )}
                     </CardFooter>
                   </Card>
                 ))}
