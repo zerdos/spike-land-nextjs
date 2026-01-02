@@ -3,7 +3,6 @@
  */
 
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import React from "react";
 
 // Mock dependencies - must be before imports that use them
 jest.mock("expo-router", () => ({

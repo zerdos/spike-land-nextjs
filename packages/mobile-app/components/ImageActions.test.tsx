@@ -80,7 +80,6 @@ jest.mock("react-native-safe-area-context", () => {
 });
 
 import { fireEvent, render } from "@testing-library/react-native";
-import React from "react";
 
 import { ImageActions } from "./ImageActions";
 

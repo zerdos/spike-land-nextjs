@@ -10,7 +10,6 @@ import UserManagementPage from "@/app/admin/users/index";
 import * as adminApi from "@/services/api/admin";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
-import React from "react";
 
 // Mock expo-router
 const mockPush = jest.fn();

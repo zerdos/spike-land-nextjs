@@ -15,7 +15,6 @@
  * <Button variant="ghost" size="sm">Cancel</Button>
  */
 
-import React from "react";
 import { ActivityIndicator } from "react-native";
 import type { GetProps } from "tamagui";
 import { Stack, styled, Text } from "tamagui";

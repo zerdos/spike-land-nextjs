@@ -144,7 +144,6 @@ jest.mock("tamagui", () => {
 });
 
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
-import React from "react";
 
 import { useImageShare } from "@/hooks/useImageShare";
 import { ShareSheet } from "./ShareSheet";

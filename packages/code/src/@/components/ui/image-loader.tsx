@@ -1,5 +1,3 @@
-import React from "react";
-
 interface RESOLUTION {
   "9:21": [640, 1536];
   "9:16": [768, 1344];

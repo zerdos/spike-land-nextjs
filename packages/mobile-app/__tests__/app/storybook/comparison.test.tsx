@@ -4,7 +4,6 @@
  */
 
 import { fireEvent, render } from "@testing-library/react-native";
-import React from "react";
 
 import ComparisonPage from "../../../app/storybook/comparison";
 

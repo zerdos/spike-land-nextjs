@@ -4,7 +4,6 @@
  */
 
 import { fireEvent, render } from "@testing-library/react-native";
-import React from "react";
 
 // Mock Switch component from react-native
 jest.mock("react-native/Libraries/Components/Switch/Switch", () => {

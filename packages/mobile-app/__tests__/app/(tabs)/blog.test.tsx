@@ -4,7 +4,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import React from "react";
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 

@@ -26,7 +26,6 @@
  * </Card>
  */
 
-import React from "react";
 import type { GetProps } from "tamagui";
 import { Stack, styled, Text } from "tamagui";
 import { borderRadius, colors, glassMorphism, shadows, spacing } from "../../constants/theme";

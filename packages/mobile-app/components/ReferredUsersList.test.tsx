@@ -3,7 +3,6 @@
  */
 
 import { fireEvent, render } from "@testing-library/react-native";
-import React from "react";
 
 import type { ReferredUser } from "./ReferredUsersList";
 import { ReferredUsersList } from "./ReferredUsersList";

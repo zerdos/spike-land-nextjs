@@ -1,5 +1,4 @@
 import NextLink from "next/link.js";
-import React from "react";
 
 // Mock ViewTransitions component - just renders children
 export function ViewTransitions({ children }: { children: React.ReactNode; }) {

@@ -4,7 +4,6 @@
  * Displays font families, heading scale, and text styles.
  */
 
-import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { borderRadius, colors, fontSize, fontWeight, spacing } from "@/constants/theme";

@@ -8,7 +8,7 @@ import type { ICode, ICodeSession } from "@/lib/interfaces";
 import { sanitizeSession } from "@/lib/make-sess";
 import * as editorUtils from "@/services/editorUtils";
 import { render, waitFor } from "@testing-library/react";
-import React from "react";
+
 import type { Mock } from "vitest";
 import { vi } from "vitest";
 import { Editor } from "../components/Editor";
