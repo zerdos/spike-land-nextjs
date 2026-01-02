@@ -134,9 +134,8 @@ Then(
   "the toggle button should show interaction mode active",
   async function(this: CustomWorld) {
     const toggle = this.page.locator('[data-testid="mode-toggle"]');
-    // Check for interaction mode styling (cyan/blue gradient, ring)
-    await expect(toggle).toHaveClass(/from-cyan-500/);
-    await expect(toggle).toHaveClass(/ring-4/);
+    // Check for interaction mode styling (cyan background)
+    await expect(toggle).toHaveClass(/bg-cyan-500/);
   },
 );
 
@@ -144,8 +143,8 @@ Then(
   "the toggle button should show orbit mode active",
   async function(this: CustomWorld) {
     const toggle = this.page.locator('[data-testid="mode-toggle"]');
-    // Check for orbit mode styling (gray gradient, no ring)
-    await expect(toggle).toHaveClass(/from-gray-700/);
+    // Check for orbit mode styling (black/dark background)
+    await expect(toggle).toHaveClass(/bg-black/);
   },
 );
 
@@ -171,7 +170,8 @@ Then(
   "I should see interaction mode active indicator",
   async function(this: CustomWorld) {
     const toggle = this.page.locator('[data-testid="mode-toggle"]');
-    await expect(toggle).toHaveClass(/ring-4/);
+    // Interaction mode is indicated by cyan background color
+    await expect(toggle).toHaveClass(/bg-cyan-500/);
   },
 );
 
@@ -207,7 +207,10 @@ Then("I should see the empty hand message", async function(this: CustomWorld) {
 
 // Dice rolling
 When("I click the dice roll button", async function(this: CustomWorld) {
-  const diceButton = this.page.locator('button:has-text("\uD83C\uDFB2")'); // Dice emoji
+  // Use the controls panel button specifically to avoid matching other elements with dice emoji
+  const diceButton = this.page.locator(
+    '[data-testid="controls-panel"] button[title="Roll a D6"]',
+  );
   await diceButton.click();
 });
 
