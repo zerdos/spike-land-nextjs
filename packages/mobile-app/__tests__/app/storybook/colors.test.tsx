@@ -4,7 +4,6 @@
  */
 
 import { render } from "@testing-library/react-native";
-import React from "react";
 
 import ColorsPage from "../../../app/storybook/colors";
 

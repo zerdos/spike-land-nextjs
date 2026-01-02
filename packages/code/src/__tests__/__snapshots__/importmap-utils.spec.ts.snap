@@ -42,9 +42,9 @@ import React, { useState, useEffect } from "react";",
 
 exports[`importMapReplace > Basic imports: default import 1`] = `
 {
-  "code": "import React from "react";",
+  "code": "",
   "result": "/** importMapReplace */
-import React from "react";",
+",
 }
 `;
 

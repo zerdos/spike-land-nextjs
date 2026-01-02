@@ -1,5 +1,3 @@
-/* eslint-env browser */
-
 const nodeTiming = {};
 
 function timerify<T>(fn: T): T {

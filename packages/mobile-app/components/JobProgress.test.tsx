@@ -3,7 +3,7 @@
  */
 
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import React from "react";
+
 import { TamaguiProvider } from "tamagui";
 import { config } from "../tamagui.config";
 import type { JobProgressProps } from "./JobProgress";

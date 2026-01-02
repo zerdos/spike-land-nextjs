@@ -3,7 +3,6 @@
  */
 
 import { act, render, waitFor } from "@testing-library/react-native";
-import React from "react";
 
 import type { ReferralStatsData } from "./ReferralStats";
 import { ReferralStats } from "./ReferralStats";

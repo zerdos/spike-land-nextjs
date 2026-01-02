@@ -4,7 +4,6 @@
  * Displays glass-morphism tiers, elevation system, and transparency effects.
  */
 
-import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { borderRadius, colors, fontSize, glassMorphism, shadows, spacing } from "@/constants/theme";

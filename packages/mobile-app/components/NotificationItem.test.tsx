@@ -79,7 +79,7 @@ jest.mock("@tamagui/lucide-icons", () => {
 
 // Now import everything else
 import { fireEvent, render } from "@testing-library/react-native";
-import React from "react";
+
 import { TamaguiProvider } from "tamagui";
 import type { NotificationType, ServerNotification } from "../services/notifications";
 import { config } from "../tamagui.config";

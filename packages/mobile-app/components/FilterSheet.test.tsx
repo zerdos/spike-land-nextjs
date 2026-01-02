@@ -160,7 +160,6 @@ jest.mock("tamagui", () => {
 
 import type { Album } from "@spike-npm-land/shared";
 import { fireEvent, render } from "@testing-library/react-native";
-import React from "react";
 
 import type { ImageFilters } from "../hooks/useImageSearch";
 import { FilterSheet, type FilterSheetProps } from "./FilterSheet";

@@ -5,7 +5,6 @@
  * semantic colors, and theme variations.
  */
 
-import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { borderRadius, colors, fontSize, spacing } from "@/constants/theme";

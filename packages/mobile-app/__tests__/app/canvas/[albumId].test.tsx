@@ -294,7 +294,7 @@ jest.mock("@tamagui/lucide-icons", () => {
 
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+
 import { Alert } from "react-native";
 import * as GestureHandler from "react-native-gesture-handler";
 import * as Reanimated from "react-native-reanimated";

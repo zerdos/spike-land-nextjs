@@ -5,7 +5,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import React from "react";
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 

@@ -4,7 +4,6 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useRouter } from "expo-router";
-import React from "react";
 
 import { authService } from "@/services/auth";
 

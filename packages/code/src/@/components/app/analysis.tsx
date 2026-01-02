@@ -9,7 +9,6 @@ import {
   UserCircle,
   XCircle,
 } from "lucide-react";
-import React from "react";
 
 interface Section {
   concepts?: string[];

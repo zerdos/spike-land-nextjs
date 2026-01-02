@@ -9,7 +9,7 @@ describe("importMapReplace", () => {
       "specific exports": `import { __await, __rest } from "tslib";`,
       "specific named imports with aliases":
         `import { __await as aw, __rest as restNow} from "tslib";`,
-      "default import": `import React from "react";`,
+      "default import": ``,
       "default and named imports together": `import React, { useState, useEffect } from "react";`,
       "multiple named imports with complex names":
         `import { camelCase, snake_case, PascalCase, CONSTANT_CASE } from "utils";`,

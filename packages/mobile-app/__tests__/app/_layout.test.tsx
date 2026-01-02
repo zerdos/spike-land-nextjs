@@ -32,7 +32,6 @@ import { useAuthStore } from "@/stores";
 import { render, waitFor } from "@testing-library/react-native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import React from "react";
 
 // ============================================================================
 // Mocks

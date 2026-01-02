@@ -5,7 +5,6 @@
  * symbolizing the AI enhancement layer.
  */
 
-import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Svg, {
   Defs,

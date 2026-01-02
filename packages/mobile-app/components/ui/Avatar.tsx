@@ -6,7 +6,7 @@
  */
 
 import { Image } from "expo-image";
-import React from "react";
+
 import { StyleSheet, Text, View, type ViewStyle } from "react-native";
 
 import { colors } from "@/constants/theme";

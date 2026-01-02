@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { HistoryItemProps, ICode, IHistoryItem } from "@/lib/interfaces";
 import { cn } from "@/lib/utils";
-import React from "react";
 
 const format = (date: Date): string =>
   new Intl.DateTimeFormat("en-GB", {

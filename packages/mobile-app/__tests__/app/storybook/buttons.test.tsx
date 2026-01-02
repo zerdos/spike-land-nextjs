@@ -4,7 +4,6 @@
  */
 
 import { fireEvent, render } from "@testing-library/react-native";
-import React from "react";
 
 import ButtonsPage from "../../../app/storybook/buttons";
 
