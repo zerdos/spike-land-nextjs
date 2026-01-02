@@ -14,6 +14,7 @@ import { md5 } from "@/lib/md5";
 import { transpile } from "@/lib/shared";
 import { tryCatch } from "@/lib/try-catch";
 import { ThemeProvider as NextThemesProvider } from "next-themes"; // Added next-themes provider
+import React from "react";
 
 // Moved toHtmlAndCss function definition before renderApp
 const htmlDecode = (input: string) => {

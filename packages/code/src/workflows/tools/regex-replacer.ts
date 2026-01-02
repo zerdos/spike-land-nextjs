@@ -4,7 +4,7 @@ import {
   updateSearchReplace as _updateSearchReplace,
 } from "@/lib/chat-utils";
 import type { ICode } from "@/lib/interfaces";
-import { Message as _Message } from "@/lib/interfaces";
+import type { Message as _Message } from "@/lib/interfaces";
 import { md5 } from "@/lib/md5";
 // import { tool } from "@langchain/core/tools"; // @langchain/core not available
 import type { CodeModification } from "../chat-langchain";

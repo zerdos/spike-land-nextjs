@@ -113,6 +113,33 @@ export const appCodespaceLinkSchema = z.object({
     .max(100),
 });
 
+// Schema for agent updates (internal use)
+export const agentAppUpdateSchema = z.object({
+  name: z
+    .string()
+    .min(3, "App name must be at least 3 characters")
+    .max(50, "App name must be less than 50 characters")
+    .optional(),
+  description: z
+    .string()
+    .max(500, "Description must be less than 500 characters")
+    .optional(),
+  status: z.enum(APP_BUILD_STATUSES).optional(),
+  statusMessage: z.string().max(1000).optional(),
+  codespaceId: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      "Codespace ID can only contain letters, numbers, hyphens, and underscores",
+    )
+    .max(100)
+    .optional(),
+  isPublic: z.boolean().optional(),
+  isCurated: z.boolean().optional(),
+  agentMessage: z.string().max(10000).optional(),
+  systemMessage: z.string().max(10000).optional(),
+});
+
 export type AppCreationFormData = z.infer<typeof appCreationSchema>;
 
 export const step1Schema = appCreationSchema.pick({

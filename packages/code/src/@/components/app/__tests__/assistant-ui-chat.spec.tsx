@@ -20,7 +20,7 @@ vi.mock("@assistant-ui/react", () => ({
 vi.mock("@assistant-ui/react-ai-sdk", () => ({
   useChatRuntime: vi.fn(),
   AssistantChatTransport: vi.fn().mockImplementation(function(
-    this: { api?: string; },
+    this: { api?: string | undefined; },
     options?: { api?: string; },
   ) {
     this.api = options?.api;
