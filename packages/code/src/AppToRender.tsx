@@ -1,12 +1,4 @@
 import { Bot, History } from "@/external/lucide-react";
-import {
-  ClerkProvider,
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  useAuth,
-  UserButton,
-} from "@clerk/clerk-react";
 import React, { type FC, memo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -18,42 +10,6 @@ import { DraggableWindow } from "./DraggableWindow";
 
 import { cn } from "@/lib/utils";
 import { type AppComponentProps } from "./app-loader";
-
-/**
- * User info component that displays authentication status
- */
-export const Hello: FC = memo(() => {
-  const { isSignedIn, userId } = useAuth();
-
-  if (!isSignedIn) {
-    return <div className="text-sm text-gray-500">Not signed in</div>;
-  }
-
-  return <h2 className="text-sm font-medium truncate max-w-[120px]">{userId}</h2>;
-});
-
-Hello.displayName = "Hello";
-
-/**
- * Header component with authentication controls
- */
-const Header: FC = memo(() => {
-  return (
-    <header className="h-11 flex items-center justify-between px-3 border-b border-border/40">
-      <div className="flex items-center gap-2">
-        <SignedOut>
-          <SignInButton />
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </div>
-      <Hello />
-    </header>
-  );
-});
-
-Header.displayName = "Header";
 
 /**
  * Action buttons component for the bottom right corner
@@ -174,60 +130,53 @@ export const AppToRender: FC<AppComponentProps> = memo(({
 
   return (
     <div className="h-[100dvh] h-[100svh] flex flex-col relative overflow-hidden">
-      <ClerkProvider
-        publishableKey="pk_live_Y2xlcmsuc3Bpa2UubGFuZCQ"
-        afterSignOutUrl="/"
-      >
-        <Header />
-
-        <main className="flex-1 relative overflow-hidden">
-          {/* Live preview window */}
-          <DraggableWindow isChatOpen={isOpen} codeSpace={codeSpace}>
-            {/* Attach a ref to the iframe so it can be replaced in the DOM */}
-            <iframe
-              ref={iframeRef}
-              title="Live preview"
-              src={`/live/${codeSpace}/`}
-              className="w-full h-full border-0"
-            />
-          </DraggableWindow>
-
-          <RainbowWrapper>
-            {
-              /* Code editor.
-                Pass replaceIframe so the editor/code processor can replace the preview iframe after rendering. */
-            }
-            <Editor
-              codeSpace={codeSpace}
-              cSess={codeSession}
-              replaceIframe={replaceIframe}
-            />
-
-            {/* Action buttons */}
-            <ActionButtons
-              isOpen={isOpen}
-              onToggleChat={handleToggleChat}
-              onToggleHistory={handleToggleAutoSaveHistory}
-            />
-          </RainbowWrapper>
-
-          {/* History modal */}
-          <HistoryModal
-            isVisible={showAutoSaveHistory}
-            codeSpace={codeSpace}
-            codeSession={codeSession} // Renamed cSess
-            onClose={handleToggleAutoSaveHistory}
+      <main className="flex-1 relative overflow-hidden">
+        {/* Live preview window */}
+        <DraggableWindow isChatOpen={isOpen} codeSpace={codeSpace}>
+          {/* Attach a ref to the iframe so it can be replaced in the DOM */}
+          <iframe
+            ref={iframeRef}
+            title="Live preview"
+            src={`/live/${codeSpace}/`}
+            className="w-full h-full border-0"
           />
-        </main>
+        </DraggableWindow>
 
-        {/* Chat interface */}
-        <ChatInterface
-          codeSession={codeSession} // Renamed cSess
+        <RainbowWrapper>
+          {
+            /* Code editor.
+              Pass replaceIframe so the editor/code processor can replace the preview iframe after rendering. */
+          }
+          <Editor
+            codeSpace={codeSpace}
+            cSess={codeSession}
+            replaceIframe={replaceIframe}
+          />
+
+          {/* Action buttons */}
+          <ActionButtons
+            isOpen={isOpen}
+            onToggleChat={handleToggleChat}
+            onToggleHistory={handleToggleAutoSaveHistory}
+          />
+        </RainbowWrapper>
+
+        {/* History modal */}
+        <HistoryModal
+          isVisible={showAutoSaveHistory}
           codeSpace={codeSpace}
-          isOpen={isOpen}
-          onClose={handleToggleChat}
+          codeSession={codeSession} // Renamed cSess
+          onClose={handleToggleAutoSaveHistory}
         />
-      </ClerkProvider>
+      </main>
+
+      {/* Chat interface */}
+      <ChatInterface
+        codeSession={codeSession} // Renamed cSess
+        codeSpace={codeSpace}
+        isOpen={isOpen}
+        onClose={handleToggleChat}
+      />
     </div>
   );
 });

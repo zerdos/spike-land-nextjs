@@ -1,13 +1,11 @@
-import { useAuth } from "@clerk/clerk-react";
 import useSWR from "swr";
 
+/**
+ * @deprecated Clerk has been removed. Use regular fetch or useSWR directly.
+ */
 export const useClerkSWR = (url: string) => {
-  const { getToken } = useAuth();
-
   const fetcher = async (...args: [RequestInfo]) => {
-    return fetch(...args, {
-      headers: { Authorization: `Bearer ${await getToken()}` },
-    }).then((res) => res.json());
+    return fetch(...args).then((res) => res.json());
   };
 
   return useSWR(url, fetcher);

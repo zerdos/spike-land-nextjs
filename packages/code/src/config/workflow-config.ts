@@ -1,6 +1,6 @@
 // Model configuration
-export const MODEL_NAME = "claude-sonnet-4-20250514";
-export const MODEL_MAX_TOKENS = 7096;
+export const MODEL_NAME = "claude-opus-4-5-20251101";
+export const MODEL_MAX_TOKENS = 8096;
 export const MODEL_TEMPERATURE = 0;
 
 // Code modification thresholds
