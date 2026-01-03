@@ -32,8 +32,10 @@ Given("I am in a tabletop game room", async function(this: CustomWorld) {
   );
 
   await this.page.waitForLoadState("networkidle");
-  // Wait for the canvas to be ready
-  await this.page.waitForSelector("canvas", { timeout: 10000 });
+  // Wait for the Three.js canvas to be fully loaded
+  // The data-engine attribute is added when Three.js is initialized
+  const canvas = this.page.locator('canvas[data-engine*="three.js"]');
+  await canvas.waitFor({ state: "visible", timeout: 30000 });
 });
 
 // Mobile device simulation

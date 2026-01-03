@@ -63,6 +63,57 @@ Given("the user is an admin", async function(this: CustomWorld) {
       }),
     });
   });
+
+  // Mock the git info API to return valid data for E2E tests
+  await this.page.route("**/api/admin/agents/git", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        branch: "feature/e2e-test-branch",
+        baseBranch: "main",
+        changedFiles: [
+          { path: "src/components/example.tsx", status: "modified" },
+          { path: "src/lib/utils.ts", status: "added" },
+        ],
+        uncommittedChanges: 2,
+        aheadBy: 3,
+        behindBy: 0,
+        lastCommit: {
+          sha: "abc123def",
+          message: "feat: Add new feature",
+          author: "Test User",
+          date: new Date().toISOString(),
+        },
+      }),
+    });
+  });
+
+  // Mock GitHub issues API to return valid data for E2E tests
+  await this.page.route("**/api/admin/agents/github/issues", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        issues: [
+          {
+            number: 123,
+            title: "Test Issue",
+            state: "open",
+            url: "https://github.com/test/repo/issues/123",
+          },
+        ],
+        pullRequests: [
+          {
+            number: 456,
+            title: "Test PR",
+            state: "open",
+            url: "https://github.com/test/repo/pull/456",
+          },
+        ],
+      }),
+    });
+  });
 });
 
 Given("the user is not an admin", async function(this: CustomWorld) {
