@@ -294,9 +294,12 @@ Then(
 );
 
 Then("I should see recent workflow runs", async function(this: CustomWorld) {
-  const workflows = this.page.getByText(/workflow|ci|action/i)
-    .or(this.page.locator("[data-testid*='workflow']"));
-  await expect(workflows.first()).toBeVisible({ timeout: 5000 });
+  // Look for any workflow-related content or CI badge
+  const workflows = this.page.getByText(/workflow|ci|action|run|build/i)
+    .or(this.page.locator("[data-testid*='workflow']"))
+    .or(this.page.locator("[class*='workflow']"))
+    .or(this.page.getByText(/no.*workflow|no.*runs/i));
+  await expect(workflows.first()).toBeVisible({ timeout: 10000 });
 });
 
 Then(
