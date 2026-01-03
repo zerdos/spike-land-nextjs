@@ -30,44 +30,72 @@ Given("the gallery is empty", async function(this: CustomWorld) {
 Given(
   "there are gallery items in the system",
   async function(this: CustomWorld) {
+    // Mutable state to track gallery items
+    const galleryItems = [
+      {
+        id: "gallery-1",
+        title: "Test Portrait",
+        description: "A test portrait image",
+        category: "PORTRAIT",
+        originalUrl: "https://example.com/original1.jpg",
+        enhancedUrl: "https://example.com/enhanced1.jpg",
+        isActive: true,
+        sortOrder: 1,
+        sourceImageId: "img-1",
+        sourceJobId: "job-1",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: "gallery-2",
+        title: "Test Landscape",
+        description: "A test landscape image",
+        category: "LANDSCAPE",
+        originalUrl: "https://example.com/original2.jpg",
+        enhancedUrl: "https://example.com/enhanced2.jpg",
+        isActive: false,
+        sortOrder: 2,
+        sourceImageId: "img-2",
+        sourceJobId: "job-2",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ];
+
     // Mock gallery items response
     await this.page.route("**/api/admin/gallery", async (route) => {
-      if (route.request().method() === "GET") {
+      const method = route.request().method();
+
+      if (method === "GET") {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
-          body: JSON.stringify({
-            items: [
-              {
-                id: "gallery-1",
-                title: "Test Portrait",
-                description: "A test portrait image",
-                category: "PORTRAIT",
-                originalUrl: "https://example.com/original1.jpg",
-                enhancedUrl: "https://example.com/enhanced1.jpg",
-                isActive: true,
-                sortOrder: 1,
-                sourceImageId: "img-1",
-                sourceJobId: "job-1",
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-              },
-              {
-                id: "gallery-2",
-                title: "Test Landscape",
-                description: "A test landscape image",
-                category: "LANDSCAPE",
-                originalUrl: "https://example.com/original2.jpg",
-                enhancedUrl: "https://example.com/enhanced2.jpg",
-                isActive: false,
-                sortOrder: 2,
-                sourceImageId: "img-2",
-                sourceJobId: "job-2",
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-              },
-            ],
-          }),
+          body: JSON.stringify({ items: galleryItems }),
+        });
+      } else if (method === "PATCH") {
+        // Handle PATCH to update items
+        const body = route.request().postDataJSON();
+        const itemIndex = galleryItems.findIndex((item) => item.id === body.id);
+        if (itemIndex !== -1) {
+          galleryItems[itemIndex] = { ...galleryItems[itemIndex], ...body };
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ item: galleryItems[itemIndex] }),
+        });
+      } else if (method === "DELETE") {
+        // Handle DELETE to remove items
+        const url = new URL(route.request().url());
+        const id = url.searchParams.get("id");
+        const itemIndex = galleryItems.findIndex((item) => item.id === id);
+        if (itemIndex !== -1) {
+          galleryItems.splice(itemIndex, 1);
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ success: true }),
         });
       } else {
         await route.continue();
@@ -166,38 +194,96 @@ Given(
 Given(
   "there are at least 2 gallery items in the system",
   async function(this: CustomWorld) {
-    // Same as "there are gallery items in the system" - already has 2 items
-    await this.page.route("**/api/admin/gallery", async (route) => {
-      if (route.request().method() === "GET") {
+    // Mutable state to track gallery items
+    const galleryItems = [
+      {
+        id: "gallery-1",
+        title: "First Item",
+        category: "PORTRAIT",
+        isActive: true,
+        sortOrder: 1,
+        originalUrl: "",
+        enhancedUrl: "",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: "gallery-2",
+        title: "Second Item",
+        category: "LANDSCAPE",
+        isActive: true,
+        sortOrder: 2,
+        originalUrl: "",
+        enhancedUrl: "",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ];
+
+    // Mock reorder API endpoint
+    await this.page.route("**/api/admin/gallery/reorder", async (route) => {
+      if (route.request().method() === "POST") {
+        const body = route.request().postDataJSON();
+        const itemIndex = galleryItems.findIndex((item) => item.id === body.id);
+        if (itemIndex !== -1) {
+          const item = galleryItems[itemIndex];
+          // Move item to new position by swapping sort orders
+          const otherIndex = galleryItems.findIndex(
+            (i) => i.sortOrder === body.newOrder,
+          );
+          if (otherIndex !== -1 && item) {
+            const otherItem = galleryItems[otherIndex];
+            if (otherItem) {
+              const tempOrder = item.sortOrder;
+              item.sortOrder = body.newOrder;
+              otherItem.sortOrder = tempOrder;
+            }
+          }
+          // Re-sort items by sortOrder
+          galleryItems.sort((a, b) => a.sortOrder - b.sortOrder);
+        }
         await route.fulfill({
           status: 200,
           contentType: "application/json",
-          body: JSON.stringify({
-            items: [
-              {
-                id: "gallery-1",
-                title: "First Item",
-                category: "PORTRAIT",
-                isActive: true,
-                sortOrder: 1,
-                originalUrl: "",
-                enhancedUrl: "",
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-              },
-              {
-                id: "gallery-2",
-                title: "Second Item",
-                category: "LANDSCAPE",
-                isActive: true,
-                sortOrder: 2,
-                originalUrl: "",
-                enhancedUrl: "",
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-              },
-            ],
-          }),
+          body: JSON.stringify({ success: true }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    // Mock main gallery API endpoint
+    await this.page.route("**/api/admin/gallery", async (route) => {
+      const method = route.request().method();
+
+      if (method === "GET") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ items: galleryItems }),
+        });
+      } else if (method === "PATCH") {
+        const body = route.request().postDataJSON();
+        const itemIndex = galleryItems.findIndex((item) => item.id === body.id);
+        if (itemIndex !== -1) {
+          galleryItems[itemIndex] = { ...galleryItems[itemIndex], ...body };
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ item: galleryItems[itemIndex] }),
+        });
+      } else if (method === "DELETE") {
+        const url = new URL(route.request().url());
+        const id = url.searchParams.get("id");
+        const itemIndex = galleryItems.findIndex((item) => item.id === id);
+        if (itemIndex !== -1) {
+          galleryItems.splice(itemIndex, 1);
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ success: true }),
         });
       } else {
         await route.continue();
@@ -231,7 +317,9 @@ Given("the gallery API returns an error", async function(this: CustomWorld) {
 When(
   "I click {string} on a gallery item",
   async function(this: CustomWorld, buttonText: string) {
-    const galleryCard = this.page.locator('[class*="Card"]').first();
+    // Wait for cards to be visible first
+    await this.page.waitForSelector(".Card", { state: "visible", timeout: 10000 });
+    const galleryCard = this.page.locator(".Card").first();
     const button = galleryCard.getByRole("button", { name: buttonText });
     await button.click();
   },
@@ -240,7 +328,9 @@ When(
 When(
   "I click {string} on the second gallery item",
   async function(this: CustomWorld, buttonText: string) {
-    const galleryCard = this.page.locator('[class*="Card"]').nth(1);
+    // Wait for cards to be visible first
+    await this.page.waitForSelector(".Card", { state: "visible", timeout: 10000 });
+    const galleryCard = this.page.locator(".Card").nth(1);
     const button = galleryCard.getByRole("button", { name: buttonText });
     await button.click();
   },
@@ -249,7 +339,9 @@ When(
 When(
   "I click {string} on the first gallery item",
   async function(this: CustomWorld, buttonText: string) {
-    const galleryCard = this.page.locator('[class*="Card"]').first();
+    // Wait for cards to be visible first
+    await this.page.waitForSelector(".Card", { state: "visible", timeout: 10000 });
+    const galleryCard = this.page.locator(".Card").first();
     const button = galleryCard.getByRole("button", { name: buttonText });
     await button.click();
   },
@@ -264,13 +356,14 @@ When(
 );
 
 When("I note the current gallery order", async function(this: CustomWorld) {
-  const titles = await this.page.locator('[class*="CardTitle"]')
+  // CardTitle in gallery renders with text-base.truncate classes
+  const titles = await this.page.locator(".Card .text-base.truncate")
     .allTextContents();
   galleryOrder = titles;
 });
 
 When("I note the gallery item count", async function(this: CustomWorld) {
-  galleryItemCount = await this.page.locator('[class*="Card"]').count();
+  galleryItemCount = await this.page.locator(".Card").count();
 });
 
 When("I select an image from the browser", async function(this: CustomWorld) {
@@ -357,7 +450,7 @@ Then("I should see the gallery grid", async function(this: CustomWorld) {
 Then(
   "each gallery item should display a thumbnail",
   async function(this: CustomWorld) {
-    const images = this.page.locator('[class*="Card"] img');
+    const images = this.page.locator(".Card img");
     const count = await images.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -366,7 +459,8 @@ Then(
 Then(
   "each gallery item should display a title",
   async function(this: CustomWorld) {
-    const titles = this.page.locator('[class*="CardTitle"]');
+    // CardTitle in gallery renders with text-base.truncate classes
+    const titles = this.page.locator(".Card .text-base.truncate");
     const count = await titles.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -375,7 +469,7 @@ Then(
 Then(
   "each gallery item should display a category badge",
   async function(this: CustomWorld) {
-    const badges = this.page.locator('[class*="Badge"]');
+    const badges = this.page.locator(".Badge");
     const count = await badges.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -384,7 +478,7 @@ Then(
 Then(
   "I should see {string} category badge",
   async function(this: CustomWorld, category: string) {
-    const badge = this.page.locator('[class*="Badge"]').filter({
+    const badge = this.page.locator(".Badge").filter({
       hasText: category,
     });
     await expect(badge).toBeVisible();
@@ -394,7 +488,11 @@ Then(
 Then(
   "I should see the image browser dialog",
   async function(this: CustomWorld) {
-    const dialog = this.page.locator('[role="dialog"]');
+    // Use a more specific selector to exclude the cookie consent dialog
+    // The cookie consent dialog has aria-labelledby="cookie-consent-title"
+    const dialog = this.page.locator(
+      '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
+    );
     await expect(dialog).toBeVisible();
   },
 );
@@ -403,10 +501,14 @@ Then(
   "the dialog should display available enhanced images",
   async function(this: CustomWorld) {
     await this.page.waitForLoadState("networkidle");
+    // Exclude cookie consent dialog
+    const dialog = this.page.locator(
+      '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
+    );
     // Check for images or a "no images" message
-    const hasContent = await this.page.locator(
-      '[role="dialog"] img, [role="dialog"] text=/no.*image/i',
-    ).count() > 0;
+    const images = dialog.locator("img");
+    const noImagesText = dialog.getByText(/no.*image/i);
+    const hasContent = (await images.count()) > 0 || (await noImagesText.count()) > 0;
     expect(hasContent).toBe(true);
   },
 );
@@ -445,7 +547,7 @@ Then(
 Then(
   "the gallery item should display {string}",
   async function(this: CustomWorld, text: string) {
-    const item = this.page.locator('[class*="Card"]').filter({ hasText: text });
+    const item = this.page.locator(".Card").filter({ hasText: text });
     await expect(item).toBeVisible();
   },
 );
@@ -453,7 +555,7 @@ Then(
 Then(
   "I should see the new gallery item in the grid",
   async function(this: CustomWorld) {
-    const cards = this.page.locator('[class*="Card"]');
+    const cards = this.page.locator(".Card");
     const count = await cards.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -474,18 +576,20 @@ Then(
     await this.page.reload();
     await this.page.waitForLoadState("networkidle");
     // Verify page still loads
-    await expect(this.page.locator('[class*="Card"]').first()).toBeVisible();
+    await expect(this.page.locator(".Card").first()).toBeVisible();
   },
 );
 
 Then("the gallery order should change", async function(this: CustomWorld) {
-  const titles = await this.page.locator('[class*="CardTitle"]')
+  // CardTitle in gallery renders with text-base.truncate classes
+  const titles = await this.page.locator(".Card .text-base.truncate")
     .allTextContents();
   expect(titles).not.toEqual(galleryOrder);
 });
 
 Then("the second item should now be first", async function(this: CustomWorld) {
-  const titles = await this.page.locator('[class*="CardTitle"]')
+  // CardTitle in gallery renders with text-base.truncate classes
+  const titles = await this.page.locator(".Card .text-base.truncate")
     .allTextContents();
   if (galleryOrder.length >= 2 && titles.length >= 2) {
     expect(titles[0]).toBe(galleryOrder[1]);
@@ -493,7 +597,8 @@ Then("the second item should now be first", async function(this: CustomWorld) {
 });
 
 Then("the first item should now be second", async function(this: CustomWorld) {
-  const titles = await this.page.locator('[class*="CardTitle"]')
+  // CardTitle in gallery renders with text-base.truncate classes
+  const titles = await this.page.locator(".Card .text-base.truncate")
     .allTextContents();
   if (galleryOrder.length >= 2 && titles.length >= 2) {
     expect(titles[1]).toBe(galleryOrder[0]);
@@ -503,7 +608,7 @@ Then("the first item should now be second", async function(this: CustomWorld) {
 Then(
   "the {string} button on the first item should be disabled",
   async function(this: CustomWorld, buttonText: string) {
-    const galleryCard = this.page.locator('[class*="Card"]').first();
+    const galleryCard = this.page.locator(".Card").first();
     const button = galleryCard.getByRole("button", { name: buttonText });
     await expect(button).toBeDisabled();
   },
@@ -512,7 +617,7 @@ Then(
 Then(
   "the {string} button on the last item should be disabled",
   async function(this: CustomWorld, buttonText: string) {
-    const galleryCard = this.page.locator('[class*="Card"]').last();
+    const galleryCard = this.page.locator(".Card").last();
     const button = galleryCard.getByRole("button", { name: buttonText });
     await expect(button).toBeDisabled();
   },
@@ -527,7 +632,7 @@ Then("the gallery item should be removed", async function(this: CustomWorld) {
 Then(
   "the gallery item count should decrease by 1",
   async function(this: CustomWorld) {
-    const currentCount = await this.page.locator('[class*="Card"]').count();
+    const currentCount = await this.page.locator(".Card").count();
     expect(currentCount).toBeLessThan(galleryItemCount);
   },
 );
@@ -535,13 +640,16 @@ Then(
 Then(
   "the gallery item count should remain the same",
   async function(this: CustomWorld) {
-    const currentCount = await this.page.locator('[class*="Card"]').count();
+    const currentCount = await this.page.locator(".Card").count();
     expect(currentCount).toBe(galleryItemCount);
   },
 );
 
 Then("the delete dialog should close", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="dialog"]');
+  // Exclude cookie consent dialog which has aria-labelledby="cookie-consent-title"
+  const dialog = this.page.locator(
+    '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
+  );
   await expect(dialog).not.toBeVisible();
 });
 

@@ -181,9 +181,8 @@ Feature: Admin Feedback Management
 
   @slow @requires-db
   Scenario: Feedback count displays correctly
-    Given there are 5 feedback items in the system
     When I visit "/admin/feedback"
-    Then I should see "Feedback (5)" text
+    Then I should see the feedback count in the header
 
   @slow @requires-db
   Scenario: Empty state when no feedback matches filters

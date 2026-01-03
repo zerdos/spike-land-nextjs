@@ -55,6 +55,7 @@ export const ImageLoader: React.FC<ImageLoaderProps> = (props) => {
   const containerClassName = props.className || "w-full max-w-2xl mx-auto";
 
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={`/replicate/${btoa(params)}.${props.outputFormat || DEFAULT_PROPS.outputFormat}`}
       alt={props.prompt || DEFAULT_PROPS.prompt}
