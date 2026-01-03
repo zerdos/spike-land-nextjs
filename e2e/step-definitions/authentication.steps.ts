@@ -450,6 +450,14 @@ Then(
 Then(
   "I should see {string} text",
   async function(this: CustomWorld, text: string) {
+    // Wait for Suspense fallback ("Loading...") to disappear for client-side rendered pages
+    await this.page.waitForFunction(
+      () => !document.body.textContent?.includes("Loading..."),
+      { timeout: 10000 },
+    ).catch(() => {
+      // Loading state may already be gone, that's OK
+    });
+
     // Use .first() to handle cases where text appears in multiple elements (e.g., nav link and heading)
     // Use longer timeout for flaky CI environment
     await expect(this.page.getByText(text).first()).toBeVisible({
@@ -476,7 +484,15 @@ Then(
 When(
   "I click the {string} link",
   async function(this: CustomWorld, linkText: string) {
-    // Wait for any loading spinners to disappear first
+    // Wait for Suspense fallback to disappear for client-side rendered pages
+    await this.page.waitForFunction(
+      () => !document.body.textContent?.includes("Loading..."),
+      { timeout: 10000 },
+    ).catch(() => {
+      // Loading state may already be gone, that's OK
+    });
+
+    // Wait for any loading spinners to disappear
     await this.page
       .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
       .catch(() => {});

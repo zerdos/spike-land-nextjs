@@ -239,8 +239,15 @@ Then("I should see resource status items", async function(this: CustomWorld) {
 Then(
   "I should see {string} resource item",
   async function(this: CustomWorld, resourceName: string) {
+    // Wait for loading state to disappear first
+    await this.page
+      .locator(".loading, .animate-pulse")
+      .first()
+      .waitFor({ state: "hidden", timeout: 10000 })
+      .catch(() => {});
+
     const resource = this.page.getByText(new RegExp(resourceName, "i"));
-    await expect(resource.first()).toBeVisible({ timeout: 5000 });
+    await expect(resource.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
