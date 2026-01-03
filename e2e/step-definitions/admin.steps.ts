@@ -177,7 +177,13 @@ When(
     const link = quickLinksSection.getByRole("link", { name: linkText });
     await expect(link).toBeVisible();
     await link.click();
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
+    // Try networkidle with short timeout, but don't fail if it times out
+    try {
+      await this.page.waitForLoadState("networkidle", { timeout: 5000 });
+    } catch {
+      // Network may still be active, that's OK
+    }
   },
 );
 
