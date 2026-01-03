@@ -300,7 +300,7 @@ Feature: Admin Jobs Queue Management
   @slow @requires-db
   Scenario: Jobs list shows loading state
     Given the jobs API is slow
-    When I visit "/admin/jobs"
+    When I navigate quickly to "/admin/jobs"
     Then I should see loading skeleton placeholders
 
   @slow @requires-db

@@ -615,6 +615,8 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 {jobs.map((job) => (
                   <div
                     key={job.id}
+                    data-testid="job-list-item"
+                    data-job-status={job.status}
                     onClick={() => selectJob(job)}
                     className={`cursor-pointer rounded-md border p-3 transition-colors hover:bg-neutral-800 ${
                       selectedJob?.id === job.id
