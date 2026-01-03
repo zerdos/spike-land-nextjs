@@ -32178,7 +32178,7 @@ __metadata:
     start-server-and-test: "npm:2.1.3"
     stripe: "npm:20.1.0"
     tailwind-merge: "npm:3.4.0"
-    tailwindcss: "npm:^4.1.18"
+    tailwindcss: "npm:4.1.18"
     three: "npm:0.182.0"
     tsx: "npm:4.21.0"
     typescript: "npm:5.9.3"
