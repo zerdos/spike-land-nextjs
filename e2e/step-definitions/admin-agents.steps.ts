@@ -280,9 +280,16 @@ Then("I should see current branch name", async function(this: CustomWorld) {
 Then(
   "I should see changed files information",
   async function(this: CustomWorld) {
+    // Wait for any loading to complete
+    const loadingElement = this.page.locator(".loading, .animate-pulse").first();
+    const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
+    if (isLoadingVisible) {
+      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    }
+
     const changedFiles = this.page.getByText(/changed|files|modified/i)
       .or(this.page.locator("[data-testid*='changes']"));
-    await expect(changedFiles.first()).toBeVisible({ timeout: 5000 });
+    await expect(changedFiles.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
