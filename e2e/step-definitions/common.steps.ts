@@ -27,9 +27,19 @@ async function mockTokenBalance(
 When(
   "I click {string} button",
   async function(this: CustomWorld, buttonText: string) {
+    // Wait for loading states to disappear
+    await this.page
+      .locator(".loading, .animate-pulse, .skeleton")
+      .first()
+      .waitFor({ state: "hidden", timeout: 10000 })
+      .catch(() => {});
+
     const button = this.page
       .getByRole("button", { name: new RegExp(buttonText, "i") })
       .and(this.page.locator(":not([data-nextjs-dev-tools-button])"));
+
+    // Wait for button to be visible before clicking
+    await expect(button.first()).toBeVisible({ timeout: 15000 });
 
     // If there are still multiple buttons (e.g. mobile vs desktop), take the first visible one
     await button.first().click();
