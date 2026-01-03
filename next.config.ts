@@ -48,7 +48,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   // Enable standalone output for Docker deployment (~200MB vs ~1GB)
-  output: "standalone",
+  // output: process.env.STANDALONE === "true" ? "standalone" : undefined,
+  ...(process.env.STANDALONE === "true" ? { output: "standalone" } : {}),
   images: {
     remotePatterns: [
       {
