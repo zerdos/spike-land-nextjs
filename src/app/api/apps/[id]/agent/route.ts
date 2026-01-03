@@ -1,3 +1,4 @@
+import { verifyAgentAuth } from "@/lib/auth/agent";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { setAgentWorking } from "@/lib/upstash";
@@ -5,27 +6,6 @@ import { agentAppUpdateSchema } from "@/lib/validations/app";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { broadcastAgentWorking, broadcastMessage, broadcastStatus } from "../messages/stream/route";
-
-// Agent API key for internal use
-const AGENT_API_KEY = process.env.AGENT_API_KEY;
-
-/**
- * Verify agent API key from Authorization header
- */
-function verifyAgentKey(request: NextRequest): boolean {
-  // In development, allow without key for testing
-  if (process.env.NODE_ENV === "development" && !AGENT_API_KEY) {
-    return true;
-  }
-
-  const authHeader = request.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return false;
-  }
-
-  const token = authHeader.slice(7);
-  return token === AGENT_API_KEY;
-}
 
 /**
  * PATCH /api/apps/[id]/agent
@@ -50,7 +30,7 @@ export async function PATCH(
   context: { params: Promise<{ id: string; }>; },
 ) {
   // Verify agent authorization
-  if (!verifyAgentKey(request)) {
+  if (!verifyAgentAuth(request)) {
     return NextResponse.json(
       { error: "Unauthorized - Invalid or missing agent API key" },
       { status: 401 },
@@ -263,7 +243,7 @@ export async function POST(
   context: { params: Promise<{ id: string; }>; },
 ) {
   // Verify agent authorization
-  if (!verifyAgentKey(request)) {
+  if (!verifyAgentAuth(request)) {
     return NextResponse.json(
       { error: "Unauthorized - Invalid or missing agent API key" },
       { status: 401 },

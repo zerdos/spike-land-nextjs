@@ -5,6 +5,26 @@
  * Can update app properties: status, description, name, etc.
  *
  * Usage: yarn agent:poll [--once] [--interval=5000]
+ *
+ * SECURITY WARNING: Claude CLI Permissions
+ * =========================================
+ *
+ * This script uses --dangerously-skip-permissions to allow the agent to
+ * execute MCP tool calls without interactive confirmation. This is required
+ * for autonomous operation but has security implications:
+ *
+ * 1. The Claude subprocess has unrestricted access to configured MCP tools:
+ *    - spike-land: Codespace creation/update operations
+ *    - MCP_DOCKER: Browser automation capabilities
+ *
+ * 2. ISOLATION REQUIREMENTS:
+ *    - Run this script in an isolated environment (Docker container, VM)
+ *    - Limit network access to required services only
+ *    - Use least-privilege credentials for SPIKE_LAND_API_KEY
+ *    - Monitor agent activities via lastAgentActivity timestamps
+ *
+ * 3. Set AGENT_REQUIRE_PERMISSIONS=true to re-enable permission prompts
+ *    (useful for debugging but breaks autonomous operation)
  */
 
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -66,6 +86,13 @@ const VALID_STATUSES: AppBuildStatus[] = [
   "ARCHIVED",
   "FAILED",
 ];
+
+/**
+ * Permission control for Claude CLI
+ * Set AGENT_REQUIRE_PERMISSIONS=true to enable interactive permission prompts
+ * (breaks autonomous operation but useful for debugging)
+ */
+const SKIP_PERMISSIONS = process.env.AGENT_REQUIRE_PERMISSIONS !== "true";
 
 interface AppUpdate {
   name?: string;
@@ -461,11 +488,18 @@ async function spawnClaudeCode(
       mcpConfigPath,
       "--system-prompt",
       systemPrompt,
-      "--dangerously-skip-permissions",
+      // Conditionally skip permissions for autonomous operation
+      // See security warning in file header for implications
+      ...(SKIP_PERMISSIONS ? ["--dangerously-skip-permissions"] : []),
       "-", // Read prompt from stdin
     ];
 
     console.log("  Spawning Claude CLI...");
+    if (SKIP_PERMISSIONS) {
+      console.log(
+        "  WARNING: Running with --dangerously-skip-permissions (see file header for security implications)",
+      );
+    }
     console.log(`  Prompt length: ${prompt.length} chars`);
     console.log(`  System prompt: ${systemPrompt.substring(0, 100)}...`);
 

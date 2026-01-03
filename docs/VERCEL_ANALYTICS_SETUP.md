@@ -18,8 +18,8 @@ Both packages are installed and configured:
 
 ```json
 {
-  "@vercel/analytics": "^1.6.1",
-  "@vercel/speed-insights": "^1.3.1"
+  "@vercel/analytics": "1.6.1",
+  "@vercel/speed-insights": "1.3.1"
 }
 ```
 
