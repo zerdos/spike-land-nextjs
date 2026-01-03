@@ -48,10 +48,11 @@ Then("I should see a success message", async function(this: CustomWorld) {
 
 // Common error message check
 Then("I should see an error message", async function(this: CustomWorld) {
+  // Exclude the Next.js route announcer which also has role="alert"
   const errorMessage = this.page.locator(
-    '[role="alert"], .error, .toast, [class*="error"]',
+    '[role="alert"]:not([id="__next-route-announcer__"]), .error, .toast, [class*="error"]:not([class*="errorBoundary"])',
   );
-  await expect(errorMessage).toBeVisible({ timeout: 10000 });
+  await expect(errorMessage.first()).toBeVisible({ timeout: 10000 });
 });
 
 // Common modal close check

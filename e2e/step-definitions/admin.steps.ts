@@ -55,13 +55,37 @@ Given("the user is an admin", async function(this: CustomWorld) {
           database: { connected: true, provider: "postgresql" },
           environment: {
             nodeEnv: "test",
-            julesConfigured: false,
+            julesConfigured: true,
             githubConfigured: true,
           },
         },
         checkedAt: new Date().toISOString(),
       }),
     });
+  });
+
+  // Mock the main agents API to return julesAvailable: true
+  await this.page.route("**/api/admin/agents", async (route) => {
+    const url = new URL(route.request().url());
+    // Only mock exact /api/admin/agents path (not subpaths like /resources, /git)
+    if (!url.pathname.endsWith("/api/admin/agents")) {
+      await route.continue();
+      return;
+    }
+    if (route.request().method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          julesAvailable: true,
+          sessions: [],
+          pagination: { total: 0, page: 1, limit: 20 },
+          statusCounts: {},
+        }),
+      });
+    } else {
+      await route.continue();
+    }
   });
 
   // Mock the git info API to return valid data for E2E tests
@@ -90,7 +114,7 @@ Given("the user is an admin", async function(this: CustomWorld) {
   });
 
   // Mock GitHub issues API to return valid data for E2E tests
-  await this.page.route("**/api/admin/agents/github/issues", async (route) => {
+  await this.page.route("**/api/admin/agents/github/issues*", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -111,6 +135,17 @@ Given("the user is an admin", async function(this: CustomWorld) {
             url: "https://github.com/test/repo/pull/456",
           },
         ],
+        workflows: [
+          {
+            id: 1,
+            name: "CI",
+            status: "completed",
+            conclusion: "success",
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        githubConfigured: true,
+        timestamp: new Date().toISOString(),
       }),
     });
   });
