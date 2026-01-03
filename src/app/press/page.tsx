@@ -1,10 +1,10 @@
 "use client";
 
-import { SpikeLandLogo } from "@/components/brand/SpikeLandLogo";
+import { PixelLogo, SpikeLandLogo } from "@/components/brand";
 import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Copy, Download } from "lucide-react";
+import { Check, Copy, Download, Github, Linkedin, Twitter } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -256,9 +256,7 @@ export default function PressPage() {
                     {/* Pixel Logo */}
                     <div className="border rounded-lg p-6 bg-white dark:bg-zinc-900 flex flex-col items-center">
                       <div className="h-16 flex items-center justify-center mb-4">
-                        <span className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-                          Pixel
-                        </span>
+                        <PixelLogo size="lg" variant="horizontal" />
                       </div>
                       <span className="text-sm text-muted-foreground mb-2">Pixel Product</span>
                       <div className="flex gap-2">
@@ -547,38 +545,54 @@ export default function PressPage() {
               </CardContent>
             </Card>
 
-            {/* Social Links - FIXED */}
+            {/* Social Links */}
             <Card>
               <CardHeader>
                 <CardTitle>Follow Us</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  <a
-                    href="https://x.com/ai_spike_land"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1 bg-muted rounded-full text-sm hover:bg-muted/80"
-                  >
-                    X/Twitter
-                  </a>
-                  <a
-                    href="https://linkedin.com/company/spike-land"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1 bg-muted rounded-full text-sm hover:bg-muted/80"
-                  >
-                    LinkedIn
-                  </a>
-                  <a
-                    href="https://github.com/zerdos"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1 bg-muted rounded-full text-sm hover:bg-muted/80"
-                  >
-                    GitHub
-                  </a>
-                </div>
+              <CardContent className="space-y-3">
+                <a
+                  href="https://x.com/ai_spike_land"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center">
+                    <Twitter className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">X (Twitter)</p>
+                    <p className="text-sm text-muted-foreground">@ai_spike_land</p>
+                  </div>
+                </a>
+                <a
+                  href="https://linkedin.com/company/spike-land"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#0A66C2] flex items-center justify-center">
+                    <Linkedin className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">LinkedIn</p>
+                    <p className="text-sm text-muted-foreground">spike-land</p>
+                  </div>
+                </a>
+                <a
+                  href="https://github.com/zerdos"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#24292e] flex items-center justify-center">
+                    <Github className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">GitHub</p>
+                    <p className="text-sm text-muted-foreground">zerdos</p>
+                  </div>
+                </a>
               </CardContent>
             </Card>
           </div>
