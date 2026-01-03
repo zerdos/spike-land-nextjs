@@ -1,8 +1,12 @@
 "use client";
 
+import { SpikeLandLogo } from "@/components/brand/SpikeLandLogo";
+import { ImageComparisonSlider } from "@/components/enhance/ImageComparisonSlider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Copy, Download } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 // Brand colors
@@ -40,6 +44,23 @@ Beyond image enhancement, spike.land pioneers "vibe coding"—a revolutionary ap
 
 At spike.land, we believe in the power of AI to augment human creativity, not replace it. We're building tools that empower creators to do more, faster, while maintaining full creative control.`,
 };
+
+const screenshots = [
+  {
+    title: "VHS to 4K Restoration",
+    original:
+      "https://pub-cf0adddb5752426a96ef090997e0da95.r2.dev/users/user_49d6efb916aec77949d6efb916aec779/originals/0532f497-5f7d-4b47-8361-ea6e83df817b.png",
+    enhanced:
+      "https://pub-cf0adddb5752426a96ef090997e0da95.r2.dev/users/user_49d6efb916aec77949d6efb916aec779/enhanced/0532f497-5f7d-4b47-8361-ea6e83df817b/cmj75u2yy000104l2fmdwa5ax.jpg",
+  },
+  {
+    title: "Photo Enhancement",
+    original:
+      "https://pub-cf0adddb5752426a96ef090997e0da95.r2.dev/users/user_b492619127d7e0c1c8338d243d71a977/originals/5b384972-3086-418e-946a-f9c57e2765c4.jpeg",
+    enhanced:
+      "https://pub-cf0adddb5752426a96ef090997e0da95.r2.dev/users/user_b492619127d7e0c1c8338d243d71a977/enhanced/5b384972-3086-418e-946a-f9c57e2765c4.jpeg",
+  },
+];
 
 function ColorSwatch({ color }: { color: typeof brandColors[0]; }) {
   const [copied, setCopied] = useState(false);
@@ -130,13 +151,17 @@ export default function PressPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-4">
-              <Button className="gap-2">
-                <Download className="h-4 w-4" />
-                Download Full Press Kit (ZIP)
+              <Button className="gap-2" asChild>
+                <a href="/press/press-kit.zip" download>
+                  <Download className="h-4 w-4" />
+                  Download Full Press Kit (ZIP)
+                </a>
               </Button>
-              <Button variant="outline" className="gap-2">
-                <Download className="h-4 w-4" />
-                Logo Package Only
+              <Button variant="outline" className="gap-2" asChild>
+                <a href="/press/logo-package.zip" download>
+                  <Download className="h-4 w-4" />
+                  Logo Package Only
+                </a>
               </Button>
             </div>
             <p className="text-sm text-muted-foreground mt-4">
@@ -163,74 +188,67 @@ export default function PressPage() {
                     {/* Full Logo */}
                     <div className="border rounded-lg p-6 bg-white dark:bg-zinc-900 flex flex-col items-center">
                       <div className="h-16 flex items-center justify-center mb-4">
-                        <span className="text-3xl">⚡</span>
-                        <span className="text-xl font-bold ml-2">spike.land</span>
+                        <SpikeLandLogo size="md" variant="horizontal" />
                       </div>
                       <span className="text-sm text-muted-foreground mb-2">Full Logo</span>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">SVG</Button>
-                        <Button size="sm" variant="outline">PNG</Button>
+                        <Button size="sm" variant="outline" asChild>
+                          <a href="/press/logos/spike-land-full.svg" download>SVG</a>
+                        </Button>
+                        <Button size="sm" variant="outline" asChild>
+                          <a href="/press/logos/spike-land-full.png" download>PNG</a>
+                        </Button>
                       </div>
                     </div>
 
                     {/* Icon Only */}
                     <div className="border rounded-lg p-6 bg-white dark:bg-zinc-900 flex flex-col items-center">
                       <div className="h-16 flex items-center justify-center mb-4">
-                        <span className="text-4xl">⚡</span>
+                        <SpikeLandLogo size="lg" variant="icon" />
                       </div>
                       <span className="text-sm text-muted-foreground mb-2">Icon Only</span>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">SVG</Button>
-                        <Button size="sm" variant="outline">PNG</Button>
+                        <Button size="sm" variant="outline" asChild>
+                          <a href="/press/logos/spike-land-icon.svg" download>SVG</a>
+                        </Button>
+                        <Button size="sm" variant="outline" asChild>
+                          <a href="/press/logos/spike-land-icon-512.png" download>PNG</a>
+                        </Button>
                       </div>
                     </div>
 
                     {/* Wordmark */}
                     <div className="border rounded-lg p-6 bg-white dark:bg-zinc-900 flex flex-col items-center">
                       <div className="h-16 flex items-center justify-center mb-4">
-                        <span className="text-2xl font-bold">spike.land</span>
+                        <span className="font-heading font-bold text-xl tracking-tight lowercase text-foreground">
+                          spike.land
+                        </span>
                       </div>
                       <span className="text-sm text-muted-foreground mb-2">Wordmark</span>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">SVG</Button>
-                        <Button size="sm" variant="outline">PNG</Button>
+                        <Button size="sm" variant="outline" asChild>
+                          <a href="/press/logos/spike-land-wordmark.svg" download>SVG</a>
+                        </Button>
+                        <Button size="sm" variant="outline" asChild>
+                          <a href="/press/logos/spike-land-wordmark.png" download>PNG</a>
+                        </Button>
                       </div>
                     </div>
 
                     {/* Dark variant */}
                     <div className="border rounded-lg p-6 bg-zinc-900 flex flex-col items-center">
                       <div className="h-16 flex items-center justify-center mb-4">
-                        <span className="text-3xl">⚡</span>
-                        <span className="text-xl font-bold ml-2 text-white">spike.land</span>
+                        <div className="flex items-center gap-2">
+                          <SpikeLandLogo size="md" variant="horizontal" className="text-white" />
+                        </div>
                       </div>
                       <span className="text-sm text-zinc-400 mb-2">On Dark</span>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">SVG</Button>
-                        <Button size="sm" variant="outline">PNG</Button>
-                      </div>
-                    </div>
-
-                    {/* Light variant */}
-                    <div className="border rounded-lg p-6 bg-amber-500 flex flex-col items-center">
-                      <div className="h-16 flex items-center justify-center mb-4">
-                        <span className="text-3xl">⚡</span>
-                        <span className="text-xl font-bold ml-2 text-white">spike.land</span>
-                      </div>
-                      <span className="text-sm text-amber-100 mb-2">On Brand</span>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-                        >
-                          SVG
+                        <Button size="sm" variant="outline" asChild>
+                          <a href="/press/logos/spike-land-dark.svg" download>SVG</a>
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-                        >
-                          PNG
+                        <Button size="sm" variant="outline" asChild>
+                          <a href="/press/logos/spike-land-dark.png" download>PNG</a>
                         </Button>
                       </div>
                     </div>
@@ -244,8 +262,12 @@ export default function PressPage() {
                       </div>
                       <span className="text-sm text-muted-foreground mb-2">Pixel Product</span>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">SVG</Button>
-                        <Button size="sm" variant="outline">PNG</Button>
+                        <Button size="sm" variant="outline" asChild>
+                          <a href="/press/logos/pixel-logo.svg" download>SVG</a>
+                        </Button>
+                        <Button size="sm" variant="outline" asChild>
+                          <a href="/press/logos/pixel-logo.png" download>PNG</a>
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -253,8 +275,8 @@ export default function PressPage() {
                   <div className="bg-muted p-4 rounded-lg">
                     <h4 className="font-semibold mb-2">Available Sizes</h4>
                     <p className="text-sm text-muted-foreground">
-                      PNG files available in: 16×16, 32×32, 64×64, 128×128, 256×256, 512×512, and
-                      1024×1024 pixels.
+                      PNG icons available in: 16×16, 32×32, 64×64, 128×128, 256×256, and 512×512
+                      pixels.
                     </p>
                   </div>
                 </CardContent>
@@ -278,6 +300,35 @@ export default function PressPage() {
               </Card>
             </section>
 
+            {/* Screenshots */}
+            <section>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">Screenshots</CardTitle>
+                  <CardDescription>
+                    Product screenshots and before/after examples
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                  <div className="grid grid-cols-1 gap-8">
+                    {screenshots.map((shot, i) => (
+                      <div key={i} className="space-y-2">
+                        <h3 className="font-semibold text-lg">{shot.title}</h3>
+                        <div className="aspect-video w-full rounded-lg overflow-hidden border">
+                          <ImageComparisonSlider
+                            originalUrl={shot.original}
+                            enhancedUrl={shot.enhanced}
+                            originalLabel="Original"
+                            enhancedLabel="Enhanced"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
             {/* Boilerplate */}
             <section>
               <Card>
@@ -291,6 +342,28 @@ export default function PressPage() {
                   <CopyableText label="One-liner (Short)" text={boilerplates.short} />
                   <CopyableText label="Paragraph (Medium)" text={boilerplates.medium} />
                   <CopyableText label="Full Description (Long)" text={boilerplates.long} />
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Press Releases - NEW */}
+            <section>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">Press Releases</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-4">
+                    <li>
+                      <Link
+                        href="/blog/pixel-launch-announcement"
+                        className="block p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <p className="font-semibold text-lg">Recreate Your Memories in 4K</p>
+                        <p className="text-sm text-muted-foreground">December 15, 2025</p>
+                      </Link>
+                    </li>
+                  </ul>
                 </CardContent>
               </Card>
             </section>
@@ -373,38 +446,6 @@ export default function PressPage() {
                 </CardContent>
               </Card>
             </section>
-
-            {/* Screenshots */}
-            <section>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-2xl">Screenshots</CardTitle>
-                  <CardDescription>
-                    Product screenshots for press use
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                      <span className="text-muted-foreground">Pixel Dashboard</span>
-                    </div>
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                      <span className="text-muted-foreground">Image Enhancement</span>
-                    </div>
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                      <span className="text-muted-foreground">Before/After</span>
-                    </div>
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                      <span className="text-muted-foreground">Mobile View</span>
-                    </div>
-                  </div>
-                  <Button variant="outline" className="w-full gap-2">
-                    <Download className="h-4 w-4" />
-                    Download All Screenshots (ZIP)
-                  </Button>
-                </CardContent>
-              </Card>
-            </section>
           </div>
 
           {/* Sidebar */}
@@ -442,26 +483,38 @@ export default function PressPage() {
               </CardContent>
             </Card>
 
-            {/* Founder */}
+            {/* Founder - MODIFIED */}
             <Card>
               <CardHeader>
                 <CardTitle>Founder</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white text-2xl font-bold">
-                    ZE
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden border">
+                    <Image
+                      src="https://pub-cf0adddb5752426a96ef090997e0da95.r2.dev/users/user_49d6efb916aec77949d6efb916aec779/enhanced/5ff8ba3c-7b23-4a1e-b9fd-14a7c3da15ab/cmj5mq0xv000304le96338hpb.jpg"
+                      alt="Zoltan Erdos"
+                      fill
+                      className="object-cover"
+                    />
                   </div>
                   <div>
                     <p className="font-semibold">Zoltan Erdos</p>
                     <p className="text-sm text-muted-foreground">Founder & CEO</p>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Zoltan Erdos is a software engineer and entrepreneur with a passion for AI and
-                  creative tools. He founded spike.land to democratize access to
-                  professional-quality creative tools through the power of artificial intelligence.
-                </p>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>
+                    Zoltan is a software engineer with a vision to democratize creation. Originally
+                    from Hungary and now based in Brighton, UK, he pioneered vibe coding in 2019,
+                    long before the AI wave.
+                  </p>
+                  <p>
+                    He founded SPIKE LAND LTD in 2024 to bring professional-grade AI tools to
+                    everyone. His dog Pixel serves as the Chief Morale Officer and supervisor of all
+                    operations in Brighton.
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
@@ -494,7 +547,7 @@ export default function PressPage() {
               </CardContent>
             </Card>
 
-            {/* Social Links */}
+            {/* Social Links - FIXED */}
             <Card>
               <CardHeader>
                 <CardTitle>Follow Us</CardTitle>
@@ -502,7 +555,7 @@ export default function PressPage() {
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   <a
-                    href="https://x.com/spike_land"
+                    href="https://x.com/ai_spike_land"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-3 py-1 bg-muted rounded-full text-sm hover:bg-muted/80"
