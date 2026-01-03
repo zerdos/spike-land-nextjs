@@ -47,6 +47,7 @@ export class CustomWorld extends World {
 
     this.context = await this.browser.newContext({
       baseURL: this.baseUrl,
+      viewport: { width: 1280, height: 900 }, // Taller viewport for sidebar visibility
       extraHTTPHeaders: Object.keys(extraHTTPHeaders).length > 0
         ? extraHTTPHeaders
         : undefined,

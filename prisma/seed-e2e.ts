@@ -2,6 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import {
   AlbumPrivacy,
   EnhancementTier,
+  ExternalAgentStatus,
   GalleryCategory,
   JobStatus,
   PrismaClient,
@@ -398,7 +399,65 @@ async function main() {
   });
   console.log("Created 2 featured gallery items");
 
-  // 12. Create test merch orders for order history tests
+  // 12. Create external agent sessions for admin agents dashboard tests
+  // Create session with AWAITING_PLAN_APPROVAL status (for approve button test)
+  await prisma.externalAgentSession.upsert({
+    where: { id: "e2e-agent-session-awaiting" },
+    update: {
+      status: ExternalAgentStatus.AWAITING_PLAN_APPROVAL,
+      planSummary:
+        "E2E test plan: Fix the authentication bug by updating the token validation logic",
+    },
+    create: {
+      id: "e2e-agent-session-awaiting",
+      externalId: "sessions/e2e-awaiting-123",
+      provider: "JULES",
+      name: "E2E Test: Fix Auth Bug",
+      description: "Automated test session awaiting plan approval",
+      status: ExternalAgentStatus.AWAITING_PLAN_APPROVAL,
+      sourceRepo: "zerdos/spike-land-nextjs",
+      startingBranch: "main",
+      planSummary:
+        "E2E test plan: Fix the authentication bug by updating the token validation logic",
+    },
+  });
+
+  // Create session with IN_PROGRESS status
+  await prisma.externalAgentSession.upsert({
+    where: { id: "e2e-agent-session-progress" },
+    update: {
+      status: ExternalAgentStatus.IN_PROGRESS,
+    },
+    create: {
+      id: "e2e-agent-session-progress",
+      externalId: "sessions/e2e-progress-456",
+      provider: "JULES",
+      name: "E2E Test: Add Unit Tests",
+      description: "Automated test session in progress",
+      status: ExternalAgentStatus.IN_PROGRESS,
+      sourceRepo: "zerdos/spike-land-nextjs",
+      startingBranch: "main",
+      planSummary: "Adding comprehensive unit tests for the user service",
+      planApprovedAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
+    },
+  });
+
+  // Create activity for the in-progress session
+  await prisma.agentSessionActivity.upsert({
+    where: { id: "e2e-agent-activity-1" },
+    update: {},
+    create: {
+      id: "e2e-agent-activity-1",
+      sessionId: "e2e-agent-session-progress",
+      externalId: "activity-1",
+      type: "code_committed",
+      content: "Committed test files for user service",
+      createdAt: new Date(Date.now() - 30 * 60 * 1000), // 30 mins ago
+    },
+  });
+  console.log("Created 2 external agent sessions for admin dashboard tests");
+
+  // 13. Create test merch orders for order history tests
   // First check if merch products exist
   const tshirtProduct = await prisma.merchProduct.findUnique({
     where: { id: "tshirt-classic" },
