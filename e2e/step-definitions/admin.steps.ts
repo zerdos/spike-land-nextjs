@@ -76,22 +76,26 @@ When(
   async function(this: CustomWorld, linkText: string) {
     const sidebar = this.page.locator("aside");
     // Ensure sidebar is stable
-    await expect(sidebar).toBeVisible();
+    await expect(sidebar).toBeVisible({ timeout: 10000 });
 
-    // Try exact match first, then fall back to partial match
-    // This handles cases like "← Back to App" where the link has an icon prefix
-    let link = sidebar.getByRole("link", { name: linkText, exact: true });
-    const exactVisible = await link.isVisible().catch(() => false);
+    // Find the link - try partial match for links with icons/prefixes like "← Back to App"
+    let link = sidebar.locator("a").filter({ hasText: linkText });
 
-    if (!exactVisible) {
-      // Fall back to partial match for links with icons/prefixes
-      link = sidebar.locator("a").filter({ hasText: linkText });
+    // Check if link exists
+    const count = await link.count();
+    if (count === 0) {
+      // Try to find it in the Sheet/drawer for mobile view
+      const sheet = this.page.locator('[role="dialog"]');
+      link = sheet.locator("a").filter({ hasText: linkText });
     }
 
-    await expect(link.first()).toBeVisible();
+    // Scroll the link into view if needed (e.g., "Back to App" at bottom of sidebar)
+    await link.first().scrollIntoViewIfNeeded({ timeout: 5000 });
+
+    await expect(link.first()).toBeVisible({ timeout: 5000 });
 
     // Wait for any potential animations or transitions
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(300);
 
     // Click and wait for navigation if it's a link
     await link.first().click();
