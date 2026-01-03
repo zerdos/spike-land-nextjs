@@ -61,10 +61,20 @@ function createPrismaClient() {
 
 const prisma = createPrismaClient();
 
-// Initialize Redis
+// Initialize Redis (support both UPSTASH_REDIS_REST_* and KV_REST_API_* naming)
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+
+if (!redisUrl || !redisToken) {
+  console.error(
+    "Redis credentials not configured. Set UPSTASH_REDIS_REST_URL/TOKEN or KV_REST_API_URL/TOKEN",
+  );
+  process.exit(1);
+}
+
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  url: redisUrl,
+  token: redisToken,
 });
 
 // Redis key helpers
@@ -913,7 +923,7 @@ async function main(): Promise<void> {
 
   console.log("Agent Poll Script");
   console.log("=================");
-  console.log(`Redis URL: ${process.env.UPSTASH_REDIS_REST_URL?.substring(0, 30)}...`);
+  console.log(`Redis URL: ${redisUrl?.substring(0, 30)}...`);
 
   if (showStats) {
     await getQueueStats();

@@ -1,11 +1,26 @@
 import { Redis } from "@upstash/redis";
 
-// Create Redis client using environment variables
-// UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be set
-export const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+// Support both UPSTASH_REDIS_REST_* (standard) and KV_REST_API_* (Vercel integration) naming
+const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+
+// Create Redis client if credentials are available, otherwise create a mock
+// This allows the app to run without Redis (with queue features disabled)
+export const redis: Redis = url && token
+  ? new Redis({ url, token })
+  : (new Proxy({} as Redis, {
+    get(_, prop) {
+      if (prop === "ping") {
+        return () => Promise.reject(new Error("Redis not configured"));
+      }
+      return () => {
+        console.warn(
+          `[Upstash Redis] Not configured - ${String(prop)} called but Redis credentials missing`,
+        );
+        return Promise.resolve(null);
+      };
+    },
+  }) as Redis);
 
 // Key prefixes for organization
 const KEYS = {
