@@ -73,12 +73,15 @@ export function ResourcesPanel(
 
   if (!resources) {
     return (
-      <Card>
+      <Card data-testid="resources-panel-empty">
         <CardHeader>
           <CardTitle>Resources</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          <p
+            className="text-sm text-neutral-600 dark:text-neutral-400"
+            data-testid="resources-empty-state"
+          >
             No resource data available
           </p>
         </CardContent>

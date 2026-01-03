@@ -40,6 +40,29 @@ async function mockAdminStatus(world: CustomWorld, isAdmin: boolean) {
 // Given steps
 Given("the user is an admin", async function(this: CustomWorld) {
   await mockAdminStatus(this, true);
+
+  // Mock the resources API to return valid data for E2E tests
+  await this.page.route("**/api/admin/agents/resources", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        resources: {
+          devServer: { running: true, port: 3000, url: "http://localhost:3000" },
+          mcpServers: [
+            { name: "playwright", type: "stdio", configured: true },
+          ],
+          database: { connected: true, provider: "postgresql" },
+          environment: {
+            nodeEnv: "test",
+            julesConfigured: false,
+            githubConfigured: true,
+          },
+        },
+        checkedAt: new Date().toISOString(),
+      }),
+    });
+  });
 });
 
 Given("the user is not an admin", async function(this: CustomWorld) {
