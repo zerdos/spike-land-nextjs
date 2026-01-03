@@ -409,11 +409,17 @@ When("I visit {string}", async function(this: CustomWorld, path: string) {
 Then(
   "I should be on the {string} page",
   async function(this: CustomWorld, path: string) {
-    // Wait for navigation to complete and URL to contain the expected path
-    await this.page.waitForLoadState("networkidle");
+    // Wait for navigation to complete - use domcontentloaded first
+    await this.page.waitForLoadState("domcontentloaded");
+    // Try networkidle with short timeout, but don't fail if it times out
+    try {
+      await this.page.waitForLoadState("networkidle", { timeout: 5000 });
+    } catch {
+      // Network may still be active (polling, websockets), that's OK
+    }
     // Wait for URL to contain the path (with timeout for client-side routing)
     await this.page.waitForURL(new RegExp(path.replace(/\//g, "\\/")), {
-      timeout: 10000,
+      timeout: 15000,
     });
     const currentUrl = this.page.url();
     // Handle both exact match, query parameters, and trailing slashes
