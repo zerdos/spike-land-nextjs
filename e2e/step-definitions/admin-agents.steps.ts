@@ -154,19 +154,6 @@ When("I expand the session card", async function(this: CustomWorld) {
   }
 });
 
-When(
-  "I click {string} button",
-  async function(this: CustomWorld, buttonText: string) {
-    // Wait for the page to be ready and find the button
-    await this.page.waitForLoadState("networkidle");
-    const button = this.page.getByRole("button", {
-      name: new RegExp(buttonText, "i"),
-    });
-    await button.waitFor({ state: "visible", timeout: 10000 });
-    await button.click();
-  },
-);
-
 // ======= Then Steps =======
 
 Then(
