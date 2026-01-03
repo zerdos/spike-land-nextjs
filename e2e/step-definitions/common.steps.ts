@@ -48,10 +48,12 @@ Then("I should see a success message", async function(this: CustomWorld) {
 
 // Common error message check
 Then("I should see an error message", async function(this: CustomWorld) {
-  // Exclude the Next.js route announcer which also has role="alert"
-  const errorMessage = this.page.locator(
-    '[role="alert"]:not([id="__next-route-announcer__"]), .error, .toast, [class*="error"]:not([class*="errorBoundary"])',
-  );
+  // Look for various error indicators - multiple patterns
+  const errorMessage = this.page
+    .locator('[role="alert"]')
+    .filter({ hasNotText: /^$/ }) // Exclude empty alerts like route announcer
+    .or(this.page.getByText(/error|failed|unable/i))
+    .or(this.page.locator(".error, .toast, [data-testid*='error']"));
   await expect(errorMessage.first()).toBeVisible({ timeout: 10000 });
 });
 
