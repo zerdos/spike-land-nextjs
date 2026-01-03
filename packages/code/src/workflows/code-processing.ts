@@ -1,8 +1,10 @@
 import { md5 } from "@/lib/md5";
 import { metrics } from "@/lib/metrics";
-import { DEFAULT_RETURN_MODIFIED_CODE } from "../config/workflow-config";
 import { hashCache } from "./caching";
 import { shouldReturnFullCode } from "./tools/utils/code-utils";
+
+// Default to not returning full code to save tokens
+const DEFAULT_RETURN_MODIFIED_CODE = false;
 
 /**
  * Attempts to extract code from a JSON string

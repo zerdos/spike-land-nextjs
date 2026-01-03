@@ -19,7 +19,25 @@ interface SSEEvent {
   timestamp: number;
 }
 
-// Store for active connections (in-memory for now, could use Redis pubsub for multi-instance)
+/**
+ * SSE Connection Store
+ *
+ * IMPORTANT: Current implementation uses in-memory storage which has limitations:
+ *
+ * 1. SINGLE INSTANCE ONLY: Connections are not shared across server instances.
+ *    In multi-instance deployments (Vercel, Kubernetes), clients connected to
+ *    different instances won't receive broadcasts from other instances.
+ *
+ * 2. NO PERSISTENCE: Connections are lost on server restart.
+ *
+ * TODO: For production multi-instance support, implement Redis Pub/Sub:
+ * - Use Upstash Redis (already configured for rate limiting)
+ * - Publish events to Redis channel on broadcast
+ * - Each instance subscribes to channel and forwards to local connections
+ * - See: https://upstash.com/docs/redis/features/pubsub
+ *
+ * For now, this works correctly for single-instance deployments.
+ */
 const activeConnections = new Map<
   string,
   Set<ReadableStreamDefaultController<Uint8Array>>
