@@ -38,10 +38,11 @@ async function isKVAvailable(): Promise<boolean> {
   }
 
   // Check for required environment variables first (sync check)
-  if (
-    !process.env.UPSTASH_REDIS_REST_URL ||
-    !process.env.UPSTASH_REDIS_REST_TOKEN
-  ) {
+  // Support both UPSTASH_REDIS_REST_* (standard) and KV_REST_API_* (Vercel integration)
+  const hasUpstashEnv = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
+  const hasKvEnv = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+
+  if (!hasUpstashEnv && !hasKvEnv) {
     console.warn(
       "Upstash Redis environment variables not set, using in-memory storage",
     );
