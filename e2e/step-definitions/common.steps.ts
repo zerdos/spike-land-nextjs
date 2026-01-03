@@ -27,12 +27,12 @@ async function mockTokenBalance(
 When(
   "I click {string} button",
   async function(this: CustomWorld, buttonText: string) {
-    // Wait for loading states to disappear
-    await this.page
-      .locator(".loading, .animate-pulse, .skeleton")
-      .first()
-      .waitFor({ state: "hidden", timeout: 10000 })
-      .catch(() => {});
+    // Wait for loading states ONLY if they are visible
+    const loadingElement = this.page.locator(".loading, .animate-pulse, .skeleton").first();
+    const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
+    if (isLoadingVisible) {
+      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    }
 
     const button = this.page
       .getByRole("button", { name: new RegExp(buttonText, "i") })
