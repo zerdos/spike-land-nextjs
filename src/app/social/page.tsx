@@ -8,8 +8,8 @@ import { ExternalLink } from "lucide-react";
 const socialPlatforms = [
   {
     name: "X (Twitter)",
-    handle: "@spike_land",
-    url: "https://x.com/spike_land",
+    handle: "@ai_spike_land",
+    url: "https://x.com/ai_spike_land",
     icon: "𝕏",
     description: "Updates, announcements, and community discussions",
     color: "bg-black dark:bg-white dark:text-black",
