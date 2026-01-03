@@ -26,8 +26,8 @@ const socialPlatforms = [
   },
   {
     name: "Facebook",
-    handle: "spike.land",
-    url: "https://facebook.com/spikeland",
+    handle: "Spike Land",
+    url: "https://www.facebook.com/profile.php?id=61585082436509",
     icon: "f",
     description: "Community posts and feature announcements",
     color: "bg-[#1877F2] text-white",
@@ -35,8 +35,8 @@ const socialPlatforms = [
   },
   {
     name: "Instagram",
-    handle: "@spike_land",
-    url: "https://instagram.com/spike_land",
+    handle: "@spike.land",
+    url: "https://www.instagram.com/spike.land/",
     icon: "📷",
     description: "Visual showcases of enhanced images",
     color: "bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] text-white",
@@ -44,8 +44,8 @@ const socialPlatforms = [
   },
   {
     name: "YouTube",
-    handle: "spike.land",
-    url: "https://youtube.com/@spike_land",
+    handle: "@spike_land",
+    url: "https://www.youtube.com/@spike_land",
     icon: "▶",
     description: "Tutorials, demos, and feature walkthroughs",
     color: "bg-[#FF0000] text-white",
@@ -53,8 +53,8 @@ const socialPlatforms = [
   },
   {
     name: "TikTok",
-    handle: "@spike_land",
-    url: "https://tiktok.com/@spike_land",
+    handle: "@spikeland_uk",
+    url: "https://tiktok.com/@spikeland_uk",
     icon: "♪",
     description: "Short-form content and creative showcases",
     color: "bg-black text-white",
@@ -63,7 +63,7 @@ const socialPlatforms = [
   {
     name: "Discord",
     handle: "spike.land",
-    url: "https://discord.gg/spikeland",
+    url: "https://discord.gg/5bnH9stj",
     icon: "💬",
     description: "Community chat, support, and discussions",
     color: "bg-[#5865F2] text-white",
@@ -72,7 +72,7 @@ const socialPlatforms = [
   {
     name: "Reddit",
     handle: "u/spike_land",
-    url: "https://reddit.com/user/spike_land",
+    url: "https://www.reddit.com/user/spike_land",
     icon: "🔴",
     description: "Community discussions and feature requests",
     color: "bg-[#FF4500] text-white",
