@@ -163,7 +163,7 @@ Feature: Admin Email Logs Management
     And I should see the template name
     And I should see the email status
     And I should see the Resend ID
-    And I should see the user information
+    And I should see the email user information
     And I should see the sent timestamp
     And I should see the opened timestamp or dash
     And I should see the clicked timestamp or dash
@@ -232,6 +232,7 @@ Feature: Admin Email Logs Management
 
   @slow @requires-db
   Scenario: Send test email successfully
+    Given there are emails in the system
     When I visit "/admin/emails"
     And I enter "test-recipient@example.com" in the test email field
     And I click the Send Test button and expect success
@@ -260,7 +261,7 @@ Feature: Admin Email Logs Management
   @slow @requires-db
   Scenario: Loading state displays while fetching emails
     Given the emails API is slow
-    When I visit "/admin/emails"
+    When I navigate quickly to "/admin/emails"
     Then I should see "Loading..." text in the table
 
   @slow @requires-db
