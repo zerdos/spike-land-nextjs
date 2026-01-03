@@ -89,7 +89,20 @@ When(
       link = sheet.locator("a").filter({ hasText: linkText });
     }
 
-    // Scroll the link into view if needed (e.g., "Back to App" at bottom of sidebar)
+    // For "Back to App" link at bottom of sidebar, we may need to scroll the nav area
+    // The sidebar has a fixed structure with scrollable nav section
+    if (linkText.includes("Back to App")) {
+      // Scroll the sidebar nav to bottom to make sure "Back to App" section is visible
+      await sidebar.evaluate((el) => {
+        const scrollableNav = el.querySelector(".overflow-y-auto");
+        if (scrollableNav) {
+          scrollableNav.scrollTop = scrollableNav.scrollHeight;
+        }
+      });
+      await this.page.waitForTimeout(200);
+    }
+
+    // Scroll the link into view if needed
     await link.first().scrollIntoViewIfNeeded({ timeout: 5000 });
 
     await expect(link.first()).toBeVisible({ timeout: 5000 });
@@ -306,12 +319,12 @@ Then(
     const main = this.page.locator("main");
     await expect(main).toBeVisible();
 
-    // Check if main has margin-left to account for sidebar
-    const marginLeft = await main.evaluate((el) => {
-      return window.getComputedStyle(el).marginLeft;
+    // Check if main has padding-left to account for sidebar (lg:pl-64 = 256px)
+    const paddingLeft = await main.evaluate((el) => {
+      return window.getComputedStyle(el).paddingLeft;
     });
 
-    // Should have margin-left for the 256px sidebar (16rem * 16px = 256px)
-    expect(marginLeft).not.toBe("0px");
+    // Should have padding-left for the 256px sidebar (16rem * 16px = 256px)
+    expect(paddingLeft).not.toBe("0px");
   },
 );

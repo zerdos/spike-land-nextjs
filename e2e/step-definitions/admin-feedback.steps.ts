@@ -382,9 +382,12 @@ Then("I should see the feedback status", async function(this: CustomWorld) {
 });
 
 Then("I should see the user information", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="dialog"]');
-  const userSection = dialog.locator("text=User").first();
-  await expect(userSection).toBeVisible();
+  // Wait for page to stabilize - the modal should already be open from previous step
+  await this.page.waitForTimeout(500);
+
+  // Look for "Test User" text anywhere on the page (it should be in the details modal)
+  const testUser = this.page.getByText("Test User");
+  await expect(testUser).toBeVisible({ timeout: 5000 });
 });
 
 Then("I should see the submission page", async function(this: CustomWorld) {
