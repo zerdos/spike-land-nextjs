@@ -299,9 +299,11 @@ When(
 When(
   "I click the Send Test button and expect success",
   async function(this: CustomWorld) {
-    // Mock the POST API to return success (avoids RESEND_API_KEY not configured error)
-    await this.page.route("**/api/admin/emails", async (route) => {
-      if (route.request().method() === "POST") {
+    // Mock both GET and POST API to avoid real API calls
+    await this.page.route("**/api/admin/emails**", async (route) => {
+      const method = route.request().method();
+
+      if (method === "POST") {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
@@ -309,6 +311,19 @@ When(
             success: true,
             message: "Test email sent successfully",
             emailId: `test-email-${Date.now()}`,
+          }),
+        });
+      } else if (method === "GET") {
+        // Return mock data for GET requests
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            emails: [
+              createMockEmail({ id: "e1", status: "DELIVERED" }),
+            ],
+            pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
+            templates: ["welcome"],
           }),
         });
       } else {
@@ -320,14 +335,24 @@ When(
     const button = this.page.getByRole("button", { name: "Send Test" });
     await expect(button).toBeEnabled({ timeout: 10000 });
 
-    // Setup dialog handler BEFORE clicking
-    const dialogPromise = this.page.waitForEvent("dialog", { timeout: 15000 });
+    // Setup dialog handler using page.on to handle alert
+    let dialogHandled = false;
+    let dialogMessage = "";
+    this.page.on("dialog", async (dialog) => {
+      dialogMessage = dialog.message();
+      dialogHandled = true;
+      await dialog.accept();
+    });
 
     await button.click();
 
-    const dialog = await dialogPromise;
-    expect(dialog.message()).toContain("success");
-    await dialog.accept();
+    // Wait for dialog to be handled
+    await this.page.waitForFunction(() => true, null, { timeout: 10000 });
+    await this.page.waitForTimeout(1000);
+
+    // Verify dialog was shown with success message
+    expect(dialogHandled).toBe(true);
+    expect(dialogMessage).toContain("success");
   },
 );
 When("I click the modal overlay", async function(this: CustomWorld) {
@@ -586,6 +611,21 @@ Then("I should see the Resend ID", async function(this: CustomWorld) {
   await expect(resendField).toBeVisible();
 });
 
+Then(
+  "I should see the email user information",
+  async function(this: CustomWorld) {
+    const modal = this.page.locator('[class*="Card"]').filter({
+      hasText: "Email Details",
+    });
+    // Check for the User label and that there's user info displayed
+    const userLabel = modal.locator("text=User").first();
+    await expect(userLabel).toBeVisible();
+    // The mock data has user.name = "Test User"
+    const testUser = modal.getByText("Test User");
+    await expect(testUser).toBeVisible({ timeout: 5000 });
+  },
+);
+
 Then("I should see the sent timestamp", async function(this: CustomWorld) {
   const modal = this.page.locator('[class*="Card"]').filter({
     hasText: "Email Details",
@@ -744,6 +784,8 @@ Then(
   async function(this: CustomWorld, text: string) {
     // Look for text within the table - the loading text is in a td element
     // Use a shorter timeout because we're racing against the slow API response
+    // The table might take a moment to render, so wait for it first
+    await this.page.waitForSelector("table", { state: "visible", timeout: 5000 });
     const element = this.page.locator("table").getByText(text);
     await expect(element).toBeVisible({ timeout: 3000 });
   },

@@ -336,21 +336,37 @@ Then("I should see the tier information", async function(this: CustomWorld) {
 When(
   "I click {string} button in the dialog",
   async function(this: CustomWorld, buttonText: string) {
+    // Use first() because dialogs may have multiple buttons with same name
+    // (e.g., text "Close" button + X close button)
     const button = this.page
       .locator('[role="dialog"]')
-      .getByRole("button", { name: buttonText });
+      .getByRole("button", { name: buttonText })
+      .first();
     await button.click();
   },
 );
 
 // Common button in modal click (alias for dialog)
+// Note: For email modals that don't use role="dialog", see email-specific step
 When(
   "I click {string} button in the modal",
   async function(this: CustomWorld, buttonText: string) {
-    const button = this.page
+    // First try to find in a dialog
+    const dialogButton = this.page
       .locator('[role="dialog"]')
       .getByRole("button", { name: buttonText });
-    await button.click();
+
+    if (await dialogButton.count() > 0) {
+      await dialogButton.first().click();
+      return;
+    }
+
+    // Fallback: look for the email modal (Card with "Email Details")
+    const emailModal = this.page.locator('[class*="Card"]').filter({
+      hasText: "Email Details",
+    });
+    const emailButton = emailModal.getByRole("button", { name: buttonText });
+    await emailButton.click();
   },
 );
 
