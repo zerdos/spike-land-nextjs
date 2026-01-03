@@ -2,10 +2,10 @@ import Link from "next/link";
 import { SectionWrapper } from "../shared/SectionWrapper";
 
 const socialLinks = [
-  { name: "X", url: "https://x.com/spike_land", icon: "𝕏" },
+  { name: "X", url: "https://x.com/ai_spike_land", icon: "𝕏" },
   { name: "LinkedIn", url: "https://linkedin.com/company/spike-land", icon: "in" },
   { name: "GitHub", url: "https://github.com/zerdos", icon: "GH" },
-  { name: "Discord", url: "https://discord.gg/spikeland", icon: "💬" },
+  { name: "Discord", url: "https://discord.gg/5bnH9stj", icon: "💬" },
   { name: "YouTube", url: "https://youtube.com/@spike_land", icon: "▶" },
 ];
 
