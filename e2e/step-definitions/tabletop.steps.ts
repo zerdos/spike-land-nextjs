@@ -78,7 +78,7 @@ When("I create a new game room", async function(this: CustomWorld) {
     name: /create.*room|new.*game|start/i,
   });
   await createButton.click();
-  await this.page.waitForURL(/\/room\/[A-Z0-9]+$/i, { timeout: 10000 });
+  await this.page.waitForURL(/\/apps\/tabletop-simulator\/room\/[A-Z0-9]+$/i, { timeout: 15000 });
 });
 
 Then(

@@ -71,6 +71,15 @@ Before(async function(this: CustomWorld) {
   }
 });
 
+// Clear session cookies for scenarios that need unauthenticated state
+// NextAuth stores sessions in HTTP-only cookies that aren't cleared by localStorage.clear()
+Before({ tags: "@requires-no-session" }, async function(this: CustomWorld) {
+  if (this.page) {
+    // Clear all cookies including HTTP-only session cookies
+    await this.page.context().clearCookies();
+  }
+});
+
 // Set up API mocks for checkout scenarios
 // These mocks must be set up AFTER page initialization but BEFORE navigation
 Before({ tags: "@requires-api-mock" }, async function(this: CustomWorld) {
