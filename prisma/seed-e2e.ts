@@ -3,6 +3,8 @@ import {
   AlbumPrivacy,
   EnhancementTier,
   ExternalAgentStatus,
+  FeedbackStatus,
+  FeedbackType,
   GalleryCategory,
   JobStatus,
   PrismaClient,
@@ -457,7 +459,68 @@ async function main() {
   });
   console.log("Created 2 external agent sessions for admin dashboard tests");
 
-  // 13. Create test merch orders for order history tests
+  // 13. Create feedback items for admin feedback management tests
+  const feedbackItems = [
+    {
+      id: "e2e-feedback-1",
+      type: FeedbackType.BUG,
+      status: FeedbackStatus.NEW,
+      message: "App crashes when uploading large images",
+      page: "/apps/pixel",
+      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    },
+    {
+      id: "e2e-feedback-2",
+      type: FeedbackType.IDEA,
+      status: FeedbackStatus.REVIEWED,
+      message: "Would be great to have dark mode support",
+      page: "/settings",
+    },
+    {
+      id: "e2e-feedback-3",
+      type: FeedbackType.OTHER,
+      status: FeedbackStatus.RESOLVED,
+      message: "General feedback about the user experience",
+      page: "/",
+    },
+    {
+      id: "e2e-feedback-4",
+      type: FeedbackType.BUG,
+      status: FeedbackStatus.DISMISSED,
+      message: "Minor UI glitch in sidebar",
+      page: "/admin",
+    },
+    {
+      id: "e2e-feedback-5",
+      type: FeedbackType.IDEA,
+      status: FeedbackStatus.NEW,
+      message: "Add batch processing for multiple images",
+      page: "/apps/pixel",
+    },
+  ];
+
+  for (const fb of feedbackItems) {
+    await prisma.feedback.upsert({
+      where: { id: fb.id },
+      update: {
+        status: fb.status,
+        type: fb.type,
+      },
+      create: {
+        id: fb.id,
+        userId: TEST_USER_ID,
+        email: TEST_USER_EMAIL,
+        type: fb.type,
+        message: fb.message,
+        page: fb.page,
+        userAgent: fb.userAgent || null,
+        status: fb.status,
+      },
+    });
+  }
+  console.log(`Created ${feedbackItems.length} feedback items for admin tests`);
+
+  // 14. Create test merch orders for order history tests
   // First check if merch products exist
   const tshirtProduct = await prisma.merchProduct.findUnique({
     where: { id: "tshirt-classic" },

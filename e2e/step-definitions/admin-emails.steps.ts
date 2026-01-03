@@ -299,6 +299,23 @@ When(
 When(
   "I click the Send Test button and expect success",
   async function(this: CustomWorld) {
+    // Mock the POST API to return success (avoids RESEND_API_KEY not configured error)
+    await this.page.route("**/api/admin/emails", async (route) => {
+      if (route.request().method() === "POST") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            success: true,
+            message: "Test email sent successfully",
+            emailId: `test-email-${Date.now()}`,
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
     // Ensure button is enabled before clicking
     const button = this.page.getByRole("button", { name: "Send Test" });
     await expect(button).toBeEnabled({ timeout: 10000 });
@@ -682,8 +699,11 @@ Then("BOUNCED status badge should be red", async function(this: CustomWorld) {
 // NOTE: "FAILED status badge should be red" is defined in common.steps.ts
 
 Then("I should see pagination controls", async function(this: CustomWorld) {
-  const pagination = this.page.locator("text=Page 1 of");
-  await expect(pagination).toBeVisible();
+  // Wait for page to load data first
+  await this.page.waitForLoadState("networkidle");
+  // Look for pagination text "Page X of Y" pattern
+  const pagination = this.page.getByText(/Page \d+ of \d+/);
+  await expect(pagination.first()).toBeVisible({ timeout: 10000 });
 });
 
 Then(
@@ -722,12 +742,10 @@ Then(
 Then(
   "I should see {string} text in the table",
   async function(this: CustomWorld, text: string) {
-    // Look for text within the table container
-    const tableContainer = this.page.locator('[class*="Card"]').filter({
-      has: this.page.locator("table"),
-    });
-    const element = tableContainer.getByText(text);
-    await expect(element).toBeVisible({ timeout: 10000 });
+    // Look for text within the table - the loading text is in a td element
+    // Use a shorter timeout because we're racing against the slow API response
+    const element = this.page.locator("table").getByText(text);
+    await expect(element).toBeVisible({ timeout: 3000 });
   },
 );
 

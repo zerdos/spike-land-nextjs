@@ -6,6 +6,14 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FeedbackClient } from "./FeedbackClient";
 
+// Mock sonner toast
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
 const mockFetchResponse = (data: unknown, ok = true): Response => {
   return {
     ok,
@@ -235,6 +243,7 @@ describe("FeedbackClient", () => {
   });
 
   it("should save admin note via API", async () => {
+    const { toast } = await import("sonner");
     vi.mocked(global.fetch).mockResolvedValueOnce(
       mockFetchResponse({
         feedback: {
@@ -245,9 +254,6 @@ describe("FeedbackClient", () => {
         },
       }),
     );
-
-    // Mock alert
-    const alertMock = vi.spyOn(window, "alert").mockImplementation(() => {});
 
     render(<FeedbackClient initialFeedback={mockFeedback} />);
 
@@ -277,7 +283,10 @@ describe("FeedbackClient", () => {
       });
     });
 
-    alertMock.mockRestore();
+    // Verify toast.success was called
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith("Note saved successfully");
+    });
   });
 
   it("should close dialog when clicking close button", async () => {
@@ -303,11 +312,10 @@ describe("FeedbackClient", () => {
   });
 
   it("should handle API error gracefully", async () => {
+    const { toast } = await import("sonner");
     vi.mocked(global.fetch).mockResolvedValueOnce(
       mockFetchResponse({ error: "Failed to update" }, false),
     );
-
-    const alertMock = vi.spyOn(window, "alert").mockImplementation(() => {});
 
     render(<FeedbackClient initialFeedback={mockFeedback} />);
 
@@ -316,11 +324,9 @@ describe("FeedbackClient", () => {
     fireEvent.click(resolveButton!);
 
     await waitFor(() => {
-      // The error message comes from the API response
-      expect(alertMock).toHaveBeenCalledWith("Failed to update");
+      // The error message comes from the API response - now using toast.error
+      expect(toast.error).toHaveBeenCalledWith("Failed to update");
     });
-
-    alertMock.mockRestore();
   });
 
   it("should filter feedback by status locally", () => {

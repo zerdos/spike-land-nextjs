@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 type FeedbackType = "BUG" | "IDEA" | "OTHER";
 type FeedbackStatus = "NEW" | "REVIEWED" | "RESOLVED" | "DISMISSED";
@@ -170,7 +171,9 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
         );
       }
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Failed to update status");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update status",
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -207,9 +210,11 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
           : null
       );
 
-      alert("Note saved successfully");
+      toast.success("Note saved successfully");
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Failed to save note");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save note",
+      );
     } finally {
       setIsUpdating(false);
     }

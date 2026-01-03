@@ -36,12 +36,14 @@ When(
   },
 );
 
-// Common success message check
+// Common success message check (supports Sonner toasts and other notification systems)
 Then("I should see a success message", async function(this: CustomWorld) {
+  // Sonner toasts appear in [data-sonner-toast] elements or as elements with .toast class
+  // Also support role="status" and elements with success-related classes
   const successMessage = this.page.locator(
-    '[role="status"], .success, .toast, [class*="success"]',
+    '[data-sonner-toast][data-type="success"], [role="status"], .success, .toast, [class*="success"], li[data-sonner-toast]',
   );
-  await expect(successMessage).toBeVisible({ timeout: 10000 });
+  await expect(successMessage.first()).toBeVisible({ timeout: 10000 });
 });
 
 // Common error message check
@@ -244,12 +246,10 @@ Then(
 When(
   "I select {string} from the type filter",
   async function(this: CustomWorld, type: string) {
-    // Works for multiple filter implementations (SelectTrigger or combobox)
-    const selectTrigger = this.page.locator('[class*="SelectTrigger"]').nth(1);
-    const combobox = this.page.locator('[role="combobox"]').first();
-
-    const filter = (await selectTrigger.isVisible()) ? selectTrigger : combobox;
-    await filter.click();
+    // Use role="combobox" which is the Radix UI Select trigger role
+    // Type filter is the second combobox on the page (first is status filter)
+    const typeSelect = this.page.getByRole("combobox").nth(1);
+    await typeSelect.click();
     await this.page.locator('[role="option"]').filter({ hasText: type })
       .click();
   },
@@ -290,8 +290,9 @@ Then("FAILED status badge should be red", async function(this: CustomWorld) {
 Then(
   "I should see the delete confirmation dialog",
   async function(this: CustomWorld) {
+    // Exclude cookie consent dialog which has aria-labelledby="cookie-consent-title"
     const dialog = this.page.locator(
-      '[role="dialog"], [role="alertdialog"]',
+      '[role="dialog"]:not([aria-labelledby="cookie-consent-title"]), [role="alertdialog"]',
     );
     await expect(dialog).toBeVisible();
   },
@@ -890,5 +891,14 @@ Given(
       await images.nth(i).click({ modifiers: ["Control"] });
       await this.page.waitForTimeout(100);
     }
+  },
+);
+
+// Navigation without waiting for network idle - used for testing loading states
+When(
+  "I navigate quickly to {string}",
+  async function(this: CustomWorld, path: string) {
+    // Navigate without waiting for network idle so we can observe loading states
+    await this.page.goto(`${this.baseUrl}${path}`, { waitUntil: "commit" });
   },
 );
