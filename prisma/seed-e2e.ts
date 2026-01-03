@@ -2,6 +2,9 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import {
   AlbumPrivacy,
   EnhancementTier,
+  ExternalAgentStatus,
+  FeedbackStatus,
+  FeedbackType,
   GalleryCategory,
   JobStatus,
   PrismaClient,
@@ -398,7 +401,274 @@ async function main() {
   });
   console.log("Created 2 featured gallery items");
 
-  // 12. Create test merch orders for order history tests
+  // 11.5. Seed merch catalog for E2E tests
+  // Categories
+  const printsCategory = await prisma.merchCategory.upsert({
+    where: { slug: "prints" },
+    update: {},
+    create: {
+      name: "Prints",
+      slug: "prints",
+      description: "High-quality photo prints on premium paper",
+      icon: "🖼️",
+      sortOrder: 1,
+      isActive: true,
+    },
+  });
+
+  const apparelCategory = await prisma.merchCategory.upsert({
+    where: { slug: "apparel" },
+    update: {},
+    create: {
+      name: "Apparel",
+      slug: "apparel",
+      description: "Custom printed clothing and accessories",
+      icon: "👕",
+      sortOrder: 2,
+      isActive: true,
+    },
+  });
+
+  // Products
+  await prisma.merchProduct.upsert({
+    where: { id: "print-premium-lustre" },
+    update: {},
+    create: {
+      id: "print-premium-lustre",
+      name: "Premium Lustre Print",
+      description: "Museum-quality lustre finish print on archival paper.",
+      categoryId: printsCategory.id,
+      provider: "PRODIGI",
+      providerSku: "GLOBAL-FAP-A4",
+      basePrice: 8.99,
+      retailPrice: 24.99,
+      currency: "GBP",
+      isActive: true,
+      sortOrder: 1,
+      minDpi: 150,
+      minWidth: 2400,
+      minHeight: 3300,
+    },
+  });
+
+  await prisma.merchProduct.upsert({
+    where: { id: "tshirt-classic" },
+    update: {},
+    create: {
+      id: "tshirt-classic",
+      name: "Classic T-Shirt",
+      description: "Soft cotton t-shirt with full-front print.",
+      categoryId: apparelCategory.id,
+      provider: "PRODIGI",
+      providerSku: "GLOBAL-APP-TSH",
+      basePrice: 12.99,
+      retailPrice: 29.99,
+      currency: "GBP",
+      isActive: true,
+      sortOrder: 1,
+      minDpi: 150,
+      minWidth: 3000,
+      minHeight: 3000,
+      printAreaWidth: 3000,
+      printAreaHeight: 3000,
+    },
+  });
+
+  // Variants for t-shirt
+  await Promise.all([
+    prisma.merchVariant.upsert({
+      where: { id: "tshirt-classic-s" },
+      update: {},
+      create: {
+        id: "tshirt-classic-s",
+        productId: "tshirt-classic",
+        name: "Small",
+        providerSku: "GLOBAL-APP-TSH-S",
+        priceDelta: 0,
+        isActive: true,
+        attributes: { size: "S", chest: "34-36" },
+      },
+    }),
+    prisma.merchVariant.upsert({
+      where: { id: "tshirt-classic-m" },
+      update: {},
+      create: {
+        id: "tshirt-classic-m",
+        productId: "tshirt-classic",
+        name: "Medium",
+        providerSku: "GLOBAL-APP-TSH-M",
+        priceDelta: 0,
+        isActive: true,
+        attributes: { size: "M", chest: "38-40" },
+      },
+    }),
+    prisma.merchVariant.upsert({
+      where: { id: "tshirt-classic-l" },
+      update: {},
+      create: {
+        id: "tshirt-classic-l",
+        productId: "tshirt-classic",
+        name: "Large",
+        providerSku: "GLOBAL-APP-TSH-L",
+        priceDelta: 0,
+        isActive: true,
+        attributes: { size: "L", chest: "42-44" },
+      },
+    }),
+  ]);
+
+  // Variants for print
+  await Promise.all([
+    prisma.merchVariant.upsert({
+      where: { id: "print-premium-lustre-a4" },
+      update: {},
+      create: {
+        id: "print-premium-lustre-a4",
+        productId: "print-premium-lustre",
+        name: 'A4 (8.3" x 11.7")',
+        providerSku: "GLOBAL-FAP-A4",
+        priceDelta: 0,
+        isActive: true,
+        attributes: { size: "A4", width: 210, height: 297 },
+      },
+    }),
+    prisma.merchVariant.upsert({
+      where: { id: "print-premium-lustre-a3" },
+      update: {},
+      create: {
+        id: "print-premium-lustre-a3",
+        productId: "print-premium-lustre",
+        name: 'A3 (11.7" x 16.5")',
+        providerSku: "GLOBAL-FAP-A3",
+        priceDelta: 12.0,
+        isActive: true,
+        attributes: { size: "A3", width: 297, height: 420 },
+      },
+    }),
+  ]);
+
+  console.log("Created 2 merch categories, 2 products, 5 variants for E2E tests");
+
+  // 12. Create external agent sessions for admin agents dashboard tests
+  // Create session with AWAITING_PLAN_APPROVAL status (for approve button test)
+  await prisma.externalAgentSession.upsert({
+    where: { id: "e2e-agent-session-awaiting" },
+    update: {
+      status: ExternalAgentStatus.AWAITING_PLAN_APPROVAL,
+      planSummary:
+        "E2E test plan: Fix the authentication bug by updating the token validation logic",
+    },
+    create: {
+      id: "e2e-agent-session-awaiting",
+      externalId: "sessions/e2e-awaiting-123",
+      provider: "JULES",
+      name: "E2E Test: Fix Auth Bug",
+      description: "Automated test session awaiting plan approval",
+      status: ExternalAgentStatus.AWAITING_PLAN_APPROVAL,
+      sourceRepo: "zerdos/spike-land-nextjs",
+      startingBranch: "main",
+      planSummary:
+        "E2E test plan: Fix the authentication bug by updating the token validation logic",
+    },
+  });
+
+  // Create session with IN_PROGRESS status
+  await prisma.externalAgentSession.upsert({
+    where: { id: "e2e-agent-session-progress" },
+    update: {
+      status: ExternalAgentStatus.IN_PROGRESS,
+    },
+    create: {
+      id: "e2e-agent-session-progress",
+      externalId: "sessions/e2e-progress-456",
+      provider: "JULES",
+      name: "E2E Test: Add Unit Tests",
+      description: "Automated test session in progress",
+      status: ExternalAgentStatus.IN_PROGRESS,
+      sourceRepo: "zerdos/spike-land-nextjs",
+      startingBranch: "main",
+      planSummary: "Adding comprehensive unit tests for the user service",
+      planApprovedAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
+    },
+  });
+
+  // Create activity for the in-progress session
+  await prisma.agentSessionActivity.upsert({
+    where: { id: "e2e-agent-activity-1" },
+    update: {},
+    create: {
+      id: "e2e-agent-activity-1",
+      sessionId: "e2e-agent-session-progress",
+      externalId: "activity-1",
+      type: "code_committed",
+      content: "Committed test files for user service",
+      createdAt: new Date(Date.now() - 30 * 60 * 1000), // 30 mins ago
+    },
+  });
+  console.log("Created 2 external agent sessions for admin dashboard tests");
+
+  // 13. Create feedback items for admin feedback management tests
+  const feedbackItems = [
+    {
+      id: "e2e-feedback-1",
+      type: FeedbackType.BUG,
+      status: FeedbackStatus.NEW,
+      message: "App crashes when uploading large images",
+      page: "/apps/pixel",
+      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    },
+    {
+      id: "e2e-feedback-2",
+      type: FeedbackType.IDEA,
+      status: FeedbackStatus.REVIEWED,
+      message: "Would be great to have dark mode support",
+      page: "/settings",
+    },
+    {
+      id: "e2e-feedback-3",
+      type: FeedbackType.OTHER,
+      status: FeedbackStatus.RESOLVED,
+      message: "General feedback about the user experience",
+      page: "/",
+    },
+    {
+      id: "e2e-feedback-4",
+      type: FeedbackType.BUG,
+      status: FeedbackStatus.DISMISSED,
+      message: "Minor UI glitch in sidebar",
+      page: "/admin",
+    },
+    {
+      id: "e2e-feedback-5",
+      type: FeedbackType.IDEA,
+      status: FeedbackStatus.NEW,
+      message: "Add batch processing for multiple images",
+      page: "/apps/pixel",
+    },
+  ];
+
+  for (const fb of feedbackItems) {
+    await prisma.feedback.upsert({
+      where: { id: fb.id },
+      update: {
+        status: fb.status,
+        type: fb.type,
+      },
+      create: {
+        id: fb.id,
+        userId: TEST_USER_ID,
+        email: TEST_USER_EMAIL,
+        type: fb.type,
+        message: fb.message,
+        page: fb.page,
+        userAgent: fb.userAgent || null,
+        status: fb.status,
+      },
+    });
+  }
+  console.log(`Created ${feedbackItems.length} feedback items for admin tests`);
+
+  // 14. Create test merch orders for order history tests
   // First check if merch products exist
   const tshirtProduct = await prisma.merchProduct.findUnique({
     where: { id: "tshirt-classic" },
@@ -484,15 +754,15 @@ async function main() {
       create: {
         id: "e2e-order-paid-item-1",
         orderId: paidOrder.id,
-        productId: "canvas-stretched",
-        variantId: "canvas-stretched-12x16",
-        productName: "Stretched Canvas",
-        variantName: '12" x 16"',
-        imageUrl: "https://placehold.co/400x400.png/333/white?text=Canvas",
-        imageR2Key: "e2e/canvas-stretched.png",
+        productId: "print-premium-lustre",
+        variantId: "print-premium-lustre-a4",
+        productName: "Premium Lustre Print",
+        variantName: "A4",
+        imageUrl: "https://placehold.co/400x400.png/333/white?text=Print+A4",
+        imageR2Key: "e2e/print-a4.png",
         quantity: 1,
-        unitPrice: 49.99,
-        totalPrice: 49.99,
+        unitPrice: 19.99,
+        totalPrice: 19.99,
       },
     });
     await prisma.merchOrderItem.upsert({
@@ -546,15 +816,15 @@ async function main() {
       create: {
         id: "e2e-order-shipped-item-1",
         orderId: shippedOrder.id,
-        productId: "canvas-stretched",
-        variantId: "canvas-stretched-16x20",
-        productName: "Stretched Canvas",
-        variantName: '16" x 20"',
-        imageUrl: "https://placehold.co/400x400.png/333/white?text=Canvas+16x20",
-        imageR2Key: "e2e/canvas-16x20.png",
+        productId: "print-premium-lustre",
+        variantId: "print-premium-lustre-a3",
+        productName: "Premium Lustre Print",
+        variantName: "A3",
+        imageUrl: "https://placehold.co/400x400.png/333/white?text=Print+A3",
+        imageR2Key: "e2e/print-a3.png",
         quantity: 1,
-        unitPrice: 64.99,
-        totalPrice: 64.99,
+        unitPrice: 29.99,
+        totalPrice: 29.99,
       },
     });
 

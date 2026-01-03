@@ -37,6 +37,7 @@ Feature: Error Pages and Error Boundaries
     Then the page should load successfully
     And I should see "Authentication Error" text
 
+  @requires-no-session
   Scenario: Auth error page Try Again button navigates to sign in
     When I visit "/auth/error?error=Configuration"
     And I click the "Try Again" link
@@ -62,6 +63,7 @@ Feature: Error Pages and Error Boundaries
     Then the page should load successfully
 
   # Error Recovery Tests
+  @requires-no-session
   Scenario: Users can recover from auth error by trying again
     When I visit "/auth/error?error=Verification"
     Then the page should load successfully

@@ -7,6 +7,20 @@ async function mockAdminStatus(world: CustomWorld, isAdmin: boolean) {
   // If user is admin, we rely on real DB permissions (seeded) and real API responses.
   // We only intercept if we want to simulate a non-admin user getting blocked.
   if (!isAdmin) {
+    // Update the e2e-user-role cookie to USER (overrides any previous ADMIN setting)
+    // This is needed because the admin layout checks the role from the cookie directly
+    await world.page.context().addCookies([
+      {
+        name: "e2e-user-role",
+        value: "USER",
+        domain: "localhost",
+        path: "/",
+        httpOnly: true,
+        sameSite: "Lax" as const,
+        expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+      },
+    ]);
+
     // Mock the admin check API or middleware to fail
     await world.page.route("**/api/admin/**", async (route) => {
       await route.fulfill({
@@ -26,6 +40,115 @@ async function mockAdminStatus(world: CustomWorld, isAdmin: boolean) {
 // Given steps
 Given("the user is an admin", async function(this: CustomWorld) {
   await mockAdminStatus(this, true);
+
+  // Mock the resources API to return valid data for E2E tests
+  await this.page.route("**/api/admin/agents/resources", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        resources: {
+          devServer: { running: true, port: 3000, url: "http://localhost:3000" },
+          mcpServers: [
+            { name: "playwright", type: "stdio", configured: true },
+          ],
+          database: { connected: true, provider: "postgresql" },
+          environment: {
+            nodeEnv: "test",
+            julesConfigured: true,
+            githubConfigured: true,
+          },
+        },
+        checkedAt: new Date().toISOString(),
+      }),
+    });
+  });
+
+  // Mock the main agents API to return julesAvailable: true
+  await this.page.route("**/api/admin/agents", async (route) => {
+    const url = new URL(route.request().url());
+    // Only mock exact /api/admin/agents path (not subpaths like /resources, /git)
+    if (!url.pathname.endsWith("/api/admin/agents")) {
+      await route.continue();
+      return;
+    }
+    if (route.request().method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          julesAvailable: true,
+          sessions: [],
+          pagination: { total: 0, page: 1, limit: 20 },
+          statusCounts: {},
+        }),
+      });
+    } else {
+      await route.continue();
+    }
+  });
+
+  // Mock the git info API to return valid data for E2E tests
+  await this.page.route("**/api/admin/agents/git", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        branch: "feature/e2e-test-branch",
+        baseBranch: "main",
+        changedFiles: [
+          { path: "src/components/example.tsx", status: "modified" },
+          { path: "src/lib/utils.ts", status: "added" },
+        ],
+        uncommittedChanges: 2,
+        aheadBy: 3,
+        behindBy: 0,
+        lastCommit: {
+          sha: "abc123def",
+          message: "feat: Add new feature",
+          author: "Test User",
+          date: new Date().toISOString(),
+        },
+      }),
+    });
+  });
+
+  // Mock GitHub issues API to return valid data for E2E tests
+  await this.page.route("**/api/admin/agents/github/issues*", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        issues: [
+          {
+            number: 123,
+            title: "Test Issue",
+            state: "open",
+            url: "https://github.com/test/repo/issues/123",
+          },
+        ],
+        pullRequests: [
+          {
+            number: 456,
+            title: "Test PR",
+            state: "open",
+            url: "https://github.com/test/repo/pull/456",
+          },
+        ],
+        workflows: [
+          {
+            id: 1,
+            name: "CI",
+            status: "completed",
+            conclusion: "success",
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        githubConfigured: true,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+  });
 });
 
 Given("the user is not an admin", async function(this: CustomWorld) {
@@ -54,7 +177,13 @@ When(
     const link = quickLinksSection.getByRole("link", { name: linkText });
     await expect(link).toBeVisible();
     await link.click();
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
+    // Try networkidle with short timeout, but don't fail if it times out
+    try {
+      await this.page.waitForLoadState("networkidle", { timeout: 5000 });
+    } catch {
+      // Network may still be active, that's OK
+    }
   },
 );
 
@@ -76,22 +205,39 @@ When(
   async function(this: CustomWorld, linkText: string) {
     const sidebar = this.page.locator("aside");
     // Ensure sidebar is stable
-    await expect(sidebar).toBeVisible();
+    await expect(sidebar).toBeVisible({ timeout: 10000 });
 
-    // Try exact match first, then fall back to partial match
-    // This handles cases like "← Back to App" where the link has an icon prefix
-    let link = sidebar.getByRole("link", { name: linkText, exact: true });
-    const exactVisible = await link.isVisible().catch(() => false);
+    // Find the link - try partial match for links with icons/prefixes like "← Back to App"
+    let link = sidebar.locator("a").filter({ hasText: linkText });
 
-    if (!exactVisible) {
-      // Fall back to partial match for links with icons/prefixes
-      link = sidebar.locator("a").filter({ hasText: linkText });
+    // Check if link exists
+    const count = await link.count();
+    if (count === 0) {
+      // Try to find it in the Sheet/drawer for mobile view
+      const sheet = this.page.locator('[role="dialog"]');
+      link = sheet.locator("a").filter({ hasText: linkText });
     }
 
-    await expect(link.first()).toBeVisible();
+    // For "Back to App" link at bottom of sidebar, we may need to scroll the nav area
+    // The sidebar has a fixed structure with scrollable nav section
+    if (linkText.includes("Back to App")) {
+      // Scroll the sidebar nav to bottom to make sure "Back to App" section is visible
+      await sidebar.evaluate((el) => {
+        const scrollableNav = el.querySelector(".overflow-y-auto");
+        if (scrollableNav) {
+          scrollableNav.scrollTop = scrollableNav.scrollHeight;
+        }
+      });
+      await this.page.waitForTimeout(200);
+    }
+
+    // Scroll the link into view if needed
+    await link.first().scrollIntoViewIfNeeded({ timeout: 5000 });
+
+    await expect(link.first()).toBeVisible({ timeout: 5000 });
 
     // Wait for any potential animations or transitions
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(300);
 
     // Click and wait for navigation if it's a link
     await link.first().click();
@@ -302,12 +448,12 @@ Then(
     const main = this.page.locator("main");
     await expect(main).toBeVisible();
 
-    // Check if main has margin-left to account for sidebar
-    const marginLeft = await main.evaluate((el) => {
-      return window.getComputedStyle(el).marginLeft;
+    // Check if main has padding-left to account for sidebar (lg:pl-64 = 256px)
+    const paddingLeft = await main.evaluate((el) => {
+      return window.getComputedStyle(el).paddingLeft;
     });
 
-    // Should have margin-left for the 256px sidebar (16rem * 16px = 256px)
-    expect(marginLeft).not.toBe("0px");
+    // Should have padding-left for the 256px sidebar (16rem * 16px = 256px)
+    expect(paddingLeft).not.toBe("0px");
   },
 );

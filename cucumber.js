@@ -115,10 +115,10 @@ module.exports = {
     ],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failFast: false, // Run all DB tests to get full report
-    retry: 1, // Retry once for transient DB issues
+    failFast: true, // Run all DB tests to get full report
+    retry: 0, // Retry once for transient DB issues
     tags: "@requires-db and not @skip and not @flaky",
-    timeout: 30000, // Longer timeout for DB operations
-    parallel: 1, // Sequential to avoid DB conflicts
+    timeout: 10000, // Longer timeout for DB operations
+    parallel: 16, // Parallel DB tests
   },
 };

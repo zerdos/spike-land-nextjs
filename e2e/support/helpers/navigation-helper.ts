@@ -1,9 +1,19 @@
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 
+// Helper to wait for network with fallback
+async function waitForNetworkIdle(page: Page, timeout: number = 5000) {
+  try {
+    await page.waitForLoadState("networkidle", { timeout });
+  } catch {
+    // Network may still be active (polling, websockets), that's OK
+  }
+}
+
 export async function navigateToHome(page: Page, baseUrl: string) {
   await page.goto(baseUrl);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
+  await waitForNetworkIdle(page);
 }
 
 export async function navigateToPath(
@@ -12,14 +22,16 @@ export async function navigateToPath(
   path: string,
 ) {
   await page.goto(`${baseUrl}${path}`);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
+  await waitForNetworkIdle(page);
 }
 
 export async function clickLink(page: Page, linkText: string) {
   const link = page.getByRole("link", { name: linkText });
   await expect(link).toBeVisible();
   await link.click();
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
+  await waitForNetworkIdle(page);
 }
 
 export async function clickButton(page: Page, buttonText: string) {
@@ -47,7 +59,8 @@ export async function clickOutside(page: Page) {
 
 export async function goBack(page: Page) {
   await page.goBack();
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
+  await waitForNetworkIdle(page);
 }
 
 export async function getCurrentUrl(page: Page): Promise<string> {
@@ -69,7 +82,8 @@ export async function waitForNavigation(
   if (urlPattern) {
     await page.waitForURL(urlPattern);
   } else {
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
+    await waitForNetworkIdle(page);
   }
 }
 

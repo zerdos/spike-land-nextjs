@@ -35,6 +35,7 @@ vi.mock("framer-motion", () => ({
         transition?: Record<string, unknown>;
         [key: string]: unknown;
       },
+      // eslint-disable-next-line @next/next/no-img-element
     ) => <img {...props}>{children}</img>,
     div: (
       {

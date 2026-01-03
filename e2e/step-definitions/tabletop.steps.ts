@@ -6,7 +6,8 @@ import type { CustomWorld } from "../support/world";
 Given(
   "I am on the tabletop simulator home page",
   async function(this: CustomWorld) {
-    await this.page.goto(`${this.baseUrl}/apps/tabletop-simulator`);
+    // Use ?e2e=true to enable E2E mode which bypasses Yjs/WebRTC
+    await this.page.goto(`${this.baseUrl}/apps/tabletop-simulator?e2e=true`);
     await this.page.waitForLoadState("networkidle");
   },
 );
@@ -23,29 +24,18 @@ Then("I should see the join room input", async function(this: CustomWorld) {
 });
 
 Given("I am in a tabletop game room", async function(this: CustomWorld) {
-  // Create a new room by visiting the app and clicking create
-  await this.page.goto(`${this.baseUrl}/apps/tabletop-simulator`);
-  await this.page.waitForLoadState("networkidle");
-
-  // Look for create room button and click it
-  const createButton = this.page.getByRole("button", {
-    name: /create.*room|new.*game/i,
-  });
-  if (await createButton.isVisible()) {
-    await createButton.click();
-    await this.page.waitForURL(/\/room\/[A-Z0-9]+$/i);
-  } else {
-    // If we're already in a room or there's a direct entry, just proceed
-    // Generate a test room ID
-    const testRoomId = "TEST" + Date.now().toString(36).toUpperCase();
-    await this.page.goto(
-      `${this.baseUrl}/apps/tabletop-simulator/room/${testRoomId}`,
-    );
-  }
+  // Generate a test room ID and navigate directly with E2E mode enabled
+  // This bypasses Yjs/WebRTC initialization which would timeout in test environment
+  const testRoomId = "E2E" + Date.now().toString(36).toUpperCase();
+  await this.page.goto(
+    `${this.baseUrl}/apps/tabletop-simulator/room/${testRoomId}?e2e=true`,
+  );
 
   await this.page.waitForLoadState("networkidle");
-  // Wait for the canvas to be ready
-  await this.page.waitForSelector("canvas", { timeout: 10000 });
+  // Wait for the Three.js canvas to be fully loaded
+  // The data-engine attribute is added when Three.js is initialized
+  const canvas = this.page.locator('canvas[data-engine*="three.js"]');
+  await canvas.waitFor({ state: "visible", timeout: 30000 });
 });
 
 // Mobile device simulation
@@ -88,7 +78,7 @@ When("I create a new game room", async function(this: CustomWorld) {
     name: /create.*room|new.*game|start/i,
   });
   await createButton.click();
-  await this.page.waitForURL(/\/room\/[A-Z0-9]+$/i, { timeout: 10000 });
+  await this.page.waitForURL(/\/apps\/tabletop-simulator\/room\/[A-Z0-9]+$/i, { timeout: 15000 });
 });
 
 Then(
