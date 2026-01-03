@@ -401,6 +401,154 @@ async function main() {
   });
   console.log("Created 2 featured gallery items");
 
+  // 11.5. Seed merch catalog for E2E tests
+  // Categories
+  const printsCategory = await prisma.merchCategory.upsert({
+    where: { slug: "prints" },
+    update: {},
+    create: {
+      name: "Prints",
+      slug: "prints",
+      description: "High-quality photo prints on premium paper",
+      icon: "🖼️",
+      sortOrder: 1,
+      isActive: true,
+    },
+  });
+
+  const apparelCategory = await prisma.merchCategory.upsert({
+    where: { slug: "apparel" },
+    update: {},
+    create: {
+      name: "Apparel",
+      slug: "apparel",
+      description: "Custom printed clothing and accessories",
+      icon: "👕",
+      sortOrder: 2,
+      isActive: true,
+    },
+  });
+
+  // Products
+  await prisma.merchProduct.upsert({
+    where: { id: "print-premium-lustre" },
+    update: {},
+    create: {
+      id: "print-premium-lustre",
+      name: "Premium Lustre Print",
+      description: "Museum-quality lustre finish print on archival paper.",
+      categoryId: printsCategory.id,
+      provider: "PRODIGI",
+      providerSku: "GLOBAL-FAP-A4",
+      basePrice: 8.99,
+      retailPrice: 24.99,
+      currency: "GBP",
+      isActive: true,
+      sortOrder: 1,
+      minDpi: 150,
+      minWidth: 2400,
+      minHeight: 3300,
+    },
+  });
+
+  await prisma.merchProduct.upsert({
+    where: { id: "tshirt-classic" },
+    update: {},
+    create: {
+      id: "tshirt-classic",
+      name: "Classic T-Shirt",
+      description: "Soft cotton t-shirt with full-front print.",
+      categoryId: apparelCategory.id,
+      provider: "PRODIGI",
+      providerSku: "GLOBAL-APP-TSH",
+      basePrice: 12.99,
+      retailPrice: 29.99,
+      currency: "GBP",
+      isActive: true,
+      sortOrder: 1,
+      minDpi: 150,
+      minWidth: 3000,
+      minHeight: 3000,
+      printAreaWidth: 3000,
+      printAreaHeight: 3000,
+    },
+  });
+
+  // Variants for t-shirt
+  await Promise.all([
+    prisma.merchVariant.upsert({
+      where: { id: "tshirt-classic-s" },
+      update: {},
+      create: {
+        id: "tshirt-classic-s",
+        productId: "tshirt-classic",
+        name: "Small",
+        providerSku: "GLOBAL-APP-TSH-S",
+        priceDelta: 0,
+        isActive: true,
+        attributes: { size: "S", chest: "34-36" },
+      },
+    }),
+    prisma.merchVariant.upsert({
+      where: { id: "tshirt-classic-m" },
+      update: {},
+      create: {
+        id: "tshirt-classic-m",
+        productId: "tshirt-classic",
+        name: "Medium",
+        providerSku: "GLOBAL-APP-TSH-M",
+        priceDelta: 0,
+        isActive: true,
+        attributes: { size: "M", chest: "38-40" },
+      },
+    }),
+    prisma.merchVariant.upsert({
+      where: { id: "tshirt-classic-l" },
+      update: {},
+      create: {
+        id: "tshirt-classic-l",
+        productId: "tshirt-classic",
+        name: "Large",
+        providerSku: "GLOBAL-APP-TSH-L",
+        priceDelta: 0,
+        isActive: true,
+        attributes: { size: "L", chest: "42-44" },
+      },
+    }),
+  ]);
+
+  // Variants for print
+  await Promise.all([
+    prisma.merchVariant.upsert({
+      where: { id: "print-premium-lustre-a4" },
+      update: {},
+      create: {
+        id: "print-premium-lustre-a4",
+        productId: "print-premium-lustre",
+        name: 'A4 (8.3" x 11.7")',
+        providerSku: "GLOBAL-FAP-A4",
+        priceDelta: 0,
+        isActive: true,
+        attributes: { size: "A4", width: 210, height: 297 },
+      },
+    }),
+    prisma.merchVariant.upsert({
+      where: { id: "print-premium-lustre-a3" },
+      update: {},
+      create: {
+        id: "print-premium-lustre-a3",
+        productId: "print-premium-lustre",
+        name: 'A3 (11.7" x 16.5")',
+        providerSku: "GLOBAL-FAP-A3",
+        priceDelta: 12.0,
+        isActive: true,
+        attributes: { size: "A3", width: 297, height: 420 },
+      },
+    }),
+  ]);
+
+  console.log("Created 2 merch categories, 2 products, 5 variants for E2E tests");
+
   // 12. Create external agent sessions for admin agents dashboard tests
   // Create session with AWAITING_PLAN_APPROVAL status (for approve button test)
   await prisma.externalAgentSession.upsert({

@@ -394,8 +394,16 @@ Then(
 
 // Navigation steps
 When("I visit {string}", async function(this: CustomWorld, path: string) {
-  await this.page.goto(`${this.baseUrl}${path}`);
-  await this.page.waitForLoadState("networkidle");
+  await this.page.goto(`${this.baseUrl}${path}`, { waitUntil: "commit" });
+
+  // Allow server-side redirects to complete without timeout
+  // Some pages (like admin pages for non-admins) redirect immediately
+  try {
+    await this.page.waitForLoadState("networkidle", { timeout: 5000 });
+  } catch {
+    // Timeout acceptable if page redirected - the redirect should complete
+    await this.page.waitForLoadState("domcontentloaded");
+  }
 });
 
 Then(

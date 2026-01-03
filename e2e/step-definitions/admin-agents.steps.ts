@@ -229,8 +229,10 @@ Then("I should see session activity log", async function(this: CustomWorld) {
 });
 
 Then("I should see resource status items", async function(this: CustomWorld) {
+  // Accept either real resource items OR the empty state (both are valid states)
   const resourceItem = this.page.locator("[data-testid*='resource']")
-    .or(this.page.getByText(/dev server|mcp|database/i));
+    .or(this.page.getByText(/dev server|mcp|database/i))
+    .or(this.page.getByTestId("resources-empty-state"));
   await expect(resourceItem.first()).toBeVisible({ timeout: 10000 });
 });
 

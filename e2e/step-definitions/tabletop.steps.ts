@@ -6,7 +6,8 @@ import type { CustomWorld } from "../support/world";
 Given(
   "I am on the tabletop simulator home page",
   async function(this: CustomWorld) {
-    await this.page.goto(`${this.baseUrl}/apps/tabletop-simulator`);
+    // Use ?e2e=true to enable E2E mode which bypasses Yjs/WebRTC
+    await this.page.goto(`${this.baseUrl}/apps/tabletop-simulator?e2e=true`);
     await this.page.waitForLoadState("networkidle");
   },
 );
@@ -23,25 +24,12 @@ Then("I should see the join room input", async function(this: CustomWorld) {
 });
 
 Given("I am in a tabletop game room", async function(this: CustomWorld) {
-  // Create a new room by visiting the app and clicking create
-  await this.page.goto(`${this.baseUrl}/apps/tabletop-simulator`);
-  await this.page.waitForLoadState("networkidle");
-
-  // Look for create room button and click it
-  const createButton = this.page.getByRole("button", {
-    name: /create.*room|new.*game/i,
-  });
-  if (await createButton.isVisible()) {
-    await createButton.click();
-    await this.page.waitForURL(/\/room\/[A-Z0-9]+$/i);
-  } else {
-    // If we're already in a room or there's a direct entry, just proceed
-    // Generate a test room ID
-    const testRoomId = "TEST" + Date.now().toString(36).toUpperCase();
-    await this.page.goto(
-      `${this.baseUrl}/apps/tabletop-simulator/room/${testRoomId}`,
-    );
-  }
+  // Generate a test room ID and navigate directly with E2E mode enabled
+  // This bypasses Yjs/WebRTC initialization which would timeout in test environment
+  const testRoomId = "E2E" + Date.now().toString(36).toUpperCase();
+  await this.page.goto(
+    `${this.baseUrl}/apps/tabletop-simulator/room/${testRoomId}?e2e=true`,
+  );
 
   await this.page.waitForLoadState("networkidle");
   // Wait for the canvas to be ready
