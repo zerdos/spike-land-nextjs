@@ -11,9 +11,7 @@ vi.mock("next/navigation", () => ({
 // Mock next-auth/react
 vi.mock("next-auth/react", () => ({
   useSession: vi.fn(() => ({ data: null })),
-  SessionProvider: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
+  SessionProvider: ({ children }: { children: React.ReactNode; }) => <>{children}</>,
 }));
 
 describe("OrbitSidebar", () => {
@@ -25,7 +23,7 @@ describe("OrbitSidebar", () => {
       <OrbitSidebar
         userEmail="test@example.com"
         userName="Test User"
-      />
+      />,
     );
 
     const links = [
@@ -51,7 +49,7 @@ describe("OrbitSidebar", () => {
       <OrbitSidebar
         userEmail="test@example.com"
         userName="Test User"
-      />
+      />,
     );
 
     const activeLink = screen.getByRole("link", { name: /Dashboard/i });
@@ -66,7 +64,7 @@ describe("OrbitSidebar", () => {
       <OrbitSidebar
         userEmail="test@example.com"
         userName="Test User"
-      />
+      />,
     );
 
     expect(screen.getByText("Test User")).toBeInTheDocument();
@@ -81,7 +79,7 @@ describe("OrbitSidebar", () => {
       <OrbitSidebar
         userEmail="test@example.com"
         userName="Test User"
-      />
+      />,
     );
 
     const backLink = screen.getByRole("link", { name: "Back to App" });

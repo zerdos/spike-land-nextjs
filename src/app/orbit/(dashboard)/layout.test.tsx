@@ -9,7 +9,7 @@ vi.mock("@/auth", () => ({
 
 // Mock OrbitSidebar
 vi.mock("./OrbitSidebar", () => ({
-  OrbitSidebar: ({ userEmail, userName }: { userEmail: string; userName: string }) => (
+  OrbitSidebar: ({ userEmail, userName }: { userEmail: string; userName: string; }) => (
     <div data-testid="orbit-sidebar">
       Sidebar: {userName} ({userEmail})
     </div>
