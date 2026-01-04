@@ -47,7 +47,11 @@ export function createSocialClient(
       const { InstagramClient } = require("./clients/instagram");
       return new InstagramClient(options);
     }
-    case "LINKEDIN":
+    case "LINKEDIN": {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { LinkedInClient } = require("./clients/linkedin");
+      return new LinkedInClient(options);
+    }
     case "TIKTOK":
       throw new Error(`Platform ${platform} is not yet implemented`);
     default:
@@ -81,7 +85,12 @@ export function getSocialAuthUrl(
       const client = new FacebookClient();
       return client.getAuthUrl(redirectUri, state);
     }
-    case "LINKEDIN":
+    case "LINKEDIN": {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { LinkedInClient } = require("./clients/linkedin");
+      const client = new LinkedInClient();
+      return client.getAuthUrl(redirectUri, state);
+    }
     case "TIKTOK":
       throw new Error(`Platform ${platform} is not yet implemented`);
     default:

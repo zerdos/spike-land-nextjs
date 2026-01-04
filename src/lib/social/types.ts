@@ -239,3 +239,115 @@ export interface PKCEChallenge {
   codeChallenge: string;
   codeChallengeMethod: "S256";
 }
+
+/**
+ * LinkedIn-specific types
+ */
+export interface LinkedInOrganization {
+  id: string;
+  localizedName: string;
+  vanityName?: string;
+  logoV2?: {
+    original: string;
+  };
+}
+
+export interface LinkedInPost {
+  id: string;
+  author: string;
+  commentary: string;
+  created: { time: number; };
+  visibility: string;
+}
+
+/**
+ * YouTube-specific types
+ * Note: YouTube is not in the Prisma SocialPlatform enum
+ */
+export interface YouTubeChannel {
+  id: string;
+  title: string;
+  description?: string;
+  customUrl?: string;
+  thumbnails?: {
+    default?: { url: string; };
+    medium?: { url: string; };
+    high?: { url: string; };
+  };
+  statistics?: {
+    subscriberCount: string;
+    viewCount: string;
+    videoCount: string;
+  };
+}
+
+export interface YouTubeVideo {
+  id: string;
+  title: string;
+  description?: string;
+  publishedAt: string;
+  thumbnails?: {
+    default?: { url: string; };
+    medium?: { url: string; };
+    high?: { url: string; };
+  };
+  statistics?: {
+    viewCount: string;
+    likeCount: string;
+    commentCount: string;
+  };
+}
+
+/**
+ * Discord-specific types
+ * Note: Discord uses Bot Token auth, not OAuth
+ */
+export interface DiscordGuild {
+  id: string;
+  name: string;
+  icon?: string;
+  member_count?: number;
+  approximate_member_count?: number;
+  approximate_presence_count?: number;
+  premium_tier?: number;
+  premium_subscription_count?: number;
+}
+
+export interface DiscordMessage {
+  id: string;
+  content: string;
+  channel_id: string;
+  author: {
+    id: string;
+    username: string;
+    bot?: boolean;
+  };
+  timestamp: string;
+  embeds?: DiscordEmbed[];
+}
+
+export interface DiscordEmbed {
+  title?: string;
+  description?: string;
+  color?: number;
+  fields?: Array<{ name: string; value: string; inline?: boolean; }>;
+  thumbnail?: { url: string; };
+  image?: { url: string; };
+  footer?: { text: string; };
+  timestamp?: string;
+}
+
+export interface DiscordMetrics {
+  memberCount: number;
+  onlineCount: number;
+  serverName: string;
+  serverIcon?: string;
+  premiumTier?: number;
+  boostCount?: number;
+}
+
+/**
+ * Extended platform type that includes platforms not in Prisma enum
+ * Use this for runtime platform identification
+ */
+export type ExtendedSocialPlatform = SocialPlatform | "YOUTUBE" | "DISCORD";
