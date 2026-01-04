@@ -6,6 +6,16 @@ pipeline.
 
 [![CI/CD Pipeline](https://github.com/zerdos/spike-land-nextjs/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/zerdos/spike-land-nextjs/actions/workflows/ci-cd.yml)
 
+## Connect With Us
+
+| Platform  | Link                                                                    |
+| --------- | ----------------------------------------------------------------------- |
+| Website   | [spike.land](https://spike.land)                                        |
+| X/Twitter | [@spike_land](https://x.com/spike_land)                                 |
+| LinkedIn  | [SPIKE LAND LTD](https://linkedin.com/company/spike-land)               |
+| Discord   | [Join Server](https://discord.gg/spike-land)                            |
+| GitHub    | [zerdos/spike-land-nextjs](https://github.com/zerdos/spike-land-nextjs) |
+
 ## ✨ Features
 
 - ⚡ **Next.js 15** - App Router with React Server Components
