@@ -1722,6 +1722,7 @@ enum SocialPlatform {
   FACEBOOK
   INSTAGRAM
   TIKTOK
+  YOUTUBE
 }
 
 enum SocialAccountStatus {

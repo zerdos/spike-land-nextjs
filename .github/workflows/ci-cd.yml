@@ -62,6 +62,9 @@ jobs:
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install --immutable
 
+      - name: Run silent install
+        run: yarn silent:install
+
       - name: Run linter
         run: yarn lint
 

@@ -14,6 +14,10 @@ import prisma from "@/lib/prisma";
 import { FacebookClient } from "@/lib/social/clients/facebook";
 import { tryCatch } from "@/lib/try-catch";
 
+// Facebook API requirement: Posts must be scheduled at least 10 minutes in the future
+// Reference: https://developers.facebook.com/docs/graph-api/reference/page/feed
+const MIN_SCHEDULE_MINUTES = 10;
+
 /**
  * GET /api/social/facebook/posts
  * List posts from a Facebook Page
@@ -200,11 +204,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         { status: 400 },
       );
     }
-    // Ensure scheduled time is at least 10 minutes in the future
-    const minScheduleTime = new Date(Date.now() + 10 * 60 * 1000);
+    // Ensure scheduled time is at least 10 minutes in the future (Facebook requirement)
+    const minScheduleTime = new Date(Date.now() + MIN_SCHEDULE_MINUTES * 60 * 1000);
     if (scheduledDate < minScheduleTime) {
       return NextResponse.json(
-        { error: "Scheduled time must be at least 10 minutes in the future" },
+        {
+          error:
+            `Facebook requires posts to be scheduled at least ${MIN_SCHEDULE_MINUTES} minutes in the future`,
+        },
         { status: 400 },
       );
     }

@@ -22,11 +22,26 @@ import type {
   SocialPost,
 } from "../types";
 
-const GRAPH_API_BASE = "https://graph.facebook.com/v21.0";
+// Facebook Graph API version (Instagram uses Facebook's Graph API)
+// Note: Facebook deprecates API versions ~2 years after release
+// v21.0 was released in October 2024, expected deprecation ~October 2026
+// Monitor: https://developers.facebook.com/docs/graph-api/changelog
+const GRAPH_API_VERSION = process.env.FACEBOOK_GRAPH_API_VERSION || "v21.0";
+const GRAPH_API_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
 
 // Container status polling configuration
-const CONTAINER_STATUS_POLL_INTERVAL = 1000; // 1 second
-const CONTAINER_STATUS_MAX_ATTEMPTS = 30; // 30 seconds max wait
+// Instagram media container processing can take time for large images or slow networks
+// These defaults can be overridden via environment variables
+const DEFAULT_CONTAINER_STATUS_POLL_INTERVAL = 1000; // 1 second
+const DEFAULT_CONTAINER_STATUS_MAX_ATTEMPTS = 30; // 30 seconds max wait
+
+const CONTAINER_STATUS_POLL_INTERVAL =
+  Number.parseInt(process.env.INSTAGRAM_CONTAINER_STATUS_POLL_INTERVAL_MS ?? "", 10) ||
+  DEFAULT_CONTAINER_STATUS_POLL_INTERVAL;
+
+const CONTAINER_STATUS_MAX_ATTEMPTS =
+  Number.parseInt(process.env.INSTAGRAM_CONTAINER_STATUS_MAX_ATTEMPTS ?? "", 10) ||
+  DEFAULT_CONTAINER_STATUS_MAX_ATTEMPTS;
 
 interface InstagramAccountResponse {
   id: string;
@@ -258,10 +273,17 @@ export class InstagramClient implements ISocialClient {
    * Validate that required configuration is present
    */
   private validateConfig(): void {
-    if (!this.accessToken) {
+    const normalizedAccessToken = this.accessToken !== undefined && this.accessToken !== null
+      ? String(this.accessToken).trim()
+      : "";
+    if (!normalizedAccessToken) {
       throw new Error("Instagram client requires an access token");
     }
-    if (!this.igUserId) {
+
+    const normalizedIgUserId = this.igUserId !== undefined && this.igUserId !== null
+      ? String(this.igUserId).trim()
+      : "";
+    if (!normalizedIgUserId) {
       throw new Error("Instagram client requires an Instagram User ID (igUserId)");
     }
   }

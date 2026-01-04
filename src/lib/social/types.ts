@@ -117,7 +117,7 @@ export interface ISocialClient {
   platform: SocialPlatform;
 
   // OAuth
-  getAuthUrl(redirectUri: string, state: string): string;
+  getAuthUrl(redirectUri: string, state: string, codeChallenge?: string): string;
   exchangeCodeForTokens(
     code: string,
     redirectUri: string,

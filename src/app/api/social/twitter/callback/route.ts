@@ -10,6 +10,7 @@ import { auth } from "@/auth";
 import { safeEncryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
 import { TwitterClient } from "@/lib/social/clients/twitter";
+import { getOAuthRedirectUri } from "@/lib/social/utils";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -125,14 +126,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   // Determine redirect URI (must match the one used in connect)
-  const redirectUri = process.env.TWITTER_CALLBACK_URL || (() => {
-    const baseUrl = process.env.NEXTAUTH_URL ||
-      process.env.VERCEL_URL ||
-      "http://localhost:3000";
-    return `${
-      baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
-    }/api/social/twitter/callback`;
-  })();
+  const redirectUri = getOAuthRedirectUri(
+    "/api/social/twitter/callback",
+    "TWITTER_CALLBACK_URL",
+  );
 
   // Exchange code for tokens
   const client = new TwitterClient();

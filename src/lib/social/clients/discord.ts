@@ -233,9 +233,9 @@ export class DiscordClient {
       throw new Error("Message content exceeds 2000 character limit");
     }
 
-    // Message must have content or embeds
+    // Either content or embeds must be providedMessage must have content or embeds
     if (!content && (!options?.embeds || options.embeds.length === 0)) {
-      throw new Error("Message must have content or embeds");
+      throw new Error("Either content or embeds must be provided");
     }
 
     interface MessagePayload {
