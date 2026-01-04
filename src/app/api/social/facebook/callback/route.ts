@@ -160,16 +160,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Log for debugging why no pages were returned
     console.warn("No Facebook Pages found for user", {
       userId: session.user.id,
-      hasLongLivedToken: !!longLivedToken,
+      hasLongLivedToken: !!longLivedTokens,
     });
 
     const response = NextResponse.redirect(
       new URL(
         "/admin/social-media/accounts?error=" + encodeURIComponent(
           "No Facebook Pages found. Please ensure you: " +
-          "1) Have access to at least one Facebook Page, " +
-          "2) Granted page permissions during login, and " +
-          "3) The page has proper admin access.",
+            "1) Have access to at least one Facebook Page, " +
+            "2) Granted page permissions during login, and " +
+            "3) The page has proper admin access.",
         ),
         request.url,
       ),

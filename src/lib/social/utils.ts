@@ -6,14 +6,14 @@
 
 /**
  * Get OAuth redirect URI for social media callbacks
- * 
+ *
  * Priority:
  * 1. Platform-specific callback URL (e.g., TWITTER_CALLBACK_URL)
  * 2. Constructed from NEXTAUTH_URL or VERCEL_URL
  * 3. Falls back to http://localhost:3000 for development
- * 
+ *
  * Note: Automatically detects localhost and uses HTTP instead of HTTPS
- * 
+ *
  * @param callbackPath - The API callback path (e.g., '/api/social/twitter/callback')
  * @param platformCallbackEnvVar - Optional platform-specific env var (e.g., 'TWITTER_CALLBACK_URL')
  * @returns The full callback URL

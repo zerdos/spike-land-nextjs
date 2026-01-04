@@ -209,7 +209,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (scheduledDate < minScheduleTime) {
       return NextResponse.json(
         {
-          error: `Facebook requires posts to be scheduled at least ${MIN_SCHEDULE_MINUTES} minutes in the future`,
+          error:
+            `Facebook requires posts to be scheduled at least ${MIN_SCHEDULE_MINUTES} minutes in the future`,
         },
         { status: 400 },
       );

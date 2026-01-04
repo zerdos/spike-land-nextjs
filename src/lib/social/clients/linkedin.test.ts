@@ -232,9 +232,10 @@ describe("LinkedInClient", () => {
       const posts = await client.getPosts(10);
 
       expect(posts).toHaveLength(1);
-      expect(posts[0].platformPostId).toBe("urn:li:activity:12345");
-      expect(posts[0].content).toBe("Test post");
-      expect(posts[0].platform).toBe("LINKEDIN");
+      const post = posts[0]!;
+      expect(post.platformPostId).toBe("urn:li:activity:12345");
+      expect(post.content).toBe("Test post");
+      expect(post.platform).toBe("LINKEDIN");
     });
   });
 
