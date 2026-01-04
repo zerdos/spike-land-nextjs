@@ -862,6 +862,7 @@ export function AudioMixer() {
             isRecording={recording.isRecording}
             isPaused={recording.isPaused}
             duration={recording.duration}
+            permissionError={recording.error}
             onStart={handleStartRecording}
             onPause={recording.pauseRecording}
             onResume={recording.resumeRecording}
