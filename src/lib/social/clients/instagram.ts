@@ -273,18 +273,16 @@ export class InstagramClient implements ISocialClient {
    * Validate that required configuration is present
    */
   private validateConfig(): void {
-    const normalizedAccessToken =
-      this.accessToken !== undefined && this.accessToken !== null
-        ? String(this.accessToken).trim()
-        : "";
+    const normalizedAccessToken = this.accessToken !== undefined && this.accessToken !== null
+      ? String(this.accessToken).trim()
+      : "";
     if (!normalizedAccessToken) {
       throw new Error("Instagram client requires an access token");
     }
 
-    const normalizedIgUserId =
-      this.igUserId !== undefined && this.igUserId !== null
-        ? String(this.igUserId).trim()
-        : "";
+    const normalizedIgUserId = this.igUserId !== undefined && this.igUserId !== null
+      ? String(this.igUserId).trim()
+      : "";
     if (!normalizedIgUserId) {
       throw new Error("Instagram client requires an Instagram User ID (igUserId)");
     }

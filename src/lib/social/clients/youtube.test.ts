@@ -242,12 +242,13 @@ describe("YouTubeClient", () => {
       const posts = await client.getPosts(10);
 
       expect(posts).toHaveLength(1);
-      expect(posts[0].platformPostId).toBe("abc123");
-      expect(posts[0].content).toBe("Test Video");
-      expect(posts[0].platform).toBe("YOUTUBE");
-      expect(posts[0].url).toBe("https://www.youtube.com/watch?v=abc123");
-      expect(posts[0].metrics?.likes).toBe(50);
-      expect(posts[0].metrics?.impressions).toBe(1000);
+      const post = posts[0]!;
+      expect(post.platformPostId).toBe("abc123");
+      expect(post.content).toBe("Test Video");
+      expect(post.platform).toBe("YOUTUBE");
+      expect(post.url).toBe("https://www.youtube.com/watch?v=abc123");
+      expect(post.metrics?.likes).toBe(50);
+      expect(post.metrics?.impressions).toBe(1000);
     });
 
     it("should fallback to search results when statistics fetch fails", async () => {
@@ -282,8 +283,9 @@ describe("YouTubeClient", () => {
       const posts = await client.getPosts(10);
 
       expect(posts).toHaveLength(1);
-      expect(posts[0].platformPostId).toBe("abc123");
-      expect(posts[0].platform).toBe("YOUTUBE");
+      const post = posts[0]!;
+      expect(post.platformPostId).toBe("abc123");
+      expect(post.platform).toBe("YOUTUBE");
     });
   });
 
