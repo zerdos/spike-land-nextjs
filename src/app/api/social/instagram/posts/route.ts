@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
   // Only allow HTTPS URLs for security
   if (parsedUrl.protocol !== "https:") {
     return NextResponse.json(
-      { error: "imageUrl must use HTTPS protocol" },
+      { error: "imageUrl must use HTTPS protocol for security. HTTP URLs are not allowed." },
       { status: 400 },
     );
   }

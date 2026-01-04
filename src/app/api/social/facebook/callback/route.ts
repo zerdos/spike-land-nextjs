@@ -312,12 +312,35 @@ async function getInstagramAccountInfo(
     fields: "username,profile_picture_url",
   });
 
-  const response = await fetch(
-    `https://graph.facebook.com/v21.0/${igUserId}?${params.toString()}`,
-    { method: "GET" },
+  const { data: response, error } = await tryCatch(
+    fetch(
+      `https://graph.facebook.com/v21.0/${igUserId}?${params.toString()}`,
+      { method: "GET" },
+    ),
   );
 
+  if (error) {
+    console.error("Failed to fetch Instagram account info", {
+      igUserId,
+      error,
+    });
+    return null;
+  }
+
   if (!response.ok) {
+    let errorBody: string | undefined;
+    try {
+      errorBody = await response.text();
+    } catch {
+      // ignore body parsing errors
+    }
+
+    console.error("Non-OK response from Instagram account info endpoint", {
+      igUserId,
+      status: response.status,
+      statusText: response.statusText,
+      body: errorBody,
+    });
     return null;
   }
 

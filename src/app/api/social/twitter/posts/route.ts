@@ -8,7 +8,7 @@
 import { auth } from "@/auth";
 import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
-import { TwitterClient } from "@/lib/social/clients/twitter";
+import { TwitterClient, TwitterHttpError } from "@/lib/social/clients/twitter";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -89,12 +89,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (postsError) {
     console.error("Failed to fetch tweets:", postsError);
 
-    // Check if it's an auth error and update account status
-    if (
-      postsError instanceof Error &&
-      (postsError.message.includes("401") ||
-        postsError.message.includes("Unauthorized"))
-    ) {
+    // Check if it's a 401 Unauthorized error
+    if (postsError instanceof TwitterHttpError && postsError.status === 401) {
       await prisma.socialAccount.update({
         where: { id: accountId },
         data: { status: "EXPIRED" },
@@ -229,12 +225,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (postError) {
     console.error("Failed to create tweet:", postError);
 
-    // Check if it's an auth error and update account status
-    if (
-      postError instanceof Error &&
-      (postError.message.includes("401") ||
-        postError.message.includes("Unauthorized"))
-    ) {
+    // Check if it's a 401 Unauthorized error
+    if (postError instanceof TwitterHttpError && postError.status === 401) {
       await prisma.socialAccount.update({
         where: { id: accountId },
         data: { status: "EXPIRED" },

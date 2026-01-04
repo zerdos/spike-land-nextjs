@@ -32,6 +32,20 @@ interface TwitterApiError {
   errors?: Array<{ message: string; code?: number; }>;
 }
 
+/**
+ * Custom error class for Twitter API errors that includes HTTP status
+ */
+export class TwitterHttpError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly statusText: string,
+  ) {
+    super(message);
+    this.name = "TwitterHttpError";
+  }
+}
+
 interface TwitterUserResponse {
   data: TwitterUser;
 }
@@ -52,7 +66,7 @@ interface TwitterCreateTweetResponse {
 }
 
 export class TwitterClient implements ISocialClient {
-  platform = "TWITTER" as const;
+  readonly platform = "TWITTER" as const;
   private accessToken?: string;
   private twitterUserId?: string;
 
@@ -129,10 +143,12 @@ export class TwitterClient implements ISocialClient {
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
-      throw new Error(
+      throw new TwitterHttpError(
         `Twitter token exchange failed: ${
           errorData.error_description || errorData.error || response.statusText
         }`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -187,10 +203,12 @@ export class TwitterClient implements ISocialClient {
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
-      throw new Error(
+      throw new TwitterHttpError(
         `Twitter token refresh failed: ${
           errorData.error_description || errorData.error || response.statusText
         }`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -230,10 +248,12 @@ export class TwitterClient implements ISocialClient {
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
-      throw new Error(
+      throw new TwitterHttpError(
         `Failed to get Twitter user info: ${
           errorData.detail || errorData.title || response.statusText
         }`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -298,7 +318,11 @@ export class TwitterClient implements ISocialClient {
         errorData.title ||
         errorData.errors?.[0]?.message ||
         response.statusText;
-      throw new Error(`Failed to create tweet: ${errorMessage}`);
+      throw new TwitterHttpError(
+        `Failed to create tweet: ${errorMessage}`,
+        response.status,
+        response.statusText,
+      );
     }
 
     const { data } = (await response.json()) as TwitterCreateTweetResponse;
@@ -349,8 +373,10 @@ export class TwitterClient implements ISocialClient {
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
-      throw new Error(
+      throw new TwitterHttpError(
         `Failed to get tweets: ${errorData.detail || errorData.title || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -403,8 +429,10 @@ export class TwitterClient implements ISocialClient {
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
-      throw new Error(
+      throw new TwitterHttpError(
         `Failed to delete tweet: ${errorData.detail || errorData.title || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
   }
@@ -427,10 +455,12 @@ export class TwitterClient implements ISocialClient {
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
-      throw new Error(
+      throw new TwitterHttpError(
         `Failed to get Twitter metrics: ${
           errorData.detail || errorData.title || response.statusText
         }`,
+        response.status,
+        response.statusText,
       );
     }
 
