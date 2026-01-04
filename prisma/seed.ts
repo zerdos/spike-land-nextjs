@@ -2,6 +2,17 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+/**
+ * Generate a URL-safe slug from a name with an optional suffix
+ */
+function generateSlug(name: string, suffix?: string): string {
+  const base = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return suffix ? `${base}-${suffix}` : base;
+}
+
 async function main() {
   console.log("Starting database seed...");
 
@@ -17,6 +28,73 @@ async function main() {
   });
 
   console.log("Created test user:", testUser);
+
+  // Create personal workspace for test user
+  const testUserWorkspaceSlug = `test-user-workspace`;
+  const testUserWorkspace = await prisma.workspace.upsert({
+    where: { slug: testUserWorkspaceSlug },
+    update: {},
+    create: {
+      name: "Test User's Workspace",
+      slug: testUserWorkspaceSlug,
+      description: "Default workspace for test user",
+      isPersonal: true,
+      members: {
+        create: {
+          userId: testUser.id,
+          role: "OWNER",
+          joinedAt: new Date(),
+        },
+      },
+    },
+  });
+
+  console.log("Created test user workspace:", testUserWorkspace.slug);
+
+  // Create personal workspaces for all existing users without workspaces
+  const usersWithoutWorkspaces = await prisma.user.findMany({
+    where: {
+      workspaceMembers: {
+        none: {},
+      },
+      NOT: {
+        id: testUser.id, // Skip test user, already handled above
+      },
+    },
+    select: { id: true, name: true, email: true },
+  });
+
+  console.log(
+    `Found ${usersWithoutWorkspaces.length} users without workspaces`,
+  );
+
+  for (const user of usersWithoutWorkspaces) {
+    const workspaceName = user.name
+      ? `${user.name}'s Workspace`
+      : "Personal Workspace";
+
+    // Generate unique slug using user ID suffix
+    const slug = generateSlug(user.name || "personal", user.id.slice(-8));
+
+    await prisma.workspace.create({
+      data: {
+        name: workspaceName,
+        slug: slug,
+        isPersonal: true,
+        members: {
+          create: {
+            userId: user.id,
+            role: "OWNER",
+            joinedAt: new Date(),
+          },
+        },
+      },
+    });
+
+    console.log(
+      `Created workspace "${workspaceName}" for user ${user.email || user.id}`,
+    );
+  }
 
   // Example: Create sample apps
   const sampleApps = await Promise.all([
