@@ -1,12 +1,14 @@
 {
   "cSpell.words": [
     "anthropics",
+    "Erdos",
     "NEXTAUTH",
     "nvmrc",
     "peerjs",
     "turbopack",
     "vitest",
-    "Wordmark"
+    "Wordmark",
+    "Zoltan"
   ],
   "css.lint.unknownAtRules": "ignore"
 }
