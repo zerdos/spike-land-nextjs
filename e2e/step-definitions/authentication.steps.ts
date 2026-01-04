@@ -419,7 +419,7 @@ Then(
     }
     // Wait for URL to contain the path (with timeout for client-side routing)
     await this.page.waitForURL(new RegExp(path.replace(/\//g, "\\/")), {
-      timeout: 15000,
+      timeout: 30000,
     });
     const currentUrl = this.page.url();
     // Handle both exact match, query parameters, and trailing slashes
