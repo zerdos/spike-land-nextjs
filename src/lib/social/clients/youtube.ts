@@ -221,10 +221,7 @@ export interface YouTubeChannelMetrics {
  * Video uploads must be done through YouTube Studio.
  */
 export class YouTubeClient implements ISocialClient {
-  // NOTE: We use "TWITTER" as a placeholder since YOUTUBE is not in the enum
-  // This will be updated when the schema migration adds YOUTUBE
-  // For now, this is a workaround to satisfy the ISocialClient interface
-  readonly platform = "TWITTER" as const; // Placeholder - see note above
+  readonly platform = "YOUTUBE" as const;
 
   private accessToken?: string;
   private channelId?: string;
@@ -540,7 +537,7 @@ export class YouTubeClient implements ISocialClient {
       return searchData.items.map((item) => ({
         id: item.id.videoId || item.etag,
         platformPostId: item.id.videoId || "",
-        platform: "TWITTER" as const, // Placeholder until YOUTUBE is in enum
+        platform: "YOUTUBE" as const,
         content: item.snippet?.title || "",
         publishedAt: item.snippet?.publishedAt
           ? new Date(item.snippet.publishedAt)
@@ -555,7 +552,7 @@ export class YouTubeClient implements ISocialClient {
     return (videoData.items || []).map((video) => ({
       id: video.id,
       platformPostId: video.id,
-      platform: "TWITTER" as const, // Placeholder until YOUTUBE is in enum
+      platform: "YOUTUBE" as const,
       content: video.snippet?.title || "",
       mediaUrls: video.snippet?.thumbnails?.high?.url
         ? [video.snippet.thumbnails.high.url]
