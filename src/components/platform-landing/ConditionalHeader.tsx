@@ -8,6 +8,7 @@ const EXCLUDED_PATHS = [
   "/canvas",
   "/storybook",
   "/admin",
+  "/orbit",
   "/personas",
   "/auth",
 ];
