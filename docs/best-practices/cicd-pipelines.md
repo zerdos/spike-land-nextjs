@@ -72,9 +72,18 @@ Break workflows into separate, parallelizable jobs using the `needs` keyword:
 
 ```yaml
 jobs:
+  tsc:
+    name: TypeScript Compilation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run tsc
+        run: yarn tsc
+
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
+    needs: tsc
     steps:
       - uses: actions/checkout@v6
       - name: Run ESLint
@@ -83,7 +92,6 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    needs: lint
     steps:
       - uses: actions/checkout@v6
       - name: Run Tests
