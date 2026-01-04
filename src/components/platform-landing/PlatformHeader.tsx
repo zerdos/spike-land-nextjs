@@ -141,7 +141,8 @@ export function PlatformHeader() {
                           <Link
                             href="/apps/pixel"
                             className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
-                            onClick={() => setMobileMenuOpen(false)}
+                            onClick={() =>
+                              setMobileMenuOpen(false)}
                           >
                             <PixelLogo
                               size="sm"
