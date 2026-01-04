@@ -27,17 +27,12 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const mockMembership = (role: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER") => ({
-  id: "membership_123",
-  workspaceId: "ws_123",
-  userId: "user_123",
-  role,
-  createdAt: new Date("2024-01-01"),
-  updatedAt: new Date("2024-01-01"),
-  invitedAt: new Date("2024-01-01"),
-  joinedAt: new Date("2024-01-01"),
-  invitedById: null,
-});
+const mockMembership = (role: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER") =>
+  ({
+    workspaceId: "ws_123",
+    userId: "user_123",
+    role,
+  }) as never;
 
 const mockSession = (userId?: string): Session | null => {
   if (!userId) return null;
