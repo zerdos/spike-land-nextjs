@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 interface JobStreamData {
   type: "status" | "error" | "connected";

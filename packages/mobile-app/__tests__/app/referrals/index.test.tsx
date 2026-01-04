@@ -4,7 +4,7 @@
 
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import * as Clipboard from "expo-clipboard";
-import React from "react";
+
 import { Alert } from "react-native";
 
 import { useReferralStats } from "@/hooks";

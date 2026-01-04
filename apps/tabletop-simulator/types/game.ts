@@ -1,6 +1,6 @@
-import { DeckState } from "./card";
-import { Card } from "./card";
-import { DiceState } from "./dice";
+import type { DeckState } from "./card";
+import type { Card } from "./card";
+import type { DiceState } from "./dice";
 
 export interface GameState {
   roomId: string;

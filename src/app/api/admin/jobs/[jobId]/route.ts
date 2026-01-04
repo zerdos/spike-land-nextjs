@@ -15,7 +15,8 @@ import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { tryCatch } from "@/lib/try-catch";
 import type { JobSource, UnifiedJob } from "@/types/admin-jobs";
 import { JobStatus } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 interface RouteParams {
   params: Promise<{ jobId: string; }>;

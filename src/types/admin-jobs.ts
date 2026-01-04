@@ -5,7 +5,7 @@
  * for the admin jobs management page.
  */
 
-import { EnhancementTier, JobStatus } from "@prisma/client";
+import type { EnhancementTier, JobStatus } from "@prisma/client";
 
 /**
  * Job source type - which table the job comes from
@@ -77,7 +77,12 @@ export interface UnifiedJob {
     lightingCondition?: string;
     cropping?: {
       isCroppingNeeded?: boolean;
-      suggestedCrop?: { left: number; top: number; right: number; bottom: number; };
+      suggestedCrop?: {
+        left: number;
+        top: number;
+        right: number;
+        bottom: number;
+      };
       cropReason?: string;
     };
   } | null;
@@ -85,7 +90,9 @@ export interface UnifiedJob {
 
   // Crop data (enhancement jobs only)
   wasCropped?: boolean;
-  cropDimensions?: { left: number; top: number; width: number; height: number; } | null;
+  cropDimensions?:
+    | { left: number; top: number; width: number; height: number; }
+    | null;
 
   // Pipeline (enhancement jobs only)
   currentStage?: string | null;

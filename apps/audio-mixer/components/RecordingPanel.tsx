@@ -6,13 +6,14 @@
 "use client";
 
 import { AlertCircle, Circle, Pause, Square } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { formatTime } from "../lib/audio-engine";
 
 interface RecordingPanelProps {
   isRecording: boolean;
   isPaused: boolean;
   duration: number;
+  permissionError?: Error | null;
   onStart: () => Promise<boolean> | void;
   onPause: () => void;
   onResume: () => void;
@@ -24,6 +25,7 @@ export function RecordingPanel({
   isRecording,
   isPaused,
   duration,
+  permissionError,
   onStart,
   onPause,
   onResume,
@@ -33,12 +35,46 @@ export function RecordingPanel({
   const [error, setError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
 
+  // Update error message when permissionError prop changes
+  useEffect(() => {
+    if (permissionError) {
+      if (
+        permissionError.name === "NotAllowedError" ||
+        permissionError.name === "PermissionDeniedError"
+      ) {
+        setError(
+          "Microphone access denied. Please allow microphone access in your browser settings (click the lock icon in the address bar).",
+        );
+      } else if (
+        permissionError.name === "NotFoundError" ||
+        permissionError.name === "DevicesNotFoundError"
+      ) {
+        setError(
+          "No microphone found. Please connect a microphone and try again.",
+        );
+      } else if (
+        permissionError.name === "NotReadableError" ||
+        permissionError.name === "TrackStartError"
+      ) {
+        setError("Microphone is currently in use by another application.");
+      } else {
+        setError(`Failed to access microphone: ${permissionError.message}`);
+      }
+
+      // Temporary debug info for Chrome issues
+      if (permissionError.name) {
+        setError((prev) => `${prev} (${permissionError.name}: ${permissionError.message})`);
+      }
+    }
+  }, [permissionError]);
+
   const handleStart = useCallback(async () => {
     setError(null);
     setIsStarting(true);
     try {
       const result = await onStart();
-      if (result === false) {
+      if (result === false && !permissionError) {
+        // Fallback generic error if hook didn't provide specific error
         setError(
           "Microphone access denied. Please allow microphone access in your browser settings.",
         );
@@ -50,7 +86,7 @@ export function RecordingPanel({
     } finally {
       setIsStarting(false);
     }
-  }, [onStart]);
+  }, [onStart, permissionError]);
 
   if (!isRecording) {
     return (
@@ -64,8 +100,8 @@ export function RecordingPanel({
           {isStarting ? "Starting..." : "Record"}
         </button>
         {error && (
-          <div className="flex items-center gap-2 text-red-400 text-sm">
-            <AlertCircle className="w-4 h-4" />
+          <div className="flex items-center gap-2 text-red-400 text-sm max-w-[250px]">
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}

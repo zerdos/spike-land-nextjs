@@ -22,7 +22,8 @@ import {
 } from "tamagui";
 
 import { useTokenBalance } from "../../hooks";
-import { purchasesService, TokenPackage } from "../../services/purchases";
+import type { TokenPackage } from "../../services/purchases";
+import { purchasesService } from "../../services/purchases";
 
 // ============================================================================
 // Component

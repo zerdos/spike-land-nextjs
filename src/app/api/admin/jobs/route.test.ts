@@ -4,7 +4,7 @@
 
 import { createMockSession } from "@/test-utils";
 import type { ImageEnhancementJob } from "@prisma/client";
-import { EnhancementTier, JobStatus } from "@prisma/client";
+import type { EnhancementTier, JobStatus } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";

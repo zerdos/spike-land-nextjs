@@ -3,10 +3,11 @@
  */
 
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import React from "react";
+
 import { TamaguiProvider } from "tamagui";
 import { config } from "../tamagui.config";
-import { JobProgress, JobProgressProps } from "./JobProgress";
+import type { JobProgressProps } from "./JobProgress";
+import { JobProgress } from "./JobProgress";
 
 // ============================================================================
 // Local Mocks - Override missing icons and components from global mocks

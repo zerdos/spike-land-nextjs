@@ -4,13 +4,8 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import {
-  getReferralCode,
-  getReferralStats,
-  getReferredUsers,
-  ReferralStatsResponse,
-  ReferredUser,
-} from "../services/api/referrals";
+import type { ReferralStatsResponse, ReferredUser } from "../services/api/referrals";
+import { getReferralCode, getReferralStats, getReferredUsers } from "../services/api/referrals";
 
 // ============================================================================
 // Types

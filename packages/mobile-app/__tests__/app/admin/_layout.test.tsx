@@ -4,7 +4,6 @@
  */
 
 import { fireEvent, render } from "@testing-library/react-native";
-import React from "react";
 
 // Mock tamagui config before any imports that use it
 jest.mock("@/tamagui.config", () => ({

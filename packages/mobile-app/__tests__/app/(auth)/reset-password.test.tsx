@@ -4,7 +4,6 @@
 
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
 
 import { calculatePasswordStrength } from "@/app/(auth)/reset-password";
 import { authService } from "@/services/auth";

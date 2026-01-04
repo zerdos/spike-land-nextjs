@@ -12,10 +12,10 @@ describe("deck game logic", () => {
     it("should have 13 cards of each suit", () => {
       const deck = createStandardDeck();
 
-      const hearts = deck.filter(c => c.suit === "hearts");
-      const diamonds = deck.filter(c => c.suit === "diamonds");
-      const clubs = deck.filter(c => c.suit === "clubs");
-      const spades = deck.filter(c => c.suit === "spades");
+      const hearts = deck.filter((c) => c.suit === "hearts");
+      const diamonds = deck.filter((c) => c.suit === "diamonds");
+      const clubs = deck.filter((c) => c.suit === "clubs");
+      const spades = deck.filter((c) => c.suit === "spades");
 
       expect(hearts.length).toBe(13);
       expect(diamonds.length).toBe(13);
@@ -25,10 +25,24 @@ describe("deck game logic", () => {
 
     it("should have all ranks in each suit", () => {
       const deck = createStandardDeck();
-      const expectedRanks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+      const expectedRanks = [
+        "A",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "J",
+        "Q",
+        "K",
+      ];
 
-      const hearts = deck.filter(c => c.suit === "hearts");
-      const heartRanks = hearts.map(c => c.rank).sort();
+      const hearts = deck.filter((c) => c.suit === "hearts");
+      const heartRanks = hearts.map((c) => c.rank).sort();
 
       expect(heartRanks).toEqual(expectedRanks.sort());
     });
@@ -48,7 +62,7 @@ describe("deck game logic", () => {
 
     it("should create unique card IDs", () => {
       const deck = createStandardDeck();
-      const ids = deck.map(c => c.id);
+      const ids = deck.map((c) => c.id);
       const uniqueIds = new Set(ids);
 
       expect(uniqueIds.size).toBe(52);
@@ -67,8 +81,8 @@ describe("deck game logic", () => {
       const deck = createStandardDeck();
       const shuffled = shuffleDeck(deck, 12345);
 
-      const originalIds = new Set(deck.map(c => c.id));
-      const shuffledIds = new Set(shuffled.map(c => c.id));
+      const originalIds = new Set(deck.map((c) => c.id));
+      const shuffledIds = new Set(shuffled.map((c) => c.id));
 
       expect(shuffledIds).toEqual(originalIds);
     });
@@ -78,8 +92,8 @@ describe("deck game logic", () => {
       const shuffled1 = shuffleDeck(deck, 12345);
       const shuffled2 = shuffleDeck(deck, 12345);
 
-      const ids1 = shuffled1.map(c => c.id);
-      const ids2 = shuffled2.map(c => c.id);
+      const ids1 = shuffled1.map((c) => c.id);
+      const ids2 = shuffled2.map((c) => c.id);
 
       expect(ids1).toEqual(ids2);
     });
@@ -89,8 +103,8 @@ describe("deck game logic", () => {
       const shuffled1 = shuffleDeck(deck, 12345);
       const shuffled2 = shuffleDeck(deck, 54321);
 
-      const ids1 = shuffled1.map(c => c.id);
-      const ids2 = shuffled2.map(c => c.id);
+      const ids1 = shuffled1.map((c) => c.id);
+      const ids2 = shuffled2.map((c) => c.id);
 
       // They should not be equal (statistically almost impossible)
       expect(ids1).not.toEqual(ids2);
@@ -100,8 +114,8 @@ describe("deck game logic", () => {
       const deck = createStandardDeck();
       const shuffled = shuffleDeck(deck, Date.now());
 
-      const originalIds = deck.map(c => c.id);
-      const shuffledIds = shuffled.map(c => c.id);
+      const originalIds = deck.map((c) => c.id);
+      const shuffledIds = shuffled.map((c) => c.id);
 
       // The probability of a perfect shuffle keeping all positions is astronomically low
       let samePositionCount = 0;
@@ -117,11 +131,11 @@ describe("deck game logic", () => {
 
     it("should not mutate the original deck", () => {
       const deck = createStandardDeck();
-      const originalIds = deck.map(c => c.id);
+      const originalIds = deck.map((c) => c.id);
 
       shuffleDeck(deck, 12345);
 
-      const afterShuffleIds = deck.map(c => c.id);
+      const afterShuffleIds = deck.map((c) => c.id);
       expect(afterShuffleIds).toEqual(originalIds);
     });
 

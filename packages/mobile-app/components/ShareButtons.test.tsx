@@ -5,7 +5,7 @@
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import * as Clipboard from "expo-clipboard";
 import * as Sharing from "expo-sharing";
-import React from "react";
+
 import { Linking } from "react-native";
 
 import { ShareButtons } from "./ShareButtons";

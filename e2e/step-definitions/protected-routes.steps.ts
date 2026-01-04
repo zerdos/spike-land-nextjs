@@ -2,7 +2,7 @@ import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { assertUrlPath } from "../support/helpers/assertion-helper";
 import { getCurrentUrl, getQueryParam, navigateToPath } from "../support/helpers/navigation-helper";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 When(
   "I navigate to {string}",

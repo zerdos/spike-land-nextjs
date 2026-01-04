@@ -1,6 +1,7 @@
-import { DataTable, Then, When } from "@cucumber/cucumber";
+import type { DataTable } from "@cucumber/cucumber";
+import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Storybook page steps
 Then(

@@ -3,9 +3,9 @@
  */
 
 import { fireEvent, render } from "@testing-library/react-native";
-import React from "react";
 
-import { ReferredUser, ReferredUsersList } from "./ReferredUsersList";
+import type { ReferredUser } from "./ReferredUsersList";
+import { ReferredUsersList } from "./ReferredUsersList";
 
 // Mock Tamagui components
 jest.mock("tamagui", () => {

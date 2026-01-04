@@ -1,33 +1,41 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Page navigation steps
-Given("I am on the tabletop simulator home page", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/apps/tabletop-simulator`);
-  await this.page.waitForLoadState("networkidle");
+Given(
+  "I am on the tabletop simulator home page",
+  async function(this: CustomWorld) {
+    // Use ?e2e=true to enable E2E mode which bypasses Yjs/WebRTC
+    await this.page.goto(`${this.baseUrl}/apps/tabletop-simulator?e2e=true`);
+    await this.page.waitForLoadState("networkidle");
+  },
+);
+
+// Home page elements
+Then("I should see the create room button", async function(this: CustomWorld) {
+  const button = this.page.getByRole("button", { name: /create.*room/i });
+  await expect(button).toBeVisible();
+});
+
+Then("I should see the join room input", async function(this: CustomWorld) {
+  const input = this.page.getByPlaceholder(/enter room code/i);
+  await expect(input).toBeVisible();
 });
 
 Given("I am in a tabletop game room", async function(this: CustomWorld) {
-  // Create a new room by visiting the app and clicking create
-  await this.page.goto(`${this.baseUrl}/apps/tabletop-simulator`);
-  await this.page.waitForLoadState("networkidle");
-
-  // Look for create room button and click it
-  const createButton = this.page.getByRole("button", { name: /create.*room|new.*game/i });
-  if (await createButton.isVisible()) {
-    await createButton.click();
-    await this.page.waitForURL(/\/room\/[A-Z0-9]+$/i);
-  } else {
-    // If we're already in a room or there's a direct entry, just proceed
-    // Generate a test room ID
-    const testRoomId = "TEST" + Date.now().toString(36).toUpperCase();
-    await this.page.goto(`${this.baseUrl}/apps/tabletop-simulator/room/${testRoomId}`);
-  }
+  // Generate a test room ID and navigate directly with E2E mode enabled
+  // This bypasses Yjs/WebRTC initialization which would timeout in test environment
+  const testRoomId = "E2E" + Date.now().toString(36).toUpperCase();
+  await this.page.goto(
+    `${this.baseUrl}/apps/tabletop-simulator/room/${testRoomId}?e2e=true`,
+  );
 
   await this.page.waitForLoadState("networkidle");
-  // Wait for the canvas to be ready
-  await this.page.waitForSelector("canvas", { timeout: 10000 });
+  // Wait for the Three.js canvas to be fully loaded
+  // The data-engine attribute is added when Three.js is initialized
+  const canvas = this.page.locator('canvas[data-engine*="three.js"]');
+  await canvas.waitFor({ state: "visible", timeout: 30000 });
 });
 
 // Mobile device simulation
@@ -52,32 +60,45 @@ Then("I should see the mobile controls", async function(this: CustomWorld) {
   await expect(controls).toBeVisible();
 });
 
-Then("I should see the card deck on the table", async function(this: CustomWorld) {
-  // The deck is rendered in the 3D canvas, so we verify it indirectly
-  // by checking that the scene has loaded
-  const canvas = this.page.locator("canvas");
-  await expect(canvas).toBeVisible();
-  // Wait a bit for the 3D scene to render
-  await this.page.waitForTimeout(1000);
-});
+Then(
+  "I should see the card deck on the table",
+  async function(this: CustomWorld) {
+    // The deck is rendered in the 3D canvas, so we verify it indirectly
+    // by checking that the scene has loaded
+    const canvas = this.page.locator("canvas");
+    await expect(canvas).toBeVisible();
+    // Wait a bit for the 3D scene to render
+    await this.page.waitForTimeout(1000);
+  },
+);
 
 // Room creation
 When("I create a new game room", async function(this: CustomWorld) {
-  const createButton = this.page.getByRole("button", { name: /create.*room|new.*game|start/i });
+  const createButton = this.page.getByRole("button", {
+    name: /create.*room|new.*game|start/i,
+  });
   await createButton.click();
-  await this.page.waitForURL(/\/room\/[A-Z0-9]+$/i, { timeout: 10000 });
+  await this.page.waitForURL(/\/apps\/tabletop-simulator\/room\/[A-Z0-9]+$/i, { timeout: 15000 });
 });
 
-Then("I should be redirected to a room page", async function(this: CustomWorld) {
-  await expect(this.page).toHaveURL(/\/apps\/tabletop-simulator\/room\/[A-Z0-9]+$/i);
-});
+Then(
+  "I should be redirected to a room page",
+  async function(this: CustomWorld) {
+    await expect(this.page).toHaveURL(
+      /\/apps\/tabletop-simulator\/room\/[A-Z0-9]+$/i,
+    );
+  },
+);
 
-Then("I should see the room code in the URL", async function(this: CustomWorld) {
-  const url = this.page.url();
-  const match = url.match(/\/room\/([A-Z0-9-]+)/i);
-  expect(match).toBeTruthy();
-  expect(match?.[1]?.length ?? 0).toBeGreaterThan(0);
-});
+Then(
+  "I should see the room code in the URL",
+  async function(this: CustomWorld) {
+    const url = this.page.url();
+    const match = url.match(/\/room\/([A-Z0-9-]+)/i);
+    expect(match).toBeTruthy();
+    expect(match?.[1]?.length ?? 0).toBeGreaterThan(0);
+  },
+);
 
 // Mode toggle steps
 When("I click the mode toggle button", async function(this: CustomWorld) {
@@ -85,45 +106,64 @@ When("I click the mode toggle button", async function(this: CustomWorld) {
   await toggle.click();
 });
 
-When("I click the mode toggle button again", async function(this: CustomWorld) {
-  const toggle = this.page.locator('[data-testid="mode-toggle"]');
-  await toggle.click();
-});
+When(
+  "I click the mode toggle button again",
+  async function(this: CustomWorld) {
+    const toggle = this.page.locator('[data-testid="mode-toggle"]');
+    await toggle.click();
+  },
+);
 
 When("I tap the mode toggle", async function(this: CustomWorld) {
   const toggle = this.page.locator('[data-testid="mode-toggle"]');
-  await toggle.tap();
+  // Use click() instead of tap() since it works universally
+  await toggle.click();
 });
 
-Then("the toggle button should show interaction mode active", async function(this: CustomWorld) {
-  const toggle = this.page.locator('[data-testid="mode-toggle"]');
-  // Check for interaction mode styling (cyan/blue gradient, ring)
-  await expect(toggle).toHaveClass(/from-cyan-500/);
-  await expect(toggle).toHaveClass(/ring-4/);
-});
+Then(
+  "the toggle button should show interaction mode active",
+  async function(this: CustomWorld) {
+    const toggle = this.page.locator('[data-testid="mode-toggle"]');
+    // Check for interaction mode styling (cyan background)
+    await expect(toggle).toHaveClass(/bg-cyan-500/);
+  },
+);
 
-Then("the toggle button should show orbit mode active", async function(this: CustomWorld) {
-  const toggle = this.page.locator('[data-testid="mode-toggle"]');
-  // Check for orbit mode styling (gray gradient, no ring)
-  await expect(toggle).toHaveClass(/from-gray-700/);
-});
+Then(
+  "the toggle button should show orbit mode active",
+  async function(this: CustomWorld) {
+    const toggle = this.page.locator('[data-testid="mode-toggle"]');
+    // Check for orbit mode styling (black/dark background)
+    await expect(toggle).toHaveClass(/bg-black/);
+  },
+);
 
-Then("the mode should default to orbit mode", async function(this: CustomWorld) {
-  const toggle = this.page.locator('[data-testid="mode-toggle"]');
-  // Should show camera icon
-  await expect(toggle).toContainText("\uD83D\uDCF7"); // Camera emoji
-});
+Then(
+  "the mode should default to orbit mode",
+  async function(this: CustomWorld) {
+    const toggle = this.page.locator('[data-testid="mode-toggle"]');
+    // Should show camera icon
+    await expect(toggle).toContainText("\uD83D\uDCF7"); // Camera emoji
+  },
+);
 
-Then("the mode should switch to interaction mode", async function(this: CustomWorld) {
-  const toggle = this.page.locator('[data-testid="mode-toggle"]');
-  // Should show hand icon
-  await expect(toggle).toContainText("\u270B"); // Hand emoji
-});
+Then(
+  "the mode should switch to interaction mode",
+  async function(this: CustomWorld) {
+    const toggle = this.page.locator('[data-testid="mode-toggle"]');
+    // Should show hand icon
+    await expect(toggle).toContainText("\u270B"); // Hand emoji
+  },
+);
 
-Then("I should see interaction mode active indicator", async function(this: CustomWorld) {
-  const toggle = this.page.locator('[data-testid="mode-toggle"]');
-  await expect(toggle).toHaveClass(/ring-4/);
-});
+Then(
+  "I should see interaction mode active indicator",
+  async function(this: CustomWorld) {
+    const toggle = this.page.locator('[data-testid="mode-toggle"]');
+    // Interaction mode is indicated by cyan background color
+    await expect(toggle).toHaveClass(/bg-cyan-500/);
+  },
+);
 
 // Hand drawer steps
 When("I click the hand toggle button", async function(this: CustomWorld) {
@@ -133,29 +173,34 @@ When("I click the hand toggle button", async function(this: CustomWorld) {
 
 When("I tap the hand button", async function(this: CustomWorld) {
   const handButton = this.page.locator('[data-testid="hand-toggle"]');
-  await handButton.tap();
+  // Use click() instead of tap() since it works universally
+  await handButton.click();
 });
 
 Then("the hand drawer should be visible", async function(this: CustomWorld) {
   const drawer = this.page.locator('[data-testid="hand-drawer"]');
   await expect(drawer).toBeVisible();
-  // Check that it's in expanded state (h-32)
-  await expect(drawer).toHaveClass(/h-32/);
+  // Hand drawer has h-40 class (always visible as persistent HUD)
+  await expect(drawer).toHaveClass(/h-40/);
 });
 
 Then("the hand drawer should expand", async function(this: CustomWorld) {
   const drawer = this.page.locator('[data-testid="hand-drawer"]');
-  await expect(drawer).toHaveClass(/h-32/);
+  // Hand drawer is always visible with h-40
+  await expect(drawer).toHaveClass(/h-40/);
 });
 
 Then("I should see the empty hand message", async function(this: CustomWorld) {
-  const message = this.page.getByText("Click on the deck to draw cards");
+  const message = this.page.getByText("Draw cards from the deck to play");
   await expect(message).toBeVisible();
 });
 
 // Dice rolling
 When("I click the dice roll button", async function(this: CustomWorld) {
-  const diceButton = this.page.locator('button:has-text("\uD83C\uDFB2")'); // Dice emoji
+  // Use the controls panel button specifically to avoid matching other elements with dice emoji
+  const diceButton = this.page.locator(
+    '[data-testid="controls-panel"] button[title="Roll a D6"]',
+  );
   await diceButton.click();
 });
 
@@ -168,25 +213,31 @@ Then("a dice should appear on the table", async function(this: CustomWorld) {
 });
 
 // Mobile touch targets
-Then("the mode toggle button should be at least 56 pixels tall", async function(this: CustomWorld) {
-  const toggle = this.page.locator('[data-testid="mode-toggle"]');
-  const box = await toggle.boundingBox();
-  expect(box).toBeTruthy();
-  expect(box!.height).toBeGreaterThanOrEqual(56);
-});
+Then(
+  "the mode toggle button should be at least 56 pixels tall",
+  async function(this: CustomWorld) {
+    const toggle = this.page.locator('[data-testid="mode-toggle"]');
+    const box = await toggle.boundingBox();
+    expect(box).toBeTruthy();
+    expect(box!.height).toBeGreaterThanOrEqual(56);
+  },
+);
 
-Then("the controls should have adequate touch targets", async function(this: CustomWorld) {
-  const controls = this.page.locator('[data-testid="controls-panel"]');
-  const buttons = controls.locator("button");
-  const count = await buttons.count();
+Then(
+  "the controls should have adequate touch targets",
+  async function(this: CustomWorld) {
+    const controls = this.page.locator('[data-testid="controls-panel"]');
+    const buttons = controls.locator("button");
+    const count = await buttons.count();
 
-  for (let i = 0; i < count; i++) {
-    const button = buttons.nth(i);
-    const box = await button.boundingBox();
-    if (box) {
-      // WCAG minimum touch target is 44x44 pixels
-      expect(box.width).toBeGreaterThanOrEqual(44);
-      expect(box.height).toBeGreaterThanOrEqual(44);
+    for (let i = 0; i < count; i++) {
+      const button = buttons.nth(i);
+      const box = await button.boundingBox();
+      if (box) {
+        // WCAG minimum touch target is 44x44 pixels
+        expect(box.width).toBeGreaterThanOrEqual(44);
+        expect(box.height).toBeGreaterThanOrEqual(44);
+      }
     }
-  }
-});
+  },
+);

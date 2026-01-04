@@ -30,6 +30,10 @@ COPY --link package.json yarn.lock .yarnrc.yml ./
 COPY --link .yarn/ ./.yarn/
 COPY --link packages/mcp-server/package.json ./packages/mcp-server/
 COPY --link packages/opfs-node-adapter/package.json ./packages/opfs-node-adapter/
+COPY --link packages/js.spike.land/package.json ./packages/js.spike.land/
+COPY --link packages/code/package.json ./packages/code/
+COPY --link packages/testing.spike.land/package.json ./packages/testing.spike.land/
+COPY --link packages/spike-land-renderer/package.json ./packages/spike-land-renderer/
 COPY --link packages/mobile-app/package.json ./packages/mobile-app/
 COPY --link packages/shared/package.json ./packages/shared/
 COPY --link prisma ./prisma
@@ -91,6 +95,7 @@ FROM source AS build
 ARG CACHE_NS
 ARG TARGETARCH
 ARG DUMMY_DATABASE_URL
+ENV STANDALONE=true
 ENV NODE_ENV=production \
     DATABASE_URL="${DUMMY_DATABASE_URL}"
 

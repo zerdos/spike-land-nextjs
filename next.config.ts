@@ -48,14 +48,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   // Enable standalone output for Docker deployment (~200MB vs ~1GB)
-  output: "standalone",
-  turbopack: {
-    root: __dirname,
-  },
-  experimental: {
-    turbopackFileSystemCacheForDev: false,
-    turbopackFileSystemCacheForBuild: false,
-  },
+  // output: process.env.STANDALONE === "true" ? "standalone" : undefined,
+  ...(process.env.STANDALONE === "true" ? { output: "standalone" } : {}),
   images: {
     remotePatterns: [
       {

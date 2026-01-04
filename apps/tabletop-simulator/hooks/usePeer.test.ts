@@ -28,12 +28,14 @@ import { usePeer } from "./usePeer";
 describe("usePeer", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockOn.mockImplementation((event: string, callback: (id: string) => void) => {
-      if (event === "open") {
-        // Simulate peer opening
-        setTimeout(() => callback("test-peer-id"), 0);
-      }
-    });
+    mockOn.mockImplementation(
+      (event: string, callback: (id: string) => void) => {
+        if (event === "open") {
+          // Simulate peer opening
+          setTimeout(() => callback("test-peer-id"), 0);
+        }
+      },
+    );
   });
 
   it("initializes peer and returns null initially", () => {

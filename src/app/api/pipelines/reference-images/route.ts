@@ -4,7 +4,8 @@ import prisma from "@/lib/prisma";
 import { deleteFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import type { Prisma } from "@prisma/client";
 import crypto from "crypto";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import sharp from "sharp";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file

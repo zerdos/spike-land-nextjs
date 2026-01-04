@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import * as Y from "yjs";
+import type * as Y from "yjs";
 import {
   getDeckArray,
   getDiceArray,
@@ -19,7 +19,10 @@ export interface GameStateSnapshot {
   messages: GameMessage[];
 }
 
-export function useYjsState(doc: Y.Doc | null, isSynced: boolean = false): GameStateSnapshot {
+export function useYjsState(
+  doc: Y.Doc | null,
+  isSynced: boolean = false,
+): GameStateSnapshot {
   const [state, setState] = useState<GameStateSnapshot>({
     cards: [],
     dice: [],

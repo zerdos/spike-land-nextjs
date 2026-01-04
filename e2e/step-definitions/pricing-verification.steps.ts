@@ -1,7 +1,7 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { TIMEOUTS } from "../support/helpers/retry-helper";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 When("I view the pricing page", async function(this: CustomWorld) {
   // Wait for DOM to be ready

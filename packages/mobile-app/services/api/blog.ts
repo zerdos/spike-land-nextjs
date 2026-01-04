@@ -3,7 +3,8 @@
  * Handles fetching blog posts from the API
  */
 
-import { apiClient, ApiResponse } from "../api-client";
+import type { ApiResponse } from "../api-client";
+import { apiClient } from "../api-client";
 
 // ============================================================================
 // Types

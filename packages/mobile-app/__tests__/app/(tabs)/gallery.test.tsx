@@ -4,7 +4,7 @@
 
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { useRouter } from "expo-router";
-import React from "react";
+
 import { Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 

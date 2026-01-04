@@ -47,7 +47,7 @@ vi.mock("crypto", () => ({
   },
 }));
 
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { DELETE, POST } from "./route";
 
 function createMockRequest(

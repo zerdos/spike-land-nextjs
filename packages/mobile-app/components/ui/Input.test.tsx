@@ -5,7 +5,8 @@
 
 import { fireEvent, render } from "@testing-library/react-native";
 import React, { createRef } from "react";
-import { Text, TextInput } from "react-native";
+import type { TextInput } from "react-native";
+import { Text } from "react-native";
 import {
   IconContainer,
   Input,

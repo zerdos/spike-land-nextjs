@@ -8,7 +8,7 @@
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { UserRole } from "@prisma/client";
-import { Session } from "next-auth";
+import type { Session } from "next-auth";
 
 /**
  * Checks if a session has admin privileges (ADMIN or SUPER_ADMIN role).

@@ -10,7 +10,8 @@ import { isSuperAdmin, requireAdminByUserId } from "@/lib/auth/admin-middleware"
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { UserRole } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Validation constants
 const MAX_TOKEN_ADJUSTMENT = 10000;

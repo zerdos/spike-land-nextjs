@@ -7,7 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { EnhancementTier, JobStatus, TIER_INFO } from "@/types/enhancement";
+import type { EnhancementTier, JobStatus } from "@/types/enhancement";
+import { TIER_INFO } from "@/types/enhancement";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
 import {
   AlertTriangle,
@@ -296,9 +297,7 @@ export function EnhancementSidebar({
                   <p
                     className={cn(
                       "text-sm font-medium",
-                      isOriginalSelected
-                        ? "text-primary"
-                        : "text-foreground",
+                      isOriginalSelected ? "text-primary" : "text-foreground",
                     )}
                   >
                     Original Image
@@ -349,7 +348,8 @@ export function EnhancementSidebar({
                       : "bg-card border-border",
                     !isProcessingJob && !isFailed && !isSelected &&
                       "hover:border-primary/50 cursor-pointer",
-                    (isProcessingJob || isFailed) && "opacity-80 cursor-default",
+                    (isProcessingJob || isFailed) &&
+                      "opacity-80 cursor-default",
                   )}
                 >
                   <div className="flex items-center gap-3">

@@ -12,6 +12,9 @@ const eslintConfig = tseslint.config(
       ".next/**",
       "out/**",
       "build/**",
+      "dist/**",
+      "**/dist/**",
+      "**/dts/**",
       "next-env.d.ts",
       "src/generated/**",
       "fix-r2-versioning-cache/**",
@@ -53,6 +56,14 @@ const eslintConfig = tseslint.config(
           argsIgnorePattern: "^_",
           varsIgnorePattern: "^_",
           caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        {
+          prefer: "type-imports",
+          fixStyle: "separate-type-imports",
+          disallowTypeAnnotations: false,
         },
       ],
       // Next.js rules

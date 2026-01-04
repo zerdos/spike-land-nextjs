@@ -35,12 +35,14 @@ describe("usePeerConnection", () => {
       connect: vi.fn().mockReturnValue(mockDataConnection),
     };
     // Mock on() to store handlers and return the peer for chaining
-    peer.on.mockImplementation((event: string, handler: (...args: unknown[]) => void) => {
-      if (event === "connection") {
-        connectionHandlers.set("peer-connection", handler);
-      }
-      return peer;
-    });
+    peer.on.mockImplementation(
+      (event: string, handler: (...args: unknown[]) => void) => {
+        if (event === "connection") {
+          connectionHandlers.set("peer-connection", handler);
+        }
+        return peer;
+      },
+    );
     mockPeer = peer;
   });
 
@@ -63,7 +65,9 @@ describe("usePeerConnection", () => {
       result.current.connectData("remote-peer-id");
     });
 
-    expect(mockPeer.connect).toHaveBeenCalledWith("remote-peer-id", { reliable: true });
+    expect(mockPeer.connect).toHaveBeenCalledWith("remote-peer-id", {
+      reliable: true,
+    });
   });
 
   it("adds connection to map when connection opens", async () => {
@@ -109,7 +113,10 @@ describe("usePeerConnection", () => {
       dataHandler?.(new Uint8Array([1, 2, 3]));
     });
 
-    expect(onData).toHaveBeenCalledWith(new Uint8Array([1, 2, 3]), "remote-peer-id");
+    expect(onData).toHaveBeenCalledWith(
+      new Uint8Array([1, 2, 3]),
+      "remote-peer-id",
+    );
   });
 
   it("removes connection from map when connection closes", async () => {
@@ -168,7 +175,9 @@ describe("usePeerConnection", () => {
       result.current.connectData("remote-peer-id");
     });
 
-    expect(consoleWarn).toHaveBeenCalledWith("[P2P] Cannot connect - peer not initialized");
+    expect(consoleWarn).toHaveBeenCalledWith(
+      "[P2P] Cannot connect - peer not initialized",
+    );
     consoleWarn.mockRestore();
   });
 });

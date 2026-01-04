@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { PipelineVisibility, Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+import { PipelineVisibility } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 interface RouteParams {

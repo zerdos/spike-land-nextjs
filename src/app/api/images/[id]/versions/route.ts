@@ -2,8 +2,9 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
-import { EnhancementTier, JobStatus } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { EnhancementTier, JobStatus } from "@prisma/client";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 type EnhancementJob = {
   id: string;

@@ -1,5 +1,5 @@
 import { After, Before, Status } from "@cucumber/cucumber";
-import { VideoWallWorld } from "./video-wall-world";
+import type { VideoWallWorld } from "./video-wall-world";
 
 // Only run video wall setup for scenarios tagged with @video-wall
 Before({ tags: "@video-wall" }, async function(this: VideoWallWorld) {

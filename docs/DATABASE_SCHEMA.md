@@ -1,6 +1,7 @@
 # Database Schema Documentation
 
-This document provides a detailed overview of the Spike Land database schema, including models, relationships, and design decisions.
+This document provides a detailed overview of the Spike Land database schema,
+including models, relationships, and design decisions.
 
 ## Schema Version
 
@@ -141,7 +142,8 @@ Core user account model integrated with NextAuth.js for authentication.
 - `audioMixerProjects`: AudioMixerProject[] - Audio mixer projects
 - `marketingAccounts`: MarketingAccount[] - Connected marketing accounts
 - `visitorSessions`: VisitorSession[] - Analytics visitor sessions
-- `campaignAttributions`: CampaignAttribution[] - Campaign conversion attributions
+- `campaignAttributions`: CampaignAttribution[] - Campaign conversion
+  attributions
 - `merchCart`: MerchCart? - Shopping cart (1:1)
 - `merchOrders`: MerchOrder[] - Merchandise orders
 
@@ -155,7 +157,8 @@ Core user account model integrated with NextAuth.js for authentication.
 **Design Notes**:
 
 - Email is nullable to support OAuth-only accounts without email permission
-- Uses CUID (Collision-resistant Unique Identifier) for globally unique, ordered IDs
+- Uses CUID (Collision-resistant Unique Identifier) for globally unique, ordered
+  IDs
 - `emailVerified` tracks when user confirmed their email address
 - Password hash stored for credential-based authentication alongside OAuth
 - Role-based access control (RBAC) via `role` enum
@@ -275,7 +278,8 @@ Active user session tracking. Part of NextAuth.js adapter schema.
 
 ### VerificationToken
 
-Email verification and passwordless sign-in tokens. Part of NextAuth.js adapter schema.
+Email verification and passwordless sign-in tokens. Part of NextAuth.js adapter
+schema.
 
 **Table Name**: `verification_tokens`
 
@@ -613,7 +617,8 @@ Reusable AI enhancement pipeline configurations.
 
 - System pipelines have NULL userId (created by admins)
 - JSON configs allow flexible pipeline customization
-- Visibility controls: PRIVATE (owner only), PUBLIC (all users), LINK (share token)
+- Visibility controls: PRIVATE (owner only), PUBLIC (all users), LINK (share
+  token)
 - Share tokens enable pipeline template sharing
 - Usage count tracks pipeline popularity
 - Pipelines can be forked/cloned by users
@@ -774,7 +779,8 @@ Photo album organization for user images.
 **Indexes**:
 
 - PRIMARY KEY on `id`
-- UNIQUE composite index on `[userId, name, privacy]` (prevents duplicate default albums)
+- UNIQUE composite index on `[userId, name, privacy]` (prevents duplicate
+  default albums)
 - Composite index on `[userId, createdAt]`
 - Index on `privacy`
 - Index on `shareToken`
@@ -1583,7 +1589,8 @@ Product size/color/material variants.
 - Flexible variant system via attributes JSON
 - Price delta adds/subtracts from product base price
 - Separate provider SKUs for each variant
-- Examples: sizes (30x40cm), colors (Black/White), materials (Canvas/Photo Paper)
+- Examples: sizes (30x40cm), colors (Black/White), materials (Canvas/Photo
+  Paper)
 
 ---
 
@@ -1648,7 +1655,8 @@ Items in shopping cart.
 **Indexes**:
 
 - PRIMARY KEY on `id`
-- UNIQUE composite index on `[cartId, productId, variantId, imageId, uploadedImageR2Key]`
+- UNIQUE composite index on
+  `[cartId, productId, variantId, imageId, uploadedImageR2Key]`
 - Index on `cartId`
 - Index on `productId`
 
@@ -1706,7 +1714,8 @@ Customer orders for merchandise.
 
 **Design Notes**:
 
-- Order lifecycle: PENDING → PAID → SUBMITTED → IN_PRODUCTION → SHIPPED → DELIVERED
+- Order lifecycle: PENDING → PAID → SUBMITTED → IN_PRODUCTION → SHIPPED →
+  DELIVERED
 - Addresses stored as JSON for flexibility
 - Stripe payment intent for payment processing
 - paidAt tracks actual payment timestamp
@@ -1828,7 +1837,8 @@ Audit trail for order lifecycle events.
 **Design Notes**:
 
 - Immutable audit trail for order events
-- Event types: ORDER_CREATED, PAYMENT_AUTHORIZED, PAYMENT_CAPTURED, SUBMITTED_TO_POD, etc.
+- Event types: ORDER_CREATED, PAYMENT_AUTHORIZED, PAYMENT_CAPTURED,
+  SUBMITTED_TO_POD, etc.
 - Data field stores event-specific details
 - Used for order history timeline
 
@@ -1910,7 +1920,8 @@ Jules/Codex agent coding session tracking.
 
 - Integrates external AI coding agents (Jules, Codex)
 - Tracks async coding tasks in external systems
-- Status lifecycle: QUEUED → PLANNING → AWAITING_PLAN_APPROVAL → IN_PROGRESS → COMPLETED/FAILED
+- Status lifecycle: QUEUED → PLANNING → AWAITING_PLAN_APPROVAL → IN_PROGRESS →
+  COMPLETED/FAILED
 - Pull request URL for code review
 - Metadata stores provider-specific data
 
@@ -2172,14 +2183,16 @@ Referral program tracking.
 **Indexes**:
 
 - PRIMARY KEY on `id`
-- UNIQUE composite index on `[referrerId, refereeId]` (prevents duplicate referrals)
+- UNIQUE composite index on `[referrerId, refereeId]` (prevents duplicate
+  referrals)
 - Composite index on `[referrerId, status]`
 - Index on `refereeId`
 - Composite index on `[status, createdAt]`
 
 **Design Notes**:
 
-- Status: PENDING → COMPLETED (when referee completes action) or INVALID (fraud detected)
+- Status: PENDING → COMPLETED (when referee completes action) or INVALID (fraud
+  detected)
 - Tokens granted when status = COMPLETED
 - IP address used for fraud detection
 - One referral per referee
@@ -2631,7 +2644,8 @@ MCP API image generation jobs.
 
 ### Index Strategy
 
-The database employs a comprehensive indexing strategy optimized for common query patterns:
+The database employs a comprehensive indexing strategy optimized for common
+query patterns:
 
 #### Primary Keys
 
@@ -3072,13 +3086,16 @@ ORDER BY pg_relation_size(indexrelid) DESC;
 
 ## Related Documentation
 
-- [TOKEN_SYSTEM.md](/Users/z/Developer/spike-land-nextjs/docs/TOKEN_SYSTEM.md) - Detailed token economics
-- [API_REFERENCE.md](/Users/z/Developer/spike-land-nextjs/docs/API_REFERENCE.md) - API endpoints using this schema
-- [DATABASE_SETUP.md](/Users/z/Developer/spike-land-nextjs/docs/DATABASE_SETUP.md) - Database setup instructions
-- [FEATURES.md](/Users/z/Developer/spike-land-nextjs/docs/FEATURES.md) - Platform features overview
+- [TOKEN_SYSTEM.md](/Users/z/Developer/spike-land-nextjs/docs/TOKEN_SYSTEM.md) -
+  Detailed token economics
+- [API_REFERENCE.md](/Users/z/Developer/spike-land-nextjs/docs/API_REFERENCE.md) -
+  API endpoints using this schema
+- [DATABASE_SETUP.md](/Users/z/Developer/spike-land-nextjs/docs/DATABASE_SETUP.md) -
+  Database setup instructions
+- [FEATURES.md](/Users/z/Developer/spike-land-nextjs/docs/FEATURES.md) -
+  Platform features overview
 
 ---
 
-**Document Maintained By**: Technical Documentation Team
-**Last Reviewed**: 2025-12-30
-**Next Review**: 2026-01-30
+**Document Maintained By**: Technical Documentation Team **Last Reviewed**:
+2025-12-30 **Next Review**: 2026-01-30

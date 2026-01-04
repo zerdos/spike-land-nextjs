@@ -3,7 +3,6 @@
  * Provides simple View-based mocks for SVG components
  */
 
-import React from "react";
 import { View } from "react-native";
 
 // Create a mock component factory

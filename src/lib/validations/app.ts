@@ -8,6 +8,20 @@ export const MONETIZATION_MODELS = [
   "usage-based",
 ] as const;
 
+export const APP_BUILD_STATUSES = [
+  "PROMPTING",
+  "WAITING",
+  "DRAFTING",
+  "BUILDING",
+  "FINE_TUNING",
+  "TEST",
+  "LIVE",
+  "ARCHIVED",
+  "FAILED",
+] as const;
+
+export const APP_MESSAGE_ROLES = ["USER", "AGENT", "SYSTEM"] as const;
+
 export const appCreationSchema = z.object({
   name: z
     .string()
@@ -38,6 +52,56 @@ export const appCreationSchema = z.object({
     .optional(),
 });
 
+// Simplified app creation schema for prompt-based flow
+export const appPromptCreationSchema = z.object({
+  prompt: z
+    .string()
+    .min(10, "Prompt must be at least 10 characters")
+    .max(4000, "Prompt must be less than 4000 characters"),
+  imageIds: z.array(z.string()).optional(),
+});
+
+// Schema for app message creation
+export const appMessageCreateSchema = z.object({
+  content: z
+    .string()
+    .min(1, "Message cannot be empty")
+    .max(10000, "Message is too long"),
+  imageIds: z.array(z.string()).optional(),
+});
+
+// Schema for updating app status
+export const appStatusUpdateSchema = z.object({
+  status: z.enum(APP_BUILD_STATUSES),
+  message: z.string().max(1000).optional(),
+});
+
+// Schema for updating app settings
+export const appSettingsUpdateSchema = z.object({
+  name: z
+    .string()
+    .min(3, "App name must be at least 3 characters")
+    .max(50, "App name must be less than 50 characters")
+    .regex(
+      /^[a-zA-Z0-9\s-]+$/,
+      "App name can only contain letters, numbers, spaces, and hyphens",
+    )
+    .optional(),
+  description: z
+    .string()
+    .max(500, "Description must be less than 500 characters")
+    .optional(),
+  isPublic: z.boolean().optional(),
+  codespaceId: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      "Codespace ID can only contain letters, numbers, hyphens, and underscores",
+    )
+    .max(100)
+    .optional(),
+});
+
 // Schema for linking a codespace to an existing app (PATCH operation)
 export const appCodespaceLinkSchema = z.object({
   codespaceId: z
@@ -47,6 +111,33 @@ export const appCodespaceLinkSchema = z.object({
       "Codespace ID can only contain letters, numbers, hyphens, and underscores",
     )
     .max(100),
+});
+
+// Schema for agent updates (internal use)
+export const agentAppUpdateSchema = z.object({
+  name: z
+    .string()
+    .min(3, "App name must be at least 3 characters")
+    .max(50, "App name must be less than 50 characters")
+    .optional(),
+  description: z
+    .string()
+    .max(500, "Description must be less than 500 characters")
+    .optional(),
+  status: z.enum(APP_BUILD_STATUSES).optional(),
+  statusMessage: z.string().max(1000).optional(),
+  codespaceId: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      "Codespace ID can only contain letters, numbers, hyphens, and underscores",
+    )
+    .max(100)
+    .optional(),
+  isPublic: z.boolean().optional(),
+  isCurated: z.boolean().optional(),
+  agentMessage: z.string().max(10000).optional(),
+  systemMessage: z.string().max(10000).optional(),
 });
 
 export type AppCreationFormData = z.infer<typeof appCreationSchema>;

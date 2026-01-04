@@ -4,10 +4,10 @@ Feature: Basic Tabletop Interaction
   So that I can play games with friends
 
   @tabletop
-  Scenario: User can access the tabletop simulator
+  Scenario: User can access the tabletop simulator home page
     Given I am on the tabletop simulator home page
-    Then I should see the game canvas
-    And I should see the controls panel
+    Then I should see the create room button
+    And I should see the join room input
 
   @tabletop
   Scenario: User can create a new game room
@@ -31,9 +31,8 @@ Feature: Basic Tabletop Interaction
     Then the toggle button should show orbit mode active
 
   @tabletop
-  Scenario: User can open the hand drawer
+  Scenario: User sees the hand drawer
     Given I am in a tabletop game room
-    When I click the hand toggle button
     Then the hand drawer should be visible
     And I should see the empty hand message
 

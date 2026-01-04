@@ -10,7 +10,8 @@ import type {
   MerchVariant,
 } from "@spike-npm-land/shared";
 import type { Cart } from "../../stores/cart-store";
-import { apiClient, ApiResponse } from "../api-client";
+import type { ApiResponse } from "../api-client";
+import { apiClient } from "../api-client";
 
 // ============================================================================
 // Types

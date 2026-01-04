@@ -70,7 +70,7 @@ describe("game-document CRDT operations", () => {
       moveCard(doc, "card-1", newPosition);
 
       const deck = getDeckArray(doc);
-      const movedCard = deck.toArray().find(c => c.id === "card-1");
+      const movedCard = deck.toArray().find((c) => c.id === "card-1");
       expect(movedCard?.position).toEqual(newPosition);
     });
 
@@ -81,12 +81,12 @@ describe("game-document CRDT operations", () => {
       flipCard(doc, "card-1");
 
       const deck = getDeckArray(doc);
-      const flippedCard = deck.toArray().find(c => c.id === "card-1");
+      const flippedCard = deck.toArray().find((c) => c.id === "card-1");
       expect(flippedCard?.faceUp).toBe(true);
 
       // Flip again
       flipCard(doc, "card-1");
-      const reflippedCard = getDeckArray(doc).toArray().find(c => c.id === "card-1");
+      const reflippedCard = getDeckArray(doc).toArray().find((c) => c.id === "card-1");
       expect(reflippedCard?.faceUp).toBe(false);
     });
 
@@ -98,7 +98,7 @@ describe("game-document CRDT operations", () => {
       drawCard(doc, playerId);
 
       const deck = getDeckArray(doc);
-      const drawnCards = deck.toArray().filter(c => c.ownerId === playerId);
+      const drawnCards = deck.toArray().filter((c) => c.ownerId === playerId);
       expect(drawnCards.length).toBe(1);
       expect(drawnCards[0]?.ownerId).toBe(playerId);
       // faceUp remains false - visibility is handled by client based on ownerId
@@ -116,7 +116,7 @@ describe("game-document CRDT operations", () => {
       playCard(doc, "card-1", tablePosition);
 
       const deck = getDeckArray(doc);
-      const playedCard = deck.toArray().find(c => c.id === "card-1");
+      const playedCard = deck.toArray().find((c) => c.id === "card-1");
       expect(playedCard?.ownerId).toBeNull();
       expect(playedCard?.position).toEqual(tablePosition);
     });

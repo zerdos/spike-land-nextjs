@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Helper function to mock NextAuth session
 async function mockSession(
@@ -394,18 +394,32 @@ Then(
 
 // Navigation steps
 When("I visit {string}", async function(this: CustomWorld, path: string) {
-  await this.page.goto(`${this.baseUrl}${path}`);
-  await this.page.waitForLoadState("networkidle");
+  await this.page.goto(`${this.baseUrl}${path}`, { waitUntil: "commit" });
+
+  // Allow server-side redirects to complete without timeout
+  // Some pages (like admin pages for non-admins) redirect immediately
+  try {
+    await this.page.waitForLoadState("networkidle", { timeout: 5000 });
+  } catch {
+    // Timeout acceptable if page redirected - the redirect should complete
+    await this.page.waitForLoadState("domcontentloaded");
+  }
 });
 
 Then(
   "I should be on the {string} page",
   async function(this: CustomWorld, path: string) {
-    // Wait for navigation to complete and URL to contain the expected path
-    await this.page.waitForLoadState("networkidle");
+    // Wait for navigation to complete - use domcontentloaded first
+    await this.page.waitForLoadState("domcontentloaded");
+    // Try networkidle with short timeout, but don't fail if it times out
+    try {
+      await this.page.waitForLoadState("networkidle", { timeout: 5000 });
+    } catch {
+      // Network may still be active (polling, websockets), that's OK
+    }
     // Wait for URL to contain the path (with timeout for client-side routing)
     await this.page.waitForURL(new RegExp(path.replace(/\//g, "\\/")), {
-      timeout: 10000,
+      timeout: 15000,
     });
     const currentUrl = this.page.url();
     // Handle both exact match, query parameters, and trailing slashes
@@ -442,6 +456,13 @@ Then(
 Then(
   "I should see {string} text",
   async function(this: CustomWorld, text: string) {
+    // Wait for Suspense fallback to disappear ONLY if it's visible
+    const loadingText = this.page.getByText("Loading...", { exact: true });
+    const isLoadingVisible = await loadingText.isVisible().catch(() => false);
+    if (isLoadingVisible) {
+      await loadingText.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    }
+
     // Use .first() to handle cases where text appears in multiple elements (e.g., nav link and heading)
     // Use longer timeout for flaky CI environment
     await expect(this.page.getByText(text).first()).toBeVisible({
@@ -468,7 +489,14 @@ Then(
 When(
   "I click the {string} link",
   async function(this: CustomWorld, linkText: string) {
-    // Wait for any loading spinners to disappear first
+    // Wait for Suspense fallback to disappear ONLY if it's visible
+    const loadingText = this.page.getByText("Loading...", { exact: true });
+    const isLoadingVisible = await loadingText.isVisible().catch(() => false);
+    if (isLoadingVisible) {
+      await loadingText.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    }
+
+    // Wait for any loading spinners to disappear
     await this.page
       .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
       .catch(() => {});

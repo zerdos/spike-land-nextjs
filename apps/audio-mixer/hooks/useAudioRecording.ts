@@ -10,12 +10,13 @@ import { blobToAudioBuffer, createRecorder } from "../lib/audio-engine";
 import type { RecordingState } from "../types";
 
 export function useAudioRecording() {
-  const [state, setState] = useState<RecordingState>({
+  const [state, setState] = useState<RecordingState & { error: Error | null; }>({
     isRecording: false,
     isPaused: false,
     duration: 0,
     mediaRecorder: null,
     chunks: [],
+    error: null,
   });
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -26,14 +27,28 @@ export function useAudioRecording() {
   const pausedDurationRef = useRef<number>(0);
 
   const startRecording = useCallback(async () => {
+    setState((prev) => ({ ...prev, error: null }));
+
     try {
+      // 1. Request simple audio first to trigger permission prompt reliably
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
+        audio: true,
       });
+
+      // 2. Try to apply advanced constraints if possible
+      const audioTrack = stream.getAudioTracks()[0];
+      if (audioTrack) {
+        try {
+          await audioTrack.applyConstraints({
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          });
+        } catch (constraintError) {
+          console.warn("Failed to apply advanced audio constraints:", constraintError);
+          // Continue with simple audio - better than failing completely
+        }
+      }
 
       streamRef.current = stream;
       chunksRef.current = [];
@@ -64,11 +79,16 @@ export function useAudioRecording() {
         duration: 0,
         mediaRecorder,
         chunks: [],
+        error: null,
       });
 
       return true;
     } catch (error) {
       console.error("Failed to start recording:", error);
+      setState((prev) => ({
+        ...prev,
+        error: error instanceof Error ? error : new Error(String(error)),
+      }));
       return false;
     }
   }, []);
@@ -127,6 +147,7 @@ export function useAudioRecording() {
           duration: 0,
           mediaRecorder: null,
           chunks: [],
+          error: null,
         });
 
         resolve(blob);
@@ -162,6 +183,7 @@ export function useAudioRecording() {
       duration: 0,
       mediaRecorder: null,
       chunks: [],
+      error: null,
     });
   }, []);
 

@@ -261,7 +261,11 @@ export function AudioMixer() {
   // Play all tracks
   const handlePlayAll = useCallback(async () => {
     const { context, masterGain } = await audioContext.initialize();
-    trackManager.playAllTracks(context, masterGain, timeline.state.playheadTime);
+    trackManager.playAllTracks(
+      context,
+      masterGain,
+      timeline.state.playheadTime,
+    );
     setIsPlaying(true);
     // Start playhead animation from current position
     timeline.startPlayheadAnimation(timeline.state.playheadTime);
@@ -858,6 +862,7 @@ export function AudioMixer() {
             isRecording={recording.isRecording}
             isPaused={recording.isPaused}
             duration={recording.duration}
+            permissionError={recording.error}
             onStart={handleStartRecording}
             onPause={recording.pauseRecording}
             onResume={recording.resumeRecording}

@@ -11,7 +11,8 @@ import { WelcomeEmail } from "@/lib/email/templates/welcome";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { EmailStatus } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const MAX_SEARCH_LENGTH = 100;
 const DEFAULT_PAGE_SIZE = 20;

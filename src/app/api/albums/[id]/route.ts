@@ -1,9 +1,10 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { EnhancementTier } from "@prisma/client";
+import type { EnhancementTier } from "@prisma/client";
 import { nanoid } from "nanoid";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 type RouteParams = { params: Promise<{ id: string; }>; };
 

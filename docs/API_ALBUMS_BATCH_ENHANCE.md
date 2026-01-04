@@ -150,8 +150,8 @@ When rate limited, the API returns 429 with retry information.
    - If false: Use total image count
 7. **Early Return**: If no images need enhancement (skipped = total)
 8. **Validate Batch Size**: Reject if more than 20 images to enhance
-9. **Fetch Image Data**: Only fetch required fields (id, originalR2Key) for images
-   to enhance
+9. **Fetch Image Data**: Only fetch required fields (id, originalR2Key) for
+   images to enhance
 10. **Calculate Cost**: Total tokens = images to enhance × tier cost
 11. **Check Balance**: Verify user has enough tokens
 12. **Consume Tokens**: Charge tokens upfront for entire batch with metadata
@@ -170,8 +170,8 @@ When rate limited, the API returns 429 with retry information.
   reducing database load
 - **Early Rejection**: Validates batch size using count queries before fetching
   full image data
-- **Batch ID Generation**: Uses timestamp-based IDs (`album-{albumId}-{timestamp}`)
-  for tracking
+- **Batch ID Generation**: Uses timestamp-based IDs
+  (`album-{albumId}-{timestamp}`) for tracking
 
 ### Token Costs
 
@@ -575,13 +575,15 @@ Development and production use different refund strategies because:
 - **Total image count**: Lightweight `count()` query
 - **Enhanced image count**: Optimized `count()` with job status filter
 - **Image fetch**: Minimal fields (`id`, `originalR2Key`) with `take: 20` limit
-- **Total queries**: 4-5 queries per request (optimized for minimal data transfer)
+- **Total queries**: 4-5 queries per request (optimized for minimal data
+  transfer)
 
 ### Token Operations
 
 - **Balance check**: 1 query to verify sufficient tokens
 - **Consumption**: 1 transaction to deduct tokens with metadata
-- **Refund**: 1 transaction per refund event (startup failure or batch completion)
+- **Refund**: 1 transaction per refund event (startup failure or batch
+  completion)
 
 ### Processing Time
 

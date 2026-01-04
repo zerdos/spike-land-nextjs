@@ -2,7 +2,6 @@
  * Mock for @tamagui/lucide-icons
  */
 
-import React from "react";
 import { View } from "react-native";
 
 // Create a mock icon component

@@ -1,0 +1,20 @@
+# Package-specific build artifacts
+/public/
+/monaco-workers/
+/dts/
+
+# Package-specific caches and temporary files
+/.yarn/
+/certs/
+/errors.txt
+
+# Generated files
+sw2.ts
+
+# Local development
+*.local
+
+# Build output
+/dist/
+/dist-vite/
+/.vite/

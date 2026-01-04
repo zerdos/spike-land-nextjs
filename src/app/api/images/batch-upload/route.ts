@@ -6,10 +6,12 @@ import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { deleteFromR2 } from "@/lib/storage/r2-client";
 import { processAndUploadImage } from "@/lib/storage/upload-handler";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
-import { ENHANCEMENT_COSTS, EnhancementTier } from "@/lib/tokens/costs";
+import type { EnhancementTier } from "@/lib/tokens/costs";
+import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { isSecureFilename } from "@/lib/upload/validation";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const MAX_BATCH_SIZE = 20;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file

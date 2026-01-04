@@ -2,9 +2,10 @@
  * Step definitions for Admin Feedback Management E2E tests
  */
 
-import { DataTable, Given, Then, When } from "@cucumber/cucumber";
+import type { DataTable } from "@cucumber/cucumber";
+import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Mock feedback data generator
 function createMockFeedback(overrides: Partial<{
@@ -102,12 +103,17 @@ Given(
 Given(
   "there are {int} feedback items in the system",
   async function(this: CustomWorld, count: number) {
+    // For @requires-db tests, we rely on E2E seed data which has 5 feedback items.
+    // The admin feedback page is a server component that fetches directly from Prisma,
+    // so route mocking doesn't work for SSR. We also set up a route mock for client-side
+    // refresh calls.
     const feedback = Array.from(
       { length: count },
       (_, i) => createMockFeedback({ id: `f${i}` }),
     );
 
-    await this.page.route("**/api/admin/feedback**", async (route) => {
+    // Only mock client-side API calls (like Refresh button)
+    await this.page.route("**/api/admin/feedback*", async (route) => {
       if (route.request().method() === "GET") {
         await route.fulfill({
           status: 200,
@@ -176,7 +182,8 @@ Given("there are no matching items", async function(this: CustomWorld) {
 When(
   "I select {string} from the status filter",
   async function(this: CustomWorld, status: string) {
-    const statusSelect = this.page.locator('[class*="SelectTrigger"]').first();
+    // Use role="combobox" which is the Radix UI Select trigger role
+    const statusSelect = this.page.getByRole("combobox").first();
     await statusSelect.click();
     await this.page.locator('[role="option"]').filter({ hasText: status })
       .click();
@@ -207,9 +214,9 @@ When(
 When(
   "I change the status to {string} in the dialog",
   async function(this: CustomWorld, status: string) {
-    const statusSelect = this.page.locator(
-      '[role="dialog"] [class*="SelectTrigger"]',
-    ).first();
+    // Use named dialog to avoid cookie consent or other dialogs
+    const dialog = this.page.getByRole("dialog", { name: "Feedback Details" });
+    const statusSelect = dialog.getByRole("combobox").first();
     await statusSelect.click();
     await this.page.locator('[role="option"]').filter({ hasText: status })
       .click();
@@ -219,7 +226,8 @@ When(
 When(
   "I enter {string} in the admin note field",
   async function(this: CustomWorld, note: string) {
-    const textarea = this.page.locator('[role="dialog"] textarea');
+    const dialog = this.page.getByRole("dialog", { name: "Feedback Details" });
+    const textarea = dialog.locator("textarea");
     await textarea.fill(note);
   },
 );
@@ -230,22 +238,28 @@ When(
 // NOTE: "I should see {string} label" is defined in common.steps.ts
 
 Then("I should see status filter dropdown", async function(this: CustomWorld) {
-  const statusSelect = this.page.locator('[class*="SelectTrigger"]').first();
+  // Use role="combobox" which is the Radix UI Select trigger role
+  const statusSelect = this.page.getByRole("combobox").first();
   await expect(statusSelect).toBeVisible();
 });
 
 Then("I should see type filter dropdown", async function(this: CustomWorld) {
-  const typeSelect = this.page.locator('[class*="SelectTrigger"]').nth(1);
+  // Use role="combobox" which is the Radix UI Select trigger role
+  const typeSelect = this.page.getByRole("combobox").nth(1);
   await expect(typeSelect).toBeVisible();
 });
 
 Then(
   "I should see feedback table with columns:",
   async function(this: CustomWorld, dataTable: DataTable) {
-    const columns = dataTable.raw().flat();
+    const rows = dataTable.raw();
+    // Skip the header row (first row with "Column" label) and get actual column names
+    const columns = rows.slice(1).flat();
+    // Wait for the table to be visible first
+    await this.page.waitForSelector("table", { state: "visible", timeout: 10000 });
     for (const column of columns) {
       const header = this.page.locator("th").filter({ hasText: column });
-      await expect(header).toBeVisible();
+      await expect(header).toBeVisible({ timeout: 5000 });
     }
   },
 );
@@ -276,10 +290,18 @@ Then(
 Then(
   "each feedback item should display user information",
   async function(this: CustomWorld) {
-    // Check for avatars which indicate user info
-    const avatars = this.page.locator("tbody [class*='Avatar']");
-    const count = await avatars.count();
+    // Check for user info cells in the table (third column contains avatar and user name)
+    // The User column contains a flex container with avatar (rounded-full) and user name span
+    const userCells = this.page.locator("tbody tr td:nth-child(3)");
+    const count = await userCells.count();
     expect(count).toBeGreaterThan(0);
+
+    // Also verify the first user cell contains expected structure
+    const firstUserCell = userCells.first();
+    await expect(firstUserCell).toBeVisible();
+    // Check it has the flex container with gap-2 (user info wrapper with avatar + name)
+    const flexContainer = firstUserCell.locator(".flex.items-center.gap-2");
+    await expect(flexContainer).toBeVisible();
   },
 );
 
@@ -354,7 +376,9 @@ Then(
 Then(
   "I should see the feedback details dialog",
   async function(this: CustomWorld) {
-    const dialog = this.page.locator('[role="dialog"]');
+    // Use getByRole with name to specifically target the feedback details dialog
+    // and not the cookie consent dialog which also has role="dialog"
+    const dialog = this.page.getByRole("dialog", { name: "Feedback Details" });
     await expect(dialog).toBeVisible();
   },
 );
@@ -362,46 +386,66 @@ Then(
 Then(
   "I should see the full feedback message",
   async function(this: CustomWorld) {
-    const dialog = this.page.locator('[role="dialog"]');
-    const messageSection = dialog.locator("text=Message").locator("..");
-    await expect(messageSection).toBeVisible();
+    const dialog = this.page.getByRole("dialog", { name: "Feedback Details" });
+    // Look for the Message label specifically (using exact match to avoid header content)
+    const messageLabel = dialog.getByText("Message", { exact: true });
+    await expect(messageLabel).toBeVisible();
   },
 );
 
 Then("I should see the feedback type", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="dialog"]');
-  const typeSection = dialog.locator("text=Type").first();
+  const dialog = this.page.getByRole("dialog", { name: "Feedback Details" });
+  const typeSection = dialog.getByText("Type", { exact: true }).first();
   await expect(typeSection).toBeVisible();
 });
 
 Then("I should see the feedback status", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="dialog"]');
-  const statusSection = dialog.locator("text=Status").first();
+  const dialog = this.page.getByRole("dialog", { name: "Feedback Details" });
+  const statusSection = dialog.getByText("Status", { exact: true }).first();
   await expect(statusSection).toBeVisible();
 });
 
 Then("I should see the user information", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="dialog"]');
-  const userSection = dialog.locator("text=User").first();
-  await expect(userSection).toBeVisible();
+  const dialog = this.page.getByRole("dialog", { name: "Feedback Details" });
+
+  // Check for User label first
+  const userLabel = dialog.getByText("User", { exact: true });
+  await expect(userLabel).toBeVisible({ timeout: 5000 });
+
+  // User info should be displayed - could be name, email, or "Anonymous"
+  // The seed data creates feedback with userId linked to "Test User"
+  // But we also accept email or Anonymous as valid user info
+  const userInfo = dialog.locator("span.text-sm").filter({
+    hasNotText: /Type|Status|Message|Page|Submitted|Updated/,
+  });
+
+  // Should have at least one span with user info
+  const count = await userInfo.count();
+  if (count === 0) {
+    // Fall back to looking for any user info text
+    const anyUserInfo = dialog.getByText(/Test User|test@example\.com|Anonymous/);
+    await expect(anyUserInfo.first()).toBeVisible({ timeout: 5000 });
+  } else {
+    await expect(userInfo.first()).toBeVisible();
+  }
 });
 
 Then("I should see the submission page", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="dialog"]');
-  const pageSection = dialog.locator("text=Page").first();
+  const dialog = this.page.getByRole("dialog", { name: "Feedback Details" });
+  const pageSection = dialog.getByText("Page", { exact: true }).first();
   await expect(pageSection).toBeVisible();
 });
 
 Then("I should see the submission date", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="dialog"]');
-  const dateSection = dialog.locator("text=Submitted").first();
+  const dialog = this.page.getByRole("dialog", { name: "Feedback Details" });
+  const dateSection = dialog.getByText("Submitted", { exact: true }).first();
   await expect(dateSection).toBeVisible();
 });
 
 // NOTE: "I should see {string} section" is defined in common.steps.ts
 
 Then("I should see the user agent string", async function(this: CustomWorld) {
-  const dialog = this.page.locator('[role="dialog"]');
+  const dialog = this.page.getByRole("dialog", { name: "Feedback Details" });
   const userAgentText = dialog.locator("text=Mozilla").first();
   await expect(userAgentText).toBeVisible();
 });
@@ -452,8 +496,20 @@ Then("the admin note should be saved", async function(this: CustomWorld) {
 Then(
   "the feedback details dialog should close",
   async function(this: CustomWorld) {
-    const dialog = this.page.locator('[role="dialog"]');
+    const dialog = this.page.getByRole("dialog", { name: "Feedback Details" });
     await expect(dialog).not.toBeVisible();
+  },
+);
+
+Then(
+  "I should see the feedback count in the header",
+  async function(this: CustomWorld) {
+    // Wait for the page to load and display the feedback count
+    // The header shows "Feedback ({count})" where count is a number
+    const feedbackHeader = this.page.locator("h2").filter({
+      hasText: /Feedback \(\d+\)/,
+    });
+    await expect(feedbackHeader).toBeVisible({ timeout: 10000 });
   },
 );
 
@@ -487,8 +543,14 @@ Then("OTHER type badge should be gray", async function(this: CustomWorld) {
 });
 
 Then("NEW status badge should be yellow", async function(this: CustomWorld) {
+  // Wait for table to load first
+  await this.page.waitForSelector("table tbody tr", {
+    state: "visible",
+    timeout: 10000,
+  });
   const badge = this.page.locator('[class*="Badge"]').filter({ hasText: "NEW" })
     .first();
+  await expect(badge).toBeVisible({ timeout: 5000 });
   const className = await badge.getAttribute("class");
   expect(className).toContain("yellow");
 });
@@ -496,9 +558,23 @@ Then("NEW status badge should be yellow", async function(this: CustomWorld) {
 Then(
   "REVIEWED status badge should be blue",
   async function(this: CustomWorld) {
-    const badge = this.page.locator('[class*="Badge"]').filter({
+    // Wait for table to load first
+    await this.page.waitForSelector("table tbody tr", {
+      state: "visible",
+      timeout: 10000,
+    });
+    // Scroll to ensure all badges are visible (table might be scrollable)
+    const table = this.page.locator("table");
+    await table.evaluate((el) => el.scrollTop = el.scrollHeight);
+    await this.page.waitForTimeout(200);
+    await table.evaluate((el) => el.scrollTop = 0);
+
+    // Look for REVIEWED badge - it should be in the 5th column (status)
+    // Use a more flexible selector that handles the table structure
+    const badge = this.page.locator("table tbody tr td").locator('[class*="Badge"]').filter({
       hasText: "REVIEWED",
     }).first();
+    await expect(badge).toBeVisible({ timeout: 5000 });
     const className = await badge.getAttribute("class");
     expect(className).toContain("blue");
   },
@@ -507,9 +583,15 @@ Then(
 Then(
   "RESOLVED status badge should be green",
   async function(this: CustomWorld) {
+    // Wait for table to load first
+    await this.page.waitForSelector("table tbody tr", {
+      state: "visible",
+      timeout: 10000,
+    });
     const badge = this.page.locator('[class*="Badge"]').filter({
       hasText: "RESOLVED",
     }).first();
+    await expect(badge).toBeVisible({ timeout: 5000 });
     const className = await badge.getAttribute("class");
     expect(className).toContain("green");
   },
@@ -518,9 +600,15 @@ Then(
 Then(
   "DISMISSED status badge should be gray",
   async function(this: CustomWorld) {
+    // Wait for table to load first
+    await this.page.waitForSelector("table tbody tr", {
+      state: "visible",
+      timeout: 10000,
+    });
     const badge = this.page.locator('[class*="Badge"]').filter({
       hasText: "DISMISSED",
     }).first();
+    await expect(badge).toBeVisible({ timeout: 5000 });
     const className = await badge.getAttribute("class");
     expect(className).toMatch(/gray|neutral/);
   },

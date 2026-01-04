@@ -58,13 +58,16 @@ const ActionButton = memo(function ActionButton({
       className="absolute w-14 h-14 rounded-full text-white shadow-lg flex flex-col items-center justify-center hover:scale-110 active:scale-95 transition-all duration-150"
       style={{
         transform: `translate(${x}px, ${y}px)`,
-        background: action.color ?? "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
+        background: action.color ??
+          "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
         boxShadow: `0 4px 12px ${action.color ?? "#3B82F6"}40, 0 2px 4px rgba(0,0,0,0.3)`,
       }}
       title={action.label}
     >
       <span className="text-xl">{action.icon}</span>
-      <span className="text-[10px] font-medium mt-0.5 opacity-90">{action.label}</span>
+      <span className="text-[10px] font-medium mt-0.5 opacity-90">
+        {action.label}
+      </span>
     </button>
   );
 });
@@ -167,7 +170,9 @@ export function RadialMenu({
   if (!isOpen) return null;
 
   // Calculate angles for each action
-  const angleStep = radialActions.length > 0 ? (2 * Math.PI) / radialActions.length : 0;
+  const angleStep = radialActions.length > 0
+    ? (2 * Math.PI) / radialActions.length
+    : 0;
   const startAngle = -Math.PI / 2; // Start from top
   const radius = 70;
 
@@ -322,7 +327,9 @@ export const RadialMenu3D = memo(function RadialMenu3D({
   }, [objectType, actions]);
 
   // Calculate angles for each action
-  const angleStep = radialActions.length > 0 ? (2 * Math.PI) / radialActions.length : 0;
+  const angleStep = radialActions.length > 0
+    ? (2 * Math.PI) / radialActions.length
+    : 0;
   const startAngle = -Math.PI / 2; // Start from top
   const radius = 60;
 

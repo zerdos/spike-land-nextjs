@@ -1,6 +1,7 @@
-import { DataTable, Given, Then, When } from "@cucumber/cucumber";
+import type { DataTable } from "@cucumber/cucumber";
+import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Navigation steps
 Given("I am on the apps page", async function(this: CustomWorld) {
@@ -185,7 +186,16 @@ Then(
 
 Then("the page should load successfully", async function(this: CustomWorld) {
   // Verify page loaded without errors
-  await this.page.waitForLoadState("networkidle");
+  // Use domcontentloaded as primary wait since networkidle can timeout
+  // when there's ongoing polling or streaming
+  await this.page.waitForLoadState("domcontentloaded");
+
+  // Try networkidle with a short timeout, but don't fail if it times out
+  try {
+    await this.page.waitForLoadState("networkidle", { timeout: 5000 });
+  } catch {
+    // Network may still be active (polling, websockets), that's OK
+  }
 
   // Check for main content
   const mainContent = this.page.locator("body");

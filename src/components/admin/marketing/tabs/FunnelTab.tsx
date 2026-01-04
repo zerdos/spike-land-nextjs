@@ -11,13 +11,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useState } from "react";
-import {
-  DateRange,
-  DateRangePicker,
-  DateRangePreset,
-  formatDateForAPI,
-  getDateRangeFromPreset,
-} from "../DateRangePicker";
+import type { DateRange, DateRangePreset } from "../DateRangePicker";
+import { DateRangePicker, formatDateForAPI, getDateRangeFromPreset } from "../DateRangePicker";
 
 interface FunnelStage {
   name: string;

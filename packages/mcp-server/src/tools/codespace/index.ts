@@ -6,7 +6,7 @@
  * iterate on web applications in real-time.
  */
 
-import { Tool } from "@modelcontextprotocol/sdk/types.js";
+import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { CodeSpaceClient } from "./client.js";
 
@@ -61,7 +61,9 @@ const LinkAppSchema = z.object({
   app_id: z
     .string()
     .min(1)
-    .describe("App ID to link the codespace to (optional - creates new app if not provided)"),
+    .describe(
+      "App ID to link the codespace to (optional - creates new app if not provided)",
+    ),
   app_name: z
     .string()
     .min(3)
@@ -235,7 +237,9 @@ export async function handleCodeSpaceToolCall(
   name: string,
   args: unknown,
 ): Promise<{
-  content: Array<{ type: string; text?: string; data?: string; mimeType?: string; }>;
+  content: Array<
+    { type: string; text?: string; data?: string; mimeType?: string; }
+  >;
   isError?: boolean;
 }> {
   if (!isCodeSpaceAvailable()) {
@@ -461,7 +465,9 @@ export async function handleCodeSpaceToolCall(
         };
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = error instanceof Error
+      ? error.message
+      : "Unknown error";
     return {
       content: [{ type: "text", text: `Error: ${errorMessage}` }],
       isError: true,

@@ -17,7 +17,10 @@ interface GameSceneProps {
   dice: DiceState[];
   playerId: string | null;
   interactionMode?: "orbit" | "interaction";
-  onCardMove: (id: string, position: { x: number; y: number; z: number; }) => void;
+  onCardMove: (
+    id: string,
+    position: { x: number; y: number; z: number; },
+  ) => void;
   onCardFlip: (id: string) => void;
   onCardGrab?: (id: string) => void;
   onCardRelease?: (id: string) => void;
@@ -44,12 +47,14 @@ export default function GameScene({
   onDeckShuffle,
 }: GameSceneProps) {
   // Cards on the table (not in anyone's hand)
-  const tableCards = cards.filter(card => card.ownerId === null);
+  const tableCards = cards.filter((card) => card.ownerId === null);
   // Actual deck count - cards not owned
-  const cardsInDeck = cards.filter(card => card.ownerId === null);
+  const cardsInDeck = cards.filter((card) => card.ownerId === null);
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }}>
+    <div
+      style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }}
+    >
       <Canvas
         shadows
         dpr={[1, 1.5]}
@@ -62,14 +67,19 @@ export default function GameScene({
             <TableSurface />
 
             {/* Render deck */}
-            <Deck count={cardsInDeck.length} onDraw={onDeckDraw} onShuffle={onDeckShuffle} />
+            <Deck
+              count={cardsInDeck.length}
+              onDraw={onDeckDraw}
+              onShuffle={onDeckShuffle}
+            />
 
             {/* Render cards on table (not at origin, meaning played cards) */}
             {tableCards
-              .filter(card =>
-                !(card.position.x === 0 && card.position.y === 0 && card.position.z === 0)
+              .filter((card) =>
+                !(card.position.x === 0 && card.position.y === 0 &&
+                  card.position.z === 0)
               )
-              .map(card => (
+              .map((card) => (
                 <MemoizedCard
                   key={card.id}
                   card={card}
@@ -82,11 +92,15 @@ export default function GameScene({
               ))}
 
             {/* Render dice */}
-            {dice.map(die => <MemoizedDice key={die.id} state={die} onSettle={onDiceSettle} />)}
+            {dice.map((die) => <MemoizedDice key={die.id} state={die} onSettle={onDiceSettle} />)}
           </Physics>
           <TableLighting />
           <GameCamera mode={interactionMode} />
-          <Environment files="/textures/environment.jpg" background blur={0.5} />
+          <Environment
+            files="/textures/environment.jpg"
+            background
+            blur={0.5}
+          />
         </Suspense>
       </Canvas>
     </div>

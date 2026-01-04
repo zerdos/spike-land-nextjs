@@ -12,7 +12,8 @@
 
 import { syncExternalCampaigns } from "@/lib/marketing/campaign-sync";
 import { cleanupExpiredCache } from "@/lib/tracking/metrics-cache";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 /**
  * Validate the cron secret header

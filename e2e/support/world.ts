@@ -1,5 +1,7 @@
-import { IWorldOptions, World } from "@cucumber/cucumber";
-import { Browser, BrowserContext, chromium, Page } from "@playwright/test";
+import type { IWorldOptions } from "@cucumber/cucumber";
+import { World } from "@cucumber/cucumber";
+import type { Browser, BrowserContext, Page } from "@playwright/test";
+import { chromium } from "@playwright/test";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -45,6 +47,7 @@ export class CustomWorld extends World {
 
     this.context = await this.browser.newContext({
       baseURL: this.baseUrl,
+      viewport: { width: 1280, height: 900 }, // Taller viewport for sidebar visibility
       extraHTTPHeaders: Object.keys(extraHTTPHeaders).length > 0
         ? extraHTTPHeaders
         : undefined,

@@ -1,10 +1,15 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { appCodespaceLinkSchema, appCreationSchema } from "@/lib/validations/app";
-import type { MonetizationType, RequirementPriority, RequirementStatus } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import { isAgentWorking } from "@/lib/upstash";
+import { appCodespaceLinkSchema, appSettingsUpdateSchema } from "@/lib/validations/app";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
+/**
+ * GET /api/apps/[id]
+ * Get a single app with full details
+ */
 export async function GET(
   _request: NextRequest,
   context: { params: Promise<{ id: string; }>; },
@@ -12,10 +17,7 @@ export async function GET(
   const { data: session, error: authError } = await tryCatch(auth());
 
   if (authError || !session?.user?.id) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { data: params, error: paramsError } = await tryCatch(context.params);
@@ -29,19 +31,29 @@ export async function GET(
       where: {
         id,
         userId: session.user.id,
-        status: {
-          not: "DELETED",
-        },
+        status: { not: "ARCHIVED" },
       },
       include: {
         requirements: {
-          orderBy: {
-            createdAt: "asc",
-          },
+          orderBy: { createdAt: "asc" },
         },
         monetizationModels: {
-          orderBy: {
-            createdAt: "asc",
+          orderBy: { createdAt: "asc" },
+        },
+        statusHistory: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          select: {
+            id: true,
+            status: true,
+            message: true,
+            createdAt: true,
+          },
+        },
+        _count: {
+          select: {
+            messages: true,
+            images: true,
           },
         },
       },
@@ -57,15 +69,22 @@ export async function GET(
   }
 
   if (!app) {
-    return NextResponse.json(
-      { error: "App not found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "App not found" }, { status: 404 });
   }
 
-  return NextResponse.json(app);
+  // Check if agent is currently working on this app
+  const { data: agentWorking } = await tryCatch(isAgentWorking(id));
+
+  return NextResponse.json({
+    ...app,
+    agentWorking: agentWorking || false,
+  });
 }
 
+/**
+ * PATCH /api/apps/[id]
+ * Update app settings
+ */
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string; }>; },
@@ -73,10 +92,7 @@ export async function PATCH(
   const { data: session, error: authError } = await tryCatch(auth());
 
   if (authError || !session?.user?.id) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { data: params, error: paramsError } = await tryCatch(context.params);
@@ -90,9 +106,7 @@ export async function PATCH(
       where: {
         id,
         userId: session.user.id,
-        status: {
-          not: "DELETED",
-        },
+        status: { not: "ARCHIVED" },
       },
     }),
   );
@@ -106,10 +120,7 @@ export async function PATCH(
   }
 
   if (!existingApp) {
-    return NextResponse.json(
-      { error: "App not found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "App not found" }, { status: 404 });
   }
 
   const { data: body, error: jsonError } = await tryCatch(request.json());
@@ -119,34 +130,26 @@ export async function PATCH(
 
   // Check if this is a codespace link request
   const codespaceResult = appCodespaceLinkSchema.safeParse(body);
-  const parseResult = appCreationSchema.partial().safeParse(body);
+  const settingsResult = appSettingsUpdateSchema.safeParse(body);
 
   // Validate with either schema
-  if (!codespaceResult.success && !parseResult.success) {
+  if (!codespaceResult.success && !settingsResult.success) {
     return NextResponse.json(
-      { error: "Validation error", details: parseResult.error?.issues },
+      { error: "Validation error", details: settingsResult.error?.issues },
       { status: 400 },
     );
   }
 
-  const validatedData = parseResult.success ? parseResult.data : {};
+  const validatedData = settingsResult.success ? settingsResult.data : {};
   const codespaceData = codespaceResult.success ? codespaceResult.data : null;
 
   const updateData: {
     name?: string;
     description?: string;
+    isPublic?: boolean;
     codespaceId?: string;
     codespaceUrl?: string;
-    requirements?: {
-      create: {
-        description: string;
-        priority: RequirementPriority;
-        status: RequirementStatus;
-      };
-    };
-    monetizationModels?: {
-      create: { type: MonetizationType; features: string[]; };
-    };
+    slug?: string;
   } = {};
 
   if (validatedData.name !== undefined) {
@@ -155,11 +158,19 @@ export async function PATCH(
   if (validatedData.description !== undefined) {
     updateData.description = validatedData.description;
   }
+  if (validatedData.isPublic !== undefined) {
+    updateData.isPublic = validatedData.isPublic;
+  }
+
   // Handle codespace linking
   if (codespaceData?.codespaceId || validatedData.codespaceId) {
     const codespaceId = codespaceData?.codespaceId || validatedData.codespaceId;
     updateData.codespaceId = codespaceId;
-    updateData.codespaceUrl = `https://testing.spike.land/live/${codespaceId}`;
+    updateData.codespaceUrl = `https://testing.spike.land/live/${codespaceId}/`;
+    // Also update slug if not already set
+    if (!existingApp.slug) {
+      updateData.slug = codespaceId;
+    }
   }
 
   const { data: app, error: updateError } = await tryCatch(
@@ -168,14 +179,17 @@ export async function PATCH(
       data: updateData,
       include: {
         requirements: {
-          orderBy: {
-            createdAt: "asc",
-          },
+          orderBy: { createdAt: "asc" },
         },
         monetizationModels: {
-          orderBy: {
-            createdAt: "asc",
-          },
+          orderBy: { createdAt: "asc" },
+        },
+        statusHistory: {
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        },
+        _count: {
+          select: { messages: true, images: true },
         },
       },
     }),
@@ -192,6 +206,10 @@ export async function PATCH(
   return NextResponse.json(app);
 }
 
+/**
+ * DELETE /api/apps/[id]
+ * Archive an app (soft delete)
+ */
 export async function DELETE(
   _request: NextRequest,
   context: { params: Promise<{ id: string; }>; },
@@ -199,10 +217,7 @@ export async function DELETE(
   const { data: session, error: authError } = await tryCatch(auth());
 
   if (authError || !session?.user?.id) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { data: params, error: paramsError } = await tryCatch(context.params);
@@ -216,9 +231,7 @@ export async function DELETE(
       where: {
         id,
         userId: session.user.id,
-        status: {
-          not: "DELETED",
-        },
+        status: { not: "ARCHIVED" },
       },
     }),
   );
@@ -232,17 +245,23 @@ export async function DELETE(
   }
 
   if (!existingApp) {
-    return NextResponse.json(
-      { error: "App not found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "App not found" }, { status: 404 });
   }
 
   const { error: deleteError } = await tryCatch(
-    prisma.app.update({
-      where: { id },
-      data: { status: "DELETED" },
-    }),
+    prisma.$transaction([
+      prisma.app.update({
+        where: { id },
+        data: { status: "ARCHIVED" },
+      }),
+      prisma.appStatusHistory.create({
+        data: {
+          appId: id,
+          status: "ARCHIVED",
+          message: "App archived by user",
+        },
+      }),
+    ]),
   );
 
   if (deleteError) {

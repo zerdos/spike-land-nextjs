@@ -1,4 +1,5 @@
-import { expect, Locator, Page, Response } from "@playwright/test";
+import type { Locator, Page, Response } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 /**
  * Environment-specific timeout configuration
@@ -190,12 +191,17 @@ export async function waitForPageLoad(
   } = {},
 ): Promise<void> {
   const timeout = options.timeout || TIMEOUTS.DEFAULT;
-  const waitUntil = options.waitUntil || "networkidle";
+  const waitUntil = options.waitUntil || "domcontentloaded";
 
   await page.waitForLoadState(waitUntil, { timeout });
 
-  // NetworkIdle already ensures rendering is complete
-  // No additional fixed timeout needed - let components drive their own loading states
+  // Try networkidle with a shorter timeout, but don't fail if it times out
+  // This handles pages with ongoing network activity (polling, websockets, Yjs sync)
+  try {
+    await page.waitForLoadState("networkidle", { timeout: 5000 });
+  } catch {
+    // Network may still be active, that's OK - the page has loaded
+  }
 }
 
 /**

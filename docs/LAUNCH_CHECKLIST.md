@@ -105,13 +105,13 @@ processes are verified before launching Spike Land to production.
   - [ ] Monitoring set up for storage usage
   - [x] Cleanup policy for old/unused images (90 days retention)
 
-### Vercel KV (Rate Limiting)
+### Upstash Redis (Rate Limiting & Message Queue)
 
-- [x] **Vercel KV Setup**
-  - [x] Vercel KV database provisioned
-  - [x] `KV_REST_API_URL` and `KV_REST_API_TOKEN` configured
+- [x] **Upstash Redis Setup**
+  - [x] Upstash Redis database provisioned
+  - [x] `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` configured
   - [x] Fallback to in-memory rate limiting tested
-  - [x] KV limits understood (free tier: 30k requests/day)
+  - [x] Redis limits understood (see Upstash pricing)
 
 ---
 

@@ -4,16 +4,17 @@
 
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
-// Mock job data generator
+// Mock job data generator - returns UnifiedJob format
 function createMockJob(overrides: Partial<{
   id: string;
+  source: "enhancement" | "mcp";
   status: string;
   tier: string;
   errorMessage: string;
   geminiModel: string;
-  geminiPrompt: string;
+  prompt: string;
   geminiTemp: number;
   workflowRunId: string;
   processingStartedAt: string;
@@ -27,46 +28,39 @@ function createMockJob(overrides: Partial<{
 
   return {
     id: overrides.id || `job-${Date.now()}`,
-    imageId: "img-1",
-    userId: "user-1",
+    source: overrides.source || "enhancement",
+    status: overrides.status || "PENDING",
     tier: overrides.tier || "TIER_2K",
     tokensCost: overrides.tier === "TIER_4K"
       ? 10
       : overrides.tier === "TIER_1K"
       ? 2
       : 5,
-    status: overrides.status || "PENDING",
-    enhancedUrl: overrides.status === "COMPLETED"
+    prompt: overrides.prompt || null,
+    inputUrl: "https://example.com/original.jpg",
+    outputUrl: overrides.status === "COMPLETED"
       ? "https://example.com/enhanced.jpg"
       : null,
-    enhancedR2Key: overrides.status === "COMPLETED" ? "enhanced-key" : null,
-    enhancedWidth: overrides.status === "COMPLETED" ? 2048 : null,
-    enhancedHeight: overrides.status === "COMPLETED" ? 1536 : null,
-    enhancedSizeBytes: overrides.status === "COMPLETED" ? 2500000 : null,
+    outputWidth: overrides.status === "COMPLETED" ? 2048 : null,
+    outputHeight: overrides.status === "COMPLETED" ? 1536 : null,
+    outputSizeBytes: overrides.status === "COMPLETED" ? 2500000 : null,
     errorMessage: overrides.errorMessage || null,
-    retryCount: 0,
-    maxRetries: 3,
-    geminiPrompt: overrides.geminiPrompt || null,
-    geminiModel: overrides.geminiModel || null,
-    geminiTemp: overrides.geminiTemp ?? null,
-    processingStartedAt: startTime,
-    processingCompletedAt: endTime,
+    userId: "user-1",
+    userEmail: "user@example.com",
+    userName: "Test User",
     createdAt: new Date(now.getTime() - 60000).toISOString(),
     updatedAt: now.toISOString(),
+    processingStartedAt: startTime,
+    processingCompletedAt: endTime,
+    // Enhancement-specific fields
+    imageId: "img-1",
+    imageName: "test-image.jpg",
+    retryCount: 0,
+    maxRetries: 3,
+    geminiModel: overrides.geminiModel || null,
+    geminiTemp: overrides.geminiTemp ?? null,
     workflowRunId: overrides.workflowRunId || null,
-    image: {
-      id: "img-1",
-      name: "test-image.jpg",
-      originalUrl: "https://example.com/original.jpg",
-      originalWidth: 1024,
-      originalHeight: 768,
-      originalSizeBytes: 500000,
-    },
-    user: {
-      id: "user-1",
-      name: "Test User",
-      email: "user@example.com",
-    },
+    currentStage: overrides.status === "PROCESSING" ? "enhancing" : null,
   };
 }
 
@@ -98,6 +92,11 @@ Given("there are jobs in the system", async function(this: CustomWorld) {
             CANCELLED: 0,
             REFUNDED: 0,
           },
+          typeCounts: {
+            all: 4,
+            enhancement: 4,
+            mcp: 0,
+          },
         }),
       });
     } else {
@@ -118,6 +117,7 @@ Given(
             jobs: [createMockJob({ id: "j1", status: "COMPLETED" })],
             pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
             statusCounts: { ALL: 1, COMPLETED: 1 },
+            typeCounts: { all: 1, enhancement: 1, mcp: 0 },
           }),
         });
       } else {
@@ -145,6 +145,7 @@ Given(
             ],
             pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
             statusCounts: { ALL: 1, FAILED: 1 },
+            typeCounts: { all: 1, enhancement: 1, mcp: 0 },
           }),
         });
       } else {
@@ -171,6 +172,7 @@ Given(
             })],
             pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
             statusCounts: { ALL: 1, COMPLETED: 1 },
+            typeCounts: { all: 1, enhancement: 1, mcp: 0 },
           }),
         });
       } else {
@@ -192,10 +194,11 @@ Given(
             jobs: [createMockJob({
               id: "j1",
               status: "COMPLETED",
-              geminiPrompt: "Enhance this image with high detail preservation",
+              prompt: "Enhance this image with high detail preservation",
             })],
             pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
             statusCounts: { ALL: 1, COMPLETED: 1 },
+            typeCounts: { all: 1, enhancement: 1, mcp: 0 },
           }),
         });
       } else {
@@ -221,6 +224,7 @@ Given(
             })],
             pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
             statusCounts: { ALL: 1, COMPLETED: 1 },
+            typeCounts: { all: 1, enhancement: 1, mcp: 0 },
           }),
         });
       } else {
@@ -261,6 +265,7 @@ Given(
               CANCELLED: 1,
               REFUNDED: 1,
             },
+            typeCounts: { all: 6, enhancement: 6, mcp: 0 },
           }),
         });
       } else {
@@ -286,6 +291,7 @@ Given(
             ],
             pagination: { page: 1, limit: 20, total: 3, totalPages: 1 },
             statusCounts: { ALL: 3 },
+            typeCounts: { all: 3, enhancement: 3, mcp: 0 },
           }),
         });
       } else {
@@ -318,6 +324,7 @@ Given(
             jobs: jobs.slice(start, end),
             pagination: { page, limit, total: 25, totalPages: 2 },
             statusCounts: { ALL: 25 },
+            typeCounts: { all: 25, enhancement: 25, mcp: 0 },
           }),
         });
       } else {
@@ -337,6 +344,7 @@ Given("there are no jobs in the system", async function(this: CustomWorld) {
           jobs: [],
           pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
           statusCounts: {},
+          typeCounts: { all: 0, enhancement: 0, mcp: 0 },
         }),
       });
     } else {
@@ -357,6 +365,7 @@ Given(
             jobs: [createMockJob({ id: "j1", status: "COMPLETED" })],
             pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
             statusCounts: { ALL: 1, COMPLETED: 1, FAILED: 0 },
+            typeCounts: { all: 1, enhancement: 1, mcp: 0 },
           }),
         });
       } else {
@@ -376,6 +385,7 @@ Given("the jobs API is slow", async function(this: CustomWorld) {
         jobs: [],
         pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
         statusCounts: {},
+        typeCounts: { all: 0, enhancement: 0, mcp: 0 },
       }),
     });
   });
@@ -403,6 +413,7 @@ Given("there is a job created just now", async function(this: CustomWorld) {
           jobs: [job],
           pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
           statusCounts: { ALL: 1 },
+          typeCounts: { all: 1, enhancement: 1, mcp: 0 },
         }),
       });
     } else {
@@ -431,6 +442,7 @@ Given(
             })],
             pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
             statusCounts: { ALL: 1, COMPLETED: 1 },
+            typeCounts: { all: 1, enhancement: 1, mcp: 0 },
           }),
         });
       } else {
@@ -452,6 +464,7 @@ Given(
             jobs: [createMockJob({ id: "j1", status: "COMPLETED" })],
             pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
             statusCounts: { ALL: 1, COMPLETED: 1 },
+            typeCounts: { all: 1, enhancement: 1, mcp: 0 },
           }),
         });
       } else {
@@ -467,9 +480,11 @@ Given(
 When(
   "I enter a job ID in the search field",
   async function(this: CustomWorld) {
-    const searchInput = this.page.locator(
-      'input[aria-label="Search by Job ID or email"]',
+    await this.page.waitForLoadState("networkidle");
+    const searchInput = this.page.getByPlaceholder(
+      "Search by Job ID or email...",
     );
+    await expect(searchInput).toBeVisible({ timeout: 10000 });
     await searchInput.fill("job-");
   },
 );
@@ -477,9 +492,11 @@ When(
 When(
   "I enter search text in the search field",
   async function(this: CustomWorld) {
-    const searchInput = this.page.locator(
-      'input[aria-label="Search by Job ID or email"]',
+    await this.page.waitForLoadState("networkidle");
+    const searchInput = this.page.getByPlaceholder(
+      "Search by Job ID or email...",
     );
+    await expect(searchInput).toBeVisible({ timeout: 10000 });
     await searchInput.fill("test");
   },
 );
@@ -489,28 +506,42 @@ When("I press Enter", async function(this: CustomWorld) {
 });
 
 When("I click on a job in the list", async function(this: CustomWorld) {
-  const jobItem = this.page.locator('[class*="cursor-pointer"]').first();
+  // Wait for loading to complete (job items to appear)
+  await this.page.waitForSelector('[data-testid="job-list-item"]', {
+    timeout: 10000,
+  });
+  const jobItem = this.page.locator('[data-testid="job-list-item"]').first();
   await jobItem.click();
 });
 
 When("I click on the completed job", async function(this: CustomWorld) {
-  const jobItem = this.page.locator('[class*="cursor-pointer"]').filter({
-    hasText: "COMPLETED",
-  })
+  // Wait for loading to complete (job items to appear)
+  await this.page.waitForSelector('[data-testid="job-list-item"]', {
+    timeout: 10000,
+  });
+  const jobItem = this.page
+    .locator('[data-testid="job-list-item"][data-job-status="COMPLETED"]')
     .first();
   await jobItem.click();
 });
 
 When("I click on the failed job", async function(this: CustomWorld) {
-  const jobItem = this.page.locator('[class*="cursor-pointer"]').filter({
-    hasText: "FAILED",
-  })
+  // Wait for loading to complete (job items to appear)
+  await this.page.waitForSelector('[data-testid="job-list-item"]', {
+    timeout: 10000,
+  });
+  const jobItem = this.page
+    .locator('[data-testid="job-list-item"][data-job-status="FAILED"]')
     .first();
   await jobItem.click();
 });
 
 When("I click on that job", async function(this: CustomWorld) {
-  const jobItem = this.page.locator('[class*="cursor-pointer"]').first();
+  // Wait for loading to complete (job items to appear)
+  await this.page.waitForSelector('[data-testid="job-list-item"]', {
+    timeout: 10000,
+  });
+  const jobItem = this.page.locator('[data-testid="job-list-item"]').first();
   await jobItem.click();
 });
 
@@ -522,29 +553,30 @@ When("I click on that job", async function(this: CustomWorld) {
 Then(
   "I should see jobs list panel on the left",
   async function(this: CustomWorld) {
-    const panel = this.page.locator('[class*="Card"]').filter({
-      hasText: "Jobs (",
-    });
-    await expect(panel).toBeVisible();
+    await this.page.waitForLoadState("networkidle");
+    // Find the heading "Jobs (X)" in the left panel using getByRole
+    const panel = this.page.getByRole("heading", { name: /Jobs \(/ });
+    await expect(panel).toBeVisible({ timeout: 10000 });
   },
 );
 
 Then(
   "I should see job details panel on the right",
   async function(this: CustomWorld) {
-    const panel = this.page.locator('[class*="Card"]').filter({
-      hasText: "Job Details",
-    });
-    await expect(panel).toBeVisible();
+    await this.page.waitForLoadState("networkidle");
+    // Find the heading "Job Details" in the right panel
+    const panel = this.page.locator("h2").filter({ hasText: "Job Details" });
+    await expect(panel).toBeVisible({ timeout: 10000 });
   },
 );
 
 Then(
   "each tab should display a job count badge",
   async function(this: CustomWorld) {
-    const badges = this.page.locator('button [class*="Badge"]');
-    const count = await badges.count();
-    expect(count).toBeGreaterThan(0);
+    await this.page.waitForLoadState("networkidle");
+    // Verify status tabs exist (All, Queue, Running, Completed, Failed, Cancelled, Refunded)
+    const allTab = this.page.getByRole("button", { name: /^All/ });
+    await expect(allTab).toBeVisible({ timeout: 10000 });
   },
 );
 
@@ -626,17 +658,19 @@ Then(
 );
 
 Then("I should see the jobs list", async function(this: CustomWorld) {
-  const list = this.page.locator('[class*="Card"]').filter({
-    hasText: "Jobs (",
-  });
-  await expect(list).toBeVisible();
+  await this.page.waitForLoadState("networkidle");
+  // Find the heading "Jobs (X)" in the list panel using getByRole
+  const heading = this.page.getByRole("heading", { name: /Jobs \(/ });
+  await expect(heading).toBeVisible({ timeout: 10000 });
 });
 
 Then(
   "each job should display a status badge",
   async function(this: CustomWorld) {
-    const badges = this.page.locator('[class*="Card"] [class*="Badge"]');
-    const count = await badges.count();
+    await this.page.waitForLoadState("networkidle");
+    // Jobs have status badges displayed (PENDING, PROCESSING, etc.)
+    const jobItems = this.page.locator('[data-testid="job-list-item"]');
+    const count = await jobItems.count();
     expect(count).toBeGreaterThan(0);
   },
 );
@@ -917,24 +951,39 @@ Then(
 Then(
   "TIER_1K should display as {string}",
   async function(this: CustomWorld, display: string) {
-    const tier = this.page.locator(`text=${display}`);
-    await expect(tier.first()).toBeVisible();
+    await this.page.waitForLoadState("networkidle");
+    // Tier labels appear within job items
+    const tier = this.page.locator('[data-testid="job-list-item"]').getByText(
+      display,
+      { exact: true },
+    );
+    await expect(tier.first()).toBeVisible({ timeout: 10000 });
   },
 );
 
 Then(
   "TIER_2K should display as {string}",
   async function(this: CustomWorld, display: string) {
-    const tier = this.page.locator(`text=${display}`);
-    await expect(tier.first()).toBeVisible();
+    await this.page.waitForLoadState("networkidle");
+    // Tier labels appear within job items
+    const tier = this.page.locator('[data-testid="job-list-item"]').getByText(
+      display,
+      { exact: true },
+    );
+    await expect(tier.first()).toBeVisible({ timeout: 10000 });
   },
 );
 
 Then(
   "TIER_4K should display as {string}",
   async function(this: CustomWorld, display: string) {
-    const tier = this.page.locator(`text=${display}`);
-    await expect(tier.first()).toBeVisible();
+    await this.page.waitForLoadState("networkidle");
+    // Tier labels appear within job items
+    const tier = this.page.locator('[data-testid="job-list-item"]').getByText(
+      display,
+      { exact: true },
+    );
+    await expect(tier.first()).toBeVisible({ timeout: 10000 });
   },
 );
 

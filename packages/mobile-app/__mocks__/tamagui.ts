@@ -2,7 +2,6 @@
  * Mock for tamagui
  */
 
-import React from "react";
 import { Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 // Create mock components that pass through to React Native equivalents

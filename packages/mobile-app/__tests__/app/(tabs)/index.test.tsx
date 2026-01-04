@@ -5,7 +5,6 @@
 
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { router } from "expo-router";
-import React from "react";
 
 // Mock @expo/vector-icons before any imports that use it
 jest.mock("@expo/vector-icons", () => {

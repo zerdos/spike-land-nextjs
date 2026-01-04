@@ -4,7 +4,6 @@
  */
 
 import { render } from "@testing-library/react-native";
-import React from "react";
 
 import LayoutPage from "../../../app/storybook/layout";
 

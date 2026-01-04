@@ -5,15 +5,13 @@
 
 import type { ImageEnhancementJob, PipelineStage } from "@spike-npm-land/shared";
 import { apiClient } from "../api-client";
+import type { BatchJobStatusResponse, JobStatusResponse, PollJobOptions } from "./jobs";
 import {
-  BatchJobStatusResponse,
   cancelJob,
   getBatchJobStatus,
   getJobStatus,
   getStageDescription,
   getStageProgress,
-  JobStatusResponse,
-  PollJobOptions,
   pollJobUntilComplete,
 } from "./jobs";
 

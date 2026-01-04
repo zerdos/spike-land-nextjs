@@ -2,7 +2,8 @@ import { auth } from "@/auth";
 import { validatePipelineConfigs } from "@/lib/ai/pipeline-validation";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { EnhancementTier, PipelineVisibility } from "@prisma/client";
+import type { EnhancementTier } from "@prisma/client";
+import { PipelineVisibility } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 interface RouteParams {

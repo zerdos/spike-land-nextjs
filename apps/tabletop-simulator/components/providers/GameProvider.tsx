@@ -1,8 +1,10 @@
 "use client";
-import { createContext, ReactNode, useContext } from "react";
+import type { ReactNode } from "react";
+import { createContext, useContext } from "react";
 import { useGameMedia } from "../../hooks/useGameMedia";
 import { useGameRoom } from "../../hooks/useGameRoom";
-import { UIState, useUIStore } from "../../stores/useUIStore";
+import type { UIState } from "../../stores/useUIStore";
+import { useUIStore } from "../../stores/useUIStore";
 
 interface GameContextValue {
   doc: ReturnType<typeof useGameRoom>["doc"];
@@ -17,7 +19,9 @@ interface GameContextValue {
 
 const GameContext = createContext<GameContextValue | null>(null);
 
-export function GameProvider({ roomId, children }: { roomId: string; children: ReactNode; }) {
+export function GameProvider(
+  { roomId, children }: { roomId: string; children: ReactNode; },
+) {
   const room = useGameRoom(roomId);
   const ui = useUIStore();
   const media = useGameMedia(room.peer, room.connections);

@@ -25,6 +25,55 @@ const mockAuth = vi.mocked(auth);
 const mockRedirect = vi.mocked(redirect);
 const mockFindMany = vi.mocked(prisma.app.findMany);
 
+// Helper to create mock app data matching new schema
+function createMockApp(overrides: Partial<{
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  userId: string;
+  status:
+    | "PROMPTING"
+    | "WAITING"
+    | "DRAFTING"
+    | "BUILDING"
+    | "FINE_TUNING"
+    | "TEST"
+    | "LIVE"
+    | "ARCHIVED"
+    | "FAILED";
+  forkedFrom: string | null;
+  domain: string | null;
+  codespaceId: string | null;
+  codespaceUrl: string | null;
+  isCurated: boolean;
+  isPublic: boolean;
+  lastAgentActivity: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  _count: { messages: number; images: number; };
+}> = {}) {
+  return {
+    id: "app-1",
+    name: "Test App",
+    slug: "test-app",
+    description: "Test description",
+    userId: "user-123",
+    status: "PROMPTING" as const,
+    forkedFrom: null,
+    domain: null,
+    codespaceId: null,
+    codespaceUrl: null,
+    isCurated: false,
+    isPublic: false,
+    lastAgentActivity: null,
+    createdAt: new Date("2025-01-01"),
+    updatedAt: new Date("2025-01-01"),
+    _count: { messages: 0, images: 0 },
+    ...overrides,
+  };
+}
+
 describe("MyAppsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -66,7 +115,7 @@ describe("MyAppsPage", () => {
       expect(result).toBeDefined();
     });
 
-    it("should fetch apps for authenticated user", async () => {
+    it("should fetch apps for authenticated user with correct query", async () => {
       mockAuth.mockResolvedValue({
         user: {
           id: "user-123",
@@ -85,15 +134,31 @@ describe("MyAppsPage", () => {
         where: {
           userId: "user-123",
           status: {
-            not: "DELETED",
+            notIn: ["ARCHIVED"],
           },
         },
-        include: {
-          requirements: true,
-          monetizationModels: true,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          status: true,
+          codespaceId: true,
+          codespaceUrl: true,
+          isCurated: true,
+          isPublic: true,
+          lastAgentActivity: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: {
+              messages: true,
+              images: true,
+            },
+          },
         },
         orderBy: {
-          createdAt: "desc",
+          updatedAt: "desc",
         },
       });
     });
@@ -165,58 +230,24 @@ describe("MyAppsPage", () => {
 
     it("should render apps when they exist", async () => {
       const mockApps = [
-        {
+        createMockApp({
           id: "app-1",
           name: "Test App 1",
+          slug: "test-app-1",
           description: "Description 1",
-          userId: "user-123",
-          status: "DRAFT" as const,
-          forkedFrom: null,
-          domain: null,
-          codespaceId: null,
-          codespaceUrl: null,
-          createdAt: new Date("2025-01-01"),
-          updatedAt: new Date("2025-01-01"),
-          requirements: [
-            {
-              id: "req-1",
-              appId: "app-1",
-              description: "Requirement 1",
-              priority: "MEDIUM" as const,
-              status: "PENDING" as const,
-              version: 1,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-          ],
-          monetizationModels: [
-            {
-              id: "mon-1",
-              appId: "app-1",
-              type: "FREE" as const,
-              price: null,
-              subscriptionInterval: null,
-              features: [],
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-          ],
-        },
-        {
+          status: "PROMPTING",
+          _count: { messages: 3, images: 1 },
+        }),
+        createMockApp({
           id: "app-2",
           name: "Test App 2",
+          slug: "test-app-2",
           description: "Description 2",
-          userId: "user-123",
-          status: "ACTIVE" as const,
-          forkedFrom: null,
-          domain: null,
-          codespaceId: null,
-          codespaceUrl: null,
-          createdAt: new Date("2025-01-02"),
-          updatedAt: new Date("2025-01-02"),
-          requirements: [],
-          monetizationModels: [],
-        },
+          status: "LIVE",
+          codespaceId: "test-app-2",
+          codespaceUrl: "https://testing.spike.land/live/test-app-2/",
+          _count: { messages: 10, images: 5 },
+        }),
       ];
 
       mockFindMany.mockResolvedValue(mockApps);
@@ -232,36 +263,16 @@ describe("MyAppsPage", () => {
 
     it("should display app status badges", async () => {
       const mockApps = [
-        {
+        createMockApp({
           id: "app-1",
-          name: "Draft App",
-          description: "A draft app",
-          userId: "user-123",
-          status: "DRAFT" as const,
-          forkedFrom: null,
-          domain: null,
-          codespaceId: null,
-          codespaceUrl: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          requirements: [],
-          monetizationModels: [],
-        },
-        {
+          name: "Prompting App",
+          status: "PROMPTING",
+        }),
+        createMockApp({
           id: "app-2",
-          name: "Active App",
-          description: "An active app",
-          userId: "user-123",
-          status: "ACTIVE" as const,
-          forkedFrom: null,
-          domain: null,
-          codespaceId: null,
-          codespaceUrl: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          requirements: [],
-          monetizationModels: [],
-        },
+          name: "Live App",
+          status: "LIVE",
+        }),
       ];
 
       mockFindMany.mockResolvedValue(mockApps);
@@ -269,48 +280,17 @@ describe("MyAppsPage", () => {
       const component = await MyAppsPage();
       render(component);
 
-      expect(screen.getByText("DRAFT")).toBeInTheDocument();
-      expect(screen.getByText("ACTIVE")).toBeInTheDocument();
+      expect(screen.getByText("PROMPTING")).toBeInTheDocument();
+      expect(screen.getByText("LIVE")).toBeInTheDocument();
     });
 
-    it("should display app requirements count", async () => {
+    it("should display message count", async () => {
       const mockApps = [
-        {
+        createMockApp({
           id: "app-1",
           name: "Test App",
-          description: "Description",
-          userId: "user-123",
-          status: "DRAFT" as const,
-          forkedFrom: null,
-          domain: null,
-          codespaceId: null,
-          codespaceUrl: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          requirements: [
-            {
-              id: "req-1",
-              appId: "app-1",
-              description: "Req 1",
-              priority: "MEDIUM" as const,
-              status: "PENDING" as const,
-              version: 1,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-            {
-              id: "req-2",
-              appId: "app-1",
-              description: "Req 2",
-              priority: "HIGH" as const,
-              status: "IN_PROGRESS" as const,
-              version: 1,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-          ],
-          monetizationModels: [],
-        },
+          _count: { messages: 5, images: 2 },
+        }),
       ];
 
       mockFindMany.mockResolvedValue(mockApps);
@@ -318,41 +298,18 @@ describe("MyAppsPage", () => {
       const component = await MyAppsPage();
       render(component);
 
-      const requirementsText = screen.getByText(/Requirements:/);
-      expect(requirementsText).toBeInTheDocument();
-      expect(requirementsText.parentElement?.textContent).toContain(
-        "Requirements: 2",
-      );
+      const messagesText = screen.getByText(/Messages:/);
+      expect(messagesText).toBeInTheDocument();
+      expect(messagesText.parentElement?.textContent).toContain("5");
     });
 
-    it("should display monetization model", async () => {
+    it("should display image count", async () => {
       const mockApps = [
-        {
+        createMockApp({
           id: "app-1",
           name: "Test App",
-          description: "Description",
-          userId: "user-123",
-          status: "DRAFT" as const,
-          forkedFrom: null,
-          domain: null,
-          codespaceId: null,
-          codespaceUrl: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          requirements: [],
-          monetizationModels: [
-            {
-              id: "mon-1",
-              appId: "app-1",
-              type: "SUBSCRIPTION" as const,
-              price: null,
-              subscriptionInterval: "MONTHLY" as const,
-              features: [],
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-          ],
-        },
+          _count: { messages: 3, images: 7 },
+        }),
       ];
 
       mockFindMany.mockResolvedValue(mockApps);
@@ -360,57 +317,28 @@ describe("MyAppsPage", () => {
       const component = await MyAppsPage();
       render(component);
 
-      expect(screen.getByText(/Monetization:/)).toBeInTheDocument();
-      expect(screen.getByText(/SUBSCRIPTION/)).toBeInTheDocument();
+      const imagesText = screen.getByText(/Images:/);
+      expect(imagesText).toBeInTheDocument();
+      expect(imagesText.parentElement?.textContent).toContain("7");
     });
 
     it("should show filter badges with counts", async () => {
       const mockApps = [
-        {
+        createMockApp({
           id: "app-1",
           name: "App 1",
-          description: "Desc",
-          userId: "user-123",
-          status: "DRAFT" as const,
-          forkedFrom: null,
-          domain: null,
-          codespaceId: null,
-          codespaceUrl: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          requirements: [],
-          monetizationModels: [],
-        },
-        {
+          status: "PROMPTING",
+        }),
+        createMockApp({
           id: "app-2",
           name: "App 2",
-          description: "Desc",
-          userId: "user-123",
-          status: "ACTIVE" as const,
-          forkedFrom: null,
-          domain: null,
-          codespaceId: null,
-          codespaceUrl: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          requirements: [],
-          monetizationModels: [],
-        },
-        {
+          status: "LIVE",
+        }),
+        createMockApp({
           id: "app-3",
           name: "App 3",
-          description: "Desc",
-          userId: "user-123",
-          status: "ACTIVE" as const,
-          forkedFrom: null,
-          domain: null,
-          codespaceId: null,
-          codespaceUrl: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          requirements: [],
-          monetizationModels: [],
-        },
+          status: "LIVE",
+        }),
       ];
 
       mockFindMany.mockResolvedValue(mockApps);
@@ -419,8 +347,62 @@ describe("MyAppsPage", () => {
       render(component);
 
       expect(screen.getByText(/All \(3\)/)).toBeInTheDocument();
-      expect(screen.getByText(/Active \(2\)/)).toBeInTheDocument();
-      expect(screen.getByText(/Draft \(1\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Live \(2\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Building \(1\)/)).toBeInTheDocument();
+    });
+
+    it("should show Preview button for apps with codespaceUrl", async () => {
+      const mockApps = [
+        createMockApp({
+          id: "app-1",
+          name: "Live App",
+          status: "LIVE",
+          codespaceId: "live-app",
+          codespaceUrl: "https://testing.spike.land/live/live-app/",
+        }),
+      ];
+
+      mockFindMany.mockResolvedValue(mockApps);
+
+      const component = await MyAppsPage();
+      render(component);
+
+      expect(screen.getByText("Preview")).toBeInTheDocument();
+    });
+
+    it("should not show Preview button for apps without codespaceUrl", async () => {
+      const mockApps = [
+        createMockApp({
+          id: "app-1",
+          name: "Draft App",
+          status: "PROMPTING",
+          codespaceUrl: null,
+        }),
+      ];
+
+      mockFindMany.mockResolvedValue(mockApps);
+
+      const component = await MyAppsPage();
+      render(component);
+
+      expect(screen.queryByText("Preview")).not.toBeInTheDocument();
+    });
+
+    it("should display failed status with destructive badge", async () => {
+      const mockApps = [
+        createMockApp({
+          id: "app-1",
+          name: "Failed App",
+          status: "FAILED",
+        }),
+      ];
+
+      mockFindMany.mockResolvedValue(mockApps);
+
+      const component = await MyAppsPage();
+      render(component);
+
+      expect(screen.getByText("FAILED")).toBeInTheDocument();
     });
   });
 });

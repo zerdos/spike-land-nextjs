@@ -10,7 +10,7 @@ import prisma from "@/lib/prisma";
 import { setCachedMetrics } from "@/lib/tracking/metrics-cache";
 import { tryCatch } from "@/lib/try-catch";
 import { createMarketingClient } from "./index";
-import { CampaignMetrics, MarketingPlatform } from "./types";
+import type { CampaignMetrics, MarketingPlatform } from "./types";
 
 interface SyncResult {
   synced: number;

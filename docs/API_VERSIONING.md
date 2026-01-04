@@ -1,6 +1,7 @@
 # Spike Land API Versioning Strategy
 
-> **Last Updated**: December 30, 2025 **Status**: Hybrid Versioning - v1 for Agent API, unversioned for public endpoints **Document Version**: 2.0
+> **Last Updated**: December 30, 2025 **Status**: Hybrid Versioning - v1 for
+> Agent API, unversioned for public endpoints **Document Version**: 2.0
 
 ## Table of Contents
 
@@ -18,7 +19,8 @@
 
 **The Spike Land API uses a hybrid versioning approach:**
 
-- **Unversioned endpoints** (`/api/*`) - Core platform APIs for images, albums, tokens, etc.
+- **Unversioned endpoints** (`/api/*`) - Core platform APIs for images, albums,
+  tokens, etc.
 - **Versioned endpoints** (`/api/v1/*`) - Agent/MCP API for async coding tasks
 
 ### Current API Structure
@@ -52,15 +54,20 @@ POST   /api/v1/agent/tasks
 POST   /api/v1/agent/heartbeat
 ```
 
-**Purpose**: These endpoints serve the Jules async coding agent feature and external MCP clients that require stable API contracts.
+**Purpose**: These endpoints serve the Jules async coding agent feature and
+external MCP clients that require stable API contracts.
 
 ### Why Hybrid Versioning?
 
-1. **Platform Evolution** - Core Spike Land APIs evolve rapidly during development
+1. **Platform Evolution** - Core Spike Land APIs evolve rapidly during
+   development
 2. **Internal-First** - Platform endpoints serve the web/mobile apps we control
-3. **External Stability** - Agent API consumed by external MCP clients (npm package `@spike-npm-land/mcp-server`)
-4. **Flexibility** - Unversioned endpoints can improve without migration overhead
-5. **Contracts Matter** - Versioned endpoints signal stability commitments to external integrators
+3. **External Stability** - Agent API consumed by external MCP clients (npm
+   package `@spike-npm-land/mcp-server`)
+4. **Flexibility** - Unversioned endpoints can improve without migration
+   overhead
+5. **Contracts Matter** - Versioned endpoints signal stability commitments to
+   external integrators
 
 ---
 
@@ -91,17 +98,20 @@ Spike Land uses **selective URL-based versioning** based on API consumer type:
 
 Implement explicit versioning when ANY of these conditions are met:
 
-1. **External SDK/Package** - Endpoint consumed by published npm packages (e.g., `@spike-npm-land/mcp-server`)
+1. **External SDK/Package** - Endpoint consumed by published npm packages (e.g.,
+   `@spike-npm-land/mcp-server`)
 2. **Third-Party Integrations** - External developers build against the API
 3. **Stability Guarantees** - Contractual commitments to API stability
 4. **Public Documentation** - API advertised for external consumption
 5. **B2B Customers** - Enterprise clients require predictable changes
 
-**Current example**: `/api/v1/agent/*` endpoints serve external MCP clients through the published npm package
+**Current example**: `/api/v1/agent/*` endpoints serve external MCP clients
+through the published npm package
 
 ### URL-Based Versioning Details
 
-We use URL-based versioning (e.g., `/api/v1/agent/tasks`) rather than header-based or query parameter versioning.
+We use URL-based versioning (e.g., `/api/v1/agent/tasks`) rather than
+header-based or query parameter versioning.
 
 #### Why URL-Based Versioning?
 
@@ -653,7 +663,8 @@ Explicitly versioned for external consumption via MCP protocol:
 
 ### Unversioned Endpoints (Platform APIs)
 
-Platform endpoints evolve without versioning as we control all consumers (our web/mobile apps).
+Platform endpoints evolve without versioning as we control all consumers (our
+web/mobile apps).
 
 #### Key Examples
 
@@ -733,14 +744,16 @@ Consider adding explicit versioning when:
 
 ### Current Status: Agent API Only
 
-Currently, **only the Agent API** (`/api/v1/agent/*`) requires versioning because:
+Currently, **only the Agent API** (`/api/v1/agent/*`) requires versioning
+because:
 
 - ✅ Published as npm package `@spike-npm-land/mcp-server`
 - ✅ External MCP clients depend on it
 - ✅ Breaking changes would affect unknown number of integrations
 - ✅ Follows MCP protocol standards
 
-All other APIs remain unversioned as we control all consumers (our web/mobile apps).
+All other APIs remain unversioned as we control all consumers (our web/mobile
+apps).
 
 ---
 
@@ -748,7 +761,8 @@ All other APIs remain unversioned as we control all consumers (our web/mobile ap
 
 ### How Versioning Works in the Codebase
 
-Spike Land uses Next.js App Router file-based routing. API versioning is implemented through directory structure:
+Spike Land uses Next.js App Router file-based routing. API versioning is
+implemented through directory structure:
 
 ```
 src/app/api/
@@ -772,7 +786,8 @@ src/app/api/
 
 ### No Middleware-Based Versioning
 
-Unlike some frameworks, Spike Land does **not** use middleware for version routing:
+Unlike some frameworks, Spike Land does **not** use middleware for version
+routing:
 
 - ❌ No `Accept-Version` header parsing
 - ❌ No version query parameters

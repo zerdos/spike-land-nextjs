@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AppCard, AppCardProps } from "./app-card";
+import type { AppCardProps } from "./app-card";
+import { AppCard } from "./app-card";
 
 describe("AppCard", () => {
   const defaultProps: AppCardProps = {

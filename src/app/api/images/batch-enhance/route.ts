@@ -5,8 +5,9 @@ import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { batchEnhanceImagesDirect, type BatchEnhanceInput } from "@/workflows/batch-enhance.direct";
 import { batchEnhanceImages } from "@/workflows/batch-enhance.workflow";
-import { EnhancementTier } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { EnhancementTier } from "@prisma/client";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { start } from "workflow/api";
 
 const MAX_BATCH_SIZE = 20;

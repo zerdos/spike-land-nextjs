@@ -12,8 +12,9 @@ import { isAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import type { JobSource, UnifiedJob } from "@/types/admin-jobs";
-import { JobStatus } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { JobStatus } from "@prisma/client";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const VALID_STATUSES: JobStatus[] = [
   "PENDING",

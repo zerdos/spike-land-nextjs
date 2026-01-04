@@ -3,7 +3,8 @@ import prisma from "@/lib/prisma";
 import { getStripe, SUBSCRIPTION_PLANS, TOKEN_PACKAGES } from "@/lib/stripe/client";
 import type { SubscriptionPlanId, TokenPackageId } from "@/lib/stripe/client";
 import { tryCatch } from "@/lib/try-catch";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Maximum request body size (10KB should be plenty for checkout requests)
 const MAX_BODY_SIZE = 10 * 1024;

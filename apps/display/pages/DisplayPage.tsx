@@ -3,7 +3,8 @@
 import { calculateOptimalLayout } from "@apps/display/lib/layout-optimizer";
 import { getTwilioIceServers } from "@apps/display/lib/webrtc/config";
 import Image from "next/image";
-import Peer, { MediaConnection } from "peerjs";
+import type { MediaConnection } from "peerjs";
+import Peer from "peerjs";
 import QRCode from "qrcode";
 import { useEffect, useRef, useState } from "react";
 

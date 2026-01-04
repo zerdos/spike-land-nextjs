@@ -1,11 +1,11 @@
 /**
- * Rate limiter with Vercel KV backend and in-memory fallback.
- * Uses Vercel KV for persistent, serverless-compatible rate limiting.
- * Falls back to in-memory storage if KV is unavailable (development/testing).
+ * Rate limiter with Upstash Redis backend and in-memory fallback.
+ * Uses Upstash Redis for persistent, serverless-compatible rate limiting.
+ * Falls back to in-memory storage if Redis is unavailable (development/testing).
  */
 
 import { tryCatch } from "@/lib/try-catch";
-import { kv } from "@vercel/kv";
+import { redis } from "@/lib/upstash";
 
 interface RateLimitEntry {
   count: number;
@@ -19,17 +19,17 @@ interface RateLimitConfig {
   windowMs: number;
 }
 
-// In-memory store for fallback (when KV is unavailable)
+// In-memory store for fallback (when Redis is unavailable)
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
-// Track KV availability
+// Track Redis availability
 let kvAvailable: boolean | null = null;
 
 // Cleanup interval for in-memory store
 let cleanupInterval: ReturnType<typeof setInterval> | null = null;
 
 /**
- * Checks if Vercel KV is available.
+ * Checks if Upstash Redis is available.
  * Caches the result to avoid repeated checks.
  */
 async function isKVAvailable(): Promise<boolean> {
@@ -38,21 +38,24 @@ async function isKVAvailable(): Promise<boolean> {
   }
 
   // Check for required environment variables first (sync check)
-  // @vercel/kv throws synchronously when these are missing, which tryCatch can't catch
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
+  // Support both UPSTASH_REDIS_REST_* (standard) and KV_REST_API_* (Vercel integration)
+  const hasUpstashEnv = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
+  const hasKvEnv = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+
+  if (!hasUpstashEnv && !hasKvEnv) {
     console.warn(
-      "Vercel KV environment variables not set, using in-memory storage",
+      "Upstash Redis environment variables not set, using in-memory storage",
     );
     kvAvailable = false;
     return false;
   }
 
-  // Test KV connection with a simple ping
-  const { error } = await tryCatch(kv.ping());
+  // Test Redis connection with a simple ping
+  const { error } = await tryCatch(redis.ping());
 
   if (error) {
     console.warn(
-      "Vercel KV unavailable, falling back to in-memory storage:",
+      "Upstash Redis unavailable, falling back to in-memory storage:",
       error,
     );
     kvAvailable = false;
@@ -64,7 +67,7 @@ async function isKVAvailable(): Promise<boolean> {
 }
 
 /**
- * Resets the KV availability cache.
+ * Resets the Redis availability cache.
  * Used for testing or after configuration changes.
  */
 export function resetKVAvailability(): void {
@@ -94,7 +97,7 @@ function ensureCleanupInterval(windowMs: number): void {
 }
 
 /**
- * Checks rate limit using Vercel KV.
+ * Checks rate limit using Upstash Redis.
  * Uses atomic operations with TTL for automatic cleanup.
  */
 async function checkRateLimitKV(
@@ -109,7 +112,7 @@ async function checkRateLimitKV(
   const key = `ratelimit:${identifier}`;
 
   // Try to get existing entry
-  const entry = await kv.get<RateLimitEntry>(key);
+  const entry = await redis.get<RateLimitEntry>(key);
 
   // No previous requests or window has expired
   if (!entry || now - entry.firstRequest > config.windowMs) {
@@ -117,7 +120,7 @@ async function checkRateLimitKV(
 
     // Store with TTL (window + 1 minute for cleanup margin)
     const ttlSeconds = Math.ceil((config.windowMs + 60000) / 1000);
-    await kv.set(key, newEntry, { ex: ttlSeconds });
+    await redis.set(key, newEntry, { ex: ttlSeconds });
 
     return {
       isLimited: false,
@@ -143,7 +146,7 @@ async function checkRateLimitKV(
 
   // Update with same TTL
   const ttlSeconds = Math.ceil((config.windowMs + 60000) / 1000);
-  await kv.set(key, updatedEntry, { ex: ttlSeconds });
+  await redis.set(key, updatedEntry, { ex: ttlSeconds });
 
   return {
     isLimited: false,
@@ -154,7 +157,7 @@ async function checkRateLimitKV(
 
 /**
  * Checks rate limit using in-memory storage (fallback).
- * Same logic as KV version but uses local Map.
+ * Same logic as Redis version but uses local Map.
  */
 function checkRateLimitMemory(
   identifier: string,
@@ -199,7 +202,7 @@ function checkRateLimitMemory(
 
 /**
  * Checks if a request is rate limited.
- * Automatically uses Vercel KV or falls back to in-memory storage.
+ * Automatically uses Upstash Redis or falls back to in-memory storage.
  *
  * @param identifier - Unique identifier for the rate limit (e.g., userId, IP)
  * @param config - Rate limit configuration
@@ -222,7 +225,7 @@ export async function checkRateLimit(
 
     if (error) {
       console.error(
-        "KV rate limit check failed, falling back to memory:",
+        "Redis rate limit check failed, falling back to memory:",
         error,
       );
       kvAvailable = false; // Mark as unavailable for subsequent requests
@@ -243,10 +246,10 @@ export async function resetRateLimit(identifier: string): Promise<void> {
   const useKV = await isKVAvailable();
 
   if (useKV) {
-    const { error } = await tryCatch(kv.del(`ratelimit:${identifier}`));
+    const { error } = await tryCatch(redis.del(`ratelimit:${identifier}`));
 
     if (error) {
-      console.error("KV rate limit reset failed:", error);
+      console.error("Redis rate limit reset failed:", error);
     }
   }
 
@@ -256,7 +259,7 @@ export async function resetRateLimit(identifier: string): Promise<void> {
 /**
  * Clears all rate limit entries.
  * Useful for testing or administrative purposes.
- * Note: For KV, this only clears entries with known identifiers.
+ * Note: For Redis, this only clears entries with known identifiers.
  */
 export async function clearAllRateLimits(
   identifiers?: string[],
@@ -266,10 +269,10 @@ export async function clearAllRateLimits(
   if (useKV && identifiers) {
     const keys = identifiers.map((id) => `ratelimit:${id}`);
     if (keys.length > 0) {
-      const { error } = await tryCatch(kv.del(...keys));
+      const { error } = await tryCatch(redis.del(...keys));
 
       if (error) {
-        console.error("KV rate limit clear failed:", error);
+        console.error("Redis rate limit clear failed:", error);
       }
     }
   }
@@ -290,7 +293,7 @@ export function stopCleanupInterval(): void {
 
 /**
  * Gets the current in-memory store size (for testing/monitoring).
- * Note: This only reflects the in-memory fallback, not KV entries.
+ * Note: This only reflects the in-memory fallback, not Redis entries.
  */
 export function getRateLimitStoreSize(): number {
   return rateLimitStore.size;
@@ -305,7 +308,7 @@ export function forceMemoryStorage(): void {
 }
 
 /**
- * Forces the rate limiter to attempt using KV storage.
+ * Forces the rate limiter to attempt using Redis storage.
  * Used for testing purposes.
  */
 export function forceKVStorage(): void {

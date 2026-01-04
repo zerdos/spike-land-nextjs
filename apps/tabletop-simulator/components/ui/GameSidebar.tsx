@@ -115,7 +115,11 @@ export function GameSidebar({
             localPlayerId={localPlayerId}
           />
         )}
-        {activeTab === "library" && <LibraryTab onSpawnObject={onSpawnObject} />}
+        {activeTab === "library" && (
+          <LibraryTab
+            onSpawnObject={onSpawnObject}
+          />
+        )}
       </div>
     </div>
   );
@@ -164,22 +168,32 @@ export function GameSidebar({
 
 // Players Tab
 function PlayersTab(
-  { players, localPlayerId }: { players: Player[]; localPlayerId: string | null; },
+  { players, localPlayerId }: {
+    players: Player[];
+    localPlayerId: string | null;
+  },
 ) {
   return (
     <div className="space-y-2">
       {players.length === 0
-        ? <p className="text-white/50 text-sm text-center py-4">No players connected</p>
+        ? (
+          <p className="text-white/50 text-sm text-center py-4">
+            No players connected
+          </p>
+        )
         : (
           players.map((player, index) => {
-            const isLocal = player.id === localPlayerId || player.peerId === localPlayerId;
+            const isLocal = player.id === localPlayerId ||
+              player.peerId === localPlayerId;
             const color = PLAYER_COLORS[index % PLAYER_COLORS.length];
 
             return (
               <div
                 key={player.id || player.peerId}
                 className={`flex items-center gap-3 p-3 rounded-lg ${
-                  isLocal ? "bg-cyan-500/20 border border-cyan-500/30" : "bg-white/5"
+                  isLocal
+                    ? "bg-cyan-500/20 border border-cyan-500/30"
+                    : "bg-white/5"
                 }`}
               >
                 <div
@@ -226,7 +240,11 @@ function ChatTab({
       {/* Messages list */}
       <div className="flex-1 overflow-y-auto space-y-2 mb-4">
         {messages.length === 0
-          ? <p className="text-white/50 text-sm text-center py-4">No messages yet</p>
+          ? (
+            <p className="text-white/50 text-sm text-center py-4">
+              No messages yet
+            </p>
+          )
           : (
             messages.map((msg) => {
               const isLocal = msg.playerId === localPlayerId;
@@ -258,7 +276,9 @@ function ChatTab({
                       })}
                     </span>
                   </div>
-                  <p className={`text-sm ${isEvent ? "text-yellow-200" : "text-white/90"}`}>
+                  <p
+                    className={`text-sm ${isEvent ? "text-yellow-200" : "text-white/90"}`}
+                  >
                     {isEvent ? `🎲 ${msg.content}` : msg.content}
                   </p>
                 </div>
@@ -292,13 +312,35 @@ function ChatTab({
 
 // Library Tab
 function LibraryTab(
-  { onSpawnObject }: { onSpawnObject: (type: "deck" | "d6" | "d20" | "token") => void; },
+  { onSpawnObject }: {
+    onSpawnObject: (type: "deck" | "d6" | "d20" | "token") => void;
+  },
 ) {
   const items = [
-    { type: "deck" as const, icon: "🃏", label: "Card Deck", description: "Standard 52-card deck" },
-    { type: "d6" as const, icon: "🎲", label: "D6", description: "Six-sided die" },
-    { type: "d20" as const, icon: "🎯", label: "D20", description: "Twenty-sided die" },
-    { type: "token" as const, icon: "🔵", label: "Token", description: "Game token/marker" },
+    {
+      type: "deck" as const,
+      icon: "🃏",
+      label: "Card Deck",
+      description: "Standard 52-card deck",
+    },
+    {
+      type: "d6" as const,
+      icon: "🎲",
+      label: "D6",
+      description: "Six-sided die",
+    },
+    {
+      type: "d20" as const,
+      icon: "🎯",
+      label: "D20",
+      description: "Twenty-sided die",
+    },
+    {
+      type: "token" as const,
+      icon: "🔵",
+      label: "Token",
+      description: "Game token/marker",
+    },
   ];
 
   return (
@@ -313,7 +355,9 @@ function LibraryTab(
             {item.icon}
           </span>
           <span className="text-white font-medium text-sm">{item.label}</span>
-          <span className="text-white/50 text-xs text-center">{item.description}</span>
+          <span className="text-white/50 text-xs text-center">
+            {item.description}
+          </span>
         </button>
       ))}
     </div>

@@ -3,7 +3,8 @@ import { SYSTEM_DEFAULT_PIPELINE } from "@/lib/ai/pipeline-types";
 import { validatePipelineConfigs } from "@/lib/ai/pipeline-validation";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { EnhancementTier, PipelineVisibility } from "@prisma/client";
+import type { EnhancementTier } from "@prisma/client";
+import { PipelineVisibility } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 // Maximum number of pipelines a user can create

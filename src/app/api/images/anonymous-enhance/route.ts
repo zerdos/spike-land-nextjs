@@ -8,7 +8,8 @@ import { tryCatch } from "@/lib/try-catch";
 import { enhanceImageDirect, type EnhanceImageInput } from "@/workflows/enhance-image.direct";
 import { enhanceImage } from "@/workflows/enhance-image.workflow";
 import { JobStatus } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { start } from "workflow/api";
 
 // Allow longer execution time for image enhancements

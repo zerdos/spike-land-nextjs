@@ -3,7 +3,6 @@
  * Provides a simple Text-based mock for all icon components
  */
 
-import React from "react";
 import { Text, View } from "react-native";
 
 // Create a mock icon component factory

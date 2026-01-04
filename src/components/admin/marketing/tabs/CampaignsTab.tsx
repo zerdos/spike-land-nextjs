@@ -21,13 +21,8 @@ import {
 } from "@/components/ui/table";
 import { ArrowDown, ArrowUp, Download } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import {
-  DateRange,
-  DateRangePicker,
-  DateRangePreset,
-  formatDateForAPI,
-  getDateRangeFromPreset,
-} from "../DateRangePicker";
+import type { DateRange, DateRangePreset } from "../DateRangePicker";
+import { DateRangePicker, formatDateForAPI, getDateRangeFromPreset } from "../DateRangePicker";
 
 interface CampaignData {
   id: string;

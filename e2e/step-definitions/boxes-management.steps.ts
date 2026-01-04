@@ -2,7 +2,7 @@ import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { TIMEOUTS } from "../support/helpers/retry-helper";
 import { BoxesPage } from "../support/page-objects/BoxesPage";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Helper to get or create page object
 function getBoxesPage(world: CustomWorld): BoxesPage {

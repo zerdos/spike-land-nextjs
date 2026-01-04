@@ -7,7 +7,6 @@ import AdminDashboard from "@/app/admin/index";
 import * as adminApi from "@/services/api/admin";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
-import React from "react";
 
 // Mock tamagui.config before any component imports
 jest.mock("@/tamagui.config", () => ({}));

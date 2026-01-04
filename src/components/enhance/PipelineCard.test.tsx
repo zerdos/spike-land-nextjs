@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { PipelineCard, PipelineData } from "./PipelineCard";
+import type { PipelineData } from "./PipelineCard";
+import { PipelineCard } from "./PipelineCard";
 
 const mockPipeline: PipelineData = {
   id: "p1",

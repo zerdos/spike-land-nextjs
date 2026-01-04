@@ -20,6 +20,10 @@ vi.mock("@/lib/prisma", () => ({
       findFirst: vi.fn(),
       update: vi.fn(),
     },
+    appStatusHistory: {
+      create: vi.fn(),
+    },
+    $transaction: vi.fn((operations) => Promise.all(operations)),
   },
 }));
 

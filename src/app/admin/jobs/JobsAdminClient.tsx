@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { JobSource, UnifiedJob } from "@/types/admin-jobs";
-import { EnhancementTier, JobStatus } from "@prisma/client";
+import type { EnhancementTier, JobStatus } from "@prisma/client";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
@@ -198,7 +198,10 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
             className="flex items-center justify-center bg-yellow-200 text-[10px] text-yellow-800"
             style={{ width: `${queuePercent}%` }}
             title={`Queued: ${
-              formatDuration(job.createdAt, job.processingStartedAt || new Date().toISOString())
+              formatDuration(
+                job.createdAt,
+                job.processingStartedAt || new Date().toISOString(),
+              )
             }`}
           >
             {queuePercent > 10 && "Queue"}
@@ -227,7 +230,11 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
         <div className="flex justify-between text-xs text-neutral-500">
           <span>Created: {formatAbsoluteTime(job.createdAt)}</span>
           {started && <span>Started: {formatAbsoluteTime(job.processingStartedAt!)}</span>}
-          {completed && <span>Completed: {formatAbsoluteTime(job.processingCompletedAt!)}</span>}
+          {completed && (
+            <span>
+              Completed: {formatAbsoluteTime(job.processingCompletedAt!)}
+            </span>
+          )}
         </div>
       </div>
     );
@@ -608,6 +615,8 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 {jobs.map((job) => (
                   <div
                     key={job.id}
+                    data-testid="job-list-item"
+                    data-job-status={job.status}
                     onClick={() => selectJob(job)}
                     className={`cursor-pointer rounded-md border p-3 transition-colors hover:bg-neutral-800 ${
                       selectedJob?.id === job.id
@@ -821,7 +830,9 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 {selectedJob.prompt && (
                   <div className="space-y-2">
                     <h3 className="text-sm font-semibold text-neutral-500">
-                      {selectedJob.source === "mcp" ? "User Prompt" : "Final Prompt"}
+                      {selectedJob.source === "mcp"
+                        ? "User Prompt"
+                        : "Final Prompt"}
                     </h3>
                     <div className="relative rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs font-mono dark:border-neutral-700 dark:bg-neutral-900">
                       <p className="whitespace-pre-wrap">
@@ -851,7 +862,14 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                           strokeLinejoin="round"
                           className="h-3 w-3"
                         >
-                          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+                          <rect
+                            width="8"
+                            height="4"
+                            x="8"
+                            y="2"
+                            rx="1"
+                            ry="1"
+                          />
                           <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
                         </svg>
                       </Button>
@@ -1071,12 +1089,15 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 {selectedJob.source === "enhancement" &&
                   (selectedJob.originalWidth || selectedJob.originalHeight) && (
                   <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
-                    <h3 className="mb-2 text-sm font-semibold">Original Image</h3>
+                    <h3 className="mb-2 text-sm font-semibold">
+                      Original Image
+                    </h3>
                     <div className="grid gap-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-neutral-500">Dimensions</span>
                         <span>
-                          {selectedJob.originalWidth}x{selectedJob.originalHeight}
+                          {selectedJob.originalWidth}x{selectedJob
+                            .originalHeight}
                         </span>
                       </div>
                       {selectedJob.originalFormat && (
@@ -1088,7 +1109,9 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                       {selectedJob.originalSizeBytes && (
                         <div className="flex justify-between">
                           <span className="text-neutral-500">Size</span>
-                          <span>{formatBytes(selectedJob.originalSizeBytes)}</span>
+                          <span>
+                            {formatBytes(selectedJob.originalSizeBytes)}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -1098,11 +1121,15 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 {/* Processing Details (enhancement jobs only) */}
                 {selectedJob.source === "enhancement" && (
                   <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
-                    <h3 className="mb-2 text-sm font-semibold">Processing Details</h3>
+                    <h3 className="mb-2 text-sm font-semibold">
+                      Processing Details
+                    </h3>
                     <div className="grid gap-2 text-sm">
                       {selectedJob.currentStage && (
                         <div className="flex justify-between">
-                          <span className="text-neutral-500">Current Stage</span>
+                          <span className="text-neutral-500">
+                            Current Stage
+                          </span>
                           <Badge className="bg-blue-100 text-blue-800 border-blue-200">
                             {selectedJob.currentStage}
                           </Badge>
@@ -1118,9 +1145,9 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                         <div className="flex justify-between">
                           <span className="text-neutral-500">Crop</span>
                           <span className="text-xs font-mono">
-                            {selectedJob.cropDimensions.left},{selectedJob.cropDimensions.top} →
-                            {" "}
-                            {selectedJob.cropDimensions.width}x{selectedJob.cropDimensions.height}
+                            {selectedJob.cropDimensions.left},{selectedJob
+                              .cropDimensions.top} → {selectedJob.cropDimensions.width}x{selectedJob
+                              .cropDimensions.height}
                           </span>
                         </div>
                       )}
@@ -1165,14 +1192,17 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 )}
 
                 {/* Analysis Results (enhancement jobs only) */}
-                {selectedJob.source === "enhancement" && selectedJob.analysisResult && (
+                {selectedJob.source === "enhancement" &&
+                  selectedJob.analysisResult && (
                   <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
                     <h3 className="mb-2 text-sm font-semibold">AI Analysis</h3>
                     <div className="space-y-3">
                       {selectedJob.analysisSource && (
                         <div className="flex justify-between text-sm">
                           <span className="text-neutral-500">Model</span>
-                          <span className="font-mono text-xs">{selectedJob.analysisSource}</span>
+                          <span className="font-mono text-xs">
+                            {selectedJob.analysisSource}
+                          </span>
                         </div>
                       )}
                       {selectedJob.analysisResult.mainSubject && (
@@ -1192,13 +1222,17 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                       {selectedJob.analysisResult.lightingCondition && (
                         <div className="text-sm">
                           <span className="text-neutral-500">Lighting:</span>
-                          <span>{selectedJob.analysisResult.lightingCondition}</span>
+                          <span>
+                            {selectedJob.analysisResult.lightingCondition}
+                          </span>
                         </div>
                       )}
                       {/* Detected Defects */}
                       {selectedJob.analysisResult.defects && (
                         <div className="space-y-1">
-                          <span className="text-sm text-neutral-500">Detected Issues:</span>
+                          <span className="text-sm text-neutral-500">
+                            Detected Issues:
+                          </span>
                           <div className="flex flex-wrap gap-1">
                             {selectedJob.analysisResult.defects.isDark && (
                               <Badge
@@ -1224,7 +1258,8 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                                 Noisy
                               </Badge>
                             )}
-                            {selectedJob.analysisResult.defects.hasVHSArtifacts && (
+                            {selectedJob.analysisResult.defects
+                              .hasVHSArtifacts && (
                               <Badge
                                 variant="outline"
                                 className="bg-purple-100 text-purple-800 text-xs"
@@ -1232,64 +1267,83 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                                 VHS Artifacts
                               </Badge>
                             )}
-                            {selectedJob.analysisResult.defects.isLowResolution && (
-                              <Badge variant="outline" className="bg-red-100 text-red-800 text-xs">
+                            {selectedJob.analysisResult.defects
+                              .isLowResolution && (
+                              <Badge
+                                variant="outline"
+                                className="bg-red-100 text-red-800 text-xs"
+                              >
                                 Low Res
                               </Badge>
                             )}
-                            {selectedJob.analysisResult.defects.isOverexposed && (
-                              <Badge
-                                variant="outline"
-                                className="bg-yellow-100 text-yellow-800 text-xs"
-                              >
-                                Overexposed
-                              </Badge>
-                            )}
-                            {selectedJob.analysisResult.defects.hasColorCast && (
-                              <Badge
-                                variant="outline"
-                                className="bg-pink-100 text-pink-800 text-xs"
-                              >
-                                Color Cast{selectedJob.analysisResult.defects.colorCastType
-                                  ? ` (${selectedJob.analysisResult.defects.colorCastType})`
-                                  : ""}
-                              </Badge>
-                            )}
+                            {selectedJob.analysisResult.defects.isOverexposed &&
+                              (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-yellow-100 text-yellow-800 text-xs"
+                                >
+                                  Overexposed
+                                </Badge>
+                              )}
+                            {selectedJob.analysisResult.defects.hasColorCast &&
+                              (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-pink-100 text-pink-800 text-xs"
+                                >
+                                  Color Cast{selectedJob.analysisResult.defects
+                                      .colorCastType
+                                    ? ` (${selectedJob.analysisResult.defects.colorCastType})`
+                                    : ""}
+                                </Badge>
+                              )}
                             {!selectedJob.analysisResult.defects.isDark &&
                               !selectedJob.analysisResult.defects.isBlurry &&
                               !selectedJob.analysisResult.defects.hasNoise &&
-                              !selectedJob.analysisResult.defects.hasVHSArtifacts &&
-                              !selectedJob.analysisResult.defects.isLowResolution &&
-                              !selectedJob.analysisResult.defects.isOverexposed &&
-                              !selectedJob.analysisResult.defects.hasColorCast && (
-                              <Badge
-                                variant="outline"
-                                className="bg-green-100 text-green-800 text-xs"
-                              >
-                                No Issues Detected
-                              </Badge>
-                            )}
+                              !selectedJob.analysisResult.defects
+                                .hasVHSArtifacts &&
+                              !selectedJob.analysisResult.defects
+                                .isLowResolution &&
+                              !selectedJob.analysisResult.defects
+                                .isOverexposed &&
+                              !selectedJob.analysisResult.defects
+                                .hasColorCast &&
+                              (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-green-100 text-green-800 text-xs"
+                                >
+                                  No Issues Detected
+                                </Badge>
+                              )}
                           </div>
                         </div>
                       )}
                       {/* Cropping Suggestion */}
                       {selectedJob.analysisResult.cropping &&
-                        selectedJob.analysisResult.cropping.isCroppingNeeded && (
-                        <div className="space-y-1 text-sm">
-                          <span className="text-neutral-500">Crop Suggestion:</span>
-                          <p className="text-xs">
-                            {selectedJob.analysisResult.cropping.cropReason}
-                          </p>
-                          {selectedJob.analysisResult.cropping.suggestedCrop && (
-                            <p className="font-mono text-xs text-neutral-400">
-                              L:{selectedJob.analysisResult.cropping.suggestedCrop.left}%
-                              T:{selectedJob.analysisResult.cropping.suggestedCrop.top}%
-                              R:{selectedJob.analysisResult.cropping.suggestedCrop.right}%
-                              B:{selectedJob.analysisResult.cropping.suggestedCrop.bottom}%
+                        selectedJob.analysisResult.cropping.isCroppingNeeded &&
+                        (
+                          <div className="space-y-1 text-sm">
+                            <span className="text-neutral-500">
+                              Crop Suggestion:
+                            </span>
+                            <p className="text-xs">
+                              {selectedJob.analysisResult.cropping.cropReason}
                             </p>
-                          )}
-                        </div>
-                      )}
+                            {selectedJob.analysisResult.cropping
+                              .suggestedCrop && (
+                              <p className="font-mono text-xs text-neutral-400">
+                                L:{selectedJob.analysisResult.cropping
+                                  .suggestedCrop.left}% T:{selectedJob
+                                  .analysisResult.cropping.suggestedCrop.top}% R:{selectedJob
+                                  .analysisResult.cropping
+                                  .suggestedCrop.right}% B:{selectedJob
+                                  .analysisResult.cropping.suggestedCrop
+                                  .bottom}%
+                              </p>
+                            )}
+                          </div>
+                        )}
                       {/* Raw JSON (collapsed) */}
                       <details className="text-xs">
                         <summary className="cursor-pointer text-neutral-500 hover:text-neutral-300">

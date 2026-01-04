@@ -70,7 +70,9 @@ export function HandDrawer({ hand, onPlayCard }: HandDrawerProps) {
                     {/* 3D Card with better visuals */}
                     <div className="relative w-24 h-36 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col items-center justify-center overflow-hidden transition-transform duration-200 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]">
                       {/* Card content */}
-                      <span className={`text-3xl font-bold ${SUIT_COLORS[card.suit]}`}>
+                      <span
+                        className={`text-3xl font-bold ${SUIT_COLORS[card.suit]}`}
+                      >
                         {card.rank}
                       </span>
                       <span className={`text-5xl ${SUIT_COLORS[card.suit]}`}>

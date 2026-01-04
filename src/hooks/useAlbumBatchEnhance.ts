@@ -1,4 +1,4 @@
-import { EnhancementTier } from "@prisma/client";
+import type { EnhancementTier } from "@prisma/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { tryCatch } from "@/lib/try-catch";

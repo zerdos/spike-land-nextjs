@@ -15,7 +15,8 @@ import {
   View as RNView,
 } from "react-native";
 import { Card, Text, View, XStack, YStack } from "tamagui";
-import { AdminUser, getUsers, UserRole } from "../../../services/api/admin";
+import type { AdminUser, UserRole } from "../../../services/api/admin";
+import { getUsers } from "../../../services/api/admin";
 
 // ============================================================================
 // Components

@@ -16,8 +16,9 @@
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { tryCatch } from "@/lib/try-catch";
-import { Prisma } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 // Rate limit config: 100 requests per minute per IP

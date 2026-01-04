@@ -16,15 +16,17 @@ import {
   View as RNView,
 } from "react-native";
 import { Card, H4, Text, View, XStack, YStack } from "tamagui";
-import {
-  createVoucher,
+import type {
   CreateVoucherRequest,
-  deleteVoucher,
-  getVouchers,
-  updateVoucherStatus,
   Voucher,
   VoucherStatus,
   VoucherType,
+} from "../../../services/api/admin";
+import {
+  createVoucher,
+  deleteVoucher,
+  getVouchers,
+  updateVoucherStatus,
 } from "../../../services/api/admin";
 
 // ============================================================================

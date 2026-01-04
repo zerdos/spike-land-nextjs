@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { CustomWorld } from "../support/world";
+import type { CustomWorld } from "../support/world";
 
 // Helper function for mocking token balance (used by multiple steps)
 async function mockTokenBalance(
@@ -27,29 +27,44 @@ async function mockTokenBalance(
 When(
   "I click {string} button",
   async function(this: CustomWorld, buttonText: string) {
+    // Wait for loading states ONLY if they are visible
+    const loadingElement = this.page.locator(".loading, .animate-pulse, .skeleton").first();
+    const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
+    if (isLoadingVisible) {
+      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    }
+
     const button = this.page
       .getByRole("button", { name: new RegExp(buttonText, "i") })
       .and(this.page.locator(":not([data-nextjs-dev-tools-button])"));
+
+    // Wait for button to be visible before clicking
+    await expect(button.first()).toBeVisible({ timeout: 15000 });
 
     // If there are still multiple buttons (e.g. mobile vs desktop), take the first visible one
     await button.first().click();
   },
 );
 
-// Common success message check
+// Common success message check (supports Sonner toasts and other notification systems)
 Then("I should see a success message", async function(this: CustomWorld) {
+  // Sonner toasts appear in [data-sonner-toast] elements or as elements with .toast class
+  // Also support role="status" and elements with success-related classes
   const successMessage = this.page.locator(
-    '[role="status"], .success, .toast, [class*="success"]',
+    '[data-sonner-toast][data-type="success"], [role="status"], .success, .toast, [class*="success"], li[data-sonner-toast]',
   );
-  await expect(successMessage).toBeVisible({ timeout: 10000 });
+  await expect(successMessage.first()).toBeVisible({ timeout: 10000 });
 });
 
 // Common error message check
 Then("I should see an error message", async function(this: CustomWorld) {
-  const errorMessage = this.page.locator(
-    '[role="alert"], .error, .toast, [class*="error"]',
-  );
-  await expect(errorMessage).toBeVisible({ timeout: 10000 });
+  // Look for various error indicators - multiple patterns
+  const errorMessage = this.page
+    .locator('[role="alert"]')
+    .filter({ hasNotText: /^$/ }) // Exclude empty alerts like route announcer
+    .or(this.page.getByText(/error|failed|unable/i))
+    .or(this.page.locator(".error, .toast, [data-testid*='error']"));
+  await expect(errorMessage.first()).toBeVisible({ timeout: 10000 });
 });
 
 // Common modal close check
@@ -244,12 +259,10 @@ Then(
 When(
   "I select {string} from the type filter",
   async function(this: CustomWorld, type: string) {
-    // Works for multiple filter implementations (SelectTrigger or combobox)
-    const selectTrigger = this.page.locator('[class*="SelectTrigger"]').nth(1);
-    const combobox = this.page.locator('[role="combobox"]').first();
-
-    const filter = (await selectTrigger.isVisible()) ? selectTrigger : combobox;
-    await filter.click();
+    // Use role="combobox" which is the Radix UI Select trigger role
+    // Type filter is the second combobox on the page (first is status filter)
+    const typeSelect = this.page.getByRole("combobox").nth(1);
+    await typeSelect.click();
     await this.page.locator('[role="option"]').filter({ hasText: type })
       .click();
   },
@@ -290,8 +303,9 @@ Then("FAILED status badge should be red", async function(this: CustomWorld) {
 Then(
   "I should see the delete confirmation dialog",
   async function(this: CustomWorld) {
+    // Exclude cookie consent dialog which has aria-labelledby="cookie-consent-title"
     const dialog = this.page.locator(
-      '[role="dialog"], [role="alertdialog"]',
+      '[role="dialog"]:not([aria-labelledby="cookie-consent-title"]), [role="alertdialog"]',
     );
     await expect(dialog).toBeVisible();
   },
@@ -335,21 +349,37 @@ Then("I should see the tier information", async function(this: CustomWorld) {
 When(
   "I click {string} button in the dialog",
   async function(this: CustomWorld, buttonText: string) {
+    // Use first() because dialogs may have multiple buttons with same name
+    // (e.g., text "Close" button + X close button)
     const button = this.page
       .locator('[role="dialog"]')
-      .getByRole("button", { name: buttonText });
+      .getByRole("button", { name: buttonText })
+      .first();
     await button.click();
   },
 );
 
 // Common button in modal click (alias for dialog)
+// Note: For email modals that don't use role="dialog", see email-specific step
 When(
   "I click {string} button in the modal",
   async function(this: CustomWorld, buttonText: string) {
-    const button = this.page
+    // First try to find in a dialog
+    const dialogButton = this.page
       .locator('[role="dialog"]')
       .getByRole("button", { name: buttonText });
-    await button.click();
+
+    if (await dialogButton.count() > 0) {
+      await dialogButton.first().click();
+      return;
+    }
+
+    // Fallback: look for the email modal (Card with "Email Details")
+    const emailModal = this.page.locator('[class*="Card"]').filter({
+      hasText: "Email Details",
+    });
+    const emailButton = emailModal.getByRole("button", { name: buttonText });
+    await emailButton.click();
   },
 );
 
@@ -890,5 +920,14 @@ Given(
       await images.nth(i).click({ modifiers: ["Control"] });
       await this.page.waitForTimeout(100);
     }
+  },
+);
+
+// Navigation without waiting for network idle - used for testing loading states
+When(
+  "I navigate quickly to {string}",
+  async function(this: CustomWorld, path: string) {
+    // Navigate without waiting for network idle so we can observe loading states
+    await this.page.goto(`${this.baseUrl}${path}`, { waitUntil: "commit" });
   },
 );

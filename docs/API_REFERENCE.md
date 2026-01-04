@@ -1,6 +1,7 @@
 # API Reference
 
-> **Last Updated**: December 2025 | **Status**: Production | **Base URL**: `https://spike.land` (Production) or `http://localhost:3000` (Development)
+> **Last Updated**: December 2025 | **Status**: Production | **Base URL**:
+> `https://spike.land` (Production) or `http://localhost:3000` (Development)
 
 ---
 
@@ -30,7 +31,8 @@
 
 ## Authentication
 
-All protected endpoints require authentication via session cookie (NextAuth.js) or Bearer token (API key for MCP endpoints).
+All protected endpoints require authentication via session cookie (NextAuth.js)
+or Bearer token (API key for MCP endpoints).
 
 ### Authentication Methods
 
@@ -502,7 +504,8 @@ Content-Disposition: form-data; name="file"; filename="photo.jpg"
 }
 ```
 
-**Note**: Anonymous images are automatically set to `isPublic: true` and do not auto-enhance. Use anonymous enhance endpoint separately.
+**Note**: Anonymous images are automatically set to `isPublic: true` and do not
+auto-enhance. Use anonymous enhance endpoint separately.
 
 ---
 
@@ -527,7 +530,8 @@ Enhance an anonymously uploaded image (rate-limited by IP).
 }
 ```
 
-**Note**: Anonymous enhancements are limited to the FREE tier only (no token cost).
+**Note**: Anonymous enhancements are limited to the FREE tier only (no token
+cost).
 
 **Response (Success - 200)**:
 
@@ -782,7 +786,8 @@ Check the status of an enhancement job.
 
 **Endpoint**: `GET /api/jobs/{jobId}`
 
-**Authentication**: Required (Session) or None (for anonymous jobs, rate-limited by IP)
+**Authentication**: Required (Session) or None (for anonymous jobs, rate-limited
+by IP)
 
 **Path Parameters**:
 
@@ -842,7 +847,8 @@ Delete a completed or failed job.
 
 **Authentication**: Required (Session)
 
-**Note**: Only jobs with status COMPLETED, FAILED, CANCELLED, or REFUNDED can be deleted.
+**Note**: Only jobs with status COMPLETED, FAILED, CANCELLED, or REFUNDED can be
+deleted.
 
 **Response (Success - 200)**:
 
@@ -948,7 +954,9 @@ const response = await fetch("/api/tokens/balance");
 const data = await response.json();
 
 console.log(`Balance: ${data.balance} tokens`);
-console.log(`Next regeneration in: ${Math.ceil(data.timeUntilNextRegenMs / 1000)}s`);
+console.log(
+  `Next regeneration in: ${Math.ceil(data.timeUntilNextRegenMs / 1000)}s`,
+);
 ```
 
 ---
@@ -1214,7 +1222,8 @@ View referral performance and earnings.
 
 ## MCP API (Model Context Protocol)
 
-The MCP API provides programmatic access to image generation and modification via API keys.
+The MCP API provides programmatic access to image generation and modification
+via API keys.
 
 ### Authentication
 
@@ -1745,7 +1754,8 @@ Retrieve error logs for debugging.
 
 ## Marketing Dashboard
 
-The Marketing Dashboard allows administrators to connect and manage Facebook Ads and Google Ads accounts.
+The Marketing Dashboard allows administrators to connect and manage Facebook Ads
+and Google Ads accounts.
 
 ### List Connected Accounts
 
@@ -1932,7 +1942,8 @@ Authorization: Bearer sk_live_xxxxx
 }
 ```
 
-**Cache**: Reports are cached for 5 minutes (Cache-Control: private, max-age=300)
+**Cache**: Reports are cached for 5 minutes (Cache-Control: private,
+max-age=300)
 
 ---
 
@@ -1968,7 +1979,8 @@ All error responses follow this format:
 
 ### Request ID Tracking
 
-All responses include a unique request ID in the `X-Request-ID` header for debugging:
+All responses include a unique request ID in the `X-Request-ID` header for
+debugging:
 
 ```http
 X-Request-ID: req_abc123xyz
@@ -2167,9 +2179,12 @@ async function generateImage(prompt) {
   while (true) {
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    const statusRes = await fetch(`https://spike.land/api/jobs/${result.jobId}`, {
-      headers: { "Authorization": `Bearer ${apiKey}` },
-    });
+    const statusRes = await fetch(
+      `https://spike.land/api/jobs/${result.jobId}`,
+      {
+        headers: { "Authorization": `Bearer ${apiKey}` },
+      },
+    );
 
     const job = await statusRes.json();
 

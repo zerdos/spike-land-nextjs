@@ -1,6 +1,7 @@
 "use client";
 import Peer from "peerjs";
 import { useEffect, useRef, useState } from "react";
+import { isE2EMode } from "../lib/e2e-utils";
 
 // Store peer instances globally to survive React Strict Mode double-mount
 const peerCache = new Map<string, { peer: Peer; refCount: number; }>();
@@ -11,8 +12,18 @@ export function usePeer() {
   const cacheKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // In E2E mode, return a mock peer ID immediately without connecting
+    // This avoids timeouts waiting for PeerJS server connections
+    if (isE2EMode()) {
+      const mockPeerId = "e2e-mock-" + Math.random().toString(36).slice(2, 9);
+      setPeerId(mockPeerId);
+      // Don't create real Peer - leave peer as null but peerId populated
+      return;
+    }
+
     // Generate a stable cache key for this component instance
-    const cacheKey = cacheKeyRef.current ?? Math.random().toString(36).substr(2, 9);
+    const cacheKey = cacheKeyRef.current ??
+      Math.random().toString(36).substr(2, 9);
     cacheKeyRef.current = cacheKey;
 
     // Check if we already have a peer for this key (Strict Mode re-mount)

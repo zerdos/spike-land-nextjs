@@ -1,6 +1,6 @@
 import { After, AfterAll, Before, BeforeAll, setDefaultTimeout, Status } from "@cucumber/cucumber";
 import { generateCoverageReport, isCoverageEnabled } from "./helpers/coverage-helper";
-import { VideoWallWorld } from "./video-wall-world";
+import type { VideoWallWorld } from "./video-wall-world";
 import { CustomWorld } from "./world";
 
 // Increase default step timeout to 30 seconds for CI font loading
@@ -58,13 +58,25 @@ Before({ tags: "not @video-wall" }, async function(this: VideoWallWorld) {
 Before(async function(this: CustomWorld) {
   if (this.page) {
     try {
+      // Set cookie consent to accepted to prevent banner from appearing
       await this.page.evaluate(() => {
         localStorage.clear();
         sessionStorage.clear();
+        // Pre-set cookie consent as accepted to dismiss banner
+        localStorage.setItem("cookie-consent", "accepted");
       });
     } catch {
       // Ignore SecurityError on about:blank - storage is already clean
     }
+  }
+});
+
+// Clear session cookies for scenarios that need unauthenticated state
+// NextAuth stores sessions in HTTP-only cookies that aren't cleared by localStorage.clear()
+Before({ tags: "@requires-no-session" }, async function(this: CustomWorld) {
+  if (this.page) {
+    // Clear all cookies including HTTP-only session cookies
+    await this.page.context().clearCookies();
   }
 });
 

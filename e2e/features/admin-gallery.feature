@@ -156,7 +156,7 @@ Feature: Admin Featured Gallery Management
   @slow @requires-db
   Scenario: Gallery shows loading state while fetching
     Given the gallery API is slow
-    When I visit "/admin/gallery"
+    When I navigate quickly to "/admin/gallery"
     Then I should see loading skeleton cards
 
   @slow @requires-db

@@ -33,7 +33,10 @@ import type { DiceType } from "../../../../../../apps/tabletop-simulator/types/d
 
 const GameScene = dynamic(
   () => import("../../../../../../apps/tabletop-simulator/components/GameScene"),
-  { ssr: false, loading: () => <div className="text-white p-4">Loading 3D Engine...</div> },
+  {
+    ssr: false,
+    loading: () => <div className="text-white p-4">Loading 3D Engine...</div>,
+  },
 );
 
 function GameUI() {
@@ -147,7 +150,7 @@ function GameUI() {
     if (!game?.doc) return;
 
     // Find card to get current transform
-    const card = gameState.cards.find(c => c.id === id);
+    const card = gameState.cards.find((c) => c.id === id);
     if (card) {
       // Snap to table surface
       // Keep X/Z position
@@ -177,12 +180,12 @@ function GameUI() {
 
   const handleDeckShuffle = useCallback(() => {
     if (!game?.doc) return;
-    const currentCards = gameState.cards.filter(c => c.ownerId === null);
+    const currentCards = gameState.cards.filter((c) => c.ownerId === null);
     if (currentCards.length > 0) {
       const shuffled = shuffleDeck(currentCards, Date.now());
       updateDeck(game.doc, [
         ...shuffled,
-        ...gameState.cards.filter(c => c.ownerId !== null),
+        ...gameState.cards.filter((c) => c.ownerId !== null),
       ]);
     }
   }, [game?.doc, gameState.cards]);
@@ -190,7 +193,11 @@ function GameUI() {
   const handlePlayCard = useCallback((cardId: string) => {
     if (!game?.doc) return;
     // Play card to center of table
-    playCard(game.doc, cardId, { x: Math.random() * 4 - 2, y: 0.1, z: Math.random() * 4 - 2 });
+    playCard(game.doc, cardId, {
+      x: Math.random() * 4 - 2,
+      y: 0.1,
+      z: Math.random() * 4 - 2,
+    });
   }, [game?.doc]);
 
   const handleToggleVideo = useCallback(async () => {
@@ -198,7 +205,7 @@ function GameUI() {
 
     if (game.media.localStream) {
       // Turn off camera
-      game.media.localStream.getTracks().forEach(track => track.stop());
+      game.media.localStream.getTracks().forEach((track) => track.stop());
       // Note: The hook doesn't expose a way to clear localStream, but stopping tracks is enough
     } else {
       // Turn on camera and call all connected peers
@@ -227,41 +234,48 @@ function GameUI() {
   }, [game?.doc, game?.peerId]);
 
   // Handle spawning objects from library
-  const handleSpawnObject = useCallback((type: "deck" | "d6" | "d20" | "token") => {
-    if (!game?.doc || !game.peerId) return;
+  const handleSpawnObject = useCallback(
+    (type: "deck" | "d6" | "d20" | "token") => {
+      if (!game?.doc || !game.peerId) return;
 
-    if (type === "deck") {
-      // Reset and shuffle deck
-      const cards = createStandardDeck();
-      const shuffled = shuffleDeck(cards, Date.now());
-      initializeDeck(game.doc, shuffled);
-    } else if (type === "d6" || type === "d20") {
-      const seed = Date.now();
-      const diceState = {
-        id: nanoid(),
-        type: type as DiceType,
-        value: 0,
-        position: { x: Math.random() * 2 - 1, y: 2, z: Math.random() * 2 - 1 },
-        rotation: { x: 0, y: 0, z: 0 },
-        isRolling: true,
-        seed,
-        ownerId: game.peerId,
-      };
-      addDice(game.doc, diceState);
-    }
-    // Token spawning can be added later
-  }, [game?.doc, game?.peerId]);
+      if (type === "deck") {
+        // Reset and shuffle deck
+        const cards = createStandardDeck();
+        const shuffled = shuffleDeck(cards, Date.now());
+        initializeDeck(game.doc, shuffled);
+      } else if (type === "d6" || type === "d20") {
+        const seed = Date.now();
+        const diceState = {
+          id: nanoid(),
+          type: type as DiceType,
+          value: 0,
+          position: {
+            x: Math.random() * 2 - 1,
+            y: 2,
+            z: Math.random() * 2 - 1,
+          },
+          rotation: { x: 0, y: 0, z: 0 },
+          isRolling: true,
+          seed,
+          ownerId: game.peerId,
+        };
+        addDice(game.doc, diceState);
+      }
+      // Token spawning can be added later
+    },
+    [game?.doc, game?.peerId],
+  );
 
   if (!game) return null;
 
   const { ui, media, peerId } = game;
 
   // Get cards in player's hand
-  const handCards = gameState.cards.filter(card => card.ownerId === peerId);
+  const handCards = gameState.cards.filter((card) => card.ownerId === peerId);
 
   // Calculate other players' hand counts
   const otherPlayersHands = new Map<string, number>();
-  gameState.cards.forEach(card => {
+  gameState.cards.forEach((card) => {
     if (card.ownerId && card.ownerId !== peerId) {
       const current = otherPlayersHands.get(card.ownerId) ?? 0;
       otherPlayersHands.set(card.ownerId, current + 1);
@@ -310,7 +324,10 @@ function GameUI() {
       {/* Top App Bar */}
       <TopAppBar
         roomCode={peerId || "---"}
-        connectionStatus={connectionStatus as "connected" | "connecting" | "disconnected"}
+        connectionStatus={connectionStatus as
+          | "connected"
+          | "connecting"
+          | "disconnected"}
         playerCount={game.connections.size + 1}
         onSidebarToggle={ui.toggleSidebar}
         isMobile={ui.isMobile}
@@ -330,7 +347,10 @@ function GameUI() {
         isMobile={ui.isMobile}
       />
 
-      <VideoOverlay localStream={media.localStream} remoteStreams={media.remoteStreams} />
+      <VideoOverlay
+        localStream={media.localStream}
+        remoteStreams={media.remoteStreams}
+      />
       <ControlsPanel
         mode={ui.interactionMode}
         onToggleMode={ui.toggleMode}

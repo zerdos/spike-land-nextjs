@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { VideoWallWorld } from "../support/video-wall-world";
+import type { VideoWallWorld } from "../support/video-wall-world";
 
 // Client connection states
 Given(

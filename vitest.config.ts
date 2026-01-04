@@ -5,26 +5,22 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   plugins: [react()],
   test: {
+    name: "root",
     environment: "jsdom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
-    // Exclude git worktrees and mobile app (mobile-app uses Jest, not vitest)
+    include: ["src/**/*.{test,spec}.{ts,tsx}", "apps/**/*.{test,spec}.{ts,tsx}"],
+    // Exclude git worktrees, mobile app (uses Jest), and packages (have their own configs)
     exclude: [
       "**/node_modules/**",
       "**/dist/**",
       "**/fix-r2-versioning-cache/**",
       "**/.git/**",
-      "**/packages/mobile-app/**",
+      "**/packages/**",
     ],
     // Use forks pool for better memory isolation in CI
     // Each test file runs in separate process with fresh memory
     pool: "forks",
-    // poolOptions: {
-    //   forks: {
-    //     singleFork: false,
-    //     isolate: true,
-    //   },
-    // },
     // Enable file parallelism for faster execution
     fileParallelism: true,
     // Use reporter optimized for CI

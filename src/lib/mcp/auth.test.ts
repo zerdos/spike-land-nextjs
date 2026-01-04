@@ -18,7 +18,7 @@ vi.mock("@/auth", () => ({
   auth: mockAuth,
 }));
 
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import {
   authenticateMcpOrSession,
   authenticateMcpRequest,

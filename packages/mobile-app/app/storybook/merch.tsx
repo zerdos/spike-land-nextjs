@@ -5,7 +5,7 @@
  */
 
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";

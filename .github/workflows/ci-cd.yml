@@ -253,6 +253,9 @@ jobs:
           SKIP_ENV_VALIDATION: "true"
           SHARD_INDEX: ${{ matrix.shard }}
           SHARD_TOTAL: 8
+          # Upstash Redis for queue operations
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
         run: yarn start:server:and:test:ci
       - name: Upload E2E test reports
         uses: actions/upload-artifact@v4
@@ -330,6 +333,9 @@ jobs:
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           NEXTAUTH_URL: http://localhost:3000
           SKIP_ENV_VALIDATION: "true"
+          # Upstash Redis for queue operations
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
         run: |
           # Start dev server in background and wait for it
           yarn dev:e2e &

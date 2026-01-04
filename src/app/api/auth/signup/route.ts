@@ -17,7 +17,8 @@ import { completeReferralAndGrantRewards } from "@/lib/referral/rewards";
 import { linkReferralOnSignup } from "@/lib/referral/tracker";
 import { tryCatch } from "@/lib/try-catch";
 import bcrypt from "bcryptjs";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Email validation regex (RFC 5322 simplified)
 const EMAIL_REGEX =

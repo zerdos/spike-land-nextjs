@@ -1,11 +1,16 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import NYECountdownClient from "./_components/NYECountdownClient";
 
 export const metadata: Metadata = {
   title: "EPIC NYE Countdown 2026",
   description:
     "The most epic countdown to 2026! Featuring deep space visuals, fireworks, confetti, and a massive midnight celebration.",
-  keywords: ["NYE 2026", "New Year's Eve Countdown", "New Year 2026", "Epic Countdown"],
+  keywords: [
+    "NYE 2026",
+    "New Year's Eve Countdown",
+    "New Year 2026",
+    "Epic Countdown",
+  ],
   openGraph: {
     title: "EPIC NYE Countdown 2026",
     description: "The most spectacular countdown to 2026. Join the celebration!",

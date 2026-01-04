@@ -14,7 +14,8 @@ import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client--workflow";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager--workflow";
 import { tryCatch } from "@/lib/try-catch--no-track";
-import { EnhancementTier, JobStatus } from "@prisma/client";
+import type { EnhancementTier } from "@prisma/client";
+import { JobStatus } from "@prisma/client";
 import sharp from "sharp";
 import { FatalError } from "workflow";
 import {
@@ -50,7 +51,9 @@ export type { EnhanceImageInput };
  * @param input - Either a proper Buffer or a serialized Buffer object
  * @returns A proper Node.js Buffer
  */
-function ensureBuffer(input: Buffer | { type: "Buffer"; data: number[]; } | unknown): Buffer {
+function ensureBuffer(
+  input: Buffer | { type: "Buffer"; data: number[]; } | unknown,
+): Buffer {
   // Already a proper Buffer
   if (Buffer.isBuffer(input)) {
     return input;

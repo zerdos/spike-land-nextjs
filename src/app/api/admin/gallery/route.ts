@@ -16,7 +16,8 @@ import {
 } from "@/lib/types/gallery";
 import { GalleryCategory } from "@prisma/client";
 import { revalidateTag } from "next/cache";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 function handleError(error: Error, context: string): NextResponse {

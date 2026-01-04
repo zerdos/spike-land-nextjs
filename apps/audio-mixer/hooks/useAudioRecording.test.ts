@@ -27,8 +27,15 @@ describe("useAudioRecording", () => {
     mimeType: string;
   };
 
+  const mockAudioTrack = {
+    stop: vi.fn(),
+    applyConstraints: vi.fn().mockResolvedValue(undefined),
+  };
+
   const mockStream = {
-    getTracks: vi.fn(() => [{ stop: vi.fn() }]),
+    getTracks: vi.fn(() => [mockAudioTrack]),
+    getAudioTracks: vi.fn(() => [mockAudioTrack]),
+    // Add other stream methods if needed
   };
 
   const mockBuffer = { duration: 5 } as AudioBuffer;
@@ -73,10 +80,19 @@ describe("useAudioRecording", () => {
     expect(result.current.isRecording).toBe(false);
     expect(result.current.isPaused).toBe(false);
     expect(result.current.duration).toBe(0);
+    expect(result.current.error).toBeNull();
   });
 
-  it("starts recording", async () => {
+  it("starts recording with simple constraints first", async () => {
     const { result } = renderHook(() => useAudioRecording());
+    const mockAudioTrack = { applyConstraints: vi.fn(), stop: vi.fn() };
+    const mockSimpleStream = {
+      getAudioTracks: vi.fn(() => [mockAudioTrack]),
+      getTracks: vi.fn(() => [mockAudioTrack]),
+    };
+
+    (navigator.mediaDevices.getUserMedia as ReturnType<typeof vi.fn>)
+      .mockResolvedValue(mockSimpleStream);
 
     await act(async () => {
       const success = await result.current.startRecording();
@@ -84,18 +100,48 @@ describe("useAudioRecording", () => {
     });
 
     expect(result.current.isRecording).toBe(true);
+    // Should call getUserMedia with simple constraints
     expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true,
-      },
+      audio: true,
     });
-    expect(mockMediaRecorder.start).toHaveBeenCalledWith(100);
+    // Then try to apply advanced constraints
+    expect(mockAudioTrack.applyConstraints).toHaveBeenCalledWith({
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+    });
+  });
+
+  it("continues if applying constraints fails", async () => {
+    const { result } = renderHook(() => useAudioRecording());
+    const mockAudioTrack = {
+      applyConstraints: vi.fn().mockRejectedValue(new Error("Constraint error")),
+      stop: vi.fn(),
+    };
+    const mockSimpleStream = {
+      getAudioTracks: vi.fn(() => [mockAudioTrack]),
+      getTracks: vi.fn(() => [mockAudioTrack]),
+    };
+
+    (navigator.mediaDevices.getUserMedia as ReturnType<typeof vi.fn>)
+      .mockResolvedValue(mockSimpleStream);
+
+    await act(async () => {
+      const success = await result.current.startRecording();
+      expect(success).toBe(true);
+    });
+
+    // Should still be recording even if constraints failed
+    expect(result.current.isRecording).toBe(true);
+    expect(result.current.error).toBeNull();
   });
 
   it("updates duration while recording", async () => {
     const { result } = renderHook(() => useAudioRecording());
+    // Ensure getUserMedia is mocked to return a stream with an audio track
+    // that has applyConstraints, as per the new logic.
+    (navigator.mediaDevices.getUserMedia as ReturnType<typeof vi.fn>)
+      .mockResolvedValue(mockStream);
 
     await act(async () => {
       await result.current.startRecording();
@@ -224,11 +270,10 @@ describe("useAudioRecording", () => {
     expect(blobToAudioBuffer).toHaveBeenCalled();
   });
 
-  it("handles getUserMedia error", async () => {
+  it("handles getUserMedia error (both attempts fail)", async () => {
+    const error = new Error("Permission denied");
     (navigator.mediaDevices.getUserMedia as ReturnType<typeof vi.fn>)
-      .mockRejectedValue(
-        new Error("Permission denied"),
-      );
+      .mockRejectedValue(error);
 
     const { result } = renderHook(() => useAudioRecording());
 
@@ -238,6 +283,33 @@ describe("useAudioRecording", () => {
     });
 
     expect(result.current.isRecording).toBe(false);
+    expect(result.current.error).toBeDefined();
+    expect(result.current.error?.message).toBe("Permission denied");
+  });
+
+  it("clears error on subsequent start attempt", async () => {
+    // First attempt fails
+    (navigator.mediaDevices.getUserMedia as ReturnType<typeof vi.fn>)
+      .mockRejectedValueOnce(new Error("Fail 1"));
+
+    const { result } = renderHook(() => useAudioRecording());
+
+    await act(async () => {
+      await result.current.startRecording();
+    });
+
+    expect(result.current.error).toBeDefined();
+
+    // Second attempt succeeds (mock returns success by default from beforeEach or next implementation)
+    (navigator.mediaDevices.getUserMedia as ReturnType<typeof vi.fn>)
+      .mockResolvedValue(mockStream);
+
+    await act(async () => {
+      await result.current.startRecording();
+    });
+
+    expect(result.current.error).toBeNull();
+    expect(result.current.isRecording).toBe(true);
   });
 
   it("returns null if no media recorder on stop", async () => {

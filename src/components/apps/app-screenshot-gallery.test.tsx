@@ -1,7 +1,8 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AppScreenshotGallery, Screenshot } from "./app-screenshot-gallery";
+import type { Screenshot } from "./app-screenshot-gallery";
+import { AppScreenshotGallery } from "./app-screenshot-gallery";
 
 vi.mock("next/image", () => ({
   default: ({ src, alt, fill, priority, sizes, className }: {
