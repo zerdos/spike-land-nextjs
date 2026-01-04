@@ -63,6 +63,8 @@ yarn dev
 | FACEBOOK_MARKETING_APP_* |  Yes  |     No     |   Yes   |    Optional    |
 | GOOGLE_ADS_*             |  Yes  |     No     |   Yes   |    Optional    |
 | UPSTASH_REDIS_REST_*     |  Yes  |     No     |   Yes   |    Optional    |
+| TWITTER_CLIENT_*         |  Yes  |     No     |   Yes   |    Optional    |
+| FACEBOOK_SOCIAL_APP_*    |  Yes  |     No     |   Yes   |    Optional    |
 
 ---
 
@@ -182,6 +184,52 @@ AUTH_FACEBOOK_SECRET=your-facebook-app-secret
 
 **NOTE:** Uses `AUTH_` prefix to distinguish from `FACEBOOK_MARKETING_APP_*`
 (Marketing API).
+
+### Social Media Posting APIs
+
+#### Twitter/X API v2 (Optional)
+
+For posting tweets and managing Twitter content.
+
+1. Go to: https://developer.twitter.com/en/portal/dashboard
+2. Sign up for developer account (Free tier available)
+3. Create a Project and App
+4. Enable OAuth 2.0:
+   - Type: Web App (Confidential client)
+   - Callback URL: `https://spike.land/api/social/twitter/callback`
+   - Local dev: `http://localhost:3000/api/social/twitter/callback`
+5. Copy Client ID and Client Secret
+
+```bash
+TWITTER_CLIENT_ID=your-client-id
+TWITTER_CLIENT_SECRET=your-client-secret
+TWITTER_CALLBACK_URL=https://spike.land/api/social/twitter/callback
+```
+
+#### Facebook/Instagram Graph API (Optional)
+
+For posting to Facebook Pages and Instagram accounts.
+
+**NOTE**: This is DIFFERENT from:
+
+- `AUTH_FACEBOOK_*` (user login)
+- `FACEBOOK_MARKETING_APP_*` (ads management)
+
+1. Go to: https://developers.facebook.com/
+2. Create a new App (Type: Business)
+3. Add products: Facebook Login, Instagram Graph API
+4. Configure OAuth redirect URI:
+   - Production: `https://spike.land/api/social/facebook/callback`
+   - Local dev: `http://localhost:3000/api/social/facebook/callback`
+5. Request permissions: `pages_manage_posts`, `pages_read_engagement`,
+   `instagram_basic`, `instagram_content_publish`
+6. Copy App ID and App Secret from Basic Settings
+
+```bash
+FACEBOOK_SOCIAL_APP_ID=your-app-id
+FACEBOOK_SOCIAL_APP_SECRET=your-app-secret
+FACEBOOK_SOCIAL_CALLBACK_URL=https://spike.land/api/social/facebook/callback
+```
 
 ### AI Services
 
