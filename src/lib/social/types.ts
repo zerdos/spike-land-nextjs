@@ -351,3 +351,112 @@ export interface DiscordMetrics {
  * Use this for runtime platform identification
  */
 export type ExtendedSocialPlatform = SocialPlatform | "YOUTUBE" | "DISCORD";
+
+// =============================================================================
+// Stream Types (Unified Feed)
+// =============================================================================
+
+/**
+ * Extended post type for the unified stream feed
+ * Includes account context and engagement capabilities
+ */
+export interface StreamPost extends SocialPost {
+  /** Reference to the SocialAccount.id in the database */
+  accountId: string;
+  /** Display name of the connected account */
+  accountName: string;
+  /** Profile picture URL of the connected account */
+  accountAvatarUrl?: string;
+  /** Whether this platform supports liking posts */
+  canLike: boolean;
+  /** Whether this platform supports replying to posts */
+  canReply: boolean;
+  /** Whether this platform supports sharing/retweeting posts */
+  canShare: boolean;
+  /** Whether the current user has liked this post (if trackable) */
+  isLiked?: boolean;
+}
+
+/**
+ * Sort options for the stream feed
+ */
+export type StreamSortBy = "publishedAt" | "likes" | "comments" | "engagementRate";
+
+/**
+ * Sort order direction
+ */
+export type StreamSortOrder = "asc" | "desc";
+
+/**
+ * Filter configuration for the stream feed
+ */
+export interface StreamFilter {
+  /** Filter by specific platforms (empty = all platforms) */
+  platforms?: SocialPlatform[];
+  /** Filter by date range */
+  dateRange?: {
+    start: Date;
+    end: Date;
+  };
+  /** Sort field */
+  sortBy: StreamSortBy;
+  /** Sort direction */
+  sortOrder: StreamSortOrder;
+  /** Search query to filter by content */
+  searchQuery?: string;
+}
+
+/**
+ * Response from the streams API
+ */
+export interface StreamsResponse {
+  /** List of posts in the feed */
+  posts: StreamPost[];
+  /** Connected accounts info for filtering UI */
+  accounts: Array<{
+    id: string;
+    platform: SocialPlatform;
+    accountName: string;
+    avatarUrl?: string;
+  }>;
+  /** Cursor for pagination */
+  nextCursor?: string;
+  /** Whether more posts are available */
+  hasMore: boolean;
+  /** Any errors that occurred while fetching (per-account) */
+  errors?: Array<{
+    accountId: string;
+    platform: SocialPlatform;
+    message: string;
+  }>;
+}
+
+/**
+ * Query parameters for the streams API
+ */
+export interface StreamsQueryParams {
+  workspaceId: string;
+  platforms?: SocialPlatform[];
+  limit?: number;
+  sortBy?: StreamSortBy;
+  sortOrder?: StreamSortOrder;
+  startDate?: string;
+  endDate?: string;
+  cursor?: string;
+  searchQuery?: string;
+}
+
+/**
+ * Platform engagement capabilities
+ */
+export const PLATFORM_CAPABILITIES: Record<
+  SocialPlatform,
+  { canLike: boolean; canReply: boolean; canShare: boolean; }
+> = {
+  TWITTER: { canLike: true, canReply: true, canShare: true },
+  FACEBOOK: { canLike: true, canReply: true, canShare: false },
+  INSTAGRAM: { canLike: true, canReply: true, canShare: false },
+  LINKEDIN: { canLike: true, canReply: true, canShare: false },
+  TIKTOK: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
+  YOUTUBE: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
+};
