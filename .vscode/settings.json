@@ -5,7 +5,8 @@
     "nvmrc",
     "peerjs",
     "turbopack",
-    "vitest"
+    "vitest",
+    "Wordmark"
   ],
   "css.lint.unknownAtRules": "ignore"
 }

@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
-import { OrbitSidebar } from "./OrbitSidebar";
 import type { ReactNode } from "react";
+import { OrbitSidebar } from "./OrbitSidebar";
 
 export default async function OrbitDashboardLayout({
   children,

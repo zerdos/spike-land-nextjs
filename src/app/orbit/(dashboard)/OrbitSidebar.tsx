@@ -1,12 +1,12 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/auth/user-avatar";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const NAV_ITEMS = [
@@ -32,7 +32,11 @@ export function OrbitSidebar({
   const NavContent = () => (
     <div className="flex h-full flex-col bg-background">
       <div className="flex h-16 items-center border-b px-6">
-        <Link href="/orbit" className="flex items-center gap-2 font-bold" onClick={() => setOpen(false)}>
+        <Link
+          href="/orbit"
+          className="flex items-center gap-2 font-bold"
+          onClick={() => setOpen(false)}
+        >
           <span>Orbit</span>
         </Link>
       </div>
