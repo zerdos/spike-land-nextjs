@@ -56,6 +56,9 @@ model User {
   // Social media tracking relations
   socialAccounts       SocialAccount[]
   socialPosts          SocialPost[]
+  // Workspace relations
+  workspaceMembers     WorkspaceMember[]
+  workspaceInvitations WorkspaceMember[]     @relation("WorkspaceInvitations")
 
   @@map("users")
 }
@@ -1652,7 +1655,7 @@ model SocialPost {
 }
 
 model SocialPostAccount {
-  id        String @id @default(cuid())
+  id        String        @id @default(cuid())
   postId    String
   post      SocialPost    @relation(fields: [postId], references: [id], onDelete: Cascade)
   accountId String
@@ -1736,4 +1739,56 @@ enum SocialPostStatus {
   SCHEDULED
   PUBLISHED
   FAILED
+}
+
+// =============================================================================
+// Workspace Models (Multi-tenant for Orbit)
+// =============================================================================
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model Workspace {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  avatarUrl   String?
+  settings    Json?
+  isPersonal  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  members WorkspaceMember[]
+
+  @@index([slug])
+  @@index([isPersonal])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole @default(MEMBER)
+  invitedAt   DateTime      @default(now())
+  joinedAt    DateTime?
+  invitedById String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invitedBy User?     @relation("WorkspaceInvitations", fields: [invitedById], references: [id], onDelete: SetNull)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([role])
+  @@map("workspace_members")
 }
