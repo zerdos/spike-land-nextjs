@@ -69,6 +69,7 @@ export class TwitterClient implements ISocialClient {
   readonly platform = "TWITTER" as const;
   private accessToken?: string;
   private twitterUserId?: string;
+  private cachedUsername?: string; // Cache username to avoid repeated API calls
 
   constructor(options?: SocialClientOptions) {
     this.accessToken = options?.accessToken;
@@ -160,8 +161,9 @@ export class TwitterClient implements ISocialClient {
       scope?: string;
     };
 
-    // Store access token for subsequent API calls
-    this.accessToken = data.access_token;
+    // NOTE: Token is not stored on the client instance here.
+    // Callers are responsible for securely handling the token (encryption, database storage)
+    // and setting it on the client via setAccessToken() or passing to constructor after encryption.
 
     return {
       accessToken: data.access_token,
@@ -327,16 +329,8 @@ export class TwitterClient implements ISocialClient {
 
     const { data } = (await response.json()) as TwitterCreateTweetResponse;
 
-    // We need the username for the URL - get it if we don't have it
-    let username = "i";
-    if (this.twitterUserId) {
-      try {
-        const userInfo = await this.getAccountInfo();
-        username = userInfo.username;
-      } catch {
-        // Fall back to generic URL format
-      }
-    }
+    // Get username for URL with caching
+    const username = await this.getUsername();
 
     return {
       platformPostId: data.id,
@@ -386,14 +380,8 @@ export class TwitterClient implements ISocialClient {
       return [];
     }
 
-    // Get username for URLs
-    let username = "i";
-    try {
-      const userInfo = await this.getAccountInfo();
-      username = userInfo.username;
-    } catch {
-      // Fall back to generic URL format
-    }
+    // Get username for URLs with caching
+    const username = await this.getUsername();
 
     return tweets.map((tweet) => ({
       id: tweet.id,
@@ -495,5 +483,24 @@ export class TwitterClient implements ISocialClient {
       throw new Error("Access token is required. Call exchangeCodeForTokens first.");
     }
     return this.accessToken;
+  }
+
+  /**
+   * Get username with caching to avoid repeated API calls
+   * Returns "i" fallback if username cannot be fetched
+   */
+  private async getUsername(): Promise<string> {
+    if (this.cachedUsername) {
+      return this.cachedUsername;
+    }
+
+    try {
+      const userInfo = await this.getAccountInfo();
+      this.cachedUsername = userInfo.username;
+      return this.cachedUsername;
+    } catch {
+      // Fall back to generic "i" format
+      return "i";
+    }
   }
 }

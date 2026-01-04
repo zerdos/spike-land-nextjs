@@ -481,6 +481,9 @@ export class FacebookClient implements ISocialClient {
     }
 
     // Get post count
+    // Note: Facebook Graph API rate limits apply. We use a limit of 100 to get a reasonable
+    // sample of recent posts for the count. For pages with many posts, this will be an estimate.
+    // Reference: https://developers.facebook.com/docs/graph-api/reference/page/feed
     const feedParams = new URLSearchParams({
       access_token: this.pageAccessToken,
       fields: "id",
