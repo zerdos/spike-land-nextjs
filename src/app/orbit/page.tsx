@@ -1,11 +1,10 @@
 "use client";
 
+import { ORBIT_STORAGE_KEY } from "@/components/orbit/constants";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-const STORAGE_KEY = "orbit-last-workspace-slug";
 
 export default function OrbitPage() {
   const router = useRouter();
@@ -13,7 +12,7 @@ export default function OrbitPage() {
 
   useEffect(() => {
     // Check localStorage for last workspace
-    const lastSlug = localStorage.getItem(STORAGE_KEY);
+    const lastSlug = localStorage.getItem(ORBIT_STORAGE_KEY);
     if (lastSlug) {
       router.replace(`/orbit/${lastSlug}/dashboard`);
       return;
@@ -25,7 +24,7 @@ export default function OrbitPage() {
       .then((data) => {
         if (data.workspaces?.length > 0) {
           const firstWorkspace = data.workspaces[0];
-          localStorage.setItem(STORAGE_KEY, firstWorkspace.slug);
+          localStorage.setItem(ORBIT_STORAGE_KEY, firstWorkspace.slug);
           router.replace(`/orbit/${firstWorkspace.slug}/dashboard`);
         } else {
           // No workspaces available, show landing

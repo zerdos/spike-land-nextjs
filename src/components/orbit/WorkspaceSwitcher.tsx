@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Check, ChevronDown, Plus } from "lucide-react";
+import { getGraphemes } from "./constants";
 import { useWorkspace } from "./WorkspaceContext";
 
 /**
@@ -65,7 +66,7 @@ export function WorkspaceSwitcher() {
             <Avatar className="h-6 w-6">
               <AvatarImage src={workspace.avatarUrl ?? undefined} alt={workspace.name} />
               <AvatarFallback className="text-xs">
-                {workspace.isPersonal ? "Me" : workspace.name.slice(0, 2).toUpperCase()}
+                {workspace.isPersonal ? "Me" : getGraphemes(workspace.name, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <span className="truncate text-sm font-medium">{workspace.name}</span>
@@ -86,7 +87,7 @@ export function WorkspaceSwitcher() {
             <Avatar className="h-6 w-6">
               <AvatarImage src={ws.avatarUrl ?? undefined} alt={ws.name} />
               <AvatarFallback className="text-xs">
-                {ws.isPersonal ? "Me" : ws.name.slice(0, 2).toUpperCase()}
+                {ws.isPersonal ? "Me" : getGraphemes(ws.name, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-1 flex-col overflow-hidden">

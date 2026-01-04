@@ -12,8 +12,7 @@ import {
   useMemo,
   useState,
 } from "react";
-
-const STORAGE_KEY = "orbit-last-workspace-slug";
+import { ORBIT_STORAGE_KEY } from "./constants";
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 
@@ -69,10 +68,10 @@ export function WorkspaceProvider({
     if (urlSlug) {
       setCurrentSlug(urlSlug);
       if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, urlSlug);
+        localStorage.setItem(ORBIT_STORAGE_KEY, urlSlug);
       }
     } else if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(ORBIT_STORAGE_KEY);
       if (stored) {
         setCurrentSlug(stored);
       }
@@ -85,7 +84,7 @@ export function WorkspaceProvider({
     if (!isLoading && firstWorkspace && !currentSlug) {
       setCurrentSlug(firstWorkspace.slug);
       if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, firstWorkspace.slug);
+        localStorage.setItem(ORBIT_STORAGE_KEY, firstWorkspace.slug);
       }
     }
   }, [isLoading, workspaces, currentSlug]);
@@ -95,7 +94,7 @@ export function WorkspaceProvider({
     if (typeof window === "undefined") return;
 
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEY && event.newValue !== null) {
+      if (event.key === ORBIT_STORAGE_KEY && event.newValue !== null) {
         setCurrentSlug(event.newValue);
       }
     };
@@ -110,7 +109,7 @@ export function WorkspaceProvider({
     (workspaceSlug: string) => {
       setCurrentSlug(workspaceSlug);
       if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, workspaceSlug);
+        localStorage.setItem(ORBIT_STORAGE_KEY, workspaceSlug);
       }
       // Navigate to workspace dashboard
       router.push(`/orbit/${workspaceSlug}/dashboard`);
@@ -124,14 +123,17 @@ export function WorkspaceProvider({
     await queryRefetch();
   }, [queryRefetch]);
 
-  const value: WorkspaceContextValue = {
-    workspace,
-    workspaces,
-    isLoading,
-    error: error as Error | null,
-    switchWorkspace,
-    refetch,
-  };
+  const value = useMemo<WorkspaceContextValue>(
+    () => ({
+      workspace,
+      workspaces,
+      isLoading,
+      error: error as Error | null,
+      switchWorkspace,
+      refetch,
+    }),
+    [workspace, workspaces, isLoading, error, switchWorkspace, refetch],
+  );
 
   return (
     <WorkspaceContext.Provider value={value}>
