@@ -1,6 +1,7 @@
 "use client";
 
 import { UserAvatar } from "@/components/auth/user-avatar";
+import { WorkspaceSwitcher } from "@/components/orbit/WorkspaceSwitcher";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -9,41 +10,40 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-const NAV_ITEMS = [
-  { href: "/orbit/dashboard", label: "Dashboard", icon: "📊" },
-  { href: "/orbit/streams", label: "Streams", icon: "📡" },
-  { href: "/orbit/inbox", label: "Inbox", icon: "📥" },
-  { href: "/orbit/calendar", label: "Calendar", icon: "📅" },
-  { href: "/orbit/content-library", label: "Content Library", icon: "📚" },
-  { href: "/orbit/ai-agents", label: "AI Agents", icon: "🤖" },
-  { href: "/orbit/settings", label: "Settings", icon: "⚙️" },
+const getNavItems = (workspaceSlug: string) => [
+  { href: `/orbit/${workspaceSlug}/dashboard`, label: "Dashboard", icon: "📊" },
+  { href: `/orbit/${workspaceSlug}/streams`, label: "Streams", icon: "📡" },
+  { href: `/orbit/${workspaceSlug}/inbox`, label: "Inbox", icon: "📥" },
+  { href: `/orbit/${workspaceSlug}/calendar`, label: "Calendar", icon: "📅" },
+  { href: `/orbit/${workspaceSlug}/content-library`, label: "Content Library", icon: "📚" },
+  { href: `/orbit/${workspaceSlug}/ai-agents`, label: "AI Agents", icon: "🤖" },
+  { href: `/orbit/${workspaceSlug}/settings`, label: "Settings", icon: "⚙️" },
 ];
+
+interface OrbitSidebarProps {
+  userEmail?: string | null;
+  userName?: string | null;
+  workspaceSlug: string;
+}
 
 export function OrbitSidebar({
   userEmail,
   userName,
-}: {
-  userEmail?: string | null;
-  userName?: string | null;
-}) {
+  workspaceSlug,
+}: OrbitSidebarProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const navItems = getNavItems(workspaceSlug);
 
   const NavContent = () => (
     <div className="flex h-full flex-col bg-background">
-      <div className="flex h-16 items-center border-b px-6">
-        <Link
-          href="/orbit"
-          className="flex items-center gap-2 font-bold"
-          onClick={() => setOpen(false)}
-        >
-          <span>Orbit</span>
-        </Link>
+      <div className="border-b px-3 py-3">
+        <WorkspaceSwitcher />
       </div>
 
       <div className="flex-1 overflow-y-auto py-4">
         <nav className="space-y-1 px-3">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
