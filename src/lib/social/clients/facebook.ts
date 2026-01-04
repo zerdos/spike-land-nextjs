@@ -18,7 +18,11 @@ import type {
   SocialPost,
 } from "../types";
 
-const GRAPH_API_VERSION = "v21.0";
+// Facebook Graph API version
+// Note: Facebook deprecates API versions ~2 years after release
+// v21.0 was released in October 2024, expected deprecation ~October 2026
+// Monitor: https://developers.facebook.com/docs/graph-api/changelog
+const GRAPH_API_VERSION = process.env.FACEBOOK_GRAPH_API_VERSION || "v21.0";
 const GRAPH_API_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
 
 // Scopes for Facebook OAuth
@@ -477,6 +481,9 @@ export class FacebookClient implements ISocialClient {
     }
 
     // Get post count
+    // Note: Facebook Graph API rate limits apply. We use a limit of 100 to get a reasonable
+    // sample of recent posts for the count. For pages with many posts, this will be an estimate.
+    // Reference: https://developers.facebook.com/docs/graph-api/reference/page/feed
     const feedParams = new URLSearchParams({
       access_token: this.pageAccessToken,
       fields: "id",

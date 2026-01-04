@@ -32,6 +32,20 @@ interface TwitterApiError {
   errors?: Array<{ message: string; code?: number; }>;
 }
 
+/**
+ * Custom error class for Twitter API errors that includes HTTP status
+ */
+export class TwitterHttpError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly statusText: string,
+  ) {
+    super(message);
+    this.name = "TwitterHttpError";
+  }
+}
+
 interface TwitterUserResponse {
   data: TwitterUser;
 }
@@ -52,9 +66,10 @@ interface TwitterCreateTweetResponse {
 }
 
 export class TwitterClient implements ISocialClient {
-  platform = "TWITTER" as const;
+  readonly platform = "TWITTER" as const;
   private accessToken?: string;
   private twitterUserId?: string;
+  private cachedUsername?: string; // Cache username to avoid repeated API calls
 
   constructor(options?: SocialClientOptions) {
     this.accessToken = options?.accessToken;
@@ -129,10 +144,12 @@ export class TwitterClient implements ISocialClient {
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
-      throw new Error(
+      throw new TwitterHttpError(
         `Twitter token exchange failed: ${
           errorData.error_description || errorData.error || response.statusText
         }`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -144,8 +161,9 @@ export class TwitterClient implements ISocialClient {
       scope?: string;
     };
 
-    // Store access token for subsequent API calls
-    this.accessToken = data.access_token;
+    // NOTE: Token is not stored on the client instance here.
+    // Callers are responsible for securely handling the token (encryption, database storage)
+    // and setting it on the client via setAccessToken() or passing to constructor after encryption.
 
     return {
       accessToken: data.access_token,
@@ -187,10 +205,12 @@ export class TwitterClient implements ISocialClient {
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
-      throw new Error(
+      throw new TwitterHttpError(
         `Twitter token refresh failed: ${
           errorData.error_description || errorData.error || response.statusText
         }`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -230,10 +250,12 @@ export class TwitterClient implements ISocialClient {
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
-      throw new Error(
+      throw new TwitterHttpError(
         `Failed to get Twitter user info: ${
           errorData.detail || errorData.title || response.statusText
         }`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -298,21 +320,17 @@ export class TwitterClient implements ISocialClient {
         errorData.title ||
         errorData.errors?.[0]?.message ||
         response.statusText;
-      throw new Error(`Failed to create tweet: ${errorMessage}`);
+      throw new TwitterHttpError(
+        `Failed to create tweet: ${errorMessage}`,
+        response.status,
+        response.statusText,
+      );
     }
 
     const { data } = (await response.json()) as TwitterCreateTweetResponse;
 
-    // We need the username for the URL - get it if we don't have it
-    let username = "i";
-    if (this.twitterUserId) {
-      try {
-        const userInfo = await this.getAccountInfo();
-        username = userInfo.username;
-      } catch {
-        // Fall back to generic URL format
-      }
-    }
+    // Get username for URL with caching
+    const username = await this.getUsername();
 
     return {
       platformPostId: data.id,
@@ -349,8 +367,10 @@ export class TwitterClient implements ISocialClient {
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
-      throw new Error(
+      throw new TwitterHttpError(
         `Failed to get tweets: ${errorData.detail || errorData.title || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -360,14 +380,8 @@ export class TwitterClient implements ISocialClient {
       return [];
     }
 
-    // Get username for URLs
-    let username = "i";
-    try {
-      const userInfo = await this.getAccountInfo();
-      username = userInfo.username;
-    } catch {
-      // Fall back to generic URL format
-    }
+    // Get username for URLs with caching
+    const username = await this.getUsername();
 
     return tweets.map((tweet) => ({
       id: tweet.id,
@@ -403,8 +417,10 @@ export class TwitterClient implements ISocialClient {
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
-      throw new Error(
+      throw new TwitterHttpError(
         `Failed to delete tweet: ${errorData.detail || errorData.title || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
   }
@@ -427,10 +443,12 @@ export class TwitterClient implements ISocialClient {
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
-      throw new Error(
+      throw new TwitterHttpError(
         `Failed to get Twitter metrics: ${
           errorData.detail || errorData.title || response.statusText
         }`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -465,5 +483,24 @@ export class TwitterClient implements ISocialClient {
       throw new Error("Access token is required. Call exchangeCodeForTokens first.");
     }
     return this.accessToken;
+  }
+
+  /**
+   * Get username with caching to avoid repeated API calls
+   * Returns "i" fallback if username cannot be fetched
+   */
+  private async getUsername(): Promise<string> {
+    if (this.cachedUsername) {
+      return this.cachedUsername;
+    }
+
+    try {
+      const userInfo = await this.getAccountInfo();
+      this.cachedUsername = userInfo.username;
+      return this.cachedUsername;
+    } catch {
+      // Fall back to generic "i" format
+      return "i";
+    }
   }
 }

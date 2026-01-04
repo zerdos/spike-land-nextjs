@@ -8,6 +8,7 @@
 import { auth } from "@/auth";
 import { generatePKCE } from "@/lib/social";
 import { TwitterClient } from "@/lib/social/clients/twitter";
+import { getOAuthRedirectUri } from "@/lib/social/utils";
 import { tryCatch } from "@/lib/try-catch";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
@@ -34,15 +35,11 @@ export async function GET(): Promise<NextResponse> {
     }),
   ).toString("base64url");
 
-  // Determine redirect URI based on environment
-  const redirectUri = process.env.TWITTER_CALLBACK_URL || (() => {
-    const baseUrl = process.env.NEXTAUTH_URL ||
-      process.env.VERCEL_URL ||
-      "http://localhost:3000";
-    return `${
-      baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
-    }/api/social/twitter/callback`;
-  })();
+  // Get redirect URI using shared utility
+  const redirectUri = getOAuthRedirectUri(
+    "/api/social/twitter/callback",
+    "TWITTER_CALLBACK_URL",
+  );
 
   // Create Twitter client and get auth URL
   const client = new TwitterClient();

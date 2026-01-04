@@ -157,9 +157,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   if (pages.length === 0) {
+    // Log for debugging why no pages were returned
+    console.warn("No Facebook Pages found for user", {
+      userId: session.user.id,
+      hasLongLivedToken: !!longLivedToken,
+    });
+
     const response = NextResponse.redirect(
       new URL(
-        "/admin/social-media/accounts?error=No Facebook Pages found. Make sure you have access to at least one Facebook Page.",
+        "/admin/social-media/accounts?error=" + encodeURIComponent(
+          "No Facebook Pages found. Please ensure you: " +
+          "1) Have access to at least one Facebook Page, " +
+          "2) Granted page permissions during login, and " +
+          "3) The page has proper admin access.",
+        ),
         request.url,
       ),
     );
@@ -312,12 +323,35 @@ async function getInstagramAccountInfo(
     fields: "username,profile_picture_url",
   });
 
-  const response = await fetch(
-    `https://graph.facebook.com/v21.0/${igUserId}?${params.toString()}`,
-    { method: "GET" },
+  const { data: response, error } = await tryCatch(
+    fetch(
+      `https://graph.facebook.com/v21.0/${igUserId}?${params.toString()}`,
+      { method: "GET" },
+    ),
   );
 
+  if (error) {
+    console.error("Failed to fetch Instagram account info", {
+      igUserId,
+      error,
+    });
+    return null;
+  }
+
   if (!response.ok) {
+    let errorBody: string | undefined;
+    try {
+      errorBody = await response.text();
+    } catch {
+      // ignore body parsing errors
+    }
+
+    console.error("Non-OK response from Instagram account info endpoint", {
+      igUserId,
+      status: response.status,
+      statusText: response.statusText,
+      body: errorBody,
+    });
     return null;
   }
 
