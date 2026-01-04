@@ -63,7 +63,7 @@ describe("PressPage", () => {
 
   it("renders correct social links", () => {
     render(<PressPage />);
-    const twitterLink = screen.getByRole("link", { name: /X\/Twitter/i });
+    const twitterLink = screen.getByRole("link", { name: /X \(Twitter\)/i });
     expect(twitterLink.getAttribute("href")).toBe("https://x.com/ai_spike_land");
   });
 });
