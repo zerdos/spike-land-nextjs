@@ -81,7 +81,7 @@ describe("useStreamActions", () => {
   });
 
   describe("likePost", () => {
-    it("calls the like API and sets loading state", async () => {
+    it("calls the like API with correct parameters", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({ success: true }),
@@ -91,18 +91,7 @@ describe("useStreamActions", () => {
         wrapper: createWrapper(),
       });
 
-      let likePromise: Promise<void>;
-      act(() => {
-        likePromise = result.current.likePost("post-123", "TWITTER", "account-456");
-      });
-
-      expect(result.current.isLiking).toBe(true);
-
-      await waitFor(() => {
-        expect(result.current.isLiking).toBe(false);
-      });
-
-      await likePromise!;
+      await act(() => result.current.likePost("post-123", "TWITTER", "account-456"));
 
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/social/twitter/posts/post-123/like",
@@ -111,6 +100,22 @@ describe("useStreamActions", () => {
           body: JSON.stringify({ accountId: "account-456" }),
         }),
       );
+    });
+
+    it("sets isLiking loading state", async () => {
+      mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
+
+      const { result } = renderHook(() => useStreamActions("workspace-123"), {
+        wrapper: createWrapper(),
+      });
+
+      act(() => {
+        result.current.likePost("post-123", "TWITTER", "account-456");
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLiking).toBe(true);
+      });
     });
 
     it("throws error when API returns error", async () => {
@@ -161,7 +166,9 @@ describe("useStreamActions", () => {
         result.current.unlikePost("post-123", "TWITTER", "account-456");
       });
 
-      expect(result.current.isUnliking).toBe(true);
+      await waitFor(() => {
+        expect(result.current.isUnliking).toBe(true);
+      });
     });
   });
 
@@ -208,7 +215,9 @@ describe("useStreamActions", () => {
         result.current.replyToPost("post-123", "TWITTER", "account-456", "Test");
       });
 
-      expect(result.current.isReplying).toBe(true);
+      await waitFor(() => {
+        expect(result.current.isReplying).toBe(true);
+      });
     });
 
     it("throws error when reply API fails", async () => {

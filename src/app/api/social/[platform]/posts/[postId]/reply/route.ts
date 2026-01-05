@@ -208,6 +208,9 @@ export async function POST(
   const { account } = accountResult;
   const accessToken = safeDecryptToken(account.accessTokenEncrypted);
 
+  // Extract metadata fields for platform-specific options
+  const metadata = account.metadata as { organizationUrn?: string; } | null;
+
   // Reply to the post
   const { data: result, error: replyError } = await tryCatch(
     replyToPostByPlatform(
@@ -216,9 +219,12 @@ export async function POST(
       content,
       accessToken,
       account.accountId,
-      account.pageId,
-      account.igUserId,
-      account.organizationUrn,
+      // For Facebook, pageId is the same as accountId
+      platform === "FACEBOOK" ? account.accountId : null,
+      // For Instagram, igUserId is the same as accountId
+      platform === "INSTAGRAM" ? account.accountId : null,
+      // For LinkedIn, organizationUrn comes from metadata
+      metadata?.organizationUrn ?? null,
     ),
   );
 
