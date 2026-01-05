@@ -9727,7 +9727,7 @@ __metadata:
     react-native-svg: "npm:15.12.1"
     react-native-web: "npm:0.21.2"
     react-native-worklets: "npm:0.5.1"
-    react-test-renderer: "npm:19.1.0"
+    react-test-renderer: "npm:19.2.3"
     tamagui: "npm:1.142.0"
     typescript: "npm:5.9.3"
     zod: "npm:4.2.1"
@@ -27275,7 +27275,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:19.2.3, react-is@npm:^19.1.0, react-is@npm:^19.2.0":
+"react-is@npm:19.2.3, react-is@npm:^19.1.0, react-is@npm:^19.2.0, react-is@npm:^19.2.3":
   version: 19.2.3
   resolution: "react-is@npm:19.2.3"
   checksum: 10c9/547ac397308204742447b5e4cf556cf09aa97f4cc1c95c4a28e4b2e73a7efab03e59d7b89b4a01f67bf9bf0ca87348a7f0e88bc87c0af6be458aaac1dec5e132
@@ -27688,6 +27688,18 @@ __metadata:
   peerDependencies:
     react: ^19.1.0
   checksum: 10c9/73ae0ea779bacd0ff084dd3644b763a4431d68adf9c6acffdaa3d0810aab5322f24c95c60259c23b77f38b5f36d9d614ffaa46d91a33840536f2d4b7188dcc89
+  languageName: node
+  linkType: hard
+
+"react-test-renderer@npm:19.2.3":
+  version: 19.2.3
+  resolution: "react-test-renderer@npm:19.2.3"
+  dependencies:
+    react-is: "npm:^19.2.3"
+    scheduler: "npm:^0.27.0"
+  peerDependencies:
+    react: ^19.2.3
+  checksum: 10c9/a9de4d869b1555a54c02e8701be262dfa669eb366ff5cdb43ba49fa516beae439cbec2c3e5606c909e773c232328993e231b393af5eef25e87a845d4c7fb00dc
   languageName: node
   linkType: hard
 
