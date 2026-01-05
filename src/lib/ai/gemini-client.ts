@@ -1004,7 +1004,7 @@ Be concise, helpful, and provide practical solutions.`;
 
   const { data: response, error } = await tryCatch(
     ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-3-flash-preview",
       contents,
       config: {
         systemInstruction: systemPrompt,
@@ -1060,7 +1060,7 @@ export async function generateStructuredResponse<T>(
 
   const { data: response, error } = await tryCatch(
     ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-3-flash-preview",
       contents: [
         {
           role: "user",
