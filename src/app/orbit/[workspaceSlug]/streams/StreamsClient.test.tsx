@@ -34,6 +34,41 @@ vi.mock("@/components/orbit/WorkspaceContext", () => ({
   })),
 }));
 
+// Mock useStreamActions hook
+const mockLikePost = vi.fn();
+const mockUnlikePost = vi.fn();
+const mockReplyToPost = vi.fn();
+
+vi.mock("@/hooks/useStreamActions", () => ({
+  useStreamActions: () => ({
+    likePost: mockLikePost,
+    unlikePost: mockUnlikePost,
+    replyToPost: mockReplyToPost,
+  }),
+}));
+
+// Mock ReplyDialog component
+vi.mock("@/components/streams/ReplyDialog", () => ({
+  ReplyDialog: (
+    { open, onOpenChange, post }: {
+      open: boolean;
+      onOpenChange: (open: boolean) => void;
+      post: { id: string; };
+    },
+  ) => (
+    open
+      ? (
+        <div data-testid="reply-dialog">
+          <span data-testid="reply-dialog-post-id">{post.id}</span>
+          <button onClick={() => onOpenChange(false)} data-testid="close-reply-dialog">
+            Close
+          </button>
+        </div>
+      )
+      : null
+  ),
+}));
+
 // Mock fetch globally
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -430,8 +465,14 @@ describe("StreamsClient", () => {
   });
 
   describe("Engagement Handlers", () => {
-    it("should log when like is clicked", async () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    beforeEach(() => {
+      mockLikePost.mockReset();
+      mockUnlikePost.mockReset();
+      mockReplyToPost.mockReset();
+    });
+
+    it("should call likePost when like is clicked", async () => {
+      mockLikePost.mockResolvedValueOnce(undefined);
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -458,13 +499,12 @@ describe("StreamsClient", () => {
       const likeButtons = screen.getAllByTestId("like-button");
       fireEvent.click(likeButtons[0]!);
 
-      expect(consoleSpy).toHaveBeenCalledWith("Like post:", "post-1");
-      consoleSpy.mockRestore();
+      await waitFor(() => {
+        expect(mockLikePost).toHaveBeenCalledWith("twitter-1", "TWITTER", "acc-1");
+      });
     });
 
-    it("should log when reply is clicked", async () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
+    it("should open reply dialog when reply is clicked", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
@@ -491,12 +531,22 @@ describe("StreamsClient", () => {
       const replyButtons = screen.getAllByTestId("reply-button");
       fireEvent.click(replyButtons[0]!);
 
-      expect(consoleSpy).toHaveBeenCalledWith("Reply to post:", "post-1");
-      consoleSpy.mockRestore();
+      // Reply dialog should be opened
+      await waitFor(() => {
+        expect(screen.getByTestId("reply-dialog")).toBeInTheDocument();
+      });
+      expect(screen.getByTestId("reply-dialog-post-id")).toHaveTextContent("post-1");
     });
 
-    it("should log when share is clicked", async () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    it("should trigger share when share is clicked", async () => {
+      // Mock clipboard API
+      const mockWriteText = vi.fn().mockResolvedValue(undefined);
+      Object.assign(navigator, {
+        clipboard: {
+          writeText: mockWriteText,
+        },
+        share: undefined, // Disable Web Share API to test clipboard fallback
+      });
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -523,8 +573,10 @@ describe("StreamsClient", () => {
       const shareButtons = screen.getAllByTestId("share-button");
       fireEvent.click(shareButtons[0]!);
 
-      expect(consoleSpy).toHaveBeenCalledWith("Share post:", "post-1");
-      consoleSpy.mockRestore();
+      // Should copy URL to clipboard since Web Share API is not available
+      await waitFor(() => {
+        expect(mockWriteText).toHaveBeenCalledWith("https://twitter.com/user/status/1");
+      });
     });
   });
 
