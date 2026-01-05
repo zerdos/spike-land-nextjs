@@ -42,6 +42,12 @@ export class CustomWorld extends World {
           "--disable-setuid-sandbox",
           "--disable-dev-shm-usage", // Prevents crashes in Docker with limited /dev/shm
           "--disable-gpu",
+          "--disable-software-rasterizer",
+          "--disable-extensions",
+          "--disable-background-networking",
+          "--disable-default-apps",
+          "--no-first-run",
+          "--disable-features=TranslateUI",
         ]
         : [],
     });
