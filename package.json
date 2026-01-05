@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
+    "dev:silent": "next dev --turbo > /dev/null 2> /dev/null",
     "dev:e2e": "E2E_BYPASS_AUTH=true next dev",
     "build": "yarn silent:install && next build",
     "deploy:dev": "NODE_ENV=development yarn build:fe && cd packages/testing.spike.land && yarn w:deploy:dev",
@@ -11,7 +12,7 @@
     "start": "next start",
     "start:standalone": "cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && node -r dotenv/config .next/standalone/server.js dotenv_config_path=.env.local",
     "start:server:and:test:ci": "start-server-and-test dev:e2e http://localhost:3000 test:e2e:shard",
-    "start:server:and:test:pr": "start-server-and-test dev http://localhost:3000 test:e2e:shard",
+    "start:server:and:test:pr": "start-server-and-test dev:silent http://localhost:3000 test:e2e:shard",
     "lint": "eslint",
     "test": "vitest",
     "test:ui": "vitest --ui",

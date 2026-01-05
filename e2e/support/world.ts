@@ -32,8 +32,18 @@ export class CustomWorld extends World {
   }
 
   async init() {
+    // Docker/CI environment needs additional Chromium flags for stability
+    const isCI = process.env.CI === "true";
     this.browser = await chromium.launch({
-      headless: process.env.CI === "true",
+      headless: isCI,
+      args: isCI
+        ? [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage", // Prevents crashes in Docker with limited /dev/shm
+          "--disable-gpu",
+        ]
+        : [],
     });
 
     // Prepare extra HTTP headers for E2E test authentication bypass
