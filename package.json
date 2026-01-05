@@ -136,7 +136,7 @@
     "workflow": "4.0.1-beta.41",
     "y-indexeddb": "9.0.12",
     "yjs": "13.6.29",
-    "zod": "4.2.1"
+    "zod": "4.3.5"
   },
   "devDependencies": {
     "@cucumber/cucumber": "12.5.0",
