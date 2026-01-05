@@ -59,6 +59,9 @@ model User {
   // Workspace relations
   workspaceMembers     WorkspaceMember[]
   workspaceInvitations WorkspaceMember[]     @relation("WorkspaceInvitations")
+  // Brand Brain relations
+  createdBrandProfiles BrandProfile[]        @relation("BrandProfileCreator")
+  updatedBrandProfiles BrandProfile[]        @relation("BrandProfileUpdater")
 
   @@map("users")
 }
@@ -1752,6 +1755,26 @@ enum WorkspaceRole {
   VIEWER
 }
 
+// Brand Brain Enums
+enum GuardrailType {
+  PROHIBITED_TOPIC
+  REQUIRED_DISCLOSURE
+  CONTENT_WARNING
+}
+
+enum GuardrailSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum VocabularyType {
+  PREFERRED
+  BANNED
+  REPLACEMENT
+}
+
 model Workspace {
   id          String    @id @default(cuid())
   name        String
@@ -1764,7 +1787,8 @@ model Workspace {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
-  members WorkspaceMember[]
+  members      WorkspaceMember[]
+  brandProfile BrandProfile?
 
   @@index([slug])
   @@index([isPersonal])
@@ -1791,4 +1815,75 @@ model WorkspaceMember {
   @@index([userId])
   @@index([role])
   @@map("workspace_members")
+}
+
+// =============================================================================
+// Brand Brain Models (AI Content Guardian)
+// =============================================================================
+
+model BrandProfile {
+  id              String   @id @default(cuid())
+  workspaceId     String   @unique
+  name            String
+  mission         String?  @db.Text
+  values          Json?
+  toneDescriptors Json?
+  version         Int      @default(1)
+  isActive        Boolean  @default(true)
+  createdById     String
+  updatedById     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  workspace  Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy  User              @relation("BrandProfileCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy  User?             @relation("BrandProfileUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  guardrails BrandGuardrail[]
+  vocabulary BrandVocabulary[]
+
+  @@index([workspaceId])
+  @@index([isActive])
+  @@index([createdById])
+  @@map("brand_profiles")
+}
+
+model BrandGuardrail {
+  id             String            @id @default(cuid())
+  brandProfileId String
+  type           GuardrailType
+  name           String
+  description    String?           @db.Text
+  severity       GuardrailSeverity @default(MEDIUM)
+  ruleConfig     Json?
+  isActive       Boolean           @default(true)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  brandProfile BrandProfile @relation(fields: [brandProfileId], references: [id], onDelete: Cascade)
+
+  @@index([brandProfileId])
+  @@index([brandProfileId, type])
+  @@index([brandProfileId, isActive])
+  @@index([type, severity])
+  @@map("brand_guardrails")
+}
+
+model BrandVocabulary {
+  id             String         @id @default(cuid())
+  brandProfileId String
+  type           VocabularyType
+  term           String
+  replacement    String?
+  context        String?
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  brandProfile BrandProfile @relation(fields: [brandProfileId], references: [id], onDelete: Cascade)
+
+  @@index([brandProfileId])
+  @@index([brandProfileId, type])
+  @@index([brandProfileId, isActive])
+  @@index([term])
+  @@map("brand_vocabulary")
 }
