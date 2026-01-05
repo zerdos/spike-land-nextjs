@@ -1,6 +1,21 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// Use vi.hoisted to declare mocks that need to be hoisted
+const { MockTwitterHttpError } = vi.hoisted(() => {
+  class MockTwitterHttpError extends Error {
+    status: number;
+    statusText: string;
+    constructor(message: string, status: number, statusText: string) {
+      super(message);
+      this.status = status;
+      this.statusText = statusText;
+      this.name = "TwitterHttpError";
+    }
+  }
+  return { MockTwitterHttpError };
+});
+
 // Mock modules before imports
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -20,19 +35,8 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/social/clients/twitter", () => ({
-  TwitterClient: vi.fn().mockImplementation(() => ({
-    likePost: vi.fn(),
-    unlikePost: vi.fn(),
-  })),
-  TwitterHttpError: class TwitterHttpError extends Error {
-    constructor(
-      message: string,
-      public status: number,
-      public statusText: string,
-    ) {
-      super(message);
-    }
-  },
+  TwitterClient: vi.fn(),
+  TwitterHttpError: MockTwitterHttpError,
 }));
 
 vi.mock("@/lib/social/clients/facebook", () => ({
@@ -59,16 +63,17 @@ vi.mock("@/lib/social/clients/linkedin", () => ({
 // Import after mocks
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { TwitterClient, TwitterHttpError } from "@/lib/social/clients/twitter";
+import { TwitterClient } from "@/lib/social/clients/twitter";
 import { DELETE, POST } from "./route";
 
 const mockAuth = auth as ReturnType<typeof vi.fn>;
-const mockPrisma = prisma as {
+const mockPrisma = prisma as unknown as {
   socialAccount: {
     findFirst: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
   };
 };
+const MockTwitterClient = TwitterClient as ReturnType<typeof vi.fn>;
 
 describe("Like API Route", () => {
   beforeEach(() => {
@@ -173,9 +178,9 @@ describe("Like API Route", () => {
       });
 
       const mockLikePost = vi.fn().mockResolvedValue(undefined);
-      (TwitterClient as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-        likePost: mockLikePost,
-      }));
+      MockTwitterClient.mockImplementation(function() {
+        return { likePost: mockLikePost };
+      });
 
       const response = await POST(
         createRequest({ accountId: "acc-123" }),
@@ -198,11 +203,11 @@ describe("Like API Route", () => {
       });
 
       const mockLikePost = vi.fn().mockRejectedValue(
-        new TwitterHttpError("Unauthorized", 401, "Unauthorized"),
+        new MockTwitterHttpError("Unauthorized", 401, "Unauthorized"),
       );
-      (TwitterClient as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-        likePost: mockLikePost,
-      }));
+      MockTwitterClient.mockImplementation(function() {
+        return { likePost: mockLikePost };
+      });
 
       const response = await POST(
         createRequest({ accountId: "acc-123" }),
@@ -226,9 +231,9 @@ describe("Like API Route", () => {
       });
 
       const mockLikePost = vi.fn().mockRejectedValue(new Error("API Error"));
-      (TwitterClient as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-        likePost: mockLikePost,
-      }));
+      MockTwitterClient.mockImplementation(function() {
+        return { likePost: mockLikePost };
+      });
 
       const response = await POST(
         createRequest({ accountId: "acc-123" }),
@@ -288,9 +293,9 @@ describe("Like API Route", () => {
       });
 
       const mockUnlikePost = vi.fn().mockResolvedValue(undefined);
-      (TwitterClient as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-        unlikePost: mockUnlikePost,
-      }));
+      MockTwitterClient.mockImplementation(function() {
+        return { unlikePost: mockUnlikePost };
+      });
 
       const response = await DELETE(
         createRequest("acc-123"),

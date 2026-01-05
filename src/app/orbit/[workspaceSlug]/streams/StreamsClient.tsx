@@ -42,10 +42,12 @@ export function StreamsClient() {
   const [replyingPostId, setReplyingPostId] = useState<string | null>(null);
 
   // State for engagement messages
-  const [engagementMessage, setEngagementMessage] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
+  const [engagementMessage, setEngagementMessage] = useState<
+    {
+      type: "success" | "error";
+      message: string;
+    } | null
+  >(null);
 
   const workspaceId = workspace?.id ?? "";
 
@@ -202,6 +204,21 @@ export function StreamsClient() {
   );
 
   /**
+   * Copy URL to clipboard helper
+   */
+  const copyToClipboard = useCallback(
+    async (url: string) => {
+      try {
+        await navigator.clipboard.writeText(url);
+        showMessage("success", "Link copied to clipboard");
+      } catch {
+        showMessage("error", "Failed to copy link");
+      }
+    },
+    [showMessage],
+  );
+
+  /**
    * Handle share action on a post
    */
   const handleShare = useCallback(
@@ -232,22 +249,7 @@ export function StreamsClient() {
         await copyToClipboard(post.url);
       }
     },
-    [posts, showMessage],
-  );
-
-  /**
-   * Copy URL to clipboard helper
-   */
-  const copyToClipboard = useCallback(
-    async (url: string) => {
-      try {
-        await navigator.clipboard.writeText(url);
-        showMessage("success", "Link copied to clipboard");
-      } catch {
-        showMessage("error", "Failed to copy link");
-      }
-    },
-    [showMessage],
+    [posts, showMessage, copyToClipboard],
   );
 
   /**
@@ -301,9 +303,7 @@ export function StreamsClient() {
       {/* Engagement Message */}
       {engagementMessage && (
         <Alert
-          variant={
-            engagementMessage.type === "error" ? "destructive" : "default"
-          }
+          variant={engagementMessage.type === "error" ? "destructive" : "default"}
           data-testid="engagement-message"
         >
           <AlertDescription>{engagementMessage.message}</AlertDescription>
