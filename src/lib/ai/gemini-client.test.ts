@@ -1899,7 +1899,7 @@ describe("gemini-client", () => {
       expect(response).toBe("Hello! How can I help you today?");
       expect(mockGenerateContent).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: "gemini-2.0-flash",
+          model: "gemini-3-flash-preview",
           contents: [{ role: "user", parts: [{ text: "Hi there!" }] }],
         }),
       );
