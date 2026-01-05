@@ -61,7 +61,7 @@ COPY --link --from=dep-context /app /app
 
 RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
     --mount=type=cache,id=${CACHE_NS}-nm-${TARGETARCH},target=/tmp/nm-cache,sharing=locked \
-    yarn install --immutable 
+    yarn install --immutable
 
 # ============================================================================
 # STAGE 3: Source Code
@@ -107,7 +107,7 @@ RUN --mount=type=cache,id=${CACHE_NS}-next-cache-${TARGETARCH},target=/app/.next
 # STAGE 6: Type Check
 # ============================================================================
 FROM source AS tsc
-RUN yarn tsc --noEmit
+RUN yarn db:generate && yarn tsc --noEmit
 
 # ============================================================================
 # STAGE 7: Test Context
