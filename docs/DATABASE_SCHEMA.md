@@ -3095,20 +3095,23 @@ generated content aligns with brand identity, guidelines, and vocabulary.
 
 Core brand identity configuration linked 1:1 to a Workspace.
 
-| Column            | Type      | Description                                             |
-| ----------------- | --------- | ------------------------------------------------------- |
-| `id`              | TEXT (PK) | CUID primary key                                        |
-| `workspaceId`     | TEXT (UK) | Unique foreign key to workspaces                        |
-| `name`            | TEXT      | Brand display name                                      |
-| `mission`         | TEXT      | Brand mission statement                                 |
-| `values`          | JSONB     | Array of brand values e.g. `["innovation", "trust"]`    |
-| `toneDescriptors` | JSONB     | Tone attributes e.g. `{"formal": 0.7, "friendly": 0.8}` |
-| `version`         | INTEGER   | Schema version for tracking changes (default: 1)        |
-| `isActive`        | BOOLEAN   | Enable/disable the profile (default: true)              |
-| `createdById`     | TEXT (FK) | User who created the profile                            |
-| `updatedById`     | TEXT (FK) | User who last updated the profile                       |
-| `createdAt`       | TIMESTAMP | Creation timestamp                                      |
-| `updatedAt`       | TIMESTAMP | Last update timestamp                                   |
+| Column            | Type      | Description                                                           |
+| ----------------- | --------- | --------------------------------------------------------------------- |
+| `id`              | TEXT (PK) | CUID primary key                                                      |
+| `workspaceId`     | TEXT (UK) | Unique foreign key to workspaces                                      |
+| `name`            | TEXT      | Brand display name                                                    |
+| `mission`         | TEXT      | Brand mission statement                                               |
+| `values`          | JSONB     | Array of brand values e.g. `["innovation", "trust"]`                  |
+| `toneDescriptors` | JSONB     | Voice slider values e.g. `{"formalCasual": 50, "seriousPlayful": 30}` |
+| `logoUrl`         | TEXT      | URL to brand logo (R2 storage)                                        |
+| `logoR2Key`       | TEXT      | R2 storage key for logo deletion                                      |
+| `colorPalette`    | JSONB     | Array of brand colors e.g. `[{"name": "Primary", "hex": "#FF5733"}]`  |
+| `version`         | INTEGER   | Schema version for tracking changes (default: 1)                      |
+| `isActive`        | BOOLEAN   | Enable/disable the profile (default: true)                            |
+| `createdById`     | TEXT (FK) | User who created the profile                                          |
+| `updatedById`     | TEXT (FK) | User who last updated the profile                                     |
+| `createdAt`       | TIMESTAMP | Creation timestamp                                                    |
+| `updatedAt`       | TIMESTAMP | Last update timestamp                                                 |
 
 **Relationships:**
 

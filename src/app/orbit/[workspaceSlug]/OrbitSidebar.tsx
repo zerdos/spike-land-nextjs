@@ -16,6 +16,7 @@ const getNavItems = (workspaceSlug: string) => [
   { href: `/orbit/${workspaceSlug}/inbox`, label: "Inbox", icon: "📥" },
   { href: `/orbit/${workspaceSlug}/calendar`, label: "Calendar", icon: "📅" },
   { href: `/orbit/${workspaceSlug}/content-library`, label: "Content Library", icon: "📚" },
+  { href: `/orbit/${workspaceSlug}/brand-brain`, label: "Brand Brain", icon: "🧠" },
   { href: `/orbit/${workspaceSlug}/ai-agents`, label: "AI Agents", icon: "🤖" },
   { href: `/orbit/${workspaceSlug}/settings`, label: "Settings", icon: "⚙️" },
 ];

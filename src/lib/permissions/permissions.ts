@@ -43,7 +43,11 @@ export type WorkspaceAction =
   // Inbox
   | "inbox:view"
   | "inbox:respond"
-  | "inbox:manage";
+  | "inbox:manage"
+  // Brand Brain
+  | "brand:read"
+  | "brand:write"
+  | "brand:delete";
 
 /**
  * Role hierarchy - higher index = more permissions
@@ -98,6 +102,11 @@ const PERMISSION_MATRIX: Record<WorkspaceAction, WorkspaceRole> = {
   "inbox:view": "VIEWER",
   "inbox:respond": "MEMBER",
   "inbox:manage": "ADMIN",
+
+  // Brand Brain
+  "brand:read": "MEMBER",
+  "brand:write": "ADMIN",
+  "brand:delete": "ADMIN",
 };
 
 /**

@@ -1828,6 +1828,9 @@ model BrandProfile {
   mission         String?  @db.Text
   values          Json?
   toneDescriptors Json?
+  logoUrl         String?
+  logoR2Key       String?
+  colorPalette    Json?
   version         Int      @default(1)
   isActive        Boolean  @default(true)
   createdById     String

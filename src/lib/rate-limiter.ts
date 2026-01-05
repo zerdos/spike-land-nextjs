@@ -377,4 +377,9 @@ export const rateLimitConfigs = {
     maxRequests: 20,
     windowMs: 60 * 1000, // 1 minute
   },
+  /** Brand content scoring: 20 requests per minute per user */
+  brandScoring: {
+    maxRequests: 20,
+    windowMs: 60 * 1000, // 1 minute
+  },
 } as const;

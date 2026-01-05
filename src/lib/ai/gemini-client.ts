@@ -1032,6 +1032,93 @@ Be concise, helpful, and provide practical solutions.`;
   return text;
 }
 
+// Structured response types and functions
+
+export interface GenerateStructuredResponseParams {
+  /** The user prompt to send */
+  prompt: string;
+  /** Optional system prompt for context */
+  systemPrompt?: string;
+  /** Maximum output tokens (default: 4096) */
+  maxTokens?: number;
+  /** Temperature for generation (default: 0.3 for structured output) */
+  temperature?: number;
+}
+
+/**
+ * Generates a structured JSON response using Gemini.
+ * Uses responseMimeType: "application/json" for reliable JSON output.
+ *
+ * @param params - Generation parameters
+ * @returns Parsed JSON response of type T
+ * @throws Error if API key is not configured, generation fails, or JSON parsing fails
+ */
+export async function generateStructuredResponse<T>(
+  params: GenerateStructuredResponseParams,
+): Promise<T> {
+  const ai = getGeminiClient();
+
+  const { data: response, error } = await tryCatch(
+    ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: params.prompt }],
+        },
+      ],
+      config: {
+        responseMimeType: "application/json",
+        systemInstruction: params.systemPrompt,
+        maxOutputTokens: params.maxTokens ?? 4096,
+        temperature: params.temperature ?? 0.3,
+      },
+    }),
+  );
+
+  if (error) {
+    console.error("[GEMINI_STRUCTURED] Error generating response:", error);
+    throw new Error(
+      `Failed to generate structured response: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`,
+    );
+  }
+
+  const text = response?.text || "";
+
+  if (!text) {
+    throw new Error("No response text received from Gemini");
+  }
+
+  // Parse JSON response (handle potential markdown code blocks)
+  let jsonText = text.trim();
+  if (jsonText.startsWith("```json")) {
+    jsonText = jsonText.slice(7);
+  } else if (jsonText.startsWith("```")) {
+    jsonText = jsonText.slice(3);
+  }
+  if (jsonText.endsWith("```")) {
+    jsonText = jsonText.slice(0, -3);
+  }
+  jsonText = jsonText.trim();
+
+  const { data: parsed, error: parseError } = await tryCatch(
+    Promise.resolve(JSON.parse(jsonText) as T),
+  );
+
+  if (parseError) {
+    console.error("[GEMINI_STRUCTURED] Failed to parse JSON response:", jsonText.slice(0, 500));
+    throw new Error(
+      `Failed to parse structured response: ${
+        parseError instanceof Error ? parseError.message : "Invalid JSON"
+      }`,
+    );
+  }
+
+  return parsed;
+}
+
 // MCP Generation types and functions
 
 export interface GenerateImageParams {
