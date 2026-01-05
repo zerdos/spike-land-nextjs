@@ -566,6 +566,132 @@ export class LinkedInClient implements ISocialClient {
   }
 
   /**
+   * Like a LinkedIn post
+   * Uses the Social Actions API to create a like reaction
+   */
+  async likePost(postId: string): Promise<void> {
+    if (!this.organizationUrn) {
+      throw new Error(
+        "Organization URN is required. Set via constructor options or setOrganization()",
+      );
+    }
+
+    const token = this.getAccessTokenOrThrow();
+
+    // LinkedIn uses URN format for posts
+    // If postId is not already a URN, assume it's a share ID
+    const actorUrn = this.organizationUrn;
+    const objectUrn = postId.startsWith("urn:") ? postId : `urn:li:share:${postId}`;
+
+    const payload = {
+      actor: actorUrn,
+      object: objectUrn,
+    };
+
+    const response = await fetch(
+      `${LINKEDIN_API_BASE}/v2/socialActions/${encodeURIComponent(objectUrn)}/likes`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "X-Restli-Protocol-Version": "2.0.0",
+        },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = (await response.json().catch(() => ({}))) as LinkedInApiError;
+      throw new Error(
+        `Failed to like LinkedIn post: ${errorData.message || response.statusText}`,
+      );
+    }
+  }
+
+  /**
+   * Unlike a LinkedIn post
+   */
+  async unlikePost(postId: string): Promise<void> {
+    if (!this.organizationUrn) {
+      throw new Error(
+        "Organization URN is required. Set via constructor options or setOrganization()",
+      );
+    }
+
+    const token = this.getAccessTokenOrThrow();
+
+    const objectUrn = postId.startsWith("urn:") ? postId : `urn:li:share:${postId}`;
+    const actorUrn = this.organizationUrn;
+
+    const response = await fetch(
+      `${LINKEDIN_API_BASE}/v2/socialActions/${encodeURIComponent(objectUrn)}/likes/${
+        encodeURIComponent(actorUrn)
+      }`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "X-Restli-Protocol-Version": "2.0.0",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = (await response.json().catch(() => ({}))) as LinkedInApiError;
+      throw new Error(
+        `Failed to unlike LinkedIn post: ${errorData.message || response.statusText}`,
+      );
+    }
+  }
+
+  /**
+   * Comment on a LinkedIn post
+   */
+  async commentOnPost(postId: string, content: string): Promise<{ id: string; }> {
+    if (!this.organizationUrn) {
+      throw new Error(
+        "Organization URN is required. Set via constructor options or setOrganization()",
+      );
+    }
+
+    const token = this.getAccessTokenOrThrow();
+
+    const objectUrn = postId.startsWith("urn:") ? postId : `urn:li:share:${postId}`;
+
+    const payload = {
+      actor: this.organizationUrn,
+      object: objectUrn,
+      message: {
+        text: content,
+      },
+    };
+
+    const response = await fetch(
+      `${LINKEDIN_API_BASE}/v2/socialActions/${encodeURIComponent(objectUrn)}/comments`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "X-Restli-Protocol-Version": "2.0.0",
+        },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = (await response.json().catch(() => ({}))) as LinkedInApiError;
+      throw new Error(
+        `Failed to comment on LinkedIn post: ${errorData.message || response.statusText}`,
+      );
+    }
+
+    const data = (await response.json()) as { id?: string; };
+    return { id: data.id || postId };
+  }
+
+  /**
    * Get organization-level metrics and share statistics
    */
   async getMetrics(): Promise<SocialMetricsData> {

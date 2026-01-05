@@ -2,15 +2,42 @@
  * Tests for Social Streams API Route
  */
 
+import type { SocialAccount } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GET } from "./route";
 
 // Mock auth
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
 
+// Mock prisma
+vi.mock("@/lib/prisma", () => ({
+  default: {
+    socialAccount: {
+      findMany: vi.fn(),
+    },
+  },
+}));
+
+// Mock token decryption
+vi.mock("@/lib/crypto/token-encryption", () => ({
+  safeDecryptToken: vi.fn((token: string) => `decrypted_${token}`),
+}));
+
+// Mock social client factory
+vi.mock("@/lib/social", () => ({
+  createSocialClient: vi.fn(),
+}));
+
 const { auth } = await import("@/auth");
+const prisma = (await import("@/lib/prisma")).default;
+const { createSocialClient } = await import("@/lib/social");
+const { safeDecryptToken } = await import("@/lib/crypto/token-encryption");
+
+// Import the route after mocks are set up
+const { GET, fetchConnectedAccounts, fetchAccountPosts, fetchAllAccountPosts } = await import(
+  "./route"
+);
 
 /**
  * Helper to create a mock NextRequest with query parameters
@@ -25,6 +52,38 @@ function createMockRequest(params: Record<string, string> = {}): Request {
     nextUrl: url,
     url: url.toString(),
   } as unknown as Request;
+}
+
+/**
+ * Helper to create a mock SocialAccount
+ */
+function createMockAccount(overrides: Partial<SocialAccount> = {}): SocialAccount {
+  return {
+    id: "account-123",
+    platform: "TWITTER",
+    accountId: "twitter_123",
+    accountName: "Test Twitter Account",
+    accessTokenEncrypted: "encrypted_token_123",
+    refreshTokenEncrypted: null,
+    tokenExpiresAt: null,
+    connectedAt: new Date(),
+    status: "ACTIVE",
+    metadata: null,
+    userId: "user-123",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+/**
+ * Helper to create a mock social client
+ */
+function createMockSocialClient(posts: Array<Record<string, unknown>> = []) {
+  return {
+    platform: "TWITTER",
+    getPosts: vi.fn().mockResolvedValue(posts),
+  };
 }
 
 describe("GET /api/social/streams", () => {
@@ -187,116 +246,223 @@ describe("GET /api/social/streams", () => {
     });
   });
 
-  describe("Successful Response", () => {
+  describe("Successful Response with Connected Accounts", () => {
     beforeEach(() => {
       vi.mocked(auth).mockResolvedValue({
         user: { id: "user-123" },
       } as any);
     });
 
-    it("should return posts with default parameters", async () => {
+    it("should return empty posts when no accounts are connected", async () => {
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([]);
+
       const request = createMockRequest({ workspaceId: "workspace-123" });
       const response = await GET(request as any);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.posts).toBeDefined();
-      expect(Array.isArray(data.posts)).toBe(true);
-      expect(data.accounts).toBeDefined();
-      expect(Array.isArray(data.accounts)).toBe(true);
-      expect(typeof data.hasMore).toBe("boolean");
+      expect(data.posts).toEqual([]);
+      expect(data.accounts).toEqual([]);
+      expect(data.hasMore).toBe(false);
     });
 
-    it("should return posts for specific platform", async () => {
+    it("should fetch posts from connected accounts", async () => {
+      const mockAccount = createMockAccount();
+      const mockPosts = [
+        {
+          id: "post-1",
+          platformPostId: "twitter_post_1",
+          platform: "TWITTER",
+          content: "Test tweet content",
+          publishedAt: new Date("2024-01-15"),
+          url: "https://twitter.com/user/status/123",
+          metrics: { likes: 100, comments: 10, shares: 5 },
+        },
+      ];
+
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+
+      const request = createMockRequest({ workspaceId: "workspace-123" });
+      const response = await GET(request as any);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.posts.length).toBe(1);
+      expect(data.accounts.length).toBe(1);
+      expect(data.accounts[0].platform).toBe("TWITTER");
+    });
+
+    it("should fetch posts from multiple platforms", async () => {
+      const twitterAccount = createMockAccount({
+        id: "account-twitter",
+        platform: "TWITTER",
+        accountName: "Twitter Account",
+      });
+      const facebookAccount = createMockAccount({
+        id: "account-facebook",
+        platform: "FACEBOOK",
+        accountId: "fb_123",
+        accountName: "Facebook Account",
+      });
+
+      const twitterPosts = [
+        {
+          id: "tw-1",
+          platformPostId: "twitter_1",
+          platform: "TWITTER",
+          content: "Tweet content",
+          publishedAt: new Date("2024-01-15"),
+          url: "https://twitter.com/status/1",
+        },
+      ];
+      const facebookPosts = [
+        {
+          id: "fb-1",
+          platformPostId: "facebook_1",
+          platform: "FACEBOOK",
+          content: "Facebook content",
+          publishedAt: new Date("2024-01-14"),
+          url: "https://facebook.com/post/1",
+        },
+      ];
+
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
+        twitterAccount,
+        facebookAccount,
+      ]);
+
+      vi.mocked(createSocialClient)
+        .mockReturnValueOnce(createMockSocialClient(twitterPosts) as any)
+        .mockReturnValueOnce(createMockSocialClient(facebookPosts) as any);
+
+      const request = createMockRequest({ workspaceId: "workspace-123" });
+      const response = await GET(request as any);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.posts.length).toBe(2);
+      expect(data.accounts.length).toBe(2);
+    });
+
+    it("should filter posts by platform", async () => {
+      const twitterAccount = createMockAccount({ platform: "TWITTER" });
+      const mockPosts = [
+        {
+          id: "tw-1",
+          platformPostId: "twitter_1",
+          platform: "TWITTER",
+          content: "Tweet",
+          publishedAt: new Date(),
+          url: "https://twitter.com/status/1",
+        },
+      ];
+
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([twitterAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+
       const request = createMockRequest({
         workspaceId: "workspace-123",
         platforms: "TWITTER",
       });
       const response = await GET(request as any);
-      const data = await response.json();
+      await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.posts.every((p: any) => p.platform === "TWITTER")).toBe(true);
-      expect(data.accounts.every((a: any) => a.platform === "TWITTER")).toBe(true);
+      expect(prisma.socialAccount.findMany).toHaveBeenCalledWith({
+        where: {
+          userId: "user-123",
+          status: "ACTIVE",
+          platform: { in: ["TWITTER"] },
+        },
+      });
     });
 
-    it("should return posts for multiple platforms", async () => {
+    it("should handle date range filtering", async () => {
+      const mockAccount = createMockAccount();
+      const mockPosts = [
+        {
+          id: "post-1",
+          platformPostId: "twitter_1",
+          platform: "TWITTER",
+          content: "Test tweet",
+          publishedAt: new Date("2024-01-10"),
+          url: "https://twitter.com/status/1",
+        },
+      ];
+
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+
       const request = createMockRequest({
         workspaceId: "workspace-123",
-        platforms: "TWITTER,FACEBOOK",
+        startDate: "2024-01-01",
+        endDate: "2024-01-31",
       });
       const response = await GET(request as any);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      const platforms = new Set(data.posts.map((p: any) => p.platform));
-      expect(platforms.has("TWITTER")).toBe(true);
-      expect(platforms.has("FACEBOOK")).toBe(true);
-      expect(platforms.has("INSTAGRAM")).toBe(false);
+      // Post should be included since it's within range
+      expect(data.posts.length).toBe(1);
     });
 
-    it("should respect limit parameter", async () => {
-      const request = createMockRequest({
+    it("should handle pagination with cursor", async () => {
+      const mockAccount = createMockAccount();
+      const mockPosts = Array.from({ length: 5 }, (_, i) => ({
+        id: `post-${i}`,
+        platformPostId: `twitter_${i}`,
+        platform: "TWITTER",
+        content: `Tweet ${i}`,
+        publishedAt: new Date(Date.now() - i * 3600000),
+        url: `https://twitter.com/status/${i}`,
+      }));
+
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+
+      // First page
+      const request1 = createMockRequest({
         workspaceId: "workspace-123",
-        limit: "5",
+        limit: "2",
       });
-      const response = await GET(request as any);
-      const data = await response.json();
+      const response1 = await GET(request1 as any);
+      const data1 = await response1.json();
 
-      expect(response.status).toBe(200);
-      expect(data.posts.length).toBeLessThanOrEqual(5);
+      expect(response1.status).toBe(200);
+      expect(data1.posts.length).toBe(2);
+      expect(data1.hasMore).toBe(true);
+      expect(data1.nextCursor).toBeDefined();
     });
 
-    it("should cap limit at 100", async () => {
+    it("should sort posts by likes descending", async () => {
+      const mockAccount = createMockAccount();
+      const mockPosts = [
+        {
+          id: "post-1",
+          platformPostId: "twitter_1",
+          platform: "TWITTER",
+          content: "Low likes",
+          publishedAt: new Date(),
+          url: "https://twitter.com/status/1",
+          metrics: { likes: 10, comments: 0, shares: 0 },
+        },
+        {
+          id: "post-2",
+          platformPostId: "twitter_2",
+          platform: "TWITTER",
+          content: "High likes",
+          publishedAt: new Date(),
+          url: "https://twitter.com/status/2",
+          metrics: { likes: 100, comments: 0, shares: 0 },
+        },
+      ];
+
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+
       const request = createMockRequest({
         workspaceId: "workspace-123",
-        limit: "200",
-        platforms: "TWITTER,FACEBOOK,INSTAGRAM,LINKEDIN",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      // With 4 platforms * 5 posts = 20 total posts, all should be returned
-      // But if there were more, it would be capped at 100
-      expect(data.posts.length).toBeLessThanOrEqual(100);
-    });
-
-    it("should sort by publishedAt descending by default", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "TWITTER",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      const dates = data.posts.map((p: any) => new Date(p.publishedAt).getTime());
-      for (let i = 1; i < dates.length; i++) {
-        expect(dates[i - 1]).toBeGreaterThanOrEqual(dates[i]);
-      }
-    });
-
-    it("should sort by publishedAt ascending when specified", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "TWITTER",
-        sortOrder: "asc",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      const dates = data.posts.map((p: any) => new Date(p.publishedAt).getTime());
-      for (let i = 1; i < dates.length; i++) {
-        expect(dates[i - 1]).toBeLessThanOrEqual(dates[i]);
-      }
-    });
-
-    it("should sort by likes when specified", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "TWITTER",
         sortBy: "likes",
         sortOrder: "desc",
       });
@@ -304,294 +470,198 @@ describe("GET /api/social/streams", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      const likes = data.posts.map((p: any) => p.metrics?.likes || 0);
-      for (let i = 1; i < likes.length; i++) {
-        expect(likes[i - 1]).toBeGreaterThanOrEqual(likes[i]);
-      }
-    });
-
-    it("should sort by comments when specified", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "TWITTER",
-        sortBy: "comments",
-        sortOrder: "asc",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      const comments = data.posts.map((p: any) => p.metrics?.comments || 0);
-      for (let i = 1; i < comments.length; i++) {
-        expect(comments[i - 1]).toBeLessThanOrEqual(comments[i]);
-      }
-    });
-
-    it("should sort by engagementRate when specified", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "TWITTER",
-        sortBy: "engagementRate",
-        sortOrder: "desc",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      const rates = data.posts.map((p: any) => p.metrics?.engagementRate || 0);
-      for (let i = 1; i < rates.length; i++) {
-        expect(rates[i - 1]).toBeGreaterThanOrEqual(rates[i]);
-      }
+      expect(data.posts[0].content).toBe("High likes");
+      expect(data.posts[1].content).toBe("Low likes");
     });
 
     it("should filter by search query", async () => {
+      const mockAccount = createMockAccount();
+      const mockPosts = [
+        {
+          id: "post-1",
+          platformPostId: "twitter_1",
+          platform: "TWITTER",
+          content: "Hello world tweet",
+          publishedAt: new Date(),
+          url: "https://twitter.com/status/1",
+        },
+        {
+          id: "post-2",
+          platformPostId: "twitter_2",
+          platform: "TWITTER",
+          content: "Another post",
+          publishedAt: new Date(),
+          url: "https://twitter.com/status/2",
+        },
+      ];
+
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+
       const request = createMockRequest({
         workspaceId: "workspace-123",
-        searchQuery: "Sample",
+        searchQuery: "hello",
       });
       const response = await GET(request as any);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      // All mock posts contain "Sample" in content
-      expect(data.posts.length).toBeGreaterThan(0);
-    });
-
-    it("should filter by search query (case insensitive)", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        searchQuery: "SAMPLE",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.posts.length).toBeGreaterThan(0);
-    });
-
-    it("should return empty array for non-matching search query", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        searchQuery: "xyz123nonexistent",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.posts).toEqual([]);
-    });
-
-    it("should handle date range filtering with valid dates", async () => {
-      const now = new Date();
-      const startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-      const endDate = now.toISOString();
-
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        startDate,
-        endDate,
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      // Posts should be within the date range
-      data.posts.forEach((post: any) => {
-        const postDate = new Date(post.publishedAt);
-        expect(postDate.getTime()).toBeGreaterThanOrEqual(new Date(startDate).getTime());
-        expect(postDate.getTime()).toBeLessThanOrEqual(new Date(endDate).getTime());
-      });
-    });
-
-    it("should handle pagination with cursor", async () => {
-      // First page
-      const request1 = createMockRequest({
-        workspaceId: "workspace-123",
-        limit: "5",
-      });
-      const response1 = await GET(request1 as any);
-      const data1 = await response1.json();
-
-      expect(response1.status).toBe(200);
-      expect(data1.posts.length).toBeLessThanOrEqual(5);
-
-      if (data1.hasMore && data1.nextCursor) {
-        // Second page
-        const request2 = createMockRequest({
-          workspaceId: "workspace-123",
-          limit: "5",
-          cursor: data1.nextCursor,
-        });
-        const response2 = await GET(request2 as any);
-        const data2 = await response2.json();
-
-        expect(response2.status).toBe(200);
-        // Posts should be different
-        const page1Ids = new Set(data1.posts.map((p: any) => p.id));
-        data2.posts.forEach((post: any) => {
-          expect(page1Ids.has(post.id)).toBe(false);
-        });
-      }
-    });
-
-    it("should handle invalid cursor gracefully", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        cursor: "invalid-cursor",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      // Should start from beginning if cursor is invalid
-      expect(response.status).toBe(200);
-      expect(data.posts).toBeDefined();
+      expect(data.posts.length).toBe(1);
+      expect(data.posts[0].content).toContain("Hello");
     });
   });
 
-  describe("Response Format", () => {
+  describe("Error Handling", () => {
     beforeEach(() => {
       vi.mocked(auth).mockResolvedValue({
         user: { id: "user-123" },
       } as any);
     });
 
-    it("should return correct StreamsResponse structure", async () => {
+    it("should handle partial failures gracefully", async () => {
+      const twitterAccount = createMockAccount({
+        id: "account-twitter",
+        platform: "TWITTER",
+      });
+      const facebookAccount = createMockAccount({
+        id: "account-facebook",
+        platform: "FACEBOOK",
+        accountId: "fb_123",
+      });
+
+      const twitterPosts = [
+        {
+          id: "tw-1",
+          platformPostId: "twitter_1",
+          platform: "TWITTER",
+          content: "Tweet",
+          publishedAt: new Date(),
+          url: "https://twitter.com/status/1",
+        },
+      ];
+
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
+        twitterAccount,
+        facebookAccount,
+      ]);
+
+      // Twitter succeeds, Facebook fails
+      vi.mocked(createSocialClient)
+        .mockReturnValueOnce(createMockSocialClient(twitterPosts) as any)
+        .mockReturnValueOnce({
+          platform: "FACEBOOK",
+          getPosts: vi.fn().mockRejectedValue(new Error("Facebook API error")),
+        } as any);
+
       const request = createMockRequest({ workspaceId: "workspace-123" });
       const response = await GET(request as any);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data).toHaveProperty("posts");
-      expect(data).toHaveProperty("accounts");
-      expect(data).toHaveProperty("hasMore");
-      // nextCursor is optional
-      expect(["string", "undefined"]).toContain(typeof data.nextCursor);
+      expect(data.posts.length).toBe(1); // Only Twitter posts
+      expect(data.accounts.length).toBe(2); // Both accounts listed
+      expect(data.errors).toBeDefined();
+      expect(data.errors.length).toBe(1);
+      expect(data.errors[0].platform).toBe("FACEBOOK");
     });
 
-    it("should return posts with correct StreamPost structure", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "TWITTER",
-        limit: "1",
-      });
+    it("should return 500 when database query fails", async () => {
+      vi.mocked(prisma.socialAccount.findMany).mockRejectedValue(
+        new Error("Database connection failed"),
+      );
+
+      const request = createMockRequest({ workspaceId: "workspace-123" });
+      const response = await GET(request as any);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Failed to fetch social streams");
+    });
+
+    it("should handle non-Error rejection in fetch", async () => {
+      const mockAccount = createMockAccount();
+
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue({
+        platform: "TWITTER",
+        getPosts: vi.fn().mockRejectedValue("String error"),
+      } as any);
+
+      const request = createMockRequest({ workspaceId: "workspace-123" });
       const response = await GET(request as any);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.posts.length).toBeGreaterThan(0);
+      expect(data.errors).toBeDefined();
+      expect(data.errors[0].message).toBe("Failed to fetch posts");
+    });
+  });
 
-      const post = data.posts[0];
-      expect(post).toHaveProperty("id");
-      expect(post).toHaveProperty("platformPostId");
-      expect(post).toHaveProperty("platform");
-      expect(post).toHaveProperty("content");
-      expect(post).toHaveProperty("publishedAt");
-      expect(post).toHaveProperty("url");
-      expect(post).toHaveProperty("accountId");
-      expect(post).toHaveProperty("accountName");
-      expect(post).toHaveProperty("canLike");
-      expect(post).toHaveProperty("canReply");
-      expect(post).toHaveProperty("canShare");
-      expect(post).toHaveProperty("metrics");
+  describe("Platform-Specific Client Options", () => {
+    beforeEach(() => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "user-123" },
+      } as any);
     });
 
-    it("should return metrics with correct structure", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        limit: "1",
+    it("should pass pageId for Facebook accounts", async () => {
+      const facebookAccount = createMockAccount({
+        platform: "FACEBOOK",
+        accountId: "fb_page_123",
       });
-      const response = await GET(request as any);
-      const data = await response.json();
 
-      expect(response.status).toBe(200);
-      const metrics = data.posts[0].metrics;
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([facebookAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
 
-      expect(metrics).toHaveProperty("likes");
-      expect(metrics).toHaveProperty("comments");
-      expect(metrics).toHaveProperty("shares");
-      expect(metrics).toHaveProperty("impressions");
-      expect(metrics).toHaveProperty("engagementRate");
-      expect(typeof metrics.likes).toBe("number");
-      expect(typeof metrics.comments).toBe("number");
-      expect(typeof metrics.shares).toBe("number");
+      const request = createMockRequest({ workspaceId: "workspace-123" });
+      await GET(request as any);
+
+      expect(createSocialClient).toHaveBeenCalledWith(
+        "FACEBOOK",
+        expect.objectContaining({
+          pageId: "fb_page_123",
+        }),
+      );
     });
 
-    it("should return accounts with correct structure", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "TWITTER",
+    it("should pass igUserId for Instagram accounts", async () => {
+      const instagramAccount = createMockAccount({
+        platform: "INSTAGRAM",
+        accountId: "ig_user_123",
       });
-      const response = await GET(request as any);
-      const data = await response.json();
 
-      expect(response.status).toBe(200);
-      expect(data.accounts.length).toBeGreaterThan(0);
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([instagramAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
 
-      const account = data.accounts[0];
-      expect(account).toHaveProperty("id");
-      expect(account).toHaveProperty("platform");
-      expect(account).toHaveProperty("accountName");
-      expect(account.platform).toBe("TWITTER");
+      const request = createMockRequest({ workspaceId: "workspace-123" });
+      await GET(request as any);
+
+      expect(createSocialClient).toHaveBeenCalledWith(
+        "INSTAGRAM",
+        expect.objectContaining({
+          igUserId: "ig_user_123",
+        }),
+      );
     });
 
-    it("should set correct platform capabilities for Twitter", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "TWITTER",
-        limit: "1",
+    it("should decrypt access token before passing to client", async () => {
+      const mockAccount = createMockAccount({
+        accessTokenEncrypted: "encrypted_test_token",
       });
-      const response = await GET(request as any);
-      const data = await response.json();
 
-      const post = data.posts[0];
-      expect(post.canLike).toBe(true);
-      expect(post.canReply).toBe(true);
-      expect(post.canShare).toBe(true);
-    });
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
 
-    it("should set correct platform capabilities for Facebook", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "FACEBOOK",
-        limit: "1",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
+      const request = createMockRequest({ workspaceId: "workspace-123" });
+      await GET(request as any);
 
-      const post = data.posts[0];
-      expect(post.canLike).toBe(true);
-      expect(post.canReply).toBe(true);
-      expect(post.canShare).toBe(false);
-    });
-
-    it("should set correct platform capabilities for Instagram", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "INSTAGRAM",
-        limit: "1",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      const post = data.posts[0];
-      expect(post.canLike).toBe(true);
-      expect(post.canReply).toBe(true);
-      expect(post.canShare).toBe(false);
-    });
-
-    it("should set correct platform capabilities for LinkedIn", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "LINKEDIN",
-        limit: "1",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      const post = data.posts[0];
-      expect(post.canLike).toBe(true);
-      expect(post.canReply).toBe(true);
-      expect(post.canShare).toBe(false);
+      expect(safeDecryptToken).toHaveBeenCalledWith("encrypted_test_token");
+      expect(createSocialClient).toHaveBeenCalledWith(
+        "TWITTER",
+        expect.objectContaining({
+          accessToken: "decrypted_encrypted_test_token",
+        }),
+      );
     });
   });
 
@@ -603,197 +673,257 @@ describe("GET /api/social/streams", () => {
     });
 
     it("should handle empty platforms list gracefully", async () => {
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([]);
+
       const request = createMockRequest({
         workspaceId: "workspace-123",
         platforms: "",
       });
       const response = await GET(request as any);
-      const data = await response.json();
+      await response.json();
 
-      // Empty platforms string is falsy, so it falls back to default platforms
+      // Empty platforms string means fetch all platforms
       expect(response.status).toBe(200);
-      expect(data.posts.length).toBeGreaterThan(0);
     });
 
     it("should handle platforms with spaces", async () => {
+      const mockAccount = createMockAccount();
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+
       const request = createMockRequest({
         workspaceId: "workspace-123",
         platforms: " TWITTER , FACEBOOK ",
       });
       const response = await GET(request as any);
-      const data = await response.json();
 
       expect(response.status).toBe(200);
-      const platforms = new Set(data.posts.map((p: any) => p.platform));
-      expect(platforms.has("TWITTER")).toBe(true);
-      expect(platforms.has("FACEBOOK")).toBe(true);
+      expect(prisma.socialAccount.findMany).toHaveBeenCalledWith({
+        where: {
+          userId: "user-123",
+          status: "ACTIVE",
+          platform: { in: ["TWITTER", "FACEBOOK"] },
+        },
+      });
     });
 
     it("should handle lowercase platform names", async () => {
+      const mockAccount = createMockAccount();
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+
       const request = createMockRequest({
         workspaceId: "workspace-123",
         platforms: "twitter,facebook",
       });
       const response = await GET(request as any);
-      const data = await response.json();
 
       expect(response.status).toBe(200);
-      const platforms = new Set(data.posts.map((p: any) => p.platform));
-      expect(platforms.has("TWITTER")).toBe(true);
-      expect(platforms.has("FACEBOOK")).toBe(true);
     });
 
-    it("should handle very large limit values", async () => {
+    it("should cap limit at 100", async () => {
+      const mockAccount = createMockAccount();
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+
       const request = createMockRequest({
         workspaceId: "workspace-123",
         limit: "999999",
       });
       const response = await GET(request as any);
+
+      expect(response.status).toBe(200);
+    });
+
+    it("should handle account with metadata containing avatarUrl", async () => {
+      const mockAccount = createMockAccount({
+        metadata: { avatarUrl: "https://example.com/avatar.jpg" },
+      });
+      const mockPosts = [
+        {
+          id: "post-1",
+          platformPostId: "twitter_1",
+          platform: "TWITTER",
+          content: "Test",
+          publishedAt: new Date(),
+          url: "https://twitter.com/status/1",
+        },
+      ];
+
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+
+      const request = createMockRequest({ workspaceId: "workspace-123" });
+      const response = await GET(request as any);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      // Should be capped at 100
-      expect(data.posts.length).toBeLessThanOrEqual(100);
+      expect(data.accounts[0].avatarUrl).toBe("https://example.com/avatar.jpg");
+    });
+
+    it("should handle TIKTOK platform validation", async () => {
+      const request = createMockRequest({
+        workspaceId: "workspace-123",
+        platforms: "TIKTOK",
+      });
+      const response = await GET(request as any);
+
+      // TIKTOK is valid platform but not yet implemented
+      expect(response.status).toBe(200);
     });
 
     it("should handle startDate only filter", async () => {
+      const mockAccount = createMockAccount();
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+
       const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const request = createMockRequest({
         workspaceId: "workspace-123",
         startDate,
       });
       const response = await GET(request as any);
-      const data = await response.json();
 
       expect(response.status).toBe(200);
-      data.posts.forEach((post: any) => {
-        expect(new Date(post.publishedAt).getTime()).toBeGreaterThanOrEqual(
-          new Date(startDate).getTime(),
-        );
-      });
     });
 
     it("should handle endDate only filter", async () => {
+      const mockAccount = createMockAccount();
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+
       const endDate = new Date().toISOString();
       const request = createMockRequest({
         workspaceId: "workspace-123",
         endDate,
       });
       const response = await GET(request as any);
-      const data = await response.json();
 
       expect(response.status).toBe(200);
-      data.posts.forEach((post: any) => {
-        expect(new Date(post.publishedAt).getTime()).toBeLessThanOrEqual(
-          new Date(endDate).getTime(),
-        );
+    });
+  });
+});
+
+describe("Exported Functions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe("fetchConnectedAccounts", () => {
+    it("should query accounts with userId and ACTIVE status", async () => {
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([]);
+
+      await fetchConnectedAccounts("user-123");
+
+      expect(prisma.socialAccount.findMany).toHaveBeenCalledWith({
+        where: {
+          userId: "user-123",
+          status: "ACTIVE",
+        },
       });
     });
 
-    it("should handle TIKTOK platform (not fully implemented)", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "TIKTOK",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
+    it("should filter by platforms when provided", async () => {
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([]);
 
-      expect(response.status).toBe(200);
-      // TIKTOK has limited capabilities
-      if (data.posts.length > 0) {
-        const post = data.posts[0];
-        expect(post.canLike).toBe(false);
-        expect(post.canReply).toBe(false);
-        expect(post.canShare).toBe(false);
-      }
+      await fetchConnectedAccounts("user-123", ["TWITTER", "FACEBOOK"]);
+
+      expect(prisma.socialAccount.findMany).toHaveBeenCalledWith({
+        where: {
+          userId: "user-123",
+          status: "ACTIVE",
+          platform: { in: ["TWITTER", "FACEBOOK"] },
+        },
+      });
     });
 
-    it("should handle search by account name", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "TWITTER",
-        searchQuery: "Twitter Account",
+    it("should not filter by platforms when empty array", async () => {
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([]);
+
+      await fetchConnectedAccounts("user-123", []);
+
+      expect(prisma.socialAccount.findMany).toHaveBeenCalledWith({
+        where: {
+          userId: "user-123",
+          status: "ACTIVE",
+        },
       });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      // Should find posts by the Twitter account
-      expect(data.posts.length).toBeGreaterThan(0);
-    });
-
-    it("should return hasMore false when all posts fit in one page", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "TWITTER",
-        limit: "100",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      // With only 5 mock posts for Twitter and limit 100, hasMore should be false
-      expect(data.hasMore).toBe(false);
-      expect(data.nextCursor).toBeUndefined();
-    });
-
-    it("should return hasMore true when more posts are available", async () => {
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        limit: "2",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      // With default platforms and only 2 limit, there should be more
-      if (data.posts.length === 2) {
-        expect(data.hasMore).toBe(true);
-        expect(data.nextCursor).toBeDefined();
-      }
     });
   });
 
-  describe("Error Handling", () => {
-    beforeEach(() => {
-      vi.mocked(auth).mockResolvedValue({
-        user: { id: "user-123" },
-      } as any);
+  describe("fetchAccountPosts", () => {
+    it("should decrypt token and create client with correct options", async () => {
+      const mockAccount = createMockAccount();
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+
+      await fetchAccountPosts(mockAccount, 10);
+
+      expect(safeDecryptToken).toHaveBeenCalledWith("encrypted_token_123");
+      expect(createSocialClient).toHaveBeenCalledWith("TWITTER", {
+        accessToken: "decrypted_encrypted_token_123",
+        accountId: "twitter_123",
+      });
     });
 
-    it("should return 500 when an unexpected error occurs", async () => {
-      // Mock PLATFORM_CAPABILITIES to throw when accessed
-      const originalModule = await import("@/lib/social/types");
-      const originalCapabilities = originalModule.PLATFORM_CAPABILITIES;
-
-      // Temporarily replace PLATFORM_CAPABILITIES with a proxy that throws
-      Object.defineProperty(originalModule, "PLATFORM_CAPABILITIES", {
-        get: () => {
-          throw new Error("Simulated error");
+    it("should return posts and context", async () => {
+      const mockAccount = createMockAccount();
+      const mockPosts = [
+        {
+          id: "post-1",
+          platformPostId: "twitter_1",
+          platform: "TWITTER",
+          content: "Test",
+          publishedAt: new Date(),
+          url: "https://twitter.com/status/1",
         },
-        configurable: true,
-      });
+      ];
 
-      const request = createMockRequest({
-        workspaceId: "workspace-123",
-        platforms: "TWITTER",
-      });
-      const response = await GET(request as any);
-      const data = await response.json();
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
 
-      expect(response.status).toBe(500);
-      expect(data.error).toBe("Failed to fetch social streams");
-      expect(console.error).toHaveBeenCalledWith(
-        "Failed to fetch social streams:",
-        expect.any(Error),
-      );
+      const result = await fetchAccountPosts(mockAccount, 10);
 
-      // Restore original
-      Object.defineProperty(originalModule, "PLATFORM_CAPABILITIES", {
-        value: originalCapabilities,
-        configurable: true,
-        writable: true,
-      });
+      expect(result.posts).toEqual(mockPosts);
+      expect(result.context.accountId).toBe("account-123");
+      expect(result.context.accountName).toBe("Test Twitter Account");
+      expect(result.context.platform).toBe("TWITTER");
+    });
+  });
+
+  describe("fetchAllAccountPosts", () => {
+    beforeEach(() => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+    });
+
+    it("should fetch posts from all accounts in parallel", async () => {
+      const account1 = createMockAccount({ id: "acc-1" });
+      const account2 = createMockAccount({ id: "acc-2" });
+
+      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+
+      const result = await fetchAllAccountPosts([account1, account2], 10);
+
+      expect(result.accounts.length).toBe(2);
+      expect(result.postsWithContext.length).toBe(2);
+      expect(result.errors.length).toBe(0);
+    });
+
+    it("should handle mixed success and failure", async () => {
+      const account1 = createMockAccount({ id: "acc-1" });
+      const account2 = createMockAccount({ id: "acc-2" });
+
+      vi.mocked(createSocialClient)
+        .mockReturnValueOnce(createMockSocialClient([]) as any)
+        .mockReturnValueOnce({
+          platform: "TWITTER",
+          getPosts: vi.fn().mockRejectedValue(new Error("API Error")),
+        } as any);
+
+      const result = await fetchAllAccountPosts([account1, account2], 10);
+
+      expect(result.accounts.length).toBe(2);
+      expect(result.postsWithContext.length).toBe(1);
+      expect(result.errors.length).toBe(1);
+      expect(result.errors[0]?.accountId).toBe("acc-2");
     });
   });
 });

@@ -633,4 +633,232 @@ describe("StreamsClient", () => {
       expect(refreshButton).not.toBeDisabled();
     });
   });
+
+  describe("Polling Status", () => {
+    it("should show polling indicator when polling is active", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const Wrapper = createWrapper();
+      render(
+        <Wrapper>
+          <StreamsClient />
+        </Wrapper>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId("stream-filters")).toBeInTheDocument();
+      });
+
+      // Wait for data to load
+      await waitFor(() => {
+        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+      });
+
+      // Polling indicator should be visible when polling is active
+      expect(screen.getByTestId("polling-indicator")).toBeInTheDocument();
+      expect(screen.getByText("Live")).toBeInTheDocument();
+    });
+  });
+
+  describe("New Posts Notification", () => {
+    it("should not show new posts banner initially", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const Wrapper = createWrapper();
+      render(
+        <Wrapper>
+          <StreamsClient />
+        </Wrapper>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId("stream-filters")).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+      });
+
+      expect(screen.queryByTestId("new-posts-banner")).not.toBeInTheDocument();
+    });
+
+    it("should show new posts banner when new posts are detected", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const Wrapper = createWrapper();
+      render(
+        <Wrapper>
+          <StreamsClient />
+        </Wrapper>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+      });
+
+      // Simulate refetch with new posts
+      const newPost: StreamPost = {
+        id: "post-new",
+        platformPostId: "twitter-new",
+        platform: "TWITTER" as SocialPlatform,
+        content: "New post!",
+        publishedAt: new Date("2025-01-02T10:00:00Z"),
+        url: "https://twitter.com/user/status/new",
+        accountId: "acc-1",
+        accountName: "Test Twitter",
+        canLike: true,
+        canReply: true,
+        canShare: true,
+        metrics: { likes: 0, comments: 0, shares: 0 },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...mockResponse,
+          posts: [newPost, ...mockPosts],
+        }),
+      });
+
+      // Click refresh button to trigger refetch
+      fireEvent.click(screen.getByTestId("refresh-button"));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("new-posts-banner")).toBeInTheDocument();
+      });
+
+      expect(screen.getByText("1 new post")).toBeInTheDocument();
+    });
+
+    it("should show plural text when multiple new posts are detected", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const Wrapper = createWrapper();
+      render(
+        <Wrapper>
+          <StreamsClient />
+        </Wrapper>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+      });
+
+      // Simulate refetch with multiple new posts
+      const newPost1: StreamPost = {
+        id: "post-new-1",
+        platformPostId: "twitter-new-1",
+        platform: "TWITTER" as SocialPlatform,
+        content: "New post 1!",
+        publishedAt: new Date("2025-01-02T10:00:00Z"),
+        url: "https://twitter.com/user/status/new1",
+        accountId: "acc-1",
+        accountName: "Test Twitter",
+        canLike: true,
+        canReply: true,
+        canShare: true,
+        metrics: { likes: 0, comments: 0, shares: 0 },
+      };
+
+      const newPost2: StreamPost = {
+        id: "post-new-2",
+        platformPostId: "twitter-new-2",
+        platform: "TWITTER" as SocialPlatform,
+        content: "New post 2!",
+        publishedAt: new Date("2025-01-02T11:00:00Z"),
+        url: "https://twitter.com/user/status/new2",
+        accountId: "acc-1",
+        accountName: "Test Twitter",
+        canLike: true,
+        canReply: true,
+        canShare: true,
+        metrics: { likes: 0, comments: 0, shares: 0 },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...mockResponse,
+          posts: [newPost1, newPost2, ...mockPosts],
+        }),
+      });
+
+      // Click refresh button to trigger refetch
+      fireEvent.click(screen.getByTestId("refresh-button"));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("new-posts-banner")).toBeInTheDocument();
+      });
+
+      expect(screen.getByText("2 new posts")).toBeInTheDocument();
+    });
+
+    it("should hide new posts banner when clicked", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const Wrapper = createWrapper();
+      render(
+        <Wrapper>
+          <StreamsClient />
+        </Wrapper>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+      });
+
+      // Simulate refetch with new posts
+      const newPost: StreamPost = {
+        id: "post-new",
+        platformPostId: "twitter-new",
+        platform: "TWITTER" as SocialPlatform,
+        content: "New post!",
+        publishedAt: new Date("2025-01-02T10:00:00Z"),
+        url: "https://twitter.com/user/status/new",
+        accountId: "acc-1",
+        accountName: "Test Twitter",
+        canLike: true,
+        canReply: true,
+        canShare: true,
+        metrics: { likes: 0, comments: 0, shares: 0 },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...mockResponse,
+          posts: [newPost, ...mockPosts],
+        }),
+      });
+
+      // Click refresh button to trigger refetch
+      fireEvent.click(screen.getByTestId("refresh-button"));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("new-posts-banner")).toBeInTheDocument();
+      });
+
+      // Click the new posts button to acknowledge
+      fireEvent.click(screen.getByTestId("new-posts-button"));
+
+      await waitFor(() => {
+        expect(screen.queryByTestId("new-posts-banner")).not.toBeInTheDocument();
+      });
+    });
+  });
 });

@@ -132,14 +132,18 @@ export async function buildMainScripts(): Promise<void> {
     mangleCache: { "_": false },
     mangleQuoted: true,
     platform: "browser",
+    // Only worker_threads is external for IIFE build - prettier must be bundled for browser
     external: [
       "worker_threads",
-      "prettier",
-      "prettier/standalone",
-      "prettier/plugins/estree",
-      "prettier/plugins/typescript",
-      "prettier/plugins/postcss",
     ],
+    // Use ESM versions of prettier plugins to avoid CJS require() issues in browser
+    alias: {
+      ...getCommonBuildOptions("production").alias,
+      "prettier/standalone": "../../node_modules/prettier/standalone.mjs",
+      "prettier/plugins/estree": "../../node_modules/prettier/plugins/estree.mjs",
+      "prettier/plugins/typescript": "../../node_modules/prettier/plugins/typescript.mjs",
+      "prettier/plugins/postcss": "../../node_modules/prettier/plugins/postcss.mjs",
+    },
     minify: false,
     ignoreAnnotations: false,
 

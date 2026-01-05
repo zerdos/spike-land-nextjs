@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import type { SocialPlatform, StreamPost } from "@/lib/social/types";
 import { cn } from "@/lib/utils";
-import { ExternalLink, Heart, MessageCircle, Share2 } from "lucide-react";
+import { ExternalLink, Heart, Loader2, MessageCircle, Share2 } from "lucide-react";
 import Image from "next/image";
 
 /**
@@ -47,6 +47,12 @@ export interface StreamPostCardProps {
   onReply?: (postId: string) => void;
   /** Callback when the share button is clicked */
   onShare?: (postId: string) => void;
+  /** Whether a like action is currently loading for this post */
+  isLiking?: boolean;
+  /** Whether a reply action is currently loading for this post */
+  isReplying?: boolean;
+  /** Whether to disable all actions */
+  disabled?: boolean;
 }
 
 /**
@@ -114,6 +120,9 @@ export function StreamPostCard({
   onLike,
   onReply,
   onShare,
+  isLiking = false,
+  isReplying = false,
+  disabled = false,
 }: StreamPostCardProps) {
   const platformColors = PLATFORM_COLORS[post.platform];
   const platformName = PLATFORM_NAMES[post.platform];
@@ -127,15 +136,21 @@ export function StreamPostCard({
     : post.content;
 
   const handleLike = () => {
-    onLike?.(post.id);
+    if (!disabled && !isLiking) {
+      onLike?.(post.id);
+    }
   };
 
   const handleReply = () => {
-    onReply?.(post.id);
+    if (!disabled && !isReplying) {
+      onReply?.(post.id);
+    }
   };
 
   const handleShare = () => {
-    onShare?.(post.id);
+    if (!disabled) {
+      onShare?.(post.id);
+    }
   };
 
   return (
@@ -240,18 +255,21 @@ export function StreamPostCard({
       </CardContent>
 
       <CardFooter className="pt-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" data-testid="stream-actions">
           {post.canLike && (
             <Button
               variant="outline"
               size="sm"
               onClick={handleLike}
+              disabled={disabled || isLiking}
               className={cn(post.isLiked && "text-red-500")}
               aria-label={post.isLiked ? "Unlike" : "Like"}
               data-testid="like-button"
             >
-              <Heart className={cn("h-4 w-4", post.isLiked && "fill-current")} />
-              Like
+              {isLiking
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <Heart className={cn("h-4 w-4", post.isLiked && "fill-current")} />}
+              <span className="ml-1">Like</span>
             </Button>
           )}
           {post.canReply && (
@@ -259,11 +277,14 @@ export function StreamPostCard({
               variant="outline"
               size="sm"
               onClick={handleReply}
+              disabled={disabled || isReplying}
               aria-label="Reply"
               data-testid="reply-button"
             >
-              <MessageCircle className="h-4 w-4" />
-              Reply
+              {isReplying
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <MessageCircle className="h-4 w-4" />}
+              <span className="ml-1">Reply</span>
             </Button>
           )}
           {post.canShare && (
@@ -271,11 +292,12 @@ export function StreamPostCard({
               variant="outline"
               size="sm"
               onClick={handleShare}
+              disabled={disabled}
               aria-label="Share"
               data-testid="share-button"
             >
               <Share2 className="h-4 w-4" />
-              Share
+              <span className="ml-1">Share</span>
             </Button>
           )}
         </div>
