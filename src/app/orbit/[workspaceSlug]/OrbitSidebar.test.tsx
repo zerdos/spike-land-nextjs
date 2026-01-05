@@ -54,6 +54,7 @@ describe("OrbitSidebar", () => {
       "Inbox",
       "Calendar",
       "Content Library",
+      "Brand Brain",
       "AI Agents",
       "Settings",
     ];
@@ -153,8 +154,9 @@ describe("OrbitSidebar", () => {
     expect(links[2]).toHaveTextContent("Inbox");
     expect(links[3]).toHaveTextContent("Calendar");
     expect(links[4]).toHaveTextContent("Content Library");
-    expect(links[5]).toHaveTextContent("AI Agents");
-    expect(links[6]).toHaveTextContent("Settings");
+    expect(links[5]).toHaveTextContent("Brand Brain");
+    expect(links[6]).toHaveTextContent("AI Agents");
+    expect(links[7]).toHaveTextContent("Settings");
   });
 
   it("renders with different workspace slugs", async () => {
