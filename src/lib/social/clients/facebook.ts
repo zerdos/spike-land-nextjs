@@ -413,6 +413,83 @@ export class FacebookClient implements ISocialClient {
   }
 
   /**
+   * Like a post on the Facebook page
+   * Note: This adds a "like" reaction to the post as the page
+   */
+  async likePost(postId: string): Promise<void> {
+    if (!this.pageAccessToken) {
+      throw new Error("Page access token is required");
+    }
+
+    const response = await fetch(`${GRAPH_API_BASE}/${postId}/likes`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        access_token: this.pageAccessToken,
+      }).toString(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        `Failed to like post: ${errorData.error?.message || response.statusText}`,
+      );
+    }
+  }
+
+  /**
+   * Unlike a post on the Facebook page
+   */
+  async unlikePost(postId: string): Promise<void> {
+    if (!this.pageAccessToken) {
+      throw new Error("Page access token is required");
+    }
+
+    const response = await fetch(
+      `${GRAPH_API_BASE}/${postId}/likes?access_token=${this.pageAccessToken}`,
+      { method: "DELETE" },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        `Failed to unlike post: ${errorData.error?.message || response.statusText}`,
+      );
+    }
+  }
+
+  /**
+   * Comment on a post on the Facebook page
+   */
+  async commentOnPost(postId: string, content: string): Promise<{ id: string; }> {
+    if (!this.pageAccessToken) {
+      throw new Error("Page access token is required");
+    }
+
+    const response = await fetch(`${GRAPH_API_BASE}/${postId}/comments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        message: content,
+        access_token: this.pageAccessToken,
+      }).toString(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        `Failed to comment on post: ${errorData.error?.message || response.statusText}`,
+      );
+    }
+
+    return response.json() as Promise<{ id: string; }>;
+  }
+
+  /**
    * Get page insights/metrics
    */
   async getMetrics(): Promise<SocialMetricsData> {

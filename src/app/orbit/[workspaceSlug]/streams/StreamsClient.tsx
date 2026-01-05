@@ -1,16 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { useWorkspace } from "@/components/orbit/WorkspaceContext";
 import { StreamEmptyState } from "@/components/streams/StreamEmptyState";
 import { StreamFeed } from "@/components/streams/StreamFeed";
 import { StreamFilters } from "@/components/streams/StreamFilters";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { useStreamFeed } from "@/hooks/useStreamFeed";
 import type { SocialPlatform, StreamFilter } from "@/lib/social/types";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ArrowUp } from "lucide-react";
 
 /**
  * Default filter configuration for the streams page
@@ -28,6 +29,7 @@ export function StreamsClient() {
   const router = useRouter();
   const { workspace } = useWorkspace();
   const [filters, setFilters] = useState<StreamFilter>(DEFAULT_FILTER);
+  const feedContainerRef = useRef<HTMLDivElement>(null);
 
   const workspaceId = workspace?.id ?? "";
 

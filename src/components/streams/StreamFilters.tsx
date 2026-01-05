@@ -16,7 +16,7 @@ import type {
   StreamSortBy,
   StreamSortOrder,
 } from "@/lib/social/types";
-import { RefreshCw, Search } from "lucide-react";
+import { Radio, RefreshCw, Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
@@ -73,6 +73,8 @@ export interface StreamFiltersProps {
   onRefresh?: () => void;
   /** Whether the refresh action is in progress */
   isLoading?: boolean;
+  /** Whether polling is currently active */
+  isPolling?: boolean;
 }
 
 /**
@@ -95,6 +97,7 @@ export function StreamFilters({
   connectedPlatforms,
   onRefresh,
   isLoading = false,
+  isPolling = false,
 }: StreamFiltersProps) {
   const [searchValue, setSearchValue] = useState(filters.searchQuery ?? "");
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -265,6 +268,18 @@ export function StreamFilters({
           ))}
         </SelectContent>
       </Select>
+
+      {/* Polling Status Indicator */}
+      {isPolling && (
+        <div
+          data-testid="polling-indicator"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground"
+          aria-label="Auto-refreshing"
+        >
+          <Radio className="h-3 w-3 animate-pulse text-green-500" />
+          <span>Live</span>
+        </div>
+      )}
 
       {/* Refresh Button */}
       {onRefresh && (

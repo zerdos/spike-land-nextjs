@@ -16,16 +16,25 @@
  */
 
 import { auth } from "@/auth";
+import { safeDecryptToken } from "@/lib/crypto/token-encryption";
+import prisma from "@/lib/prisma";
+import { createSocialClient } from "@/lib/social";
 import {
-  PLATFORM_CAPABILITIES,
+  type AccountContext,
+  type AggregateOptions,
+  aggregateStreamPosts,
+} from "@/lib/social/stream-aggregator";
+import {
   type SocialPlatform,
-  type StreamPost,
+  type SocialPost,
+  type StreamFilter,
   type StreamSortBy,
   type StreamSortOrder,
   type StreamsQueryParams,
   type StreamsResponse,
 } from "@/lib/social/types";
 import { tryCatch } from "@/lib/try-catch";
+import type { SocialAccount } from "@prisma/client";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -163,136 +172,156 @@ function parseQueryParams(
 }
 
 /**
- * Generate mock posts for a platform
- * This will be replaced with real API integration in ORB-006
+ * Error info for accounts that failed to fetch
  */
-function generateMockPosts(
-  platform: SocialPlatform,
-  accountId: string,
-  accountName: string,
-  count: number,
-): StreamPost[] {
-  const capabilities = PLATFORM_CAPABILITIES[platform];
-  const posts: StreamPost[] = [];
-
-  const baseDate = new Date();
-
-  for (let i = 0; i < count; i++) {
-    const publishedAt = new Date(baseDate.getTime() - i * 3600000); // 1 hour apart
-    const likes = Math.floor(Math.random() * 1000);
-    const comments = Math.floor(Math.random() * 100);
-    const shares = Math.floor(Math.random() * 50);
-    const impressions = likes * 10 + comments * 5 + shares * 20;
-
-    posts.push({
-      id: `mock-${platform.toLowerCase()}-${accountId}-${i}`,
-      platformPostId: `${platform.toLowerCase()}_post_${Date.now()}_${i}`,
-      platform,
-      content: `Sample ${platform} post #${
-        i + 1
-      }. This is a mock post for testing the unified stream feed. #socialMedia #mockData`,
-      publishedAt,
-      url: `https://${platform.toLowerCase()}.com/post/${Date.now()}_${i}`,
-      accountId,
-      accountName,
-      accountAvatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${accountName}`,
-      canLike: capabilities.canLike,
-      canReply: capabilities.canReply,
-      canShare: capabilities.canShare,
-      metrics: {
-        likes,
-        comments,
-        shares,
-        impressions,
-        engagementRate: impressions > 0 ? ((likes + comments + shares) / impressions) * 100 : 0,
-      },
-    });
-  }
-
-  return posts;
-}
-
-/**
- * Generate mock accounts for the response
- */
-function generateMockAccounts(platforms: SocialPlatform[]): Array<{
-  id: string;
+interface AccountError {
+  accountId: string;
   platform: SocialPlatform;
-  accountName: string;
-  avatarUrl?: string;
-}> {
-  return platforms.map((platform) => ({
-    id: `mock-account-${platform.toLowerCase()}`,
-    platform,
-    accountName: `${platform.charAt(0)}${platform.slice(1).toLowerCase()} Account`,
-    avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${platform}`,
-  }));
+  message: string;
 }
 
 /**
- * Filter posts by search query
+ * Result of fetching posts from all accounts
  */
-function filterBySearch(posts: StreamPost[], searchQuery?: string): StreamPost[] {
-  if (!searchQuery) return posts;
-  const query = searchQuery.toLowerCase();
-  return posts.filter(
-    (post) =>
-      post.content.toLowerCase().includes(query) ||
-      post.accountName.toLowerCase().includes(query),
-  );
+interface FetchAccountsResult {
+  postsWithContext: Array<[SocialPost[], AccountContext]>;
+  accounts: Array<{
+    id: string;
+    platform: SocialPlatform;
+    accountName: string;
+    avatarUrl?: string;
+  }>;
+  errors: AccountError[];
 }
 
 /**
- * Filter posts by date range
+ * Fetch connected social accounts for a user
+ * Uses workspaceId to find the user's social accounts
  */
-function filterByDateRange(
-  posts: StreamPost[],
-  startDate?: string,
-  endDate?: string,
-): StreamPost[] {
-  let filtered = posts;
+export async function fetchConnectedAccounts(
+  userId: string,
+  platforms?: SocialPlatform[],
+): Promise<SocialAccount[]> {
+  const whereClause: {
+    userId: string;
+    status: "ACTIVE";
+    platform?: { in: SocialPlatform[]; };
+  } = {
+    userId,
+    status: "ACTIVE",
+  };
 
-  if (startDate) {
-    const start = new Date(startDate);
-    filtered = filtered.filter((post) => post.publishedAt >= start);
+  if (platforms && platforms.length > 0) {
+    whereClause.platform = { in: platforms };
   }
 
-  if (endDate) {
-    const end = new Date(endDate);
-    filtered = filtered.filter((post) => post.publishedAt <= end);
-  }
-
-  return filtered;
-}
-
-/**
- * Sort posts by the specified field and order
- */
-function sortPosts(
-  posts: StreamPost[],
-  sortBy: StreamSortBy,
-  sortOrder: StreamSortOrder,
-): StreamPost[] {
-  return [...posts].sort((a, b) => {
-    let comparison = 0;
-
-    switch (sortBy) {
-      case "publishedAt":
-        comparison = a.publishedAt.getTime() - b.publishedAt.getTime();
-        break;
-      case "likes":
-        comparison = (a.metrics?.likes || 0) - (b.metrics?.likes || 0);
-        break;
-      case "comments":
-        comparison = (a.metrics?.comments || 0) - (b.metrics?.comments || 0);
-        break;
-      case "engagementRate":
-        comparison = (a.metrics?.engagementRate || 0) - (b.metrics?.engagementRate || 0);
-        break;
-    }
-
-    return sortOrder === "asc" ? comparison : -comparison;
+  return prisma.socialAccount.findMany({
+    where: whereClause,
   });
+}
+
+/**
+ * Fetch posts from a single social account
+ * Returns posts and account context, or throws on error
+ */
+export async function fetchAccountPosts(
+  account: SocialAccount,
+  limit: number,
+): Promise<{ posts: SocialPost[]; context: AccountContext; }> {
+  // Decrypt the access token
+  const accessToken = safeDecryptToken(account.accessTokenEncrypted);
+
+  // Create the appropriate social client based on platform
+  const clientOptions: Record<string, string> = {
+    accessToken,
+    accountId: account.accountId,
+  };
+
+  // Platform-specific client options
+  if (account.platform === "FACEBOOK") {
+    // Facebook needs pageId set
+    clientOptions.pageId = account.accountId;
+  } else if (account.platform === "INSTAGRAM") {
+    // Instagram needs igUserId set
+    clientOptions.igUserId = account.accountId;
+  }
+
+  const client = createSocialClient(account.platform, clientOptions);
+
+  // Fetch posts from the social platform API
+  const posts = await client.getPosts(limit);
+
+  // Create account context for stream transformation
+  const context: AccountContext = {
+    accountId: account.id,
+    accountName: account.accountName,
+    accountAvatarUrl: (account.metadata as { avatarUrl?: string; } | null)?.avatarUrl,
+    platform: account.platform,
+  };
+
+  return { posts, context };
+}
+
+/**
+ * Fetch posts from all connected accounts
+ * Uses Promise.allSettled to handle partial failures gracefully
+ */
+export async function fetchAllAccountPosts(
+  accounts: SocialAccount[],
+  postsPerAccount: number,
+): Promise<FetchAccountsResult> {
+  const postsWithContext: Array<[SocialPost[], AccountContext]> = [];
+  const accountInfos: Array<{
+    id: string;
+    platform: SocialPlatform;
+    accountName: string;
+    avatarUrl?: string;
+  }> = [];
+  const errors: AccountError[] = [];
+
+  // Fetch posts from all accounts in parallel, handling failures gracefully
+  const results = await Promise.allSettled(
+    accounts.map((account) => fetchAccountPosts(account, postsPerAccount)),
+  );
+
+  // Process results
+  results.forEach((result, index) => {
+    const account = accounts[index];
+    if (!account) return;
+
+    if (result.status === "fulfilled") {
+      const { posts, context } = result.value;
+      postsWithContext.push([posts, context]);
+      accountInfos.push({
+        id: account.id,
+        platform: account.platform,
+        accountName: account.accountName,
+        avatarUrl: (account.metadata as { avatarUrl?: string; } | null)?.avatarUrl,
+      });
+    } else {
+      // Account failed to fetch - log error and continue
+      console.error(
+        `Failed to fetch posts for account ${account.id} (${account.platform}):`,
+        result.reason,
+      );
+      errors.push({
+        accountId: account.id,
+        platform: account.platform,
+        message: result.reason instanceof Error
+          ? result.reason.message
+          : "Failed to fetch posts",
+      });
+      // Still include account in list even if fetching failed
+      accountInfos.push({
+        id: account.id,
+        platform: account.platform,
+        accountName: account.accountName,
+        avatarUrl: (account.metadata as { avatarUrl?: string; } | null)?.avatarUrl,
+      });
+    }
+  });
+
+  return { postsWithContext, accounts: accountInfos, errors };
 }
 
 /**
@@ -317,52 +346,61 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    // For ORB-005, generate mock data
-    // In ORB-006, this will be replaced with real API calls to connected accounts
-    const targetPlatforms = params.platforms || VALID_PLATFORMS.filter(p => p !== "TIKTOK");
-    const postsPerPlatform = 5;
+    const userId = session.user.id;
+    const postsPerAccount = 10; // Fetch up to 10 posts per account
 
-    // Generate mock accounts
-    const accounts = generateMockAccounts(targetPlatforms);
+    // Fetch connected social accounts from the database
+    const connectedAccounts = await fetchConnectedAccounts(userId, params.platforms);
 
-    // Generate mock posts for each platform
-    let allPosts: StreamPost[] = [];
-    for (const account of accounts) {
-      const posts = generateMockPosts(
-        account.platform,
-        account.id,
-        account.accountName,
-        postsPerPlatform,
-      );
-      allPosts = allPosts.concat(posts);
+    // If no accounts are connected, return empty response
+    if (connectedAccounts.length === 0) {
+      const response: StreamsResponse = {
+        posts: [],
+        accounts: [],
+        hasMore: false,
+        nextCursor: undefined,
+      };
+      return NextResponse.json(response);
     }
 
-    // Apply filters
-    allPosts = filterBySearch(allPosts, params.searchQuery);
-    allPosts = filterByDateRange(allPosts, params.startDate, params.endDate);
+    // Fetch posts from all connected accounts
+    const { postsWithContext, accounts, errors } = await fetchAllAccountPosts(
+      connectedAccounts,
+      postsPerAccount,
+    );
 
-    // Sort posts
-    allPosts = sortPosts(allPosts, params.sortBy!, params.sortOrder!);
+    // Build filter from query params
+    const filter: StreamFilter = {
+      platforms: params.platforms,
+      sortBy: params.sortBy || "publishedAt",
+      sortOrder: params.sortOrder || "desc",
+      searchQuery: params.searchQuery,
+    };
 
-    // Apply pagination
-    const limit = params.limit!;
-    let startIndex = 0;
-
-    if (params.cursor) {
-      // Simple cursor-based pagination using index
-      startIndex = parseInt(params.cursor, 10);
-      if (isNaN(startIndex)) startIndex = 0;
+    // Add date range if provided
+    if (params.startDate || params.endDate) {
+      filter.dateRange = {
+        start: params.startDate ? new Date(params.startDate) : new Date(0),
+        end: params.endDate ? new Date(params.endDate) : new Date(),
+      };
     }
 
-    const paginatedPosts = allPosts.slice(startIndex, startIndex + limit);
-    const hasMore = startIndex + limit < allPosts.length;
-    const nextCursor = hasMore ? String(startIndex + limit) : undefined;
+    // Aggregate posts using stream-aggregator
+    const aggregateOptions: AggregateOptions = {
+      filter,
+      limit: params.limit || 20,
+      cursor: params.cursor,
+    };
 
+    const aggregatedResult = aggregateStreamPosts(postsWithContext, aggregateOptions);
+
+    // Build response
     const response: StreamsResponse = {
-      posts: paginatedPosts,
+      posts: aggregatedResult.posts,
       accounts,
-      hasMore,
-      nextCursor,
+      hasMore: aggregatedResult.hasMore,
+      nextCursor: aggregatedResult.nextCursor,
+      errors: errors.length > 0 ? errors : undefined,
     };
 
     return NextResponse.json(response);

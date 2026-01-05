@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { SocialPlatform, StreamFilter, StreamPost, StreamsResponse } from "@/lib/social/types";
 
-import { useStreamFeed } from "./useStreamFeed";
+import { DEFAULT_POLLING_INTERVAL, useStreamFeed } from "./useStreamFeed";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -887,6 +887,542 @@ describe("useStreamFeed", () => {
       expect(errorsAggregated).toHaveLength(2);
       expect(errorsAggregated[0]!.message).toBe("Rate limited");
       expect(errorsAggregated[1]!.message).toBe("Token expired");
+    });
+  });
+
+  describe("polling", () => {
+    it("should export DEFAULT_POLLING_INTERVAL constant", () => {
+      expect(DEFAULT_POLLING_INTERVAL).toBe(30000);
+    });
+
+    it("should have isPolling true by default when enabled", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const { result } = renderHook(
+        () => useStreamFeed({ workspaceId: mockWorkspaceId }),
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.isPolling).toBe(true);
+    });
+
+    it("should have isPolling false when pollingInterval is 0", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const { result } = renderHook(
+        () => useStreamFeed({ workspaceId: mockWorkspaceId, pollingInterval: 0 }),
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.isPolling).toBe(false);
+    });
+
+    it("should have isPolling false when enabled is false", async () => {
+      const { result } = renderHook(
+        () => useStreamFeed({ workspaceId: mockWorkspaceId, enabled: false }),
+        { wrapper: createWrapper() },
+      );
+
+      expect(result.current.isPolling).toBe(false);
+    });
+
+    it("should pause polling when document is hidden", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const { result } = renderHook(
+        () => useStreamFeed({ workspaceId: mockWorkspaceId }),
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.isPolling).toBe(true);
+
+      // Simulate document becoming hidden
+      Object.defineProperty(document, "visibilityState", {
+        value: "hidden",
+        configurable: true,
+      });
+      act(() => {
+        document.dispatchEvent(new Event("visibilitychange"));
+      });
+
+      expect(result.current.isPolling).toBe(false);
+
+      // Restore visible state
+      Object.defineProperty(document, "visibilityState", {
+        value: "visible",
+        configurable: true,
+      });
+      act(() => {
+        document.dispatchEvent(new Event("visibilitychange"));
+      });
+
+      expect(result.current.isPolling).toBe(true);
+    });
+
+    it("should use custom pollingInterval when provided", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const customInterval = 60000;
+      const { result } = renderHook(
+        () => useStreamFeed({ workspaceId: mockWorkspaceId, pollingInterval: customInterval }),
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.isPolling).toBe(true);
+    });
+  });
+
+  describe("new posts detection", () => {
+    it("should initialize newPostsCount to 0", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const { result } = renderHook(
+        () => useStreamFeed({ workspaceId: mockWorkspaceId }),
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.newPostsCount).toBe(0);
+    });
+
+    it("should detect new posts on subsequent fetches", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const { result } = renderHook(
+        () => useStreamFeed({ workspaceId: mockWorkspaceId }),
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.newPostsCount).toBe(0);
+
+      // Simulate polling with new posts
+      const newPost: StreamPost = {
+        id: "post-new",
+        platformPostId: "twitter-new",
+        platform: "TWITTER" as SocialPlatform,
+        content: "New post!",
+        publishedAt: new Date("2025-01-02T10:00:00Z"),
+        url: "https://twitter.com/user/status/new",
+        accountId: "acc-1",
+        accountName: "Test Twitter",
+        canLike: true,
+        canReply: true,
+        canShare: true,
+        metrics: { likes: 0, comments: 0, shares: 0 },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...mockResponse,
+          posts: [newPost, ...mockPosts],
+        }),
+      });
+
+      await act(async () => {
+        result.current.refetch();
+      });
+
+      await waitFor(() => {
+        expect(result.current.isRefetching).toBe(false);
+      });
+
+      // Wait for the effect to update newPostsCount
+      await waitFor(() => {
+        expect(result.current.newPostsCount).toBe(1);
+      });
+    });
+
+    it("should accumulate new posts count across multiple fetches", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const { result } = renderHook(
+        () => useStreamFeed({ workspaceId: mockWorkspaceId }),
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // First refetch with 1 new post
+      const newPost1: StreamPost = {
+        id: "post-new-1",
+        platformPostId: "twitter-new-1",
+        platform: "TWITTER" as SocialPlatform,
+        content: "New post 1!",
+        publishedAt: new Date("2025-01-02T10:00:00Z"),
+        url: "https://twitter.com/user/status/new1",
+        accountId: "acc-1",
+        accountName: "Test Twitter",
+        canLike: true,
+        canReply: true,
+        canShare: true,
+        metrics: { likes: 0, comments: 0, shares: 0 },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...mockResponse,
+          posts: [newPost1, ...mockPosts],
+        }),
+      });
+
+      await act(async () => {
+        result.current.refetch();
+      });
+
+      await waitFor(() => {
+        expect(result.current.isRefetching).toBe(false);
+      });
+
+      // Wait for effect to update newPostsCount
+      await waitFor(() => {
+        expect(result.current.newPostsCount).toBe(1);
+      });
+
+      // Second refetch with another new post
+      const newPost2: StreamPost = {
+        id: "post-new-2",
+        platformPostId: "twitter-new-2",
+        platform: "TWITTER" as SocialPlatform,
+        content: "New post 2!",
+        publishedAt: new Date("2025-01-02T11:00:00Z"),
+        url: "https://twitter.com/user/status/new2",
+        accountId: "acc-1",
+        accountName: "Test Twitter",
+        canLike: true,
+        canReply: true,
+        canShare: true,
+        metrics: { likes: 0, comments: 0, shares: 0 },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...mockResponse,
+          posts: [newPost2, newPost1, ...mockPosts],
+        }),
+      });
+
+      await act(async () => {
+        result.current.refetch();
+      });
+
+      await waitFor(() => {
+        expect(result.current.isRefetching).toBe(false);
+      });
+
+      // Wait for effect to accumulate newPostsCount
+      await waitFor(() => {
+        expect(result.current.newPostsCount).toBe(2);
+      });
+    });
+
+    it("should reset newPostsCount when acknowledgeNewPosts is called", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const { result } = renderHook(
+        () => useStreamFeed({ workspaceId: mockWorkspaceId }),
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // Add a new post
+      const newPost: StreamPost = {
+        id: "post-new",
+        platformPostId: "twitter-new",
+        platform: "TWITTER" as SocialPlatform,
+        content: "New post!",
+        publishedAt: new Date("2025-01-02T10:00:00Z"),
+        url: "https://twitter.com/user/status/new",
+        accountId: "acc-1",
+        accountName: "Test Twitter",
+        canLike: true,
+        canReply: true,
+        canShare: true,
+        metrics: { likes: 0, comments: 0, shares: 0 },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...mockResponse,
+          posts: [newPost, ...mockPosts],
+        }),
+      });
+
+      await act(async () => {
+        result.current.refetch();
+      });
+
+      await waitFor(() => {
+        expect(result.current.isRefetching).toBe(false);
+      });
+
+      // Wait for effect to update newPostsCount
+      await waitFor(() => {
+        expect(result.current.newPostsCount).toBe(1);
+      });
+
+      // Acknowledge new posts
+      act(() => {
+        result.current.acknowledgeNewPosts();
+      });
+
+      expect(result.current.newPostsCount).toBe(0);
+    });
+
+    it("should reset new posts tracking when workspaceId changes", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const { result, rerender } = renderHook(
+        ({ workspaceId }: { workspaceId: string; }) => useStreamFeed({ workspaceId }),
+        {
+          wrapper: createWrapper(),
+          initialProps: { workspaceId: "ws-123" },
+        },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // Add a new post
+      const newPost: StreamPost = {
+        id: "post-new",
+        platformPostId: "twitter-new",
+        platform: "TWITTER" as SocialPlatform,
+        content: "New post!",
+        publishedAt: new Date("2025-01-02T10:00:00Z"),
+        url: "https://twitter.com/user/status/new",
+        accountId: "acc-1",
+        accountName: "Test Twitter",
+        canLike: true,
+        canReply: true,
+        canShare: true,
+        metrics: { likes: 0, comments: 0, shares: 0 },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...mockResponse,
+          posts: [newPost, ...mockPosts],
+        }),
+      });
+
+      await act(async () => {
+        result.current.refetch();
+      });
+
+      await waitFor(() => {
+        expect(result.current.isRefetching).toBe(false);
+      });
+
+      // Wait for effect to update newPostsCount
+      await waitFor(() => {
+        expect(result.current.newPostsCount).toBe(1);
+      });
+
+      // Change workspaceId
+      rerender({ workspaceId: "ws-456" });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.newPostsCount).toBe(0);
+    });
+
+    it("should reset new posts tracking when filters change", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const initialFilters: StreamFilter = {
+        sortBy: "publishedAt",
+        sortOrder: "desc",
+      };
+
+      const { result, rerender } = renderHook(
+        ({ filters }: { filters: StreamFilter; }) =>
+          useStreamFeed({ workspaceId: mockWorkspaceId, filters }),
+        {
+          wrapper: createWrapper(),
+          initialProps: { filters: initialFilters },
+        },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // Add a new post
+      const newPost: StreamPost = {
+        id: "post-new",
+        platformPostId: "twitter-new",
+        platform: "TWITTER" as SocialPlatform,
+        content: "New post!",
+        publishedAt: new Date("2025-01-02T10:00:00Z"),
+        url: "https://twitter.com/user/status/new",
+        accountId: "acc-1",
+        accountName: "Test Twitter",
+        canLike: true,
+        canReply: true,
+        canShare: true,
+        metrics: { likes: 0, comments: 0, shares: 0 },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...mockResponse,
+          posts: [newPost, ...mockPosts],
+        }),
+      });
+
+      await act(async () => {
+        result.current.refetch();
+      });
+
+      await waitFor(() => {
+        expect(result.current.isRefetching).toBe(false);
+      });
+
+      // Wait for effect to update newPostsCount
+      await waitFor(() => {
+        expect(result.current.newPostsCount).toBe(1);
+      });
+
+      // Change filters
+      const newFilters: StreamFilter = {
+        platforms: ["TWITTER" as SocialPlatform],
+        sortBy: "likes",
+        sortOrder: "desc",
+      };
+
+      rerender({ filters: newFilters });
+
+      await waitFor(() => {
+        expect(mockFetch.mock.calls.length).toBeGreaterThan(2);
+      });
+
+      expect(result.current.newPostsCount).toBe(0);
+    });
+
+    it("should not count existing posts as new on refetch", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const { result } = renderHook(
+        () => useStreamFeed({ workspaceId: mockWorkspaceId }),
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.newPostsCount).toBe(0);
+
+      // Refetch with same posts (no new posts)
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      await act(async () => {
+        result.current.refetch();
+      });
+
+      await waitFor(() => {
+        expect(result.current.isRefetching).toBe(false);
+      });
+
+      expect(result.current.newPostsCount).toBe(0);
+    });
+
+    it("should handle empty posts array", async () => {
+      const emptyResponse: StreamsResponse = {
+        posts: [],
+        accounts: mockAccounts,
+        hasMore: false,
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => emptyResponse,
+      });
+
+      const { result } = renderHook(
+        () => useStreamFeed({ workspaceId: mockWorkspaceId }),
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.newPostsCount).toBe(0);
+      expect(result.current.posts).toEqual([]);
     });
   });
 });

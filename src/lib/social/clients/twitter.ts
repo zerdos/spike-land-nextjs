@@ -426,6 +426,76 @@ export class TwitterClient implements ISocialClient {
   }
 
   /**
+   * Like a tweet
+   */
+  async likePost(postId: string): Promise<void> {
+    const token = this.getAccessTokenOrThrow();
+
+    // Ensure we have the user ID
+    if (!this.twitterUserId) {
+      const userInfo = await this.getAccountInfo();
+      this.twitterUserId = userInfo.platformId;
+    }
+
+    const response = await fetch(`${TWITTER_API_BASE}/2/users/${this.twitterUserId}/likes`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ tweet_id: postId }),
+    });
+
+    if (!response.ok) {
+      const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
+      throw new TwitterHttpError(
+        `Failed to like tweet: ${errorData.detail || errorData.title || response.statusText}`,
+        response.status,
+        response.statusText,
+      );
+    }
+  }
+
+  /**
+   * Unlike a tweet
+   */
+  async unlikePost(postId: string): Promise<void> {
+    const token = this.getAccessTokenOrThrow();
+
+    // Ensure we have the user ID
+    if (!this.twitterUserId) {
+      const userInfo = await this.getAccountInfo();
+      this.twitterUserId = userInfo.platformId;
+    }
+
+    const response = await fetch(
+      `${TWITTER_API_BASE}/2/users/${this.twitterUserId}/likes/${postId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
+      throw new TwitterHttpError(
+        `Failed to unlike tweet: ${errorData.detail || errorData.title || response.statusText}`,
+        response.status,
+        response.statusText,
+      );
+    }
+  }
+
+  /**
+   * Reply to a tweet
+   */
+  async replyToPost(postId: string, content: string): Promise<PostResult> {
+    return this.createPost(content, { replyToId: postId });
+  }
+
+  /**
    * Get account-level metrics
    */
   async getMetrics(): Promise<SocialMetricsData> {

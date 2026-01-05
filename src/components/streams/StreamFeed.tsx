@@ -27,6 +27,10 @@ export interface StreamFeedProps {
   onShare?: (postId: string) => void;
   /** Callback when connect accounts is clicked from empty state */
   onConnectAccounts?: () => void;
+  /** Post ID that is currently being liked */
+  likingPostId?: string | null;
+  /** Post ID that is currently being replied to */
+  replyingPostId?: string | null;
 }
 
 /**
@@ -78,6 +82,8 @@ export function StreamFeed({
   onReply,
   onShare,
   onConnectAccounts,
+  likingPostId,
+  replyingPostId,
 }: StreamFeedProps) {
   // Show loading skeletons when loading and no posts yet
   if (isLoading && posts.length === 0) {
@@ -112,6 +118,8 @@ export function StreamFeed({
           onLike={onLike}
           onReply={onReply}
           onShare={onShare}
+          isLiking={likingPostId === post.id || likingPostId === post.platformPostId}
+          isReplying={replyingPostId === post.id || replyingPostId === post.platformPostId}
         />
       ))}
 

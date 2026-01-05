@@ -236,6 +236,54 @@ export class InstagramClient implements ISocialClient {
   }
 
   /**
+   * Like an Instagram media post
+   * Note: Instagram Graph API does not support programmatic likes on behalf of users.
+   * This is a limitation of the Instagram Graph API for Business accounts.
+   * The method is provided for interface consistency but will throw an error.
+   */
+  async likeMedia(_mediaId: string): Promise<void> {
+    throw new Error(
+      "Instagram Graph API does not support programmatic likes. " +
+        "Users must like posts directly through the Instagram app.",
+    );
+  }
+
+  /**
+   * Unlike an Instagram media post
+   * Note: Instagram Graph API does not support programmatic unlikes.
+   */
+  async unlikeMedia(_mediaId: string): Promise<void> {
+    throw new Error(
+      "Instagram Graph API does not support programmatic unlikes. " +
+        "Users must unlike posts directly through the Instagram app.",
+    );
+  }
+
+  /**
+   * Comment on an Instagram media post
+   */
+  async commentOnMedia(mediaId: string, content: string): Promise<{ id: string; }> {
+    this.validateConfig();
+
+    const url = new URL(`${GRAPH_API_BASE}/${mediaId}/comments`);
+    url.searchParams.set("message", content);
+    url.searchParams.set("access_token", this.accessToken);
+
+    const response = await fetch(url.toString(), {
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        `Failed to comment on Instagram media: ${response.status} - ${JSON.stringify(errorData)}`,
+      );
+    }
+
+    return response.json() as Promise<{ id: string; }>;
+  }
+
+  /**
    * Get Instagram account metrics/insights
    */
   async getMetrics(): Promise<SocialMetricsData> {
