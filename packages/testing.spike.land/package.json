@@ -50,7 +50,7 @@
     "vitest": "3.2.4"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "3.0.2",
+    "@ai-sdk/anthropic": "3.0.3",
     "@anthropic-ai/sdk": "0.71.2",
     "@spike-npm-land/code": "0.9.56",
     "@types/node": "25.0.3",
@@ -70,7 +70,7 @@
     "p-map": "7.0.4",
     "p-queue": "9.0.1",
     "replicate": "1.4.0",
-    "zod": "4.2.1"
+    "zod": "4.3.5"
   },
   "publishConfig": {
     "access": "public"
