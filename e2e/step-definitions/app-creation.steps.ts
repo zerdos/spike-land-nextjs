@@ -482,6 +482,8 @@ When(
   "I start creating an app with name {string}",
   async function(this: CustomWorld, appName: string) {
     const wizard = getWizard(this);
+    await wizard.navigate();
+    await waitForPageLoad(this.page);
     const nameField = await wizard.getAppNameInput();
     await nameField.fill(appName);
   },
