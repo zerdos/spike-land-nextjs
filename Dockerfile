@@ -52,26 +52,16 @@ RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/
     && apt-get install -y --no-install-recommends \
        python3 make g++ \
        libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
+ADD https://github.com/zerdos/spike-land-nextjs.git /app/
+RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
+    --mount=type=cache,id=${CACHE_NS}-nm-${TARGETARCH},target=/tmp/nm-cache,sharing=locked \
+    yarn install --immutable
 
 COPY --link --from=dep-context /app /app
 
 RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
     --mount=type=cache,id=${CACHE_NS}-nm-${TARGETARCH},target=/tmp/nm-cache,sharing=locked \
-    LOCK_HASH=$(sha256sum yarn.lock | cut -d' ' -f1) && \
-    if [ -f /tmp/nm-cache/hash ] && [ "$(cat /tmp/nm-cache/hash)" = "$LOCK_HASH" ] && [ -d /tmp/nm-cache/nm ]; then \
-      echo "♻️  Restoring node_modules from cache (yarn.lock unchanged)"; \
-      cp -al /tmp/nm-cache/nm ./node_modules 2>/dev/null || cp -a /tmp/nm-cache/nm ./node_modules; \
-    fi && \
-    DATABASE_URL="${DUMMY_DATABASE_URL}" yarn install --immutable && \
-    if [ ! -f /tmp/nm-cache/hash ] || [ "$(cat /tmp/nm-cache/hash)" != "$LOCK_HASH" ]; then \
-      echo "💾 Saving node_modules to cache"; \
-      rm -rf /tmp/nm-cache/nm && \
-      cp -al node_modules /tmp/nm-cache/nm 2>/dev/null || cp -a node_modules /tmp/nm-cache/nm && \
-      echo "$LOCK_HASH" > /tmp/nm-cache/hash; \
-    fi
-
-RUN test -d node_modules/.prisma/client || \
-    (DATABASE_URL="${DUMMY_DATABASE_URL}" yarn prisma generate --no-hints)
+    yarn install --immutable 
 
 # ============================================================================
 # STAGE 3: Source Code
@@ -251,6 +241,7 @@ COPY --link --from=source /app/tsconfig*.json /app/next.config.ts /app/postcss.c
 COPY --link --from=source /app/tailwind.config.ts ./
 COPY --link --from=source /app/src ./src
 COPY --link --from=source /app/apps ./apps
+COPY --link --from=source /app/public ./public
 COPY --link --from=source /app/content ./content
 
 # Copy test files and environment
@@ -261,16 +252,13 @@ COPY --link --from=test-source /app/cucumber.js ./cucumber.js
 COPY --link scripts/e2e-cache-manager.ts scripts/run-cached-e2e.sh scripts/e2e-shard.sh ./scripts/
 RUN chmod +x ./scripts/run-cached-e2e.sh ./scripts/e2e-shard.sh
 
-ARG DATABASE_URL=${DUMMY_DATABASE_URL}
-ARG AUTH_SECRET
-ARG E2E_BYPASS_SECRET
+# Note: AUTH_SECRET, DATABASE_URL, and E2E_BYPASS_SECRET are loaded from .env.local
+# Do NOT set them here as empty ARGs would override the .env.local values
 ENV CI=true \
+    NODE_ENV=development \
     BASE_URL=http://localhost:3000 \
     NEXTAUTH_URL=http://localhost:3000 \
-    SKIP_ENV_VALIDATION=true \
-    DATABASE_URL=${DATABASE_URL} \
-    AUTH_SECRET=${AUTH_SECRET} \
-    E2E_BYPASS_SECRET=${E2E_BYPASS_SECRET}
+    SKIP_ENV_VALIDATION=true
 
 RUN mkdir -p e2e/reports
 
