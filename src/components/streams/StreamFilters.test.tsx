@@ -983,4 +983,65 @@ describe("StreamFilters", () => {
       expect(refreshButton).not.toBeDisabled();
     });
   });
+
+  describe("Polling Indicator", () => {
+    it("should show polling indicator when isPolling is true", () => {
+      const onChange = vi.fn();
+      render(
+        <StreamFilters
+          filters={createDefaultFilter()}
+          onChange={onChange}
+          connectedPlatforms={DEFAULT_PLATFORMS}
+          isPolling={true}
+        />,
+      );
+
+      expect(screen.getByTestId("polling-indicator")).toBeInTheDocument();
+      expect(screen.getByText("Live")).toBeInTheDocument();
+    });
+
+    it("should not show polling indicator when isPolling is false", () => {
+      const onChange = vi.fn();
+      render(
+        <StreamFilters
+          filters={createDefaultFilter()}
+          onChange={onChange}
+          connectedPlatforms={DEFAULT_PLATFORMS}
+          isPolling={false}
+        />,
+      );
+
+      expect(screen.queryByTestId("polling-indicator")).not.toBeInTheDocument();
+    });
+
+    it("should not show polling indicator by default", () => {
+      const onChange = vi.fn();
+      render(
+        <StreamFilters
+          filters={createDefaultFilter()}
+          onChange={onChange}
+          connectedPlatforms={DEFAULT_PLATFORMS}
+        />,
+      );
+
+      expect(screen.queryByTestId("polling-indicator")).not.toBeInTheDocument();
+    });
+
+    it("should have correct aria-label on polling indicator", () => {
+      const onChange = vi.fn();
+      render(
+        <StreamFilters
+          filters={createDefaultFilter()}
+          onChange={onChange}
+          connectedPlatforms={DEFAULT_PLATFORMS}
+          isPolling={true}
+        />,
+      );
+
+      expect(screen.getByTestId("polling-indicator")).toHaveAttribute(
+        "aria-label",
+        "Auto-refreshing",
+      );
+    });
+  });
 });

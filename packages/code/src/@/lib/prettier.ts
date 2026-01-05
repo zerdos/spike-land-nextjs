@@ -1,5 +1,6 @@
 import emotionPrettifier from "@emotion/css-prettifier";
 import type { Options } from "prettier";
+// Use bare specifiers to let package exports handle ESM/CJS resolution
 import pluginEstree from "prettier/plugins/estree";
 import postCss from "prettier/plugins/postcss";
 import pluginTypescript from "prettier/plugins/typescript";

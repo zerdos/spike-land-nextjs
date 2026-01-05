@@ -1,7 +1,12 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { StreamFilter, StreamPost, StreamsResponse } from "@/lib/social/types";
+
+/**
+ * Default polling interval in milliseconds (30 seconds)
+ */
+export const DEFAULT_POLLING_INTERVAL = 30000;
 
 /**
  * Options for the useStreamFeed hook
@@ -13,6 +18,8 @@ export interface UseStreamFeedOptions {
   filters?: StreamFilter;
   /** Whether to enable the query (default: true) */
   enabled?: boolean;
+  /** Polling interval in milliseconds (default: 30000ms). Set to 0 to disable polling. */
+  pollingInterval?: number;
 }
 
 /**
@@ -41,6 +48,12 @@ export interface UseStreamFeedResult {
   refetch: () => void;
   /** Whether currently refetching */
   isRefetching: boolean;
+  /** Number of new posts detected since last acknowledgment */
+  newPostsCount: number;
+  /** Function to acknowledge new posts (resets count) */
+  acknowledgeNewPosts: () => void;
+  /** Whether polling is currently active */
+  isPolling: boolean;
 }
 
 /**
@@ -107,15 +120,17 @@ function normalizeFilters(filters?: StreamFilter): Record<string, unknown> | und
  *
  * Uses infinite query for cursor-based pagination.
  * Automatically refetches on window focus and handles caching.
+ * Supports polling with automatic pause when tab is not visible.
  *
  * @param options - The options for the hook
  * @returns The stream feed data and control functions
  *
  * @example
  * ```tsx
- * const { posts, isLoading, fetchNextPage, hasMore } = useStreamFeed({
+ * const { posts, isLoading, fetchNextPage, hasMore, newPostsCount, acknowledgeNewPosts } = useStreamFeed({
  *   workspaceId: "ws-123",
  *   filters: { sortBy: "publishedAt", sortOrder: "desc" },
+ *   pollingInterval: 30000, // Poll every 30 seconds
  * });
  * ```
  */
@@ -123,8 +138,35 @@ export function useStreamFeed({
   workspaceId,
   filters,
   enabled = true,
+  pollingInterval = DEFAULT_POLLING_INTERVAL,
 }: UseStreamFeedOptions): UseStreamFeedResult {
   const normalizedFilters = useMemo(() => normalizeFilters(filters), [filters]);
+
+  // Track document visibility for polling
+  const [isDocumentVisible, setIsDocumentVisible] = useState(true);
+
+  // Track known post IDs for new post detection
+  const knownPostIdsRef = useRef<Set<string>>(new Set());
+  const [newPostsCount, setNewPostsCount] = useState(0);
+  const isInitialFetchRef = useRef(true);
+
+  // Handle visibility change for polling
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsDocumentVisible(document.visibilityState === "visible");
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    // Set initial state
+    setIsDocumentVisible(document.visibilityState === "visible");
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  // Determine if polling should be active
+  const shouldPoll = enabled && pollingInterval > 0 && isDocumentVisible;
 
   const query = useInfiniteQuery({
     queryKey: ["streams", workspaceId, normalizedFilters] as const,
@@ -134,6 +176,8 @@ export function useStreamFeed({
     enabled,
     staleTime: 30 * 1000, // 30 seconds
     refetchOnWindowFocus: true,
+    // Use function for refetchInterval to conditionally enable polling
+    refetchInterval: shouldPoll ? pollingInterval : false,
   });
 
   // Flatten posts from all pages
@@ -141,6 +185,50 @@ export function useStreamFeed({
     if (!query.data?.pages) return [];
     return query.data.pages.flatMap((page) => page.posts);
   }, [query.data?.pages]);
+
+  // Track the dataUpdatedAt timestamp to detect actual data changes
+  const lastDataUpdatedAtRef = useRef<number>(0);
+
+  // Detect new posts when data changes
+  useEffect(() => {
+    // Skip if no data or timestamp hasn't changed
+    if (!query.data?.pages || query.dataUpdatedAt === lastDataUpdatedAtRef.current) return;
+
+    const currentPosts = query.data.pages.flatMap((page) => page.posts);
+
+    // On initial fetch, just populate the known IDs
+    if (isInitialFetchRef.current) {
+      knownPostIdsRef.current = new Set(currentPosts.map((post) => post.id));
+      isInitialFetchRef.current = false;
+      lastDataUpdatedAtRef.current = query.dataUpdatedAt;
+      return;
+    }
+
+    // Count new posts (posts we haven't seen before)
+    const currentPostIds = currentPosts.map((post) => post.id);
+    const newIds = currentPostIds.filter((id) => !knownPostIdsRef.current.has(id));
+
+    if (newIds.length > 0) {
+      setNewPostsCount((prev) => prev + newIds.length);
+      // Add new IDs to known set
+      newIds.forEach((id) => knownPostIdsRef.current.add(id));
+    }
+
+    lastDataUpdatedAtRef.current = query.dataUpdatedAt;
+  }, [query.data?.pages, query.dataUpdatedAt]);
+
+  // Reset state when filters or workspaceId changes
+  useEffect(() => {
+    knownPostIdsRef.current = new Set();
+    setNewPostsCount(0);
+    isInitialFetchRef.current = true;
+    lastDataUpdatedAtRef.current = 0;
+  }, [workspaceId, normalizedFilters]);
+
+  // Function to acknowledge new posts
+  const acknowledgeNewPosts = useCallback(() => {
+    setNewPostsCount(0);
+  }, []);
 
   // Get accounts from the first page (they're the same across pages)
   const accounts = useMemo(() => {
@@ -178,5 +266,8 @@ export function useStreamFeed({
       query.refetch();
     },
     isRefetching: query.isRefetching,
+    newPostsCount,
+    acknowledgeNewPosts,
+    isPolling: shouldPoll,
   };
 }
