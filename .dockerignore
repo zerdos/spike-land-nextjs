@@ -10,6 +10,8 @@ e2e/reports
 dist
 .cache
 
+depot.json
+
 # Yarn cache (huge - will reinstall from lock file)
 .yarn/cache
 .yarn/unplugged
