@@ -3084,6 +3084,134 @@ ORDER BY pg_relation_size(indexrelid) DESC;
 
 ---
 
+## Brand Brain (AI Content Guardian)
+
+Brand Brain is the AI-powered content governance system that ensures all
+generated content aligns with brand identity, guidelines, and vocabulary.
+
+### Models
+
+#### BrandProfile
+
+Core brand identity configuration linked 1:1 to a Workspace.
+
+| Column            | Type      | Description                                             |
+| ----------------- | --------- | ------------------------------------------------------- |
+| `id`              | TEXT (PK) | CUID primary key                                        |
+| `workspaceId`     | TEXT (UK) | Unique foreign key to workspaces                        |
+| `name`            | TEXT      | Brand display name                                      |
+| `mission`         | TEXT      | Brand mission statement                                 |
+| `values`          | JSONB     | Array of brand values e.g. `["innovation", "trust"]`    |
+| `toneDescriptors` | JSONB     | Tone attributes e.g. `{"formal": 0.7, "friendly": 0.8}` |
+| `version`         | INTEGER   | Schema version for tracking changes (default: 1)        |
+| `isActive`        | BOOLEAN   | Enable/disable the profile (default: true)              |
+| `createdById`     | TEXT (FK) | User who created the profile                            |
+| `updatedById`     | TEXT (FK) | User who last updated the profile                       |
+| `createdAt`       | TIMESTAMP | Creation timestamp                                      |
+| `updatedAt`       | TIMESTAMP | Last update timestamp                                   |
+
+**Relationships:**
+
+- Workspace (1:1, CASCADE delete)
+- User as creator (RESTRICT delete)
+- User as updater (SET NULL on delete)
+- BrandGuardrail (1:N)
+- BrandVocabulary (1:N)
+
+#### BrandGuardrail
+
+Content rules and restrictions for brand compliance.
+
+| Column           | Type              | Description                                      |
+| ---------------- | ----------------- | ------------------------------------------------ |
+| `id`             | TEXT (PK)         | CUID primary key                                 |
+| `brandProfileId` | TEXT (FK)         | Foreign key to brand_profiles                    |
+| `type`           | GuardrailType     | Rule type (see enums below)                      |
+| `name`           | TEXT              | Human-readable rule name                         |
+| `description`    | TEXT              | Detailed rule description                        |
+| `severity`       | GuardrailSeverity | Rule severity level (default: MEDIUM)            |
+| `ruleConfig`     | JSONB             | Flexible rule configuration (keywords, patterns) |
+| `isActive`       | BOOLEAN           | Enable/disable the rule (default: true)          |
+| `createdAt`      | TIMESTAMP         | Creation timestamp                               |
+| `updatedAt`      | TIMESTAMP         | Last update timestamp                            |
+
+**Relationships:**
+
+- BrandProfile (N:1, CASCADE delete)
+
+#### BrandVocabulary
+
+Preferred and banned words/phrases for consistent brand voice.
+
+| Column           | Type           | Description                              |
+| ---------------- | -------------- | ---------------------------------------- |
+| `id`             | TEXT (PK)      | CUID primary key                         |
+| `brandProfileId` | TEXT (FK)      | Foreign key to brand_profiles            |
+| `type`           | VocabularyType | Entry type (see enums below)             |
+| `term`           | TEXT           | The word or phrase                       |
+| `replacement`    | TEXT           | Replacement term (for REPLACEMENT type)  |
+| `context`        | TEXT           | When this rule applies                   |
+| `isActive`       | BOOLEAN        | Enable/disable the entry (default: true) |
+| `createdAt`      | TIMESTAMP      | Creation timestamp                       |
+| `updatedAt`      | TIMESTAMP      | Last update timestamp                    |
+
+**Relationships:**
+
+- BrandProfile (N:1, CASCADE delete)
+
+**Indexes:**
+
+- GIN index on `term` using pg_trgm for full-text search
+
+### Enums
+
+```typescript
+enum GuardrailType {
+  PROHIBITED_TOPIC    // Topics that must never be discussed
+  REQUIRED_DISCLOSURE // Disclosures that must be included
+  CONTENT_WARNING     // Content that requires warnings
+}
+
+enum GuardrailSeverity {
+  LOW      // Informational, soft warning
+  MEDIUM   // Should be addressed, but not blocking
+  HIGH     // Must be addressed, blocking in strict mode
+  CRITICAL // Always blocking, immediate escalation
+}
+
+enum VocabularyType {
+  PREFERRED   // Use these terms
+  BANNED      // Avoid these terms
+  REPLACEMENT // Use X instead of Y
+}
+```
+
+### Example Queries
+
+**Get workspace brand profile with all rules:**
+
+```typescript
+const brandProfile = await prisma.brandProfile.findUnique({
+  where: { workspaceId },
+  include: {
+    guardrails: { where: { isActive: true } },
+    vocabulary: { where: { isActive: true } },
+  },
+});
+```
+
+**Search vocabulary terms with fuzzy matching:**
+
+```sql
+SELECT * FROM brand_vocabulary
+WHERE term % 'innovation'  -- Uses GIN trigram index
+  AND "isActive" = true
+ORDER BY similarity(term, 'innovation') DESC
+LIMIT 10;
+```
+
+---
+
 ## Related Documentation
 
 - [TOKEN_SYSTEM.md](/Users/z/Developer/spike-land-nextjs/docs/TOKEN_SYSTEM.md) -
