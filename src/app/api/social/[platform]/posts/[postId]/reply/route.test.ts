@@ -1,6 +1,21 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// Use vi.hoisted to declare mocks that need to be hoisted
+const { MockTwitterHttpError } = vi.hoisted(() => {
+  class MockTwitterHttpError extends Error {
+    status: number;
+    statusText: string;
+    constructor(message: string, status: number, statusText: string) {
+      super(message);
+      this.status = status;
+      this.statusText = statusText;
+      this.name = "TwitterHttpError";
+    }
+  }
+  return { MockTwitterHttpError };
+});
+
 // Mock modules before imports
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -20,51 +35,38 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/social/clients/twitter", () => ({
-  TwitterClient: vi.fn().mockImplementation(() => ({
-    replyToPost: vi.fn(),
-  })),
-  TwitterHttpError: class TwitterHttpError extends Error {
-    constructor(
-      message: string,
-      public status: number,
-      public statusText: string,
-    ) {
-      super(message);
-    }
-  },
+  TwitterClient: vi.fn(),
+  TwitterHttpError: MockTwitterHttpError,
 }));
 
 vi.mock("@/lib/social/clients/facebook", () => ({
-  FacebookClient: vi.fn().mockImplementation(() => ({
-    commentOnPost: vi.fn(),
-  })),
+  FacebookClient: vi.fn(),
 }));
 
 vi.mock("@/lib/social/clients/instagram", () => ({
-  InstagramClient: vi.fn().mockImplementation(() => ({
-    commentOnMedia: vi.fn(),
-  })),
+  InstagramClient: vi.fn(),
 }));
 
 vi.mock("@/lib/social/clients/linkedin", () => ({
-  LinkedInClient: vi.fn().mockImplementation(() => ({
-    commentOnPost: vi.fn(),
-  })),
+  LinkedInClient: vi.fn(),
 }));
 
 // Import after mocks
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { TwitterClient, TwitterHttpError } from "@/lib/social/clients/twitter";
+import { FacebookClient } from "@/lib/social/clients/facebook";
+import { TwitterClient } from "@/lib/social/clients/twitter";
 import { PLATFORM_CHARACTER_LIMITS, POST } from "./route";
 
 const mockAuth = auth as ReturnType<typeof vi.fn>;
-const mockPrisma = prisma as {
+const mockPrisma = prisma as unknown as {
   socialAccount: {
     findFirst: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
   };
 };
+const MockTwitterClient = TwitterClient as ReturnType<typeof vi.fn>;
+const MockFacebookClient = FacebookClient as ReturnType<typeof vi.fn>;
 
 describe("Reply API Route", () => {
   beforeEach(() => {
@@ -218,9 +220,9 @@ describe("Reply API Route", () => {
         platformPostId: "reply-456",
         url: "https://twitter.com/user/status/reply-456",
       });
-      (TwitterClient as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-        replyToPost: mockReplyToPost,
-      }));
+      MockTwitterClient.mockImplementation(function() {
+        return { replyToPost: mockReplyToPost };
+      });
 
       const response = await POST(
         createRequest({ accountId: "acc-123", content: "Test reply" }),
@@ -247,11 +249,11 @@ describe("Reply API Route", () => {
       });
 
       const mockReplyToPost = vi.fn().mockRejectedValue(
-        new TwitterHttpError("Unauthorized", 401, "Unauthorized"),
+        new MockTwitterHttpError("Unauthorized", 401, "Unauthorized"),
       );
-      (TwitterClient as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-        replyToPost: mockReplyToPost,
-      }));
+      MockTwitterClient.mockImplementation(function() {
+        return { replyToPost: mockReplyToPost };
+      });
 
       const response = await POST(
         createRequest({ accountId: "acc-123", content: "Test reply" }),
@@ -275,9 +277,9 @@ describe("Reply API Route", () => {
       });
 
       const mockReplyToPost = vi.fn().mockRejectedValue(new Error("API Error"));
-      (TwitterClient as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-        replyToPost: mockReplyToPost,
-      }));
+      MockTwitterClient.mockImplementation(function() {
+        return { replyToPost: mockReplyToPost };
+      });
 
       const response = await POST(
         createRequest({ accountId: "acc-123", content: "Test reply" }),
@@ -296,19 +298,14 @@ describe("Reply API Route", () => {
         status: "ACTIVE",
         accessTokenEncrypted: "token",
         accountId: "fb-123",
-        pageId: "page-123",
       });
 
       const longContent = "a".repeat(500); // More than Twitter's limit but less than Facebook's
 
-      // Mock should not be called because we're testing length validation
-      // But we need the mock in case validation passes
       const mockCommentOnPost = vi.fn().mockResolvedValue({ id: "comment-123" });
-      vi.mock("@/lib/social/clients/facebook", () => ({
-        FacebookClient: vi.fn().mockImplementation(() => ({
-          commentOnPost: mockCommentOnPost,
-        })),
-      }));
+      MockFacebookClient.mockImplementation(function() {
+        return { commentOnPost: mockCommentOnPost };
+      });
 
       const request = new NextRequest(
         "http://localhost/api/social/facebook/posts/123/reply",

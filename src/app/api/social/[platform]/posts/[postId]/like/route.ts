@@ -207,6 +207,9 @@ export async function POST(
   const { account } = accountResult;
   const accessToken = safeDecryptToken(account.accessTokenEncrypted);
 
+  // Extract metadata fields for platform-specific options
+  const metadata = account.metadata as { organizationUrn?: string; } | null;
+
   // Like the post
   const { error: likeError } = await tryCatch(
     likePostByPlatform(
@@ -214,8 +217,10 @@ export async function POST(
       postId,
       accessToken,
       account.accountId,
-      account.pageId,
-      account.organizationUrn,
+      // For Facebook, pageId is the same as accountId
+      platform === "FACEBOOK" ? account.accountId : null,
+      // For LinkedIn, organizationUrn comes from metadata
+      metadata?.organizationUrn ?? null,
     ),
   );
 
@@ -307,6 +312,9 @@ export async function DELETE(
   const { account } = accountResult;
   const accessToken = safeDecryptToken(account.accessTokenEncrypted);
 
+  // Extract metadata fields for platform-specific options
+  const metadata = account.metadata as { organizationUrn?: string; } | null;
+
   // Unlike the post
   const { error: unlikeError } = await tryCatch(
     unlikePostByPlatform(
@@ -314,8 +322,10 @@ export async function DELETE(
       postId,
       accessToken,
       account.accountId,
-      account.pageId,
-      account.organizationUrn,
+      // For Facebook, pageId is the same as accountId
+      platform === "FACEBOOK" ? account.accountId : null,
+      // For LinkedIn, organizationUrn comes from metadata
+      metadata?.organizationUrn ?? null,
     ),
   );
 
