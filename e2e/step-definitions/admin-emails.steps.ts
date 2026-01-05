@@ -256,7 +256,7 @@ When(
 When(
   "I enter {string} in the test email field",
   async function(this: CustomWorld, email: string) {
-    const emailInput = this.page.locator('input[type="email"]');
+    const emailInput = this.page.locator('input[placeholder="recipient@example.com"]');
     await emailInput.fill(email);
   },
 );
@@ -274,7 +274,10 @@ When(
   async function(this: CustomWorld, status: string) {
     const statusSelect = this.page.getByRole("combobox").first();
     await statusSelect.click();
-    await this.page.getByRole("option", { name: status }).click();
+    // Wait for dropdown portal to render
+    const option = this.page.getByRole("option", { name: status });
+    await option.waitFor({ state: "visible", timeout: 10000 });
+    await option.click();
   },
 );
 
@@ -372,7 +375,7 @@ Then(
 );
 
 Then("I should see email input field", async function(this: CustomWorld) {
-  const emailInput = this.page.locator('input[type="email"]');
+  const emailInput = this.page.locator('input[placeholder="recipient@example.com"]');
   await expect(emailInput).toBeVisible();
 });
 
@@ -423,6 +426,8 @@ Then(
 Then(
   "each email should display the subject",
   async function(this: CustomWorld) {
+    // Wait for data rows to load (not loading/empty state)
+    await this.page.waitForSelector("tbody tr td:nth-child(2)", { timeout: 10000 });
     // Subject is in second column
     const subjects = this.page.locator("tbody tr td:nth-child(2)");
     const count = await subjects.count();
@@ -760,7 +765,7 @@ Then(
 Then(
   "the test email field should be cleared",
   async function(this: CustomWorld) {
-    const emailInput = this.page.locator('input[type="email"]');
+    const emailInput = this.page.locator('input[placeholder="recipient@example.com"]');
     await expect(emailInput).toHaveValue("");
   },
 );
