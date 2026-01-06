@@ -70,7 +70,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   // Verify state
-  let stateData: { userId: string; timestamp: number; nonce?: string; };
+  let stateData: { userId: string; workspaceId: string; timestamp: number; nonce?: string; };
   try {
     stateData = JSON.parse(
       Buffer.from(state, "base64url").toString("utf-8"),
@@ -91,6 +91,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return clearOAuthCookies(
       NextResponse.redirect(
         new URL("/admin/social-media/accounts?error=User mismatch", request.url),
+      ),
+    );
+  }
+
+  // Verify workspaceId is present
+  if (!stateData.workspaceId) {
+    return clearOAuthCookies(
+      NextResponse.redirect(
+        new URL(
+          "/admin/social-media/accounts?error=Missing workspace context",
+          request.url,
+        ),
       ),
     );
   }
@@ -190,24 +202,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // ============================================================================
   // DATABASE STORAGE - DISABLED UNTIL YOUTUBE IS ADDED TO SocialPlatform ENUM
   // ============================================================================
-  // To enable database storage:
-  // 1. Add YOUTUBE to the SocialPlatform enum in prisma/schema.prisma:
-  //    enum SocialPlatform {
-  //      TWITTER
-  //      LINKEDIN
-  //      FACEBOOK
-  //      INSTAGRAM
-  //      TIKTOK
-  //      YOUTUBE  // <-- Add this
-  //    }
-  // 2. Run: npx prisma migrate dev --name add-youtube-platform
-  // 3. Uncomment the code below:
+  // Note: YOUTUBE has been added to the SocialPlatform enum in the
+  // 20260104_add_youtube_platform migration. You can now enable this code.
+  //
+  // To enable database storage, uncomment the code below:
   //
   // const { error: dbError } = await tryCatch(
   //   prisma.socialAccount.upsert({
   //     where: {
-  //       userId_platform_accountId: {
-  //         userId: session.user.id,
+  //       workspaceId_platform_accountId: {
+  //         workspaceId: stateData.workspaceId,
   //         platform: "YOUTUBE",
   //         accountId: channelInfo.platformId,
   //       },
@@ -229,7 +233,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   //       updatedAt: new Date(),
   //     },
   //     create: {
-  //       userId: session.user.id,
+  //       userId: session.user.id, // Keep for audit trail
+  //       workspaceId: stateData.workspaceId,
   //       platform: "YOUTUBE",
   //       accountId: channelInfo.platformId,
   //       accountName: channelInfo.displayName,

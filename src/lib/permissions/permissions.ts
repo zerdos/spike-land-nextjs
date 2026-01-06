@@ -47,7 +47,11 @@ export type WorkspaceAction =
   // Brand Brain
   | "brand:read"
   | "brand:write"
-  | "brand:delete";
+  | "brand:delete"
+  // Social Accounts
+  | "social:view"
+  | "social:connect"
+  | "social:disconnect";
 
 /**
  * Role hierarchy - higher index = more permissions
@@ -107,6 +111,11 @@ const PERMISSION_MATRIX: Record<WorkspaceAction, WorkspaceRole> = {
   "brand:read": "MEMBER",
   "brand:write": "ADMIN",
   "brand:delete": "ADMIN",
+
+  // Social Accounts
+  "social:view": "MEMBER",
+  "social:connect": "ADMIN",
+  "social:disconnect": "ADMIN",
 };
 
 /**

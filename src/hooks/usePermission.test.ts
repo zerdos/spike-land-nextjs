@@ -277,14 +277,14 @@ describe("usePermission", () => {
 
       const { result } = renderHook(() => useAllPermissions());
 
-      expect(result.current.actions).toHaveLength(29);
+      expect(result.current.actions).toHaveLength(32);
       expect(result.current.role).toBe("OWNER");
       expect(result.current.isLoading).toBe(false);
       expect(result.current.actions).toContain("workspace:delete");
       expect(result.current.actions).toContain("workspace:transfer");
     });
 
-    it("returns 27 actions for ADMIN (excludes OWNER-only)", () => {
+    it("returns 30 actions for ADMIN (excludes OWNER-only)", () => {
       mockUseWorkspace.mockReturnValue({
         workspace: createMockWorkspace("ADMIN"),
         isLoading: false,
@@ -292,7 +292,7 @@ describe("usePermission", () => {
 
       const { result } = renderHook(() => useAllPermissions());
 
-      expect(result.current.actions).toHaveLength(27);
+      expect(result.current.actions).toHaveLength(30);
       expect(result.current.role).toBe("ADMIN");
       expect(result.current.actions).not.toContain("workspace:delete");
       expect(result.current.actions).not.toContain("workspace:transfer");

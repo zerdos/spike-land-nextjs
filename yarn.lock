@@ -31,15 +31,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ai-sdk/anthropic@npm:3.0.6":
-  version: 3.0.6
-  resolution: "@ai-sdk/anthropic@npm:3.0.6"
+"@ai-sdk/anthropic@npm:3.0.7":
+  version: 3.0.7
+  resolution: "@ai-sdk/anthropic@npm:3.0.7"
   dependencies:
-    "@ai-sdk/provider": "npm:3.0.1"
-    "@ai-sdk/provider-utils": "npm:4.0.3"
+    "@ai-sdk/provider": "npm:3.0.2"
+    "@ai-sdk/provider-utils": "npm:4.0.4"
   peerDependencies:
     zod: ^3.25.76 || ^4.1.8
-  checksum: 10c9/e20a26c850c01fd306bc0155b06ab543e04bcc07f6d3ba348cea3e9b047963bf50b3c11e62caeda56b298fd707b89452e12ace7c00bb317101e7b845b4014d08
+  checksum: 10c9/d959fc9c569d0b8995ba36ece5cce4d2b3d45711e0f07533d56925c023b724153b77cbacf5d0289d6c88875450ddeb9f3d31226948cd7befe9d0319ce96db620
   languageName: node
   linkType: hard
 
@@ -95,6 +95,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-sdk/provider-utils@npm:4.0.4":
+  version: 4.0.4
+  resolution: "@ai-sdk/provider-utils@npm:4.0.4"
+  dependencies:
+    "@ai-sdk/provider": "npm:3.0.2"
+    "@standard-schema/spec": "npm:^1.1.0"
+    eventsource-parser: "npm:^3.0.6"
+  peerDependencies:
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c9/8144b133ff4654b18e698d1490601d2174fb0c5c3b89a909707c3575cc4af78d8c1a60e419f826ea605e59266dbe947ac89193c0fd33aaacaea0632b48c3c0c4
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/provider@npm:2.0.1":
   version: 2.0.1
   resolution: "@ai-sdk/provider@npm:2.0.1"
@@ -110,6 +123,15 @@ __metadata:
   dependencies:
     json-schema: "npm:^0.4.0"
   checksum: 10c9/97c4df2ed806260b4d66f3623d7b6fd9120310ab5126bc4ff8a1b8e6bd79e55cfb2fe9bcaba16e4c1bfba9d7ae201e65c43466cc878965eb87f80d0adc06fd42
+  languageName: node
+  linkType: hard
+
+"@ai-sdk/provider@npm:3.0.2":
+  version: 3.0.2
+  resolution: "@ai-sdk/provider@npm:3.0.2"
+  dependencies:
+    json-schema: "npm:^0.4.0"
+  checksum: 10c9/d31d76958700e31626207a1073291db3168cb390bf6b50205a24f30a00cca2d06d2b1bbf76a032259f52b54700240a4d55bdd8d985dad16b6809c1b2a3765d80
   languageName: node
   linkType: hard
 
@@ -9616,7 +9638,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@spike-npm-land/code@workspace:packages/code"
   dependencies:
-    "@ai-sdk/anthropic": "npm:3.0.6"
+    "@ai-sdk/anthropic": "npm:3.0.7"
     "@assistant-ui/react": "npm:0.11.53"
     "@assistant-ui/react-ai-sdk": "npm:1.1.20"
     "@assistant-ui/react-markdown": "npm:0.11.9"
@@ -9884,7 +9906,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@spike-npm-land/spike-land-backend@workspace:packages/testing.spike.land"
   dependencies:
-    "@ai-sdk/anthropic": "npm:3.0.6"
+    "@ai-sdk/anthropic": "npm:3.0.7"
     "@anthropic-ai/sdk": "npm:0.71.2"
     "@cloudflare/kv-asset-handler": "npm:0.4.1"
     "@cloudflare/vitest-pool-workers": "npm:0.11.1"

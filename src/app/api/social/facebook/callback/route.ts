@@ -51,7 +51,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   // Verify state
-  let stateData: { userId: string; timestamp: number; nonce?: string; };
+  let stateData: { userId: string; workspaceId: string; timestamp: number; nonce?: string; };
   try {
     stateData = JSON.parse(Buffer.from(state, "base64url").toString("utf-8"));
   } catch {
@@ -67,6 +67,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (stateData.userId !== session.user.id) {
     return NextResponse.redirect(
       new URL("/admin/social-media/accounts?error=User mismatch", request.url),
+    );
+  }
+
+  // Verify workspaceId is present
+  if (!stateData.workspaceId) {
+    return NextResponse.redirect(
+      new URL(
+        "/admin/social-media/accounts?error=Missing workspace context",
+        request.url,
+      ),
     );
   }
 
@@ -240,14 +250,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // Save all accounts to database
+  // Save all accounts to database (using workspace-scoped unique constraint)
   const { error: dbError } = await tryCatch(
     Promise.all(
       accountsToCreate.map((account) =>
         prisma.socialAccount.upsert({
           where: {
-            userId_platform_accountId: {
-              userId: session.user.id,
+            workspaceId_platform_accountId: {
+              workspaceId: stateData.workspaceId,
               platform: account.platform,
               accountId: account.accountId,
             },
@@ -261,7 +271,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             updatedAt: new Date(),
           },
           create: {
-            userId: session.user.id,
+            userId: session.user.id, // Keep for audit trail
+            workspaceId: stateData.workspaceId,
             platform: account.platform,
             accountId: account.accountId,
             accountName: account.accountName,

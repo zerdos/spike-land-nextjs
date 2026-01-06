@@ -17,6 +17,7 @@
 
 import { auth } from "@/auth";
 import { safeDecryptToken } from "@/lib/crypto/token-encryption";
+import { requireWorkspaceMembership } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
 import { createSocialClient } from "@/lib/social";
 import {
@@ -195,19 +196,19 @@ interface FetchAccountsResult {
 }
 
 /**
- * Fetch connected social accounts for a user
- * Uses workspaceId to find the user's social accounts
+ * Fetch connected social accounts for a workspace
+ * Uses workspaceId to find the workspace's social accounts
  */
 export async function fetchConnectedAccounts(
-  userId: string,
+  workspaceId: string,
   platforms?: SocialPlatform[],
 ): Promise<SocialAccount[]> {
   const whereClause: {
-    userId: string;
+    workspaceId: string;
     status: "ACTIVE";
     platform?: { in: SocialPlatform[]; };
   } = {
-    userId,
+    workspaceId,
     status: "ACTIVE",
   };
 
@@ -345,12 +346,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: parseError }, { status: 400 });
   }
 
+  // Verify user has access to the workspace
+  const { error: permError } = await tryCatch(
+    requireWorkspaceMembership(session, params.workspaceId),
+  );
+
+  if (permError) {
+    const status = permError.message.includes("Unauthorized") ? 401 : 403;
+    return NextResponse.json({ error: permError.message }, { status });
+  }
+
   try {
-    const userId = session.user.id;
     const postsPerAccount = 10; // Fetch up to 10 posts per account
 
-    // Fetch connected social accounts from the database
-    const connectedAccounts = await fetchConnectedAccounts(userId, params.platforms);
+    // Fetch connected social accounts from the database (by workspace)
+    const connectedAccounts = await fetchConnectedAccounts(params.workspaceId, params.platforms);
 
     // If no accounts are connected, return empty response
     if (connectedAccounts.length === 0) {
