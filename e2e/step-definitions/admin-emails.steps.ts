@@ -272,21 +272,88 @@ When(
 When(
   "I select {string} from the email status filter",
   async function(this: CustomWorld, status: string) {
+    // Wait for the page to be fully loaded (table should be visible)
+    await this.page.waitForSelector("table", { state: "visible", timeout: 30000 });
+
+    // Get the first combobox (status filter) and ensure it's ready
     const statusSelect = this.page.getByRole("combobox").first();
-    await statusSelect.click();
-    // Wait for dropdown portal to render
-    const option = this.page.getByRole("option", { name: status });
-    await option.waitFor({ state: "visible", timeout: 10000 });
-    await option.click();
+    await statusSelect.waitFor({ state: "visible", timeout: 10000 });
+
+    // Retry logic for opening dropdown (Radix UI portal can be slow)
+    let attempts = 0;
+    const maxAttempts = 3;
+    let optionVisible = false;
+
+    while (!optionVisible && attempts < maxAttempts) {
+      attempts++;
+      await statusSelect.click();
+      // Small delay for portal to render
+      await this.page.waitForTimeout(300);
+
+      const option = this.page.getByRole("option", { name: status });
+      try {
+        await option.waitFor({ state: "visible", timeout: 3000 });
+        optionVisible = true;
+        await option.click();
+      } catch {
+        // Dropdown may have closed, retry
+        if (attempts < maxAttempts) {
+          // Press Escape to ensure any open dropdown is closed
+          await this.page.keyboard.press("Escape");
+          await this.page.waitForTimeout(200);
+        }
+      }
+    }
+
+    if (!optionVisible) {
+      throw new Error(
+        `Failed to find option "${status}" in status filter after ${maxAttempts} attempts`,
+      );
+    }
   },
 );
 
 When(
   "I select a template from the template filter",
   async function(this: CustomWorld) {
+    // Wait for the page to be fully loaded (table should be visible)
+    await this.page.waitForSelector("table", { state: "visible", timeout: 30000 });
+
+    // Get the second combobox (template filter) and ensure it's ready
     const templateSelect = this.page.getByRole("combobox").nth(1);
-    await templateSelect.click();
-    await this.page.getByRole("option", { name: "welcome" }).click();
+    await templateSelect.waitFor({ state: "visible", timeout: 10000 });
+
+    // Retry logic for opening dropdown (Radix UI portal can be slow)
+    let attempts = 0;
+    const maxAttempts = 3;
+    let optionVisible = false;
+
+    while (!optionVisible && attempts < maxAttempts) {
+      attempts++;
+      await templateSelect.click();
+      // Small delay for portal to render
+      await this.page.waitForTimeout(300);
+
+      const option = this.page.getByRole("option", { name: "welcome" });
+      try {
+        await option.waitFor({ state: "visible", timeout: 3000 });
+        optionVisible = true;
+        await option.click();
+      } catch {
+        // Dropdown may have closed, retry
+        if (attempts < maxAttempts) {
+          // Press Escape to ensure any open dropdown is closed
+          await this.page.keyboard.press("Escape");
+          await this.page.waitForTimeout(200);
+        }
+      }
+    }
+
+    if (!optionVisible) {
+      throw new Error(
+        `Failed to find option "welcome" in template filter after ${maxAttempts} attempts`,
+      );
+    }
   },
 );
 

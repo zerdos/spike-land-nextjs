@@ -149,6 +149,52 @@ Given("the user is an admin", async function(this: CustomWorld) {
       }),
     });
   });
+
+  // Mock the user analytics API to return valid data for E2E tests
+  await this.page.route("**/api/admin/analytics/users", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        dailyRegistrations: Array.from({ length: 30 }, (_, i) => ({
+          date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000)
+            .toISOString(),
+          count: Math.floor(Math.random() * 10) + 1,
+        })),
+        authProviders: [
+          { name: "Email", count: 45 },
+          { name: "Google", count: 30 },
+          { name: "GitHub", count: 15 },
+        ],
+        activeUsers: {
+          last7Days: 25,
+          last30Days: 60,
+        },
+        totalUsers: 100,
+        growth: {
+          last7Days: 5,
+          last30Days: 20,
+        },
+      }),
+    });
+  });
+
+  // Mock the token analytics API to return valid data for E2E tests
+  await this.page.route("**/api/admin/analytics/tokens", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        totalTokens: 50000,
+        usedTokens: 15000,
+        averagePerUser: 150,
+        topUsers: [
+          { id: "user-1", name: "Test User 1", tokens: 500 },
+          { id: "user-2", name: "Test User 2", tokens: 300 },
+        ],
+      }),
+    });
+  });
 });
 
 Given("the user is not an admin", async function(this: CustomWorld) {
