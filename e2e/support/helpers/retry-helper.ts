@@ -205,6 +205,62 @@ export async function waitForPageLoad(
 }
 
 /**
+ * Navigate to a URL with retry logic
+ * Handles transient network errors like ERR_EMPTY_RESPONSE in CI
+ *
+ * @param page - Playwright Page instance
+ * @param url - URL to navigate to
+ * @param options - Configuration options
+ */
+export async function gotoWithRetry(
+  page: Page,
+  url: string,
+  options: {
+    timeout?: number;
+    waitUntil?: "load" | "domcontentloaded" | "networkidle";
+    maxRetries?: number;
+  } = {},
+): Promise<Response | null> {
+  const timeout = options.timeout || TIMEOUTS.LONG;
+  const waitUntil = options.waitUntil || "load";
+  const maxRetries = options.maxRetries ?? 3;
+
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await page.goto(url, { timeout, waitUntil });
+      // Wait for page to stabilize
+      await waitForPageLoad(page);
+      return response;
+    } catch (error) {
+      lastError = error as Error;
+      const isNetworkError = lastError.message.includes("net::ERR_") ||
+        lastError.message.includes("ERR_EMPTY_RESPONSE") ||
+        lastError.message.includes("ERR_CONNECTION_REFUSED");
+
+      if (isNetworkError && attempt < maxRetries - 1) {
+        console.log(
+          `Navigation to ${url} failed (attempt ${
+            attempt + 1
+          }/${maxRetries}): ${lastError.message}`,
+        );
+        // Wait before retry with exponential backoff
+        await page.waitForTimeout(1000 * (attempt + 1));
+        continue;
+      }
+      throw lastError;
+    }
+  }
+
+  throw new Error(
+    `Navigation to ${url} failed after ${maxRetries} attempts. Last error: ${
+      lastError?.message || "unknown"
+    }`,
+  );
+}
+
+/**
  * Fills an input field with retry logic
  * Ensures the field is visible and enabled before filling
  *
