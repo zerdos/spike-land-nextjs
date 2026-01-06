@@ -108,17 +108,39 @@ When("I am not logged in", async function(this: CustomWorld) {
   // Remember current URL to navigate back after context switch
   const currentUrl = this.page.url();
 
-  // Close current page and context
-  await this.page.close();
-  await this.context.close();
+  // Close current page and context with error handling
+  try {
+    await this.page.close();
+  } catch {
+    // Page may already be closed
+  }
+  try {
+    await this.context.close();
+  } catch {
+    // Context may already be closed
+  }
 
   // Create a new context WITHOUT the E2E bypass header
   // This simulates a truly unauthenticated user
-  this.context = await this.browser.newContext({
-    baseURL: this.baseUrl,
-    // No extraHTTPHeaders - no bypass
-  });
-  this.page = await this.context.newPage();
+  // Retry logic for browser stability in CI environment
+  let retries = 3;
+  while (retries > 0) {
+    try {
+      this.context = await this.browser.newContext({
+        baseURL: this.baseUrl,
+        // No extraHTTPHeaders - no bypass
+      });
+      this.page = await this.context.newPage();
+      break;
+    } catch (error) {
+      retries--;
+      if (retries === 0) {
+        throw error;
+      }
+      // Wait a bit before retrying
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
 
   // Mock no session for client-side requests
   await mockSession(this, null);
