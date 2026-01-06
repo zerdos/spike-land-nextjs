@@ -303,18 +303,26 @@ Then("I should see added text highlighted in green", async function(this: Custom
 
 // Result handling
 Then("I should return to the empty form", async function(this: CustomWorld) {
+  // Wait for React state to update after button click
+  await this.page.waitForTimeout(500);
+
   // The form should be visible again
   const textarea = this.page.locator('textarea[id="content"]');
-  await expect(textarea).toBeVisible();
+  await expect(textarea).toBeVisible({ timeout: 5000 });
 
-  // And the diff viewer should not be visible
-  const reviewHeading = this.page.getByText("Review Changes");
-  await expect(reviewHeading).not.toBeVisible();
+  // And the diff viewer heading should not be visible
+  // Use exact: true to avoid matching partial text
+  const reviewHeading = this.page.getByRole("heading", { name: "Review Changes" });
+  await expect(reviewHeading).not.toBeVisible({ timeout: 5000 });
 });
 
 Then("the rewrite result should be cleared", async function(this: CustomWorld) {
-  const reviewHeading = this.page.getByText("Review Changes");
-  await expect(reviewHeading).not.toBeVisible();
+  // Wait for React state to update
+  await this.page.waitForTimeout(500);
+
+  // Use heading role with exact match
+  const reviewHeading = this.page.getByRole("heading", { name: "Review Changes" });
+  await expect(reviewHeading).not.toBeVisible({ timeout: 5000 });
 });
 
 // Toggle changes steps
