@@ -182,11 +182,18 @@ Given("there are no matching items", async function(this: CustomWorld) {
 When(
   "I select {string} from the status filter",
   async function(this: CustomWorld, status: string) {
+    // Wait for the page to be fully interactive
+    await this.page.waitForLoadState("domcontentloaded");
+
     // Use role="combobox" which is the Radix UI Select trigger role
     const statusSelect = this.page.getByRole("combobox").first();
+    await statusSelect.waitFor({ state: "visible", timeout: 10000 });
     await statusSelect.click();
-    await this.page.locator('[role="option"]').filter({ hasText: status })
-      .click();
+
+    // Wait for dropdown to appear and click the option
+    const option = this.page.locator('[role="option"]').filter({ hasText: status });
+    await option.waitFor({ state: "visible", timeout: 5000 });
+    await option.click();
   },
 );
 
