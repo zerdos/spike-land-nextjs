@@ -235,11 +235,13 @@ export async function gotoWithRetry(
       return response;
     } catch (error) {
       lastError = error as Error;
-      const isNetworkError = lastError.message.includes("net::ERR_") ||
+      const isRetryableError = lastError.message.includes("net::ERR_") ||
         lastError.message.includes("ERR_EMPTY_RESPONSE") ||
-        lastError.message.includes("ERR_CONNECTION_REFUSED");
+        lastError.message.includes("ERR_CONNECTION_REFUSED") ||
+        lastError.message.includes("Timeout") ||
+        lastError.message.includes("timeout");
 
-      if (isNetworkError && attempt < maxRetries - 1) {
+      if (isRetryableError && attempt < maxRetries - 1) {
         console.log(
           `Navigation to ${url} failed (attempt ${
             attempt + 1
