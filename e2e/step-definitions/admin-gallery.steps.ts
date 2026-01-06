@@ -317,15 +317,18 @@ Given("the gallery API returns an error", async function(this: CustomWorld) {
 When(
   "I click {string} on a gallery item",
   async function(this: CustomWorld, buttonText: string) {
-    // Wait for loading states to disappear
-    const loadingElement = this.page.locator(".loading, .animate-pulse, .skeleton").first();
-    const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
-    if (isLoadingVisible) {
-      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
-    }
+    // Wait for all loading skeletons to disappear (skeleton Cards also have .Card class)
+    await this.page.waitForFunction(
+      () => document.querySelectorAll(".animate-pulse").length === 0,
+      { timeout: 15000 },
+    ).catch(() => {});
 
-    // Wait for cards to be visible first
-    await this.page.waitForSelector(".Card", { state: "visible", timeout: 10000 });
+    // Wait for a Card with the target button to be visible (indicates data loaded)
+    await this.page.waitForSelector(`.Card button:has-text("${buttonText}")`, {
+      state: "visible",
+      timeout: 15000,
+    });
+
     const galleryCard = this.page.locator(".Card").first();
     const button = galleryCard.getByRole("button", { name: buttonText });
 
@@ -338,15 +341,18 @@ When(
 When(
   "I click {string} on the second gallery item",
   async function(this: CustomWorld, buttonText: string) {
-    // Wait for loading states to disappear
-    const loadingElement = this.page.locator(".loading, .animate-pulse, .skeleton").first();
-    const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
-    if (isLoadingVisible) {
-      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
-    }
+    // Wait for all loading skeletons to disappear (skeleton Cards also have .Card class)
+    await this.page.waitForFunction(
+      () => document.querySelectorAll(".animate-pulse").length === 0,
+      { timeout: 15000 },
+    ).catch(() => {});
 
-    // Wait for cards to be visible first
-    await this.page.waitForSelector(".Card", { state: "visible", timeout: 10000 });
+    // Wait for a Card with the target button to be visible (indicates data loaded)
+    await this.page.waitForSelector(`.Card button:has-text("${buttonText}")`, {
+      state: "visible",
+      timeout: 15000,
+    });
+
     const galleryCard = this.page.locator(".Card").nth(1);
     const button = galleryCard.getByRole("button", { name: buttonText });
 
@@ -359,15 +365,18 @@ When(
 When(
   "I click {string} on the first gallery item",
   async function(this: CustomWorld, buttonText: string) {
-    // Wait for loading states to disappear
-    const loadingElement = this.page.locator(".loading, .animate-pulse, .skeleton").first();
-    const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
-    if (isLoadingVisible) {
-      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
-    }
+    // Wait for all loading skeletons to disappear (skeleton Cards also have .Card class)
+    await this.page.waitForFunction(
+      () => document.querySelectorAll(".animate-pulse").length === 0,
+      { timeout: 15000 },
+    ).catch(() => {});
 
-    // Wait for cards to be visible first
-    await this.page.waitForSelector(".Card", { state: "visible", timeout: 10000 });
+    // Wait for a Card with the target button to be visible (indicates data loaded)
+    await this.page.waitForSelector(`.Card button:has-text("${buttonText}")`, {
+      state: "visible",
+      timeout: 15000,
+    });
+
     const galleryCard = this.page.locator(".Card").first();
     const button = galleryCard.getByRole("button", { name: buttonText });
 
