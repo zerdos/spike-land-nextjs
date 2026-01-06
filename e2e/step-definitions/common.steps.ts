@@ -946,14 +946,7 @@ Then(
   },
 );
 
-// "I should see {string} text" - generic text visibility check
-Then(
-  "I should see {string} text",
-  async function(this: CustomWorld, text: string) {
-    const element = this.page.getByText(new RegExp(text, "i"));
-    await expect(element.first()).toBeVisible({ timeout: 10000 });
-  },
-);
+// NOTE: "I should see {string} text" is defined in authentication.steps.ts
 
 // "I should see {string} section" - generic section visibility check
 Then(
