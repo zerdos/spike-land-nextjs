@@ -63,9 +63,24 @@ export class VideoWallWorld extends World {
         ]
         : [],
     });
+
+    // Prepare extra HTTP headers for E2E test authentication bypass
+    const extraHTTPHeaders: Record<string, string> = {};
+
+    // Add E2E bypass header if secret is configured
+    // Sanitize the value to remove any newlines or whitespace that could cause
+    // "Invalid header value" errors in Chromium
+    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET?.trim().replace(/[\r\n]/g, "");
+    if (e2eBypassSecret) {
+      extraHTTPHeaders["x-e2e-auth-bypass"] = e2eBypassSecret;
+    }
+
     this.displayContext = await this.browser.newContext({
       baseURL: this.baseUrl,
       permissions: ["camera", "microphone"],
+      extraHTTPHeaders: Object.keys(extraHTTPHeaders).length > 0
+        ? extraHTTPHeaders
+        : undefined,
     });
     this.displayPage = await this.displayContext.newPage();
 
@@ -83,9 +98,19 @@ export class VideoWallWorld extends World {
     clientId: string,
     name?: string,
   ): Promise<ClientContext> {
+    // Prepare extra HTTP headers for E2E test authentication bypass
+    const extraHTTPHeaders: Record<string, string> = {};
+    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET?.trim().replace(/[\r\n]/g, "");
+    if (e2eBypassSecret) {
+      extraHTTPHeaders["x-e2e-auth-bypass"] = e2eBypassSecret;
+    }
+
     const context = await this.browser.newContext({
       baseURL: this.baseUrl,
       permissions: ["camera", "microphone"],
+      extraHTTPHeaders: Object.keys(extraHTTPHeaders).length > 0
+        ? extraHTTPHeaders
+        : undefined,
       // Note: 'display-capture' is not a valid Playwright permission
       // Screen sharing will be mocked via mockMediaDevices instead
     });
