@@ -263,12 +263,19 @@ Then(
 When(
   "I select {string} from the type filter",
   async function(this: CustomWorld, type: string) {
+    // Wait for the page to be fully interactive
+    await this.page.waitForLoadState("domcontentloaded");
+
     // Use role="combobox" which is the Radix UI Select trigger role
     // Type filter is the second combobox on the page (first is status filter)
     const typeSelect = this.page.getByRole("combobox").nth(1);
+    await typeSelect.waitFor({ state: "visible", timeout: 10000 });
     await typeSelect.click();
-    await this.page.locator('[role="option"]').filter({ hasText: type })
-      .click();
+
+    // Wait for dropdown to appear and click the option
+    const option = this.page.locator('[role="option"]').filter({ hasText: type });
+    await option.waitFor({ state: "visible", timeout: 5000 });
+    await option.click();
   },
 );
 
