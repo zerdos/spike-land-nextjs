@@ -3,6 +3,7 @@ import { expect } from "@playwright/test";
 import {
   clickButtonWithRetry,
   fillInputWithRetry,
+  gotoWithRetry,
   TIMEOUTS,
   waitForPageLoad,
   waitForTestId,
@@ -12,7 +13,8 @@ export class AppCreationWizard {
   constructor(private page: Page) {}
 
   async navigate() {
-    await this.page.goto("/my-apps/new");
+    // Use gotoWithRetry to handle transient network errors in CI
+    await gotoWithRetry(this.page, "/my-apps/new");
     await waitForPageLoad(this.page);
     // Wait for the wizard form to be visible before proceeding
     // This ensures the page is fully rendered after authentication
