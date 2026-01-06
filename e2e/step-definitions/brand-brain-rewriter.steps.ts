@@ -1,5 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { gotoWithRetry } from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // Test workspace slug used across scenarios
@@ -112,8 +113,7 @@ Given("I have a brand profile configured", async function(this: CustomWorld) {
 
 // Navigation steps
 When("I navigate to the Brand Brain page", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/orbit/${TEST_WORKSPACE_SLUG}/brand-brain`);
-  await this.page.waitForLoadState("networkidle");
+  await gotoWithRetry(this.page, `${this.baseUrl}/orbit/${TEST_WORKSPACE_SLUG}/brand-brain`);
 });
 
 When("I navigate to the rewriter page", async function(this: CustomWorld) {
@@ -133,8 +133,10 @@ When("I navigate to the rewriter page", async function(this: CustomWorld) {
     },
   );
 
-  await this.page.goto(`${this.baseUrl}/orbit/${TEST_WORKSPACE_SLUG}/brand-brain/rewriter`);
-  await this.page.waitForLoadState("networkidle");
+  await gotoWithRetry(
+    this.page,
+    `${this.baseUrl}/orbit/${TEST_WORKSPACE_SLUG}/brand-brain/rewriter`,
+  );
   // Wait for workspace ID to be fetched
   await this.page.waitForSelector('form, [role="alert"]', { timeout: 10000 });
 });
@@ -148,8 +150,7 @@ When("I navigate to a non-existent workspace rewriter page", async function(this
       body: JSON.stringify({ error: "Workspace not found" }),
     });
   });
-  await this.page.goto(`${this.baseUrl}/orbit/non-existent/brand-brain/rewriter`);
-  await this.page.waitForLoadState("networkidle");
+  await gotoWithRetry(this.page, `${this.baseUrl}/orbit/non-existent/brand-brain/rewriter`);
 });
 
 Then("I should be on the rewriter page", async function(this: CustomWorld) {
@@ -256,8 +257,10 @@ When("I have a rewrite result with changes", async function(this: CustomWorld) {
   );
 
   // Navigate to rewriter page
-  await this.page.goto(`${this.baseUrl}/orbit/${TEST_WORKSPACE_SLUG}/brand-brain/rewriter`);
-  await this.page.waitForLoadState("networkidle");
+  await gotoWithRetry(
+    this.page,
+    `${this.baseUrl}/orbit/${TEST_WORKSPACE_SLUG}/brand-brain/rewriter`,
+  );
 
   // Fill and submit form
   const textarea = this.page.locator('textarea[id="content"]');
@@ -359,11 +362,14 @@ When("I click on the Open Rewriter card", async function(this: CustomWorld) {
   await setupWorkspaceMocks(this);
 
   // Wait for page to load
-  await this.page.waitForLoadState("networkidle");
+  await this.page.waitForLoadState("domcontentloaded");
+  await this.page.waitForSelector('[role="link"], [role="button"]', { timeout: 10000 });
 
   // Find and click the button/link
   const button = this.page.getByRole("link", { name: /Open Rewriter/i })
     .or(this.page.getByRole("button", { name: /Open Rewriter/i }));
   await button.click();
-  await this.page.waitForLoadState("networkidle");
+
+  // Wait for navigation to complete
+  await this.page.waitForURL(/\/brand-brain\/rewriter/, { timeout: 15000 });
 });
