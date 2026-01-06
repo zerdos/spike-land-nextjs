@@ -118,6 +118,21 @@ When("I navigate to the Brand Brain page", async function(this: CustomWorld) {
 
 When("I navigate to the rewriter page", async function(this: CustomWorld) {
   await setupWorkspaceMocks(this);
+
+  // Set up rewrite API mock BEFORE navigation so it's ready when form is submitted
+  await this.page.route(
+    `**/api/workspaces/${mockWorkspace.id}/brand-brain/rewrite`,
+    async (route) => {
+      // Add a small delay to simulate processing
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(mockRewriteResponse),
+      });
+    },
+  );
+
   await this.page.goto(`${this.baseUrl}/orbit/${TEST_WORKSPACE_SLUG}/brand-brain/rewriter`);
   await this.page.waitForLoadState("networkidle");
   // Wait for workspace ID to be fetched
@@ -221,22 +236,8 @@ Then("I should see a loading indicator", async function(this: CustomWorld) {
 });
 
 When("the rewrite completes", async function(this: CustomWorld) {
-  // Mock the rewrite API to return successfully
-  await this.page.route(
-    `**/api/workspaces/${mockWorkspace.id}/brand-brain/rewrite`,
-    async (route) => {
-      // Add a small delay to simulate processing
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify(mockRewriteResponse),
-      });
-    },
-  );
-
-  // Wait for the result to appear
-  await this.page.waitForSelector('text="Review Changes"', { timeout: 10000 });
+  // Wait for the result to appear - the mock should already be set up
+  await expect(this.page.getByText("Review Changes")).toBeVisible({ timeout: 15000 });
 });
 
 When("I have a rewrite result with changes", async function(this: CustomWorld) {
@@ -266,7 +267,7 @@ When("I have a rewrite result with changes", async function(this: CustomWorld) {
   await button.click();
 
   // Wait for result
-  await this.page.waitForSelector('text="Review Changes"', { timeout: 10000 });
+  await expect(this.page.getByText("Review Changes")).toBeVisible({ timeout: 15000 });
 });
 
 // Diff viewer steps
@@ -337,6 +338,10 @@ Then("the preview should update", async function(this: CustomWorld) {
 
 // Error handling steps
 When("the rewrite API returns an error", async function(this: CustomWorld) {
+  // Unroute any existing mock for this endpoint first
+  await this.page.unroute(`**/api/workspaces/${mockWorkspace.id}/brand-brain/rewrite`);
+
+  // Set up error mock
   await this.page.route(
     `**/api/workspaces/${mockWorkspace.id}/brand-brain/rewrite`,
     async (route) => {

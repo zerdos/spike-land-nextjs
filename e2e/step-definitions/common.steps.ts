@@ -931,3 +931,46 @@ When(
     await this.page.goto(`${this.baseUrl}${path}`, { waitUntil: "commit" });
   },
 );
+
+// ======= BRAND BRAIN REWRITER STEPS (consolidated from brand-brain-rewriter.steps.ts) =======
+
+// "I should see {string} heading" - generic heading visibility check
+Then(
+  "I should see {string} heading",
+  async function(this: CustomWorld, headingText: string) {
+    // Check for heading elements (h1-h6) or elements with heading-like classes (CardTitle renders as div)
+    const heading = this.page
+      .locator("h1, h2, h3, h4, h5, h6, [class*='CardTitle']")
+      .filter({ hasText: new RegExp(headingText, "i") });
+    await expect(heading.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+// "I should see {string} text" - generic text visibility check
+Then(
+  "I should see {string} text",
+  async function(this: CustomWorld, text: string) {
+    const element = this.page.getByText(new RegExp(text, "i"));
+    await expect(element.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+// "I should see {string} section" - generic section visibility check
+Then(
+  "I should see {string} section",
+  async function(this: CustomWorld, sectionText: string) {
+    const element = this.page.getByText(new RegExp(sectionText, "i"));
+    await expect(element.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+// "I click the {string} link" - click a link by text
+When(
+  "I click the {string} link",
+  async function(this: CustomWorld, linkText: string) {
+    const link = this.page.getByRole("link", { name: new RegExp(linkText, "i") });
+    await expect(link.first()).toBeVisible({ timeout: 10000 });
+    await link.first().click();
+    await this.page.waitForLoadState("networkidle");
+  },
+);
