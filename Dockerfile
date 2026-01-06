@@ -263,10 +263,11 @@ RUN mkdir -p e2e/reports
 
 # ============================================================================
 # STAGE 11: E2E Tests (sharded) - with coverage-based caching
+# Note: Reduced from 8 to 4 shards to prevent Chromium crashes due to memory pressure
 # ============================================================================
 FROM e2e-test-base AS e2e-test-shard
 ARG SHARD_INDEX=1
-ARG SHARD_TOTAL=8
+ARG SHARD_TOTAL=4
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=${SHARD_INDEX} \
@@ -279,7 +280,7 @@ FROM e2e-test-base AS e2e-tests-1
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=1 \
-    SHARD_TOTAL=8 \
+    SHARD_TOTAL=4 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
 RUN yarn start:server:and:test:pr
@@ -288,7 +289,7 @@ FROM e2e-test-base AS e2e-tests-2
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=2 \
-    SHARD_TOTAL=8 \
+    SHARD_TOTAL=4 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
 RUN yarn start:server:and:test:pr
@@ -297,7 +298,7 @@ FROM e2e-test-base AS e2e-tests-3
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=3 \
-    SHARD_TOTAL=8 \
+    SHARD_TOTAL=4 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
 RUN yarn start:server:and:test:pr
@@ -306,43 +307,7 @@ FROM e2e-test-base AS e2e-tests-4
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=4 \
-    SHARD_TOTAL=8 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
-
-FROM e2e-test-base AS e2e-tests-5
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=5 \
-    SHARD_TOTAL=8 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
-
-FROM e2e-test-base AS e2e-tests-6
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=6 \
-    SHARD_TOTAL=8 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
-
-FROM e2e-test-base AS e2e-tests-7
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=7 \
-    SHARD_TOTAL=8 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
-
-FROM e2e-test-base AS e2e-tests-8
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=8 \
-    SHARD_TOTAL=8 \
+    SHARD_TOTAL=4 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
 RUN yarn start:server:and:test:pr
@@ -352,11 +317,7 @@ COPY --link --from=e2e-tests-1 /tmp/. /tmp/
 COPY --link --from=e2e-tests-2 /tmp/. /tmp/
 COPY --link --from=e2e-tests-3 /tmp/. /tmp/
 COPY --link --from=e2e-tests-4 /tmp/. /tmp/
-COPY --link --from=e2e-tests-5 /tmp/. /tmp/
-COPY --link --from=e2e-tests-6 /tmp/. /tmp/
-COPY --link --from=e2e-tests-7 /tmp/. /tmp/
-COPY --link --from=e2e-tests-8 /tmp/. /tmp/
-RUN cat /tmp/e2e-*.log && echo "::notice::✅ All 8 E2E test shards passed"
+RUN cat /tmp/e2e-*.log && echo "::notice::✅ All 4 E2E test shards passed"
 
 # ============================================================================
 # STAGE 12: CI Gateway
