@@ -48,6 +48,12 @@ export class CustomWorld extends World {
           "--disable-default-apps",
           "--no-first-run",
           "--disable-features=TranslateUI",
+          // Additional memory optimization flags
+          "--single-process", // Run in single process mode to reduce memory
+          "--disable-accelerated-2d-canvas",
+          "--disable-renderer-backgrounding",
+          "--disable-backgrounding-occluded-windows",
+          "--js-flags=--max-old-space-size=512",
         ]
         : [],
     });
