@@ -8,7 +8,7 @@ module.exports = {
     publishQuiet: true,
     failFast: true, // Stop on first failure
     retry: 0, // Don't retry failed scenarios
-    tags: "not @skip and not @flaky and not @requires-db and not @wip", // Skip scenarios tagged with @skip, @flaky, @requires-db, or @wip
+    tags: "not @skip and not @flaky and not @wip", // Skip scenarios tagged with @skip, @flaky, or @wip (includes @requires-db)
     timeout: 15000, // Increase default step timeout to 15 seconds (was 5 seconds)
   },
   // Fast tests - unit tests and quick integration tests
@@ -66,7 +66,7 @@ module.exports = {
     publishQuiet: true,
     failFast: true, // In CI, run all tests to get full report
     retry: 0, // Retry once in CI to handle transient issues
-    tags: "not @skip and not @flaky and not @requires-db and not @wip", // Skip db-dependent and wip tests in CI
+    tags: "not @skip and not @flaky and not @wip", // Include @requires-db tests in sharded runs
     timeout: 10000, // 30 second timeout for CI
     parallel: 1, // Run 4 scenarios in parallel
   },
@@ -97,7 +97,7 @@ module.exports = {
     publishQuiet: true,
     failFast: false, // Run all tests to get full coverage
     retry: 0, // No retries for coverage - each run should be deterministic
-    tags: "not @skip and not @flaky and not @requires-db",
+    tags: "not @skip and not @flaky",
     timeout: 15000,
     parallel: 1, // Coverage requires single process to accumulate data
   },

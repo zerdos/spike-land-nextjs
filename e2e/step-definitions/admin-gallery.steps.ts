@@ -317,10 +317,20 @@ Given("the gallery API returns an error", async function(this: CustomWorld) {
 When(
   "I click {string} on a gallery item",
   async function(this: CustomWorld, buttonText: string) {
+    // Wait for loading states to disappear
+    const loadingElement = this.page.locator(".loading, .animate-pulse, .skeleton").first();
+    const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
+    if (isLoadingVisible) {
+      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    }
+
     // Wait for cards to be visible first
     await this.page.waitForSelector(".Card", { state: "visible", timeout: 10000 });
     const galleryCard = this.page.locator(".Card").first();
     const button = galleryCard.getByRole("button", { name: buttonText });
+
+    // Wait for button to be visible and enabled before clicking
+    await expect(button).toBeVisible({ timeout: 15000 });
     await button.click();
   },
 );
@@ -328,10 +338,20 @@ When(
 When(
   "I click {string} on the second gallery item",
   async function(this: CustomWorld, buttonText: string) {
+    // Wait for loading states to disappear
+    const loadingElement = this.page.locator(".loading, .animate-pulse, .skeleton").first();
+    const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
+    if (isLoadingVisible) {
+      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    }
+
     // Wait for cards to be visible first
     await this.page.waitForSelector(".Card", { state: "visible", timeout: 10000 });
     const galleryCard = this.page.locator(".Card").nth(1);
     const button = galleryCard.getByRole("button", { name: buttonText });
+
+    // Wait for button to be visible and enabled before clicking
+    await expect(button).toBeVisible({ timeout: 15000 });
     await button.click();
   },
 );
@@ -339,10 +359,20 @@ When(
 When(
   "I click {string} on the first gallery item",
   async function(this: CustomWorld, buttonText: string) {
+    // Wait for loading states to disappear
+    const loadingElement = this.page.locator(".loading, .animate-pulse, .skeleton").first();
+    const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
+    if (isLoadingVisible) {
+      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    }
+
     // Wait for cards to be visible first
     await this.page.waitForSelector(".Card", { state: "visible", timeout: 10000 });
     const galleryCard = this.page.locator(".Card").first();
     const button = galleryCard.getByRole("button", { name: buttonText });
+
+    // Wait for button to be visible and enabled before clicking
+    await expect(button).toBeVisible({ timeout: 15000 });
     await button.click();
   },
 );
@@ -350,7 +380,18 @@ When(
 When(
   "I toggle the active switch on a gallery item",
   async function(this: CustomWorld) {
-    const switchElement = this.page.locator('[role="switch"]').first();
+    // Use Playwright's built-in auto-waiting with locators
+    const galleryCard = this.page.locator(".Card").first();
+    await expect(galleryCard).toBeVisible({ timeout: 15000 });
+
+    // Find the switch within the card using getByRole for better semantics
+    const switchElement = galleryCard.getByRole("switch");
+
+    // Wait for switch to be visible AND enabled (not disabled during updates)
+    await expect(switchElement).toBeVisible({ timeout: 10000 });
+    await expect(switchElement).toBeEnabled({ timeout: 5000 });
+
+    // Click the switch
     await switchElement.click();
   },
 );

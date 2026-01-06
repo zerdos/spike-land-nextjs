@@ -187,16 +187,58 @@ jobs:
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
 
   # ============================================================================
-  # TIER 2: E2E Tests - runs against localhost (in parallel with other jobs)
+  # TIER 2: E2E Database Seed - prepares test database before sharded E2E tests
+  # ============================================================================
+
+  e2e-seed:
+    name: Seed E2E Database
+    runs-on: ubuntu-latest
+    # NO DEPENDENCIES - runs in parallel with other Tier 1 jobs
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "yarn"
+          cache-dependency-path: yarn.lock
+
+      - name: Cache node_modules
+        uses: actions/cache@v5
+        id: yarn-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies (if cache miss)
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --immutable
+
+      - name: Generate Prisma Client
+        run: yarn prisma generate --no-hints
+
+      - name: Seed E2E test database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
+        run: yarn db:seed-e2e
+
+  # ============================================================================
+  # TIER 2: E2E Tests - runs against localhost (after database seed)
   # ============================================================================
 
   # E2E tests run against localhost with yarn dev, not against Vercel preview.
   # This speeds up CI by not waiting for Vercel deployment.
   # Tests are sharded across 8 runners for faster execution.
+  # Includes @requires-db tests - all shards connect to test database.
   e2e:
     name: E2E Tests [${{ matrix.shard }}/8]
     runs-on: ubuntu-latest
-    # NO DEPENDENCIES - runs in parallel with other jobs
+    needs: [e2e-seed] # Wait for database seeding before running tests
     timeout-minutes: 30
     strategy:
       matrix:
@@ -250,7 +292,7 @@ jobs:
         env:
           BASE_URL: http://localhost:3000
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           NEXTAUTH_URL: http://localhost:3000
           SKIP_ENV_VALIDATION: "true"
@@ -269,16 +311,14 @@ jobs:
           retention-days: 7
 
   # ============================================================================
-  # TIER 2: E2E Database Tests - runs @requires-db scenarios against test database
+  # TIER 3: E2E Database Cleanup - cleans up test database after all shards complete
   # ============================================================================
 
-  # E2E database tests run against a Neon test database.
-  # These tests require real database interaction and run sequentially.
-  e2e-db:
-    name: E2E Database Tests
+  e2e-cleanup:
+    name: Cleanup E2E Database
     runs-on: ubuntu-latest
-    # NO DEPENDENCIES - runs in parallel with other jobs
-    timeout-minutes: 30
+    needs: [e2e]
+    if: always() # Run cleanup even if tests fail
 
     steps:
       - name: Checkout code
@@ -304,58 +344,10 @@ jobs:
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install --immutable
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v5
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-
-      - name: Install Playwright browsers (if cache miss)
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: yarn playwright install chromium --with-deps
-
-      - name: Install Playwright dependencies (always needed for system libs)
-        run: yarn playwright install-deps chromium
-
       - name: Generate Prisma Client
         run: yarn prisma generate --no-hints
 
-      - name: Seed E2E test database
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
-        run: yarn db:seed-e2e
-
-      - name: Run E2E database tests
-        env:
-          BASE_URL: http://localhost:3000
-          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-          NEXTAUTH_URL: http://localhost:3000
-          SKIP_ENV_VALIDATION: "true"
-          # Upstash Redis for queue operations
-          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
-          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
-        run: |
-          # Start dev server in background and wait for it
-          yarn dev:e2e &
-          npx wait-on http://localhost:3000 --timeout 60000
-          # Run database-dependent E2E tests
-          yarn test:e2e:db
-
       - name: Cleanup E2E test database
-        if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
         run: yarn db:cleanup-e2e
-
-      - name: Upload E2E database test reports
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: e2e-db-reports
-          path: e2e/reports
-          retention-days: 7

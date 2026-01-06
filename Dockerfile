@@ -252,6 +252,7 @@ RUN chmod +x ./scripts/run-cached-e2e.sh ./scripts/e2e-shard.sh
 
 # Note: AUTH_SECRET, DATABASE_URL, and E2E_BYPASS_SECRET are loaded from .env.local
 # Do NOT set them here as empty ARGs would override the .env.local values
+# IMPORTANT: E2E tests include @requires-db scenarios - ensure .env.local has DATABASE_URL set
 ENV CI=true \
     NODE_ENV=development \
     BASE_URL=http://localhost:3000 \
