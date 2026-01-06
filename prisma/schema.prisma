@@ -62,6 +62,7 @@ model User {
   // Brand Brain relations
   createdBrandProfiles BrandProfile[]        @relation("BrandProfileCreator")
   updatedBrandProfiles BrandProfile[]        @relation("BrandProfileUpdater")
+  contentRewrites      ContentRewrite[]
 
   @@map("users")
 }
@@ -1744,6 +1745,22 @@ enum SocialPostStatus {
   FAILED
 }
 
+// Brand Brain Content Rewriter Enums
+enum RewriteStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ContentPlatform {
+  TWITTER // 280 chars
+  LINKEDIN // 3000 chars
+  INSTAGRAM // 2200 chars
+  FACEBOOK // 63206 chars
+  GENERAL // 50000 chars
+}
+
 // =============================================================================
 // Workspace Models (Multi-tenant for Orbit)
 // =============================================================================
@@ -1787,8 +1804,9 @@ model Workspace {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
-  members      WorkspaceMember[]
-  brandProfile BrandProfile?
+  members         WorkspaceMember[]
+  brandProfile    BrandProfile?
+  contentRewrites ContentRewrite[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -1838,11 +1856,12 @@ model BrandProfile {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  workspace  Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdBy  User              @relation("BrandProfileCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  updatedBy  User?             @relation("BrandProfileUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
-  guardrails BrandGuardrail[]
-  vocabulary BrandVocabulary[]
+  workspace       Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy       User              @relation("BrandProfileCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy       User?             @relation("BrandProfileUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  guardrails      BrandGuardrail[]
+  vocabulary      BrandVocabulary[]
+  contentRewrites ContentRewrite[]
 
   @@index([workspaceId])
   @@index([isActive])
@@ -1889,4 +1908,37 @@ model BrandVocabulary {
   @@index([brandProfileId, isActive])
   @@index([term])
   @@map("brand_vocabulary")
+}
+
+// =============================================================================
+// Content Rewrite Model (Brand Brain AI Rewriter)
+// =============================================================================
+
+model ContentRewrite {
+  id               String          @id @default(cuid())
+  workspaceId      String
+  brandProfileId   String
+  originalContent  String          @db.Text
+  rewrittenContent String?         @db.Text
+  platform         ContentPlatform @default(GENERAL)
+  status           RewriteStatus   @default(PENDING)
+  characterLimit   Int?
+  changes          Json? // Diff hunks for selective apply
+  toneAnalysis     Json? // Detected vs target tone analysis
+  errorMessage     String?
+  processedAt      DateTime?
+  createdById      String
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  brandProfile BrandProfile @relation(fields: [brandProfileId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([brandProfileId])
+  @@index([createdById])
+  @@index([status])
+  @@index([createdAt])
+  @@map("content_rewrites")
 }

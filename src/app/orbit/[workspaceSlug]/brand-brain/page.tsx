@@ -7,10 +7,11 @@ import { tryCatch } from "@/lib/try-catch";
 import { cn } from "@/lib/utils";
 import type { ColorPaletteItem, ToneDescriptors } from "@/lib/validations/brand-brain";
 import { VOICE_DIMENSION_LABELS } from "@/lib/validations/brand-brain";
-import { Brain, Edit2, Palette, Plus, Shield, Volume2 } from "lucide-react";
+import { Brain, Edit2, Palette, Plus, Shield, Sparkles, Volume2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ContentRewriterCard } from "./rewriter/components/ContentRewriterCard";
 
 interface Props {
   params: Promise<{ workspaceSlug: string; }>;
@@ -314,6 +315,17 @@ export default async function BrandBrainPage({ params }: Props) {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Content Tools */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <h2 className="text-xl font-semibold">Content Tools</h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <ContentRewriterCard workspaceSlug={workspaceSlug} />
+        </div>
       </div>
 
       {/* Version Info */}
