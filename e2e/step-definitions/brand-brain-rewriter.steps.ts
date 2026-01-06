@@ -117,6 +117,7 @@ When("I navigate to the Brand Brain page", async function(this: CustomWorld) {
 });
 
 When("I navigate to the rewriter page", async function(this: CustomWorld) {
+  // Set up workspace mocks FIRST, before any navigation
   await setupWorkspaceMocks(this);
 
   // Set up rewrite API mock BEFORE navigation so it's ready when form is submitted
@@ -137,8 +138,10 @@ When("I navigate to the rewriter page", async function(this: CustomWorld) {
     this.page,
     `${this.baseUrl}/orbit/${TEST_WORKSPACE_SLUG}/brand-brain/rewriter`,
   );
-  // Wait for workspace ID to be fetched
-  await this.page.waitForSelector('form, [role="alert"]', { timeout: 10000 });
+
+  // Wait for loading state to finish and form to appear
+  // The form contains the Rewrite button
+  await this.page.waitForSelector('form button[type="submit"]', { timeout: 15000 });
 });
 
 When("I navigate to a non-existent workspace rewriter page", async function(this: CustomWorld) {

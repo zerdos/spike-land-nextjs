@@ -153,7 +153,9 @@ Then(
     const button = this.page.getByRole("button", {
       name: new RegExp(buttonText, "i"),
     });
-    await expect(button.first()).toBeDisabled();
+    // Wait for button to be visible first, then check disabled state
+    await expect(button.first()).toBeVisible({ timeout: 10000 });
+    await expect(button.first()).toBeDisabled({ timeout: 5000 });
   },
 );
 
@@ -164,7 +166,9 @@ Then(
     const button = this.page.getByRole("button", {
       name: new RegExp(buttonText, "i"),
     });
-    await expect(button.first()).toBeEnabled();
+    // Wait for button to be visible first, then check enabled state
+    await expect(button.first()).toBeVisible({ timeout: 10000 });
+    await expect(button.first()).toBeEnabled({ timeout: 5000 });
   },
 );
 
