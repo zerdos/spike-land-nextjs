@@ -62,7 +62,9 @@ export class CustomWorld extends World {
     const extraHTTPHeaders: Record<string, string> = {};
 
     // Add E2E bypass header if secret is configured
-    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
+    // Sanitize the value to remove any newlines or whitespace that could cause
+    // "Invalid header value" errors in Chromium
+    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET?.trim().replace(/[\r\n]/g, "");
     if (e2eBypassSecret) {
       extraHTTPHeaders["x-e2e-auth-bypass"] = e2eBypassSecret;
     }
