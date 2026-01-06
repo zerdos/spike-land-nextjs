@@ -151,16 +151,26 @@ After(
   async function(this: VideoWallWorld, { result, pickle }) {
     if (result?.status === Status.FAILED) {
       // Use this.page for non-video-wall scenarios (CustomWorld uses page, not displayPage)
-      const screenshot = await this.page?.screenshot({
-        path: `e2e/reports/screenshots/${pickle.name.replace(/\s+/g, "_")}.png`,
-        fullPage: true,
-      });
-      if (screenshot) {
-        this.attach(screenshot, "image/png");
+      // Wrap in try-catch to handle browser crashes gracefully
+      try {
+        const screenshot = await this.page?.screenshot({
+          path: `e2e/reports/screenshots/${pickle.name.replace(/\s+/g, "_")}.png`,
+          fullPage: true,
+        });
+        if (screenshot) {
+          this.attach(screenshot, "image/png");
+        }
+      } catch (error) {
+        // Browser may have crashed, log error but don't fail teardown
+        console.error(`Failed to take screenshot: ${(error as Error).message}`);
       }
     }
-    // Call the parent CustomWorld.destroy() method
-    await CustomWorld.prototype.destroy.call(this);
+    // Call the parent CustomWorld.destroy() method - also wrap in try-catch
+    try {
+      await CustomWorld.prototype.destroy.call(this);
+    } catch (error) {
+      console.error(`Failed to destroy context: ${(error as Error).message}`);
+    }
   },
 );
 
