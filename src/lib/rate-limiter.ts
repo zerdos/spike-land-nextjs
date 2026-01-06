@@ -382,4 +382,9 @@ export const rateLimitConfigs = {
     maxRequests: 20,
     windowMs: 60 * 1000, // 1 minute
   },
+  /** Brand content rewriting: 15 requests per minute per user (slightly lower due to higher LLM cost) */
+  brandRewriting: {
+    maxRequests: 15,
+    windowMs: 60 * 1000, // 1 minute
+  },
 } as const;

@@ -53,9 +53,7 @@ RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/
        python3 make g++ \
        libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
 ADD https://github.com/zerdos/spike-land-nextjs.git /app/
-RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
-    --mount=type=cache,id=${CACHE_NS}-nm-${TARGETARCH},target=/tmp/nm-cache,sharing=locked \
-    yarn install --immutable
+RUN yarn install --immutable
 
 COPY --link --from=dep-context /app /app
 
