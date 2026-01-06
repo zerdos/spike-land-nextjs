@@ -48,8 +48,7 @@ export class CustomWorld extends World {
           "--disable-default-apps",
           "--no-first-run",
           "--disable-features=TranslateUI",
-          // Additional memory optimization flags
-          "--single-process", // Run in single process mode to reduce memory
+          // Memory optimization flags (note: --single-process removed as it causes crashes when recreating contexts)
           "--disable-accelerated-2d-canvas",
           "--disable-renderer-backgrounding",
           "--disable-backgrounding-occluded-windows",
