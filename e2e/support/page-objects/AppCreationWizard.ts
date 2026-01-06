@@ -14,6 +14,11 @@ export class AppCreationWizard {
   async navigate() {
     await this.page.goto("/my-apps/new");
     await waitForPageLoad(this.page);
+    // Wait for the wizard form to be visible before proceeding
+    // This ensures the page is fully rendered after authentication
+    await waitForTestId(this.page, "wizard-step-title", {
+      timeout: TIMEOUTS.LONG,
+    });
   }
 
   async getProgressBar() {
