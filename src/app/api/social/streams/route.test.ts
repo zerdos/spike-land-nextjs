@@ -29,6 +29,15 @@ vi.mock("@/lib/social", () => ({
   createSocialClient: vi.fn(),
 }));
 
+// Mock workspace middleware
+vi.mock("@/lib/permissions/workspace-middleware", () => ({
+  requireWorkspaceMembership: vi.fn().mockResolvedValue({
+    workspaceId: "workspace-123",
+    userId: "user-123",
+    role: "OWNER",
+  }),
+}));
+
 const { auth } = await import("@/auth");
 const prisma = (await import("@/lib/prisma")).default;
 const { createSocialClient } = await import("@/lib/social");
@@ -70,6 +79,7 @@ function createMockAccount(overrides: Partial<SocialAccount> = {}): SocialAccoun
     status: "ACTIVE",
     metadata: null,
     userId: "user-123",
+    workspaceId: "workspace-123",
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -371,7 +381,7 @@ describe("GET /api/social/streams", () => {
       expect(response.status).toBe(200);
       expect(prisma.socialAccount.findMany).toHaveBeenCalledWith({
         where: {
-          userId: "user-123",
+          workspaceId: "workspace-123",
           status: "ACTIVE",
           platform: { in: ["TWITTER"] },
         },
@@ -700,7 +710,7 @@ describe("GET /api/social/streams", () => {
       expect(response.status).toBe(200);
       expect(prisma.socialAccount.findMany).toHaveBeenCalledWith({
         where: {
-          userId: "user-123",
+          workspaceId: "workspace-123",
           status: "ACTIVE",
           platform: { in: ["TWITTER", "FACEBOOK"] },
         },
@@ -810,14 +820,14 @@ describe("Exported Functions", () => {
   });
 
   describe("fetchConnectedAccounts", () => {
-    it("should query accounts with userId and ACTIVE status", async () => {
+    it("should query accounts with workspaceId and ACTIVE status", async () => {
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([]);
 
-      await fetchConnectedAccounts("user-123");
+      await fetchConnectedAccounts("workspace-123");
 
       expect(prisma.socialAccount.findMany).toHaveBeenCalledWith({
         where: {
-          userId: "user-123",
+          workspaceId: "workspace-123",
           status: "ACTIVE",
         },
       });
@@ -826,11 +836,11 @@ describe("Exported Functions", () => {
     it("should filter by platforms when provided", async () => {
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([]);
 
-      await fetchConnectedAccounts("user-123", ["TWITTER", "FACEBOOK"]);
+      await fetchConnectedAccounts("workspace-123", ["TWITTER", "FACEBOOK"]);
 
       expect(prisma.socialAccount.findMany).toHaveBeenCalledWith({
         where: {
-          userId: "user-123",
+          workspaceId: "workspace-123",
           status: "ACTIVE",
           platform: { in: ["TWITTER", "FACEBOOK"] },
         },
@@ -840,11 +850,11 @@ describe("Exported Functions", () => {
     it("should not filter by platforms when empty array", async () => {
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([]);
 
-      await fetchConnectedAccounts("user-123", []);
+      await fetchConnectedAccounts("workspace-123", []);
 
       expect(prisma.socialAccount.findMany).toHaveBeenCalledWith({
         where: {
-          userId: "user-123",
+          workspaceId: "workspace-123",
           status: "ACTIVE",
         },
       });

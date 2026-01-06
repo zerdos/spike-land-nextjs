@@ -1615,9 +1615,13 @@ model SocialAccount {
   status                SocialAccountStatus @default(ACTIVE)
   metadata              Json?
 
-  // User ownership
+  // User ownership (kept for audit trail - who connected the account)
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Workspace ownership (primary relationship for Orbit)
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -1627,8 +1631,9 @@ model SocialAccount {
   metrics      SocialMetrics[]
   postAccounts SocialPostAccount[]
 
-  @@unique([userId, platform, accountId])
+  @@unique([workspaceId, platform, accountId])
   @@index([userId])
+  @@index([workspaceId])
   @@index([status])
   @@map("social_accounts")
 }
@@ -1807,6 +1812,7 @@ model Workspace {
   members         WorkspaceMember[]
   brandProfile    BrandProfile?
   contentRewrites ContentRewrite[]
+  socialAccounts  SocialAccount[]
 
   @@index([slug])
   @@index([isPersonal])

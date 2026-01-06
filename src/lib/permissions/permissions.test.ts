@@ -128,7 +128,7 @@ describe("permissions", () => {
   describe("getPermittedActions", () => {
     it("returns all actions for OWNER", () => {
       const actions = getPermittedActions("OWNER");
-      expect(actions).toHaveLength(29);
+      expect(actions).toHaveLength(32);
       expect(actions).toContain("workspace:delete");
       expect(actions).toContain("workspace:transfer");
     });
@@ -180,9 +180,9 @@ describe("permissions", () => {
   });
 
   describe("getAllActions", () => {
-    it("returns all 29 defined actions", () => {
+    it("returns all 32 defined actions", () => {
       const actions = getAllActions();
-      expect(actions).toHaveLength(29);
+      expect(actions).toHaveLength(32);
     });
 
     it("includes actions from all categories", () => {
