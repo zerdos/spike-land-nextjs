@@ -1,4 +1,3 @@
-@skip
 Feature: Complete User Flows
   As a user
   I want to complete common workflows

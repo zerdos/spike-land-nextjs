@@ -131,7 +131,11 @@ When("I am not logged in", async function(this: CustomWorld) {
   // Re-navigate if needed
   if (currentUrl && currentUrl !== "about:blank") {
     await this.page.goto(currentUrl, { waitUntil: "commit" });
-    await waitForPageReady(this.page);
+    await waitForPageReady(this.page, { strategy: "both", waitForSuspense: true });
+  } else {
+    // If no URL, navigate to home page
+    await this.page.goto(this.baseUrl, { waitUntil: "commit" });
+    await waitForPageReady(this.page, { strategy: "both", waitForSuspense: true });
   }
 });
 
@@ -141,8 +145,9 @@ Given("I am logged in as a test user", async function(this: CustomWorld) {
     name: "Test User",
     email: "test@example.com",
   });
-  await this.page.reload();
-  await this.page.waitForLoadState("networkidle");
+  await waitForRouteReady(this.page);
+  await this.page.reload({ waitUntil: "commit" });
+  await waitForPageReady(this.page, { strategy: "both" });
 });
 
 When(
@@ -158,49 +163,52 @@ When(
 When(
   "I am logged in as {string} without an avatar image",
   async function(this: CustomWorld, name: string) {
-    await mockSession(this, {
-      name,
-      email: `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`,
-    });
-    await this.page.reload();
-    await this.page.waitForLoadState("networkidle");
+    const email = `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`;
+    await mockSession(this, { name, email });
+    await waitForRouteReady(this.page);
+    await this.page.reload({ waitUntil: "commit" });
+    await waitForPageReady(this.page, { strategy: "both" });
   },
 );
 
 When(
   "I am logged in as {string} with avatar image {string}",
   async function(this: CustomWorld, name: string, imageUrl: string) {
-    await mockSession(this, {
-      name,
-      email: `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`,
-      image: imageUrl,
-    });
-    await this.page.reload();
-    await this.page.waitForLoadState("networkidle");
+    const email = `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`;
+    await mockSession(this, { name, email, image: imageUrl });
+    await waitForRouteReady(this.page);
+    await this.page.reload({ waitUntil: "commit" });
+    await waitForPageReady(this.page, { strategy: "both" });
   },
 );
 
 When(
   "I log out and log in as {string}",
   async function(this: CustomWorld, name: string) {
+    const email = `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`;
+
     // First log out by mocking null session
     await mockSession(this, null);
+    await waitForRouteReady(this.page);
 
     // Clear previous user's data for isolation
-    await this.page.evaluate(() => {
-      localStorage.clear();
-    });
+    try {
+      await this.page.evaluate(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+      });
+    } catch {
+      // Ignore storage access errors
+    }
 
-    await this.page.reload();
-    await this.page.waitForLoadState("networkidle");
+    await this.page.reload({ waitUntil: "commit" });
+    await waitForPageReady(this.page, { strategy: "both" });
 
     // Then log in as the new user
-    await mockSession(this, {
-      name,
-      email: `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`,
-    });
-    await this.page.reload();
-    await this.page.waitForLoadState("networkidle");
+    await mockSession(this, { name, email });
+    await waitForRouteReady(this.page);
+    await this.page.reload({ waitUntil: "commit" });
+    await waitForPageReady(this.page, { strategy: "both" });
   },
 );
 
@@ -209,24 +217,26 @@ When(
   async function(this: CustomWorld, name: string, email: string) {
     // First log out by mocking null session
     await mockSession(this, null);
+    await waitForRouteReady(this.page);
 
     // Clear previous user's data for isolation
-    // Wrap in try-catch to handle cross-origin/security restrictions
     try {
       await this.page.evaluate(() => {
         localStorage.clear();
+        sessionStorage.clear();
       });
     } catch {
       // localStorage access denied - likely cross-origin, continue anyway
     }
 
-    await this.page.reload();
-    await this.page.waitForLoadState("networkidle");
+    await this.page.reload({ waitUntil: "commit" });
+    await waitForPageReady(this.page, { strategy: "both" });
 
     // Then log in as the new user with specified email
     await mockSession(this, { name, email });
-    await this.page.reload();
-    await this.page.waitForLoadState("networkidle");
+    await waitForRouteReady(this.page);
+    await this.page.reload({ waitUntil: "commit" });
+    await waitForPageReady(this.page, { strategy: "both" });
   },
 );
 
@@ -255,8 +265,9 @@ When("I click on the user avatar", async function(this: CustomWorld) {
   await avatar.scrollIntoViewIfNeeded();
   await avatar.dispatchEvent("click"); // More reliable than force: true
 
-  // Wait for dropdown to appear
-  await this.page.waitForTimeout(200);
+  // Wait for dropdown menu to appear with proper assertion
+  const menu = this.page.getByRole("menu");
+  await expect(menu).toBeVisible({ timeout: 5000 });
 });
 
 When(
@@ -364,8 +375,12 @@ Then(
 Then("I should be logged out", async function(this: CustomWorld) {
   // Mock the session as null after logout
   await mockSession(this, null);
+  await waitForRouteReady(this.page);
+
   // Wait for the page to reflect the logged-out state
-  await this.page.waitForTimeout(500);
+  // Check that login buttons are visible (indicating logged out state)
+  const githubButton = this.page.getByRole("button", { name: /Continue with GitHub/i });
+  await expect(githubButton).toBeVisible({ timeout: 5000 });
 });
 
 Then(

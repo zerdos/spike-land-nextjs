@@ -1,5 +1,6 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { waitForUrlPath } from "../support/helpers/wait-helper";
 import { ProfilePage } from "../support/page-objects/ProfilePage";
 import type { CustomWorld } from "../support/world";
 
@@ -116,7 +117,7 @@ Then(
 // NOTE: "I am on the home page" step is defined in home-page.steps.ts
 
 Then("I should be on the profile page", async function(this: CustomWorld) {
-  await expect(this.page).toHaveURL(/\/profile$/);
+  await waitForUrlPath(this.page, "/profile", { timeout: 10000, exact: true });
 });
 
 Then("I should see my profile information", async function(this: CustomWorld) {
