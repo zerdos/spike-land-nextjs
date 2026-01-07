@@ -1,12 +1,13 @@
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
+import { gotoWithRetry, waitForPageReady } from "../helpers/wait-helper";
 
 export class ProfilePage {
   constructor(private page: Page) {}
 
   async navigate() {
-    await this.page.goto("/profile");
-    await this.page.waitForLoadState("networkidle");
+    await gotoWithRetry(this.page, "/profile");
+    await waitForPageReady(this.page);
   }
 
   async getPageTitle() {

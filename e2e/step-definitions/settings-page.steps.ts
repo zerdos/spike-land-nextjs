@@ -1,11 +1,12 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { gotoWithRetry, waitForPageReady, waitForUrlPath } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
 
 // Navigation
 When("I navigate to the settings page", async function(this: CustomWorld) {
-  await this.page.goto(`${this.baseUrl}/settings`);
-  await this.page.waitForLoadState("networkidle");
+  await gotoWithRetry(this.page, `${this.baseUrl}/settings`);
+  await waitForPageReady(this.page);
 });
 
 // Page verification
@@ -20,7 +21,7 @@ Then(
 // NOTE: "the page URL should be {string}" step is defined in my-apps.steps.ts
 
 Then("I should be on the settings page", async function(this: CustomWorld) {
-  await expect(this.page).toHaveURL(/\/settings/, { timeout: 10000 });
+  await waitForUrlPath(this.page, "/settings", { timeout: 10000 });
 });
 
 // Tabs
@@ -40,6 +41,15 @@ Then("I should see the settings tabs", async function(this: CustomWorld) {
 });
 
 // NOTE: "I click the {string} tab" is defined in common.steps.ts
+// Wait for tab content to load after switching
+When(
+  "I click the {string} tab and wait",
+  async function(this: CustomWorld, tabName: string) {
+    const tab = this.page.getByRole("tab", { name: tabName });
+    await tab.click();
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
+  },
+);
 
 // NOTE: "the {string} tab should be active" is defined in common.steps.ts
 
@@ -152,7 +162,8 @@ When(
       await toggle.click();
     }
 
-    await this.page.waitForTimeout(500);
+    // Wait for state update
+    await waitForPageReady(this.page, { strategy: "domcontentloaded", waitForSuspense: false });
   },
 );
 
@@ -174,7 +185,8 @@ When(
       await toggle.click();
     }
 
-    await this.page.waitForTimeout(500);
+    // Wait for state update
+    await waitForPageReady(this.page, { strategy: "domcontentloaded", waitForSuspense: false });
   },
 );
 
@@ -194,8 +206,8 @@ Then(
 Then(
   "the change should be reflected in the UI",
   async function(this: CustomWorld) {
-    // Verify UI update
-    await this.page.waitForTimeout(500);
+    // Wait for UI to update
+    await waitForPageReady(this.page, { strategy: "domcontentloaded", waitForSuspense: false });
     expect(true).toBeTruthy(); // Placeholder for actual UI check
   },
 );
@@ -289,7 +301,8 @@ When(
     const dialog = this.page.locator('[role="dialog"], [role="alertdialog"]');
     const button = dialog.getByRole("button", { name: buttonText });
     await button.click();
-    await this.page.waitForTimeout(500);
+    // Wait for dialog action to complete
+    await waitForPageReady(this.page, { strategy: "domcontentloaded", waitForSuspense: false });
   },
 );
 
@@ -304,6 +317,6 @@ Then(
 Then(
   "I should still be on the settings page",
   async function(this: CustomWorld) {
-    await expect(this.page).toHaveURL(/\/settings/, { timeout: 5000 });
+    await waitForUrlPath(this.page, "/settings", { timeout: 10000 });
   },
 );
