@@ -5,6 +5,7 @@
 import type { DataTable } from "@cucumber/cucumber";
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { TIMEOUTS, waitForElementWithRetry } from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // Mock feedback data generator
@@ -187,13 +188,16 @@ When(
 
     // Use role="combobox" which is the Radix UI Select trigger role
     const statusSelect = this.page.getByRole("combobox").first();
-    await statusSelect.waitFor({ state: "visible", timeout: 10000 });
+    await statusSelect.waitFor({ state: "visible", timeout: TIMEOUTS.DEFAULT });
     await statusSelect.click();
 
-    // Wait for dropdown to appear and click the option
+    // Wait for dropdown to appear and click the option with retry
     const option = this.page.locator('[role="option"]').filter({ hasText: status });
-    await option.waitFor({ state: "visible", timeout: 5000 });
+    await option.waitFor({ state: "visible", timeout: TIMEOUTS.DEFAULT });
     await option.click();
+
+    // Wait a bit for filtering to apply
+    await this.page.waitForLoadState("networkidle", { timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -550,14 +554,16 @@ Then("OTHER type badge should be gray", async function(this: CustomWorld) {
 });
 
 Then("NEW status badge should be yellow", async function(this: CustomWorld) {
-  // Wait for table to load first
-  await this.page.waitForSelector("table tbody tr", {
-    state: "visible",
-    timeout: 10000,
-  });
+  // Wait for table to load first with retry
+  await waitForElementWithRetry(
+    this.page,
+    "table tbody tr",
+    { timeout: TIMEOUTS.DEFAULT },
+  );
+  // Find and verify the NEW badge
   const badge = this.page.locator('[class*="Badge"]').filter({ hasText: "NEW" })
     .first();
-  await expect(badge).toBeVisible({ timeout: 5000 });
+  await expect(badge).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   const className = await badge.getAttribute("class");
   expect(className).toContain("yellow");
 });
@@ -565,23 +571,23 @@ Then("NEW status badge should be yellow", async function(this: CustomWorld) {
 Then(
   "REVIEWED status badge should be blue",
   async function(this: CustomWorld) {
-    // Wait for table to load first
-    await this.page.waitForSelector("table tbody tr", {
-      state: "visible",
-      timeout: 15000,
-    });
+    // Wait for table to load first with retry
+    await waitForElementWithRetry(
+      this.page,
+      "table tbody tr",
+      { timeout: TIMEOUTS.DEFAULT },
+    );
     // Scroll to ensure all badges are visible (table might be scrollable)
     const table = this.page.locator("table");
     await table.evaluate((el) => el.scrollTop = el.scrollHeight);
     await this.page.waitForTimeout(200);
     await table.evaluate((el) => el.scrollTop = 0);
 
-    // Look for REVIEWED badge - it should be in the 5th column (status)
-    // Use a more flexible selector that handles the table structure
+    // Find and verify the REVIEWED badge
     const badge = this.page.locator("table tbody tr td").locator('[class*="Badge"]').filter({
       hasText: "REVIEWED",
     }).first();
-    await expect(badge).toBeVisible({ timeout: 15000 });
+    await expect(badge).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     const className = await badge.getAttribute("class");
     expect(className).toContain("blue");
   },
@@ -590,15 +596,17 @@ Then(
 Then(
   "RESOLVED status badge should be green",
   async function(this: CustomWorld) {
-    // Wait for table to load first
-    await this.page.waitForSelector("table tbody tr", {
-      state: "visible",
-      timeout: 15000,
-    });
+    // Wait for table to load first with retry
+    await waitForElementWithRetry(
+      this.page,
+      "table tbody tr",
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    // Find and verify the RESOLVED badge
     const badge = this.page.locator('[class*="Badge"]').filter({
       hasText: "RESOLVED",
     }).first();
-    await expect(badge).toBeVisible({ timeout: 15000 });
+    await expect(badge).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     const className = await badge.getAttribute("class");
     expect(className).toContain("green");
   },
@@ -607,15 +615,17 @@ Then(
 Then(
   "DISMISSED status badge should be gray",
   async function(this: CustomWorld) {
-    // Wait for table to load first
-    await this.page.waitForSelector("table tbody tr", {
-      state: "visible",
-      timeout: 15000,
-    });
+    // Wait for table to load first with retry
+    await waitForElementWithRetry(
+      this.page,
+      "table tbody tr",
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    // Find and verify the DISMISSED badge
     const badge = this.page.locator('[class*="Badge"]').filter({
       hasText: "DISMISSED",
     }).first();
-    await expect(badge).toBeVisible({ timeout: 15000 });
+    await expect(badge).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     const className = await badge.getAttribute("class");
     expect(className).toMatch(/gray|neutral/);
   },

@@ -27,7 +27,7 @@ Feature: Admin Featured Gallery Management
     Then I should see "No gallery items yet" text
     And I should see "Add New Item" text
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Gallery displays existing items in a grid
     Given there are gallery items in the system
     When I visit "/admin/gallery"
@@ -36,7 +36,7 @@ Feature: Admin Featured Gallery Management
     And each gallery item should display a title
     And each gallery item should display a category badge
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Gallery items show category badges with correct styling
     Given there are gallery items with different categories
     When I visit "/admin/gallery"
@@ -45,14 +45,14 @@ Feature: Admin Featured Gallery Management
     And I should see "PRODUCT" category badge
     And I should see "ARCHITECTURE" category badge
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Open image browser dialog to add new gallery item
     When I visit "/admin/gallery"
     And I click "Add New Item" button
     Then I should see the image browser dialog
     And the dialog should display available enhanced images
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Select an image from browser and open add form
     Given there are enhanced images available
     When I visit "/admin/gallery"
@@ -61,7 +61,7 @@ Feature: Admin Featured Gallery Management
     Then I should see the add gallery item form
     And I should see "Add Gallery Item" dialog title
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Add a new gallery item with all fields
     Given there are enhanced images available
     When I visit "/admin/gallery"
@@ -75,7 +75,7 @@ Feature: Admin Featured Gallery Management
     Then I should see the new gallery item in the grid
     And the gallery item should display "Beautiful Portrait"
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Edit an existing gallery item
     Given there are gallery items in the system
     When I visit "/admin/gallery"
@@ -86,7 +86,7 @@ Feature: Admin Featured Gallery Management
     And I submit the gallery item form
     Then the gallery item should display "Updated Title"
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Toggle gallery item active status
     Given there are gallery items in the system
     When I visit "/admin/gallery"
@@ -94,7 +94,7 @@ Feature: Admin Featured Gallery Management
     Then the gallery item active status should change
     And the change should persist after page refresh
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Move gallery item up in order
     Given there are at least 2 gallery items in the system
     When I visit "/admin/gallery"
@@ -103,7 +103,7 @@ Feature: Admin Featured Gallery Management
     Then the gallery order should change
     And the second item should now be first
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Move gallery item down in order
     Given there are at least 2 gallery items in the system
     When I visit "/admin/gallery"
@@ -112,19 +112,19 @@ Feature: Admin Featured Gallery Management
     Then the gallery order should change
     And the first item should now be second
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: First item has disabled Up button
     Given there are gallery items in the system
     When I visit "/admin/gallery"
     Then the "Up" button on the first item should be disabled
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Last item has disabled Down button
     Given there are gallery items in the system
     When I visit "/admin/gallery"
     Then the "Down" button on the last item should be disabled
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Delete gallery item shows confirmation dialog
     Given there are gallery items in the system
     When I visit "/admin/gallery"
@@ -133,7 +133,7 @@ Feature: Admin Featured Gallery Management
     And I should see "Delete Gallery Item" dialog title
     And I should see "This action cannot be undone" text
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Confirm deletion removes gallery item
     Given there are gallery items in the system
     When I visit "/admin/gallery"
@@ -143,7 +143,7 @@ Feature: Admin Featured Gallery Management
     Then the gallery item should be removed
     And the gallery item count should decrease by 1
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Cancel deletion keeps gallery item
     Given there are gallery items in the system
     When I visit "/admin/gallery"
@@ -153,13 +153,13 @@ Feature: Admin Featured Gallery Management
     Then the gallery item count should remain the same
     And the delete dialog should close
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Gallery shows loading state while fetching
     Given the gallery API is slow
     When I navigate quickly to "/admin/gallery"
     Then I should see loading skeleton cards
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Gallery shows error state on API failure
     Given the gallery API returns an error
     When I visit "/admin/gallery"

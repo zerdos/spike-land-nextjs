@@ -1,4 +1,4 @@
-@requires-db @flaky
+@requires-db
 Feature: Album Management
   As an authenticated user
   I want to create and manage my photo albums

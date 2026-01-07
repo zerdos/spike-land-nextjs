@@ -4,6 +4,12 @@
 
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import {
+  TIMEOUTS,
+  waitForApiResponse,
+  waitForDynamicContent,
+  waitForElementWithRetry,
+} from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // Given steps
@@ -31,16 +37,25 @@ Given("there is a custom tracked path", async function(this: CustomWorld) {
 
 // When steps
 When("I wait for pages to load", async function(this: CustomWorld) {
-  // Wait for some iframes to finish loading
-  await this.page.waitForTimeout(3000);
+  // Wait for iframes to finish loading using retry logic
+  await waitForElementWithRetry(
+    this.page,
+    "iframe",
+    { timeout: TIMEOUTS.LONG, state: "visible" },
+  );
+  // Wait for at least one iframe to fully load
+  await this.page.waitForTimeout(TIMEOUTS.SHORT);
 });
 
 When(
   "I click the refresh button on a route card",
   async function(this: CustomWorld) {
-    const refreshButton = this.page.locator('[title="Reload this iframe"]')
-      .first();
-    await refreshButton.click();
+    const refreshButton = await waitForElementWithRetry(
+      this.page,
+      '[title="Reload this iframe"]',
+      { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+    );
+    await refreshButton.first().click();
   },
 );
 
@@ -58,41 +73,72 @@ When(
       };
     });
 
-    const externalButton = this.page.locator('[title="Open in new tab"]')
-      .first();
-    await externalButton.click();
+    const externalButton = await waitForElementWithRetry(
+      this.page,
+      '[title="Open in new tab"]',
+      { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+    );
+    await externalButton.first().click();
   },
 );
 
 When(
   "I click the visibility toggle on a route card",
   async function(this: CustomWorld) {
-    const visibilityButton = this.page.locator(
+    // Wait for API response before checking updates
+    const apiPromise = waitForApiResponse(
+      this.page,
+      "/api/admin/tracked-urls",
+      { timeout: TIMEOUTS.LONG },
+    );
+
+    const visibilityButton = await waitForElementWithRetry(
+      this.page,
       '[title*="Hide this path"], [title*="Show this path"]',
-    )
-      .first();
-    await visibilityButton.click();
+      { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+    );
+    await visibilityButton.first().click();
+
+    await apiPromise;
   },
 );
 
 When(
   "I click the visibility toggle on a hidden route card",
   async function(this: CustomWorld) {
+    // Wait for API response before checking updates
+    const apiPromise = waitForApiResponse(
+      this.page,
+      "/api/admin/tracked-urls",
+      { timeout: TIMEOUTS.LONG },
+    );
+
     // Find a card with "Hidden" badge and click its visibility toggle
+    await waitForElementWithRetry(
+      this.page,
+      '[class*="Card"]',
+      { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+    );
+
     const hiddenCard = this.page.locator('[class*="Card"]').filter({
       hasText: "Hidden",
     }).first();
     const visibilityButton = hiddenCard.locator('[title*="Show this path"]');
     await visibilityButton.click();
+
+    await apiPromise;
   },
 );
 
 When(
   "I click the delete button on a custom path card",
   async function(this: CustomWorld) {
-    const deleteButton = this.page.locator('[title="Delete custom path"]')
-      .first();
-    await deleteButton.click();
+    const deleteButton = await waitForElementWithRetry(
+      this.page,
+      '[title="Delete custom path"]',
+      { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+    );
+    await deleteButton.first().click();
   },
 );
 
@@ -116,6 +162,11 @@ When(
 
 // Then steps
 Then("I should see health status badges", async function(this: CustomWorld) {
+  // Wait for at least one badge to be visible
+  await this.page.waitForSelector('[class*="Badge"]', {
+    state: "visible",
+    timeout: TIMEOUTS.LONG,
+  });
   const badges = this.page.locator('[class*="Badge"]');
   const count = await badges.count();
   expect(count).toBeGreaterThan(0);
@@ -124,26 +175,46 @@ Then("I should see health status badges", async function(this: CustomWorld) {
 Then(
   "I should see {string} status count",
   async function(this: CustomWorld, status: string) {
+    await waitForDynamicContent(
+      this.page,
+      '[class*="Badge"]',
+      status,
+      { timeout: TIMEOUTS.LONG },
+    );
     const statusBadge = this.page.locator('[class*="Badge"]').filter({
       hasText: status,
     });
-    await expect(statusBadge).toBeVisible();
+    await expect(statusBadge).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
 Then(
   "I should see {string} count text",
   async function(this: CustomWorld, text: string) {
+    await waitForDynamicContent(
+      this.page,
+      "body",
+      text,
+      { timeout: TIMEOUTS.LONG },
+    );
     const countText = this.page.locator(`text=${text}`);
-    await expect(countText.first()).toBeVisible();
+    await expect(countText.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then(
   "I should see a grid of route preview cards",
   async function(this: CustomWorld) {
-    const grid = this.page.locator(".grid");
-    await expect(grid).toBeVisible();
+    await waitForElementWithRetry(
+      this.page,
+      ".grid",
+      { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+    );
+    // Wait for at least one card to be visible
+    await this.page.waitForSelector('[class*="Card"]', {
+      state: "visible",
+      timeout: TIMEOUTS.LONG,
+    });
     const cards = this.page.locator('[class*="Card"]');
     const count = await cards.count();
     expect(count).toBeGreaterThan(0);
@@ -171,6 +242,11 @@ Then(
 Then(
   "each card should have an iframe preview",
   async function(this: CustomWorld) {
+    await waitForElementWithRetry(
+      this.page,
+      "iframe",
+      { timeout: TIMEOUTS.LONG, state: "visible" },
+    );
     const iframes = this.page.locator("iframe");
     const count = await iframes.count();
     expect(count).toBeGreaterThan(0);
@@ -207,6 +283,11 @@ Then(
 Then(
   "loaded cards should show the page content in iframe",
   async function(this: CustomWorld) {
+    await waitForElementWithRetry(
+      this.page,
+      "iframe",
+      { timeout: TIMEOUTS.LONG, state: "visible" },
+    );
     const iframes = this.page.locator("iframe");
     const count = await iframes.count();
     expect(count).toBeGreaterThan(0);
@@ -234,17 +315,33 @@ Then(
 Then(
   "I should see preview card for {string}",
   async function(this: CustomWorld, path: string) {
+    await waitForElementWithRetry(
+      this.page,
+      '[class*="Card"]',
+      { timeout: TIMEOUTS.LONG, state: "visible" },
+    );
     const card = this.page.locator('[class*="Card"]').filter({ hasText: path });
-    await expect(card).toBeVisible();
+    await expect(card).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
 Then("that card should show loading state", async function(this: CustomWorld) {
-  // Card should show loading indicator
-  await this.page.waitForTimeout(500);
+  // Wait for loading indicator to appear
+  await waitForElementWithRetry(
+    this.page,
+    ".bg-yellow-500.animate-pulse",
+    { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+  ).catch(() => {
+    // Loading state may be too fast to catch
+  });
 });
 
 Then("the card should reload the iframe", async function(this: CustomWorld) {
+  await waitForElementWithRetry(
+    this.page,
+    "iframe",
+    { timeout: TIMEOUTS.LONG, state: "visible" },
+  );
   await this.page.waitForLoadState("networkidle");
 });
 
@@ -269,10 +366,16 @@ Then("the route should open in a new tab", async function(this: CustomWorld) {
 Then(
   "the card should show {string} badge",
   async function(this: CustomWorld, badgeText: string) {
+    await waitForDynamicContent(
+      this.page,
+      '[class*="Badge"]',
+      badgeText,
+      { timeout: TIMEOUTS.LONG },
+    );
     const badge = this.page.locator('[class*="Badge"]').filter({
       hasText: badgeText,
     });
-    await expect(badge.first()).toBeVisible();
+    await expect(badge.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -286,8 +389,14 @@ Then(
 
 Then("the hidden count should increase", async function(this: CustomWorld) {
   // Verify hidden count is displayed
+  await waitForDynamicContent(
+    this.page,
+    "body",
+    /\d+ hidden/,
+    { timeout: TIMEOUTS.LONG },
+  );
   const hiddenText = this.page.locator("text=/\\d+ hidden/");
-  await expect(hiddenText).toBeVisible();
+  await expect(hiddenText).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then("hidden routes should not be visible", async function(this: CustomWorld) {
@@ -319,8 +428,14 @@ Then(
 );
 
 Then("the hidden count should decrease", async function(this: CustomWorld) {
+  await waitForDynamicContent(
+    this.page,
+    "body",
+    /\d+ hidden/,
+    { timeout: TIMEOUTS.LONG },
+  );
   const hiddenText = this.page.locator("text=/\\d+ hidden/");
-  await expect(hiddenText).toBeVisible();
+  await expect(hiddenText).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then(
@@ -341,8 +456,14 @@ Then("I should see a path input field", async function(this: CustomWorld) {
 Then(
   "I should see a new preview card for {string}",
   async function(this: CustomWorld, path: string) {
+    await waitForDynamicContent(
+      this.page,
+      '[class*="Card"]',
+      path,
+      { timeout: TIMEOUTS.LONG },
+    );
     const card = this.page.locator('[class*="Card"]').filter({ hasText: path });
-    await expect(card).toBeVisible();
+    await expect(card).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -388,8 +509,14 @@ Then("the route should still be hidden", async function(this: CustomWorld) {
 });
 
 Then("the hidden count should be correct", async function(this: CustomWorld) {
+  await waitForDynamicContent(
+    this.page,
+    "body",
+    /\d+ hidden/,
+    { timeout: TIMEOUTS.LONG },
+  );
   const hiddenText = this.page.locator("text=/\\d+ hidden/");
-  await expect(hiddenText).toBeVisible();
+  await expect(hiddenText).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then(
@@ -410,16 +537,26 @@ Then(
 );
 
 Then("the healthy count should increase", async function(this: CustomWorld) {
+  await waitForDynamicContent(
+    this.page,
+    '[class*="Badge"]',
+    "Healthy",
+    { timeout: TIMEOUTS.LONG },
+  );
   const healthyBadge = this.page.locator('[class*="Badge"]').filter({
     hasText: "Healthy",
   });
-  await expect(healthyBadge).toBeVisible();
+  await expect(healthyBadge).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then(
   "the loading count should decrease to zero",
   async function(this: CustomWorld) {
-    // Wait for loading to complete
-    await this.page.waitForTimeout(5000);
+    // Wait for all loading indicators to disappear
+    await this.page.waitForTimeout(TIMEOUTS.SHORT);
+    // Optionally verify no loading dots remain
+    const loadingDots = this.page.locator(".bg-yellow-500.animate-pulse");
+    const count = await loadingDots.count();
+    expect(count).toBe(0);
   },
 );

@@ -5,6 +5,13 @@
 import type { DataTable } from "@cucumber/cucumber";
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import {
+  TIMEOUTS,
+  waitForDynamicContent,
+  waitForElementWithRetry,
+  waitForModalState,
+  waitForTextWithRetry,
+} from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // Mock email data generator
@@ -272,42 +279,41 @@ When(
 When(
   "I select {string} from the email status filter",
   async function(this: CustomWorld, status: string) {
-    // Wait for the page to be fully loaded (table should be visible)
-    await this.page.waitForSelector("table", { state: "visible", timeout: 30000 });
+    // Wait for the table to be visible first
+    await waitForElementWithRetry(this.page, "table", {
+      timeout: TIMEOUTS.DEFAULT,
+    });
 
     // Get the first combobox (status filter) and ensure it's ready
     const statusSelect = this.page.getByRole("combobox").first();
-    await statusSelect.waitFor({ state: "visible", timeout: 10000 });
+    await expect(statusSelect).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
     // Retry logic for opening dropdown (Radix UI portal can be slow)
-    let attempts = 0;
-    const maxAttempts = 3;
+    const startTime = Date.now();
     let optionVisible = false;
 
-    while (!optionVisible && attempts < maxAttempts) {
-      attempts++;
-      await statusSelect.click();
-      // Small delay for portal to render
-      await this.page.waitForTimeout(300);
-
-      const option = this.page.getByRole("option", { name: status });
+    while (!optionVisible && Date.now() - startTime < TIMEOUTS.DEFAULT) {
       try {
-        await option.waitFor({ state: "visible", timeout: 3000 });
-        optionVisible = true;
+        await statusSelect.click();
+        // Wait for portal animation
+        await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
+
+        const option = this.page.getByRole("option", { name: status });
+        await expect(option).toBeVisible({
+          timeout: TIMEOUTS.RETRY_INTERVAL * 2,
+        });
         await option.click();
+        optionVisible = true;
       } catch {
-        // Dropdown may have closed, retry
-        if (attempts < maxAttempts) {
-          // Press Escape to ensure any open dropdown is closed
-          await this.page.keyboard.press("Escape");
-          await this.page.waitForTimeout(200);
-        }
+        // Dropdown may have closed, press Escape and retry
+        await this.page.keyboard.press("Escape");
+        await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
       }
     }
 
     if (!optionVisible) {
       throw new Error(
-        `Failed to find option "${status}" in status filter after ${maxAttempts} attempts`,
+        `Failed to select "${status}" from status filter after ${TIMEOUTS.DEFAULT}ms`,
       );
     }
   },
@@ -316,42 +322,41 @@ When(
 When(
   "I select a template from the template filter",
   async function(this: CustomWorld) {
-    // Wait for the page to be fully loaded (table should be visible)
-    await this.page.waitForSelector("table", { state: "visible", timeout: 30000 });
+    // Wait for the table to be visible first
+    await waitForElementWithRetry(this.page, "table", {
+      timeout: TIMEOUTS.DEFAULT,
+    });
 
     // Get the second combobox (template filter) and ensure it's ready
     const templateSelect = this.page.getByRole("combobox").nth(1);
-    await templateSelect.waitFor({ state: "visible", timeout: 10000 });
+    await expect(templateSelect).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
     // Retry logic for opening dropdown (Radix UI portal can be slow)
-    let attempts = 0;
-    const maxAttempts = 3;
+    const startTime = Date.now();
     let optionVisible = false;
 
-    while (!optionVisible && attempts < maxAttempts) {
-      attempts++;
-      await templateSelect.click();
-      // Small delay for portal to render
-      await this.page.waitForTimeout(300);
-
-      const option = this.page.getByRole("option", { name: "welcome" });
+    while (!optionVisible && Date.now() - startTime < TIMEOUTS.DEFAULT) {
       try {
-        await option.waitFor({ state: "visible", timeout: 3000 });
-        optionVisible = true;
+        await templateSelect.click();
+        // Wait for portal animation
+        await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
+
+        const option = this.page.getByRole("option", { name: "welcome" });
+        await expect(option).toBeVisible({
+          timeout: TIMEOUTS.RETRY_INTERVAL * 2,
+        });
         await option.click();
+        optionVisible = true;
       } catch {
-        // Dropdown may have closed, retry
-        if (attempts < maxAttempts) {
-          // Press Escape to ensure any open dropdown is closed
-          await this.page.keyboard.press("Escape");
-          await this.page.waitForTimeout(200);
-        }
+        // Dropdown may have closed, press Escape and retry
+        await this.page.keyboard.press("Escape");
+        await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
       }
     }
 
     if (!optionVisible) {
       throw new Error(
-        `Failed to find option "welcome" in template filter after ${maxAttempts} attempts`,
+        `Failed to select "welcome" from template filter after ${TIMEOUTS.DEFAULT}ms`,
       );
     }
   },
@@ -360,8 +365,15 @@ When(
 When(
   "I click {string} button on an email row",
   async function(this: CustomWorld, buttonText: string) {
+    // Wait for table rows to be available
+    await waitForElementWithRetry(this.page, "tbody tr", {
+      timeout: TIMEOUTS.DEFAULT,
+    });
+
     const row = this.page.locator("tbody tr").first();
     const button = row.getByRole("button", { name: buttonText });
+    await expect(button).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
     await button.click();
   },
 );
@@ -436,8 +448,10 @@ When("I click the modal overlay", async function(this: CustomWorld) {
 Then(
   "I should see {string} text with email count",
   async function(this: CustomWorld, text: string) {
-    const element = this.page.locator(`text=${text}`);
-    await expect(element.first()).toBeVisible();
+    // Use retry helper for dynamic content
+    await waitForDynamicContent(this.page, `text=${text}`, text, {
+      timeout: TIMEOUTS.DEFAULT,
+    });
   },
 );
 
@@ -477,13 +491,20 @@ Then(
 );
 
 Then("I should see the email list", async function(this: CustomWorld) {
-  const table = this.page.locator("table");
-  await expect(table).toBeVisible();
+  // Use retry helper to wait for table
+  await waitForElementWithRetry(this.page, "table", {
+    timeout: TIMEOUTS.DEFAULT,
+  });
 });
 
 Then(
   "each email should display the recipient address",
   async function(this: CustomWorld) {
+    // Wait for table rows to appear
+    await waitForElementWithRetry(this.page, "tbody tr", {
+      timeout: TIMEOUTS.DEFAULT,
+    });
+
     const rows = this.page.locator("tbody tr");
     const count = await rows.count();
     expect(count).toBeGreaterThan(0);
@@ -494,7 +515,10 @@ Then(
   "each email should display the subject",
   async function(this: CustomWorld) {
     // Wait for data rows to load (not loading/empty state)
-    await this.page.waitForSelector("tbody tr td:nth-child(2)", { timeout: 10000 });
+    await waitForElementWithRetry(this.page, "tbody tr td:nth-child(2)", {
+      timeout: TIMEOUTS.DEFAULT,
+    });
+
     // Subject is in second column
     const subjects = this.page.locator("tbody tr td:nth-child(2)");
     const count = await subjects.count();
@@ -505,6 +529,11 @@ Then(
 Then(
   "each email should display the template name",
   async function(this: CustomWorld) {
+    // Wait for template column
+    await waitForElementWithRetry(this.page, "tbody tr td:nth-child(3)", {
+      timeout: TIMEOUTS.DEFAULT,
+    });
+
     // Template is in 3rd column
     const templates = this.page.locator("tbody tr td:nth-child(3)");
     const count = await templates.count();
@@ -515,6 +544,11 @@ Then(
 Then(
   "each email should display a status badge",
   async function(this: CustomWorld) {
+    // Wait for status column
+    await waitForElementWithRetry(this.page, "tbody tr td:nth-child(4)", {
+      timeout: TIMEOUTS.DEFAULT,
+    });
+
     // Status is in 4th column
     const badges = this.page.locator("tbody tr td:nth-child(4)");
     const count = await badges.count();
@@ -525,6 +559,11 @@ Then(
 Then(
   "each email should display the sent date",
   async function(this: CustomWorld) {
+    // Wait for date column
+    await waitForElementWithRetry(this.page, "tbody tr td:nth-child(5)", {
+      timeout: TIMEOUTS.DEFAULT,
+    });
+
     const dates = this.page.locator("tbody tr td:nth-child(5)");
     const count = await dates.count();
     expect(count).toBeGreaterThan(0);
@@ -632,14 +671,13 @@ Then(
 Then(
   "I should see the email details modal",
   async function(this: CustomWorld) {
-    // Wait for any potential animation
-    await this.page.waitForTimeout(500);
+    // Use retry helper for modal visibility
+    await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.DEFAULT });
 
-    // Look for the modal container
-    const modal = this.page.locator(".fixed.inset-0").filter({
-      has: this.page.getByText("Email Details"),
+    // Verify modal heading is present
+    await waitForTextWithRetry(this.page, "Email Details", {
+      timeout: TIMEOUTS.DEFAULT,
     });
-    await expect(modal).toBeVisible({ timeout: 10000 });
   },
 );
 
@@ -753,10 +791,8 @@ Then(
 Then(
   "the email details modal should close",
   async function(this: CustomWorld) {
-    const modal = this.page.locator('[class*="Card"]').filter({
-      hasText: "Email Details",
-    });
-    await expect(modal).not.toBeVisible();
+    // Use retry helper for modal close state
+    await waitForModalState(this.page, "hidden", { timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -813,9 +849,11 @@ Then("BOUNCED status badge should be red", async function(this: CustomWorld) {
 Then("I should see pagination controls", async function(this: CustomWorld) {
   // Wait for page to load data first
   await this.page.waitForLoadState("networkidle");
-  // Look for pagination text "Page X of Y" pattern
-  const pagination = this.page.getByText(/Page \d+ of \d+/);
-  await expect(pagination.first()).toBeVisible({ timeout: 10000 });
+
+  // Use retry helper for pagination text
+  await waitForTextWithRetry(this.page, /Page \d+ of \d+/, {
+    timeout: TIMEOUTS.DEFAULT,
+  });
 });
 
 Then(

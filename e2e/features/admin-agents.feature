@@ -41,7 +41,6 @@ Feature: Admin Agents Dashboard
     And I should see the sessions list or empty state
 
   # Session Management Scenarios
-  @flaky
   Scenario: Dashboard shows active session details
     Given the user is an admin
     And there is an active Jules session
@@ -50,14 +49,12 @@ Feature: Admin Agents Dashboard
     And the session card should show status badge
     And the session card should show provider icon
 
-  @flaky
   Scenario: Admin can view session with AWAITING_PLAN_APPROVAL status
     Given the user is an admin
     And there is a Jules session awaiting plan approval
     When I visit "/admin/agents"
     Then I should see "Approve Plan" button on the session card
 
-  @flaky
   Scenario: Admin can view session activities
     Given the user is an admin
     And there is an active Jules session with activities
@@ -66,35 +63,30 @@ Feature: Admin Agents Dashboard
     Then I should see session activity log
 
   # Resources Panel Scenarios
-  @flaky
   Scenario: Dashboard shows resources panel
     Given the user is an admin
     When I visit "/admin/agents"
     Then I should see "Resources" heading
     And I should see resource status items
 
-  @flaky
   Scenario: Resources panel shows dev server status
     Given the user is an admin
     When I visit "/admin/agents"
     Then I should see "Dev Server" resource item
     And the resource item should have a status indicator
 
-  @flaky
   Scenario: Resources panel shows MCP servers status
     Given the user is an admin
     When I visit "/admin/agents"
     Then I should see MCP server status items
 
   # Git Info Panel Scenarios
-  @flaky
   Scenario: Dashboard shows git info panel
     Given the user is an admin
     When I visit "/admin/agents"
     Then I should see "Git Info" heading
     And I should see current branch name
 
-  @flaky
   Scenario: Git info shows changed files count
     Given the user is an admin
     When I visit "/admin/agents"
@@ -102,7 +94,6 @@ Feature: Admin Agents Dashboard
     And I should see ahead/behind status
 
   # GitHub Issues Panel Scenarios
-  @flaky
   Scenario: Dashboard shows GitHub issues panel
     Given the user is an admin
     And GitHub API is configured
@@ -110,7 +101,6 @@ Feature: Admin Agents Dashboard
     Then I should see "GitHub Issues" heading
     And I should see open issues list or empty state
 
-  @flaky
   Scenario: GitHub issues panel shows workflow runs
     Given the user is an admin
     And GitHub API is configured
@@ -118,7 +108,6 @@ Feature: Admin Agents Dashboard
     Then I should see recent workflow runs
     And workflow runs should have status indicators
 
-  @flaky
   Scenario: GitHub panel shows unconfigured message when token missing
     Given the user is an admin
     And GitHub API is not configured
@@ -150,7 +139,6 @@ Feature: Admin Agents Dashboard
     Then the "New Task" button should be disabled or hidden
 
   # Polling and Refresh Scenarios
-  @flaky
   Scenario: Dashboard auto-refreshes session data
     Given the user is an admin
     When I visit "/admin/agents"
@@ -158,13 +146,11 @@ Feature: Admin Agents Dashboard
     And the timestamp should update periodically
 
   # Navigation Scenarios
-  @flaky
   Scenario: Agents link appears in admin sidebar
     Given the user is an admin
     When I visit "/admin"
     Then I should see "Agents" link in the sidebar
 
-  @flaky
   Scenario: Navigate to agents from sidebar
     Given the user is an admin
     And I am on the admin dashboard
@@ -172,7 +158,6 @@ Feature: Admin Agents Dashboard
     Then I should be on the "/admin/agents" page
 
   # Error Handling Scenarios
-  @flaky
   Scenario: Dashboard handles API errors gracefully
     Given the user is an admin
     And the agents API returns an error
@@ -180,7 +165,6 @@ Feature: Admin Agents Dashboard
     Then I should see an error message
     And I should see a retry option
 
-  @flaky
   Scenario: Dashboard shows loading state
     Given the user is an admin
     When I visit "/admin/agents"

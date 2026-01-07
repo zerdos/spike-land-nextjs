@@ -1,7 +1,13 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import type { CustomWorld } from "../support/world";
+import {
+  TIMEOUTS,
+  waitForApiResponse,
+  waitForDynamicContent,
+  waitForElementWithRetry,
+} from "../support/helpers/retry-helper";
 import { waitForPageReady } from "../support/helpers/wait-helper";
+import type { CustomWorld } from "../support/world";
 
 // Marketing Analytics Step Definitions
 
@@ -11,10 +17,16 @@ Then(
     // Wait for page to be fully ready before checking for funnel
     await waitForPageReady(this.page, { strategy: "both" });
 
-    const funnel = this.page.locator(
+    // Use retry pattern for funnel visualization
+    const funnel = await waitForElementWithRetry(
+      this.page,
       '[data-testid="conversion-funnel"], [class*="funnel"]',
+      { timeout: TIMEOUTS.LONG },
     );
-    await expect(funnel.first()).toBeVisible({ timeout: 10000 });
+
+    // Extra wait for chart rendering
+    await this.page.waitForTimeout(1000);
+    await expect(funnel.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -25,7 +37,7 @@ Then(
     await waitForPageReady(this.page, { strategy: "both" });
 
     const stage = this.page.getByText(new RegExp(stageName, "i"));
-    await expect(stage.first()).toBeVisible({ timeout: 10000 });
+    await expect(stage.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -35,10 +47,13 @@ Then(
     // Wait for page to be fully ready before checking for table
     await waitForPageReady(this.page, { strategy: "both" });
 
-    const table = this.page.locator(
+    // Use retry pattern for table with long timeout
+    const table = await waitForElementWithRetry(
+      this.page,
       '[data-testid="campaign-table"], table, [role="table"]',
+      { timeout: TIMEOUTS.LONG },
     );
-    await expect(table.first()).toBeVisible({ timeout: 10000 });
+    await expect(table.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -51,7 +66,7 @@ Then(
     const header = this.page.locator("th, [role='columnheader']").filter({
       hasText: new RegExp(columnName, "i"),
     });
-    await expect(header.first()).toBeVisible({ timeout: 10000 });
+    await expect(header.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -95,7 +110,7 @@ When(
     ).or(this.page.getByRole("button", { name: /date|range|period/i }));
 
     // Wait for picker to be visible and clickable
-    await expect(picker.first()).toBeVisible({ timeout: 10000 });
+    await expect(picker.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
     await picker.first().click();
 
     // Wait for dropdown to open
@@ -112,9 +127,16 @@ When(
     } else {
       // Fallback: click on text matching the date range
       const rangeText = this.page.getByText(new RegExp(dateRange, "i"));
-      await expect(rangeText.first()).toBeVisible({ timeout: 5000 });
+      await expect(rangeText.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       await rangeText.first().click();
     }
+
+    // Wait for API response after date range change
+    await waitForApiResponse(this.page, /analytics|metrics|marketing/, {
+      timeout: TIMEOUTS.LONG,
+    }).catch(() => {
+      // API call may complete before we start listening - that's OK
+    });
 
     // Wait for selection to apply
     await this.page.waitForTimeout(500);
@@ -127,11 +149,16 @@ Then(
     // Wait for data to update after selecting date range
     await waitForPageReady(this.page, { strategy: "both" });
 
-    // Verify metrics are visible (any metric indicator)
-    const metrics = this.page.locator(
+    // Use retry pattern for metrics with long timeout for chart data loading
+    const metrics = await waitForElementWithRetry(
+      this.page,
       '[data-testid*="metric"], [class*="metric"], .stat',
+      { timeout: TIMEOUTS.LONG },
     );
-    await expect(metrics.first()).toBeVisible({ timeout: 10000 });
+    await expect(metrics.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
+
+    // Extra wait for chart data loading
+    await this.page.waitForTimeout(1000);
   },
 );
 
@@ -142,7 +169,7 @@ Then("I should see live status indicator", async function(this: CustomWorld) {
   const liveIndicator = this.page.locator(
     '[data-testid="live-indicator"], [class*="live"], .pulse',
   ).or(this.page.getByText(/live|real-?time/i));
-  await expect(liveIndicator.first()).toBeVisible({ timeout: 10000 });
+  await expect(liveIndicator.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 Then("I should see refresh button", async function(this: CustomWorld) {
@@ -152,5 +179,41 @@ Then("I should see refresh button", async function(this: CustomWorld) {
   const refreshButton = this.page.getByRole("button", {
     name: /refresh|reload|update/i,
   }).or(this.page.locator('[data-testid="refresh-button"]'));
-  await expect(refreshButton.first()).toBeVisible({ timeout: 10000 });
+  await expect(refreshButton.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
+
+// Marketing-specific metric card step (admin.steps.ts skips marketing pages)
+Then(
+  "I should see {string} metric card",
+  async function(this: CustomWorld, metricName: string) {
+    // Only run for marketing analytics page
+    const currentUrl = this.page.url();
+    if (!currentUrl.includes("/admin/marketing")) {
+      return;
+    }
+
+    // Wait for page to be fully ready
+    await waitForPageReady(this.page, { strategy: "both" });
+
+    // Use retry pattern for metric cards with long timeout
+    const metricCard = await waitForElementWithRetry(
+      this.page,
+      `[data-testid*="metric"], [class*="metric"], .stat`,
+      { timeout: TIMEOUTS.LONG },
+    );
+
+    // Verify the metric name is visible within the metric card
+    const metricText = metricCard.filter({ hasText: new RegExp(metricName, "i") });
+    await expect(metricText.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
+
+    // Wait for dynamic content to load (numeric values)
+    await waitForDynamicContent(
+      this.page,
+      `[data-testid*="metric"], [class*="metric"], .stat`,
+      /\d+/,
+      { timeout: TIMEOUTS.LONG },
+    ).catch(() => {
+      // Metric may not have numeric value yet - that's OK
+    });
+  },
+);

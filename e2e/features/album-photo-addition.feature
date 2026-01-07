@@ -1,4 +1,3 @@
-@flaky
 Feature: Album Photo Addition
   As an authenticated user
   I want to add photos to my albums

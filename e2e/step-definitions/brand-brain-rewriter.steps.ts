@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { gotoWithRetry } from "../support/helpers/retry-helper";
+import { gotoWithRetry, TIMEOUTS, waitForApiResponse } from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // Test workspace slug used across scenarios
@@ -125,7 +125,7 @@ When("I navigate to the rewriter page", async function(this: CustomWorld) {
     `**/api/workspaces/${mockWorkspace.id}/brand-brain/rewrite`,
     async (route) => {
       // Add a small delay to simulate processing
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 300));
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -140,8 +140,8 @@ When("I navigate to the rewriter page", async function(this: CustomWorld) {
   );
 
   // Wait for loading state to finish and form to appear
-  // The form contains the Rewrite button
-  await this.page.waitForSelector('form button[type="submit"]', { timeout: 15000 });
+  // The form contains the Rewrite button - use shorter timeout to stay under Cucumber's 30s limit
+  await this.page.waitForSelector('form button[type="submit"]', { timeout: TIMEOUTS.LONG });
 });
 
 When("I navigate to a non-existent workspace rewriter page", async function(this: CustomWorld) {
@@ -182,34 +182,63 @@ When("I select {string} from the platform selector", async function(
   this: CustomWorld,
   platformName: string,
 ) {
+  // Use retry pattern for platform selection
   const trigger = this.page.locator('[id="platform"]');
+  await expect(trigger).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   await trigger.click();
-  await this.page.waitForTimeout(200);
+  await this.page.waitForTimeout(300);
 
-  // Find and click the option
+  // Find and click the option with retry
   const option = this.page.locator('[role="option"]').filter({ hasText: platformName });
+  await expect(option).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   await option.click();
-  await this.page.waitForTimeout(100);
+  await this.page.waitForTimeout(200);
 });
 
 Then("I should see {string} in the character limit indicator", async function(
   this: CustomWorld,
   limit: string,
 ) {
-  const indicator = this.page.getByText(new RegExp(`${limit}.*characters|${limit}`));
-  await expect(indicator.first()).toBeVisible({ timeout: 5000 });
+  // Wait for platform change to update UI
+  await this.page.waitForTimeout(500);
+
+  // Match both "3000" and "3,000" formats (toLocaleString adds commas)
+  const limitWithCommas = limit.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const indicator = this.page.getByText(
+    new RegExp(`(${limit}|${limitWithCommas}).*character`, "i"),
+  );
+  await expect(indicator.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 // Content input steps
 When("I enter draft content {string}", async function(this: CustomWorld, content: string) {
   const textarea = this.page.locator('textarea[id="content"]');
+  await expect(textarea).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(textarea).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
+  // Clear and fill with retry
+  await textarea.clear();
   await textarea.fill(content);
+
+  // Wait for React state to update
+  await this.page.waitForTimeout(200);
+
+  // Verify value was set
+  await expect(textarea).toHaveValue(content, { timeout: TIMEOUTS.SHORT });
 });
 
 When("I enter draft content that exceeds 280 characters", async function(this: CustomWorld) {
   const longContent = "a".repeat(300);
   const textarea = this.page.locator('textarea[id="content"]');
+  await expect(textarea).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(textarea).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
+  // Clear and fill with retry
+  await textarea.clear();
   await textarea.fill(longContent);
+
+  // Wait for React state to update
+  await this.page.waitForTimeout(200);
 });
 
 Then("I should see {string} in the character count", async function(
@@ -236,21 +265,25 @@ Then("the character count should show over limit warning", async function(this: 
 Then("I should see a loading indicator", async function(this: CustomWorld) {
   const spinner = this.page.locator(".animate-spin");
   // Loading indicator may be brief, so use a reasonable timeout
-  await expect(spinner.first()).toBeVisible({ timeout: 5000 });
+  await expect(spinner.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 When("the rewrite completes", async function(this: CustomWorld) {
-  // Wait for the result to appear - the mock should already be set up
-  await expect(this.page.getByText("Review Changes")).toBeVisible({ timeout: 15000 });
+  // Wait for API response first
+  await waitForApiResponse(this.page, /brand-brain\/rewrite/, { timeout: TIMEOUTS.LONG });
+
+  // Wait for the AI-generated result heading to appear
+  await expect(this.page.getByText("Review Changes")).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 When("I have a rewrite result with changes", async function(this: CustomWorld) {
   await setupWorkspaceMocks(this);
 
-  // Mock the rewrite API
+  // Mock the rewrite API with slight delay to simulate AI processing
   await this.page.route(
     `**/api/workspaces/${mockWorkspace.id}/brand-brain/rewrite`,
     async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 300));
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -265,43 +298,56 @@ When("I have a rewrite result with changes", async function(this: CustomWorld) {
     `${this.baseUrl}/orbit/${TEST_WORKSPACE_SLUG}/brand-brain/rewriter`,
   );
 
-  // Fill and submit form
-  const textarea = this.page.locator('textarea[id="content"]');
-  await textarea.fill("Check out our cheap products today!");
+  // Wait for form to be ready
+  await this.page.waitForSelector('textarea[id="content"]', { timeout: TIMEOUTS.LONG });
 
+  // Fill form with retry pattern
+  const textarea = this.page.locator('textarea[id="content"]');
+  await expect(textarea).toBeVisible({ timeout: TIMEOUTS.LONG });
+  await expect(textarea).toBeEnabled({ timeout: TIMEOUTS.LONG });
+  await textarea.clear();
+  await textarea.fill("Check out our cheap products today!");
+  await this.page.waitForTimeout(300);
+
+  // Click submit button with retry
   const button = this.page.getByRole("button", { name: /Rewrite with AI/i });
+  await expect(button).toBeVisible({ timeout: TIMEOUTS.LONG });
+  await expect(button).toBeEnabled({ timeout: TIMEOUTS.LONG });
   await button.click();
 
-  // Wait for result
-  await expect(this.page.getByText("Review Changes")).toBeVisible({ timeout: 15000 });
+  // Wait for API response
+  await waitForApiResponse(this.page, /brand-brain\/rewrite/, { timeout: TIMEOUTS.LONG });
+
+  // Wait for AI-generated result heading to appear
+  await expect(this.page.getByText("Review Changes")).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 // Diff viewer steps
 Then("I should see the diff viewer", async function(this: CustomWorld) {
   const diffViewer = this.page.locator('[role="tablist"]');
-  await expect(diffViewer).toBeVisible();
+  await expect(diffViewer).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 Then("I should see the original text", async function(this: CustomWorld) {
-  // The original text parts are shown in the diff
+  // The original text parts are shown in the diff - AI-generated content needs longer timeout
   const unchangedText = this.page.getByText(/products today!/);
-  await expect(unchangedText.first()).toBeVisible();
+  await expect(unchangedText.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 Then("I should see the rewritten text", async function(this: CustomWorld) {
-  // Rewritten text includes "affordable"
+  // Rewritten text includes "affordable" - AI-generated content needs longer timeout
   const rewrittenText = this.page.getByText(/affordable/);
-  await expect(rewrittenText.first()).toBeVisible();
+  await expect(rewrittenText.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 Then("I should see removed text highlighted in red", async function(this: CustomWorld) {
   const removedText = this.page.locator('.bg-red-100, [class*="bg-red"]');
-  await expect(removedText.first()).toBeVisible();
+  await expect(removedText.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 Then("I should see added text highlighted in green", async function(this: CustomWorld) {
   const addedText = this.page.locator('.bg-green-100, [class*="bg-green"]');
-  await expect(addedText.first()).toBeVisible();
+  await expect(addedText.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 // Result handling
