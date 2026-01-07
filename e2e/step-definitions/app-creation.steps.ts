@@ -55,17 +55,18 @@ Then(
   "I should see the {string} input field",
   async function(this: CustomWorld, fieldName: string) {
     // Wait for the form to be fully rendered and interactive
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
 
     // Try to find by testid first, fall back to label for backward compatibility
-    try {
-      const testId = fieldName.toLowerCase().replace(/\s+/g, "-") + "-input";
-      const field = this.page.getByTestId(testId);
-      await expect(field).toBeVisible({ timeout: TIMEOUTS.SHORT });
-    } catch {
-      const label = this.page.getByLabel(new RegExp(fieldName, "i"));
-      await expect(label).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    }
+    const testId = fieldName.toLowerCase().replace(/\s+/g, "-") + "-input";
+    const fieldByTestId = this.page.getByTestId(testId);
+    const fieldByLabel = this.page.getByLabel(new RegExp(fieldName, "i"));
+
+    // Use .or() to try both selectors - first one visible wins
+    const field = fieldByTestId.or(fieldByLabel);
+
+    // Wait for field to be visible with increased timeout
+    await expect(field.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -73,17 +74,18 @@ Then(
   "I should see the {string} textarea field",
   async function(this: CustomWorld, fieldName: string) {
     // Wait for the form to be fully rendered and interactive
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
 
     // Try to find by testid first, fall back to label for backward compatibility
-    try {
-      const testId = fieldName.toLowerCase().replace(/\s+/g, "-") + "-textarea";
-      const field = this.page.getByTestId(testId);
-      await expect(field).toBeVisible({ timeout: TIMEOUTS.SHORT });
-    } catch {
-      const label = this.page.getByLabel(new RegExp(fieldName, "i"));
-      await expect(label).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    }
+    const testId = fieldName.toLowerCase().replace(/\s+/g, "-") + "-textarea";
+    const fieldByTestId = this.page.getByTestId(testId);
+    const fieldByLabel = this.page.getByLabel(new RegExp(fieldName, "i"));
+
+    // Use .or() to try both selectors - first one visible wins
+    const field = fieldByTestId.or(fieldByLabel);
+
+    // Wait for field to be visible with increased timeout
+    await expect(field.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -200,16 +202,26 @@ Then(
     // Monetization uses a Select dropdown - verify the select trigger is visible
     const select = this.page.getByTestId("monetization-select");
     await expect(select).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(select).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
     // Open dropdown and verify option exists
     await select.click();
+
+    // Wait for dropdown to open
+    await this.page.waitForTimeout(200);
+
     // Use exact match pattern to avoid "Free" matching "Freemium"
     const optionPattern = new RegExp(`^${option}\\s*-`, "i");
     const optionElement = this.page.getByRole("option", {
       name: optionPattern,
     });
-    await expect(optionElement).toBeVisible({ timeout: TIMEOUTS.SHORT });
+    await expect(optionElement).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
     // Close dropdown by pressing Escape
     await this.page.keyboard.press("Escape");
+
+    // Wait for dropdown to close
+    await this.page.waitForTimeout(200);
   },
 );
 
@@ -376,22 +388,39 @@ Then(
   "the draft should be saved to localStorage",
   async function(this: CustomWorld) {
     // Wait for localStorage to be populated (debounce delay)
+    // Increase timeout to account for debouncing (typically 500-1000ms)
     await waitForLocalStorage(this.page, "app-creation-draft", {
       shouldExist: true,
       minLength: 2, // At least "{}"
-      timeout: TIMEOUTS.DEFAULT,
+      timeout: TIMEOUTS.LONG, // Increased from DEFAULT to handle debounce
     });
 
     const draft = await this.page.evaluate(() => {
       return localStorage.getItem("app-creation-draft");
     });
     expect(draft).toBeTruthy();
+
+    // Additional validation: ensure draft contains valid JSON
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        expect(parsed).toBeTruthy();
+      } catch (e) {
+        throw new Error(`Draft localStorage contains invalid JSON: ${draft}`);
+      }
+    }
   },
 );
 
 Then(
   "the draft indicator should show {string}",
   async function(this: CustomWorld, text: string) {
+    // First ensure draft is actually saved to localStorage
+    await waitForLocalStorage(this.page, "app-creation-draft", {
+      shouldExist: true,
+      timeout: TIMEOUTS.LONG,
+    });
+
     // Try multiple selectors for draft indicator
     const indicator = this.page.getByTestId("draft-saved-indicator")
       .or(this.page.getByText(text))
@@ -401,7 +430,7 @@ Then(
     // If no indicator UI element exists, the test passes if localStorage was saved
     try {
       await expect(indicator.first()).toContainText(text, {
-        timeout: TIMEOUTS.SHORT,
+        timeout: TIMEOUTS.DEFAULT, // Increased from SHORT to handle animation
       });
     } catch {
       // Fallback: verify draft is in localStorage (which is the actual behavior being tested)
@@ -423,11 +452,27 @@ Then(
   "the draft should contain step 1 and step 2 data",
   async function(this: CustomWorld) {
     // Wait for localStorage to be populated with both steps
+    // Use LONG timeout to account for sequential updates (step 1 save + step 2 save)
     await waitForLocalStorage(this.page, "app-creation-draft", {
       shouldExist: true,
       minLength: 10, // Should have meaningful content
-      timeout: TIMEOUTS.DEFAULT,
+      timeout: TIMEOUTS.LONG,
     });
+
+    // Additional wait to ensure both fields are populated
+    await this.page.waitForFunction(
+      () => {
+        const draft = localStorage.getItem("app-creation-draft");
+        if (!draft) return false;
+        try {
+          const parsed = JSON.parse(draft);
+          return parsed.name && parsed.requirements;
+        } catch {
+          return false;
+        }
+      },
+      { timeout: TIMEOUTS.LONG },
+    );
 
     const draft = await this.page.evaluate(() => {
       const data = localStorage.getItem("app-creation-draft");
@@ -436,7 +481,9 @@ Then(
     expect(draft).toBeTruthy();
     // Draft uses flat structure: { name, description, requirements, monetizationModel }
     expect(draft.name).toBeDefined();
+    expect(draft.name).not.toBe("");
     expect(draft.requirements).toBeDefined();
+    expect(draft.requirements).not.toBe("");
   },
 );
 

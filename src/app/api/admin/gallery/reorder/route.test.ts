@@ -3,7 +3,7 @@
  */
 
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PATCH, POST } from "./route";
 
 vi.mock("@/auth", () => ({
@@ -36,9 +36,16 @@ const VALID_ITEM2_ID = "citem1000000000000000002";
 const VALID_ITEM3_ID = "citem1000000000000000003";
 
 describe("Reorder Gallery Items API", () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.resetAllMocks();
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   describe("PATCH", () => {

@@ -21,6 +21,16 @@ export class AppCreationWizard {
     await waitForTestId(this.page, "wizard-step-title", {
       timeout: TIMEOUTS.LONG,
     });
+    // Additional wait for form to be interactive - ensures React state is ready
+    await this.page.waitForFunction(
+      () => {
+        const nameInput = document.querySelector('[data-testid="app-name-input"]');
+        return nameInput && !nameInput.hasAttribute("disabled");
+      },
+      { timeout: TIMEOUTS.DEFAULT },
+    ).catch(() => {
+      // If specific input not found, continue - page may have different structure
+    });
   }
 
   async getProgressBar() {
@@ -49,12 +59,32 @@ export class AppCreationWizard {
 
   async clickNext() {
     await clickButtonWithRetry(this.page, "wizard-next-button");
+    // Wait for navigation/state change with increased timeout
+    await this.page.waitForTimeout(300); // Allow React state to update
     await waitForPageLoad(this.page);
+    // Ensure new step is fully rendered before proceeding
+    await this.page.waitForFunction(
+      () => {
+        const stepTitle = document.querySelector('[data-testid="wizard-step-title"]');
+        return stepTitle && stepTitle.textContent && stepTitle.textContent.trim().length > 0;
+      },
+      { timeout: TIMEOUTS.DEFAULT },
+    );
   }
 
   async clickBack() {
     await clickButtonWithRetry(this.page, "wizard-back-button");
+    // Wait for navigation/state change with increased timeout
+    await this.page.waitForTimeout(300); // Allow React state to update
     await waitForPageLoad(this.page);
+    // Ensure previous step is fully rendered with preserved data
+    await this.page.waitForFunction(
+      () => {
+        const stepTitle = document.querySelector('[data-testid="wizard-step-title"]');
+        return stepTitle && stepTitle.textContent && stepTitle.textContent.trim().length > 0;
+      },
+      { timeout: TIMEOUTS.DEFAULT },
+    );
   }
 
   async clickSubmit() {
@@ -109,12 +139,30 @@ export class AppCreationWizard {
   async selectMonetizationOption(
     option: "Free" | "Paid" | "Freemium" | "Subscription",
   ) {
-    // Click the select trigger to open dropdown
-    await this.page.getByTestId("monetization-select").click();
-    // Wait for dropdown to open and click the option
+    // Click the select trigger to open dropdown with retry
+    const selectTrigger = this.page.getByTestId("monetization-select");
+    await expect(selectTrigger).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(selectTrigger).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+    await selectTrigger.click();
+
+    // Wait for dropdown animation to complete
+    await this.page.waitForTimeout(200);
+
     // Use exact match pattern to avoid "Free" matching "Freemium"
     const optionPattern = new RegExp(`^${option}\\s*-`, "i");
-    await this.page.getByRole("option", { name: optionPattern }).click();
+    const optionElement = this.page.getByRole("option", { name: optionPattern });
+
+    // Wait for option to be visible and clickable
+    await expect(optionElement).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await optionElement.click();
+
+    // Wait for selection to be applied
+    await this.page.waitForTimeout(200);
+
+    // Verify selection was successful
+    await expect(selectTrigger).toContainText(new RegExp(option, "i"), {
+      timeout: TIMEOUTS.DEFAULT,
+    });
   }
 
   async getPriceInput() {
@@ -178,11 +226,27 @@ export class AppCreationWizard {
   // Progress verification
   async verifyProgress(percentage: number) {
     const progressBar = await this.getProgressBar();
+    // Wait for progress bar to be visible first
+    await expect(progressBar).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+    // Wait for progress animation to complete using waitForFunction
+    await this.page.waitForFunction(
+      (targetValue) => {
+        const progressEl = document.querySelector('[data-testid="wizard-progress"]');
+        if (!progressEl) return false;
+        const currentValue = progressEl.getAttribute("aria-valuenow");
+        return currentValue === targetValue.toString();
+      },
+      percentage,
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+
+    // Final assertion
     await expect(progressBar).toHaveAttribute(
       "aria-valuenow",
       percentage.toString(),
       {
-        timeout: TIMEOUTS.DEFAULT,
+        timeout: TIMEOUTS.SHORT,
       },
     );
   }

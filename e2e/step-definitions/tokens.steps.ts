@@ -110,9 +110,12 @@ When("I open the purchase modal", async function(this: CustomWorld) {
   await expect(triggerButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   await triggerButton.click();
 
-  // Wait for modal to open
+  // Wait for modal to open and animation to complete
+  await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.DEFAULT });
+
+  // Verify modal content is loaded
   await waitForTextWithRetry(this.page, "Get More Tokens", {
-    timeout: TIMEOUTS.DEFAULT,
+    timeout: TIMEOUTS.SHORT,
   });
 });
 
@@ -141,17 +144,23 @@ When(
 When("I click the apply voucher button", async function(this: CustomWorld) {
   const applyButton = this.page.locator("button").filter({ hasText: "Apply" });
   await expect(applyButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(applyButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
 
-  // Set up response wait BEFORE clicking
+  // Set up response wait BEFORE clicking to avoid race condition
   const responsePromise = this.page.waitForResponse(
     (resp) => resp.url().includes("/api/vouchers/redeem"),
     { timeout: TIMEOUTS.DEFAULT },
-  ).catch(() => null);
+  );
 
   await applyButton.click();
 
   // Wait for the API call to complete
-  await responsePromise;
+  const response = await responsePromise.catch(() => null);
+
+  if (response) {
+    // Wait for response to be processed and UI to update
+    await this.page.waitForTimeout(500);
+  }
 });
 
 When(
@@ -177,11 +186,22 @@ When(
 );
 
 When("I close the purchase modal", async function(this: CustomWorld) {
-  // Find and click the close button (X) or press Escape
-  await this.page.keyboard.press("Escape");
+  // Try to click the close button first, fall back to Escape key
+  const closeButton = this.page.locator('[role="dialog"] button[aria-label*="close"]').first();
+  const closeButtonVisible = await closeButton.isVisible({ timeout: 1000 }).catch(() => false);
+
+  if (closeButtonVisible) {
+    await closeButton.click();
+  } else {
+    // Fall back to Escape key
+    await this.page.keyboard.press("Escape");
+  }
 
   // Wait for modal to close using proper modal state wait
   await waitForModalState(this.page, "hidden", { timeout: TIMEOUTS.DEFAULT });
+
+  // Wait for any cleanup animations
+  await this.page.waitForTimeout(300);
 });
 
 // Then steps
@@ -248,16 +268,19 @@ Then(
 Then(
   "I should see the success message {string}",
   async function(this: CustomWorld, message: string) {
-    // After successful voucher redemption, the modal closes automatically
-    // So we check if either: the success message is visible briefly, or the modal has closed
-    try {
-      await waitForTextWithRetry(this.page, message, {
-        timeout: 2000,
-      });
-    } catch {
-      // If the success message isn't visible, the modal should have closed (indicating success)
-      const modalTitle = this.page.getByText("Get More Tokens");
-      await expect(modalTitle).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    // After successful voucher redemption, look for success indicators
+    // The success message may show briefly before modal auto-closes
+
+    // First, check if success message is visible
+    const successMessage = this.page.getByText(message);
+    const messageVisible = await successMessage.isVisible({ timeout: 3000 }).catch(() => false);
+
+    if (messageVisible) {
+      // Success message is shown
+      await expect(successMessage).toBeVisible({ timeout: TIMEOUTS.SHORT });
+    } else {
+      // Modal may have already closed on success - verify it's not visible
+      await waitForModalState(this.page, "hidden", { timeout: TIMEOUTS.DEFAULT });
     }
   },
 );
@@ -265,9 +288,16 @@ Then(
 Then("my balance should increase", async function(this: CustomWorld) {
   // After successful redemption, the modal closes automatically
   // The balance will be refreshed when the page re-renders
-  // We verify success by checking the modal closed (not open anymore)
-  const modalTitle = this.page.getByText("Get More Tokens");
-  await expect(modalTitle).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+  // Wait for modal to close
+  await waitForModalState(this.page, "hidden", { timeout: TIMEOUTS.DEFAULT });
+
+  // Wait for balance to update - look for any token balance display
+  await waitForTokenBalance(this.page, { timeout: TIMEOUTS.DEFAULT });
+
+  // Verify balance is visible with a numeric value
+  const balanceDisplay = this.page.getByText(/\d+\s*tokens?/i);
+  await expect(balanceDisplay.first()).toBeVisible({ timeout: TIMEOUTS.SHORT });
 });
 
 Then(
@@ -353,17 +383,31 @@ Then("I should not see the purchase modal", async function(this: CustomWorld) {
 Then("the purchase modal should close", async function(this: CustomWorld) {
   // Wait for modal to close after successful redemption
   await waitForModalState(this.page, "hidden", { timeout: TIMEOUTS.DEFAULT });
-  // Verify title is no longer visible
-  const modalTitle = this.page.getByText("Get More Tokens");
-  await expect(modalTitle).not.toBeVisible({ timeout: TIMEOUTS.SHORT });
+
+  // Verify title is no longer visible and modal DOM is fully removed
+  const modal = this.page.locator('[role="dialog"]');
+  await expect(modal).not.toBeVisible({ timeout: TIMEOUTS.SHORT });
+
+  // Wait for cleanup animations
+  await this.page.waitForTimeout(200);
 });
 
 Then("the token balance should be updated", async function(this: CustomWorld) {
-  // Wait for token balance to be updated
+  // Wait for token balance API to be called
+  await this.page.waitForResponse(
+    (resp) => resp.url().includes("/api/tokens/balance"),
+    { timeout: TIMEOUTS.DEFAULT },
+  ).catch(() => {
+    // Balance may already be cached
+  });
+
+  // Wait for token balance to be updated and rendered
   await waitForTokenBalance(this.page, { timeout: TIMEOUTS.DEFAULT });
-  // Verify the balance display is visible
-  await expect(this.page.getByText(/\d+\s*Tokens/i)).toBeVisible({
-    timeout: TIMEOUTS.DEFAULT,
+
+  // Verify the balance display is visible with numeric value
+  const balanceDisplay = this.page.getByText(/\d+\s*tokens?/i);
+  await expect(balanceDisplay.first()).toBeVisible({
+    timeout: TIMEOUTS.SHORT,
   });
 });
 

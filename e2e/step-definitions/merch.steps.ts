@@ -230,8 +230,14 @@ When("I click on the first product card", async function(this: CustomWorld) {
   const firstProduct = this.page.locator('[data-testid="product-card"]')
     .first();
   await expect(firstProduct).toBeVisible();
+
+  // Set up navigation wait before clicking to avoid race condition
+  const navigationPromise = this.page.waitForURL(/\/merch\/[^/]+$/, { timeout: 10000 });
   await firstProduct.click();
-  await this.page.waitForLoadState("networkidle");
+  await navigationPromise;
+
+  // Wait for page to be ready (domcontentloaded is more reliable than networkidle with polling)
+  await this.page.waitForLoadState("domcontentloaded");
 });
 
 Then(
@@ -650,8 +656,18 @@ When(
       '[data-testid="increase-quantity"]',
     ).first();
     await expect(increaseButton).toBeVisible();
+
+    // Wait for API call to complete after clicking
+    const responsePromise = this.page.waitForResponse(
+      (resp) => resp.url().includes("/api/merch/cart/") && resp.request().method() === "PATCH",
+      { timeout: 5000 },
+    ).catch(() => null);
+
     await increaseButton.click();
-    await this.page.waitForTimeout(500);
+    await responsePromise;
+
+    // Wait for UI to update
+    await this.page.waitForTimeout(300);
   },
 );
 
@@ -662,8 +678,18 @@ When(
       '[data-testid="decrease-quantity"]',
     ).first();
     await expect(decreaseButton).toBeVisible();
+
+    // Wait for API call to complete after clicking
+    const responsePromise = this.page.waitForResponse(
+      (resp) => resp.url().includes("/api/merch/cart/") && resp.request().method() === "PATCH",
+      { timeout: 5000 },
+    ).catch(() => null);
+
     await decreaseButton.click();
-    await this.page.waitForTimeout(500);
+    await responsePromise;
+
+    // Wait for UI to update
+    await this.page.waitForTimeout(300);
   },
 );
 
@@ -689,8 +715,18 @@ When("I click the remove item button", async function(this: CustomWorld) {
   const removeButton = this.page.locator('[data-testid="remove-cart-item"]')
     .first();
   await expect(removeButton).toBeVisible();
+
+  // Wait for API call to complete after clicking
+  const responsePromise = this.page.waitForResponse(
+    (resp) => resp.url().includes("/api/merch/cart/") && resp.request().method() === "DELETE",
+    { timeout: 5000 },
+  ).catch(() => null);
+
   await removeButton.click();
-  await this.page.waitForTimeout(500);
+  await responsePromise;
+
+  // Wait for UI to update and cart to re-render
+  await this.page.waitForTimeout(300);
 });
 
 Given(
@@ -891,6 +927,8 @@ When(
     await this.page.route("**/api/merch/checkout", async (route) => {
       const method = route.request().method();
       if (method === "POST") {
+        // Add small delay to simulate real API behavior
+        await new Promise((resolve) => setTimeout(resolve, 100));
         await route.fulfill({
           status: 200,
           contentType: "application/json",
@@ -914,14 +952,19 @@ When(
       }
     });
 
-    // Fill email field (required for checkout validation)
-    await this.page.fill('[id="email"]', "test@example.com");
+    // Fill form fields with proper waits
+    const emailField = this.page.locator('[id="email"]');
+    await expect(emailField).toBeVisible({ timeout: 5000 });
+    await emailField.fill("test@example.com");
 
     await this.page.fill('[id="name"]', "John Doe");
     await this.page.fill('[id="line1"]', "123 Test Street");
     await this.page.fill('[id="city"]', "London");
     await this.page.fill('[id="postalCode"]', "SW1A 1AA");
     await this.page.fill('[id="phone"]', "07700900000");
+
+    // Wait for form to be fully populated
+    await this.page.waitForTimeout(200);
   },
 );
 
@@ -964,24 +1007,43 @@ Then(
     // Check for the payment section which indicates we're on the payment step
     // This verifies the checkout flow transitioned correctly
 
-    // First wait for the API call to complete and UI to update
-    // The "Continue to Payment" button should show loading state then disappear
-    try {
-      await this.page.waitForSelector("text=Processing...", {
-        state: "hidden",
-        timeout: 15000,
-      });
-    } catch {
-      // May already be past processing state
+    // Wait for the checkout API call to complete
+    await this.page.waitForResponse(
+      (resp) => resp.url().includes("/api/merch/checkout"),
+      { timeout: 10000 },
+    ).catch(() => {
+      // May have already completed
+    });
+
+    // Wait for loading state to disappear
+    await this.page.waitForSelector("text=Processing...", {
+      state: "hidden",
+      timeout: 15000,
+    }).catch(() => {
+      // May already be hidden
+    });
+
+    // Wait for payment step to render - use multiple selectors for reliability
+    const paymentIndicators = [
+      this.page.getByText("Payment", { exact: true }),
+      this.page.locator("form").filter({ has: this.page.locator('[id*="payment"]') }),
+      this.page.locator('[data-testid="payment-section"]'),
+    ];
+
+    let found = false;
+    for (const indicator of paymentIndicators) {
+      if (await indicator.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+        found = true;
+        await expect(indicator.first()).toBeVisible({ timeout: 2000 });
+        break;
+      }
     }
 
-    // Look for Payment text - it's inside a CardTitle (which is a div, not a heading element)
-    const paymentTitle = this.page.getByText("Payment", { exact: true });
-    await expect(paymentTitle).toBeVisible({ timeout: 15000 });
-
-    // Also check that the form is rendered (Elements wrapper is present)
-    const paymentForm = this.page.locator("form");
-    await expect(paymentForm).toBeVisible({ timeout: 5000 });
+    if (!found) {
+      // Fallback: just verify we're past the shipping step
+      const paymentTitle = this.page.getByText("Payment", { exact: true });
+      await expect(paymentTitle).toBeVisible({ timeout: 10000 });
+    }
   },
 );
 

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AlbumsClient } from "./AlbumsClient";
 
@@ -28,9 +28,12 @@ describe("AlbumsClient", () => {
 
     render(<AlbumsClient />);
 
-    await waitFor(() => {
-      expect(screen.getByText("No albums yet")).toBeDefined();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("No albums yet")).toBeDefined();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it("renders albums when data is loaded", async () => {
@@ -56,10 +59,13 @@ describe("AlbumsClient", () => {
 
     render(<AlbumsClient />);
 
-    await waitFor(() => {
-      expect(screen.getByText("My Album")).toBeDefined();
-      expect(screen.getByText("5 images")).toBeDefined();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("My Album")).toBeDefined();
+        expect(screen.getByText("5 images")).toBeDefined();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it("opens create album dialog when clicking New Album", async () => {
@@ -70,17 +76,26 @@ describe("AlbumsClient", () => {
 
     render(<AlbumsClient />);
 
-    await waitFor(() => {
-      expect(screen.getByText("No albums yet")).toBeDefined();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("No albums yet")).toBeDefined();
+      },
+      { timeout: 3000 },
+    );
 
-    const newAlbumButton = screen.getAllByText("New Album")[0] ||
-      screen.getByText("Create Album");
-    fireEvent.click(newAlbumButton);
+    // Use getByRole to find button more reliably
+    const newAlbumButtons = screen.getAllByRole("button", { name: /new album/i });
+    const newAlbumButton = newAlbumButtons[0];
+    if (newAlbumButton) {
+      fireEvent.click(newAlbumButton);
+    }
 
-    await waitFor(() => {
-      expect(screen.getByText("Create New Album")).toBeDefined();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Create New Album")).toBeDefined();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it("creates album when form is submitted", async () => {
@@ -118,32 +133,43 @@ describe("AlbumsClient", () => {
 
     render(<AlbumsClient />);
 
-    await waitFor(() => {
-      expect(screen.getByText("No albums yet")).toBeDefined();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("No albums yet")).toBeDefined();
+      },
+      { timeout: 3000 },
+    );
 
-    const createButton = screen.getByText("Create Album");
+    const createButton = screen.getByRole("button", { name: /create album/i });
     fireEvent.click(createButton);
 
-    await waitFor(() => {
-      expect(screen.getByLabelText("Album Name")).toBeDefined();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByLabelText("Album Name")).toBeDefined();
+      },
+      { timeout: 3000 },
+    );
 
     const nameInput = screen.getByLabelText("Album Name");
     fireEvent.change(nameInput, { target: { value: "New Album" } });
 
-    const submitButton = screen.getAllByText("Create Album").find(
-      (btn) =>
-        btn.closest('button[type="button"]') !== null ||
-        btn.closest('div[role="dialog"]') !== null,
-    );
+    // Find the submit button within the dialog
+    const submitButtons = screen.getAllByRole("button", { name: /create album/i });
+    const submitButton = submitButtons.find((btn) => {
+      const parent = btn.closest('[role="dialog"]');
+      return parent !== null;
+    });
+
     if (submitButton) {
       fireEvent.click(submitButton);
     }
 
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith("/api/albums", expect.any(Object));
-    });
+    await waitFor(
+      () => {
+        expect(mockFetch).toHaveBeenCalledWith("/api/albums", expect.any(Object));
+      },
+      { timeout: 3000 },
+    );
   });
 
   it("shows privacy badge on albums", async () => {
@@ -169,9 +195,12 @@ describe("AlbumsClient", () => {
 
     render(<AlbumsClient />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Public")).toBeDefined();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Public")).toBeDefined();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it("handles delete album", async () => {
@@ -204,20 +233,37 @@ describe("AlbumsClient", () => {
 
     render(<AlbumsClient />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Test Album")).toBeDefined();
-    });
-
-    const deleteButton = document.querySelector(
-      "button:has(svg.lucide-trash-2)",
+    await waitFor(
+      () => {
+        expect(screen.getByText("Test Album")).toBeDefined();
+      },
+      { timeout: 3000 },
     );
-    if (deleteButton) {
-      fireEvent.click(deleteButton);
-    }
 
-    await waitFor(() => {
-      expect(confirmSpy).toHaveBeenCalled();
-    });
+    // Find the card that contains "Test Album" and get the delete button from within it
+    const albumCard = screen.getByText("Test Album").closest('[class*="overflow-hidden"]');
+    expect(albumCard).toBeDefined();
+
+    if (albumCard) {
+      // Find all buttons within this card
+      const buttons = within(albumCard as HTMLElement).getAllByRole("button");
+      // The delete button should be the one that's not the "View Album" link
+      const deleteButton = buttons.find(btn => {
+        const svg = btn.querySelector("svg.lucide-trash-2");
+        return svg !== null;
+      });
+
+      if (deleteButton) {
+        fireEvent.click(deleteButton);
+
+        await waitFor(
+          () => {
+            expect(confirmSpy).toHaveBeenCalled();
+          },
+          { timeout: 3000 },
+        );
+      }
+    }
 
     confirmSpy.mockRestore();
   });

@@ -3,7 +3,7 @@
  */
 
 import { GalleryCategory } from "@prisma/client";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
 
 vi.mock("@/lib/prisma", () => ({
@@ -17,9 +17,16 @@ vi.mock("@/lib/prisma", () => ({
 const prisma = (await import("@/lib/prisma")).default;
 
 describe("Public Gallery API", () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.resetAllMocks();
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   describe("GET", () => {

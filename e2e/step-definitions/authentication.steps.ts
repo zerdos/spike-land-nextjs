@@ -1,5 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { waitForPageReady, waitForRouteReady } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
 
 // Helper function to mock NextAuth session
@@ -105,49 +106,32 @@ async function mockSession(
 // Given('I am on the home page', ...)
 
 When("I am not logged in", async function(this: CustomWorld) {
-  // Remember current URL to navigate back after context switch
   const currentUrl = this.page.url();
 
-  // Close current page and context with error handling
-  try {
+  // Improved cleanup with state checking
+  if (!this.page.isClosed()) {
     await this.page.close();
-  } catch {
-    // Page may already be closed
   }
-  try {
+  if (this.context) {
     await this.context.close();
-  } catch {
-    // Context may already be closed
   }
 
-  // Create a new context WITHOUT the E2E bypass header
-  // This simulates a truly unauthenticated user
-  // Retry logic for browser stability in CI environment
-  let retries = 3;
-  while (retries > 0) {
-    try {
-      this.context = await this.browser.newContext({
-        baseURL: this.baseUrl,
-        // No extraHTTPHeaders - no bypass
-      });
-      this.page = await this.context.newPage();
-      break;
-    } catch (error) {
-      retries--;
-      if (retries === 0) {
-        throw error;
-      }
-      // Wait a bit before retrying
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-  }
+  // Create new unauthenticated context
+  this.context = await this.browser.newContext({
+    baseURL: this.baseUrl,
+  });
+  this.page = await this.context.newPage();
 
-  // Mock no session for client-side requests
+  // Mock no session
   await mockSession(this, null);
 
-  // Re-navigate to the page we were on (important for Background scenarios)
+  // Wait for route to be ready
+  await waitForRouteReady(this.page);
+
+  // Re-navigate if needed
   if (currentUrl && currentUrl !== "about:blank") {
-    await this.page.goto(currentUrl);
+    await this.page.goto(currentUrl, { waitUntil: "commit" });
+    await waitForPageReady(this.page);
   }
 });
 
@@ -165,8 +149,9 @@ When(
   "I am logged in as {string} with email {string}",
   async function(this: CustomWorld, name: string, email: string) {
     await mockSession(this, { name, email });
-    await this.page.reload();
-    await this.page.waitForLoadState("networkidle");
+    await waitForRouteReady(this.page); // FIX: Wait for route registration
+    await this.page.reload({ waitUntil: "commit" });
+    await waitForPageReady(this.page); // FIX: Consistent wait strategy
   },
 );
 
@@ -262,11 +247,16 @@ When("authentication is loading", async function(this: CustomWorld) {
 });
 
 When("I click on the user avatar", async function(this: CustomWorld) {
-  // Find the avatar using the data-testid attribute
   const avatar = this.page.getByTestId("user-avatar");
   await expect(avatar).toBeVisible();
-  // Use force: true to bypass Radix overlay interception when dropdown is open
-  await avatar.click({ force: true });
+
+  // FIX: Don't use force: true, use dispatchEvent instead
+  await avatar.waitFor({ state: "attached" });
+  await avatar.scrollIntoViewIfNeeded();
+  await avatar.dispatchEvent("click"); // More reliable than force: true
+
+  // Wait for dropdown to appear
+  await this.page.waitForTimeout(200);
 });
 
 When(
@@ -417,40 +407,26 @@ Then(
 // Navigation steps
 When("I visit {string}", async function(this: CustomWorld, path: string) {
   await this.page.goto(`${this.baseUrl}${path}`, { waitUntil: "commit" });
-
-  // Allow server-side redirects to complete without timeout
-  // Some pages (like admin pages for non-admins) redirect immediately
-  try {
-    await this.page.waitForLoadState("networkidle", { timeout: 5000 });
-  } catch {
-    // Timeout acceptable if page redirected - the redirect should complete
-    await this.page.waitForLoadState("domcontentloaded");
-  }
+  await waitForPageReady(this.page, {
+    strategy: "both", // Try networkidle, fall back to dom
+    waitForSuspense: true, // Wait for loading states to disappear
+  });
 });
 
 Then(
   "I should be on the {string} page",
   async function(this: CustomWorld, path: string) {
-    // Wait for navigation to complete - use domcontentloaded first
-    await this.page.waitForLoadState("domcontentloaded");
-    // Try networkidle with short timeout, but don't fail if it times out
-    try {
-      await this.page.waitForLoadState("networkidle", { timeout: 5000 });
-    } catch {
-      // Network may still be active (polling, websockets), that's OK
-    }
-    // Wait for URL to contain the path (with timeout for client-side routing)
-    await this.page.waitForURL(new RegExp(path.replace(/\//g, "\\/")), {
-      timeout: 30000,
-    });
+    // Wait for URL to match with proper timeout
+    await this.page.waitForURL((url) => {
+      const expectedUrl = `${this.baseUrl}${path}`;
+      return url.href.startsWith(expectedUrl) ||
+        url.href.startsWith(`${expectedUrl}/`) ||
+        url.href.includes(path);
+    }, { timeout: 10000 });
+
+    await waitForPageReady(this.page);
     const currentUrl = this.page.url();
-    // Handle both exact match, query parameters, and trailing slashes
-    const expectedUrl = `${this.baseUrl}${path}`;
-    // Also accept URL with trailing slash or query params
-    const urlMatches = currentUrl.startsWith(expectedUrl) ||
-      currentUrl.startsWith(`${expectedUrl}/`) ||
-      currentUrl.includes(path);
-    expect(urlMatches).toBe(true);
+    expect(currentUrl).toMatch(new RegExp(path));
   },
 );
 

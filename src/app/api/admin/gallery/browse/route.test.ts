@@ -4,7 +4,7 @@
 
 import { JobStatus } from "@prisma/client";
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
 
 vi.mock("@/auth", () => ({
@@ -33,9 +33,16 @@ const VALID_IMG_ID = "cimg1000000000000000000";
 const VALID_JOB_ID = "cjob1000000000000000000";
 
 describe("Browse Images for Gallery API", () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.resetAllMocks();
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   describe("GET", () => {

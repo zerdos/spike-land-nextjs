@@ -178,10 +178,15 @@ export const mockNavigator = {
 
 // Setup function to reset mocks before each test
 export const setupTest = () => {
-  // Reset all mocks
+  // Clear only the call history, not the implementations
   vi.clearAllMocks();
 
-  // Reset mock file system
+  // Clear and reset mock file system to initial state
+  Object.keys(mockFileSystem).forEach((key) => {
+    delete mockFileSystem[key];
+  });
+
+  // Reinitialize default test.txt file
   mockFileSystem["test.txt"] = {
     kind: "file",
     name: "test.txt",
@@ -198,7 +203,63 @@ export const setupTest = () => {
     }),
   };
 
-  // Reset mock directory handle getFileHandle
+  // Reinitialize default test directory
+  mockFileSystem["test"] = {
+    kind: "directory",
+    name: "test",
+    getDirectoryHandle: vi.fn().mockImplementation(async (name, options) => {
+      if (mockFileSystem[`test/${name}`]?.kind === "directory") {
+        return mockFileSystem[`test/${name}`] as MockFileSystemDirectory;
+      }
+      if (options?.create) {
+        const newDir = {
+          kind: "directory" as const,
+          name,
+          getDirectoryHandle: vi.fn().mockResolvedValue({}),
+          getFileHandle: vi.fn().mockResolvedValue({}),
+          removeEntry: vi.fn().mockResolvedValue(undefined),
+          entries: vi.fn().mockReturnValue([]),
+        };
+        mockFileSystem[`test/${name}`] = newDir;
+        return newDir;
+      }
+      throw new Error("Not a directory");
+    }),
+    getFileHandle: vi.fn().mockImplementation(async (name, options) => {
+      if (mockFileSystem[`test/${name}`]?.kind === "file") {
+        return mockFileSystem[`test/${name}`] as MockFileSystemFile;
+      }
+      if (options?.create) {
+        const newFile = {
+          kind: "file" as const,
+          name,
+          getFile: vi.fn().mockResolvedValue({
+            size: 0,
+            type: "text/plain",
+            lastModified: Date.now(),
+            text: vi.fn().mockResolvedValue(""),
+          }),
+          createWritable: vi.fn().mockResolvedValue({
+            write: vi.fn().mockResolvedValue(undefined),
+            close: vi.fn().mockResolvedValue(undefined),
+          }),
+        };
+        mockFileSystem[`test/${name}`] = newFile;
+        return newFile;
+      }
+      throw new Error("Not a file");
+    }),
+    removeEntry: vi.fn().mockResolvedValue(undefined),
+    entries: vi.fn().mockImplementation(async function*() {
+      for (const [key, value] of Object.entries(mockFileSystem)) {
+        if (key.startsWith("test/")) {
+          yield [key.replace("test/", ""), value];
+        }
+      }
+    }),
+  };
+
+  // Properly reset mock directory handle methods with fresh implementations
   mockDirectoryHandle.getFileHandle = vi.fn(async (name, options) => {
     if (mockFileSystem[name]?.kind === "file") {
       return mockFileSystem[name] as MockFileSystemFile;
@@ -224,7 +285,6 @@ export const setupTest = () => {
     throw new Error("Not a file");
   });
 
-  // Reset mock directory handle getDirectoryHandle
   mockDirectoryHandle.getDirectoryHandle = vi.fn(async (name, options) => {
     if (mockFileSystem[name]?.kind === "directory") {
       return mockFileSystem[name] as MockFileSystemDirectory;
@@ -243,4 +303,17 @@ export const setupTest = () => {
     }
     throw new Error("Not a directory");
   });
+
+  mockDirectoryHandle.removeEntry = vi.fn().mockResolvedValue(undefined);
+
+  mockDirectoryHandle.entries = vi.fn().mockImplementation(async function*() {
+    for (const [key, value] of Object.entries(mockFileSystem)) {
+      if (!key.includes("/")) {
+        yield [key, value];
+      }
+    }
+  });
+
+  // Reset navigator mock
+  mockNavigator.storage.getDirectory = vi.fn().mockResolvedValue(mockDirectoryHandle);
 };

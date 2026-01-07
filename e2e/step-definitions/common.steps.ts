@@ -1,5 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { waitForPageReady } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
 
 // Helper function for mocking token balance (used by multiple steps)
@@ -27,7 +28,7 @@ async function mockTokenBalance(
 When(
   "I click {string} button",
   async function(this: CustomWorld, buttonText: string) {
-    // Wait for loading states ONLY if they are visible
+    // Wait for loading states to disappear
     const loadingElement = this.page.locator(".loading, .animate-pulse, .skeleton").first();
     const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
     if (isLoadingVisible) {
@@ -38,11 +39,14 @@ When(
       .getByRole("button", { name: new RegExp(buttonText, "i") })
       .and(this.page.locator(":not([data-nextjs-dev-tools-button])"));
 
-    // Wait for button to be visible before clicking
     await expect(button.first()).toBeVisible({ timeout: 15000 });
 
-    // If there are still multiple buttons (e.g. mobile vs desktop), take the first visible one
+    // FIX: Ensure button is in viewport before clicking
+    await button.first().scrollIntoViewIfNeeded();
     await button.first().click();
+
+    // Wait for action to complete
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
   },
 );
 
@@ -442,7 +446,6 @@ Then(
 When(
   "I click the {string} button",
   async function(this: CustomWorld, buttonText: string) {
-    // Check for both button and link (Button asChild pattern renders as <a>)
     const button = this.page.getByRole("button", {
       name: new RegExp(buttonText, "i"),
     });
@@ -452,8 +455,13 @@ When(
 
     const element = button.or(link);
     await expect(element.first()).toBeVisible({ timeout: 10000 });
+
+    // FIX: Scroll into view before clicking
+    await element.first().scrollIntoViewIfNeeded();
     await element.first().click();
-    await this.page.waitForLoadState("networkidle");
+
+    // Wait for navigation/action to complete
+    await waitForPageReady(this.page);
   },
 );
 

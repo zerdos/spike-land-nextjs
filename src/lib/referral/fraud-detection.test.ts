@@ -429,40 +429,46 @@ describe("Fraud Detection", () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(
         () => {},
       );
-      vi.mocked(prisma.referral.findFirst).mockRejectedValue(
-        new Error("Database connection failed"),
-      );
+      try {
+        vi.mocked(prisma.referral.findFirst).mockRejectedValue(
+          new Error("Database connection failed"),
+        );
 
-      const result = await fraudDetection.validateReferralAfterVerification(
-        "referee-456",
-      );
+        const result = await fraudDetection.validateReferralAfterVerification(
+          "referee-456",
+        );
 
-      expect(result.success).toBe(false);
-      expect(result.shouldGrantRewards).toBe(false);
-      expect(result.error).toBe("Database connection failed");
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Failed to validate referral:",
-        expect.any(Error),
-      );
-      consoleSpy.mockRestore();
+        expect(result.success).toBe(false);
+        expect(result.shouldGrantRewards).toBe(false);
+        expect(result.error).toBe("Database connection failed");
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "Failed to validate referral:",
+          expect.any(Error),
+        );
+      } finally {
+        consoleSpy.mockRestore();
+      }
     });
 
     it("should handle unknown errors gracefully", async () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(
         () => {},
       );
-      vi.mocked(prisma.referral.findFirst).mockRejectedValue(
-        "Unknown error type",
-      );
+      try {
+        vi.mocked(prisma.referral.findFirst).mockRejectedValue(
+          "Unknown error type",
+        );
 
-      const result = await fraudDetection.validateReferralAfterVerification(
-        "referee-456",
-      );
+        const result = await fraudDetection.validateReferralAfterVerification(
+          "referee-456",
+        );
 
-      expect(result.success).toBe(false);
-      expect(result.shouldGrantRewards).toBe(false);
-      expect(result.error).toBe("Unknown error");
-      consoleSpy.mockRestore();
+        expect(result.success).toBe(false);
+        expect(result.shouldGrantRewards).toBe(false);
+        expect(result.error).toBe("Unknown error");
+      } finally {
+        consoleSpy.mockRestore();
+      }
     });
   });
 

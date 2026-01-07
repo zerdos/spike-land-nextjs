@@ -10,9 +10,9 @@ import {
 import {
   clickAvatar as _clickAvatar,
   clickOutside,
-  goBack,
   navigateToPath,
 } from "../support/helpers/navigation-helper";
+import { waitForPageReady } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
 
 When("I click the logo in the header", async function(this: CustomWorld) {
@@ -41,12 +41,31 @@ When("I click outside the dropdown", async function(this: CustomWorld) {
 });
 
 When("I use the browser back button", async function(this: CustomWorld) {
-  await goBack(this.page);
+  const currentUrl = this.page.url();
+  await this.page.goBack({ waitUntil: "commit" });
+
+  // Wait for URL to actually change
+  await this.page.waitForFunction(
+    (oldUrl) => window.location.href !== oldUrl,
+    currentUrl,
+    { timeout: 5000 },
+  );
+
+  await waitForPageReady(this.page);
 });
 
 When("I use the browser forward button", async function(this: CustomWorld) {
-  await this.page.goForward();
-  await this.page.waitForLoadState("networkidle");
+  const currentUrl = this.page.url();
+  await this.page.goForward({ waitUntil: "commit" });
+
+  // Wait for URL to actually change
+  await this.page.waitForFunction(
+    (oldUrl) => window.location.href !== oldUrl,
+    currentUrl,
+    { timeout: 5000 },
+  );
+
+  await waitForPageReady(this.page);
 });
 
 When(

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ShareButton } from "./ShareButton";
@@ -416,7 +416,9 @@ describe("ShareButton Component", () => {
       expect(copyButton.querySelector(".text-green-500")).toBeInTheDocument();
     });
 
-    vi.advanceTimersByTime(2000);
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
 
     await waitFor(() => {
       expect(copyButton.querySelector(".text-green-500")).not
