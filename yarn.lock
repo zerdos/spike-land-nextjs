@@ -5389,9 +5389,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@modelcontextprotocol/sdk@npm:1.25.1":
-  version: 1.25.1
-  resolution: "@modelcontextprotocol/sdk@npm:1.25.1"
+"@modelcontextprotocol/sdk@npm:1.25.2":
+  version: 1.25.2
+  resolution: "@modelcontextprotocol/sdk@npm:1.25.2"
   dependencies:
     "@hono/node-server": "npm:^1.19.7"
     ajv: "npm:^8.17.1"
@@ -5417,7 +5417,7 @@ __metadata:
       optional: true
     zod:
       optional: false
-  checksum: 10c9/f54ad121097ad5c1f68232beabfcf26f70899cffb5c98bb700d748e0dffa77ab6737622447f0b260162a883fa228a35e6636c6043bab9a5cce9bdb335c78cb60
+  checksum: 10c9/2d34ae3d27e85255ea105898c2e4f87ed796ff8a3118ac602103c56024a0767ad17dc3a381ecd36aae483b92984fee9a35d592df3b77aa060e028d5924fee6e4
   languageName: node
   linkType: hard
 
@@ -9797,7 +9797,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@spike-npm-land/mcp-server@workspace:packages/mcp-server"
   dependencies:
-    "@modelcontextprotocol/sdk": "npm:1.25.1"
+    "@modelcontextprotocol/sdk": "npm:1.25.2"
     "@types/node": "npm:25.0.3"
     typescript: "npm:5.9.3"
     zod: "npm:4.3.5"
