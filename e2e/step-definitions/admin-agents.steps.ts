@@ -382,20 +382,25 @@ Then(
 Then(
   "the dashboard should poll for updates",
   async function(this: CustomWorld) {
-    // Verify polling is configured by checking for timestamp or refresh indicator
-    // Use longer timeout for server-rendered admin pages which may take time to fetch data
-    const timestamp = this.page.getByText(/updated|refreshed|ago/i)
-      .or(this.page.locator("[data-testid*='timestamp']"));
-    await expect(timestamp.first()).toBeVisible({ timeout: 15000 });
+    // First wait for the Agents Dashboard heading to ensure the page has loaded
+    const heading = this.page.getByRole("heading", { name: "Agents Dashboard" });
+    await expect(heading).toBeVisible({ timeout: 15000 });
+
+    // Then verify polling is configured by checking for timestamp or refresh indicator
+    // The timestamp div has data-testid="timestamp" and contains "Last updated:"
+    const timestamp = this.page.locator("[data-testid='timestamp']")
+      .or(this.page.getByText(/Last updated:/i));
+    await expect(timestamp.first()).toBeVisible({ timeout: 10000 });
   },
 );
 
 Then(
   "the timestamp should update periodically",
   async function(this: CustomWorld) {
-    // Verify timestamp exists - actual update verification would require waiting
+    // Verify timestamp exists by looking for the "Last updated:" text
     // Use longer timeout for server-rendered admin pages which may take time to fetch data
-    const timestamp = this.page.getByText(/updated|refreshed|ago|just now/i);
+    const timestamp = this.page.getByText(/Last updated:/i)
+      .or(this.page.locator("[data-testid='timestamp']"));
     await expect(timestamp.first()).toBeVisible({ timeout: 15000 });
   },
 );
