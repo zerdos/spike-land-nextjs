@@ -60,8 +60,8 @@ When(
     });
 
     // Navigate to the callback URL
-    await this.page.goto(redirectUrl);
-    await this.page.waitForLoadState("networkidle");
+    await this.page.goto(`${this.baseUrl}${redirectUrl}`, { waitUntil: "commit" });
+    await waitForPageReady(this.page);
   },
 );
 
@@ -107,8 +107,8 @@ When(
     });
 
     // Navigate to the callback URL
-    await this.page.goto(redirectUrl);
-    await this.page.waitForLoadState("networkidle");
+    await this.page.goto(redirectUrl, { waitUntil: "commit" });
+    await waitForPageReady(this.page);
   },
 );
 
@@ -139,8 +139,8 @@ When("my session expires", async function(this: CustomWorld) {
   });
 
   // Navigate back to the protected route - should redirect to home
-  await this.page.goto(currentPath);
-  await this.page.waitForLoadState("networkidle");
+  await this.page.goto(currentPath, { waitUntil: "commit" });
+  await waitForPageReady(this.page);
 });
 
 When(
@@ -173,7 +173,8 @@ When(
 Then(
   "I should remain on {string}",
   async function(this: CustomWorld, expectedPath: string) {
-    await this.page.waitForTimeout(300);
+    // Wait for any potential redirects to complete
+    await waitForPageReady(this.page);
     await assertUrlPath(this.page, expectedPath);
   },
 );
@@ -181,7 +182,8 @@ Then(
 // NOTE: "I should see {string} heading" step is defined in authentication.steps.ts
 
 Then("I should not be redirected", async function(this: CustomWorld) {
-  await this.page.waitForTimeout(300);
+  // Wait for any potential redirects to complete
+  await waitForPageReady(this.page);
   const currentUrl = await getCurrentUrl(this.page);
   expect(currentUrl).toContain(this.baseUrl);
 });
