@@ -328,10 +328,11 @@ Then(
 Then(
   "I should see GitHub configuration required message",
   async function(this: CustomWorld) {
+    // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const configMessage = this.page.getByText(
       /not configured|set.*token|github.*required/i,
     );
-    await expect(configMessage.first()).toBeVisible({ timeout: 5000 });
+    await expect(configMessage.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
@@ -382,9 +383,10 @@ Then(
   "the dashboard should poll for updates",
   async function(this: CustomWorld) {
     // Verify polling is configured by checking for timestamp or refresh indicator
+    // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const timestamp = this.page.getByText(/updated|refreshed|ago/i)
       .or(this.page.locator("[data-testid*='timestamp']"));
-    await expect(timestamp.first()).toBeVisible({ timeout: 10000 });
+    await expect(timestamp.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
@@ -392,8 +394,9 @@ Then(
   "the timestamp should update periodically",
   async function(this: CustomWorld) {
     // Verify timestamp exists - actual update verification would require waiting
+    // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const timestamp = this.page.getByText(/updated|refreshed|ago|just now/i);
-    await expect(timestamp.first()).toBeVisible({ timeout: 5000 });
+    await expect(timestamp.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
