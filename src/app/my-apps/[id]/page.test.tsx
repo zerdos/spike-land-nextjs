@@ -160,7 +160,7 @@ describe("AppWorkspacePage", () => {
     render(<AppWorkspacePage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Preview")).toBeInTheDocument();
+      expect(screen.getByText("testing.spike.land/live/test-codespace/")).toBeInTheDocument();
     });
   });
 
@@ -419,7 +419,7 @@ describe("AppWorkspacePage", () => {
     render(<AppWorkspacePage />);
 
     await waitFor(() => {
-      expect(screen.getByText("No preview available yet")).toBeInTheDocument();
+      expect(screen.getByText("Preview will appear here")).toBeInTheDocument();
     });
   });
 

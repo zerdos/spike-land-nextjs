@@ -42,8 +42,6 @@ export interface SocketPolicy {
 export interface SharedWorkerState {
   ata: unknown;
   connections: Map<string, Connection>;
-  prettierCss: unknown;
-  prettierJs: unknown;
   createWorkflow: unknown;
   tsx: unknown;
   updateSearchReplace: unknown;

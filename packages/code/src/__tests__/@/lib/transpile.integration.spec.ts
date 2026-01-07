@@ -3,7 +3,6 @@
 // import { dirname } from "path";
 // import { fileURLToPath } from "url";
 // import { importMapReplace } from "../importmap-utils";
-// import { prettierJs } from "../prettier";
 // import { transpile } from "../transpile";
 import { describe, it } from "vitest";
 
@@ -22,9 +21,6 @@ describe("tsxToMjs", () => {
 
     // expect(output).toBeTruthy();
     // expect(typeof output).toBe("string");
-
-    // const prettifiedOutput = await prettierJs({ code: importMapReplace(output), toThrow: true });
-    // const prettifiedExpectedOutput = await prettierJs({ code: expectedOutput, toThrow: true });
 
     // expect(prettifiedOutput).toBe(prettifiedExpectedOutput);
   });
