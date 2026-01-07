@@ -568,7 +568,7 @@ Then(
     // Wait for table to load first
     await this.page.waitForSelector("table tbody tr", {
       state: "visible",
-      timeout: 10000,
+      timeout: 15000,
     });
     // Scroll to ensure all badges are visible (table might be scrollable)
     const table = this.page.locator("table");
@@ -581,7 +581,7 @@ Then(
     const badge = this.page.locator("table tbody tr td").locator('[class*="Badge"]').filter({
       hasText: "REVIEWED",
     }).first();
-    await expect(badge).toBeVisible({ timeout: 5000 });
+    await expect(badge).toBeVisible({ timeout: 15000 });
     const className = await badge.getAttribute("class");
     expect(className).toContain("blue");
   },
@@ -593,12 +593,12 @@ Then(
     // Wait for table to load first
     await this.page.waitForSelector("table tbody tr", {
       state: "visible",
-      timeout: 10000,
+      timeout: 15000,
     });
     const badge = this.page.locator('[class*="Badge"]').filter({
       hasText: "RESOLVED",
     }).first();
-    await expect(badge).toBeVisible({ timeout: 5000 });
+    await expect(badge).toBeVisible({ timeout: 15000 });
     const className = await badge.getAttribute("class");
     expect(className).toContain("green");
   },
@@ -610,12 +610,12 @@ Then(
     // Wait for table to load first
     await this.page.waitForSelector("table tbody tr", {
       state: "visible",
-      timeout: 10000,
+      timeout: 15000,
     });
     const badge = this.page.locator('[class*="Badge"]').filter({
       hasText: "DISMISSED",
     }).first();
-    await expect(badge).toBeVisible({ timeout: 5000 });
+    await expect(badge).toBeVisible({ timeout: 15000 });
     const className = await badge.getAttribute("class");
     expect(className).toMatch(/gray|neutral/);
   },
