@@ -1,4 +1,4 @@
-@requires-db @flaky
+@requires-db
 Feature: App Creation Full Journey
   As an authenticated user
   I want to complete the entire app creation process
