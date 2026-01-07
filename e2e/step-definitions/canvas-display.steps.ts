@@ -1,5 +1,5 @@
 import { Given, Then, When } from "@cucumber/cucumber";
-import { expect } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 import {
   TIMEOUTS,
   waitForDynamicContent,
@@ -37,7 +37,7 @@ const E2E_TEST_ALBUMS = {
 let shouldSkipCanvasTests = false;
 
 // Helper function to wait for and get first thumbnail
-async function waitForCanvasThumbnail(page: any, timeout = TIMEOUTS.DEFAULT) {
+async function waitForCanvasThumbnail(page: Page, timeout = TIMEOUTS.DEFAULT) {
   // First wait for at least one thumbnail to exist
   await waitForElementWithRetry(
     page,
