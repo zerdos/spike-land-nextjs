@@ -183,6 +183,8 @@ When(
     const tab = this.page.getByRole("tab", { name: new RegExp(tabName, "i") })
       .or(this.page.getByRole("button", { name: new RegExp(tabName, "i") }));
     await tab.first().click();
+    // Wait for tab content to load
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
   },
 );
 
