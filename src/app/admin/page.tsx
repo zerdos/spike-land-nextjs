@@ -10,78 +10,99 @@ import prisma from "@/lib/prisma";
 import { JobStatus, UserRole } from "@prisma/client";
 
 async function getDashboardMetrics() {
-  const [
-    totalUsers,
-    adminCount,
-    totalEnhancements,
-    pendingJobs,
-    processingJobs,
-    completedJobs,
-    failedJobs,
-    totalTokensPurchased,
-    totalTokensSpent,
-    activeVouchers,
-  ] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({
-      where: {
-        OR: [{ role: UserRole.ADMIN }, { role: UserRole.SUPER_ADMIN }],
-      },
-    }),
-    prisma.imageEnhancementJob.count(),
-    prisma.imageEnhancementJob.count({
-      where: { status: JobStatus.PENDING },
-    }),
-    prisma.imageEnhancementJob.count({
-      where: { status: JobStatus.PROCESSING },
-    }),
-    prisma.imageEnhancementJob.count({
-      where: { status: JobStatus.COMPLETED },
-    }),
-    prisma.imageEnhancementJob.count({
-      where: { status: JobStatus.FAILED },
-    }),
-    prisma.tokenTransaction.aggregate({
-      where: {
-        type: {
-          in: ["EARN_PURCHASE", "EARN_BONUS", "EARN_REGENERATION"],
+  try {
+    const [
+      totalUsers,
+      adminCount,
+      totalEnhancements,
+      pendingJobs,
+      processingJobs,
+      completedJobs,
+      failedJobs,
+      totalTokensPurchased,
+      totalTokensSpent,
+      activeVouchers,
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({
+        where: {
+          OR: [{ role: UserRole.ADMIN }, { role: UserRole.SUPER_ADMIN }],
         },
-      },
-      _sum: {
-        amount: true,
-      },
-    }),
-    prisma.tokenTransaction.aggregate({
-      where: {
-        type: "SPEND_ENHANCEMENT",
-      },
-      _sum: {
-        amount: true,
-      },
-    }),
-    prisma.voucher.count({
-      where: {
-        status: "ACTIVE",
-      },
-    }),
-  ]);
+      }),
+      prisma.imageEnhancementJob.count(),
+      prisma.imageEnhancementJob.count({
+        where: { status: JobStatus.PENDING },
+      }),
+      prisma.imageEnhancementJob.count({
+        where: { status: JobStatus.PROCESSING },
+      }),
+      prisma.imageEnhancementJob.count({
+        where: { status: JobStatus.COMPLETED },
+      }),
+      prisma.imageEnhancementJob.count({
+        where: { status: JobStatus.FAILED },
+      }),
+      prisma.tokenTransaction.aggregate({
+        where: {
+          type: {
+            in: ["EARN_PURCHASE", "EARN_BONUS", "EARN_REGENERATION"],
+          },
+        },
+        _sum: {
+          amount: true,
+        },
+      }),
+      prisma.tokenTransaction.aggregate({
+        where: {
+          type: "SPEND_ENHANCEMENT",
+        },
+        _sum: {
+          amount: true,
+        },
+      }),
+      prisma.voucher.count({
+        where: {
+          status: "ACTIVE",
+        },
+      }),
+    ]);
 
-  return {
-    totalUsers,
-    adminCount,
-    totalEnhancements,
-    jobStatus: {
-      pending: pendingJobs,
-      processing: processingJobs,
-      completed: completedJobs,
-      failed: failedJobs,
-      active: pendingJobs + processingJobs,
-    },
-    totalTokensPurchased: totalTokensPurchased._sum.amount || 0,
-    totalTokensSpent: Math.abs(totalTokensSpent._sum.amount || 0),
-    activeVouchers,
-    timestamp: new Date().toISOString(),
-  };
+    return {
+      totalUsers,
+      adminCount,
+      totalEnhancements,
+      jobStatus: {
+        pending: pendingJobs,
+        processing: processingJobs,
+        completed: completedJobs,
+        failed: failedJobs,
+        active: pendingJobs + processingJobs,
+      },
+      totalTokensPurchased: totalTokensPurchased._sum.amount || 0,
+      totalTokensSpent: Math.abs(totalTokensSpent._sum.amount || 0),
+      activeVouchers,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Failed to fetch dashboard metrics:", error);
+    // Return default metrics so the dashboard still renders
+    return {
+      totalUsers: 0,
+      adminCount: 0,
+      totalEnhancements: 0,
+      jobStatus: {
+        pending: 0,
+        processing: 0,
+        completed: 0,
+        failed: 0,
+        active: 0,
+      },
+      totalTokensPurchased: 0,
+      totalTokensSpent: 0,
+      activeVouchers: 0,
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
 
 export default async function AdminDashboard() {

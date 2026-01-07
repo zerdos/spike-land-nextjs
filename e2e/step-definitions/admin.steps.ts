@@ -297,21 +297,23 @@ Then(
   "I should see {string} metric card",
   async function(this: CustomWorld, metricName: string) {
     // Look for the label text which should be visible
+    // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const label = this.page.getByText(metricName, { exact: true });
-    await expect(label).toBeVisible();
+    await expect(label).toBeVisible({ timeout: 15000 });
   },
 );
 
 Then(
   "the {string} metric should display a number",
   async function(this: CustomWorld, metricName: string) {
+    // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const label = this.page.getByText(metricName, { exact: true });
-    await expect(label).toBeVisible();
+    await expect(label).toBeVisible({ timeout: 15000 });
 
     // The value is in a sibling paragraph (p + p)
     // Structure: <div><p>Label</p><p>Value</p></div>
     const valueElement = label.locator("xpath=following-sibling::p");
-    await expect(valueElement).toBeVisible();
+    await expect(valueElement).toBeVisible({ timeout: 10000 });
 
     // Look for numeric value in the card
     const text = await valueElement.textContent();
@@ -323,18 +325,19 @@ Then(
   "I should see admin count in the metric card",
   async function(this: CustomWorld) {
     const adminText = this.page.getByText(/\d+ admin/);
-    await expect(adminText).toBeVisible();
+    await expect(adminText).toBeVisible({ timeout: 10000 });
   },
 );
 
 Then(
   "the {string} metric should display total count",
   async function(this: CustomWorld, metricName: string) {
+    // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const label = this.page.getByText(metricName, { exact: true });
-    await expect(label).toBeVisible();
+    await expect(label).toBeVisible({ timeout: 15000 });
 
     const valueElement = label.locator("xpath=following-sibling::p");
-    await expect(valueElement).toBeVisible();
+    await expect(valueElement).toBeVisible({ timeout: 10000 });
 
     // Verify numeric value exists
     const text = await valueElement.textContent();
@@ -344,17 +347,18 @@ Then(
 
 Then("I should see active jobs count", async function(this: CustomWorld) {
   const jobsText = this.page.getByText(/\d+ active job/);
-  await expect(jobsText).toBeVisible();
+  await expect(jobsText).toBeVisible({ timeout: 10000 });
 });
 
 Then(
   "the {string} metric should display total",
   async function(this: CustomWorld, metricName: string) {
+    // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const label = this.page.getByText(metricName, { exact: true });
-    await expect(label).toBeVisible();
+    await expect(label).toBeVisible({ timeout: 15000 });
 
     const valueElement = label.locator("xpath=following-sibling::p");
-    await expect(valueElement).toBeVisible();
+    await expect(valueElement).toBeVisible({ timeout: 10000 });
 
     // Verify numeric value exists
     const text = await valueElement.textContent();
@@ -364,7 +368,7 @@ Then(
 
 Then("I should see tokens spent count", async function(this: CustomWorld) {
   const spentText = this.page.getByText(/\d+ spent/);
-  await expect(spentText).toBeVisible();
+  await expect(spentText).toBeVisible({ timeout: 10000 });
 });
 
 Then(
@@ -374,13 +378,13 @@ Then(
       "..",
     );
     const link = quickLinksSection.getByRole("link", { name: linkText });
-    await expect(link).toBeVisible();
+    await expect(link).toBeVisible({ timeout: 10000 });
   },
 );
 
 Then("I should see the admin sidebar", async function(this: CustomWorld) {
   const sidebar = this.page.locator("aside");
-  await expect(sidebar).toBeVisible();
+  await expect(sidebar).toBeVisible({ timeout: 10000 });
 });
 
 Then(

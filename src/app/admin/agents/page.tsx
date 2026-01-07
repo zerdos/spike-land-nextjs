@@ -8,26 +8,40 @@
 import { auth } from "@/auth";
 import { AgentsDashboardClient } from "@/components/admin/agents/AgentsDashboardClient";
 import { isJulesAvailable } from "@/lib/agents/jules-client";
-import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
+import { isAdmin, isAdminByUserId } from "@/lib/auth/admin-middleware";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminAgentsPage() {
+  // Check for E2E bypass header (only in non-production)
+  const headersList = await headers();
+  const e2eBypassHeader = headersList.get("x-e2e-auth-bypass");
+  const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
+  const isE2EBypass = process.env.NODE_ENV !== "production" &&
+    e2eBypassSecret &&
+    e2eBypassHeader === e2eBypassSecret;
+
   const session = await auth();
 
   if (!session?.user?.id) {
     redirect("/");
   }
 
-  const { error: adminError } = await tryCatch(
-    requireAdminByUserId(session.user.id),
-  );
-
-  if (adminError) {
-    redirect("/");
+  // For E2E bypass, check role from session
+  // For regular users, check role from database
+  if (isE2EBypass) {
+    if (!isAdmin(session)) {
+      redirect("/");
+    }
+  } else {
+    const userIsAdmin = await isAdminByUserId(session.user.id);
+    if (!userIsAdmin) {
+      redirect("/");
+    }
   }
 
   // Fetch initial data
