@@ -24,7 +24,6 @@ Feature: Admin Dashboard
     When I visit "/admin"
     Then I should be on the "/" page
 
-  @flaky
   Scenario: Admin dashboard displays metrics cards
     Given the user is an admin
     When I visit "/admin"
