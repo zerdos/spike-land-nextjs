@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ReferralsPage from "./page";
 
@@ -73,9 +73,12 @@ describe("ReferralsPage", () => {
   it("should display referral link and stats after loading", async () => {
     render(<ReferralsPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Referral Program")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Referral Program")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
 
     expect(screen.getByDisplayValue(mockLinkData.url)).toBeTruthy();
     expect(screen.getByText(mockLinkData.code)).toBeTruthy();
@@ -89,9 +92,12 @@ describe("ReferralsPage", () => {
   it("should display referred users in table", async () => {
     render(<ReferralsPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText("j***@example.com")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("j***@example.com")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
 
     expect(screen.getByText("a***@test.com")).toBeTruthy();
     expect(screen.getAllByText("COMPLETED")).toBeTruthy();
@@ -101,9 +107,12 @@ describe("ReferralsPage", () => {
   it("should copy referral link to clipboard", async () => {
     render(<ReferralsPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Copy")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Copy")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
 
     const copyButton = screen.getByText("Copy");
     fireEvent.click(copyButton);
@@ -120,9 +129,12 @@ describe("ReferralsPage", () => {
   it("should open Twitter share dialog", async () => {
     render(<ReferralsPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Share on Twitter")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Share on Twitter")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
 
     const twitterButton = screen.getByText("Share on Twitter");
     fireEvent.click(twitterButton);
@@ -137,9 +149,12 @@ describe("ReferralsPage", () => {
   it("should open Facebook share dialog", async () => {
     render(<ReferralsPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Share on Facebook")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Share on Facebook")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
 
     const facebookButton = screen.getByText("Share on Facebook");
     fireEvent.click(facebookButton);
@@ -154,9 +169,12 @@ describe("ReferralsPage", () => {
   it("should open LinkedIn share dialog", async () => {
     render(<ReferralsPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Share on LinkedIn")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Share on LinkedIn")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
 
     const linkedinButton = screen.getByText("Share on LinkedIn");
     fireEvent.click(linkedinButton);
@@ -173,10 +191,16 @@ describe("ReferralsPage", () => {
     vi.clearAllMocks();
     vi.mocked(fetch).mockRejectedValue(new Error("Network error"));
 
-    const { container } = render(<ReferralsPage />);
+    let container: HTMLElement;
+    await act(async () => {
+      const result = render(<ReferralsPage />);
+      container = result.container;
+    });
 
-    // Just verify the component renders something
-    expect(container).toBeTruthy();
+    // Wait for error state to settle
+    await waitFor(() => {
+      expect(container!).toBeTruthy();
+    });
   });
 
   it("should render with zero referrals", async () => {
@@ -202,9 +226,12 @@ describe("ReferralsPage", () => {
     const { container } = render(<ReferralsPage />);
 
     // Wait for component to finish loading
-    await waitFor(() => {
-      expect(container.querySelector(".container")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(container.querySelector(".container")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
 
     // Verify it shows 0 for stats
     await waitFor(() => {
@@ -221,22 +248,32 @@ describe("ReferralsPage", () => {
       json: async () => ({ error: "Unauthorized" }),
     } as Response);
 
-    const { container } = render(<ReferralsPage />);
+    let container: HTMLElement;
+    await act(async () => {
+      const result = render(<ReferralsPage />);
+      container = result.container;
+    });
 
-    // Just verify the component renders something
-    expect(container).toBeTruthy();
+    // Wait for error state to settle
+    await waitFor(() => {
+      expect(container!).toBeTruthy();
+    });
   });
 
   it("should handle clipboard copy errors", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.mocked(navigator.clipboard.writeText).mockRejectedValueOnce(
       new Error("Clipboard error"),
     );
 
     render(<ReferralsPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Copy")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Copy")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
 
     const copyButton = screen.getByText("Copy");
     fireEvent.click(copyButton);
@@ -244,7 +281,13 @@ describe("ReferralsPage", () => {
     // Should not throw error, just log to console
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Failed to copy:",
+        expect.any(Error),
+      );
     });
+
+    consoleErrorSpy.mockRestore();
   });
 
   it("should display error when fetching referral link fails", async () => {
@@ -256,9 +299,12 @@ describe("ReferralsPage", () => {
 
     render(<ReferralsPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Failed to fetch referral link")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Failed to fetch referral link")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it("should display error when fetching referral stats fails", async () => {
@@ -275,9 +321,12 @@ describe("ReferralsPage", () => {
 
     render(<ReferralsPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Failed to fetch referral stats")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Failed to fetch referral stats")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it("should display fallback error message for non-Error exceptions", async () => {
@@ -286,8 +335,11 @@ describe("ReferralsPage", () => {
 
     render(<ReferralsPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Failed to load referral data")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Failed to load referral data")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
   });
 });

@@ -180,9 +180,8 @@ describe("calculateHeroTransform", () => {
     });
 
     afterEach(() => {
-      if (originalWindow !== undefined) {
-        globalThis.window = originalWindow;
-      }
+      // Always restore original window object to prevent test pollution
+      globalThis.window = originalWindow;
     });
 
     it("should use window dimensions when available", () => {

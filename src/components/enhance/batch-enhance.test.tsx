@@ -644,14 +644,20 @@ describe("BatchEnhance Component", () => {
     fireEvent.click(enhanceButton);
 
     // Should keep showing enhancing while processing
-    await waitFor(() => {
-      expect(screen.getByText("1 enhancing")).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText("1 enhancing")).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
     // After polling completes, should show completed
-    await waitFor(() => {
-      expect(screen.getByText("1 completed")).toBeInTheDocument();
-    }, { timeout: 8000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText("1 completed")).toBeInTheDocument();
+      },
+      { timeout: 8000, interval: 100 },
+    );
   }, 20000);
 
   it("should handle clearing completed items", async () => {

@@ -38,40 +38,52 @@ describe("timeouts config", () => {
     process.env.ENHANCEMENT_TIMEOUT_SECONDS = "600";
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import(
-      "./timeouts"
-    );
+    try {
+      const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import(
+        "./timeouts"
+      );
 
-    expect(ENHANCEMENT_TIMEOUT_SECONDS).toBe(600);
-    expect(maxDuration).toBe(300);
-    expect(warnSpy).toHaveBeenCalledWith(
-      "ENHANCEMENT_TIMEOUT_SECONDS (600) exceeds Vercel Pro limit (300s). Capping at 300s.",
-    );
+      expect(ENHANCEMENT_TIMEOUT_SECONDS).toBe(600);
+      expect(maxDuration).toBe(300);
+      expect(warnSpy).toHaveBeenCalledWith(
+        "ENHANCEMENT_TIMEOUT_SECONDS (600) exceeds Vercel Pro limit (300s). Capping at 300s.",
+      );
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 
   it("should handle exactly 300 without warning", async () => {
     process.env.ENHANCEMENT_TIMEOUT_SECONDS = "300";
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import(
-      "./timeouts"
-    );
+    try {
+      const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import(
+        "./timeouts"
+      );
 
-    expect(ENHANCEMENT_TIMEOUT_SECONDS).toBe(300);
-    expect(maxDuration).toBe(300);
-    expect(warnSpy).not.toHaveBeenCalled();
+      expect(ENHANCEMENT_TIMEOUT_SECONDS).toBe(300);
+      expect(maxDuration).toBe(300);
+      expect(warnSpy).not.toHaveBeenCalled();
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 
   it("should handle value at boundary (301)", async () => {
     process.env.ENHANCEMENT_TIMEOUT_SECONDS = "301";
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import(
-      "./timeouts"
-    );
+    try {
+      const { ENHANCEMENT_TIMEOUT_SECONDS, maxDuration } = await import(
+        "./timeouts"
+      );
 
-    expect(ENHANCEMENT_TIMEOUT_SECONDS).toBe(301);
-    expect(maxDuration).toBe(300);
-    expect(warnSpy).toHaveBeenCalled();
+      expect(ENHANCEMENT_TIMEOUT_SECONDS).toBe(301);
+      expect(maxDuration).toBe(300);
+      expect(warnSpy).toHaveBeenCalled();
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 });

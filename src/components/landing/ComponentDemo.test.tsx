@@ -60,8 +60,7 @@ describe("ComponentDemo Component", () => {
     });
 
     it("should show loading state when Click Me button is pressed", async () => {
-      vi.useRealTimers(); // Use real timers for this test
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<ComponentDemo />);
 
       const button = screen.getByRole("button", { name: "Click Me" });
@@ -69,13 +68,15 @@ describe("ComponentDemo Component", () => {
 
       expect(screen.getByRole("button", { name: /Loading/i }))
         .toBeInTheDocument();
+
+      // Advance timers to complete the loading state
+      await vi.advanceTimersByTimeAsync(2000);
     });
   });
 
   describe("Inputs Tab", () => {
     it("should switch to inputs tab and show form controls", async () => {
-      vi.useRealTimers();
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<ComponentDemo />);
 
       await user.click(screen.getByRole("tab", { name: "Inputs" }));
@@ -86,8 +87,7 @@ describe("ComponentDemo Component", () => {
     });
 
     it("should render select component", async () => {
-      vi.useRealTimers();
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<ComponentDemo />);
 
       await user.click(screen.getByRole("tab", { name: "Inputs" }));
@@ -96,8 +96,7 @@ describe("ComponentDemo Component", () => {
     });
 
     it("should render switch component", async () => {
-      vi.useRealTimers();
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<ComponentDemo />);
 
       await user.click(screen.getByRole("tab", { name: "Inputs" }));
@@ -108,8 +107,7 @@ describe("ComponentDemo Component", () => {
     });
 
     it("should toggle switch", async () => {
-      vi.useRealTimers();
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<ComponentDemo />);
 
       await user.click(screen.getByRole("tab", { name: "Inputs" }));
@@ -124,8 +122,7 @@ describe("ComponentDemo Component", () => {
 
   describe("Feedback Tab", () => {
     it("should show progress bar", async () => {
-      vi.useRealTimers();
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<ComponentDemo />);
 
       await user.click(screen.getByRole("tab", { name: "Feedback" }));
@@ -134,8 +131,7 @@ describe("ComponentDemo Component", () => {
     });
 
     it("should show alerts", async () => {
-      vi.useRealTimers();
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<ComponentDemo />);
 
       await user.click(screen.getByRole("tab", { name: "Feedback" }));
@@ -145,8 +141,7 @@ describe("ComponentDemo Component", () => {
     });
 
     it("should show skeleton loaders", async () => {
-      vi.useRealTimers();
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<ComponentDemo />);
 
       await user.click(screen.getByRole("tab", { name: "Feedback" }));
@@ -184,8 +179,7 @@ describe("ComponentDemo Component", () => {
 
   describe("Dialog Tab", () => {
     it("should show dialog tab content", async () => {
-      vi.useRealTimers();
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<ComponentDemo />);
 
       await user.click(screen.getByRole("tab", { name: "Dialog" }));
@@ -196,8 +190,7 @@ describe("ComponentDemo Component", () => {
     });
 
     it("should open dialog when button clicked", async () => {
-      vi.useRealTimers();
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<ComponentDemo />);
 
       await user.click(screen.getByRole("tab", { name: "Dialog" }));
@@ -209,8 +202,7 @@ describe("ComponentDemo Component", () => {
     });
 
     it("should close dialog with Cancel button", async () => {
-      vi.useRealTimers();
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<ComponentDemo />);
 
       await user.click(screen.getByRole("tab", { name: "Dialog" }));
@@ -226,8 +218,7 @@ describe("ComponentDemo Component", () => {
     });
 
     it("should close dialog with Confirm button", async () => {
-      vi.useRealTimers();
-      const user = userEvent.setup();
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(<ComponentDemo />);
 
       await user.click(screen.getByRole("tab", { name: "Dialog" }));

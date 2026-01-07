@@ -354,13 +354,18 @@ When(
     await this.page.goto(`/albums/${mockAlbum.id}`);
     await this.page.waitForLoadState("networkidle");
 
-    // Wait for images to load
-    const imageCards = this.page.locator("[data-draggable-photo-card]").or(
-      this.page.locator("div[draggable]").filter({
-        has: this.page.locator("img"),
-      }),
-    );
-    await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
+    // Wait for images to load with explicit count check
+    const imageCards = this.page.locator('div[draggable="true"]').filter({
+      has: this.page.locator("img"),
+    });
+
+    // Verify expected number of images are visible
+    await expect(imageCards).toHaveCount(mockAlbum.images.length, { timeout: 10000 });
+
+    // Verify first image is fully loaded and draggable
+    const firstCard = imageCards.first();
+    await expect(firstCard).toBeVisible({ timeout: 5000 });
+    await expect(firstCard).toHaveAttribute("draggable", "true");
   },
 );
 
@@ -374,13 +379,17 @@ When("I navigate to the {string} album detail page", async function(
   await this.page.goto(`/albums/${album.id}`);
   await this.page.waitForLoadState("networkidle");
 
-  // Wait for images to load
-  const imageCards = this.page.locator("[data-draggable-photo-card]").or(
-    this.page.locator("div[draggable]").filter({
-      has: this.page.locator("img"),
-    }),
-  );
-  await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
+  // Wait for images to load with explicit count check
+  const imageCards = this.page.locator('div[draggable="true"]').filter({
+    has: this.page.locator("img"),
+  });
+
+  // Verify expected number of images are visible
+  if (album.images.length > 0) {
+    await expect(imageCards).toHaveCount(album.images.length, { timeout: 10000 });
+    await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
+    await expect(imageCards.first()).toHaveAttribute("draggable", "true");
+  }
 });
 
 When("I navigate to the shared album page", async function(this: CustomWorld) {
@@ -397,17 +406,32 @@ When(
       has: this.page.locator("img"),
     });
 
+    // Verify cards are ready for drag
+    await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
+    const count = await imageCards.count();
+    expect(count).toBeGreaterThanOrEqual(3);
+
     const firstCard = imageCards.nth(0);
     const thirdCard = imageCards.nth(2);
 
-    // Perform drag and drop
+    // Verify both cards are visible and actionable
+    await expect(firstCard).toBeVisible();
+    await expect(thirdCard).toBeVisible();
+
+    // Perform drag and drop without force to ensure proper event handling
     await firstCard.dragTo(thirdCard, {
-      force: true,
       targetPosition: { x: 10, y: 10 },
     });
 
-    // Wait for potential save operation
-    await this.page.waitForTimeout(500);
+    // Wait for save request to complete
+    await this.page.waitForResponse(
+      (resp) =>
+        resp.url().includes("/api/albums/") && resp.url().includes("/images") &&
+        resp.request().method() === "PATCH",
+      { timeout: 5000 },
+    ).catch(() => {
+      // Save might be debounced or optimistic, continue
+    });
   },
 );
 
@@ -418,16 +442,31 @@ When(
       has: this.page.locator("img"),
     });
 
+    // Verify cards are ready
+    await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
     const count = await imageCards.count();
+    expect(count).toBeGreaterThan(0);
+
     const firstCard = imageCards.nth(0);
     const lastCard = imageCards.nth(count - 1);
 
+    // Verify both cards are visible
+    await expect(firstCard).toBeVisible();
+    await expect(lastCard).toBeVisible();
+
     await firstCard.dragTo(lastCard, {
-      force: true,
       targetPosition: { x: 10, y: 10 },
     });
 
-    await this.page.waitForTimeout(500);
+    // Wait for save request to complete
+    await this.page.waitForResponse(
+      (resp) =>
+        resp.url().includes("/api/albums/") && resp.url().includes("/images") &&
+        resp.request().method() === "PATCH",
+      { timeout: 5000 },
+    ).catch(() => {
+      // Save might be debounced or optimistic, continue
+    });
   },
 );
 
@@ -437,6 +476,7 @@ When("I start dragging the first image", async function(this: CustomWorld) {
   });
 
   const firstCard = imageCards.nth(0);
+  await expect(firstCard).toBeVisible({ timeout: 5000 });
 
   // Get bounding box for drag start
   const box = await firstCard.boundingBox();
@@ -450,8 +490,18 @@ When("I start dragging the first image", async function(this: CustomWorld) {
     box.y + box.height / 2 + 10,
   );
 
-  // Don't release - keep dragging state
-  await this.page.waitForTimeout(100);
+  // Wait for drag state to be applied to DOM
+  await this.page.waitForFunction(
+    () => {
+      const draggingEl = document.querySelector('[data-is-dragging="true"]') ||
+        document.querySelector('[aria-grabbed="true"]') ||
+        document.querySelector(".cursor-grabbing");
+      return draggingEl !== null;
+    },
+    { timeout: 3000 },
+  ).catch(() => {
+    // Drag state may not have visual indicator, continue
+  });
 });
 
 When("I drag over the second image", async function(this: CustomWorld) {
@@ -460,55 +510,105 @@ When("I drag over the second image", async function(this: CustomWorld) {
   });
 
   const secondCard = imageCards.nth(1);
+  await expect(secondCard).toBeVisible({ timeout: 5000 });
+
   const box = await secondCard.boundingBox();
   if (!box) throw new Error("Could not get image bounding box");
 
-  // Move mouse over second image
-  await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await this.page.waitForTimeout(100);
+  // Move mouse over second image slowly to trigger drag-over events
+  await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 });
+
+  // Wait for drop indicator to appear
+  await this.page.waitForFunction(
+    () => {
+      const dropTarget = document.querySelector(".ring-2.ring-primary") ||
+        document.querySelector('[data-drag-over="true"]');
+      return dropTarget !== null;
+    },
+    { timeout: 2000 },
+  ).catch(() => {
+    // Drop indicator may not be visible, continue
+  });
 });
 
 When("I release the drag", async function(this: CustomWorld) {
   await this.page.mouse.up();
-  await this.page.waitForTimeout(300);
+
+  // Wait for drag state to be cleared from DOM
+  await this.page.waitForFunction(
+    () => {
+      const draggingEl = document.querySelector('[data-is-dragging="true"]');
+      return draggingEl === null;
+    },
+    { timeout: 3000 },
+  ).catch(() => {
+    // Drag state may already be cleared
+  });
 });
 
 // NOTE: "I press the Escape key" step moved to common.steps.ts
 
 When("I enable selection mode", async function(this: CustomWorld) {
   const selectButton = this.page.getByRole("button", { name: /^select$/i });
-  await expect(selectButton).toBeVisible();
+  await expect(selectButton).toBeVisible({ timeout: 5000 });
   await selectButton.click();
-  await this.page.waitForTimeout(300);
+
+  // Wait for selection mode to activate - checkboxes should appear
+  await this.page.waitForFunction(
+    () => {
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      return checkboxes.length > 0;
+    },
+    { timeout: 3000 },
+  );
 });
 
 When("I disable selection mode", async function(this: CustomWorld) {
   const cancelButton = this.page.getByRole("button", { name: /cancel/i });
-  await expect(cancelButton).toBeVisible();
+  await expect(cancelButton).toBeVisible({ timeout: 5000 });
   await cancelButton.click();
-  await this.page.waitForTimeout(300);
+
+  // Wait for selection mode to deactivate - checkboxes should disappear
+  await this.page.waitForFunction(
+    () => {
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      return checkboxes.length === 0;
+    },
+    { timeout: 3000 },
+  ).catch(() => {
+    // Checkboxes might be hidden instead of removed
+  });
 });
 
 When(
   "I select the first and second images",
   async function(this: CustomWorld) {
-    const checkboxes = this.page.locator('input[type="checkbox"]').filter({
-      has: this.page.locator(".."),
-    });
+    const checkboxes = this.page.locator('input[type="checkbox"]');
 
-    await checkboxes.nth(0).check({ force: true });
-    await checkboxes.nth(1).check({ force: true });
-    await this.page.waitForTimeout(200);
+    // Wait for checkboxes to be visible
+    await expect(checkboxes.first()).toBeVisible({ timeout: 5000 });
+    const count = await checkboxes.count();
+    expect(count).toBeGreaterThanOrEqual(2);
+
+    // Check first checkbox and verify it's checked
+    await checkboxes.nth(0).check();
+    await expect(checkboxes.nth(0)).toBeChecked({ timeout: 2000 });
+
+    // Check second checkbox and verify it's checked
+    await checkboxes.nth(1).check();
+    await expect(checkboxes.nth(1)).toBeChecked({ timeout: 2000 });
   },
 );
 
 When("I select the first image", async function(this: CustomWorld) {
-  const checkboxes = this.page.locator('input[type="checkbox"]').filter({
-    has: this.page.locator(".."),
-  });
+  const checkboxes = this.page.locator('input[type="checkbox"]');
 
-  await checkboxes.nth(0).check({ force: true });
-  await this.page.waitForTimeout(200);
+  // Wait for checkboxes to be visible
+  await expect(checkboxes.first()).toBeVisible({ timeout: 5000 });
+
+  // Check first checkbox and verify it's checked
+  await checkboxes.nth(0).check();
+  await expect(checkboxes.nth(0)).toBeChecked({ timeout: 2000 });
 });
 
 When(
@@ -518,24 +618,42 @@ When(
       has: this.page.locator("img"),
     });
 
+    // Verify we have enough cards
+    await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
+    const count = await imageCards.count();
+    expect(count).toBeGreaterThanOrEqual(4);
+
     // Drag first selected image
     const firstCard = imageCards.nth(0);
     const fourthCard = imageCards.nth(3);
 
+    await expect(firstCard).toBeVisible();
+    await expect(fourthCard).toBeVisible();
+
     await firstCard.dragTo(fourthCard, {
-      force: true,
       targetPosition: { x: 10, y: 10 },
     });
 
-    await this.page.waitForTimeout(500);
+    // Wait for save request to complete
+    await this.page.waitForResponse(
+      (resp) =>
+        resp.url().includes("/api/albums/") && resp.url().includes("/images") &&
+        resp.request().method() === "PATCH",
+      { timeout: 5000 },
+    ).catch(() => {
+      // Save might be debounced or optimistic, continue
+    });
   },
 );
 
 When("I click the Move button", async function(this: CustomWorld) {
   const moveButton = this.page.getByRole("button", { name: /move \(\d+\)/i });
-  await expect(moveButton).toBeVisible();
+  await expect(moveButton).toBeVisible({ timeout: 5000 });
+  await expect(moveButton).toBeEnabled({ timeout: 2000 });
   await moveButton.click();
-  await this.page.waitForTimeout(300);
+
+  // Wait for move dialog to open
+  await this.page.waitForSelector('[role="dialog"]', { state: "visible", timeout: 5000 });
 });
 
 When("I select the {string} album from the dropdown", async function(
@@ -546,24 +664,58 @@ When("I select the {string} album from the dropdown", async function(
   const selectTrigger = this.page.locator('[role="combobox"]').or(
     this.page.getByRole("button").filter({ hasText: /select an album/i }),
   );
+  await expect(selectTrigger).toBeVisible({ timeout: 5000 });
   await selectTrigger.click();
-  await this.page.waitForTimeout(200);
+
+  // Wait for dropdown to open
+  await this.page.waitForFunction(
+    () => {
+      const options = document.querySelectorAll('[role="option"]');
+      return options.length > 0;
+    },
+    { timeout: 3000 },
+  );
 
   // Select the album
   const albumOption = this.page.getByRole("option", {
     name: new RegExp(albumName, "i"),
-  }).or(
-    this.page.getByText(new RegExp(`${albumName}`, "i")),
-  );
+  });
+  await expect(albumOption).toBeVisible({ timeout: 3000 });
   await albumOption.click();
-  await this.page.waitForTimeout(200);
+
+  // Wait for selection to be reflected in UI
+  await this.page.waitForFunction(
+    (name) => {
+      const trigger = document.querySelector('[role="combobox"]');
+      return trigger?.textContent?.includes(name) ?? false;
+    },
+    albumName,
+    { timeout: 3000 },
+  ).catch(() => {
+    // Selection may be reflected differently in UI
+  });
 });
 
 When("I confirm the move operation", async function(this: CustomWorld) {
   const confirmButton = this.page.getByRole("button", { name: /move images/i });
-  await expect(confirmButton).toBeEnabled();
+  await expect(confirmButton).toBeVisible({ timeout: 5000 });
+  await expect(confirmButton).toBeEnabled({ timeout: 2000 });
+
+  // Set up wait for API response before clicking
+  const responsePromise = this.page.waitForResponse(
+    (resp) =>
+      resp.url().includes("/api/albums/") && resp.url().includes("/images") &&
+      resp.request().method() === "POST",
+    { timeout: 5000 },
+  ).catch(() => null);
+
   await confirmButton.click();
-  await this.page.waitForTimeout(500);
+
+  // Wait for move operation to complete
+  await responsePromise;
+
+  // Wait for dialog to close
+  await this.page.waitForSelector('[role="dialog"]', { state: "hidden", timeout: 5000 });
 });
 
 When(
@@ -576,23 +728,48 @@ When(
       has: this.page.locator("img"),
     });
 
+    // Verify cards are ready
+    await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
+    const count = await imageCards.count();
+    expect(count).toBeGreaterThanOrEqual(3);
+
     const firstCard = imageCards.nth(0);
     const thirdCard = imageCards.nth(2);
 
+    await expect(firstCard).toBeVisible();
+    await expect(thirdCard).toBeVisible();
+
     // Use standard drag API which works for touch
     await firstCard.dragTo(thirdCard, {
-      force: true,
       targetPosition: { x: 10, y: 10 },
     });
 
-    await this.page.waitForTimeout(500);
+    // Wait for save request to complete
+    await this.page.waitForResponse(
+      (resp) =>
+        resp.url().includes("/api/albums/") && resp.url().includes("/images") &&
+        resp.request().method() === "PATCH",
+      { timeout: 5000 },
+    ).catch(() => {
+      // Save might be debounced or optimistic, continue
+    });
   },
 );
 
 // Then steps
 Then("the images should be reordered", async function(this: CustomWorld) {
-  // Verify DOM order has changed
-  await this.page.waitForTimeout(300);
+  // Wait for any pending DOM updates to complete
+  await this.page.waitForFunction(
+    () => {
+      // Check that we're not in a loading/saving state
+      const loadingIndicator = document.querySelector('[aria-busy="true"]') ||
+        document.querySelector('[data-loading="true"]');
+      return !loadingIndicator;
+    },
+    { timeout: 5000 },
+  ).catch(() => {
+    // No loading indicator found, continue
+  });
 
   // The images should now be in a different order
   const imageCards = this.page.locator('div[draggable="true"]').filter({
@@ -602,8 +779,8 @@ Then("the images should be reordered", async function(this: CustomWorld) {
   const count = await imageCards.count();
   expect(count).toBeGreaterThan(0);
 
-  // Just verify we can see the cards - actual order verification happens in mock
-  await expect(imageCards.first()).toBeVisible();
+  // Verify cards are still visible after reorder
+  await expect(imageCards.first()).toBeVisible({ timeout: 3000 });
 });
 
 Then(
@@ -628,10 +805,16 @@ Then(
     await this.page.reload();
     await this.page.waitForLoadState("networkidle");
 
-    // Verify images are still visible
+    // Wait for images to be fully loaded after reload
     const imageCards = this.page.locator('div[draggable="true"]').filter({
       has: this.page.locator("img"),
     });
+
+    // Verify expected number of images are still present
+    if (mockAlbum) {
+      await expect(imageCards).toHaveCount(mockAlbum.images.length, { timeout: 10000 });
+    }
+
     await expect(imageCards.first()).toBeVisible({ timeout: 5000 });
 
     // The mock album maintains the new order, so it should persist
@@ -678,10 +861,20 @@ Then(
 Then(
   "all visual indicators should be removed",
   async function(this: CustomWorld) {
-    // Wait for drag to complete
-    await this.page.waitForTimeout(300);
+    // Wait for drag state to be cleared
+    await this.page.waitForFunction(
+      () => {
+        const dragging = document.querySelector('[data-is-dragging="true"]');
+        const grabbed = document.querySelector('[aria-grabbed="true"]');
+        const grabbing = document.querySelector(".cursor-grabbing");
+        return !dragging && !grabbed && !grabbing;
+      },
+      { timeout: 5000 },
+    ).catch(() => {
+      // Visual indicators may already be cleared
+    });
 
-    // No elements should be in dragging state
+    // Verify no elements are in dragging state
     const draggingElements = this.page.locator('[data-is-dragging="true"]');
     const count = await draggingElements.count();
     expect(count).toBe(0);
@@ -765,8 +958,17 @@ Then(
 Then(
   "the drag operation should be cancelled",
   async function(this: CustomWorld) {
-    // After Escape, drag should be cancelled
-    await this.page.waitForTimeout(200);
+    // After Escape, drag should be cancelled - wait for state to clear
+    await this.page.waitForFunction(
+      () => {
+        const dragging = document.querySelector('[data-is-dragging="true"]');
+        const grabbed = document.querySelector('[aria-grabbed="true"]');
+        return !dragging && !grabbed;
+      },
+      { timeout: 3000 },
+    ).catch(() => {
+      // Drag may have already been cancelled
+    });
 
     const draggingElements = this.page.locator('[data-is-dragging="true"]');
     const count = await draggingElements.count();
@@ -842,8 +1044,17 @@ Then("the indicator should disappear", async function(this: CustomWorld) {
 Then(
   "the images should revert to their original order",
   async function(this: CustomWorld) {
-    // After failed save, order should revert
-    await this.page.waitForTimeout(500);
+    // After failed save, order should revert - wait for revert to complete
+    await this.page.waitForFunction(
+      () => {
+        const loadingIndicator = document.querySelector('[aria-busy="true"]') ||
+          document.querySelector('[data-loading="true"]');
+        return !loadingIndicator;
+      },
+      { timeout: 5000 },
+    ).catch(() => {
+      // No loading indicator, continue
+    });
 
     if (mockAlbum) {
       const currentOrder = mockAlbum.images.map((img) => img.id);

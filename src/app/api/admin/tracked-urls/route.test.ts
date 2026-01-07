@@ -3,7 +3,7 @@
  */
 
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DELETE, GET, PATCH, POST } from "./route";
 
 vi.mock("@/auth", () => ({
@@ -29,11 +29,18 @@ const prisma = (await import("@/lib/prisma")).default;
 const { requireAdminByUserId } = await import("@/lib/auth/admin-middleware");
 
 describe("Tracked Paths Management API", () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.resetAllMocks();
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     // Reset requireAdminByUserId to resolve by default (admin access granted)
     vi.mocked(requireAdminByUserId).mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   describe("GET", () => {

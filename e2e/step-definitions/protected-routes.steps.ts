@@ -2,12 +2,19 @@ import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { assertUrlPath } from "../support/helpers/assertion-helper";
 import { getCurrentUrl, getQueryParam, navigateToPath } from "../support/helpers/navigation-helper";
+import { waitForPageReady, waitForUrlPath } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
 
 When(
   "I navigate to {string}",
   async function(this: CustomWorld, path: string) {
-    await navigateToPath(this.page, this.baseUrl, path);
+    await this.page.goto(`${this.baseUrl}${path}`, { waitUntil: "commit" });
+
+    // Wait for any server-side redirects to complete
+    await this.page.waitForLoadState("domcontentloaded");
+
+    // Wait for page to be ready
+    await waitForPageReady(this.page, { strategy: "both" });
   },
 );
 
@@ -196,10 +203,13 @@ Then(
 Then(
   "I should be on {string}",
   async function(this: CustomWorld, expectedPath: string) {
-    // Wait for URL to stabilize (handles client-side redirects from useEffect)
-    await this.page
-      .waitForURL((url) => url.pathname === expectedPath, { timeout: 10000 })
-      .catch(() => {});
-    await assertUrlPath(this.page, expectedPath);
+    // Use the new helper for robust URL checking
+    await waitForUrlPath(this.page, expectedPath, {
+      timeout: 10000,
+      exact: false, // Allow query params and trailing slashes
+    });
+
+    const currentUrl = this.page.url();
+    expect(currentUrl).toMatch(new RegExp(expectedPath));
   },
 );

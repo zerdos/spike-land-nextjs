@@ -283,7 +283,15 @@ export async function fillInputWithRetry(
       const input = page.getByTestId(testId);
       await expect(input).toBeVisible({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
       await expect(input).toBeEnabled({ timeout: TIMEOUTS.RETRY_INTERVAL * 2 });
+
+      // Clear existing value first to ensure clean state
+      await input.clear();
+
+      // Fill the value
       await input.fill(value);
+
+      // Wait a bit for value to be set (handles React controlled inputs)
+      await page.waitForTimeout(100);
 
       // Verify the value was set correctly - use SHORT timeout for inputs with debouncing/validation
       await expect(input).toHaveValue(value, { timeout: TIMEOUTS.SHORT });

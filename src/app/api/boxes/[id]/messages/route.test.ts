@@ -27,6 +27,7 @@ import { POST } from "./route";
 describe("/api/boxes/[id]/messages POST", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   it("returns 401 if user is not authenticated", async () => {
@@ -124,6 +125,7 @@ describe("/api/boxes/[id]/messages POST", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
+    expect(mockPrisma.boxMessage.create).toHaveBeenCalledTimes(2);
     // Compare with date strings since JSON serializes Date objects to strings
     expect(data.userMessage).toEqual({
       ...userMessage,

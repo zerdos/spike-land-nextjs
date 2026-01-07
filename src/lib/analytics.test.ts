@@ -42,13 +42,16 @@ describe("analytics", () => {
 
     it("should not track on server side", () => {
       const originalWindow = global.window;
-      // @ts-expect-error - Testing server-side behavior
-      delete global.window;
+      try {
+        // @ts-expect-error - Testing server-side behavior
+        delete global.window;
 
-      trackEvent("wizard_started");
-      expect(track).not.toHaveBeenCalled();
-
-      global.window = originalWindow;
+        trackEvent("wizard_started");
+        expect(track).not.toHaveBeenCalled();
+      } finally {
+        // Always restore window to prevent test pollution
+        global.window = originalWindow;
+      }
     });
   });
 

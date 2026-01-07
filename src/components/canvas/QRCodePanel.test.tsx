@@ -174,25 +174,30 @@ describe("QRCodePanel", () => {
     });
 
     it("reverts to 'Copy URL' after timeout", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
       render(<QRCodePanel {...defaultProps} />);
 
       const copyButton = screen.getByTestId("copy-url-button");
       fireEvent.click(copyButton);
 
+      // Wait for the copy action to complete
       await waitFor(() => {
         expect(screen.getByText("Copied!")).toBeInTheDocument();
       });
 
-      // Wait for the timeout (2000ms + buffer)
-      await waitFor(
-        () => {
-          expect(screen.getByText("Copy URL")).toBeInTheDocument();
-        },
-        { timeout: 3000 },
-      );
+      // Advance timers to trigger the timeout (2000ms)
+      await vi.advanceTimersByTimeAsync(2000);
+
+      // Wait for the state update to complete
+      await waitFor(() => {
+        expect(screen.getByText("Copy URL")).toBeInTheDocument();
+      });
+
+      vi.useRealTimers();
     });
 
     it("uses fallback copy method when clipboard API fails", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
       const mockExecCommand = vi.fn();
       document.execCommand = mockExecCommand;
 
@@ -209,6 +214,8 @@ describe("QRCodePanel", () => {
         expect(mockExecCommand).toHaveBeenCalledWith("copy");
         expect(screen.getByText("Copied!")).toBeInTheDocument();
       });
+
+      vi.useRealTimers();
     });
   });
 
