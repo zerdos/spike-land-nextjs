@@ -1424,7 +1424,6 @@ yarn add --dev @axe-core/react
 - [ ] Use TypeScript strict mode
 - [ ] 100% test coverage (unit + E2E)
 - [ ] ESLint configuration with recommended rules
-- [ ] Prettier for consistent formatting
 - [ ] React DevTools for debugging
 - [ ] Profiler for performance issues
 

@@ -3,7 +3,7 @@ import { wait } from "@/lib/wait";
 import { editor, Range, typescript, Uri } from "@/workers/monaco-editor.worker";
 import { getEditorOptions } from "./config";
 import { originToUse } from "./config";
-import { configureJsxSupport, registerFormattingProvider, registerLanguages } from "./language";
+import { configureJsxSupport, registerLanguages } from "./language";
 import type { EditorConfig, EditorModel, EditorState } from "./types";
 import {
   checkTypeScriptErrors,
@@ -46,8 +46,6 @@ const modelStore: Record<string, EditorModel> = {};
  * Initialize Monaco editor with the given configuration
  * @param config Editor configuration
  * @param ata Auto Type Acquisition function
- * @param prettierToThrow Prettier formatting function
- * @param version Monaco editor version
  */
 export async function startMonaco(
   {
@@ -59,9 +57,6 @@ export async function startMonaco(
   ata: (
     options: { code: string; originToUse: string; },
   ) => Promise<Array<{ filePath: string; content: string; }>>,
-  prettierToThrow: (
-    options: { code: string; toThrow: boolean; },
-  ) => Promise<string>,
 ): Promise<EditorModel> {
   // If we already have a model for this codeSpace, check if it's still valid
   if (modelStore[codeSpace]) {
@@ -97,7 +92,6 @@ export async function startMonaco(
       onChange,
     },
     ata,
-    prettierToThrow,
   );
 
   return modelStore[codeSpace];
@@ -107,8 +101,6 @@ export async function startMonaco(
  * Create a new editor model
  * @param config Editor configuration
  * @param ata Auto Type Acquisition function
- * @param prettierToThrow Prettier formatting function
- * @param version Monaco editor version
  */
 async function createEditorModel(
   {
@@ -120,9 +112,6 @@ async function createEditorModel(
   ata: (
     options: { code: string; originToUse: string; },
   ) => Promise<Array<{ filePath: string; content: string; }>>,
-  prettierToThrow: (
-    options: { code: string; toThrow: boolean; },
-  ) => Promise<string>,
 ): Promise<EditorModel> {
   // Initialize languages and compiler options
   registerLanguages();
@@ -146,9 +135,6 @@ async function createEditorModel(
     // Configure JSX support for TSX files
     configureJsxSupport(uri.toString());
   }
-
-  // Register formatting provider
-  registerFormattingProvider(prettierToThrow);
 
   // Load Monaco CSS
   await loadMonacoCss();
@@ -345,14 +331,10 @@ async function createEditorModel(
   // Function to handle content changes and formatting
   const onChangeAddRecentlyChanged = async () => {
     const code = model.getValue();
-    const formattedText = await prettierToThrow({
-      code,
-      toThrow: false,
-    });
-    const hashOfCode = md5(formattedText);
+    const hashOfCode = md5(code);
     recentlyChanged.add(hashOfCode);
 
-    onChange(formattedText);
+    onChange(code);
     setTimeout(() => {
       recentlyChanged.delete(hashOfCode);
     }, 1000);

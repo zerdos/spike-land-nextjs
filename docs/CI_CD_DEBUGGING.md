@@ -118,7 +118,6 @@ yarn lint
 
 - Unused imports or variables
 - Missing return types
-- Incorrect formatting (use Prettier)
 - Console statements left in code
 
 #### TypeScript Errors

@@ -1,6 +1,5 @@
 import type { ICode, ICodeSession } from "@/lib/interfaces";
 import { md5 } from "@/lib/md5";
-import { prettierToThrow } from "@/lib/shared";
 import { tryCatch } from "@/lib/try-catch";
 import { wait } from "@/lib/wait";
 import { initializeMonaco } from "@/services/editorUtils";
@@ -70,19 +69,9 @@ export const Editor: React.FC<EditorProps> = (
       controller.current = new AbortController();
       const { signal } = controller.current;
 
-      const { data: formatted, error } = await tryCatch(prettierToThrow({
-        code,
-        toThrow: true,
-      }));
-
-      if (error) {
-        console.error("[Editor] Prettier error:", error);
-        return;
-      }
-
       if (signal.aborted) return;
 
-      const newHash = md5(formatted);
+      const newHash = md5(code);
       const startSync = Date.now();
 
       // Prevent unnecessary updates
@@ -93,24 +82,24 @@ export const Editor: React.FC<EditorProps> = (
         await wait(10);
         if (signal.aborted) return;
 
-        setEditorState((prev) => ({ ...prev, code: formatted }));
+        setEditorState((prev) => ({ ...prev, code }));
         // Pass replaceIframe to cSess.setCode so the preview iframe DOM node can be replaced after rendering.
         const { data: newCode, error: saveError } = await tryCatch(
-          cSess.setCode(formatted, false, replaceIframe),
+          cSess.setCode(code, false, replaceIframe),
         );
         if (saveError) {
           console.error("[Editor] Error saving code:", saveError);
           return;
         }
-        if (newCode !== formatted) {
+        if (newCode !== code) {
           const { data: finalCode, error: saveError } = await tryCatch(
-            cSess.setCode(formatted, true),
+            cSess.setCode(code, true),
           );
           if (saveError) {
             console.error("[Editor] Error saving final code:", saveError);
             return;
           }
-          if (finalCode !== formatted) {
+          if (finalCode !== code) {
             // Update editorState and lastHash based on finalCode,
             // to align with what the session considers the true state.
             setEditorState((prev) => ({ ...prev, code: finalCode }));
@@ -118,8 +107,6 @@ export const Editor: React.FC<EditorProps> = (
             // No longer treating this as a fatal error, allowing the flow to continue.
             // The external update listener should handle syncing Monaco's display if cSess broadcasts finalCode.
           }
-          // If finalCode === formatted, the forced save worked as expected.
-          // lastHash is already md5(formatted) from the earlier setLastHash(newHash) call.
         }
 
         const { error: typeErrorError } = await tryCatch(throttledTypeCheck());

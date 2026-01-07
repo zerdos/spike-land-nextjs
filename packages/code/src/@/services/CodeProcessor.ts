@@ -3,7 +3,7 @@ import { importMap, importMapReplace } from "@/lib/importmap-utils";
 import type { ICodeSession } from "@/lib/interfaces";
 import { md5 } from "@/lib/md5";
 import { tryCatch } from "@/lib/try-catch";
-import { formatCode, transpileCode } from "@/services/editorUtils";
+import { transpileCode } from "@/services/editorUtils";
 import { RenderService } from "@/services/RenderService";
 import type { RunMessageResult } from "@/services/types";
 
@@ -83,26 +83,13 @@ export class CodeProcessor {
     const origin = window.location.origin;
     if (signal.aborted) return false;
 
-    const { data: code, error: formatError } = await tryCatch(
-      this.formatCode(rawCode),
-    );
-
     if (signal.aborted) {
       return false;
     }
 
-    if (formatError) {
-      console.error("Error formatting code:", formatError);
-      return false;
-    }
-
-    if (code === getSession()?.code) {
-      return getSession();
-    }
-
     // Transpile code
     const { data: transpiled, error: transpileError } = await tryCatch(
-      this.transpileCode(code),
+      this.transpileCode(rawCode),
     );
     if (signal.aborted || transpileError) {
       if (transpileError) {
@@ -116,7 +103,7 @@ export class CodeProcessor {
     }
 
     const processedSession = {
-      code,
+      code: rawCode,
       transpiled,
     };
 
@@ -143,8 +130,6 @@ export class CodeProcessor {
     return {
       ...getSession(),
       ...processedSession,
-      code,
-      transpiled,
     };
   }
 
@@ -374,22 +359,6 @@ export class CodeProcessor {
     }
     // } // This was an extra closing brace from the original refactor attempt, removing it.
     return true; // Indicates success
-  }
-
-  private async formatCode(code: string): Promise<string> {
-    const { data, error } = await tryCatch(formatCode(code));
-
-    if (error) {
-      console.error("Error formatting code:", { code, error }); // Added error to log
-      throw new Error(
-        `Error formatting code: ${error?.message || String(error)}`,
-      );
-    }
-    if (!data) { // Added check for null/undefined data
-      console.error("Formatting code returned no data", { code });
-      throw new Error("Formatting code returned no data");
-    }
-    return data;
   }
 
   private async transpileCode(code: string): Promise<string> {

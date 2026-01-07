@@ -9750,7 +9750,6 @@ __metadata:
     playwright: "npm:1.57.0"
     postcss: "npm:8.5.6"
     postcss-import: "npm:16.1.1"
-    prettier: "npm:3.7.4"
     qrious: "npm:4.0.2"
     react: "npm:19.2.3"
     react-day-picker: "npm:9.13.0"
@@ -27042,7 +27041,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.7.4, prettier@npm:^3.5.0, prettier@npm:^3.5.3":
+"prettier@npm:^3.5.0, prettier@npm:^3.5.3":
   version: 3.7.4
   resolution: "prettier@npm:3.7.4"
   bin:

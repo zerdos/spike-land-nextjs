@@ -20,12 +20,7 @@ export {
 } from "./config";
 
 // Export language utilities
-export {
-  configureJsxSupport,
-  registerFormattingProvider,
-  registerLanguages,
-  setTypeScriptValidation,
-} from "./language";
+export { configureJsxSupport, registerLanguages } from "./language";
 
 // Export model management
 export { startMonaco } from "./model";

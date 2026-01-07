@@ -68,20 +68,6 @@ export function messagesPush(
 }
 
 /**
- * Formats code as a section with a title
- */
-export const formatCodeAsSection = (
-  codeSpace: string,
-  code: string,
-): string => `
-# ${codeSpace}.tsx
-
-\`\`\`tsx
-${code}
-\`\`\`
-`;
-
-/**
  * Formats a code modification into the standard format
  */
 function formatCodeModification(mod: CodeModification): string {
