@@ -1,4 +1,4 @@
-@requires-db @flaky
+@requires-db
 Feature: Batch Image Enhancement
   As an authenticated user with sufficient tokens
   I want to enhance multiple images at once
