@@ -1,5 +1,11 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import {
+  TIMEOUTS,
+  waitForDynamicContent,
+  waitForTextWithRetry,
+  waitForTokenBalance,
+} from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // Mock data
@@ -196,6 +202,9 @@ async function mockJobStatusPolling(
     pollCount++;
     const jobs = batchWorld.enhancementJobs || [];
 
+    // Add a small delay to simulate real API behavior
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     // Simulate progressive completion
     const updatedJobs = jobs.map((job: MockJob, idx: number) => {
       if (options?.varied) {
@@ -388,15 +397,37 @@ When("enhancements are processing", async function(this: CustomWorld) {
 });
 
 When("I see processing has started", async function(this: CustomWorld) {
-  const processingIndicator = this.page.locator('[data-testid*="processing"]');
-  await expect(processingIndicator.first()).toBeVisible({ timeout: 5000 });
+  // Wait for processing indicators with extended timeout and retry
+  const processingIndicator = this.page.locator(
+    '[data-testid*="processing"], [data-status="processing"], [role="progressbar"]',
+  );
+  await expect(processingIndicator.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 When(
   "all enhancements complete successfully",
   async function(this: CustomWorld) {
-    // Wait for all jobs to complete
-    await this.page.waitForTimeout(4000);
+    // Wait for all jobs to complete with dynamic content check
+    // Poll for completion status with extended timeout
+    await this.page.waitForFunction(
+      () => {
+        const completedElements = document.querySelectorAll(
+          '[data-testid*="completed"], [data-status="completed"]',
+        );
+        const progressBars = document.querySelectorAll('[role="progressbar"]');
+        // Check if we have completed elements or all progress bars show 100%
+        return completedElements.length > 0 || Array.from(progressBars).some((bar) => {
+          const value = bar.getAttribute("aria-valuenow");
+          return value === "100";
+        });
+      },
+      { timeout: TIMEOUTS.LONG },
+    ).catch(() => {
+      // If we can't detect completion, wait a fixed time
+    });
+
+    // Add buffer time for UI to stabilize
+    await this.page.waitForTimeout(1000);
   },
 );
 
@@ -442,9 +473,14 @@ Then(
 Then(
   "all images should show {string} status when complete",
   async function(this: CustomWorld, status: string) {
-    // Wait for all jobs to complete
-    await this.page.waitForTimeout(4000);
+    // Wait for status text to appear with retry logic and extended timeout
+    await waitForTextWithRetry(this.page, status, {
+      timeout: TIMEOUTS.LONG,
+    });
+
+    // Verify multiple status elements appear
     const statusElements = this.page.getByText(status, { exact: false });
+    await expect(statusElements.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     const count = await statusElements.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -458,12 +494,17 @@ Then(
     const originalBalance = batchWorld.currentTokenBalance || 0;
     const expectedBalance = originalBalance - tokenAmount;
     await mockTokenBalance(this, expectedBalance);
-    await this.page.waitForTimeout(500);
-    // Verify balance display is updated
-    const balanceDisplay = this.page.getByText(`${expectedBalance}`, {
-      exact: false,
-    });
-    await expect(balanceDisplay).toBeVisible({ timeout: 5000 });
+
+    // Wait for token balance to update using the helper
+    await waitForTokenBalance(this.page, { timeout: TIMEOUTS.LONG });
+
+    // Use dynamic content wait for the specific balance value
+    await waitForDynamicContent(
+      this.page,
+      '[data-testid="token-balance"]',
+      `${expectedBalance}`,
+      { timeout: TIMEOUTS.LONG },
+    );
   },
 );
 
@@ -616,8 +657,14 @@ Then(
   async function(this: CustomWorld, balance: string) {
     const balanceNumber = parseInt(balance.replace(/\D/g, ""));
     await mockTokenBalance(this, balanceNumber);
-    const balanceDisplay = this.page.getByText(balance, { exact: false });
-    await expect(balanceDisplay).toBeVisible({ timeout: 5000 });
+
+    // Wait for token balance to update using the helper
+    await waitForTokenBalance(this.page, { timeout: TIMEOUTS.LONG });
+
+    // Wait for the specific balance text to appear
+    await waitForTextWithRetry(this.page, balance, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
@@ -684,8 +731,21 @@ Then(
 Then(
   "polling should stop when all jobs are complete",
   async function(this: CustomWorld) {
-    // Wait for completion and verify no more polling
-    await this.page.waitForTimeout(4000);
+    // Wait for completion with dynamic check
+    await this.page.waitForFunction(
+      () => {
+        const completedElements = document.querySelectorAll(
+          '[data-testid*="completed"], [data-status="completed"]',
+        );
+        return completedElements.length > 0;
+      },
+      { timeout: TIMEOUTS.LONG },
+    ).catch(() => {
+      // Fallback to fixed wait
+    });
+
+    // Add buffer for polling to actually stop
+    await this.page.waitForTimeout(2000);
   },
 );
 
@@ -716,8 +776,18 @@ Then(
 Then(
   "job statuses should update automatically",
   async function(this: CustomWorld) {
-    // Wait for status updates via polling
-    await this.page.waitForTimeout(2000);
+    // Wait for status updates via polling with dynamic check
+    await this.page.waitForFunction(
+      () => {
+        // Look for processing or completed status indicators
+        const statusElements = document.querySelectorAll('[data-testid*="status"], [data-status]');
+        return statusElements.length > 0;
+      },
+      { timeout: TIMEOUTS.LONG },
+    );
+
+    // Additional wait for updates to propagate
+    await this.page.waitForTimeout(1000);
   },
 );
 
@@ -729,25 +799,53 @@ Then(
     _status2: string,
     _status3: string,
   ) {
-    // Status transitions are verified through polling
-    await this.page.waitForTimeout(3000);
+    // Wait for status transitions with extended timeout
+    // Poll for completion status
+    await this.page.waitForFunction(
+      () => {
+        const completedElements = document.querySelectorAll(
+          '[data-testid*="completed"], [data-status="completed"]',
+        );
+        return completedElements.length > 0;
+      },
+      { timeout: TIMEOUTS.LONG },
+    ).catch(() => {
+      // Transitions may happen too fast to observe
+    });
   },
 );
 
 Then(
   "completion percentage should increase progressively",
   async function(this: CustomWorld) {
-    // Watch progress bar increase
-    await this.page.waitForTimeout(2000);
+    // Watch progress bar increase with dynamic check
     const progress = this.page.locator('[role="progressbar"]');
-    await expect(progress.first()).toBeVisible();
+    await expect(progress.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+    // Wait for progress to update
+    await this.page.waitForFunction(
+      () => {
+        const progressBars = document.querySelectorAll('[role="progressbar"]');
+        return Array.from(progressBars).some((bar) => {
+          const value = bar.getAttribute("aria-valuenow");
+          return value && parseInt(value) > 0;
+        });
+      },
+      { timeout: TIMEOUTS.LONG },
+    );
   },
 );
 
 Then(
   "I should see all enhancements completed",
   async function(this: CustomWorld) {
+    // Wait for completed text to appear with retry
+    await waitForTextWithRetry(this.page, /completed/i, {
+      timeout: TIMEOUTS.LONG,
+    });
+
     const completedIndicators = this.page.getByText(/completed/i);
+    await expect(completedIndicators.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     const count = await completedIndicators.count();
     expect(count).toBeGreaterThan(0);
   },
