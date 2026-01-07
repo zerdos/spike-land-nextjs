@@ -353,7 +353,7 @@ spike-land-nextjs/
 │   │   ├── src/@/            # Main source with shadcn/ui
 │   │   │   ├── components/   # Editor components
 │   │   │   ├── lib/          # Utilities and AI handlers
-│   │   │   └── workers/      # Web Workers (prettier, ata)
+│   │   │   └── workers/      # Web Workers (esbuild, ata)
 │   │   └── src/workflows/    # AI workflow tools
 │   │
 │   ├── js.spike.land/        # Cloudflare Worker transpiler

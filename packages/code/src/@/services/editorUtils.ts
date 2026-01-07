@@ -1,6 +1,6 @@
 import type { ImageData } from "@/lib/interfaces";
 import { md5 } from "@/lib/md5";
-import { prettierToThrow, transpile } from "@/lib/shared";
+import { transpile } from "@/lib/shared";
 import { tryCatch } from "@/lib/try-catch";
 import type { RunMessageResult } from "./types";
 
@@ -166,24 +166,6 @@ export function memoizeWithAbort<TArgs extends unknown[], TReturn>(
     }
   });
 }
-
-export const formatCode = memoize(async (code: string): Promise<string> => {
-  const { data, error } = await tryCatch(
-    prettierToThrow({ code, toThrow: true }),
-  );
-  if (error) {
-    const errorMessage = typeof error === "string"
-      ? error
-      : (error as Error).message || JSON.stringify(error);
-    throw new Error(
-      `Prettier formatting failed: ${errorMessage.replace(/\\n/g, "\n").split('"').join('"')}`,
-    );
-  }
-  if (data === null || data === undefined) {
-    throw new Error("Prettier formatting returned null or undefined.");
-  }
-  return data;
-}, (code: string) => md5(code));
 
 export const transpileCode = memoize(async (code: string): Promise<string> => {
   const { data, error } = await tryCatch(

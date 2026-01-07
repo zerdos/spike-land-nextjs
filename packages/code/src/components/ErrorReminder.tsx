@@ -83,7 +83,6 @@ export const ErrorReminder: React.FC<ErrorReminderProps> = ({
             className={cn("mb-4 border-l-4", {
               "border-l-red-500": errorType === "typescript" ||
                 errorType === "transpile",
-              "border-l-yellow-500": errorType === "prettier",
               "border-l-orange-500": errorType === "render",
             })}
           >

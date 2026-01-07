@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 
 export const useErrorHandling = (engine: string) => {
   const [errorType, setErrorType] = useState<
-    "typescript" | "prettier" | "transpile" | "render" | null
+    "typescript" | "transpile" | "render" | null
   >(null);
 
   const throttledTypeCheck = useCallback(

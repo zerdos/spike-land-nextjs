@@ -11,10 +11,6 @@ const lazyLoadScript = (scriptName: string): void => {
 
 interface WorkerFunctions {
   ata: (params: { code: string; originToUse: string; }) => Promise<unknown>;
-  prettierCss: (code: string) => Promise<string>;
-  prettierJs: (
-    { code, toThrow }: { code: string; toThrow: boolean; },
-  ) => Promise<string>;
   createWorkflow: (q: string) => Promise<unknown>;
   transpile: (code: string, originToUse: string) => Promise<string>;
   build: (params: BuildParams) => Promise<unknown>;
@@ -44,9 +40,7 @@ const rpcFactory = (port: MessagePort): RpcProvider =>
   );
 
 const workerFiles: Record<keyof WorkerFunctions, string[]> = {
-  prettierJs: ["prettier-esm"],
   createWorkflow: ["lang-chain"],
-  prettierCss: ["prettier-esm"],
   ata: ["dts", "ata"],
   transpile: ["transpile"],
   build: ["transpile"],
