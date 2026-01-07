@@ -405,7 +405,7 @@ Then(
       try {
         const parsed = JSON.parse(draft);
         expect(parsed).toBeTruthy();
-      } catch (e) {
+      } catch (_e) {
         throw new Error(`Draft localStorage contains invalid JSON: ${draft}`);
       }
     }
