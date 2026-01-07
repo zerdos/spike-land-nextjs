@@ -1,5 +1,10 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import {
+  TIMEOUTS,
+  waitForElementWithRetry,
+  waitForTextWithRetry,
+} from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // Helper to mock admin status
@@ -207,13 +212,24 @@ Given("the user is a super admin", async function(this: CustomWorld) {
 
 Given("I am on the admin dashboard", async function(this: CustomWorld) {
   await this.page.goto(`${this.baseUrl}/admin`);
-  await this.page.waitForLoadState("networkidle");
+  await this.page.waitForLoadState("domcontentloaded");
+
+  // Wait for dashboard heading (h1) to ensure page is loaded
+  const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
+  await expect(heading).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 // When steps
 When(
   "I click the {string} quick link",
   async function(this: CustomWorld, linkText: string) {
+    // Wait for Quick Links heading to be visible first
+    await waitForTextWithRetry(
+      this.page,
+      "Quick Links",
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+
     // Scope to the Quick Links section container (parent of the heading)
     // to avoid ambiguity with sidebar links or other parts of the page
     const quickLinksSection = this.page
@@ -221,12 +237,12 @@ When(
       .locator("..");
 
     const link = quickLinksSection.getByRole("link", { name: linkText });
-    await expect(link).toBeVisible();
+    await expect(link).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await link.click();
-    await this.page.waitForLoadState("domcontentloaded");
+    await this.page.waitForLoadState("domcontentloaded", { timeout: TIMEOUTS.DEFAULT });
     // Try networkidle with short timeout, but don't fail if it times out
     try {
-      await this.page.waitForLoadState("networkidle", { timeout: 5000 });
+      await this.page.waitForLoadState("networkidle", { timeout: TIMEOUTS.SHORT });
     } catch {
       // Network may still be active, that's OK
     }
@@ -296,34 +312,62 @@ When(
 Then(
   "I should see {string} metric card",
   async function(this: CustomWorld, metricName: string) {
-    // First wait for the Admin Dashboard heading to ensure the page has loaded
-    const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
-    await expect(heading).toBeVisible({ timeout: 20000 });
+    // Skip this step if we're on the marketing analytics page
+    // (marketing has its own implementation in admin-marketing.steps.ts)
+    const currentUrl = this.page.url();
+    if (currentUrl.includes("/admin/marketing")) {
+      return;
+    }
 
-    // Then look for the label text which should be visible
-    // Use longer timeout for server-rendered admin pages which may take time to fetch data
-    const label = this.page.getByText(metricName, { exact: true });
-    await expect(label).toBeVisible({ timeout: 15000 });
+    // First wait for the Admin Dashboard heading (h1) to ensure the page has loaded
+    const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
+    await expect(heading).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+    // Then look for the metric card label with retry logic
+    await waitForTextWithRetry(
+      this.page,
+      metricName,
+      { timeout: TIMEOUTS.DEFAULT, exact: true },
+    );
   },
 );
 
 Then(
   "the {string} metric should display a number",
   async function(this: CustomWorld, metricName: string) {
-    // First wait for the Admin Dashboard heading to ensure the page has loaded
+    // First wait for the Admin Dashboard heading (h1) to ensure the page has loaded
     const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
-    await expect(heading).toBeVisible({ timeout: 20000 });
+    await expect(heading).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 
-    // Use longer timeout for server-rendered admin pages which may take time to fetch data
-    const label = this.page.getByText(metricName, { exact: true });
-    await expect(label).toBeVisible({ timeout: 15000 });
+    // Use retry logic for metric label
+    const label = await waitForTextWithRetry(
+      this.page,
+      metricName,
+      { timeout: TIMEOUTS.DEFAULT, exact: true },
+    );
 
     // The value is in a sibling paragraph (p + p)
     // Structure: <div><p>Label</p><p>Value</p></div>
     const valueElement = label.locator("xpath=following-sibling::p");
-    await expect(valueElement).toBeVisible({ timeout: 10000 });
 
-    // Look for numeric value in the card
+    // Wait for value element with retry and numeric content
+    await this.page.waitForFunction(
+      (labelText) => {
+        const labels = Array.from(document.querySelectorAll("p"));
+        const labelElement = labels.find(p => p.textContent?.trim() === labelText);
+        if (!labelElement) return false;
+
+        const valueP = labelElement.nextElementSibling;
+        if (!valueP || valueP.tagName !== "P") return false;
+
+        const text = valueP.textContent || "";
+        return /[\d,]+/.test(text);
+      },
+      metricName,
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+
+    // Verify numeric value
     const text = await valueElement.textContent();
     expect(text).toMatch(/[\d,]+/);
   },
@@ -332,20 +376,42 @@ Then(
 Then(
   "I should see admin count in the metric card",
   async function(this: CustomWorld) {
-    const adminText = this.page.getByText(/\d+ admin/);
-    await expect(adminText).toBeVisible({ timeout: 10000 });
+    await waitForTextWithRetry(
+      this.page,
+      /\d+ admin/,
+      { timeout: TIMEOUTS.DEFAULT },
+    );
   },
 );
 
 Then(
   "the {string} metric should display total count",
   async function(this: CustomWorld, metricName: string) {
-    // Use longer timeout for server-rendered admin pages which may take time to fetch data
-    const label = this.page.getByText(metricName, { exact: true });
-    await expect(label).toBeVisible({ timeout: 15000 });
+    // Use retry logic for metric label
+    const label = await waitForTextWithRetry(
+      this.page,
+      metricName,
+      { timeout: TIMEOUTS.DEFAULT, exact: true },
+    );
 
     const valueElement = label.locator("xpath=following-sibling::p");
-    await expect(valueElement).toBeVisible({ timeout: 10000 });
+
+    // Wait for value element with retry and numeric content
+    await this.page.waitForFunction(
+      (labelText) => {
+        const labels = Array.from(document.querySelectorAll("p"));
+        const labelElement = labels.find(p => p.textContent?.trim() === labelText);
+        if (!labelElement) return false;
+
+        const valueP = labelElement.nextElementSibling;
+        if (!valueP || valueP.tagName !== "P") return false;
+
+        const text = valueP.textContent || "";
+        return /[\d,]+/.test(text);
+      },
+      metricName,
+      { timeout: TIMEOUTS.DEFAULT },
+    );
 
     // Verify numeric value exists
     const text = await valueElement.textContent();
@@ -354,19 +420,41 @@ Then(
 );
 
 Then("I should see active jobs count", async function(this: CustomWorld) {
-  const jobsText = this.page.getByText(/\d+ active job/);
-  await expect(jobsText).toBeVisible({ timeout: 10000 });
+  await waitForTextWithRetry(
+    this.page,
+    /\d+ active job/,
+    { timeout: TIMEOUTS.DEFAULT },
+  );
 });
 
 Then(
   "the {string} metric should display total",
   async function(this: CustomWorld, metricName: string) {
-    // Use longer timeout for server-rendered admin pages which may take time to fetch data
-    const label = this.page.getByText(metricName, { exact: true });
-    await expect(label).toBeVisible({ timeout: 15000 });
+    // Use retry logic for metric label
+    const label = await waitForTextWithRetry(
+      this.page,
+      metricName,
+      { timeout: TIMEOUTS.DEFAULT, exact: true },
+    );
 
     const valueElement = label.locator("xpath=following-sibling::p");
-    await expect(valueElement).toBeVisible({ timeout: 10000 });
+
+    // Wait for value element with retry and numeric content
+    await this.page.waitForFunction(
+      (labelText) => {
+        const labels = Array.from(document.querySelectorAll("p"));
+        const labelElement = labels.find(p => p.textContent?.trim() === labelText);
+        if (!labelElement) return false;
+
+        const valueP = labelElement.nextElementSibling;
+        if (!valueP || valueP.tagName !== "P") return false;
+
+        const text = valueP.textContent || "";
+        return /[\d,]+/.test(text);
+      },
+      metricName,
+      { timeout: TIMEOUTS.DEFAULT },
+    );
 
     // Verify numeric value exists
     const text = await valueElement.textContent();
@@ -375,24 +463,38 @@ Then(
 );
 
 Then("I should see tokens spent count", async function(this: CustomWorld) {
-  const spentText = this.page.getByText(/\d+ spent/);
-  await expect(spentText).toBeVisible({ timeout: 10000 });
+  await waitForTextWithRetry(
+    this.page,
+    /\d+ spent/,
+    { timeout: TIMEOUTS.DEFAULT },
+  );
 });
 
 Then(
   "I should see {string} quick link",
   async function(this: CustomWorld, linkText: string) {
+    // Wait for Quick Links heading first
+    await waitForTextWithRetry(
+      this.page,
+      "Quick Links",
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+
     const quickLinksSection = this.page.locator("text=Quick Links").locator(
       "..",
     );
     const link = quickLinksSection.getByRole("link", { name: linkText });
-    await expect(link).toBeVisible({ timeout: 10000 });
+    await expect(link).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then("I should see the admin sidebar", async function(this: CustomWorld) {
-  const sidebar = this.page.locator("aside");
-  await expect(sidebar).toBeVisible({ timeout: 10000 });
+  const sidebar = await waitForElementWithRetry(
+    this.page,
+    "aside",
+    { timeout: TIMEOUTS.DEFAULT },
+  );
+  await expect(sidebar).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then(

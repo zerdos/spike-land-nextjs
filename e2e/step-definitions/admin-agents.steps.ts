@@ -1,5 +1,10 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import {
+  TIMEOUTS,
+  waitForApiResponse,
+  waitForDynamicContent,
+} from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // ======= Given Steps =======
@@ -183,6 +188,7 @@ Then(
 );
 
 Then("I should see the session card", async function(this: CustomWorld) {
+  // Use retry pattern for session cards which may load dynamically
   const sessionCard = this.page.locator("[data-testid*='session']")
     .or(this.page.locator("[class*='session-card']"))
     .or(
@@ -190,7 +196,11 @@ Then("I should see the session card", async function(this: CustomWorld) {
         hasText: /session|jules/i,
       }),
     );
-  await expect(sessionCard.first()).toBeVisible({ timeout: 10000 });
+
+  // Wait for API response first to ensure data is loaded
+  await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT });
+
+  await expect(sessionCard.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then(
@@ -198,7 +208,7 @@ Then(
   async function(this: CustomWorld) {
     const badge = this.page.locator("[class*='Badge']")
       .or(this.page.locator("[data-testid*='status']"));
-    await expect(badge.first()).toBeVisible({ timeout: 5000 });
+    await expect(badge.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -208,46 +218,66 @@ Then(
     // Check for provider badge within sessions list (showing "JULES" or similar)
     const sessionsList = this.page.locator("[data-testid='sessions-list']");
     const providerBadge = sessionsList.getByText(/jules/i);
-    await expect(providerBadge.first()).toBeVisible({ timeout: 5000 });
+    await expect(providerBadge.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then(
   "I should see {string} button on the session card",
   async function(this: CustomWorld, buttonText: string) {
+    // Wait for session card to be loaded first
+    await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT });
+
     const button = this.page.getByRole("button", {
       name: new RegExp(buttonText, "i"),
     });
-    await expect(button.first()).toBeVisible({ timeout: 5000 });
+    await expect(button.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then("I should see session activity log", async function(this: CustomWorld) {
+  // Wait for session details to load
+  await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT });
+
   const activityLog = this.page.locator("[data-testid*='activity']")
     .or(this.page.getByText(/activity|log|analyzing/i));
-  await expect(activityLog.first()).toBeVisible({ timeout: 5000 });
+  await expect(activityLog.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then("I should see resource status items", async function(this: CustomWorld) {
+  // Wait for main agents API to complete (resources are part of this response)
+  await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT }).catch(
+    () => {
+      // API might not respond, that's ok
+    },
+  );
+
   // Accept either real resource items OR the empty state (both are valid states)
   const resourceItem = this.page.locator("[data-testid*='resource']")
     .or(this.page.getByText(/dev server|mcp|database/i))
     .or(this.page.getByTestId("resources-empty-state"));
-  await expect(resourceItem.first()).toBeVisible({ timeout: 10000 });
+  await expect(resourceItem.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then(
   "I should see {string} resource item",
   async function(this: CustomWorld, resourceName: string) {
+    // Wait for main agents API to complete (resources are part of this response)
+    await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT }).catch(
+      () => {
+        // API might not respond, that's ok
+      },
+    );
+
     // Wait for loading state to disappear ONLY if it's visible
     const loadingElement = this.page.locator(".loading, .animate-pulse").first();
     const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
     if (isLoadingVisible) {
-      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+      await loadingElement.waitFor({ state: "hidden", timeout: TIMEOUTS.DEFAULT }).catch(() => {});
     }
 
     const resource = this.page.getByText(new RegExp(resourceName, "i"));
-    await expect(resource.first()).toBeVisible({ timeout: 15000 });
+    await expect(resource.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -257,7 +287,7 @@ Then(
     const indicator = this.page.locator("[class*='status']")
       .or(this.page.locator("[class*='indicator']"))
       .or(this.page.locator("[class*='Badge']"));
-    await expect(indicator.first()).toBeVisible({ timeout: 5000 });
+    await expect(indicator.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -272,48 +302,75 @@ Then(
 );
 
 Then("I should see current branch name", async function(this: CustomWorld) {
+  // Wait for git info API to complete
+  await waitForApiResponse(this.page, "/api/admin/agents/git", { timeout: TIMEOUTS.DEFAULT }).catch(
+    () => {
+      // Git API might not exist, that's ok
+    },
+  );
+
   const branchInfo = this.page.getByText(/branch|main|feature/i)
     .or(this.page.locator("[data-testid*='branch']"));
-  await expect(branchInfo.first()).toBeVisible({ timeout: 10000 });
+  await expect(branchInfo.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then(
   "I should see changed files information",
   async function(this: CustomWorld) {
+    // Wait for git info API to complete
+    await waitForApiResponse(this.page, "/api/admin/agents/git", { timeout: TIMEOUTS.DEFAULT })
+      .catch(() => {
+        // Git API might not exist, that's ok
+      });
+
     // Wait for any loading to complete
     const loadingElement = this.page.locator(".loading, .animate-pulse").first();
     const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
     if (isLoadingVisible) {
-      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+      await loadingElement.waitFor({ state: "hidden", timeout: TIMEOUTS.DEFAULT }).catch(() => {});
     }
 
     const changedFiles = this.page.getByText(/changed|files|modified/i)
       .or(this.page.locator("[data-testid*='changes']"));
-    await expect(changedFiles.first()).toBeVisible({ timeout: 15000 });
+    await expect(changedFiles.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
 Then("I should see ahead\\/behind status", async function(this: CustomWorld) {
   const syncStatus = this.page.getByText(/ahead|behind|up to date|sync/i);
-  await expect(syncStatus.first()).toBeVisible({ timeout: 5000 });
+  await expect(syncStatus.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then(
   "I should see open issues list or empty state",
   async function(this: CustomWorld) {
+    // Wait for GitHub API to complete
+    await waitForApiResponse(this.page, "/api/admin/agents/github/issues", {
+      timeout: TIMEOUTS.DEFAULT,
+    }).catch(() => {
+      // GitHub API might not be configured, that's ok
+    });
+
     const issuesList = this.page.locator("[data-testid*='issues']")
       .or(this.page.getByText(/no issues|fix authentication|add dark mode/i));
-    await expect(issuesList.first()).toBeVisible({ timeout: 10000 });
+    await expect(issuesList.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then("I should see recent workflow runs", async function(this: CustomWorld) {
+  // Wait for GitHub API to complete
+  await waitForApiResponse(this.page, "/api/admin/agents/github/issues", {
+    timeout: TIMEOUTS.DEFAULT,
+  }).catch(() => {
+    // GitHub API might not be configured, that's ok
+  });
+
   // Look for any workflow-related content or CI badge
   const workflows = this.page.getByText(/workflow|ci|action|run|build/i)
     .or(this.page.locator("[data-testid*='workflow']"))
     .or(this.page.locator("[class*='workflow']"))
     .or(this.page.getByText(/no.*workflow|no.*runs/i));
-  await expect(workflows.first()).toBeVisible({ timeout: 10000 });
+  await expect(workflows.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then(
@@ -321,18 +378,24 @@ Then(
   async function(this: CustomWorld) {
     const statusIndicator = this.page.locator("[class*='Badge']")
       .or(this.page.locator("[class*='status']"));
-    await expect(statusIndicator.first()).toBeVisible({ timeout: 5000 });
+    await expect(statusIndicator.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then(
   "I should see GitHub configuration required message",
   async function(this: CustomWorld) {
-    // Use longer timeout for server-rendered admin pages which may take time to fetch data
+    // Wait for GitHub API to complete (will fail with error)
+    await waitForApiResponse(this.page, "/api/admin/agents/github/issues", {
+      timeout: TIMEOUTS.DEFAULT,
+    }).catch(() => {
+      // Expected to fail when not configured
+    });
+
     const configMessage = this.page.getByText(
       /not configured|set.*token|github.*required/i,
     );
-    await expect(configMessage.first()).toBeVisible({ timeout: 15000 });
+    await expect(configMessage.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -341,7 +404,7 @@ Then(
   async function(this: CustomWorld) {
     // Be specific about the Create Session modal to avoid matching cookie consent dialog
     const modal = this.page.getByRole("dialog", { name: /create.*jules.*task|new.*task/i });
-    await expect(modal).toBeVisible({ timeout: 5000 });
+    await expect(modal).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -349,7 +412,7 @@ Then("the modal should have title field", async function(this: CustomWorld) {
   // Target the create session modal specifically
   const modal = this.page.getByRole("dialog", { name: /create.*jules.*task|new.*task/i });
   const titleField = modal.getByLabel(/title/i);
-  await expect(titleField).toBeVisible({ timeout: 5000 });
+  await expect(titleField).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then("the modal should have task field", async function(this: CustomWorld) {
@@ -357,7 +420,7 @@ Then("the modal should have task field", async function(this: CustomWorld) {
   const modal = this.page.getByRole("dialog", { name: /create.*jules.*task|new.*task/i });
   const taskField = modal.getByLabel(/task|description/i)
     .or(modal.locator("textarea"));
-  await expect(taskField.first()).toBeVisible({ timeout: 5000 });
+  await expect(taskField.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then(
@@ -384,24 +447,36 @@ Then(
   async function(this: CustomWorld) {
     // First wait for the Agents Dashboard heading to ensure the page has loaded
     const heading = this.page.getByRole("heading", { name: "Agents Dashboard" });
-    await expect(heading).toBeVisible({ timeout: 15000 });
+    await expect(heading).toBeVisible({ timeout: TIMEOUTS.LONG });
+
+    // Wait for initial API response
+    await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT });
 
     // Then verify polling is configured by checking for timestamp or refresh indicator
     // The timestamp div has data-testid="timestamp" and contains "Last updated:"
     const timestamp = this.page.locator("[data-testid='timestamp']")
       .or(this.page.getByText(/Last updated:/i));
-    await expect(timestamp.first()).toBeVisible({ timeout: 10000 });
+    await expect(timestamp.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then(
   "the timestamp should update periodically",
   async function(this: CustomWorld) {
+    // Wait for the timestamp element to be present and have content
+    await waitForDynamicContent(
+      this.page,
+      "[data-testid='timestamp']",
+      /Last updated:/i,
+      { timeout: TIMEOUTS.LONG },
+    ).catch(() => {
+      // Fallback: timestamp might use different selector
+    });
+
     // Verify timestamp exists by looking for the "Last updated:" text
-    // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const timestamp = this.page.getByText(/Last updated:/i)
       .or(this.page.locator("[data-testid='timestamp']"));
-    await expect(timestamp.first()).toBeVisible({ timeout: 15000 });
+    await expect(timestamp.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -410,7 +485,7 @@ Then(
   async function(this: CustomWorld, linkText: string) {
     const sidebar = this.page.locator("aside");
     const link = sidebar.getByRole("link", { name: new RegExp(linkText, "i") });
-    await expect(link.first()).toBeVisible({ timeout: 5000 });
+    await expect(link.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -418,7 +493,7 @@ Then("I should see a retry option", async function(this: CustomWorld) {
   const retryButton = this.page.getByRole("button", {
     name: /retry|try again|refresh/i,
   });
-  await expect(retryButton.first()).toBeVisible({ timeout: 5000 });
+  await expect(retryButton.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then(

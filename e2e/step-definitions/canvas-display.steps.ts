@@ -1,5 +1,11 @@
 import { Given, Then, When } from "@cucumber/cucumber";
-import { expect } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
+import {
+  TIMEOUTS,
+  waitForDynamicContent,
+  waitForElementWithRetry,
+  waitForTextWithRetry,
+} from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // Test data for Canvas E2E tests
@@ -29,6 +35,18 @@ const E2E_TEST_ALBUMS = {
 
 // Skip flag for tests when no albums exist in test environment
 let shouldSkipCanvasTests = false;
+
+// Helper function to wait for and get first thumbnail
+async function waitForCanvasThumbnail(page: Page, timeout = TIMEOUTS.DEFAULT) {
+  // First wait for at least one thumbnail to exist
+  await waitForElementWithRetry(
+    page,
+    '[data-testid^="grid-thumbnail-"]',
+    { timeout },
+  );
+  // Then return the first one to avoid strict mode violations
+  return page.locator('[data-testid^="grid-thumbnail-"]').first();
+}
 
 // Helper function to mock NextAuth session for canvas tests
 async function mockCanvasSession(world: CustomWorld) {
@@ -239,8 +257,15 @@ Then(
       return "skipped";
     }
 
-    const container = this.page.locator("div.bg-black").first();
-    await expect(container).toBeVisible({ timeout: 10000 });
+    // Use retry helper for canvas container (uses custom dark background color)
+    const container = await waitForElementWithRetry(
+      this.page,
+      '[data-testid="canvas-container"]',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    await expect(container).toBeVisible();
+    // Wait for canvas to stabilize after rendering
+    await this.page.waitForTimeout(500);
     return;
   },
 );
@@ -252,8 +277,15 @@ Then(
       return "skipped";
     }
 
-    const image = this.page.locator("img").first();
-    await expect(image).toBeVisible({ timeout: 10000 });
+    // Use helper to wait for and get first thumbnail
+    const thumbnail = await waitForCanvasThumbnail(this.page);
+    await expect(thumbnail).toBeVisible();
+
+    // Also verify the actual image element loaded
+    const image = thumbnail.locator("img");
+    await expect(image).toBeVisible();
+    // Wait for image to fully render on canvas
+    await this.page.waitForTimeout(500);
     return;
   },
 );
@@ -263,9 +295,10 @@ Then("I should see a 404 error page", async function(this: CustomWorld) {
     return "skipped";
   }
 
-  // Check for 404 content or next.js not-found page
-  const notFoundText = this.page.getByText(/not found|404/i);
-  await expect(notFoundText).toBeVisible({ timeout: 10000 });
+  // Check for 404 content or next.js not-found page with retry
+  await waitForTextWithRetry(this.page, /not found|404/i, {
+    timeout: TIMEOUTS.DEFAULT,
+  });
   return;
 });
 
@@ -277,11 +310,18 @@ Then("I should see the image rotated by {int} degrees", async function(
     return "skipped";
   }
 
-  const image = this.page.locator("img").first();
-  await expect(image).toBeVisible({ timeout: 10000 });
+  // Use retry helper for canvas grid with rotation
+  const grid = await waitForElementWithRetry(
+    this.page,
+    '[data-testid="smart-grid"]',
+    { timeout: TIMEOUTS.DEFAULT },
+  );
+  await expect(grid).toBeVisible();
+  // Wait for CSS transform to be applied after canvas rendering
+  await this.page.waitForTimeout(500);
 
-  // Check CSS transform property
-  const transform = await image.evaluate((el) => {
+  // Check CSS transform property on the grid container
+  const transform = await grid.evaluate((el) => {
     return window.getComputedStyle(el).transform;
   });
 
@@ -302,9 +342,18 @@ Then(
       return "skipped";
     }
 
-    // Verify the page loaded successfully
-    const image = this.page.locator("img").first();
-    await expect(image).toBeVisible({ timeout: 10000 });
+    // Verify the canvas loaded successfully with retry
+    const container = await waitForElementWithRetry(
+      this.page,
+      '[data-testid="canvas-container"]',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    await expect(container).toBeVisible();
+    // Verify at least one thumbnail exists
+    const thumbnail = await waitForCanvasThumbnail(this.page);
+    await expect(thumbnail).toBeVisible();
+    // Wait for slideshow to initialize
+    await this.page.waitForTimeout(500);
     return;
   },
 );
@@ -317,8 +366,10 @@ Then(
       return "skipped";
     }
 
-    const qrPanel = this.page.getByText("Canvas Display");
-    await expect(qrPanel).toBeVisible({ timeout: 10000 });
+    // Use retry helper for QR panel
+    await waitForTextWithRetry(this.page, "Canvas Display", {
+      timeout: TIMEOUTS.DEFAULT,
+    });
     return;
   },
 );
@@ -343,8 +394,13 @@ Then(
       return "skipped";
     }
 
-    const qrCode = this.page.locator('[data-testid="qr-code-container"] svg');
-    await expect(qrCode).toBeVisible({ timeout: 10000 });
+    // Use retry helper for QR code SVG
+    const qrCode = await waitForElementWithRetry(
+      this.page,
+      '[data-testid="qr-code-container"] svg',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    await expect(qrCode).toBeVisible();
     return;
   },
 );
@@ -356,13 +412,22 @@ Then(
       return "skipped";
     }
 
-    const rotationSelect = this.page.locator('[data-testid="rotation-select"]');
-    const orderSelect = this.page.locator('[data-testid="order-select"]');
-    const intervalInput = this.page.locator('[data-testid="interval-input"]');
-
-    await expect(rotationSelect).toBeVisible({ timeout: 10000 });
-    await expect(orderSelect).toBeVisible({ timeout: 10000 });
-    await expect(intervalInput).toBeVisible({ timeout: 10000 });
+    // Use retry helpers for all settings controls
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="rotation-select"]',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="order-select"]',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="interval-input"]',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
     return;
   },
 );
@@ -425,12 +490,15 @@ Then("the QR code URL should contain {string}", async function(
 
   // Get the QR code value by checking the rendered URL in the component
   // The QRCodePanel component stores the URL and we can verify via the Copy URL button action
-  await this.page.waitForTimeout(500); // Wait for QR code to update
-  // This would ideally check the actual QR code value, but for now we verify the settings changed
-  const settingsContainer = this.page.locator(
+  // Wait for QR code to update with dynamic content helper
+  await waitForDynamicContent(
+    this.page,
     '[data-testid="qr-code-container"]',
+    "",
+    { timeout: TIMEOUTS.DEFAULT },
   );
-  await expect(settingsContainer).toBeVisible();
+  // Additional wait for canvas state update
+  await this.page.waitForTimeout(500);
   return;
 });
 
@@ -498,9 +566,22 @@ Then(
     }
 
     // This would require tracking the initial image and comparing after wait
-    // For now, we verify the slideshow container is still active
-    const image = this.page.locator("img").first();
-    await expect(image).toBeVisible();
+    // For now, we verify the canvas is still active with retry
+    const container = await waitForElementWithRetry(
+      this.page,
+      '[data-testid="canvas-container"]',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    await expect(container).toBeVisible();
+    // Verify grid thumbnails are still present
+    const thumbnail = await waitForElementWithRetry(
+      this.page,
+      '[data-testid^="grid-thumbnail-"]',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    await expect(thumbnail).toBeVisible();
+    // Wait for slideshow transition to complete
+    await this.page.waitForTimeout(500);
     return;
   },
 );
@@ -513,9 +594,22 @@ Then(
     }
 
     // Verify random order is active - this is hard to verify definitively
-    // We just ensure the slideshow is running
-    const image = this.page.locator("img").first();
-    await expect(image).toBeVisible();
+    // We just ensure the canvas is running with retry
+    const container = await waitForElementWithRetry(
+      this.page,
+      '[data-testid="canvas-container"]',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    await expect(container).toBeVisible();
+    // Verify thumbnails are present
+    const thumbnail = await waitForElementWithRetry(
+      this.page,
+      '[data-testid^="grid-thumbnail-"]',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    await expect(thumbnail).toBeVisible();
+    // Wait for slideshow to stabilize
+    await this.page.waitForTimeout(500);
     return;
   },
 );
@@ -527,9 +621,22 @@ Then(
       return "skipped";
     }
 
-    // Verify album order is active
-    const image = this.page.locator("img").first();
-    await expect(image).toBeVisible();
+    // Verify album order is active with retry
+    const container = await waitForElementWithRetry(
+      this.page,
+      '[data-testid="canvas-container"]',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    await expect(container).toBeVisible();
+    // Verify thumbnails are present
+    const thumbnail = await waitForElementWithRetry(
+      this.page,
+      '[data-testid^="grid-thumbnail-"]',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    await expect(thumbnail).toBeVisible();
+    // Wait for slideshow to stabilize
+    await this.page.waitForTimeout(500);
     return;
   },
 );
@@ -557,8 +664,13 @@ Then(
       return "skipped";
     }
 
-    const qrCode = this.page.locator("svg[aria-label]");
-    await expect(qrCode).toBeVisible({ timeout: 10000 });
+    // Use retry helper for SVG with ARIA label
+    const qrCode = await waitForElementWithRetry(
+      this.page,
+      "svg[aria-label]",
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+    await expect(qrCode).toBeVisible();
     return;
   },
 );
@@ -570,12 +682,18 @@ Then(
       return "skipped";
     }
 
-    // Tab through the controls and verify focus
-    const rotationSelect = this.page.locator('[data-testid="rotation-select"]');
+    // Tab through the controls and verify focus with retry
+    const rotationSelect = await waitForElementWithRetry(
+      this.page,
+      '[data-testid="rotation-select"]',
+      { timeout: TIMEOUTS.DEFAULT },
+    );
     await rotationSelect.focus();
     await expect(rotationSelect).toBeFocused();
 
     await this.page.keyboard.press("Tab");
+    // Wait for focus to shift
+    await this.page.waitForTimeout(200);
     const orderSelect = this.page.locator('[data-testid="order-select"]');
     await expect(orderSelect).toBeFocused();
     return;

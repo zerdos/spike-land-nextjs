@@ -1,4 +1,4 @@
-@requires-db @flaky
+@requires-db
 Feature: Browser Agent Box Management
   As a user
   I want to create and manage browser agent boxes

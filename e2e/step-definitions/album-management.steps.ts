@@ -1,5 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { TIMEOUTS, waitForApiResponse, waitForModalState } from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // ============================================================================
@@ -431,6 +432,8 @@ When(
     await mockAlbumsAPI(this);
     await this.page.goto(path);
     await this.page.waitForLoadState("networkidle");
+    // Wait for page to be fully interactive
+    await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
   },
 );
 
@@ -465,8 +468,12 @@ When(
     const nameInput = this.page.locator(
       'input[name="name"], input[placeholder*="name" i]',
     ).first();
-    await expect(nameInput).toBeVisible();
+    await expect(nameInput).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await nameInput.clear();
     await nameInput.fill(name);
+    // Wait for value to be set (React controlled component)
+    await this.page.waitForTimeout(100);
+    await expect(nameInput).toHaveValue(name, { timeout: TIMEOUTS.SHORT });
   },
 );
 
@@ -476,8 +483,12 @@ When(
     const descInput = this.page.locator(
       'textarea[name="description"], input[name="description"], textarea[placeholder*="description" i]',
     ).first();
-    await expect(descInput).toBeVisible();
+    await expect(descInput).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await descInput.clear();
     await descInput.fill(description);
+    // Wait for value to be set (React controlled component)
+    await this.page.waitForTimeout(100);
+    await expect(descInput).toHaveValue(description, { timeout: TIMEOUTS.SHORT });
   },
 );
 
@@ -505,18 +516,28 @@ When("I confirm album creation", async function(this: CustomWorld) {
   const createButton = this.page.getByRole("button", {
     name: /create|save|confirm/i,
   });
-  await expect(createButton).toBeVisible();
+  await expect(createButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(createButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
+  // Wait for API response after clicking
+  const responsePromise = waitForApiResponse(this.page, /\/api\/albums/);
   await createButton.click();
-  await this.page.waitForTimeout(500);
+  await responsePromise;
+
+  // Wait for modal to close
+  await waitForModalState(this.page, "hidden");
 });
 
 When("I open album settings", async function(this: CustomWorld) {
   const settingsButton = this.page.getByRole("button", {
     name: /settings|edit|manage/i,
   }).first();
-  await expect(settingsButton).toBeVisible();
+  await expect(settingsButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(settingsButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
   await settingsButton.click();
-  await this.page.waitForTimeout(300);
+
+  // Wait for settings modal/dialog to open
+  await waitForModalState(this.page, "visible");
 });
 
 When(
@@ -525,9 +546,12 @@ When(
     const nameInput = this.page.locator(
       'input[name="name"], input[placeholder*="name" i]',
     ).first();
-    await expect(nameInput).toBeVisible();
+    await expect(nameInput).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await nameInput.clear();
     await nameInput.fill(newName);
+    // Wait for value to be set (React controlled component)
+    await this.page.waitForTimeout(100);
+    await expect(nameInput).toHaveValue(newName, { timeout: TIMEOUTS.SHORT });
   },
 );
 
@@ -537,9 +561,12 @@ When(
     const descInput = this.page.locator(
       'textarea[name="description"], input[name="description"]',
     ).first();
-    await expect(descInput).toBeVisible();
+    await expect(descInput).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await descInput.clear();
     await descInput.fill(newDesc);
+    // Wait for value to be set (React controlled component)
+    await this.page.waitForTimeout(100);
+    await expect(descInput).toHaveValue(newDesc, { timeout: TIMEOUTS.SHORT });
   },
 );
 
@@ -568,9 +595,16 @@ When("I save the changes", async function(this: CustomWorld) {
   const saveButton = this.page.getByRole("button", {
     name: /save|update|confirm/i,
   });
-  await expect(saveButton).toBeVisible();
+  await expect(saveButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(saveButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
+  // Wait for API response after clicking
+  const responsePromise = waitForApiResponse(this.page, /\/api\/albums/);
   await saveButton.click();
-  await this.page.waitForTimeout(500);
+  await responsePromise;
+
+  // Wait for modal to close
+  await waitForModalState(this.page, "hidden");
 });
 
 // NOTE: "I confirm the deletion" is defined in common.steps.ts
@@ -675,9 +709,16 @@ When("I confirm the selection", async function(this: CustomWorld) {
   const confirmButton = this.page.getByRole("button", {
     name: /add|confirm|save/i,
   });
-  await expect(confirmButton).toBeVisible();
+  await expect(confirmButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(confirmButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
+  // Wait for API response after clicking
+  const responsePromise = waitForApiResponse(this.page, /\/api\/albums/);
   await confirmButton.click();
-  await this.page.waitForTimeout(500);
+  await responsePromise;
+
+  // Wait for modal to close
+  await waitForModalState(this.page, "hidden");
 });
 
 When(
@@ -705,9 +746,18 @@ When("I confirm removal", async function(this: CustomWorld) {
   const confirmButton = this.page.getByRole("button", {
     name: /remove|confirm|yes/i,
   });
-  await expect(confirmButton).toBeVisible();
+  await expect(confirmButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(confirmButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
+  // Wait for API response after clicking
+  const responsePromise = waitForApiResponse(this.page, /\/api\/albums/);
   await confirmButton.click();
-  await this.page.waitForTimeout(500);
+  await responsePromise;
+
+  // Wait for modal to close if present
+  await waitForModalState(this.page, "hidden").catch(() => {
+    // Modal may not exist for some operations
+  });
 });
 
 When("I try to navigate to that album", async function(this: CustomWorld) {
@@ -767,10 +817,11 @@ Then(
     if (!this.page.url().includes("/albums")) {
       await this.page.goto("/albums");
       await this.page.waitForLoadState("networkidle");
+      await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
     }
 
     const albumCard = this.page.getByText(albumName);
-    await expect(albumCard).toBeVisible({ timeout: 5000 });
+    await expect(albumCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -833,32 +884,32 @@ Then(
     initTestState(this);
 
     // Wait for update to complete
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
 
     // Check the page shows the new name
     const nameElement = this.page.getByRole("heading", { name: newName }).or(
       this.page.getByText(newName),
     );
-    await expect(nameElement.first()).toBeVisible();
+    await expect(nameElement.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then(
   "the album description should be updated to {string}",
   async function(this: CustomWorld, newDesc: string) {
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
     const descElement = this.page.getByText(newDesc);
-    await expect(descElement).toBeVisible();
+    await expect(descElement).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then(
   "the album privacy should be {string}",
   async function(this: CustomWorld, privacy: string) {
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
     // Check for privacy indicator
     const privacyBadge = this.page.getByText(new RegExp(privacy, "i"));
-    await expect(privacyBadge).toBeVisible();
+    await expect(privacyBadge).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -875,11 +926,11 @@ Then(
   async function(this: CustomWorld) {
     const state = initTestState(this);
 
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
 
     if (state.currentAlbum) {
       const albumCard = this.page.getByText(state.currentAlbum.name);
-      await expect(albumCard).not.toBeVisible();
+      await expect(albumCard).not.toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     }
   },
 );
@@ -903,15 +954,16 @@ Then(
 Then("the album should still exist", async function(this: CustomWorld) {
   const state = initTestState(this);
 
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
 
   if (state.currentAlbum) {
     // Navigate back to albums list
     await this.page.goto("/albums");
     await this.page.waitForLoadState("networkidle");
+    await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
 
     const albumCard = this.page.getByText(state.currentAlbum.name);
-    await expect(albumCard).toBeVisible();
+    await expect(albumCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   }
 });
 
@@ -957,7 +1009,7 @@ Then(
 // NOTE: "I should see {string} error" step moved to common.steps.ts
 
 Then("the shareable URL should be removed", async function(this: CustomWorld) {
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(TIMEOUTS.RETRY_INTERVAL);
 
   // The share URL field should either be hidden or show "No share link"
   const noShareMessage = this.page.getByText(/no share|private/i);

@@ -4,6 +4,13 @@
 
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import {
+  TIMEOUTS,
+  waitForApiResponse,
+  waitForDynamicContent,
+  waitForElementWithRetry,
+  waitForTextWithRetry,
+} from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // Mock job data generator - returns UnifiedJob format
@@ -480,11 +487,11 @@ Given(
 When(
   "I enter a job ID in the search field",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
-    const searchInput = this.page.getByPlaceholder(
-      "Search by Job ID or email...",
+    const searchInput = await waitForElementWithRetry(
+      this.page,
+      'input[placeholder="Search by Job ID or email..."]',
+      { timeout: TIMEOUTS.LONG },
     );
-    await expect(searchInput).toBeVisible({ timeout: 10000 });
     await searchInput.fill("job-");
   },
 );
@@ -492,11 +499,11 @@ When(
 When(
   "I enter search text in the search field",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
-    const searchInput = this.page.getByPlaceholder(
-      "Search by Job ID or email...",
+    const searchInput = await waitForElementWithRetry(
+      this.page,
+      'input[placeholder="Search by Job ID or email..."]',
+      { timeout: TIMEOUTS.LONG },
     );
-    await expect(searchInput).toBeVisible({ timeout: 10000 });
     await searchInput.fill("test");
   },
 );
@@ -506,42 +513,54 @@ When("I press Enter", async function(this: CustomWorld) {
 });
 
 When("I click on a job in the list", async function(this: CustomWorld) {
-  // Wait for loading to complete (job items to appear)
-  await this.page.waitForSelector('[data-testid="job-list-item"]', {
-    timeout: 10000,
+  // Wait for API response and job items to appear
+  await waitForApiResponse(this.page, "/api/admin/jobs", {
+    timeout: TIMEOUTS.LONG,
   });
-  const jobItem = this.page.locator('[data-testid="job-list-item"]').first();
+  const jobItem = await waitForElementWithRetry(
+    this.page,
+    '[data-testid="job-list-item"]',
+    { timeout: TIMEOUTS.LONG },
+  );
   await jobItem.click();
 });
 
 When("I click on the completed job", async function(this: CustomWorld) {
-  // Wait for loading to complete (job items to appear)
-  await this.page.waitForSelector('[data-testid="job-list-item"]', {
-    timeout: 10000,
+  // Wait for API response and completed job items to appear
+  await waitForApiResponse(this.page, "/api/admin/jobs", {
+    timeout: TIMEOUTS.LONG,
   });
-  const jobItem = this.page
-    .locator('[data-testid="job-list-item"][data-job-status="COMPLETED"]')
-    .first();
+  const jobItem = await waitForElementWithRetry(
+    this.page,
+    '[data-testid="job-list-item"][data-job-status="COMPLETED"]',
+    { timeout: TIMEOUTS.LONG },
+  );
   await jobItem.click();
 });
 
 When("I click on the failed job", async function(this: CustomWorld) {
-  // Wait for loading to complete (job items to appear)
-  await this.page.waitForSelector('[data-testid="job-list-item"]', {
-    timeout: 10000,
+  // Wait for API response and failed job items to appear
+  await waitForApiResponse(this.page, "/api/admin/jobs", {
+    timeout: TIMEOUTS.LONG,
   });
-  const jobItem = this.page
-    .locator('[data-testid="job-list-item"][data-job-status="FAILED"]')
-    .first();
+  const jobItem = await waitForElementWithRetry(
+    this.page,
+    '[data-testid="job-list-item"][data-job-status="FAILED"]',
+    { timeout: TIMEOUTS.LONG },
+  );
   await jobItem.click();
 });
 
 When("I click on that job", async function(this: CustomWorld) {
-  // Wait for loading to complete (job items to appear)
-  await this.page.waitForSelector('[data-testid="job-list-item"]', {
-    timeout: 10000,
+  // Wait for API response and job items to appear
+  await waitForApiResponse(this.page, "/api/admin/jobs", {
+    timeout: TIMEOUTS.LONG,
   });
-  const jobItem = this.page.locator('[data-testid="job-list-item"]').first();
+  const jobItem = await waitForElementWithRetry(
+    this.page,
+    '[data-testid="job-list-item"]',
+    { timeout: TIMEOUTS.LONG },
+  );
   await jobItem.click();
 });
 
@@ -553,46 +572,63 @@ When("I click on that job", async function(this: CustomWorld) {
 Then(
   "I should see jobs list panel on the left",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
     // Find the heading "Jobs (X)" in the left panel using getByRole
-    const panel = this.page.getByRole("heading", { name: /Jobs \(/ });
-    await expect(panel).toBeVisible({ timeout: 10000 });
+    await waitForTextWithRetry(this.page, /Jobs \(/, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "I should see job details panel on the right",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
     // Find the heading "Job Details" in the right panel
-    const panel = this.page.locator("h2").filter({ hasText: "Job Details" });
-    await expect(panel).toBeVisible({ timeout: 10000 });
+    await waitForTextWithRetry(this.page, "Job Details", {
+      timeout: TIMEOUTS.LONG,
+      exact: true,
+    });
   },
 );
 
 Then(
   "each tab should display a job count badge",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
-    // Verify status tabs exist (All, Queue, Running, Completed, Failed, Cancelled, Refunded)
-    const allTab = this.page.getByRole("button", { name: /^All/ });
-    await expect(allTab).toBeVisible({ timeout: 10000 });
+    // Wait for API response first to ensure counts are loaded
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
+    // Verify status tabs exist with counts
+    await waitForDynamicContent(this.page, 'button[role="tab"]', /All.*\d+/, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "the {string} tab count should equal total jobs",
   async function(this: CustomWorld, _tabName: string) {
-    // Verify count is displayed
-    const allTab = this.page.getByRole("button", { name: "All" });
-    await expect(allTab).toBeVisible();
+    // Wait for API response and verify count is displayed
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
+    await waitForTextWithRetry(this.page, /All.*\d+/, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "the jobs list should only show PENDING status jobs",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
+    // Wait for filtered API response
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="job-list-item"]',
+      { timeout: TIMEOUTS.LONG },
+    );
   },
 );
 
@@ -601,209 +637,288 @@ Then(
 Then(
   "the jobs list should only show PROCESSING status jobs",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
+    // Wait for filtered API response
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="job-list-item"]',
+      { timeout: TIMEOUTS.LONG },
+    );
   },
 );
 
 Then(
   "processing jobs should have animated status badge",
   async function(this: CustomWorld) {
-    const animatedBadge = this.page.locator('[class*="animate-pulse"]');
-    await expect(animatedBadge.first()).toBeVisible();
+    await waitForElementWithRetry(this.page, '[class*="animate-pulse"]', {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "the jobs list should only show COMPLETED status jobs",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
+    // Wait for filtered API response
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="job-list-item"]',
+      { timeout: TIMEOUTS.LONG },
+    );
   },
 );
 
 Then(
   "completed jobs should show processing duration",
   async function(this: CustomWorld) {
-    const duration = this.page.locator("text=/\\d+(\\.\\d+)?s/");
-    await expect(duration.first()).toBeVisible();
+    await waitForTextWithRetry(this.page, /\d+(\.\d+)?s/, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "the jobs list should only show FAILED status jobs",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
+    // Wait for filtered API response
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="job-list-item"]',
+      { timeout: TIMEOUTS.LONG },
+    );
   },
 );
 
 Then(
   "failed jobs should show error message preview",
   async function(this: CustomWorld) {
-    const errorPreview = this.page.locator('[class*="text-red"]');
-    await expect(errorPreview.first()).toBeVisible();
+    await waitForElementWithRetry(this.page, '[class*="text-red"]', {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "the jobs list should only show CANCELLED status jobs",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
+    // Wait for filtered API response
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="job-list-item"]',
+      { timeout: TIMEOUTS.LONG },
+    );
   },
 );
 
 Then(
   "the jobs list should only show REFUNDED status jobs",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
+    // Wait for filtered API response
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="job-list-item"]',
+      { timeout: TIMEOUTS.LONG },
+    );
   },
 );
 
 Then("I should see the jobs list", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
-  // Find the heading "Jobs (X)" in the list panel using getByRole
-  const heading = this.page.getByRole("heading", { name: /Jobs \(/ });
-  await expect(heading).toBeVisible({ timeout: 10000 });
+  // Wait for API and find the heading "Jobs (X)" in the list panel
+  await waitForApiResponse(this.page, "/api/admin/jobs", {
+    timeout: TIMEOUTS.LONG,
+  });
+  await waitForTextWithRetry(this.page, /Jobs \(/, { timeout: TIMEOUTS.LONG });
 });
 
 Then(
   "each job should display a status badge",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
-    // Jobs have status badges displayed (PENDING, PROCESSING, etc.)
-    const jobItems = this.page.locator('[data-testid="job-list-item"]');
-    const count = await jobItems.count();
-    expect(count).toBeGreaterThan(0);
+    // Wait for API response and job items to be visible
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="job-list-item"]',
+      { timeout: TIMEOUTS.LONG },
+    );
   },
 );
 
 Then(
   "each job should display the enhancement tier",
   async function(this: CustomWorld) {
-    const tiers = this.page.locator("text=/1K|2K|4K/");
-    const count = await tiers.count();
-    expect(count).toBeGreaterThan(0);
+    await waitForTextWithRetry(this.page, /1K|2K|4K/, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "each job should display a relative timestamp",
   async function(this: CustomWorld) {
-    const timestamps = this.page.locator("text=/ago|just now/");
-    const count = await timestamps.count();
-    expect(count).toBeGreaterThan(0);
+    await waitForTextWithRetry(this.page, /ago|just now/, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "each job should display job ID preview",
   async function(this: CustomWorld) {
-    const jobIds = this.page.locator('[class*="font-mono"]');
-    const count = await jobIds.count();
-    expect(count).toBeGreaterThan(0);
+    await waitForElementWithRetry(this.page, '[class*="font-mono"]', {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then("each job should display user email", async function(this: CustomWorld) {
-  const emails = this.page.locator("text=@example.com");
-  const count = await emails.count();
-  expect(count).toBeGreaterThan(0);
+  await waitForTextWithRetry(this.page, "@example.com", {
+    timeout: TIMEOUTS.LONG,
+  });
 });
 
 Then(
   "the jobs list should show matching jobs",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
+    // Wait for filtered API response
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="job-list-item"]',
+      { timeout: TIMEOUTS.LONG },
+    );
   },
 );
 
 Then(
   "the jobs list should only show jobs from that user",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
+    // Wait for filtered API response
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
+    await waitForTextWithRetry(this.page, "user@example.com", {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then("the search should execute", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
+  // Wait for search API call
+  await waitForApiResponse(this.page, "/api/admin/jobs", {
+    timeout: TIMEOUTS.LONG,
+  });
 });
 
 Then("the jobs list should refresh", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
+  // Wait for refresh API call
+  await waitForApiResponse(this.page, "/api/admin/jobs", {
+    timeout: TIMEOUTS.LONG,
+  });
 });
 
 Then("the job counts should update", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
+  // Wait for updated counts in tabs
+  await waitForApiResponse(this.page, "/api/admin/jobs", {
+    timeout: TIMEOUTS.LONG,
+  });
+  await waitForDynamicContent(this.page, 'button[role="tab"]', /\d+/, {
+    timeout: TIMEOUTS.LONG,
+  });
 });
 
 Then("the job should be highlighted", async function(this: CustomWorld) {
-  const highlighted = this.page.locator('[class*="border-blue-500"]');
-  await expect(highlighted.first()).toBeVisible();
+  await waitForElementWithRetry(this.page, '[class*="border-blue-500"]', {
+    timeout: TIMEOUTS.LONG,
+  });
 });
 
 Then(
   "the details panel should show job information",
   async function(this: CustomWorld) {
-    const detailsPanel = this.page.locator('[class*="Card"]').filter({
-      hasText: "Job Details",
+    await waitForTextWithRetry(this.page, "Job Details", {
+      timeout: TIMEOUTS.LONG,
     });
-    const hasContent = await detailsPanel.locator('[class*="Badge"], text=Status').count() > 0;
-    expect(hasContent).toBe(true);
+    await waitForTextWithRetry(this.page, "Status", { timeout: TIMEOUTS.LONG });
   },
 );
 
 Then(
   "the details panel should show {string} section",
   async function(this: CustomWorld, section: string) {
-    const sectionElement = this.page.locator(`text=${section}`);
-    await expect(sectionElement.first()).toBeVisible();
+    await waitForTextWithRetry(this.page, section, {
+      timeout: TIMEOUTS.LONG,
+      exact: true,
+    });
   },
 );
 
 Then(
   "the details panel should show {string} timestamp",
   async function(this: CustomWorld, label: string) {
-    const timestamp = this.page.locator(`text=${label}`);
-    await expect(timestamp.first()).toBeVisible();
+    await waitForTextWithRetry(this.page, label, { timeout: TIMEOUTS.LONG });
   },
 );
 
 // NOTE: "I should see the tier information" step moved to common.steps.ts
 
 Then("I should see the tokens cost", async function(this: CustomWorld) {
-  const tokens = this.page.locator("text=/\\d+ tokens/");
-  await expect(tokens.first()).toBeVisible();
+  await waitForTextWithRetry(this.page, /\d+ tokens/, {
+    timeout: TIMEOUTS.LONG,
+  });
 });
 
 Then(
   "I should see original image dimensions",
   async function(this: CustomWorld) {
-    const dimensions = this.page.locator("text=/\\d+x\\d+/");
-    await expect(dimensions.first()).toBeVisible();
+    await waitForTextWithRetry(this.page, /\d+x\d+/, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then("I should see original image size", async function(this: CustomWorld) {
-  const size = this.page.locator("text=/(KB|MB|B)/");
-  await expect(size.first()).toBeVisible();
+  await waitForTextWithRetry(this.page, /(KB|MB|B)/, {
+    timeout: TIMEOUTS.LONG,
+  });
 });
 
 Then("I should see retry count", async function(this: CustomWorld) {
-  const retries = this.page.locator("text=Retries");
-  await expect(retries.first()).toBeVisible();
+  await waitForTextWithRetry(this.page, "Retries", { timeout: TIMEOUTS.LONG });
 });
 
 Then(
   "the details panel should show enhanced image dimensions",
   async function(this: CustomWorld) {
-    const dimensions = this.page.locator("text=/Enhanced.*\\d+x\\d+/");
-    await expect(dimensions.first()).toBeVisible();
+    await waitForTextWithRetry(this.page, /Enhanced.*\d+x\d+/, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "the details panel should show enhanced image size",
   async function(this: CustomWorld) {
-    const size = this.page.locator("text=/(KB|MB)/");
-    await expect(size.first()).toBeVisible();
+    await waitForTextWithRetry(this.page, /(KB|MB)/, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
@@ -811,91 +926,95 @@ Then(
   "the details panel should show image comparison slider",
   async function(this: CustomWorld) {
     // Check for the comparison slider component
-    await this.page.waitForLoadState("networkidle");
+    await waitForTextWithRetry(this.page, "Original", {
+      timeout: TIMEOUTS.LONG,
+    });
+    await waitForTextWithRetry(this.page, "Enhanced", {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 // NOTE: "I should see {string} label" is defined in common.steps.ts
 
 Then("I should see the model name", async function(this: CustomWorld) {
-  const model = this.page.locator('[class*="font-mono"]').filter({
-    hasText: "gemini",
-  });
-  await expect(model).toBeVisible();
+  await waitForTextWithRetry(this.page, /gemini/, { timeout: TIMEOUTS.LONG });
 });
 
 Then(
   "I should see the temperature setting",
   async function(this: CustomWorld) {
-    const temp = this.page.locator("text=Temperature");
-    await expect(temp).toBeVisible();
+    await waitForTextWithRetry(this.page, "Temperature", {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "the prompt should be displayed in a code block",
   async function(this: CustomWorld) {
-    const codeBlock = this.page.locator("pre");
-    await expect(codeBlock.first()).toBeVisible();
+    await waitForElementWithRetry(this.page, "pre", { timeout: TIMEOUTS.LONG });
   },
 );
 
 Then(
   "the details panel should show {string} section in red",
   async function(this: CustomWorld, _section: string) {
-    const errorSection = this.page.locator('[class*="text-red"]').filter({
-      hasText: "Error",
-    });
-    await expect(errorSection).toBeVisible();
+    await waitForElementWithRetry(
+      this.page,
+      '[class*="text-red"]',
+      { timeout: TIMEOUTS.LONG },
+    );
+    await waitForTextWithRetry(this.page, "Error", { timeout: TIMEOUTS.LONG });
   },
 );
 
 Then(
   "the error message should be displayed",
   async function(this: CustomWorld) {
-    const errorPre = this.page.locator("pre").filter({
-      hasText: /error|failed/i,
+    await waitForElementWithRetry(this.page, "pre", { timeout: TIMEOUTS.LONG });
+    await waitForTextWithRetry(this.page, /error|failed/i, {
+      timeout: TIMEOUTS.LONG,
     });
-    await expect(errorPre).toBeVisible();
   },
 );
 
 Then(
   "I should see the user name or {string}",
   async function(this: CustomWorld, _fallback: string) {
-    const userName = this.page.locator("text=/Test User|Unknown/");
-    await expect(userName.first()).toBeVisible();
+    await waitForTextWithRetry(this.page, /Test User|Unknown/, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then("I should see the user email", async function(this: CustomWorld) {
-  const email = this.page.locator("text=@example.com");
-  await expect(email.first()).toBeVisible();
+  await waitForTextWithRetry(this.page, "@example.com", {
+    timeout: TIMEOUTS.LONG,
+  });
 });
 
 Then("I should see the Job ID", async function(this: CustomWorld) {
-  const jobId = this.page.locator("text=Job").first();
-  await expect(jobId).toBeVisible();
+  await waitForTextWithRetry(this.page, "Job", { timeout: TIMEOUTS.LONG });
 });
 
 Then("I should see the Image ID", async function(this: CustomWorld) {
-  const imageId = this.page.locator("text=Image").first();
-  await expect(imageId).toBeVisible();
+  await waitForTextWithRetry(this.page, "Image", { timeout: TIMEOUTS.LONG });
 });
 
 Then(
   "the details panel should show the Workflow ID",
   async function(this: CustomWorld) {
-    const workflowId = this.page.locator("text=Workflow");
-    await expect(workflowId).toBeVisible();
+    await waitForTextWithRetry(this.page, "Workflow", {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "the details panel should show {string} text",
   async function(this: CustomWorld, text: string) {
-    const textElement = this.page.locator(`text=${text}`);
-    await expect(textElement).toBeVisible();
+    await waitForTextWithRetry(this.page, text, { timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -904,9 +1023,14 @@ Then(
 Then(
   "PROCESSING status badge should be blue with animation",
   async function(this: CustomWorld) {
-    const badge = this.page.locator('[class*="Badge"]').filter({
-      hasText: "PROCESSING",
-    }).first();
+    const badge = await waitForElementWithRetry(
+      this.page,
+      '[class*="Badge"]',
+      { timeout: TIMEOUTS.LONG },
+    );
+    await waitForTextWithRetry(this.page, "PROCESSING", {
+      timeout: TIMEOUTS.LONG,
+    });
     const className = await badge.getAttribute("class");
     expect(className).toContain("blue");
     expect(className).toContain("animate-pulse");
@@ -916,9 +1040,14 @@ Then(
 Then(
   "COMPLETED status badge should be green",
   async function(this: CustomWorld) {
-    const badge = this.page.locator('[class*="Badge"]').filter({
-      hasText: "COMPLETED",
-    }).first();
+    const badge = await waitForElementWithRetry(
+      this.page,
+      '[class*="Badge"]',
+      { timeout: TIMEOUTS.LONG },
+    );
+    await waitForTextWithRetry(this.page, "COMPLETED", {
+      timeout: TIMEOUTS.LONG,
+    });
     const className = await badge.getAttribute("class");
     expect(className).toContain("green");
   },
@@ -929,9 +1058,14 @@ Then(
 Then(
   "CANCELLED status badge should be neutral",
   async function(this: CustomWorld) {
-    const badge = this.page.locator('[class*="Badge"]').filter({
-      hasText: "CANCELLED",
-    }).first();
+    const badge = await waitForElementWithRetry(
+      this.page,
+      '[class*="Badge"]',
+      { timeout: TIMEOUTS.LONG },
+    );
+    await waitForTextWithRetry(this.page, "CANCELLED", {
+      timeout: TIMEOUTS.LONG,
+    });
     const className = await badge.getAttribute("class");
     expect(className).toMatch(/neutral|gray/);
   },
@@ -940,9 +1074,14 @@ Then(
 Then(
   "REFUNDED status badge should be purple",
   async function(this: CustomWorld) {
-    const badge = this.page.locator('[class*="Badge"]').filter({
-      hasText: "REFUNDED",
-    }).first();
+    const badge = await waitForElementWithRetry(
+      this.page,
+      '[class*="Badge"]',
+      { timeout: TIMEOUTS.LONG },
+    );
+    await waitForTextWithRetry(this.page, "REFUNDED", {
+      timeout: TIMEOUTS.LONG,
+    });
     const className = await badge.getAttribute("class");
     expect(className).toContain("purple");
   },
@@ -951,78 +1090,101 @@ Then(
 Then(
   "TIER_1K should display as {string}",
   async function(this: CustomWorld, display: string) {
-    await this.page.waitForLoadState("networkidle");
+    // Wait for API response first
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
     // Tier labels appear within job items
-    const tier = this.page.locator('[data-testid="job-list-item"]').getByText(
+    await waitForDynamicContent(
+      this.page,
+      '[data-testid="job-list-item"]',
       display,
-      { exact: true },
+      { timeout: TIMEOUTS.LONG },
     );
-    await expect(tier.first()).toBeVisible({ timeout: 10000 });
   },
 );
 
 Then(
   "TIER_2K should display as {string}",
   async function(this: CustomWorld, display: string) {
-    await this.page.waitForLoadState("networkidle");
+    // Wait for API response first
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
     // Tier labels appear within job items
-    const tier = this.page.locator('[data-testid="job-list-item"]').getByText(
+    await waitForDynamicContent(
+      this.page,
+      '[data-testid="job-list-item"]',
       display,
-      { exact: true },
+      { timeout: TIMEOUTS.LONG },
     );
-    await expect(tier.first()).toBeVisible({ timeout: 10000 });
   },
 );
 
 Then(
   "TIER_4K should display as {string}",
   async function(this: CustomWorld, display: string) {
-    await this.page.waitForLoadState("networkidle");
+    // Wait for API response first
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
     // Tier labels appear within job items
-    const tier = this.page.locator('[data-testid="job-list-item"]').getByText(
+    await waitForDynamicContent(
+      this.page,
+      '[data-testid="job-list-item"]',
       display,
-      { exact: true },
+      { timeout: TIMEOUTS.LONG },
     );
-    await expect(tier.first()).toBeVisible({ timeout: 10000 });
   },
 );
 
 Then(
   "I should see different jobs in the list",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
+    // Wait for page change API response
+    await waitForApiResponse(this.page, "/api/admin/jobs", {
+      timeout: TIMEOUTS.LONG,
+    });
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="job-list-item"]',
+      { timeout: TIMEOUTS.LONG },
+    );
   },
 );
 
 Then(
   "I should see loading skeleton placeholders",
   async function(this: CustomWorld) {
-    const skeleton = this.page.locator('[class*="animate-pulse"]');
-    await expect(skeleton.first()).toBeVisible();
+    await waitForElementWithRetry(this.page, '[class*="animate-pulse"]', {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "I should see {string} timestamp",
   async function(this: CustomWorld, timestamp: string) {
-    const timestampElement = this.page.locator(`text=${timestamp}`);
-    await expect(timestampElement.first()).toBeVisible();
+    await waitForTextWithRetry(this.page, timestamp, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "I should see processing time formatted as seconds",
   async function(this: CustomWorld) {
-    const time = this.page.locator("text=/\\d+(\\.\\d+)?s/");
-    await expect(time.first()).toBeVisible();
+    await waitForTextWithRetry(this.page, /\d+(\.\d+)?s/, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then(
   "file sizes should be formatted with appropriate units",
   async function(this: CustomWorld) {
-    const sizes = this.page.locator("text=/(KB|MB|B)/");
-    const count = await sizes.count();
-    expect(count).toBeGreaterThan(0);
+    await waitForTextWithRetry(this.page, /(KB|MB|B)/, {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );

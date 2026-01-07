@@ -5,6 +5,13 @@
 import type { DataTable } from "@cucumber/cucumber";
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import {
+  TIMEOUTS,
+  waitForApiResponse,
+  waitForElementWithRetry,
+  waitForModalState,
+  waitForTextWithRetry,
+} from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // State for tracking gallery items during tests
@@ -317,23 +324,23 @@ Given("the gallery API returns an error", async function(this: CustomWorld) {
 When(
   "I click {string} on a gallery item",
   async function(this: CustomWorld, buttonText: string) {
-    // Wait for all loading skeletons to disappear (skeleton Cards also have .Card class)
+    // Wait for all loading skeletons to disappear
     await this.page.waitForFunction(
       () => document.querySelectorAll(".animate-pulse").length === 0,
-      { timeout: 15000 },
+      { timeout: TIMEOUTS.LONG },
     ).catch(() => {});
 
-    // Wait for a Card with the target button to be visible (indicates data loaded)
-    await this.page.waitForSelector(`.Card button:has-text("${buttonText}")`, {
-      state: "visible",
-      timeout: 15000,
+    // Wait for gallery grid to be visible with retry
+    await waitForElementWithRetry(this.page, ".Card", {
+      timeout: TIMEOUTS.LONG,
     });
 
     const galleryCard = this.page.locator(".Card").first();
     const button = galleryCard.getByRole("button", { name: buttonText });
 
-    // Wait for button to be visible and enabled before clicking
-    await expect(button).toBeVisible({ timeout: 15000 });
+    // Wait for button to be visible and enabled with retry
+    await expect(button).toBeVisible({ timeout: TIMEOUTS.LONG });
+    await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
     await button.click();
   },
 );
@@ -341,23 +348,23 @@ When(
 When(
   "I click {string} on the second gallery item",
   async function(this: CustomWorld, buttonText: string) {
-    // Wait for all loading skeletons to disappear (skeleton Cards also have .Card class)
+    // Wait for all loading skeletons to disappear
     await this.page.waitForFunction(
       () => document.querySelectorAll(".animate-pulse").length === 0,
-      { timeout: 15000 },
+      { timeout: TIMEOUTS.LONG },
     ).catch(() => {});
 
-    // Wait for a Card with the target button to be visible (indicates data loaded)
-    await this.page.waitForSelector(`.Card button:has-text("${buttonText}")`, {
-      state: "visible",
-      timeout: 15000,
+    // Wait for gallery grid to be visible with retry
+    await waitForElementWithRetry(this.page, ".Card", {
+      timeout: TIMEOUTS.LONG,
     });
 
     const galleryCard = this.page.locator(".Card").nth(1);
     const button = galleryCard.getByRole("button", { name: buttonText });
 
-    // Wait for button to be visible and enabled before clicking
-    await expect(button).toBeVisible({ timeout: 15000 });
+    // Wait for button to be visible and enabled with retry
+    await expect(button).toBeVisible({ timeout: TIMEOUTS.LONG });
+    await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
     await button.click();
   },
 );
@@ -365,23 +372,23 @@ When(
 When(
   "I click {string} on the first gallery item",
   async function(this: CustomWorld, buttonText: string) {
-    // Wait for all loading skeletons to disappear (skeleton Cards also have .Card class)
+    // Wait for all loading skeletons to disappear
     await this.page.waitForFunction(
       () => document.querySelectorAll(".animate-pulse").length === 0,
-      { timeout: 15000 },
+      { timeout: TIMEOUTS.LONG },
     ).catch(() => {});
 
-    // Wait for a Card with the target button to be visible (indicates data loaded)
-    await this.page.waitForSelector(`.Card button:has-text("${buttonText}")`, {
-      state: "visible",
-      timeout: 15000,
+    // Wait for gallery grid to be visible with retry
+    await waitForElementWithRetry(this.page, ".Card", {
+      timeout: TIMEOUTS.LONG,
     });
 
     const galleryCard = this.page.locator(".Card").first();
     const button = galleryCard.getByRole("button", { name: buttonText });
 
-    // Wait for button to be visible and enabled before clicking
-    await expect(button).toBeVisible({ timeout: 15000 });
+    // Wait for button to be visible and enabled with retry
+    await expect(button).toBeVisible({ timeout: TIMEOUTS.LONG });
+    await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
     await button.click();
   },
 );
@@ -389,19 +396,27 @@ When(
 When(
   "I toggle the active switch on a gallery item",
   async function(this: CustomWorld) {
-    // Use Playwright's built-in auto-waiting with locators
+    // Wait for gallery grid to be visible with retry
+    await waitForElementWithRetry(this.page, ".Card", {
+      timeout: TIMEOUTS.LONG,
+    });
+
     const galleryCard = this.page.locator(".Card").first();
-    await expect(galleryCard).toBeVisible({ timeout: 15000 });
+    await expect(galleryCard).toBeVisible({ timeout: TIMEOUTS.LONG });
 
     // Find the switch within the card using getByRole for better semantics
     const switchElement = galleryCard.getByRole("switch");
 
     // Wait for switch to be visible AND enabled (not disabled during updates)
-    await expect(switchElement).toBeVisible({ timeout: 10000 });
-    await expect(switchElement).toBeEnabled({ timeout: 5000 });
+    await expect(switchElement).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(switchElement).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
 
-    // Click the switch
+    // Click the switch and wait for API response
+    const responsePromise = waitForApiResponse(this.page, "/api/admin/gallery", {
+      timeout: TIMEOUTS.DEFAULT,
+    });
     await switchElement.click();
+    await responsePromise.catch(() => {}); // API might be mocked
   },
 );
 
@@ -417,6 +432,9 @@ When("I note the gallery item count", async function(this: CustomWorld) {
 });
 
 When("I select an image from the browser", async function(this: CustomWorld) {
+  // Wait for modal to be visible
+  await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.LONG });
+
   // Click on the first available image in the browser dialog
   const imageButton = this.page.locator('[role="dialog"] button').filter({
     hasText: /select/i,
@@ -427,6 +445,7 @@ When("I select an image from the browser", async function(this: CustomWorld) {
   } else {
     // Fall back to clicking an image directly
     const image = this.page.locator('[role="dialog"] img').first();
+    await expect(image).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await image.click();
   }
 });
@@ -436,24 +455,32 @@ When(
   async function(this: CustomWorld, dataTable: DataTable) {
     const data = dataTable.rowsHash();
 
+    // Wait for form to be visible
+    await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.LONG });
+
     if (data.title) {
-      await this.page.fill(
+      const titleInput = this.page.locator(
         'input[name="title"], input[placeholder*="title" i]',
-        data.title,
       );
+      await expect(titleInput).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+      await titleInput.fill(data.title);
     }
     if (data.description) {
-      await this.page.fill(
+      const descInput = this.page.locator(
         'textarea[name="description"], textarea[placeholder*="description" i]',
-        data.description,
       );
+      await expect(descInput).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+      await descInput.fill(data.description);
     }
     if (data.category) {
       const categorySelect = this.page.locator('[role="combobox"]').first();
+      await expect(categorySelect).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       await categorySelect.click();
-      await this.page.locator(`[role="option"]`).filter({
+      const option = this.page.locator(`[role="option"]`).filter({
         hasText: data.category,
-      }).click();
+      });
+      await expect(option).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+      await option.click();
     }
   },
 );
@@ -465,17 +492,29 @@ When("I submit the gallery item form", async function(this: CustomWorld) {
       name: /save|submit|add/i,
     },
   );
+  await expect(submitButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(submitButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
+  // Wait for API response after submission
+  const responsePromise = waitForApiResponse(this.page, "/api/admin/gallery", {
+    timeout: TIMEOUTS.LONG,
+  });
   await submitButton.click();
-  await this.page.waitForLoadState("networkidle");
+  await responsePromise.catch(() => {}); // API might be mocked
+
+  // Wait for modal to close
+  await waitForModalState(this.page, "hidden", { timeout: TIMEOUTS.DEFAULT });
 });
 
 When(
   "I change the title to {string}",
   async function(this: CustomWorld, newTitle: string) {
-    await this.page.fill(
+    const titleInput = this.page.locator(
       'input[name="title"], input[placeholder*="title" i]',
-      newTitle,
     );
+    await expect(titleInput).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await titleInput.clear();
+    await titleInput.fill(newTitle);
   },
 );
 
@@ -495,14 +534,22 @@ When("I cancel the deletion", async function(this: CustomWorld) {
 Then("I should see the gallery grid", async function(this: CustomWorld) {
   // Wait for the page to fully load and render the gallery items
   await this.page.waitForLoadState("networkidle");
-  const grid = this.page.locator(".grid");
-  await expect(grid).toBeVisible({ timeout: 15000 });
+
+  // Wait for gallery grid with retry
+  await waitForElementWithRetry(this.page, ".grid", {
+    timeout: TIMEOUTS.LONG,
+  });
 });
 
 Then(
   "each gallery item should display a thumbnail",
   async function(this: CustomWorld) {
+    // Wait for gallery cards with retry
+    await waitForElementWithRetry(this.page, ".Card", {
+      timeout: TIMEOUTS.LONG,
+    });
     const images = this.page.locator(".Card img");
+    await expect(images.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     const count = await images.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -512,6 +559,9 @@ Then(
   "each gallery item should display a title",
   async function(this: CustomWorld) {
     // CardTitle in gallery renders with text-base.truncate classes
+    await waitForElementWithRetry(this.page, ".Card .text-base.truncate", {
+      timeout: TIMEOUTS.LONG,
+    });
     const titles = this.page.locator(".Card .text-base.truncate");
     const count = await titles.count();
     expect(count).toBeGreaterThan(0);
@@ -521,6 +571,9 @@ Then(
 Then(
   "each gallery item should display a category badge",
   async function(this: CustomWorld) {
+    await waitForElementWithRetry(this.page, ".Badge", {
+      timeout: TIMEOUTS.LONG,
+    });
     const badges = this.page.locator(".Badge");
     const count = await badges.count();
     expect(count).toBeGreaterThan(0);
@@ -533,19 +586,21 @@ Then(
     const badge = this.page.locator(".Badge").filter({
       hasText: category,
     });
-    await expect(badge).toBeVisible();
+    await expect(badge).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then(
   "I should see the image browser dialog",
   async function(this: CustomWorld) {
+    // Wait for modal to appear with retry
+    await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.LONG });
+
     // Use a more specific selector to exclude the cookie consent dialog
-    // The cookie consent dialog has aria-labelledby="cookie-consent-title"
     const dialog = this.page.locator(
       '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
     );
-    await expect(dialog).toBeVisible();
+    await expect(dialog).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -574,45 +629,67 @@ Then(
 Then(
   "I should see the add gallery item form",
   async function(this: CustomWorld) {
+    // Wait for modal to appear with retry
+    await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.LONG });
+
     const form = this.page.locator(
       '[role="dialog"] form, [role="dialog"] input',
     );
-    await expect(form.first()).toBeVisible();
+    await expect(form.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then(
   "I should see {string} dialog title",
   async function(this: CustomWorld, title: string) {
+    // Wait for modal to appear with retry
+    await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.LONG });
+
     const dialogTitle = this.page.locator('[role="dialog"]').getByRole(
       "heading",
       { name: title },
     );
-    await expect(dialogTitle).toBeVisible();
+    await expect(dialogTitle).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then(
   "I should see the edit gallery item form",
   async function(this: CustomWorld) {
+    // Wait for modal to appear with retry
+    await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.LONG });
+
     const form = this.page.locator(
       '[role="dialog"] form, [role="dialog"] input',
     );
-    await expect(form.first()).toBeVisible();
+    await expect(form.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then(
   "the gallery item should display {string}",
   async function(this: CustomWorld, text: string) {
+    // Wait for gallery cards with retry
+    await waitForElementWithRetry(this.page, ".Card", {
+      timeout: TIMEOUTS.LONG,
+    });
+
+    // Wait for the specific text to appear
+    await waitForTextWithRetry(this.page, text, { timeout: TIMEOUTS.LONG });
+
     const item = this.page.locator(".Card").filter({ hasText: text });
-    await expect(item).toBeVisible();
+    await expect(item).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then(
   "I should see the new gallery item in the grid",
   async function(this: CustomWorld) {
+    // Wait for gallery cards with retry
+    await waitForElementWithRetry(this.page, ".Card", {
+      timeout: TIMEOUTS.LONG,
+    });
+
     const cards = this.page.locator(".Card");
     const count = await cards.count();
     expect(count).toBeGreaterThan(0);
@@ -624,7 +701,7 @@ Then(
   async function(this: CustomWorld) {
     // The switch state should have changed - this is verified by the UI update
     const switchElement = this.page.locator('[role="switch"]').first();
-    await expect(switchElement).toBeVisible();
+    await expect(switchElement).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -633,12 +710,20 @@ Then(
   async function(this: CustomWorld) {
     await this.page.reload();
     await this.page.waitForLoadState("networkidle");
-    // Verify page still loads
-    await expect(this.page.locator(".Card").first()).toBeVisible();
+
+    // Wait for gallery cards with retry after reload
+    await waitForElementWithRetry(this.page, ".Card", {
+      timeout: TIMEOUTS.LONG,
+    });
   },
 );
 
 Then("the gallery order should change", async function(this: CustomWorld) {
+  // Wait for gallery cards with retry
+  await waitForElementWithRetry(this.page, ".Card .text-base.truncate", {
+    timeout: TIMEOUTS.LONG,
+  });
+
   // CardTitle in gallery renders with text-base.truncate classes
   const titles = await this.page.locator(".Card .text-base.truncate")
     .allTextContents();
@@ -646,6 +731,11 @@ Then("the gallery order should change", async function(this: CustomWorld) {
 });
 
 Then("the second item should now be first", async function(this: CustomWorld) {
+  // Wait for gallery cards with retry
+  await waitForElementWithRetry(this.page, ".Card .text-base.truncate", {
+    timeout: TIMEOUTS.LONG,
+  });
+
   // CardTitle in gallery renders with text-base.truncate classes
   const titles = await this.page.locator(".Card .text-base.truncate")
     .allTextContents();
@@ -655,6 +745,11 @@ Then("the second item should now be first", async function(this: CustomWorld) {
 });
 
 Then("the first item should now be second", async function(this: CustomWorld) {
+  // Wait for gallery cards with retry
+  await waitForElementWithRetry(this.page, ".Card .text-base.truncate", {
+    timeout: TIMEOUTS.LONG,
+  });
+
   // CardTitle in gallery renders with text-base.truncate classes
   const titles = await this.page.locator(".Card .text-base.truncate")
     .allTextContents();
@@ -666,18 +761,28 @@ Then("the first item should now be second", async function(this: CustomWorld) {
 Then(
   "the {string} button on the first item should be disabled",
   async function(this: CustomWorld, buttonText: string) {
+    // Wait for gallery cards with retry
+    await waitForElementWithRetry(this.page, ".Card", {
+      timeout: TIMEOUTS.LONG,
+    });
+
     const galleryCard = this.page.locator(".Card").first();
     const button = galleryCard.getByRole("button", { name: buttonText });
-    await expect(button).toBeDisabled();
+    await expect(button).toBeDisabled({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
 Then(
   "the {string} button on the last item should be disabled",
   async function(this: CustomWorld, buttonText: string) {
+    // Wait for gallery cards with retry
+    await waitForElementWithRetry(this.page, ".Card", {
+      timeout: TIMEOUTS.LONG,
+    });
+
     const galleryCard = this.page.locator(".Card").last();
     const button = galleryCard.getByRole("button", { name: buttonText });
-    await expect(button).toBeDisabled();
+    await expect(button).toBeDisabled({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -704,11 +809,8 @@ Then(
 );
 
 Then("the delete dialog should close", async function(this: CustomWorld) {
-  // Exclude cookie consent dialog which has aria-labelledby="cookie-consent-title"
-  const dialog = this.page.locator(
-    '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
-  );
-  await expect(dialog).not.toBeVisible();
+  // Wait for modal to close with retry
+  await waitForModalState(this.page, "hidden", { timeout: TIMEOUTS.DEFAULT });
 });
 
 Then("I should see loading skeleton cards", async function(this: CustomWorld) {
