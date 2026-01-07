@@ -1,6 +1,6 @@
 import type { ICodeSession, RenderedApp } from "@/lib/interfaces";
 import { CodeProcessor } from "@/services/CodeProcessor";
-import { formatCode, transpileCode } from "@/services/editorUtils";
+import { transpileCode } from "@/services/editorUtils";
 import { RenderService } from "@/services/RenderService";
 import type { IWebSocketManager } from "@/services/types";
 import type { EmotionCache } from "@emotion/cache";
@@ -110,8 +110,6 @@ describe("CodeProcessor", () => {
 
       vi.mocked(transpileCode).mockResolvedValue(`transpiled`);
 
-      vi.mocked(formatCode).mockResolvedValue(`formatted`);
-
       const result = await codeProcessor.process(
         mockCode,
         true,
@@ -147,7 +145,6 @@ describe("CodeProcessor", () => {
       const mockSignal = new AbortController().signal;
 
       vi.mocked(transpileCode).mockResolvedValue(`transpiled`);
-      vi.mocked(formatCode).mockResolvedValue(`formatted`);
 
       // Mock the window message event to simulate iframe response (unused, commented out)
       // const _mockMessageEvent = {
@@ -226,8 +223,8 @@ describe("CodeProcessor", () => {
 
       vi.spyOn(console, "error").mockImplementation(() => {}); // Silence console errors
 
-      // Mock formatCode to throw an error
-      vi.mocked(formatCode).mockRejectedValue(new Error("Format error"));
+      // Mock transpileCode to throw an error
+      vi.mocked(transpileCode).mockRejectedValue(new Error("Format error"));
 
       const result = await codeProcessor.process(
         mockCode,

@@ -49,7 +49,7 @@ vi.mock("@/services/RenderService", () => ({
 import { getInitialDarkMode } from "@/hooks/use-dark-mode";
 import { importMapReplace } from "@/lib/importmap-utils";
 import { md5 } from "@/lib/md5";
-import { formatCode, transpileCode } from "@/services/editorUtils";
+import { transpileCode } from "@/services/editorUtils";
 import { CodeProcessor } from "../CodeProcessor";
 
 describe("CodeProcessor", () => {
@@ -127,39 +127,6 @@ describe("CodeProcessor", () => {
     });
   });
 
-  describe("formatCode", () => {
-    it("should format code using editorUtils", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("formatted code");
-
-      const result = await (processor as unknown as {
-        formatCode: (code: string) => Promise<string>;
-      }).formatCode("unformatted code");
-
-      expect(formatCode).toHaveBeenCalledWith("unformatted code");
-      expect(result).toBe("formatted code");
-    });
-
-    it("should throw error when formatting fails", async () => {
-      vi.mocked(formatCode).mockRejectedValueOnce(new Error("Format error"));
-
-      await expect(
-        (processor as unknown as {
-          formatCode: (code: string) => Promise<string>;
-        }).formatCode("bad code"),
-      ).rejects.toThrow("Error formatting code");
-    });
-
-    it("should throw error when formatting returns null", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce(null as unknown as string);
-
-      await expect(
-        (processor as unknown as {
-          formatCode: (code: string) => Promise<string>;
-        }).formatCode("code"),
-      ).rejects.toThrow("Formatting code returned no data");
-    });
-  });
-
   describe("transpileCode", () => {
     it("should transpile code using editorUtils", async () => {
       vi.mocked(transpileCode).mockResolvedValueOnce(
@@ -211,8 +178,8 @@ describe("CodeProcessor", () => {
       expect(result).toBe(false);
     });
 
-    it("should return false when formatting fails", async () => {
-      vi.mocked(formatCode).mockRejectedValueOnce(new Error("Format error"));
+    it("should return false when transpilation fails", async () => {
+      vi.mocked(transpileCode).mockRejectedValueOnce(new Error("Transpile error"));
 
       const result = await processor.process(
         "bad code",
@@ -225,7 +192,7 @@ describe("CodeProcessor", () => {
     });
 
     it("should return existing session when code is unchanged", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("const x = 1;");
+      vi.mocked(transpileCode).mockResolvedValueOnce("const x = 1;");
 
       const result = await processor.process(
         "const x = 1;",
@@ -238,7 +205,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should return false when transpilation fails", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockRejectedValueOnce(
         new Error("Transpile error"),
       );
@@ -254,7 +220,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should return session when transpiled code is unchanged", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce(
         "transpiled:const x = 1;",
       );
@@ -270,7 +235,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should skip running code when skipRunning is true", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
 
       const result = await processor.process(
@@ -288,7 +252,7 @@ describe("CodeProcessor", () => {
     });
 
     it("should return false when aborted during processing", async () => {
-      vi.mocked(formatCode).mockImplementation(async () => {
+      vi.mocked(transpileCode).mockImplementation(async () => {
         mockAbortController.abort();
         return "code";
       });
@@ -332,7 +296,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should use transpiled code directly without reformatting", async () => {
-      vi.mocked(formatCode).mockClear();
       vi.mocked(transpileCode).mockClear();
 
       await processor.reRenderFromTranspiled(
@@ -341,14 +304,12 @@ describe("CodeProcessor", () => {
         mockGetSession,
       );
 
-      expect(formatCode).not.toHaveBeenCalled();
       expect(transpileCode).not.toHaveBeenCalled();
     });
   });
 
   describe("iframe execution", () => {
     it("should create blob URL for transpiled code", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
 
       await processor.process(
@@ -362,7 +323,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should use importMapReplace for code transformation", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
 
       await processor.process(
@@ -376,7 +336,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should check dark mode for iframe styling", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
 
       await processor.process(
@@ -390,7 +349,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should use md5 for request ID matching", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
 
       await processor.process(
@@ -404,7 +362,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should call replaceIframe callback when provided", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
 
       const replaceIframe = vi.fn();
@@ -429,7 +386,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should append hidden iframe when no replaceIframe callback", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
 
       const processPromise = processor.process(
@@ -450,7 +406,6 @@ describe("CodeProcessor", () => {
 
   describe("error handling", () => {
     it("should handle blob URL creation error", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
       vi.spyOn(URL, "createObjectURL").mockImplementation(() => {
         throw new Error("Blob error");
@@ -468,7 +423,7 @@ describe("CodeProcessor", () => {
 
     it("should log error when format fails", async () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      vi.mocked(formatCode).mockRejectedValueOnce(new Error("Format failed"));
+      vi.mocked(transpileCode).mockRejectedValueOnce(new Error("Format failed"));
 
       await processor.process(
         "bad code",
@@ -485,7 +440,6 @@ describe("CodeProcessor", () => {
 
     it("should log error when transpile fails", async () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockRejectedValueOnce(
         new Error("Transpile failed"),
       );
@@ -519,7 +473,6 @@ describe("CodeProcessor", () => {
     it("should listen for rendered message from iframe", async () => {
       const addEventListenerSpy = vi.spyOn(window, "addEventListener");
 
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
 
       const processPromise = processor.process(
@@ -541,7 +494,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should handle successful render message", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
       vi.mocked(md5).mockReturnValueOnce("test-request-id");
 
@@ -589,7 +541,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should reject render with empty HTML", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
       vi.mocked(md5).mockReturnValueOnce("test-request-id");
 
@@ -631,7 +582,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should ignore messages with wrong requestId", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
       vi.mocked(md5).mockReturnValueOnce("correct-id");
 
@@ -674,7 +624,6 @@ describe("CodeProcessor", () => {
     });
 
     it("should ignore non-rendered message types", async () => {
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
       vi.mocked(md5).mockReturnValueOnce("test-id");
 
@@ -717,7 +666,6 @@ describe("CodeProcessor", () => {
   describe("dark mode handling", () => {
     it("should use dark mode colors when dark mode is enabled", async () => {
       vi.mocked(getInitialDarkMode).mockReturnValueOnce(true);
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
 
       let createdIframe: HTMLIFrameElement | null = null;
@@ -758,7 +706,6 @@ describe("CodeProcessor", () => {
 
     it("should use light mode colors when dark mode is disabled", async () => {
       vi.mocked(getInitialDarkMode).mockReturnValueOnce(false);
-      vi.mocked(formatCode).mockResolvedValueOnce("new code");
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
 
       let createdIframe: HTMLIFrameElement | null = null;
