@@ -21,7 +21,7 @@ When("I click the logo in the header", async function(this: CustomWorld) {
   ).first();
   await expect(logo).toBeVisible();
   await logo.click();
-  await this.page.waitForLoadState("networkidle");
+  await waitForPageReady(this.page);
 });
 
 When(
@@ -32,7 +32,7 @@ When(
     ).first();
     await expect(title).toBeVisible();
     await title.click();
-    await this.page.waitForLoadState("networkidle");
+    await waitForPageReady(this.page);
   },
 );
 
@@ -76,13 +76,18 @@ When(
 );
 
 When("I refresh the page", async function(this: CustomWorld) {
-  await this.page.reload();
-  await this.page.waitForLoadState("networkidle");
+  await this.page.reload({ waitUntil: "commit" });
+  await waitForPageReady(this.page);
 });
 
 When("I press the Tab key", async function(this: CustomWorld) {
   await this.page.keyboard.press("Tab");
-  await this.page.waitForTimeout(200);
+  // Wait for focus to shift (check for focused element change)
+  await this.page.waitForFunction(() => {
+    return document.activeElement !== document.body;
+  }, { timeout: 2000 }).catch(() => {
+    // If no element receives focus, that's OK
+  });
 });
 
 Then("the dropdown menu should be visible", async function(this: CustomWorld) {
@@ -99,8 +104,13 @@ Then(
 Then(
   "the dropdown menu should remain visible",
   async function(this: CustomWorld) {
+    // Check dropdown is still visible after a brief moment
+    const dropdown = this.page.getByRole("menu");
+    await expect(dropdown).toBeVisible({ timeout: 5000 });
+
+    // Wait a bit and verify it's still visible
     await this.page.waitForTimeout(300);
-    await assertDropdownVisible(this.page);
+    await expect(dropdown).toBeVisible();
   },
 );
 
