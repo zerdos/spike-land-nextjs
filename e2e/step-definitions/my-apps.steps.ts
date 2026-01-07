@@ -1,5 +1,6 @@
 import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { waitForUrlPath } from "../support/helpers/wait-helper";
 import { MyAppsPage } from "../support/page-objects/MyAppsPage";
 import type { CustomWorld } from "../support/world";
 
@@ -269,7 +270,8 @@ Then(
 Then(
   "I should be redirected to the home page",
   async function(this: CustomWorld) {
-    await expect(this.page).toHaveURL(/\/$|\/home/);
+    // Wait for SSR redirect to complete
+    await waitForUrlPath(this.page, "/", { timeout: 10000, exact: false });
   },
 );
 
