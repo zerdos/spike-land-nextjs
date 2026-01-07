@@ -1,6 +1,11 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS, waitForPageLoad } from "../support/helpers/retry-helper";
+import {
+  TIMEOUTS,
+  waitForLocalStorage,
+  waitForPageLoad,
+} from "../support/helpers/retry-helper";
+import { waitForPageReady } from "../support/helpers/wait-helper";
 import { AppCreationWizard } from "../support/page-objects/AppCreationWizard";
 import type { CustomWorld } from "../support/world";
 
@@ -24,7 +29,10 @@ declare module "../support/world" {
 // Subscription and price-related steps
 Then(
   "I should see the subscription pricing options",
-  async function(this: CustomWorld) {
+  async function (this: CustomWorld) {
+    // Wait for page to be fully ready before checking elements
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
+
     const monthlyOption = this.page.locator(
       '[data-testid="subscription-monthly"]',
     );
@@ -45,7 +53,7 @@ Then(
 // Navigation validation steps
 When(
   "I try to navigate directly to step {int}",
-  async function(this: CustomWorld, stepNumber: number) {
+  async function (this: CustomWorld, stepNumber: number) {
     // Try to access step directly via URL manipulation
     const currentUrl = this.page.url();
     const stepUrl = currentUrl.includes("?")
@@ -53,12 +61,13 @@ When(
       : `${currentUrl}?step=${stepNumber}`;
     await this.page.goto(stepUrl);
     await waitForPageLoad(this.page);
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
   },
 );
 
 Then(
   "I should be redirected back to step {int}",
-  async function(this: CustomWorld, stepNumber: number) {
+  async function (this: CustomWorld, stepNumber: number) {
     const wizard = getWizard(this);
     const stepTitle = await wizard.getStepTitle();
     const expectedSteps: Record<number, string> = {
@@ -80,18 +89,23 @@ Then(
 // Character limit validation
 When(
   "I type a description longer than {int} characters",
-  async function(this: CustomWorld, limit: number) {
+  async function (this: CustomWorld, limit: number) {
     this.descriptionCharacterLimit = limit;
     const longDescription = "A".repeat(limit + 50);
     const wizard = getWizard(this);
     const descField = await wizard.getAppDescriptionTextarea();
     await descField.fill(longDescription);
+    // Wait for validation to trigger
+    await this.page.waitForTimeout(300);
   },
 );
 
 Then(
   "I should see the character count warning",
-  async function(this: CustomWorld) {
+  async function (this: CustomWorld) {
+    // Wait for validation to run
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
+
     const warning = this.page.locator(
       '[data-testid="character-count-warning"], .character-warning',
     );
@@ -101,7 +115,7 @@ Then(
 
 Then(
   "characters over the limit should be truncated",
-  async function(this: CustomWorld) {
+  async function (this: CustomWorld) {
     const wizard = getWizard(this);
     const descField = await wizard.getAppDescriptionTextarea();
     const value = await descField.inputValue();
@@ -114,7 +128,10 @@ Then(
 
 Then(
   "I should see the unsaved changes confirmation dialog",
-  async function(this: CustomWorld) {
+  async function (this: CustomWorld) {
+    // Wait for dialog animation to complete
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
+
     const dialog = this.page.locator('[role="dialog"], [role="alertdialog"]');
     await expect(dialog).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
@@ -122,26 +139,28 @@ Then(
 
 // NOTE: "I should see {string} text" is defined in authentication.steps.ts
 
-When("I confirm discarding changes", async function(this: CustomWorld) {
+When("I confirm discarding changes", async function (this: CustomWorld) {
   const discardButton = this.page.getByRole("button", {
     name: /Discard|Yes|Confirm/i,
   });
   await discardButton.click();
   await waitForPageLoad(this.page);
+  await waitForPageReady(this.page, { strategy: "domcontentloaded" });
 });
 
 When(
   "I click {string}",
-  async function(this: CustomWorld, buttonText: string) {
+  async function (this: CustomWorld, buttonText: string) {
     const button = this.page.getByRole("button", {
       name: new RegExp(buttonText, "i"),
     });
     await button.click();
     await waitForPageLoad(this.page);
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
   },
 );
 
-Then("I should remain on the wizard", async function(this: CustomWorld) {
+Then("I should remain on the wizard", async function (this: CustomWorld) {
   await expect(this.page).toHaveURL(/\/my-apps\/new/, {
     timeout: TIMEOUTS.DEFAULT,
   });
@@ -150,7 +169,7 @@ Then("I should remain on the wizard", async function(this: CustomWorld) {
 // Error handling steps
 Given(
   "the server will return a submission error",
-  async function(this: CustomWorld) {
+  async function (this: CustomWorld) {
     this.serverSubmissionError = true;
     await this.page.route("**/api/apps", async (route) => {
       if (route.request().method() === "POST") {
@@ -166,7 +185,10 @@ Given(
   },
 );
 
-Then("I should remain on the review step", async function(this: CustomWorld) {
+Then("I should remain on the review step", async function (this: CustomWorld) {
+  // Wait for error handling to complete
+  await waitForPageReady(this.page, { strategy: "domcontentloaded" });
+
   const wizard = getWizard(this);
   const stepTitle = await wizard.getStepTitle();
   await expect(stepTitle).toContainText("Review", {
@@ -177,7 +199,7 @@ Then("I should remain on the review step", async function(this: CustomWorld) {
 // Accessibility steps
 Then(
   "I should be able to tab through form fields",
-  async function(this: CustomWorld) {
+  async function (this: CustomWorld) {
     await this.page.keyboard.press("Tab");
     const focusedElement = this.page.locator(":focus");
     await expect(focusedElement).toBeVisible();
@@ -186,7 +208,7 @@ Then(
 
 Then(
   "the focused field should have a visible focus indicator",
-  async function(this: CustomWorld) {
+  async function (this: CustomWorld) {
     const focusedElement = this.page.locator(":focus");
     await expect(focusedElement).toBeVisible();
     // Check for focus ring or outline
@@ -200,17 +222,21 @@ Then(
 
 When(
   "I press Enter on the {string} button",
-  async function(this: CustomWorld, buttonText: string) {
+  async function (this: CustomWorld, buttonText: string) {
     const button = this.page.getByRole("button", {
       name: new RegExp(buttonText, "i"),
     });
     await button.focus();
     await this.page.keyboard.press("Enter");
     await waitForPageLoad(this.page);
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
   },
 );
 
-Then("I should advance to the next step", async function(this: CustomWorld) {
+Then("I should advance to the next step", async function (this: CustomWorld) {
+  // Wait for navigation to complete
+  await waitForPageReady(this.page, { strategy: "domcontentloaded" });
+
   // Verify we moved forward by checking the progress bar increased
   const wizard = getWizard(this);
   const progressBar = await wizard.getProgressBar();
@@ -220,7 +246,7 @@ Then("I should advance to the next step", async function(this: CustomWorld) {
 
 Then(
   "all form fields should have associated labels",
-  async function(this: CustomWorld) {
+  async function (this: CustomWorld) {
     const inputs = this.page.locator("input:visible, textarea:visible");
     const count = await inputs.count();
     for (let i = 0; i < count; i++) {
@@ -243,7 +269,7 @@ Then(
 
 Then(
   "required fields should be indicated with aria-required",
-  async function(this: CustomWorld) {
+  async function (this: CustomWorld) {
     const requiredInputs = this.page.locator(
       "[aria-required='true'], input:required, textarea:required",
     );
@@ -255,17 +281,26 @@ Then(
 // App creation helper
 Given(
   "I create an app named {string}",
-  async function(this: CustomWorld, appName: string) {
+  async function (this: CustomWorld, appName: string) {
     const wizard = getWizard(this);
     await wizard.navigate();
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
+
     await wizard.fillBasicInfo(appName, "Test description for created app");
     await wizard.clickNext();
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
+
     await wizard.fillRequirements("Basic app requirements for testing");
     await wizard.clickNext();
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
+
     await wizard.selectMonetizationOption("Free");
     await wizard.clickNext();
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
+
     await wizard.clickSubmit();
     await waitForPageLoad(this.page);
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
   },
 );
 
