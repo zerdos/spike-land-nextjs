@@ -296,7 +296,11 @@ When(
 Then(
   "I should see {string} metric card",
   async function(this: CustomWorld, metricName: string) {
-    // Look for the label text which should be visible
+    // First wait for the Admin Dashboard heading to ensure the page has loaded
+    const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
+    await expect(heading).toBeVisible({ timeout: 20000 });
+
+    // Then look for the label text which should be visible
     // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const label = this.page.getByText(metricName, { exact: true });
     await expect(label).toBeVisible({ timeout: 15000 });
@@ -306,6 +310,10 @@ Then(
 Then(
   "the {string} metric should display a number",
   async function(this: CustomWorld, metricName: string) {
+    // First wait for the Admin Dashboard heading to ensure the page has loaded
+    const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
+    await expect(heading).toBeVisible({ timeout: 20000 });
+
     // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const label = this.page.getByText(metricName, { exact: true });
     await expect(label).toBeVisible({ timeout: 15000 });

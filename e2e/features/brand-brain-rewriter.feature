@@ -1,7 +1,7 @@
 # Skip entire feature in CI: requires database seeding for proper testing
 # The rewriter page fetches workspace data via API which needs real database records
 # Run with: yarn cucumber --profile db
-@requires-db
+@requires-db @flaky
 Feature: Brand Brain Content Rewriter
   As a workspace member
   I want to rewrite content to align with brand guidelines

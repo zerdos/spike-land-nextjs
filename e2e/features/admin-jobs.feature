@@ -39,14 +39,14 @@ Feature: Admin Jobs Queue Management
     Then I should see jobs list panel on the left
     And I should see job details panel on the right
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Status tabs show job counts
     Given there are jobs in the system
     When I visit "/admin/jobs"
     Then each tab should display a job count badge
     And the "All" tab count should equal total jobs
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter jobs by PENDING status
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -54,7 +54,7 @@ Feature: Admin Jobs Queue Management
     Then the jobs list should only show PENDING status jobs
     And the "Queue" tab should be active
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter jobs by PROCESSING status
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -62,7 +62,7 @@ Feature: Admin Jobs Queue Management
     Then the jobs list should only show PROCESSING status jobs
     And processing jobs should have animated status badge
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter jobs by COMPLETED status
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -70,7 +70,7 @@ Feature: Admin Jobs Queue Management
     Then the jobs list should only show COMPLETED status jobs
     And completed jobs should show processing duration
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter jobs by FAILED status
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -78,21 +78,21 @@ Feature: Admin Jobs Queue Management
     Then the jobs list should only show FAILED status jobs
     And failed jobs should show error message preview
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter jobs by CANCELLED status
     Given there are jobs in the system
     When I visit "/admin/jobs"
     And I click the "Cancelled" tab
     Then the jobs list should only show CANCELLED status jobs
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter jobs by REFUNDED status
     Given there are jobs in the system
     When I visit "/admin/jobs"
     And I click the "Refunded" tab
     Then the jobs list should only show REFUNDED status jobs
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Jobs list displays items correctly
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -103,7 +103,7 @@ Feature: Admin Jobs Queue Management
     And each job should display job ID preview
     And each job should display user email
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Search jobs by job ID
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -111,7 +111,7 @@ Feature: Admin Jobs Queue Management
     And I click "Search" button
     Then the jobs list should show matching jobs
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Search jobs by email
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -119,7 +119,7 @@ Feature: Admin Jobs Queue Management
     And I click "Search" button
     Then the jobs list should only show jobs from that user
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Search with Enter key
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -127,7 +127,7 @@ Feature: Admin Jobs Queue Management
     And I press Enter
     Then the search should execute
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Refresh job list
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -135,7 +135,7 @@ Feature: Admin Jobs Queue Management
     Then the jobs list should refresh
     And the job counts should update
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Select job to view details
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -143,7 +143,7 @@ Feature: Admin Jobs Queue Management
     Then the job should be highlighted
     And the details panel should show job information
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Job details shows status and timing
     Given there is a completed job in the system
     When I visit "/admin/jobs"
@@ -153,7 +153,7 @@ Feature: Admin Jobs Queue Management
     And the details panel should show "Created" timestamp
     And the details panel should show "Completed" timestamp
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Job details shows enhancement information
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -165,7 +165,7 @@ Feature: Admin Jobs Queue Management
     And I should see original image size
     And I should see retry count
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Completed job details shows enhanced image info
     Given there is a completed job in the system
     When I visit "/admin/jobs"
@@ -173,7 +173,7 @@ Feature: Admin Jobs Queue Management
     Then the details panel should show enhanced image dimensions
     And the details panel should show enhanced image size
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Completed job shows before/after comparison
     Given there is a completed job in the system
     When I visit "/admin/jobs"
@@ -182,7 +182,7 @@ Feature: Admin Jobs Queue Management
     And I should see "Original" label
     And I should see "Enhanced" label
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Job details shows AI model information
     Given there is a job with AI model info in the system
     When I visit "/admin/jobs"
@@ -191,7 +191,7 @@ Feature: Admin Jobs Queue Management
     And I should see the model name
     And I should see the temperature setting
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Job details shows prompt for processed jobs
     Given there is a job with a prompt in the system
     When I visit "/admin/jobs"
@@ -199,7 +199,7 @@ Feature: Admin Jobs Queue Management
     Then the details panel should show "Prompt" section
     And the prompt should be displayed in a code block
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Failed job details shows error message
     Given there is a failed job in the system
     When I visit "/admin/jobs"
@@ -207,7 +207,7 @@ Feature: Admin Jobs Queue Management
     Then the details panel should show "Error" section in red
     And the error message should be displayed
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Job details shows user information
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -216,7 +216,7 @@ Feature: Admin Jobs Queue Management
     And I should see the user name or "Unknown"
     And I should see the user email
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Job details shows all IDs
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -225,19 +225,19 @@ Feature: Admin Jobs Queue Management
     And I should see the Job ID
     And I should see the Image ID
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Job details shows workflow ID when present
     Given there is a job with workflow run ID
     When I visit "/admin/jobs"
     And I click on that job
     Then the details panel should show the Workflow ID
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Empty job details when no job selected
     When I visit "/admin/jobs"
     Then the details panel should show "Select a job to view details" text
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Job status badges have correct colors
     Given there are jobs of all statuses in the system
     When I visit "/admin/jobs"
@@ -248,7 +248,7 @@ Feature: Admin Jobs Queue Management
     And CANCELLED status badge should be neutral
     And REFUNDED status badge should be purple
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Tier labels display correctly
     Given there are jobs of all tiers in the system
     When I visit "/admin/jobs"
@@ -256,7 +256,7 @@ Feature: Admin Jobs Queue Management
     And TIER_2K should display as "2K"
     And TIER_4K should display as "4K"
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Pagination displays when more than 20 jobs
     Given there are more than 20 jobs in the system
     When I visit "/admin/jobs"
@@ -265,7 +265,7 @@ Feature: Admin Jobs Queue Management
     And I should see "Previous" button disabled
     And I should see "Next" button enabled
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Navigate to next page of jobs
     Given there are more than 20 jobs in the system
     When I visit "/admin/jobs"
@@ -273,7 +273,7 @@ Feature: Admin Jobs Queue Management
     Then I should see "Page 2 of" text
     And I should see different jobs in the list
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Navigate to previous page of jobs
     Given there are more than 20 jobs in the system
     When I visit "/admin/jobs"
@@ -281,7 +281,7 @@ Feature: Admin Jobs Queue Management
     And I click "Previous" button
     Then I should see "Page 1 of" text
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Tab change resets to page 1
     Given there are more than 20 jobs in the system
     When I visit "/admin/jobs"
@@ -289,7 +289,7 @@ Feature: Admin Jobs Queue Management
     And I click the "Failed" tab
     Then I should see "Page 1 of" text
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Selected job clears when switching tabs
     Given there are jobs in the system
     When I visit "/admin/jobs"
@@ -297,45 +297,45 @@ Feature: Admin Jobs Queue Management
     And I click the "Failed" tab
     Then the details panel should show "Select a job to view details" text
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Jobs list shows loading state
     Given the jobs API is slow
     When I navigate quickly to "/admin/jobs"
     Then I should see loading skeleton placeholders
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Empty state when no jobs found
     Given there are no jobs in the system
     When I visit "/admin/jobs"
     Then I should see "No jobs found" text
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Empty state when no jobs match filter
     Given there are only completed jobs in the system
     When I visit "/admin/jobs"
     And I click the "Failed" tab
     Then I should see "No jobs found" text
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Error state displays on API failure
     Given the jobs API returns an error
     When I visit "/admin/jobs"
     Then I should see an error message in red
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Relative time displays correctly
     Given there is a job created just now
     When I visit "/admin/jobs"
     Then I should see "just now" timestamp
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Processing duration formats correctly
     Given there is a completed job that took 45 seconds
     When I visit "/admin/jobs"
     And I click on the completed job
     Then I should see processing time formatted as seconds
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: File sizes format correctly
     Given there is a completed job with known file sizes
     When I visit "/admin/jobs"

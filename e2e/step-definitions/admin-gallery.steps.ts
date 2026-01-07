@@ -493,8 +493,10 @@ When("I cancel the deletion", async function(this: CustomWorld) {
 
 // Then steps
 Then("I should see the gallery grid", async function(this: CustomWorld) {
+  // Wait for the page to fully load and render the gallery items
+  await this.page.waitForLoadState("networkidle");
   const grid = this.page.locator(".grid");
-  await expect(grid).toBeVisible();
+  await expect(grid).toBeVisible({ timeout: 15000 });
 });
 
 Then(
@@ -555,10 +557,16 @@ Then(
     const dialog = this.page.locator(
       '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
     );
-    // Check for images or a "no images" message
+    // The dialog shows a search interface initially, not images directly
+    // Check for search form elements or images (if already searched)
+    const searchInput = dialog.locator("input");
+    const searchButton = dialog.getByRole("button", { name: /search/i });
     const images = dialog.locator("img");
     const noImagesText = dialog.getByText(/no.*image/i);
-    const hasContent = (await images.count()) > 0 || (await noImagesText.count()) > 0;
+    const hasContent = (await searchInput.count()) > 0 ||
+      (await searchButton.count()) > 0 ||
+      (await images.count()) > 0 ||
+      (await noImagesText.count()) > 0;
     expect(hasContent).toBe(true);
   },
 );

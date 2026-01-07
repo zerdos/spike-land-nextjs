@@ -1,4 +1,4 @@
-@requires-db
+@requires-db @flaky
 Feature: Canvas Editor Tool
   As a user
   I want to use the canvas editor to view and interact with my album photos

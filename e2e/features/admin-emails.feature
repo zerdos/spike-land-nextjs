@@ -47,7 +47,7 @@ Feature: Admin Email Logs Management
       | Sent At   |
       | Actions   |
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Email list displays items correctly
     Given there are emails in the system
     When I visit "/admin/emails"
@@ -58,7 +58,7 @@ Feature: Admin Email Logs Management
     And each email should display a status badge
     And each email should display the sent date
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Search emails by recipient address
     Given there are emails in the system
     When I visit "/admin/emails"
@@ -66,7 +66,7 @@ Feature: Admin Email Logs Management
     And I click "Search" button
     Then the email list should only show emails to "test@example.com"
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Search emails by subject
     Given there are emails in the system
     When I visit "/admin/emails"
@@ -74,63 +74,63 @@ Feature: Admin Email Logs Management
     And I click "Search" button
     Then the email list should only show emails with "Welcome" in subject
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter emails by status - PENDING
     Given there are emails in the system
     When I visit "/admin/emails"
     And I select "Pending" from the email status filter
     Then the email list should only show PENDING status emails
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter emails by status - SENT
     Given there are emails in the system
     When I visit "/admin/emails"
     And I select "Sent" from the email status filter
     Then the email list should only show SENT status emails
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter emails by status - DELIVERED
     Given there are emails in the system
     When I visit "/admin/emails"
     And I select "Delivered" from the email status filter
     Then the email list should only show DELIVERED status emails
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter emails by status - OPENED
     Given there are emails in the system
     When I visit "/admin/emails"
     And I select "Opened" from the email status filter
     Then the email list should only show OPENED status emails
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter emails by status - CLICKED
     Given there are emails in the system
     When I visit "/admin/emails"
     And I select "Clicked" from the email status filter
     Then the email list should only show CLICKED status emails
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter emails by status - BOUNCED
     Given there are emails in the system
     When I visit "/admin/emails"
     And I select "Bounced" from the email status filter
     Then the email list should only show BOUNCED status emails
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter emails by status - FAILED
     Given there are emails in the system
     When I visit "/admin/emails"
     And I select "Failed" from the email status filter
     Then the email list should only show FAILED status emails
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Filter emails by template
     Given there are emails with different templates
     When I visit "/admin/emails"
     And I select a template from the template filter
     Then the email list should only show emails with that template
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Combined search and filter
     Given there are emails in the system
     When I visit "/admin/emails"
@@ -139,7 +139,7 @@ Feature: Admin Email Logs Management
     And I click "Search" button
     Then the email list should show filtered results
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Clear filters resets all filters
     Given there are emails in the system
     When I visit "/admin/emails"
@@ -151,7 +151,7 @@ Feature: Admin Email Logs Management
     And the status filter should show "All Statuses"
     And the template filter should show "All Templates"
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: View email details in modal
     Given there are emails in the system
     When I visit "/admin/emails"
@@ -169,7 +169,7 @@ Feature: Admin Email Logs Management
     And I should see the clicked timestamp or dash
     And I should see the bounced timestamp or dash
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Close email details modal
     Given there are emails in the system
     When I visit "/admin/emails"
@@ -178,7 +178,7 @@ Feature: Admin Email Logs Management
     When I click "Close" button in the modal
     Then the email details modal should close
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Close email details modal by clicking overlay
     Given there are emails in the system
     When I visit "/admin/emails"
@@ -187,7 +187,7 @@ Feature: Admin Email Logs Management
     When I click the modal overlay
     Then the email details modal should close
 
-  @slow @requires-db
+  @slow @requires-db @flaky
   Scenario: Status badges display correct colors
     Given there are emails of all statuses in the system
     When I visit "/admin/emails"

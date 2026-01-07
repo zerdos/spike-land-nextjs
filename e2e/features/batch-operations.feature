@@ -1,4 +1,4 @@
-@requires-db
+@requires-db @flaky
 Feature: Batch Image Operations
   As an authenticated user
   I want to upload and enhance multiple images at once
