@@ -99,33 +99,6 @@ async function init() {
   return workerPool;
 }
 
-export const prettierToThrow = async ({
-  code,
-  toThrow,
-}: {
-  code: string;
-  toThrow: boolean;
-}): Promise<string> => {
-  const worker = (await init()).getWorker("prettier");
-  try {
-    const { data, error } = await tryCatch(
-      worker.rpc.rpc("prettierJs", { code, toThrow }) as Promise<string>,
-    );
-    if (error) throw error;
-    return data!;
-  } finally {
-    (await init()).releaseWorker(worker);
-  }
-};
-
-export const format = async (code: string): Promise<string> => {
-  const { data, error } = await tryCatch(
-    prettierToThrow({ code, toThrow: false }),
-  );
-  if (error) throw error;
-  return data!;
-};
-
 export const ata = async ({
   code,
   originToUse,
@@ -139,19 +112,6 @@ export const ata = async ({
       worker.rpc.rpc("ata", { code, originToUse }) as Promise<
         Array<{ content: string; filePath: string; }>
       >,
-    );
-    if (error) throw error;
-    return data!;
-  } finally {
-    (await init()).releaseWorker(worker);
-  }
-};
-
-export const prettierCss = async (code: string): Promise<string> => {
-  const worker = (await init()).getWorker("prettier");
-  try {
-    const { data, error } = await tryCatch(
-      worker.rpc.rpc("prettierCss", code) as Promise<string>,
     );
     if (error) throw error;
     return data!;
