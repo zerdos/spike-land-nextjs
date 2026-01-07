@@ -1,5 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { waitForPageReady, waitForUrlPath } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
 
 // Helper to mock admin status
@@ -207,28 +208,40 @@ Given("the user is a super admin", async function(this: CustomWorld) {
 
 Given("I am on the admin dashboard", async function(this: CustomWorld) {
   await this.page.goto(`${this.baseUrl}/admin`);
-  await this.page.waitForLoadState("networkidle");
+  // Use waitForPageReady instead of networkidle to avoid hanging on admin polling
+  await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
+  // Wait for the Admin Dashboard heading to ensure SSR content is loaded
+  const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
+  await expect(heading).toBeVisible({ timeout: 15000 });
 });
 
 // When steps
 When(
   "I click the {string} quick link",
   async function(this: CustomWorld, linkText: string) {
+    // First ensure Quick Links section is visible and loaded
+    const quickLinksHeading = this.page.getByRole("heading", { name: "Quick Links" });
+    await expect(quickLinksHeading).toBeVisible({ timeout: 10000 });
+
     // Scope to the Quick Links section container (parent of the heading)
     // to avoid ambiguity with sidebar links or other parts of the page
-    const quickLinksSection = this.page
-      .getByRole("heading", { name: "Quick Links" })
-      .locator("..");
+    const quickLinksSection = quickLinksHeading.locator("..");
 
     const link = quickLinksSection.getByRole("link", { name: linkText });
-    await expect(link).toBeVisible();
+    await expect(link).toBeVisible({ timeout: 10000 });
+
+    // Get the expected href for verification
+    const href = await link.getAttribute("href");
+
     await link.click();
-    await this.page.waitForLoadState("domcontentloaded");
-    // Try networkidle with short timeout, but don't fail if it times out
-    try {
-      await this.page.waitForLoadState("networkidle", { timeout: 5000 });
-    } catch {
-      // Network may still be active, that's OK
+
+    // Use waitForPageReady to ensure navigation completes
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
+    // Verify navigation to correct page if href is available
+    if (href) {
+      await waitForUrlPath(this.page, href, { timeout: 10000 });
     }
   },
 );
@@ -237,12 +250,24 @@ When(
   "I click {string} in the sidebar",
   async function(this: CustomWorld, linkText: string) {
     const sidebar = this.page.locator("aside");
+    await expect(sidebar).toBeVisible({ timeout: 10000 });
+
     // Use text-based locator since accessible name may include emoji icons
     const link = sidebar.locator("a").filter({ hasText: linkText });
-    await expect(link).toBeVisible();
+    await expect(link).toBeVisible({ timeout: 10000 });
+
+    // Get href before clicking for navigation verification
+    const href = await link.getAttribute("href");
+
     await link.click();
-    // Don't wait for load state here, let the next step handle it if needed
-    // or rely on auto-wait. Dashboard polling can cause networkidle to hang.
+
+    // Wait for page to be ready after navigation
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
+    // Verify navigation if href is available
+    if (href) {
+      await waitForUrlPath(this.page, href, { timeout: 10000 });
+    }
   },
 );
 
@@ -300,6 +325,9 @@ Then(
     const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
     await expect(heading).toBeVisible({ timeout: 20000 });
 
+    // Wait a bit for SSR metrics to populate
+    await this.page.waitForTimeout(500);
+
     // Then look for the label text which should be visible
     // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const label = this.page.getByText(metricName, { exact: true });
@@ -314,6 +342,9 @@ Then(
     const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
     await expect(heading).toBeVisible({ timeout: 20000 });
 
+    // Wait for metrics to load
+    await this.page.waitForTimeout(500);
+
     // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const label = this.page.getByText(metricName, { exact: true });
     await expect(label).toBeVisible({ timeout: 15000 });
@@ -322,6 +353,9 @@ Then(
     // Structure: <div><p>Label</p><p>Value</p></div>
     const valueElement = label.locator("xpath=following-sibling::p");
     await expect(valueElement).toBeVisible({ timeout: 10000 });
+
+    // Wait for the value to populate (not be loading state)
+    await this.page.waitForTimeout(300);
 
     // Look for numeric value in the card
     const text = await valueElement.textContent();
@@ -332,6 +366,9 @@ Then(
 Then(
   "I should see admin count in the metric card",
   async function(this: CustomWorld) {
+    // Wait for metrics to load
+    await this.page.waitForTimeout(500);
+
     const adminText = this.page.getByText(/\d+ admin/);
     await expect(adminText).toBeVisible({ timeout: 10000 });
   },
@@ -340,12 +377,18 @@ Then(
 Then(
   "the {string} metric should display total count",
   async function(this: CustomWorld, metricName: string) {
+    // Wait for metrics to load
+    await this.page.waitForTimeout(500);
+
     // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const label = this.page.getByText(metricName, { exact: true });
     await expect(label).toBeVisible({ timeout: 15000 });
 
     const valueElement = label.locator("xpath=following-sibling::p");
     await expect(valueElement).toBeVisible({ timeout: 10000 });
+
+    // Wait for value to populate
+    await this.page.waitForTimeout(300);
 
     // Verify numeric value exists
     const text = await valueElement.textContent();
@@ -354,6 +397,9 @@ Then(
 );
 
 Then("I should see active jobs count", async function(this: CustomWorld) {
+  // Wait for metrics to load
+  await this.page.waitForTimeout(500);
+
   const jobsText = this.page.getByText(/\d+ active job/);
   await expect(jobsText).toBeVisible({ timeout: 10000 });
 });
@@ -361,12 +407,18 @@ Then("I should see active jobs count", async function(this: CustomWorld) {
 Then(
   "the {string} metric should display total",
   async function(this: CustomWorld, metricName: string) {
+    // Wait for metrics to load
+    await this.page.waitForTimeout(500);
+
     // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const label = this.page.getByText(metricName, { exact: true });
     await expect(label).toBeVisible({ timeout: 15000 });
 
     const valueElement = label.locator("xpath=following-sibling::p");
     await expect(valueElement).toBeVisible({ timeout: 10000 });
+
+    // Wait for value to populate
+    await this.page.waitForTimeout(300);
 
     // Verify numeric value exists
     const text = await valueElement.textContent();
@@ -375,6 +427,9 @@ Then(
 );
 
 Then("I should see tokens spent count", async function(this: CustomWorld) {
+  // Wait for metrics to load
+  await this.page.waitForTimeout(500);
+
   const spentText = this.page.getByText(/\d+ spent/);
   await expect(spentText).toBeVisible({ timeout: 10000 });
 });
@@ -382,9 +437,14 @@ Then("I should see tokens spent count", async function(this: CustomWorld) {
 Then(
   "I should see {string} quick link",
   async function(this: CustomWorld, linkText: string) {
-    const quickLinksSection = this.page.locator("text=Quick Links").locator(
-      "..",
-    );
+    // First ensure Quick Links section is visible
+    const quickLinksHeading = this.page.getByRole("heading", { name: "Quick Links" });
+    await expect(quickLinksHeading).toBeVisible({ timeout: 10000 });
+
+    // Wait for quick links to load
+    await this.page.waitForTimeout(300);
+
+    const quickLinksSection = quickLinksHeading.locator("..");
     const link = quickLinksSection.getByRole("link", { name: linkText });
     await expect(link).toBeVisible({ timeout: 10000 });
   },
@@ -415,8 +475,8 @@ Then(
 );
 
 Then("I should see analytics content", async function(this: CustomWorld) {
-  // Wait for page to load - specific content depends on implementation
-  await this.page.waitForLoadState("networkidle");
+  // Use waitForPageReady instead of networkidle
+  await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
   // Check for any card or heading that indicates analytics content
   const hasContent = (await this.page.locator('h1, h2, [class*="Card"]').count()) > 0;
   expect(hasContent).toBe(true);
@@ -425,14 +485,14 @@ Then("I should see analytics content", async function(this: CustomWorld) {
 Then(
   "I should see token economics content",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
     const hasContent = (await this.page.locator('h1, h2, [class*="Card"]').count()) > 0;
     expect(hasContent).toBe(true);
   },
 );
 
 Then("I should see system health content", async function(this: CustomWorld) {
-  await this.page.waitForLoadState("networkidle");
+  await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
   const hasContent = (await this.page.locator('h1, h2, [class*="Card"]').count()) > 0;
   expect(hasContent).toBe(true);
 });
@@ -440,7 +500,7 @@ Then("I should see system health content", async function(this: CustomWorld) {
 Then(
   "I should see voucher management content",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
     const hasContent = (await this.page.locator('h1, h2, [class*="Card"]').count()) > 0;
     expect(hasContent).toBe(true);
   },
@@ -449,7 +509,7 @@ Then(
 Then(
   "I should see user management content",
   async function(this: CustomWorld) {
-    await this.page.waitForLoadState("networkidle");
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
     const hasContent = (await this.page.locator('h1, h2, [class*="Card"]').count()) > 0;
     expect(hasContent).toBe(true);
   },
@@ -470,9 +530,14 @@ Then(
 Then(
   "all quick link cards should be clickable",
   async function(this: CustomWorld) {
-    const quickLinksSection = this.page.locator("text=Quick Links").locator(
-      "..",
-    );
+    // Ensure Quick Links section is visible first
+    const quickLinksHeading = this.page.getByRole("heading", { name: "Quick Links" });
+    await expect(quickLinksHeading).toBeVisible({ timeout: 10000 });
+
+    // Wait for links to load
+    await this.page.waitForTimeout(300);
+
+    const quickLinksSection = quickLinksHeading.locator("..");
     const links = quickLinksSection.getByRole("link");
     const count = await links.count();
 

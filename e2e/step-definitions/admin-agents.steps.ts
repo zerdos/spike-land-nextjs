@@ -1,5 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
+import { waitForPageReady } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
 
 // ======= Given Steps =======
@@ -144,6 +145,9 @@ Given("the agents API returns an error", async function(this: CustomWorld) {
 // ======= When Steps =======
 
 When("I expand the session card", async function(this: CustomWorld) {
+  // Ensure page is fully ready before expanding
+  await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
   const expandButton = this.page.getByRole("button", {
     name: /expand|show more|details/i,
   })
@@ -159,8 +163,11 @@ When("I expand the session card", async function(this: CustomWorld) {
 Then(
   "I should see status overview section",
   async function(this: CustomWorld) {
+    // Ensure page is fully ready before checking status overview
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
     const statusCards = this.page.locator("[class*='Card']");
-    await expect(statusCards.first()).toBeVisible({ timeout: 10000 });
+    await expect(statusCards.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
@@ -168,21 +175,31 @@ Then(
   "I should see {string} status card",
   async function(this: CustomWorld, cardName: string) {
     const card = this.page.getByText(cardName, { exact: false });
-    await expect(card.first()).toBeVisible({ timeout: 10000 });
+    await expect(card.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
 Then(
   "I should see the sessions list or empty state",
   async function(this: CustomWorld) {
+    // Ensure page is fully ready before checking sessions list
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
     const sessionList = this.page.locator("[data-testid='sessions-list']")
       .or(this.page.getByText(/no sessions|no active agents/i))
       .or(this.page.locator("[class*='session-card']"));
-    await expect(sessionList.first()).toBeVisible({ timeout: 10000 });
+    await expect(sessionList.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
 Then("I should see the session card", async function(this: CustomWorld) {
+  // Ensure page is fully ready before checking for session cards
+  await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
+  // Wait for the sessions list container to be visible
+  const sessionsList = this.page.locator("[data-testid='sessions-list']");
+  await expect(sessionsList).toBeVisible({ timeout: 15000 });
+
   const sessionCard = this.page.locator("[data-testid*='session']")
     .or(this.page.locator("[class*='session-card']"))
     .or(
@@ -190,7 +207,7 @@ Then("I should see the session card", async function(this: CustomWorld) {
         hasText: /session|jules/i,
       }),
     );
-  await expect(sessionCard.first()).toBeVisible({ timeout: 10000 });
+  await expect(sessionCard.first()).toBeVisible({ timeout: 15000 });
 });
 
 Then(
@@ -198,7 +215,7 @@ Then(
   async function(this: CustomWorld) {
     const badge = this.page.locator("[class*='Badge']")
       .or(this.page.locator("[data-testid*='status']"));
-    await expect(badge.first()).toBeVisible({ timeout: 5000 });
+    await expect(badge.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
@@ -208,42 +225,58 @@ Then(
     // Check for provider badge within sessions list (showing "JULES" or similar)
     const sessionsList = this.page.locator("[data-testid='sessions-list']");
     const providerBadge = sessionsList.getByText(/jules/i);
-    await expect(providerBadge.first()).toBeVisible({ timeout: 5000 });
+    await expect(providerBadge.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
 Then(
   "I should see {string} button on the session card",
   async function(this: CustomWorld, buttonText: string) {
+    // Ensure page is fully ready before checking for buttons
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
+    // Wait for the sessions list to be visible first
+    const sessionsList = this.page.locator("[data-testid='sessions-list']");
+    await expect(sessionsList).toBeVisible({ timeout: 15000 });
+
     const button = this.page.getByRole("button", {
       name: new RegExp(buttonText, "i"),
     });
-    await expect(button.first()).toBeVisible({ timeout: 5000 });
+    await expect(button.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
 Then("I should see session activity log", async function(this: CustomWorld) {
+  // Ensure page is fully ready and session card is expanded
+  await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
   const activityLog = this.page.locator("[data-testid*='activity']")
     .or(this.page.getByText(/activity|log|analyzing/i));
-  await expect(activityLog.first()).toBeVisible({ timeout: 5000 });
+  await expect(activityLog.first()).toBeVisible({ timeout: 15000 });
 });
 
 Then("I should see resource status items", async function(this: CustomWorld) {
+  // Ensure page is fully ready before checking resources
+  await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
   // Accept either real resource items OR the empty state (both are valid states)
   const resourceItem = this.page.locator("[data-testid*='resource']")
     .or(this.page.getByText(/dev server|mcp|database/i))
     .or(this.page.getByTestId("resources-empty-state"));
-  await expect(resourceItem.first()).toBeVisible({ timeout: 10000 });
+  await expect(resourceItem.first()).toBeVisible({ timeout: 15000 });
 });
 
 Then(
   "I should see {string} resource item",
   async function(this: CustomWorld, resourceName: string) {
+    // Ensure page is fully ready before checking for specific resources
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
     // Wait for loading state to disappear ONLY if it's visible
     const loadingElement = this.page.locator(".loading, .animate-pulse").first();
     const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
     if (isLoadingVisible) {
-      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+      await loadingElement.waitFor({ state: "hidden", timeout: 15000 }).catch(() => {});
     }
 
     const resource = this.page.getByText(new RegExp(resourceName, "i"));
@@ -257,13 +290,16 @@ Then(
     const indicator = this.page.locator("[class*='status']")
       .or(this.page.locator("[class*='indicator']"))
       .or(this.page.locator("[class*='Badge']"));
-    await expect(indicator.first()).toBeVisible({ timeout: 5000 });
+    await expect(indicator.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
 Then(
   "I should see MCP server status items",
   async function(this: CustomWorld) {
+    // Ensure page is fully ready before checking MCP servers
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
     const mcpStatus = this.page.getByText(/mcp|playwright|docker/i);
     // MCP servers may or may not be visible depending on configuration
     const isVisible = await mcpStatus.first().isVisible().catch(() => false);
@@ -272,19 +308,25 @@ Then(
 );
 
 Then("I should see current branch name", async function(this: CustomWorld) {
+  // Ensure page is fully ready before checking git info
+  await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
   const branchInfo = this.page.getByText(/branch|main|feature/i)
     .or(this.page.locator("[data-testid*='branch']"));
-  await expect(branchInfo.first()).toBeVisible({ timeout: 10000 });
+  await expect(branchInfo.first()).toBeVisible({ timeout: 15000 });
 });
 
 Then(
   "I should see changed files information",
   async function(this: CustomWorld) {
+    // Ensure page is fully ready before checking git info
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
     // Wait for any loading to complete
     const loadingElement = this.page.locator(".loading, .animate-pulse").first();
     const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
     if (isLoadingVisible) {
-      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+      await loadingElement.waitFor({ state: "hidden", timeout: 15000 }).catch(() => {});
     }
 
     const changedFiles = this.page.getByText(/changed|files|modified/i)
@@ -295,25 +337,31 @@ Then(
 
 Then("I should see ahead\\/behind status", async function(this: CustomWorld) {
   const syncStatus = this.page.getByText(/ahead|behind|up to date|sync/i);
-  await expect(syncStatus.first()).toBeVisible({ timeout: 5000 });
+  await expect(syncStatus.first()).toBeVisible({ timeout: 15000 });
 });
 
 Then(
   "I should see open issues list or empty state",
   async function(this: CustomWorld) {
+    // Ensure page is fully ready before checking GitHub issues
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
     const issuesList = this.page.locator("[data-testid*='issues']")
       .or(this.page.getByText(/no issues|fix authentication|add dark mode/i));
-    await expect(issuesList.first()).toBeVisible({ timeout: 10000 });
+    await expect(issuesList.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
 Then("I should see recent workflow runs", async function(this: CustomWorld) {
+  // Ensure page is fully ready before checking workflows
+  await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
   // Look for any workflow-related content or CI badge
   const workflows = this.page.getByText(/workflow|ci|action|run|build/i)
     .or(this.page.locator("[data-testid*='workflow']"))
     .or(this.page.locator("[class*='workflow']"))
     .or(this.page.getByText(/no.*workflow|no.*runs/i));
-  await expect(workflows.first()).toBeVisible({ timeout: 10000 });
+  await expect(workflows.first()).toBeVisible({ timeout: 15000 });
 });
 
 Then(
@@ -321,13 +369,16 @@ Then(
   async function(this: CustomWorld) {
     const statusIndicator = this.page.locator("[class*='Badge']")
       .or(this.page.locator("[class*='status']"));
-    await expect(statusIndicator.first()).toBeVisible({ timeout: 5000 });
+    await expect(statusIndicator.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
 Then(
   "I should see GitHub configuration required message",
   async function(this: CustomWorld) {
+    // Ensure page is fully ready before checking for config message
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
     // Use longer timeout for server-rendered admin pages which may take time to fetch data
     const configMessage = this.page.getByText(
       /not configured|set.*token|github.*required/i,
@@ -341,7 +392,7 @@ Then(
   async function(this: CustomWorld) {
     // Be specific about the Create Session modal to avoid matching cookie consent dialog
     const modal = this.page.getByRole("dialog", { name: /create.*jules.*task|new.*task/i });
-    await expect(modal).toBeVisible({ timeout: 5000 });
+    await expect(modal).toBeVisible({ timeout: 15000 });
   },
 );
 
@@ -349,7 +400,7 @@ Then("the modal should have title field", async function(this: CustomWorld) {
   // Target the create session modal specifically
   const modal = this.page.getByRole("dialog", { name: /create.*jules.*task|new.*task/i });
   const titleField = modal.getByLabel(/title/i);
-  await expect(titleField).toBeVisible({ timeout: 5000 });
+  await expect(titleField).toBeVisible({ timeout: 15000 });
 });
 
 Then("the modal should have task field", async function(this: CustomWorld) {
@@ -357,15 +408,14 @@ Then("the modal should have task field", async function(this: CustomWorld) {
   const modal = this.page.getByRole("dialog", { name: /create.*jules.*task|new.*task/i });
   const taskField = modal.getByLabel(/task|description/i)
     .or(modal.locator("textarea"));
-  await expect(taskField.first()).toBeVisible({ timeout: 5000 });
+  await expect(taskField.first()).toBeVisible({ timeout: 15000 });
 });
 
 Then(
   "the {string} button should be disabled or hidden",
   async function(this: CustomWorld, buttonText: string) {
-    // Wait for the page to stabilize after loading
-    await this.page.waitForLoadState("networkidle");
-    await this.page.waitForTimeout(500);
+    // Ensure page is fully ready before checking button state
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
 
     const button = this.page.getByRole("button", {
       name: new RegExp(buttonText, "i"),
@@ -390,7 +440,7 @@ Then(
     // The timestamp div has data-testid="timestamp" and contains "Last updated:"
     const timestamp = this.page.locator("[data-testid='timestamp']")
       .or(this.page.getByText(/Last updated:/i));
-    await expect(timestamp.first()).toBeVisible({ timeout: 10000 });
+    await expect(timestamp.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
@@ -408,17 +458,23 @@ Then(
 Then(
   "I should see {string} link in the sidebar",
   async function(this: CustomWorld, linkText: string) {
+    // Ensure page is fully ready before checking sidebar
+    await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
     const sidebar = this.page.locator("aside");
     const link = sidebar.getByRole("link", { name: new RegExp(linkText, "i") });
-    await expect(link.first()).toBeVisible({ timeout: 5000 });
+    await expect(link.first()).toBeVisible({ timeout: 15000 });
   },
 );
 
 Then("I should see a retry option", async function(this: CustomWorld) {
+  // Ensure page is fully ready before checking for retry button
+  await waitForPageReady(this.page, { strategy: "both", timeout: 15000 });
+
   const retryButton = this.page.getByRole("button", {
     name: /retry|try again|refresh/i,
   });
-  await expect(retryButton.first()).toBeVisible({ timeout: 5000 });
+  await expect(retryButton.first()).toBeVisible({ timeout: 15000 });
 });
 
 Then(

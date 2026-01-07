@@ -272,8 +272,8 @@ When(
 When(
   "I select {string} from the email status filter",
   async function(this: CustomWorld, status: string) {
-    // Wait for the page to be fully loaded (table should be visible)
-    await this.page.waitForSelector("table", { state: "visible", timeout: 30000 });
+    // Wait for the email list to be fully loaded first
+    await waitForEmailListReady(this.page);
 
     // Get the first combobox (status filter) and ensure it's ready
     const statusSelect = this.page.getByRole("combobox").first();
@@ -295,6 +295,8 @@ When(
         await option.waitFor({ state: "visible", timeout: 3000 });
         optionVisible = true;
         await option.click();
+        // Wait for filter to apply
+        await this.page.waitForTimeout(300);
       } catch {
         // Dropdown may have closed, retry
         if (attempts < maxAttempts) {
@@ -316,8 +318,8 @@ When(
 When(
   "I select a template from the template filter",
   async function(this: CustomWorld) {
-    // Wait for the page to be fully loaded (table should be visible)
-    await this.page.waitForSelector("table", { state: "visible", timeout: 30000 });
+    // Wait for the email list to be fully loaded first
+    await waitForEmailListReady(this.page);
 
     // Get the second combobox (template filter) and ensure it's ready
     const templateSelect = this.page.getByRole("combobox").nth(1);
