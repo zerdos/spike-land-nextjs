@@ -16,6 +16,7 @@ vi.mock("@/components/enhance/ImageComparisonSlider", () => ({
 }));
 
 vi.mock("next/image", () => ({
+  // eslint-disable-next-line @next/next/no-img-element
   default: (props: any) => <img {...props} />,
 }));
 

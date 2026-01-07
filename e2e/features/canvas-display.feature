@@ -1,4 +1,4 @@
-@requires-db @flaky
+@requires-db
 Feature: Canvas Smart Photo Frame Display
   As a user
   I want to display my album photos on any browser-based device

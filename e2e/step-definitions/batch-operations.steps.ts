@@ -1,6 +1,11 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import * as path from "path";
+import {
+  TIMEOUTS,
+  waitForDynamicContent,
+  waitForElementWithRetry,
+} from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // Given steps
@@ -117,10 +122,16 @@ Given(
 Given(
   "I have selected {int} images for enhancement",
   async function(this: CustomWorld, count: number) {
-    // Select images using checkboxes
-    const checkboxes = this.page.locator('input[type="checkbox"]');
+    // Select images using checkboxes with retry
     for (let i = 0; i < count; i++) {
-      await checkboxes.nth(i).check();
+      const checkbox = await waitForElementWithRetry(
+        this.page,
+        `input[type="checkbox"]:nth-of-type(${i + 1})`,
+        { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+      );
+      await checkbox.check({ timeout: TIMEOUTS.DEFAULT });
+      // Wait for checkbox state to update
+      await this.page.waitForTimeout(100);
     }
   },
 );
@@ -128,9 +139,16 @@ Given(
 Given(
   "I have {int} images selected for enhancement",
   async function(this: CustomWorld, count: number) {
-    const checkboxes = this.page.locator('input[type="checkbox"]');
+    // Select images using checkboxes with retry
     for (let i = 0; i < count; i++) {
-      await checkboxes.nth(i).check();
+      const checkbox = await waitForElementWithRetry(
+        this.page,
+        `input[type="checkbox"]:nth-of-type(${i + 1})`,
+        { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+      );
+      await checkbox.check({ timeout: TIMEOUTS.DEFAULT });
+      // Wait for checkbox state to update
+      await this.page.waitForTimeout(100);
     }
   },
 );
@@ -140,9 +158,16 @@ Given(
 Given(
   "I have {int} images selected",
   async function(this: CustomWorld, count: number) {
-    const checkboxes = this.page.locator('input[type="checkbox"]');
+    // Select images using checkboxes with retry
     for (let i = 0; i < count; i++) {
-      await checkboxes.nth(i).check();
+      const checkbox = await waitForElementWithRetry(
+        this.page,
+        `input[type="checkbox"]:nth-of-type(${i + 1})`,
+        { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+      );
+      await checkbox.check({ timeout: TIMEOUTS.DEFAULT });
+      // Wait for checkbox state to update
+      await this.page.waitForTimeout(100);
     }
   },
 );
@@ -150,9 +175,17 @@ Given(
 Given(
   "I have images selected for batch enhancement",
   async function(this: CustomWorld) {
-    const checkboxes = this.page.locator('input[type="checkbox"]');
-    await checkboxes.first().check();
-    await checkboxes.nth(1).check();
+    // Select first two images with retry
+    for (let i = 0; i < 2; i++) {
+      const checkbox = await waitForElementWithRetry(
+        this.page,
+        `input[type="checkbox"]:nth-of-type(${i + 1})`,
+        { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+      );
+      await checkbox.check({ timeout: TIMEOUTS.DEFAULT });
+      // Wait for checkbox state to update
+      await this.page.waitForTimeout(100);
+    }
   },
 );
 
@@ -187,9 +220,16 @@ Given(
 Given(
   "I have {int} images selected for deletion",
   async function(this: CustomWorld, count: number) {
-    const checkboxes = this.page.locator('input[type="checkbox"]');
+    // Select images using checkboxes with retry
     for (let i = 0; i < count; i++) {
-      await checkboxes.nth(i).check();
+      const checkbox = await waitForElementWithRetry(
+        this.page,
+        `input[type="checkbox"]:nth-of-type(${i + 1})`,
+        { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+      );
+      await checkbox.check({ timeout: TIMEOUTS.DEFAULT });
+      // Wait for checkbox state to update
+      await this.page.waitForTimeout(100);
     }
   },
 );
@@ -312,9 +352,16 @@ When(
 When(
   "I select {int} images using checkboxes",
   async function(this: CustomWorld, count: number) {
-    const checkboxes = this.page.locator('input[type="checkbox"]');
+    // Select images using checkboxes with retry
     for (let i = 0; i < count; i++) {
-      await checkboxes.nth(i).check();
+      const checkbox = await waitForElementWithRetry(
+        this.page,
+        `input[type="checkbox"]:nth-of-type(${i + 1})`,
+        { timeout: TIMEOUTS.DEFAULT, state: "visible" },
+      );
+      await checkbox.check({ timeout: TIMEOUTS.DEFAULT });
+      // Wait for checkbox state to update
+      await this.page.waitForTimeout(100);
     }
   },
 );
@@ -381,6 +428,12 @@ When("I open the tier selection modal", async function(this: CustomWorld) {
 Then(
   "I should see multiple images queued for upload",
   async function(this: CustomWorld) {
+    // Wait for queue items to appear with retry
+    await waitForElementWithRetry(
+      this.page,
+      '[data-testid="upload-queue-item"]',
+      { timeout: TIMEOUTS.LONG },
+    );
     const queueItems = this.page.locator('[data-testid="upload-queue-item"]');
     const count = await queueItems.count();
     expect(count).toBeGreaterThan(1);
@@ -390,6 +443,12 @@ Then(
 Then(
   "each image should show an upload progress indicator",
   async function(this: CustomWorld) {
+    // Wait for progress indicators with retry
+    await waitForElementWithRetry(
+      this.page,
+      '[role="progressbar"]',
+      { timeout: TIMEOUTS.LONG },
+    );
     const progressBars = this.page.locator('[role="progressbar"]');
     const count = await progressBars.count();
     expect(count).toBeGreaterThan(0);
@@ -418,6 +477,12 @@ Then(
 Then(
   "each image should show individual upload progress",
   async function(this: CustomWorld) {
+    // Wait for progress indicators with retry
+    await waitForElementWithRetry(
+      this.page,
+      '[role="progressbar"]',
+      { timeout: TIMEOUTS.LONG },
+    );
     const progressBars = this.page.locator('[role="progressbar"]');
     const count = await progressBars.count();
     expect(count).toBeGreaterThan(0);
@@ -596,6 +661,12 @@ Then("images should remain selected", async function(this: CustomWorld) {
 Then(
   "I should see individual progress for each image",
   async function(this: CustomWorld) {
+    // Wait for progress indicators with retry
+    await waitForElementWithRetry(
+      this.page,
+      '[role="progressbar"]',
+      { timeout: TIMEOUTS.LONG },
+    );
     const progressBars = this.page.locator('[role="progressbar"]');
     const count = await progressBars.count();
     expect(count).toBeGreaterThan(0);
@@ -603,8 +674,12 @@ Then(
 );
 
 Then("I should see overall batch progress", async function(this: CustomWorld) {
-  const batchProgress = this.page.locator('[data-testid="batch-progress"]');
-  await expect(batchProgress).toBeVisible();
+  // Wait for batch progress indicator with retry
+  await waitForElementWithRetry(
+    this.page,
+    '[data-testid="batch-progress"]',
+    { timeout: TIMEOUTS.LONG },
+  );
 });
 
 Then(
@@ -626,6 +701,13 @@ Then("no images should be selected", async function(this: CustomWorld) {
 Then(
   "all {int} images should be selected",
   async function(this: CustomWorld, count: number) {
+    // Wait for checkboxes to be checked with dynamic content verification
+    await waitForDynamicContent(
+      this.page,
+      'input[type="checkbox"]:checked',
+      "",
+      { timeout: TIMEOUTS.LONG },
+    );
     const checkedBoxes = this.page.locator('input[type="checkbox"]:checked');
     const actualCount = await checkedBoxes.count();
     expect(actualCount).toBe(count);

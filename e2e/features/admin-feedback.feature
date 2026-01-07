@@ -1,4 +1,4 @@
-@requires-db @flaky
+@requires-db
 Feature: Admin Feedback Management
   As an admin user
   I want to review and manage user feedback
@@ -209,7 +209,7 @@ Feature: Admin Feedback Management
     And IDEA type badge should be blue
     And OTHER type badge should be gray
 
-  @slow @requires-db @flaky
+  @slow @requires-db
   Scenario: Status badges display correct colors
     Given there is feedback of all statuses in the system
     When I visit "/admin/feedback"

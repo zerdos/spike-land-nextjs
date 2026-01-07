@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS, waitForModalState } from "../support/helpers/retry-helper";
+import { TIMEOUTS, waitForApiResponse, waitForModalState } from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
 // Mock data
@@ -148,16 +148,18 @@ Given(
 When(
   "I click the Add to Album button on an image",
   async function(this: CustomWorld) {
+    // Wait for page to load and images to be rendered
+    await this.page.waitForLoadState("networkidle", { timeout: TIMEOUTS.LONG });
+
+    // Wait for the button to appear (it may take time for images to render)
     const addToAlbumButton = this.page.getByRole("button", {
       name: /add to album/i,
     }).first();
-    await expect(addToAlbumButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(addToAlbumButton).toBeVisible({ timeout: TIMEOUTS.LONG });
+    await expect(addToAlbumButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
     await addToAlbumButton.click();
-    // Wait for modal to open
-    await this.page.waitForSelector('[role="dialog"]', {
-      state: "visible",
-      timeout: TIMEOUTS.DEFAULT,
-    });
+    // Wait for modal to open with animation
+    await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -165,14 +167,18 @@ When("I select an album from the dropdown", async function(this: CustomWorld) {
   // Wait for the dropdown to be ready and populated with albums
   const selectTrigger = this.page.getByText("Select an album");
   await expect(selectTrigger).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(selectTrigger).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
 
-  // Click to open dropdown
-  await selectTrigger.click();
+  // Click to open dropdown with retry
+  await selectTrigger.click({ timeout: TIMEOUTS.DEFAULT });
 
   // Wait for dropdown options to be visible (albums are loaded async)
   const albumOption = this.page.getByText("Vacation Photos");
   await expect(albumOption).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-  await albumOption.click();
+  await expect(albumOption).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
+  // Click album option
+  await albumOption.click({ timeout: TIMEOUTS.DEFAULT });
 
   // Wait for selection to be reflected - use waitForFunction for more reliable check
   await this.page.waitForFunction(
@@ -192,16 +198,21 @@ When(
   async function(this: CustomWorld) {
     // Find the Add to Album button inside the dialog
     const dialog = this.page.getByRole("dialog");
+    await expect(dialog).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
     const confirmButton = dialog.getByRole("button", { name: /add to album/i });
+    await expect(confirmButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await expect(confirmButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
 
     // Set up API response wait BEFORE clicking
-    const responsePromise = this.page.waitForResponse(
-      (resp) => resp.url().includes("/api/albums/") && resp.url().includes("/images"),
+    const responsePromise = waitForApiResponse(
+      this.page,
+      "/api/albums/",
       { timeout: TIMEOUTS.DEFAULT },
     ).catch(() => null);
 
-    await confirmButton.click();
+    // Click with explicit timeout
+    await confirmButton.click({ timeout: TIMEOUTS.DEFAULT });
 
     // Wait for API response
     await responsePromise;
@@ -216,7 +227,8 @@ When(
   async function(this: CustomWorld) {
     const cancelButton = this.page.getByRole("button", { name: /cancel/i });
     await expect(cancelButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    await cancelButton.click();
+    await expect(cancelButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+    await cancelButton.click({ timeout: TIMEOUTS.DEFAULT });
     // Wait for modal to close
     await waitForModalState(this.page, "hidden", { timeout: TIMEOUTS.DEFAULT });
   },

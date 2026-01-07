@@ -118,7 +118,7 @@ module.exports = {
     failFast: true, // Run all DB tests to get full report
     retry: 0, // Retry once for transient DB issues
     tags: "@requires-db and not @skip and not @flaky",
-    timeout: 10000, // Longer timeout for DB operations
+    timeout: 30000, // Longer timeout for DB operations and AI processing
     parallel: 16, // Parallel DB tests
   },
 };

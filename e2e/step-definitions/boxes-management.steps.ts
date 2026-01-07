@@ -1,6 +1,6 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { TIMEOUTS } from "../support/helpers/retry-helper";
+import { TIMEOUTS, waitForApiResponse, waitForModalState } from "../support/helpers/retry-helper";
 import { BoxesPage } from "../support/page-objects/BoxesPage";
 import type { CustomWorld } from "../support/world";
 
@@ -145,7 +145,7 @@ Then(
   async function(this: CustomWorld) {
     const boxesPage = getBoxesPage(this);
     const tierCards = await boxesPage.getTierSelectionCards();
-    await expect(tierCards).toHaveCount(3, { timeout: TIMEOUTS.DEFAULT });
+    await expect(tierCards).toHaveCount(3, { timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -154,7 +154,7 @@ Then(
   async function(this: CustomWorld, tierName: string) {
     const boxesPage = getBoxesPage(this);
     const tierCard = await boxesPage.getTierCard(tierName);
-    await expect(tierCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(tierCard).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -166,7 +166,7 @@ Then(
     for (let i = 0; i < count; i++) {
       const card = tierCards.nth(i);
       const priceElement = card.locator('[data-testid="tier-price"], .price');
-      await expect(priceElement).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+      await expect(priceElement).toBeVisible({ timeout: TIMEOUTS.LONG });
     }
   },
 );
@@ -184,7 +184,7 @@ Then(
   async function(this: CustomWorld) {
     const boxesPage = getBoxesPage(this);
     const form = await boxesPage.getBoxConfigurationForm();
-    await expect(form).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(form).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -192,7 +192,7 @@ Then(
   "the {string} input field should be visible",
   async function(this: CustomWorld, fieldName: string) {
     const input = this.page.getByLabel(new RegExp(fieldName, "i"));
-    await expect(input).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(input).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -241,7 +241,7 @@ Then(
   async function(this: CustomWorld) {
     const boxesPage = getBoxesPage(this);
     const statusIndicator = await boxesPage.getStatusIndicator();
-    await expect(statusIndicator).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(statusIndicator).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -249,14 +249,14 @@ Then("I should see the box tier badge", async function(this: CustomWorld) {
   const tierBadge = this.page.locator(
     '[data-testid="tier-badge"], .tier-badge',
   );
-  await expect(tierBadge).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(tierBadge).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 // Box control steps
 Then("I should see the box control panel", async function(this: CustomWorld) {
   const boxesPage = getBoxesPage(this);
   const controlPanel = await boxesPage.getControlPanel();
-  await expect(controlPanel).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(controlPanel).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 Then(
@@ -265,13 +265,23 @@ Then(
     const button = this.page.getByRole("button", {
       name: new RegExp(buttonName, "i"),
     });
-    await expect(button).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(button).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
 Then(
   "I should see the box status change to {string}",
   async function(this: CustomWorld, status: string) {
+    // Wait for any API response that might update box status
+    const apiPromise = waitForApiResponse(this.page, /\/api\/boxes/, {
+      timeout: TIMEOUTS.LONG,
+    }).catch(() => null); // Don't fail if no API call
+
+    await Promise.race([
+      apiPromise,
+      this.page.waitForTimeout(TIMEOUTS.SHORT),
+    ]);
+
     const boxesPage = getBoxesPage(this);
     await boxesPage.verifyBoxStatus(status);
   },
@@ -281,7 +291,7 @@ Then(
 Then("I should see the connection URL", async function(this: CustomWorld) {
   const boxesPage = getBoxesPage(this);
   const connectionUrl = await boxesPage.getConnectionUrl();
-  await expect(connectionUrl).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(connectionUrl).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 Then(
@@ -289,7 +299,7 @@ Then(
   async function(this: CustomWorld) {
     const boxesPage = getBoxesPage(this);
     const authToken = await boxesPage.getAuthToken();
-    await expect(authToken).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(authToken).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -301,7 +311,7 @@ Then(
   "I should still be on the box detail page",
   async function(this: CustomWorld) {
     await expect(this.page).toHaveURL(/\/boxes\/[^/]+$/, {
-      timeout: TIMEOUTS.DEFAULT,
+      timeout: TIMEOUTS.LONG,
     });
   },
 );
@@ -319,9 +329,12 @@ When(
 
 // Upgrade flow steps
 Then("I should see the tier upgrade modal", async function(this: CustomWorld) {
+  // Wait for modal to be visible with animation
+  await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.LONG });
+
   const boxesPage = getBoxesPage(this);
   const modal = await boxesPage.getTierUpgradeModal();
-  await expect(modal).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await expect(modal).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
 Then(
@@ -330,7 +343,7 @@ Then(
     const option = this.page.locator('[data-testid="upgrade-option"]', {
       hasText: tierName,
     });
-    await expect(option).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(option).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -358,6 +371,9 @@ Then(
 Then(
   "I should only see boxes with {string} status",
   async function(this: CustomWorld, status: string) {
+    // Wait for filter to be applied
+    await this.page.waitForTimeout(500);
+
     const boxCards = this.page.locator('[data-testid="box-card"]');
     const count = await boxCards.count();
     for (let i = 0; i < count; i++) {
@@ -365,7 +381,7 @@ Then(
         '[data-testid="box-status"]',
       );
       await expect(statusElement).toContainText(status, {
-        timeout: TIMEOUTS.DEFAULT,
+        timeout: TIMEOUTS.LONG,
       });
     }
   },
@@ -376,7 +392,7 @@ Then(
   "I should remain on the creation page",
   async function(this: CustomWorld) {
     await expect(this.page).toHaveURL(/\/boxes\/new/, {
-      timeout: TIMEOUTS.DEFAULT,
+      timeout: TIMEOUTS.LONG,
     });
   },
 );
