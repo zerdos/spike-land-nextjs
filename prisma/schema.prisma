@@ -1630,6 +1630,7 @@ model SocialAccount {
   // Relations
   metrics      SocialMetrics[]
   postAccounts SocialPostAccount[]
+  anomalies    SocialMetricAnomaly[]
 
   @@unique([workspaceId, platform, accountId])
   @@index([userId])
@@ -1707,6 +1708,30 @@ model SocialMetrics {
   @@map("social_metrics")
 }
 
+/// Detected anomalies in social media metrics
+/// Used by Pulse AI Agent for alerting
+/// Resolves #647
+model SocialMetricAnomaly {
+  id            String        @id @default(cuid())
+  accountId     String
+  account       SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  metricType    String        // followers, engagement_rate, impressions, etc.
+  detectedAt    DateTime      @default(now())
+  currentValue  Float
+  expectedValue Float
+  zScore        Float
+  severity      String        // warning, critical
+  direction     String        // spike, drop
+  percentChange Float
+
+  createdAt DateTime @default(now())
+
+  @@index([accountId])
+  @@index([detectedAt])
+  @@index([severity])
+  @@map("social_metric_anomalies")
+}
+
 enum AgentProvider {
   JULES
   CODEX
@@ -1735,6 +1760,7 @@ enum SocialPlatform {
   INSTAGRAM
   TIKTOK
   YOUTUBE
+  DISCORD
 }
 
 enum SocialAccountStatus {

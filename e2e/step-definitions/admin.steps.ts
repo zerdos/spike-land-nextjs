@@ -12,7 +12,12 @@ async function mockAdminStatus(world: CustomWorld, isAdmin: boolean) {
   // If user is admin, we rely on real DB permissions (seeded) and real API responses.
   // We only intercept if we want to simulate a non-admin user getting blocked.
   if (!isAdmin) {
-    // Update the e2e-user-role cookie to USER (overrides any previous ADMIN setting)
+    // FIRST: Clear any existing auth session and role cookies to ensure clean state
+    // This forces the server to use the newly set e2e-user-role cookie
+    await world.page.context().clearCookies({ name: "authjs.session-token" });
+    await world.page.context().clearCookies({ name: "e2e-user-role" });
+
+    // Set e2e-user-role cookie to USER
     // This is needed because the admin layout checks the role from the cookie directly
     await world.page.context().addCookies([
       {
@@ -309,28 +314,8 @@ When(
 );
 
 // Then steps
-Then(
-  "I should see {string} metric card",
-  async function(this: CustomWorld, metricName: string) {
-    // Skip this step if we're on the marketing analytics page
-    // (marketing has its own implementation in admin-marketing.steps.ts)
-    const currentUrl = this.page.url();
-    if (currentUrl.includes("/admin/marketing")) {
-      return;
-    }
-
-    // First wait for the Admin Dashboard heading (h1) to ensure the page has loaded
-    const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
-    await expect(heading).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-
-    // Then look for the metric card label with retry logic
-    await waitForTextWithRetry(
-      this.page,
-      metricName,
-      { timeout: TIMEOUTS.DEFAULT, exact: true },
-    );
-  },
-);
+// Note: "I should see {string} metric card" is defined in admin-marketing.steps.ts
+// and handles both admin dashboard and marketing pages
 
 Then(
   "the {string} metric should display a number",

@@ -34,6 +34,7 @@ export const PLATFORM_CHARACTER_LIMITS: Record<SocialPlatform, number> = {
   LINKEDIN: 3000,
   TIKTOK: 150,
   YOUTUBE: 10000,
+  DISCORD: 2000,
 };
 
 /**
