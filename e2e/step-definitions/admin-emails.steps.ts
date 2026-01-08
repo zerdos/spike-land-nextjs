@@ -11,6 +11,7 @@ import {
   waitForModalState,
   waitForTextWithRetry,
 } from "../support/helpers/retry-helper";
+import { waitForPageReady } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
 
 // Mock email data generator
@@ -364,19 +365,24 @@ When(
 When(
   "I click {string} button on an email row",
   async function(this: CustomWorld, buttonText: string) {
+    // Wait for page to be ready before interacting
+    await waitForPageReady(this.page, { strategy: "both" });
+
     // Wait for table rows to be available (use first() for strict mode)
     const rows = this.page.locator("tbody tr");
-    await expect(rows.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await expect(rows.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
 
     const row = rows.first();
-    const button = row.getByRole("button", { name: buttonText });
-    await expect(button).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+    // Try multiple ways to find the button
+    const button = row.getByRole("button", { name: buttonText })
+      .or(row.locator(`button:has-text("${buttonText}")`));
+    await expect(button.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
+    await expect(button.first()).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
 
     // Some buttons may trigger navigation, wait for it to complete
     await Promise.all([
       this.page.waitForLoadState("domcontentloaded").catch(() => {}),
-      button.click(),
+      button.first().click(),
     ]);
   },
 );

@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
 
   // Store detected anomalies
   let storedCount = 0;
-  const storeErrors: { index: number; error: string }[] = [];
+  const storeErrors: { index: number; error: string; }[] = [];
   let anomalyIndex = 0;
 
   for (const anomaly of result.anomalies) {
@@ -133,10 +133,9 @@ export async function POST(request: NextRequest) {
       console.error("[AnomalyAPI] Failed to store anomaly:", storeError);
       storeErrors.push({
         index: anomalyIndex,
-        error:
-          storeError instanceof Error
-            ? storeError.message
-            : String(storeError),
+        error: storeError instanceof Error
+          ? storeError.message
+          : String(storeError),
       });
     } else {
       storedCount += 1;
