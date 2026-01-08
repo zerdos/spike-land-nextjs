@@ -144,8 +144,7 @@ export async function POST(request: NextRequest) {
     anomalyIndex += 1;
   }
 
-  const hasStoreErrors = storeErrors.length > 0;
-  const responseStatus = hasStoreErrors ? 207 : 200;
+  const responseStatus = storeErrors.length > 0 ? 207 : 200;
 
   console.log(
     `[AnomalyAPI] Detection completed: ${result.anomalies.length} anomalies found in ${result.durationMs}ms`,
