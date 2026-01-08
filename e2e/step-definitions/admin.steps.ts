@@ -309,28 +309,8 @@ When(
 );
 
 // Then steps
-Then(
-  "I should see {string} metric card",
-  async function(this: CustomWorld, metricName: string) {
-    // Skip this step if we're on the marketing analytics page
-    // (marketing has its own implementation in admin-marketing.steps.ts)
-    const currentUrl = this.page.url();
-    if (currentUrl.includes("/admin/marketing")) {
-      return;
-    }
-
-    // First wait for the Admin Dashboard heading (h1) to ensure the page has loaded
-    const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
-    await expect(heading).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-
-    // Then look for the metric card label with retry logic
-    await waitForTextWithRetry(
-      this.page,
-      metricName,
-      { timeout: TIMEOUTS.DEFAULT, exact: true },
-    );
-  },
-);
+// Note: "I should see {string} metric card" is defined in admin-marketing.steps.ts
+// and handles both admin dashboard and marketing pages
 
 Then(
   "the {string} metric should display a number",

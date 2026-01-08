@@ -5,6 +5,7 @@ import {
   waitForApiResponse,
   waitForDynamicContent,
   waitForElementWithRetry,
+  waitForTextWithRetry,
 } from "../support/helpers/retry-helper";
 import { waitForPageReady } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
@@ -182,20 +183,29 @@ Then("I should see refresh button", async function(this: CustomWorld) {
   await expect(refreshButton.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
 });
 
-// Marketing-specific metric card step (admin.steps.ts skips marketing pages)
+// Metric card step for both admin dashboard and marketing pages
 Then(
   "I should see {string} metric card",
   async function(this: CustomWorld, metricName: string) {
-    // Only run for marketing analytics page
     const currentUrl = this.page.url();
-    if (!currentUrl.includes("/admin/marketing")) {
-      return;
-    }
+    const isMarketingPage = currentUrl.includes("/admin/marketing");
 
     // Wait for page to be fully ready
     await waitForPageReady(this.page, { strategy: "both" });
 
-    // Use retry pattern for metric cards with long timeout
+    if (!isMarketingPage) {
+      // For admin dashboard, wait for the heading then look for metric text
+      const heading = this.page.getByRole("heading", { name: "Admin Dashboard" });
+      await expect(heading).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+      await waitForTextWithRetry(
+        this.page,
+        metricName,
+        { timeout: TIMEOUTS.DEFAULT, exact: true },
+      );
+      return;
+    }
+
+    // For marketing page, use retry pattern for metric cards with long timeout
     const metricCard = await waitForElementWithRetry(
       this.page,
       `[data-testid*="metric"], [class*="metric"], .stat`,

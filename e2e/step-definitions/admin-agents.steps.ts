@@ -358,8 +358,12 @@ Then(
 Then(
   "I should see {string} button on the session card",
   async function(this: CustomWorld, buttonText: string) {
-    // Wait for session card to be loaded first
-    await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT });
+    // Wait for session card to be loaded first (API response may have already completed)
+    await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT }).catch(
+      () => {
+        // API response may have already completed during navigation
+      },
+    );
 
     const button = this.page.getByRole("button", {
       name: new RegExp(buttonText, "i"),
@@ -586,8 +590,12 @@ Then(
     const heading = this.page.getByRole("heading", { name: "Agents Dashboard" });
     await expect(heading).toBeVisible({ timeout: TIMEOUTS.LONG });
 
-    // Wait for initial API response
-    await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT });
+    // Wait for initial API response (may have already completed during navigation)
+    await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT }).catch(
+      () => {
+        // API response may have already completed during page load
+      },
+    );
 
     // Then verify polling is configured by checking for timestamp or refresh indicator
     // The timestamp div has data-testid="timestamp" and contains "Last updated:"
