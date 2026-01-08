@@ -9,6 +9,12 @@
  *
  * This endpoint is protected by Vercel's cron secret.
  *
+ * IMPORTANT: The 15-minute schedule (every 15 minutes) should be monitored
+ * for potential rate limiting issues with social media APIs. Consider:
+ * - Adjusting frequency based on the number of accounts monitored
+ * - Implementing per-platform rate limit tracking
+ * - Scaling back to 30-minute intervals if rate limits are reached
+ *
  * Resolves #646
  */
 
@@ -50,11 +56,6 @@ function validateCronSecret(request: NextRequest): boolean {
   // Also check x-cron-secret header (Vercel Cron uses this)
   const cronSecretHeader = request.headers.get("x-cron-secret");
   if (cronSecretHeader === cronSecret) {
-    return true;
-  }
-
-  // Legacy: Check bare Authorization header
-  if (authHeader === `Bearer ${cronSecret}`) {
     return true;
   }
 

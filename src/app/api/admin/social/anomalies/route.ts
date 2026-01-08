@@ -123,27 +123,53 @@ export async function POST(request: NextRequest) {
   }
 
   // Store detected anomalies
+  let storedCount = 0;
+  const storeErrors: { index: number; error: string }[] = [];
+  let anomalyIndex = 0;
+
   for (const anomaly of result.anomalies) {
     const { error: storeError } = await tryCatch(storeAnomaly(anomaly));
     if (storeError) {
       console.error("[AnomalyAPI] Failed to store anomaly:", storeError);
+      storeErrors.push({
+        index: anomalyIndex,
+        error:
+          storeError instanceof Error
+            ? storeError.message
+            : String(storeError),
+      });
+    } else {
+      storedCount += 1;
     }
+    anomalyIndex += 1;
   }
+
+  const responseStatus = storeErrors.length > 0 ? 207 : 200;
 
   console.log(
     `[AnomalyAPI] Detection completed: ${result.anomalies.length} anomalies found in ${result.durationMs}ms`,
   );
 
-  return NextResponse.json({
-    success: true,
-    result: {
-      analyzedAccounts: result.analyzedAccounts,
-      anomalyCount: result.anomalies.length,
-      criticalCount: result.anomalies.filter((a) => a.severity === "critical").length,
-      warningCount: result.anomalies.filter((a) => a.severity === "warning").length,
-      durationMs: result.durationMs,
+  return NextResponse.json(
+    {
+      success: true,
+      result: {
+        analyzedAccounts: result.analyzedAccounts,
+        anomalyCount: result.anomalies.length,
+        criticalCount: result.anomalies.filter((a) => a.severity === "critical")
+          .length,
+        warningCount: result.anomalies.filter((a) => a.severity === "warning")
+          .length,
+        durationMs: result.durationMs,
+      },
+      anomalies: result.anomalies,
+      storeSummary: {
+        storedCount,
+        failedCount: storeErrors.length,
+        errors: storeErrors,
+      },
+      timestamp: new Date().toISOString(),
     },
-    anomalies: result.anomalies,
-    timestamp: new Date().toISOString(),
-  });
+    { status: responseStatus },
+  );
 }
