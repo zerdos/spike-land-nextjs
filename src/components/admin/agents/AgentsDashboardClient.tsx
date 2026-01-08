@@ -198,10 +198,11 @@ export function AgentsDashboardClient({ initialData }: Props) {
   // Initial fetch for all panel data
   useEffect(() => {
     setLastUpdated(new Date());
+    fetchData();
     fetchResources();
     fetchGitInfo();
     fetchGitHub();
-  }, [fetchResources, fetchGitInfo, fetchGitHub]);
+  }, [fetchData, fetchResources, fetchGitInfo, fetchGitHub]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);

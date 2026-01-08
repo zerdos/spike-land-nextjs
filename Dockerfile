@@ -4,6 +4,7 @@ ARG NODE_IMAGE=node:24.12.0-bookworm-slim
 ARG DUMMY_DATABASE_URL=postgresql://build:build@localhost:5432/build
 ARG CACHE_NS=vercel-app
 ARG TEST_CACHE_NS=test-cache
+ARG DEP_CACHE_COMMIT=c2364562
 
 # ============================================================================
 # STAGE 0: Base
@@ -39,26 +40,35 @@ COPY --link packages/shared/package.json ./packages/shared/
 COPY --link prisma ./prisma
 
 # ============================================================================
-# STAGE 2: Install Dependencies
+# STAGE 2: Install Dependencies (with pre-warming from pinned commit)
 # ============================================================================
 FROM base AS deps
 ARG CACHE_NS
 ARG TARGETARCH
 ARG DUMMY_DATABASE_URL
+ARG DEP_CACHE_COMMIT
 
+# Install native build dependencies
 RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=${CACHE_NS}-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
     apt-get update \
     && apt-get install -y --no-install-recommends \
        python3 make g++ \
        libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
-ADD https://github.com/zerdos/spike-land-nextjs.git /app/
-RUN yarn install --immutable
 
-COPY --link --from=dep-context /app /app
+# Pre-warm yarn cache from pinned commit (stable layer)
+ADD https://github.com/zerdos/spike-land-nextjs/archive/${DEP_CACHE_COMMIT}.tar.gz /tmp/repo.tar.gz
+RUN tar -xzf /tmp/repo.tar.gz -C /app --strip-components=1 \
+    && rm -rf /tmp/repo.tar.gz
 
 RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
-    --mount=type=cache,id=${CACHE_NS}-nm-${TARGETARCH},target=/tmp/nm-cache,sharing=locked \
+    yarn install --immutable || true
+
+# Overlay current build context
+COPY --link --from=dep-context /app /app
+
+# Final install with pre-warmed cache
+RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
     yarn install --immutable
 
 # ============================================================================
