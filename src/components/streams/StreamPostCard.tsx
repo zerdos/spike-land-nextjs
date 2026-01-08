@@ -21,6 +21,7 @@ const PLATFORM_COLORS: Record<SocialPlatform, { bg: string; text: string; }> = {
   LINKEDIN: { bg: "bg-[#0A66C2]", text: "text-white" },
   TIKTOK: { bg: "bg-black", text: "text-white" },
   YOUTUBE: { bg: "bg-[#FF0000]", text: "text-white" },
+  DISCORD: { bg: "bg-[#5865F2]", text: "text-white" },
 };
 
 /**
@@ -33,6 +34,7 @@ const PLATFORM_NAMES: Record<SocialPlatform, string> = {
   LINKEDIN: "LinkedIn",
   TIKTOK: "TikTok",
   YOUTUBE: "YouTube",
+  DISCORD: "Discord",
 };
 
 /**

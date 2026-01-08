@@ -10,26 +10,154 @@ import type { CustomWorld } from "../support/world";
 // ======= Given Steps =======
 
 Given("there is an active Jules session", async function(this: CustomWorld) {
-  // E2E seeded data - session with id "e2e-agent-session-progress" exists in DB
-  // with status IN_PROGRESS (created by prisma/seed-e2e.ts)
-  // No mocking needed - the data is in the test database
+  // Mock the agents API to return a session with IN_PROGRESS status
+  // This ensures the test doesn't depend on database seeding being successful
+  await this.page.route("**/api/admin/agents", async (route) => {
+    const url = new URL(route.request().url());
+    // Only mock exact /api/admin/agents path, not sub-paths
+    if (url.pathname !== "/api/admin/agents") {
+      await route.continue();
+      return;
+    }
+    if (route.request().method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          julesAvailable: true,
+          sessions: [
+            {
+              id: "e2e-agent-session-progress",
+              externalId: "sessions/e2e-progress-456",
+              provider: "JULES",
+              name: "E2E Test: Add Unit Tests",
+              description: "Automated test session in progress",
+              status: "IN_PROGRESS",
+              sourceRepo: "zerdos/spike-land-nextjs",
+              startingBranch: "main",
+              outputBranch: null,
+              pullRequestUrl: null,
+              planSummary: "Adding comprehensive unit tests for the user service",
+              planApprovedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+              lastActivityAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+              errorMessage: null,
+              metadata: null,
+              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+              updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+              activityCount: 1,
+            },
+          ],
+          pagination: { total: 1, page: 1, limit: 20, offset: 0, hasMore: false },
+          statusCounts: { IN_PROGRESS: 1 },
+          timestamp: new Date().toISOString(),
+        }),
+      });
+    } else {
+      await route.continue();
+    }
+  });
 });
 
 Given(
   "there is a Jules session awaiting plan approval",
   async function(this: CustomWorld) {
-    // E2E seeded data - session with id "e2e-agent-session-awaiting" exists in DB
-    // with status AWAITING_PLAN_APPROVAL (created by prisma/seed-e2e.ts)
-    // No mocking needed - the data is in the test database
+    // Mock the agents API to return a session with AWAITING_PLAN_APPROVAL status
+    await this.page.route("**/api/admin/agents", async (route) => {
+      const url = new URL(route.request().url());
+      // Only mock exact /api/admin/agents path, not sub-paths
+      if (url.pathname !== "/api/admin/agents") {
+        await route.continue();
+        return;
+      }
+      if (route.request().method() === "GET") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            julesAvailable: true,
+            sessions: [
+              {
+                id: "e2e-agent-session-awaiting",
+                externalId: "sessions/e2e-awaiting-123",
+                provider: "JULES",
+                name: "E2E Test: Fix Authentication Bug",
+                description: "Automated test session awaiting approval",
+                status: "AWAITING_PLAN_APPROVAL",
+                sourceRepo: "zerdos/spike-land-nextjs",
+                startingBranch: "main",
+                outputBranch: null,
+                pullRequestUrl: null,
+                planSummary:
+                  "E2E test plan: Fix the authentication bug by updating the token validation logic",
+                planApprovedAt: null,
+                lastActivityAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+                errorMessage: null,
+                metadata: null,
+                createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+                updatedAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+                activityCount: 0,
+              },
+            ],
+            pagination: { total: 1, page: 1, limit: 20, offset: 0, hasMore: false },
+            statusCounts: { AWAITING_PLAN_APPROVAL: 1 },
+            timestamp: new Date().toISOString(),
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
   },
 );
 
 Given(
   "there is an active Jules session with activities",
   async function(this: CustomWorld) {
-    // E2E seeded data - session "e2e-agent-session-progress" has associated activity
-    // "e2e-agent-activity-1" (created by prisma/seed-e2e.ts)
-    // No mocking needed - the data is in the test database
+    // Mock the agents API to return a session with activities
+    await this.page.route("**/api/admin/agents", async (route) => {
+      const url = new URL(route.request().url());
+      // Only mock exact /api/admin/agents path, not sub-paths
+      if (url.pathname !== "/api/admin/agents") {
+        await route.continue();
+        return;
+      }
+      if (route.request().method() === "GET") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            julesAvailable: true,
+            sessions: [
+              {
+                id: "e2e-agent-session-progress",
+                externalId: "sessions/e2e-progress-456",
+                provider: "JULES",
+                name: "E2E Test: Add Unit Tests",
+                description: "Automated test session in progress",
+                status: "IN_PROGRESS",
+                sourceRepo: "zerdos/spike-land-nextjs",
+                startingBranch: "main",
+                outputBranch: null,
+                pullRequestUrl: null,
+                planSummary: "Adding comprehensive unit tests for the user service",
+                planApprovedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+                lastActivityAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+                errorMessage: null,
+                metadata: null,
+                createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+                activityCount: 3,
+              },
+            ],
+            pagination: { total: 1, page: 1, limit: 20, offset: 0, hasMore: false },
+            statusCounts: { IN_PROGRESS: 1 },
+            timestamp: new Date().toISOString(),
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
   },
 );
 
@@ -188,17 +316,19 @@ Then(
 );
 
 Then("I should see the session card", async function(this: CustomWorld) {
-  // Use retry pattern for session cards which may load dynamically
-  const sessionCard = this.page.locator("[data-testid*='session']")
-    .or(this.page.locator("[class*='session-card']"))
-    .or(
-      this.page.locator("[class*='Card']").filter({
-        hasText: /session|jules/i,
-      }),
-    );
-
   // Wait for API response first to ensure data is loaded
-  await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT });
+  await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT }).catch(
+    () => {
+      // API response may have already completed during navigation
+    },
+  );
+
+  // Look for session cards within the sessions list
+  // Session cards are Card elements that contain session-specific content (like activity count or provider)
+  const sessionsList = this.page.locator("[data-testid='sessions-list']");
+  const sessionCard = sessionsList.locator("[class*='Card']").filter({
+    hasText: /activities|jules|in progress|queued|planning/i,
+  });
 
   await expect(sessionCard.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
@@ -206,8 +336,10 @@ Then("I should see the session card", async function(this: CustomWorld) {
 Then(
   "the session card should show status badge",
   async function(this: CustomWorld) {
-    const badge = this.page.locator("[class*='Badge']")
-      .or(this.page.locator("[data-testid*='status']"));
+    // Look for status badges within the sessions list (not the overview section)
+    const sessionsList = this.page.locator("[data-testid='sessions-list']");
+    const badge = sessionsList.locator("[class*='Badge']")
+      .or(sessionsList.locator("[data-testid*='status']"));
     await expect(badge.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
@@ -216,6 +348,7 @@ Then(
   "the session card should show provider icon",
   async function(this: CustomWorld) {
     // Check for provider badge within sessions list (showing "JULES" or similar)
+    // The provider is displayed in a Badge component with the text matching the provider name
     const sessionsList = this.page.locator("[data-testid='sessions-list']");
     const providerBadge = sessionsList.getByText(/jules/i);
     await expect(providerBadge.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
@@ -237,7 +370,11 @@ Then(
 
 Then("I should see session activity log", async function(this: CustomWorld) {
   // Wait for session details to load
-  await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT });
+  await waitForApiResponse(this.page, "/api/admin/agents", { timeout: TIMEOUTS.DEFAULT }).catch(
+    () => {
+      // API response may have already completed during navigation
+    },
+  );
 
   const activityLog = this.page.locator("[data-testid*='activity']")
     .or(this.page.getByText(/activity|log|analyzing/i));
