@@ -23,7 +23,9 @@ vi.mock("@/components/orbit/WorkspaceSwitcher", () => ({
 describe("OrbitSidebar", () => {
   it("renders workspace switcher", async () => {
     const { usePathname } = await import("next/navigation");
-    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue("/orbit/test-workspace/dashboard");
+    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue(
+      "/orbit/test-workspace/dashboard",
+    );
 
     render(
       <OrbitSidebar
@@ -38,7 +40,9 @@ describe("OrbitSidebar", () => {
 
   it("renders navigation items with workspace slug", async () => {
     const { usePathname } = await import("next/navigation");
-    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue("/orbit/my-workspace/dashboard");
+    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue(
+      "/orbit/my-workspace/dashboard",
+    );
 
     render(
       <OrbitSidebar
@@ -65,12 +69,17 @@ describe("OrbitSidebar", () => {
 
     // Check that links include workspace slug
     const dashboardLink = screen.getByRole("link", { name: /Dashboard/i });
-    expect(dashboardLink).toHaveAttribute("href", "/orbit/my-workspace/dashboard");
+    expect(dashboardLink).toHaveAttribute(
+      "href",
+      "/orbit/my-workspace/dashboard",
+    );
   });
 
   it("highlights active link", async () => {
     const { usePathname } = await import("next/navigation");
-    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue("/orbit/test-workspace/dashboard");
+    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue(
+      "/orbit/test-workspace/dashboard",
+    );
 
     render(
       <OrbitSidebar
@@ -86,7 +95,9 @@ describe("OrbitSidebar", () => {
 
   it("does not highlight inactive links", async () => {
     const { usePathname } = await import("next/navigation");
-    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue("/orbit/test-workspace/dashboard");
+    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue(
+      "/orbit/test-workspace/dashboard",
+    );
 
     render(
       <OrbitSidebar
@@ -103,7 +114,9 @@ describe("OrbitSidebar", () => {
 
   it("renders user information", async () => {
     const { usePathname } = await import("next/navigation");
-    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue("/orbit/test-workspace/dashboard");
+    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue(
+      "/orbit/test-workspace/dashboard",
+    );
 
     render(
       <OrbitSidebar
@@ -119,7 +132,9 @@ describe("OrbitSidebar", () => {
 
   it("renders back to app link", async () => {
     const { usePathname } = await import("next/navigation");
-    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue("/orbit/test-workspace/dashboard");
+    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue(
+      "/orbit/test-workspace/dashboard",
+    );
 
     render(
       <OrbitSidebar
@@ -136,7 +151,9 @@ describe("OrbitSidebar", () => {
 
   it("renders navigation items in correct order", async () => {
     const { usePathname } = await import("next/navigation");
-    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue("/orbit/test-workspace/dashboard");
+    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue(
+      "/orbit/test-workspace/dashboard",
+    );
 
     render(
       <OrbitSidebar
@@ -161,7 +178,9 @@ describe("OrbitSidebar", () => {
 
   it("renders with different workspace slugs", async () => {
     const { usePathname } = await import("next/navigation");
-    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue("/orbit/another-workspace/streams");
+    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue(
+      "/orbit/another-workspace/streams",
+    );
 
     render(
       <OrbitSidebar
@@ -172,7 +191,10 @@ describe("OrbitSidebar", () => {
     );
 
     const streamsLink = screen.getByRole("link", { name: /Streams/i });
-    expect(streamsLink).toHaveAttribute("href", "/orbit/another-workspace/streams");
+    expect(streamsLink).toHaveAttribute(
+      "href",
+      "/orbit/another-workspace/streams",
+    );
     expect(streamsLink).toHaveClass("bg-primary");
   });
 });

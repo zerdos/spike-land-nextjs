@@ -143,8 +143,10 @@ describe("WorkspaceSwitcher", () => {
       await user.click(trigger);
 
       expect(screen.getByText("Workspaces")).toBeInTheDocument();
-      expect(screen.getByTestId("workspace-option-personal-workspace")).toBeInTheDocument();
-      expect(screen.getByTestId("workspace-option-team-workspace")).toBeInTheDocument();
+      expect(screen.getByTestId("workspace-option-personal-workspace"))
+        .toBeInTheDocument();
+      expect(screen.getByTestId("workspace-option-team-workspace"))
+        .toBeInTheDocument();
     });
 
     it("shows checkmark for active workspace", async () => {
@@ -261,7 +263,8 @@ describe("WorkspaceSwitcher", () => {
       const trigger = screen.getByTestId("workspace-switcher-trigger");
       await user.click(trigger);
 
-      expect(screen.getByTestId("workspace-option-only-workspace")).toBeInTheDocument();
+      expect(screen.getByTestId("workspace-option-only-workspace"))
+        .toBeInTheDocument();
     });
   });
 });

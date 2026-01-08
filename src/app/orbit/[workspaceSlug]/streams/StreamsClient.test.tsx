@@ -60,7 +60,10 @@ vi.mock("@/components/streams/ReplyDialog", () => ({
       ? (
         <div data-testid="reply-dialog">
           <span data-testid="reply-dialog-post-id">{post.id}</span>
-          <button onClick={() => onOpenChange(false)} data-testid="close-reply-dialog">
+          <button
+            onClick={() => onOpenChange(false)}
+            data-testid="close-reply-dialog"
+          >
             Close
           </button>
         </div>
@@ -133,7 +136,11 @@ describe("StreamsClient", () => {
       accountName: "Test Twitter",
       avatarUrl: "https://example.com/avatar1.jpg",
     },
-    { id: "acc-2", platform: "FACEBOOK" as SocialPlatform, accountName: "Test Facebook" },
+    {
+      id: "acc-2",
+      platform: "FACEBOOK" as SocialPlatform,
+      accountName: "Test Facebook",
+    },
   ];
 
   const mockResponse: StreamsResponse = {
@@ -155,7 +162,11 @@ describe("StreamsClient", () => {
     accounts: mockAccounts,
     hasMore: false,
     errors: [
-      { accountId: "acc-1", platform: "TWITTER" as SocialPlatform, message: "Rate limited" },
+      {
+        accountId: "acc-1",
+        platform: "TWITTER" as SocialPlatform,
+        message: "Rate limited",
+      },
     ],
   };
 
@@ -198,9 +209,12 @@ describe("StreamsClient", () => {
       );
 
       expect(screen.getByTestId("streams-client")).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: "Streams" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Streams" }))
+        .toBeInTheDocument();
       expect(
-        screen.getByText("View and engage with posts from all your connected accounts"),
+        screen.getByText(
+          "View and engage with posts from all your connected accounts",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -262,7 +276,8 @@ describe("StreamsClient", () => {
         expect(screen.getByTestId("stream-empty-state")).toBeInTheDocument();
       });
 
-      expect(screen.getByText("Connect your social accounts")).toBeInTheDocument();
+      expect(screen.getByText("Connect your social accounts"))
+        .toBeInTheDocument();
     });
 
     it("should navigate to settings when connect accounts is clicked", async () => {
@@ -279,7 +294,8 @@ describe("StreamsClient", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId("connect-accounts-button")).toBeInTheDocument();
+        expect(screen.getByTestId("connect-accounts-button"))
+          .toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByTestId("connect-accounts-button"));
@@ -323,7 +339,8 @@ describe("StreamsClient", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId("streams-account-errors")).toBeInTheDocument();
+        expect(screen.getByTestId("streams-account-errors"))
+          .toBeInTheDocument();
       });
 
       expect(screen.getByText("Some accounts had issues")).toBeInTheDocument();
@@ -351,12 +368,14 @@ describe("StreamsClient", () => {
 
       // Wait for posts to load so we know filters are fully initialized
       await waitFor(() => {
-        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+        expect(screen.getAllByTestId("stream-post-card").length)
+          .toBeGreaterThan(0);
       });
 
       // Should have platform toggles for all connected accounts
       expect(screen.getByTestId("platform-toggle-twitter")).toBeInTheDocument();
-      expect(screen.getByTestId("platform-toggle-facebook")).toBeInTheDocument();
+      expect(screen.getByTestId("platform-toggle-facebook"))
+        .toBeInTheDocument();
     });
 
     it("should have default sort by publishedAt desc", async () => {
@@ -377,7 +396,9 @@ describe("StreamsClient", () => {
       });
 
       // Check that the sort select shows "Newest first"
-      expect(screen.getByTestId("sort-select")).toHaveTextContent("Newest first");
+      expect(screen.getByTestId("sort-select")).toHaveTextContent(
+        "Newest first",
+      );
     });
   });
 
@@ -434,7 +455,8 @@ describe("StreamsClient", () => {
 
       // Wait for posts to load first
       await waitFor(() => {
-        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+        expect(screen.getAllByTestId("stream-post-card").length)
+          .toBeGreaterThan(0);
       });
 
       // Load more button should be visible when hasMore is true
@@ -456,7 +478,8 @@ describe("StreamsClient", () => {
 
       // Wait for posts to load first
       await waitFor(() => {
-        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+        expect(screen.getAllByTestId("stream-post-card").length)
+          .toBeGreaterThan(0);
       });
 
       // Load more button should NOT be visible when hasMore is false
@@ -500,7 +523,11 @@ describe("StreamsClient", () => {
       fireEvent.click(likeButtons[0]!);
 
       await waitFor(() => {
-        expect(mockLikePost).toHaveBeenCalledWith("twitter-1", "TWITTER", "acc-1");
+        expect(mockLikePost).toHaveBeenCalledWith(
+          "twitter-1",
+          "TWITTER",
+          "acc-1",
+        );
       });
     });
 
@@ -519,7 +546,8 @@ describe("StreamsClient", () => {
 
       // Wait for stream post cards to render (ensures posts are fully loaded)
       await waitFor(() => {
-        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+        expect(screen.getAllByTestId("stream-post-card").length)
+          .toBeGreaterThan(0);
       });
 
       // Wait for reply buttons to be available
@@ -535,7 +563,9 @@ describe("StreamsClient", () => {
       await waitFor(() => {
         expect(screen.getByTestId("reply-dialog")).toBeInTheDocument();
       });
-      expect(screen.getByTestId("reply-dialog-post-id")).toHaveTextContent("post-1");
+      expect(screen.getByTestId("reply-dialog-post-id")).toHaveTextContent(
+        "post-1",
+      );
     });
 
     it("should trigger share when share is clicked", async () => {
@@ -575,7 +605,9 @@ describe("StreamsClient", () => {
 
       // Should copy URL to clipboard since Web Share API is not available
       await waitFor(() => {
-        expect(mockWriteText).toHaveBeenCalledWith("https://twitter.com/user/status/1");
+        expect(mockWriteText).toHaveBeenCalledWith(
+          "https://twitter.com/user/status/1",
+        );
       });
     });
   });
@@ -630,7 +662,8 @@ describe("StreamsClient", () => {
 
       // Should have toggle buttons for Twitter and Facebook (the accounts in mockAccounts)
       expect(screen.getByTestId("platform-toggle-twitter")).toBeInTheDocument();
-      expect(screen.getByTestId("platform-toggle-facebook")).toBeInTheDocument();
+      expect(screen.getByTestId("platform-toggle-facebook"))
+        .toBeInTheDocument();
     });
   });
 
@@ -677,7 +710,8 @@ describe("StreamsClient", () => {
 
       // Wait for posts to load (filters are shown but loading might still be true)
       await waitFor(() => {
-        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+        expect(screen.getAllByTestId("stream-post-card").length)
+          .toBeGreaterThan(0);
       });
 
       // Verify refresh button is rendered and not disabled after loading
@@ -706,7 +740,8 @@ describe("StreamsClient", () => {
 
       // Wait for data to load
       await waitFor(() => {
-        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+        expect(screen.getAllByTestId("stream-post-card").length)
+          .toBeGreaterThan(0);
       });
 
       // Polling indicator should be visible when polling is active
@@ -734,7 +769,8 @@ describe("StreamsClient", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+        expect(screen.getAllByTestId("stream-post-card").length)
+          .toBeGreaterThan(0);
       });
 
       expect(screen.queryByTestId("new-posts-banner")).not.toBeInTheDocument();
@@ -754,7 +790,8 @@ describe("StreamsClient", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+        expect(screen.getAllByTestId("stream-post-card").length)
+          .toBeGreaterThan(0);
       });
 
       // Simulate refetch with new posts
@@ -805,7 +842,8 @@ describe("StreamsClient", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+        expect(screen.getAllByTestId("stream-post-card").length)
+          .toBeGreaterThan(0);
       });
 
       // Simulate refetch with multiple new posts
@@ -871,7 +909,8 @@ describe("StreamsClient", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getAllByTestId("stream-post-card").length).toBeGreaterThan(0);
+        expect(screen.getAllByTestId("stream-post-card").length)
+          .toBeGreaterThan(0);
       });
 
       // Simulate refetch with new posts
@@ -909,7 +948,8 @@ describe("StreamsClient", () => {
       fireEvent.click(screen.getByTestId("new-posts-button"));
 
       await waitFor(() => {
-        expect(screen.queryByTestId("new-posts-banner")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("new-posts-banner")).not
+          .toBeInTheDocument();
       });
     });
   });

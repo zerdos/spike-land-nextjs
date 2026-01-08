@@ -92,11 +92,17 @@ export const PLATFORM_CONFIG: Record<
   DISCORD: { name: "Discord", icon: "💬", color: "bg-[#5865F2] text-white" },
   REDDIT: { name: "Reddit", icon: "🔴", color: "bg-[#FF4500] text-white" },
   DEVTO: { name: "Dev.to", icon: "DEV", color: "bg-black text-white" },
-  HACKERNEWS: { name: "Hacker News", icon: "Y", color: "bg-[#FF6600] text-white" },
+  HACKERNEWS: {
+    name: "Hacker News",
+    icon: "Y",
+    color: "bg-[#FF6600] text-white",
+  },
   GITHUB: { name: "GitHub", icon: "🐙", color: "bg-[#24292e] text-white" },
 };
 
-export function SocialMediaLayout({ initialData, children }: SocialMediaLayoutProps) {
+export function SocialMediaLayout(
+  { initialData, children }: SocialMediaLayoutProps,
+) {
   const pathname = usePathname();
   const [data, setData] = useState<SocialMediaData>(initialData);
   const [loading, setLoading] = useState(false);
@@ -148,7 +154,9 @@ export function SocialMediaLayout({ initialData, children }: SocialMediaLayoutPr
             variant="outline"
             size="sm"
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
           <div className="text-right text-sm text-muted-foreground">
@@ -194,7 +202,9 @@ interface SocialMediaDataContextType {
   refreshData: () => Promise<void>;
 }
 
-const SocialMediaDataContext = createContext<SocialMediaDataContextType | null>(null);
+const SocialMediaDataContext = createContext<SocialMediaDataContextType | null>(
+  null,
+);
 
 export function useSocialMediaData() {
   const context = useContext(SocialMediaDataContext);

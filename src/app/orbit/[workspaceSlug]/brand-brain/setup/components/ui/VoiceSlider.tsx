@@ -26,9 +26,7 @@ export function VoiceSlider({
         <span
           className={cn(
             "text-sm font-medium transition-colors",
-            value < 50
-              ? "text-foreground"
-              : "text-muted-foreground",
+            value < 50 ? "text-foreground" : "text-muted-foreground",
           )}
         >
           {leftLabel}
@@ -43,9 +41,7 @@ export function VoiceSlider({
         <span
           className={cn(
             "text-sm font-medium transition-colors",
-            value > 50
-              ? "text-foreground"
-              : "text-muted-foreground",
+            value > 50 ? "text-foreground" : "text-muted-foreground",
           )}
         >
           {rightLabel}

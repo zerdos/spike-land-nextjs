@@ -105,7 +105,9 @@ async function replyToPostByPlatform(
       return { id: result.id };
     }
     case "LINKEDIN": {
-      if (!organizationUrn) throw new Error("Organization URN is required for LinkedIn");
+      if (!organizationUrn) {
+        throw new Error("Organization URN is required for LinkedIn");
+      }
       const client = new LinkedInClient({ accessToken, organizationUrn });
       const result = await client.commentOnPost(postId, content);
       return { id: result.id };
@@ -160,7 +162,10 @@ export async function POST(
     );
   }
 
-  const { accountId, content } = body as { accountId?: string; content?: string; };
+  const { accountId, content } = body as {
+    accountId?: string;
+    content?: string;
+  };
 
   if (!accountId) {
     return NextResponse.json(
@@ -180,7 +185,9 @@ export async function POST(
   const charLimit = PLATFORM_CHARACTER_LIMITS[platform];
   if (charLimit && content.length > charLimit) {
     return NextResponse.json(
-      { error: `Reply content exceeds ${charLimit} characters for ${platform}` },
+      {
+        error: `Reply content exceeds ${charLimit} characters for ${platform}`,
+      },
       { status: 400 },
     );
   }
@@ -246,7 +253,9 @@ export async function POST(
     return NextResponse.json(
       {
         error: "Failed to reply to post",
-        details: replyError instanceof Error ? replyError.message : "Unknown error",
+        details: replyError instanceof Error
+          ? replyError.message
+          : "Unknown error",
       },
       { status: 500 },
     );

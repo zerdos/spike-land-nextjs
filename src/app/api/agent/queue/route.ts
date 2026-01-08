@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
   }
 
   // Get app IDs with pending messages from Redis
-  const { data: appIds, error: redisError } = await tryCatch(getAppsWithPending());
+  const { data: appIds, error: redisError } = await tryCatch(
+    getAppsWithPending(),
+  );
 
   if (redisError) {
     console.error("Error fetching pending apps from Redis:", redisError);

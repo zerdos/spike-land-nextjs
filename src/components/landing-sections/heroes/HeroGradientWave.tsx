@@ -21,7 +21,9 @@ export function HeroGradientWave() {
             </p>
             <div className="flex flex-wrap gap-4">
               <ThemeButton size="lg" glow>Start now</ThemeButton>
-              <ThemeButton variant="ghost" size="lg">Contact sales &rarr;</ThemeButton>
+              <ThemeButton variant="ghost" size="lg">
+                Contact sales &rarr;
+              </ThemeButton>
             </div>
           </div>
 

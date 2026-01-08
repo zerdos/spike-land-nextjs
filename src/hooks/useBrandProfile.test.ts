@@ -29,7 +29,12 @@ const mockBrandProfile: BrandProfileData = {
     severity: "HIGH",
     isActive: true,
   }],
-  vocabulary: [{ id: "v1", type: "PREFERRED", term: "Customer", isActive: true }],
+  vocabulary: [{
+    id: "v1",
+    type: "PREFERRED",
+    term: "Customer",
+    isActive: true,
+  }],
   version: 1,
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-01-01T00:00:00.000Z",
@@ -155,7 +160,9 @@ describe("useBrandProfile", () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      expect(result.current.error?.message).toBe("Failed to fetch brand profile");
+      expect(result.current.error?.message).toBe(
+        "Failed to fetch brand profile",
+      );
     });
 
     it("handles network error", async () => {
@@ -179,7 +186,9 @@ describe("useBrandProfile", () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      expect(result.current.error?.message).toBe("Failed to fetch brand profile");
+      expect(result.current.error?.message).toBe(
+        "Failed to fetch brand profile",
+      );
     });
 
     it("handles null response", async () => {

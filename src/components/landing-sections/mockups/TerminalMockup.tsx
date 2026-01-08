@@ -25,7 +25,9 @@ export function TerminalMockup(
         <div className="mt-2 text-gray-400">
           <div>Downloading spike-land 1.0.0...</div>
           <div>Installing dependencies...</div>
-          <div className="text-green-500 mt-2">✓ Project created successfully!</div>
+          <div className="text-green-500 mt-2">
+            ✓ Project created successfully!
+          </div>
           <div className="mt-2 text-white">
             <span className="text-gray-500">$</span> cd my-app && yarn dev
           </div>

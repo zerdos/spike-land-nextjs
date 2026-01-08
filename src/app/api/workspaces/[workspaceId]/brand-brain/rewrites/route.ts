@@ -14,7 +14,8 @@ const listQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
   status: z.enum(["PENDING", "PROCESSING", "COMPLETED", "FAILED"]).optional(),
-  platform: z.enum(["TWITTER", "LINKEDIN", "INSTAGRAM", "FACEBOOK", "GENERAL"]).optional(),
+  platform: z.enum(["TWITTER", "LINKEDIN", "INSTAGRAM", "FACEBOOK", "GENERAL"])
+    .optional(),
 });
 
 // GET /api/workspaces/[workspaceId]/brand-brain/rewrites
@@ -44,7 +45,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   if (!queryResult.success) {
     return NextResponse.json(
-      { error: "Invalid query parameters", details: queryResult.error.flatten() },
+      {
+        error: "Invalid query parameters",
+        details: queryResult.error.flatten(),
+      },
       { status: 400 },
     );
   }

@@ -175,7 +175,8 @@ describe("score-cache", () => {
       mockRedis.set.mockRejectedValue(new Error("Redis error"));
 
       // Should not throw
-      await expect(setCachedScore("test-key", mockScore)).resolves.toBeUndefined();
+      await expect(setCachedScore("test-key", mockScore)).resolves
+        .toBeUndefined();
     });
   });
 

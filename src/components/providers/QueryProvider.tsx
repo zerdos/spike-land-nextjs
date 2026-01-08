@@ -19,7 +19,9 @@ interface QueryProviderProps {
  * </QueryProvider>
  * ```
  */
-export function QueryProvider({ children }: QueryProviderProps): React.JSX.Element {
+export function QueryProvider(
+  { children }: QueryProviderProps,
+): React.JSX.Element {
   const [queryClient] = useState(
     () =>
       new QueryClient({

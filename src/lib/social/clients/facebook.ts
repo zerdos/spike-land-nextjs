@@ -295,7 +295,10 @@ export class FacebookClient implements ISocialClient {
   /**
    * Create a post on the Facebook page
    */
-  async createPost(content: string, options?: PostOptions): Promise<PostResult> {
+  async createPost(
+    content: string,
+    options?: PostOptions,
+  ): Promise<PostResult> {
     if (!this.pageId || !this.pageAccessToken) {
       throw new Error("Page ID and page access token are required");
     }
@@ -463,7 +466,10 @@ export class FacebookClient implements ISocialClient {
   /**
    * Comment on a post on the Facebook page
    */
-  async commentOnPost(postId: string, content: string): Promise<{ id: string; }> {
+  async commentOnPost(
+    postId: string,
+    content: string,
+  ): Promise<{ id: string; }> {
     if (!this.pageAccessToken) {
       throw new Error("Page access token is required");
     }
@@ -541,7 +547,8 @@ export class FacebookClient implements ISocialClient {
     let reach = 0;
 
     if (insightsResponse.ok) {
-      const insightsData: FacebookInsightsResponse = await insightsResponse.json();
+      const insightsData: FacebookInsightsResponse = await insightsResponse
+        .json();
 
       for (const metric of insightsData.data || []) {
         const latestValue = metric.values?.[0]?.value || 0;

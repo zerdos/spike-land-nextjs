@@ -157,7 +157,9 @@ export async function POST(request: NextRequest) {
 
   if (!imageUrl) {
     return NextResponse.json(
-      { error: "Missing required field: imageUrl. Instagram posts require an image." },
+      {
+        error: "Missing required field: imageUrl. Instagram posts require an image.",
+      },
       { status: 400 },
     );
   }
@@ -177,7 +179,9 @@ export async function POST(request: NextRequest) {
   // Only allow HTTPS URLs for security
   if (parsedUrl.protocol !== "https:") {
     return NextResponse.json(
-      { error: "imageUrl must use HTTPS protocol for security. HTTP URLs are not allowed." },
+      {
+        error: "imageUrl must use HTTPS protocol for security. HTTP URLs are not allowed.",
+      },
       { status: 400 },
     );
   }
@@ -227,7 +231,9 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.json(
-      { error: "Access token has expired. Please reconnect your Instagram account." },
+      {
+        error: "Access token has expired. Please reconnect your Instagram account.",
+      },
       { status: 401 },
     );
   }
@@ -263,7 +269,9 @@ export async function POST(request: NextRequest) {
     console.error("Failed to create Instagram post:", postError);
 
     // Check for common error types
-    const errorMessage = postError instanceof Error ? postError.message : "Unknown error";
+    const errorMessage = postError instanceof Error
+      ? postError.message
+      : "Unknown error";
 
     if (errorMessage.includes("expired")) {
       // Update account status
@@ -275,14 +283,18 @@ export async function POST(request: NextRequest) {
       );
 
       return NextResponse.json(
-        { error: "Access token has expired. Please reconnect your Instagram account." },
+        {
+          error: "Access token has expired. Please reconnect your Instagram account.",
+        },
         { status: 401 },
       );
     }
 
     if (errorMessage.includes("timeout")) {
       return NextResponse.json(
-        { error: "Instagram took too long to process the image. Please try again." },
+        {
+          error: "Instagram took too long to process the image. Please try again.",
+        },
         { status: 504 },
       );
     }

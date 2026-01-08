@@ -19,7 +19,9 @@ describe("AppWorkspaceError", () => {
 
     expect(screen.getByText("Something went wrong")).toBeInTheDocument();
     expect(
-      screen.getByText("We encountered an error while loading this app workspace."),
+      screen.getByText(
+        "We encountered an error while loading this app workspace.",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -33,7 +35,8 @@ describe("AppWorkspaceError", () => {
     const emptyError = new Error("");
     render(<AppWorkspaceError error={emptyError} reset={mockReset} />);
 
-    expect(screen.getByText("An unexpected error occurred")).toBeInTheDocument();
+    expect(screen.getByText("An unexpected error occurred"))
+      .toBeInTheDocument();
   });
 
   it("calls reset when Try Again button is clicked", async () => {
@@ -100,7 +103,8 @@ describe("AppWorkspaceError", () => {
       <AppWorkspaceError error={mockError} reset={mockReset} />,
     );
 
-    expect(container.querySelector('[class*="rounded-2xl"]')).toBeInTheDocument();
+    expect(container.querySelector('[class*="rounded-2xl"]'))
+      .toBeInTheDocument();
   });
 
   it("re-logs error if error changes", () => {

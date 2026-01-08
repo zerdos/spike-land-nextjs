@@ -302,7 +302,9 @@ describe("Reply API Route", () => {
 
       const longContent = "a".repeat(500); // More than Twitter's limit but less than Facebook's
 
-      const mockCommentOnPost = vi.fn().mockResolvedValue({ id: "comment-123" });
+      const mockCommentOnPost = vi.fn().mockResolvedValue({
+        id: "comment-123",
+      });
       MockFacebookClient.mockImplementation(function() {
         return { commentOnPost: mockCommentOnPost };
       });
@@ -316,7 +318,10 @@ describe("Reply API Route", () => {
         },
       );
 
-      const response = await POST(request, createParams("facebook", "post-123"));
+      const response = await POST(
+        request,
+        createParams("facebook", "post-123"),
+      );
 
       // Should pass validation (500 < 8000)
       expect(response.status).toBe(200);

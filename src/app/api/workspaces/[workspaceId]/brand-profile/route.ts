@@ -113,7 +113,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
   if (existing) {
     return NextResponse.json(
-      { error: "Brand profile already exists for this workspace. Use PATCH to update." },
+      {
+        error: "Brand profile already exists for this workspace. Use PATCH to update.",
+      },
       { status: 409 },
     );
   }
@@ -279,10 +281,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       if (name !== undefined) updateData.name = name;
       if (mission !== undefined) updateData.mission = mission || null;
       if (values !== undefined) updateData.values = values || [];
-      if (toneDescriptors !== undefined) updateData.toneDescriptors = toneDescriptors;
+      if (toneDescriptors !== undefined) {
+        updateData.toneDescriptors = toneDescriptors;
+      }
       if (logoUrl !== undefined) updateData.logoUrl = logoUrl || null;
       if (logoR2Key !== undefined) updateData.logoR2Key = logoR2Key || null;
-      if (colorPalette !== undefined) updateData.colorPalette = colorPalette || [];
+      if (colorPalette !== undefined) {
+        updateData.colorPalette = colorPalette || [];
+      }
 
       // Update the brand profile
       const profile = await tx.brandProfile.update({

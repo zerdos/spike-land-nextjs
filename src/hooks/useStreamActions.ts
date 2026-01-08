@@ -189,7 +189,9 @@ export function useStreamActions(workspaceId: string): UseStreamActionsResult {
       }>(getStreamsQueryKey());
 
       // Optimistically update to the new value
-      queryClient.setQueryData<{ pages: Array<{ posts: StreamPost[]; }>; } | undefined>(
+      queryClient.setQueryData<
+        { pages: Array<{ posts: StreamPost[]; }>; } | undefined
+      >(
         getStreamsQueryKey(),
         (old) => {
           if (!old?.pages) return old;
@@ -244,7 +246,9 @@ export function useStreamActions(workspaceId: string): UseStreamActionsResult {
         pages: Array<{ posts: StreamPost[]; }>;
       }>(getStreamsQueryKey());
 
-      queryClient.setQueryData<{ pages: Array<{ posts: StreamPost[]; }>; } | undefined>(
+      queryClient.setQueryData<
+        { pages: Array<{ posts: StreamPost[]; }>; } | undefined
+      >(
         getStreamsQueryKey(),
         (old) => {
           if (!old?.pages) return old;
@@ -258,7 +262,10 @@ export function useStreamActions(workspaceId: string): UseStreamActionsResult {
                     ...post,
                     isLiked: false,
                     metrics: post.metrics
-                      ? { ...post.metrics, likes: Math.max(0, post.metrics.likes - 1) }
+                      ? {
+                        ...post.metrics,
+                        likes: Math.max(0, post.metrics.likes - 1),
+                      }
                       : undefined,
                   }
                   : post
@@ -286,14 +293,21 @@ export function useStreamActions(workspaceId: string): UseStreamActionsResult {
   const replyMutation = useMutation<
     { id: string; url?: string; },
     Error,
-    { postId: string; platform: SocialPlatform; accountId: string; content: string; },
+    {
+      postId: string;
+      platform: SocialPlatform;
+      accountId: string;
+      content: string;
+    },
     StreamsQueryContext
   >({
     mutationFn: ({ postId, platform, accountId, content }) =>
       replyToPostApi(postId, platform, accountId, content),
     onSuccess: (_data, { postId }) => {
       // Update comment count after successful reply
-      queryClient.setQueryData<{ pages: Array<{ posts: StreamPost[]; }>; } | undefined>(
+      queryClient.setQueryData<
+        { pages: Array<{ posts: StreamPost[]; }>; } | undefined
+      >(
         getStreamsQueryKey(),
         (old) => {
           if (!old?.pages) return old;

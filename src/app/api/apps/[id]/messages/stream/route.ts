@@ -46,7 +46,10 @@ const activeConnections = new Map<
 /**
  * Broadcast an event to all connected clients for an app
  */
-export function broadcastToApp(appId: string, event: Omit<SSEEvent, "timestamp">) {
+export function broadcastToApp(
+  appId: string,
+  event: Omit<SSEEvent, "timestamp">,
+) {
   const connections = activeConnections.get(appId);
   if (!connections || connections.size === 0) return;
 
@@ -143,7 +146,9 @@ export async function GET(
         data: { appId: id, status: app.status },
         timestamp: Date.now(),
       };
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify(connectedEvent)}\n\n`));
+      controller.enqueue(
+        encoder.encode(`data: ${JSON.stringify(connectedEvent)}\n\n`),
+      );
 
       // Check and send agent working status
       isAgentWorking(id).then((working) => {
@@ -154,7 +159,9 @@ export async function GET(
             timestamp: Date.now(),
           };
           try {
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify(workingEvent)}\n\n`));
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify(workingEvent)}\n\n`),
+            );
           } catch {
             // Controller closed
           }
@@ -169,7 +176,9 @@ export async function GET(
             data: null,
             timestamp: Date.now(),
           };
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(heartbeat)}\n\n`));
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(heartbeat)}\n\n`),
+          );
         } catch {
           // Controller closed, clear interval
           clearInterval(heartbeatInterval);

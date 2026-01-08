@@ -19,7 +19,9 @@ import {
   transformRewriteResult,
 } from "./rewrite-content";
 
-const mockGenerateStructuredResponse = generateStructuredResponse as ReturnType<typeof vi.fn>;
+const mockGenerateStructuredResponse = generateStructuredResponse as ReturnType<
+  typeof vi.fn
+>;
 
 describe("rewrite-content", () => {
   beforeEach(() => {
@@ -118,8 +120,12 @@ describe("rewrite-content", () => {
     it("should format guardrails with severity emoji", () => {
       const result = _formatGuardrails(mockGuardrails);
 
-      expect(result).toContain("! [PROHIBITED_TOPIC] Politics: Avoid political topics");
-      expect(result).toContain("- [REQUIRED_DISCLOSURE] Affiliate: Disclose affiliate links");
+      expect(result).toContain(
+        "! [PROHIBITED_TOPIC] Politics: Avoid political topics",
+      );
+      expect(result).toContain(
+        "- [REQUIRED_DISCLOSURE] Affiliate: Disclose affiliate links",
+      );
     });
 
     it("should return message when no guardrails", () => {
@@ -167,7 +173,9 @@ describe("rewrite-content", () => {
 
       const result = _formatGuardrails(guardrails);
 
-      expect(result).toContain("!! [PROHIBITED_TOPIC] Legal Risk: Avoid legal advice");
+      expect(result).toContain(
+        "!! [PROHIBITED_TOPIC] Legal Risk: Avoid legal advice",
+      );
     });
 
     it("should handle unknown severity with default dash", () => {
@@ -197,8 +205,12 @@ describe("rewrite-content", () => {
       const result = _formatVocabulary(mockVocabulary);
 
       expect(result).toContain("**Preferred Terms:** awesome");
-      expect(result).toContain("**Banned Terms (MUST replace):** cheap (use 'affordable' instead)");
-      expect(result).toContain('**Required Replacements:** "product" -> "solution"');
+      expect(result).toContain(
+        "**Banned Terms (MUST replace):** cheap (use 'affordable' instead)",
+      );
+      expect(result).toContain(
+        '**Required Replacements:** "product" -> "solution"',
+      );
     });
 
     it("should return message when no vocabulary", () => {
@@ -411,8 +423,12 @@ describe("rewrite-content", () => {
       const hunks = computeDiffHunks("Hello world", "Hello universe");
 
       expect(hunks.length).toBeGreaterThan(0);
-      expect(hunks.some((h) => h.type === "removed" && h.value.includes("world"))).toBe(true);
-      expect(hunks.some((h) => h.type === "added" && h.value.includes("universe"))).toBe(true);
+      expect(
+        hunks.some((h) => h.type === "removed" && h.value.includes("world")),
+      ).toBe(true);
+      expect(
+        hunks.some((h) => h.type === "added" && h.value.includes("universe")),
+      ).toBe(true);
     });
 
     it("should mark all hunks as selected by default", () => {
@@ -422,7 +438,10 @@ describe("rewrite-content", () => {
     });
 
     it("should assign unique IDs to hunks", () => {
-      const hunks = computeDiffHunks("Hello beautiful world", "Hello amazing world");
+      const hunks = computeDiffHunks(
+        "Hello beautiful world",
+        "Hello amazing world",
+      );
 
       const ids = hunks.map((h) => h.id);
       const uniqueIds = new Set(ids);
@@ -553,7 +572,9 @@ describe("rewrite-content", () => {
     it("should throw error on API failure", async () => {
       mockGenerateStructuredResponse.mockRejectedValue(new Error("API error"));
 
-      await expect(rewriteContent(params)).rejects.toThrow("Failed to rewrite content: API error");
+      await expect(rewriteContent(params)).rejects.toThrow(
+        "Failed to rewrite content: API error",
+      );
     });
 
     it("should throw error on invalid response structure", async () => {
@@ -561,7 +582,9 @@ describe("rewrite-content", () => {
         invalid: "response",
       });
 
-      await expect(rewriteContent(params)).rejects.toThrow("Invalid rewrite response structure");
+      await expect(rewriteContent(params)).rejects.toThrow(
+        "Invalid rewrite response structure",
+      );
     });
 
     it("should truncate content exceeding character limit", async () => {
@@ -656,7 +679,12 @@ describe("rewrite-content", () => {
       changes: [
         { id: "hunk-0", type: "unchanged", value: "Brand", selected: true },
         { id: "hunk-1", type: "removed", value: "Old", selected: true },
-        { id: "hunk-2", type: "added", value: "-aligned content", selected: true },
+        {
+          id: "hunk-2",
+          type: "added",
+          value: "-aligned content",
+          selected: true,
+        },
       ],
       toneAnalysis: {
         formalCasual: 50,

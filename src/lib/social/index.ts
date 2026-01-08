@@ -102,7 +102,10 @@ export function getSocialAuthUrl(
  * Generate PKCE code verifier and challenge
  * Required for Twitter OAuth 2.0
  */
-export function generatePKCE(): { codeVerifier: string; codeChallenge: string; } {
+export function generatePKCE(): {
+  codeVerifier: string;
+  codeChallenge: string;
+} {
   // Generate a random code verifier (43-128 characters)
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);

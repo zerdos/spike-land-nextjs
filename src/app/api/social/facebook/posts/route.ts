@@ -205,7 +205,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
     // Ensure scheduled time is at least 10 minutes in the future (Facebook requirement)
-    const minScheduleTime = new Date(Date.now() + MIN_SCHEDULE_MINUTES * 60 * 1000);
+    const minScheduleTime = new Date(
+      Date.now() + MIN_SCHEDULE_MINUTES * 60 * 1000,
+    );
     if (scheduledDate < minScheduleTime) {
       return NextResponse.json(
         {
@@ -228,7 +230,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         error: "Failed to create post on Facebook",
-        details: postError instanceof Error ? postError.message : "Unknown error",
+        details: postError instanceof Error
+          ? postError.message
+          : "Unknown error",
       },
       { status: 500 },
     );

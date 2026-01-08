@@ -14,10 +14,16 @@ export function HeroElegantProduct() {
         </p>
 
         <div className="flex justify-center gap-6 text-xl">
-          <a href="#" className="text-[var(--landing-accent)] hover:underline flex items-center">
+          <a
+            href="#"
+            className="text-[var(--landing-accent)] hover:underline flex items-center"
+          >
             Get started <span className="ml-1 text-sm">›</span>
           </a>
-          <a href="#" className="text-[var(--landing-accent)] hover:underline flex items-center">
+          <a
+            href="#"
+            className="text-[var(--landing-accent)] hover:underline flex items-center"
+          >
             Watch the film <span className="ml-1 text-sm">›</span>
           </a>
         </div>

@@ -154,7 +154,9 @@ describe("Workspaces API", () => {
         new Error("Database error"),
       );
 
-      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleError = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       const response = await GET();
       const data = await response.json();

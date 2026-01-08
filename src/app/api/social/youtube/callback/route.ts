@@ -70,7 +70,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   // Verify state
-  let stateData: { userId: string; workspaceId: string; timestamp: number; nonce?: string; };
+  let stateData: {
+    userId: string;
+    workspaceId: string;
+    timestamp: number;
+    nonce?: string;
+  };
   try {
     stateData = JSON.parse(
       Buffer.from(state, "base64url").toString("utf-8"),
@@ -90,7 +95,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (stateData.userId !== session.user.id) {
     return clearOAuthCookies(
       NextResponse.redirect(
-        new URL("/admin/social-media/accounts?error=User mismatch", request.url),
+        new URL(
+          "/admin/social-media/accounts?error=User mismatch",
+          request.url,
+        ),
       ),
     );
   }
@@ -278,7 +286,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         `/admin/social-media/accounts?connected=youtube&channelName=${
           encodeURIComponent(channelInfo.displayName)
         }&channelId=${encodeURIComponent(channelInfo.platformId)}&note=${
-          encodeURIComponent("YouTube connected! Note: Database storage requires schema migration.")
+          encodeURIComponent(
+            "YouTube connected! Note: Database storage requires schema migration.",
+          )
         }`,
         request.url,
       ),

@@ -65,7 +65,9 @@ export default function SocialMediaPostsPage() {
         <CardContent className="space-y-4">
           {/* Platform Selection */}
           <div>
-            <Label className="text-sm font-medium mb-3 block">Select Platforms</Label>
+            <Label className="text-sm font-medium mb-3 block">
+              Select Platforms
+            </Label>
             <div className="flex flex-wrap gap-2">
               {data.accounts.map((account) => {
                 const config = PLATFORM_CONFIG[account.platform];
@@ -95,7 +97,10 @@ export default function SocialMediaPostsPage() {
 
           {/* Post Content */}
           <div>
-            <Label htmlFor="post-content" className="text-sm font-medium mb-2 block">
+            <Label
+              htmlFor="post-content"
+              className="text-sm font-medium mb-2 block"
+            >
               Post Content
             </Label>
             <Textarea

@@ -163,7 +163,14 @@ export default async function MyAppsPage() {
                     className="cursor-not-allowed opacity-50"
                   >
                     Building ({apps.filter((app) =>
-                      ["PROMPTING", "WAITING", "DRAFTING", "BUILDING", "FINE_TUNING", "TEST"]
+                      [
+                        "PROMPTING",
+                        "WAITING",
+                        "DRAFTING",
+                        "BUILDING",
+                        "FINE_TUNING",
+                        "TEST",
+                      ]
                         .includes(app.status)
                     ).length})
                   </Badge>
@@ -216,7 +223,11 @@ export default async function MyAppsPage() {
                           target="_blank"
                           className="flex-1"
                         >
-                          <Button variant="default" className="w-full" size="sm">
+                          <Button
+                            variant="default"
+                            className="w-full"
+                            size="sm"
+                          >
                             Preview
                           </Button>
                         </Link>

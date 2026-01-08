@@ -168,7 +168,11 @@ export async function PATCH(
 
   // Broadcast updates to connected clients via SSE
   if (status !== undefined && status !== existingApp.status) {
-    broadcastStatus(id, status, statusMessage || `Agent changed status to ${status}`);
+    broadcastStatus(
+      id,
+      status,
+      statusMessage || `Agent changed status to ${status}`,
+    );
   }
 
   if (agentMessage) {

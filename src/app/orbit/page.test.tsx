@@ -72,7 +72,9 @@ describe("OrbitPage", () => {
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith("/api/workspaces");
-      expect(mockReplace).toHaveBeenCalledWith("/orbit/first-workspace/dashboard");
+      expect(mockReplace).toHaveBeenCalledWith(
+        "/orbit/first-workspace/dashboard",
+      );
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         "orbit-last-workspace-slug",
         "first-workspace",
@@ -89,9 +91,14 @@ describe("OrbitPage", () => {
     render(<OrbitPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("No workspaces found. Create your first workspace to get started."))
+      expect(
+        screen.getByText(
+          "No workspaces found. Create your first workspace to get started.",
+        ),
+      )
         .toBeInTheDocument();
-      expect(screen.getByText("Create Workspace (Coming Soon)")).toBeInTheDocument();
+      expect(screen.getByText("Create Workspace (Coming Soon)"))
+        .toBeInTheDocument();
     });
 
     expect(mockReplace).not.toHaveBeenCalled();
@@ -104,7 +111,11 @@ describe("OrbitPage", () => {
     render(<OrbitPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("No workspaces found. Create your first workspace to get started."))
+      expect(
+        screen.getByText(
+          "No workspaces found. Create your first workspace to get started.",
+        ),
+      )
         .toBeInTheDocument();
     });
 
@@ -124,7 +135,8 @@ describe("OrbitPage", () => {
 
     // After fetch completes, still shows branding
     await waitFor(() => {
-      expect(screen.getByText("Your Social Command Center")).toBeInTheDocument();
+      expect(screen.getByText("Your Social Command Center"))
+        .toBeInTheDocument();
     });
   });
 });

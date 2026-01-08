@@ -7,7 +7,9 @@ interface LandingThemeContextType {
   theme: LandingTheme;
 }
 
-const LandingThemeContext = createContext<LandingThemeContextType | undefined>(undefined);
+const LandingThemeContext = createContext<LandingThemeContextType | undefined>(
+  undefined,
+);
 
 export function LandingThemeProvider({
   children,
@@ -44,7 +46,9 @@ export function LandingThemeProvider({
 export function useLandingTheme() {
   const context = useContext(LandingThemeContext);
   if (context === undefined) {
-    throw new Error("useLandingTheme must be used within a LandingThemeProvider");
+    throw new Error(
+      "useLandingTheme must be used within a LandingThemeProvider",
+    );
   }
   return context;
 }

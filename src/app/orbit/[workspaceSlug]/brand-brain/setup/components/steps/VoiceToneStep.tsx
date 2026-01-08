@@ -115,12 +115,18 @@ function VoiceSummary(
 function getVoiceDescription(dimension: string, value: number): string {
   switch (dimension) {
     case "formalCasual":
-      if (value < 30) return "Professional language with proper titles and structure";
-      if (value > 70) return "Friendly, conversational tone like talking to a colleague";
+      if (value < 30) {
+        return "Professional language with proper titles and structure";
+      }
+      if (value > 70) {
+        return "Friendly, conversational tone like talking to a colleague";
+      }
       return "Balanced mix of professional and approachable";
 
     case "technicalSimple":
-      if (value < 30) return "Industry jargon and detailed technical explanations";
+      if (value < 30) {
+        return "Industry jargon and detailed technical explanations";
+      }
       if (value > 70) return "Plain language anyone can understand";
       return "Technical when needed, simple when possible";
 

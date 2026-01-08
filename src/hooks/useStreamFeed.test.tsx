@@ -69,7 +69,11 @@ describe("useStreamFeed", () => {
       accountName: "Test Twitter",
       avatarUrl: "https://example.com/avatar1.jpg",
     },
-    { id: "acc-2", platform: "FACEBOOK" as SocialPlatform, accountName: "Test Facebook" },
+    {
+      id: "acc-2",
+      platform: "FACEBOOK" as SocialPlatform,
+      accountName: "Test Facebook",
+    },
   ];
 
   const mockResponse: StreamsResponse = {
@@ -249,8 +253,16 @@ describe("useStreamFeed", () => {
       const responseWithErrors: StreamsResponse = {
         ...mockResponse,
         errors: [
-          { accountId: "acc-1", platform: "TWITTER" as SocialPlatform, message: "Rate limited" },
-          { accountId: "acc-2", platform: "FACEBOOK" as SocialPlatform, message: "Token expired" },
+          {
+            accountId: "acc-1",
+            platform: "TWITTER" as SocialPlatform,
+            message: "Rate limited",
+          },
+          {
+            accountId: "acc-2",
+            platform: "FACEBOOK" as SocialPlatform,
+            message: "Token expired",
+          },
         ],
       };
 
@@ -796,7 +808,11 @@ describe("useStreamFeed", () => {
   describe("accounts consistency across pages", () => {
     it("should use accounts from the first page", async () => {
       const page2AccountsMock: StreamsResponse["accounts"] = [
-        { id: "acc-3", platform: "INSTAGRAM" as SocialPlatform, accountName: "Different Account" },
+        {
+          id: "acc-3",
+          platform: "INSTAGRAM" as SocialPlatform,
+          accountName: "Different Account",
+        },
       ];
 
       const page2WithDifferentAccounts: StreamsResponse = {
@@ -988,7 +1004,11 @@ describe("useStreamFeed", () => {
 
       const customInterval = 60000;
       const { result } = renderHook(
-        () => useStreamFeed({ workspaceId: mockWorkspaceId, pollingInterval: customInterval }),
+        () =>
+          useStreamFeed({
+            workspaceId: mockWorkspaceId,
+            pollingInterval: customInterval,
+          }),
         { wrapper: createWrapper() },
       );
 

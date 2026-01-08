@@ -84,7 +84,10 @@ export async function deleteCachedRewrite(cacheKey: string): Promise<void> {
   const { error } = await tryCatch(redis.del(cacheKey));
 
   if (error) {
-    console.warn("[BRAND_REWRITE_CACHE] Failed to delete cached rewrite:", error);
+    console.warn(
+      "[BRAND_REWRITE_CACHE] Failed to delete cached rewrite:",
+      error,
+    );
   }
 }
 

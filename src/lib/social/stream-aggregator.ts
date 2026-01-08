@@ -56,7 +56,9 @@ export interface AggregateOptions {
  * @param metrics - Post metrics containing engagement data
  * @returns Engagement rate as a percentage, or undefined if not calculable
  */
-export function calculateEngagementRate(metrics?: PostMetrics): number | undefined {
+export function calculateEngagementRate(
+  metrics?: PostMetrics,
+): number | undefined {
   if (!metrics) {
     return undefined;
   }

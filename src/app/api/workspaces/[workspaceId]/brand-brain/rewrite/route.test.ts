@@ -43,7 +43,9 @@ vi.mock("@/lib/brand-brain/rewrite-content", () => ({
 
 const { auth } = await import("@/auth");
 const prisma = (await import("@/lib/prisma")).default;
-const { requireWorkspacePermission } = await import("@/lib/permissions/workspace-middleware");
+const { requireWorkspacePermission } = await import(
+  "@/lib/permissions/workspace-middleware"
+);
 const { checkRateLimit } = await import("@/lib/rate-limiter");
 const { buildRewriteCacheKey, getCachedRewrite, setCachedRewrite } = await import(
   "@/lib/brand-brain/rewrite-cache"
@@ -95,8 +97,18 @@ describe("POST /api/workspaces/[workspaceId]/brand-brain/rewrite", () => {
   const mockRewriteResult = {
     rewrittenContent: "Brand-aligned content",
     changes: [
-      { id: "hunk-0", type: "unchanged" as const, value: "Brand", selected: true },
-      { id: "hunk-1", type: "added" as const, value: "-aligned content", selected: true },
+      {
+        id: "hunk-0",
+        type: "unchanged" as const,
+        value: "Brand",
+        selected: true,
+      },
+      {
+        id: "hunk-1",
+        type: "added" as const,
+        value: "-aligned content",
+        selected: true,
+      },
     ],
     toneAnalysis: {
       formalCasual: 50,
@@ -135,7 +147,9 @@ describe("POST /api/workspaces/[workspaceId]/brand-brain/rewrite", () => {
       remaining: 10,
       resetAt: Date.now() + 60000,
     });
-    vi.mocked(prisma.brandProfile.findUnique).mockResolvedValue(mockBrandProfile);
+    vi.mocked(prisma.brandProfile.findUnique).mockResolvedValue(
+      mockBrandProfile,
+    );
     vi.mocked(buildRewriteCacheKey).mockReturnValue("cache-key");
     vi.mocked(getCachedRewrite).mockResolvedValue(null);
     vi.mocked(rewriteContent).mockResolvedValue(mockRewriteResult);
@@ -161,10 +175,13 @@ describe("POST /api/workspaces/[workspaceId]/brand-brain/rewrite", () => {
   });
 
   const createRequest = (body: unknown) =>
-    new NextRequest("http://localhost/api/workspaces/workspace-123/brand-brain/rewrite", {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
+    new NextRequest(
+      "http://localhost/api/workspaces/workspace-123/brand-brain/rewrite",
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+      },
+    );
 
   const createParams = () => ({
     params: Promise.resolve({ workspaceId: "workspace-123" }),
@@ -186,7 +203,9 @@ describe("POST /api/workspaces/[workspaceId]/brand-brain/rewrite", () => {
   });
 
   it("should return 401 for unauthenticated user", async () => {
-    vi.mocked(requireWorkspacePermission).mockRejectedValue(new Error("Unauthorized"));
+    vi.mocked(requireWorkspacePermission).mockRejectedValue(
+      new Error("Unauthorized"),
+    );
 
     const request = createRequest({
       content: "Test content",
@@ -201,7 +220,9 @@ describe("POST /api/workspaces/[workspaceId]/brand-brain/rewrite", () => {
   });
 
   it("should return 403 for user without permission", async () => {
-    vi.mocked(requireWorkspacePermission).mockRejectedValue(new Error("Access denied"));
+    vi.mocked(requireWorkspacePermission).mockRejectedValue(
+      new Error("Access denied"),
+    );
 
     const request = createRequest({
       content: "Test content",
@@ -329,7 +350,9 @@ describe("POST /api/workspaces/[workspaceId]/brand-brain/rewrite", () => {
   });
 
   it("should return 500 when brand profile fetch fails", async () => {
-    vi.mocked(prisma.brandProfile.findUnique).mockRejectedValue(new Error("DB error"));
+    vi.mocked(prisma.brandProfile.findUnique).mockRejectedValue(
+      new Error("DB error"),
+    );
 
     const request = createRequest({
       content: "Test content",
@@ -359,7 +382,9 @@ describe("POST /api/workspaces/[workspaceId]/brand-brain/rewrite", () => {
   });
 
   it("should continue when database history write fails", async () => {
-    vi.mocked(prisma.contentRewrite.create).mockRejectedValue(new Error("DB error"));
+    vi.mocked(prisma.contentRewrite.create).mockRejectedValue(
+      new Error("DB error"),
+    );
 
     const request = createRequest({
       content: "Test content",
@@ -456,7 +481,9 @@ describe("POST /api/workspaces/[workspaceId]/brand-brain/rewrite", () => {
         },
       ],
     };
-    vi.mocked(prisma.brandProfile.findUnique).mockResolvedValue(profileWithGuardrails);
+    vi.mocked(prisma.brandProfile.findUnique).mockResolvedValue(
+      profileWithGuardrails,
+    );
 
     const request = createRequest({
       content: "Test content",
@@ -494,7 +521,9 @@ describe("POST /api/workspaces/[workspaceId]/brand-brain/rewrite", () => {
         },
       ],
     };
-    vi.mocked(prisma.brandProfile.findUnique).mockResolvedValue(profileWithVocabulary);
+    vi.mocked(prisma.brandProfile.findUnique).mockResolvedValue(
+      profileWithVocabulary,
+    );
 
     const request = createRequest({
       content: "Test content",

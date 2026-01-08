@@ -3,7 +3,11 @@ import { SectionWrapper } from "../shared/SectionWrapper";
 
 const socialLinks = [
   { name: "X", url: "https://x.com/ai_spike_land", icon: "𝕏" },
-  { name: "LinkedIn", url: "https://linkedin.com/company/spike-land", icon: "in" },
+  {
+    name: "LinkedIn",
+    url: "https://linkedin.com/company/spike-land",
+    icon: "in",
+  },
   { name: "GitHub", url: "https://github.com/zerdos", icon: "GH" },
   { name: "Discord", url: "https://discord.gg/5bnH9stj", icon: "💬" },
   { name: "YouTube", url: "https://youtube.com/@spike_land", icon: "▶" },
@@ -42,22 +46,34 @@ export function FooterMinimal() {
             <h4 className="font-bold mb-4">Product</h4>
             <ul className="space-y-2 text-[var(--landing-muted-fg)]">
               <li>
-                <Link href="/pixel" className="hover:text-[var(--landing-primary)]">
+                <Link
+                  href="/pixel"
+                  className="hover:text-[var(--landing-primary)]"
+                >
                   Pixel
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="hover:text-[var(--landing-primary)]">
+                <Link
+                  href="/pricing"
+                  className="hover:text-[var(--landing-primary)]"
+                >
                   Pricing
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="hover:text-[var(--landing-primary)]">
+                <Link
+                  href="/blog"
+                  className="hover:text-[var(--landing-primary)]"
+                >
                   Blog
                 </Link>
               </li>
               <li>
-                <Link href="/social" className="hover:text-[var(--landing-primary)]">
+                <Link
+                  href="/social"
+                  className="hover:text-[var(--landing-primary)]"
+                >
                   Social
                 </Link>
               </li>
@@ -68,12 +84,18 @@ export function FooterMinimal() {
             <h4 className="font-bold mb-4">Company</h4>
             <ul className="space-y-2 text-[var(--landing-muted-fg)]">
               <li>
-                <Link href="/press" className="hover:text-[var(--landing-primary)]">
+                <Link
+                  href="/press"
+                  className="hover:text-[var(--landing-primary)]"
+                >
                   Press Kit
                 </Link>
               </li>
               <li>
-                <Link href="/community" className="hover:text-[var(--landing-primary)]">
+                <Link
+                  href="/community"
+                  className="hover:text-[var(--landing-primary)]"
+                >
                   Community
                 </Link>
               </li>
@@ -88,7 +110,10 @@ export function FooterMinimal() {
                 </a>
               </li>
               <li>
-                <a href="mailto:hello@spike.land" className="hover:text-[var(--landing-primary)]">
+                <a
+                  href="mailto:hello@spike.land"
+                  className="hover:text-[var(--landing-primary)]"
+                >
                   Contact
                 </a>
               </li>
@@ -99,12 +124,18 @@ export function FooterMinimal() {
             <h4 className="font-bold mb-4">Legal</h4>
             <ul className="space-y-2 text-[var(--landing-muted-fg)]">
               <li>
-                <Link href="/privacy" className="hover:text-[var(--landing-primary)]">
+                <Link
+                  href="/privacy"
+                  className="hover:text-[var(--landing-primary)]"
+                >
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="hover:text-[var(--landing-primary)]">
+                <Link
+                  href="/terms"
+                  className="hover:text-[var(--landing-primary)]"
+                >
                   Terms of Service
                 </Link>
               </li>
@@ -118,7 +149,10 @@ export function FooterMinimal() {
             SPIKE LAND LTD (UK Company #16906682). All rights reserved.
           </div>
           <div className="flex gap-6">
-            <Link href="/privacy" className="hover:text-[var(--landing-primary)]">
+            <Link
+              href="/privacy"
+              className="hover:text-[var(--landing-primary)]"
+            >
               Privacy
             </Link>
             <Link href="/terms" className="hover:text-[var(--landing-primary)]">

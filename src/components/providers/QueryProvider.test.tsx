@@ -109,7 +109,9 @@ describe("QueryProvider", () => {
   });
 
   it("handles query errors gracefully", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleError = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     function ErrorQueryConsumer() {
       const { error, isError } = useQuery({

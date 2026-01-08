@@ -2,7 +2,8 @@ import { Redis } from "@upstash/redis";
 
 // Support both UPSTASH_REDIS_REST_* (standard) and KV_REST_API_* (Vercel integration) naming
 const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+const token = process.env.UPSTASH_REDIS_REST_TOKEN ||
+  process.env.KV_REST_API_TOKEN;
 
 // Create Redis client if credentials are available, otherwise create a mock
 // This allows the app to run without Redis (with queue features disabled)

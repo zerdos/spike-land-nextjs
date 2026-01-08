@@ -66,7 +66,9 @@ function createMockRequest(params: Record<string, string> = {}): Request {
 /**
  * Helper to create a mock SocialAccount
  */
-function createMockAccount(overrides: Partial<SocialAccount> = {}): SocialAccount {
+function createMockAccount(
+  overrides: Partial<SocialAccount> = {},
+): SocialAccount {
   return {
     id: "account-123",
     platform: "TWITTER",
@@ -291,7 +293,9 @@ describe("GET /api/social/streams", () => {
       ];
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient(mockPosts) as any,
+      );
 
       const request = createMockRequest({ workspaceId: "workspace-123" });
       const response = await GET(request as any);
@@ -368,8 +372,12 @@ describe("GET /api/social/streams", () => {
         },
       ];
 
-      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([twitterAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
+        twitterAccount,
+      ]);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient(mockPosts) as any,
+      );
 
       const request = createMockRequest({
         workspaceId: "workspace-123",
@@ -402,7 +410,9 @@ describe("GET /api/social/streams", () => {
       ];
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient(mockPosts) as any,
+      );
 
       const request = createMockRequest({
         workspaceId: "workspace-123",
@@ -429,7 +439,9 @@ describe("GET /api/social/streams", () => {
       }));
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient(mockPosts) as any,
+      );
 
       // First page
       const request1 = createMockRequest({
@@ -469,7 +481,9 @@ describe("GET /api/social/streams", () => {
       ];
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient(mockPosts) as any,
+      );
 
       const request = createMockRequest({
         workspaceId: "workspace-123",
@@ -506,7 +520,9 @@ describe("GET /api/social/streams", () => {
       ];
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient(mockPosts) as any,
+      );
 
       const request = createMockRequest({
         workspaceId: "workspace-123",
@@ -620,8 +636,12 @@ describe("GET /api/social/streams", () => {
         accountId: "fb_page_123",
       });
 
-      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([facebookAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
+        facebookAccount,
+      ]);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient([]) as any,
+      );
 
       const request = createMockRequest({ workspaceId: "workspace-123" });
       await GET(request as any);
@@ -640,8 +660,12 @@ describe("GET /api/social/streams", () => {
         accountId: "ig_user_123",
       });
 
-      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([instagramAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
+        instagramAccount,
+      ]);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient([]) as any,
+      );
 
       const request = createMockRequest({ workspaceId: "workspace-123" });
       await GET(request as any);
@@ -660,7 +684,9 @@ describe("GET /api/social/streams", () => {
       });
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient([]) as any,
+      );
 
       const request = createMockRequest({ workspaceId: "workspace-123" });
       await GET(request as any);
@@ -699,7 +725,9 @@ describe("GET /api/social/streams", () => {
     it("should handle platforms with spaces", async () => {
       const mockAccount = createMockAccount();
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient([]) as any,
+      );
 
       const request = createMockRequest({
         workspaceId: "workspace-123",
@@ -720,7 +748,9 @@ describe("GET /api/social/streams", () => {
     it("should handle lowercase platform names", async () => {
       const mockAccount = createMockAccount();
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient([]) as any,
+      );
 
       const request = createMockRequest({
         workspaceId: "workspace-123",
@@ -734,7 +764,9 @@ describe("GET /api/social/streams", () => {
     it("should cap limit at 100", async () => {
       const mockAccount = createMockAccount();
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient([]) as any,
+      );
 
       const request = createMockRequest({
         workspaceId: "workspace-123",
@@ -761,7 +793,9 @@ describe("GET /api/social/streams", () => {
       ];
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient(mockPosts) as any,
+      );
 
       const request = createMockRequest({ workspaceId: "workspace-123" });
       const response = await GET(request as any);
@@ -785,9 +819,12 @@ describe("GET /api/social/streams", () => {
     it("should handle startDate only filter", async () => {
       const mockAccount = createMockAccount();
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient([]) as any,
+      );
 
-      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        .toISOString();
       const request = createMockRequest({
         workspaceId: "workspace-123",
         startDate,
@@ -800,7 +837,9 @@ describe("GET /api/social/streams", () => {
     it("should handle endDate only filter", async () => {
       const mockAccount = createMockAccount();
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient([]) as any,
+      );
 
       const endDate = new Date().toISOString();
       const request = createMockRequest({
@@ -864,7 +903,9 @@ describe("Exported Functions", () => {
   describe("fetchAccountPosts", () => {
     it("should decrypt token and create client with correct options", async () => {
       const mockAccount = createMockAccount();
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient([]) as any,
+      );
 
       await fetchAccountPosts(mockAccount, 10);
 
@@ -888,7 +929,9 @@ describe("Exported Functions", () => {
         },
       ];
 
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient(mockPosts) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient(mockPosts) as any,
+      );
 
       const result = await fetchAccountPosts(mockAccount, 10);
 
@@ -908,7 +951,9 @@ describe("Exported Functions", () => {
       const account1 = createMockAccount({ id: "acc-1" });
       const account2 = createMockAccount({ id: "acc-2" });
 
-      vi.mocked(createSocialClient).mockReturnValue(createMockSocialClient([]) as any);
+      vi.mocked(createSocialClient).mockReturnValue(
+        createMockSocialClient([]) as any,
+      );
 
       const result = await fetchAllAccountPosts([account1, account2], 10);
 

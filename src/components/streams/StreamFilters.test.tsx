@@ -6,7 +6,9 @@ import { StreamFilters } from "./StreamFilters";
 /**
  * Helper function to create a default StreamFilter
  */
-function createDefaultFilter(overrides: Partial<StreamFilter> = {}): StreamFilter {
+function createDefaultFilter(
+  overrides: Partial<StreamFilter> = {},
+): StreamFilter {
   return {
     sortBy: "publishedAt",
     sortOrder: "desc",
@@ -17,7 +19,11 @@ function createDefaultFilter(overrides: Partial<StreamFilter> = {}): StreamFilte
 /**
  * Default connected platforms for testing
  */
-const DEFAULT_PLATFORMS: SocialPlatform[] = ["TWITTER", "FACEBOOK", "INSTAGRAM"];
+const DEFAULT_PLATFORMS: SocialPlatform[] = [
+  "TWITTER",
+  "FACEBOOK",
+  "INSTAGRAM",
+];
 
 describe("StreamFilters", () => {
   beforeEach(() => {
@@ -66,8 +72,10 @@ describe("StreamFilters", () => {
       );
       expect(screen.getByTestId("platform-filter")).toBeInTheDocument();
       expect(screen.getByTestId("platform-toggle-twitter")).toBeInTheDocument();
-      expect(screen.getByTestId("platform-toggle-facebook")).toBeInTheDocument();
-      expect(screen.getByTestId("platform-toggle-instagram")).toBeInTheDocument();
+      expect(screen.getByTestId("platform-toggle-facebook"))
+        .toBeInTheDocument();
+      expect(screen.getByTestId("platform-toggle-instagram"))
+        .toBeInTheDocument();
     });
 
     it("should render sort dropdown", () => {
@@ -130,9 +138,12 @@ describe("StreamFilters", () => {
         />,
       );
       expect(screen.getByTestId("platform-toggle-twitter")).toBeInTheDocument();
-      expect(screen.getByTestId("platform-toggle-linkedin")).toBeInTheDocument();
-      expect(screen.queryByTestId("platform-toggle-facebook")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("platform-toggle-instagram")).not.toBeInTheDocument();
+      expect(screen.getByTestId("platform-toggle-linkedin"))
+        .toBeInTheDocument();
+      expect(screen.queryByTestId("platform-toggle-facebook")).not
+        .toBeInTheDocument();
+      expect(screen.queryByTestId("platform-toggle-instagram")).not
+        .toBeInTheDocument();
     });
 
     it("should render TikTok platform toggle when connected", () => {
@@ -530,26 +541,36 @@ describe("StreamFilters", () => {
       const onChange = vi.fn();
       render(
         <StreamFilters
-          filters={createDefaultFilter({ sortBy: "publishedAt", sortOrder: "desc" })}
+          filters={createDefaultFilter({
+            sortBy: "publishedAt",
+            sortOrder: "desc",
+          })}
           onChange={onChange}
           connectedPlatforms={DEFAULT_PLATFORMS}
         />,
       );
 
-      expect(screen.getByTestId("sort-select")).toHaveTextContent("Newest first");
+      expect(screen.getByTestId("sort-select")).toHaveTextContent(
+        "Newest first",
+      );
     });
 
     it("should display correct initial sort value for oldest first", () => {
       const onChange = vi.fn();
       render(
         <StreamFilters
-          filters={createDefaultFilter({ sortBy: "publishedAt", sortOrder: "asc" })}
+          filters={createDefaultFilter({
+            sortBy: "publishedAt",
+            sortOrder: "asc",
+          })}
           onChange={onChange}
           connectedPlatforms={DEFAULT_PLATFORMS}
         />,
       );
 
-      expect(screen.getByTestId("sort-select")).toHaveTextContent("Oldest first");
+      expect(screen.getByTestId("sort-select")).toHaveTextContent(
+        "Oldest first",
+      );
     });
 
     it("should display correct initial sort value for most liked", () => {
@@ -569,26 +590,36 @@ describe("StreamFilters", () => {
       const onChange = vi.fn();
       render(
         <StreamFilters
-          filters={createDefaultFilter({ sortBy: "comments", sortOrder: "desc" })}
+          filters={createDefaultFilter({
+            sortBy: "comments",
+            sortOrder: "desc",
+          })}
           onChange={onChange}
           connectedPlatforms={DEFAULT_PLATFORMS}
         />,
       );
 
-      expect(screen.getByTestId("sort-select")).toHaveTextContent("Most comments");
+      expect(screen.getByTestId("sort-select")).toHaveTextContent(
+        "Most comments",
+      );
     });
 
     it("should display correct initial sort value for highest engagement", () => {
       const onChange = vi.fn();
       render(
         <StreamFilters
-          filters={createDefaultFilter({ sortBy: "engagementRate", sortOrder: "desc" })}
+          filters={createDefaultFilter({
+            sortBy: "engagementRate",
+            sortOrder: "desc",
+          })}
           onChange={onChange}
           connectedPlatforms={DEFAULT_PLATFORMS}
         />,
       );
 
-      expect(screen.getByTestId("sort-select")).toHaveTextContent("Highest engagement");
+      expect(screen.getByTestId("sort-select")).toHaveTextContent(
+        "Highest engagement",
+      );
     });
 
     it("should call onChange when sort option is selected", () => {
@@ -694,7 +725,9 @@ describe("StreamFilters", () => {
       );
 
       // Should show "Newest first" as fallback
-      expect(screen.getByTestId("sort-select")).toHaveTextContent("Newest first");
+      expect(screen.getByTestId("sort-select")).toHaveTextContent(
+        "Newest first",
+      );
     });
   });
 
@@ -895,7 +928,10 @@ describe("StreamFilters", () => {
       );
 
       const platformFilter = screen.getByTestId("platform-filter");
-      expect(platformFilter).toHaveAttribute("aria-label", "Filter by platform");
+      expect(platformFilter).toHaveAttribute(
+        "aria-label",
+        "Filter by platform",
+      );
     });
 
     it("should have accessible sort select", () => {
@@ -963,7 +999,8 @@ describe("StreamFilters", () => {
       );
 
       expect(screen.getByTestId("platform-filter")).toBeInTheDocument();
-      expect(screen.getByTestId("platform-toggle-linkedin")).toBeInTheDocument();
+      expect(screen.getByTestId("platform-toggle-linkedin"))
+        .toBeInTheDocument();
       expect(screen.getByText("LI")).toBeInTheDocument();
     });
 

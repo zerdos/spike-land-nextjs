@@ -48,7 +48,7 @@ export default function SocialMediaAccountsPage() {
           <CardTitle>All Accounts</CardTitle>
           <CardDescription>
             {data.accounts.length} accounts connected across{" "}
-            {new Set(data.accounts.map(a => a.platform)).size} platforms
+            {new Set(data.accounts.map((a) => a.platform)).size} platforms
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -90,12 +90,16 @@ export default function SocialMediaAccountsPage() {
                       </a>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={account.isActive ? "default" : "secondary"}>
+                      <Badge
+                        variant={account.isActive ? "default" : "secondary"}
+                      >
                         {account.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {account.followers !== null ? account.followers.toLocaleString() : "—"}
+                      {account.followers !== null
+                        ? account.followers.toLocaleString()
+                        : "—"}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {account.lastSynced
@@ -104,13 +108,28 @@ export default function SocialMediaAccountsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" disabled title="Sync account">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled
+                          title="Sync account"
+                        >
                           <RefreshCw className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" disabled title="Account settings">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled
+                          title="Account settings"
+                        >
                           <Settings className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" disabled title="Remove account">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled
+                          title="Remove account"
+                        >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>

@@ -143,7 +143,9 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-export default async function AdminSocialMediaLayout({ children }: LayoutProps) {
+export default async function AdminSocialMediaLayout(
+  { children }: LayoutProps,
+) {
   const session = await auth();
 
   if (!session?.user?.id) {

@@ -136,11 +136,17 @@ export type DiffHunkType = (typeof DIFF_HUNK_TYPES)[number];
 export type ContentRewriteRequest = z.infer<typeof contentRewriteRequestSchema>;
 export type DiffHunk = z.infer<typeof diffHunkSchema>;
 export type CharacterCount = z.infer<typeof characterCountSchema>;
-export type ContentRewriteResponse = z.infer<typeof contentRewriteResponseSchema>;
+export type ContentRewriteResponse = z.infer<
+  typeof contentRewriteResponseSchema
+>;
 export type GeminiRewriteResponse = z.infer<typeof geminiRewriteResponseSchema>;
 export type RewriteHistoryItem = z.infer<typeof rewriteHistoryItemSchema>;
-export type RewriteHistoryResponse = z.infer<typeof rewriteHistoryResponseSchema>;
-export type ApplySelectedChangesRequest = z.infer<typeof applySelectedChangesRequestSchema>;
+export type RewriteHistoryResponse = z.infer<
+  typeof rewriteHistoryResponseSchema
+>;
+export type ApplySelectedChangesRequest = z.infer<
+  typeof applySelectedChangesRequestSchema
+>;
 
 // ============================================
 // Helper Functions

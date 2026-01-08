@@ -134,13 +134,15 @@ describe("StreamFeed", () => {
 
       render(<StreamFeed posts={posts} />);
 
-      expect(screen.queryByTestId("stream-empty-state")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("stream-empty-state")).not
+        .toBeInTheDocument();
     });
 
     it("should not show empty state when loading", () => {
       render(<StreamFeed posts={[]} isLoading={true} />);
 
-      expect(screen.queryByTestId("stream-empty-state")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("stream-empty-state")).not
+        .toBeInTheDocument();
     });
 
     it("should pass onConnectAccounts to empty state", () => {
@@ -174,7 +176,9 @@ describe("StreamFeed", () => {
       const onLoadMore = vi.fn();
       const posts = [createMockPost({ id: "post-1" })];
 
-      render(<StreamFeed posts={posts} hasMore={true} onLoadMore={onLoadMore} />);
+      render(
+        <StreamFeed posts={posts} hasMore={true} onLoadMore={onLoadMore} />,
+      );
 
       fireEvent.click(screen.getByTestId("load-more-button"));
       expect(onLoadMore).toHaveBeenCalledTimes(1);
@@ -257,7 +261,8 @@ describe("StreamFeed", () => {
       render(<StreamFeed posts={posts} />);
 
       expect(screen.getByTestId("stream-post-card")).toBeInTheDocument();
-      expect(screen.queryByTestId("stream-feed-skeleton")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("stream-feed-skeleton")).not
+        .toBeInTheDocument();
     });
 
     it("should handle undefined hasMore", () => {

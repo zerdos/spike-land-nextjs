@@ -20,7 +20,12 @@ export const VIOLATION_TYPES = [
   "STYLE_DEVIATION",
 ] as const;
 
-export const VIOLATION_SEVERITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const;
+export const VIOLATION_SEVERITIES = [
+  "LOW",
+  "MEDIUM",
+  "HIGH",
+  "CRITICAL",
+] as const;
 
 export const OVERALL_ASSESSMENTS = [
   "EXCELLENT", // 90-100
@@ -190,7 +195,9 @@ export function transformGeminiResponse(
       formalCasual: Math.round(geminiResponse.toneAnalysis.formalCasual),
       technicalSimple: Math.round(geminiResponse.toneAnalysis.technicalSimple),
       seriousPlayful: Math.round(geminiResponse.toneAnalysis.seriousPlayful),
-      reservedEnthusiastic: Math.round(geminiResponse.toneAnalysis.reservedEnthusiastic),
+      reservedEnthusiastic: Math.round(
+        geminiResponse.toneAnalysis.reservedEnthusiastic,
+      ),
       alignment: Math.round(geminiResponse.toneAnalysis.alignment),
     },
     cached,

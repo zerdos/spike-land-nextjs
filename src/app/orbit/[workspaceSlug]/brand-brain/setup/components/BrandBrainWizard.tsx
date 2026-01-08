@@ -175,7 +175,9 @@ export function BrandBrainWizard({
         }, 1500);
       } catch (error) {
         setSubmitError(
-          error instanceof Error ? error.message : "An unexpected error occurred",
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
         );
       } finally {
         setIsSubmitting(false);
@@ -315,7 +317,10 @@ export function BrandBrainWizard({
             <div className="flex items-center gap-2">
               {currentStep === STEPS.length - 1
                 ? (
-                  <Button type="submit" disabled={isSubmitting || submitSuccess}>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || submitSuccess}
+                  >
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isEditMode ? "Update Profile" : "Create Profile"}
                   </Button>

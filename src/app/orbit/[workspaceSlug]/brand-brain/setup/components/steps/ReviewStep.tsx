@@ -19,7 +19,9 @@ interface ReviewStepProps {
   onEditStep: (step: number) => void;
 }
 
-export function ReviewStep({ disabled: _disabled = false, onEditStep }: ReviewStepProps) {
+export function ReviewStep(
+  { disabled: _disabled = false, onEditStep }: ReviewStepProps,
+) {
   const form = useFormContext<BrandProfileFormData>();
   const data = form.getValues();
 
@@ -134,7 +136,11 @@ export function ReviewStep({ disabled: _disabled = false, onEditStep }: ReviewSt
                     />
                   </div>
                 )
-                : <p className="text-sm text-muted-foreground">No logo uploaded</p>}
+                : (
+                  <p className="text-sm text-muted-foreground">
+                    No logo uploaded
+                  </p>
+                )}
             </div>
 
             {/* Color Palette */}
@@ -154,7 +160,9 @@ export function ReviewStep({ disabled: _disabled = false, onEditStep }: ReviewSt
                           className="h-4 w-4 rounded-sm border"
                           style={{ backgroundColor: color.hex }}
                         />
-                        <span className="text-xs font-medium">{color.name}</span>
+                        <span className="text-xs font-medium">
+                          {color.name}
+                        </span>
                         <span className="font-mono text-xs text-muted-foreground">
                           {color.hex}
                         </span>
@@ -175,9 +183,14 @@ export function ReviewStep({ disabled: _disabled = false, onEditStep }: ReviewSt
         <ReviewCard title="Content Guardrails" onEdit={() => onEditStep(3)}>
           <div className="space-y-3">
             {/* Guardrails by type */}
-            {(["PROHIBITED_TOPIC", "REQUIRED_DISCLOSURE", "CONTENT_WARNING"] as const).map(
+            {([
+              "PROHIBITED_TOPIC",
+              "REQUIRED_DISCLOSURE",
+              "CONTENT_WARNING",
+            ] as const).map(
               (type) => {
-                const items = data.guardrails?.filter((g) => g.type === type) || [];
+                const items = data.guardrails?.filter((g) => g.type === type) ||
+                  [];
                 if (items.length === 0) return null;
 
                 return (
@@ -199,7 +212,8 @@ export function ReviewStep({ disabled: _disabled = false, onEditStep }: ReviewSt
 
             {/* Vocabulary by type */}
             {(["PREFERRED", "BANNED", "REPLACEMENT"] as const).map((type) => {
-              const items = data.vocabulary?.filter((v) => v.type === type) || [];
+              const items = data.vocabulary?.filter((v) => v.type === type) ||
+                [];
               if (items.length === 0) return null;
 
               return (

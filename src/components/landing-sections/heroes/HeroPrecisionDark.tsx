@@ -27,7 +27,9 @@ export function HeroPrecisionDark() {
 
           <div className="pt-8 flex justify-center gap-4">
             <ThemeButton size="lg" glow>Get Started</ThemeButton>
-            <ThemeButton variant="outline" size="lg">Read the Manifesto</ThemeButton>
+            <ThemeButton variant="outline" size="lg">
+              Read the Manifesto
+            </ThemeButton>
           </div>
         </div>
 

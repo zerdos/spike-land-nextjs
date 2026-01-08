@@ -121,7 +121,12 @@ export function VocabularyList({
                           <div className="flex items-center gap-2">
                             <Input
                               value={item.term}
-                              onChange={(e) => handleUpdate(actualIndex, "term", e.target.value)}
+                              onChange={(e) =>
+                                handleUpdate(
+                                  actualIndex,
+                                  "term",
+                                  e.target.value,
+                                )}
                               disabled={disabled}
                               placeholder="Enter term"
                               className="flex-1"
@@ -148,7 +153,12 @@ export function VocabularyList({
 
                           <Textarea
                             value={item.context || ""}
-                            onChange={(e) => handleUpdate(actualIndex, "context", e.target.value)}
+                            onChange={(e) =>
+                              handleUpdate(
+                                actualIndex,
+                                "context",
+                                e.target.value,
+                              )}
                             disabled={disabled}
                             placeholder="Context (optional) - When should this rule apply?"
                             rows={1}

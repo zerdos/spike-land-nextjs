@@ -44,7 +44,9 @@ function createMockSocialPost(overrides: Partial<SocialPost> = {}): SocialPost {
   };
 }
 
-function createMockAccountContext(overrides: Partial<AccountContext> = {}): AccountContext {
+function createMockAccountContext(
+  overrides: Partial<AccountContext> = {},
+): AccountContext {
   return {
     accountId: "account-1",
     accountName: "Test Account",
@@ -78,7 +80,9 @@ function createMockStreamPost(overrides: Partial<StreamPost> = {}): StreamPost {
   };
 }
 
-function createDefaultFilter(overrides: Partial<StreamFilter> = {}): StreamFilter {
+function createDefaultFilter(
+  overrides: Partial<StreamFilter> = {},
+): StreamFilter {
   return {
     sortBy: "publishedAt",
     sortOrder: "desc",
@@ -258,7 +262,11 @@ describe("createAccountContext", () => {
       followingCount: 500,
     };
 
-    const result = createAccountContext("db-account-id", accountInfo, "TWITTER");
+    const result = createAccountContext(
+      "db-account-id",
+      accountInfo,
+      "TWITTER",
+    );
 
     expect(result.accountId).toBe("db-account-id");
     expect(result.accountName).toBe("Test User Display");
@@ -274,7 +282,11 @@ describe("createAccountContext", () => {
       avatarUrl: "https://example.com/avatar.jpg",
     };
 
-    const result = createAccountContext("db-account-id", accountInfo, "FACEBOOK");
+    const result = createAccountContext(
+      "db-account-id",
+      accountInfo,
+      "FACEBOOK",
+    );
 
     // displayName is empty string which is falsy, so username is used
     expect(result.accountName).toBe("testuser");
@@ -287,7 +299,11 @@ describe("createAccountContext", () => {
       displayName: "Test User",
     };
 
-    const result = createAccountContext("db-account-id", accountInfo, "INSTAGRAM");
+    const result = createAccountContext(
+      "db-account-id",
+      accountInfo,
+      "INSTAGRAM",
+    );
 
     expect(result.accountAvatarUrl).toBeUndefined();
   });
@@ -346,10 +362,13 @@ describe("filterStreamPosts", () => {
     });
 
     it("should filter by multiple platforms", () => {
-      const filter = createDefaultFilter({ platforms: ["TWITTER", "FACEBOOK"] });
+      const filter = createDefaultFilter({
+        platforms: ["TWITTER", "FACEBOOK"],
+      });
       const result = filterStreamPosts(mockPosts, filter);
       expect(result).toHaveLength(3);
-      expect(result.every((p) => ["TWITTER", "FACEBOOK"].includes(p.platform))).toBe(true);
+      expect(result.every((p) => ["TWITTER", "FACEBOOK"].includes(p.platform)))
+        .toBe(true);
     });
 
     it("should return empty array when no posts match platform", () => {
@@ -551,9 +570,15 @@ describe("sortStreamPosts", () => {
   describe("edge cases", () => {
     it("should handle posts with missing metrics when sorting by likes", () => {
       const postsWithMissingMetrics: StreamPost[] = [
-        createMockStreamPost({ id: "1", metrics: { likes: 100, comments: 10, shares: 5 } }),
+        createMockStreamPost({
+          id: "1",
+          metrics: { likes: 100, comments: 10, shares: 5 },
+        }),
         createMockStreamPost({ id: "2", metrics: undefined }),
-        createMockStreamPost({ id: "3", metrics: { likes: 50, comments: 5, shares: 2 } }),
+        createMockStreamPost({
+          id: "3",
+          metrics: { likes: 50, comments: 5, shares: 2 },
+        }),
       ];
 
       const result = sortStreamPosts(postsWithMissingMetrics, "likes", "desc");
@@ -562,12 +587,22 @@ describe("sortStreamPosts", () => {
 
     it("should handle posts with missing metrics when sorting by comments", () => {
       const postsWithMissingMetrics: StreamPost[] = [
-        createMockStreamPost({ id: "1", metrics: { likes: 100, comments: 20, shares: 5 } }),
+        createMockStreamPost({
+          id: "1",
+          metrics: { likes: 100, comments: 20, shares: 5 },
+        }),
         createMockStreamPost({ id: "2", metrics: undefined }),
-        createMockStreamPost({ id: "3", metrics: { likes: 50, comments: 10, shares: 2 } }),
+        createMockStreamPost({
+          id: "3",
+          metrics: { likes: 50, comments: 10, shares: 2 },
+        }),
       ];
 
-      const result = sortStreamPosts(postsWithMissingMetrics, "comments", "desc");
+      const result = sortStreamPosts(
+        postsWithMissingMetrics,
+        "comments",
+        "desc",
+      );
       expect(result.map((p) => p.id)).toEqual(["1", "3", "2"]);
     });
 
@@ -601,7 +636,11 @@ describe("sortStreamPosts", () => {
         }),
       ];
 
-      const result = sortStreamPosts(postsWithoutImpressions, "engagementRate", "desc");
+      const result = sortStreamPosts(
+        postsWithoutImpressions,
+        "engagementRate",
+        "desc",
+      );
       // Post without impressions has rate 0, post with impressions has 5.7%
       expect(result.map((p) => p.id)).toEqual(["2", "1"]);
     });
@@ -679,13 +718,16 @@ describe("cursor encoding/decoding", () => {
     });
 
     it("should return 0 for missing offset in JSON", () => {
-      const missingOffset = Buffer.from(JSON.stringify({ other: "data" })).toString("base64");
+      const missingOffset = Buffer.from(JSON.stringify({ other: "data" }))
+        .toString("base64");
       const offset = decodeCursor(missingOffset);
       expect(offset).toBe(0);
     });
 
     it("should return 0 for non-number offset", () => {
-      const stringOffset = Buffer.from(JSON.stringify({ offset: "not a number" })).toString(
+      const stringOffset = Buffer.from(
+        JSON.stringify({ offset: "not a number" }),
+      ).toString(
         "base64",
       );
       const offset = decodeCursor(stringOffset);
@@ -776,9 +818,14 @@ describe("aggregateStreamPosts", () => {
       const twitterPosts = result.posts.filter((p) => p.platform === "TWITTER");
       const facebookPosts = result.posts.filter((p) => p.platform === "FACEBOOK");
 
-      expect(twitterPosts.every((p) => p.accountId === "twitter-account")).toBe(true);
-      expect(twitterPosts.every((p) => p.accountName === "Twitter User")).toBe(true);
-      expect(facebookPosts.every((p) => p.accountId === "facebook-account")).toBe(true);
+      expect(twitterPosts.every((p) => p.accountId === "twitter-account")).toBe(
+        true,
+      );
+      expect(twitterPosts.every((p) => p.accountName === "Twitter User")).toBe(
+        true,
+      );
+      expect(facebookPosts.every((p) => p.accountId === "facebook-account"))
+        .toBe(true);
     });
 
     it("should handle empty input", () => {
@@ -858,7 +905,10 @@ describe("aggregateStreamPosts", () => {
     it("should sort by publishedAt descending by default", () => {
       const postsWithContext = createPostsWithContext();
       const options: AggregateOptions = {
-        filter: createDefaultFilter({ sortBy: "publishedAt", sortOrder: "desc" }),
+        filter: createDefaultFilter({
+          sortBy: "publishedAt",
+          sortOrder: "desc",
+        }),
       };
 
       const result = aggregateStreamPosts(postsWithContext, options);
@@ -900,11 +950,16 @@ describe("aggregateStreamPosts", () => {
 
     it("should use default limit of 20", () => {
       // Create more than 20 posts
-      const manyPosts: SocialPost[] = Array.from({ length: 25 }, (_, i) =>
-        createMockSocialPost({
-          id: `post-${i}`,
-          publishedAt: new Date(`2024-01-${String(i + 1).padStart(2, "0")}T10:00:00Z`),
-        }));
+      const manyPosts: SocialPost[] = Array.from(
+        { length: 25 },
+        (_, i) =>
+          createMockSocialPost({
+            id: `post-${i}`,
+            publishedAt: new Date(
+              `2024-01-${String(i + 1).padStart(2, "0")}T10:00:00Z`,
+            ),
+          }),
+      );
       const context = createMockAccountContext();
 
       const options: AggregateOptions = {
@@ -925,7 +980,10 @@ describe("aggregateStreamPosts", () => {
         filter: createDefaultFilter(),
         limit: 2,
       };
-      const firstPage = aggregateStreamPosts(postsWithContext, firstPageOptions);
+      const firstPage = aggregateStreamPosts(
+        postsWithContext,
+        firstPageOptions,
+      );
 
       expect(firstPage.posts).toHaveLength(2);
       expect(firstPage.hasMore).toBe(true);
@@ -937,7 +995,10 @@ describe("aggregateStreamPosts", () => {
         limit: 2,
         cursor: firstPage.nextCursor,
       };
-      const secondPage = aggregateStreamPosts(postsWithContext, secondPageOptions);
+      const secondPage = aggregateStreamPosts(
+        postsWithContext,
+        secondPageOptions,
+      );
 
       expect(secondPage.posts).toHaveLength(1);
       expect(secondPage.hasMore).toBe(false);
@@ -978,9 +1039,15 @@ describe("aggregateStreamPosts", () => {
 
 describe("mergeStreamPosts", () => {
   it("should merge multiple arrays of stream posts", () => {
-    const array1 = [createMockStreamPost({ id: "1" }), createMockStreamPost({ id: "2" })];
+    const array1 = [
+      createMockStreamPost({ id: "1" }),
+      createMockStreamPost({ id: "2" }),
+    ];
     const array2 = [createMockStreamPost({ id: "3" })];
-    const array3 = [createMockStreamPost({ id: "4" }), createMockStreamPost({ id: "5" })];
+    const array3 = [
+      createMockStreamPost({ id: "4" }),
+      createMockStreamPost({ id: "5" }),
+    ];
 
     const result = mergeStreamPosts(array1, array2, array3);
 
@@ -999,7 +1066,10 @@ describe("mergeStreamPosts", () => {
   });
 
   it("should handle single array", () => {
-    const array = [createMockStreamPost({ id: "1" }), createMockStreamPost({ id: "2" })];
+    const array = [
+      createMockStreamPost({ id: "1" }),
+      createMockStreamPost({ id: "2" }),
+    ];
 
     const result = mergeStreamPosts(array);
 

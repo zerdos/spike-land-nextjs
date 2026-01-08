@@ -102,7 +102,9 @@ async function fetchStreams(
  * Normalizes filters for stable query key comparison
  * Converts dates to ISO strings and sorts platform arrays
  */
-function normalizeFilters(filters?: StreamFilter): Record<string, unknown> | undefined {
+function normalizeFilters(
+  filters?: StreamFilter,
+): Record<string, unknown> | undefined {
   if (!filters) return undefined;
 
   return {
@@ -172,7 +174,9 @@ export function useStreamFeed({
     queryKey: ["streams", workspaceId, normalizedFilters] as const,
     queryFn: ({ pageParam }) => fetchStreams(workspaceId, filters, pageParam),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
+    getNextPageParam: (
+      lastPage,
+    ) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
     enabled,
     staleTime: 30 * 1000, // 30 seconds
     refetchOnWindowFocus: true,
@@ -192,7 +196,9 @@ export function useStreamFeed({
   // Detect new posts when data changes
   useEffect(() => {
     // Skip if no data or timestamp hasn't changed
-    if (!query.data?.pages || query.dataUpdatedAt === lastDataUpdatedAtRef.current) return;
+    if (
+      !query.data?.pages || query.dataUpdatedAt === lastDataUpdatedAtRef.current
+    ) return;
 
     const currentPosts = query.data.pages.flatMap((page) => page.posts);
 

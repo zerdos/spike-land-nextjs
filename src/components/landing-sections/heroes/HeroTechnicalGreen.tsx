@@ -10,7 +10,9 @@ export function HeroTechnicalGreen() {
           <div className="space-y-8">
             <h1 className="text-5xl md:text-6xl font-[var(--landing-heading-weight)] tracking-tight text-[var(--landing-foreground)]">
               Build in a weekend.<br />
-              <span className="text-[var(--landing-primary)]">Scale to millions.</span>
+              <span className="text-[var(--landing-primary)]">
+                Scale to millions.
+              </span>
             </h1>
 
             <p className="text-xl text-[var(--landing-muted-fg)]">
@@ -20,15 +22,20 @@ export function HeroTechnicalGreen() {
             </p>
 
             <div className="flex flex-wrap gap-4">
-              <ThemeButton size="lg" className="bg-[var(--landing-primary)] text-black">
+              <ThemeButton
+                size="lg"
+                className="bg-[var(--landing-primary)] text-black"
+              >
                 Start your project
               </ThemeButton>
-              <ThemeButton variant="secondary" size="lg">Documentation</ThemeButton>
+              <ThemeButton variant="secondary" size="lg">
+                Documentation
+              </ThemeButton>
             </div>
 
             <div className="pt-4 flex items-center gap-4 text-sm text-[var(--landing-muted-fg)]">
               <div className="flex -space-x-2">
-                {[1, 2, 3, 4].map(i => (
+                {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
                     className="w-8 h-8 rounded-full bg-gray-600 border border-black flex items-center justify-center text-xs text-white"

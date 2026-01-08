@@ -96,7 +96,10 @@ export function RewriteDiffViewer({
       </div>
 
       {/* Tabs for Diff / Preview */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "diff" | "preview")}>
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as "diff" | "preview")}
+      >
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="diff">Diff View</TabsTrigger>
           <TabsTrigger value="preview">
@@ -185,7 +188,8 @@ function DiffHunkItem({ hunk, onToggle }: DiffHunkItemProps) {
         "relative inline",
         isAddition && hunk.selected &&
           "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
-        isAddition && !hunk.selected && "bg-gray-100 dark:bg-gray-800 text-gray-400 line-through",
+        isAddition && !hunk.selected &&
+          "bg-gray-100 dark:bg-gray-800 text-gray-400 line-through",
         isRemoval && hunk.selected &&
           "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 line-through",
         isRemoval && !hunk.selected &&

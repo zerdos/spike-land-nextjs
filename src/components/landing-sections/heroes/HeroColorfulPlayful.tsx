@@ -25,7 +25,10 @@ export function HeroColorfulPlayful() {
         </p>
 
         <div className="flex justify-center gap-4">
-          <ThemeButton size="lg" className="bg-black text-white hover:bg-black/80">
+          <ThemeButton
+            size="lg"
+            className="bg-black text-white hover:bg-black/80"
+          >
             Try for free
           </ThemeButton>
         </div>

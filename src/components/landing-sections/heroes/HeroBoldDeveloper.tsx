@@ -22,8 +22,14 @@ export function HeroBoldDeveloper() {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <ThemeButton size="xl" className="min-w-[200px]">Start Deploying</ThemeButton>
-            <ThemeButton variant="secondary" size="xl" className="min-w-[200px]">
+            <ThemeButton size="xl" className="min-w-[200px]">
+              Start Deploying
+            </ThemeButton>
+            <ThemeButton
+              variant="secondary"
+              size="xl"
+              className="min-w-[200px]"
+            >
               Get a Demo
             </ThemeButton>
           </div>

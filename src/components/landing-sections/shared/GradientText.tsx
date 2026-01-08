@@ -7,7 +7,9 @@ interface GradientTextProps {
   to?: string;
 }
 
-export function GradientText({ children, className, from, to }: GradientTextProps) {
+export function GradientText(
+  { children, className, from, to }: GradientTextProps,
+) {
   const fromColor = from || "var(--landing-primary)";
   const toColor = to || "var(--landing-accent)";
 

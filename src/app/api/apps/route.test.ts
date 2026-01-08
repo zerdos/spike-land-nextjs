@@ -230,7 +230,9 @@ describe("GET /api/apps", () => {
       },
     ];
 
-    vi.mocked(prisma.app.findMany).mockResolvedValue(mockApps as unknown as App[]);
+    vi.mocked(prisma.app.findMany).mockResolvedValue(
+      mockApps as unknown as App[],
+    );
 
     const request = new NextRequest("http://localhost/api/apps");
     const response = await GET(request);

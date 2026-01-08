@@ -150,7 +150,10 @@ export function GuardrailList({
 
                 <Badge
                   variant="outline"
-                  className={cn("shrink-0", SEVERITY_COLORS[guardrail.severity ?? "MEDIUM"])}
+                  className={cn(
+                    "shrink-0",
+                    SEVERITY_COLORS[guardrail.severity ?? "MEDIUM"],
+                  )}
                 >
                   {guardrail.severity ?? "MEDIUM"}
                 </Badge>
@@ -244,7 +247,11 @@ export function GuardrailList({
             </label>
             <Textarea
               value={newGuardrail.description || ""}
-              onChange={(e) => setNewGuardrail({ ...newGuardrail, description: e.target.value })}
+              onChange={(e) =>
+                setNewGuardrail({
+                  ...newGuardrail,
+                  description: e.target.value,
+                })}
               disabled={disabled}
               placeholder="Add more details..."
               rows={2}

@@ -35,7 +35,10 @@ export function ComparisonTable() {
           </thead>
           <tbody>
             {rows.map((row, i) => (
-              <tr key={i} className="hover:bg-[var(--landing-secondary)]/50 transition-colors">
+              <tr
+                key={i}
+                className="hover:bg-[var(--landing-secondary)]/50 transition-colors"
+              >
                 <td className="p-4 border-b border-[var(--landing-border)] font-medium">
                   {row.feature}
                 </td>
@@ -45,7 +48,9 @@ export function ComparisonTable() {
                     : <span className="text-red-500">×</span>}
                 </td>
                 <td className="p-4 border-b border-[var(--landing-border)] text-center text-[var(--landing-muted-fg)]">
-                  {row.them ? <span className="text-green-500">✓</span> : <span>×</span>}
+                  {row.them
+                    ? <span className="text-green-500">✓</span>
+                    : <span>×</span>}
                 </td>
               </tr>
             ))}

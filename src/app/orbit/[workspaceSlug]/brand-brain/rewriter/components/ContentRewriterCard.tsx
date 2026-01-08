@@ -9,7 +9,9 @@ interface ContentRewriterCardProps {
   workspaceSlug: string;
 }
 
-export function ContentRewriterCard({ workspaceSlug }: ContentRewriterCardProps) {
+export function ContentRewriterCard(
+  { workspaceSlug }: ContentRewriterCardProps,
+) {
   return (
     <Card>
       <CardHeader>

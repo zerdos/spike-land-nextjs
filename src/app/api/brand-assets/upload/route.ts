@@ -47,7 +47,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   // Parse form data
-  const { data: formData, error: formError } = await tryCatch(request.formData());
+  const { data: formData, error: formError } = await tryCatch(
+    request.formData(),
+  );
 
   if (formError) {
     return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
@@ -63,7 +65,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   if (!workspaceId) {
-    return NextResponse.json({ error: "workspaceId is required" }, { status: 400 });
+    return NextResponse.json({ error: "workspaceId is required" }, {
+      status: 400,
+    });
   }
 
   // Check workspace permission
@@ -75,7 +79,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   if (!hasPermission) {
     return NextResponse.json(
-      { error: "You don't have permission to upload brand assets for this workspace" },
+      {
+        error: "You don't have permission to upload brand assets for this workspace",
+      },
       { status: 403 },
     );
   }
@@ -83,7 +89,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // Validate file size
   if (file.size > MAX_FILE_SIZE) {
     return NextResponse.json(
-      { error: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB` },
+      {
+        error: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB`,
+      },
       { status: 400 },
     );
   }
@@ -91,13 +99,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // Validate MIME type
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
     return NextResponse.json(
-      { error: `Invalid file type. Allowed types: ${ALLOWED_MIME_TYPES.join(", ")}` },
+      {
+        error: `Invalid file type. Allowed types: ${ALLOWED_MIME_TYPES.join(", ")}`,
+      },
       { status: 400 },
     );
   }
 
   // Convert file to buffer
-  const { data: arrayBuffer, error: bufferError } = await tryCatch(file.arrayBuffer());
+  const { data: arrayBuffer, error: bufferError } = await tryCatch(
+    file.arrayBuffer(),
+  );
 
   if (bufferError) {
     console.error("Failed to read file:", bufferError);
@@ -127,7 +139,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       ) {
         const { data: optimizedBuffer, error: resizeError } = await tryCatch(
           sharp(buffer)
-            .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: "inside", withoutEnlargement: true })
+            .resize(MAX_DIMENSION, MAX_DIMENSION, {
+              fit: "inside",
+              withoutEnlargement: true,
+            })
             .webp({ quality: 85 })
             .toBuffer(),
         );
@@ -137,7 +152,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           contentType = "image/webp";
 
           // Get new dimensions
-          const { data: newMetadata } = await tryCatch(sharp(buffer).metadata());
+          const { data: newMetadata } = await tryCatch(
+            sharp(buffer).metadata(),
+          );
           if (newMetadata) {
             width = newMetadata.width;
             height = newMetadata.height;
@@ -149,7 +166,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // Generate R2 key
   const timestamp = Date.now();
-  const extension = contentType === "image/svg+xml" ? "svg" : contentType.split("/")[1];
+  const extension = contentType === "image/svg+xml"
+    ? "svg"
+    : contentType.split("/")[1];
   const r2Key = `brand-assets/${workspaceId}/${assetType}-${timestamp}.${extension}`;
 
   // Upload to R2

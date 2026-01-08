@@ -51,9 +51,13 @@ describe("LinkedInClient", () => {
 
       const authUrl = client.getAuthUrl(redirectUri, state);
 
-      expect(authUrl).toContain("https://www.linkedin.com/oauth/v2/authorization");
+      expect(authUrl).toContain(
+        "https://www.linkedin.com/oauth/v2/authorization",
+      );
       expect(authUrl).toContain(`client_id=${mockEnv.LINKEDIN_CLIENT_ID}`);
-      expect(authUrl).toContain(`redirect_uri=${encodeURIComponent(redirectUri)}`);
+      expect(authUrl).toContain(
+        `redirect_uri=${encodeURIComponent(redirectUri)}`,
+      );
       expect(authUrl).toContain(`state=${state}`);
       expect(authUrl).toContain("response_type=code");
       expect(authUrl).toContain("scope=");
@@ -82,7 +86,9 @@ describe("LinkedInClient", () => {
       expect(result.expiresAt).toBeInstanceOf(Date);
       expect(result.tokenType).toBe("Bearer");
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("https://www.linkedin.com/oauth/v2/accessToken"),
+        expect.stringContaining(
+          "https://www.linkedin.com/oauth/v2/accessToken",
+        ),
         expect.objectContaining({
           method: "POST",
           headers: expect.objectContaining({

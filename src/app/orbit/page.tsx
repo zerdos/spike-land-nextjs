@@ -42,7 +42,9 @@ export default function OrbitPage() {
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
         <div className="text-center">
           <h1 className="mb-2 text-4xl font-bold tracking-tight">Orbit</h1>
-          <p className="text-xl text-muted-foreground">Loading your workspace...</p>
+          <p className="text-xl text-muted-foreground">
+            Loading your workspace...
+          </p>
         </div>
       </div>
     );

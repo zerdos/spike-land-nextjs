@@ -48,7 +48,9 @@ export default async function BrandBrainSetupPage({ params }: Props) {
     }),
   );
 
-  if (!membership || (membership.role !== "ADMIN" && membership.role !== "OWNER")) {
+  if (
+    !membership || (membership.role !== "ADMIN" && membership.role !== "OWNER")
+  ) {
     redirect(`/orbit/${workspaceSlug}/brand-brain`);
   }
 

@@ -39,7 +39,10 @@ describe("StreamEmptyState", () => {
     it("should call onConnectAccounts when button is clicked", () => {
       const onConnectAccounts = vi.fn();
       render(
-        <StreamEmptyState type="no-accounts" onConnectAccounts={onConnectAccounts} />,
+        <StreamEmptyState
+          type="no-accounts"
+          onConnectAccounts={onConnectAccounts}
+        />,
       );
 
       fireEvent.click(screen.getByTestId("connect-accounts-button"));
@@ -63,7 +66,9 @@ describe("StreamEmptyState", () => {
 
     it("should display the correct title for no-posts", () => {
       render(<StreamEmptyState type="no-posts" />);
-      expect(screen.getByTestId("empty-state-title")).toHaveTextContent("No posts yet");
+      expect(screen.getByTestId("empty-state-title")).toHaveTextContent(
+        "No posts yet",
+      );
     });
 
     it("should display the correct description for no-posts", () => {
@@ -75,7 +80,8 @@ describe("StreamEmptyState", () => {
 
     it("should not display the connect accounts button for no-posts", () => {
       render(<StreamEmptyState type="no-posts" />);
-      expect(screen.queryByTestId("connect-accounts-button")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("connect-accounts-button")).not
+        .toBeInTheDocument();
     });
 
     it("should render the FileText icon for no-posts", () => {
@@ -106,7 +112,8 @@ describe("StreamEmptyState", () => {
 
     it("should not display the connect accounts button for no-results", () => {
       render(<StreamEmptyState type="no-results" />);
-      expect(screen.queryByTestId("connect-accounts-button")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("connect-accounts-button")).not
+        .toBeInTheDocument();
     });
 
     it("should render the Search icon for no-results", () => {
@@ -159,7 +166,8 @@ describe("StreamEmptyState", () => {
 
       types.forEach((type) => {
         const { unmount } = render(<StreamEmptyState type={type} />);
-        expect(screen.getByTestId("empty-state-description")).toBeInTheDocument();
+        expect(screen.getByTestId("empty-state-description"))
+          .toBeInTheDocument();
         unmount();
       });
     });

@@ -95,7 +95,9 @@ export default function SocialMediaAnalyticsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Engagement Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Engagement Rate
+            </CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -138,8 +140,9 @@ export default function SocialMediaAnalyticsPage() {
                     <div className="flex gap-6 mt-2 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Users className="h-3 w-3" />
-                        {account.followers !== null ? account.followers.toLocaleString() : "—"}{" "}
-                        followers
+                        {account.followers !== null
+                          ? account.followers.toLocaleString()
+                          : "—"} followers
                       </span>
                       <span className="flex items-center gap-1">
                         <Heart className="h-3 w-3" />

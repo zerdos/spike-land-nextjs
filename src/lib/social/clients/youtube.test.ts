@@ -57,7 +57,9 @@ describe("YouTubeClient", () => {
 
       expect(authUrl).toContain("https://accounts.google.com/o/oauth2/v2/auth");
       expect(authUrl).toContain(`client_id=${mockEnv.YOUTUBE_CLIENT_ID}`);
-      expect(authUrl).toContain(`redirect_uri=${encodeURIComponent(redirectUri)}`);
+      expect(authUrl).toContain(
+        `redirect_uri=${encodeURIComponent(redirectUri)}`,
+      );
       expect(authUrl).toContain(`state=${state}`);
       expect(authUrl).toContain("response_type=code");
       expect(authUrl).toContain("scope=");
@@ -151,7 +153,9 @@ describe("YouTubeClient", () => {
       expect(accountInfo.platformId).toBe("UC1234567890");
       expect(accountInfo.displayName).toBe("Test Channel");
       expect(accountInfo.username).toBe("@testchannel");
-      expect(accountInfo.avatarUrl).toBe("https://yt3.ggpht.com/test-avatar.jpg");
+      expect(accountInfo.avatarUrl).toBe(
+        "https://yt3.ggpht.com/test-avatar.jpg",
+      );
       expect(accountInfo.followersCount).toBe(10000);
     });
 
@@ -165,7 +169,9 @@ describe("YouTubeClient", () => {
         accessToken: "test_token",
       });
 
-      await expect(client.getAccountInfo()).rejects.toThrow("No YouTube channel found");
+      await expect(client.getAccountInfo()).rejects.toThrow(
+        "No YouTube channel found",
+      );
     });
   });
 

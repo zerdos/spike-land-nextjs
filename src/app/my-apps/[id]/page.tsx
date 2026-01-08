@@ -282,7 +282,10 @@ export default function AppWorkspacePage() {
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/my-apps" className="text-muted-foreground hover:text-foreground">
+            <Link
+              href="/my-apps"
+              className="text-muted-foreground hover:text-foreground"
+            >
               &larr; Back
             </Link>
             <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
@@ -347,7 +350,9 @@ export default function AppWorkspacePage() {
                         <div
                           key={message.id}
                           className={`flex ${
-                            message.role === "USER" ? "justify-end" : "justify-start"
+                            message.role === "USER"
+                              ? "justify-end"
+                              : "justify-start"
                           }`}
                         >
                           <div
@@ -359,8 +364,11 @@ export default function AppWorkspacePage() {
                                 : "bg-secondary text-secondary-foreground"
                             }`}
                           >
-                            <p className="whitespace-pre-wrap">{message.content}</p>
-                            {message.attachments && message.attachments.length > 0 && (
+                            <p className="whitespace-pre-wrap">
+                              {message.content}
+                            </p>
+                            {message.attachments &&
+                              message.attachments.length > 0 && (
                               <div className="mt-2 flex flex-wrap gap-2">
                                 {message.attachments.map((attachment) => (
                                   <Image
@@ -399,7 +407,8 @@ export default function AppWorkspacePage() {
                 />
                 <Button
                   onClick={handleSendMessage}
-                  disabled={!newMessage.trim() || sendingMessage || app.status === "ARCHIVED"}
+                  disabled={!newMessage.trim() || sendingMessage ||
+                    app.status === "ARCHIVED"}
                   className="shrink-0"
                 >
                   {sendingMessage ? "Sending..." : "Send"}
@@ -422,7 +431,10 @@ export default function AppWorkspacePage() {
                 <div className="flex-1 flex items-center justify-center">
                   <div className="flex w-full max-w-sm items-center gap-2 rounded-md bg-zinc-950/50 px-3 py-1.5 text-xs text-zinc-500">
                     <div className="h-2 w-2 rounded-full bg-zinc-700" />
-                    <span>{app.codespaceUrl?.replace("https://", "") || "localhost:3000"}</span>
+                    <span>
+                      {app.codespaceUrl?.replace("https://", "") ||
+                        "localhost:3000"}
+                    </span>
                   </div>
                 </div>
 
@@ -430,7 +442,7 @@ export default function AppWorkspacePage() {
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6 text-zinc-500 hover:text-zinc-300"
-                  onClick={() => setIframeKey(prev => prev + 1)}
+                  onClick={() => setIframeKey((prev) => prev + 1)}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -482,7 +494,14 @@ export default function AppWorkspacePage() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           >
-                            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                            <rect
+                              width="18"
+                              height="18"
+                              x="3"
+                              y="3"
+                              rx="2"
+                              ry="2"
+                            />
                             <circle cx="9" cy="9" r="2" />
                             <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
                           </svg>
@@ -535,7 +554,9 @@ export default function AppWorkspacePage() {
                 </div>
                 <div className="text-zinc-400 font-mono">
                   <span className="text-blue-400">[Claude Code Agent]</span>{" "}
-                  <span className="text-green-400">App updated successfully.</span>
+                  <span className="text-green-400">
+                    App updated successfully.
+                  </span>
                 </div>
                 {Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="text-zinc-600 font-mono">

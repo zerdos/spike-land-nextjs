@@ -146,7 +146,10 @@ export function hasPermission(
  * @returns Array of permitted actions
  */
 export function getPermittedActions(role: WorkspaceRole): WorkspaceAction[] {
-  return (Object.entries(PERMISSION_MATRIX) as [WorkspaceAction, WorkspaceRole][])
+  return (Object.entries(PERMISSION_MATRIX) as [
+    WorkspaceAction,
+    WorkspaceRole,
+  ][])
     .filter(
       ([, requiredRole]) => ROLE_HIERARCHY[role] >= ROLE_HIERARCHY[requiredRole],
     )
@@ -238,7 +241,10 @@ export function canModifyRole(
  * @param role2 - Second role
  * @returns positive if role1 > role2, negative if role1 < role2, 0 if equal
  */
-export function compareRoles(role1: WorkspaceRole, role2: WorkspaceRole): number {
+export function compareRoles(
+  role1: WorkspaceRole,
+  role2: WorkspaceRole,
+): number {
   return ROLE_HIERARCHY[role1] - ROLE_HIERARCHY[role2];
 }
 

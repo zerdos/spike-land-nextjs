@@ -55,7 +55,9 @@ export default function CommunityPage() {
           <section id="welcome">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Welcome to spike.land</CardTitle>
+                <CardTitle className="text-2xl">
+                  Welcome to spike.land
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p>
@@ -108,19 +110,27 @@ export default function CommunityPage() {
                   <ul className="space-y-2 text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <span className="text-green-500">•</span>
-                      <span>Be respectful and considerate in all interactions</span>
+                      <span>
+                        Be respectful and considerate in all interactions
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-500">•</span>
-                      <span>Provide constructive feedback that helps others improve</span>
+                      <span>
+                        Provide constructive feedback that helps others improve
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-500">•</span>
-                      <span>Share knowledge and help newcomers get started</span>
+                      <span>
+                        Share knowledge and help newcomers get started
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-500">•</span>
-                      <span>Respect intellectual property and give credit where due</span>
+                      <span>
+                        Respect intellectual property and give credit where due
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-500">•</span>
@@ -128,7 +138,9 @@ export default function CommunityPage() {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-500">•</span>
-                      <span>Celebrate others&apos; achievements and successes</span>
+                      <span>
+                        Celebrate others&apos; achievements and successes
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -144,7 +156,9 @@ export default function CommunityPage() {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-red-500">•</span>
-                      <span>Share offensive, inappropriate, or harmful content</span>
+                      <span>
+                        Share offensive, inappropriate, or harmful content
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-red-500">•</span>
@@ -152,7 +166,9 @@ export default function CommunityPage() {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-red-500">•</span>
-                      <span>Share others&apos; personal information without consent</span>
+                      <span>
+                        Share others&apos; personal information without consent
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-red-500">•</span>
@@ -160,7 +176,9 @@ export default function CommunityPage() {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-red-500">•</span>
-                      <span>Attempt to circumvent security or abuse the service</span>
+                      <span>
+                        Attempt to circumvent security or abuse the service
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -234,7 +252,9 @@ export default function CommunityPage() {
                 </div>
 
                 <div className="bg-muted p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">Contribution Guidelines</h4>
+                  <h4 className="font-semibold mb-2">
+                    Contribution Guidelines
+                  </h4>
                   <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
                     <li>Fork the repository on GitHub</li>
                     <li>Create a feature branch for your changes</li>
@@ -263,7 +283,10 @@ export default function CommunityPage() {
                     <p className="text-sm text-muted-foreground mb-3">
                       Check our docs for guides, tutorials, and API references.
                     </p>
-                    <Link href="/docs" className="text-primary hover:underline text-sm">
+                    <Link
+                      href="/docs"
+                      className="text-primary hover:underline text-sm"
+                    >
                       Browse Documentation →
                     </Link>
                   </div>
@@ -331,7 +354,9 @@ export default function CommunityPage() {
           <section id="social-guidelines">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Social Media Guidelines</CardTitle>
+                <CardTitle className="text-2xl">
+                  Social Media Guidelines
+                </CardTitle>
                 <CardDescription>
                   How to engage with us on social platforms
                 </CardDescription>
@@ -396,7 +421,9 @@ export default function CommunityPage() {
           <section id="recognition">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Community Recognition</CardTitle>
+                <CardTitle className="text-2xl">
+                  Community Recognition
+                </CardTitle>
                 <CardDescription>
                   How we celebrate our community members
                 </CardDescription>
@@ -445,7 +472,10 @@ export default function CommunityPage() {
                 <div className="bg-muted p-4 rounded-lg text-center">
                   <p className="text-muted-foreground">
                     Want to nominate someone? Let us know at{" "}
-                    <a href="mailto:hello@spike.land" className="text-primary hover:underline">
+                    <a
+                      href="mailto:hello@spike.land"
+                      className="text-primary hover:underline"
+                    >
                       hello@spike.land
                     </a>
                   </p>

@@ -54,7 +54,9 @@ export function FeatureGridCards() {
               {feature.icon}
             </div>
             <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-            <p className="text-[var(--landing-muted-fg)]">{feature.description}</p>
+            <p className="text-[var(--landing-muted-fg)]">
+              {feature.description}
+            </p>
           </ThemeCard>
         ))}
       </div>
