@@ -372,7 +372,12 @@ When(
     const button = row.getByRole("button", { name: buttonText });
     await expect(button).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
-    await button.click();
+
+    // Some buttons may trigger navigation, wait for it to complete
+    await Promise.all([
+      this.page.waitForLoadState("domcontentloaded").catch(() => {}),
+      button.click(),
+    ]);
   },
 );
 
