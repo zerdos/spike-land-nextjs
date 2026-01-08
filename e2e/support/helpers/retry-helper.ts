@@ -368,14 +368,19 @@ export async function waitForModalState(
   options: { timeout?: number; } = {},
 ): Promise<void> {
   const timeout = options.timeout || TIMEOUTS.DEFAULT;
-  const modal = page.locator('[role="dialog"]');
+  // Exclude cookie consent dialog which also has role="dialog"
+  const modal = page.locator(
+    '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
+  );
 
   if (state === "visible") {
     await expect(modal).toBeVisible({ timeout });
     // Wait for animation to complete by checking for stable visibility
     await page.waitForFunction(
       () => {
-        const dialog = document.querySelector('[role="dialog"]');
+        const dialog = document.querySelector(
+          '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
+        );
         if (!dialog) return false;
         const style = window.getComputedStyle(dialog);
         return style.opacity === "1" && style.transform === "none";

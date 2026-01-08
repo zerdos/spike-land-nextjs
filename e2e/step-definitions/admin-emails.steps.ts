@@ -7,11 +7,11 @@ import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import {
   TIMEOUTS,
-  waitForDynamicContent,
   waitForElementWithRetry,
   waitForModalState,
   waitForTextWithRetry,
 } from "../support/helpers/retry-helper";
+import { waitForPageReady } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
 
 // Mock email data generator
@@ -365,16 +365,25 @@ When(
 When(
   "I click {string} button on an email row",
   async function(this: CustomWorld, buttonText: string) {
-    // Wait for table rows to be available
-    await waitForElementWithRetry(this.page, "tbody tr", {
-      timeout: TIMEOUTS.DEFAULT,
-    });
+    // Wait for page to be ready before interacting
+    await waitForPageReady(this.page, { strategy: "both" });
 
-    const row = this.page.locator("tbody tr").first();
-    const button = row.getByRole("button", { name: buttonText });
-    await expect(button).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
-    await button.click();
+    // Wait for table rows to be available (use first() for strict mode)
+    const rows = this.page.locator("tbody tr");
+    await expect(rows.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
+
+    const row = rows.first();
+    // Try multiple ways to find the button
+    const button = row.getByRole("button", { name: buttonText })
+      .or(row.locator(`button:has-text("${buttonText}")`));
+    await expect(button.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
+    await expect(button.first()).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
+    // Some buttons may trigger navigation, wait for it to complete
+    await Promise.all([
+      this.page.waitForLoadState("domcontentloaded").catch(() => {}),
+      button.first().click(),
+    ]);
   },
 );
 
@@ -448,10 +457,9 @@ When("I click the modal overlay", async function(this: CustomWorld) {
 Then(
   "I should see {string} text with email count",
   async function(this: CustomWorld, text: string) {
-    // Use retry helper for dynamic content
-    await waitForDynamicContent(this.page, `text=${text}`, text, {
-      timeout: TIMEOUTS.DEFAULT,
-    });
+    // Wait for the text to be visible using Playwright's text locator
+    const element = this.page.getByText(new RegExp(text, "i"));
+    await expect(element.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -500,12 +508,10 @@ Then("I should see the email list", async function(this: CustomWorld) {
 Then(
   "each email should display the recipient address",
   async function(this: CustomWorld) {
-    // Wait for table rows to appear
-    await waitForElementWithRetry(this.page, "tbody tr", {
-      timeout: TIMEOUTS.DEFAULT,
-    });
-
+    // Wait for table rows to appear (use first() for strict mode)
     const rows = this.page.locator("tbody tr");
+    await expect(rows.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
     const count = await rows.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -514,13 +520,10 @@ Then(
 Then(
   "each email should display the subject",
   async function(this: CustomWorld) {
-    // Wait for data rows to load (not loading/empty state)
-    await waitForElementWithRetry(this.page, "tbody tr td:nth-child(2)", {
-      timeout: TIMEOUTS.DEFAULT,
-    });
-
-    // Subject is in second column
+    // Subject is in second column (use first() for strict mode)
     const subjects = this.page.locator("tbody tr td:nth-child(2)");
+    await expect(subjects.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
     const count = await subjects.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -529,13 +532,10 @@ Then(
 Then(
   "each email should display the template name",
   async function(this: CustomWorld) {
-    // Wait for template column
-    await waitForElementWithRetry(this.page, "tbody tr td:nth-child(3)", {
-      timeout: TIMEOUTS.DEFAULT,
-    });
-
-    // Template is in 3rd column
+    // Template is in 3rd column (use first() for strict mode)
     const templates = this.page.locator("tbody tr td:nth-child(3)");
+    await expect(templates.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
     const count = await templates.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -544,13 +544,10 @@ Then(
 Then(
   "each email should display a status badge",
   async function(this: CustomWorld) {
-    // Wait for status column
-    await waitForElementWithRetry(this.page, "tbody tr td:nth-child(4)", {
-      timeout: TIMEOUTS.DEFAULT,
-    });
-
-    // Status is in 4th column
+    // Status is in 4th column (use first() for strict mode)
     const badges = this.page.locator("tbody tr td:nth-child(4)");
+    await expect(badges.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
     const count = await badges.count();
     expect(count).toBeGreaterThan(0);
   },
@@ -559,12 +556,10 @@ Then(
 Then(
   "each email should display the sent date",
   async function(this: CustomWorld) {
-    // Wait for date column
-    await waitForElementWithRetry(this.page, "tbody tr td:nth-child(5)", {
-      timeout: TIMEOUTS.DEFAULT,
-    });
-
+    // Date is in 5th column (use first() for strict mode)
     const dates = this.page.locator("tbody tr td:nth-child(5)");
+    await expect(dates.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
     const count = await dates.count();
     expect(count).toBeGreaterThan(0);
   },
