@@ -266,9 +266,11 @@ export function StreamPostCard({
               aria-label={post.isLiked ? "Unlike" : "Like"}
               data-testid="like-button"
             >
-              {isLiking
-                ? <Loader2 className="h-4 w-4 animate-spin" />
-                : <Heart className={cn("h-4 w-4", post.isLiked && "fill-current")} />}
+              {isLiking ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                <Heart
+                  className={cn("h-4 w-4", post.isLiked && "fill-current")}
+                />
+              )}
               <span className="ml-1">Like</span>
             </Button>
           )}

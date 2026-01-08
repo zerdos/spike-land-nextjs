@@ -30,7 +30,13 @@ vi.mock("@/components/orbit/WorkspaceContext", () => ({
     <div data-testid="workspace-provider">{children}</div>
   ),
   useWorkspace: () => ({
-    workspace: { id: "1", name: "Test", slug: "test-workspace", isPersonal: true, role: "OWNER" },
+    workspace: {
+      id: "1",
+      name: "Test",
+      slug: "test-workspace",
+      isPersonal: true,
+      role: "OWNER",
+    },
     workspaces: [],
     isLoading: false,
     error: null,

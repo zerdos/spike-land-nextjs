@@ -5,7 +5,8 @@ import SettingsPage from "./page";
 describe("SettingsPage", () => {
   it("renders page content", () => {
     render(<SettingsPage />);
-    expect(screen.getByRole("heading", { name: "Settings" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Settings" }))
+      .toBeInTheDocument();
     expect(screen.getByText("Settings coming soon.")).toBeInTheDocument();
   });
 });

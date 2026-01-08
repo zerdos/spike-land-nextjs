@@ -49,7 +49,9 @@ import { checkRateLimit } from "@/lib/rate-limiter";
 import { POST } from "./route";
 
 // Cast mocks for type safety
-const mockRequireWorkspacePermission = requireWorkspacePermission as ReturnType<typeof vi.fn>;
+const mockRequireWorkspacePermission = requireWorkspacePermission as ReturnType<
+  typeof vi.fn
+>;
 const mockCheckRateLimit = checkRateLimit as ReturnType<typeof vi.fn>;
 const mockPrisma = prisma as unknown as {
   brandProfile: { findUnique: ReturnType<typeof vi.fn>; };
@@ -61,11 +63,14 @@ const mockBuildScoreCacheKey = buildScoreCacheKey as ReturnType<typeof vi.fn>;
 
 // Helper to create mock request
 function createMockRequest(body: unknown): NextRequest {
-  return new NextRequest("http://localhost:3000/api/workspaces/ws-123/brand-brain/score", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  return new NextRequest(
+    "http://localhost:3000/api/workspaces/ws-123/brand-brain/score",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+  );
 }
 
 // Helper to create mock params
@@ -293,7 +298,9 @@ describe("POST /api/workspaces/[workspaceId]/brand-brain/score", () => {
 
   describe("scoring", () => {
     it("should return score for valid request", async () => {
-      const request = createMockRequest({ content: "Test content for scoring" });
+      const request = createMockRequest({
+        content: "Test content for scoring",
+      });
       const response = await POST(request, createMockParams());
 
       expect(response.status).toBe(200);

@@ -401,7 +401,11 @@ describe("brand-brain validation schemas", () => {
           reservedEnthusiastic: 60,
         },
         logoUrl: "https://example.com/logo.png",
-        colorPalette: [{ name: "Brand Blue", hex: "#0066FF", usage: "primary" }],
+        colorPalette: [{
+          name: "Brand Blue",
+          hex: "#0066FF",
+          usage: "primary",
+        }],
         guardrails: [{ type: "PROHIBITED_TOPIC", name: "Competitors" }],
         vocabulary: [{ type: "PREFERRED", term: "Solution" }],
       });
@@ -483,7 +487,12 @@ describe("brand-brain validation schemas", () => {
     });
 
     it("should have correct GUARDRAIL_SEVERITIES", () => {
-      expect(GUARDRAIL_SEVERITIES).toEqual(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
+      expect(GUARDRAIL_SEVERITIES).toEqual([
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL",
+      ]);
     });
   });
 

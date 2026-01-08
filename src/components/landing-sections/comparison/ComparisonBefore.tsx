@@ -34,7 +34,9 @@ export function ComparisonBefore() {
           <div className="absolute top-0 right-0 p-2 bg-[var(--landing-primary)] text-[var(--landing-primary-fg)] text-xs font-bold rounded-bl-[var(--landing-radius)]">
             SPIKE.LAND
           </div>
-          <h3 className="text-[var(--landing-primary)] font-bold mb-6 text-xl">The Vibe Way</h3>
+          <h3 className="text-[var(--landing-primary)] font-bold mb-6 text-xl">
+            The Vibe Way
+          </h3>
           <ul className="space-y-4 text-[var(--landing-foreground)]">
             <li className="flex gap-3">
               <span className="text-[var(--landing-primary)]">✓</span> Zero configuration

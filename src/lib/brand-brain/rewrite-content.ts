@@ -89,9 +89,10 @@ function formatVocabulary(vocabulary: BrandVocabulary[]): string {
   if (grouped.REPLACEMENT.length) {
     parts.push(
       "**Required Replacements:** " +
-        grouped.REPLACEMENT.map((v) => `"${v.term}" -> "${v.replacement}"`).join(
-          ", ",
-        ),
+        grouped.REPLACEMENT.map((v) => `"${v.term}" -> "${v.replacement}"`)
+          .join(
+            ", ",
+          ),
     );
   }
 
@@ -185,7 +186,10 @@ Return the rewritten content as JSON. Ensure the rewritten content is <= ${limit
 /**
  * Compute diff hunks between original and rewritten content.
  */
-export function computeDiffHunks(original: string, rewritten: string): DiffHunk[] {
+export function computeDiffHunks(
+  original: string,
+  rewritten: string,
+): DiffHunk[] {
   const diff = diffWords(original, rewritten);
 
   return diff.map((part, index) => ({
@@ -267,7 +271,9 @@ export async function rewriteContent(
     formalCasual: Math.round(validatedResponse.toneAnalysis.formalCasual),
     technicalSimple: Math.round(validatedResponse.toneAnalysis.technicalSimple),
     seriousPlayful: Math.round(validatedResponse.toneAnalysis.seriousPlayful),
-    reservedEnthusiastic: Math.round(validatedResponse.toneAnalysis.reservedEnthusiastic),
+    reservedEnthusiastic: Math.round(
+      validatedResponse.toneAnalysis.reservedEnthusiastic,
+    ),
     alignment: Math.round(validatedResponse.toneAnalysis.alignment),
   };
 

@@ -53,7 +53,9 @@ export function PlatformSelector({
           <SelectValue placeholder="Select platform" />
         </SelectTrigger>
         <SelectContent>
-          {(Object.keys(PLATFORM_LIMITS) as ContentPlatform[]).map((platform) => (
+          {(Object.keys(PLATFORM_LIMITS) as ContentPlatform[]).map((
+            platform,
+          ) => (
             <SelectItem key={platform} value={platform}>
               <span className="flex items-center gap-2">
                 <span className="w-6 text-center font-bold">

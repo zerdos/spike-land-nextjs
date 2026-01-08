@@ -95,7 +95,9 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json(
-      { error: "Access token has expired. Please reconnect your Instagram account." },
+      {
+        error: "Access token has expired. Please reconnect your Instagram account.",
+      },
       { status: 401 },
     );
   }
@@ -129,7 +131,9 @@ export async function GET(request: NextRequest) {
     console.error("Failed to fetch Instagram metrics:", metricsError);
 
     // Check for token expiration
-    const errorMessage = metricsError instanceof Error ? metricsError.message : "";
+    const errorMessage = metricsError instanceof Error
+      ? metricsError.message
+      : "";
 
     if (
       errorMessage.includes("expired") ||
@@ -143,7 +147,9 @@ export async function GET(request: NextRequest) {
       );
 
       return NextResponse.json(
-        { error: "Access token has expired. Please reconnect your Instagram account." },
+        {
+          error: "Access token has expired. Please reconnect your Instagram account.",
+        },
         { status: 401 },
       );
     }

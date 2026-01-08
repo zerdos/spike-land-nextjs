@@ -16,7 +16,9 @@ export default function RewriterPage() {
   const workspaceSlug = params.workspaceSlug as string;
 
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
-  const [rewriteResult, setRewriteResult] = useState<ContentRewriteResponse | null>(null);
+  const [rewriteResult, setRewriteResult] = useState<
+    ContentRewriteResponse | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,7 +27,9 @@ export default function RewriterPage() {
   useEffect(() => {
     async function fetchWorkspaceId() {
       try {
-        const response = await fetch(`/api/workspaces/by-slug/${workspaceSlug}`);
+        const response = await fetch(
+          `/api/workspaces/by-slug/${workspaceSlug}`,
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch workspace");
         }
@@ -41,11 +45,14 @@ export default function RewriterPage() {
     fetchWorkspaceId();
   }, [workspaceSlug]);
 
-  const handleRewriteComplete = useCallback((result: ContentRewriteResponse) => {
-    setRewriteResult(result);
-    setError(null);
-    setSuccess(null);
-  }, []);
+  const handleRewriteComplete = useCallback(
+    (result: ContentRewriteResponse) => {
+      setRewriteResult(result);
+      setError(null);
+      setSuccess(null);
+    },
+    [],
+  );
 
   const handleError = useCallback((errorMessage: string) => {
     setError(errorMessage);

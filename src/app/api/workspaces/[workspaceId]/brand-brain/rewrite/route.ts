@@ -108,7 +108,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
   if (!brandProfile) {
     return NextResponse.json(
-      { error: "Brand profile not found. Please set up your brand profile first." },
+      {
+        error: "Brand profile not found. Please set up your brand profile first.",
+      },
       { status: 404 },
     );
   }
@@ -166,7 +168,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       guardrails: brandProfile.guardrails.map((g) => ({
         id: g.id,
         brandProfileId: g.brandProfileId,
-        type: g.type as "PROHIBITED_TOPIC" | "REQUIRED_DISCLOSURE" | "CONTENT_WARNING",
+        type: g.type as
+          | "PROHIBITED_TOPIC"
+          | "REQUIRED_DISCLOSURE"
+          | "CONTENT_WARNING",
         name: g.name,
         description: g.description,
         severity: g.severity as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",

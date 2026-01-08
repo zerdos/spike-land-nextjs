@@ -82,7 +82,9 @@ async function likePostByPlatform(
       break;
     }
     case "LINKEDIN": {
-      if (!organizationUrn) throw new Error("Organization URN is required for LinkedIn");
+      if (!organizationUrn) {
+        throw new Error("Organization URN is required for LinkedIn");
+      }
       const client = new LinkedInClient({ accessToken, organizationUrn });
       await client.likePost(postId);
       break;
@@ -121,7 +123,9 @@ async function unlikePostByPlatform(
       break;
     }
     case "LINKEDIN": {
-      if (!organizationUrn) throw new Error("Organization URN is required for LinkedIn");
+      if (!organizationUrn) {
+        throw new Error("Organization URN is required for LinkedIn");
+      }
       const client = new LinkedInClient({ accessToken, organizationUrn });
       await client.unlikePost(postId);
       break;
@@ -242,7 +246,9 @@ export async function POST(
     return NextResponse.json(
       {
         error: "Failed to like post",
-        details: likeError instanceof Error ? likeError.message : "Unknown error",
+        details: likeError instanceof Error
+          ? likeError.message
+          : "Unknown error",
       },
       { status: 500 },
     );
@@ -347,7 +353,9 @@ export async function DELETE(
     return NextResponse.json(
       {
         error: "Failed to unlike post",
-        details: unlikeError instanceof Error ? unlikeError.message : "Unknown error",
+        details: unlikeError instanceof Error
+          ? unlikeError.message
+          : "Unknown error",
       },
       { status: 500 },
     );

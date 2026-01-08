@@ -199,7 +199,10 @@ describe("useStreamActions", () => {
         "/api/social/twitter/posts/post-123/reply",
         expect.objectContaining({
           method: "POST",
-          body: JSON.stringify({ accountId: "account-456", content: "Test reply" }),
+          body: JSON.stringify({
+            accountId: "account-456",
+            content: "Test reply",
+          }),
         }),
       );
     });
@@ -212,7 +215,12 @@ describe("useStreamActions", () => {
       });
 
       act(() => {
-        result.current.replyToPost("post-123", "TWITTER", "account-456", "Test");
+        result.current.replyToPost(
+          "post-123",
+          "TWITTER",
+          "account-456",
+          "Test",
+        );
       });
 
       await waitFor(() => {
@@ -231,7 +239,14 @@ describe("useStreamActions", () => {
       });
 
       await expect(
-        act(() => result.current.replyToPost("post-123", "TWITTER", "account-456", "Test")),
+        act(() =>
+          result.current.replyToPost(
+            "post-123",
+            "TWITTER",
+            "account-456",
+            "Test",
+          )
+        ),
       ).rejects.toThrow("Failed to reply");
     });
   });

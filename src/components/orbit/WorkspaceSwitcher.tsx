@@ -64,12 +64,19 @@ export function WorkspaceSwitcher() {
         >
           <div className="flex items-center gap-2 overflow-hidden">
             <Avatar className="h-6 w-6">
-              <AvatarImage src={workspace.avatarUrl ?? undefined} alt={workspace.name} />
+              <AvatarImage
+                src={workspace.avatarUrl ?? undefined}
+                alt={workspace.name}
+              />
               <AvatarFallback className="text-xs">
-                {workspace.isPersonal ? "Me" : getGraphemes(workspace.name, 2).toUpperCase()}
+                {workspace.isPersonal
+                  ? "Me"
+                  : getGraphemes(workspace.name, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="truncate text-sm font-medium">{workspace.name}</span>
+            <span className="truncate text-sm font-medium">
+              {workspace.name}
+            </span>
           </div>
           <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -95,12 +102,19 @@ export function WorkspaceSwitcher() {
               {ws.isPersonal && <span className="text-xs text-muted-foreground">Personal</span>}
             </div>
             {ws.slug === workspace.slug && (
-              <Check className="h-4 w-4 text-primary" data-testid="workspace-active-check" />
+              <Check
+                className="h-4 w-4 text-primary"
+                data-testid="workspace-active-check"
+              />
             )}
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="gap-2" disabled data-testid="create-workspace-option">
+        <DropdownMenuItem
+          className="gap-2"
+          disabled
+          data-testid="create-workspace-option"
+        >
           <Plus className="h-4 w-4" />
           <span>Create Workspace</span>
         </DropdownMenuItem>

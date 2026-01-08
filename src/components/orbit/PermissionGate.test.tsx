@@ -29,7 +29,8 @@ describe("PermissionGate", () => {
         </PermissionGate>,
       );
 
-      expect(screen.getByRole("button", { name: "Create Content" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Create Content" }))
+        .toBeInTheDocument();
     });
 
     it("does not render children when user lacks permission", () => {
@@ -45,7 +46,8 @@ describe("PermissionGate", () => {
         </PermissionGate>,
       );
 
-      expect(screen.queryByRole("button", { name: "Create Content" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Create Content" })).not
+        .toBeInTheDocument();
     });
 
     it("renders fallback when user lacks permission", () => {
@@ -64,7 +66,8 @@ describe("PermissionGate", () => {
         </PermissionGate>,
       );
 
-      expect(screen.queryByRole("button", { name: "Settings" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Settings" })).not
+        .toBeInTheDocument();
       expect(screen.getByText("No access")).toBeInTheDocument();
     });
   });
@@ -100,7 +103,8 @@ describe("PermissionGate", () => {
       );
 
       // Button should not be rendered while loading
-      expect(screen.queryByRole("button", { name: "Create Content" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Create Content" })).not
+        .toBeInTheDocument();
       // Check for loading skeleton element
       const skeleton = document.querySelector(".animate-pulse");
       expect(skeleton).toBeInTheDocument();
@@ -146,7 +150,8 @@ describe("PermissionGate", () => {
 
       expect(screen.getByTestId("delete-section")).toBeInTheDocument();
       expect(screen.getByText("Danger Zone")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Delete Workspace" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Delete Workspace" }))
+        .toBeInTheDocument();
     });
 
     it("renders complex fallback when not permitted", () => {
@@ -169,9 +174,11 @@ describe("PermissionGate", () => {
         </PermissionGate>,
       );
 
-      expect(screen.queryByRole("button", { name: "Delete Workspace" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Delete Workspace" })).not
+        .toBeInTheDocument();
       expect(screen.getByTestId("upgrade-notice")).toBeInTheDocument();
-      expect(screen.getByText("Only workspace owners can delete workspaces")).toBeInTheDocument();
+      expect(screen.getByText("Only workspace owners can delete workspaces"))
+        .toBeInTheDocument();
     });
   });
 });
@@ -198,7 +205,8 @@ describe("withPermission HOC", () => {
 
     render(<ProtectedButton label="Invite Members" />);
 
-    expect(screen.getByRole("button", { name: "Invite Members" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Invite Members" }))
+      .toBeInTheDocument();
   });
 
   it("does not render component when user lacks permission", () => {
@@ -212,7 +220,8 @@ describe("withPermission HOC", () => {
 
     render(<ProtectedButton label="Invite Members" />);
 
-    expect(screen.queryByRole("button", { name: "Invite Members" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Invite Members" })).not
+      .toBeInTheDocument();
   });
 
   it("renders fallback when user lacks permission", () => {
@@ -230,7 +239,8 @@ describe("withPermission HOC", () => {
 
     render(<ProtectedButton label="Invite Members" />);
 
-    expect(screen.queryByRole("button", { name: "Invite Members" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Invite Members" })).not
+      .toBeInTheDocument();
     expect(screen.getByText("Admin only")).toBeInTheDocument();
   });
 
@@ -259,7 +269,8 @@ describe("withPermission HOC", () => {
 
     // Without override - should not render
     const { rerender } = render(<ProtectedButton label="Delete" />);
-    expect(screen.queryByRole("button", { name: "Delete" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Delete" })).not
+      .toBeInTheDocument();
 
     // With override - should render despite no permission
     rerender(<ProtectedButton label="Delete" permissionOverride />);
@@ -276,9 +287,14 @@ describe("withPermission HOC", () => {
     // Anonymous component
     const AnonymousComponent = ({ text }: { text: string; }) => <span>{text}</span>;
 
-    const ProtectedAnonymous = withPermission(AnonymousComponent, "content:create");
+    const ProtectedAnonymous = withPermission(
+      AnonymousComponent,
+      "content:create",
+    );
 
-    expect(ProtectedAnonymous.displayName).toBe("WithPermission(AnonymousComponent)");
+    expect(ProtectedAnonymous.displayName).toBe(
+      "WithPermission(AnonymousComponent)",
+    );
   });
 
   it("passes props correctly to wrapped component", () => {
@@ -306,7 +322,10 @@ describe("withPermission HOC", () => {
       );
     }
 
-    const ProtectedMultiProp = withPermission(MultiPropComponent, "content:create");
+    const ProtectedMultiProp = withPermission(
+      MultiPropComponent,
+      "content:create",
+    );
 
     render(<ProtectedMultiProp title="Test Title" count={42} active />);
 

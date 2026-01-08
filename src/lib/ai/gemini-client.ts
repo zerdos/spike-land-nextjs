@@ -1108,7 +1108,10 @@ export async function generateStructuredResponse<T>(
   );
 
   if (parseError) {
-    console.error("[GEMINI_STRUCTURED] Failed to parse JSON response:", jsonText.slice(0, 500));
+    console.error(
+      "[GEMINI_STRUCTURED] Failed to parse JSON response:",
+      jsonText.slice(0, 500),
+    );
     throw new Error(
       `Failed to parse structured response: ${
         parseError instanceof Error ? parseError.message : "Invalid JSON"

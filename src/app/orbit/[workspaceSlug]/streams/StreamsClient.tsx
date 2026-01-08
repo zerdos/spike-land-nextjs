@@ -303,7 +303,9 @@ export function StreamsClient() {
       {/* Engagement Message */}
       {engagementMessage && (
         <Alert
-          variant={engagementMessage.type === "error" ? "destructive" : "default"}
+          variant={engagementMessage.type === "error"
+            ? "destructive"
+            : "default"}
           data-testid="engagement-message"
         >
           <AlertDescription>{engagementMessage.message}</AlertDescription>

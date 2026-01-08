@@ -40,7 +40,9 @@ export function LogoUpload({
         "image/svg+xml",
       ];
       if (!allowedTypes.includes(file.type)) {
-        setError("Invalid file type. Please upload a JPEG, PNG, GIF, WebP, or SVG image.");
+        setError(
+          "Invalid file type. Please upload a JPEG, PNG, GIF, WebP, or SVG image.",
+        );
         return;
       }
 

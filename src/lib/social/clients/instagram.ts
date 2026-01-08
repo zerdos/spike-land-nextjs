@@ -35,12 +35,16 @@ const GRAPH_API_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
 const DEFAULT_CONTAINER_STATUS_POLL_INTERVAL = 1000; // 1 second
 const DEFAULT_CONTAINER_STATUS_MAX_ATTEMPTS = 30; // 30 seconds max wait
 
-const CONTAINER_STATUS_POLL_INTERVAL =
-  Number.parseInt(process.env.INSTAGRAM_CONTAINER_STATUS_POLL_INTERVAL_MS ?? "", 10) ||
+const CONTAINER_STATUS_POLL_INTERVAL = Number.parseInt(
+  process.env.INSTAGRAM_CONTAINER_STATUS_POLL_INTERVAL_MS ?? "",
+  10,
+) ||
   DEFAULT_CONTAINER_STATUS_POLL_INTERVAL;
 
-const CONTAINER_STATUS_MAX_ATTEMPTS =
-  Number.parseInt(process.env.INSTAGRAM_CONTAINER_STATUS_MAX_ATTEMPTS ?? "", 10) ||
+const CONTAINER_STATUS_MAX_ATTEMPTS = Number.parseInt(
+  process.env.INSTAGRAM_CONTAINER_STATUS_MAX_ATTEMPTS ?? "",
+  10,
+) ||
   DEFAULT_CONTAINER_STATUS_MAX_ATTEMPTS;
 
 interface InstagramAccountResponse {
@@ -164,7 +168,10 @@ export class InstagramClient implements ISocialClient {
    * 2. Poll for container status (wait for FINISHED)
    * 3. Publish the container
    */
-  async createPost(content: string, options?: PostOptions): Promise<PostResult> {
+  async createPost(
+    content: string,
+    options?: PostOptions,
+  ): Promise<PostResult> {
     this.validateConfig();
 
     const imageUrl = options?.mediaUrls?.[0];
@@ -262,7 +269,10 @@ export class InstagramClient implements ISocialClient {
   /**
    * Comment on an Instagram media post
    */
-  async commentOnMedia(mediaId: string, content: string): Promise<{ id: string; }> {
+  async commentOnMedia(
+    mediaId: string,
+    content: string,
+  ): Promise<{ id: string; }> {
     this.validateConfig();
 
     const url = new URL(`${GRAPH_API_BASE}/${mediaId}/comments`);
@@ -332,14 +342,19 @@ export class InstagramClient implements ISocialClient {
       ? String(this.igUserId).trim()
       : "";
     if (!normalizedIgUserId) {
-      throw new Error("Instagram client requires an Instagram User ID (igUserId)");
+      throw new Error(
+        "Instagram client requires an Instagram User ID (igUserId)",
+      );
     }
   }
 
   /**
    * Create a media container for image upload
    */
-  private async createMediaContainer(imageUrl: string, caption: string): Promise<string> {
+  private async createMediaContainer(
+    imageUrl: string,
+    caption: string,
+  ): Promise<string> {
     const url = new URL(`${GRAPH_API_BASE}/${this.igUserId}/media`);
     url.searchParams.set("image_url", imageUrl);
     if (caption) {
@@ -413,7 +428,9 @@ export class InstagramClient implements ISocialClient {
   /**
    * Get the status of a media container
    */
-  private async getContainerStatus(containerId: string): Promise<InstagramContainerStatus> {
+  private async getContainerStatus(
+    containerId: string,
+  ): Promise<InstagramContainerStatus> {
     const url = new URL(`${GRAPH_API_BASE}/${containerId}`);
     url.searchParams.set("fields", "status_code,status");
     url.searchParams.set("access_token", this.accessToken);
@@ -480,11 +497,16 @@ export class InstagramClient implements ISocialClient {
    * Fetch Instagram insights
    * Note: Requires Instagram Business or Creator account
    */
-  private async fetchInsights(): Promise<{ impressions?: number; reach?: number; }> {
+  private async fetchInsights(): Promise<
+    { impressions?: number; reach?: number; }
+  > {
     // Instagram insights are available for business/creator accounts only
     // We request lifetime metrics for follower_count and day-based for impressions/reach
     const url = new URL(`${GRAPH_API_BASE}/${this.igUserId}/insights`);
-    url.searchParams.set("metric", "impressions,reach,follower_count,profile_views");
+    url.searchParams.set(
+      "metric",
+      "impressions,reach,follower_count,profile_views",
+    );
     url.searchParams.set("period", "day");
     url.searchParams.set("access_token", this.accessToken);
 

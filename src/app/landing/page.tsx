@@ -4,16 +4,56 @@ import Link from "next/link";
 
 export default function LandingIndexPage() {
   const pages = [
-    { name: "Stripe", path: "/landing/stripe", color: "from-[#635bff] to-[#00d4ff]" },
-    { name: "Linear", path: "/landing/linear", color: "from-[#5E6AD2] to-[#b2b2b2]" },
-    { name: "Vercel", path: "/landing/vercel", color: "from-black to-gray-600" },
-    { name: "Apple", path: "/landing/apple", color: "from-[#0071e3] to-[#2997ff]" },
-    { name: "Figma", path: "/landing/figma", color: "from-[#0acf83] to-[#f24e1e]" },
-    { name: "Notion", path: "/landing/notion", color: "from-[#37352f] to-[#eb5757]" },
-    { name: "Discord", path: "/landing/discord", color: "from-[#5865f2] to-[#eb459e]" },
-    { name: "Framer", path: "/landing/framer", color: "from-[#0055ff] to-[#bb5ef9]" },
-    { name: "Supabase", path: "/landing/supabase", color: "from-[#3ecf8e] to-[#6366f1]" },
-    { name: "Brutalist", path: "/landing/brutalist", color: "from-red-600 to-yellow-400" },
+    {
+      name: "Stripe",
+      path: "/landing/stripe",
+      color: "from-[#635bff] to-[#00d4ff]",
+    },
+    {
+      name: "Linear",
+      path: "/landing/linear",
+      color: "from-[#5E6AD2] to-[#b2b2b2]",
+    },
+    {
+      name: "Vercel",
+      path: "/landing/vercel",
+      color: "from-black to-gray-600",
+    },
+    {
+      name: "Apple",
+      path: "/landing/apple",
+      color: "from-[#0071e3] to-[#2997ff]",
+    },
+    {
+      name: "Figma",
+      path: "/landing/figma",
+      color: "from-[#0acf83] to-[#f24e1e]",
+    },
+    {
+      name: "Notion",
+      path: "/landing/notion",
+      color: "from-[#37352f] to-[#eb5757]",
+    },
+    {
+      name: "Discord",
+      path: "/landing/discord",
+      color: "from-[#5865f2] to-[#eb459e]",
+    },
+    {
+      name: "Framer",
+      path: "/landing/framer",
+      color: "from-[#0055ff] to-[#bb5ef9]",
+    },
+    {
+      name: "Supabase",
+      path: "/landing/supabase",
+      color: "from-[#3ecf8e] to-[#6366f1]",
+    },
+    {
+      name: "Brutalist",
+      path: "/landing/brutalist",
+      color: "from-red-600 to-yellow-400",
+    },
   ];
 
   return (
@@ -52,7 +92,9 @@ export default function LandingIndexPage() {
                     ↗
                   </span>
                 </Link>
-                <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${page.color} shadow-sm`} />
+                <div
+                  className={`w-3 h-3 rounded-full bg-gradient-to-br ${page.color} shadow-sm`}
+                />
               </div>
 
               {/* Preview Container */}

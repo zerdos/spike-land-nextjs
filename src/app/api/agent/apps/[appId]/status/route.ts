@@ -114,7 +114,11 @@ export async function POST(
   }
 
   // Broadcast status change to connected clients
-  broadcastStatus(appId, status, message || `Agent changed status to ${status}`);
+  broadcastStatus(
+    appId,
+    status,
+    message || `Agent changed status to ${status}`,
+  );
 
   return NextResponse.json(updatedApp[0]);
 }

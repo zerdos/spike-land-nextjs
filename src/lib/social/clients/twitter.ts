@@ -79,14 +79,22 @@ export class TwitterClient implements ISocialClient {
   /**
    * Generate Twitter OAuth 2.0 authorization URL with PKCE
    */
-  getAuthUrl(redirectUri: string, state: string, codeChallenge?: string): string {
+  getAuthUrl(
+    redirectUri: string,
+    state: string,
+    codeChallenge?: string,
+  ): string {
     const clientId = process.env.TWITTER_CLIENT_ID;
     if (!clientId) {
-      throw new Error("TWITTER_CLIENT_ID environment variable is not configured");
+      throw new Error(
+        "TWITTER_CLIENT_ID environment variable is not configured",
+      );
     }
 
     if (!codeChallenge) {
-      throw new Error("codeChallenge is required for Twitter OAuth 2.0 PKCE flow");
+      throw new Error(
+        "codeChallenge is required for Twitter OAuth 2.0 PKCE flow",
+      );
     }
 
     const params = new URLSearchParams({
@@ -120,11 +128,15 @@ export class TwitterClient implements ISocialClient {
     }
 
     if (!codeVerifier) {
-      throw new Error("codeVerifier is required for Twitter OAuth 2.0 PKCE flow");
+      throw new Error(
+        "codeVerifier is required for Twitter OAuth 2.0 PKCE flow",
+      );
     }
 
     // Twitter requires Basic auth with client_id:client_secret
-    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString(
+      "base64",
+    );
 
     const params = new URLSearchParams({
       grant_type: "authorization_code",
@@ -168,7 +180,9 @@ export class TwitterClient implements ISocialClient {
     return {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
-      expiresAt: data.expires_in ? new Date(Date.now() + data.expires_in * 1000) : undefined,
+      expiresAt: data.expires_in
+        ? new Date(Date.now() + data.expires_in * 1000)
+        : undefined,
       tokenType: data.token_type,
       scope: data.scope,
     };
@@ -187,7 +201,9 @@ export class TwitterClient implements ISocialClient {
       );
     }
 
-    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString(
+      "base64",
+    );
 
     const params = new URLSearchParams({
       grant_type: "refresh_token",
@@ -227,7 +243,9 @@ export class TwitterClient implements ISocialClient {
     return {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
-      expiresAt: data.expires_in ? new Date(Date.now() + data.expires_in * 1000) : undefined,
+      expiresAt: data.expires_in
+        ? new Date(Date.now() + data.expires_in * 1000)
+        : undefined,
       tokenType: data.token_type,
       scope: data.scope,
     };
@@ -278,7 +296,10 @@ export class TwitterClient implements ISocialClient {
   /**
    * Create a new tweet
    */
-  async createPost(content: string, options?: PostOptions): Promise<PostResult> {
+  async createPost(
+    content: string,
+    options?: PostOptions,
+  ): Promise<PostResult> {
     const token = this.getAccessTokenOrThrow();
 
     interface TweetPayload {
@@ -394,7 +415,8 @@ export class TwitterClient implements ISocialClient {
         ? {
           likes: tweet.public_metrics.like_count,
           comments: tweet.public_metrics.reply_count,
-          shares: tweet.public_metrics.retweet_count + tweet.public_metrics.quote_count,
+          shares: tweet.public_metrics.retweet_count +
+            tweet.public_metrics.quote_count,
           impressions: tweet.public_metrics.impression_count,
         }
         : undefined,
@@ -437,14 +459,17 @@ export class TwitterClient implements ISocialClient {
       this.twitterUserId = userInfo.platformId;
     }
 
-    const response = await fetch(`${TWITTER_API_BASE}/2/users/${this.twitterUserId}/likes`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `${TWITTER_API_BASE}/2/users/${this.twitterUserId}/likes`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tweet_id: postId }),
       },
-      body: JSON.stringify({ tweet_id: postId }),
-    });
+    );
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
@@ -550,7 +575,9 @@ export class TwitterClient implements ISocialClient {
    */
   private getAccessTokenOrThrow(): string {
     if (!this.accessToken) {
-      throw new Error("Access token is required. Call exchangeCodeForTokens first.");
+      throw new Error(
+        "Access token is required. Call exchangeCodeForTokens first.",
+      );
     }
     return this.accessToken;
   }

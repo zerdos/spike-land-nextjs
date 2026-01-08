@@ -17,11 +17,36 @@ const brandColors = [
     rgb: "245, 158, 11",
     usage: "Main brand color, CTAs, highlights",
   },
-  { name: "Primary Light", hex: "#FBBF24", rgb: "251, 191, 36", usage: "Hover states, accents" },
-  { name: "Primary Dark", hex: "#D97706", rgb: "217, 119, 6", usage: "Active states, emphasis" },
-  { name: "Background", hex: "#FFFFFF", rgb: "255, 255, 255", usage: "Light mode background" },
-  { name: "Background Dark", hex: "#0A0A0A", rgb: "10, 10, 10", usage: "Dark mode background" },
-  { name: "Text Primary", hex: "#171717", rgb: "23, 23, 23", usage: "Primary text (light mode)" },
+  {
+    name: "Primary Light",
+    hex: "#FBBF24",
+    rgb: "251, 191, 36",
+    usage: "Hover states, accents",
+  },
+  {
+    name: "Primary Dark",
+    hex: "#D97706",
+    rgb: "217, 119, 6",
+    usage: "Active states, emphasis",
+  },
+  {
+    name: "Background",
+    hex: "#FFFFFF",
+    rgb: "255, 255, 255",
+    usage: "Light mode background",
+  },
+  {
+    name: "Background Dark",
+    hex: "#0A0A0A",
+    rgb: "10, 10, 10",
+    usage: "Dark mode background",
+  },
+  {
+    name: "Text Primary",
+    hex: "#171717",
+    rgb: "23, 23, 23",
+    usage: "Primary text (light mode)",
+  },
   {
     name: "Text Primary Dark",
     hex: "#FAFAFA",
@@ -85,7 +110,9 @@ function ColorSwatch({ color }: { color: typeof brandColors[0]; }) {
             className="p-1 hover:bg-muted rounded"
             title="Copy HEX"
           >
-            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+            {copied
+              ? <Check className="h-4 w-4 text-green-500" />
+              : <Copy className="h-4 w-4" />}
           </button>
         </div>
         <div className="text-sm text-muted-foreground space-y-1">
@@ -119,11 +146,15 @@ function CopyableText({ label, text }: { label: string; text: string; }) {
           onClick={copyToClipboard}
           className="flex items-center gap-1 text-sm text-primary hover:underline"
         >
-          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          {copied
+            ? <Check className="h-4 w-4" />
+            : <Copy className="h-4 w-4" />}
           {copied ? "Copied!" : "Copy"}
         </button>
       </div>
-      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{text}</p>
+      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+        {text}
+      </p>
     </div>
   );
 }
@@ -190,13 +221,19 @@ export default function PressPage() {
                       <div className="h-16 flex items-center justify-center mb-4">
                         <SpikeLandLogo size="md" variant="horizontal" />
                       </div>
-                      <span className="text-sm text-muted-foreground mb-2">Full Logo</span>
+                      <span className="text-sm text-muted-foreground mb-2">
+                        Full Logo
+                      </span>
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline" asChild>
-                          <a href="/press/logos/spike-land-full.svg" download>SVG</a>
+                          <a href="/press/logos/spike-land-full.svg" download>
+                            SVG
+                          </a>
                         </Button>
                         <Button size="sm" variant="outline" asChild>
-                          <a href="/press/logos/spike-land-full.png" download>PNG</a>
+                          <a href="/press/logos/spike-land-full.png" download>
+                            PNG
+                          </a>
                         </Button>
                       </div>
                     </div>
@@ -206,13 +243,22 @@ export default function PressPage() {
                       <div className="h-16 flex items-center justify-center mb-4">
                         <SpikeLandLogo size="lg" variant="icon" />
                       </div>
-                      <span className="text-sm text-muted-foreground mb-2">Icon Only</span>
+                      <span className="text-sm text-muted-foreground mb-2">
+                        Icon Only
+                      </span>
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline" asChild>
-                          <a href="/press/logos/spike-land-icon.svg" download>SVG</a>
+                          <a href="/press/logos/spike-land-icon.svg" download>
+                            SVG
+                          </a>
                         </Button>
                         <Button size="sm" variant="outline" asChild>
-                          <a href="/press/logos/spike-land-icon-512.png" download>PNG</a>
+                          <a
+                            href="/press/logos/spike-land-icon-512.png"
+                            download
+                          >
+                            PNG
+                          </a>
                         </Button>
                       </div>
                     </div>
@@ -224,13 +270,25 @@ export default function PressPage() {
                           spike.land
                         </span>
                       </div>
-                      <span className="text-sm text-muted-foreground mb-2">Wordmark</span>
+                      <span className="text-sm text-muted-foreground mb-2">
+                        Wordmark
+                      </span>
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline" asChild>
-                          <a href="/press/logos/spike-land-wordmark.svg" download>SVG</a>
+                          <a
+                            href="/press/logos/spike-land-wordmark.svg"
+                            download
+                          >
+                            SVG
+                          </a>
                         </Button>
                         <Button size="sm" variant="outline" asChild>
-                          <a href="/press/logos/spike-land-wordmark.png" download>PNG</a>
+                          <a
+                            href="/press/logos/spike-land-wordmark.png"
+                            download
+                          >
+                            PNG
+                          </a>
                         </Button>
                       </div>
                     </div>
@@ -239,16 +297,26 @@ export default function PressPage() {
                     <div className="border rounded-lg p-6 bg-zinc-900 flex flex-col items-center">
                       <div className="h-16 flex items-center justify-center mb-4">
                         <div className="flex items-center gap-2">
-                          <SpikeLandLogo size="md" variant="horizontal" className="text-white" />
+                          <SpikeLandLogo
+                            size="md"
+                            variant="horizontal"
+                            className="text-white"
+                          />
                         </div>
                       </div>
-                      <span className="text-sm text-zinc-400 mb-2">On Dark</span>
+                      <span className="text-sm text-zinc-400 mb-2">
+                        On Dark
+                      </span>
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline" asChild>
-                          <a href="/press/logos/spike-land-dark.svg" download>SVG</a>
+                          <a href="/press/logos/spike-land-dark.svg" download>
+                            SVG
+                          </a>
                         </Button>
                         <Button size="sm" variant="outline" asChild>
-                          <a href="/press/logos/spike-land-dark.png" download>PNG</a>
+                          <a href="/press/logos/spike-land-dark.png" download>
+                            PNG
+                          </a>
                         </Button>
                       </div>
                     </div>
@@ -258,7 +326,9 @@ export default function PressPage() {
                       <div className="h-16 flex items-center justify-center mb-4">
                         <PixelLogo size="lg" variant="horizontal" />
                       </div>
-                      <span className="text-sm text-muted-foreground mb-2">Pixel Product</span>
+                      <span className="text-sm text-muted-foreground mb-2">
+                        Pixel Product
+                      </span>
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline" asChild>
                           <a href="/press/logos/pixel-logo.svg" download>SVG</a>
@@ -337,9 +407,18 @@ export default function PressPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <CopyableText label="One-liner (Short)" text={boilerplates.short} />
-                  <CopyableText label="Paragraph (Medium)" text={boilerplates.medium} />
-                  <CopyableText label="Full Description (Long)" text={boilerplates.long} />
+                  <CopyableText
+                    label="One-liner (Short)"
+                    text={boilerplates.short}
+                  />
+                  <CopyableText
+                    label="Paragraph (Medium)"
+                    text={boilerplates.medium}
+                  />
+                  <CopyableText
+                    label="Full Description (Long)"
+                    text={boilerplates.long}
+                  />
                 </CardContent>
               </Card>
             </section>
@@ -357,8 +436,12 @@ export default function PressPage() {
                         href="/blog/pixel-launch-announcement"
                         className="block p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                       >
-                        <p className="font-semibold text-lg">Recreate Your Memories in 4K</p>
-                        <p className="text-sm text-muted-foreground">December 15, 2025</p>
+                        <p className="font-semibold text-lg">
+                          Recreate Your Memories in 4K
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          December 15, 2025
+                        </p>
                       </Link>
                     </li>
                   </ul>
@@ -383,7 +466,9 @@ export default function PressPage() {
                     <ul className="space-y-2 text-muted-foreground">
                       <li className="flex items-start gap-2">
                         <span className="text-green-500">•</span>
-                        <span>Use logos on a clean, uncluttered background</span>
+                        <span>
+                          Use logos on a clean, uncluttered background
+                        </span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-green-500">•</span>
@@ -394,7 +479,9 @@ export default function PressPage() {
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-green-500">•</span>
-                        <span>Use the appropriate color variant for the background</span>
+                        <span>
+                          Use the appropriate color variant for the background
+                        </span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-green-500">•</span>
@@ -418,7 +505,9 @@ export default function PressPage() {
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-red-500">•</span>
-                        <span>Place the logo on busy or clashing backgrounds</span>
+                        <span>
+                          Place the logo on busy or clashing backgrounds
+                        </span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-red-500">•</span>
@@ -455,15 +544,21 @@ export default function PressPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <span className="text-sm text-muted-foreground">Company Name</span>
+                  <span className="text-sm text-muted-foreground">
+                    Company Name
+                  </span>
                   <p className="font-semibold">SPIKE LAND LTD</p>
                 </div>
                 <div>
-                  <span className="text-sm text-muted-foreground">Company Number</span>
+                  <span className="text-sm text-muted-foreground">
+                    Company Number
+                  </span>
                   <p className="font-semibold">16906682</p>
                 </div>
                 <div>
-                  <span className="text-sm text-muted-foreground">Registered</span>
+                  <span className="text-sm text-muted-foreground">
+                    Registered
+                  </span>
                   <p className="font-semibold">United Kingdom</p>
                 </div>
                 <div>
@@ -473,7 +568,10 @@ export default function PressPage() {
                 <div>
                   <span className="text-sm text-muted-foreground">Website</span>
                   <p className="font-semibold">
-                    <a href="https://spike.land" className="text-primary hover:underline">
+                    <a
+                      href="https://spike.land"
+                      className="text-primary hover:underline"
+                    >
                       spike.land
                     </a>
                   </p>
@@ -498,7 +596,9 @@ export default function PressPage() {
                   </div>
                   <div>
                     <p className="font-semibold">Zoltan Erdos</p>
-                    <p className="text-sm text-muted-foreground">Founder & CEO</p>
+                    <p className="text-sm text-muted-foreground">
+                      Founder & CEO
+                    </p>
                   </div>
                 </div>
                 <div className="text-sm text-muted-foreground space-y-2">
@@ -525,15 +625,23 @@ export default function PressPage() {
                 <div>
                   <span className="text-sm text-muted-foreground">Email</span>
                   <p className="font-semibold">
-                    <a href="mailto:press@spike.land" className="text-primary hover:underline">
+                    <a
+                      href="mailto:press@spike.land"
+                      className="text-primary hover:underline"
+                    >
                       press@spike.land
                     </a>
                   </p>
                 </div>
                 <div>
-                  <span className="text-sm text-muted-foreground">General Inquiries</span>
+                  <span className="text-sm text-muted-foreground">
+                    General Inquiries
+                  </span>
                   <p className="font-semibold">
-                    <a href="mailto:hello@spike.land" className="text-primary hover:underline">
+                    <a
+                      href="mailto:hello@spike.land"
+                      className="text-primary hover:underline"
+                    >
                       hello@spike.land
                     </a>
                   </p>
@@ -562,7 +670,9 @@ export default function PressPage() {
                   </div>
                   <div>
                     <p className="font-semibold">X (Twitter)</p>
-                    <p className="text-sm text-muted-foreground">@ai_spike_land</p>
+                    <p className="text-sm text-muted-foreground">
+                      @ai_spike_land
+                    </p>
                   </div>
                 </a>
                 <a

@@ -127,7 +127,9 @@ function parseQueryParams(
   }
 
   // Parse sortOrder
-  const sortOrderParam = searchParams.get("sortOrder") as StreamSortOrder | null;
+  const sortOrderParam = searchParams.get("sortOrder") as
+    | StreamSortOrder
+    | null;
   let sortOrder: StreamSortOrder = "desc";
   if (sortOrderParam) {
     if (!VALID_SORT_ORDER.includes(sortOrderParam)) {
@@ -256,7 +258,8 @@ export async function fetchAccountPosts(
   const context: AccountContext = {
     accountId: account.id,
     accountName: account.accountName,
-    accountAvatarUrl: (account.metadata as { avatarUrl?: string; } | null)?.avatarUrl,
+    accountAvatarUrl: (account.metadata as { avatarUrl?: string; } | null)
+      ?.avatarUrl,
     platform: account.platform,
   };
 
@@ -297,7 +300,8 @@ export async function fetchAllAccountPosts(
         id: account.id,
         platform: account.platform,
         accountName: account.accountName,
-        avatarUrl: (account.metadata as { avatarUrl?: string; } | null)?.avatarUrl,
+        avatarUrl: (account.metadata as { avatarUrl?: string; } | null)
+          ?.avatarUrl,
       });
     } else {
       // Account failed to fetch - log error and continue
@@ -317,7 +321,8 @@ export async function fetchAllAccountPosts(
         id: account.id,
         platform: account.platform,
         accountName: account.accountName,
-        avatarUrl: (account.metadata as { avatarUrl?: string; } | null)?.avatarUrl,
+        avatarUrl: (account.metadata as { avatarUrl?: string; } | null)
+          ?.avatarUrl,
       });
     }
   });
@@ -360,7 +365,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const postsPerAccount = 10; // Fetch up to 10 posts per account
 
     // Fetch connected social accounts from the database (by workspace)
-    const connectedAccounts = await fetchConnectedAccounts(params.workspaceId, params.platforms);
+    const connectedAccounts = await fetchConnectedAccounts(
+      params.workspaceId,
+      params.platforms,
+    );
 
     // If no accounts are connected, return empty response
     if (connectedAccounts.length === 0) {
@@ -402,7 +410,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       cursor: params.cursor,
     };
 
-    const aggregatedResult = aggregateStreamPosts(postsWithContext, aggregateOptions);
+    const aggregatedResult = aggregateStreamPosts(
+      postsWithContext,
+      aggregateOptions,
+    );
 
     // Build response
     const response: StreamsResponse = {

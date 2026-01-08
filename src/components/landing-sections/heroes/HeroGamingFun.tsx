@@ -38,7 +38,9 @@ export function HeroGamingFun() {
 
         <div className="grid md:grid-cols-2 gap-8 text-left max-w-5xl mx-auto">
           <div className="bg-[var(--landing-secondary)] p-8 rounded-[var(--landing-radius)]">
-            <h3 className="font-bold text-xl mb-2">Create an invite-only place</h3>
+            <h3 className="font-bold text-xl mb-2">
+              Create an invite-only place
+            </h3>
             <p className="text-[var(--landing-muted)]">
               Where you belong and can code comfortably.
             </p>

@@ -32,14 +32,18 @@ export function TestimonialCards() {
       <div className="grid md:grid-cols-3 gap-6">
         {testimonials.map((t, i) => (
           <ThemeCard key={i} className="flex flex-col justify-between">
-            <p className="text-lg italic mb-6 text-[var(--landing-muted-fg)]">"{t.quote}"</p>
+            <p className="text-lg italic mb-6 text-[var(--landing-muted-fg)]">
+              "{t.quote}"
+            </p>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-[var(--landing-primary)]/20 flex items-center justify-center text-[var(--landing-primary)] font-bold">
                 {t.author[0]}
               </div>
               <div>
                 <div className="font-bold">{t.author}</div>
-                <div className="text-sm text-[var(--landing-muted-fg)]">{t.role}</div>
+                <div className="text-sm text-[var(--landing-muted-fg)]">
+                  {t.role}
+                </div>
               </div>
             </div>
           </ThemeCard>

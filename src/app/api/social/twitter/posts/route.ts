@@ -240,7 +240,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         error: "Failed to create tweet",
-        details: postError instanceof Error ? postError.message : "Unknown error",
+        details: postError instanceof Error
+          ? postError.message
+          : "Unknown error",
       },
       { status: 500 },
     );

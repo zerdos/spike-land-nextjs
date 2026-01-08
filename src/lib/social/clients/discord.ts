@@ -207,7 +207,9 @@ export class DiscordClient {
    *
    * @returns Member count and online count
    */
-  async getMemberCount(): Promise<{ memberCount: number; onlineCount: number; }> {
+  async getMemberCount(): Promise<
+    { memberCount: number; onlineCount: number; }
+  > {
     const guild = await this.getGuildInfo(true);
     return {
       memberCount: guild.approximate_member_count ?? 0,

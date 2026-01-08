@@ -24,11 +24,15 @@ export default function SocialMediaOverviewPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Accounts</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Accounts
+            </CardTitle>
             <Share2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.summary.totalAccounts}</div>
+            <div className="text-2xl font-bold">
+              {data.summary.totalAccounts}
+            </div>
             <p className="text-xs text-muted-foreground">
               Across all platforms
             </p>
@@ -37,11 +41,15 @@ export default function SocialMediaOverviewPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Accounts</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Active Accounts
+            </CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.summary.activeAccounts}</div>
+            <div className="text-2xl font-bold">
+              {data.summary.activeAccounts}
+            </div>
             <p className="text-xs text-muted-foreground">
               Currently connected
             </p>
@@ -50,12 +58,16 @@ export default function SocialMediaOverviewPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Followers</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Followers
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {data.summary.totalFollowers > 0 ? data.summary.totalFollowers.toLocaleString() : "—"}
+              {data.summary.totalFollowers > 0
+                ? data.summary.totalFollowers.toLocaleString()
+                : "—"}
             </div>
             <p className="text-xs text-muted-foreground">
               Combined audience
@@ -65,12 +77,16 @@ export default function SocialMediaOverviewPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Engagement</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Avg. Engagement
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {data.summary.avgEngagement > 0 ? `${data.summary.avgEngagement.toFixed(1)}%` : "—"}
+              {data.summary.avgEngagement > 0
+                ? `${data.summary.avgEngagement.toFixed(1)}%`
+                : "—"}
             </div>
             <p className="text-xs text-muted-foreground">
               Across all platforms
@@ -86,7 +102,10 @@ export default function SocialMediaOverviewPage() {
           {data.accounts.map((account) => {
             const config = PLATFORM_CONFIG[account.platform];
             return (
-              <Card key={account.id} className="hover:shadow-md transition-shadow">
+              <Card
+                key={account.id}
+                className="hover:shadow-md transition-shadow"
+              >
                 <CardHeader className="flex flex-row items-center gap-4 pb-2">
                   <div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold ${config.color}`}
@@ -107,7 +126,11 @@ export default function SocialMediaOverviewPage() {
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">
                       {account.followers !== null
-                        ? <span>{account.followers.toLocaleString()} followers</span>
+                        ? (
+                          <span>
+                            {account.followers.toLocaleString()} followers
+                          </span>
+                        )
                         : <span>Followers: —</span>}
                     </div>
                     <Button variant="ghost" size="sm" asChild>

@@ -84,7 +84,9 @@ describe("AlbumsClient", () => {
     );
 
     // Use getByRole to find button more reliably
-    const newAlbumButtons = screen.getAllByRole("button", { name: /new album/i });
+    const newAlbumButtons = screen.getAllByRole("button", {
+      name: /new album/i,
+    });
     const newAlbumButton = newAlbumButtons[0];
     if (newAlbumButton) {
       fireEvent.click(newAlbumButton);
@@ -154,7 +156,9 @@ describe("AlbumsClient", () => {
     fireEvent.change(nameInput, { target: { value: "New Album" } });
 
     // Find the submit button within the dialog
-    const submitButtons = screen.getAllByRole("button", { name: /create album/i });
+    const submitButtons = screen.getAllByRole("button", {
+      name: /create album/i,
+    });
     const submitButton = submitButtons.find((btn) => {
       const parent = btn.closest('[role="dialog"]');
       return parent !== null;
@@ -166,7 +170,10 @@ describe("AlbumsClient", () => {
 
     await waitFor(
       () => {
-        expect(mockFetch).toHaveBeenCalledWith("/api/albums", expect.any(Object));
+        expect(mockFetch).toHaveBeenCalledWith(
+          "/api/albums",
+          expect.any(Object),
+        );
       },
       { timeout: 3000 },
     );
@@ -241,14 +248,16 @@ describe("AlbumsClient", () => {
     );
 
     // Find the card that contains "Test Album" and get the delete button from within it
-    const albumCard = screen.getByText("Test Album").closest('[class*="overflow-hidden"]');
+    const albumCard = screen.getByText("Test Album").closest(
+      '[class*="overflow-hidden"]',
+    );
     expect(albumCard).toBeDefined();
 
     if (albumCard) {
       // Find all buttons within this card
       const buttons = within(albumCard as HTMLElement).getAllByRole("button");
       // The delete button should be the one that's not the "View Album" link
-      const deleteButton = buttons.find(btn => {
+      const deleteButton = buttons.find((btn) => {
         const svg = btn.querySelector("svg.lucide-trash-2");
         return svg !== null;
       });

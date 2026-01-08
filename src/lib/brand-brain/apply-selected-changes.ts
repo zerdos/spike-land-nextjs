@@ -101,7 +101,10 @@ export function countSelectedChanges(hunks: DiffHunk[]): {
  * @param hunkId - ID of the hunk to toggle
  * @returns New array with the hunk's selection toggled
  */
-export function toggleHunkSelection(hunks: DiffHunk[], hunkId: string): DiffHunk[] {
+export function toggleHunkSelection(
+  hunks: DiffHunk[],
+  hunkId: string,
+): DiffHunk[] {
   return hunks.map((hunk) => hunk.id === hunkId ? { ...hunk, selected: !hunk.selected } : hunk);
 }
 

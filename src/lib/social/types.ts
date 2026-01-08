@@ -117,7 +117,11 @@ export interface ISocialClient {
   platform: SocialPlatform;
 
   // OAuth
-  getAuthUrl(redirectUri: string, state: string, codeChallenge?: string): string;
+  getAuthUrl(
+    redirectUri: string,
+    state: string,
+    codeChallenge?: string,
+  ): string;
   exchangeCodeForTokens(
     code: string,
     redirectUri: string,
@@ -380,7 +384,11 @@ export interface StreamPost extends SocialPost {
 /**
  * Sort options for the stream feed
  */
-export type StreamSortBy = "publishedAt" | "likes" | "comments" | "engagementRate";
+export type StreamSortBy =
+  | "publishedAt"
+  | "likes"
+  | "comments"
+  | "engagementRate";
 
 /**
  * Sort order direction

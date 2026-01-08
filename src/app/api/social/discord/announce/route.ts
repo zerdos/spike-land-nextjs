@@ -115,13 +115,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           if (!field) continue;
           if (field.name.length > 256) {
             return NextResponse.json(
-              { error: `Embed ${i + 1}, field ${j + 1}: name exceeds 256 characters` },
+              {
+                error: `Embed ${i + 1}, field ${j + 1}: name exceeds 256 characters`,
+              },
               { status: 400 },
             );
           }
           if (field.value.length > 1024) {
             return NextResponse.json(
-              { error: `Embed ${i + 1}, field ${j + 1}: value exceeds 1024 characters` },
+              {
+                error: `Embed ${i + 1}, field ${j + 1}: value exceeds 1024 characters`,
+              },
               { status: 400 },
             );
           }
@@ -162,7 +166,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       accessError || "No access",
     );
     return NextResponse.json(
-      { error: "Bot cannot access the announcement channel. Check permissions." },
+      {
+        error: "Bot cannot access the announcement channel. Check permissions.",
+      },
       { status: 500 },
     );
   }
@@ -176,7 +182,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error("Failed to send Discord announcement:", sendError);
 
     // Handle rate limiting
-    if (sendError instanceof Error && sendError.message.includes("rate limited")) {
+    if (
+      sendError instanceof Error && sendError.message.includes("rate limited")
+    ) {
       return NextResponse.json(
         {
           error: "Rate limited by Discord. Please try again later.",
@@ -189,7 +197,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         error: "Failed to send announcement",
-        details: sendError instanceof Error ? sendError.message : "Unknown error",
+        details: sendError instanceof Error
+          ? sendError.message
+          : "Unknown error",
       },
       { status: 500 },
     );

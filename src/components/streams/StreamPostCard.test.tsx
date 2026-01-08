@@ -84,10 +84,15 @@ describe("StreamPostCard", () => {
     });
 
     it("should render external link to original post", () => {
-      const post = createMockPost({ url: "https://twitter.com/test/status/123" });
+      const post = createMockPost({
+        url: "https://twitter.com/test/status/123",
+      });
       render(<StreamPostCard post={post} />);
       const link = screen.getByRole("link", { name: /open original post/i });
-      expect(link).toHaveAttribute("href", "https://twitter.com/test/status/123");
+      expect(link).toHaveAttribute(
+        "href",
+        "https://twitter.com/test/status/123",
+      );
       expect(link).toHaveAttribute("target", "_blank");
       expect(link).toHaveAttribute("rel", "noopener noreferrer");
     });
@@ -205,7 +210,8 @@ describe("StreamPostCard", () => {
       });
       render(<StreamPostCard post={post} />);
       expect(screen.getByTestId("media-preview")).toBeInTheDocument();
-      expect(screen.getByRole("img", { name: "Post media 1" })).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Post media 1" }))
+        .toBeInTheDocument();
     });
 
     it("should not render media preview when no mediaUrls", () => {
@@ -229,9 +235,12 @@ describe("StreamPostCard", () => {
         ],
       });
       render(<StreamPostCard post={post} />);
-      expect(screen.getByRole("img", { name: "Post media 1" })).toBeInTheDocument();
-      expect(screen.getByRole("img", { name: "Post media 2" })).toBeInTheDocument();
-      expect(screen.getByRole("img", { name: "Post media 3" })).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Post media 1" }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Post media 2" }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Post media 3" }))
+        .toBeInTheDocument();
     });
 
     it("should render exactly 2 media items with grid-cols-2", () => {
@@ -244,8 +253,10 @@ describe("StreamPostCard", () => {
       render(<StreamPostCard post={post} />);
       const mediaPreview = screen.getByTestId("media-preview");
       expect(mediaPreview).toHaveClass("grid-cols-2");
-      expect(screen.getByRole("img", { name: "Post media 1" })).toBeInTheDocument();
-      expect(screen.getByRole("img", { name: "Post media 2" })).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Post media 1" }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Post media 2" }))
+        .toBeInTheDocument();
     });
 
     it("should limit media preview to 4 items", () => {
@@ -259,9 +270,12 @@ describe("StreamPostCard", () => {
         ],
       });
       render(<StreamPostCard post={post} />);
-      expect(screen.getByRole("img", { name: "Post media 1" })).toBeInTheDocument();
-      expect(screen.getByRole("img", { name: "Post media 4" })).toBeInTheDocument();
-      expect(screen.queryByRole("img", { name: "Post media 5" })).not.toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Post media 1" }))
+        .toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Post media 4" }))
+        .toBeInTheDocument();
+      expect(screen.queryByRole("img", { name: "Post media 5" })).not
+        .toBeInTheDocument();
     });
   });
 

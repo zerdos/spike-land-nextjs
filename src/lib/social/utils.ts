@@ -46,7 +46,9 @@ export function getOAuthRedirectUri(
   }
 
   // Ensure callback path starts with /
-  const normalizedPath = callbackPath.startsWith("/") ? callbackPath : `/${callbackPath}`;
+  const normalizedPath = callbackPath.startsWith("/")
+    ? callbackPath
+    : `/${callbackPath}`;
 
   return `${fullBaseUrl}${normalizedPath}`;
 }

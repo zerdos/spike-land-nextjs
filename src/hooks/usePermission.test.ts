@@ -11,7 +11,9 @@ vi.mock("@/components/orbit/WorkspaceContext", () => ({
 
 // Mock the permissions module to avoid prisma imports
 vi.mock("@/lib/permissions", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/permissions/permissions")>(
+  const actual = await vi.importActual<
+    typeof import("@/lib/permissions/permissions")
+  >(
     "@/lib/permissions/permissions",
   );
   return actual;

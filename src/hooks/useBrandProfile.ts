@@ -55,8 +55,12 @@ interface UseBrandProfileReturn {
 
   // Actions
   refetch: () => Promise<void>;
-  createProfile: (data: BrandProfileFormData) => Promise<BrandProfileData | null>;
-  updateProfile: (data: Partial<BrandProfileFormData>) => Promise<BrandProfileData | null>;
+  createProfile: (
+    data: BrandProfileFormData,
+  ) => Promise<BrandProfileData | null>;
+  updateProfile: (
+    data: Partial<BrandProfileFormData>,
+  ) => Promise<BrandProfileData | null>;
   deleteProfile: () => Promise<boolean>;
 }
 
@@ -78,7 +82,9 @@ export function useBrandProfile({
   workspaceId,
   enabled = true,
 }: UseBrandProfileOptions): UseBrandProfileReturn {
-  const [brandProfile, setBrandProfile] = useState<BrandProfileData | null>(null);
+  const [brandProfile, setBrandProfile] = useState<BrandProfileData | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -102,7 +108,9 @@ export function useBrandProfile({
 
     if (fetchError) {
       setError(
-        fetchError instanceof Error ? fetchError : new Error("Failed to fetch brand profile"),
+        fetchError instanceof Error
+          ? fetchError
+          : new Error("Failed to fetch brand profile"),
       );
       setIsLoading(false);
       return;
@@ -143,7 +151,9 @@ export function useBrandProfile({
 
     if (jsonError) {
       setError(
-        jsonError instanceof Error ? jsonError : new Error("Failed to parse response"),
+        jsonError instanceof Error
+          ? jsonError
+          : new Error("Failed to parse response"),
       );
       setIsLoading(false);
       return;
@@ -182,8 +192,12 @@ export function useBrandProfile({
       }
 
       if (!response || !response.ok) {
-        const errorData = response ? await response.json().catch(() => ({})) : {};
-        const err = new Error(errorData.error || "Failed to create brand profile");
+        const errorData = response
+          ? await response.json().catch(() => ({}))
+          : {};
+        const err = new Error(
+          errorData.error || "Failed to create brand profile",
+        );
         setError(err);
         setIsCreating(false);
         throw err;
@@ -194,7 +208,9 @@ export function useBrandProfile({
       );
 
       if (jsonError) {
-        const err = jsonError instanceof Error ? jsonError : new Error("Failed to parse response");
+        const err = jsonError instanceof Error
+          ? jsonError
+          : new Error("Failed to parse response");
         setError(err);
         setIsCreating(false);
         throw err;
@@ -212,7 +228,9 @@ export function useBrandProfile({
    * Update the brand profile
    */
   const updateProfile = useCallback(
-    async (data: Partial<BrandProfileFormData>): Promise<BrandProfileData | null> => {
+    async (
+      data: Partial<BrandProfileFormData>,
+    ): Promise<BrandProfileData | null> => {
       if (!workspaceId) return null;
 
       setIsUpdating(true);
@@ -236,8 +254,12 @@ export function useBrandProfile({
       }
 
       if (!response || !response.ok) {
-        const errorData = response ? await response.json().catch(() => ({})) : {};
-        const err = new Error(errorData.error || "Failed to update brand profile");
+        const errorData = response
+          ? await response.json().catch(() => ({}))
+          : {};
+        const err = new Error(
+          errorData.error || "Failed to update brand profile",
+        );
         setError(err);
         setIsUpdating(false);
         throw err;
@@ -248,7 +270,9 @@ export function useBrandProfile({
       );
 
       if (jsonError) {
-        const err = jsonError instanceof Error ? jsonError : new Error("Failed to parse response");
+        const err = jsonError instanceof Error
+          ? jsonError
+          : new Error("Failed to parse response");
         setError(err);
         setIsUpdating(false);
         throw err;
@@ -288,7 +312,9 @@ export function useBrandProfile({
 
     if (!response || !response.ok) {
       const errorData = response ? await response.json().catch(() => ({})) : {};
-      const err = new Error(errorData.error || "Failed to delete brand profile");
+      const err = new Error(
+        errorData.error || "Failed to delete brand profile",
+      );
       setError(err);
       setIsDeleting(false);
       throw err;

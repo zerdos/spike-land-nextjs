@@ -60,7 +60,10 @@ export async function GET(): Promise<NextResponse> {
     console.error("Failed to fetch Discord metrics:", metricsError);
 
     // Handle rate limiting
-    if (metricsError instanceof Error && metricsError.message.includes("rate limited")) {
+    if (
+      metricsError instanceof Error &&
+      metricsError.message.includes("rate limited")
+    ) {
       return NextResponse.json(
         {
           error: "Rate limited by Discord. Please try again later.",
@@ -73,7 +76,8 @@ export async function GET(): Promise<NextResponse> {
     // Handle permission errors
     if (
       metricsError instanceof Error &&
-      (metricsError.message.includes("403") || metricsError.message.includes("Missing Access"))
+      (metricsError.message.includes("403") ||
+        metricsError.message.includes("Missing Access"))
     ) {
       return NextResponse.json(
         {
@@ -87,7 +91,9 @@ export async function GET(): Promise<NextResponse> {
     return NextResponse.json(
       {
         error: "Failed to fetch Discord metrics",
-        details: metricsError instanceof Error ? metricsError.message : "Unknown error",
+        details: metricsError instanceof Error
+          ? metricsError.message
+          : "Unknown error",
       },
       { status: 500 },
     );

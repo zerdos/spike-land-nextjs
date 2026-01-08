@@ -51,7 +51,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   // Verify state
-  let stateData: { userId: string; workspaceId: string; timestamp: number; nonce?: string; };
+  let stateData: {
+    userId: string;
+    workspaceId: string;
+    timestamp: number;
+    nonce?: string;
+  };
   try {
     stateData = JSON.parse(Buffer.from(state, "base64url").toString("utf-8"));
   } catch {

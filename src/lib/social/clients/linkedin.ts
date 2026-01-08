@@ -316,7 +316,9 @@ export class LinkedInClient implements ISocialClient {
   /**
    * Get list of organizations (company pages) the user can manage
    */
-  async getOrganizations(): Promise<Array<{ id: string; name: string; urn: string; }>> {
+  async getOrganizations(): Promise<
+    Array<{ id: string; name: string; urn: string; }>
+  > {
     const token = this.getAccessTokenOrThrow();
 
     // Get organization ACLs - organizations the user can administer
@@ -344,7 +346,9 @@ export class LinkedInClient implements ISocialClient {
 
     for (const acl of data.elements || []) {
       // Extract organization ID from URN like "urn:li:organization:12345"
-      const urnMatch = acl.organizationalTarget.match(/urn:li:organization:(\d+)/);
+      const urnMatch = acl.organizationalTarget.match(
+        /urn:li:organization:(\d+)/,
+      );
       if (!urnMatch) continue;
 
       const orgId = urnMatch[1];
@@ -409,7 +413,9 @@ export class LinkedInClient implements ISocialClient {
     let followersCount = 0;
     const followersResponse = await fetch(
       `${LINKEDIN_API_BASE}/v2/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=${
-        encodeURIComponent(this.organizationUrn || `urn:li:organization:${this.organizationId}`)
+        encodeURIComponent(
+          this.organizationUrn || `urn:li:organization:${this.organizationId}`,
+        )
       }`,
       {
         headers: {
@@ -420,10 +426,12 @@ export class LinkedInClient implements ISocialClient {
     );
 
     if (followersResponse.ok) {
-      const followersData: LinkedInFollowerStatistics = await followersResponse.json();
+      const followersData: LinkedInFollowerStatistics = await followersResponse
+        .json();
       const followerCounts = followersData.elements?.[0]?.followerCounts;
       if (followerCounts) {
-        followersCount = followerCounts.organicFollowerCount + followerCounts.paidFollowerCount;
+        followersCount = followerCounts.organicFollowerCount +
+          followerCounts.paidFollowerCount;
       }
     }
 
@@ -450,7 +458,10 @@ export class LinkedInClient implements ISocialClient {
    * Create a post on the organization's LinkedIn page
    * Uses UGC Post API
    */
-  async createPost(content: string, options?: PostOptions): Promise<PostResult> {
+  async createPost(
+    content: string,
+    options?: PostOptions,
+  ): Promise<PostResult> {
     if (!this.organizationUrn) {
       throw new Error(
         "Organization URN is required. Set via constructor options or setOrganization()",
@@ -581,7 +592,9 @@ export class LinkedInClient implements ISocialClient {
     // LinkedIn uses URN format for posts
     // If postId is not already a URN, assume it's a share ID
     const actorUrn = this.organizationUrn;
-    const objectUrn = postId.startsWith("urn:") ? postId : `urn:li:share:${postId}`;
+    const objectUrn = postId.startsWith("urn:")
+      ? postId
+      : `urn:li:share:${postId}`;
 
     const payload = {
       actor: actorUrn,
@@ -621,7 +634,9 @@ export class LinkedInClient implements ISocialClient {
 
     const token = this.getAccessTokenOrThrow();
 
-    const objectUrn = postId.startsWith("urn:") ? postId : `urn:li:share:${postId}`;
+    const objectUrn = postId.startsWith("urn:")
+      ? postId
+      : `urn:li:share:${postId}`;
     const actorUrn = this.organizationUrn;
 
     const response = await fetch(
@@ -648,7 +663,10 @@ export class LinkedInClient implements ISocialClient {
   /**
    * Comment on a LinkedIn post
    */
-  async commentOnPost(postId: string, content: string): Promise<{ id: string; }> {
+  async commentOnPost(
+    postId: string,
+    content: string,
+  ): Promise<{ id: string; }> {
     if (!this.organizationUrn) {
       throw new Error(
         "Organization URN is required. Set via constructor options or setOrganization()",
@@ -657,7 +675,9 @@ export class LinkedInClient implements ISocialClient {
 
     const token = this.getAccessTokenOrThrow();
 
-    const objectUrn = postId.startsWith("urn:") ? postId : `urn:li:share:${postId}`;
+    const objectUrn = postId.startsWith("urn:")
+      ? postId
+      : `urn:li:share:${postId}`;
 
     const payload = {
       actor: this.organizationUrn,
@@ -718,10 +738,12 @@ export class LinkedInClient implements ISocialClient {
     );
 
     if (followersResponse.ok) {
-      const followersData: LinkedInFollowerStatistics = await followersResponse.json();
+      const followersData: LinkedInFollowerStatistics = await followersResponse
+        .json();
       const followerCounts = followersData.elements?.[0]?.followerCounts;
       if (followerCounts) {
-        followers = followerCounts.organicFollowerCount + followerCounts.paidFollowerCount;
+        followers = followerCounts.organicFollowerCount +
+          followerCounts.paidFollowerCount;
       }
     }
 
@@ -790,7 +812,8 @@ export class LinkedInClient implements ISocialClient {
    */
   setOrganization(organizationId: string, organizationUrn?: string): void {
     this.organizationId = organizationId;
-    this.organizationUrn = organizationUrn || `urn:li:organization:${organizationId}`;
+    this.organizationUrn = organizationUrn ||
+      `urn:li:organization:${organizationId}`;
   }
 
   /**
@@ -798,7 +821,9 @@ export class LinkedInClient implements ISocialClient {
    */
   private getAccessTokenOrThrow(): string {
     if (!this.accessToken) {
-      throw new Error("Access token is required. Call exchangeCodeForTokens first.");
+      throw new Error(
+        "Access token is required. Call exchangeCodeForTokens first.",
+      );
     }
     return this.accessToken;
   }

@@ -59,7 +59,10 @@ export function HeroWarmFriendly() {
                 <span>Create your first component</span>
               </div>
               <div className="flex items-center gap-2">
-                <input type="checkbox" className="accent-[var(--landing-foreground)]" />
+                <input
+                  type="checkbox"
+                  className="accent-[var(--landing-foreground)]"
+                />
                 <span>Deploy to production</span>
               </div>
             </div>

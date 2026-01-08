@@ -20,7 +20,10 @@ export function HeroCreativeMotion() {
         </p>
 
         <div className="flex justify-center gap-4">
-          <ThemeButton size="lg" className="bg-white text-black hover:bg-white/90 font-bold">
+          <ThemeButton
+            size="lg"
+            className="bg-white text-black hover:bg-white/90 font-bold"
+          >
             Start Designing
           </ThemeButton>
           <ThemeButton

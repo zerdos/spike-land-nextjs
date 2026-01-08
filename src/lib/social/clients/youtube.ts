@@ -239,7 +239,8 @@ export class YouTubeClient implements ISocialClient {
    * @returns Authorization URL to redirect the user to
    */
   getAuthUrl(redirectUri: string, state: string): string {
-    const clientId = process.env.YOUTUBE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+    const clientId = process.env.YOUTUBE_CLIENT_ID ||
+      process.env.GOOGLE_CLIENT_ID;
 
     if (!clientId) {
       throw new Error(
@@ -275,8 +276,10 @@ export class YouTubeClient implements ISocialClient {
     code: string,
     redirectUri: string,
   ): Promise<OAuthTokenResponse> {
-    const clientId = process.env.YOUTUBE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.YOUTUBE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+    const clientId = process.env.YOUTUBE_CLIENT_ID ||
+      process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.YOUTUBE_CLIENT_SECRET ||
+      process.env.GOOGLE_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
       throw new Error(
@@ -336,8 +339,10 @@ export class YouTubeClient implements ISocialClient {
    * @returns New token response (refresh token may be unchanged)
    */
   async refreshAccessToken(refreshToken: string): Promise<OAuthTokenResponse> {
-    const clientId = process.env.YOUTUBE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.YOUTUBE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+    const clientId = process.env.YOUTUBE_CLIENT_ID ||
+      process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.YOUTUBE_CLIENT_SECRET ||
+      process.env.GOOGLE_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
       throw new Error(
@@ -454,7 +459,10 @@ export class YouTubeClient implements ISocialClient {
    *
    * @throws Error always - use YouTube Studio to upload videos
    */
-  async createPost(_content: string, _options?: PostOptions): Promise<PostResult> {
+  async createPost(
+    _content: string,
+    _options?: PostOptions,
+  ): Promise<PostResult> {
     throw new Error(
       "YouTube does not support direct post creation. " +
         "Use YouTube Studio (https://studio.youtube.com) to upload videos.",
@@ -722,9 +730,7 @@ export class YouTubeClient implements ISocialClient {
       subscriberCount: statistics?.subscriberCount
         ? parseInt(statistics.subscriberCount, 10)
         : 0,
-      viewCount: statistics?.viewCount
-        ? parseInt(statistics.viewCount, 10)
-        : 0,
+      viewCount: statistics?.viewCount ? parseInt(statistics.viewCount, 10) : 0,
       videoCount: statistics?.videoCount
         ? parseInt(statistics.videoCount, 10)
         : 0,
@@ -751,7 +757,9 @@ export class YouTubeClient implements ISocialClient {
    */
   private getAccessTokenOrThrow(): string {
     if (!this.accessToken) {
-      throw new Error("Access token is required. Call exchangeCodeForTokens first.");
+      throw new Error(
+        "Access token is required. Call exchangeCodeForTokens first.",
+      );
     }
     return this.accessToken;
   }

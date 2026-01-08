@@ -36,7 +36,9 @@ describe("GET /api/apps/[id]/messages/stream", () => {
   it("should return 401 if user is not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost/api/apps/app-1/messages/stream");
+    const request = new NextRequest(
+      "http://localhost/api/apps/app-1/messages/stream",
+    );
     const context = { params: Promise.resolve({ id: "app-1" }) };
 
     const response = await GET(request, context);
@@ -53,7 +55,9 @@ describe("GET /api/apps/[id]/messages/stream", () => {
 
     vi.mocked(prisma.app.findFirst).mockResolvedValue(null);
 
-    const request = new NextRequest("http://localhost/api/apps/app-1/messages/stream");
+    const request = new NextRequest(
+      "http://localhost/api/apps/app-1/messages/stream",
+    );
     const context = { params: Promise.resolve({ id: "app-1" }) };
 
     const response = await GET(request, context);
@@ -73,14 +77,18 @@ describe("GET /api/apps/[id]/messages/stream", () => {
       status: "PROMPTING",
     } as never);
 
-    const request = new NextRequest("http://localhost/api/apps/app-1/messages/stream");
+    const request = new NextRequest(
+      "http://localhost/api/apps/app-1/messages/stream",
+    );
     const context = { params: Promise.resolve({ id: "app-1" }) };
 
     const response = await GET(request, context);
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("text/event-stream");
-    expect(response.headers.get("Cache-Control")).toBe("no-cache, no-store, must-revalidate");
+    expect(response.headers.get("Cache-Control")).toBe(
+      "no-cache, no-store, must-revalidate",
+    );
 
     // Read first event (connected)
     const reader = response.body!.getReader();
@@ -108,7 +116,8 @@ describe("Broadcast functions", () => {
   });
 
   it("broadcastStatus should not throw without connections", () => {
-    expect(() => broadcastStatus("app-1", "LIVE", "App is now live")).not.toThrow();
+    expect(() => broadcastStatus("app-1", "LIVE", "App is now live")).not
+      .toThrow();
   });
 
   it("broadcastAgentWorking should not throw without connections", () => {

@@ -160,7 +160,8 @@ describe("AppWorkspacePage", () => {
     render(<AppWorkspacePage />);
 
     await waitFor(() => {
-      expect(screen.getByText("testing.spike.land/live/test-codespace/")).toBeInTheDocument();
+      expect(screen.getByText("testing.spike.land/live/test-codespace/"))
+        .toBeInTheDocument();
     });
   });
 
@@ -205,7 +206,9 @@ describe("AppWorkspacePage", () => {
     await waitFor(() => {
       const iframe = document.querySelector("iframe");
       expect(iframe).toBeInTheDocument();
-      expect(iframe?.src).toBe("https://testing.spike.land/live/test-codespace/");
+      expect(iframe?.src).toBe(
+        "https://testing.spike.land/live/test-codespace/",
+      );
     });
   });
 
@@ -257,38 +260,44 @@ describe("AppWorkspacePage", () => {
   it("can send a message", async () => {
     const user = userEvent.setup();
 
-    mockFetch.mockImplementation((url: string, options?: { method?: string; }) => {
-      if (url.includes("/api/apps/test-app-id/messages") && options?.method === "POST") {
-        return Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              id: "new-msg",
-              role: "USER",
-              content: "New message",
-              createdAt: new Date().toISOString(),
-            }),
-        });
-      }
-      if (url.includes("/api/apps/test-app-id/messages")) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockMessages),
-        });
-      }
-      if (url.includes("/api/apps/test-app-id")) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockAppData),
-        });
-      }
-      return Promise.resolve({ ok: false, status: 404 });
-    });
+    mockFetch.mockImplementation(
+      (url: string, options?: { method?: string; }) => {
+        if (
+          url.includes("/api/apps/test-app-id/messages") &&
+          options?.method === "POST"
+        ) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                id: "new-msg",
+                role: "USER",
+                content: "New message",
+                createdAt: new Date().toISOString(),
+              }),
+          });
+        }
+        if (url.includes("/api/apps/test-app-id/messages")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockMessages),
+          });
+        }
+        if (url.includes("/api/apps/test-app-id")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockAppData),
+          });
+        }
+        return Promise.resolve({ ok: false, status: 404 });
+      },
+    );
 
     render(<AppWorkspacePage />);
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/type your message/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/type your message/i))
+        .toBeInTheDocument();
     });
 
     const textarea = screen.getByPlaceholderText(/type your message/i);

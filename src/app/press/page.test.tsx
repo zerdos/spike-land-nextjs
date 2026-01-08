@@ -23,12 +23,15 @@ vi.mock("next/image", () => ({
 describe("PressPage", () => {
   it("renders the main heading", () => {
     render(<PressPage />);
-    expect(screen.getByRole("heading", { name: /Press & Media Kit/i })).toBeDefined();
+    expect(screen.getByRole("heading", { name: /Press & Media Kit/i }))
+      .toBeDefined();
   });
 
   it("renders download buttons with correct links", () => {
     render(<PressPage />);
-    const kitLink = screen.getByRole("link", { name: /Download Full Press Kit \(ZIP\)/i });
+    const kitLink = screen.getByRole("link", {
+      name: /Download Full Press Kit \(ZIP\)/i,
+    });
     expect(kitLink.getAttribute("href")).toBe("/press/press-kit.zip");
 
     const logoLink = screen.getByRole("link", { name: /Logo Package Only/i });
@@ -65,6 +68,8 @@ describe("PressPage", () => {
   it("renders correct social links", () => {
     render(<PressPage />);
     const twitterLink = screen.getByRole("link", { name: /X \(Twitter\)/i });
-    expect(twitterLink.getAttribute("href")).toBe("https://x.com/ai_spike_land");
+    expect(twitterLink.getAttribute("href")).toBe(
+      "https://x.com/ai_spike_land",
+    );
   });
 });

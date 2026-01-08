@@ -22,7 +22,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 /**
  * Platform display configuration with icons/names
  */
-const PLATFORM_CONFIG: Record<SocialPlatform, { name: string; shortName: string; }> = {
+const PLATFORM_CONFIG: Record<
+  SocialPlatform,
+  { name: string; shortName: string; }
+> = {
   TWITTER: { name: "Twitter", shortName: "X" },
   FACEBOOK: { name: "Facebook", shortName: "FB" },
   INSTAGRAM: { name: "Instagram", shortName: "IG" },
@@ -42,10 +45,30 @@ interface SortOption {
 }
 
 const SORT_OPTIONS: SortOption[] = [
-  { value: "newest", label: "Newest first", sortBy: "publishedAt", sortOrder: "desc" },
-  { value: "oldest", label: "Oldest first", sortBy: "publishedAt", sortOrder: "asc" },
-  { value: "most-liked", label: "Most liked", sortBy: "likes", sortOrder: "desc" },
-  { value: "most-comments", label: "Most comments", sortBy: "comments", sortOrder: "desc" },
+  {
+    value: "newest",
+    label: "Newest first",
+    sortBy: "publishedAt",
+    sortOrder: "desc",
+  },
+  {
+    value: "oldest",
+    label: "Oldest first",
+    sortBy: "publishedAt",
+    sortOrder: "asc",
+  },
+  {
+    value: "most-liked",
+    label: "Most liked",
+    sortBy: "likes",
+    sortOrder: "desc",
+  },
+  {
+    value: "most-comments",
+    label: "Most comments",
+    sortBy: "comments",
+    sortOrder: "desc",
+  },
   {
     value: "highest-engagement",
     label: "Highest engagement",
@@ -80,7 +103,10 @@ export interface StreamFiltersProps {
 /**
  * Get the sort option value from sortBy and sortOrder
  */
-function getSortValue(sortBy: StreamSortBy, sortOrder: StreamSortOrder): string {
+function getSortValue(
+  sortBy: StreamSortBy,
+  sortOrder: StreamSortOrder,
+): string {
   const option = SORT_OPTIONS.find(
     (opt) => opt.sortBy === sortBy && opt.sortOrder === sortOrder,
   );
@@ -164,10 +190,10 @@ export function StreamFilters({
   const handlePlatformChange = useCallback(
     (selectedPlatforms: string[]) => {
       // If all platforms are selected or none are selected, set to undefined (show all)
-      const platforms =
-        selectedPlatforms.length === 0 || selectedPlatforms.length === connectedPlatforms.length
-          ? undefined
-          : (selectedPlatforms as SocialPlatform[]);
+      const platforms = selectedPlatforms.length === 0 ||
+          selectedPlatforms.length === connectedPlatforms.length
+        ? undefined
+        : (selectedPlatforms as SocialPlatform[]);
 
       onChange({
         ...filters,
@@ -291,7 +317,9 @@ export function StreamFilters({
           disabled={isLoading}
           aria-label="Refresh posts"
         >
-          <RefreshCw className={isLoading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+          <RefreshCw
+            className={isLoading ? "h-4 w-4 animate-spin" : "h-4 w-4"}
+          />
         </Button>
       )}
     </div>

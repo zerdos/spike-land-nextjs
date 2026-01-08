@@ -76,7 +76,9 @@ export default async function BrandBrainPage({ params }: Props) {
             <div className="mb-4 rounded-full bg-primary/10 p-4">
               <Brain className="h-12 w-12 text-primary" />
             </div>
-            <h2 className="mb-2 text-xl font-semibold">Set Up Your Brand Brain</h2>
+            <h2 className="mb-2 text-xl font-semibold">
+              Set Up Your Brand Brain
+            </h2>
             <p className="mb-6 max-w-md text-center text-muted-foreground">
               Configure your brand identity, voice, visual assets, and content guardrails to ensure
               AI-generated content stays on-brand.
@@ -101,7 +103,9 @@ export default async function BrandBrainPage({ params }: Props) {
     );
   }
 
-  const toneDescriptors = brandProfile.toneDescriptors as ToneDescriptors | null;
+  const toneDescriptors = brandProfile.toneDescriptors as
+    | ToneDescriptors
+    | null;
   const colorPalette = brandProfile.colorPalette as ColorPaletteItem[] | null;
   const values = brandProfile.values as string[] | null;
 
@@ -165,7 +169,9 @@ export default async function BrandBrainPage({ params }: Props) {
             {/* Mission */}
             {brandProfile.mission && (
               <div>
-                <p className="text-xs font-medium text-muted-foreground">Mission</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Mission
+                </p>
                 <p className="text-sm">{brandProfile.mission}</p>
               </div>
             )}
@@ -173,7 +179,9 @@ export default async function BrandBrainPage({ params }: Props) {
             {/* Values */}
             {values && values.length > 0 && (
               <div>
-                <p className="mb-2 text-xs font-medium text-muted-foreground">Values</p>
+                <p className="mb-2 text-xs font-medium text-muted-foreground">
+                  Values
+                </p>
                 <div className="flex flex-wrap gap-1">
                   {values.map((value, i) => (
                     <Badge key={i} variant="secondary">
@@ -199,7 +207,8 @@ export default async function BrandBrainPage({ params }: Props) {
             {toneDescriptors
               ? (
                 Object.entries(VOICE_DIMENSION_LABELS).map(([key, labels]) => {
-                  const value = toneDescriptors[key as keyof ToneDescriptors] ?? 50;
+                  const value = toneDescriptors[key as keyof ToneDescriptors] ??
+                    50;
                   return (
                     <div key={key} className="flex items-center gap-2">
                       <span
@@ -307,7 +316,9 @@ export default async function BrandBrainPage({ params }: Props) {
 
             {/* Vocabulary Summary */}
             <div className="border-t pt-4">
-              <p className="text-xs font-medium text-muted-foreground">Vocabulary</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                Vocabulary
+              </p>
               <p className="text-sm">
                 {brandProfile.vocabulary.length} term
                 {brandProfile.vocabulary.length !== 1 ? "s" : ""} configured

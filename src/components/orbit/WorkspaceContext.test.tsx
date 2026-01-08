@@ -127,8 +127,20 @@ describe("WorkspaceContext", () => {
         ok: true,
         json: async () => ({
           workspaces: [
-            { id: "1", name: "Workspace 1", slug: "ws-1", isPersonal: true, role: "OWNER" },
-            { id: "2", name: "Workspace 2", slug: "ws-2", isPersonal: false, role: "MEMBER" },
+            {
+              id: "1",
+              name: "Workspace 1",
+              slug: "ws-1",
+              isPersonal: true,
+              role: "OWNER",
+            },
+            {
+              id: "2",
+              name: "Workspace 2",
+              slug: "ws-2",
+              isPersonal: false,
+              role: "MEMBER",
+            },
           ],
         }),
       });
@@ -145,7 +157,13 @@ describe("WorkspaceContext", () => {
         ok: true,
         json: async () => ({
           workspaces: [
-            { id: "1", name: "First Workspace", slug: "first-ws", isPersonal: true, role: "OWNER" },
+            {
+              id: "1",
+              name: "First Workspace",
+              slug: "first-ws",
+              isPersonal: true,
+              role: "OWNER",
+            },
           ],
         }),
       });
@@ -153,7 +171,9 @@ describe("WorkspaceContext", () => {
       render(<TestConsumer />, { wrapper: createWrapper() });
 
       await waitFor(() => {
-        expect(screen.getByTestId("workspace-name")).toHaveTextContent("First Workspace");
+        expect(screen.getByTestId("workspace-name")).toHaveTextContent(
+          "First Workspace",
+        );
       });
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
@@ -183,7 +203,9 @@ describe("WorkspaceContext", () => {
       render(<TestConsumer />, { wrapper: createWrapper() });
 
       await waitFor(() => {
-        expect(screen.getByTestId("workspace-name")).toHaveTextContent("URL Workspace");
+        expect(screen.getByTestId("workspace-name")).toHaveTextContent(
+          "URL Workspace",
+        );
       });
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
@@ -213,12 +235,16 @@ describe("WorkspaceContext", () => {
       render(<TestConsumer />, { wrapper: createWrapper() });
 
       await waitFor(() => {
-        expect(screen.getByTestId("workspace-name")).toHaveTextContent("Stored Workspace");
+        expect(screen.getByTestId("workspace-name")).toHaveTextContent(
+          "Stored Workspace",
+        );
       });
     });
 
     it("handles fetch error", async () => {
-      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleError = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       mockFetch.mockResolvedValue({
         ok: false,
@@ -265,7 +291,13 @@ describe("WorkspaceContext", () => {
         ok: true,
         json: async () => ({
           workspaces: [
-            { id: "1", name: "Workspace 1", slug: "ws-1", isPersonal: true, role: "OWNER" },
+            {
+              id: "1",
+              name: "Workspace 1",
+              slug: "ws-1",
+              isPersonal: true,
+              role: "OWNER",
+            },
             {
               id: "2",
               name: "Other Workspace",
@@ -302,7 +334,13 @@ describe("WorkspaceContext", () => {
         ok: true,
         json: async () => ({
           workspaces: [
-            { id: "1", name: "Workspace 1", slug: "ws-1", isPersonal: true, role: "OWNER" },
+            {
+              id: "1",
+              name: "Workspace 1",
+              slug: "ws-1",
+              isPersonal: true,
+              role: "OWNER",
+            },
           ],
         }),
       });
@@ -328,7 +366,9 @@ describe("WorkspaceContext", () => {
 
   describe("useWorkspace", () => {
     it("throws error when used outside provider", () => {
-      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleError = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       expect(() => {
         render(<TestConsumer />);
@@ -367,7 +407,9 @@ describe("WorkspaceContext", () => {
         json: async () => ({ workspaces: [] }),
       });
 
-      const { unmount } = render(<TestConsumer />, { wrapper: createWrapper() });
+      const { unmount } = render(<TestConsumer />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(screen.getByTestId("test-consumer")).toBeInTheDocument();

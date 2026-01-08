@@ -116,7 +116,8 @@ export function withPermission<P extends object>(
   }
 
   // Set display name for debugging
-  const displayName = WrappedComponent.displayName || WrappedComponent.name || "Component";
+  const displayName = WrappedComponent.displayName || WrappedComponent.name ||
+    "Component";
   WithPermission.displayName = `WithPermission(${displayName})`;
 
   return WithPermission;

@@ -125,7 +125,10 @@ export default function SocialPage() {
           <h2 className="text-2xl font-semibold mb-6">Main Platforms</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {socialPlatforms.slice(0, 6).map((platform) => (
-              <Card key={platform.name} className="hover:shadow-lg transition-shadow">
+              <Card
+                key={platform.name}
+                className="hover:shadow-lg transition-shadow"
+              >
                 <CardHeader className="flex flex-row items-center gap-4">
                   <div
                     className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold ${platform.color}`}
@@ -142,7 +145,11 @@ export default function SocialPage() {
                     {platform.description}
                   </p>
                   <Button asChild className="w-full">
-                    <a href={platform.url} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={platform.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Follow <ExternalLink className="ml-2 h-4 w-4" />
                     </a>
                   </Button>
@@ -157,7 +164,10 @@ export default function SocialPage() {
           <h2 className="text-2xl font-semibold mb-6">Developer Community</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {socialPlatforms.slice(6).map((platform) => (
-              <Card key={platform.name} className="hover:shadow-lg transition-shadow">
+              <Card
+                key={platform.name}
+                className="hover:shadow-lg transition-shadow"
+              >
                 <CardHeader className="flex flex-row items-center gap-4">
                   <div
                     className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold ${platform.color}`}
@@ -174,7 +184,11 @@ export default function SocialPage() {
                     {platform.description}
                   </p>
                   <Button asChild variant="outline" className="w-full">
-                    <a href={platform.url} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={platform.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Follow <ExternalLink className="ml-2 h-4 w-4" />
                     </a>
                   </Button>
@@ -213,13 +227,19 @@ export default function SocialPage() {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               <span className="font-semibold">Email:</span>
-              <a href="mailto:hello@spike.land" className="text-primary hover:underline">
+              <a
+                href="mailto:hello@spike.land"
+                className="text-primary hover:underline"
+              >
                 hello@spike.land
               </a>
             </div>
             <div className="flex items-center gap-4">
               <span className="font-semibold">Website:</span>
-              <a href="https://spike.land" className="text-primary hover:underline">
+              <a
+                href="https://spike.land"
+                className="text-primary hover:underline"
+              >
                 spike.land
               </a>
             </div>

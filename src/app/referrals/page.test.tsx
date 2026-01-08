@@ -261,7 +261,9 @@ describe("ReferralsPage", () => {
   });
 
   it("should handle clipboard copy errors", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
     vi.mocked(navigator.clipboard.writeText).mockRejectedValueOnce(
       new Error("Clipboard error"),
     );

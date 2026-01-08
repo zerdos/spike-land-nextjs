@@ -41,7 +41,12 @@ describe("brand-score validation schemas", () => {
     });
 
     it("should have correct VIOLATION_SEVERITIES", () => {
-      expect(VIOLATION_SEVERITIES).toEqual(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
+      expect(VIOLATION_SEVERITIES).toEqual([
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL",
+      ]);
     });
 
     it("should have correct OVERALL_ASSESSMENTS", () => {

@@ -11,9 +11,18 @@ export function FeatureCodeBlocks() {
           </h2>
           <div className="space-y-6">
             {[
-              { title: "Type Safe", desc: "Full TypeScript support out of the box." },
-              { title: "Zero Config", desc: "No webpack. No tsconfig. Just code." },
-              { title: "MCP Ready", desc: "Connects to your local AI agents instantly." },
+              {
+                title: "Type Safe",
+                desc: "Full TypeScript support out of the box.",
+              },
+              {
+                title: "Zero Config",
+                desc: "No webpack. No tsconfig. Just code.",
+              },
+              {
+                title: "MCP Ready",
+                desc: "Connects to your local AI agents instantly.",
+              },
             ].map((item, i) => (
               <div key={i} className="flex gap-4">
                 <div className="w-12 h-12 rounded-[var(--landing-radius)] bg-[var(--landing-primary)]/10 flex items-center justify-center text-[var(--landing-primary)] font-bold text-xl">

@@ -348,7 +348,9 @@ describe("brand-rewrite validations", () => {
     };
 
     it("should validate valid history response", () => {
-      const result = rewriteHistoryResponseSchema.safeParse(validHistoryResponse);
+      const result = rewriteHistoryResponseSchema.safeParse(
+        validHistoryResponse,
+      );
 
       expect(result.success).toBe(true);
     });

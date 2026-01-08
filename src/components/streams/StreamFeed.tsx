@@ -100,7 +100,10 @@ export function StreamFeed({
   if (posts.length === 0 && !isLoading) {
     return (
       <div data-testid="stream-feed">
-        <StreamEmptyState type="no-posts" onConnectAccounts={onConnectAccounts} />
+        <StreamEmptyState
+          type="no-posts"
+          onConnectAccounts={onConnectAccounts}
+        />
       </div>
     );
   }
@@ -118,8 +121,10 @@ export function StreamFeed({
           onLike={onLike}
           onReply={onReply}
           onShare={onShare}
-          isLiking={likingPostId === post.id || likingPostId === post.platformPostId}
-          isReplying={replyingPostId === post.id || replyingPostId === post.platformPostId}
+          isLiking={likingPostId === post.id ||
+            likingPostId === post.platformPostId}
+          isReplying={replyingPostId === post.id ||
+            replyingPostId === post.platformPostId}
         />
       ))}
 

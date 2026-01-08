@@ -27,17 +27,28 @@ export const GUARDRAIL_TYPES = [
   "CONTENT_WARNING",
 ] as const;
 
-export const GUARDRAIL_TYPE_LABELS: Record<(typeof GUARDRAIL_TYPES)[number], string> = {
+export const GUARDRAIL_TYPE_LABELS: Record<
+  (typeof GUARDRAIL_TYPES)[number],
+  string
+> = {
   PROHIBITED_TOPIC: "Prohibited Topic",
   REQUIRED_DISCLOSURE: "Required Disclosure",
   CONTENT_WARNING: "Content Warning",
 };
 
-export const GUARDRAIL_SEVERITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const;
+export const GUARDRAIL_SEVERITIES = [
+  "LOW",
+  "MEDIUM",
+  "HIGH",
+  "CRITICAL",
+] as const;
 
 export const VOCABULARY_TYPES = ["PREFERRED", "BANNED", "REPLACEMENT"] as const;
 
-export const VOCABULARY_TYPE_LABELS: Record<(typeof VOCABULARY_TYPES)[number], string> = {
+export const VOCABULARY_TYPE_LABELS: Record<
+  (typeof VOCABULARY_TYPES)[number],
+  string
+> = {
   PREFERRED: "Preferred Term",
   BANNED: "Banned Term",
   REPLACEMENT: "Replacement",
@@ -62,7 +73,10 @@ export const hexColorSchema = z
   });
 
 export const colorPaletteItemSchema = z.object({
-  name: z.string().min(1, "Color name is required").max(30, "Color name too long"),
+  name: z.string().min(1, "Color name is required").max(
+    30,
+    "Color name too long",
+  ),
   hex: hexColorSchema,
   usage: z.enum(COLOR_USAGES).optional(),
 });
@@ -102,9 +116,12 @@ export const brandBasicsSchema = z.object({
     .string()
     .min(2, "Brand name must be at least 2 characters")
     .max(100, "Brand name must be less than 100 characters"),
-  mission: z.string().max(1000, "Mission must be less than 1000 characters").optional(),
+  mission: z.string().max(1000, "Mission must be less than 1000 characters")
+    .optional(),
   values: z
-    .array(z.string().min(1).max(50, "Each value must be less than 50 characters"))
+    .array(
+      z.string().min(1).max(50, "Each value must be less than 50 characters"),
+    )
     .max(10, "Maximum 10 values allowed")
     .optional(),
 });

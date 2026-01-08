@@ -166,7 +166,9 @@ describe("score-content", () => {
       const result = _formatVocabulary(mockVocabulary);
 
       expect(result).toContain("**Preferred Terms:** customers");
-      expect(result).toContain("**Banned Terms:** cheap (Use 'affordable' instead)");
+      expect(result).toContain(
+        "**Banned Terms:** cheap (Use 'affordable' instead)",
+      );
       expect(result).toContain('**Replacements:** "users" → "customers"');
     });
 

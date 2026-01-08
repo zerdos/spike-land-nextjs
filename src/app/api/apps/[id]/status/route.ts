@@ -125,7 +125,11 @@ export async function PATCH(
 
   // Users can only set certain statuses directly
   const allowedUserStatuses = ["ARCHIVED", "PROMPTING"] as const;
-  if (!allowedUserStatuses.includes(status as (typeof allowedUserStatuses)[number])) {
+  if (
+    !allowedUserStatuses.includes(
+      status as (typeof allowedUserStatuses)[number],
+    )
+  ) {
     return NextResponse.json(
       { error: "You can only archive or restart apps" },
       { status: 403 },

@@ -26,7 +26,9 @@ export const ORBIT_STORAGE_KEY = "orbit-last-workspace-slug";
 export function getGraphemes(str: string, count: number): string {
   // Use Intl.Segmenter for proper grapheme cluster handling
   if (typeof Intl !== "undefined" && Intl.Segmenter) {
-    const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+    const segmenter = new Intl.Segmenter(undefined, {
+      granularity: "grapheme",
+    });
     const segments = Array.from(segmenter.segment(str));
     return segments
       .slice(0, count)

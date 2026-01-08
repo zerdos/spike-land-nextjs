@@ -17,7 +17,10 @@ describe("DiscordClient", () => {
     // Set up environment variables
     vi.stubEnv("DISCORD_BOT_TOKEN", mockEnv.DISCORD_BOT_TOKEN);
     vi.stubEnv("DISCORD_SERVER_ID", mockEnv.DISCORD_SERVER_ID);
-    vi.stubEnv("DISCORD_ANNOUNCEMENT_CHANNEL_ID", mockEnv.DISCORD_ANNOUNCEMENT_CHANNEL_ID);
+    vi.stubEnv(
+      "DISCORD_ANNOUNCEMENT_CHANNEL_ID",
+      mockEnv.DISCORD_ANNOUNCEMENT_CHANNEL_ID,
+    );
 
     // Mock fetch
     global.fetch = vi.fn();
