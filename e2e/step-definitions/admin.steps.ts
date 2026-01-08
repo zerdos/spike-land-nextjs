@@ -12,7 +12,12 @@ async function mockAdminStatus(world: CustomWorld, isAdmin: boolean) {
   // If user is admin, we rely on real DB permissions (seeded) and real API responses.
   // We only intercept if we want to simulate a non-admin user getting blocked.
   if (!isAdmin) {
-    // Update the e2e-user-role cookie to USER (overrides any previous ADMIN setting)
+    // FIRST: Clear any existing auth session and role cookies to ensure clean state
+    // This forces the server to use the newly set e2e-user-role cookie
+    await world.page.context().clearCookies({ name: "authjs.session-token" });
+    await world.page.context().clearCookies({ name: "e2e-user-role" });
+
+    // Set e2e-user-role cookie to USER
     // This is needed because the admin layout checks the role from the cookie directly
     await world.page.context().addCookies([
       {
