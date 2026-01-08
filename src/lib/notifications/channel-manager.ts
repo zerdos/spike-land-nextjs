@@ -59,7 +59,7 @@ function isQuietHours(preferences: WorkspaceNotificationPreferences): boolean {
     });
     const parts = formatter.formatToParts(now);
     const hourPart = parts.find((part) => part.type === "hour");
-    hour = hourPart ? Number(hourPart.value) : now.getHours();
+    hour = hourPart !== undefined ? Number(hourPart.value) : now.getHours();
   } else {
     hour = now.getHours();
   }
@@ -144,6 +144,7 @@ async function sendEmailNotification(
       severity: notification.anomaly.severity,
       direction: notification.anomaly.direction,
       dashboardUrl: notification.dashboardUrl,
+      timestamp: notification.timestamp,
     }),
   });
 
