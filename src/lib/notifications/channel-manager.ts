@@ -48,7 +48,21 @@ function isQuietHours(preferences: WorkspaceNotificationPreferences): boolean {
   }
 
   const now = new Date();
-  const hour = now.getHours();
+  const timeZone = preferences.timezone;
+
+  let hour: number;
+  if (timeZone) {
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      hour12: false,
+      timeZone,
+    });
+    const parts = formatter.formatToParts(now);
+    const hourPart = parts.find((part) => part.type === "hour");
+    hour = hourPart ? Number(hourPart.value) : now.getHours();
+  } else {
+    hour = now.getHours();
+  }
 
   if (preferences.quietHoursStart < preferences.quietHoursEnd) {
     // Simple case: quiet hours don't cross midnight (e.g., 22:00 - 23:00)
