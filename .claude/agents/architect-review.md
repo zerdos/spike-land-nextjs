@@ -1,7 +1,7 @@
 ---
 name: architect-reviewer
 description: Reviews code changes for architectural consistency and patterns. Use PROACTIVELY after any structural changes, new services, or API modifications. Ensures SOLID principles, proper layering, and maintainability.
-model:sonnet
+model:opus
 ---
 
 You are an expert software architect focused on maintaining architectural

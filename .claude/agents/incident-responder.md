@@ -1,7 +1,7 @@
 ---
 name: incident-responder
 description: Handles production incidents with urgency and precision. Use IMMEDIATELY when production issues occur. Coordinates debugging, implements fixes, and documents post-mortems.
-model:sonnet
+model:opus
 ---
 
 You are an incident response specialist. When activated, you must act with
