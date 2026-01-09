@@ -84,13 +84,13 @@ export class CanvasEditorPage {
 
   async getNextArrowButton() {
     return this.page.locator(
-      '[data-testid="next-button"], button[aria-label*="next" i]',
+      '[data-testid="slideshow-next-button"], [data-testid="next-button"], button[aria-label*="next" i]',
     );
   }
 
   async getPreviousArrowButton() {
     return this.page.locator(
-      '[data-testid="prev-button"], button[aria-label*="previous" i]',
+      '[data-testid="slideshow-prev-button"], [data-testid="prev-button"], button[aria-label*="previous" i]',
     );
   }
 
@@ -134,7 +134,9 @@ export class CanvasEditorPage {
   }
 
   async getSlideshowControls() {
-    return this.page.locator('[data-testid="slideshow-controls"]');
+    return this.page.locator(
+      '[data-testid="slideshow-controls"], [data-testid="canvas-toolbar"]',
+    );
   }
 
   // Rotation Controls
