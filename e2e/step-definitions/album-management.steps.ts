@@ -529,9 +529,20 @@ When("I confirm album creation", async function(this: CustomWorld) {
 });
 
 When("I open album settings", async function(this: CustomWorld) {
-  const settingsButton = this.page.getByRole("button", {
+  // The settings button may be icon-only (Settings icon without text label)
+  // Try multiple strategies to find it
+  const buttonByName = this.page.getByRole("button", {
     name: /settings|edit|manage/i,
   }).first();
+  const buttonByIcon = this.page.locator("button:has(svg.lucide-settings)").first();
+  const buttonByTestId = this.page.locator('[data-testid="album-settings-button"]');
+  const buttonByAriaLabel = this.page.locator(
+    'button[aria-label*="settings" i], button[aria-label*="Settings"]',
+  ).first();
+
+  const settingsButton = buttonByTestId.or(buttonByAriaLabel).or(buttonByIcon).or(buttonByName)
+    .first();
+
   await expect(settingsButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
   await expect(settingsButton).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
   await settingsButton.click();
@@ -789,8 +800,12 @@ When("I try to delete the album", async function(this: CustomWorld) {
     await this.page.goto(`/albums/${state.currentAlbum.id}`);
     await this.page.waitForLoadState("networkidle");
 
-    const settingsButton = this.page.getByRole("button", { name: /settings/i })
-      .first();
+    // Try multiple strategies for icon-only settings button
+    const buttonByName = this.page.getByRole("button", { name: /settings/i }).first();
+    const buttonByIcon = this.page.locator("button:has(svg.lucide-settings)").first();
+    const buttonByTestId = this.page.locator('[data-testid="album-settings-button"]');
+    const settingsButton = buttonByTestId.or(buttonByIcon).or(buttonByName).first();
+
     if (await settingsButton.isVisible()) {
       await settingsButton.click();
       await this.page.waitForTimeout(300);

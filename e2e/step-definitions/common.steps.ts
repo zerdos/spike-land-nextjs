@@ -493,13 +493,18 @@ Then("the dialog should close", async function(this: CustomWorld) {
 
 // "I should see {string} option" - consolidated from batch-operations.steps.ts,
 // mcp-history.steps.ts, pixel-pipelines.steps.ts, tokens-extended.steps.ts
+// Also supports toggle buttons (like AttributionToggle) which use Button instead of role="option"
 Then(
   "I should see {string} option",
   async function(this: CustomWorld, optionText: string) {
+    // Check for role="option" (select/combobox) OR button text (toggle buttons)
     const option = this.page.locator('[role="option"]').filter({
       hasText: new RegExp(optionText, "i"),
     });
-    await expect(option.first()).toBeVisible();
+    const button = this.page.getByRole("button", {
+      name: new RegExp(optionText, "i"),
+    });
+    await expect(option.or(button).first()).toBeVisible({ timeout: 5000 });
   },
 );
 

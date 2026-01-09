@@ -534,21 +534,39 @@ When("I click on a job in the list", async function(this: CustomWorld) {
 When("I click on the completed job", async function(this: CustomWorld) {
   // Wait for network to settle and completed job items to appear
   await this.page.waitForLoadState("networkidle").catch(() => {});
-  const jobItem = await waitForElementWithRetry(
-    this.page,
+
+  // Try multiple selectors for completed jobs
+  const completedJobByStatus = this.page.locator(
     '[data-testid="job-list-item"][data-job-status="COMPLETED"]',
-    { timeout: TIMEOUTS.LONG },
   );
-  // Click using evaluate to ensure React event handlers work correctly
-  await jobItem.first().evaluate((el) => {
-    (el as HTMLElement).click();
+  const completedJobByText = this.page.locator('[data-testid="job-list-item"]').filter({
+    has: this.page.getByText(/COMPLETED/i),
   });
-  // Wait a moment for React to process the state update
-  await this.page.waitForTimeout(100);
-  // Wait for the job selection to take effect (React state update)
-  // The Copy Link button appears when a job is selected
+
+  const jobItem = completedJobByStatus.or(completedJobByText).first();
+  await expect(jobItem).toBeVisible({ timeout: TIMEOUTS.LONG });
+
+  // Click using regular click method
+  await jobItem.click();
+
+  // Wait for React to process the state update
+  await this.page.waitForTimeout(300);
+
+  // Wait for the job selection to take effect - try multiple indicators
   const copyLinkButton = this.page.getByRole("button", { name: /copy link/i });
-  await copyLinkButton.waitFor({ state: "visible", timeout: TIMEOUTS.LONG });
+  const jobDetailsPanel = this.page.locator('[class*="overflow-y-auto"]').filter({
+    has: copyLinkButton,
+  });
+
+  try {
+    await expect(copyLinkButton.or(jobDetailsPanel).first()).toBeVisible({
+      timeout: TIMEOUTS.LONG,
+    });
+  } catch {
+    // Retry click if job details didn't appear
+    await jobItem.click();
+    await expect(copyLinkButton).toBeVisible({ timeout: TIMEOUTS.LONG });
+  }
 });
 
 When("I click on the failed job", async function(this: CustomWorld) {

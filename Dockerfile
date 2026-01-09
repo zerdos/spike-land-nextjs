@@ -123,8 +123,6 @@ RUN yarn db:generate && yarn tsc --noEmit
 FROM source AS test-source
 COPY --link vitest.config.ts vitest.setup.ts ./
 COPY --link vitest.mock-*.ts vitest.mock-*.tsx ./
-COPY --link cucumber.js ./
-COPY --link e2e ./e2e
 # Copy test caching scripts
 COPY --link scripts/vitest-coverage-mapper-reporter.ts scripts/test-cache-manager.ts scripts/run-cached-tests.sh ./scripts/
 RUN chmod +x ./scripts/run-cached-tests.sh
@@ -254,8 +252,8 @@ COPY --link --from=source /app/content ./content
 
 # Copy test files and environment
 COPY --link .env.local ./
-COPY --link --from=test-source /app/e2e ./e2e
-COPY --link --from=test-source /app/cucumber.js ./cucumber.js
+COPY --link cucumber.js ./
+COPY --link e2e ./e2e
 # Copy E2E cache scripts
 COPY --link scripts/e2e-cache-manager.ts scripts/run-cached-e2e.sh scripts/e2e-shard.sh ./scripts/
 RUN chmod +x ./scripts/run-cached-e2e.sh ./scripts/e2e-shard.sh

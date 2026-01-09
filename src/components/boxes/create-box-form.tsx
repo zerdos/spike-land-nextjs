@@ -68,6 +68,7 @@ export function CreateBoxForm({ tiers }: CreateBoxFormProps) {
             return (
               <Card
                 key={tier.id}
+                data-testid={`tier-card-${tier.name.toLowerCase()}`}
                 className={cn(
                   "cursor-pointer transition-all hover:border-primary/50 relative",
                   isSelected ? "border-primary ring-2 ring-primary/20" : "",
