@@ -177,7 +177,9 @@ export class CanvasEditorPage {
   }
 
   async getImageErrorPlaceholder() {
-    return this.page.locator('[data-testid="image-error"], .image-error');
+    return this.page.locator(
+      '[data-testid="image-error"], [data-testid="image-error-fallback"], .image-error',
+    );
   }
 
   async getRetryButton() {

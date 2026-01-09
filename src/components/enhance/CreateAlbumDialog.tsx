@@ -116,6 +116,8 @@ export function CreateAlbumDialog(
             <Label htmlFor="album-name">Album Name</Label>
             <Input
               id="album-name"
+              name="name"
+              data-testid="album-name-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={handleKeyDown}
