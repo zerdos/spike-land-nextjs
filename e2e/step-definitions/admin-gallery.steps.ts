@@ -21,7 +21,8 @@ let galleryOrder: string[] = [];
 // Given steps
 Given("the gallery is empty", async function(this: CustomWorld) {
   // Mock empty gallery response
-  await this.page.route("**/api/admin/gallery", async (route) => {
+  // Use * to match query parameters
+  await this.page.route("**/api/admin/gallery*", async (route) => {
     if (route.request().method() === "GET") {
       await route.fulfill({
         status: 200,
@@ -70,7 +71,8 @@ Given(
     ];
 
     // Mock gallery items response
-    await this.page.route("**/api/admin/gallery", async (route) => {
+    // Use **/* pattern to also match query parameters like ?id=xxx
+    await this.page.route("**/api/admin/gallery*", async (route) => {
       const method = route.request().method();
 
       if (method === "GET") {
@@ -114,7 +116,8 @@ Given(
 Given(
   "there are gallery items with different categories",
   async function(this: CustomWorld) {
-    await this.page.route("**/api/admin/gallery", async (route) => {
+    // Use * to match query parameters
+    await this.page.route("**/api/admin/gallery*", async (route) => {
       if (route.request().method() === "GET") {
         await route.fulfill({
           status: 200,
@@ -223,8 +226,9 @@ Given(
       });
     });
 
-    // Mock the main gallery API endpoint for GET and POST
-    await this.page.route("**/api/admin/gallery", async (route) => {
+    // Mock the main gallery API endpoint for GET, POST, DELETE
+    // Use * to match query parameters
+    await this.page.route("**/api/admin/gallery*", async (route) => {
       const method = route.request().method();
 
       if (method === "GET") {
@@ -325,7 +329,8 @@ Given(
     });
 
     // Mock main gallery API endpoint
-    await this.page.route("**/api/admin/gallery", async (route) => {
+    // Use * to match query parameters
+    await this.page.route("**/api/admin/gallery*", async (route) => {
       const method = route.request().method();
 
       if (method === "GET") {
@@ -365,7 +370,8 @@ Given(
 );
 
 Given("the gallery API is slow", async function(this: CustomWorld) {
-  await this.page.route("**/api/admin/gallery", async (route) => {
+  // Use * to match query parameters
+  await this.page.route("**/api/admin/gallery*", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     await route.fulfill({
       status: 200,
@@ -376,7 +382,8 @@ Given("the gallery API is slow", async function(this: CustomWorld) {
 });
 
 Given("the gallery API returns an error", async function(this: CustomWorld) {
-  await this.page.route("**/api/admin/gallery", async (route) => {
+  // Use * to match query parameters
+  await this.page.route("**/api/admin/gallery*", async (route) => {
     await route.fulfill({
       status: 500,
       contentType: "application/json",

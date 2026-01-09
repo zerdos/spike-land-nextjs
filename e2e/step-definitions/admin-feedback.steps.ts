@@ -577,16 +577,14 @@ Then(
       "table tbody tr",
       { timeout: TIMEOUTS.DEFAULT },
     );
-    // Scroll to ensure all badges are visible (table might be scrollable)
-    const table = this.page.locator("table");
-    await table.evaluate((el) => el.scrollTop = el.scrollHeight);
-    await this.page.waitForTimeout(200);
-    await table.evaluate((el) => el.scrollTop = 0);
-
-    // Find and verify the REVIEWED badge
-    const badge = this.page.locator("table tbody tr td").locator('[class*="Badge"]').filter({
+    // Wait for page to stabilize after hydration
+    await this.page.waitForLoadState("networkidle", { timeout: TIMEOUTS.DEFAULT });
+    // Find and verify the REVIEWED badge - scroll into view to ensure visibility
+    const badge = this.page.locator('[class*="Badge"]').filter({
       hasText: "REVIEWED",
     }).first();
+    // Scroll badge into view if it exists
+    await badge.scrollIntoViewIfNeeded({ timeout: TIMEOUTS.DEFAULT });
     await expect(badge).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     const className = await badge.getAttribute("class");
     expect(className).toContain("blue");
