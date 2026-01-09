@@ -49,11 +49,11 @@ function createMockGalleryImage(
   return {
     id: `image-${index}`,
     name: `Test Image ${index}`,
-    originalUrl: `https://placehold.co/600x400.png/gray/white?text=Original${index}`,
+    originalUrl: `https://placehold.co/600x400/gray/white.png?text=Original${index}`,
     enhancedUrl: hasEnhanced
-      ? `https://placehold.co/600x400.png/green/white?text=Enhanced${index}`
+      ? `https://placehold.co/600x400/green/white.png?text=Enhanced${index}`
       : null,
-    url: `https://placehold.co/600x400.png/gray/white?text=Image${index}`,
+    url: `https://placehold.co/600x400/gray/white.png?text=Image${index}`,
     width: 600,
     height: 400,
   };

@@ -14,7 +14,7 @@ import { useState } from "react";
 const sampleGalleryImage: SelectedImage = {
   type: "gallery",
   id: "sample-1",
-  url: "https://placehold.co/400x400.png/1a1a2e/ffffff?text=Sample",
+  url: "https://placehold.co/400x400/1a1a2e/ffffff.png?text=Sample",
   name: "sample-photo.jpg",
   width: 400,
   height: 400,
@@ -23,7 +23,7 @@ const sampleGalleryImage: SelectedImage = {
 const sampleUploadImage: SelectedImage = {
   type: "upload",
   id: "upload-1",
-  url: "https://placehold.co/400x400.png/2e1a2e/ffffff?text=Uploaded",
+  url: "https://placehold.co/400x400/2e1a2e/ffffff.png?text=Uploaded",
   name: "my-upload.png",
   width: 400,
   height: 400,
