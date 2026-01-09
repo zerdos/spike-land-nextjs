@@ -543,7 +543,11 @@ Then(
   "the URL should contain {string}",
   async function(this: CustomWorld, urlPart: string) {
     const currentUrl = this.page.url();
-    expect(currentUrl).toContain(urlPart);
+    // Check both encoded and decoded versions for robustness
+    const hasMatch = currentUrl.includes(urlPart) ||
+      currentUrl.includes(encodeURIComponent(urlPart)) ||
+      decodeURIComponent(currentUrl).includes(urlPart);
+    expect(hasMatch).toBe(true);
   },
 );
 

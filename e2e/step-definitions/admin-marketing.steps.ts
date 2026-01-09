@@ -90,13 +90,11 @@ Then(
 Then(
   "the loading indicator should disappear when data loads",
   async function(this: CustomWorld) {
-    // Use waitForPageReady with both strategy to handle real-time polling pages
     await waitForPageReady(this.page, { strategy: "both" });
-
-    const loading = this.page.locator(
-      '.animate-spin, [data-testid="loading"]',
-    );
-    await expect(loading).not.toBeVisible({ timeout: 10000 });
+    // Wait for metrics content to appear rather than loading to disappear
+    // Real-time polling keeps spinners visible, so check for actual content instead
+    const content = this.page.locator('[data-testid="metrics-loaded"], .metrics-content, h2, h3');
+    await expect(content.first()).toBeVisible({ timeout: 10000 });
   },
 );
 

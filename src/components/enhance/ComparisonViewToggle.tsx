@@ -34,6 +34,7 @@ export function ComparisonViewToggle({
       defaultValue={defaultMode}
       onValueChange={handleModeChange}
       className="w-full"
+      data-testid="comparison-view"
     >
       <div className="flex justify-end mb-4">
         <TabsList>

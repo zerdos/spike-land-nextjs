@@ -308,7 +308,7 @@ export default function AdminPhotosPage() {
 
         {loading
           ? (
-            <div className="p-8 text-center text-muted-foreground">
+            <div className="p-8 text-center text-muted-foreground" data-testid="loading">
               Loading...
             </div>
           )
