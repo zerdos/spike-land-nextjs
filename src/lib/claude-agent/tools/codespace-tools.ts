@@ -70,7 +70,7 @@ export function createCodespaceServer(codespaceId: string) {
         "Read the current code from the codespace. ALWAYS use this before making any changes to understand the current state.",
         {},
         async () => {
-          const result = await callMcpTool(codespaceId, "read_code", {});
+          const result = await callMcpTool(codespaceId, "read_code", { codeSpace: codespaceId });
           return { content: [{ type: "text", text: result }] };
         },
       ),
@@ -79,7 +79,10 @@ export function createCodespaceServer(codespaceId: string) {
         "Replace the ENTIRE code content of the file. Use this for major rewrites or when search_and_replace is too complex.",
         { code: z.string().describe("The full new code content for the file") },
         async (args) => {
-          const result = await callMcpTool(codespaceId, "update_code", args);
+          const result = await callMcpTool(codespaceId, "update_code", {
+            ...args,
+            codeSpace: codespaceId,
+          });
           return { content: [{ type: "text", text: result }] };
         },
       ),
@@ -96,7 +99,10 @@ export function createCodespaceServer(codespaceId: string) {
           ).describe("List of edits to apply"),
         },
         async (args) => {
-          const result = await callMcpTool(codespaceId, "edit_code", args);
+          const result = await callMcpTool(codespaceId, "edit_code", {
+            ...args,
+            codeSpace: codespaceId,
+          });
           return { content: [{ type: "text", text: result }] };
         },
       ),
@@ -109,7 +115,10 @@ export function createCodespaceServer(codespaceId: string) {
           isRegex: z.boolean().optional().describe("Whether the search pattern is a regex"),
         },
         async (args) => {
-          const result = await callMcpTool(codespaceId, "search_and_replace", args);
+          const result = await callMcpTool(codespaceId, "search_and_replace", {
+            ...args,
+            codeSpace: codespaceId,
+          });
           return { content: [{ type: "text", text: result }] };
         },
       ),
@@ -118,7 +127,10 @@ export function createCodespaceServer(codespaceId: string) {
         "Find line numbers matching a pattern. Use this to locate code before using edit_code.",
         { search: z.string().describe("The string pattern to search for") },
         async (args) => {
-          const result = await callMcpTool(codespaceId, "find_lines", args);
+          const result = await callMcpTool(codespaceId, "find_lines", {
+            ...args,
+            codeSpace: codespaceId,
+          });
           return { content: [{ type: "text", text: result }] };
         },
       ),
