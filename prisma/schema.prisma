@@ -63,6 +63,8 @@ model User {
   createdBrandProfiles BrandProfile[]        @relation("BrandProfileCreator")
   updatedBrandProfiles BrandProfile[]        @relation("BrandProfileUpdater")
   contentRewrites      ContentRewrite[]
+  // Calendar scheduled posts
+  scheduledPosts       ScheduledPost[]
 
   @@map("users")
 }
@@ -1628,9 +1630,10 @@ model SocialAccount {
   updatedAt DateTime @updatedAt
 
   // Relations
-  metrics      SocialMetrics[]
-  postAccounts SocialPostAccount[]
-  anomalies    SocialMetricAnomaly[]
+  metrics               SocialMetrics[]
+  postAccounts          SocialPostAccount[]
+  anomalies             SocialMetricAnomaly[]
+  scheduledPostAccounts ScheduledPostAccount[]
 
   @@unique([workspaceId, platform, accountId])
   @@index([userId])
@@ -1839,6 +1842,7 @@ model Workspace {
   brandProfile    BrandProfile?
   contentRewrites ContentRewrite[]
   socialAccounts  SocialAccount[]
+  scheduledPosts  ScheduledPost[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -1973,4 +1977,83 @@ model ContentRewrite {
   @@index([status])
   @@index([createdAt])
   @@map("content_rewrites")
+}
+
+// =============================================================================
+// Calendar / Scheduled Posts Models
+// Resolves #571 - Create Calendar data model
+// =============================================================================
+
+enum ScheduledPostStatus {
+  DRAFT // Post is being composed
+  PENDING // Waiting for scheduled time
+  SCHEDULED // Confirmed and queued for publishing
+  PUBLISHING // Currently being published
+  PUBLISHED // Successfully published
+  FAILED // Publishing failed
+  CANCELLED // User cancelled the scheduled post
+}
+
+/// Scheduled posts for the Calendar feature
+/// Supports multi-platform cross-posting and recurrence
+model ScheduledPost {
+  id               String              @id @default(cuid())
+  content          String              @db.Text
+  scheduledAt      DateTime
+  timezone         String              @default("UTC")
+  recurrenceRule   String? // RRULE format (RFC 5545) for repeating posts
+  recurrenceEndAt  DateTime? // When recurrence ends (if recurring)
+  status           ScheduledPostStatus @default(DRAFT)
+  metadata         Json? // Media URLs, link previews, etc.
+  publishedAt      DateTime?
+  errorMessage     String?
+  retryCount       Int                 @default(0)
+  maxRetries       Int                 @default(3)
+  lastAttemptAt    DateTime?
+  nextOccurrenceAt DateTime? // For recurring posts, when the next occurrence is
+
+  // Workspace ownership
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // User who created the post
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations (many-to-many with accounts via join table)
+  postAccounts ScheduledPostAccount[]
+
+  @@index([workspaceId])
+  @@index([workspaceId, scheduledAt])
+  @@index([workspaceId, status])
+  @@index([createdById])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([nextOccurrenceAt])
+  @@map("scheduled_posts")
+}
+
+/// Join table for cross-posting scheduled posts to multiple social accounts
+model ScheduledPostAccount {
+  id        String                @id @default(cuid())
+  postId    String
+  post      ScheduledPost         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  accountId String
+  account   SocialAccount         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  // Platform-specific post ID after publishing
+  platformPostId String?
+  publishedAt    DateTime?
+  status         ScheduledPostStatus @default(DRAFT)
+  errorMessage   String?
+
+  @@unique([postId, accountId])
+  @@index([postId])
+  @@index([accountId])
+  @@index([status])
+  @@map("scheduled_post_accounts")
 }
