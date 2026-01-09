@@ -208,7 +208,7 @@ Then(
     // For marketing page, use retry pattern for metric cards with long timeout
     const metricCard = await waitForElementWithRetry(
       this.page,
-      `[data-testid*="metric"], [class*="metric"], .stat`,
+      `[data-testid="metric-card"]`,
       { timeout: TIMEOUTS.LONG },
     );
 
@@ -219,7 +219,7 @@ Then(
     // Wait for dynamic content to load (numeric values)
     await waitForDynamicContent(
       this.page,
-      `[data-testid*="metric"], [class*="metric"], .stat`,
+      `[data-testid="metric-card"]`,
       /\d+/,
       { timeout: TIMEOUTS.LONG },
     ).catch(() => {
