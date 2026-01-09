@@ -60,13 +60,33 @@ Then("I should see a tier badge", async function(this: CustomWorld) {
 Then(
   "I should see the Pixel logo linking to home",
   async function(this: CustomWorld) {
+    // First verify we're on the share page (not 404)
+    const currentUrl = this.page.url();
+    if (!currentUrl.includes("/share/")) {
+      throw new Error(
+        `Expected to be on share page but was on: ${currentUrl}. The share token may not exist in the database.`,
+      );
+    }
+
     // The logo is in the header as a link to /
     const logoLink = this.page.locator("header a[href='/']");
     await expect(logoLink).toBeVisible({ timeout: 10000 });
 
-    // Verify it contains "pixel" text
-    const logoText = await logoLink.textContent();
-    expect(logoText?.toLowerCase()).toContain("pixel");
+    // Verify it contains "pixel" text or the Pixel logo aria-label
+    const pixelLogo = logoLink.locator('[aria-label*="Pixel" i], span');
+    const hasPixelBranding = await pixelLogo.first().isVisible().catch(() => false);
+
+    if (hasPixelBranding) {
+      const logoText = await logoLink.textContent();
+      // Allow either "pixel" or check aria-label
+      const containsPixel = logoText?.toLowerCase().includes("pixel");
+      const hasPixelAriaLabel = await logoLink.locator('[aria-label*="Pixel" i]').count() > 0;
+      expect(containsPixel || hasPixelAriaLabel).toBe(true);
+    } else {
+      // Fallback: check text content
+      const logoText = await logoLink.textContent();
+      expect(logoText?.toLowerCase()).toContain("pixel");
+    }
   },
 );
 

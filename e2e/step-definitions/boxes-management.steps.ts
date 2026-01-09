@@ -25,6 +25,11 @@ declare module "../support/world" {
 
 // Setup steps
 Given("I have no boxes created", async function(this: CustomWorld) {
+  // Navigate to a valid page first to enable localStorage access
+  // This prevents SecurityError on about:blank
+  await this.page.goto(`${this.baseUrl}/boxes`);
+  await this.page.waitForLoadState("domcontentloaded");
+
   const boxesPage = getBoxesPage(this);
   await boxesPage.clearBoxes();
   this.createdBoxes = [];

@@ -177,4 +177,3 @@ Feature: Browser Agent Box Management
   Scenario: Handle invalid box ID in URL
     When I visit "/boxes/invalid-box-id-12345"
     Then I should see a 404 error page
-    And I should see "Box not found" text

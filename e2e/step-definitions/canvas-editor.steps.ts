@@ -8,7 +8,7 @@ import type { CustomWorld } from "../support/world";
 const E2E_TEST_ALBUMS = {
   unlisted: {
     id: "e2e-unlisted-album",
-    shareToken: "e2e-share-token-123",
+    shareToken: "e2e-album-share-token-456",
   },
   private: {
     id: "e2e-private-album",

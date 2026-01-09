@@ -10,7 +10,7 @@ Feature: Album Management
   # Album Creation Tests
   Scenario: Create a new album with name only
     When I navigate to "/albums" page
-    And I click "Create Album" button
+    And I click "New Album" button
     And I enter "Summer Vacation" as the album name
     And I confirm album creation
     Then I should see the new album "Summer Vacation" in my albums list
@@ -18,7 +18,7 @@ Feature: Album Management
 
   Scenario: Create album with name and description
     When I navigate to "/albums" page
-    And I click "Create Album" button
+    And I click "New Album" button
     And I enter "Summer Vacation" as the album name
     And I enter "Photos from our trip to California" as the album description
     And I confirm album creation
@@ -27,7 +27,7 @@ Feature: Album Management
 
   Scenario: Cannot create album with empty name
     When I navigate to "/albums" page
-    And I click "Create Album" button
+    And I click "New Album" button
     And I leave the album name empty
     And I confirm album creation
     Then I should see a validation error for album name
@@ -35,7 +35,7 @@ Feature: Album Management
 
   Scenario: Cannot create album with name exceeding 100 characters
     When I navigate to "/albums" page
-    And I click "Create Album" button
+    And I click "New Album" button
     And I enter a name longer than 100 characters
     And I confirm album creation
     Then I should see a validation error for album name length
@@ -143,7 +143,7 @@ Feature: Album Management
     Given I have an album named "My Album"
     And I have 3 enhanced images not in any album
     When I navigate to the album
-    And I click "Add Images" button
+    And I click "Upload" button
     And I select 1 image from my library
     And I confirm the selection
     Then the album should show 1 image
@@ -153,7 +153,7 @@ Feature: Album Management
     Given I have an album named "My Album"
     And I have 5 enhanced images not in any album
     When I navigate to the album
-    And I click "Add Images" button
+    And I click "Upload" button
     And I select 3 images from my library
     And I confirm the selection
     Then the album should show 3 images
@@ -161,7 +161,7 @@ Feature: Album Management
   Scenario: Cannot add same image to album twice
     Given I have an album named "My Album" with 1 image
     When I navigate to the album
-    And I click "Add Images" button
+    And I click "Upload" button
     And I select the image that is already in the album
     And I confirm the selection
     Then I should see an info message about duplicate image
@@ -181,7 +181,7 @@ Feature: Album Management
     Given I have an album named "Empty Album"
     When I navigate to the album
     Then I should see empty state message
-    And I should see "Add Images" button
+    And I should see "Upload Images" button
 
   Scenario: View album displays all images
     Given I have an album named "My Album" with 5 images

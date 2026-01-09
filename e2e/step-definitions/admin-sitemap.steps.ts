@@ -400,12 +400,62 @@ Then("the hidden count should increase", async function(this: CustomWorld) {
 });
 
 Then("hidden routes should not be visible", async function(this: CustomWorld) {
-  // Hidden routes are filtered out by default
   await this.page.waitForLoadState("networkidle");
+
+  // Wait for cards to load
+  await waitForElementWithRetry(
+    this.page,
+    '[class*="Card"]',
+    { timeout: TIMEOUTS.LONG, state: "visible" },
+  );
+
+  // Hidden routes should NOT be visible in the grid by default
+  // Cards with "Hidden" badge are filtered out when showHidden is false
+  const hiddenBadges = this.page.locator('[class*="Card"]').locator(
+    '[class*="Badge"]:has-text("Hidden")',
+  );
+
+  // There should be no cards with "Hidden" badge visible
+  // (because hidden cards are filtered out of the grid by default)
+  const hiddenBadgeCount = await hiddenBadges.count();
+  expect(hiddenBadgeCount).toBe(0);
+
+  // Also verify the stats badge shows there ARE hidden routes (just not visible)
+  const statsText = this.page.locator('[class*="Badge"]').filter({
+    hasText: /\d+ visible \/ \d+ hidden/,
+  });
+  await expect(statsText).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then("hidden routes should become visible", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");
+
+  // Wait for cards to load
+  await waitForElementWithRetry(
+    this.page,
+    '[class*="Card"]',
+    { timeout: TIMEOUTS.LONG, state: "visible" },
+  );
+
+  // After clicking "Show Hidden Paths", hidden routes should now be visible
+  // Look for cards with the "Hidden" badge and opacity-50 class
+  const hiddenCards = this.page.locator('[class*="Card"]').filter({
+    has: this.page.locator('[class*="Badge"]:has-text("Hidden")'),
+  });
+
+  // There should be at least one hidden card visible now
+  const hiddenCardCount = await hiddenCards.count();
+  expect(hiddenCardCount).toBeGreaterThan(0);
+
+  // Verify the first hidden card is actually visible and has the expected styling
+  await expect(hiddenCards.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+  // Verify hidden cards have reduced opacity (opacity-50 class)
+  const cardWithOpacity = this.page.locator(
+    '[class*="Card"][class*="opacity-50"]',
+  );
+  const opacityCount = await cardWithOpacity.count();
+  expect(opacityCount).toBeGreaterThan(0);
 });
 
 Then(
