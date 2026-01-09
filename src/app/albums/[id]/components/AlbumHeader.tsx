@@ -120,7 +120,13 @@ export const AlbumHeader = memo(function AlbumHeader({
               : <Upload className="mr-2 h-4 w-4" />}
             {isUploading ? "Uploading..." : "Upload"}
           </Button>
-          <Button variant="outline" size="icon" onClick={onShowSettings}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onShowSettings}
+            aria-label="Album settings"
+            data-testid="album-settings-button"
+          >
             <Settings className="h-4 w-4" />
           </Button>
         </div>

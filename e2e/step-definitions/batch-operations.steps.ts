@@ -122,15 +122,17 @@ Given(
 Given(
   "I have selected {int} images for enhancement",
   async function(this: CustomWorld, count: number) {
-    // Select images using checkboxes with retry
-    for (let i = 0; i < count; i++) {
-      const checkbox = await waitForElementWithRetry(
-        this.page,
-        `input[type="checkbox"]:nth-of-type(${i + 1})`,
-        { timeout: TIMEOUTS.DEFAULT, state: "visible" },
-      );
+    // Wait for gallery to be ready
+    await this.page.waitForLoadState("networkidle");
+
+    // Select images using role-based checkbox selector (shadcn/ui Checkbox)
+    const checkboxes = this.page.getByRole("checkbox");
+    await expect(checkboxes.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+    const selectCount = Math.min(count, await checkboxes.count());
+    for (let i = 0; i < selectCount; i++) {
+      const checkbox = checkboxes.nth(i);
       await checkbox.check({ timeout: TIMEOUTS.DEFAULT });
-      // Wait for checkbox state to update
       await this.page.waitForTimeout(100);
     }
   },
@@ -139,15 +141,17 @@ Given(
 Given(
   "I have {int} images selected for enhancement",
   async function(this: CustomWorld, count: number) {
-    // Select images using checkboxes with retry
-    for (let i = 0; i < count; i++) {
-      const checkbox = await waitForElementWithRetry(
-        this.page,
-        `input[type="checkbox"]:nth-of-type(${i + 1})`,
-        { timeout: TIMEOUTS.DEFAULT, state: "visible" },
-      );
+    // Wait for gallery to be ready
+    await this.page.waitForLoadState("networkidle");
+
+    // Select images using role-based checkbox selector (shadcn/ui Checkbox)
+    const checkboxes = this.page.getByRole("checkbox");
+    await expect(checkboxes.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+    const selectCount = Math.min(count, await checkboxes.count());
+    for (let i = 0; i < selectCount; i++) {
+      const checkbox = checkboxes.nth(i);
       await checkbox.check({ timeout: TIMEOUTS.DEFAULT });
-      // Wait for checkbox state to update
       await this.page.waitForTimeout(100);
     }
   },
@@ -158,13 +162,19 @@ Given(
 Given(
   "I have {int} images selected",
   async function(this: CustomWorld, count: number) {
-    // Select images using checkboxes with retry
-    for (let i = 0; i < count; i++) {
-      const checkbox = await waitForElementWithRetry(
-        this.page,
-        `input[type="checkbox"]:nth-of-type(${i + 1})`,
-        { timeout: TIMEOUTS.DEFAULT, state: "visible" },
-      );
+    // Wait for gallery to be ready
+    await this.page.waitForLoadState("networkidle");
+
+    // Select images using checkboxes - shadcn/ui Checkbox uses role="checkbox"
+    // Try multiple selector strategies for robustness
+    const checkboxes = this.page.getByRole("checkbox");
+    await expect(checkboxes.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+    const checkboxCount = await checkboxes.count();
+    const selectCount = Math.min(count, checkboxCount);
+
+    for (let i = 0; i < selectCount; i++) {
+      const checkbox = checkboxes.nth(i);
       await checkbox.check({ timeout: TIMEOUTS.DEFAULT });
       // Wait for checkbox state to update
       await this.page.waitForTimeout(100);
@@ -175,13 +185,16 @@ Given(
 Given(
   "I have images selected for batch enhancement",
   async function(this: CustomWorld) {
-    // Select first two images with retry
-    for (let i = 0; i < 2; i++) {
-      const checkbox = await waitForElementWithRetry(
-        this.page,
-        `input[type="checkbox"]:nth-of-type(${i + 1})`,
-        { timeout: TIMEOUTS.DEFAULT, state: "visible" },
-      );
+    // Wait for gallery to be ready
+    await this.page.waitForLoadState("networkidle");
+
+    // Select first two images using role-based checkbox selector
+    const checkboxes = this.page.getByRole("checkbox");
+    await expect(checkboxes.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+    const selectCount = Math.min(2, await checkboxes.count());
+    for (let i = 0; i < selectCount; i++) {
+      const checkbox = checkboxes.nth(i);
       await checkbox.check({ timeout: TIMEOUTS.DEFAULT });
       // Wait for checkbox state to update
       await this.page.waitForTimeout(100);

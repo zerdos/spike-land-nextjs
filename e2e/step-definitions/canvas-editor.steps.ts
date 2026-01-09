@@ -59,7 +59,9 @@ Given(
 
 Given("I am using a touch device", async function(this: CustomWorld) {
   this.isTouchDevice = true;
-  // Configure viewport for touch device
+  // Reinitialize context with touch support for tap/swipe/pinch gestures
+  await this.initWithTouch();
+  // Adjust viewport to match iPhone X dimensions
   await this.page.setViewportSize({ width: 375, height: 812 });
 });
 

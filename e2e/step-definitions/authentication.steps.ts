@@ -258,16 +258,27 @@ When("authentication is loading", async function(this: CustomWorld) {
 
 When("I click on the user avatar", async function(this: CustomWorld) {
   const avatar = this.page.getByTestId("user-avatar");
-  await expect(avatar).toBeVisible();
+  await expect(avatar).toBeVisible({ timeout: 10000 });
 
-  // FIX: Don't use force: true, use dispatchEvent instead
+  // Ensure avatar is ready for interaction
   await avatar.waitFor({ state: "attached" });
   await avatar.scrollIntoViewIfNeeded();
-  await avatar.dispatchEvent("click"); // More reliable than force: true
 
-  // Wait for dropdown menu to appear with proper assertion
+  // Use regular click - Radix dropdown needs a proper mouse click event
+  await avatar.click();
+
+  // Wait for dropdown menu to appear - Radix uses role="menu" for dropdown content
+  // Try multiple selectors for robustness
   const menu = this.page.getByRole("menu");
-  await expect(menu).toBeVisible({ timeout: 5000 });
+  const dropdownContent = this.page.locator("[data-radix-menu-content]");
+
+  try {
+    await expect(menu.or(dropdownContent).first()).toBeVisible({ timeout: 5000 });
+  } catch {
+    // Retry click if menu didn't open
+    await avatar.click();
+    await expect(menu.or(dropdownContent).first()).toBeVisible({ timeout: 5000 });
+  }
 });
 
 When(

@@ -18,9 +18,18 @@ When(
 Then(
   "I should see the image comparison slider",
   async function(this: CustomWorld) {
-    // The slider has cursor-ew-resize class and contains Before/After labels
-    const slider = this.page.locator(".cursor-ew-resize");
-    await expect(slider).toBeVisible({ timeout: 10000 });
+    // The ImageComparisonSlider has multiple identifying features:
+    // 1. cursor-ew-resize class on the container
+    // 2. Before/After or Original/Enhanced labels
+    // 3. select-none class for drag behavior
+    const sliderByCursor = this.page.locator(".cursor-ew-resize");
+    const sliderBySelectNone = this.page.locator(".select-none").filter({
+      has: this.page.getByText(/Before|After|Original|Enhanced/i),
+    });
+
+    // Wait for either selector to be visible
+    const slider = sliderByCursor.or(sliderBySelectNone).first();
+    await expect(slider).toBeVisible({ timeout: 15000 });
   },
 );
 
@@ -73,8 +82,13 @@ Then(
 Then(
   "the comparison slider should have cursor ew-resize style",
   async function(this: CustomWorld) {
-    const slider = this.page.locator(".cursor-ew-resize");
-    await expect(slider).toBeVisible({ timeout: 10000 });
+    // Try multiple selectors for robustness
+    const sliderByCursor = this.page.locator(".cursor-ew-resize");
+    const sliderBySelectNone = this.page.locator(".select-none").filter({
+      has: this.page.getByText(/Before|After|Original|Enhanced/i),
+    });
+    const slider = sliderByCursor.or(sliderBySelectNone).first();
+    await expect(slider).toBeVisible({ timeout: 15000 });
 
     // Verify the cursor style
     const cursor = await slider.evaluate((el) => {

@@ -190,13 +190,8 @@ Given(
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return;
 
-    // Set viewport and user agent for touch device
-    await this.page.setViewportSize({ width: 375, height: 667 });
-    await this.context.addInitScript(() => {
-      Object.defineProperty(navigator, "maxTouchPoints", {
-        get: () => 5,
-      });
-    });
+    // Reinitialize context with touch support for tap/swipe gestures
+    await this.initWithTouch();
 
     await this.page.goto(
       `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`,
@@ -498,13 +493,8 @@ Given(
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return;
 
-    // Set up touch device
-    await this.page.setViewportSize({ width: 375, height: 667 });
-    await this.context.addInitScript(() => {
-      Object.defineProperty(navigator, "maxTouchPoints", {
-        get: () => 5,
-      });
-    });
+    // Reinitialize context with touch support for tap/swipe gestures
+    await this.initWithTouch();
 
     await this.page.goto(
       `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`,
@@ -530,12 +520,8 @@ Given(
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return;
 
-    await this.page.setViewportSize({ width: 375, height: 667 });
-    await this.context.addInitScript(() => {
-      Object.defineProperty(navigator, "maxTouchPoints", {
-        get: () => 5,
-      });
-    });
+    // Reinitialize context with touch support for tap/swipe gestures
+    await this.initWithTouch();
 
     await this.page.goto(
       `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`,
