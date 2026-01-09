@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { enqueueMessage } from "@/lib/upstash";
 import { appMessageCreateSchema } from "@/lib/validations/app";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -280,8 +279,7 @@ export async function POST(
     broadcastStatus(id, "WAITING", "User submitted initial prompt");
   }
 
-  // Enqueue message for agent processing
-  await tryCatch(enqueueMessage(id, message.id));
+  // Enqueue message removed - Agent processing is now handled by the chat stream endpoint
 
   return NextResponse.json(message, { status: 201 });
 }
