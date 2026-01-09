@@ -256,10 +256,19 @@ Given(
     try {
       await expect(grid).toBeVisible({ timeout: 15000 });
     } catch {
+      // Diagnose what state the page is in
       const url = this.page.url();
-      throw new Error(
-        `Smart grid not visible after 15s with auto-cycle interval. URL: ${url}`,
-      );
+      const emptyState = await this.page.locator('[data-testid="canvas-empty"]').isVisible();
+      const notFound = await this.page.getByText(/not found|404/i).isVisible();
+      const pageContent = await this.page.content();
+      const hasError = pageContent.includes("error") || pageContent.includes("Error");
+
+      let diagnosis = `Smart grid not visible after 15s with auto-cycle interval. URL: ${url}`;
+      if (emptyState) diagnosis += " (empty state - album has no images)";
+      if (notFound) diagnosis += " (404 - album not found or invalid token)";
+      if (hasError) diagnosis += " (page may have errors)";
+
+      throw new Error(diagnosis);
     }
   },
 );
@@ -288,11 +297,19 @@ Given(
     try {
       await expect(grid).toBeVisible({ timeout: 15000 });
     } catch {
-      // Capture URL for debugging
+      // Diagnose what state the page is in
       const url = this.page.url();
-      throw new Error(
-        `Smart grid not visible after 15s with rotation ${degrees}. URL: ${url}`,
-      );
+      const emptyState = await this.page.locator('[data-testid="canvas-empty"]').isVisible();
+      const notFound = await this.page.getByText(/not found|404/i).isVisible();
+      const pageContent = await this.page.content();
+      const hasError = pageContent.includes("error") || pageContent.includes("Error");
+
+      let diagnosis = `Smart grid not visible after 15s with rotation ${degrees}. URL: ${url}`;
+      if (emptyState) diagnosis += " (empty state - album has no images)";
+      if (notFound) diagnosis += " (404 - album not found or invalid token)";
+      if (hasError) diagnosis += " (page may have errors)";
+
+      throw new Error(diagnosis);
     }
   },
 );
@@ -544,8 +561,19 @@ Given("I am in slideshow mode", async function(this: CustomWorld) {
   try {
     await expect(grid).toBeVisible({ timeout: 15000 });
   } catch {
+    // Diagnose what state the page is in
     const url = this.page.url();
-    throw new Error(`Smart grid not visible after 15s. URL: ${url}`);
+    const emptyState = await this.page.locator('[data-testid="canvas-empty"]').isVisible();
+    const notFound = await this.page.getByText(/not found|404/i).isVisible();
+    const pageContent = await this.page.content();
+    const hasError = pageContent.includes("error") || pageContent.includes("Error");
+
+    let diagnosis = `Smart grid not visible after 15s. URL: ${url}`;
+    if (emptyState) diagnosis += " (empty state - album has no images)";
+    if (notFound) diagnosis += " (404 - album not found or invalid token)";
+    if (hasError) diagnosis += " (page may have errors)";
+
+    throw new Error(diagnosis);
   }
 
   // Select first image

@@ -31,8 +31,9 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import dotenv from "dotenv";
 
 // Load environment variables
-dotenv.config({ path: ".env.local" });
-dotenv.config({ path: ".env" });
+// Use quiet: true to suppress verbose logging
+dotenv.config({ path: ".env.local", quiet: true });
+dotenv.config({ path: ".env", quiet: true });
 
 import { type AppBuildStatus, PrismaClient } from "@prisma/client";
 import { Redis } from "@upstash/redis";
