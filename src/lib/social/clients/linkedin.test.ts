@@ -201,6 +201,81 @@ describe("LinkedInClient", () => {
       );
     });
 
+    it("should create an image post with mediaIds", async () => {
+      const mockPostResponse = {
+        id: "urn:li:share:67890",
+      };
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockPostResponse,
+      });
+
+      const client = new LinkedInClient({
+        accessToken: "test_token",
+        organizationUrn: "urn:li:organization:12345",
+      });
+
+      const result = await client.createPost("Post with image", {
+        mediaIds: ["urn:li:digitalmediaAsset:C4D22ABC123"],
+      });
+
+      expect(result.platformPostId).toBe("urn:li:share:67890");
+
+      // Verify the request body contained IMAGE category
+      const fetchMock = global.fetch as ReturnType<typeof vi.fn>;
+      const fetchCall = fetchMock.mock.calls[0] as [string, RequestInit];
+      expect(fetchCall).toBeDefined();
+      const requestBody = JSON.parse(fetchCall[1].body as string);
+      expect(
+        requestBody.specificContent["com.linkedin.ugc.ShareContent"]
+          .shareMediaCategory,
+      ).toBe("IMAGE");
+      expect(
+        requestBody.specificContent["com.linkedin.ugc.ShareContent"].media,
+      ).toHaveLength(1);
+      expect(
+        requestBody.specificContent["com.linkedin.ugc.ShareContent"].media[0]
+          .media,
+      ).toBe("urn:li:digitalmediaAsset:C4D22ABC123");
+    });
+
+    it("should create an article post with link", async () => {
+      const mockPostResponse = {
+        id: "urn:li:share:99999",
+      };
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockPostResponse,
+      });
+
+      const client = new LinkedInClient({
+        accessToken: "test_token",
+        organizationUrn: "urn:li:organization:12345",
+      });
+
+      const result = await client.createPost("Check out this article", {
+        metadata: { link: "https://example.com/article" },
+      });
+
+      expect(result.platformPostId).toBe("urn:li:share:99999");
+
+      // Verify the request body contained ARTICLE category
+      const fetchMock = global.fetch as ReturnType<typeof vi.fn>;
+      const fetchCall = fetchMock.mock.calls[0] as [string, RequestInit];
+      expect(fetchCall).toBeDefined();
+      const requestBody = JSON.parse(fetchCall[1].body as string);
+      expect(
+        requestBody.specificContent["com.linkedin.ugc.ShareContent"]
+          .shareMediaCategory,
+      ).toBe("ARTICLE");
+      expect(
+        requestBody.specificContent["com.linkedin.ugc.ShareContent"].media[0]
+          .originalUrl,
+      ).toBe("https://example.com/article");
+    });
+
     it("should throw error when organization URN is missing", async () => {
       const client = new LinkedInClient({
         accessToken: "test_token",
@@ -209,6 +284,85 @@ describe("LinkedInClient", () => {
       await expect(
         client.createPost("Test"),
       ).rejects.toThrow("Organization URN is required");
+    });
+  });
+
+  describe("uploadImage", () => {
+    it("should register and upload an image successfully", async () => {
+      const mockRegisterResponse = {
+        value: {
+          uploadMechanism: {
+            "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest": {
+              uploadUrl: "https://api.linkedin.com/mediaUpload/xxx",
+              headers: { "X-Custom-Header": "value" },
+            },
+          },
+          asset: "urn:li:digitalmediaAsset:C4D22ABC123",
+        },
+      };
+
+      (global.fetch as ReturnType<typeof vi.fn>)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => mockRegisterResponse,
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+        });
+
+      const client = new LinkedInClient({
+        accessToken: "test_token",
+        organizationUrn: "urn:li:organization:12345",
+      });
+
+      const imageBuffer = new TextEncoder().encode("fake-image-data");
+      const assetUrn = await client.uploadImage(imageBuffer, "image/jpeg");
+
+      expect(assetUrn).toBe("urn:li:digitalmediaAsset:C4D22ABC123");
+
+      // Verify register upload was called
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/assets?action=registerUpload"),
+        expect.objectContaining({
+          method: "POST",
+        }),
+      );
+
+      // Verify binary upload was called
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.linkedin.com/mediaUpload/xxx",
+        expect.objectContaining({
+          method: "PUT",
+          body: expect.any(Blob),
+        }),
+      );
+    });
+
+    it("should throw error when organization URN is missing", async () => {
+      const client = new LinkedInClient({
+        accessToken: "test_token",
+      });
+
+      await expect(
+        client.uploadImage(new TextEncoder().encode("test")),
+      ).rejects.toThrow("Organization URN is required");
+    });
+
+    it("should throw error on failed upload registration", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: false,
+        statusText: "Bad Request",
+        json: async () => ({ message: "Invalid request" }),
+      });
+
+      const client = new LinkedInClient({
+        accessToken: "test_token",
+        organizationUrn: "urn:li:organization:12345",
+      });
+
+      await expect(
+        client.uploadImage(new TextEncoder().encode("test")),
+      ).rejects.toThrow("Failed to register LinkedIn image upload");
     });
   });
 
