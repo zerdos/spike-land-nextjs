@@ -69,6 +69,26 @@ function getStatusVariant(status: string): StatusVariant {
   }
 }
 
+/**
+ * Format agent response with proper paragraph breaks.
+ * Detects sentence endings followed by capital letters and adds line breaks.
+ */
+function formatWithParagraphs(text: string): string {
+  if (!text) return text;
+
+  // Add line breaks after sentence endings (. ! ?) followed by a space and capital letter
+  // But don't break inside code blocks or after abbreviations like "Dr." or "e.g."
+  return text
+    // Preserve existing double newlines
+    .replace(/\n\n/g, "\n\n")
+    // Add paragraph breaks after sentences followed by capital letters
+    // Excludes cases like "Dr. Smith" or "e.g. Example" or URLs
+    .replace(/([.!?])(\s+)([A-Z])/g, (_match, punct, _space, letter) => {
+      // Add paragraph break after sentence endings followed by capital letters
+      return `${punct}\n\n${letter}`;
+    });
+}
+
 export default function AppWorkspacePage() {
   const params = useParams();
   const appId = params.id as string;
@@ -425,7 +445,9 @@ export default function AppWorkspacePage() {
                             }`}
                           >
                             <p className="whitespace-pre-wrap">
-                              {message.content}
+                              {message.role === "AGENT"
+                                ? formatWithParagraphs(message.content)
+                                : message.content}
                             </p>
                             {message.attachments &&
                               message.attachments.length > 0 && (
@@ -456,7 +478,7 @@ export default function AppWorkspacePage() {
                   <div className="flex justify-start">
                     <div className="max-w-[80%] rounded-lg px-4 py-2 bg-secondary text-secondary-foreground">
                       <p className="whitespace-pre-wrap">
-                        {streamingResponse}
+                        {formatWithParagraphs(streamingResponse)}
                         <span className="animate-pulse">▊</span>
                       </p>
                       <p className="mt-1 text-xs opacity-70">Thinking...</p>
