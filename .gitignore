@@ -11,6 +11,8 @@
 !.yarn/releases
 !.yarn/versions
 
+spike_land/
+
 # testing
 /coverage
 /e2e/reports
