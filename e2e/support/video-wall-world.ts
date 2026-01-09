@@ -1,8 +1,9 @@
 import type { IWorldOptions } from "@cucumber/cucumber";
-import { setWorldConstructor, World } from "@cucumber/cucumber";
-import type { Browser, BrowserContext, Page } from "@playwright/test";
+import { setWorldConstructor } from "@cucumber/cucumber";
+import type { BrowserContext, Page } from "@playwright/test";
 import { chromium } from "@playwright/test";
 import { startCoverage, stopCoverage } from "./helpers/coverage-helper";
+import { CustomWorld } from "./world";
 
 export interface ClientContext {
   context: BrowserContext;
@@ -11,33 +12,29 @@ export interface ClientContext {
   name?: string;
 }
 
-export class VideoWallWorld extends World {
-  browser!: Browser;
+export class VideoWallWorld extends CustomWorld {
   displayContext!: BrowserContext;
   displayPage!: Page;
-  get page() {
+  override get page() {
     return this.displayPage;
   }
-  set page(p: Page) {
+  override set page(p: Page) {
     this.displayPage = p;
   }
-  get context() {
+  override get context() {
     return this.displayContext;
   }
-  set context(c: BrowserContext) {
+  override set context(c: BrowserContext) {
     this.displayContext = c;
   }
   clientContexts: Map<string, ClientContext> = new Map();
-  baseUrl: string;
   displayId?: string;
 
   constructor(options: IWorldOptions) {
     super(options);
-    // Use deployed URL in CI, localhost for local development
-    this.baseUrl = process.env.BASE_URL || "http://localhost:3000";
   }
 
-  async init() {
+  override async init() {
     // Docker/CI environment needs additional Chromium flags for stability
     const isCI = process.env.CI === "true";
     this.browser = await chromium.launch({
@@ -64,23 +61,10 @@ export class VideoWallWorld extends World {
         : [],
     });
 
-    // Prepare extra HTTP headers for E2E test authentication bypass
-    const extraHTTPHeaders: Record<string, string> = {};
-
-    // Add E2E bypass header if secret is configured
-    // Sanitize the value to remove any newlines or whitespace that could cause
-    // "Invalid header value" errors in Chromium
-    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET?.trim().replace(/[\r\n]/g, "");
-    if (e2eBypassSecret) {
-      extraHTTPHeaders["x-e2e-auth-bypass"] = e2eBypassSecret;
-    }
-
     this.displayContext = await this.browser.newContext({
       baseURL: this.baseUrl,
       permissions: ["camera", "microphone"],
-      extraHTTPHeaders: Object.keys(extraHTTPHeaders).length > 0
-        ? extraHTTPHeaders
-        : undefined,
+      extraHTTPHeaders: this.getExtraHTTPHeaders(),
     });
     this.displayPage = await this.displayContext.newPage();
 
@@ -98,19 +82,10 @@ export class VideoWallWorld extends World {
     clientId: string,
     name?: string,
   ): Promise<ClientContext> {
-    // Prepare extra HTTP headers for E2E test authentication bypass
-    const extraHTTPHeaders: Record<string, string> = {};
-    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET?.trim().replace(/[\r\n]/g, "");
-    if (e2eBypassSecret) {
-      extraHTTPHeaders["x-e2e-auth-bypass"] = e2eBypassSecret;
-    }
-
     const context = await this.browser.newContext({
       baseURL: this.baseUrl,
       permissions: ["camera", "microphone"],
-      extraHTTPHeaders: Object.keys(extraHTTPHeaders).length > 0
-        ? extraHTTPHeaders
-        : undefined,
+      extraHTTPHeaders: this.getExtraHTTPHeaders(),
       // Note: 'display-capture' is not a valid Playwright permission
       // Screen sharing will be mocked via mockMediaDevices instead
     });
@@ -425,7 +400,7 @@ export class VideoWallWorld extends World {
     this.clientContexts.clear();
   }
 
-  async destroy() {
+  override async destroy() {
     // Stop coverage collection on all pages before closing
     if (this.displayPage) {
       await stopCoverage(this.displayPage);
