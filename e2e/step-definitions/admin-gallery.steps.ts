@@ -887,6 +887,15 @@ Then("the gallery item should be removed", async function(this: CustomWorld) {
 Then(
   "the gallery item count should decrease by 1",
   async function(this: CustomWorld) {
+    // Wait for the item count to decrease (UI may take time to re-render)
+    await this.page.waitForFunction(
+      (expectedMax: number) => {
+        const cards = document.querySelectorAll(".Card");
+        return cards.length < expectedMax;
+      },
+      galleryItemCount,
+      { timeout: TIMEOUTS.DEFAULT },
+    );
     const currentCount = await this.page.locator(".Card").count();
     expect(currentCount).toBeLessThan(galleryItemCount);
   },
