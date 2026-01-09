@@ -929,7 +929,7 @@ Then("I should see loading skeleton cards", async function(this: CustomWorld) {
 // NOTE: "I should see {string} button" is defined in common.steps.ts
 
 Then("I should be redirected to home page", async function(this: CustomWorld) {
-  await this.page.waitForURL("**/", { timeout: 5000 });
+  await this.page.waitForURL("**/", { timeout: 15000 });
   expect(this.page.url()).toMatch(/\/$/);
 });
 

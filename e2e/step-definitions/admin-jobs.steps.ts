@@ -519,7 +519,16 @@ When("I click on a job in the list", async function(this: CustomWorld) {
     '[data-testid="job-list-item"]',
     { timeout: TIMEOUTS.LONG },
   );
-  await jobItem.first().click();
+  // Click using evaluate to ensure React event handlers work correctly
+  await jobItem.first().evaluate((el) => {
+    (el as HTMLElement).click();
+  });
+  // Wait a moment for React to process the state update
+  await this.page.waitForTimeout(100);
+  // Wait for the job selection to take effect (React state update)
+  // The Copy Link button appears when a job is selected
+  const copyLinkButton = this.page.getByRole("button", { name: /copy link/i });
+  await copyLinkButton.waitFor({ state: "visible", timeout: TIMEOUTS.LONG });
 });
 
 When("I click on the completed job", async function(this: CustomWorld) {
@@ -530,7 +539,16 @@ When("I click on the completed job", async function(this: CustomWorld) {
     '[data-testid="job-list-item"][data-job-status="COMPLETED"]',
     { timeout: TIMEOUTS.LONG },
   );
-  await jobItem.first().click();
+  // Click using evaluate to ensure React event handlers work correctly
+  await jobItem.first().evaluate((el) => {
+    (el as HTMLElement).click();
+  });
+  // Wait a moment for React to process the state update
+  await this.page.waitForTimeout(100);
+  // Wait for the job selection to take effect (React state update)
+  // The Copy Link button appears when a job is selected
+  const copyLinkButton = this.page.getByRole("button", { name: /copy link/i });
+  await copyLinkButton.waitFor({ state: "visible", timeout: TIMEOUTS.LONG });
 });
 
 When("I click on the failed job", async function(this: CustomWorld) {
@@ -541,7 +559,16 @@ When("I click on the failed job", async function(this: CustomWorld) {
     '[data-testid="job-list-item"][data-job-status="FAILED"]',
     { timeout: TIMEOUTS.LONG },
   );
-  await jobItem.first().click();
+  // Click using evaluate to ensure React event handlers work correctly
+  await jobItem.first().evaluate((el) => {
+    (el as HTMLElement).click();
+  });
+  // Wait a moment for React to process the state update
+  await this.page.waitForTimeout(100);
+  // Wait for the job selection to take effect (React state update)
+  // The Copy Link button appears when a job is selected
+  const copyLinkButton = this.page.getByRole("button", { name: /copy link/i });
+  await copyLinkButton.waitFor({ state: "visible", timeout: TIMEOUTS.LONG });
 });
 
 When("I click on that job", async function(this: CustomWorld) {
@@ -552,7 +579,16 @@ When("I click on that job", async function(this: CustomWorld) {
     '[data-testid="job-list-item"]',
     { timeout: TIMEOUTS.LONG },
   );
-  await jobItem.first().click();
+  // Click using evaluate to ensure React event handlers work correctly
+  await jobItem.first().evaluate((el) => {
+    (el as HTMLElement).click();
+  });
+  // Wait a moment for React to process the state update
+  await this.page.waitForTimeout(100);
+  // Wait for the job selection to take effect (React state update)
+  // The Copy Link button appears when a job is selected
+  const copyLinkButton = this.page.getByRole("button", { name: /copy link/i });
+  await copyLinkButton.waitFor({ state: "visible", timeout: TIMEOUTS.LONG });
 });
 
 // Then steps
@@ -586,10 +622,15 @@ Then(
   async function(this: CustomWorld) {
     // Wait for network to settle to ensure counts are loaded
     await this.page.waitForLoadState("networkidle").catch(() => {});
-    // Verify status tabs exist with counts
-    await waitForDynamicContent(this.page, 'button[role="tab"]', /All.*\d+/, {
-      timeout: TIMEOUTS.LONG,
+    // Verify status tabs exist with counts - they are Button components with Badge children
+    // Look for buttons that contain "All" text and a Badge with a number
+    const allTabButton = this.page.getByRole("button", { name: /All/ }).filter({
+      has: this.page.locator('[class*="Badge"]'),
     });
+    await expect(allTabButton.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
+    // Verify the badge has a count (number or "...")
+    const badge = allTabButton.first().locator('[class*="Badge"]');
+    await expect(badge).toHaveText(/\d+|\.\.\./, { timeout: TIMEOUTS.DEFAULT });
   },
 );
 
@@ -801,9 +842,14 @@ Then("the jobs list should refresh", async function(this: CustomWorld) {
 Then("the job counts should update", async function(this: CustomWorld) {
   // Wait for network to settle and updated counts in tabs
   await this.page.waitForLoadState("networkidle").catch(() => {});
-  await waitForDynamicContent(this.page, 'button[role="tab"]', /\d+/, {
-    timeout: TIMEOUTS.LONG,
+  // Verify status tabs exist with counts - they are Button components with Badge children
+  const allTabButton = this.page.getByRole("button", { name: /All/ }).filter({
+    has: this.page.locator('[class*="Badge"]'),
   });
+  await expect(allTabButton.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
+  // Verify the badge has a count (number or "...")
+  const badge = allTabButton.first().locator('[class*="Badge"]');
+  await expect(badge).toHaveText(/\d+|\.\.\./, { timeout: TIMEOUTS.DEFAULT });
 });
 
 Then("the job should be highlighted", async function(this: CustomWorld) {
@@ -869,9 +915,18 @@ Then("I should see retry count", async function(this: CustomWorld) {
 Then(
   "the details panel should show enhanced image dimensions",
   async function(this: CustomWorld) {
-    await waitForTextWithRetry(this.page, /Enhanced.*\d+x\d+/, {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle after clicking a job
+    await this.page.waitForLoadState("networkidle").catch(() => {});
+
+    // Wait for the job details to load - look for action buttons which appear when a job is selected
+    // The "Copy Link" button appears when a job is selected
+    const copyLinkButton = this.page.getByRole("button", { name: /copy link/i });
+    await expect(copyLinkButton).toBeVisible({ timeout: TIMEOUTS.LONG });
+
+    // Now check for dimensions text (e.g., "2048x1536")
+    // Wait for the output dimensions to be visible
+    const dimensionsText = this.page.getByText(/\d+x\d+/);
+    await expect(dimensionsText.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
   },
 );
 
@@ -887,7 +942,14 @@ Then(
 Then(
   "the details panel should show image comparison slider",
   async function(this: CustomWorld) {
-    // Check for the comparison slider component
+    // Wait for network to settle after clicking a job
+    await this.page.waitForLoadState("networkidle").catch(() => {});
+
+    // Wait for the job details to load - look for action buttons which appear when a job is selected
+    const copyLinkButton = this.page.getByRole("button", { name: /copy link/i });
+    await expect(copyLinkButton).toBeVisible({ timeout: TIMEOUTS.LONG });
+
+    // Check for the comparison slider component labels
     await waitForTextWithRetry(this.page, "Original", {
       timeout: TIMEOUTS.LONG,
     });

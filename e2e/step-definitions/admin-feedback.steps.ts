@@ -154,6 +154,9 @@ Given(
 Given(
   "there is feedback of all statuses in the system",
   async function(this: CustomWorld) {
+    // Set up route mock for client-side API calls
+    // Note: Server Components use Prisma directly, so this mock only affects client-side fetches
+    // The badge step will trigger a filter change to force a client-side fetch using this mock
     await this.page.route("**/api/admin/feedback**", async (route) => {
       if (route.request().method() === "GET") {
         await route.fulfill({
@@ -577,14 +580,27 @@ Then(
       "table tbody tr",
       { timeout: TIMEOUTS.DEFAULT },
     );
-    // Wait for page to stabilize after hydration
+
+    // For Server Component pages using Prisma, we need to trigger a client-side fetch
+    // to use the mocked API response. Click the Refresh button to fetch from API.
+    const refreshButton = this.page.getByRole("button", { name: /refresh/i });
+    await refreshButton.waitFor({ state: "visible", timeout: TIMEOUTS.DEFAULT });
+    await refreshButton.click();
+
+    // Wait for API response to be processed
     await this.page.waitForLoadState("networkidle", { timeout: TIMEOUTS.DEFAULT });
-    // Find and verify the REVIEWED badge - scroll into view to ensure visibility
+
+    // Wait for table to update with new data
+    await waitForElementWithRetry(
+      this.page,
+      "table tbody tr",
+      { timeout: TIMEOUTS.DEFAULT },
+    );
+
+    // Find and verify the REVIEWED badge
     const badge = this.page.locator('[class*="Badge"]').filter({
       hasText: "REVIEWED",
     }).first();
-    // Scroll badge into view if it exists
-    await badge.scrollIntoViewIfNeeded({ timeout: TIMEOUTS.DEFAULT });
     await expect(badge).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     const className = await badge.getAttribute("class");
     expect(className).toContain("blue");
