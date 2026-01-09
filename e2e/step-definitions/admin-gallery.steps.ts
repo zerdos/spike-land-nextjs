@@ -178,6 +178,20 @@ Given(
 Given(
   "there are enhanced images available",
   async function(this: CustomWorld) {
+    // State to track created gallery items
+    const galleryItems: {
+      id: string;
+      title: string;
+      description: string | null;
+      category: string;
+      originalUrl: string;
+      enhancedUrl: string;
+      isActive: boolean;
+      sortOrder: number;
+      createdAt: string;
+      updatedAt: string;
+    }[] = [];
+
     // Mock the browse API endpoint used by ImageBrowserDialog
     await this.page.route("**/api/admin/gallery/browse**", async (route) => {
       await route.fulfill({
@@ -207,6 +221,44 @@ Given(
           ],
         }),
       });
+    });
+
+    // Mock the main gallery API endpoint for GET and POST
+    await this.page.route("**/api/admin/gallery", async (route) => {
+      const method = route.request().method();
+
+      if (method === "GET") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ items: galleryItems }),
+        });
+      } else if (method === "POST") {
+        // Create a new gallery item
+        const body = route.request().postDataJSON();
+        const newItem = {
+          id: `gallery-${Date.now()}`,
+          title: body.title || "Untitled",
+          description: body.description || null,
+          category: body.category || "PORTRAIT",
+          originalUrl: body.originalUrl ||
+            "https://placehold.co/400x300/purple/white?text=Test",
+          enhancedUrl: body.enhancedUrl ||
+            "https://placehold.co/400x300/purple/white?text=Enhanced",
+          isActive: true,
+          sortOrder: galleryItems.length + 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        galleryItems.push(newItem);
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ item: newItem }),
+        });
+      } else {
+        await route.continue();
+      }
     });
   },
 );
