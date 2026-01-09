@@ -414,16 +414,6 @@ Then(
 );
 
 Then(
-  "I should see the {string} button",
-  async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", {
-      name: new RegExp(buttonText, "i"),
-    });
-    await expect(button.first()).toBeVisible({ timeout: 10000 });
-  },
-);
-
-Then(
   "the button should display the LinkedIn logo",
   async function(this: CustomWorld) {
     // Check for LinkedIn icon/logo near the button

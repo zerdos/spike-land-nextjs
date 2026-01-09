@@ -633,7 +633,7 @@ When(
 );
 
 Then(
-  "I should see the error message",
+  "I should see the post error message",
   async function(this: CustomWorld) {
     await expect(this.page.locator("[data-testid='error-message']")).toBeVisible();
   },
@@ -692,14 +692,6 @@ Then(
 );
 
 // Dashboard Steps
-When(
-  "I navigate to the workspace dashboard",
-  async function(this: CustomWorld) {
-    await this.page.goto(`/orbit/${this.workspaceSlug ?? "test-marketing"}`);
-    await this.page.waitForLoadState("networkidle");
-  },
-);
-
 Then(
   "I should see the {string} widget",
   async function(this: CustomWorld, widgetName: string) {

@@ -136,7 +136,7 @@ Feature: Orbit Calendar / Scheduled Posts
     Given I have a failed scheduled post
     When I navigate to the calendar page
     And I click on the failed post
-    Then I should see the error message
+    Then I should see the post error message
     And I should see options to retry or edit
 
   # Calendar Navigation
