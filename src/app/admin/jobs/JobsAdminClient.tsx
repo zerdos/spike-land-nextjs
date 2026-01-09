@@ -609,7 +609,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
               </div>
             )
             : jobs.length === 0
-            ? <p className="text-neutral-500">No jobs found</p>
+            ? <p className="text-neutral-500" data-testid="empty-jobs-message">No jobs found</p>
             : (
               <div className="max-h-[600px] space-y-2 overflow-y-auto">
                 {jobs.map((job) => (
@@ -710,6 +710,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                     size="sm"
                     onClick={() => handleCopyLink(selectedJob.id)}
                     disabled={actionLoading === selectedJob.id}
+                    data-testid="job-copy-link-button"
                   >
                     Copy Link
                   </Button>
@@ -727,6 +728,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                       size="sm"
                       onClick={() => handleKillJob(selectedJob.id)}
                       disabled={actionLoading === selectedJob.id}
+                      data-testid="job-kill-button"
                     >
                       {actionLoading === selectedJob.id ? "..." : "Kill Job"}
                     </Button>

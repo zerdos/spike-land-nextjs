@@ -88,6 +88,7 @@ export const AlbumImageCard = memo(function AlbumImageCard({
   return (
     <Card
       className={className}
+      data-testid="album-image"
       draggable={draggable}
       onDragStart={onDragStart}
       onDragOver={onDragOver}

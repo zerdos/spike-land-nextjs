@@ -505,8 +505,13 @@ When("I delete an image from the list", async function(this: CustomWorld) {
 // NOTE: "I confirm the deletion" is defined in common.steps.ts
 
 When("I attempt to delete an image", async function(this: CustomWorld) {
-  const deleteButton = this.page.getByRole("button", { name: /delete/i })
+  // Try multiple selectors for delete button
+  const deleteButton = this.page.locator('[data-testid="delete-button"]')
+    .or(this.page.getByRole("button", { name: /delete/i }))
     .first();
+
+  // Wait for the delete button to be visible
+  await expect(deleteButton).toBeVisible({ timeout: 15000 });
   await deleteButton.click();
 
   // Wait for confirmation dialog to appear

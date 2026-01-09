@@ -103,8 +103,13 @@ Given(
     testContext.autoCycleInterval = null;
     testContext.rotation = 0;
 
-    // No need to mock API - using real seeded database data
-    // The E2E database has albums and images seeded by prisma/seed-e2e.ts
+    // Mock API to ensure test works even without seeded database
+    // This provides fallback data if the E2E database is not seeded
+    const images = Array.from(
+      { length: testContext.imageCount },
+      (_, i) => createMockGalleryImage(i + 1, testContext.hasEnhancedVersions),
+    );
+    await mockGalleryAPI(this, images);
   },
 );
 

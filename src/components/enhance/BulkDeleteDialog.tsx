@@ -72,6 +72,7 @@ export function BulkDeleteDialog({
           size="sm"
           disabled={disabled || selectedVersions.length === 0}
           className="flex items-center gap-2"
+          data-testid="delete-selected-button"
         >
           <Trash2 className="h-4 w-4" />
           Delete Selected ({selectedVersions.length})

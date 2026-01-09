@@ -296,14 +296,22 @@ When("I visit the shared image link", async function(this: CustomWorld) {
 When(
   "I select the completed enhancement version",
   async function(this: CustomWorld) {
+    // Try multiple selectors for completed version cards
     const versionCard = this.page.locator("[data-version-id]").filter({
       has: this.page.locator('[data-status="COMPLETED"]'),
-    }).first();
+    }).or(this.page.locator('[data-testid*="completed"]'))
+      .or(this.page.locator(".version-card").filter({ hasText: /completed/i }))
+      .first();
 
-    if (await versionCard.isVisible()) {
-      await versionCard.click();
-      await this.page.waitForTimeout(300);
-    }
+    // Wait for version card to be visible
+    await expect(versionCard).toBeVisible({ timeout: 10000 });
+    await versionCard.click();
+    // Wait for UI to update with selected version
+    await this.page.waitForTimeout(500);
+    // Wait for "Before & After Comparison" text to appear
+    await expect(this.page.getByText(/Before & After Comparison|Original Image/i)).toBeVisible({
+      timeout: 5000,
+    });
   },
 );
 
