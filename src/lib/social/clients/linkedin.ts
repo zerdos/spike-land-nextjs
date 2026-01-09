@@ -80,8 +80,10 @@ interface LinkedInShareContent {
   shareMediaCategory: "NONE" | "ARTICLE" | "IMAGE";
   media?: Array<{
     status: string;
-    originalUrl: string;
+    originalUrl?: string;
+    media?: string; // LinkedIn asset URN for uploaded images (urn:li:digitalmediaAsset:xxx)
     title?: { text: string; };
+    description?: { text: string; };
   }>;
 }
 
@@ -478,16 +480,27 @@ export class LinkedInClient implements ISocialClient {
       shareMediaCategory: "NONE",
     };
 
-    // Add link if provided in metadata
-    const link = options?.metadata?.link as string | undefined;
-    if (link) {
-      shareContent.shareMediaCategory = "ARTICLE";
-      shareContent.media = [
-        {
-          status: "READY",
-          originalUrl: link,
-        },
-      ];
+    // Check for media IDs (pre-uploaded LinkedIn asset URNs)
+    // LinkedIn requires images to be uploaded first via Assets API
+    // Format: urn:li:digitalmediaAsset:xxx or urn:li:image:xxx
+    if (options?.mediaIds && options.mediaIds.length > 0) {
+      shareContent.shareMediaCategory = "IMAGE";
+      shareContent.media = options.mediaIds.map((assetUrn) => ({
+        status: "READY",
+        media: assetUrn,
+      }));
+    } // Add link if provided in metadata (ARTICLE type - supports URL-based content)
+    else {
+      const link = options?.metadata?.link as string | undefined;
+      if (link) {
+        shareContent.shareMediaCategory = "ARTICLE";
+        shareContent.media = [
+          {
+            status: "READY",
+            originalUrl: link,
+          },
+        ];
+      }
     }
 
     const payload: LinkedInUGCPost = {
@@ -814,6 +827,114 @@ export class LinkedInClient implements ISocialClient {
     this.organizationId = organizationId;
     this.organizationUrn = organizationUrn ||
       `urn:li:organization:${organizationId}`;
+  }
+
+  /**
+   * Register and upload an image to LinkedIn
+   * Returns the asset URN to use in createPost with mediaIds option
+   *
+   * @param imageBuffer - The image binary data as Buffer or ArrayBuffer
+   * @param mimeType - The image MIME type (image/jpeg, image/png, image/gif)
+   * @returns The LinkedIn asset URN (urn:li:digitalmediaAsset:xxx)
+   */
+  async uploadImage(
+    imageData: ArrayBuffer | Uint8Array,
+    mimeType: "image/jpeg" | "image/png" | "image/gif" = "image/jpeg",
+  ): Promise<string> {
+    if (!this.organizationUrn) {
+      throw new Error(
+        "Organization URN is required. Set via constructor options or setOrganization()",
+      );
+    }
+
+    const token = this.getAccessTokenOrThrow();
+
+    // Step 1: Register the upload to get an upload URL
+    const registerPayload = {
+      registerUploadRequest: {
+        recipes: ["urn:li:digitalmediaRecipe:feedshare-image"],
+        owner: this.organizationUrn,
+        serviceRelationships: [
+          {
+            relationshipType: "OWNER",
+            identifier: "urn:li:userGeneratedContent",
+          },
+        ],
+      },
+    };
+
+    const registerResponse = await fetch(
+      `${LINKEDIN_API_BASE}/v2/assets?action=registerUpload`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "X-Restli-Protocol-Version": "2.0.0",
+        },
+        body: JSON.stringify(registerPayload),
+      },
+    );
+
+    if (!registerResponse.ok) {
+      const errorData = (await registerResponse.json().catch(
+        () => ({}),
+      )) as LinkedInApiError;
+      throw new Error(
+        `Failed to register LinkedIn image upload: ${
+          errorData.message || registerResponse.statusText
+        }`,
+      );
+    }
+
+    const registerData = (await registerResponse.json()) as {
+      value: {
+        uploadMechanism: {
+          "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest": {
+            uploadUrl: string;
+            headers: Record<string, string>;
+          };
+        };
+        asset: string;
+      };
+    };
+
+    const uploadInfo = registerData.value.uploadMechanism[
+      "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"
+    ];
+    const assetUrn = registerData.value.asset;
+
+    if (!uploadInfo?.uploadUrl || !assetUrn) {
+      throw new Error("Failed to get upload URL from LinkedIn");
+    }
+
+    // Step 2: Upload the image binary
+    // Convert to Blob for fetch compatibility
+    // Handle both ArrayBuffer and Uint8Array inputs
+    const blobPart: BlobPart = imageData instanceof ArrayBuffer
+      ? imageData
+      : new Uint8Array(imageData);
+    const imageBlob = new Blob([blobPart], { type: mimeType });
+
+    const uploadHeaders: Record<string, string> = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": mimeType,
+      ...uploadInfo.headers,
+    };
+
+    const uploadResponse = await fetch(uploadInfo.uploadUrl, {
+      method: "PUT",
+      headers: uploadHeaders,
+      body: imageBlob,
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error(
+        `Failed to upload image to LinkedIn: ${uploadResponse.statusText}`,
+      );
+    }
+
+    return assetUrn;
   }
 
   /**
