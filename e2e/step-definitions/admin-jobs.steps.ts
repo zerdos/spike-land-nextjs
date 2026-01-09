@@ -519,7 +519,7 @@ When("I click on a job in the list", async function(this: CustomWorld) {
     '[data-testid="job-list-item"]',
     { timeout: TIMEOUTS.LONG },
   );
-  await jobItem.click();
+  await jobItem.first().click();
 });
 
 When("I click on the completed job", async function(this: CustomWorld) {
@@ -530,7 +530,7 @@ When("I click on the completed job", async function(this: CustomWorld) {
     '[data-testid="job-list-item"][data-job-status="COMPLETED"]',
     { timeout: TIMEOUTS.LONG },
   );
-  await jobItem.click();
+  await jobItem.first().click();
 });
 
 When("I click on the failed job", async function(this: CustomWorld) {
@@ -541,7 +541,7 @@ When("I click on the failed job", async function(this: CustomWorld) {
     '[data-testid="job-list-item"][data-job-status="FAILED"]',
     { timeout: TIMEOUTS.LONG },
   );
-  await jobItem.click();
+  await jobItem.first().click();
 });
 
 When("I click on that job", async function(this: CustomWorld) {
@@ -552,7 +552,7 @@ When("I click on that job", async function(this: CustomWorld) {
     '[data-testid="job-list-item"]',
     { timeout: TIMEOUTS.LONG },
   );
-  await jobItem.click();
+  await jobItem.first().click();
 });
 
 // Then steps
