@@ -8,11 +8,12 @@ import path from "path";
 import { startCoverage, stopCoverage } from "./helpers/coverage-helper";
 
 // Load environment variables from .env.local if it exists
+// Use quiet: true to suppress verbose logging in CI
 if (fs.existsSync(path.resolve(process.cwd(), ".env.local"))) {
-  dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+  dotenv.config({ path: path.resolve(process.cwd(), ".env.local"), quiet: true });
 } else {
   // Fallback to .env
-  dotenv.config();
+  dotenv.config({ quiet: true });
 }
 
 export interface CucumberWorldConstructorParams {

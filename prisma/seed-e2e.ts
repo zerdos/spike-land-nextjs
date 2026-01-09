@@ -15,7 +15,8 @@ import { createHash } from "crypto";
 import { config } from "dotenv";
 
 // Load environment variables from .env.local
-config({ path: ".env.local" });
+// Use quiet: true to suppress verbose logging in CI
+config({ path: ".env.local", quiet: true });
 
 /**
  * E2E Test Data Seed Script
