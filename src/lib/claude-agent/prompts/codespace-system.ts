@@ -43,3 +43,17 @@ After making changes, briefly confirm:
 "Done! I [what you did]. The preview should update automatically."
 Keep it brief.
 `;
+
+/**
+ * Generate system prompt with current code included
+ */
+export function getSystemPromptWithCode(currentCode: string): string {
+  return `${CODESPACE_SYSTEM_PROMPT}
+## CURRENT CODE
+The current code in the codespace is shown below. You can skip read_code since you already have the code.
+
+\`\`\`tsx
+${currentCode}
+\`\`\`
+`;
+}

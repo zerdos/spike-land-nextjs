@@ -1,5 +1,8 @@
 import { auth } from "@/auth";
-import { CODESPACE_SYSTEM_PROMPT } from "@/lib/claude-agent/prompts/codespace-system";
+import {
+  CODESPACE_SYSTEM_PROMPT,
+  getSystemPromptWithCode,
+} from "@/lib/claude-agent/prompts/codespace-system";
 import {
   CODESPACE_TOOL_NAMES,
   createCodespaceServer,
@@ -88,7 +91,34 @@ export async function POST(
   // Create MCP server with codespace tools
   const codespaceServer = createCodespaceServer(app.codespaceId);
 
-  console.log("[agent/chat] Starting agent query for app:", id, "codespace:", app.codespaceId);
+  // Fetch current code from testing.spike.land to include in context
+  let currentCode = "";
+  const { data: sessionResponse, error: sessionError } = await tryCatch(
+    fetch(`https://testing.spike.land/live/${app.codespaceId}/session.json`, {
+      headers: { "Accept": "application/json" },
+    }),
+  );
+
+  if (!sessionError && sessionResponse.ok) {
+    const { data: sessionData } = await tryCatch(sessionResponse.json());
+    if (sessionData?.code) {
+      currentCode = sessionData.code;
+    }
+  }
+
+  console.log(
+    "[agent/chat] Starting agent query for app:",
+    id,
+    "codespace:",
+    app.codespaceId,
+    "code length:",
+    currentCode.length,
+  );
+
+  // Build system prompt with current code
+  const systemPrompt = currentCode
+    ? getSystemPromptWithCode(currentCode)
+    : CODESPACE_SYSTEM_PROMPT;
 
   // Stream using Claude Agent SDK
   const stream = new ReadableStream({
@@ -101,7 +131,7 @@ export async function POST(
               codespace: codespaceServer,
             },
             allowedTools: CODESPACE_TOOL_NAMES,
-            systemPrompt: CODESPACE_SYSTEM_PROMPT,
+            systemPrompt,
           },
         });
 
