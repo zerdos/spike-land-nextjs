@@ -3,8 +3,9 @@ import { PrismaClient } from "@prisma/client";
 import { config } from "dotenv";
 
 // Load .env.local first, then .env
-config({ path: ".env.local" });
-config({ path: ".env" });
+// Use quiet: true to suppress verbose logging
+config({ path: ".env.local", quiet: true });
+config({ path: ".env", quiet: true });
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {

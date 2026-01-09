@@ -24,6 +24,14 @@ async function mockTokenBalance(
   });
 }
 
+// Map of button text to data-testid for more reliable selection
+const BUTTON_TESTID_MAP: Record<string, string> = {
+  "enhance all": "enhance-all-button",
+  "delete selected": "delete-selected-button",
+  "copy link": "job-copy-link-button",
+  "kill job": "job-kill-button",
+};
+
 // Common button click step used across multiple features
 When(
   "I click {string} button",
@@ -35,9 +43,25 @@ When(
       await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
     }
 
-    const button = this.page
-      .getByRole("button", { name: new RegExp(buttonText, "i") })
-      .and(this.page.locator(":not([data-nextjs-dev-tools-button])"));
+    // Check if there's a known data-testid for this button
+    const testId = BUTTON_TESTID_MAP[buttonText.toLowerCase()];
+
+    let button;
+    if (testId) {
+      // Try data-testid first, then fall back to role-based selector
+      const testIdButton = this.page.locator(`[data-testid="${testId}"]`);
+      const roleButton = this.page
+        .getByRole("button", { name: new RegExp(buttonText, "i") })
+        .and(this.page.locator(":not([data-nextjs-dev-tools-button])"));
+
+      // Use whichever is visible
+      const testIdVisible = await testIdButton.first().isVisible().catch(() => false);
+      button = testIdVisible ? testIdButton : roleButton;
+    } else {
+      button = this.page
+        .getByRole("button", { name: new RegExp(buttonText, "i") })
+        .and(this.page.locator(":not([data-nextjs-dev-tools-button])"));
+    }
 
     await expect(button.first()).toBeVisible({ timeout: 15000 });
 
@@ -180,9 +204,21 @@ Then(
 When(
   "I click the {string} tab",
   async function(this: CustomWorld, tabName: string) {
+    // Wait for loading states to disappear first
+    const loadingElement = this.page.locator(".loading, .animate-pulse, .skeleton").first();
+    const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
+    if (isLoadingVisible) {
+      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    }
+
     const tab = this.page.getByRole("tab", { name: new RegExp(tabName, "i") })
       .or(this.page.getByRole("button", { name: new RegExp(tabName, "i") }));
+
+    // Add visibility check and scroll like button clicking
+    await expect(tab.first()).toBeVisible({ timeout: 15000 });
+    await tab.first().scrollIntoViewIfNeeded();
     await tab.first().click();
+
     // Wait for tab content to load
     await waitForPageReady(this.page, { strategy: "domcontentloaded" });
   },
@@ -569,13 +605,31 @@ Given("I have an empty album", async function(this: CustomWorld) {
 // "I press the right arrow key" - consolidated from canvas-editor.steps.ts,
 // smart-gallery.steps.ts
 When("I press the right arrow key", async function(this: CustomWorld) {
+  // Store current image src for comparison in subsequent steps
+  const mainImage = this.page.locator(
+    '[data-testid="main-image"], img[alt*="image" i], .main-image',
+  ).first();
+  if (await mainImage.isVisible().catch(() => false)) {
+    this.initialImageSrc = await mainImage.getAttribute("src") || undefined;
+  }
   await this.page.keyboard.press("ArrowRight");
+  // Wait a bit for the image to change
+  await this.page.waitForTimeout(300);
 });
 
 // "I press the left arrow key" - consolidated from canvas-editor.steps.ts,
 // smart-gallery.steps.ts
 When("I press the left arrow key", async function(this: CustomWorld) {
+  // Store current image src for comparison in subsequent steps
+  const mainImage = this.page.locator(
+    '[data-testid="main-image"], img[alt*="image" i], .main-image',
+  ).first();
+  if (await mainImage.isVisible().catch(() => false)) {
+    this.initialImageSrc = await mainImage.getAttribute("src") || undefined;
+  }
   await this.page.keyboard.press("ArrowLeft");
+  // Wait a bit for the image to change
+  await this.page.waitForTimeout(300);
 });
 
 // "I press the Escape key" - consolidated from smart-gallery.steps.ts,
@@ -701,18 +755,22 @@ When(
   async function(this: CustomWorld, value: string, fieldName: string) {
     // Try to find by testid first - with proper waiting
     const testId = fieldName.toLowerCase().replace(/\s+/g, "-");
+    // Try various testid patterns including app- prefix (used in app creation wizard)
     const suffixes = ["", "-input", "-field", "-textarea"];
+    const prefixes = ["", "app-"];
 
-    for (const suffix of suffixes) {
-      const field = this.page.locator(`[data-testid="${testId}${suffix}"]`);
-      try {
-        // Wait for element to be visible with a short timeout per suffix
-        await expect(field).toBeVisible({ timeout: 2000 });
-        await field.fill(value);
-        return;
-      } catch {
-        // Element not found with this suffix, try next
-        continue;
+    for (const prefix of prefixes) {
+      for (const suffix of suffixes) {
+        const field = this.page.locator(`[data-testid="${prefix}${testId}${suffix}"]`);
+        try {
+          // Wait for element to be visible with a short timeout per combination
+          await expect(field).toBeVisible({ timeout: 1500 });
+          await field.fill(value);
+          return;
+        } catch {
+          // Element not found with this combination, try next
+          continue;
+        }
       }
     }
 
@@ -731,7 +789,10 @@ Then(
     const testId = fieldName.toLowerCase().replace(/\s+/g, "-");
     const field = this.page.locator(`[data-testid="${testId}"]`)
       .or(this.page.locator(`[data-testid="${testId}-input"]`))
+      .or(this.page.locator(`[data-testid="${testId}-field"]`))
       .or(this.page.locator(`[data-testid="${testId}-textarea"]`))
+      .or(this.page.locator(`[data-testid="app-${testId}"]`))
+      .or(this.page.locator(`[data-testid="app-${testId}-input"]`))
       .or(this.page.locator(`[data-testid="app-${testId}-textarea"]`))
       .or(this.page.getByLabel(new RegExp(fieldName, "i")));
     await expect(field.first()).toHaveValue(value);

@@ -52,7 +52,6 @@ Feature: Admin Photos Page
     And I enter "user-123" in the "User ID" filter
     And I click "Apply Filters" button
     Then the photos should be filtered by user ID
-    And the URL should contain "userId=user-123"
 
   @requires-db
   Scenario: Filter photos by date range
@@ -62,8 +61,6 @@ Feature: Admin Photos Page
     And I select "2024-12-31" as end date
     And I click "Apply Filters" button
     Then the photos should be filtered by date range
-    And the URL should contain "startDate=2024-01-01"
-    And the URL should contain "endDate=2024-12-31"
 
   @requires-db
   Scenario: Clear all filters

@@ -1,5 +1,6 @@
 import { config } from "dotenv";
-config({ path: ".env.local" });
+// Use quiet: true to suppress verbose logging
+config({ path: ".env.local", quiet: true });
 import prisma from "./src/lib/prisma";
 
 async function main() {

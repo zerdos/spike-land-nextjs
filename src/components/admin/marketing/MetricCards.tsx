@@ -53,7 +53,7 @@ export function MetricCard(
 ) {
   if (loading) {
     return (
-      <Card>
+      <Card data-testid="metric-card">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div className="h-4 w-20 animate-pulse rounded bg-muted" />
         </CardHeader>
@@ -66,7 +66,7 @@ export function MetricCard(
   }
 
   return (
-    <Card>
+    <Card data-testid="metric-card">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{metric.title}</CardTitle>
         {metric.change !== undefined && (

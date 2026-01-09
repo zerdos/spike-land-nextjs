@@ -342,9 +342,13 @@ When(
         has: this.page.getByText(/tier/i),
       }),
     );
-    await tierSelector.click();
-    await this.page.getByRole("option", { name: new RegExp(tier, "i") })
-      .click();
+    // Wait for the tier selector to be visible and clickable
+    await expect(tierSelector.first()).toBeVisible({ timeout: 15000 });
+    await tierSelector.first().click();
+    // Wait for dropdown options to appear
+    const option = this.page.getByRole("option", { name: new RegExp(tier, "i") });
+    await expect(option).toBeVisible({ timeout: 5000 });
+    await option.click();
   },
 );
 

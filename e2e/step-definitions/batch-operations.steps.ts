@@ -302,9 +302,10 @@ Given(
 When(
   "I select multiple valid image files for upload",
   async function(this: CustomWorld) {
-    // Note: File selection in E2E tests is tricky
-    // This is a placeholder that would need actual file paths
+    // File inputs may be hidden - use force: true or wait for it to be attached
     const fileInput = this.page.locator('input[type="file"]');
+    // Wait for file input to be in DOM (even if hidden)
+    await fileInput.waitFor({ state: "attached", timeout: 15000 });
     await fileInput.setInputFiles([
       path.join(__dirname, "../fixtures/test-image-1.jpg"),
       path.join(__dirname, "../fixtures/test-image-2.jpg"),

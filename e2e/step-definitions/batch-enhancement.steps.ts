@@ -355,8 +355,9 @@ Given(
     await mockBatchEnhancement(this);
     await this.page.goto(`${this.baseUrl}/apps/pixel/albums/${mockAlbumId}`);
     await this.page.waitForLoadState("networkidle");
+    // Matches both "Enhance All" button and "Enhance All Photos" variants
     const enhanceButton = this.page.getByRole("button", {
-      name: /Enhance All/i,
+      name: /Enhance All( Photos)?/i,
     });
     await enhanceButton.click();
     await this.page.waitForTimeout(300);
@@ -453,8 +454,9 @@ When(
   async function(this: CustomWorld) {
     await this.page.goto(`${this.baseUrl}/apps/pixel/albums/${mockAlbumId}`);
     await this.page.waitForLoadState("networkidle");
+    // Matches both "Enhance All" button and "Enhance All Photos" variants
     const enhanceButton = this.page.getByRole("button", {
-      name: /Enhance All/i,
+      name: /Enhance All( Photos)?/i,
     });
     await enhanceButton.click();
   },
@@ -702,6 +704,7 @@ Then(
   },
 );
 
+// Uses flexible regex matching - "Enhance All" matches both "Enhance All" and "Enhance All Photos"
 Then(
   "I should not see {string} button",
   async function(this: CustomWorld, buttonText: string) {

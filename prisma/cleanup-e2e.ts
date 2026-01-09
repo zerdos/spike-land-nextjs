@@ -3,7 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import { config } from "dotenv";
 
 // Load environment variables from .env.local
-config({ path: ".env.local" });
+// Use quiet: true to suppress verbose logging
+config({ path: ".env.local", quiet: true });
 
 /**
  * E2E Test Data Cleanup Script

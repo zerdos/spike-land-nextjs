@@ -155,15 +155,26 @@ export function CanvasClient({
     >
       {/* Header with Pixel Logo and CTA */}
       {viewMode === "grid" && (
-        <header className="sticky top-0 z-40 bg-[#0B0E14]/90 backdrop-blur-sm border-b border-white/10">
+        <header
+          className="sticky top-0 z-40 bg-[#0B0E14]/90 backdrop-blur-sm border-b border-white/10"
+          data-testid="canvas-toolbar"
+        >
           <div className="flex items-center justify-between px-4 py-3">
-            <Link
-              href="/apps/pixel"
-              className="transition-opacity hover:opacity-80"
-              data-testid="pixel-logo-link"
-            >
-              <PixelLogo size="sm" variant="horizontal" />
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/apps/pixel"
+                className="transition-opacity hover:opacity-80"
+                data-testid="pixel-logo-link"
+              >
+                <PixelLogo size="sm" variant="horizontal" />
+              </Link>
+              <h1
+                className="text-white/80 text-sm font-medium truncate max-w-[200px]"
+                data-testid="album-title"
+              >
+                {albumName}
+              </h1>
+            </div>
             <Button
               onClick={enterSlideshow}
               disabled={!selectedImageId}

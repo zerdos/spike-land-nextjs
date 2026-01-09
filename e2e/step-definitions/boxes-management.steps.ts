@@ -25,6 +25,11 @@ declare module "../support/world" {
 
 // Setup steps
 Given("I have no boxes created", async function(this: CustomWorld) {
+  // Navigate to a valid page first to enable localStorage access
+  // This prevents SecurityError on about:blank
+  await this.page.goto(`${this.baseUrl}/boxes`);
+  await this.page.waitForLoadState("domcontentloaded");
+
   const boxesPage = getBoxesPage(this);
   await boxesPage.clearBoxes();
   this.createdBoxes = [];
@@ -33,6 +38,14 @@ Given("I have no boxes created", async function(this: CustomWorld) {
 Given(
   "I have created a box named {string}",
   async function(this: CustomWorld, boxName: string) {
+    // Navigate to a valid page first to enable localStorage access
+    // This prevents SecurityError on about:blank
+    const currentUrl = this.page.url();
+    if (!currentUrl || currentUrl === "about:blank" || !currentUrl.startsWith("http")) {
+      await this.page.goto(`${this.baseUrl}/boxes`);
+      await this.page.waitForLoadState("domcontentloaded");
+    }
+
     const boxesPage = getBoxesPage(this);
     const boxData = {
       id: `box-${Date.now()}`,
@@ -49,6 +62,13 @@ Given(
 Given(
   "I have created a {string} box named {string}",
   async function(this: CustomWorld, tier: string, boxName: string) {
+    // Navigate to a valid page first to enable localStorage access
+    const currentUrl = this.page.url();
+    if (!currentUrl || currentUrl === "about:blank" || !currentUrl.startsWith("http")) {
+      await this.page.goto(`${this.baseUrl}/boxes`);
+      await this.page.waitForLoadState("domcontentloaded");
+    }
+
     const boxesPage = getBoxesPage(this);
     const boxData = {
       id: `box-${Date.now()}`,
@@ -63,6 +83,13 @@ Given(
 );
 
 Given("I have created multiple boxes", async function(this: CustomWorld) {
+  // Navigate to a valid page first to enable localStorage access
+  const currentUrl = this.page.url();
+  if (!currentUrl || currentUrl === "about:blank" || !currentUrl.startsWith("http")) {
+    await this.page.goto(`${this.baseUrl}/boxes`);
+    await this.page.waitForLoadState("domcontentloaded");
+  }
+
   const boxesPage = getBoxesPage(this);
   const boxes = [
     { id: "box-1", name: "Test Agent 1", tier: "Standard", status: "Stopped" },
@@ -88,6 +115,13 @@ Given("I have created multiple boxes", async function(this: CustomWorld) {
 Given(
   "I have boxes with different statuses",
   async function(this: CustomWorld) {
+    // Navigate to a valid page first to enable localStorage access
+    const currentUrl = this.page.url();
+    if (!currentUrl || currentUrl === "about:blank" || !currentUrl.startsWith("http")) {
+      await this.page.goto(`${this.baseUrl}/boxes`);
+      await this.page.waitForLoadState("domcontentloaded");
+    }
+
     const boxesPage = getBoxesPage(this);
     const boxes = [
       { id: "box-1", name: "Running Box", tier: "Standard", status: "Running" },

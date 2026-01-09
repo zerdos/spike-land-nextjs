@@ -408,10 +408,10 @@ Then(
 Then(
   "the avatar should display {string} as initials",
   async function(this: CustomWorld, initials: string) {
-    // Look for the avatar fallback with initials
-    const avatarFallback = this.page.locator('[class*="avatar-fallback"]')
+    // Look for the avatar fallback with initials using data-testid
+    const avatarFallback = this.page.locator('[data-testid="avatar-fallback"]')
       .first();
-    await expect(avatarFallback).toBeVisible();
+    await expect(avatarFallback).toBeVisible({ timeout: 10000 });
     await expect(avatarFallback).toHaveText(initials);
   },
 );
@@ -543,7 +543,11 @@ Then(
   "the URL should contain {string}",
   async function(this: CustomWorld, urlPart: string) {
     const currentUrl = this.page.url();
-    expect(currentUrl).toContain(urlPart);
+    // Check both encoded and decoded versions for robustness
+    const hasMatch = currentUrl.includes(urlPart) ||
+      currentUrl.includes(encodeURIComponent(urlPart)) ||
+      decodeURIComponent(currentUrl).includes(urlPart);
+    expect(hasMatch).toBe(true);
   },
 );
 
@@ -551,7 +555,10 @@ Then(
 Then(
   "I should see error message {string}",
   async function(this: CustomWorld, errorMessage: string) {
-    const alert = this.page.locator('[role="alert"]');
+    // Exclude Next.js route announcer which also has role="alert"
+    const alert = this.page.locator(
+      '[role="alert"]:not([id="__next-route-announcer__"])',
+    );
     await expect(alert).toBeVisible();
     await expect(alert).toContainText(errorMessage);
   },
@@ -560,9 +567,10 @@ Then(
 Then(
   "I should see error title {string}",
   async function(this: CustomWorld, errorTitle: string) {
-    const alertTitle = this.page.locator('[role="alert"]').getByText(
-      errorTitle,
-    );
+    // Exclude Next.js route announcer which also has role="alert"
+    const alertTitle = this.page.locator(
+      '[role="alert"]:not([id="__next-route-announcer__"])',
+    ).getByText(errorTitle);
     await expect(alertTitle).toBeVisible();
   },
 );
@@ -570,7 +578,10 @@ Then(
 Then(
   "I should see error description containing {string}",
   async function(this: CustomWorld, descriptionPart: string) {
-    const alert = this.page.locator('[role="alert"]');
+    // Exclude Next.js route announcer which also has role="alert"
+    const alert = this.page.locator(
+      '[role="alert"]:not([id="__next-route-announcer__"])',
+    );
     await expect(alert).toBeVisible();
     const text = await alert.textContent();
     expect(text?.toLowerCase()).toContain(descriptionPart.toLowerCase());
