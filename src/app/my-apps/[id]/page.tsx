@@ -185,26 +185,86 @@ export default function AppWorkspacePage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Stream state
+  const [streamingResponse, setStreamingResponse] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+
   // Send message
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || sendingMessage) return;
+    if (!newMessage.trim() || sendingMessage || isStreaming) return;
 
+    const content = newMessage.trim();
+    setNewMessage("");
     setSendingMessage(true);
+    setIsStreaming(true);
+    setStreamingResponse("");
+
     try {
-      const response = await fetch(`/api/apps/${appId}/messages`, {
+      // Optimistically add user message
+      const optimId = `temp-${Date.now()}`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: optimId,
+          role: "USER",
+          content,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+
+      const response = await fetch(`/api/apps/${appId}/agent/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: newMessage.trim() }),
+        body: JSON.stringify({ content }),
       });
 
       if (!response.ok) throw new Error("Failed to send message");
 
-      setNewMessage("");
-      // Message will be added via SSE
-    } catch {
-      console.error("Failed to send message");
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) throw new Error("No reader available");
+
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        buffer += chunk;
+
+        const lines = buffer.split("\n");
+        // Keep the last line in the buffer as it might be incomplete
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.substring(6));
+              if (data.type === "chunk") {
+                setStreamingResponse((prev) => prev + data.content);
+              } else if (data.type === "status") {
+                console.log("Agent status:", data.content);
+              }
+            } catch (e) {
+              console.error("Error parsing SSE data", e);
+            }
+          }
+        }
+      }
+
+      // Refresh messages to get the persisted agent message
+      await fetchMessages();
+      // Reload iframe to show changes
+      setIframeKey((prev) => prev + 1);
+    } catch (e) {
+      console.error("Failed to send message", e);
+      // Revert optimistic message on error (optional, or show error)
     } finally {
       setSendingMessage(false);
+      setIsStreaming(false);
+      setStreamingResponse("");
     }
   };
 
@@ -392,6 +452,17 @@ export default function AppWorkspacePage() {
                       <div ref={messagesEndRef} />
                     </div>
                   )}
+                {isStreaming && streamingResponse && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[80%] rounded-lg px-4 py-2 bg-secondary text-secondary-foreground">
+                      <p className="whitespace-pre-wrap">
+                        {streamingResponse}
+                        <span className="animate-pulse">▊</span>
+                      </p>
+                      <p className="mt-1 text-xs opacity-70">Thinking...</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
             {/* Message Input */}
