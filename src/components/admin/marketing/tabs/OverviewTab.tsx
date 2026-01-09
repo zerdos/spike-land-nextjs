@@ -182,7 +182,7 @@ export function OverviewTab({ className }: OverviewTabProps) {
           <CardContent>
             {loading
               ? (
-                <div className="h-[300px] flex items-center justify-center">
+                <div className="h-[300px] flex items-center justify-center" data-testid="loading">
                   <Skeleton className="h-full w-full" />
                 </div>
               )
@@ -240,7 +240,7 @@ export function OverviewTab({ className }: OverviewTabProps) {
           <CardContent>
             {loading
               ? (
-                <div className="h-[300px] flex items-center justify-center">
+                <div className="h-[300px] flex items-center justify-center" data-testid="loading">
                   <Skeleton className="h-[200px] w-[200px] rounded-full" />
                 </div>
               )

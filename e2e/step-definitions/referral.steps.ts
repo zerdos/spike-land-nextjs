@@ -344,7 +344,7 @@ Then(
     // Wait for popup and verify URL
     const popup = await popupPromise;
     const url = popup.url();
-    expect(url).toContain("twitter.com");
+    expect(url).toMatch(/twitter\.com|x\.com/);
     await popup.close();
   },
 );

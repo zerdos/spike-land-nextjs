@@ -153,6 +153,14 @@ export function SlideshowView({
         </div>
       </div>
 
+      {/* Image counter - visible */}
+      <div
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm text-white/80 text-sm"
+        data-testid="image-counter"
+      >
+        {currentIndex + 1} of {images.length}
+      </div>
+
       {/* Image counter and announcement for screen readers */}
       <div
         className="sr-only"
