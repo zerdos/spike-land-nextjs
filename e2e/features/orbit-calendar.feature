@@ -45,7 +45,7 @@ Feature: Orbit Calendar / Scheduled Posts
     And I enter post content "Exciting company news!"
     And I select a future date and time
     And I select LinkedIn as the target platform
-    And I click "Schedule"
+    And I click the calendar "Schedule" button
     Then the post should be saved as scheduled
     And it should appear on the calendar
 
@@ -56,7 +56,7 @@ Feature: Orbit Calendar / Scheduled Posts
     And I enter post content "Cross-platform announcement"
     And I select a future date and time
     And I select both LinkedIn and Twitter as targets
-    And I click "Schedule"
+    And I click the calendar "Schedule" button
     Then the post should be scheduled for both platforms
     And both platform icons should appear on the calendar
 
@@ -68,7 +68,7 @@ Feature: Orbit Calendar / Scheduled Posts
     And I enable recurrence
     And I set recurrence to "Weekly"
     And I select LinkedIn as the target platform
-    And I click "Schedule"
+    And I click the calendar "Schedule" button
     Then the recurring post should be created
     And it should show recurring indicators on the calendar
 
@@ -80,7 +80,7 @@ Feature: Orbit Calendar / Scheduled Posts
     And I click on the scheduled post
     Then the post details dialog should open
     When I edit the content to "Updated announcement"
-    And I click "Save"
+    And I click the calendar "Save" button
     Then the post should be updated
     And I should see the updated content
 
@@ -98,7 +98,7 @@ Feature: Orbit Calendar / Scheduled Posts
     And I have a Twitter account "Test Twitter" connected
     When I edit the scheduled post
     And I add Twitter as a target
-    And I click "Save"
+    And I click the calendar "Save" button
     Then the post should be scheduled for both platforms
 
   # Deleting/Canceling Posts
@@ -107,7 +107,7 @@ Feature: Orbit Calendar / Scheduled Posts
     Given I have a scheduled post "Post to delete"
     When I navigate to the calendar page
     And I click on the scheduled post
-    And I click "Delete"
+    And I click the calendar "Delete" button
     And I confirm deletion
     Then the post should be removed
     And it should not appear on the calendar
@@ -117,7 +117,7 @@ Feature: Orbit Calendar / Scheduled Posts
     Given I have a scheduled post "Post to cancel"
     When I navigate to the calendar page
     And I click on the scheduled post
-    And I click "Cancel Post"
+    And I click the calendar "Cancel Post" button
     Then the post status should be "Cancelled"
     And it should appear dimmed on the calendar
 
@@ -183,7 +183,7 @@ Feature: Orbit Calendar / Scheduled Posts
     And I enter post content "Test post"
     And I select a future date and time
     And I do not select any platform
-    And I click "Schedule"
+    And I click the calendar "Schedule" button
     Then I should see an error "Please select at least one account"
 
   # Timezone Support
