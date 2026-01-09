@@ -263,18 +263,21 @@ describe("AppWorkspacePage", () => {
     mockFetch.mockImplementation(
       (url: string, options?: { method?: string; }) => {
         if (
-          url.includes("/api/apps/test-app-id/messages") &&
+          url.includes("/api/apps/test-app-id/agent/chat") &&
           options?.method === "POST"
         ) {
+          const stream = new ReadableStream({
+            start(controller) {
+              const encoder = new TextEncoder();
+              const data = JSON.stringify({ type: "chunk", content: "Agent response" });
+              controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+              controller.close();
+            },
+          });
+
           return Promise.resolve({
             ok: true,
-            json: () =>
-              Promise.resolve({
-                id: "new-msg",
-                role: "USER",
-                content: "New message",
-                createdAt: new Date().toISOString(),
-              }),
+            body: stream,
           });
         }
         if (url.includes("/api/apps/test-app-id/messages")) {
@@ -308,7 +311,7 @@ describe("AppWorkspacePage", () => {
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        "/api/apps/test-app-id/messages",
+        "/api/apps/test-app-id/agent/chat",
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ content: "New message" }),
