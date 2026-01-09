@@ -6,7 +6,7 @@ module.exports = {
     format: ["progress-bar", "html:e2e/reports/cucumber-report.html"],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failFast: true, // Stop on first failure
+    failFast: false, // Stop on first failure
     retry: 0, // Don't retry failed scenarios
     tags: "not @skip and not @flaky and not @wip", // Skip scenarios tagged with @skip, @flaky, or @wip (includes @requires-db)
     timeout: 15000, // Increase default step timeout to 15 seconds (was 5 seconds)
@@ -19,7 +19,7 @@ module.exports = {
     format: ["progress-bar", "html:e2e/reports/cucumber-report-fast.html"],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failFast: true,
+    failfast: false,
     retry: 0,
     tags: "@fast and not @skip and not @flaky",
     timeout: 15000,
@@ -32,7 +32,7 @@ module.exports = {
     format: ["progress-bar", "html:e2e/reports/cucumber-report-slow.html"],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failFast: false, // Run all slow tests even if some fail
+    faifFast: false, // Run all slow tests even if some fail
     retry: 1, // Retry slow tests once to handle flakiness
     tags: "@slow and not @skip",
     timeout: 15000,
@@ -64,7 +64,7 @@ module.exports = {
     ],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failFast: true, // In CI, run all tests to get full report
+    failfast: false, // In CI, run all tests to get full report
     retry: 0, // Retry once in CI to handle transient issues
     tags: "not @skip and not @flaky and not @wip", // Include @requires-db tests in sharded runs
     timeout: 10000, // 30 second timeout for CI
@@ -81,7 +81,7 @@ module.exports = {
     ],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failFast: true, // In CI, run all tests to get full report
+    failFast: false, // In CI, run all tests to get full report
     retry: 0, // Retry once in CI to handle transient issues
     tags: "not @skip and not @flaky",
     timeout: 10000,
@@ -115,10 +115,10 @@ module.exports = {
     ],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failFast: true, // Run all DB tests to get full report
+    failFast: false, // Run all DB tests to get full report
     retry: 0, // Retry once for transient DB issues
     tags: "@requires-db and not @skip and not @flaky",
     timeout: 30000, // Longer timeout for DB operations and AI processing
-    parallel: 16, // Parallel DB tests
+    parallel: 1, // Parallel DB tests
   },
 };

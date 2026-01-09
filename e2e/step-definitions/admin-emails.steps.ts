@@ -379,11 +379,12 @@ When(
     await expect(button.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
     await expect(button.first()).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
 
-    // Some buttons may trigger navigation, wait for it to complete
-    await Promise.all([
-      this.page.waitForLoadState("domcontentloaded").catch(() => {}),
-      button.first().click(),
-    ]);
+    await button.first().click();
+
+    // For "Details" button, wait for modal to appear after clicking
+    if (buttonText === "Details") {
+      await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.DEFAULT });
+    }
   },
 );
 
