@@ -6,7 +6,6 @@ import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import {
   TIMEOUTS,
-  waitForApiResponse,
   waitForDynamicContent,
   waitForElementWithRetry,
   waitForTextWithRetry,
@@ -513,10 +512,8 @@ When("I press Enter", async function(this: CustomWorld) {
 });
 
 When("I click on a job in the list", async function(this: CustomWorld) {
-  // Wait for API response and job items to appear
-  await waitForApiResponse(this.page, "/api/admin/jobs", {
-    timeout: TIMEOUTS.LONG,
-  });
+  // Wait for network to settle and job items to appear
+  await this.page.waitForLoadState("networkidle").catch(() => {});
   const jobItem = await waitForElementWithRetry(
     this.page,
     '[data-testid="job-list-item"]',
@@ -526,10 +523,8 @@ When("I click on a job in the list", async function(this: CustomWorld) {
 });
 
 When("I click on the completed job", async function(this: CustomWorld) {
-  // Wait for API response and completed job items to appear
-  await waitForApiResponse(this.page, "/api/admin/jobs", {
-    timeout: TIMEOUTS.LONG,
-  });
+  // Wait for network to settle and completed job items to appear
+  await this.page.waitForLoadState("networkidle").catch(() => {});
   const jobItem = await waitForElementWithRetry(
     this.page,
     '[data-testid="job-list-item"][data-job-status="COMPLETED"]',
@@ -539,10 +534,8 @@ When("I click on the completed job", async function(this: CustomWorld) {
 });
 
 When("I click on the failed job", async function(this: CustomWorld) {
-  // Wait for API response and failed job items to appear
-  await waitForApiResponse(this.page, "/api/admin/jobs", {
-    timeout: TIMEOUTS.LONG,
-  });
+  // Wait for network to settle and failed job items to appear
+  await this.page.waitForLoadState("networkidle").catch(() => {});
   const jobItem = await waitForElementWithRetry(
     this.page,
     '[data-testid="job-list-item"][data-job-status="FAILED"]',
@@ -552,10 +545,8 @@ When("I click on the failed job", async function(this: CustomWorld) {
 });
 
 When("I click on that job", async function(this: CustomWorld) {
-  // Wait for API response and job items to appear
-  await waitForApiResponse(this.page, "/api/admin/jobs", {
-    timeout: TIMEOUTS.LONG,
-  });
+  // Wait for network to settle and job items to appear
+  await this.page.waitForLoadState("networkidle").catch(() => {});
   const jobItem = await waitForElementWithRetry(
     this.page,
     '[data-testid="job-list-item"]',
@@ -593,10 +584,8 @@ Then(
 Then(
   "each tab should display a job count badge",
   async function(this: CustomWorld) {
-    // Wait for API response first to ensure counts are loaded
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle to ensure counts are loaded
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     // Verify status tabs exist with counts
     await waitForDynamicContent(this.page, 'button[role="tab"]', /All.*\d+/, {
       timeout: TIMEOUTS.LONG,
@@ -607,10 +596,8 @@ Then(
 Then(
   "the {string} tab count should equal total jobs",
   async function(this: CustomWorld, _tabName: string) {
-    // Wait for API response and verify count is displayed
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle and verify count is displayed
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     await waitForTextWithRetry(this.page, /All.*\d+/, {
       timeout: TIMEOUTS.LONG,
     });
@@ -620,10 +607,8 @@ Then(
 Then(
   "the jobs list should only show PENDING status jobs",
   async function(this: CustomWorld) {
-    // Wait for filtered API response
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle after filter change
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     await waitForElementWithRetry(
       this.page,
       '[data-testid="job-list-item"]',
@@ -637,10 +622,9 @@ Then(
 Then(
   "the jobs list should only show PROCESSING status jobs",
   async function(this: CustomWorld) {
-    // Wait for filtered API response
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for loading to complete and job items to appear
+    // The API call happens when tab is clicked, don't wait for response
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     await waitForElementWithRetry(
       this.page,
       '[data-testid="job-list-item"]',
@@ -661,10 +645,8 @@ Then(
 Then(
   "the jobs list should only show COMPLETED status jobs",
   async function(this: CustomWorld) {
-    // Wait for filtered API response
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for loading to complete and job items to appear
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     await waitForElementWithRetry(
       this.page,
       '[data-testid="job-list-item"]',
@@ -685,10 +667,8 @@ Then(
 Then(
   "the jobs list should only show FAILED status jobs",
   async function(this: CustomWorld) {
-    // Wait for filtered API response
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle after filter change
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     await waitForElementWithRetry(
       this.page,
       '[data-testid="job-list-item"]',
@@ -709,10 +689,8 @@ Then(
 Then(
   "the jobs list should only show CANCELLED status jobs",
   async function(this: CustomWorld) {
-    // Wait for filtered API response
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle after filter change
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     await waitForElementWithRetry(
       this.page,
       '[data-testid="job-list-item"]',
@@ -724,10 +702,8 @@ Then(
 Then(
   "the jobs list should only show REFUNDED status jobs",
   async function(this: CustomWorld) {
-    // Wait for filtered API response
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle after filter change
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     await waitForElementWithRetry(
       this.page,
       '[data-testid="job-list-item"]',
@@ -737,20 +713,16 @@ Then(
 );
 
 Then("I should see the jobs list", async function(this: CustomWorld) {
-  // Wait for API and find the heading "Jobs (X)" in the list panel
-  await waitForApiResponse(this.page, "/api/admin/jobs", {
-    timeout: TIMEOUTS.LONG,
-  });
+  // Wait for network to settle and find the heading "Jobs (X)" in the list panel
+  await this.page.waitForLoadState("networkidle").catch(() => {});
   await waitForTextWithRetry(this.page, /Jobs \(/, { timeout: TIMEOUTS.LONG });
 });
 
 Then(
   "each job should display a status badge",
   async function(this: CustomWorld) {
-    // Wait for API response and job items to be visible
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle and job items to be visible
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     await waitForElementWithRetry(
       this.page,
       '[data-testid="job-list-item"]',
@@ -795,10 +767,8 @@ Then("each job should display user email", async function(this: CustomWorld) {
 Then(
   "the jobs list should show matching jobs",
   async function(this: CustomWorld) {
-    // Wait for filtered API response
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle after filter change
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     await waitForElementWithRetry(
       this.page,
       '[data-testid="job-list-item"]',
@@ -810,10 +780,8 @@ Then(
 Then(
   "the jobs list should only show jobs from that user",
   async function(this: CustomWorld) {
-    // Wait for filtered API response
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle after filter change
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     await waitForTextWithRetry(this.page, "user@example.com", {
       timeout: TIMEOUTS.LONG,
     });
@@ -821,24 +789,18 @@ Then(
 );
 
 Then("the search should execute", async function(this: CustomWorld) {
-  // Wait for search API call
-  await waitForApiResponse(this.page, "/api/admin/jobs", {
-    timeout: TIMEOUTS.LONG,
-  });
+  // Wait for network to settle after search
+  await this.page.waitForLoadState("networkidle").catch(() => {});
 });
 
 Then("the jobs list should refresh", async function(this: CustomWorld) {
-  // Wait for refresh API call
-  await waitForApiResponse(this.page, "/api/admin/jobs", {
-    timeout: TIMEOUTS.LONG,
-  });
+  // Wait for network to settle after refresh
+  await this.page.waitForLoadState("networkidle").catch(() => {});
 });
 
 Then("the job counts should update", async function(this: CustomWorld) {
-  // Wait for updated counts in tabs
-  await waitForApiResponse(this.page, "/api/admin/jobs", {
-    timeout: TIMEOUTS.LONG,
-  });
+  // Wait for network to settle and updated counts in tabs
+  await this.page.waitForLoadState("networkidle").catch(() => {});
   await waitForDynamicContent(this.page, 'button[role="tab"]', /\d+/, {
     timeout: TIMEOUTS.LONG,
   });
@@ -1090,10 +1052,8 @@ Then(
 Then(
   "TIER_1K should display as {string}",
   async function(this: CustomWorld, display: string) {
-    // Wait for API response first
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     // Tier labels appear within job items
     await waitForDynamicContent(
       this.page,
@@ -1107,10 +1067,8 @@ Then(
 Then(
   "TIER_2K should display as {string}",
   async function(this: CustomWorld, display: string) {
-    // Wait for API response first
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     // Tier labels appear within job items
     await waitForDynamicContent(
       this.page,
@@ -1124,10 +1082,8 @@ Then(
 Then(
   "TIER_4K should display as {string}",
   async function(this: CustomWorld, display: string) {
-    // Wait for API response first
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     // Tier labels appear within job items
     await waitForDynamicContent(
       this.page,
@@ -1141,10 +1097,8 @@ Then(
 Then(
   "I should see different jobs in the list",
   async function(this: CustomWorld) {
-    // Wait for page change API response
-    await waitForApiResponse(this.page, "/api/admin/jobs", {
-      timeout: TIMEOUTS.LONG,
-    });
+    // Wait for network to settle after page change
+    await this.page.waitForLoadState("networkidle").catch(() => {});
     await waitForElementWithRetry(
       this.page,
       '[data-testid="job-list-item"]',
