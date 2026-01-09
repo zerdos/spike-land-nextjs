@@ -505,8 +505,13 @@ When("I delete an image from the list", async function(this: CustomWorld) {
 // NOTE: "I confirm the deletion" is defined in common.steps.ts
 
 When("I attempt to delete an image", async function(this: CustomWorld) {
-  const deleteButton = this.page.getByRole("button", { name: /delete/i })
+  // Try multiple selectors for delete button
+  const deleteButton = this.page.locator('[data-testid="delete-button"]')
+    .or(this.page.getByRole("button", { name: /delete/i }))
     .first();
+
+  // Wait for the delete button to be visible
+  await expect(deleteButton).toBeVisible({ timeout: 15000 });
   await deleteButton.click();
 
   // Wait for confirmation dialog to appear
@@ -679,8 +684,16 @@ Then(
 Then(
   "I should see {string} enhancement option",
   async function(this: CustomWorld, tier: string) {
-    const tierOption = this.page.getByText(tier);
-    await expect(tierOption).toBeVisible();
+    // Map tier codes to display text patterns
+    const tierDisplayMap: Record<string, string> = {
+      TIER_1K: "1K.*1024px|TIER_1K",
+      TIER_2K: "2K.*2048px|TIER_2K",
+      TIER_4K: "4K.*4096px|TIER_4K",
+    };
+
+    const pattern = tierDisplayMap[tier] || tier;
+    const tierOption = this.page.getByText(new RegExp(pattern, "i")).first();
+    await expect(tierOption).toBeVisible({ timeout: 10000 });
   },
 );
 

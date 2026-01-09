@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import * as path from "path";
 
 // Load environment variables from .env.local
-dotenv.config({ path: path.join(__dirname, "..", ".env.local") });
+// Use quiet: true to suppress verbose logging
+dotenv.config({ path: path.join(__dirname, "..", ".env.local"), quiet: true });
 
 async function main() {
   const apiKey = process.env.GEMINI_API_KEY;

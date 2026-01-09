@@ -15,7 +15,8 @@ import { createHash } from "crypto";
 import { config } from "dotenv";
 
 // Load environment variables from .env.local
-config({ path: ".env.local" });
+// Use quiet: true to suppress verbose logging in CI
+config({ path: ".env.local", quiet: true });
 
 /**
  * E2E Test Data Seed Script
@@ -122,32 +123,39 @@ async function main() {
   console.log("Set token balance: 100");
 
   // 3. Create test images (using placeholder URLs)
+  // First image has shareToken for share page tests
   const testImages = await Promise.all(
     Array.from({ length: 5 }, (_, i) =>
       prisma.enhancedImage.upsert({
         where: { id: `e2e-test-image-${i + 1}` },
-        update: {},
+        update: {
+          // Update shareToken for first image if it already exists
+          ...(i === 0 ? { shareToken: "e2e-share-token-123" } : {}),
+        },
         create: {
           id: `e2e-test-image-${i + 1}`,
           userId: TEST_USER_ID,
           name: `E2E Test Image ${i + 1}.jpg`,
-          originalUrl: `https://placehold.co/800x600.png/333/white?text=E2E+Image+${i + 1}`,
+          originalUrl: `https://placehold.co/800x600/333/white.png?text=E2E+Image+${i + 1}`,
           originalR2Key: `e2e-test/image-${i + 1}.jpg`,
           originalWidth: 800,
           originalHeight: 600,
           originalSizeBytes: 50000,
           originalFormat: "jpeg",
           isPublic: false,
+          // First image gets shareToken for share page tests
+          ...(i === 0 ? { shareToken: "e2e-share-token-123" } : {}),
         },
       })),
   );
   console.log(`Created ${testImages.length} test images`);
 
   // 4. Create UNLISTED album with images (for canvas tests)
+  // Note: Album uses different share token than EnhancedImage for separate test scenarios
   const unlistedAlbum = await prisma.album.upsert({
     where: { id: "e2e-unlisted-album" },
     update: {
-      shareToken: "e2e-share-token-123",
+      shareToken: "e2e-album-share-token-456",
     },
     create: {
       id: "e2e-unlisted-album",
@@ -155,7 +163,7 @@ async function main() {
       name: "E2E Test Album",
       description: "Album for E2E canvas display tests",
       privacy: AlbumPrivacy.UNLISTED,
-      shareToken: "e2e-share-token-123",
+      shareToken: "e2e-album-share-token-456",
     },
   });
   console.log("Created UNLISTED album:", unlistedAlbum.id);
@@ -285,7 +293,7 @@ async function main() {
           ? new Date()
           : null,
         enhancedUrl: jobConfig.status === JobStatus.COMPLETED
-          ? "https://placehold.co/2048x1536.png/333/white?text=Enhanced"
+          ? "https://placehold.co/2048x1536/333/white.png?text=Enhanced"
           : null,
         enhancedR2Key: jobConfig.status === JobStatus.COMPLETED
           ? "e2e-test/enhanced-1.jpg"
@@ -372,8 +380,8 @@ async function main() {
       title: "E2E Test Portrait",
       description: "A beautiful AI-enhanced portrait for E2E testing",
       category: GalleryCategory.PORTRAIT,
-      originalUrl: "https://placehold.co/800x1200.png/333/white?text=Original+Portrait",
-      enhancedUrl: "https://placehold.co/2048x3072.png/333/white?text=Enhanced+Portrait",
+      originalUrl: "https://placehold.co/800x1200/333/white.png?text=Original+Portrait",
+      enhancedUrl: "https://placehold.co/2048x3072/333/white.png?text=Enhanced+Portrait",
       width: 2,
       height: 3,
       sortOrder: 0,
@@ -390,8 +398,8 @@ async function main() {
       title: "E2E Test Landscape",
       description: "A stunning AI-enhanced landscape for E2E testing",
       category: GalleryCategory.LANDSCAPE,
-      originalUrl: "https://placehold.co/1200x800.png/333/white?text=Original+Landscape",
-      enhancedUrl: "https://placehold.co/3072x2048.png/333/white?text=Enhanced+Landscape",
+      originalUrl: "https://placehold.co/1200x800/333/white.png?text=Original+Landscape",
+      enhancedUrl: "https://placehold.co/3072x2048/333/white.png?text=Enhanced+Landscape",
       width: 3,
       height: 2,
       sortOrder: 1,
@@ -713,7 +721,7 @@ async function main() {
         variantId: "tshirt-classic-m",
         productName: "Classic T-Shirt",
         variantName: "Medium",
-        imageUrl: "https://placehold.co/400x400.png/333/white?text=TShirt",
+        imageUrl: "https://placehold.co/400x400/333/white.png?text=TShirt",
         imageR2Key: "e2e/tshirt-classic.png",
         quantity: 1,
         unitPrice: 29.99,
@@ -758,7 +766,7 @@ async function main() {
         variantId: "print-premium-lustre-a4",
         productName: "Premium Lustre Print",
         variantName: "A4",
-        imageUrl: "https://placehold.co/400x400.png/333/white?text=Print+A4",
+        imageUrl: "https://placehold.co/400x400/333/white.png?text=Print+A4",
         imageR2Key: "e2e/print-a4.png",
         quantity: 1,
         unitPrice: 19.99,
@@ -775,7 +783,7 @@ async function main() {
         variantId: "tshirt-classic-l",
         productName: "Classic T-Shirt",
         variantName: "Large",
-        imageUrl: "https://placehold.co/400x400.png/333/white?text=TShirt+L",
+        imageUrl: "https://placehold.co/400x400/333/white.png?text=TShirt+L",
         imageR2Key: "e2e/tshirt-classic-l.png",
         quantity: 1,
         unitPrice: 29.99,
@@ -820,7 +828,7 @@ async function main() {
         variantId: "print-premium-lustre-a3",
         productName: "Premium Lustre Print",
         variantName: "A3",
-        imageUrl: "https://placehold.co/400x400.png/333/white?text=Print+A3",
+        imageUrl: "https://placehold.co/400x400/333/white.png?text=Print+A3",
         imageR2Key: "e2e/print-a3.png",
         quantity: 1,
         unitPrice: 29.99,

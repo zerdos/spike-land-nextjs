@@ -275,8 +275,12 @@ Then(
 Then(
   "I should see {string} step",
   async function(this: CustomWorld, stepText: string) {
-    const step = this.page.getByText(stepText);
-    await expect(step).toBeVisible();
+    // Scope to the How It Works section to avoid strict mode violation
+    const howItWorksSection = this.page.locator("section, div").filter({
+      has: this.page.getByRole("heading", { name: /How It Works/i }),
+    });
+    const step = howItWorksSection.getByRole("heading", { name: stepText });
+    await expect(step.first()).toBeVisible();
   },
 );
 
@@ -340,7 +344,7 @@ Then(
     // Wait for popup and verify URL
     const popup = await popupPromise;
     const url = popup.url();
-    expect(url).toContain("twitter.com");
+    expect(url).toMatch(/twitter\.com|x\.com/);
     await popup.close();
   },
 );

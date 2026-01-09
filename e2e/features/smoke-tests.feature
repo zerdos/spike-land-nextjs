@@ -213,7 +213,7 @@ Feature: Smoke Tests
   Scenario: Authenticated user sees logout option
     Given I am logged in as "Test User" with email "test@example.com"
     When I visit "/"
-    Then I should see "Sign Out" or "Logout" option
+    Then I should see "Sign Out" or "Log out" option
 
   @fast
   Scenario: Footer links load correctly

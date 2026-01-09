@@ -8,11 +8,12 @@ import path from "path";
 import { startCoverage, stopCoverage } from "./helpers/coverage-helper";
 
 // Load environment variables from .env.local if it exists
+// Use quiet: true to suppress verbose logging in CI
 if (fs.existsSync(path.resolve(process.cwd(), ".env.local"))) {
-  dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+  dotenv.config({ path: path.resolve(process.cwd(), ".env.local"), quiet: true });
 } else {
   // Fallback to .env
-  dotenv.config();
+  dotenv.config({ quiet: true });
 }
 
 export interface CucumberWorldConstructorParams {
@@ -21,9 +22,22 @@ export interface CucumberWorldConstructorParams {
 
 export class CustomWorld extends World {
   browser!: Browser;
-  context!: BrowserContext;
-  page!: Page;
+  protected _context!: BrowserContext;
+  protected _page!: Page;
   baseUrl: string;
+
+  get context(): BrowserContext {
+    return this._context;
+  }
+  set context(c: BrowserContext) {
+    this._context = c;
+  }
+  get page(): Page {
+    return this._page;
+  }
+  set page(p: Page) {
+    this._page = p;
+  }
 
   constructor(options: IWorldOptions) {
     super(options);
@@ -34,7 +48,7 @@ export class CustomWorld extends World {
   /**
    * Get extra HTTP headers for E2E test authentication bypass
    */
-  private getExtraHTTPHeaders(): Record<string, string> | undefined {
+  protected getExtraHTTPHeaders(): Record<string, string> | undefined {
     const extraHTTPHeaders: Record<string, string> = {};
 
     // Add E2E bypass header if secret is configured
