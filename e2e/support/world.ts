@@ -21,9 +21,22 @@ export interface CucumberWorldConstructorParams {
 
 export class CustomWorld extends World {
   browser!: Browser;
-  context!: BrowserContext;
-  page!: Page;
+  protected _context!: BrowserContext;
+  protected _page!: Page;
   baseUrl: string;
+
+  get context(): BrowserContext {
+    return this._context;
+  }
+  set context(c: BrowserContext) {
+    this._context = c;
+  }
+  get page(): Page {
+    return this._page;
+  }
+  set page(p: Page) {
+    this._page = p;
+  }
 
   constructor(options: IWorldOptions) {
     super(options);
@@ -34,7 +47,7 @@ export class CustomWorld extends World {
   /**
    * Get extra HTTP headers for E2E test authentication bypass
    */
-  private getExtraHTTPHeaders(): Record<string, string> | undefined {
+  protected getExtraHTTPHeaders(): Record<string, string> | undefined {
     const extraHTTPHeaders: Record<string, string> = {};
 
     // Add E2E bypass header if secret is configured
