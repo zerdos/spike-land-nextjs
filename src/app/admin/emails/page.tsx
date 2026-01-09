@@ -371,6 +371,8 @@ export default function EmailLogsPage() {
           onClick={() => setSelectedEmail(null)}
         >
           <Card
+            role="dialog"
+            aria-modal="true"
             className="max-h-[80vh] w-full max-w-lg overflow-auto p-6"
             onClick={(e) => e.stopPropagation()}
           >

@@ -44,8 +44,8 @@ Given(
         title: "Test Portrait",
         description: "A test portrait image",
         category: "PORTRAIT",
-        originalUrl: "https://example.com/original1.jpg",
-        enhancedUrl: "https://example.com/enhanced1.jpg",
+        originalUrl: "https://placehold.co/400x300/purple/white?text=Portrait",
+        enhancedUrl: "https://placehold.co/400x300/purple/white?text=Portrait+Enhanced",
         isActive: true,
         sortOrder: 1,
         sourceImageId: "img-1",
@@ -58,8 +58,8 @@ Given(
         title: "Test Landscape",
         description: "A test landscape image",
         category: "LANDSCAPE",
-        originalUrl: "https://example.com/original2.jpg",
-        enhancedUrl: "https://example.com/enhanced2.jpg",
+        originalUrl: "https://placehold.co/400x300/green/white?text=Landscape",
+        enhancedUrl: "https://placehold.co/400x300/green/white?text=Landscape+Enhanced",
         isActive: false,
         sortOrder: 2,
         sourceImageId: "img-2",
@@ -178,7 +178,8 @@ Given(
 Given(
   "there are enhanced images available",
   async function(this: CustomWorld) {
-    await this.page.route("**/api/admin/gallery/images**", async (route) => {
+    // Mock the browse API endpoint used by ImageBrowserDialog
+    await this.page.route("**/api/admin/gallery/browse**", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -186,10 +187,22 @@ Given(
           images: [
             {
               id: "img-1",
-              originalUrl: "https://example.com/original1.jpg",
-              enhancedUrl: "https://example.com/enhanced1.jpg",
-              jobId: "job-1",
+              originalUrl: "https://placehold.co/400x300/purple/white?text=Test",
+              shareToken: "test-token-123",
               createdAt: new Date().toISOString(),
+              user: {
+                id: "user-1",
+                name: "Test User",
+                email: "test@example.com",
+              },
+              enhancementJobs: [
+                {
+                  id: "job-1",
+                  tier: "TIER_1K",
+                  enhancedUrl: "https://placehold.co/400x300/purple/white?text=Enhanced",
+                  createdAt: new Date().toISOString(),
+                },
+              ],
             },
           ],
         }),
@@ -432,22 +445,49 @@ When("I note the gallery item count", async function(this: CustomWorld) {
 });
 
 When("I select an image from the browser", async function(this: CustomWorld) {
-  // Wait for modal to be visible
+  // Wait for browse dialog to be visible
   await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.LONG });
 
-  // Click on the first available image in the browser dialog
-  const imageButton = this.page.locator('[role="dialog"] button').filter({
-    hasText: /select/i,
-  })
+  // The ImageBrowserDialog requires a search to be performed first
+  // Enter a search query (the mock will return results for any query)
+  const searchInput = this.page.locator('[role="dialog"] input#search-query');
+  await expect(searchInput).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await searchInput.fill("test");
+
+  // Click the Search button
+  const searchButton = this.page
+    .locator('[role="dialog"]')
+    .getByRole("button", { name: "Search" });
+  await expect(searchButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await searchButton.click();
+
+  // Wait for images to load (mock returns one image)
+  const imageCard = this.page.locator('[role="dialog"] .Card').first();
+  await expect(imageCard).toBeVisible({ timeout: TIMEOUTS.LONG });
+
+  // Click on the first image to select it
+  await imageCard.click();
+
+  // Wait for enhancement jobs to appear and click the first one
+  const enhancementCard = this.page
+    .locator('[role="dialog"]')
+    .locator(".Card")
+    .filter({ hasText: /TIER/i })
     .first();
-  if (await imageButton.isVisible()) {
-    await imageButton.click();
-  } else {
-    // Fall back to clicking an image directly
-    const image = this.page.locator('[role="dialog"] img').first();
-    await expect(image).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    await image.click();
-  }
+  await expect(enhancementCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await enhancementCard.click();
+
+  // Click "Use This Enhancement" to confirm selection
+  const confirmButton = this.page
+    .locator('[role="dialog"]')
+    .getByRole("button", {
+      name: /use this enhancement/i,
+    });
+  await expect(confirmButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  await confirmButton.click();
+
+  // Wait for the add gallery form dialog to appear
+  await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.DEFAULT });
 });
 
 When(

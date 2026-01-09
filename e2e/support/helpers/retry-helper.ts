@@ -97,10 +97,14 @@ export async function waitForElementWithRetry(
     try {
       const element = page.locator(selector);
 
+      // Use .first() for visibility/attached checks to avoid strict mode violations
+      // when selector matches multiple elements. The full locator is still returned.
       if (state === "visible") {
-        await expect(element).toBeVisible({ timeout: retryInterval * 2 });
+        await expect(element.first()).toBeVisible({ timeout: retryInterval * 2 });
       } else if (state === "attached") {
-        await expect(element).toBeAttached({ timeout: retryInterval * 2 });
+        await expect(element.first()).toBeAttached({
+          timeout: retryInterval * 2,
+        });
       } else if (state === "hidden") {
         await expect(element).toBeHidden({ timeout: retryInterval * 2 });
       }
