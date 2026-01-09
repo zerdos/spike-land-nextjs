@@ -679,8 +679,16 @@ Then(
 Then(
   "I should see {string} enhancement option",
   async function(this: CustomWorld, tier: string) {
-    const tierOption = this.page.getByText(tier);
-    await expect(tierOption).toBeVisible();
+    // Map tier codes to display text patterns
+    const tierDisplayMap: Record<string, string> = {
+      TIER_1K: "1K.*1024px|TIER_1K",
+      TIER_2K: "2K.*2048px|TIER_2K",
+      TIER_4K: "4K.*4096px|TIER_4K",
+    };
+
+    const pattern = tierDisplayMap[tier] || tier;
+    const tierOption = this.page.getByText(new RegExp(pattern, "i")).first();
+    await expect(tierOption).toBeVisible({ timeout: 10000 });
   },
 );
 
