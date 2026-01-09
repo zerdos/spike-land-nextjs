@@ -409,7 +409,7 @@ When(
 );
 
 When(
-  "I click {string}",
+  "I click the calendar {string} button",
   async function(this: CustomWorld, buttonText: string) {
     // Mock the create/update API
     await this.page.route("**/api/orbit/scheduled-posts", async (route) => {
