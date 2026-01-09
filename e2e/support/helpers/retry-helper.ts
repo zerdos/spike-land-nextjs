@@ -323,7 +323,9 @@ export async function waitForTextWithRetry(
     page,
     async () => {
       const element = page.getByText(text, { exact });
-      await expect(element).toBeVisible({
+      // Use .first() for visibility check to avoid strict mode violations
+      // when text matches multiple elements. The full locator is still returned.
+      await expect(element.first()).toBeVisible({
         timeout: TIMEOUTS.RETRY_INTERVAL * 2,
       });
       return element;
