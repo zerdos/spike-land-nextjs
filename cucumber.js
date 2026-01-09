@@ -19,7 +19,7 @@ module.exports = {
     format: ["progress-bar", "html:e2e/reports/cucumber-report-fast.html"],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failfast: false,
+    failFast: false,
     retry: 0,
     tags: "@fast and not @skip and not @flaky",
     timeout: 15000,
@@ -32,7 +32,7 @@ module.exports = {
     format: ["progress-bar", "html:e2e/reports/cucumber-report-slow.html"],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    faifFast: false, // Run all slow tests even if some fail
+    failFast: false, // Run all slow tests even if some fail
     retry: 1, // Retry slow tests once to handle flakiness
     tags: "@slow and not @skip",
     timeout: 15000,
@@ -64,11 +64,11 @@ module.exports = {
     ],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failfast: false, // In CI, run all tests to get full report
+    failFast: false, // In CI, run all tests to get full report
     retry: 0, // Retry once in CI to handle transient issues
     tags: "not @skip and not @flaky and not @wip", // Include @requires-db tests in sharded runs
     timeout: 10000, // 30 second timeout for CI
-    parallel: 1, // Run 4 scenarios in parallel
+    parallel: 4,
   },
   local: {
     paths: ["e2e/features/**/*.feature"],
