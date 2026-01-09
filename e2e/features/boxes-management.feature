@@ -18,8 +18,8 @@ Feature: Browser Agent Box Management
   Scenario: Tier selection cards are displayed
     Given I visit "/boxes/new"
     Then I should see the "Standard" tier card
-    And I should see the "Professional" tier card
-    And I should see the "Enterprise" tier card
+    And I should see the "Pro" tier card
+    And I should see the "Ultra" tier card
     And each tier card should display pricing information
 
   @fast
@@ -144,8 +144,8 @@ Feature: Browser Agent Box Management
     And I navigate to the box detail page for "Upgrade Test Box"
     When I click the "Upgrade" button
     Then I should see the tier upgrade modal
-    And I should see the "Professional" upgrade option
-    And I should see the "Enterprise" upgrade option
+    And I should see the "Pro" upgrade option
+    And I should see the "Ultra" upgrade option
 
   # Search and Filter Tests
   @requires-db
