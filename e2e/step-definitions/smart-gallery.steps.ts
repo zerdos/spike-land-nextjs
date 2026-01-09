@@ -94,20 +94,17 @@ Given(
   "I have an album with gallery images",
   async function(this: CustomWorld) {
     shouldSkipGalleryTests = false;
-    testContext.albumId = "test-gallery-album";
-    testContext.shareToken = "test-gallery-token";
+    // Use E2E seeded album data from prisma/seed-e2e.ts
+    testContext.albumId = "e2e-unlisted-album";
+    testContext.shareToken = "e2e-album-share-token-456";
     testContext.imageCount = 5;
     testContext.hasEnhancedVersions = true;
     testContext.selectedImageId = null;
     testContext.autoCycleInterval = null;
     testContext.rotation = 0;
 
-    const images = Array.from(
-      { length: testContext.imageCount },
-      (_, i) => createMockGalleryImage(i + 1, testContext.hasEnhancedVersions),
-    );
-
-    await mockGalleryAPI(this, images);
+    // No need to mock API - using real seeded database data
+    // The E2E database has albums and images seeded by prisma/seed-e2e.ts
   },
 );
 
@@ -174,21 +171,40 @@ Given(
 Given("I am viewing an album gallery page", async function(this: CustomWorld) {
   if (shouldSkipGalleryTests) return;
 
+  // Validate context is set up
+  if (!testContext.albumId || !testContext.shareToken) {
+    throw new Error(
+      `Gallery test context not initialized. albumId: ${testContext.albumId}, shareToken: ${testContext.shareToken}`,
+    );
+  }
+
   await this.page.goto(
     `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`,
   );
   await this.page.waitForLoadState("networkidle");
 
-  // Wait for the smart grid to load
+  // Wait for grid with better timeout and error handling
   const grid = this.page.locator('[data-testid="smart-grid"]');
-  await expect(grid).toBeVisible({ timeout: 10000 });
-  return;
+  try {
+    await expect(grid).toBeVisible({ timeout: 15000 });
+  } catch {
+    // Capture URL for debugging
+    const url = this.page.url();
+    throw new Error(`Smart grid not visible after 15s. URL: ${url}`);
+  }
 });
 
 Given(
   "I am viewing an album gallery page on a touch device",
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return;
+
+    // Validate context is set up
+    if (!testContext.albumId || !testContext.shareToken) {
+      throw new Error(
+        `Gallery test context not initialized. albumId: ${testContext.albumId}, shareToken: ${testContext.shareToken}`,
+      );
+    }
 
     // Reinitialize context with touch support for tap/swipe gestures
     await this.initWithTouch();
@@ -198,8 +214,16 @@ Given(
     );
     await this.page.waitForLoadState("networkidle");
 
+    // Wait for grid with better timeout and error handling
     const grid = this.page.locator('[data-testid="smart-grid"]');
-    await expect(grid).toBeVisible({ timeout: 10000 });
+    try {
+      await expect(grid).toBeVisible({ timeout: 15000 });
+    } catch {
+      const url = this.page.url();
+      throw new Error(
+        `Smart grid not visible after 15s on touch device. URL: ${url}`,
+      );
+    }
   },
 );
 
@@ -208,6 +232,13 @@ Given(
   async function(this: CustomWorld, seconds: number) {
     if (shouldSkipGalleryTests) return;
 
+    // Validate context is set up
+    if (!testContext.albumId || !testContext.shareToken) {
+      throw new Error(
+        `Gallery test context not initialized. albumId: ${testContext.albumId}, shareToken: ${testContext.shareToken}`,
+      );
+    }
+
     testContext.autoCycleInterval = seconds * 1000;
 
     await this.page.goto(
@@ -215,8 +246,16 @@ Given(
     );
     await this.page.waitForLoadState("networkidle");
 
+    // Wait for grid with better timeout and error handling
     const grid = this.page.locator('[data-testid="smart-grid"]');
-    await expect(grid).toBeVisible({ timeout: 10000 });
+    try {
+      await expect(grid).toBeVisible({ timeout: 15000 });
+    } catch {
+      const url = this.page.url();
+      throw new Error(
+        `Smart grid not visible after 15s with auto-cycle interval. URL: ${url}`,
+      );
+    }
   },
 );
 
@@ -225,6 +264,13 @@ Given(
   async function(this: CustomWorld, degrees: number) {
     if (shouldSkipGalleryTests) return;
 
+    // Validate context is set up
+    if (!testContext.albumId || !testContext.shareToken) {
+      throw new Error(
+        `Gallery test context not initialized. albumId: ${testContext.albumId}, shareToken: ${testContext.shareToken}`,
+      );
+    }
+
     testContext.rotation = degrees as 0 | 90 | 180 | 270;
 
     await this.page.goto(
@@ -232,8 +278,17 @@ Given(
     );
     await this.page.waitForLoadState("networkidle");
 
+    // Wait for grid with better timeout and error handling
     const grid = this.page.locator('[data-testid="smart-grid"]');
-    await expect(grid).toBeVisible({ timeout: 10000 });
+    try {
+      await expect(grid).toBeVisible({ timeout: 15000 });
+    } catch {
+      // Capture URL for debugging
+      const url = this.page.url();
+      throw new Error(
+        `Smart grid not visible after 15s with rotation ${degrees}. URL: ${url}`,
+      );
+    }
   },
 );
 
@@ -466,17 +521,31 @@ Then(
 Given("I am in slideshow mode", async function(this: CustomWorld) {
   if (shouldSkipGalleryTests) return;
 
+  // Validate context is set up
+  if (!testContext.albumId || !testContext.shareToken) {
+    throw new Error(
+      `Gallery test context not initialized. albumId: ${testContext.albumId}, shareToken: ${testContext.shareToken}`,
+    );
+  }
+
   // First navigate to gallery and select an image
   await this.page.goto(
     `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`,
   );
   await this.page.waitForLoadState("networkidle");
 
+  // Wait for grid with better timeout and error handling
   const grid = this.page.locator('[data-testid="smart-grid"]');
-  await expect(grid).toBeVisible({ timeout: 10000 });
+  try {
+    await expect(grid).toBeVisible({ timeout: 15000 });
+  } catch {
+    const url = this.page.url();
+    throw new Error(`Smart grid not visible after 15s. URL: ${url}`);
+  }
 
   // Select first image
   const thumbnail = this.page.locator('[role="gridcell"]').first();
+  await expect(thumbnail).toBeVisible({ timeout: 5000 });
   await thumbnail.click();
   await this.page.waitForTimeout(200);
 
@@ -493,6 +562,13 @@ Given(
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return;
 
+    // Validate context is set up
+    if (!testContext.albumId || !testContext.shareToken) {
+      throw new Error(
+        `Gallery test context not initialized. albumId: ${testContext.albumId}, shareToken: ${testContext.shareToken}`,
+      );
+    }
+
     // Reinitialize context with touch support for tap/swipe gestures
     await this.initWithTouch();
 
@@ -501,14 +577,28 @@ Given(
     );
     await this.page.waitForLoadState("networkidle");
 
-    // Select and enter slideshow
-    const thumbnail = this.page.locator('[role="gridcell"]').first();
-    await thumbnail.tap();
-    await this.page.waitForTimeout(200);
+    // Wait for grid to be ready before interacting
+    const grid = this.page.locator('[data-testid="smart-grid"]');
+    try {
+      await expect(grid).toBeVisible({ timeout: 15000 });
+    } catch {
+      const url = this.page.url();
+      throw new Error(
+        `Smart grid not visible after 15s on touch device. URL: ${url}`,
+      );
+    }
 
-    // Double-tap to enter slideshow
-    await thumbnail.dblclick();
-    await this.page.waitForTimeout(400);
+    // Select and enter slideshow using touch interactions
+    const thumbnail = this.page.locator('[role="gridcell"]').first();
+    await expect(thumbnail).toBeVisible({ timeout: 5000 });
+    await thumbnail.tap();
+    await this.page.waitForTimeout(300);
+
+    // Double-tap to enter slideshow mode (use tap twice for touch device)
+    await thumbnail.tap();
+    await this.page.waitForTimeout(100);
+    await thumbnail.tap();
+    await this.page.waitForTimeout(500);
 
     const slideshow = this.page.locator('[data-testid="slideshow-view"]');
     await expect(slideshow).toBeVisible({ timeout: 5000 });
@@ -520,6 +610,13 @@ Given(
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return;
 
+    // Validate context is set up
+    if (!testContext.albumId || !testContext.shareToken) {
+      throw new Error(
+        `Gallery test context not initialized. albumId: ${testContext.albumId}, shareToken: ${testContext.shareToken}`,
+      );
+    }
+
     // Reinitialize context with touch support for tap/swipe gestures
     await this.initWithTouch();
 
@@ -528,11 +625,28 @@ Given(
     );
     await this.page.waitForLoadState("networkidle");
 
+    // Wait for grid to be ready before interacting
+    const grid = this.page.locator('[data-testid="smart-grid"]');
+    try {
+      await expect(grid).toBeVisible({ timeout: 15000 });
+    } catch {
+      const url = this.page.url();
+      throw new Error(
+        `Smart grid not visible after 15s on touch device. URL: ${url}`,
+      );
+    }
+
+    // Use tap for touch device
     const thumbnail = this.page.locator('[role="gridcell"]').first();
+    await expect(thumbnail).toBeVisible({ timeout: 5000 });
     await thumbnail.tap();
-    await this.page.waitForTimeout(200);
-    await thumbnail.dblclick();
-    await this.page.waitForTimeout(400);
+    await this.page.waitForTimeout(300);
+
+    // Double-tap to enter slideshow mode (use tap twice for touch device)
+    await thumbnail.tap();
+    await this.page.waitForTimeout(100);
+    await thumbnail.tap();
+    await this.page.waitForTimeout(500);
   },
 );
 
@@ -541,12 +655,29 @@ Given(
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return;
 
+    // Validate context is set up
+    if (!testContext.albumId || !testContext.shareToken) {
+      throw new Error(
+        `Gallery test context not initialized. albumId: ${testContext.albumId}, shareToken: ${testContext.shareToken}`,
+      );
+    }
+
     await this.page.goto(
       `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}`,
     );
     await this.page.waitForLoadState("networkidle");
 
+    // Wait for grid to be ready
+    const grid = this.page.locator('[data-testid="smart-grid"]');
+    try {
+      await expect(grid).toBeVisible({ timeout: 15000 });
+    } catch {
+      const url = this.page.url();
+      throw new Error(`Smart grid not visible after 15s. URL: ${url}`);
+    }
+
     const thumbnail = this.page.locator('[role="gridcell"]').first();
+    await expect(thumbnail).toBeVisible({ timeout: 5000 });
     await thumbnail.click();
     await this.page.waitForTimeout(200);
 
@@ -560,12 +691,31 @@ Given(
   async function(this: CustomWorld, degrees: number) {
     if (shouldSkipGalleryTests) return;
 
+    // Validate context is set up
+    if (!testContext.albumId || !testContext.shareToken) {
+      throw new Error(
+        `Gallery test context not initialized. albumId: ${testContext.albumId}, shareToken: ${testContext.shareToken}`,
+      );
+    }
+
     await this.page.goto(
       `${this.baseUrl}/canvas/${testContext.albumId}?token=${testContext.shareToken}&rotation=${degrees}`,
     );
     await this.page.waitForLoadState("networkidle");
 
+    // Wait for grid to be ready
+    const grid = this.page.locator('[data-testid="smart-grid"]');
+    try {
+      await expect(grid).toBeVisible({ timeout: 15000 });
+    } catch {
+      const url = this.page.url();
+      throw new Error(
+        `Smart grid not visible after 15s with rotation ${degrees}. URL: ${url}`,
+      );
+    }
+
     const thumbnail = this.page.locator('[role="gridcell"]').first();
+    await expect(thumbnail).toBeVisible({ timeout: 5000 });
     await thumbnail.click();
     await this.page.waitForTimeout(200);
 

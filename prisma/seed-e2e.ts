@@ -122,11 +122,15 @@ async function main() {
   console.log("Set token balance: 100");
 
   // 3. Create test images (using placeholder URLs)
+  // First image has shareToken for share page tests
   const testImages = await Promise.all(
     Array.from({ length: 5 }, (_, i) =>
       prisma.enhancedImage.upsert({
         where: { id: `e2e-test-image-${i + 1}` },
-        update: {},
+        update: {
+          // Update shareToken for first image if it already exists
+          ...(i === 0 ? { shareToken: "e2e-share-token-123" } : {}),
+        },
         create: {
           id: `e2e-test-image-${i + 1}`,
           userId: TEST_USER_ID,
@@ -138,16 +142,19 @@ async function main() {
           originalSizeBytes: 50000,
           originalFormat: "jpeg",
           isPublic: false,
+          // First image gets shareToken for share page tests
+          ...(i === 0 ? { shareToken: "e2e-share-token-123" } : {}),
         },
       })),
   );
   console.log(`Created ${testImages.length} test images`);
 
   // 4. Create UNLISTED album with images (for canvas tests)
+  // Note: Album uses different share token than EnhancedImage for separate test scenarios
   const unlistedAlbum = await prisma.album.upsert({
     where: { id: "e2e-unlisted-album" },
     update: {
-      shareToken: "e2e-share-token-123",
+      shareToken: "e2e-album-share-token-456",
     },
     create: {
       id: "e2e-unlisted-album",
@@ -155,7 +162,7 @@ async function main() {
       name: "E2E Test Album",
       description: "Album for E2E canvas display tests",
       privacy: AlbumPrivacy.UNLISTED,
-      shareToken: "e2e-share-token-123",
+      shareToken: "e2e-album-share-token-456",
     },
   });
   console.log("Created UNLISTED album:", unlistedAlbum.id);

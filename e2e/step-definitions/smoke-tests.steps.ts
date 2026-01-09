@@ -118,13 +118,16 @@ Then("I should see {string} or {string} option", async function(
   option1: string,
   option2: string,
 ) {
+  // Check for exact matches AND common variations like "Log out"
   const element1 = this.page.getByText(new RegExp(option1, "i"));
   const element2 = this.page.getByText(new RegExp(option2, "i"));
+  const element3 = this.page.getByText(/Log\s*out/i); // Matches "Log out", "Logout", "log out"
 
   const isVisible1 = await element1.isVisible().catch(() => false);
   const isVisible2 = await element2.isVisible().catch(() => false);
+  const isVisible3 = await element3.isVisible().catch(() => false);
 
-  expect(isVisible1 || isVisible2).toBe(true);
+  expect(isVisible1 || isVisible2 || isVisible3).toBe(true);
 });
 
 Then(

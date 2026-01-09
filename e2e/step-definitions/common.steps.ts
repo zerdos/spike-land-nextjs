@@ -180,9 +180,21 @@ Then(
 When(
   "I click the {string} tab",
   async function(this: CustomWorld, tabName: string) {
+    // Wait for loading states to disappear first
+    const loadingElement = this.page.locator(".loading, .animate-pulse, .skeleton").first();
+    const isLoadingVisible = await loadingElement.isVisible().catch(() => false);
+    if (isLoadingVisible) {
+      await loadingElement.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    }
+
     const tab = this.page.getByRole("tab", { name: new RegExp(tabName, "i") })
       .or(this.page.getByRole("button", { name: new RegExp(tabName, "i") }));
+
+    // Add visibility check and scroll like button clicking
+    await expect(tab.first()).toBeVisible({ timeout: 15000 });
+    await tab.first().scrollIntoViewIfNeeded();
     await tab.first().click();
+
     // Wait for tab content to load
     await waitForPageReady(this.page, { strategy: "domcontentloaded" });
   },
