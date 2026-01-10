@@ -2124,6 +2124,9 @@ model Workspace {
   // Scout content suggestions
   contentSuggestions    ContentSuggestion[]
 
+  // Allocator models
+  allocatorCampaigns    AllocatorCampaign[]
+
   @@index([slug])
   @@index([isPersonal])
   @@map("workspaces")
@@ -3011,4 +3014,53 @@ enum SuggestionStatus {
   ACCEPTED
   DISMISSED
   USED
+}
+
+// =============================================================================
+// Allocator Models
+// =============================================================================
+
+enum AllocatorPlatform {
+  FACEBOOK_ADS
+  GOOGLE_ADS
+  LINKEDIN_ADS
+}
+
+model AllocatorCampaign {
+  id                 String            @id @default(cuid())
+  workspaceId        String
+  workspace          Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  platform           AllocatorPlatform
+  platformCampaignId String
+  name               String
+  status             String // Platform-specific status (e.g., "ACTIVE", "PAUSED")
+  budget             Decimal?          @db.Decimal(10, 2)
+  spend              Decimal           @default(0) @db.Decimal(10, 2)
+  metrics            Json? // Store other relevant metrics
+  lastSyncAt         DateTime
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  adSets             AllocatorAdSet[]
+
+  @@unique([workspaceId, platform, platformCampaignId])
+  @@index([workspaceId])
+  @@index([platform])
+  @@map("allocator_campaigns")
+}
+
+model AllocatorAdSet {
+  id              String   @id @default(cuid())
+  campaignId      String
+  campaign        AllocatorCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  platformAdSetId String
+  name            String
+  status          String
+  budget          Decimal? @db.Decimal(10, 2)
+  spend           Decimal  @default(0) @db.Decimal(10, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([campaignId, platformAdSetId])
+  @@index([campaignId])
+  @@map("allocator_ad_sets")
 }
