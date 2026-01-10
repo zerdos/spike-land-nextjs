@@ -8,27 +8,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  AlertCircle,
-  Calendar,
-  Clock,
-  Lightbulb,
-  TrendingUp,
-} from "lucide-react";
+import { AlertCircle, Calendar, Clock, Lightbulb, TrendingUp } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type {
   BestTimeRecommendationsResponse,
   CalendarGap,
@@ -71,13 +57,11 @@ function ConfidenceBadge({
 }) {
   return (
     <Badge
-      variant={
-        confidence === "high"
-          ? "default"
-          : confidence === "medium"
-            ? "secondary"
-            : "outline"
-      }
+      variant={confidence === "high"
+        ? "default"
+        : confidence === "medium"
+        ? "secondary"
+        : "outline"}
       className="text-xs"
     >
       {confidence}
@@ -131,8 +115,7 @@ function PlatformSection({
   recommendations: PlatformRecommendations;
   onSlotClick?: (dayOfWeek: number, hour: number) => void;
 }) {
-  const platformName =
-    recommendations.platform.charAt(0) +
+  const platformName = recommendations.platform.charAt(0) +
     recommendations.platform.slice(1).toLowerCase();
 
   return (
@@ -150,32 +133,34 @@ function PlatformSection({
               <AlertCircle className="h-4 w-4 text-amber-500" />
             </TooltipTrigger>
             <TooltipContent>
-              Limited data ({recommendations.daysAnalyzed} days). Recommendations based on industry benchmarks.
+              Limited data ({recommendations.daysAnalyzed}{" "}
+              days). Recommendations based on industry benchmarks.
             </TooltipContent>
           </Tooltip>
         )}
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-2 pl-2">
-        {recommendations.bestTimeSlots.length > 0 ? (
-          <div className="grid gap-2">
-            {recommendations.bestTimeSlots.slice(0, 4).map((slot, idx) => (
-              <TimeSlotItem
-                key={`${slot.dayOfWeek}-${slot.hour}-${idx}`}
-                slot={slot}
-                onClick={() => onSlotClick?.(slot.dayOfWeek, slot.hour)}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            No recommendations available
-          </p>
-        )}
+        {recommendations.bestTimeSlots.length > 0
+          ? (
+            <div className="grid gap-2">
+              {recommendations.bestTimeSlots.slice(0, 4).map((slot, idx) => (
+                <TimeSlotItem
+                  key={`${slot.dayOfWeek}-${slot.hour}-${idx}`}
+                  slot={slot}
+                  onClick={() => onSlotClick?.(slot.dayOfWeek, slot.hour)}
+                />
+              ))}
+            </div>
+          )
+          : (
+            <p className="text-sm text-muted-foreground">
+              No recommendations available
+            </p>
+          )}
         {recommendations.avoidDays.length > 0 && (
           <div className="mt-2 rounded-md bg-destructive/10 p-2">
             <p className="text-xs text-destructive">
-              Avoid posting on:{" "}
-              {recommendations.avoidDays
+              Avoid posting on: {recommendations.avoidDays
                 .map((d) => DAY_NAMES[d])
                 .join(", ")}
             </p>
@@ -186,7 +171,7 @@ function PlatformSection({
   );
 }
 
-function CalendarGapItem({ gap }: { gap: CalendarGap }) {
+function CalendarGapItem({ gap }: { gap: CalendarGap; }) {
   const startDate = new Date(gap.start);
   const endDate = new Date(gap.end);
 
@@ -202,8 +187,7 @@ function CalendarGapItem({ gap }: { gap: CalendarGap }) {
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm">
-            {startDate.toLocaleDateString()} -{" "}
-            {endDate.toLocaleDateString()}
+            {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
           </span>
         </div>
         <span className="text-xs text-muted-foreground">

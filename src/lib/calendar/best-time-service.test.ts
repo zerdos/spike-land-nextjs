@@ -181,7 +181,7 @@ describe("best-time-service", () => {
         });
       }
 
-      vi.mocked(prisma.socialMetrics.findMany).mockResolvedValue(mockMetrics);
+      vi.mocked(prisma.socialMetrics.findMany).mockResolvedValue(mockMetrics as never);
       vi.mocked(prisma.scheduledPost.findMany).mockResolvedValue([]);
 
       const result = await getBestTimeRecommendations(defaultOptions);

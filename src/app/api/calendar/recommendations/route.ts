@@ -64,7 +64,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const includeGaps = includeGapsParam !== "false";
 
   // Parse gap analysis date range
-  let gapAnalysisRange: { start: Date; end: Date } | undefined;
+  let gapAnalysisRange: { start: Date; end: Date; } | undefined;
   if (gapStartDate && gapEndDate) {
     const start = new Date(gapStartDate);
     const end = new Date(gapEndDate);
