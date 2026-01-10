@@ -1,5 +1,4 @@
 import { safeDecryptToken, safeEncryptToken } from "@/lib/crypto/token-encryption";
-import { GoogleAdsClient } from "@/lib/marketing/google-ads-client";
 import prisma from "@/lib/prisma";
 import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -22,8 +21,22 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// Use vi.hoisted to ensure mock functions are available before vi.mock hoisting
+const { mockListCampaigns, mockSetAccessToken, mockSetCustomerId, mockRefreshAccessToken } = vi
+  .hoisted(() => ({
+    mockListCampaigns: vi.fn(),
+    mockSetAccessToken: vi.fn(),
+    mockSetCustomerId: vi.fn(),
+    mockRefreshAccessToken: vi.fn(),
+  }));
+
 vi.mock("@/lib/marketing/google-ads-client", () => ({
-  GoogleAdsClient: vi.fn(),
+  GoogleAdsClient: class MockGoogleAdsClient {
+    setAccessToken = mockSetAccessToken;
+    setCustomerId = mockSetCustomerId;
+    listCampaigns = mockListCampaigns;
+    refreshAccessToken = mockRefreshAccessToken;
+  },
 }));
 vi.mock("@/lib/crypto/token-encryption");
 
@@ -84,16 +97,7 @@ describe("POST /api/orbit/google-ads/campaigns", () => {
       { id: "campaign-2", name: "Campaign 2", status: "PAUSED", budgetAmount: 20000 },
     ];
 
-    const mockListCampaigns = vi.fn().mockResolvedValue(mockCampaigns);
-    const mockSetAccessToken = vi.fn();
-    const mockSetCustomerId = vi.fn();
-
-    (GoogleAdsClient as Mock).mockImplementation(() => ({
-      setAccessToken: mockSetAccessToken,
-      setCustomerId: mockSetCustomerId,
-      listCampaigns: mockListCampaigns,
-    }));
-
+    mockListCampaigns.mockResolvedValue(mockCampaigns);
     (prisma.googleAdsCampaign.upsert as Mock).mockResolvedValue({});
 
     const req = new Request("http://localhost/api/orbit/google-ads/campaigns", {
