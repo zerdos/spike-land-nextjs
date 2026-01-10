@@ -30,8 +30,8 @@ Feature: Site Navigation
   Scenario: Avatar visible when logged in
     When I am logged in as "Alice Johnson" with email "alice@example.com"
     Then I should see the user avatar
-    And I should not see the "Continue with GitHub" button
-    And I should not see the "Continue with Google" button
+    And I should not see "Sign In" link in the header
+    And I should not see the "Get Started" button
 
   # Avatar Dropdown Navigation
   Scenario: Click avatar opens dropdown menu

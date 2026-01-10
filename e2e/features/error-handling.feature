@@ -66,14 +66,14 @@ Feature: Authentication Error Handling
     When I navigate to "/auth/error?error=Configuration"
     And I click the "Try Again" button
     Then I should be redirected to "/"
-    And I should see the "Continue with GitHub" button
-    And I should see the "Continue with Google" button
+    And I should see "Sign In" link in the header
+    And I should see the "Get Started" button
 
   Scenario: Back to Home button redirects to home page
     When I navigate to "/auth/error?error=AccessDenied"
     And I click the "Back to Home" button
     Then I should be redirected to "/"
-    And I should see the "Continue with GitHub" button
+    And I should see "Sign In" link in the header
 
   Scenario: Error page displays error code
     When I navigate to "/auth/error?error=Configuration"

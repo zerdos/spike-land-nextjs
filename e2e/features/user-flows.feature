@@ -54,8 +54,8 @@ Feature: Complete User Flows
     And I click on the user avatar
     And I click the "Log out" option in the dropdown
     Then I should be logged out
-    And I should see the "Continue with GitHub" button
-    And I should see the "Continue with Google" button
+    And I should see "Sign In" link in the header
+    And I should see the "Get Started" button
     And I should not see the user avatar
 
   Scenario: User session persists across page refreshes
