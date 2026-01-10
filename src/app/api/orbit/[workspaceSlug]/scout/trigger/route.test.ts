@@ -7,7 +7,7 @@ import { POST } from "./route";
 
 vi.mock("@/auth");
 vi.mock("@/lib/prisma", () => ({
-  prisma: {
+  default: {
     workspace: {
       findFirst: vi.fn(),
     },
