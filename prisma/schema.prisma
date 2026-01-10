@@ -74,6 +74,9 @@ model User {
   // Comprehensive audit logs
   workspaceAuditLogs   WorkspaceAuditLog[] @relation("WorkspaceAuditLogs")
   aiDecisionLogs       AIDecisionLog[]     @relation("AIDecisionLogs")
+  // Crisis detection relations
+  acknowledgedCrises   CrisisDetectionEvent[] @relation("CrisisAcknowledger")
+  resolvedCrises       CrisisDetectionEvent[] @relation("CrisisResolver")
 
   @@map("users")
 }
@@ -2014,6 +2017,10 @@ model Workspace {
   workspaceAuditLogs    WorkspaceAuditLog[]
   aiDecisionLogs        AIDecisionLog[]
   auditRetentionPolicies AuditRetentionPolicy[]
+  // Crisis detection relations
+  crisisEvents          CrisisDetectionEvent[]
+  crisisTemplates       CrisisResponseTemplate[]
+  crisisAlertRules      CrisisAlertRule[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -2403,4 +2410,117 @@ enum DraftAuditAction {
   SENT // Draft was sent to platform
   SEND_FAILED // Sending failed
   REGENERATED // User requested regeneration
+}
+
+// =============================================================================
+// Crisis Detection System Models
+// Resolves #588: Create Crisis Detection System
+// =============================================================================
+
+model CrisisDetectionEvent {
+  id          String             @id @default(cuid())
+  workspaceId String
+  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  severity    CrisisSeverity
+  status      CrisisEventStatus  @default(DETECTED)
+
+  triggerType String             // SENTIMENT_SPIKE, ENGAGEMENT_DROP, VIRAL_COMPLAINT, MANUAL
+  triggerData Json               // Detection context and metrics
+
+  affectedAccountIds String[]    // Social account IDs affected by this crisis
+
+  // Response tracking
+  acknowledgedAt   DateTime?
+  acknowledgedById String?
+  acknowledgedBy   User?         @relation("CrisisAcknowledger", fields: [acknowledgedById], references: [id], onDelete: SetNull)
+
+  resolvedAt       DateTime?
+  resolvedById     String?
+  resolvedBy       User?         @relation("CrisisResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  responseNotes    String?       @db.Text
+
+  // Timestamps
+  detectedAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([severity])
+  @@index([detectedAt])
+  @@index([workspaceId, status])
+  @@map("crisis_detection_events")
+}
+
+model CrisisResponseTemplate {
+  id          String          @id @default(cuid())
+  workspaceId String?         // null = system template available to all
+  workspace   Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  name        String
+  category    String          // APOLOGY, ACKNOWLEDGMENT, REDIRECT, ESCALATION, EMPATHY
+  platform    SocialPlatform? // null = all platforms
+  content     String          @db.Text
+  variables   String[]        // Placeholder variables like {customer_name}, {issue}
+
+  isActive    Boolean         @default(true)
+  usageCount  Int             @default(0)
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([workspaceId])
+  @@index([category])
+  @@index([isActive])
+  @@map("crisis_response_templates")
+}
+
+model CrisisAlertRule {
+  id          String          @id @default(cuid())
+  workspaceId String
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  ruleType    CrisisRuleType
+  conditions  Json            // Rule configuration (thresholds, metrics, patterns)
+  severity    CrisisSeverity
+
+  notifyChannels       String[] // email, slack, in_app, push
+  escalateAfterMinutes Int?     // Auto-escalate if not acknowledged within this time
+
+  isActive    Boolean         @default(true)
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([workspaceId])
+  @@index([isActive])
+  @@index([ruleType])
+  @@map("crisis_alert_rules")
+}
+
+enum CrisisSeverity {
+  LOW      // Minor issue, monitor only
+  MEDIUM   // Moderate concern, review needed
+  HIGH     // Significant issue, action required
+  CRITICAL // Major crisis, immediate response needed
+}
+
+enum CrisisEventStatus {
+  DETECTED    // Crisis detected by system
+  ACKNOWLEDGED // Team has seen and is reviewing
+  RESOLVED    // Crisis has been handled
+  FALSE_ALARM // Not a real crisis
+}
+
+enum CrisisRuleType {
+  SENTIMENT_THRESHOLD  // Negative sentiment exceeds threshold
+  ENGAGEMENT_DROP      // Engagement rate drops significantly
+  MENTION_SPIKE        // Unusual spike in mentions/comments
+  FOLLOWER_DROP        // Significant follower loss
+  VIRAL_COMPLAINT      // Single post getting unusual negative engagement
+  MANUAL               // Manually triggered crisis
 }
