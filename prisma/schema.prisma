@@ -67,6 +67,10 @@ model User {
   scheduledPosts       ScheduledPost[]
   // Relay draft reviews
   reviewedDrafts       RelayDraft[]
+  // Relay draft edit history
+  draftEdits           DraftEditHistory[]
+  // Relay draft audit logs
+  draftAuditLogs       DraftAuditLog[]
 
   @@map("users")
 }
@@ -1721,13 +1725,13 @@ model SocialMetricAnomaly {
   id            String        @id @default(cuid())
   accountId     String
   account       SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  metricType    String        // followers, engagement_rate, impressions, etc.
+  metricType    String // followers, engagement_rate, impressions, etc.
   detectedAt    DateTime      @default(now())
   currentValue  Float
   expectedValue Float
   zScore        Float
-  severity      String        // warning, critical
-  direction     String        // spike, drop
+  severity      String // warning, critical
+  direction     String // spike, drop
   percentChange Float
 
   createdAt DateTime @default(now())
@@ -2043,11 +2047,11 @@ model ScheduledPost {
 
 /// Join table for cross-posting scheduled posts to multiple social accounts
 model ScheduledPostAccount {
-  id        String                @id @default(cuid())
+  id        String        @id @default(cuid())
   postId    String
-  post      ScheduledPost         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post      ScheduledPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   accountId String
-  account   SocialAccount         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account   SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   // Platform-specific post ID after publishing
   platformPostId String?
@@ -2085,21 +2089,21 @@ enum InboxItemStatus {
 
 /// Represents incoming social interactions that need attention
 model InboxItem {
-  id               String          @id @default(cuid())
-  type             InboxItemType
-  status           InboxItemStatus @default(UNREAD)
-  platform         SocialPlatform
-  platformItemId   String // Platform-specific ID for the item
-  content          String          @db.Text // Original message/comment content
-  senderName       String // Name of the person who sent the message
-  senderHandle     String? // @handle or username
-  senderAvatarUrl  String? // Profile picture URL
-  originalPostId   String? // ID of the post this is in response to (if applicable)
-  originalPostContent String? @db.Text // Content of the original post
-  metadata         Json? // Additional platform-specific data
-  receivedAt       DateTime // When the message was received on the platform
-  readAt           DateTime? // When the item was marked as read
-  repliedAt        DateTime? // When a response was sent
+  id                  String          @id @default(cuid())
+  type                InboxItemType
+  status              InboxItemStatus @default(UNREAD)
+  platform            SocialPlatform
+  platformItemId      String // Platform-specific ID for the item
+  content             String          @db.Text // Original message/comment content
+  senderName          String // Name of the person who sent the message
+  senderHandle        String? // @handle or username
+  senderAvatarUrl     String? // Profile picture URL
+  originalPostId      String? // ID of the post this is in response to (if applicable)
+  originalPostContent String?         @db.Text // Content of the original post
+  metadata            Json? // Additional platform-specific data
+  receivedAt          DateTime // When the message was received on the platform
+  readAt              DateTime? // When the item was marked as read
+  repliedAt           DateTime? // When a response was sent
 
   // Workspace ownership
   workspaceId String
@@ -2151,8 +2155,13 @@ model RelayDraft {
 
   // User who approved/rejected (if any)
   reviewedById String?
-  reviewedBy   User?    @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedBy   User?     @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
   reviewedAt   DateTime?
+
+  // Edit history for ML feedback loop
+  editHistory DraftEditHistory[]
+  // Audit log for all actions
+  auditLogs   DraftAuditLog[]
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -2162,4 +2171,73 @@ model RelayDraft {
   @@index([inboxItemId, status])
   @@index([status])
   @@map("relay_drafts")
+}
+
+// Track edits made to drafts for ML feedback loop
+model DraftEditHistory {
+  id              String        @id @default(cuid())
+  draftId         String
+  originalContent String        @db.Text // Content before edit
+  editedContent   String        @db.Text // Content after edit
+  editType        DraftEditType // Type of edit made
+  changesSummary  String? // AI-generated summary of changes
+  editDistance    Int? // Levenshtein distance between original and edited
+
+  // User who made the edit
+  editedById String
+  editedBy   User   @relation(fields: [editedById], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  draft RelayDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+
+  @@index([draftId])
+  @@index([editedById])
+  @@index([editType])
+  @@map("draft_edit_history")
+}
+
+enum DraftEditType {
+  MINOR_TWEAK // Small changes (punctuation, capitalization)
+  TONE_ADJUSTMENT // Changed tone/style
+  CONTENT_REVISION // Significant content changes
+  COMPLETE_REWRITE // Fully rewrote the draft
+  PLATFORM_FORMATTING // Added/changed hashtags, mentions, etc.
+}
+
+// Audit log for all draft actions
+model DraftAuditLog {
+  id        String           @id @default(cuid())
+  draftId   String
+  action    DraftAuditAction
+  details   Json? // Additional context for the action
+  ipAddress String?
+  userAgent String?
+
+  // User who performed the action
+  performedById String
+  performedBy   User   @relation(fields: [performedById], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  draft RelayDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+
+  @@index([draftId])
+  @@index([performedById])
+  @@index([action])
+  @@index([createdAt])
+  @@map("draft_audit_logs")
+}
+
+enum DraftAuditAction {
+  CREATED // Draft was generated
+  VIEWED // Draft was viewed by user
+  EDITED // Draft content was modified
+  APPROVED // Draft was approved for sending
+  REJECTED // Draft was rejected
+  SENT // Draft was sent to platform
+  SEND_FAILED // Sending failed
+  REGENERATED // User requested regeneration
 }
