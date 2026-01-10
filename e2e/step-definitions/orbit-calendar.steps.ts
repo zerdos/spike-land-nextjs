@@ -289,13 +289,7 @@ Then(
   },
 );
 
-When(
-  "I filter by {string} platform",
-  async function(this: CustomWorld, platform: string) {
-    await this.page.click(`[data-testid='platform-filter-${platform.toLowerCase()}']`);
-    await this.page.waitForLoadState("networkidle");
-  },
-);
+// NOTE: "I filter by {string} platform" is defined in orbit-social.steps.ts to avoid ambiguity
 
 Then(
   "I should only see LinkedIn scheduled posts",
