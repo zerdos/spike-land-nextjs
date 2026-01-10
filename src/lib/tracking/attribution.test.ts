@@ -219,6 +219,7 @@ describe("attribution", () => {
         utmSource: "google",
         utmMedium: "cpc",
         convertedAt: new Date("2024-01-01"),
+        conversionId: "conv-1",
       };
 
       vi.mocked(prisma.campaignAttribution.findFirst).mockResolvedValue(
@@ -263,6 +264,7 @@ describe("attribution", () => {
         utmSource: "facebook",
         utmMedium: "paid",
         convertedAt: new Date("2024-01-15"),
+        conversionId: "conv-2",
       };
 
       vi.mocked(prisma.campaignAttribution.findFirst).mockResolvedValue(
@@ -308,6 +310,7 @@ describe("attribution", () => {
           utmSource: "google",
           utmMedium: "cpc",
           convertedAt: new Date("2024-01-01"),
+          conversionId: "conv-1",
         },
         {
           id: "attr-2",
@@ -322,6 +325,7 @@ describe("attribution", () => {
           utmSource: null,
           utmMedium: null,
           convertedAt: new Date("2024-01-15"),
+          conversionId: "conv-2",
         },
       ];
 
