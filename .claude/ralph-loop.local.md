@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 41
+iteration: 95
 max_iterations: 200
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -22,30 +22,56 @@ started_at: "2026-01-10T00:00:00Z"
 
 ---
 
+## Status Values Reference
+
+The Status column in the Active Task Registry uses these values:
+
+| Status                     | Description                                  |
+| -------------------------- | -------------------------------------------- |
+| `PLANNING`                 | Jules is creating implementation plan        |
+| `IN_PROGRESS`              | Jules is actively coding                     |
+| `PR_CREATED`               | PR exists, checking CI + branch health       |
+| `PR_CI_FAILING`            | CI failing on PR, Jules notified to fix      |
+| `PR_BEHIND_MAIN`           | Branch behind main, Jules notified to rebase |
+| `REVIEW_REQUESTED`         | PR is ready (not draft), awaiting review     |
+| `REVIEW_STARTED`           | claude-code-review is reviewing              |
+| `REVIEW_APPROVED`          | Review approved, ready to merge              |
+| `REVIEW_CHANGES_REQUESTED` | Review requested changes, Jules notified     |
+| `JULES_FIXING_REVIEW`      | Jules addressing review feedback             |
+| `JULES_FIX_COMPLETED`      | Jules pushed fixes, re-checking CI/branch    |
+| `COMPLETED`                | Merged and closed                            |
+| `FAILED`                   | Failed after max retries, escalated          |
+
+---
+
 ## Active Task Registry
 
 <!-- Ralph: UPDATE THIS EVERY ITERATION! This is your memory. -->
 
 | Issue #        | Session ID           | Status      | PR #    | Retries | Last Updated     |
 | -------------- | -------------------- | ----------- | ------- | ------- | ---------------- |
-| CI-FIX         | 2812978267625884087  | IN_PROGRESS | -       | 0       | 2026-01-10T14:35 |
-| #530 (ORB-022) | 1223874300114515623  | PLANNING    | -       | 0       | 2026-01-10T14:35 |
-| #546 (ORB-027) | 8888902902611137034  | IN_PROGRESS | -       | 0       | 2026-01-10T14:35 |
+| CI-FIX-RETRY   | 2071026505896574240  | PLANNING    | -       | 1       | 2026-01-10T17:25 |
+| #545 (ORB-042) | 10448440558500030178 | PLANNING    | -       | 0       | 2026-01-10T17:25 |
+| #530 (ORB-022) | 1223874300114515623  | IN_PROGRESS | -       | 0       | 2026-01-10T17:25 |
+| #536 (ORB-036) | 12268363689474090994 | IN_PROGRESS | -       | 0       | 2026-01-10T17:25 |
+| PR-659-FIX     | 12847152019524036796 | IN_PROGRESS | -       | 0       | 2026-01-10T17:25 |
+| PR-660-FIX     | 12880711734109548513 | IN_PROGRESS | -       | 0       | 2026-01-10T17:25 |
+| #546 (ORB-027) | 13204058962977056689 | COMPLETED   | ⚠️ No PR | 1       | 2026-01-10T17:10 |
 | #544 (ORB-026) | 8018068239388301596  | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T14:15 |
-| #536 (ORB-036) | 12268363689474090994 | IN_PROGRESS | -       | 0       | 2026-01-10T14:35 |
-| #538 (ORB-037) | 13964044312522937140 | IN_PROGRESS | -       | 0       | 2026-01-10T14:35 |
-| #540 (ORB-039) | 16859514757019367340 | IN_PROGRESS | -       | 0       | 2026-01-10T14:35 |
+| #538 (ORB-037) | 13964044312522937140 | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T17:05 |
+| #540 (ORB-039) | 16859514757019367340 | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T16:00 |
 | #532 (ORB-024) | 3272942138734267585  | COMPLETED   | #659    | 0       | 2026-01-10T14:15 |
 | #531 (ORB-023) | 12664520598883814187 | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T12:10 |
-| #529 (ORB-021) | 12716452045721348213 | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T12:10 |
+| #529 (ORB-021) | 12716452045721348213 | COMPLETED   | #660    | 0       | 2026-01-10T16:00 |
 
 **PRs Pending Review:**
 
-- PR #659 (ORB-024): Scout competitor tracking - checks passing, awaiting review
+- PR #659 (ORB-024): Scout competitor tracking - ⚠️ CONFLICTING, 29 review comments, follow-up task active
+- PR #660 (ORB-021): Unified inbox UI - BEHIND main, 28 review comments, follow-up task active
 
 **Issues Flagged for Human Review:**
 
-- ORB-021, ORB-023, ORB-026: Jules sessions COMPLETED but no PRs created
+- ORB-023, ORB-026, ORB-027, ORB-037, ORB-039: Jules sessions COMPLETED but no PRs created
 
 ---
 
@@ -59,13 +85,16 @@ mcp__spike-land__jules_list_sessions
 
 Parse response and categorize ALL sessions into:
 
-| Category          | Statuses                            | Action         |
-| ----------------- | ----------------------------------- | -------------- |
-| 🟢 Needs Approval | `AWAITING_PLAN_APPROVAL`            | → Step 2       |
-| 🟡 Needs Input    | `AWAITING_USER_FEEDBACK`            | → Step 6       |
-| ✅ Done           | `COMPLETED`                         | → Step 3       |
-| ❌ Failed         | `FAILED`                            | → Step 5       |
-| ⏳ Working        | `IN_PROGRESS`, `PLANNING`, `QUEUED` | Log & continue |
+| Category          | Statuses                                                          | Action         |
+| ----------------- | ----------------------------------------------------------------- | -------------- |
+| 🟢 Needs Approval | `AWAITING_PLAN_APPROVAL`                                          | → Step 2       |
+| 🟡 Needs Input    | `AWAITING_USER_FEEDBACK`                                          | → Step 6       |
+| 🔄 PR Lifecycle   | `PR_CREATED`, `PR_CI_FAILING`, `PR_BEHIND_MAIN`,                  | → Step 3       |
+|                   | `REVIEW_REQUESTED`, `REVIEW_STARTED`, `REVIEW_CHANGES_REQUESTED`, |                |
+|                   | `JULES_FIXING_REVIEW`, `JULES_FIX_COMPLETED`, `REVIEW_APPROVED`   |                |
+| ✅ Done           | `COMPLETED`                                                       | → Remove       |
+| ❌ Failed         | `FAILED`                                                          | → Step 7       |
+| ⏳ Working        | `IN_PROGRESS`, `PLANNING`, `QUEUED`                               | Log & continue |
 
 Update the Active Task Registry table above with current state.
 
@@ -89,60 +118,117 @@ Do NOT wait for approval to take effect - continue to next step.
 
 ---
 
-### Step 3: Handle Completed Tasks
+### Step 3: Handle PR Lifecycle
 
-For each `COMPLETED` session:
+For sessions with a PR (status contains `PR_`, `REVIEW_`, or `JULES_`), or `COMPLETED` sessions:
 
 #### 3.1 Check for PR
 
-Get session details to find PR number. If no PR exists, log warning and skip.
+Get session details to find PR number:
 
-#### 3.2 Publish Draft PR (if needed)
+```
+mcp__spike-land__jules_get_session { session_id: "[id]" }
+```
+
+If no PR exists, log warning and skip to next session.
+
+#### 3.2 Check PR Health
 
 ```bash
+# Check CI status
+gh pr checks [PR#] --json name,state,conclusion
+
+# Check if up-to-date with main
+gh pr view [PR#] --json mergeStateStatus -q '.mergeStateStatus'
+```
+
+| Condition                     | Action                                        |
+| ----------------------------- | --------------------------------------------- |
+| Any CI check failing          | Update status to `PR_CI_FAILING` → Step 3.2a  |
+| Branch behind main (`BEHIND`) | Update status to `PR_BEHIND_MAIN` → Step 3.2a |
+| CI passing + up-to-date       | → Step 3.3 (Publish PR)                       |
+
+#### 3.2a Message Jules to Fix PR Issues
+
+Use the existing session to request fixes:
+
+```
+mcp__spike-land__jules_send_message {
+  session_id: "[session id from registry]",
+  message: "Your PR #[n] needs attention:\n\n[IF CI FAILING]: CI checks are failing. Please fix the failing tests/build.\n\n[IF BEHIND MAIN]: Your branch is behind main. Please rebase onto main and resolve any conflicts.\n\nPush your fixes when ready."
+}
+```
+
+Update registry status accordingly. Check again next iteration.
+
+#### 3.3 Publish Draft PR (Take Out of Draft Mode)
+
+```bash
+# Check if still draft
 gh pr view [PR#] --json isDraft -q '.isDraft'
 ```
 
-If draft:
+If draft AND CI passing AND up-to-date:
 
 ```bash
 gh pr ready [PR#]
 ```
 
-This triggers `@claude-code-review`. Move to "PRs Pending Review" list and continue.
+Update status to `REVIEW_REQUESTED`. This triggers `claude-code-review.yml` workflow.
 
-#### 3.3 Check Review Status
+#### 3.4 Check Review Status
 
 ```bash
-gh pr checks [PR#] --json name,state,conclusion
-gh pr view [PR#] --json reviews -q '.reviews[-1]'
+# Check for review decision
+gh pr view [PR#] --json reviews,reviewDecision -q '{reviews: .reviews, decision: .reviewDecision}'
 ```
 
-| Condition                         | Action                                              |
-| --------------------------------- | --------------------------------------------------- |
-| Review requested changes          | → Create new Jules task with feedback (Step 3.4)    |
-| Review approved + all checks pass | → Auto-merge (Step 3.5)                             |
-| Checks still running              | → Add to "PRs Pending Review", check next iteration |
-| Checks failed                     | → Create Jules task to fix (Step 3.4)               |
+| Review State        | Action                                         |
+| ------------------- | ---------------------------------------------- |
+| No reviews yet      | Status = `REVIEW_REQUESTED`, wait              |
+| Review in progress  | Status = `REVIEW_STARTED`, wait                |
+| `APPROVED`          | Status = `REVIEW_APPROVED` → Step 3.6 (Merge)  |
+| `CHANGES_REQUESTED` | Status = `REVIEW_CHANGES_REQUESTED` → Step 3.5 |
 
-#### 3.4 Create Follow-up Task
+#### 3.5 Handle Review Feedback
+
+Extract review comments:
+
+```bash
+gh pr view [PR#] --json reviews -q '.reviews[] | select(.state == "CHANGES_REQUESTED") | .body'
+gh api repos/zerdos/spike-land-nextjs/pulls/[PR#]/comments --jq '.[].body'
+```
+
+Message Jules with feedback:
 
 ```
-mcp__spike-land__jules_create_session {
-  title: "Fix review feedback for PR #[n]",
-  task: "Address the following review comments:\n[paste review comments]\n\nOriginal issue: #[issue]",
-  source_repo: "zerdos/spike-land-nextjs"
+mcp__spike-land__jules_send_message {
+  session_id: "[session id from registry]",
+  message: "Review feedback for PR #[n]:\n\n[paste review comments]\n\nPlease address these comments and push fixes."
 }
 ```
 
-#### 3.5 Auto-Merge
+Update status to `JULES_FIXING_REVIEW`.
+
+When Jules pushes (detected by checking PR updated_at):
+
+- Update status to `JULES_FIX_COMPLETED`
+- Re-run from Step 3.2 (check CI/branch again)
+
+#### 3.6 Auto-Merge
+
+Only when ALL conditions met:
+
+- Status = `REVIEW_APPROVED`
+- CI passing (re-verify)
+- Up-to-date with main (re-verify)
 
 ```bash
 gh pr merge [PR#] --squash --delete-branch
 gh issue close [ISSUE#] --comment "✅ Fixed by PR #[n]"
 ```
 
-Remove from Active Task Registry. 🎉
+Update status to `COMPLETED`. Remove from Active Task Registry. 🎉
 
 ---
 
@@ -150,7 +236,7 @@ Remove from Active Task Registry. 🎉
 
 #### 4.1 Count Active Tasks
 
-Active = sessions with status: `QUEUED`, `PLANNING`, `AWAITING_PLAN_APPROVAL`, `AWAITING_USER_FEEDBACK`, `IN_PROGRESS`
+Active = sessions with status: `QUEUED`, `PLANNING`, `AWAITING_PLAN_APPROVAL`, `AWAITING_USER_FEEDBACK`, `IN_PROGRESS`, `PR_CREATED`, `PR_CI_FAILING`, `PR_BEHIND_MAIN`, `REVIEW_REQUESTED`, `REVIEW_STARTED`, `REVIEW_CHANGES_REQUESTED`, `JULES_FIXING_REVIEW`, `JULES_FIX_COMPLETED`, `REVIEW_APPROVED`
 
 ```
 available_slots = WIP_LIMIT (6) - active_count
@@ -391,7 +477,66 @@ Output `<promise>WORKFORCE_IDLE</promise>` when ALL true:
               │
               ▼
    ┌─────────────────────┐
-   │     COMPLETED       │───► PR Created ───► Review ───► Merge
+   │    PR_CREATED       │ (Jules completed, PR exists)
+   └──────────┬──────────┘
+              │
+      ┌───────┴───────┐
+      │               │
+      ▼               ▼
+   HEALTHY        UNHEALTHY
+      │               │
+      │               ▼
+      │    ┌─────────────────────┐
+      │    │ PR_CI_FAILING or    │
+      │    │ PR_BEHIND_MAIN      │◄────────┐
+      │    │ (Message Jules)     │         │
+      │    └──────────┬──────────┘         │
+      │               │                    │
+      │               ▼                    │
+      │         Jules fixes ───────────────┘
+      │
+      ▼
+   ┌─────────────────────┐
+   │ gh pr ready [PR#]   │
+   │ REVIEW_REQUESTED    │
+   └──────────┬──────────┘
+              │
+              ▼
+   ┌─────────────────────┐
+   │   REVIEW_STARTED    │ (claude-code-review running)
+   └──────────┬──────────┘
+              │
+      ┌───────┴───────┐
+      │               │
+      ▼               ▼
+   APPROVED    CHANGES_REQUESTED
+      │               │
+      │               ▼
+      │    ┌─────────────────────────────┐
+      │    │ REVIEW_CHANGES_REQUESTED    │
+      │    │ (Message Jules w/ feedback) │
+      │    └──────────┬──────────────────┘
+      │               │
+      │               ▼
+      │    ┌─────────────────────┐
+      │    │ JULES_FIXING_REVIEW │◄────────┐
+      │    └──────────┬──────────┘         │
+      │               │                    │
+      │               ▼                    │
+      │    ┌─────────────────────┐         │
+      │    │ JULES_FIX_COMPLETED │         │
+      │    │ (Re-check CI/branch)│─────────┘
+      │    └─────────────────────┘
+      │
+      ▼
+   ┌─────────────────────┐
+   │   REVIEW_APPROVED   │
+   │   (Auto-merge)      │
+   └──────────┬──────────┘
+              │
+              ▼
+   ┌─────────────────────┐
+   │     COMPLETED       │
    └─────────────────────┘
 
    Any State ───► FAILED ───► Retry (max 2) ───► Escalate
@@ -449,4 +594,4 @@ Each iteration should output structured logs:
 
 ---
 
-_Last updated: Iteration 39 at 2026-01-10T14:30:00Z_
+_Last updated: Iteration 93 at 2026-01-10T18:00:00Z_
