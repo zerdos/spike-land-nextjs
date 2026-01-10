@@ -28,6 +28,9 @@ export interface PublicFacebookPost {
 }
 
 export class PublicFacebookClient {
+  // Disable delays in test/CI environments for faster test execution
+  private readonly enableDelays = process.env.NODE_ENV !== 'test' && !process.env.CI;
+
   /**
    * Fetches mock information for a Facebook account.
    * @param handle The Facebook username/handle.
@@ -36,8 +39,10 @@ export class PublicFacebookClient {
   async getAccountInfo(handle: string): Promise<PublicFacebookAccount | null> {
     if (!handle) return null;
 
-    // Simulate an API call delay
-    await new Promise(resolve => setTimeout(resolve, 200));
+    // Simulate an API call delay (disabled in test environments)
+    if (this.enableDelays) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
 
     return {
       handle,
@@ -55,8 +60,10 @@ export class PublicFacebookClient {
   async getPosts(handle: string): Promise<PublicFacebookPost[]> {
     if (!handle) return [];
 
-    // Simulate an API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Simulate an API call delay (disabled in test environments)
+    if (this.enableDelays) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
 
     const posts: PublicFacebookPost[] = Array.from({ length: 5 }, (_, i) => {
       const postId = `mock_fb_post_${i + 1}`;

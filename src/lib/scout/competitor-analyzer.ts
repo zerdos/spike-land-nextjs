@@ -125,8 +125,13 @@ export async function generateBenchmarkReport(
   let totalCompetitorShares = 0;
   let totalCompetitorPosts = 0;
 
-  for (const competitor of competitors) {
-    const metrics = await analyzeCompetitorEngagement(competitor.id, startDate, endDate);
+  // Parallelize metric calculations for all competitors to avoid sequential queries
+  const metricsPromises = competitors.map(competitor => 
+    analyzeCompetitorEngagement(competitor.id, startDate, endDate)
+  );
+  const metricsResults = await Promise.all(metricsPromises);
+
+  for (const metrics of metricsResults) {
     totalCompetitorLikes += metrics.averageLikes * metrics.totalPosts;
     totalCompetitorComments += metrics.averageComments * metrics.totalPosts;
     totalCompetitorShares += metrics.averageShares * metrics.totalPosts;
@@ -140,13 +145,13 @@ export async function generateBenchmarkReport(
     totalPosts: totalCompetitorPosts,
   };
 
-  // Mocked metrics for the workspace's own performance.
-  // In a real implementation, this data would be fetched from the `SocialMetrics` model.
+  // TODO: Replace mocked metrics with real SocialMetrics data from workspace.
+  // This should query the SocialMetrics table for the workspace within the date range.
   const ownMetrics = {
-    averageLikes: 150,
-    averageComments: 25,
-    averageShares: 10,
-    totalPosts: 20,
+    averageLikes: 0,
+    averageComments: 0,
+    averageShares: 0,
+    totalPosts: 0,
   };
 
   const period = `${startDate.toISOString().slice(0, 10)}_${endDate.toISOString().slice(0, 10)}`;

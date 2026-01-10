@@ -34,9 +34,16 @@ function getPublicApiClient(platform: SocialPlatform) {
  * @returns The newly created ScoutCompetitor object or null if validation fails.
  */
 export async function addCompetitor(workspaceId: string, platform: SocialPlatform, handle: string) {
+  // Validate handle is not empty
+  if (!handle || typeof handle !== 'string' || handle.trim() === '') {
+    return null;
+  }
+
+  const trimmedHandle = handle.trim();
+  
   const client = getPublicApiClient(platform);
 
-  const accountInfo = await client.getAccountInfo(handle);
+  const accountInfo = await client.getAccountInfo(trimmedHandle);
   if (!accountInfo) {
     // Account validation failed
     return null;
@@ -94,9 +101,16 @@ export async function syncCompetitorPosts(competitorId: string) {
 
 /**
  * Syncs posts for all active competitors in a given workspace.
+ * Uses parallel processing with rate limiting to improve performance while respecting API limits.
  * @param workspaceId The ID of the workspace to sync.
+ * @param concurrency Maximum number of concurrent sync operations (default: 3)
+ * @param delayMs Delay in milliseconds between batches (default: 1000)
  */
-export async function syncAllCompetitorsForWorkspace(workspaceId: string) {
+export async function syncAllCompetitorsForWorkspace(
+  workspaceId: string, 
+  concurrency: number = 3,
+  delayMs: number = 1000
+) {
   const competitors = await prisma.scoutCompetitor.findMany({
     where: {
       workspaceId,
@@ -104,13 +118,37 @@ export async function syncAllCompetitorsForWorkspace(workspaceId: string) {
     },
   });
 
-  for (const competitor of competitors) {
-    try {
-      await syncCompetitorPosts(competitor.id);
-      // Optional: Add a small delay between competitors to be a good citizen
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error(`Failed to sync posts for competitor ${competitor.handle}:`, error);
+  // Process competitors in batches with controlled concurrency
+  const results: Array<{ id: string; handle: string; success: boolean; error?: string }> = [];
+  
+  for (let i = 0; i < competitors.length; i += concurrency) {
+    const batch = competitors.slice(i, i + concurrency);
+    
+    const batchResults = await Promise.allSettled(
+      batch.map(async (competitor) => {
+        try {
+          await syncCompetitorPosts(competitor.id);
+          return { id: competitor.id, handle: competitor.handle, success: true };
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          console.error(`Failed to sync posts for competitor ${competitor.handle}:`, error);
+          return { id: competitor.id, handle: competitor.handle, success: false, error: errorMessage };
+        }
+      })
+    );
+
+    // Collect results
+    for (const result of batchResults) {
+      if (result.status === 'fulfilled') {
+        results.push(result.value);
+      }
+    }
+
+    // Add delay between batches (except for the last batch)
+    if (i + concurrency < competitors.length) {
+      await new Promise(resolve => setTimeout(resolve, delayMs));
     }
   }
+
+  return results;
 }
