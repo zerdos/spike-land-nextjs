@@ -9,8 +9,8 @@ Feature: User Authentication
 
   Scenario: Unauthenticated user sees login options
     When I am not logged in
-    Then I should see the "Continue with GitHub" button
-    And I should see the "Continue with Google" button
+    Then I should see "Sign In" link in the header
+    And I should see the "Get Started" button
     And I should not see the user avatar
 
   # TODO: Fix OAuth flow testing in CI - See issue #23
@@ -29,8 +29,8 @@ Feature: User Authentication
   Scenario: Authenticated user sees avatar
     When I am logged in as "John Doe" with email "john@example.com"
     Then I should see the user avatar
-    And I should not see the "Continue with GitHub" button
-    And I should not see the "Continue with Google" button
+    And I should not see "Sign In" link in the header
+    And I should not see the "Get Started" button
 
   Scenario: Authenticated user can open avatar dropdown
     When I am logged in as "Jane Smith" with email "jane@example.com"
@@ -47,8 +47,8 @@ Feature: User Authentication
     And I click on the user avatar
     And I click the "Log out" option in the dropdown
     Then I should be logged out
-    And I should see the "Continue with GitHub" button
-    And I should see the "Continue with Google" button
+    And I should see "Sign In" link in the header
+    And I should see the "Get Started" button
     And I should not see the user avatar
 
   Scenario: Loading state is displayed during authentication
