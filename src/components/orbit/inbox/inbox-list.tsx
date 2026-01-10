@@ -13,7 +13,15 @@ async function fetchInboxItems(workspaceSlug: string, filters: FilterFormValues,
   const query = new URLSearchParams({ ...filters, page: page.toString() } as Record<string, string>);
   const res = await fetch(`/api/orbit/${workspaceSlug}/inbox?${query}`);
   if (!res.ok) {
-    throw new Error('Failed to fetch inbox items');
+    let responseBody: string | undefined;
+    try {
+      responseBody = await res.text();
+    } catch {
+      // Ignore errors while reading the response body; we still want to throw the original error.
+    }
+    const baseMessage = `Failed to fetch inbox items: ${res.status} ${res.statusText}`;
+    const detailedMessage = responseBody ? `${baseMessage} - ${responseBody}` : baseMessage;
+    throw new Error(detailedMessage);
   }
   return res.json();
 }
@@ -56,10 +64,10 @@ export function InboxList({ onItemSelected, filters }: InboxListProps) {
   const handleItemClick = (item: InboxItemType) => {
     setSelectedItem(item);
     onItemSelected(item);
-  }
+  };
 
   return (
-    <div ref={parentRef} className="h-[600px] overflow-auto">
+    <div ref={parentRef} className="h-full max-h-[calc(100vh-200px)] overflow-auto">
       <div style={{ height: `${rowVirtualizer.totalSize}px`, width: '100%', position: 'relative' }}>
         {rowVirtualizer.virtualItems.map((virtualRow) => {
           const isLoaderRow = virtualRow.index > allItems.length - 1;

@@ -30,7 +30,15 @@ async function assignItem(workspaceSlug: string, itemId: string, assignedToId: s
     body: JSON.stringify({ assignedToId }),
   });
   if (!res.ok) {
-    throw new Error('Failed to assign item');
+    let responseText: string | undefined;
+    try {
+      responseText = await res.text();
+    } catch {
+      responseText = undefined;
+    }
+    const statusInfo = `${res.status} ${res.statusText || ''}`.trim();
+    const bodyInfo = responseText && responseText.length > 0 ? ` - Response body: ${responseText}` : '';
+    throw new Error(`Failed to assign item (${statusInfo})${bodyInfo}`);
   }
   return res.json();
 }

@@ -40,6 +40,20 @@ export async function PATCH(
 
     await requireWorkspacePermission(session, workspace.id, 'inbox:manage');
 
+    // Verify that the itemId belongs to the specified workspace
+    const existingItem = await prisma.inboxItem.findUnique({
+      where: { id: params.itemId },
+      select: { workspaceId: true },
+    });
+
+    if (!existingItem) {
+      return NextResponse.json({ error: 'Inbox item not found' }, { status: 404 });
+    }
+
+    if (existingItem.workspaceId !== workspace.id) {
+      return NextResponse.json({ error: 'Inbox item does not belong to this workspace' }, { status: 403 });
+    }
+
     let item;
     if (status) {
       if (status === 'ARCHIVED') {
@@ -53,12 +67,31 @@ export async function PATCH(
       item = (await assignInboxItem(params.itemId, assignedToId)).item;
     }
 
+    if (!item) {
+      return NextResponse.json(
+        { error: 'No valid update fields provided' },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json(item);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
-    const status = error.message.includes("Unauthorized") ? 401 : error.message.includes("Forbidden") ? 403 : 500;
+
+    const status =
+      typeof (error as any)?.status === 'number'
+        ? (error as any).status
+        : typeof (error as any)?.statusCode === 'number'
+          ? (error as any).statusCode
+          : 500;
+
+    const message =
+      typeof (error as any)?.message === 'string' && (error as any).message.length > 0
+        ? (error as any).message
+        : 'Failed to update inbox item';
+
     return NextResponse.json(
-      { error: error.message || 'Failed to update inbox item' },
+      { error: message },
       { status },
     );
   }

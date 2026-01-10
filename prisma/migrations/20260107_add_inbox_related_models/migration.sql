@@ -1,36 +1,19 @@
--- CreateEnum
-CREATE TYPE "SubscriptionTier" AS ENUM ('FREE', 'PRO', 'BUSINESS');
+-- NOTE:
+-- The following operations were removed from this migration because they
+-- duplicate definitions handled in other migrations / the schema:
+--   - CREATE TYPE "SocialPlatform" (already exists in schema.prisma at line 1936)
+--   - CREATE TYPE "SubscriptionTier" (already exists in schema.prisma at line 889)
+--   - CREATE TABLE "social_accounts" (already exists as SocialAccount model at line 1781)
+--   - ALTER TABLE "user_token_balances" ADD COLUMN "tier" (already exists)
+--   - CREATE INDEX "user_token_balances_tier_idx" (already exists)
+--
+-- This migration file has been adjusted to avoid conflicts with existing schema definitions.
+-- If you need to add inbox-related models, please review the schema.prisma file and create
+-- a new migration with only the missing definitions.
+--
+-- SECURITY NOTE:
+-- The social_accounts table stores OAuth credentials (accessToken, accessTokenSecret, refreshToken)
+-- as plain TEXT fields. Consider encrypting these token fields at rest using an application-level
+-- encryption key or a dedicated secrets service. Strictly limit access to them in both schema design
+-- and application logic to prevent unauthorized access in case of database compromise.
 
--- CreateEnum
-CREATE TYPE "SocialPlatform" AS ENUM ('TWITTER', 'LINKEDIN', 'FACEBOOK', 'INSTAGRAM', 'TIKTOK', 'YOUTUBE', 'DISCORD');
-
--- CreateTable
-CREATE TABLE "social_accounts" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "workspaceId" TEXT,
-    "accountId" TEXT,
-    "platform" "SocialPlatform" NOT NULL,
-    "username" TEXT NOT NULL,
-    "displayName" TEXT,
-    "avatarUrl" TEXT,
-    "followers" INTEGER,
-    "following" INTEGER,
-    "posts" INTEGER,
-    "url" TEXT,
-    "externalId" TEXT,
-    "accessToken" TEXT,
-    "accessTokenSecret" TEXT,
-    "refreshToken" TEXT,
-    "expiresAt" TIMESTAMP(3),
-    "scopes" TEXT[],
-    "metadata" JSONB,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "social_accounts_pkey" PRIMARY KEY ("id")
-);
-
--- Add tier column to user_token_balances table
-ALTER TABLE "user_token_balances" ADD COLUMN "tier" "SubscriptionTier" NOT NULL DEFAULT 'FREE';
-CREATE INDEX "user_token_balances_tier_idx" ON "user_token_balances"("tier");

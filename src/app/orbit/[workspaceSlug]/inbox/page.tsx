@@ -1,15 +1,13 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { InboxFilters, FilterFormValues } from '@/components/orbit/inbox/inbox-filters';
 import { InboxList } from '@/components/orbit/inbox/inbox-list';
 import { InboxReplyPanel } from '@/components/orbit/inbox/inbox-reply-panel';
 import { InboxAssignDialog } from '@/components/orbit/inbox/inbox-assign-dialog';
 import { InboxItem } from '@prisma/client';
-
-const queryClient = new QueryClient();
 
 // Mock team members for now
 const teamMembers = [
@@ -19,6 +17,7 @@ const teamMembers = [
 ];
 
 export default function InboxPage() {
+  const queryClient = useMemo(() => new QueryClient(), []);
   const [filters, setFilters] = useState<FilterFormValues>({});
   const [selectedItem, setSelectedItem] = useState<InboxItem | null>(null);
 
@@ -27,8 +26,7 @@ export default function InboxPage() {
   };
 
   const handleAssign = () => {
-    // In a real app, you'd refetch the inbox list
-    console.log('Item assigned');
+    // TODO: Implement inbox list refetch after assignment
   };
 
   return (

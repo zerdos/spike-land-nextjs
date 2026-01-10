@@ -6,7 +6,7 @@ import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 
 const schema = z.object({
-  content: z.string().min(1),
+  content: z.string().trim().min(1, 'Reply content cannot be empty'),
 });
 
 export async function POST(
@@ -37,15 +37,50 @@ export async function POST(
 
     await requireWorkspacePermission(session, workspace.id, 'inbox:respond');
 
-    // TODO: Implement the actual reply logic in inbox-manager.ts
-    console.log(`Replying to item ${params.itemId} with content: ${content}`);
+    // Verify that the itemId belongs to the specified workspace
+    const existingItem = await prisma.inboxItem.findUnique({
+      where: { id: params.itemId },
+      select: { workspaceId: true },
+    });
 
-    return NextResponse.json({ success: true, message: 'Reply sent' });
-  } catch (error: any) {
-    console.error(error);
-    const status = error.message.includes("Unauthorized") ? 401 : error.message.includes("Forbidden") ? 403 : 500;
+    if (!existingItem) {
+      return NextResponse.json({ error: 'Inbox item not found' }, { status: 404 });
+    }
+
+    if (existingItem.workspaceId !== workspace.id) {
+      return NextResponse.json({ error: 'Inbox item does not belong to this workspace' }, { status: 403 });
+    }
+
+    // Reply functionality not yet implemented
     return NextResponse.json(
-      { error: error.message || 'Failed to send reply' },
+      { error: 'Reply functionality not yet implemented' },
+      { status: 501 },
+    );
+  } catch (error: unknown) {
+    console.error(error);
+
+    let status = 500;
+    let message = 'Failed to send reply';
+
+    if (error instanceof Error) {
+      const anyError = error as any;
+      // Prefer explicit status/statusCode properties if available
+      if (typeof anyError.status === 'number') {
+        status = anyError.status;
+      } else if (typeof anyError.statusCode === 'number') {
+        status = anyError.statusCode;
+      } else if (error.name === 'UnauthorizedError') {
+        status = 401;
+      } else if (error.name === 'ForbiddenError') {
+        status = 403;
+      }
+      if (error.message) {
+        message = error.message;
+      }
+    }
+
+    return NextResponse.json(
+      { error: message },
       { status },
     );
   }
