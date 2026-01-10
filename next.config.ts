@@ -47,11 +47,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  typescript: {
-    // TypeScript checking is handled by CI's `tsc --noEmit` step
-    // Skip during build to reduce memory usage when SKIP_TS_BUILD_CHECK=true
-    ignoreBuildErrors: process.env.SKIP_TS_BUILD_CHECK === "true",
-  },
   // Enable standalone output for Docker deployment (~200MB vs ~1GB)
   // output: process.env.STANDALONE === "true" ? "standalone" : undefined,
   ...(process.env.STANDALONE === "true" ? { output: "standalone" } : {}),

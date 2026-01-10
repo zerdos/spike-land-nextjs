@@ -1,7 +1,6 @@
 
 import { NextResponse } from 'next/server';
 import { SocialPlatform } from '@prisma/client';
-import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { addCompetitor } from '@/lib/scout/competitor-tracker';
 
@@ -11,22 +10,8 @@ export async function GET(
   { params }: { params: { workspaceSlug: string } }
 ) {
   try {
-    // Verify authentication
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Find workspace by slug and verify user is a member
-    const workspace = await prisma.workspace.findFirst({
-      where: {
-        slug: params.workspaceSlug,
-        members: {
-          some: {
-            userId: session.user.id,
-          },
-        },
-      },
+    const workspace = await prisma.workspace.findUnique({
+      where: { slug: params.workspaceSlug },
     });
 
     if (!workspace) {
@@ -51,22 +36,8 @@ export async function POST(
   { params }: { params: { workspaceSlug: string } }
 ) {
   try {
-    // Verify authentication
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Find workspace by slug and verify user is a member
-    const workspace = await prisma.workspace.findFirst({
-      where: {
-        slug: params.workspaceSlug,
-        members: {
-          some: {
-            userId: session.user.id,
-          },
-        },
-      },
+    const workspace = await prisma.workspace.findUnique({
+      where: { slug: params.workspaceSlug },
     });
 
     if (!workspace) {
@@ -79,18 +50,7 @@ export async function POST(
       return NextResponse.json({ error: 'Platform and handle are required' }, { status: 400 });
     }
 
-    // Validate platform enum value
-    const validPlatforms = Object.values(SocialPlatform);
-    if (!validPlatforms.includes(platform)) {
-      return NextResponse.json({ error: 'Invalid platform value' }, { status: 400 });
-    }
-
-    // Validate handle is not empty
-    if (typeof handle !== 'string' || handle.trim() === '') {
-      return NextResponse.json({ error: 'Handle must be a non-empty string' }, { status: 400 });
-    }
-
-    const competitor = await addCompetitor(workspace.id, platform as SocialPlatform, handle.trim());
+    const competitor = await addCompetitor(workspace.id, platform as SocialPlatform, handle);
 
     if (!competitor) {
       return NextResponse.json({ error: 'Failed to validate or add competitor' }, { status: 400 });

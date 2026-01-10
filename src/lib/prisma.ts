@@ -1,29 +1,16 @@
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
 
-const prismaClientSingleton = () => {
-  const connectionString = process.env.DATABASE_URL;
+import { PrismaClient } from '@prisma/client';
 
-  if (!connectionString) {
-    throw new Error(
-      "DATABASE_URL environment variable is required for database access. " +
-        "Please ensure it is set in your environment.",
-    );
-  }
+declare global {
+  // allow global `var` declarations
+  // eslint-disable-next-line no-var
+  var prisma: PrismaClient | undefined;
+}
 
-  const adapter = new PrismaPg({ connectionString });
-  return new PrismaClient({
-    adapter,
-    log: ["error", "warn"],
+export const prisma =
+  global.prisma ||
+  new PrismaClient({
+    log: ['query'],
   });
-};
 
-declare const globalThis: {
-  prismaGlobal: ReturnType<typeof prismaClientSingleton>;
-} & typeof global;
-
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
-
-export default prisma;
-
-if (process.env.NODE_ENV !== "production") globalThis.prismaGlobal = prisma;
+if (process.env.NODE_ENV !== 'production') global.prisma = prisma;
