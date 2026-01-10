@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 14
+iteration: 15
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -49,49 +49,46 @@ The Status column in the Active Task Registry uses these values:
 
 <!-- Ralph: UPDATE THIS EVERY ITERATION! This is your memory. -->
 
-| Issue #        | Session ID           | Status        | PR #    | Retries | Last Updated     |
-| -------------- | -------------------- | ------------- | ------- | ------- | ---------------- |
-| UNIT-TEST-FIX  | 5134072663804435110  | IN_PROGRESS   | #669    | 0       | 2026-01-10T18:30 |
-| #545 (ORB-042) | 10448440558500030178 | IN_PROGRESS   | -       | 0       | 2026-01-10T18:30 |
-| PR-659-FIX     | 12847152019524036796 | IN_PROGRESS   | -       | 0       | 2026-01-10T18:30 |
-| PR-665-FIX     | 3633172326393439913  | PLANNING      | -       | 0       | 2026-01-10T18:30 |
-| PR-667-FIX     | 17258562081963162276 | PLANNING      | -       | 0       | 2026-01-10T18:30 |
-| #544 (ORB-026) | 8018068239388301596  | PR_CREATED    | #666    | 0       | 2026-01-10T18:30 |
-| #540 (ORB-039) | 16859514757019367340 | PR_CREATED    | #668    | 0       | 2026-01-10T18:30 |
-| #532 (ORB-024) | 3272942138734267585  | COMPLETED     | #659 ✅ | 0       | 2026-01-10T18:05 |
-| #531 (ORB-023) | 12664520598883814187 | PR_CI_FAILING | #667    | 0       | 2026-01-10T18:30 |
-| #529 (ORB-021) | 12716452045721348213 | COMPLETED     | #660 ✅ | 0       | 2026-01-10T18:05 |
-| #530 (ORB-022) | 1223874300114515623  | COMPLETED     | -       | 0       | 2026-01-10T18:30 |
-| #536 (ORB-036) | 12268363689474090994 | COMPLETED     | -       | 0       | 2026-01-10T18:00 |
-| #538 (ORB-037) | 13964044312522937140 | COMPLETED     | -       | 0       | 2026-01-10T17:05 |
-| #546 (ORB-027) | 13204058962977056689 | COMPLETED     | -       | 1       | 2026-01-10T17:10 |
+| Issue #        | Session ID           | Status      | PR #    | Retries | Last Updated     |
+| -------------- | -------------------- | ----------- | ------- | ------- | ---------------- |
+| UNIT-TEST-FIX  | 5134072663804435110  | IN_PROGRESS | #669    | 0       | 2026-01-10T18:45 |
+| #545 (ORB-042) | 10448440558500030178 | IN_PROGRESS | -       | 0       | 2026-01-10T18:45 |
+| PR-659-FIX     | 12847152019524036796 | IN_PROGRESS | -       | 0       | 2026-01-10T18:45 |
+| PR-665-FIX     | 3633172326393439913  | PLANNING    | -       | 0       | 2026-01-10T18:45 |
+| PR-666-FIX     | 909302481420016346   | PLANNING    | -       | 0       | 2026-01-10T18:45 |
+| PR-667-FIX     | 17258562081963162276 | IN_PROGRESS | -       | 0       | 2026-01-10T18:45 |
+| #544 (ORB-026) | 8018068239388301596  | PR_CREATED  | #666    | 0       | 2026-01-10T18:45 |
+| #540 (ORB-039) | 16859514757019367340 | PR_CREATED  | #668    | 0       | 2026-01-10T18:45 |
+| #532 (ORB-024) | 3272942138734267585  | COMPLETED   | #659 ✅ | 0       | 2026-01-10T18:05 |
+| #531 (ORB-023) | 12664520598883814187 | COMPLETED   | #667    | 0       | 2026-01-10T18:45 |
+| #529 (ORB-021) | 12716452045721348213 | COMPLETED   | #660 ✅ | 0       | 2026-01-10T18:05 |
+| #530 (ORB-022) | 1223874300114515623  | COMPLETED   | -       | 0       | 2026-01-10T18:30 |
+| #536 (ORB-036) | 12268363689474090994 | COMPLETED   | -       | 0       | 2026-01-10T18:00 |
+| #538 (ORB-037) | 13964044312522937140 | COMPLETED   | -       | 0       | 2026-01-10T17:05 |
+| #546 (ORB-027) | 13204058962977056689 | COMPLETED   | -       | 1       | 2026-01-10T17:10 |
 
-**Active Count: 5/6** (1 slot available)
+**Active Count: 6/6** (WIP_LIMIT reached)
 
 **PRs Open (5):**
 
 | PR # | Issue         | Status             | Next Action                |
 | ---- | ------------- | ------------------ | -------------------------- |
-| #669 | UNIT-TEST-FIX | Draft, BEHIND main | Jules notified to fix      |
-| #668 | #540 ORB-039  | Draft              | Wait for CI check          |
-| #667 | #531 ORB-023  | CI FAILING         | PR-667-FIX session created |
-| #666 | #544 ORB-026  | Draft              | Wait for CI check          |
-| #665 | #532 ORB-024  | DIRTY (conflicts)  | PR-665-FIX session created |
+| #669 | UNIT-TEST-FIX | Draft, BEHIND main | Jules working on it        |
+| #668 | #540 ORB-039  | Draft, BEHIND      | Next: create fix session   |
+| #667 | #531 ORB-023  | Not draft          | PR-667-FIX session working |
+| #666 | #544 ORB-026  | Draft, BEHIND      | PR-666-FIX session created |
+| #665 | #532 ORB-024  | DIRTY (conflicts)  | PR-665-FIX session working |
 
 **Build Status (main):**
 
-- unit-tests-1: ❌ FAILING
-- unit-tests-2: ❌ FAILING (GitHubIssuesPanel, OverviewTab, FunnelTab)
-- unit-tests-3: ✅ PASSING
-- unit-tests-4: ✅ PASSING
+- CodeQL: 🔄 IN_PROGRESS
+- CI/CD Pipeline: ❌ Last run failed (unit-tests-2)
 
 **Actions This Iteration:**
 
-- ✅ Approved #545 (ORB-042) plan
-- ✅ Messaged Jules about PR #669 being behind main
-- ✅ Created PR-665-FIX session for merge conflicts
-- ✅ Created PR-667-FIX session for CI failures
-- ✅ Updated PR mappings in registry
+- ✅ Approved PR-667-FIX plan
+- ✅ Created PR-666-FIX session for rebase
+- ✅ Filled last WIP slot
 
 **Issues Flagged for Human Review:**
 
