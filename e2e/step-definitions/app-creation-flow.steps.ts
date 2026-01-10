@@ -219,9 +219,12 @@ Then(
 When(
   "I press Enter on the {string} button",
   async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", {
-      name: new RegExp(buttonText, "i"),
-    });
+    // Use data-testid for Next button to avoid matching Next.js dev tools button
+    const button = buttonText.toLowerCase() === "next"
+      ? this.page.getByTestId("wizard-next-button")
+      : this.page.getByRole("button", {
+        name: new RegExp(buttonText, "i"),
+      });
     await button.focus();
     await this.page.keyboard.press("Enter");
     await waitForPageLoad(this.page);
