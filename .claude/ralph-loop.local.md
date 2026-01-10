@@ -39,6 +39,7 @@ The Status column in the Active Task Registry uses these values:
 | `REVIEW_CHANGES_REQUESTED` | Review requested changes, Jules notified     |
 | `JULES_FIXING_REVIEW`      | Jules addressing review feedback             |
 | `JULES_FIX_COMPLETED`      | Jules pushed fixes, re-checking CI/branch    |
+| `AWAITING_PR_CREATION`     | Session complete, browser creating PR        |
 | `COMPLETED`                | Merged and closed                            |
 | `FAILED`                   | Failed after max retries, escalated          |
 
@@ -85,16 +86,17 @@ mcp__spike-land__jules_list_sessions
 
 Parse response and categorize ALL sessions into:
 
-| Category          | Statuses                                                          | Action         |
-| ----------------- | ----------------------------------------------------------------- | -------------- |
-| 🟢 Needs Approval | `AWAITING_PLAN_APPROVAL`                                          | → Step 2       |
-| 🟡 Needs Input    | `AWAITING_USER_FEEDBACK`                                          | → Step 6       |
-| 🔄 PR Lifecycle   | `PR_CREATED`, `PR_CI_FAILING`, `PR_BEHIND_MAIN`,                  | → Step 3       |
-|                   | `REVIEW_REQUESTED`, `REVIEW_STARTED`, `REVIEW_CHANGES_REQUESTED`, |                |
-|                   | `JULES_FIXING_REVIEW`, `JULES_FIX_COMPLETED`, `REVIEW_APPROVED`   |                |
-| ✅ Done           | `COMPLETED`                                                       | → Remove       |
-| ❌ Failed         | `FAILED`                                                          | → Step 7       |
-| ⏳ Working        | `IN_PROGRESS`, `PLANNING`, `QUEUED`                               | Log & continue |
+| Category             | Statuses                                                          | Action         |
+| -------------------- | ----------------------------------------------------------------- | -------------- |
+| 🟢 Needs Approval    | `AWAITING_PLAN_APPROVAL`                                          | → Step 2       |
+| 🟡 Needs Input       | `AWAITING_USER_FEEDBACK`                                          | → Step 6       |
+| 🔵 Needs PR Creation | `COMPLETED` with "⚠️ No PR"                                        | → Step 3.0     |
+| 🔄 PR Lifecycle      | `PR_CREATED`, `PR_CI_FAILING`, `PR_BEHIND_MAIN`,                  | → Step 3       |
+|                      | `REVIEW_REQUESTED`, `REVIEW_STARTED`, `REVIEW_CHANGES_REQUESTED`, |                |
+|                      | `JULES_FIXING_REVIEW`, `JULES_FIX_COMPLETED`, `REVIEW_APPROVED`   |                |
+| ✅ Done              | `COMPLETED` with PR merged                                        | → Remove       |
+| ❌ Failed            | `FAILED`                                                          | → Step 7       |
+| ⏳ Working           | `IN_PROGRESS`, `PLANNING`, `QUEUED`                               | Log & continue |
 
 Update the Active Task Registry table above with current state.
 
@@ -121,6 +123,50 @@ Do NOT wait for approval to take effect - continue to next step.
 ### Step 3: Handle PR Lifecycle
 
 For sessions with a PR (status contains `PR_`, `REVIEW_`, or `JULES_`), or `COMPLETED` sessions:
+
+#### 3.0 Create PR via Browser (for COMPLETED sessions with no PR)
+
+For sessions in registry marked `COMPLETED` with "⚠️ No PR":
+
+**Step 3.0.1: Navigate to Jules session**
+
+```
+mcp__playwright__browser_navigate { url: "https://jules.google.com/session/[session_id]" }
+```
+
+**Step 3.0.2: Check login status / Get page snapshot**
+
+```
+mcp__playwright__browser_snapshot {}
+```
+
+If login required, notify user: "🔐 Please log in to jules.google.com - browser is open"
+Wait for user confirmation, then re-snapshot.
+
+**Step 3.0.3: Find and click PR creation button**
+
+Look for button with text like "Create pull request", "Open PR", or similar.
+
+```
+mcp__playwright__browser_click { element: "Create pull request button", ref: "[ref]" }
+```
+
+**Step 3.0.4: Wait for PR creation**
+
+```
+mcp__playwright__browser_wait_for { text: "pull request", time: 30 }
+```
+
+**Step 3.0.5: Extract PR URL/number**
+
+Snapshot the page, find the GitHub PR link, extract PR number.
+
+**Step 3.0.6: Update registry**
+
+Change status from `COMPLETED` + "⚠️ No PR" to `PR_CREATED` with PR number.
+Continue to Step 3.1 for normal PR lifecycle handling.
+
+---
 
 #### 3.1 Check for PR
 
