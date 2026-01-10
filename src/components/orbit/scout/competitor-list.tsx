@@ -71,6 +71,34 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
     }
   };
 
+  const handleRemove = async (competitorId: string) => {
+    if (!confirm('Are you sure you want to remove this competitor?')) {
+      return;
+    }
+
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/orbit/${workspaceSlug}/scout/competitors/${competitorId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const { error } = await response.json();
+        throw new Error(error || 'Failed to remove competitor');
+      }
+
+      // Remove from local state
+      setCompetitors(competitors.filter(c => c.id !== competitorId));
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred while removing competitor.');
+      }
+    }
+  };
+
   return (
     <div className="p-4 border rounded-lg shadow-sm">
       <h2 className="text-lg font-semibold mb-4">Competitor Accounts</h2>
@@ -109,7 +137,12 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
                 <span className="font-bold">{c.name || c.handle}</span>
                 <span className="text-gray-500 ml-2">({c.platform})</span>
               </div>
-              <button className="text-red-500">Remove</button>
+              <button 
+                onClick={() => handleRemove(c.id)}
+                className="text-red-500 hover:text-red-700"
+              >
+                Remove
+              </button>
             </li>
           ))}
         </ul>
