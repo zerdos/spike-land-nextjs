@@ -51,6 +51,7 @@ describe("attribution", () => {
         id: "attr-123",
         userId: "user-123",
         sessionId: "session-123",
+        conversionId: "conv-123",
         attributionType: "FIRST_TOUCH",
         conversionType: "SIGNUP",
         conversionValue: 100,
@@ -65,6 +66,7 @@ describe("attribution", () => {
       const params: AttributionParams = {
         userId: "user-123",
         sessionId: "session-123",
+        conversionId: "conv-123",
         attributionType: "FIRST_TOUCH",
         conversionType: "SIGNUP",
         conversionValue: 100,
@@ -83,6 +85,7 @@ describe("attribution", () => {
         data: {
           userId: "user-123",
           sessionId: "session-123",
+          conversionId: "conv-123",
           attributionType: "FIRST_TOUCH",
           conversionType: "SIGNUP",
           conversionValue: 100,
@@ -100,6 +103,7 @@ describe("attribution", () => {
         id: "attr-123",
         userId: "user-123",
         sessionId: "session-123",
+        conversionId: "conv-123",
         attributionType: "LAST_TOUCH",
         conversionType: "ENHANCEMENT",
         conversionValue: null,
@@ -114,6 +118,7 @@ describe("attribution", () => {
       await createAttribution({
         userId: "user-123",
         sessionId: "session-123",
+        conversionId: "conv-123",
         attributionType: "LAST_TOUCH",
         conversionType: "ENHANCEMENT",
         utmParams: {
@@ -135,6 +140,7 @@ describe("attribution", () => {
         id: "attr-123",
         userId: "user-123",
         sessionId: "session-123",
+        conversionId: "conv-123",
         attributionType: "FIRST_TOUCH",
         conversionType: "PURCHASE",
         conversionValue: 9.99,
@@ -149,6 +155,7 @@ describe("attribution", () => {
       await createAttribution({
         userId: "user-123",
         sessionId: "session-123",
+        conversionId: "conv-123",
         attributionType: "FIRST_TOUCH",
         conversionType: "PURCHASE",
         conversionValue: 9.99,
@@ -166,6 +173,7 @@ describe("attribution", () => {
         id: "attr-123",
         userId: "user-123",
         sessionId: "session-123",
+        conversionId: "conv-123",
         attributionType: "FIRST_TOUCH",
         conversionType: "SIGNUP",
         conversionValue: null,
@@ -180,6 +188,7 @@ describe("attribution", () => {
       await createAttribution({
         userId: "user-123",
         sessionId: "session-123",
+        conversionId: "conv-123",
         attributionType: "FIRST_TOUCH",
         conversionType: "SIGNUP",
         utmParams: {
@@ -339,7 +348,7 @@ describe("attribution", () => {
   });
 
   describe("attributeConversion", () => {
-    it("should create both first-touch and last-touch attributions", async () => {
+    it("should create first-touch, last-touch, and linear attributions", async () => {
       const mockSessions = [
         {
           id: "session-1",
@@ -379,9 +388,9 @@ describe("attribution", () => {
           landingPage: "/pricing",
           exitPage: "/checkout",
           pageViewCount: 5,
-          utmSource: null,
-          utmMedium: null,
-          utmCampaign: null,
+          utmSource: "facebook",
+          utmMedium: "social",
+          utmCampaign: "promo",
           utmTerm: null,
           utmContent: null,
           gclid: null,
@@ -390,46 +399,48 @@ describe("attribution", () => {
       ];
 
       vi.mocked(prisma.visitorSession.findMany).mockResolvedValue(mockSessions);
-      vi.mocked(prisma.campaignAttribution.create).mockResolvedValue({
-        id: "attr-123",
-        userId: "user-123",
-        sessionId: "session-1",
-        attributionType: "FIRST_TOUCH",
-        conversionType: "SIGNUP",
-        conversionValue: null,
-        platform: "GOOGLE_ADS",
-        externalCampaignId: "abc123",
-        utmCampaign: "brand",
-        utmSource: "google",
-        utmMedium: "cpc",
-        convertedAt: new Date(),
+
+      await attributeConversion("user-123", "SIGNUP", 100);
+
+      expect(prisma.campaignAttribution.create).toHaveBeenCalledTimes(4); // FT, LT, Linear x2
+
+      const calls = vi.mocked(prisma.campaignAttribution.create).mock.calls;
+      const conversionId = calls[0][0]!.data!.conversionId;
+
+      // All calls should have the same conversionId
+      calls.forEach((call) => {
+        expect(call[0]!.data!.conversionId).toBe(conversionId);
       });
 
-      await attributeConversion("user-123", "SIGNUP");
+      // First Touch
+      expect(calls[0][0]!.data).toMatchObject({
+        attributionType: "FIRST_TOUCH",
+        sessionId: "session-1",
+        platform: "GOOGLE_ADS",
+        conversionValue: 100,
+      });
 
-      expect(prisma.campaignAttribution.create).toHaveBeenCalledTimes(2);
-      // First call should be FIRST_TOUCH with first session
-      expect(prisma.campaignAttribution.create).toHaveBeenNthCalledWith(
-        1,
-        expect.objectContaining({
-          data: expect.objectContaining({
-            sessionId: "session-1",
-            attributionType: "FIRST_TOUCH",
-            platform: "GOOGLE_ADS",
-          }),
-        }),
-      );
-      // Second call should be LAST_TOUCH with last session
-      expect(prisma.campaignAttribution.create).toHaveBeenNthCalledWith(
-        2,
-        expect.objectContaining({
-          data: expect.objectContaining({
-            sessionId: "session-2",
-            attributionType: "LAST_TOUCH",
-            platform: "DIRECT",
-          }),
-        }),
-      );
+      // Last Touch
+      expect(calls[1][0]!.data).toMatchObject({
+        attributionType: "LAST_TOUCH",
+        sessionId: "session-2",
+        platform: "FACEBOOK",
+        conversionValue: 100,
+      });
+
+      // Linear
+      expect(calls[2][0]!.data).toMatchObject({
+        attributionType: "LINEAR",
+        sessionId: "session-1",
+        platform: "GOOGLE_ADS",
+        conversionValue: 50,
+      });
+      expect(calls[3][0]!.data).toMatchObject({
+        attributionType: "LINEAR",
+        sessionId: "session-2",
+        platform: "FACEBOOK",
+        conversionValue: 50,
+      });
     });
 
     it("should include conversion value when provided", async () => {
@@ -464,6 +475,7 @@ describe("attribution", () => {
         id: "attr-123",
         userId: "user-123",
         sessionId: "session-1",
+        conversionId: "conv-123",
         attributionType: "FIRST_TOUCH",
         conversionType: "PURCHASE",
         conversionValue: 9.99,
@@ -477,13 +489,13 @@ describe("attribution", () => {
 
       await attributeConversion("user-123", "PURCHASE", 9.99);
 
-      expect(prisma.campaignAttribution.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            conversionValue: 9.99,
-          }),
-        }),
-      );
+      // FT, LT, Linear
+      expect(prisma.campaignAttribution.create).toHaveBeenCalledTimes(3);
+      expect(
+        vi.mocked(prisma.campaignAttribution.create).mock.calls.every(
+          (c) => c[0]!.data!.conversionValue === 9.99,
+        ),
+      ).toBe(true);
     });
 
     it("should create direct attribution when no sessions exist", async () => {
@@ -542,14 +554,9 @@ describe("attribution", () => {
       });
       expect(prisma.campaignAttribution.createMany).toHaveBeenCalledWith({
         data: [
-          expect.objectContaining({
-            attributionType: "FIRST_TOUCH",
-            platform: "DIRECT",
-          }),
-          expect.objectContaining({
-            attributionType: "LAST_TOUCH",
-            platform: "DIRECT",
-          }),
+          expect.objectContaining({ attributionType: "FIRST_TOUCH" }),
+          expect.objectContaining({ attributionType: "LAST_TOUCH" }),
+          expect.objectContaining({ attributionType: "LINEAR" }),
         ],
       });
     });
@@ -599,6 +606,7 @@ describe("attribution", () => {
         id: "attr-123",
         userId: "user-123",
         sessionId: "session-1",
+        conversionId: "conv-123",
         attributionType: "FIRST_TOUCH",
         conversionType: "SIGNUP",
         conversionValue: null,
@@ -612,14 +620,22 @@ describe("attribution", () => {
 
       await attributeConversion("user-123", "SIGNUP");
 
-      expect(prisma.campaignAttribution.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            platform: "FACEBOOK",
-            externalCampaignId: "fb-click-id",
-          }),
-        }),
-      );
+      const createCalls = vi.mocked(prisma.campaignAttribution.create).mock
+        .calls;
+
+      // Check that FT, LT, and Linear calls have correct platform
+      expect(createCalls[0][0]!.data).toMatchObject({
+        platform: "FACEBOOK",
+        externalCampaignId: "fb-click-id",
+      });
+      expect(createCalls[1][0]!.data).toMatchObject({
+        platform: "FACEBOOK",
+        externalCampaignId: "fb-click-id",
+      });
+      expect(createCalls[2][0]!.data).toMatchObject({
+        platform: "FACEBOOK",
+        externalCampaignId: "fb-click-id",
+      });
     });
 
     it("should detect ORGANIC from search engine referrer", async () => {
@@ -654,6 +670,7 @@ describe("attribution", () => {
         id: "attr-123",
         userId: "user-123",
         sessionId: "session-1",
+        conversionId: "conv-123",
         attributionType: "FIRST_TOUCH",
         conversionType: "SIGNUP",
         conversionValue: null,
@@ -708,6 +725,7 @@ describe("attribution", () => {
         id: "attr-123",
         userId: "user-123",
         sessionId: "session-1",
+        conversionId: "conv-123",
         attributionType: "FIRST_TOUCH",
         conversionType: "SIGNUP",
         conversionValue: null,
@@ -762,6 +780,7 @@ describe("attribution", () => {
         id: "attr-123",
         userId: "user-123",
         sessionId: "session-1",
+        conversionId: "conv-123",
         attributionType: "FIRST_TOUCH",
         conversionType: "SIGNUP",
         conversionValue: null,
@@ -786,51 +805,75 @@ describe("attribution", () => {
   });
 
   describe("getCampaignAttributionSummary", () => {
-    it("should return attribution summary for campaign", async () => {
+    it("should return correct summary for multiple conversions", async () => {
       const mockAttributions = [
+        // Conversion 1: Signup (Value: 0)
         {
-          id: "attr-1",
-          userId: "user-1",
-          sessionId: "session-1",
-          attributionType: "FIRST_TOUCH" as const,
-          conversionType: "SIGNUP" as const,
-          conversionValue: null,
-          platform: "GOOGLE_ADS",
-          externalCampaignId: null,
+          id: "attr-1-ft",
+          conversionId: "conv-1",
+          attributionType: "FIRST_TOUCH",
+          conversionType: "SIGNUP",
+          conversionValue: 0,
           utmCampaign: "brand",
-          utmSource: "google",
-          utmMedium: "cpc",
-          convertedAt: new Date("2024-01-05"),
+          convertedAt: new Date(),
         },
         {
-          id: "attr-2",
-          userId: "user-2",
-          sessionId: "session-2",
-          attributionType: "LAST_TOUCH" as const,
-          conversionType: "PURCHASE" as const,
-          conversionValue: 9.99,
-          platform: "GOOGLE_ADS",
-          externalCampaignId: null,
+          id: "attr-1-lt",
+          conversionId: "conv-1",
+          attributionType: "LAST_TOUCH",
+          conversionType: "SIGNUP",
+          conversionValue: 0,
           utmCampaign: "brand",
-          utmSource: "google",
-          utmMedium: "cpc",
-          convertedAt: new Date("2024-01-10"),
+          convertedAt: new Date(),
         },
         {
-          id: "attr-3",
-          userId: "user-3",
-          sessionId: "session-3",
-          attributionType: "FIRST_TOUCH" as const,
-          conversionType: "ENHANCEMENT" as const,
-          conversionValue: 100,
-          platform: "GOOGLE_ADS",
-          externalCampaignId: null,
+          id: "attr-1-ln1",
+          conversionId: "conv-1",
+          attributionType: "LINEAR",
+          conversionType: "SIGNUP",
+          conversionValue: 0,
           utmCampaign: "brand",
-          utmSource: "google",
-          utmMedium: "cpc",
-          convertedAt: new Date("2024-01-15"),
+          convertedAt: new Date(),
         },
-      ];
+
+        // Conversion 2: Purchase (Value: 50)
+        {
+          id: "attr-2-ft",
+          conversionId: "conv-2",
+          attributionType: "FIRST_TOUCH",
+          conversionType: "PURCHASE",
+          conversionValue: 50,
+          utmCampaign: "brand",
+          convertedAt: new Date(),
+        },
+        {
+          id: "attr-2-lt",
+          conversionId: "conv-2",
+          attributionType: "LAST_TOUCH",
+          conversionType: "PURCHASE",
+          conversionValue: 50,
+          utmCampaign: "brand",
+          convertedAt: new Date(),
+        },
+        {
+          id: "attr-2-ln1",
+          conversionId: "conv-2",
+          attributionType: "LINEAR",
+          conversionType: "PURCHASE",
+          conversionValue: 25,
+          utmCampaign: "brand",
+          convertedAt: new Date(),
+        },
+        {
+          id: "attr-2-ln2",
+          conversionId: "conv-2",
+          attributionType: "LINEAR",
+          conversionType: "PURCHASE",
+          conversionValue: 25,
+          utmCampaign: "brand",
+          convertedAt: new Date(),
+        },
+      ] as any;
 
       vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(
         mockAttributions,
@@ -838,37 +881,35 @@ describe("attribution", () => {
 
       const result = await getCampaignAttributionSummary(
         "brand",
-        new Date("2024-01-01"),
-        new Date("2024-01-31"),
+        new Date(),
+        new Date(),
       );
 
       expect(result).toEqual({
-        totalConversions: 3,
-        firstTouchCount: 2,
-        lastTouchCount: 1,
-        totalValue: 109.99,
+        totalConversions: 2,
+        firstTouchValue: 50,
+        lastTouchValue: 50,
+        linearValue: 50,
         conversionsByType: {
           SIGNUP: 1,
-          ENHANCEMENT: 1,
           PURCHASE: 1,
+          ENHANCEMENT: 0,
         },
       });
     });
 
     it("should return zero counts for empty results", async () => {
       vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue([]);
-
       const result = await getCampaignAttributionSummary(
         "nonexistent",
-        new Date("2024-01-01"),
-        new Date("2024-01-31"),
+        new Date(),
+        new Date(),
       );
-
       expect(result).toEqual({
         totalConversions: 0,
-        firstTouchCount: 0,
-        lastTouchCount: 0,
-        totalValue: 0,
+        firstTouchValue: 0,
+        lastTouchValue: 0,
+        linearValue: 0,
         conversionsByType: {
           SIGNUP: 0,
           ENHANCEMENT: 0,
