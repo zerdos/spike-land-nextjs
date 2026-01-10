@@ -846,3 +846,48 @@ Then(
     await expect(accountElement).not.toBeVisible({ timeout: 10000 });
   },
 );
+
+// Missing steps for orbit-social-integration.feature
+Given(
+  "I have a LinkedIn account connected",
+  async function(this: CustomWorld) {
+    // Variant without account name parameter - use default mock
+    this.connectedAccounts = [
+      {
+        platform: "LINKEDIN",
+        name: "Test Company",
+        id: MOCK_LINKEDIN_ACCOUNT.id,
+      },
+    ];
+
+    await this.page.route("**/api/orbit/*/social/accounts", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          accounts: [MOCK_LINKEDIN_ACCOUNT],
+        }),
+      });
+    });
+  },
+);
+
+When(
+  "I try to fetch LinkedIn posts",
+  async function(this: CustomWorld) {
+    // Mock rate limit error
+    await this.page.route("**/api/orbit/*/social/posts**", async (route) => {
+      await route.fulfill({
+        status: 429,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: "Rate limit exceeded",
+          retryAfter: 60,
+        }),
+      });
+    });
+
+    await this.page.click("[data-testid='refresh-posts-button']");
+    await this.page.waitForLoadState("networkidle");
+  },
+);

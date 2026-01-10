@@ -77,6 +77,11 @@ model User {
   // Crisis detection relations
   acknowledgedCrises   CrisisDetectionEvent[] @relation("CrisisAcknowledger")
   resolvedCrises       CrisisDetectionEvent[] @relation("CrisisResolver")
+  // Account health monitoring
+  resolvedHealthEvents AccountHealthEvent[]   @relation("HealthEventResolver")
+  // Policy Checker relations
+  policyChecks         PolicyCheck[]
+  policyViolationOverrides PolicyViolation[]
 
   @@map("users")
 }
@@ -1803,6 +1808,9 @@ model SocialAccount {
   anomalies             SocialMetricAnomaly[]
   scheduledPostAccounts ScheduledPostAccount[]
   inboxItems            InboxItem[]
+  // Account health monitoring
+  health                SocialAccountHealth?
+  healthEvents          AccountHealthEvent[]
 
   @@unique([workspaceId, platform, accountId])
   @@index([userId])
@@ -1936,9 +1944,13 @@ enum SocialPlatform {
 }
 
 enum SocialAccountStatus {
-  ACTIVE
-  EXPIRED
-  ERROR
+  ACTIVE        // Working normally
+  EXPIRED       // Token expired, needs refresh
+  ERROR         // Last operation failed
+  RATE_LIMITED  // Currently rate limited by platform
+  RESTRICTED    // Platform restrictions applied
+  SUSPENDED     // Account suspended by platform
+  DISCONNECTED  // Manually disconnected by user
 }
 
 enum SocialPostStatus {
@@ -2021,6 +2033,12 @@ model Workspace {
   crisisEvents          CrisisDetectionEvent[]
   crisisTemplates       CrisisResponseTemplate[]
   crisisAlertRules      CrisisAlertRule[]
+  // Account health monitoring
+  accountHealthEvents   AccountHealthEvent[]
+  // Policy Checker relations
+  policyRules           PolicyRule[]
+  policyChecks          PolicyCheck[]
+  policyViolations      PolicyViolation[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -2523,4 +2541,325 @@ enum CrisisRuleType {
   FOLLOWER_DROP        // Significant follower loss
   VIRAL_COMPLAINT      // Single post getting unusual negative engagement
   MANUAL               // Manually triggered crisis
+}
+
+// =============================================================================
+// Account Health Monitoring System Models
+// Resolves #586: Implement Account Health Monitor
+// =============================================================================
+
+/// Tracks the health status of each connected social account
+/// Provides real-time monitoring of sync status, rate limits, and token health
+model SocialAccountHealth {
+  id                    String              @id @default(cuid())
+  accountId             String              @unique
+  account               SocialAccount       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  // Health metrics
+  healthScore           Int                 @default(100) // 0-100 score
+  status                AccountHealthStatus @default(HEALTHY)
+
+  // Sync tracking
+  lastSuccessfulSync    DateTime?
+  lastSyncAttempt       DateTime?
+  lastError             String?
+  lastErrorAt           DateTime?
+  consecutiveErrors     Int                 @default(0)
+  totalErrorsLast24h    Int                 @default(0)
+
+  // Rate limit tracking
+  rateLimitRemaining    Int?
+  rateLimitTotal        Int?
+  rateLimitResetAt      DateTime?
+  isRateLimited         Boolean             @default(false)
+
+  // Token health
+  tokenExpiresAt        DateTime?
+  tokenRefreshRequired  Boolean             @default(false)
+
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([accountId])
+  @@index([status])
+  @@index([healthScore])
+  @@map("social_account_health")
+}
+
+/// Recovery guidance templates for common account issues
+/// Provides step-by-step instructions for resolving problems
+model RecoveryGuidance {
+  id                String              @id @default(cuid())
+  platform          SocialPlatform?     // null = all platforms
+  issueType         AccountIssueType
+  severity          IssueSeverity
+  title             String
+  description       String              @db.Text
+  steps             Json                // Array of { order, title, description, actionUrl?, isAutomated? }
+  estimatedTime     String?             // e.g., "5-10 minutes"
+  requiresAction    Boolean             @default(true)
+  autoRecoverable   Boolean             @default(false)
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@unique([platform, issueType])
+  @@index([issueType])
+  @@index([severity])
+  @@map("recovery_guidance")
+}
+
+/// Account health events log for tracking status changes and issues
+model AccountHealthEvent {
+  id                String                  @id @default(cuid())
+  accountId         String
+  account           SocialAccount           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  workspaceId       String
+  workspace         Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  eventType         AccountHealthEventType
+  severity          IssueSeverity
+  previousStatus    AccountHealthStatus?
+  newStatus         AccountHealthStatus
+  previousScore     Int?
+  newScore          Int
+  message           String
+  details           Json?                   // Additional context
+
+  resolvedAt        DateTime?
+  resolvedById      String?
+  resolvedBy        User?                   @relation("HealthEventResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolutionNotes   String?
+
+  createdAt         DateTime                @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([workspaceId, createdAt])
+  @@index([eventType])
+  @@index([severity])
+  @@map("account_health_events")
+}
+
+enum AccountHealthStatus {
+  HEALTHY           // Score 80-100, all systems operational
+  DEGRADED          // Score 50-79, minor issues detected
+  UNHEALTHY         // Score 20-49, significant problems
+  CRITICAL          // Score 0-19, immediate attention required
+}
+
+enum AccountIssueType {
+  TOKEN_EXPIRED       // OAuth token has expired
+  TOKEN_EXPIRING_SOON // Token will expire within 24h
+  RATE_LIMITED        // Hit platform rate limits
+  API_ERROR           // API call failed
+  PERMISSION_DENIED   // Missing required permissions
+  ACCOUNT_RESTRICTED  // Platform restrictions on account
+  ACCOUNT_SUSPENDED   // Account suspended by platform
+  SYNC_FAILED         // Metrics sync failed
+  CONNECTION_LOST     // Cannot connect to platform
+  QUOTA_EXCEEDED      // API quota exhausted
+}
+
+enum AccountHealthEventType {
+  STATUS_CHANGED      // Health status changed
+  SCORE_DECREASED     // Health score dropped
+  SCORE_RECOVERED     // Health score improved
+  RATE_LIMIT_HIT      // Rate limit triggered
+  RATE_LIMIT_CLEARED  // Rate limit reset
+  ERROR_OCCURRED      // API error detected
+  ERROR_RESOLVED      // Error condition cleared
+  TOKEN_REFRESHED     // Token successfully refreshed
+  TOKEN_EXPIRED       // Token expiration detected
+  ACCOUNT_RECOVERED   // Full recovery from issues
+  MANUAL_INTERVENTION // User took manual action
+}
+
+enum IssueSeverity {
+  INFO              // Informational only
+  WARNING           // Minor issue, monitor
+  ERROR             // Problem requiring attention
+  CRITICAL          // Urgent issue requiring immediate action
+}
+
+// Policy Checker System Models
+// Resolves #584: Build Policy Checker
+// =============================================================================
+
+/// Policy rules for content validation across platforms
+/// Stores platform-specific and global policy configurations
+model PolicyRule {
+  id              String          @id @default(cuid())
+  workspaceId     String?         // null = global/system rule
+  workspace       Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Rule identification
+  name            String
+  description     String          @db.Text
+  platform        SocialPlatform? // null = applies to all platforms
+  category        PolicyCategory
+  ruleType        PolicyRuleType
+
+  // Rule configuration
+  conditions      Json            // Rule conditions and patterns
+  severity        PolicySeverity  @default(WARNING)
+  isBlocking      Boolean         @default(false) // If true, prevents publishing
+  isActive        Boolean         @default(true)
+
+  // Metadata
+  sourceUrl       String?         // Link to official policy documentation
+  lastVerifiedAt  DateTime?       // When this rule was last verified against platform docs
+  version         Int             @default(1)
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  violations      PolicyViolation[]
+
+  @@unique([workspaceId, platform, name])
+  @@index([workspaceId])
+  @@index([platform])
+  @@index([category])
+  @@index([isActive])
+  @@map("policy_rules")
+}
+
+/// Records of policy check executions
+/// Tracks what content was checked and the overall result
+model PolicyCheck {
+  id              String          @id @default(cuid())
+  workspaceId     String
+  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Content being checked
+  contentType     PolicyContentType
+  contentId       String?         // Reference to ScheduledPost, InboxItem, etc.
+  contentText     String          @db.Text
+  contentMetadata Json?           // Additional content info (images, links, etc.)
+
+  // Check configuration
+  platform        SocialPlatform? // Target platform for this check
+  checkScope      PolicyCheckScope @default(FULL)
+
+  // Results
+  status          PolicyCheckStatus @default(PENDING)
+  passedRules     Int             @default(0)
+  failedRules     Int             @default(0)
+  warningRules    Int             @default(0)
+  overallResult   PolicyCheckResult?
+  summary         String?         @db.Text
+
+  // Timing
+  startedAt       DateTime        @default(now())
+  completedAt     DateTime?
+  durationMs      Int?
+
+  // Actor
+  checkedById     String?
+  checkedBy       User?           @relation(fields: [checkedById], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime        @default(now())
+
+  // Relations
+  violations      PolicyViolation[]
+
+  @@index([workspaceId, createdAt])
+  @@index([contentType, contentId])
+  @@index([status])
+  @@index([overallResult])
+  @@map("policy_checks")
+}
+
+/// Individual policy violations detected during checks
+/// Links violations to specific rules and provides remediation guidance
+model PolicyViolation {
+  id              String          @id @default(cuid())
+  checkId         String
+  check           PolicyCheck     @relation(fields: [checkId], references: [id], onDelete: Cascade)
+  ruleId          String
+  rule            PolicyRule      @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  workspaceId     String
+  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Violation details
+  severity        PolicySeverity
+  message         String          @db.Text
+  matchedContent  String?         @db.Text // The specific content that triggered the violation
+  matchLocation   Json?           // Where in the content the violation was found
+  confidence      Float?          // 0-1 confidence score for NLP-detected violations
+
+  // Remediation
+  suggestedFix    String?         @db.Text
+  isOverridden    Boolean         @default(false)
+  overriddenById  String?
+  overriddenBy    User?           @relation(fields: [overriddenById], references: [id], onDelete: SetNull)
+  overrideReason  String?
+  overriddenAt    DateTime?
+
+  createdAt       DateTime        @default(now())
+
+  @@index([checkId])
+  @@index([ruleId])
+  @@index([workspaceId, createdAt])
+  @@index([severity])
+  @@map("policy_violations")
+}
+
+enum PolicyCategory {
+  CONTENT_GUIDELINES    // General content policies
+  AD_COMPLIANCE         // Advertising-specific rules
+  CHARACTER_LIMITS      // Platform character restrictions
+  PROHIBITED_CONTENT    // Banned content types
+  CLAIMS_RESTRICTIONS   // Health, financial, legal claims
+  BRAND_SAFETY          // Brand protection rules
+  ACCESSIBILITY         // Accessibility requirements
+  HASHTAG_RULES         // Hashtag usage policies
+  LINK_POLICIES         // URL and link restrictions
+  MEDIA_REQUIREMENTS    // Image/video specifications
+}
+
+enum PolicyRuleType {
+  KEYWORD_MATCH         // Simple keyword/phrase detection
+  REGEX_PATTERN         // Regular expression matching
+  CHARACTER_COUNT       // Length validation
+  MEDIA_CHECK           // Image/video requirements
+  LINK_VALIDATION       // URL checking
+  NLP_CLASSIFICATION    // ML-based content classification
+  CUSTOM_LOGIC          // Custom validation logic
+}
+
+enum PolicySeverity {
+  INFO                  // Informational only
+  WARNING               // Should review, but can proceed
+  ERROR                 // Must fix before publishing
+  CRITICAL              // Immediate action required, blocks publishing
+}
+
+enum PolicyContentType {
+  POST                  // Social media post
+  AD                    // Paid advertisement
+  COMMENT               // Reply/comment
+  MESSAGE               // Direct message
+  BIO                   // Profile bio/description
+  STORY                 // Ephemeral content
+}
+
+enum PolicyCheckScope {
+  FULL                  // Check all applicable rules
+  QUICK                 // Check critical rules only
+  CUSTOM                // Check specific rule categories
+}
+
+enum PolicyCheckStatus {
+  PENDING               // Check queued
+  IN_PROGRESS           // Currently checking
+  COMPLETED             // Check finished
+  FAILED                // Check failed (system error)
+}
+
+enum PolicyCheckResult {
+  PASSED                // All checks passed
+  PASSED_WITH_WARNINGS  // Passed but has warnings
+  FAILED                // Has errors/critical violations
+  BLOCKED               // Has blocking violations
 }

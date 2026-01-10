@@ -724,12 +724,7 @@ Then(
 );
 
 // Validation Steps
-Then(
-  "I should see an error {string}",
-  async function(this: CustomWorld, errorMessage: string) {
-    await expect(this.page.getByText(errorMessage)).toBeVisible();
-  },
-);
+// NOTE: "I should see an error {string}" is defined in common.steps.ts
 
 Then(
   "the schedule button should be disabled",
@@ -760,5 +755,55 @@ Then(
   async function(this: CustomWorld) {
     // The UTC time should be offset from the displayed time
     await expect(this.page.locator("[data-testid='utc-time-display']")).toBeVisible();
+  },
+);
+
+// Publishing cron job steps
+Given(
+  "I have a scheduled post due for publishing now",
+  async function(this: CustomWorld) {
+    const now = new Date();
+    now.setSeconds(0, 0); // Round to current minute
+
+    const post: ScheduledPost = {
+      id: "sched-post-ready",
+      content: "Post ready for publishing",
+      scheduledAt: now.toISOString(),
+      status: "SCHEDULED",
+      timezone: "UTC",
+      recurrenceRule: null,
+      accounts: [
+        { platform: "LINKEDIN", accountName: "Test Company", status: "SCHEDULED" },
+      ],
+    };
+
+    this.scheduledPosts = [post];
+    this.currentPost = post;
+  },
+);
+
+When(
+  "the publishing cron job runs",
+  async function(this: CustomWorld) {
+    // Mock the cron job execution
+    await this.page.route("**/api/orbit/cron/publish-scheduled-posts", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          publishedCount: 1,
+          posts: [
+            {
+              ...this.currentPost,
+              status: "PUBLISHED",
+            },
+          ],
+        }),
+      });
+    });
+
+    // Trigger the cron job
+    await this.page.request.post(`${this.baseUrl}/api/orbit/cron/publish-scheduled-posts`);
+    await this.page.waitForTimeout(500);
   },
 );

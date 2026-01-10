@@ -389,9 +389,14 @@ Then("I should be logged out", async function(this: CustomWorld) {
   await waitForRouteReady(this.page);
 
   // Wait for the page to reflect the logged-out state
-  // Check that login buttons are visible (indicating logged out state)
-  const githubButton = this.page.getByRole("button", { name: /Continue with GitHub/i });
-  await expect(githubButton).toBeVisible({ timeout: 5000 });
+  // Check that Sign In link is visible in header (indicating logged out state)
+  await this.page
+    .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
+    .catch(() => {});
+
+  const header = this.page.locator("header");
+  const signInLink = header.getByRole("link", { name: "Sign In" });
+  await expect(signInLink.first()).toBeVisible({ timeout: 10000 });
 });
 
 Then(
@@ -507,6 +512,36 @@ Then(
     // Use .first() to handle cases where there are multiple links with similar names
     // Use longer timeout for pages with async loading
     await expect(link.first()).toBeVisible({ timeout: 15000 });
+  },
+);
+
+Then(
+  "I should see {string} link in the header",
+  async function(this: CustomWorld, linkText: string) {
+    // Wait for page to fully load
+    await this.page
+      .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
+      .catch(() => {});
+
+    // Look for the link within the header element
+    const header = this.page.locator("header");
+    const link = header.getByRole("link", { name: linkText });
+    await expect(link.first()).toBeVisible({ timeout: 15000 });
+  },
+);
+
+Then(
+  "I should not see {string} link in the header",
+  async function(this: CustomWorld, linkText: string) {
+    // Wait for page to fully load
+    await this.page
+      .waitForSelector(".animate-spin", { state: "hidden", timeout: 10000 })
+      .catch(() => {});
+
+    // Look for the link within the header element
+    const header = this.page.locator("header");
+    const link = header.getByRole("link", { name: linkText });
+    await expect(link).not.toBeVisible({ timeout: 5000 });
   },
 );
 
