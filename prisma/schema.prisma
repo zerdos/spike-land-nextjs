@@ -1778,14 +1778,17 @@ model AgentSessionActivity {
 // Social Media Tracking Models
 // =============================================================================
 
+/// Scout Competitor - Tracks competitor social media accounts for benchmarking.
+/// Stores basic information about competitors that a workspace is monitoring.
+/// Related to ScoutCompetitorPost for historical post data and ScoutBenchmark for performance comparisons.
 model ScoutCompetitor {
   id          String         @id @default(cuid())
   workspaceId String
   workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   platform    SocialPlatform
-  handle      String // Username or handle
-  name        String? // Display name
-  isActive    Boolean        @default(true)
+  handle      String // Username or handle on the social platform
+  name        String? // Display name of the competitor account
+  isActive    Boolean        @default(true) // Whether to actively sync posts for this competitor
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
@@ -1796,17 +1799,20 @@ model ScoutCompetitor {
   @@map("scout_competitors")
 }
 
+/// Scout Competitor Post - Historical posts from tracked competitor accounts.
+/// Stores social media posts with engagement metrics for competitor analysis.
+/// Posts are synced periodically and used for engagement benchmarking.
 model ScoutCompetitorPost {
   id             String          @id @default(cuid())
   competitorId   String
   competitor     ScoutCompetitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
-  platformPostId String
-  content        String          @db.Text
-  postedAt       DateTime
-  likes          Int             @default(0)
-  comments       Int             @default(0)
-  shares         Int             @default(0)
-  metadata       Json?
+  platformPostId String // Unique ID from the social platform
+  content        String          @db.Text // Post content/text
+  postedAt       DateTime // When the post was published on the platform
+  likes          Int             @default(0) // Number of likes/favorites
+  comments       Int             @default(0) // Number of comments/replies
+  shares         Int             @default(0) // Number of shares/retweets
+  metadata       Json? // Additional platform-specific data
   createdAt      DateTime        @default(now())
 
   @@unique([competitorId, platformPostId])
@@ -1815,13 +1821,16 @@ model ScoutCompetitorPost {
   @@map("scout_competitor_posts")
 }
 
+/// Scout Benchmark - Performance comparison reports between workspace and competitors.
+/// Stores aggregated metrics comparing a workspace's social performance against tracked competitors.
+/// Generated periodically (e.g., weekly/monthly) for trend analysis.
 model ScoutBenchmark {
   id                String    @id @default(cuid())
   workspaceId       String
   workspace         Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  period            String // e.g., "2024-W32", "2024-08"
-  ownMetrics        Json
-  competitorMetrics Json
+  period            String // Time period identifier, e.g., "2024-W32" for week 32 or "2024-08" for August
+  ownMetrics        Json // Workspace's own engagement metrics (averageLikes, averageComments, etc.)
+  competitorMetrics Json // Aggregated competitor engagement metrics
   generatedAt       DateTime  @default(now())
 
   @@unique([workspaceId, period])

@@ -29,12 +29,14 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
       try {
         const response = await fetch(`/api/orbit/${workspaceSlug}/scout/competitors`);
         if (!response.ok) {
-          throw new Error('Failed to fetch competitors');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Failed to fetch competitors (${response.status})`);
         }
         const data = await response.json();
         setCompetitors(data);
       } catch (err) {
-        setError('Could not load competitors.');
+        const errorMessage = err instanceof Error ? err.message : 'Could not load competitors.';
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -68,6 +70,34 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
           } else {
             setError('An unknown error occurred.');
           }
+    }
+  };
+
+  const handleRemove = async (competitorId: string) => {
+    if (!confirm('Are you sure you want to remove this competitor?')) {
+      return;
+    }
+
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/orbit/${workspaceSlug}/scout/competitors/${competitorId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const { error } = await response.json();
+        throw new Error(error || 'Failed to remove competitor');
+      }
+
+      // Remove from local state
+      setCompetitors(competitors.filter(c => c.id !== competitorId));
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred while removing competitor.');
+      }
     }
   };
 
@@ -109,7 +139,12 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
                 <span className="font-bold">{c.name || c.handle}</span>
                 <span className="text-gray-500 ml-2">({c.platform})</span>
               </div>
-              <button className="text-red-500">Remove</button>
+              <button 
+                onClick={() => handleRemove(c.id)}
+                className="text-red-500 hover:text-red-700"
+              >
+                Remove
+              </button>
             </li>
           ))}
         </ul>
