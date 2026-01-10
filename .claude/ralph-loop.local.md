@@ -640,34 +640,179 @@ Each iteration should output structured logs:
 
 ---
 
-please add this properly to this file in the next iteration:
+## 🔧 Git Worktree Policy
 
-Also please each loop try to improve a bit on the process - so if you feel that you stuck - just changed the prompt slightly for the next iteration! If jules messaged that encountered a critical issue, you should kill that task immidietally and start from the beginning with a new Jules agent! with browser, please also clear up this jules agents, so archive the chats!
+**CRITICAL**: Always work on the `main` branch directly.
+
+### Rules
+
+1. **Ralph operates on `main`** - All status checks, commits, and pushes happen on main
+2. **Subagents use worktrees** - When spawning subagents for merge conflicts or complex fixes:
+   ```bash
+   # Create worktree for subagent work
+   git worktree add ../fix-[issue] -b fix-[issue]
+
+   # Subagent works in worktree
+   cd ../fix-[issue]
+   # ... do work ...
+
+   # Merge back to main
+   cd ../main
+   git merge fix-[issue]
+   git worktree remove ../fix-[issue]
+   ```
+3. **Never leave main** - Ralph's iteration loop always runs from main branch
 
 ---
 
-also add this
+## 🚨 Build Fixing Priority (STEP 0 - BEFORE ALL ELSE)
 
-Also, you should always work on the main branch. if you work with subagents - for example to resolve merge conflicts, always use git worktrees
-Also, fixing the build should be number one priority from now. To fix the build, use the following technique.
+**Build health is the #1 priority.** Before any iteration workflow, verify and fix the build.
 
-1. check that you are on the main branch
-2. run these ones - maximum 3 parallel
-   docker build . --target=unit-tests-1
-   docker build . --target=unit-tests-2
-   docker build . --target=unit-tests-3
-   docker build . --target=unit-tests-4
+### Step 0.1: Verify on Main Branch
 
+```bash
+git branch --show-current  # Must output "main"
+```
+
+### Step 0.2: Run Docker Build Tests (Max 3 Parallel)
+
+Run these in batches of 3 to identify failures:
+
+**Batch 1 - Unit Tests:**
+
+```bash
+docker build . --target=unit-tests-1 &
+docker build . --target=unit-tests-2 &
+docker build . --target=unit-tests-3 &
+wait
+docker build . --target=unit-tests-4
+```
+
+**Batch 2 - E2E Tests (run sequentially or in small batches):**
+
+```bash
 docker build . --target=e2e-tests-1
 docker build . --target=e2e-tests-2
-docker build . --target=e2e-tests-3
-...
+# ... through ...
 docker build . --target=e2e-tests-16
+```
 
-finally:
+**Final - Full CI:**
 
+```bash
 docker build . --target=ci
+```
 
-if any of it fails - (the first in the list) - you should add the errors to github issues, and assign it to jules immediatally.
+### Step 0.3: On Failure - Create Jules Task Immediately
 
-So when fixing the build, first we identify which part is failing, then locally running that part => and with the error message we start a new jules
+When any build target fails:
+
+1. **Capture the error output**
+2. **Create GitHub issue with error details**
+3. **Create Jules task immediately** (exceeds WIP_LIMIT - priority override)
+
+```bash
+# Create issue
+gh issue create --title "🚨 Build failing: [target] - [summary]" \
+  --body "Build target \`[target]\` is failing.\n\n\`\`\`\n[error log]\n\`\`\`" \
+  --label "bug,priority:critical"
+```
+
+````
+mcp__spike-land__jules_create_session {
+  title: "🚨 Fix Build: [target] failure",
+  task: "Build is failing on target [target].\n\nError:\n```\n[error output]\n```\n\nFix this immediately. This blocks all other work.",
+  source_repo: "zerdos/spike-land-nextjs"
+}
+````
+
+### Build Target Reference
+
+| Target         | Description          |
+| -------------- | -------------------- |
+| unit-tests-1   | Unit test shard 1    |
+| unit-tests-2   | Unit test shard 2    |
+| unit-tests-3   | Unit test shard 3    |
+| unit-tests-4   | Unit test shard 4    |
+| e2e-tests-1-16 | E2E test shards 1-16 |
+| ci             | Full CI validation   |
+
+---
+
+## 🔄 Continuous Improvement
+
+**Each iteration, look for opportunities to improve the process.**
+
+### Self-Improvement Rules
+
+1. **If stuck on same issue for 2+ iterations**: Modify approach, try different strategy
+2. **If Jules reports critical issue**: Kill task immediately, start fresh with new context
+3. **If pattern of failures emerges**: Update this document with lessons learned
+4. **If process feels inefficient**: Adjust workflow steps for next iteration
+
+### Handling Critical Issues from Jules
+
+When Jules messages that it encountered a **critical issue** (blocked, can't proceed, fundamental problem):
+
+#### Step 1: Kill the Task Immediately
+
+Do NOT retry with same context. The task is poisoned.
+
+#### Step 2: Archive via Browser
+
+```
+mcp__playwright__browser_navigate { url: "https://jules.google.com/session/[session_id]" }
+mcp__playwright__browser_snapshot {}
+```
+
+Look for "Archive" or "Close" button and click it to clean up.
+
+#### Step 3: Start Fresh
+
+Create a new Jules session with:
+
+- Simplified task description
+- Different approach angle
+- Lessons from the failure
+
+```
+mcp__spike-land__jules_create_session {
+  title: "Retry #[n]: [issue] - Fresh approach",
+  task: "[Simplified task]\n\n⚠️ Previous attempt failed due to: [reason]\n\nTry this approach instead: [new approach]",
+  source_repo: "zerdos/spike-land-nextjs"
+}
+```
+
+### Iteration Improvement Log
+
+<!-- Track what was learned/changed each iteration -->
+
+| Iteration | Change Made               | Reason                   |
+| --------- | ------------------------- | ------------------------ |
+| 12        | Added build priority step | Build health is critical |
+| 12        | Added worktree policy     | Prevent branch confusion |
+| 12        | Added critical issue kill | Stop wasting retries     |
+
+---
+
+## 🗑️ Session Cleanup via Browser
+
+For completed, failed, or stuck sessions, clean up via jules.google.com:
+
+### Archive a Session
+
+```
+mcp__playwright__browser_navigate { url: "https://jules.google.com" }
+mcp__playwright__browser_snapshot {}
+```
+
+Find session in list, click to open, then:
+
+```
+mcp__playwright__browser_click { element: "Archive button or menu", ref: "[ref]" }
+```
+
+### Bulk Cleanup
+
+Periodically (every 5 iterations), archive all COMPLETED and FAILED sessions that are older than 24 hours to keep the Jules dashboard clean
