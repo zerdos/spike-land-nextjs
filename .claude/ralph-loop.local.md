@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 12
+iteration: 13
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -51,28 +51,36 @@ The Status column in the Active Task Registry uses these values:
 
 | Issue #        | Session ID           | Status      | PR #    | Retries | Last Updated     |
 | -------------- | -------------------- | ----------- | ------- | ------- | ---------------- |
+| UNIT-TEST-FIX  | 5134072663804435110  | IN_PROGRESS | -       | 0       | 2026-01-10T18:05 |
 | CI-FIX-RETRY   | 2071026505896574240  | PLANNING    | -       | 1       | 2026-01-10T17:25 |
-| #545 (ORB-042) | 10448440558500030178 | PLANNING    | -       | 0       | 2026-01-10T17:25 |
-| #530 (ORB-022) | 1223874300114515623  | IN_PROGRESS | -       | 0       | 2026-01-10T17:25 |
-| #536 (ORB-036) | 12268363689474090994 | IN_PROGRESS | -       | 0       | 2026-01-10T17:25 |
-| PR-659-FIX     | 12847152019524036796 | IN_PROGRESS | -       | 0       | 2026-01-10T17:25 |
-| PR-660-FIX     | 12880711734109548513 | IN_PROGRESS | -       | 0       | 2026-01-10T17:25 |
+| #545 (ORB-042) | 10448440558500030178 | IN_PROGRESS | -       | 0       | 2026-01-10T18:00 |
+| #530 (ORB-022) | 1223874300114515623  | PLANNING    | -       | 0       | 2026-01-10T18:00 |
+| #536 (ORB-036) | 12268363689474090994 | COMPLETED   | -       | 0       | 2026-01-10T18:00 |
+| PR-659-FIX     | 12847152019524036796 | IN_PROGRESS | -       | 0       | 2026-01-10T18:00 |
+| PR-660-FIX     | 12880711734109548513 | COMPLETED   | -       | 0       | 2026-01-10T18:00 |
 | #546 (ORB-027) | 13204058962977056689 | COMPLETED   | ⚠️ No PR | 1       | 2026-01-10T17:10 |
 | #544 (ORB-026) | 8018068239388301596  | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T14:15 |
 | #538 (ORB-037) | 13964044312522937140 | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T17:05 |
 | #540 (ORB-039) | 16859514757019367340 | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T16:00 |
-| #532 (ORB-024) | 3272942138734267585  | COMPLETED   | #659    | 0       | 2026-01-10T14:15 |
+| #532 (ORB-024) | 3272942138734267585  | COMPLETED   | #659 ✅ | 0       | 2026-01-10T18:05 |
 | #531 (ORB-023) | 12664520598883814187 | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T12:10 |
-| #529 (ORB-021) | 12716452045721348213 | COMPLETED   | #660    | 0       | 2026-01-10T16:00 |
+| #529 (ORB-021) | 12716452045721348213 | COMPLETED   | #660 ✅ | 0       | 2026-01-10T18:05 |
 
-**PRs Pending Review:**
+**PRs Merged This Iteration:**
 
-- PR #659 (ORB-024): Scout competitor tracking - ⚠️ CONFLICTING, 29 review comments, follow-up task active
-- PR #660 (ORB-021): Unified inbox UI - BEHIND main, 28 review comments, follow-up task active
+- PR #659 (ORB-024): Scout competitor tracking - ✅ MERGED
+- PR #660 (ORB-021): Unified inbox UI - ✅ MERGED
 
 **Issues Flagged for Human Review:**
 
 - ORB-023, ORB-026, ORB-027, ORB-037, ORB-039: Jules sessions COMPLETED but no PRs created
+
+**Build Status:**
+
+- unit-tests-1: ✅ PASSING (after inbox route fix)
+- unit-tests-2: ❌ FAILING (FunnelTab.test.tsx, OverviewTab.test.tsx)
+- unit-tests-3: ✅ PASSING
+- unit-tests-4: ❌ FAILING (CampaignsTab.test.tsx)
 
 ---
 
