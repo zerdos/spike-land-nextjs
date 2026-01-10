@@ -43,7 +43,7 @@ When("I click outside the dropdown", async function(this: CustomWorld) {
 When("I use the browser back button", async function(this: CustomWorld) {
   const currentUrl = this.page.url();
   await this.page.goBack({ waitUntil: "commit" });
-  await this.page.waitForLoadState('domcontentloaded');
+  await this.page.waitForLoadState("domcontentloaded");
 
   // Wait for URL to actually change
   await this.page.waitForFunction(
@@ -58,7 +58,7 @@ When("I use the browser back button", async function(this: CustomWorld) {
 When("I use the browser forward button", async function(this: CustomWorld) {
   const currentUrl = this.page.url();
   await this.page.goForward({ waitUntil: "commit" });
-  await this.page.waitForLoadState('domcontentloaded');
+  await this.page.waitForLoadState("domcontentloaded");
 
   // Wait for URL to actually change
   await this.page.waitForFunction(

@@ -1,8 +1,7 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { SocialPlatform } from '@prisma/client';
+import type { SocialPlatform } from "@prisma/client";
+import { useEffect, useState } from "react";
 
 // Define the Competitor type matching our Prisma model
 interface Competitor {
@@ -19,8 +18,8 @@ interface CompetitorListProps {
 
 export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
-  const [platform, setPlatform] = useState<SocialPlatform>('TWITTER');
-  const [handle, setHandle] = useState('');
+  const [platform, setPlatform] = useState<SocialPlatform>("TWITTER");
+  const [handle, setHandle] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +34,7 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
         const data = await response.json();
         setCompetitors(data);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Could not load competitors.';
+        const errorMessage = err instanceof Error ? err.message : "Could not load competitors.";
         setError(errorMessage);
       } finally {
         setIsLoading(false);
@@ -51,43 +50,46 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
 
     try {
       const response = await fetch(`/api/orbit/${workspaceSlug}/scout/competitors`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ platform, handle }),
       });
 
       if (!response.ok) {
         const { error } = await response.json();
-        throw new Error(error || 'Failed to add competitor');
+        throw new Error(error || "Failed to add competitor");
       }
 
       const newCompetitor = await response.json();
       setCompetitors([newCompetitor, ...competitors]);
-      setHandle('');
+      setHandle("");
     } catch (err) {
-        if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError('An unknown error occurred.');
-          }
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred.");
+      }
     }
   };
 
   const handleRemove = async (competitorId: string) => {
-    if (!confirm('Are you sure you want to remove this competitor?')) {
+    if (!confirm("Are you sure you want to remove this competitor?")) {
       return;
     }
 
     setError(null);
 
     try {
-      const response = await fetch(`/api/orbit/${workspaceSlug}/scout/competitors/${competitorId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/orbit/${workspaceSlug}/scout/competitors/${competitorId}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       if (!response.ok) {
         const { error } = await response.json();
-        throw new Error(error || 'Failed to remove competitor');
+        throw new Error(error || "Failed to remove competitor");
       }
 
       // Remove from local state
@@ -96,7 +98,7 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('An unknown error occurred while removing competitor.');
+        setError("An unknown error occurred while removing competitor.");
       }
     }
   };
@@ -129,9 +131,7 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
-      {isLoading ? (
-        <p>Loading competitors...</p>
-      ) : (
+      {isLoading ? <p>Loading competitors...</p> : (
         <ul>
           {competitors.map((c) => (
             <li key={c.id} className="border-b p-2 flex justify-between items-center">
@@ -139,8 +139,9 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
                 <span className="font-bold">{c.name || c.handle}</span>
                 <span className="text-gray-500 ml-2">({c.platform})</span>
               </div>
-              <button 
-                onClick={() => handleRemove(c.id)}
+              <button
+                onClick={() =>
+                  handleRemove(c.id)}
                 className="text-red-500 hover:text-red-700"
               >
                 Remove

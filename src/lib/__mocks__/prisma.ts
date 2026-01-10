@@ -1,4 +1,4 @@
-import { mockDeep } from 'vitest-mock-extended';
+import { mockDeep } from "vitest-mock-extended";
 
 const prismaMock = mockDeep();
-export const prisma = prismaMock;
+export default prismaMock;

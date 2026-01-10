@@ -1,17 +1,23 @@
+"use client";
 
-'use client';
-
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
-import { useMutation } from 'react-query';
-import { useParams } from 'next/navigation';
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const replySchema = z.object({
-  content: z.string().trim().min(1, 'Reply content cannot be empty'),
+  content: z.string().trim().min(1, "Reply content cannot be empty"),
 });
 
 type ReplyFormValues = z.infer<typeof replySchema>;
@@ -22,8 +28,8 @@ interface InboxReplyPanelProps {
 
 async function postReply(workspaceSlug: string, itemId: string, content: string) {
   const res = await fetch(`/api/orbit/${workspaceSlug}/inbox/${itemId}/reply`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ content }),
   });
   if (!res.ok) {
@@ -31,7 +37,7 @@ async function postReply(workspaceSlug: string, itemId: string, content: string)
     try {
       errorText = await res.text();
     } catch {
-      errorText = '<unable to read response body>';
+      errorText = "<unable to read response body>";
     }
     throw new Error(
       `Failed to post reply: HTTP ${res.status} ${res.statusText} - ${errorText}`,
@@ -45,18 +51,16 @@ export function InboxReplyPanel({ itemId }: InboxReplyPanelProps) {
   const workspaceSlug = params.workspaceSlug as string;
   const form = useForm<ReplyFormValues>({
     resolver: zodResolver(replySchema),
-    defaultValues: { content: '' },
+    defaultValues: { content: "" },
   });
 
-  const mutation = useMutation(
-    (content: string) => postReply(workspaceSlug, itemId, content),
-    {
-      onSuccess: () => {
-        form.reset();
-        // In a real app, you'd probably want to refetch the inbox item
-      },
-    }
-  );
+  const mutation = useMutation({
+    mutationFn: (content: string) => postReply(workspaceSlug, itemId, content),
+    onSuccess: () => {
+      form.reset();
+      // In a real app, you'd probably want to refetch the inbox item
+    },
+  });
 
   function onSubmit(data: ReplyFormValues) {
     mutation.mutate(data.content);
@@ -78,8 +82,8 @@ export function InboxReplyPanel({ itemId }: InboxReplyPanelProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={mutation.isLoading}>
-          {mutation.isLoading ? 'Sending...' : 'Send Reply'}
+        <Button type="submit" disabled={mutation.isPending}>
+          {mutation.isPending ? "Sending..." : "Send Reply"}
         </Button>
       </form>
     </Form>

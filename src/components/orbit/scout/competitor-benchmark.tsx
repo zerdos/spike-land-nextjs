@@ -1,7 +1,6 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from "react";
 
 interface EngagementMetrics {
   averageLikes: number;
@@ -30,18 +29,23 @@ export function CompetitorBenchmark({ workspaceSlug }: CompetitorBenchmarkProps)
       // For now, we simulate by fetching and aggregating all competitor data.
       try {
         const response = await fetch(`/api/orbit/${workspaceSlug}/scout/competitors`);
-        
+
         if (!response.ok) {
-          throw new Error('Failed to fetch competitors');
+          throw new Error("Failed to fetch competitors");
         }
-        
+
         const competitors = await response.json();
 
         if (competitors.length === 0) {
           setReport({
             // TODO: Replace with real SocialMetrics data from workspace
             ownMetrics: { averageLikes: 0, averageComments: 0, averageShares: 0, totalPosts: 0 },
-            competitorMetrics: { averageLikes: 0, averageComments: 0, averageShares: 0, totalPosts: 0 }
+            competitorMetrics: {
+              averageLikes: 0,
+              averageComments: 0,
+              averageShares: 0,
+              totalPosts: 0,
+            },
           });
           return;
         }
@@ -50,19 +54,21 @@ export function CompetitorBenchmark({ workspaceSlug }: CompetitorBenchmarkProps)
 
         // Fetch metrics for all competitors concurrently to avoid sequential N+1 latency
         const metricsResults = await Promise.allSettled(
-          competitors.map(async (c: { id: string }) => {
-            const metricsRes = await fetch(`/api/orbit/${workspaceSlug}/scout/competitors/${c.id}/metrics`);
+          competitors.map(async (c: { id: string; }) => {
+            const metricsRes = await fetch(
+              `/api/orbit/${workspaceSlug}/scout/competitors/${c.id}/metrics`,
+            );
             if (!metricsRes.ok) {
               throw new Error(`Failed to fetch metrics for competitor ${c.id}`);
             }
             const { engagementMetrics } = await metricsRes.json();
             return engagementMetrics as EngagementMetrics;
-          })
+          }),
         );
 
         // Aggregate metrics, skipping failed requests
         for (const result of metricsResults) {
-          if (result.status !== 'fulfilled' || !result.value) {
+          if (result.status !== "fulfilled" || !result.value) {
             continue;
           }
           const engagementMetrics = result.value;
@@ -80,15 +86,14 @@ export function CompetitorBenchmark({ workspaceSlug }: CompetitorBenchmarkProps)
             averageLikes: totalPosts > 0 ? totalLikes / totalPosts : 0,
             averageComments: totalPosts > 0 ? totalComments / totalPosts : 0,
             averageShares: totalPosts > 0 ? totalShares / totalPosts : 0,
-            totalPosts: totalPosts
-          }
+            totalPosts: totalPosts,
+          },
         });
-
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
         } else {
-          setError('Could not load benchmark data.');
+          setError("Could not load benchmark data.");
         }
       } finally {
         setIsLoading(false);
@@ -106,7 +111,8 @@ export function CompetitorBenchmark({ workspaceSlug }: CompetitorBenchmarkProps)
     <div className="p-4 border rounded-lg shadow-sm">
       <h2 className="text-lg font-semibold mb-4">Performance Benchmark (Last 30 Days)</h2>
       <div className="mb-2 text-sm text-amber-600 bg-amber-50 p-2 rounded">
-        Note: &quot;Your Performance&quot; metrics are currently placeholder values. Integration with SocialMetrics data is pending.
+        Note: &quot;Your Performance&quot; metrics are currently placeholder values. Integration
+        with SocialMetrics data is pending.
       </div>
       <table className="w-full text-left">
         <thead>
