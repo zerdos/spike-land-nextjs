@@ -3,30 +3,37 @@ import { expect } from "@playwright/test";
 import type { CustomWorld } from "../support/world";
 
 Then("I should see sign-in options", async function(this: CustomWorld) {
-  // First check if we need to click a Sign In button to open the OAuth options
-  const signInButton = this.page.getByRole("button", { name: /sign.?in/i });
-  const getStartedButton = this.page.getByRole("button", { name: /get started/i });
-  const githubButton = this.page.getByRole("button", { name: /continue with github/i });
+  // Check if we're on the home page or auth/signin page
+  const currentUrl = this.page.url();
+  const isOnSignInPage = currentUrl.includes("/auth/signin");
 
-  // Check if GitHub button is already visible (might be on a sign-in page)
-  const isGithubVisible = await githubButton.isVisible().catch(() => false);
+  if (isOnSignInPage) {
+    // On sign-in page, OAuth buttons should be directly visible
+    const githubButton = this.page.getByRole("button", { name: /continue with github/i });
+    const googleButton = this.page.getByRole("button", { name: /continue with google/i });
+    await expect(githubButton).toBeVisible({ timeout: 5000 });
+    await expect(googleButton).toBeVisible({ timeout: 5000 });
+  } else {
+    // On home page, we should see Sign In link and Get Started button
+    const header = this.page.locator("header");
+    const signInLink = header.getByRole("link", { name: "Sign In" });
+    const getStartedButton = this.page.getByRole("button", { name: /get started/i }).or(
+      this.page.getByRole("link", { name: /get started/i }),
+    );
 
-  if (!isGithubVisible) {
-    // Try to open the sign-in options by clicking Sign In or Get Started
-    const openButton = signInButton.or(getStartedButton).first();
-    const canOpenModal = await openButton.isVisible().catch(() => false);
+    await expect(signInLink.first()).toBeVisible({ timeout: 5000 });
+    await expect(getStartedButton.first()).toBeVisible({ timeout: 5000 });
 
-    if (canOpenModal) {
-      await openButton.click();
-      await this.page.waitForTimeout(500);
-    }
+    // Click the Sign In link to navigate to the sign-in page
+    await signInLink.first().click();
+    await this.page.waitForURL("**/auth/signin**", { timeout: 10000 });
+
+    // Now OAuth buttons should be visible
+    const githubButton = this.page.getByRole("button", { name: /continue with github/i });
+    const googleButton = this.page.getByRole("button", { name: /continue with google/i });
+    await expect(githubButton).toBeVisible({ timeout: 5000 });
+    await expect(googleButton).toBeVisible({ timeout: 5000 });
   }
-
-  // Now check for OAuth buttons
-  await expect(githubButton).toBeVisible({ timeout: 5000 });
-  await expect(
-    this.page.getByRole("button", { name: /continue with google/i }),
-  ).toBeVisible({ timeout: 5000 });
 });
 
 Then("I should return to the homepage", async function(this: CustomWorld) {
