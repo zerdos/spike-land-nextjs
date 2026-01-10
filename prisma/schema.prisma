@@ -2039,6 +2039,8 @@ model Workspace {
   policyRules           PolicyRule[]
   policyChecks          PolicyCheck[]
   policyViolations      PolicyViolation[]
+  // Scout content suggestions
+  contentSuggestions    ContentSuggestion[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -2871,4 +2873,60 @@ enum PolicyCheckResult {
   PASSED_WITH_WARNINGS  // Passed but has warnings
   FAILED                // Has errors/critical violations
   BLOCKED               // Has blocking violations
+}
+
+// =============================================================================
+// SCOUT CONTENT SUGGESTIONS
+// =============================================================================
+
+/// AI-generated content suggestions based on trends and competitor analysis
+model ContentSuggestion {
+  id                  String                    @id
+  workspaceId         String
+  workspace           Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Content details
+  title               String
+  description         String                    @db.Text
+  draftContent        String                    @db.Text
+  contentType         SuggestionContentType
+  suggestedPlatforms  String[]                  // Array of platform names
+
+  // Trend data as JSON (source, keywords, metrics)
+  trendData           Json[]
+
+  // Scoring
+  relevanceScore      Float
+  timelinessScore     Float
+  brandAlignmentScore Float
+  overallScore        Float
+
+  // Status tracking
+  status              SuggestionStatus          @default(PENDING)
+  generatedAt         DateTime                  @default(now())
+  expiresAt           DateTime?
+  usedAt              DateTime?
+  dismissedAt         DateTime?
+  dismissalReason     String?
+  feedback            String?                   @db.Text
+
+  @@index([workspaceId, status])
+  @@index([workspaceId, overallScore])
+  @@index([expiresAt])
+  @@map("content_suggestions")
+}
+
+enum SuggestionContentType {
+  POST
+  THREAD
+  STORY
+  REEL
+  ARTICLE
+}
+
+enum SuggestionStatus {
+  PENDING
+  ACCEPTED
+  DISMISSED
+  USED
 }
