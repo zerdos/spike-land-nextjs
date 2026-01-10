@@ -10,6 +10,9 @@ import prisma from "@/lib/prisma";
 
 import {
   cleanupOldChecks,
+  getCheck,
+  getCheckHistory,
+  getChecksForContent,
   getViolation,
   getViolationHistory,
   getViolationsForCheck,
@@ -363,6 +366,205 @@ describe("Violation Manager", () => {
         },
       });
       expect(result).toBe(50);
+    });
+  });
+
+  describe("getCheck", () => {
+    it("should return a check with violations and rules", async () => {
+      const mockCheck = {
+        id: "check-1",
+        workspaceId: "workspace-1",
+        contentType: "SCHEDULED_POST",
+        contentId: "post-1",
+        contentText: "Test content",
+        platform: "TWITTER",
+        checkScope: "FULL",
+        status: "COMPLETED",
+        passedRules: 5,
+        failedRules: 1,
+        warningRules: 0,
+        overallResult: "FAILED",
+        summary: "1 rule failed",
+        createdAt: new Date(),
+        completedAt: new Date(),
+        durationMs: 150,
+        violations: [
+          {
+            id: "v1",
+            ruleId: "r1",
+            severity: "ERROR",
+            message: "Violation message",
+            rule: {
+              id: "r1",
+              name: "Test Rule",
+            },
+          },
+        ],
+      };
+
+      vi.mocked(prisma.policyCheck.findUnique).mockResolvedValue(mockCheck as never);
+
+      const result = await getCheck("check-1");
+
+      expect(prisma.policyCheck.findUnique).toHaveBeenCalledWith({
+        where: { id: "check-1" },
+        include: {
+          violations: {
+            include: { rule: true },
+          },
+        },
+      });
+      expect(result!.id).toBe("check-1");
+      expect((result as { violations: unknown[]; } & typeof result)!.violations).toHaveLength(1);
+    });
+
+    it("should return null when check not found", async () => {
+      vi.mocked(prisma.policyCheck.findUnique).mockResolvedValue(null);
+
+      const result = await getCheck("non-existent");
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("getCheckHistory", () => {
+    it("should return paginated check history", async () => {
+      const mockChecks = [
+        { id: "check-1", status: "COMPLETED", overallResult: "PASSED" },
+        { id: "check-2", status: "COMPLETED", overallResult: "FAILED" },
+      ];
+
+      vi.mocked(prisma.policyCheck.findMany).mockResolvedValue(mockChecks as never);
+      vi.mocked(prisma.policyCheck.count).mockResolvedValue(100);
+
+      const result = await getCheckHistory("workspace-1", { limit: 50, offset: 0 });
+
+      expect(result.checks).toHaveLength(2);
+      expect(result.total).toBe(100);
+    });
+
+    it("should filter by content type", async () => {
+      vi.mocked(prisma.policyCheck.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.policyCheck.count).mockResolvedValue(0);
+
+      await getCheckHistory("workspace-1", { contentType: "SCHEDULED_POST" });
+
+      expect(prisma.policyCheck.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            contentType: "SCHEDULED_POST",
+          }),
+        }),
+      );
+    });
+
+    it("should filter by result", async () => {
+      vi.mocked(prisma.policyCheck.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.policyCheck.count).mockResolvedValue(0);
+
+      await getCheckHistory("workspace-1", { result: "FAILED" });
+
+      expect(prisma.policyCheck.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            overallResult: "FAILED",
+          }),
+        }),
+      );
+    });
+
+    it("should filter by date range", async () => {
+      vi.mocked(prisma.policyCheck.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.policyCheck.count).mockResolvedValue(0);
+
+      const startDate = new Date("2024-01-01");
+      const endDate = new Date("2024-01-31");
+
+      await getCheckHistory("workspace-1", { startDate, endDate });
+
+      expect(prisma.policyCheck.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          }),
+        }),
+      );
+    });
+
+    it("should handle start date only", async () => {
+      vi.mocked(prisma.policyCheck.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.policyCheck.count).mockResolvedValue(0);
+
+      const startDate = new Date("2024-01-01");
+
+      await getCheckHistory("workspace-1", { startDate });
+
+      expect(prisma.policyCheck.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: {
+              gte: startDate,
+            },
+          }),
+        }),
+      );
+    });
+
+    it("should handle end date only", async () => {
+      vi.mocked(prisma.policyCheck.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.policyCheck.count).mockResolvedValue(0);
+
+      const endDate = new Date("2024-01-31");
+
+      await getCheckHistory("workspace-1", { endDate });
+
+      expect(prisma.policyCheck.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: {
+              lte: endDate,
+            },
+          }),
+        }),
+      );
+    });
+  });
+
+  describe("getChecksForContent", () => {
+    it("should return checks for a specific content item", async () => {
+      const mockChecks = [
+        { id: "check-1", contentType: "SCHEDULED_POST", contentId: "post-1" },
+        { id: "check-2", contentType: "SCHEDULED_POST", contentId: "post-1" },
+      ];
+
+      vi.mocked(prisma.policyCheck.findMany).mockResolvedValue(mockChecks as never);
+
+      const result = await getChecksForContent("SCHEDULED_POST", "post-1");
+
+      expect(prisma.policyCheck.findMany).toHaveBeenCalledWith({
+        where: {
+          contentType: "SCHEDULED_POST",
+          contentId: "post-1",
+        },
+        include: {
+          violations: {
+            include: { rule: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      expect(result).toHaveLength(2);
+    });
+
+    it("should return empty array when no checks found", async () => {
+      vi.mocked(prisma.policyCheck.findMany).mockResolvedValue([]);
+
+      const result = await getChecksForContent("SCHEDULED_POST", "non-existent");
+
+      expect(result).toHaveLength(0);
     });
   });
 });

@@ -22,9 +22,16 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+import prisma from "@/lib/prisma";
 import type { PolicyRule } from "@prisma/client";
 
-import { evaluateRule, extractContentMetadata, getCharacterLimit } from "./policy-engine";
+import {
+  checkContent,
+  evaluateRule,
+  extractContentMetadata,
+  getApplicableRules,
+  getCharacterLimit,
+} from "./policy-engine";
 import type { PolicyRuleConditions } from "./types";
 
 // Mock PolicyRule type for testing - cast conditions to match Prisma's JsonValue
@@ -407,6 +414,418 @@ describe("Policy Engine", () => {
       // Cast to bypass type checking for test
       const limit = getCharacterLimit("UNKNOWN" as never, "post");
       expect(limit).toBe(Infinity);
+    });
+
+    it("should return correct limit for comment types", () => {
+      const linkedinComment = getCharacterLimit("LINKEDIN", "comment");
+      expect(linkedinComment).toBe(1250);
+    });
+
+    it("should return correct limit for TikTok comments", () => {
+      const tiktokComment = getCharacterLimit("TIKTOK", "comment");
+      expect(tiktokComment).toBe(150);
+    });
+  });
+
+  describe("evaluateRule - CUSTOM_LOGIC", () => {
+    it("should pass with custom logic placeholder", () => {
+      const rule = createMockRule({
+        ruleType: "CUSTOM_LOGIC",
+        conditions: {},
+      });
+
+      const result = evaluateRule(rule, "Any content", undefined);
+
+      expect(result.passed).toBe(true);
+      expect(result.message).toContain("Custom logic");
+    });
+  });
+
+  describe("evaluateRule - Unknown rule type", () => {
+    it("should pass for unknown rule types with appropriate message", () => {
+      const rule = createMockRule({
+        ruleType: "UNKNOWN_TYPE" as never,
+        conditions: {},
+      });
+
+      const result = evaluateRule(rule, "Any content", undefined);
+
+      expect(result.passed).toBe(true);
+      expect(result.message).toContain("Unknown rule type");
+    });
+  });
+
+  describe("evaluateRule - Additional NLP cases", () => {
+    it("should detect financial claims", () => {
+      const rule = createMockRule({
+        ruleType: "NLP_CLASSIFICATION",
+        conditions: {
+          categories: ["financial_claims"],
+          minConfidence: 0.7,
+        },
+      });
+
+      const result = evaluateRule(rule, "Get guaranteed returns on your investment!", undefined);
+
+      expect(result.passed).toBe(false);
+      expect(result.confidence).toBeGreaterThan(0.7);
+    });
+
+    it("should detect spam content", () => {
+      const rule = createMockRule({
+        ruleType: "NLP_CLASSIFICATION",
+        conditions: {
+          categories: ["spam"],
+          minConfidence: 0.5,
+        },
+      });
+
+      const result = evaluateRule(
+        rule,
+        "Click here for limited time offer! Act now!",
+        undefined,
+      );
+
+      expect(result.passed).toBe(false);
+    });
+
+    it("should pass for unknown NLP category", () => {
+      const rule = createMockRule({
+        ruleType: "NLP_CLASSIFICATION",
+        conditions: {
+          categories: ["unknown_category"],
+          minConfidence: 0.7,
+        },
+      });
+
+      const result = evaluateRule(rule, "Normal content here", undefined);
+
+      expect(result.passed).toBe(true);
+    });
+  });
+
+  describe("evaluateRule - Additional link validation cases", () => {
+    it("should fail for non-allowed domain when allowedDomains is set", () => {
+      const rule = createMockRule({
+        ruleType: "LINK_VALIDATION",
+        conditions: {
+          allowedDomains: ["trusted.com"],
+        },
+      });
+
+      const result = evaluateRule(rule, "Content", {
+        links: ["https://untrusted.com/page"],
+      });
+
+      expect(result.passed).toBe(false);
+      expect(result.message).toContain("non-allowed domain");
+    });
+
+    it("should fail for invalid URL format", () => {
+      const rule = createMockRule({
+        ruleType: "LINK_VALIDATION",
+        conditions: {
+          requireHttps: true,
+        },
+      });
+
+      const result = evaluateRule(rule, "Content", {
+        links: ["not-a-valid-url"],
+      });
+
+      expect(result.passed).toBe(false);
+      expect(result.message).toContain("Invalid URL");
+    });
+
+    it("should pass when no links provided", () => {
+      const rule = createMockRule({
+        ruleType: "LINK_VALIDATION",
+        conditions: {
+          requireHttps: true,
+        },
+      });
+
+      const result = evaluateRule(rule, "Content without links", {});
+
+      expect(result.passed).toBe(true);
+    });
+  });
+
+  describe("evaluateRule - Additional media check cases", () => {
+    it("should fail when required media types are missing", () => {
+      const rule = createMockRule({
+        ruleType: "MEDIA_CHECK",
+        conditions: {
+          requiredMediaTypes: ["video"],
+        },
+      });
+
+      const result = evaluateRule(rule, "Post content", {
+        mediaUrls: ["img1.jpg"],
+        mediaTypes: ["image"],
+      });
+
+      expect(result.passed).toBe(false);
+      expect(result.message).toContain("Missing required media types");
+    });
+
+    it("should pass when all required media types are present", () => {
+      const rule = createMockRule({
+        ruleType: "MEDIA_CHECK",
+        conditions: {
+          requiredMediaTypes: ["image", "video"],
+        },
+      });
+
+      const result = evaluateRule(rule, "Post content", {
+        mediaUrls: ["img1.jpg", "video.mp4"],
+        mediaTypes: ["image", "video"],
+      });
+
+      expect(result.passed).toBe(true);
+    });
+  });
+
+  describe("getApplicableRules", () => {
+    beforeEach(() => {
+      vi.mocked(prisma.policyRule.findMany).mockReset();
+    });
+
+    it("should get rules for workspace and platform", async () => {
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue([
+        createMockRule({ id: "rule-1", name: "Test Rule 1" }),
+        createMockRule({ id: "rule-2", name: "Test Rule 2" }),
+      ]);
+
+      const rules = await getApplicableRules({
+        workspaceId: "workspace-1",
+        platform: "TWITTER",
+        contentType: "POST",
+        checkScope: "FULL",
+      });
+
+      expect(rules).toHaveLength(2);
+      expect(vi.mocked(prisma.policyRule.findMany)).toHaveBeenCalled();
+    });
+
+    it("should filter by severity for QUICK scope", async () => {
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue([
+        createMockRule({ id: "rule-1", severity: "CRITICAL" }),
+      ]);
+
+      await getApplicableRules({
+        workspaceId: "workspace-1",
+        platform: "TWITTER",
+        contentType: "POST",
+        checkScope: "QUICK",
+      });
+
+      const callArgs = vi.mocked(prisma.policyRule.findMany).mock.calls[0]?.[0] as {
+        where?: { severity?: unknown; };
+      } | undefined;
+      expect(callArgs?.where?.severity).toEqual({ in: ["CRITICAL", "ERROR"] });
+    });
+
+    it("should include global and workspace-specific rules", async () => {
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue([]);
+
+      await getApplicableRules({
+        workspaceId: "workspace-1",
+        platform: undefined,
+        contentType: "POST",
+        checkScope: "FULL",
+      });
+
+      expect(vi.mocked(prisma.policyRule.findMany)).toHaveBeenCalled();
+    });
+  });
+
+  describe("checkContent", () => {
+    beforeEach(() => {
+      vi.mocked(prisma.policyRule.findMany).mockReset();
+      vi.mocked(prisma.policyCheck.create).mockReset();
+      vi.mocked(prisma.policyCheck.update).mockReset();
+      vi.mocked(prisma.policyViolation.create).mockReset();
+    });
+
+    it("should create check record and return result for passing content", async () => {
+      vi.mocked(prisma.policyCheck.create).mockResolvedValue({
+        id: "check-1",
+        workspaceId: "workspace-1",
+        contentType: "POST",
+        contentText: "Valid content",
+        status: "IN_PROGRESS",
+      } as never);
+
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue([
+        createMockRule({
+          id: "rule-1",
+          ruleType: "CHARACTER_COUNT",
+          conditions: { maxLength: 280 },
+        }),
+      ]);
+
+      vi.mocked(prisma.policyCheck.update).mockResolvedValue({} as never);
+
+      const result = await checkContent("workspace-1", {
+        contentType: "POST",
+        contentText: "Valid content",
+        platform: "TWITTER",
+      });
+
+      expect(result.status).toBe("COMPLETED");
+      expect(result.overallResult).toBe("PASSED");
+      expect(result.canPublish).toBe(true);
+      expect(result.passedRules).toBe(1);
+      expect(result.failedRules).toBe(0);
+    });
+
+    it("should record violations for failing content", async () => {
+      vi.mocked(prisma.policyCheck.create).mockResolvedValue({
+        id: "check-1",
+        workspaceId: "workspace-1",
+        contentType: "POST",
+        contentText: "A".repeat(300),
+        status: "IN_PROGRESS",
+      } as never);
+
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue([
+        createMockRule({
+          id: "rule-1",
+          ruleType: "CHARACTER_COUNT",
+          conditions: { maxLength: 280 },
+          severity: "CRITICAL",
+          isBlocking: true,
+        }),
+      ]);
+
+      vi.mocked(prisma.policyViolation.create).mockResolvedValue({} as never);
+      vi.mocked(prisma.policyCheck.update).mockResolvedValue({} as never);
+
+      const result = await checkContent("workspace-1", {
+        contentType: "POST",
+        contentText: "A".repeat(300),
+        platform: "TWITTER",
+      });
+
+      expect(result.status).toBe("COMPLETED");
+      expect(result.overallResult).toBe("BLOCKED");
+      expect(result.canPublish).toBe(false);
+      expect(result.violations).toHaveLength(1);
+      expect(vi.mocked(prisma.policyViolation.create)).toHaveBeenCalled();
+    });
+
+    it("should return PASSED_WITH_WARNINGS for warning violations", async () => {
+      vi.mocked(prisma.policyCheck.create).mockResolvedValue({
+        id: "check-1",
+        workspaceId: "workspace-1",
+        contentType: "POST",
+        contentText: "Get your free money now!",
+        status: "IN_PROGRESS",
+      } as never);
+
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue([
+        createMockRule({
+          id: "rule-1",
+          ruleType: "KEYWORD_MATCH",
+          conditions: {
+            keywords: ["free money"],
+            caseSensitive: false,
+          },
+          severity: "WARNING",
+          isBlocking: false,
+        }),
+      ]);
+
+      vi.mocked(prisma.policyViolation.create).mockResolvedValue({} as never);
+      vi.mocked(prisma.policyCheck.update).mockResolvedValue({} as never);
+
+      const result = await checkContent("workspace-1", {
+        contentType: "POST",
+        contentText: "Get your free money now!",
+      });
+
+      expect(result.overallResult).toBe("PASSED_WITH_WARNINGS");
+      expect(result.canPublish).toBe(true);
+    });
+
+    it("should return FAILED for error violations", async () => {
+      vi.mocked(prisma.policyCheck.create).mockResolvedValue({
+        id: "check-1",
+        workspaceId: "workspace-1",
+        contentType: "POST",
+        contentText: "This treats cancer",
+        status: "IN_PROGRESS",
+      } as never);
+
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue([
+        createMockRule({
+          id: "rule-1",
+          ruleType: "KEYWORD_MATCH",
+          conditions: {
+            keywords: ["treats cancer"],
+            caseSensitive: false,
+          },
+          severity: "ERROR",
+          isBlocking: false,
+        }),
+      ]);
+
+      vi.mocked(prisma.policyViolation.create).mockResolvedValue({} as never);
+      vi.mocked(prisma.policyCheck.update).mockResolvedValue({} as never);
+
+      const result = await checkContent("workspace-1", {
+        contentType: "POST",
+        contentText: "This treats cancer",
+      });
+
+      expect(result.overallResult).toBe("FAILED");
+      expect(result.canPublish).toBe(false);
+    });
+
+    it("should handle errors gracefully", async () => {
+      vi.mocked(prisma.policyCheck.create).mockResolvedValue({
+        id: "check-1",
+        workspaceId: "workspace-1",
+        status: "IN_PROGRESS",
+      } as never);
+
+      vi.mocked(prisma.policyRule.findMany).mockRejectedValue(new Error("Database error"));
+      vi.mocked(prisma.policyCheck.update).mockResolvedValue({} as never);
+
+      await expect(
+        checkContent("workspace-1", {
+          contentType: "POST",
+          contentText: "Content",
+        }),
+      ).rejects.toThrow("Database error");
+
+      expect(vi.mocked(prisma.policyCheck.update)).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: "FAILED",
+          }),
+        }),
+      );
+    });
+
+    it("should auto-extract metadata when not provided", async () => {
+      vi.mocked(prisma.policyCheck.create).mockResolvedValue({
+        id: "check-1",
+        workspaceId: "workspace-1",
+        status: "IN_PROGRESS",
+      } as never);
+
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.policyCheck.update).mockResolvedValue({} as never);
+
+      const result = await checkContent("workspace-1", {
+        contentType: "POST",
+        contentText: "Check out https://example.com and #trending @user",
+      });
+
+      expect(result.status).toBe("COMPLETED");
+      expect(result.overallResult).toBe("PASSED");
     });
   });
 });
