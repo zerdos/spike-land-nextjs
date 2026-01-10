@@ -816,6 +816,49 @@ Located in `scripts/ralph/` (also available as yarn commands):
 | `yarn ralph:available-issues`     | `available-issues.sh`     | Filtered, prioritized issues       | ~70%    |
 | `yarn ralph:ci-status`            | `ci-status.sh`            | Main branch CI with error excerpt  | ~60%    |
 | `yarn ralph:check-session-health` | `check-session-health.sh` | Verify sessions exist before comms | ~50%    |
+| `yarn ralph:publish-pr`           | `publish-jules-pr.mjs`    | Publish PR from Jules session      | ~95%    |
+
+### Token-Efficient PR Publishing
+
+**When browser is already open to Jules session, use `browser_run_code` instead of snapshot-click-wait:**
+
+```javascript
+// ONE call instead of snapshot + find ref + click + wait + snapshot
+mcp__playwright__browser_run_code({
+  code: `async (page) => {
+    // Navigate to session if not already there
+    if (!page.url().includes('jules.google.com/session')) {
+      await page.goto('https://jules.google.com/session/SESSION_ID');
+      await page.waitForLoadState('networkidle');
+    }
+
+    // Click Publish PR button
+    const btn = page.getByRole('button', { name: 'Publish PR' });
+    if (await btn.isVisible()) {
+      await btn.click();
+      await page.waitForFunction(() =>
+        document.body.innerText.includes('View PR')
+      , { timeout: 60000 });
+
+      // Get the PR URL from new tab
+      const pages = page.context().pages();
+      for (const p of pages) {
+        if (p.url().includes('/pull/')) {
+          return { success: true, pr_url: p.url() };
+        }
+      }
+    }
+    return { success: false, error: 'No Publish PR button' };
+  }`,
+});
+```
+
+**Or from CLI (requires browser login):**
+
+```bash
+yarn ralph:publish-pr 6575646228061348411
+# Returns: {"success":true,"pr_number":670,"pr_url":"https://github.com/..."}
+```
 
 ### Usage Examples
 

@@ -66,7 +66,8 @@
     "ralph:batch-pr-status": "./scripts/ralph/batch-pr-status.sh",
     "ralph:available-issues": "./scripts/ralph/available-issues.sh",
     "ralph:ci-status": "./scripts/ralph/ci-status.sh",
-    "ralph:check-session-health": "./scripts/ralph/check-session-health.sh"
+    "ralph:check-session-health": "./scripts/ralph/check-session-health.sh",
+    "ralph:publish-pr": "node scripts/ralph/publish-jules-pr.mjs"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.2",
