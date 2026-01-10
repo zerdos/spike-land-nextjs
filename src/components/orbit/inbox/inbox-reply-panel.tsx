@@ -11,7 +11,7 @@ import { useMutation } from 'react-query';
 import { useParams } from 'next/navigation';
 
 const replySchema = z.object({
-  content: z.string().min(1),
+  content: z.string().trim().min(1, 'Reply content cannot be empty'),
 });
 
 type ReplyFormValues = z.infer<typeof replySchema>;
@@ -27,7 +27,15 @@ async function postReply(workspaceSlug: string, itemId: string, content: string)
     body: JSON.stringify({ content }),
   });
   if (!res.ok) {
-    throw new Error('Failed to post reply');
+    let errorText: string;
+    try {
+      errorText = await res.text();
+    } catch {
+      errorText = '<unable to read response body>';
+    }
+    throw new Error(
+      `Failed to post reply: HTTP ${res.status} ${res.statusText} - ${errorText}`,
+    );
   }
   return res.json();
 }

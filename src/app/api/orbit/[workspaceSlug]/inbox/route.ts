@@ -7,8 +7,6 @@ import { requireWorkspacePermission } from '@/lib/permissions/workspace-middlewa
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 
-import { InboxItemStatus, InboxItemType, SocialPlatform } from '@prisma/client';
-
 const schema = z.object({
   status: z.union([z.enum(Object.values(InboxItemStatus) as [string, ...string[]]), z.array(z.enum(Object.values(InboxItemStatus) as [string, ...string[]]))]).optional(),
   type: z.union([z.enum(Object.values(InboxItemType) as [string, ...string[]]), z.array(z.enum(Object.values(InboxItemType) as [string, ...string[]]))]).optional(),
@@ -83,11 +81,23 @@ export async function GET(
     const data = await listInboxItems(filter, pagination);
 
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
-    const status = error.message.includes("Unauthorized") ? 401 : error.message.includes("Forbidden") ? 403 : 500;
+
+    const status =
+      typeof (error as any)?.status === 'number'
+        ? (error as any).status
+        : typeof (error as any)?.statusCode === 'number'
+          ? (error as any).statusCode
+          : 500;
+
+    const message =
+      typeof (error as any)?.message === 'string' && (error as any).message.length > 0
+        ? (error as any).message
+        : 'Failed to list inbox items';
+
     return NextResponse.json(
-      { error: error.message || 'Failed to list inbox items' },
+      { error: message },
       { status },
     );
   }

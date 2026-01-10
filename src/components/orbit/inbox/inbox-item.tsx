@@ -20,6 +20,14 @@ export function InboxItem({ item, isSelected, onClick }: InboxItemProps) {
     <Card
       className={`cursor-pointer ${isSelected ? 'bg-gray-100' : ''}`}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }}
     >
       <CardContent className="p-4 flex items-start space-x-4">
         <Avatar>
@@ -29,7 +37,13 @@ export function InboxItem({ item, isSelected, onClick }: InboxItemProps) {
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <div className="font-semibold">{item.senderName}</div>
-            <div className="text-xs text-gray-500">{new Date(item.receivedAt).toLocaleDateString()}</div>
+            <div className="text-xs text-gray-500">
+              {new Date(item.receivedAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              })}
+            </div>
           </div>
           <div className="text-sm text-gray-700 mt-1">{item.content}</div>
           <div className="mt-2">

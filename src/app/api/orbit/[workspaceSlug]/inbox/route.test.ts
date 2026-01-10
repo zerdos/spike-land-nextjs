@@ -4,12 +4,13 @@ import { NextRequest } from 'next/server';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 import { InboxItemStatus, SocialPlatform } from '@prisma/client';
+import { vi } from 'vitest';
 
 vi.mock('@/auth', () => ({
   auth: vi.fn(),
 }));
-import { auth } from '@/auth';
-const mockedAuth = auth as jest.Mock;
+
+const mockedAuth = auth as ReturnType<typeof vi.fn>;
 
 describe('GET /api/orbit/[workspaceSlug]/inbox', () => {
   let workspace: any;
