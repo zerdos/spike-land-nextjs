@@ -211,11 +211,9 @@ describe("InboxList", () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("platform=TWITTER"),
-        undefined,
       );
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("status=UNREAD"),
-        undefined,
       );
     });
   });
