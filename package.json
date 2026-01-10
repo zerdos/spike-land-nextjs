@@ -61,7 +61,12 @@
     "dead-code:files": "knip --include files",
     "dead-code:exports": "knip --include exports",
     "dead-code:deps": "knip --include dependencies",
-    "find-last-passing-ci": "./scripts/find-last-passing-ci.sh"
+    "find-last-passing-ci": "./scripts/find-last-passing-ci.sh",
+    "ralph:pr-health": "./scripts/ralph/pr-health.sh",
+    "ralph:batch-pr-status": "./scripts/ralph/batch-pr-status.sh",
+    "ralph:available-issues": "./scripts/ralph/available-issues.sh",
+    "ralph:ci-status": "./scripts/ralph/ci-status.sh",
+    "ralph:check-session-health": "./scripts/ralph/check-session-health.sh"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.2",
