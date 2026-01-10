@@ -492,16 +492,20 @@ Then(
   },
 );
 
-// Filter steps
+// Filter steps - used by both orbit-social and orbit-calendar features
 When(
   "I filter by {string} platform",
   async function(this: CustomWorld, platform: string) {
+    // Try multiple selectors for different contexts (social stream and calendar)
     const platformFilter = this.page.getByRole("button", {
       name: new RegExp(platform, "i"),
     }).or(
       this.page.locator(`[data-testid="filter-${platform.toLowerCase()}"]`),
+    ).or(
+      this.page.locator(`[data-testid='platform-filter-${platform.toLowerCase()}']`),
     );
     await platformFilter.first().click();
+    await this.page.waitForLoadState("networkidle").catch(() => {});
   },
 );
 
