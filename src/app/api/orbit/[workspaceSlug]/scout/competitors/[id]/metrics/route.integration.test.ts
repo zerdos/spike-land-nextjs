@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { SocialPlatform } from '@prisma/client';
 import { GET } from './route';
 import { NextRequest } from 'next/server';
-import prisma from '@/test-utils/db';
+import prisma from '@/lib/prisma';
 
 describe('Competitor Metrics API', () => {
   let workspace: any;
