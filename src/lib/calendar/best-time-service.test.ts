@@ -8,12 +8,12 @@
 import type { SocialPlatform } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { BestTimeRecommendationsOptions } from "./best-time-types";
 import {
   getBestTimeRecommendations,
   getIndustryBenchmarks,
   isRecommendedTimeSlot,
 } from "./best-time-service";
+import type { BestTimeRecommendationsOptions } from "./best-time-types";
 
 // Mock Prisma
 vi.mock("@/lib/prisma", () => ({
@@ -31,8 +31,6 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 import prisma from "@/lib/prisma";
-
-const mockPrisma = vi.mocked(prisma);
 
 // Helper to create mock social account
 function createMockSocialAccount(overrides: {
@@ -106,7 +104,7 @@ describe("best-time-service", () => {
     };
 
     it("returns recommendations for workspace with accounts", async () => {
-      mockPrisma.socialAccount.findMany.mockResolvedValue([
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
         createMockSocialAccount({
           id: "account-1",
           platform: "LINKEDIN",
@@ -114,19 +112,19 @@ describe("best-time-service", () => {
         }),
       ]);
 
-      mockPrisma.socialMetrics.findMany.mockResolvedValue([]);
-      mockPrisma.scheduledPost.findMany.mockResolvedValue([]);
+      vi.mocked(prisma.socialMetrics.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.scheduledPost.findMany).mockResolvedValue([]);
 
       const result = await getBestTimeRecommendations(defaultOptions);
 
       expect(result).toBeDefined();
       expect(result.platformRecommendations).toHaveLength(1);
-      expect(result.platformRecommendations[0].platform).toBe("LINKEDIN");
-      expect(result.platformRecommendations[0].accountName).toBe("Test Company");
+      expect(result.platformRecommendations[0]?.platform).toBe("LINKEDIN");
+      expect(result.platformRecommendations[0]?.accountName).toBe("Test Company");
     });
 
     it("uses industry benchmarks when no historical data", async () => {
-      mockPrisma.socialAccount.findMany.mockResolvedValue([
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
         createMockSocialAccount({
           id: "account-1",
           platform: "LINKEDIN",
@@ -134,21 +132,23 @@ describe("best-time-service", () => {
         }),
       ]);
 
-      mockPrisma.socialMetrics.findMany.mockResolvedValue([]);
-      mockPrisma.scheduledPost.findMany.mockResolvedValue([]);
+      vi.mocked(prisma.socialMetrics.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.scheduledPost.findMany).mockResolvedValue([]);
 
       const result = await getBestTimeRecommendations(defaultOptions);
 
-      expect(result.platformRecommendations[0].hasEnoughData).toBe(false);
-      expect(result.platformRecommendations[0].bestTimeSlots.length).toBeGreaterThan(0);
+      expect(result.platformRecommendations[0]?.hasEnoughData).toBe(false);
+      expect(
+        (result.platformRecommendations[0]?.bestTimeSlots.length ?? 0) > 0,
+      ).toBe(true);
       // Should use industry benchmarks
       expect(
-        result.platformRecommendations[0].bestTimeSlots[0].reason,
+        result.platformRecommendations[0]?.bestTimeSlots[0]?.reason,
       ).toContain("Industry best practice");
     });
 
     it("calculates recommendations from historical data", async () => {
-      mockPrisma.socialAccount.findMany.mockResolvedValue([
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
         createMockSocialAccount({
           id: "account-1",
           platform: "LINKEDIN",
@@ -181,18 +181,20 @@ describe("best-time-service", () => {
         });
       }
 
-      mockPrisma.socialMetrics.findMany.mockResolvedValue(mockMetrics);
-      mockPrisma.scheduledPost.findMany.mockResolvedValue([]);
+      vi.mocked(prisma.socialMetrics.findMany).mockResolvedValue(mockMetrics);
+      vi.mocked(prisma.scheduledPost.findMany).mockResolvedValue([]);
 
       const result = await getBestTimeRecommendations(defaultOptions);
 
-      expect(result.platformRecommendations[0].hasEnoughData).toBe(true);
-      expect(result.platformRecommendations[0].daysAnalyzed).toBeGreaterThanOrEqual(30);
+      expect(result.platformRecommendations[0]?.hasEnoughData).toBe(true);
+      expect(
+        (result.platformRecommendations[0]?.daysAnalyzed ?? 0) >= 30,
+      ).toBe(true);
     });
 
     it("returns empty recommendations for workspace without accounts", async () => {
-      mockPrisma.socialAccount.findMany.mockResolvedValue([]);
-      mockPrisma.scheduledPost.findMany.mockResolvedValue([]);
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.scheduledPost.findMany).mockResolvedValue([]);
 
       const result = await getBestTimeRecommendations(defaultOptions);
 
@@ -201,7 +203,7 @@ describe("best-time-service", () => {
     });
 
     it("filters by specific account IDs", async () => {
-      mockPrisma.socialAccount.findMany.mockResolvedValue([
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
         createMockSocialAccount({
           id: "account-2",
           platform: "TWITTER",
@@ -209,15 +211,15 @@ describe("best-time-service", () => {
         }),
       ]);
 
-      mockPrisma.socialMetrics.findMany.mockResolvedValue([]);
-      mockPrisma.scheduledPost.findMany.mockResolvedValue([]);
+      vi.mocked(prisma.socialMetrics.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.scheduledPost.findMany).mockResolvedValue([]);
 
       await getBestTimeRecommendations({
         ...defaultOptions,
         accountIds: ["account-2"],
       });
 
-      expect(mockPrisma.socialAccount.findMany).toHaveBeenCalledWith(
+      expect(prisma.socialAccount.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             id: { in: ["account-2"] },
@@ -227,7 +229,7 @@ describe("best-time-service", () => {
     });
 
     it("identifies calendar gaps", async () => {
-      mockPrisma.socialAccount.findMany.mockResolvedValue([
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
         createMockSocialAccount({
           id: "account-1",
           platform: "LINKEDIN",
@@ -235,7 +237,7 @@ describe("best-time-service", () => {
         }),
       ]);
 
-      mockPrisma.socialMetrics.findMany.mockResolvedValue([]);
+      vi.mocked(prisma.socialMetrics.findMany).mockResolvedValue([]);
 
       // Create posts with a gap
       const now = new Date();
@@ -244,7 +246,7 @@ describe("best-time-service", () => {
       const post2Date = new Date(now);
       post2Date.setDate(post2Date.getDate() + 5);
 
-      mockPrisma.scheduledPost.findMany.mockResolvedValue([
+      vi.mocked(prisma.scheduledPost.findMany).mockResolvedValue([
         {
           id: "post-1",
           scheduledAt: post1Date,
@@ -293,7 +295,7 @@ describe("best-time-service", () => {
     });
 
     it("skips gap analysis when includeGaps is false", async () => {
-      mockPrisma.socialAccount.findMany.mockResolvedValue([]);
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([]);
 
       const result = await getBestTimeRecommendations({
         ...defaultOptions,
@@ -301,11 +303,11 @@ describe("best-time-service", () => {
       });
 
       expect(result.calendarGaps).toHaveLength(0);
-      expect(mockPrisma.scheduledPost.findMany).not.toHaveBeenCalled();
+      expect(prisma.scheduledPost.findMany).not.toHaveBeenCalled();
     });
 
     it("calculates global best slots across platforms", async () => {
-      mockPrisma.socialAccount.findMany.mockResolvedValue([
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
         createMockSocialAccount({
           id: "account-1",
           platform: "LINKEDIN",
@@ -318,8 +320,8 @@ describe("best-time-service", () => {
         }),
       ]);
 
-      mockPrisma.socialMetrics.findMany.mockResolvedValue([]);
-      mockPrisma.scheduledPost.findMany.mockResolvedValue([]);
+      vi.mocked(prisma.socialMetrics.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.scheduledPost.findMany).mockResolvedValue([]);
 
       const result = await getBestTimeRecommendations(defaultOptions);
 
