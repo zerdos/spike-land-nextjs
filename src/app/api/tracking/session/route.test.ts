@@ -7,7 +7,7 @@
 
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "./route";
+import { PATCH, POST } from "./route";
 
 // Mock prisma
 vi.mock("@/lib/prisma", () => ({
@@ -16,6 +16,9 @@ vi.mock("@/lib/prisma", () => ({
       findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+    },
+    user: {
+      findUnique: vi.fn(),
     },
   },
 }));
@@ -681,6 +684,275 @@ describe("POST /api/tracking/session", () => {
           fbclid: "fbclid-456",
         }),
       });
+    });
+  });
+});
+
+describe("PATCH /api/tracking/session", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(checkRateLimit).mockResolvedValue({
+      isLimited: false,
+      remaining: 99,
+      resetAt: Date.now() + 60000,
+    });
+  });
+
+  describe("Request validation", () => {
+    it("should return 400 for missing sessionId", async () => {
+      const request = new NextRequest("http://localhost/api/tracking/session", {
+        method: "PATCH",
+        body: JSON.stringify({
+          exitPage: "/about",
+        }),
+      });
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Invalid input");
+    });
+
+    it("should return 400 for no update fields provided", async () => {
+      const request = new NextRequest("http://localhost/api/tracking/session", {
+        method: "PATCH",
+        body: JSON.stringify({
+          sessionId: "session-123",
+        }),
+      });
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("No update fields provided");
+    });
+  });
+
+  describe("User validation", () => {
+    it("should return 400 when userId does not exist", async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+
+      const request = new NextRequest("http://localhost/api/tracking/session", {
+        method: "PATCH",
+        body: JSON.stringify({
+          sessionId: "session-123",
+          userId: "non-existent-user",
+        }),
+      });
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("User not found");
+      expect(prisma.user.findUnique).toHaveBeenCalledWith({
+        where: { id: "non-existent-user" },
+        select: { id: true },
+      });
+    });
+
+    it("should update session when userId exists", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-123" } as any);
+      vi.mocked(prisma.visitorSession.update).mockResolvedValue({
+        id: "session-123",
+        visitorId: "v_visitor-123",
+        userId: "user-123",
+        sessionStart: new Date(),
+        sessionEnd: null,
+        deviceType: null,
+        browser: null,
+        os: null,
+        ipCountry: null,
+        ipCity: null,
+        referrer: null,
+        landingPage: "/",
+        exitPage: "/",
+        pageViewCount: 1,
+        utmSource: null,
+        utmMedium: null,
+        utmCampaign: null,
+        utmTerm: null,
+        utmContent: null,
+        gclid: null,
+        fbclid: null,
+      });
+
+      const request = new NextRequest("http://localhost/api/tracking/session", {
+        method: "PATCH",
+        body: JSON.stringify({
+          sessionId: "session-123",
+          userId: "user-123",
+        }),
+      });
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.sessionId).toBe("session-123");
+      expect(prisma.visitorSession.update).toHaveBeenCalledWith({
+        where: { id: "session-123" },
+        data: { userId: "user-123" },
+      });
+    });
+
+    it("should skip user validation when userId not provided", async () => {
+      vi.mocked(prisma.visitorSession.update).mockResolvedValue({
+        id: "session-123",
+        visitorId: "v_visitor-123",
+        userId: null,
+        sessionStart: new Date(),
+        sessionEnd: new Date(),
+        deviceType: null,
+        browser: null,
+        os: null,
+        ipCountry: null,
+        ipCity: null,
+        referrer: null,
+        landingPage: "/",
+        exitPage: "/about",
+        pageViewCount: 1,
+        utmSource: null,
+        utmMedium: null,
+        utmCampaign: null,
+        utmTerm: null,
+        utmContent: null,
+        gclid: null,
+        fbclid: null,
+      });
+
+      const request = new NextRequest("http://localhost/api/tracking/session", {
+        method: "PATCH",
+        body: JSON.stringify({
+          sessionId: "session-123",
+          exitPage: "/about",
+        }),
+      });
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.sessionId).toBe("session-123");
+      expect(prisma.user.findUnique).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Session update", () => {
+    it("should update session end time", async () => {
+      const sessionEnd = new Date().toISOString();
+      vi.mocked(prisma.visitorSession.update).mockResolvedValue({
+        id: "session-123",
+        visitorId: "v_visitor-123",
+        userId: null,
+        sessionStart: new Date(),
+        sessionEnd: new Date(sessionEnd),
+        deviceType: null,
+        browser: null,
+        os: null,
+        ipCountry: null,
+        ipCity: null,
+        referrer: null,
+        landingPage: "/",
+        exitPage: "/",
+        pageViewCount: 1,
+        utmSource: null,
+        utmMedium: null,
+        utmCampaign: null,
+        utmTerm: null,
+        utmContent: null,
+        gclid: null,
+        fbclid: null,
+      });
+
+      const request = new NextRequest("http://localhost/api/tracking/session", {
+        method: "PATCH",
+        body: JSON.stringify({
+          sessionId: "session-123",
+          sessionEnd,
+        }),
+      });
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.sessionId).toBe("session-123");
+      expect(prisma.visitorSession.update).toHaveBeenCalledWith({
+        where: { id: "session-123" },
+        data: { sessionEnd: expect.any(Date) },
+      });
+    });
+
+    it("should return 404 when session not found", async () => {
+      vi.mocked(prisma.visitorSession.update).mockRejectedValue(
+        new Error("Record to update not found"),
+      );
+
+      const request = new NextRequest("http://localhost/api/tracking/session", {
+        method: "PATCH",
+        body: JSON.stringify({
+          sessionId: "non-existent-session",
+          exitPage: "/about",
+        }),
+      });
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(404);
+      expect(data.error).toBe("Session not found");
+    });
+
+    it("should handle foreign key constraint violation gracefully", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-123" } as any);
+      const fkError = new Error("Foreign key constraint failed") as Error & {
+        code: string;
+      };
+      fkError.code = "P2003";
+      vi.mocked(prisma.visitorSession.update).mockRejectedValue(fkError);
+
+      const request = new NextRequest("http://localhost/api/tracking/session", {
+        method: "PATCH",
+        body: JSON.stringify({
+          sessionId: "session-123",
+          userId: "user-123",
+        }),
+      });
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("User not found");
+    });
+  });
+
+  describe("Rate limiting", () => {
+    it("should return 429 when rate limited", async () => {
+      vi.mocked(checkRateLimit).mockResolvedValue({
+        isLimited: true,
+        remaining: 0,
+        resetAt: Date.now() + 30000,
+      });
+
+      const request = new NextRequest("http://localhost/api/tracking/session", {
+        method: "PATCH",
+        body: JSON.stringify({
+          sessionId: "session-123",
+          exitPage: "/about",
+        }),
+      });
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(429);
+      expect(data.error).toBe("Too many requests");
     });
   });
 });
