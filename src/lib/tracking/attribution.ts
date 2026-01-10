@@ -8,12 +8,13 @@
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import type { CampaignAttribution, VisitorSession } from "@prisma/client";
+import { randomUUID } from "crypto";
 import { getPlatformFromUTM, type UTMParams } from "./utm-capture";
 
 /**
  * Attribution types matching Prisma schema
  */
-type AttributionType = "FIRST_TOUCH" | "LAST_TOUCH";
+type AttributionType = "FIRST_TOUCH" | "LAST_TOUCH" | "LINEAR";
 
 /**
  * Conversion types matching Prisma schema
@@ -28,6 +29,8 @@ export interface AttributionParams {
   userId: string;
   /** Session ID associated with the conversion */
   sessionId: string;
+  /** Unique ID for the conversion event */
+  conversionId: string;
   /** Attribution model type */
   attributionType: AttributionType;
   /** Conversion type */
@@ -64,6 +67,7 @@ export async function createAttribution(
   const {
     userId,
     sessionId,
+    conversionId,
     attributionType,
     conversionType,
     conversionValue,
@@ -80,6 +84,7 @@ export async function createAttribution(
     data: {
       userId,
       sessionId,
+      conversionId,
       attributionType,
       conversionType,
       conversionValue,
@@ -222,11 +227,13 @@ export async function attributeConversion(
 
   const firstSession = sessions[0]!;
   const lastSession = sessions[sessions.length - 1]!;
+  const conversionId = randomUUID();
 
   // Create first-touch attribution
   await createAttribution({
     userId,
     sessionId: firstSession.id,
+    conversionId,
     attributionType: "FIRST_TOUCH",
     conversionType,
     conversionValue: value,
@@ -240,6 +247,7 @@ export async function attributeConversion(
   await createAttribution({
     userId,
     sessionId: lastSession.id,
+    conversionId,
     attributionType: "LAST_TOUCH",
     conversionType,
     conversionValue: value,
@@ -247,6 +255,24 @@ export async function attributeConversion(
     externalCampaignId: lastSession.gclid || lastSession.fbclid || undefined,
     utmParams: extractUTMFromSession(lastSession),
   });
+
+  // Create linear attribution records for all sessions
+  const linearValue = value && sessions.length > 0
+    ? value / sessions.length
+    : undefined;
+  for (const session of sessions) {
+    await createAttribution({
+      userId,
+      sessionId: session.id,
+      conversionId,
+      attributionType: "LINEAR",
+      conversionType,
+      conversionValue: linearValue,
+      platform: await determineSessionPlatform(session),
+      externalCampaignId: session.gclid || session.fbclid || undefined,
+      utmParams: extractUTMFromSession(session),
+    });
+  }
 }
 
 /**
@@ -270,13 +296,15 @@ async function createDirectAttribution(
       pageViewCount: 0,
     },
   });
+  const conversionId = randomUUID();
 
-  // Create both attribution records with DIRECT platform
+  // Create all attribution records with DIRECT platform
   await prisma.campaignAttribution.createMany({
     data: [
       {
         userId,
         sessionId: session.id,
+        conversionId,
         attributionType: "FIRST_TOUCH",
         conversionType,
         conversionValue: value,
@@ -285,7 +313,17 @@ async function createDirectAttribution(
       {
         userId,
         sessionId: session.id,
+        conversionId,
         attributionType: "LAST_TOUCH",
+        conversionType,
+        conversionValue: value,
+        platform: "DIRECT",
+      },
+      {
+        userId,
+        sessionId: session.id,
+        conversionId,
+        attributionType: "LINEAR",
         conversionType,
         conversionValue: value,
         platform: "DIRECT",
@@ -398,9 +436,9 @@ export async function getCampaignAttributionSummary(
   endDate: Date,
 ): Promise<{
   totalConversions: number;
-  firstTouchCount: number;
-  lastTouchCount: number;
-  totalValue: number;
+  firstTouchValue: number;
+  lastTouchValue: number;
+  linearValue: number;
   conversionsByType: Record<ConversionType, number>;
 }> {
   const attributions = await prisma.campaignAttribution.findMany({
@@ -413,14 +451,20 @@ export async function getCampaignAttributionSummary(
     },
   });
 
+  // Group by conversionId to correctly sum values and count conversions
+  const conversions = new Map<string, CampaignAttribution[]>();
+  for (const attr of attributions) {
+    if (!conversions.has(attr.conversionId)) {
+      conversions.set(attr.conversionId, []);
+    }
+    conversions.get(attr.conversionId)!.push(attr);
+  }
+
   const summary = {
-    totalConversions: attributions.length,
-    firstTouchCount: attributions.filter((a) => a.attributionType === "FIRST_TOUCH").length,
-    lastTouchCount: attributions.filter((a) => a.attributionType === "LAST_TOUCH").length,
-    totalValue: attributions.reduce(
-      (sum, a) => sum + (a.conversionValue || 0),
-      0,
-    ),
+    totalConversions: conversions.size,
+    firstTouchValue: 0,
+    lastTouchValue: 0,
+    linearValue: 0,
     conversionsByType: {
       SIGNUP: 0,
       ENHANCEMENT: 0,
@@ -428,8 +472,30 @@ export async function getCampaignAttributionSummary(
     } as Record<ConversionType, number>,
   };
 
-  for (const attribution of attributions) {
-    summary.conversionsByType[attribution.conversionType as ConversionType]++;
+  for (const conversionAttrs of conversions.values()) {
+    const firstTouch = conversionAttrs.find(
+      (a) => a.attributionType === "FIRST_TOUCH",
+    );
+    const lastTouch = conversionAttrs.find(
+      (a) => a.attributionType === "LAST_TOUCH",
+    );
+    const linearAttrs = conversionAttrs.filter(
+      (a) => a.attributionType === "LINEAR",
+    );
+
+    if (firstTouch) {
+      summary.firstTouchValue += firstTouch.conversionValue || 0;
+      summary.conversionsByType[
+        firstTouch.conversionType as ConversionType
+      ]++;
+    }
+    if (lastTouch) {
+      summary.lastTouchValue += lastTouch.conversionValue || 0;
+    }
+    summary.linearValue += linearAttrs.reduce(
+      (sum, a) => sum + (a.conversionValue || 0),
+      0,
+    );
   }
 
   return summary;
