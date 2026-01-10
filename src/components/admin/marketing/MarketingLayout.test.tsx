@@ -13,16 +13,18 @@ vi.mock("next/navigation", () => ({
 describe("MarketingLayout", () => {
   const mockPathname = usePathname as any;
   const mockSearchParams = useSearchParams as any;
+  const originalFetch = global.fetch;
 
   beforeEach(() => {
     mockPathname.mockReturnValue("/admin/marketing");
     mockSearchParams.mockReturnValue(new URLSearchParams());
-    global.fetch = createFetchMock({
+    global.fetch = vi.fn(createFetchMock({
       "/api/admin/marketing/accounts": mockMarketingData,
-    });
+    }));
   });
 
   afterEach(() => {
+    global.fetch = originalFetch;
     vi.restoreAllMocks();
   });
 

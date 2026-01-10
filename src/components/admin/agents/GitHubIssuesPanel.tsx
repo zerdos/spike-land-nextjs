@@ -116,7 +116,7 @@ export function GitHubIssuesPanel({
         {/* Issues */}
         <div data-testid="github-issues">
           <h4 className="mb-2 text-sm font-medium">Open Issues</h4>
-          {data.issues.length === 0
+          {data.issues?.length === 0
             ? (
               <p className="text-sm text-neutral-600 dark:text-neutral-400">
                 No open issues
@@ -124,7 +124,7 @@ export function GitHubIssuesPanel({
             )
             : (
               <ul className="space-y-1">
-                {data.issues.slice(0, 5).map((issue) => (
+                {(data.issues || []).slice(0, 5).map((issue) => (
                   <li key={issue.number} data-testid={`issue-${issue.number}`}>
                     <a
                       href={issue.url}
@@ -143,7 +143,7 @@ export function GitHubIssuesPanel({
         {/* Workflow Runs */}
         <div data-testid="github-workflows">
           <h4 className="mb-2 text-sm font-medium">Recent Workflow Runs</h4>
-          {data.workflows.length === 0
+          {data.workflows?.length === 0
             ? (
               <p className="text-sm text-neutral-600 dark:text-neutral-400">
                 No workflow runs
@@ -151,7 +151,7 @@ export function GitHubIssuesPanel({
             )
             : (
               <ul className="space-y-2">
-                {data.workflows.slice(0, 5).map((workflow) => (
+                {(data.workflows || []).slice(0, 5).map((workflow) => (
                   <li
                     key={workflow.id}
                     data-testid={`workflow-${workflow.id}`}
