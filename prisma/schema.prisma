@@ -71,6 +71,9 @@ model User {
   draftEdits           DraftEditHistory[]
   // Relay draft audit logs
   draftAuditLogs       DraftAuditLog[]
+  // Comprehensive audit logs
+  workspaceAuditLogs   WorkspaceAuditLog[] @relation("WorkspaceAuditLogs")
+  aiDecisionLogs       AIDecisionLog[]     @relation("AIDecisionLogs")
 
   @@map("users")
 }
@@ -567,20 +570,131 @@ model Referral {
 }
 
 model AuditLog {
-  id        String      @id @default(cuid())
-  userId    String
-  action    AuditAction
-  targetId  String?
-  metadata  Json?
-  ipAddress String?
-  createdAt DateTime    @default(now())
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String      @id @default(cuid())
+  userId       String
+  action       AuditAction
+  targetId     String?
+  targetType   String?     // e.g., "user", "workspace", "draft", "content"
+  resourceId   String?     // Additional resource identifier
+  resourceType String?     // Type of the resource
+  metadata     Json?
+  ipAddress    String?
+  userAgent    String?
+  sessionId    String?     // Session tracking for compliance
+  createdAt    DateTime    @default(now())
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([action])
   @@index([targetId])
+  @@index([targetType])
   @@index([createdAt])
+  @@index([resourceId, resourceType])
   @@map("audit_logs")
+}
+
+// Workspace-level audit logging for multi-tenant compliance
+model WorkspaceAuditLog {
+  id           String      @id @default(cuid())
+  workspaceId  String
+  userId       String
+  action       AuditAction
+  targetId     String?     // ID of the affected resource
+  targetType   String?     // Type of target (draft, inbox, settings, etc.)
+  resourceId   String?     // Additional resource identifier
+  resourceType String?     // Type of the resource
+  oldValue     Json?       // Previous state for changes
+  newValue     Json?       // New state for changes
+  metadata     Json?       // Additional context (AI reasoning, etc.)
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime    @default(now())
+  workspace    Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user         User        @relation("WorkspaceAuditLogs", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([action])
+  @@index([targetId, targetType])
+  @@index([createdAt])
+  @@index([workspaceId, createdAt])
+  @@map("workspace_audit_logs")
+}
+
+// AI Decision logging for transparency and debugging
+model AIDecisionLog {
+  id            String    @id @default(cuid())
+  workspaceId   String?
+  userId        String?
+  requestType   String    // e.g., "draft_generation", "content_analysis", "recommendation"
+  inputPrompt   String?   @db.Text
+  inputContext  Json?     // Additional input context
+  outputResult  String?   @db.Text
+  outputMetadata Json?    // Model info, confidence scores, etc.
+  modelId       String?   // Which AI model was used
+  modelVersion  String?
+  tokensUsed    Int?      // For cost tracking
+  latencyMs     Int?      // Response time
+  status        String    // success, error, timeout
+  errorMessage  String?
+  createdAt     DateTime  @default(now())
+  workspace     Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  user          User?     @relation("AIDecisionLogs", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([requestType])
+  @@index([status])
+  @@index([createdAt])
+  @@map("ai_decision_logs")
+}
+
+// Retention policy configuration for audit logs
+model AuditRetentionPolicy {
+  id                  String    @id @default(cuid())
+  workspaceId         String?   // null for system-wide policy
+  name                String
+  description         String?
+  retentionDays       Int       @default(365) // How long to keep logs
+  archiveAfterDays    Int?      // Move to archive storage after X days
+  deleteAfterDays     Int?      // Hard delete after X days (if different from retention)
+  actionTypes         String[]  // Which action types this applies to, empty = all
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  workspace           Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@index([isActive])
+  @@map("audit_retention_policies")
+}
+
+// Archived audit logs for compliance storage
+model ArchivedAuditLog {
+  id              String    @id @default(cuid())
+  originalId      String    // Original audit log ID
+  workspaceId     String?
+  userId          String
+  action          String    // Stored as string for flexibility after enum changes
+  targetId        String?
+  targetType      String?
+  resourceId      String?
+  resourceType    String?
+  metadata        Json?
+  ipAddress       String?
+  userAgent       String?
+  originalCreatedAt DateTime // Original creation timestamp
+  archivedAt      DateTime  @default(now())
+  retentionPolicyId String?
+  archiveReason   String?   // "scheduled", "manual", "compliance"
+
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([action])
+  @@index([originalCreatedAt])
+  @@index([archivedAt])
+  @@map("archived_audit_logs")
 }
 
 // Error logging for tryCatch blocks across frontend and backend
@@ -784,6 +898,7 @@ enum ReferralStatus {
 }
 
 enum AuditAction {
+  // Admin actions
   ROLE_CHANGE
   TOKEN_ADJUSTMENT
   VOUCHER_CREATE
@@ -791,6 +906,50 @@ enum AuditAction {
   VOUCHER_DELETE
   USER_DELETE
   ADMIN_LOGIN
+
+  // Session actions
+  USER_LOGIN
+  USER_LOGOUT
+  SESSION_REFRESH
+
+  // Workspace actions
+  WORKSPACE_CREATE
+  WORKSPACE_UPDATE
+  WORKSPACE_DELETE
+  WORKSPACE_MEMBER_ADD
+  WORKSPACE_MEMBER_REMOVE
+  WORKSPACE_SETTINGS_CHANGE
+
+  // Content actions
+  CONTENT_CREATE
+  CONTENT_UPDATE
+  CONTENT_DELETE
+  CONTENT_PUBLISH
+  CONTENT_UNPUBLISH
+  CONTENT_SCHEDULE
+
+  // AI actions
+  AI_GENERATION_REQUEST
+  AI_GENERATION_COMPLETE
+  AI_APPROVAL
+  AI_REJECTION
+  AI_FEEDBACK
+
+  // Integration actions
+  INTEGRATION_CONNECT
+  INTEGRATION_DISCONNECT
+  INTEGRATION_SYNC
+
+  // Export/Import
+  DATA_EXPORT
+  DATA_IMPORT
+
+  // Relay actions
+  RELAY_DRAFT_CREATE
+  RELAY_DRAFT_APPROVE
+  RELAY_DRAFT_REJECT
+  RELAY_DRAFT_EDIT
+  RELAY_DRAFT_SEND
 }
 
 enum FeedbackType {
@@ -1845,12 +2004,16 @@ model Workspace {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
-  members         WorkspaceMember[]
-  brandProfile    BrandProfile?
-  contentRewrites ContentRewrite[]
-  socialAccounts  SocialAccount[]
-  scheduledPosts  ScheduledPost[]
-  inboxItems      InboxItem[]
+  members               WorkspaceMember[]
+  brandProfile          BrandProfile?
+  contentRewrites       ContentRewrite[]
+  socialAccounts        SocialAccount[]
+  scheduledPosts        ScheduledPost[]
+  inboxItems            InboxItem[]
+  // Comprehensive audit logs
+  workspaceAuditLogs    WorkspaceAuditLog[]
+  aiDecisionLogs        AIDecisionLog[]
+  auditRetentionPolicies AuditRetentionPolicy[]
 
   @@index([slug])
   @@index([isPersonal])
