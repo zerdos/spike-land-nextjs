@@ -239,3 +239,49 @@ Feature: Orbit Calendar / Scheduled Posts
     Then I should see the publishing history
     And I should see when it was published
     And I should see the platform post IDs
+
+  # Best-Time Recommendations (Part of #578: Add best-time recommendations)
+  @calendar @recommendations
+  Scenario: View best-time recommendations panel
+    When I navigate to the calendar page
+    Then I should see the "Best Times to Post" panel
+    And I should see time slot recommendations
+    And each recommendation should show confidence level
+
+  @calendar @recommendations
+  Scenario: View platform-specific recommendations
+    Given I have engagement data for my LinkedIn account
+    When I navigate to the calendar page
+    Then I should see LinkedIn recommendations
+    And recommendations should show engagement scores
+    And recommendations should indicate days to avoid
+
+  @calendar @recommendations
+  Scenario: View recommendations based on industry benchmarks
+    Given I have a new social account with no historical data
+    When I navigate to the calendar page
+    Then I should see recommendations based on industry benchmarks
+    And I should see a low confidence indicator
+    And I should see the benchmark source
+
+  @calendar @recommendations
+  Scenario: View calendar content gaps
+    Given I have scheduled posts with gaps between them
+    When I navigate to the calendar page
+    Then I should see identified content gaps
+    And gaps during high-engagement times should be highlighted
+    And I should see suggested platforms for each gap
+
+  @calendar @recommendations
+  Scenario: Navigate to recommended time slot
+    When I navigate to the calendar page
+    And I click on a recommended time slot
+    Then the create post dialog should open
+    And the date and time should be pre-filled with the recommended slot
+
+  @calendar @recommendations
+  Scenario: View global best slots across platforms
+    Given I have multiple social accounts connected
+    When I navigate to the calendar page
+    Then I should see global best time recommendations
+    And global recommendations should aggregate across all platforms

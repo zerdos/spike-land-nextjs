@@ -46,3 +46,23 @@ export {
   type PublishingRunResult,
   publishScheduledPost,
 } from "./publishing-service";
+
+// Best-time recommendations
+export type {
+  BestTimeRecommendationsOptions,
+  BestTimeRecommendationsResponse,
+  CalendarGap,
+  ConfidenceLevel,
+  DailyEngagementPattern,
+  DayOfWeek,
+  HourOfDay,
+  IndustryBenchmark,
+  PlatformRecommendations,
+  TimeSlotRecommendation,
+} from "./best-time-types";
+
+export {
+  getBestTimeRecommendations,
+  getIndustryBenchmarks,
+  isRecommendedTimeSlot,
+} from "./best-time-service";
