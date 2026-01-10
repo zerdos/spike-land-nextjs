@@ -10,6 +10,9 @@ export default defineConfig({
     projects: ["./src/app/api/vite.config.ts"],
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
+    env: {
+      DATABASE_URL: "postgresql://mock:5432/mock",
+    },
     include: ["src/**/*.{test,spec}.{ts,tsx}", "apps/**/*.{test,spec}.{ts,tsx}"],
     // Exclude git worktrees, mobile app (uses Jest), and packages (have their own configs)
     exclude: [

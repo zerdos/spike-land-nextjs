@@ -4,7 +4,10 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
-      "next/server": "next/dist/server/web/spec-extension/index.js",
+      "next/server": path.resolve(
+        __dirname,
+        "../../../node_modules/next/dist/server/web/exports/index.js",
+      ),
       "@": path.resolve(__dirname, "../../../src"),
       "@/components": path.resolve(__dirname, "../../../src/components"),
       "@/ui": path.resolve(__dirname, "../../../src/components/ui"),
@@ -12,6 +15,12 @@ export default defineConfig({
       "@/utils": path.resolve(__dirname, "../../../src/lib/utils"),
       "@/hooks": path.resolve(__dirname, "../../../src/hooks"),
       "@apps": path.resolve(__dirname, "../../../apps"),
+    },
+  },
+  test: {
+    globals: true,
+    env: {
+      DATABASE_URL: "postgresql://mock:5432/mock",
     },
   },
 });
