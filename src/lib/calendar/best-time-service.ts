@@ -191,7 +191,7 @@ function calculateEngagementScore(pattern: DailyEngagementPattern): number {
   };
 
   // Normalize each metric (we'll use relative scoring within the dataset)
-  let score = pattern.avgEngagementRate * weights.engagementRate +
+  const score = pattern.avgEngagementRate * weights.engagementRate +
     Math.min(pattern.avgImpressions / 1000, 10) * weights.impressions +
     Math.min(pattern.avgReach / 1000, 10) * weights.reach +
     Math.min(pattern.avgLikes / 100, 10) * weights.likes +
