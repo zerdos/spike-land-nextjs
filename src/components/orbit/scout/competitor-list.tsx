@@ -29,12 +29,14 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
       try {
         const response = await fetch(`/api/orbit/${workspaceSlug}/scout/competitors`);
         if (!response.ok) {
-          throw new Error('Failed to fetch competitors');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Failed to fetch competitors (${response.status})`);
         }
         const data = await response.json();
         setCompetitors(data);
       } catch (err) {
-        setError('Could not load competitors.');
+        const errorMessage = err instanceof Error ? err.message : 'Could not load competitors.';
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
