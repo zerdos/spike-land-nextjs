@@ -50,12 +50,14 @@ export interface ScheduledPostMetadata {
     imageUrl?: string;
   };
   // Platform-specific overrides
-  platformOverrides?: Record<
-    SocialPlatform,
-    {
-      content?: string;
-      mediaIds?: string[];
-    }
+  platformOverrides?: Partial<
+    Record<
+      SocialPlatform,
+      {
+        content?: string;
+        mediaIds?: string[];
+      }
+    >
   >;
 }
 
