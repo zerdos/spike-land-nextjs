@@ -562,13 +562,7 @@ Then(
 
 // NOTE: "I should see {string} link" is defined in authentication.steps.ts
 
-Then(
-  "I should see an error {string}",
-  async function(this: CustomWorld, errorMessage: string) {
-    const error = this.page.getByText(errorMessage);
-    await expect(error).toBeVisible();
-  },
-);
+// NOTE: "I should see an error {string}" is defined in common.steps.ts
 
 Then(
   "I should see the token balance for the API key",
