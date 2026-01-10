@@ -24,13 +24,17 @@ vi.mock("recharts", async (importOriginal) => {
 });
 
 describe("OverviewTab", () => {
+  const originalFetch = global.fetch;
+
   beforeEach(() => {
-    global.fetch = createFetchMock({
+    // We need to spy on fetch to be able to assert calls, but also provide implementation
+    global.fetch = vi.fn(createFetchMock({
       "/api/admin/marketing/analytics/overview": mockOverviewData,
-    });
+    }));
   });
 
   afterEach(() => {
+    global.fetch = originalFetch;
     vi.restoreAllMocks();
   });
 
