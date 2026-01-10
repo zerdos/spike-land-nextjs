@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
+
 import { NextRequest } from "next/server";
 import { GET } from "./route";
 

@@ -1,13 +1,6 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import {
-  createTopic,
-  createTopicSchema,
-  deleteTopic,
-  listTopicsByWorkspace,
-  updateTopic,
-  updateTopicSchema,
-} from "@/lib/scout/topic-config";
+import prisma from "@/lib/prisma";
+import { createTopic, createTopicSchema, listTopicsByWorkspace } from "@/lib/scout/topic-config";
 import { tryCatch } from "@/lib/try-catch";
 import { type NextRequest, NextResponse } from "next/server";
 

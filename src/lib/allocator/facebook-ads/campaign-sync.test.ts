@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { SocialAccount } from "@prisma/client";
+import type { SocialAccount } from "@prisma/client";
 import { vi } from "vitest";
 import { syncFacebookCampaigns } from "./campaign-sync";
 import { FacebookMarketingApiClient } from "./client";

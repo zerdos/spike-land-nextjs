@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
+import type { Prisma } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 
 interface RouteContext {
@@ -32,14 +33,15 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
     const limit = parseInt(searchParams.get("limit") ?? "20", 10);
     const offset = (page - 1) * limit;
 
-    const where: any = {
+    const where: Prisma.ScoutResultWhereInput = {
       topic: {
         workspaceId: workspace.id,
       },
     };
 
     if (topicId) where.topicId = topicId;
-    if (platform) where.platform = platform;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (platform) where.platform = platform as any;
 
     const results = await prisma.scoutResult.findMany({
       where,

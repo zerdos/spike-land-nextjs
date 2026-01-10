@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScoutResult } from "@prisma/client";
+import type { ScoutResult } from "@prisma/client";
 import { useEffect, useState } from "react";
 
 interface TopicFeedProps {
