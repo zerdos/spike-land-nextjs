@@ -225,8 +225,8 @@ describe("AgentsDashboardClient", () => {
 
     // The fetch calls happen on mount
     await waitFor(() => {
-        // Assert that fetch was called for resources
-        expect(global.fetch).toHaveBeenCalledWith("/api/admin/agents/resources");
+      // Assert that fetch was called for resources
+      expect(global.fetch).toHaveBeenCalledWith("/api/admin/agents/resources");
     });
 
     await waitFor(() => {
@@ -244,7 +244,7 @@ describe("AgentsDashboardClient", () => {
     render(<AgentsDashboardClient initialData={mockAgentsData} />);
 
     await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith("/api/admin/agents/git");
+      expect(global.fetch).toHaveBeenCalledWith("/api/admin/agents/git");
     });
 
     await waitFor(() => {
@@ -262,7 +262,7 @@ describe("AgentsDashboardClient", () => {
     render(<AgentsDashboardClient initialData={mockAgentsData} />);
 
     await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith("/api/admin/agents/github/issues");
+      expect(global.fetch).toHaveBeenCalledWith("/api/admin/agents/github/issues");
     });
 
     await waitFor(() => {

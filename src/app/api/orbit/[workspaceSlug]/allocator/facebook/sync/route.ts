@@ -1,11 +1,10 @@
-
-import { NextResponse } from "next/server";
 import { syncFacebookCampaigns } from "@/lib/allocator/facebook-ads/campaign-sync";
 import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
 export async function POST(
   _: Request,
-  { params }: { params: { workspaceSlug: string } },
+  { params }: { params: { workspaceSlug: string; }; },
 ) {
   try {
     const resolvedParams = await params;

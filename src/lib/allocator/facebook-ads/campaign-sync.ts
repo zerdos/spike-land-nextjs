@@ -1,4 +1,3 @@
-
 import { decryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
 import type { SocialAccount } from "@prisma/client";

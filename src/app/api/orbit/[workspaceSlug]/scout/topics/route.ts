@@ -1,7 +1,5 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { prisma } from '@/lib/prisma';
-import { tryCatch } from '@/lib/try-catch';
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import {
   createTopic,
   createTopicSchema,
@@ -9,7 +7,9 @@ import {
   listTopicsByWorkspace,
   updateTopic,
   updateTopicSchema,
-} from '@/lib/scout/topic-config';
+} from "@/lib/scout/topic-config";
+import { tryCatch } from "@/lib/try-catch";
+import { type NextRequest, NextResponse } from "next/server";
 
 interface RouteContext {
   params: {
@@ -29,10 +29,10 @@ async function getWorkspaceId(slug: string, userId: string): Promise<string | nu
 export async function GET(req: NextRequest, { params }: RouteContext) {
   return tryCatch(async () => {
     const session = await auth();
-    if (!session?.user?.id) return new Response('Unauthorized', { status: 401 });
+    if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
 
     const workspaceId = await getWorkspaceId(params.workspaceSlug, session.user.id);
-    if (!workspaceId) return new Response('Workspace not found', { status: 404 });
+    if (!workspaceId) return new Response("Workspace not found", { status: 404 });
 
     const topics = await listTopicsByWorkspace(workspaceId);
     return NextResponse.json(topics);
@@ -43,10 +43,10 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
 export async function POST(req: NextRequest, { params }: RouteContext) {
   return tryCatch(async () => {
     const session = await auth();
-    if (!session?.user?.id) return new Response('Unauthorized', { status: 401 });
+    if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
 
     const workspaceId = await getWorkspaceId(params.workspaceSlug, session.user.id);
-    if (!workspaceId) return new Response('Workspace not found', { status: 404 });
+    if (!workspaceId) return new Response("Workspace not found", { status: 404 });
 
     const body = await req.json();
     const data = createTopicSchema.parse(body);

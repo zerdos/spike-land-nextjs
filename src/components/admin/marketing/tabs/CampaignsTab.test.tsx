@@ -10,11 +10,11 @@ const mockResponse = {
     visitors: 1000,
     signups: 50,
     conversionRate: 5.0,
-    revenue: 500
+    revenue: 500,
   })),
   total: 2,
   page: 1,
-  pageSize: 10
+  pageSize: 10,
 };
 
 describe("CampaignsTab", () => {
@@ -88,11 +88,11 @@ describe("CampaignsTab", () => {
         visitors: 100,
         signups: 10,
         conversionRate: 10,
-        revenue: 100
+        revenue: 100,
       })),
       total: 50,
       pageSize: 10,
-      page: 1
+      page: 1,
     };
 
     global.fetch = vi.fn(createFetchMock({

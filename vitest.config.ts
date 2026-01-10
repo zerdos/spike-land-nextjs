@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     name: "root",
     environment: "jsdom",
-    projects: ['./src/app/api/vite.config.ts'],
+    projects: ["./src/app/api/vite.config.ts"],
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}", "apps/**/*.{test,spec}.{ts,tsx}"],

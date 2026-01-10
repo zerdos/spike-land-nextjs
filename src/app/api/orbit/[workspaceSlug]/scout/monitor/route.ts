@@ -1,7 +1,7 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { prisma } from '@/lib/prisma';
-import { tryCatch } from '@/lib/try-catch';
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
+import { type NextRequest, NextResponse } from "next/server";
 
 interface RouteContext {
   params: {
@@ -13,7 +13,7 @@ interface RouteContext {
 export async function GET(req: NextRequest, { params }: RouteContext) {
   return tryCatch(async () => {
     const session = await auth();
-    if (!session?.user?.id) return new Response('Unauthorized', { status: 401 });
+    if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
 
     const workspace = await prisma.workspace.findFirst({
       where: {
@@ -23,13 +23,13 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
       select: { id: true },
     });
 
-    if (!workspace) return new Response('Workspace not found', { status: 404 });
+    if (!workspace) return new Response("Workspace not found", { status: 404 });
 
     const { searchParams } = new URL(req.url);
-    const topicId = searchParams.get('topicId');
-    const platform = searchParams.get('platform');
-    const page = parseInt(searchParams.get('page') ?? '1', 10);
-    const limit = parseInt(searchParams.get('limit') ?? '20', 10);
+    const topicId = searchParams.get("topicId");
+    const platform = searchParams.get("platform");
+    const page = parseInt(searchParams.get("page") ?? "1", 10);
+    const limit = parseInt(searchParams.get("limit") ?? "20", 10);
     const offset = (page - 1) * limit;
 
     const where: any = {
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
 
     const results = await prisma.scoutResult.findMany({
       where,
-      orderBy: { foundAt: 'desc' },
+      orderBy: { foundAt: "desc" },
       take: limit,
       skip: offset,
       include: {
