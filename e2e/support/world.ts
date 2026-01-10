@@ -95,6 +95,10 @@ export class CustomWorld extends World {
     });
     this.page = await this.context.newPage();
 
+    // Set custom timeouts for actions and navigation
+    this.page.setDefaultTimeout(15000); // Action timeout
+    this.page.setDefaultNavigationTimeout(30000); // Navigation timeout
+
     // Start coverage collection if enabled
     await startCoverage(this.page);
   }
@@ -121,6 +125,10 @@ export class CustomWorld extends World {
       extraHTTPHeaders: this.getExtraHTTPHeaders(),
     });
     this.page = await this.context.newPage();
+
+    // Set custom timeouts for actions and navigation
+    this.page.setDefaultTimeout(15000); // Action timeout
+    this.page.setDefaultNavigationTimeout(30000); // Navigation timeout
 
     // Start coverage collection on new page
     await startCoverage(this.page);

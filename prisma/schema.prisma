@@ -8,79 +8,79 @@ datasource db {
 }
 
 model User {
-  id                   String                @id @default(cuid())
-  name                 String?
-  email                String?               @unique
-  emailVerified        DateTime?
-  image                String?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  stripeCustomerId     String?               @unique
-  role                 UserRole              @default(USER)
-  referralCode         String?               @unique
-  referredById         String?
-  referralCount        Int                   @default(0)
-  passwordHash         String?
-  accounts             Account[]
-  albums               Album[]
-  apps                 App[]
-  auditLogs            AuditLog[]
-  enhancedImages       EnhancedImage[]
-  enhancementJobs      ImageEnhancementJob[]
-  refereeReferrals     Referral[]            @relation("RefereeReferrals")
-  referrerReferrals    Referral[]            @relation("ReferrerReferrals")
-  sessions             Session[]
-  stripePayments       StripePayment[]
-  subscription         Subscription?
-  tokenTransactions    TokenTransaction[]
-  tokenBalance         UserTokenBalance?
-  referredBy           User?                 @relation("Referrals", fields: [referredById], references: [id])
-  referrals            User[]                @relation("Referrals")
-  voucherRedemptions   VoucherRedemption[]
-  feedback             Feedback[]
-  createdGalleryItems  FeaturedGalleryItem[] @relation("GalleryItemCreator")
-  emailLogs            EmailLog[]
-  trackedUrls          TrackedUrl[]
-  apiKeys              ApiKey[]
-  mcpGenerationJobs    McpGenerationJob[]
-  boxes                Box[]
-  pipelines            EnhancementPipeline[]
-  audioMixerProjects   AudioMixerProject[]
-  marketingAccounts    MarketingAccount[]
+  id                       String                 @id @default(cuid())
+  name                     String?
+  email                    String?                @unique
+  emailVerified            DateTime?
+  image                    String?
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+  stripeCustomerId         String?                @unique
+  role                     UserRole               @default(USER)
+  referralCode             String?                @unique
+  referredById             String?
+  referralCount            Int                    @default(0)
+  passwordHash             String?
+  accounts                 Account[]
+  albums                   Album[]
+  apps                     App[]
+  auditLogs                AuditLog[]
+  enhancedImages           EnhancedImage[]
+  enhancementJobs          ImageEnhancementJob[]
+  refereeReferrals         Referral[]             @relation("RefereeReferrals")
+  referrerReferrals        Referral[]             @relation("ReferrerReferrals")
+  sessions                 Session[]
+  stripePayments           StripePayment[]
+  subscription             Subscription?
+  tokenTransactions        TokenTransaction[]
+  tokenBalance             UserTokenBalance?
+  referredBy               User?                  @relation("Referrals", fields: [referredById], references: [id])
+  referrals                User[]                 @relation("Referrals")
+  voucherRedemptions       VoucherRedemption[]
+  feedback                 Feedback[]
+  createdGalleryItems      FeaturedGalleryItem[]  @relation("GalleryItemCreator")
+  emailLogs                EmailLog[]
+  trackedUrls              TrackedUrl[]
+  apiKeys                  ApiKey[]
+  mcpGenerationJobs        McpGenerationJob[]
+  boxes                    Box[]
+  pipelines                EnhancementPipeline[]
+  audioMixerProjects       AudioMixerProject[]
+  marketingAccounts        MarketingAccount[]
   // Campaign Analytics relations
-  visitorSessions      VisitorSession[]
-  campaignAttributions CampaignAttribution[]
+  visitorSessions          VisitorSession[]
+  campaignAttributions     CampaignAttribution[]
   // Merch relations
-  merchCart            MerchCart?
-  merchOrders          MerchOrder[]
+  merchCart                MerchCart?
+  merchOrders              MerchOrder[]
   // Social media tracking relations
-  socialAccounts       SocialAccount[]
-  socialPosts          SocialPost[]
+  socialAccounts           SocialAccount[]
+  socialPosts              SocialPost[]
   // Workspace relations
-  workspaceMembers     WorkspaceMember[]
-  workspaceInvitations WorkspaceMember[]     @relation("WorkspaceInvitations")
+  workspaceMembers         WorkspaceMember[]
+  workspaceInvitations     WorkspaceMember[]      @relation("WorkspaceInvitations")
   // Brand Brain relations
-  createdBrandProfiles BrandProfile[]        @relation("BrandProfileCreator")
-  updatedBrandProfiles BrandProfile[]        @relation("BrandProfileUpdater")
-  contentRewrites      ContentRewrite[]
+  createdBrandProfiles     BrandProfile[]         @relation("BrandProfileCreator")
+  updatedBrandProfiles     BrandProfile[]         @relation("BrandProfileUpdater")
+  contentRewrites          ContentRewrite[]
   // Calendar scheduled posts
-  scheduledPosts       ScheduledPost[]
+  scheduledPosts           ScheduledPost[]
   // Relay draft reviews
-  reviewedDrafts       RelayDraft[]
+  reviewedDrafts           RelayDraft[]
   // Relay draft edit history
-  draftEdits           DraftEditHistory[]
+  draftEdits               DraftEditHistory[]
   // Relay draft audit logs
-  draftAuditLogs       DraftAuditLog[]
+  draftAuditLogs           DraftAuditLog[]
   // Comprehensive audit logs
-  workspaceAuditLogs   WorkspaceAuditLog[] @relation("WorkspaceAuditLogs")
-  aiDecisionLogs       AIDecisionLog[]     @relation("AIDecisionLogs")
+  workspaceAuditLogs       WorkspaceAuditLog[]    @relation("WorkspaceAuditLogs")
+  aiDecisionLogs           AIDecisionLog[]        @relation("AIDecisionLogs")
   // Crisis detection relations
-  acknowledgedCrises   CrisisDetectionEvent[] @relation("CrisisAcknowledger")
-  resolvedCrises       CrisisDetectionEvent[] @relation("CrisisResolver")
+  acknowledgedCrises       CrisisDetectionEvent[] @relation("CrisisAcknowledger")
+  resolvedCrises           CrisisDetectionEvent[] @relation("CrisisResolver")
   // Account health monitoring
-  resolvedHealthEvents AccountHealthEvent[]   @relation("HealthEventResolver")
+  resolvedHealthEvents     AccountHealthEvent[]   @relation("HealthEventResolver")
   // Policy Checker relations
-  policyChecks         PolicyCheck[]
+  policyChecks             PolicyCheck[]
   policyViolationOverrides PolicyViolation[]
 
   @@map("users")
@@ -121,8 +121,26 @@ model MarketingAccount {
 
   @@unique([userId, platform, accountId])
   @@index([userId])
+  googleAdsCampaigns GoogleAdsCampaign[]
+
   @@index([platform])
   @@map("marketing_accounts")
+}
+
+model GoogleAdsCampaign {
+  id                 String   @id @default(cuid())
+  marketingAccountId String
+  campaignId         String   @unique // Google Ads Campaign ID
+  name               String
+  status             String // e.g., "ENABLED", "PAUSED", "REMOVED"
+  spend              Int      @default(0) // in cents
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  marketingAccount MarketingAccount @relation(fields: [marketingAccountId], references: [id], onDelete: Cascade)
+
+  @@index([marketingAccountId])
+  @@map("google_ads_campaigns")
 }
 
 model Session {
@@ -582,13 +600,13 @@ model AuditLog {
   userId       String
   action       AuditAction
   targetId     String?
-  targetType   String?     // e.g., "user", "workspace", "draft", "content"
-  resourceId   String?     // Additional resource identifier
-  resourceType String?     // Type of the resource
+  targetType   String? // e.g., "user", "workspace", "draft", "content"
+  resourceId   String? // Additional resource identifier
+  resourceType String? // Type of the resource
   metadata     Json?
   ipAddress    String?
   userAgent    String?
-  sessionId    String?     // Session tracking for compliance
+  sessionId    String? // Session tracking for compliance
   createdAt    DateTime    @default(now())
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -607,13 +625,13 @@ model WorkspaceAuditLog {
   workspaceId  String
   userId       String
   action       AuditAction
-  targetId     String?     // ID of the affected resource
-  targetType   String?     // Type of target (draft, inbox, settings, etc.)
-  resourceId   String?     // Additional resource identifier
-  resourceType String?     // Type of the resource
-  oldValue     Json?       // Previous state for changes
-  newValue     Json?       // New state for changes
-  metadata     Json?       // Additional context (AI reasoning, etc.)
+  targetId     String? // ID of the affected resource
+  targetType   String? // Type of target (draft, inbox, settings, etc.)
+  resourceId   String? // Additional resource identifier
+  resourceType String? // Type of the resource
+  oldValue     Json? // Previous state for changes
+  newValue     Json? // New state for changes
+  metadata     Json? // Additional context (AI reasoning, etc.)
   ipAddress    String?
   userAgent    String?
   createdAt    DateTime    @default(now())
@@ -631,23 +649,23 @@ model WorkspaceAuditLog {
 
 // AI Decision logging for transparency and debugging
 model AIDecisionLog {
-  id            String    @id @default(cuid())
-  workspaceId   String?
-  userId        String?
-  requestType   String    // e.g., "draft_generation", "content_analysis", "recommendation"
-  inputPrompt   String?   @db.Text
-  inputContext  Json?     // Additional input context
-  outputResult  String?   @db.Text
-  outputMetadata Json?    // Model info, confidence scores, etc.
-  modelId       String?   // Which AI model was used
-  modelVersion  String?
-  tokensUsed    Int?      // For cost tracking
-  latencyMs     Int?      // Response time
-  status        String    // success, error, timeout
-  errorMessage  String?
-  createdAt     DateTime  @default(now())
-  workspace     Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
-  user          User?     @relation("AIDecisionLogs", fields: [userId], references: [id], onDelete: SetNull)
+  id             String     @id @default(cuid())
+  workspaceId    String?
+  userId         String?
+  requestType    String // e.g., "draft_generation", "content_analysis", "recommendation"
+  inputPrompt    String?    @db.Text
+  inputContext   Json? // Additional input context
+  outputResult   String?    @db.Text
+  outputMetadata Json? // Model info, confidence scores, etc.
+  modelId        String? // Which AI model was used
+  modelVersion   String?
+  tokensUsed     Int? // For cost tracking
+  latencyMs      Int? // Response time
+  status         String // success, error, timeout
+  errorMessage   String?
+  createdAt      DateTime   @default(now())
+  workspace      Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  user           User?      @relation("AIDecisionLogs", fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([workspaceId])
   @@index([userId])
@@ -659,18 +677,18 @@ model AIDecisionLog {
 
 // Retention policy configuration for audit logs
 model AuditRetentionPolicy {
-  id                  String    @id @default(cuid())
-  workspaceId         String?   // null for system-wide policy
-  name                String
-  description         String?
-  retentionDays       Int       @default(365) // How long to keep logs
-  archiveAfterDays    Int?      // Move to archive storage after X days
-  deleteAfterDays     Int?      // Hard delete after X days (if different from retention)
-  actionTypes         String[]  // Which action types this applies to, empty = all
-  isActive            Boolean   @default(true)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  workspace           Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id               String     @id @default(cuid())
+  workspaceId      String? // null for system-wide policy
+  name             String
+  description      String?
+  retentionDays    Int        @default(365) // How long to keep logs
+  archiveAfterDays Int? // Move to archive storage after X days
+  deleteAfterDays  Int? // Hard delete after X days (if different from retention)
+  actionTypes      String[] // Which action types this applies to, empty = all
+  isActive         Boolean    @default(true)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  workspace        Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, name])
   @@index([workspaceId])
@@ -680,22 +698,22 @@ model AuditRetentionPolicy {
 
 // Archived audit logs for compliance storage
 model ArchivedAuditLog {
-  id              String    @id @default(cuid())
-  originalId      String    // Original audit log ID
-  workspaceId     String?
-  userId          String
-  action          String    // Stored as string for flexibility after enum changes
-  targetId        String?
-  targetType      String?
-  resourceId      String?
-  resourceType    String?
-  metadata        Json?
-  ipAddress       String?
-  userAgent       String?
+  id                String   @id @default(cuid())
+  originalId        String // Original audit log ID
+  workspaceId       String?
+  userId            String
+  action            String // Stored as string for flexibility after enum changes
+  targetId          String?
+  targetType        String?
+  resourceId        String?
+  resourceType      String?
+  metadata          Json?
+  ipAddress         String?
+  userAgent         String?
   originalCreatedAt DateTime // Original creation timestamp
-  archivedAt      DateTime  @default(now())
+  archivedAt        DateTime @default(now())
   retentionPolicyId String?
-  archiveReason   String?   // "scheduled", "manual", "compliance"
+  archiveReason     String? // "scheduled", "manual", "compliance"
 
   @@index([workspaceId])
   @@index([userId])
@@ -1781,6 +1799,66 @@ model AgentSessionActivity {
 // Social Media Tracking Models
 // =============================================================================
 
+/// Scout Competitor - Tracks competitor social media accounts for benchmarking.
+/// Stores basic information about competitors that a workspace is monitoring.
+/// Related to ScoutCompetitorPost for historical post data and ScoutBenchmark for performance comparisons.
+model ScoutCompetitor {
+  id          String         @id @default(cuid())
+  workspaceId String
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  platform    SocialPlatform
+  handle      String // Username or handle on the social platform
+  name        String? // Display name of the competitor account
+  isActive    Boolean        @default(true) // Whether to actively sync posts for this competitor
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  posts ScoutCompetitorPost[]
+
+  @@unique([workspaceId, platform, handle])
+  @@index([workspaceId])
+  @@map("scout_competitors")
+}
+
+/// Scout Competitor Post - Historical posts from tracked competitor accounts.
+/// Stores social media posts with engagement metrics for competitor analysis.
+/// Posts are synced periodically and used for engagement benchmarking.
+model ScoutCompetitorPost {
+  id             String          @id @default(cuid())
+  competitorId   String
+  competitor     ScoutCompetitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  platformPostId String // Unique ID from the social platform
+  content        String          @db.Text // Post content/text
+  postedAt       DateTime // When the post was published on the platform
+  likes          Int             @default(0) // Number of likes/favorites
+  comments       Int             @default(0) // Number of comments/replies
+  shares         Int             @default(0) // Number of shares/retweets
+  metadata       Json? // Additional platform-specific data
+  createdAt      DateTime        @default(now())
+
+  @@unique([competitorId, platformPostId])
+  @@index([competitorId])
+  @@index([postedAt])
+  @@map("scout_competitor_posts")
+}
+
+/// Scout Benchmark - Performance comparison reports between workspace and competitors.
+/// Stores aggregated metrics comparing a workspace's social performance against tracked competitors.
+/// Generated periodically (e.g., weekly/monthly) for trend analysis.
+model ScoutBenchmark {
+  id                String    @id @default(cuid())
+  workspaceId       String
+  workspace         Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  period            String // Time period identifier, e.g., "2024-W32" for week 32 or "2024-08" for August
+  ownMetrics        Json // Workspace's own engagement metrics (averageLikes, averageComments, etc.)
+  competitorMetrics Json // Aggregated competitor engagement metrics
+  generatedAt       DateTime  @default(now())
+
+  @@unique([workspaceId, period])
+  @@index([workspaceId])
+  @@map("scout_benchmarks")
+}
+
 model SocialAccount {
   id                    String              @id @default(cuid())
   platform              SocialPlatform
@@ -1947,13 +2025,13 @@ enum SocialPlatform {
 }
 
 enum SocialAccountStatus {
-  ACTIVE        // Working normally
-  EXPIRED       // Token expired, needs refresh
-  ERROR         // Last operation failed
-  RATE_LIMITED  // Currently rate limited by platform
-  RESTRICTED    // Platform restrictions applied
-  SUSPENDED     // Account suspended by platform
-  DISCONNECTED  // Manually disconnected by user
+  ACTIVE // Working normally
+  EXPIRED // Token expired, needs refresh
+  ERROR // Last operation failed
+  RATE_LIMITED // Currently rate limited by platform
+  RESTRICTED // Platform restrictions applied
+  SUSPENDED // Account suspended by platform
+  DISCONNECTED // Manually disconnected by user
 }
 
 enum SocialPostStatus {
@@ -2022,26 +2100,30 @@ model Workspace {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
-  members               WorkspaceMember[]
-  brandProfile          BrandProfile?
-  contentRewrites       ContentRewrite[]
-  socialAccounts        SocialAccount[]
-  scheduledPosts        ScheduledPost[]
-  inboxItems            InboxItem[]
+  members                WorkspaceMember[]
+  brandProfile           BrandProfile?
+  contentRewrites        ContentRewrite[]
+  socialAccounts         SocialAccount[]
+  scheduledPosts         ScheduledPost[]
+  inboxItems             InboxItem[]
   // Comprehensive audit logs
-  workspaceAuditLogs    WorkspaceAuditLog[]
-  aiDecisionLogs        AIDecisionLog[]
+  workspaceAuditLogs     WorkspaceAuditLog[]
+  aiDecisionLogs         AIDecisionLog[]
   auditRetentionPolicies AuditRetentionPolicy[]
   // Crisis detection relations
-  crisisEvents          CrisisDetectionEvent[]
-  crisisTemplates       CrisisResponseTemplate[]
-  crisisAlertRules      CrisisAlertRule[]
+  crisisEvents           CrisisDetectionEvent[]
+  crisisTemplates        CrisisResponseTemplate[]
+  crisisAlertRules       CrisisAlertRule[]
   // Account health monitoring
-  accountHealthEvents   AccountHealthEvent[]
+  accountHealthEvents    AccountHealthEvent[]
   // Policy Checker relations
-  policyRules           PolicyRule[]
-  policyChecks          PolicyCheck[]
-  policyViolations      PolicyViolation[]
+  policyRules            PolicyRule[]
+  policyChecks           PolicyCheck[]
+  policyViolations       PolicyViolation[]
+
+  // Scout Competitor Tracking
+  scoutCompetitors ScoutCompetitor[]
+  scoutBenchmarks  ScoutBenchmark[]
   // Scout content suggestions
   contentSuggestions    ContentSuggestion[]
 
@@ -2450,33 +2532,33 @@ enum DraftAuditAction {
 // =============================================================================
 
 model CrisisDetectionEvent {
-  id          String             @id @default(cuid())
+  id          String    @id @default(cuid())
   workspaceId String
-  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  severity    CrisisSeverity
-  status      CrisisEventStatus  @default(DETECTED)
+  severity CrisisSeverity
+  status   CrisisEventStatus @default(DETECTED)
 
-  triggerType String             // SENTIMENT_SPIKE, ENGAGEMENT_DROP, VIRAL_COMPLAINT, MANUAL
-  triggerData Json               // Detection context and metrics
+  triggerType String // SENTIMENT_SPIKE, ENGAGEMENT_DROP, VIRAL_COMPLAINT, MANUAL
+  triggerData Json // Detection context and metrics
 
-  affectedAccountIds String[]    // Social account IDs affected by this crisis
+  affectedAccountIds String[] // Social account IDs affected by this crisis
 
   // Response tracking
   acknowledgedAt   DateTime?
   acknowledgedById String?
-  acknowledgedBy   User?         @relation("CrisisAcknowledger", fields: [acknowledgedById], references: [id], onDelete: SetNull)
+  acknowledgedBy   User?     @relation("CrisisAcknowledger", fields: [acknowledgedById], references: [id], onDelete: SetNull)
 
-  resolvedAt       DateTime?
-  resolvedById     String?
-  resolvedBy       User?         @relation("CrisisResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedAt   DateTime?
+  resolvedById String?
+  resolvedBy   User?     @relation("CrisisResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
 
-  responseNotes    String?       @db.Text
+  responseNotes String? @db.Text
 
   // Timestamps
-  detectedAt DateTime  @default(now())
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  detectedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([workspaceId])
   @@index([status])
@@ -2487,21 +2569,21 @@ model CrisisDetectionEvent {
 }
 
 model CrisisResponseTemplate {
-  id          String          @id @default(cuid())
-  workspaceId String?         // null = system template available to all
-  workspace   Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id          String     @id @default(cuid())
+  workspaceId String? // null = system template available to all
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  name        String
-  category    String          // APOLOGY, ACKNOWLEDGMENT, REDIRECT, ESCALATION, EMPATHY
-  platform    SocialPlatform? // null = all platforms
-  content     String          @db.Text
-  variables   String[]        // Placeholder variables like {customer_name}, {issue}
+  name      String
+  category  String // APOLOGY, ACKNOWLEDGMENT, REDIRECT, ESCALATION, EMPATHY
+  platform  SocialPlatform? // null = all platforms
+  content   String          @db.Text
+  variables String[] // Placeholder variables like {customer_name}, {issue}
 
-  isActive    Boolean         @default(true)
-  usageCount  Int             @default(0)
+  isActive   Boolean @default(true)
+  usageCount Int     @default(0)
 
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([workspaceId])
   @@index([category])
@@ -2510,23 +2592,23 @@ model CrisisResponseTemplate {
 }
 
 model CrisisAlertRule {
-  id          String          @id @default(cuid())
+  id          String    @id @default(cuid())
   workspaceId String
-  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   name        String
   description String?
   ruleType    CrisisRuleType
-  conditions  Json            // Rule configuration (thresholds, metrics, patterns)
+  conditions  Json // Rule configuration (thresholds, metrics, patterns)
   severity    CrisisSeverity
 
   notifyChannels       String[] // email, slack, in_app, push
-  escalateAfterMinutes Int?     // Auto-escalate if not acknowledged within this time
+  escalateAfterMinutes Int? // Auto-escalate if not acknowledged within this time
 
-  isActive    Boolean         @default(true)
+  isActive Boolean @default(true)
 
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([workspaceId])
   @@index([isActive])
@@ -2535,26 +2617,26 @@ model CrisisAlertRule {
 }
 
 enum CrisisSeverity {
-  LOW      // Minor issue, monitor only
-  MEDIUM   // Moderate concern, review needed
-  HIGH     // Significant issue, action required
+  LOW // Minor issue, monitor only
+  MEDIUM // Moderate concern, review needed
+  HIGH // Significant issue, action required
   CRITICAL // Major crisis, immediate response needed
 }
 
 enum CrisisEventStatus {
-  DETECTED    // Crisis detected by system
+  DETECTED // Crisis detected by system
   ACKNOWLEDGED // Team has seen and is reviewing
-  RESOLVED    // Crisis has been handled
+  RESOLVED // Crisis has been handled
   FALSE_ALARM // Not a real crisis
 }
 
 enum CrisisRuleType {
-  SENTIMENT_THRESHOLD  // Negative sentiment exceeds threshold
-  ENGAGEMENT_DROP      // Engagement rate drops significantly
-  MENTION_SPIKE        // Unusual spike in mentions/comments
-  FOLLOWER_DROP        // Significant follower loss
-  VIRAL_COMPLAINT      // Single post getting unusual negative engagement
-  MANUAL               // Manually triggered crisis
+  SENTIMENT_THRESHOLD // Negative sentiment exceeds threshold
+  ENGAGEMENT_DROP // Engagement rate drops significantly
+  MENTION_SPIKE // Unusual spike in mentions/comments
+  FOLLOWER_DROP // Significant follower loss
+  VIRAL_COMPLAINT // Single post getting unusual negative engagement
+  MANUAL // Manually triggered crisis
 }
 
 // =============================================================================
@@ -2565,34 +2647,34 @@ enum CrisisRuleType {
 /// Tracks the health status of each connected social account
 /// Provides real-time monitoring of sync status, rate limits, and token health
 model SocialAccountHealth {
-  id                    String              @id @default(cuid())
-  accountId             String              @unique
-  account               SocialAccount       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  id        String        @id @default(cuid())
+  accountId String        @unique
+  account   SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   // Health metrics
-  healthScore           Int                 @default(100) // 0-100 score
-  status                AccountHealthStatus @default(HEALTHY)
+  healthScore Int                 @default(100) // 0-100 score
+  status      AccountHealthStatus @default(HEALTHY)
 
   // Sync tracking
-  lastSuccessfulSync    DateTime?
-  lastSyncAttempt       DateTime?
-  lastError             String?
-  lastErrorAt           DateTime?
-  consecutiveErrors     Int                 @default(0)
-  totalErrorsLast24h    Int                 @default(0)
+  lastSuccessfulSync DateTime?
+  lastSyncAttempt    DateTime?
+  lastError          String?
+  lastErrorAt        DateTime?
+  consecutiveErrors  Int       @default(0)
+  totalErrorsLast24h Int       @default(0)
 
   // Rate limit tracking
-  rateLimitRemaining    Int?
-  rateLimitTotal        Int?
-  rateLimitResetAt      DateTime?
-  isRateLimited         Boolean             @default(false)
+  rateLimitRemaining Int?
+  rateLimitTotal     Int?
+  rateLimitResetAt   DateTime?
+  isRateLimited      Boolean   @default(false)
 
   // Token health
-  tokenExpiresAt        DateTime?
-  tokenRefreshRequired  Boolean             @default(false)
+  tokenExpiresAt       DateTime?
+  tokenRefreshRequired Boolean   @default(false)
 
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([accountId])
   @@index([status])
@@ -2603,19 +2685,19 @@ model SocialAccountHealth {
 /// Recovery guidance templates for common account issues
 /// Provides step-by-step instructions for resolving problems
 model RecoveryGuidance {
-  id                String              @id @default(cuid())
-  platform          SocialPlatform?     // null = all platforms
-  issueType         AccountIssueType
-  severity          IssueSeverity
-  title             String
-  description       String              @db.Text
-  steps             Json                // Array of { order, title, description, actionUrl?, isAutomated? }
-  estimatedTime     String?             // e.g., "5-10 minutes"
-  requiresAction    Boolean             @default(true)
-  autoRecoverable   Boolean             @default(false)
+  id              String           @id @default(cuid())
+  platform        SocialPlatform? // null = all platforms
+  issueType       AccountIssueType
+  severity        IssueSeverity
+  title           String
+  description     String           @db.Text
+  steps           Json // Array of { order, title, description, actionUrl?, isAutomated? }
+  estimatedTime   String? // e.g., "5-10 minutes"
+  requiresAction  Boolean          @default(true)
+  autoRecoverable Boolean          @default(false)
 
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([platform, issueType])
   @@index([issueType])
@@ -2625,27 +2707,27 @@ model RecoveryGuidance {
 
 /// Account health events log for tracking status changes and issues
 model AccountHealthEvent {
-  id                String                  @id @default(cuid())
-  accountId         String
-  account           SocialAccount           @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  workspaceId       String
-  workspace         Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id          String        @id @default(cuid())
+  accountId   String
+  account     SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  eventType         AccountHealthEventType
-  severity          IssueSeverity
-  previousStatus    AccountHealthStatus?
-  newStatus         AccountHealthStatus
-  previousScore     Int?
-  newScore          Int
-  message           String
-  details           Json?                   // Additional context
+  eventType      AccountHealthEventType
+  severity       IssueSeverity
+  previousStatus AccountHealthStatus?
+  newStatus      AccountHealthStatus
+  previousScore  Int?
+  newScore       Int
+  message        String
+  details        Json? // Additional context
 
-  resolvedAt        DateTime?
-  resolvedById      String?
-  resolvedBy        User?                   @relation("HealthEventResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
-  resolutionNotes   String?
+  resolvedAt      DateTime?
+  resolvedById    String?
+  resolvedBy      User?     @relation("HealthEventResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolutionNotes String?
 
-  createdAt         DateTime                @default(now())
+  createdAt DateTime @default(now())
 
   @@index([accountId, createdAt])
   @@index([workspaceId, createdAt])
@@ -2655,44 +2737,44 @@ model AccountHealthEvent {
 }
 
 enum AccountHealthStatus {
-  HEALTHY           // Score 80-100, all systems operational
-  DEGRADED          // Score 50-79, minor issues detected
-  UNHEALTHY         // Score 20-49, significant problems
-  CRITICAL          // Score 0-19, immediate attention required
+  HEALTHY // Score 80-100, all systems operational
+  DEGRADED // Score 50-79, minor issues detected
+  UNHEALTHY // Score 20-49, significant problems
+  CRITICAL // Score 0-19, immediate attention required
 }
 
 enum AccountIssueType {
-  TOKEN_EXPIRED       // OAuth token has expired
+  TOKEN_EXPIRED // OAuth token has expired
   TOKEN_EXPIRING_SOON // Token will expire within 24h
-  RATE_LIMITED        // Hit platform rate limits
-  API_ERROR           // API call failed
-  PERMISSION_DENIED   // Missing required permissions
-  ACCOUNT_RESTRICTED  // Platform restrictions on account
-  ACCOUNT_SUSPENDED   // Account suspended by platform
-  SYNC_FAILED         // Metrics sync failed
-  CONNECTION_LOST     // Cannot connect to platform
-  QUOTA_EXCEEDED      // API quota exhausted
+  RATE_LIMITED // Hit platform rate limits
+  API_ERROR // API call failed
+  PERMISSION_DENIED // Missing required permissions
+  ACCOUNT_RESTRICTED // Platform restrictions on account
+  ACCOUNT_SUSPENDED // Account suspended by platform
+  SYNC_FAILED // Metrics sync failed
+  CONNECTION_LOST // Cannot connect to platform
+  QUOTA_EXCEEDED // API quota exhausted
 }
 
 enum AccountHealthEventType {
-  STATUS_CHANGED      // Health status changed
-  SCORE_DECREASED     // Health score dropped
-  SCORE_RECOVERED     // Health score improved
-  RATE_LIMIT_HIT      // Rate limit triggered
-  RATE_LIMIT_CLEARED  // Rate limit reset
-  ERROR_OCCURRED      // API error detected
-  ERROR_RESOLVED      // Error condition cleared
-  TOKEN_REFRESHED     // Token successfully refreshed
-  TOKEN_EXPIRED       // Token expiration detected
-  ACCOUNT_RECOVERED   // Full recovery from issues
+  STATUS_CHANGED // Health status changed
+  SCORE_DECREASED // Health score dropped
+  SCORE_RECOVERED // Health score improved
+  RATE_LIMIT_HIT // Rate limit triggered
+  RATE_LIMIT_CLEARED // Rate limit reset
+  ERROR_OCCURRED // API error detected
+  ERROR_RESOLVED // Error condition cleared
+  TOKEN_REFRESHED // Token successfully refreshed
+  TOKEN_EXPIRED // Token expiration detected
+  ACCOUNT_RECOVERED // Full recovery from issues
   MANUAL_INTERVENTION // User took manual action
 }
 
 enum IssueSeverity {
-  INFO              // Informational only
-  WARNING           // Minor issue, monitor
-  ERROR             // Problem requiring attention
-  CRITICAL          // Urgent issue requiring immediate action
+  INFO // Informational only
+  WARNING // Minor issue, monitor
+  ERROR // Problem requiring attention
+  CRITICAL // Urgent issue requiring immediate action
 }
 
 // Policy Checker System Models
@@ -2702,33 +2784,33 @@ enum IssueSeverity {
 /// Policy rules for content validation across platforms
 /// Stores platform-specific and global policy configurations
 model PolicyRule {
-  id              String          @id @default(cuid())
-  workspaceId     String?         // null = global/system rule
-  workspace       Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id          String     @id @default(cuid())
+  workspaceId String? // null = global/system rule
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   // Rule identification
-  name            String
-  description     String          @db.Text
-  platform        SocialPlatform? // null = applies to all platforms
-  category        PolicyCategory
-  ruleType        PolicyRuleType
+  name        String
+  description String          @db.Text
+  platform    SocialPlatform? // null = applies to all platforms
+  category    PolicyCategory
+  ruleType    PolicyRuleType
 
   // Rule configuration
-  conditions      Json            // Rule conditions and patterns
-  severity        PolicySeverity  @default(WARNING)
-  isBlocking      Boolean         @default(false) // If true, prevents publishing
-  isActive        Boolean         @default(true)
+  conditions Json // Rule conditions and patterns
+  severity   PolicySeverity @default(WARNING)
+  isBlocking Boolean        @default(false) // If true, prevents publishing
+  isActive   Boolean        @default(true)
 
   // Metadata
-  sourceUrl       String?         // Link to official policy documentation
-  lastVerifiedAt  DateTime?       // When this rule was last verified against platform docs
-  version         Int             @default(1)
+  sourceUrl      String? // Link to official policy documentation
+  lastVerifiedAt DateTime? // When this rule was last verified against platform docs
+  version        Int       @default(1)
 
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  violations      PolicyViolation[]
+  violations PolicyViolation[]
 
   @@unique([workspaceId, platform, name])
   @@index([workspaceId])
@@ -2741,41 +2823,41 @@ model PolicyRule {
 /// Records of policy check executions
 /// Tracks what content was checked and the overall result
 model PolicyCheck {
-  id              String          @id @default(cuid())
-  workspaceId     String
-  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   // Content being checked
   contentType     PolicyContentType
-  contentId       String?         // Reference to ScheduledPost, InboxItem, etc.
-  contentText     String          @db.Text
-  contentMetadata Json?           // Additional content info (images, links, etc.)
+  contentId       String? // Reference to ScheduledPost, InboxItem, etc.
+  contentText     String            @db.Text
+  contentMetadata Json? // Additional content info (images, links, etc.)
 
   // Check configuration
-  platform        SocialPlatform? // Target platform for this check
-  checkScope      PolicyCheckScope @default(FULL)
+  platform   SocialPlatform? // Target platform for this check
+  checkScope PolicyCheckScope @default(FULL)
 
   // Results
-  status          PolicyCheckStatus @default(PENDING)
-  passedRules     Int             @default(0)
-  failedRules     Int             @default(0)
-  warningRules    Int             @default(0)
-  overallResult   PolicyCheckResult?
-  summary         String?         @db.Text
+  status        PolicyCheckStatus  @default(PENDING)
+  passedRules   Int                @default(0)
+  failedRules   Int                @default(0)
+  warningRules  Int                @default(0)
+  overallResult PolicyCheckResult?
+  summary       String?            @db.Text
 
   // Timing
-  startedAt       DateTime        @default(now())
-  completedAt     DateTime?
-  durationMs      Int?
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  durationMs  Int?
 
   // Actor
-  checkedById     String?
-  checkedBy       User?           @relation(fields: [checkedById], references: [id], onDelete: SetNull)
+  checkedById String?
+  checkedBy   User?   @relation(fields: [checkedById], references: [id], onDelete: SetNull)
 
-  createdAt       DateTime        @default(now())
+  createdAt DateTime @default(now())
 
   // Relations
-  violations      PolicyViolation[]
+  violations PolicyViolation[]
 
   @@index([workspaceId, createdAt])
   @@index([contentType, contentId])
@@ -2787,30 +2869,30 @@ model PolicyCheck {
 /// Individual policy violations detected during checks
 /// Links violations to specific rules and provides remediation guidance
 model PolicyViolation {
-  id              String          @id @default(cuid())
-  checkId         String
-  check           PolicyCheck     @relation(fields: [checkId], references: [id], onDelete: Cascade)
-  ruleId          String
-  rule            PolicyRule      @relation(fields: [ruleId], references: [id], onDelete: Cascade)
-  workspaceId     String
-  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id          String      @id @default(cuid())
+  checkId     String
+  check       PolicyCheck @relation(fields: [checkId], references: [id], onDelete: Cascade)
+  ruleId      String
+  rule        PolicyRule  @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   // Violation details
-  severity        PolicySeverity
-  message         String          @db.Text
-  matchedContent  String?         @db.Text // The specific content that triggered the violation
-  matchLocation   Json?           // Where in the content the violation was found
-  confidence      Float?          // 0-1 confidence score for NLP-detected violations
+  severity       PolicySeverity
+  message        String         @db.Text
+  matchedContent String?        @db.Text // The specific content that triggered the violation
+  matchLocation  Json? // Where in the content the violation was found
+  confidence     Float? // 0-1 confidence score for NLP-detected violations
 
   // Remediation
-  suggestedFix    String?         @db.Text
-  isOverridden    Boolean         @default(false)
-  overriddenById  String?
-  overriddenBy    User?           @relation(fields: [overriddenById], references: [id], onDelete: SetNull)
-  overrideReason  String?
-  overriddenAt    DateTime?
+  suggestedFix   String?   @db.Text
+  isOverridden   Boolean   @default(false)
+  overriddenById String?
+  overriddenBy   User?     @relation(fields: [overriddenById], references: [id], onDelete: SetNull)
+  overrideReason String?
+  overriddenAt   DateTime?
 
-  createdAt       DateTime        @default(now())
+  createdAt DateTime @default(now())
 
   @@index([checkId])
   @@index([ruleId])
@@ -2820,62 +2902,62 @@ model PolicyViolation {
 }
 
 enum PolicyCategory {
-  CONTENT_GUIDELINES    // General content policies
-  AD_COMPLIANCE         // Advertising-specific rules
-  CHARACTER_LIMITS      // Platform character restrictions
-  PROHIBITED_CONTENT    // Banned content types
-  CLAIMS_RESTRICTIONS   // Health, financial, legal claims
-  BRAND_SAFETY          // Brand protection rules
-  ACCESSIBILITY         // Accessibility requirements
-  HASHTAG_RULES         // Hashtag usage policies
-  LINK_POLICIES         // URL and link restrictions
-  MEDIA_REQUIREMENTS    // Image/video specifications
+  CONTENT_GUIDELINES // General content policies
+  AD_COMPLIANCE // Advertising-specific rules
+  CHARACTER_LIMITS // Platform character restrictions
+  PROHIBITED_CONTENT // Banned content types
+  CLAIMS_RESTRICTIONS // Health, financial, legal claims
+  BRAND_SAFETY // Brand protection rules
+  ACCESSIBILITY // Accessibility requirements
+  HASHTAG_RULES // Hashtag usage policies
+  LINK_POLICIES // URL and link restrictions
+  MEDIA_REQUIREMENTS // Image/video specifications
 }
 
 enum PolicyRuleType {
-  KEYWORD_MATCH         // Simple keyword/phrase detection
-  REGEX_PATTERN         // Regular expression matching
-  CHARACTER_COUNT       // Length validation
-  MEDIA_CHECK           // Image/video requirements
-  LINK_VALIDATION       // URL checking
-  NLP_CLASSIFICATION    // ML-based content classification
-  CUSTOM_LOGIC          // Custom validation logic
+  KEYWORD_MATCH // Simple keyword/phrase detection
+  REGEX_PATTERN // Regular expression matching
+  CHARACTER_COUNT // Length validation
+  MEDIA_CHECK // Image/video requirements
+  LINK_VALIDATION // URL checking
+  NLP_CLASSIFICATION // ML-based content classification
+  CUSTOM_LOGIC // Custom validation logic
 }
 
 enum PolicySeverity {
-  INFO                  // Informational only
-  WARNING               // Should review, but can proceed
-  ERROR                 // Must fix before publishing
-  CRITICAL              // Immediate action required, blocks publishing
+  INFO // Informational only
+  WARNING // Should review, but can proceed
+  ERROR // Must fix before publishing
+  CRITICAL // Immediate action required, blocks publishing
 }
 
 enum PolicyContentType {
-  POST                  // Social media post
-  AD                    // Paid advertisement
-  COMMENT               // Reply/comment
-  MESSAGE               // Direct message
-  BIO                   // Profile bio/description
-  STORY                 // Ephemeral content
+  POST // Social media post
+  AD // Paid advertisement
+  COMMENT // Reply/comment
+  MESSAGE // Direct message
+  BIO // Profile bio/description
+  STORY // Ephemeral content
 }
 
 enum PolicyCheckScope {
-  FULL                  // Check all applicable rules
-  QUICK                 // Check critical rules only
-  CUSTOM                // Check specific rule categories
+  FULL // Check all applicable rules
+  QUICK // Check critical rules only
+  CUSTOM // Check specific rule categories
 }
 
 enum PolicyCheckStatus {
-  PENDING               // Check queued
-  IN_PROGRESS           // Currently checking
-  COMPLETED             // Check finished
-  FAILED                // Check failed (system error)
+  PENDING // Check queued
+  IN_PROGRESS // Currently checking
+  COMPLETED // Check finished
+  FAILED // Check failed (system error)
 }
 
 enum PolicyCheckResult {
-  PASSED                // All checks passed
-  PASSED_WITH_WARNINGS  // Passed but has warnings
-  FAILED                // Has errors/critical violations
-  BLOCKED               // Has blocking violations
+  PASSED // All checks passed
+  PASSED_WITH_WARNINGS // Passed but has warnings
+  FAILED // Has errors/critical violations
+  BLOCKED // Has blocking violations
 }
 
 // =============================================================================
