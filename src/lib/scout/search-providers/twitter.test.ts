@@ -1,6 +1,6 @@
-import { topicKeywordsSchema } from "@/lib/scout/topic-config";
+import type { topicKeywordsSchema } from "@/lib/scout/topic-config";
 import { describe, expect, it } from "vitest";
-import { z } from "zod";
+import type { z } from "zod";
 import { buildTwitterQuery } from "./twitter"; // Assuming the function is exported from here
 
 describe("buildTwitterQuery", () => {

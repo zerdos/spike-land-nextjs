@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { runTopicMonitoring } from "@/lib/scout/topic-monitor";
 import { tryCatch } from "@/lib/try-catch";
 import { type NextRequest, NextResponse } from "next/server";

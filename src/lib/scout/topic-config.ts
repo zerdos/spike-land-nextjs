@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
-import { ScoutTopic } from "@prisma/client";
+import prisma from "@/lib/prisma";
+import type { ScoutTopic } from "@prisma/client";
 import { z } from "zod";
 
 export const topicKeywordsSchema = z.object({

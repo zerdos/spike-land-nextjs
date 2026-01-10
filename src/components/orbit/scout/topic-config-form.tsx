@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { createTopicSchema, topicKeywordsSchema } from "@/lib/scout/topic-config";
+import type { createTopicSchema, topicKeywordsSchema } from "@/lib/scout/topic-config";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -20,7 +20,7 @@ import { z } from "zod";
 
 interface TopicConfigFormProps {
   workspaceSlug: string;
-  initialData?: z.infer<typeof createTopicSchema>;
+  initialData?: z.infer<typeof createTopicSchema> & { id?: string; };
   onSave: () => void;
 }
 
@@ -44,9 +44,9 @@ export function TopicConfigForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialData?.name ?? "",
-      andKeywords: (initialData?.keywords as any)?.and?.join(", ") ?? "",
-      orKeywords: (initialData?.keywords as any)?.or?.join(", ") ?? "",
-      notKeywords: (initialData?.keywords as any)?.not?.join(", ") ?? "",
+      andKeywords: initialData?.keywords?.and?.join(", ") ?? "",
+      orKeywords: initialData?.keywords?.or?.join(", ") ?? "",
+      notKeywords: initialData?.keywords?.not?.join(", ") ?? "",
       isActive: initialData?.isActive ?? true,
     },
   });
@@ -65,7 +65,7 @@ export function TopicConfigForm({
     };
 
     const endpoint = initialData
-      ? `/api/orbit/${workspaceSlug}/scout/topics/${(initialData as any).id}`
+      ? `/api/orbit/${workspaceSlug}/scout/topics/${initialData.id}`
       : `/api/orbit/${workspaceSlug}/scout/topics`;
     const method = initialData ? "PUT" : "POST";
 
