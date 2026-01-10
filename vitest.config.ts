@@ -7,6 +7,7 @@ export default defineConfig({
   test: {
     name: "root",
     environment: "jsdom",
+    projects: ['./src/app/api/vite.config.ts'],
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}", "apps/**/*.{test,spec}.{ts,tsx}"],
@@ -93,7 +94,6 @@ export default defineConfig({
         "./vitest.mock-next-view-transitions.tsx",
       ),
       // Fix ESM module resolution for next-auth imports
-      "next/server": path.resolve(__dirname, "./node_modules/next/server.js"),
       "next/link": path.resolve(__dirname, "./node_modules/next/link.js"),
       "next/image": path.resolve(__dirname, "./node_modules/next/image.js"),
     },

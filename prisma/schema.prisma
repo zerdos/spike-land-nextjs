@@ -2127,7 +2127,8 @@ model Workspace {
   // Scout content suggestions
   contentSuggestions    ContentSuggestion[]
 
-  // Allocator models
+  // Scout Topic Monitoring
+  scoutTopics           ScoutTopic[]
   allocatorCampaigns    AllocatorCampaign[]
 
   @@index([slug])
@@ -2902,6 +2903,52 @@ model PolicyViolation {
   @@index([workspaceId, createdAt])
   @@index([severity])
   @@map("policy_violations")
+}
+
+// =============================================================================
+// Scout Topic Monitoring Models
+// Resolves #531
+// =============================================================================
+
+model ScoutTopic {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  name      String
+  // Example: { "and": ["ai", "development"], "or": ["gpt-4"], "not": ["crypto"] }
+  keywords  Json
+  isActive  Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  results ScoutResult[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@map("scout_topics")
+}
+
+model ScoutResult {
+  id         String   @id @default(cuid())
+  topicId    String
+  topic      ScoutTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  platform   SocialPlatform
+  platformId String   // Platform-specific ID for the post/comment
+  content    String   @db.Text
+  author     String   // Author's username/handle
+  authorUrl  String?  // URL to author's profile
+  postUrl    String   // URL to the post/comment
+  engagement Json     // { "likes": 123, "comments": 45, "shares": 67 }
+
+  foundAt    DateTime @default(now())
+
+  @@unique([platform, platformId, topicId])
+  @@index([topicId])
+  @@index([foundAt])
+  @@map("scout_results")
 }
 
 enum PolicyCategory {
