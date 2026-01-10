@@ -77,6 +77,8 @@ model User {
   // Crisis detection relations
   acknowledgedCrises   CrisisDetectionEvent[] @relation("CrisisAcknowledger")
   resolvedCrises       CrisisDetectionEvent[] @relation("CrisisResolver")
+  // Account health monitoring
+  resolvedHealthEvents AccountHealthEvent[]   @relation("HealthEventResolver")
   // Policy Checker relations
   policyChecks         PolicyCheck[]
   policyViolationOverrides PolicyViolation[]
@@ -1806,6 +1808,9 @@ model SocialAccount {
   anomalies             SocialMetricAnomaly[]
   scheduledPostAccounts ScheduledPostAccount[]
   inboxItems            InboxItem[]
+  // Account health monitoring
+  health                SocialAccountHealth?
+  healthEvents          AccountHealthEvent[]
 
   @@unique([workspaceId, platform, accountId])
   @@index([userId])
@@ -1939,9 +1944,13 @@ enum SocialPlatform {
 }
 
 enum SocialAccountStatus {
-  ACTIVE
-  EXPIRED
-  ERROR
+  ACTIVE        // Working normally
+  EXPIRED       // Token expired, needs refresh
+  ERROR         // Last operation failed
+  RATE_LIMITED  // Currently rate limited by platform
+  RESTRICTED    // Platform restrictions applied
+  SUSPENDED     // Account suspended by platform
+  DISCONNECTED  // Manually disconnected by user
 }
 
 enum SocialPostStatus {
@@ -2024,6 +2033,8 @@ model Workspace {
   crisisEvents          CrisisDetectionEvent[]
   crisisTemplates       CrisisResponseTemplate[]
   crisisAlertRules      CrisisAlertRule[]
+  // Account health monitoring
+  accountHealthEvents   AccountHealthEvent[]
   // Policy Checker relations
   policyRules           PolicyRule[]
   policyChecks          PolicyCheck[]
@@ -2533,6 +2544,143 @@ enum CrisisRuleType {
 }
 
 // =============================================================================
+// Account Health Monitoring System Models
+// Resolves #586: Implement Account Health Monitor
+// =============================================================================
+
+/// Tracks the health status of each connected social account
+/// Provides real-time monitoring of sync status, rate limits, and token health
+model SocialAccountHealth {
+  id                    String              @id @default(cuid())
+  accountId             String              @unique
+  account               SocialAccount       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  // Health metrics
+  healthScore           Int                 @default(100) // 0-100 score
+  status                AccountHealthStatus @default(HEALTHY)
+
+  // Sync tracking
+  lastSuccessfulSync    DateTime?
+  lastSyncAttempt       DateTime?
+  lastError             String?
+  lastErrorAt           DateTime?
+  consecutiveErrors     Int                 @default(0)
+  totalErrorsLast24h    Int                 @default(0)
+
+  // Rate limit tracking
+  rateLimitRemaining    Int?
+  rateLimitTotal        Int?
+  rateLimitResetAt      DateTime?
+  isRateLimited         Boolean             @default(false)
+
+  // Token health
+  tokenExpiresAt        DateTime?
+  tokenRefreshRequired  Boolean             @default(false)
+
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([accountId])
+  @@index([status])
+  @@index([healthScore])
+  @@map("social_account_health")
+}
+
+/// Recovery guidance templates for common account issues
+/// Provides step-by-step instructions for resolving problems
+model RecoveryGuidance {
+  id                String              @id @default(cuid())
+  platform          SocialPlatform?     // null = all platforms
+  issueType         AccountIssueType
+  severity          IssueSeverity
+  title             String
+  description       String              @db.Text
+  steps             Json                // Array of { order, title, description, actionUrl?, isAutomated? }
+  estimatedTime     String?             // e.g., "5-10 minutes"
+  requiresAction    Boolean             @default(true)
+  autoRecoverable   Boolean             @default(false)
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@unique([platform, issueType])
+  @@index([issueType])
+  @@index([severity])
+  @@map("recovery_guidance")
+}
+
+/// Account health events log for tracking status changes and issues
+model AccountHealthEvent {
+  id                String                  @id @default(cuid())
+  accountId         String
+  account           SocialAccount           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  workspaceId       String
+  workspace         Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  eventType         AccountHealthEventType
+  severity          IssueSeverity
+  previousStatus    AccountHealthStatus?
+  newStatus         AccountHealthStatus
+  previousScore     Int?
+  newScore          Int
+  message           String
+  details           Json?                   // Additional context
+
+  resolvedAt        DateTime?
+  resolvedById      String?
+  resolvedBy        User?                   @relation("HealthEventResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolutionNotes   String?
+
+  createdAt         DateTime                @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([workspaceId, createdAt])
+  @@index([eventType])
+  @@index([severity])
+  @@map("account_health_events")
+}
+
+enum AccountHealthStatus {
+  HEALTHY           // Score 80-100, all systems operational
+  DEGRADED          // Score 50-79, minor issues detected
+  UNHEALTHY         // Score 20-49, significant problems
+  CRITICAL          // Score 0-19, immediate attention required
+}
+
+enum AccountIssueType {
+  TOKEN_EXPIRED       // OAuth token has expired
+  TOKEN_EXPIRING_SOON // Token will expire within 24h
+  RATE_LIMITED        // Hit platform rate limits
+  API_ERROR           // API call failed
+  PERMISSION_DENIED   // Missing required permissions
+  ACCOUNT_RESTRICTED  // Platform restrictions on account
+  ACCOUNT_SUSPENDED   // Account suspended by platform
+  SYNC_FAILED         // Metrics sync failed
+  CONNECTION_LOST     // Cannot connect to platform
+  QUOTA_EXCEEDED      // API quota exhausted
+}
+
+enum AccountHealthEventType {
+  STATUS_CHANGED      // Health status changed
+  SCORE_DECREASED     // Health score dropped
+  SCORE_RECOVERED     // Health score improved
+  RATE_LIMIT_HIT      // Rate limit triggered
+  RATE_LIMIT_CLEARED  // Rate limit reset
+  ERROR_OCCURRED      // API error detected
+  ERROR_RESOLVED      // Error condition cleared
+  TOKEN_REFRESHED     // Token successfully refreshed
+  TOKEN_EXPIRED       // Token expiration detected
+  ACCOUNT_RECOVERED   // Full recovery from issues
+  MANUAL_INTERVENTION // User took manual action
+}
+
+enum IssueSeverity {
+  INFO              // Informational only
+  WARNING           // Minor issue, monitor
+  ERROR             // Problem requiring attention
+  CRITICAL          // Urgent issue requiring immediate action
+}
+
 // Policy Checker System Models
 // Resolves #584: Build Policy Checker
 // =============================================================================
