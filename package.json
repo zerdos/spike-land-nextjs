@@ -6,7 +6,7 @@
     "dev": "next dev --turbo",
     "dev:silent": "next dev --turbo > /dev/null 2> /dev/null || true",
     "dev:e2e": "E2E_BYPASS_AUTH=true next dev",
-    "build": "yarn silent:install && next build",
+    "build": "yarn silent:install && NODE_OPTIONS='--max-old-space-size=4096' next build",
     "deploy:dev": "NODE_ENV=development yarn build:fe && cd packages/testing.spike.land && yarn w:deploy:dev",
     "build:fe": "cd packages/code && yarn build",
     "start": "next start",
