@@ -192,6 +192,8 @@ export function createFetchMock(
       }
     }
 
+    // console.warn(`Mock fetch 404 for URL: ${url}`); // Debugging help
+
     // Default 404 response
     return Promise.resolve({
       ok: false,
