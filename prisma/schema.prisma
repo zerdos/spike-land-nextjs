@@ -77,6 +77,9 @@ model User {
   // Crisis detection relations
   acknowledgedCrises   CrisisDetectionEvent[] @relation("CrisisAcknowledger")
   resolvedCrises       CrisisDetectionEvent[] @relation("CrisisResolver")
+  // Policy Checker relations
+  policyChecks         PolicyCheck[]
+  policyViolationOverrides PolicyViolation[]
 
   @@map("users")
 }
@@ -2021,6 +2024,10 @@ model Workspace {
   crisisEvents          CrisisDetectionEvent[]
   crisisTemplates       CrisisResponseTemplate[]
   crisisAlertRules      CrisisAlertRule[]
+  // Policy Checker relations
+  policyRules           PolicyRule[]
+  policyChecks          PolicyCheck[]
+  policyViolations      PolicyViolation[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -2523,4 +2530,188 @@ enum CrisisRuleType {
   FOLLOWER_DROP        // Significant follower loss
   VIRAL_COMPLAINT      // Single post getting unusual negative engagement
   MANUAL               // Manually triggered crisis
+}
+
+// =============================================================================
+// Policy Checker System Models
+// Resolves #584: Build Policy Checker
+// =============================================================================
+
+/// Policy rules for content validation across platforms
+/// Stores platform-specific and global policy configurations
+model PolicyRule {
+  id              String          @id @default(cuid())
+  workspaceId     String?         // null = global/system rule
+  workspace       Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Rule identification
+  name            String
+  description     String          @db.Text
+  platform        SocialPlatform? // null = applies to all platforms
+  category        PolicyCategory
+  ruleType        PolicyRuleType
+
+  // Rule configuration
+  conditions      Json            // Rule conditions and patterns
+  severity        PolicySeverity  @default(WARNING)
+  isBlocking      Boolean         @default(false) // If true, prevents publishing
+  isActive        Boolean         @default(true)
+
+  // Metadata
+  sourceUrl       String?         // Link to official policy documentation
+  lastVerifiedAt  DateTime?       // When this rule was last verified against platform docs
+  version         Int             @default(1)
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  violations      PolicyViolation[]
+
+  @@unique([workspaceId, platform, name])
+  @@index([workspaceId])
+  @@index([platform])
+  @@index([category])
+  @@index([isActive])
+  @@map("policy_rules")
+}
+
+/// Records of policy check executions
+/// Tracks what content was checked and the overall result
+model PolicyCheck {
+  id              String          @id @default(cuid())
+  workspaceId     String
+  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Content being checked
+  contentType     PolicyContentType
+  contentId       String?         // Reference to ScheduledPost, InboxItem, etc.
+  contentText     String          @db.Text
+  contentMetadata Json?           // Additional content info (images, links, etc.)
+
+  // Check configuration
+  platform        SocialPlatform? // Target platform for this check
+  checkScope      PolicyCheckScope @default(FULL)
+
+  // Results
+  status          PolicyCheckStatus @default(PENDING)
+  passedRules     Int             @default(0)
+  failedRules     Int             @default(0)
+  warningRules    Int             @default(0)
+  overallResult   PolicyCheckResult?
+  summary         String?         @db.Text
+
+  // Timing
+  startedAt       DateTime        @default(now())
+  completedAt     DateTime?
+  durationMs      Int?
+
+  // Actor
+  checkedById     String?
+  checkedBy       User?           @relation(fields: [checkedById], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime        @default(now())
+
+  // Relations
+  violations      PolicyViolation[]
+
+  @@index([workspaceId, createdAt])
+  @@index([contentType, contentId])
+  @@index([status])
+  @@index([overallResult])
+  @@map("policy_checks")
+}
+
+/// Individual policy violations detected during checks
+/// Links violations to specific rules and provides remediation guidance
+model PolicyViolation {
+  id              String          @id @default(cuid())
+  checkId         String
+  check           PolicyCheck     @relation(fields: [checkId], references: [id], onDelete: Cascade)
+  ruleId          String
+  rule            PolicyRule      @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  workspaceId     String
+  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Violation details
+  severity        PolicySeverity
+  message         String          @db.Text
+  matchedContent  String?         @db.Text // The specific content that triggered the violation
+  matchLocation   Json?           // Where in the content the violation was found
+  confidence      Float?          // 0-1 confidence score for NLP-detected violations
+
+  // Remediation
+  suggestedFix    String?         @db.Text
+  isOverridden    Boolean         @default(false)
+  overriddenById  String?
+  overriddenBy    User?           @relation(fields: [overriddenById], references: [id], onDelete: SetNull)
+  overrideReason  String?
+  overriddenAt    DateTime?
+
+  createdAt       DateTime        @default(now())
+
+  @@index([checkId])
+  @@index([ruleId])
+  @@index([workspaceId, createdAt])
+  @@index([severity])
+  @@map("policy_violations")
+}
+
+enum PolicyCategory {
+  CONTENT_GUIDELINES    // General content policies
+  AD_COMPLIANCE         // Advertising-specific rules
+  CHARACTER_LIMITS      // Platform character restrictions
+  PROHIBITED_CONTENT    // Banned content types
+  CLAIMS_RESTRICTIONS   // Health, financial, legal claims
+  BRAND_SAFETY          // Brand protection rules
+  ACCESSIBILITY         // Accessibility requirements
+  HASHTAG_RULES         // Hashtag usage policies
+  LINK_POLICIES         // URL and link restrictions
+  MEDIA_REQUIREMENTS    // Image/video specifications
+}
+
+enum PolicyRuleType {
+  KEYWORD_MATCH         // Simple keyword/phrase detection
+  REGEX_PATTERN         // Regular expression matching
+  CHARACTER_COUNT       // Length validation
+  MEDIA_CHECK           // Image/video requirements
+  LINK_VALIDATION       // URL checking
+  NLP_CLASSIFICATION    // ML-based content classification
+  CUSTOM_LOGIC          // Custom validation logic
+}
+
+enum PolicySeverity {
+  INFO                  // Informational only
+  WARNING               // Should review, but can proceed
+  ERROR                 // Must fix before publishing
+  CRITICAL              // Immediate action required, blocks publishing
+}
+
+enum PolicyContentType {
+  POST                  // Social media post
+  AD                    // Paid advertisement
+  COMMENT               // Reply/comment
+  MESSAGE               // Direct message
+  BIO                   // Profile bio/description
+  STORY                 // Ephemeral content
+}
+
+enum PolicyCheckScope {
+  FULL                  // Check all applicable rules
+  QUICK                 // Check critical rules only
+  CUSTOM                // Check specific rule categories
+}
+
+enum PolicyCheckStatus {
+  PENDING               // Check queued
+  IN_PROGRESS           // Currently checking
+  COMPLETED             // Check finished
+  FAILED                // Check failed (system error)
+}
+
+enum PolicyCheckResult {
+  PASSED                // All checks passed
+  PASSED_WITH_WARNINGS  // Passed but has warnings
+  FAILED                // Has errors/critical violations
+  BLOCKED               // Has blocking violations
 }
