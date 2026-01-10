@@ -65,6 +65,8 @@ model User {
   contentRewrites      ContentRewrite[]
   // Calendar scheduled posts
   scheduledPosts       ScheduledPost[]
+  // Relay draft reviews
+  reviewedDrafts       RelayDraft[]
 
   @@map("users")
 }
@@ -1634,6 +1636,7 @@ model SocialAccount {
   postAccounts          SocialPostAccount[]
   anomalies             SocialMetricAnomaly[]
   scheduledPostAccounts ScheduledPostAccount[]
+  inboxItems            InboxItem[]
 
   @@unique([workspaceId, platform, accountId])
   @@index([userId])
@@ -1843,6 +1846,7 @@ model Workspace {
   contentRewrites ContentRewrite[]
   socialAccounts  SocialAccount[]
   scheduledPosts  ScheduledPost[]
+  inboxItems      InboxItem[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -2056,4 +2060,106 @@ model ScheduledPostAccount {
   @@index([accountId])
   @@index([status])
   @@map("scheduled_post_accounts")
+}
+
+// ============================================
+// Relay (Inbox) Models - Issue #555
+// ============================================
+
+enum InboxItemType {
+  MENTION // Someone mentioned the brand
+  COMMENT // Comment on a post
+  DIRECT_MESSAGE // Direct/private message
+  REPLY // Reply to a post or comment
+  REVIEW // Product/service review
+}
+
+enum InboxItemStatus {
+  UNREAD // Not yet viewed
+  READ // Viewed but not acted on
+  PENDING_REPLY // Has a draft ready for review
+  REPLIED // Response has been sent
+  ARCHIVED // Archived for later
+  IGNORED // Marked to ignore
+}
+
+/// Represents incoming social interactions that need attention
+model InboxItem {
+  id               String          @id @default(cuid())
+  type             InboxItemType
+  status           InboxItemStatus @default(UNREAD)
+  platform         SocialPlatform
+  platformItemId   String // Platform-specific ID for the item
+  content          String          @db.Text // Original message/comment content
+  senderName       String // Name of the person who sent the message
+  senderHandle     String? // @handle or username
+  senderAvatarUrl  String? // Profile picture URL
+  originalPostId   String? // ID of the post this is in response to (if applicable)
+  originalPostContent String? @db.Text // Content of the original post
+  metadata         Json? // Additional platform-specific data
+  receivedAt       DateTime // When the message was received on the platform
+  readAt           DateTime? // When the item was marked as read
+  repliedAt        DateTime? // When a response was sent
+
+  // Workspace ownership
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Social account that received this item
+  accountId String
+  account   SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  drafts RelayDraft[]
+
+  @@unique([workspaceId, platform, platformItemId])
+  @@index([workspaceId])
+  @@index([workspaceId, status])
+  @@index([workspaceId, platform])
+  @@index([accountId])
+  @@index([receivedAt])
+  @@map("inbox_items")
+}
+
+enum RelayDraftStatus {
+  PENDING // Draft awaiting review
+  APPROVED // Approved for sending
+  REJECTED // Rejected by reviewer
+  SENT // Successfully sent
+  FAILED // Failed to send
+}
+
+/// AI-generated response drafts for inbox items
+model RelayDraft {
+  id              String           @id @default(cuid())
+  content         String           @db.Text // Draft response content
+  confidenceScore Float // AI confidence in the draft (0-1)
+  status          RelayDraftStatus @default(PENDING)
+  isPreferred     Boolean          @default(false) // If this is the recommended draft
+  reason          String? // Why this draft was generated
+  metadata        Json? // Platform-specific formatting, hashtags, etc.
+  sentAt          DateTime? // When the draft was actually sent
+  errorMessage    String? // Error if sending failed
+
+  // Parent inbox item
+  inboxItemId String
+  inboxItem   InboxItem @relation(fields: [inboxItemId], references: [id], onDelete: Cascade)
+
+  // User who approved/rejected (if any)
+  reviewedById String?
+  reviewedBy   User?    @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([inboxItemId])
+  @@index([inboxItemId, status])
+  @@index([status])
+  @@map("relay_drafts")
 }
