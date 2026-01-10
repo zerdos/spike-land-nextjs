@@ -2060,6 +2060,9 @@ model WorkspaceMember {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   invitedBy User?     @relation("WorkspaceInvitations", fields: [invitedById], references: [id], onDelete: SetNull)
 
+  // Inbox items assigned to this team member
+  assignedInboxItems InboxItem[]
+
   @@unique([workspaceId, userId])
   @@index([workspaceId])
   @@index([userId])
@@ -2292,6 +2295,7 @@ model InboxItem {
   receivedAt          DateTime // When the message was received on the platform
   readAt              DateTime? // When the item was marked as read
   repliedAt           DateTime? // When a response was sent
+  resolvedAt          DateTime? // When the item was resolved/closed
 
   // Workspace ownership
   workspaceId String
@@ -2300,6 +2304,10 @@ model InboxItem {
   // Social account that received this item
   accountId String
   account   SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  // Team member assignment for routing
+  assignedToId String?
+  assignedTo   WorkspaceMember? @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -2313,6 +2321,7 @@ model InboxItem {
   @@index([workspaceId, status])
   @@index([workspaceId, platform])
   @@index([accountId])
+  @@index([assignedToId])
   @@index([receivedAt])
   @@map("inbox_items")
 }
