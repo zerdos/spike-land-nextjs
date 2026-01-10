@@ -121,8 +121,26 @@ model MarketingAccount {
 
   @@unique([userId, platform, accountId])
   @@index([userId])
+  googleAdsCampaigns GoogleAdsCampaign[]
+
   @@index([platform])
   @@map("marketing_accounts")
+}
+
+model GoogleAdsCampaign {
+  id                 String   @id @default(cuid())
+  marketingAccountId String
+  campaignId         String   @unique // Google Ads Campaign ID
+  name               String
+  status             String // e.g., "ENABLED", "PAUSED", "REMOVED"
+  spend              Int      @default(0) // in cents
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  marketingAccount MarketingAccount @relation(fields: [marketingAccountId], references: [id], onDelete: Cascade)
+
+  @@index([marketingAccountId])
+  @@map("google_ads_campaigns")
 }
 
 model Session {
