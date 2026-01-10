@@ -1,11 +1,10 @@
-
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
-import { updateInboxItem, assignInboxItem, archiveInboxItem } from '@/lib/inbox/inbox-manager';
-import { InboxItemStatus } from '@/lib/inbox/types';
-import { requireWorkspacePermission } from '@/lib/permissions/workspace-middleware';
-import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
+import { auth } from "@/auth";
+import { archiveInboxItem, assignInboxItem, updateInboxItem } from "@/lib/inbox/inbox-manager";
+import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
+import prisma from "@/lib/prisma";
+import { InboxItemStatus } from "@prisma/client";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 const schema = z.object({
   status: z.nativeEnum(InboxItemStatus).optional(),
@@ -14,7 +13,7 @@ const schema = z.object({
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { workspaceSlug: string; itemId: string } },
+  { params }: { params: { workspaceSlug: string; itemId: string; }; },
 ) {
   const session = await auth();
   const body = await request.json();
@@ -22,7 +21,7 @@ export async function PATCH(
   const validated = schema.safeParse(body);
   if (!validated.success) {
     return NextResponse.json(
-      { error: validated.error.errors },
+      { error: validated.error.issues },
       { status: 400 },
     );
   }
@@ -35,10 +34,10 @@ export async function PATCH(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
     }
 
-    await requireWorkspacePermission(session, workspace.id, 'inbox:manage');
+    await requireWorkspacePermission(session, workspace.id, "inbox:manage");
 
     // Verify that the itemId belongs to the specified workspace
     const existingItem = await prisma.inboxItem.findUnique({
@@ -47,19 +46,24 @@ export async function PATCH(
     });
 
     if (!existingItem) {
-      return NextResponse.json({ error: 'Inbox item not found' }, { status: 404 });
+      return NextResponse.json({ error: "Inbox item not found" }, { status: 404 });
     }
 
     if (existingItem.workspaceId !== workspace.id) {
-      return NextResponse.json({ error: 'Inbox item does not belong to this workspace' }, { status: 403 });
+      return NextResponse.json({ error: "Inbox item does not belong to this workspace" }, {
+        status: 403,
+      });
     }
 
     let item;
     if (status) {
-      if (status === 'ARCHIVED') {
+      if (status === "ARCHIVED") {
         item = await archiveInboxItem(params.itemId);
       } else {
-        item = await updateInboxItem(params.itemId, { status, readAt: status === 'READ' ? new Date() : null });
+        item = await updateInboxItem(params.itemId, {
+          status,
+          readAt: status === "READ" ? new Date() : null,
+        });
       }
     }
 
@@ -69,7 +73,7 @@ export async function PATCH(
 
     if (!item) {
       return NextResponse.json(
-        { error: 'No valid update fields provided' },
+        { error: "No valid update fields provided" },
         { status: 400 },
       );
     }
@@ -78,17 +82,20 @@ export async function PATCH(
   } catch (error: unknown) {
     console.error(error);
 
-    const status =
-      typeof (error as any)?.status === 'number'
-        ? (error as any).status
-        : typeof (error as any)?.statusCode === 'number'
-          ? (error as any).statusCode
-          : 500;
+    let status = 500;
+    let message = "Failed to update inbox item";
 
-    const message =
-      typeof (error as any)?.message === 'string' && (error as any).message.length > 0
-        ? (error as any).message
-        : 'Failed to update inbox item';
+    if (error instanceof Error) {
+      const errWithStatus = error as Error & { status?: number; statusCode?: number; };
+      if (typeof errWithStatus.status === "number") {
+        status = errWithStatus.status;
+      } else if (typeof errWithStatus.statusCode === "number") {
+        status = errWithStatus.statusCode;
+      }
+      if (error.message) {
+        message = error.message;
+      }
+    }
 
     return NextResponse.json(
       { error: message },

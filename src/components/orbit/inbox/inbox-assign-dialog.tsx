@@ -1,15 +1,35 @@
+"use client";
 
-'use client';
-
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useMutation } from 'react-query';
-import { useParams } from 'next/navigation';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const assignSchema = z.object({
   assignedToId: z.string(),
@@ -19,14 +39,14 @@ type AssignFormValues = z.infer<typeof assignSchema>;
 
 interface InboxAssignDialogProps {
   itemId: string;
-  teamMembers: { id: string; name: string }[];
+  teamMembers: { id: string; name: string; }[];
   onAssign: () => void;
 }
 
 async function assignItem(workspaceSlug: string, itemId: string, assignedToId: string) {
   const res = await fetch(`/api/orbit/${workspaceSlug}/inbox/${itemId}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ assignedToId }),
   });
   if (!res.ok) {
@@ -36,8 +56,10 @@ async function assignItem(workspaceSlug: string, itemId: string, assignedToId: s
     } catch {
       responseText = undefined;
     }
-    const statusInfo = `${res.status} ${res.statusText || ''}`.trim();
-    const bodyInfo = responseText && responseText.length > 0 ? ` - Response body: ${responseText}` : '';
+    const statusInfo = `${res.status} ${res.statusText || ""}`.trim();
+    const bodyInfo = responseText && responseText.length > 0
+      ? ` - Response body: ${responseText}`
+      : "";
     throw new Error(`Failed to assign item (${statusInfo})${bodyInfo}`);
   }
   return res.json();
@@ -50,14 +72,12 @@ export function InboxAssignDialog({ itemId, teamMembers, onAssign }: InboxAssign
     resolver: zodResolver(assignSchema),
   });
 
-  const mutation = useMutation(
-    (assignedToId: string) => assignItem(workspaceSlug, itemId, assignedToId),
-    {
-      onSuccess: () => {
-        onAssign();
-      },
-    }
-  );
+  const mutation = useMutation({
+    mutationFn: (assignedToId: string) => assignItem(workspaceSlug, itemId, assignedToId),
+    onSuccess: () => {
+      onAssign();
+    },
+  });
 
   function onSubmit(data: AssignFormValues) {
     mutation.mutate(data.assignedToId);
@@ -102,8 +122,8 @@ export function InboxAssignDialog({ itemId, teamMembers, onAssign }: InboxAssign
               )}
             />
             <DialogFooter>
-              <Button type="submit" disabled={mutation.isLoading}>
-                {mutation.isLoading ? 'Assigning...' : 'Assign'}
+              <Button type="submit" disabled={mutation.isPending}>
+                {mutation.isPending ? "Assigning..." : "Assign"}
               </Button>
             </DialogFooter>
           </form>

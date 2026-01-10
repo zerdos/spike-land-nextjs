@@ -1,18 +1,17 @@
-
-import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { prisma } from '@/lib/prisma';
+import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
 // DELETE - Removes a competitor from a workspace
 export async function DELETE(
-  request: Request,
-  { params }: { params: { workspaceSlug: string; id: string } }
+  _request: Request,
+  { params }: { params: { workspaceSlug: string; id: string; }; },
 ) {
   try {
     // Verify authentication
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Find workspace by slug and verify user is a member
@@ -28,7 +27,7 @@ export async function DELETE(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
     }
 
     // Verify competitor belongs to the workspace before deleting
@@ -40,7 +39,7 @@ export async function DELETE(
     });
 
     if (!competitor) {
-      return NextResponse.json({ error: 'Competitor not found' }, { status: 404 });
+      return NextResponse.json({ error: "Competitor not found" }, { status: 404 });
     }
 
     // Delete competitor (posts will be cascade deleted by Prisma schema)
@@ -50,7 +49,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error('Failed to delete competitor:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("Failed to delete competitor:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

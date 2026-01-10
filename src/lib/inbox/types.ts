@@ -4,7 +4,8 @@
  * Type definitions for the inbox management system.
  */
 
-import type { InboxItem, InboxItemStatus, InboxItemType, SocialPlatform } from "@prisma/client";
+import type { InboxItem } from "@prisma/client";
+import { InboxItemStatus, InboxItemType, SocialPlatform } from "@prisma/client";
 
 /**
  * Options for creating an inbox item
@@ -96,4 +97,5 @@ export interface AssignmentResult {
 }
 
 // Re-export Prisma types for convenience
-export type { InboxItem, InboxItemStatus, InboxItemType } from "@prisma/client";
+export type { InboxItem } from "@prisma/client";
+export { InboxItemStatus, InboxItemType, SocialPlatform };
