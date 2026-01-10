@@ -9,11 +9,7 @@
 
 import { Sparkles } from "lucide-react";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ConfidenceLevel } from "@/lib/calendar/best-time-types";
 import { cn } from "@/lib/utils";
 

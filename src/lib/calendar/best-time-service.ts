@@ -150,31 +150,25 @@ async function analyzeEngagementPatterns(
     const sampleCount = data.impressions.length;
     patterns.push({
       dayOfWeek: day,
-      avgEngagementRate:
-        data.engagementRates.length > 0
-          ? data.engagementRates.reduce((a, b) => a + b, 0) /
-            data.engagementRates.length
-          : 0,
-      avgImpressions:
-        sampleCount > 0
-          ? data.impressions.reduce((a, b) => a + b, 0) / sampleCount
-          : 0,
-      avgReach:
-        sampleCount > 0
-          ? data.reach.reduce((a, b) => a + b, 0) / sampleCount
-          : 0,
-      avgLikes:
-        sampleCount > 0
-          ? data.likes.reduce((a, b) => a + b, 0) / sampleCount
-          : 0,
-      avgComments:
-        sampleCount > 0
-          ? data.comments.reduce((a, b) => a + b, 0) / sampleCount
-          : 0,
-      avgShares:
-        sampleCount > 0
-          ? data.shares.reduce((a, b) => a + b, 0) / sampleCount
-          : 0,
+      avgEngagementRate: data.engagementRates.length > 0
+        ? data.engagementRates.reduce((a, b) => a + b, 0) /
+          data.engagementRates.length
+        : 0,
+      avgImpressions: sampleCount > 0
+        ? data.impressions.reduce((a, b) => a + b, 0) / sampleCount
+        : 0,
+      avgReach: sampleCount > 0
+        ? data.reach.reduce((a, b) => a + b, 0) / sampleCount
+        : 0,
+      avgLikes: sampleCount > 0
+        ? data.likes.reduce((a, b) => a + b, 0) / sampleCount
+        : 0,
+      avgComments: sampleCount > 0
+        ? data.comments.reduce((a, b) => a + b, 0) / sampleCount
+        : 0,
+      avgShares: sampleCount > 0
+        ? data.shares.reduce((a, b) => a + b, 0) / sampleCount
+        : 0,
       sampleCount,
     });
   }
@@ -197,8 +191,7 @@ function calculateEngagementScore(pattern: DailyEngagementPattern): number {
   };
 
   // Normalize each metric (we'll use relative scoring within the dataset)
-  let score =
-    pattern.avgEngagementRate * weights.engagementRate +
+  let score = pattern.avgEngagementRate * weights.engagementRate +
     Math.min(pattern.avgImpressions / 1000, 10) * weights.impressions +
     Math.min(pattern.avgReach / 1000, 10) * weights.reach +
     Math.min(pattern.avgLikes / 100, 10) * weights.likes +
@@ -250,7 +243,9 @@ async function getPlatformRecommendations(
           hour: hour as HourOfDay,
           confidence: getConfidenceLevel(daysAnalyzed),
           engagementScore: score,
-          reason: `${getDayName(pattern.dayOfWeek)} shows ${score}% engagement based on ${pattern.sampleCount} days of data`,
+          reason: `${
+            getDayName(pattern.dayOfWeek)
+          } shows ${score}% engagement based on ${pattern.sampleCount} days of data`,
         });
       }
     }
@@ -277,7 +272,10 @@ async function getPlatformRecommendations(
 
   // Peak hours (from benchmark or default)
   const peakHours: HourOfDay[] = benchmark?.bestHours.slice(0, 4) || [
-    9, 10, 11, 12,
+    9,
+    10,
+    11,
+    12,
   ];
 
   return {
@@ -321,8 +319,7 @@ async function findCalendarGaps(
   let lastPostTime = startDate;
 
   for (const post of posts) {
-    const gapHours =
-      (post.scheduledAt.getTime() - lastPostTime.getTime()) / (1000 * 60 * 60);
+    const gapHours = (post.scheduledAt.getTime() - lastPostTime.getTime()) / (1000 * 60 * 60);
 
     if (gapHours >= minGapHours) {
       const gapStart = new Date(lastPostTime);
@@ -333,7 +330,7 @@ async function findCalendarGaps(
       const isHighEngagementSlot = platformRecommendations.some((pr) =>
         pr.bestTimeSlots.some(
           (slot) => slot.dayOfWeek === dayOfWeek && slot.engagementScore >= 60,
-        ),
+        )
       );
 
       gaps.push({
@@ -351,14 +348,13 @@ async function findCalendarGaps(
   }
 
   // Check gap from last post to end of range
-  const finalGapHours =
-    (endDate.getTime() - lastPostTime.getTime()) / (1000 * 60 * 60);
+  const finalGapHours = (endDate.getTime() - lastPostTime.getTime()) / (1000 * 60 * 60);
   if (finalGapHours >= minGapHours) {
     const dayOfWeek = lastPostTime.getDay() as DayOfWeek;
     const isHighEngagementSlot = platformRecommendations.some((pr) =>
       pr.bestTimeSlots.some(
         (slot) => slot.dayOfWeek === dayOfWeek && slot.engagementScore >= 60,
-      ),
+      )
     );
 
     gaps.push({
@@ -384,7 +380,7 @@ function calculateGlobalBestSlots(
   // Aggregate time slot scores across platforms
   const slotScores: Map<
     string,
-    { slot: TimeSlotRecommendation; totalScore: number; count: number }
+    { slot: TimeSlotRecommendation; totalScore: number; count: number; }
   > = new Map();
 
   for (const pr of platformRecommendations) {
@@ -413,10 +409,9 @@ function calculateGlobalBestSlots(
     globalSlots.push({
       ...slot,
       engagementScore: avgScore,
-      reason:
-        count > 1
-          ? `Optimal across ${count} platforms with ${avgScore}% average engagement`
-          : slot.reason,
+      reason: count > 1
+        ? `Optimal across ${count} platforms with ${avgScore}% average engagement`
+        : slot.reason,
     });
   }
 

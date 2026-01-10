@@ -47,6 +47,7 @@ describe("GET /api/calendar/recommendations", () => {
       id: "user-1",
       name: "Test User",
       email: "test@test.com",
+      role: "USER" as const,
     },
     expires: new Date(Date.now() + 86400000).toISOString(),
   };
@@ -75,7 +76,11 @@ describe("GET /api/calendar/recommendations", () => {
 
   it("returns 400 for invalid lookbackDays", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession);
-    vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined);
+    vi.mocked(requireWorkspaceMembership).mockResolvedValue({
+      workspaceId: "workspace-1",
+      userId: "user-1",
+      role: "OWNER" as const,
+    });
 
     const request = createRequest({
       workspaceId: "workspace-1",
@@ -90,7 +95,11 @@ describe("GET /api/calendar/recommendations", () => {
 
   it("returns 400 for lookbackDays out of range", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession);
-    vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined);
+    vi.mocked(requireWorkspaceMembership).mockResolvedValue({
+      workspaceId: "workspace-1",
+      userId: "user-1",
+      role: "OWNER" as const,
+    });
 
     const request = createRequest({
       workspaceId: "workspace-1",
@@ -105,7 +114,11 @@ describe("GET /api/calendar/recommendations", () => {
 
   it("returns 400 for invalid gap date format", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession);
-    vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined);
+    vi.mocked(requireWorkspaceMembership).mockResolvedValue({
+      workspaceId: "workspace-1",
+      userId: "user-1",
+      role: "OWNER" as const,
+    });
 
     const request = createRequest({
       workspaceId: "workspace-1",
@@ -121,7 +134,11 @@ describe("GET /api/calendar/recommendations", () => {
 
   it("returns 400 if gapStartDate is after gapEndDate", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession);
-    vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined);
+    vi.mocked(requireWorkspaceMembership).mockResolvedValue({
+      workspaceId: "workspace-1",
+      userId: "user-1",
+      role: "OWNER" as const,
+    });
 
     const request = createRequest({
       workspaceId: "workspace-1",
@@ -149,7 +166,11 @@ describe("GET /api/calendar/recommendations", () => {
 
   it("returns recommendations successfully", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession);
-    vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined);
+    vi.mocked(requireWorkspaceMembership).mockResolvedValue({
+      workspaceId: "workspace-1",
+      userId: "user-1",
+      role: "OWNER" as const,
+    });
 
     const mockRecommendations = {
       platformRecommendations: [
@@ -201,7 +222,11 @@ describe("GET /api/calendar/recommendations", () => {
 
   it("passes accountIds filter to service", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession);
-    vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined);
+    vi.mocked(requireWorkspaceMembership).mockResolvedValue({
+      workspaceId: "workspace-1",
+      userId: "user-1",
+      role: "OWNER" as const,
+    });
     vi.mocked(getBestTimeRecommendations).mockResolvedValue({
       platformRecommendations: [],
       calendarGaps: [],
@@ -224,7 +249,11 @@ describe("GET /api/calendar/recommendations", () => {
 
   it("passes includeGaps=false to service", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession);
-    vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined);
+    vi.mocked(requireWorkspaceMembership).mockResolvedValue({
+      workspaceId: "workspace-1",
+      userId: "user-1",
+      role: "OWNER" as const,
+    });
     vi.mocked(getBestTimeRecommendations).mockResolvedValue({
       platformRecommendations: [],
       calendarGaps: [],
@@ -247,7 +276,11 @@ describe("GET /api/calendar/recommendations", () => {
 
   it("passes custom lookbackDays to service", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession);
-    vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined);
+    vi.mocked(requireWorkspaceMembership).mockResolvedValue({
+      workspaceId: "workspace-1",
+      userId: "user-1",
+      role: "OWNER" as const,
+    });
     vi.mocked(getBestTimeRecommendations).mockResolvedValue({
       platformRecommendations: [],
       calendarGaps: [],
@@ -270,7 +303,11 @@ describe("GET /api/calendar/recommendations", () => {
 
   it("returns 500 on service error", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession);
-    vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined);
+    vi.mocked(requireWorkspaceMembership).mockResolvedValue({
+      workspaceId: "workspace-1",
+      userId: "user-1",
+      role: "OWNER" as const,
+    });
     vi.mocked(getBestTimeRecommendations).mockRejectedValue(
       new Error("Database error"),
     );
