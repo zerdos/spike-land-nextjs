@@ -85,9 +85,9 @@ export class TwitterClient implements ISocialClient {
     const params = new URLSearchParams({
       query,
       max_results: limit.toString(),
-      expansions: 'author_id',
-      'tweet.fields': 'id,text,created_at,public_metrics,author_id',
-      'user.fields': 'id,name,username,profile_image_url',
+      expansions: "author_id",
+      "tweet.fields": "id,text,created_at,public_metrics,author_id",
+      "user.fields": "id,name,username,profile_image_url",
     });
 
     const response = await fetch(

@@ -31,8 +31,8 @@ describe("AccountsTab", () => {
           objective: "CONVERSIONS",
           budgetAmount: 10000,
           budgetCurrency: "USD",
-          budgetType: "DAILY"
-        }))
+          budgetType: "DAILY",
+        })),
       },
       "/api/admin/marketing/accounts": { success: true },
     }));

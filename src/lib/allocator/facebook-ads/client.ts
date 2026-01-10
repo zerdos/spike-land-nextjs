@@ -1,10 +1,9 @@
-
 import type {
   FacebookAdAccount,
   FacebookAdCampaignResponse,
-  FacebookCampaign,
-  FacebookAdSetResponse,
   FacebookAdSet,
+  FacebookAdSetResponse,
+  FacebookCampaign,
   FacebookInsights,
   FacebookInsightsResponse,
 } from "./types";
@@ -20,7 +19,7 @@ export class FacebookMarketingApiClient {
   }
 
   private async facebookRequest<
-    T extends { data: any[]; paging?: { next?: string } },
+    T extends { data: any[]; paging?: { next?: string; }; },
   >(
     path: string,
     params: Record<string, string> = {},
@@ -56,7 +55,7 @@ export class FacebookMarketingApiClient {
   }
 
   async getAdAccounts(): Promise<FacebookAdAccount[]> {
-    return await this.facebookRequest<{ data: FacebookAdAccount[] }>(
+    return await this.facebookRequest<{ data: FacebookAdAccount[]; }>(
       "me/adaccounts",
       {
         fields: "account_id,name",
@@ -68,8 +67,7 @@ export class FacebookMarketingApiClient {
     return await this.facebookRequest<FacebookAdCampaignResponse>(
       `act_${adAccountId}/campaigns`,
       {
-        fields:
-          "id,name,status,objective,daily_budget,lifetime_budget,budget_remaining",
+        fields: "id,name,status,objective,daily_budget,lifetime_budget,budget_remaining",
         limit: "100",
       },
     );
