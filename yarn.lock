@@ -17666,17 +17666,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:17.2.3, dotenv@npm:^17.2.3":
-  version: 17.2.3
-  resolution: "dotenv@npm:17.2.3"
-  checksum: 10c9/ff513b5b1400d68d106385b819753f950e9f22e52be30a2384703e2eb8c4559c35bebd2b0ebff6b8c6ae8882783f2f2f13f19316b37456f1a778a710e65a8ed0
-  languageName: node
-  linkType: hard
-
 "dotenv@npm:^16.3.1, dotenv@npm:^16.4.5, dotenv@npm:^16.6.1":
   version: 16.6.1
   resolution: "dotenv@npm:16.6.1"
   checksum: 10c9/292228bc35e332ddbea1b9af80cb97dc07724aa7eb78be76cfff052ad0addab93b0cadc88fe105f9952677a514ce115511f8d0877b110473a279cc3d2617fccd
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^17.2.3":
+  version: 17.2.3
+  resolution: "dotenv@npm:17.2.3"
+  checksum: 10c9/ff513b5b1400d68d106385b819753f950e9f22e52be30a2384703e2eb8c4559c35bebd2b0ebff6b8c6ae8882783f2f2f13f19316b37456f1a778a710e65a8ed0
   languageName: node
   linkType: hard
 
@@ -19811,6 +19811,17 @@ __metadata:
   bin:
     fxparser: src/cli/cli.js
   checksum: 10c9/3cd4ee1213e633493b64b1c001ea11291399673160bc6b40de97c2b504e5c76e7f2647ab9c36304177b16bfcc5a811c710376a71e461de889688f5fa96d2ae4b
+  languageName: node
+  linkType: hard
+
+"fast-xml-parser@npm:^5.3.3":
+  version: 5.3.3
+  resolution: "fast-xml-parser@npm:5.3.3"
+  dependencies:
+    strnum: "npm:^2.1.0"
+  bin:
+    fxparser: src/cli/cli.js
+  checksum: 10c9/02c68a9f6eaade8312bcbc9e94bfa567786f5123ff25a1f7617d2b7880d5fde6baf0d4fe0478374e7e325f2cdb57c1fef0e6298c6d37fd49661bff049ecf2adc
   languageName: node
   linkType: hard
 
@@ -31142,6 +31153,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ts-essentials@npm:>=10.0.0":
+  version: 10.1.1
+  resolution: "ts-essentials@npm:10.1.1"
+  peerDependencies:
+    typescript: ">=4.5.0"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10c9/16f4346e9ef3b8eb49e6d7d6b1c5521db6b1ef3ef91cdc7619ae997b4f2f88853ff913f7e515b74a5f7f73a6f2ef3eb9da8d3d8328c933cea20a31f1bfcee3e5
+  languageName: node
+  linkType: hard
+
 "ts-interface-checker@npm:^0.1.9":
   version: 0.1.13
   resolution: "ts-interface-checker@npm:0.1.13"
@@ -32269,10 +32292,11 @@ __metadata:
     clsx: "npm:2.1.1"
     date-fns: "npm:^4.1.0"
     diff: "npm:^8.0.2"
-    dotenv: "npm:17.2.3"
+    dotenv: "npm:^17.2.3"
     dprint: "npm:0.51.1"
     eslint: "npm:9.39.2"
     eslint-config-next: "npm:16.1.1"
+    fast-xml-parser: "npm:^5.3.3"
     framer-motion: "npm:^12.24.10"
     gray-matter: "npm:4.0.3"
     happy-dom: "npm:20.1.0"
@@ -32311,6 +32335,7 @@ __metadata:
     typescript: "npm:5.9.3"
     vercel: "npm:50.1.6"
     vitest: "npm:4.0.16"
+    vitest-mock-extended: "npm:^3.1.0"
     wait-on: "npm:9.0.3"
     workflow: "npm:4.0.1-beta.42"
     y-indexeddb: "npm:9.0.12"
@@ -32519,6 +32544,18 @@ __metadata:
   bin:
     vite: bin/vite.js
   checksum: 10c9/4374f5ebcb6bd2a4762bb6685dce21fb1165a642946a1fd344891699f63bfdf9b4889ae034151c8cb09c2129cada38d3fdddf0442b497aab5b2d4c1f97208fdf
+  languageName: node
+  linkType: hard
+
+"vitest-mock-extended@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "vitest-mock-extended@npm:3.1.0"
+  dependencies:
+    ts-essentials: "npm:>=10.0.0"
+  peerDependencies:
+    typescript: 3.x || 4.x || 5.x
+    vitest: ">=3.0.0"
+  checksum: 10c9/a64a22fbba75d10948b252e40610bed63c2825a5333fb2b666b9bc0546b45f4da6702b1b1341cded20bc28a91278dbd5ac826da59ad7cd42f504d5a2ce93d95d
   languageName: node
   linkType: hard
 
