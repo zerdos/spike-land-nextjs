@@ -194,3 +194,48 @@ Feature: Orbit Calendar / Scheduled Posts
     And I select 9:00 AM as the time
     Then the time should be displayed in America/New_York timezone
     And the post should be scheduled for the correct UTC time
+
+  # Publishing (Part of #576: Implement Calendar publishing)
+  @calendar @publishing
+  Scenario: Scheduled post is published when due
+    Given I have a scheduled post due for publishing now
+    When the publishing cron job runs
+    Then the post should be published to all target platforms
+    And the post status should be "Published"
+    And the post should show a published timestamp
+
+  @calendar @publishing
+  Scenario: Failed publishing triggers retry
+    Given I have a scheduled post due for publishing
+    And the social platform API returns an error
+    When the publishing cron job runs
+    Then the post status should remain "Scheduled" for retry
+    And the retry count should increment
+    And the post should show the error message
+
+  @calendar @publishing
+  Scenario: Post fails permanently after max retries
+    Given I have a scheduled post that has failed 3 times
+    When the publishing cron job runs again
+    Then the post status should be "Failed"
+    And I should see the failure reason
+    And I should see an option to retry manually
+
+  @calendar @publishing
+  Scenario: Partial success when publishing to multiple platforms
+    Given I have a scheduled post for LinkedIn and Twitter
+    And LinkedIn publishing succeeds
+    And Twitter publishing fails
+    When the publishing cron job runs
+    Then the post should show partial success status
+    And LinkedIn should show as published
+    And Twitter should show as failed
+    And I should be able to retry just Twitter
+
+  @calendar @publishing
+  Scenario: View publishing history for a post
+    Given I have a published post
+    When I navigate to the post details
+    Then I should see the publishing history
+    And I should see when it was published
+    And I should see the platform post IDs

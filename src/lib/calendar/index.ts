@@ -39,3 +39,10 @@ export {
   schedulePost,
   updateScheduledPost,
 } from "./scheduled-posts";
+
+// Publishing service
+export {
+  processScheduledPosts,
+  type PublishingRunResult,
+  publishScheduledPost,
+} from "./publishing-service";
