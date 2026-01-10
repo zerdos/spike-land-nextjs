@@ -9,13 +9,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import prisma from "@/lib/prisma";
 
 import {
+  bulkCreateRules,
+  cloneRule,
   createRule,
   deleteRule,
   getGlobalRules,
   getRule,
   getRulesForWorkspace,
+  getRulesNeedingVerification,
   getRuleStatistics,
   getWorkspaceRules,
+  markRuleVerified,
   toggleRuleActive,
   updateRule,
 } from "./rule-manager";
@@ -423,6 +427,170 @@ describe("Rule Manager", () => {
       expect(stats.byCategory["AD_COMPLIANCE"]).toBe(1);
       expect(stats.bySeverity["WARNING"]).toBe(2);
       expect(stats.bySeverity["ERROR"]).toBe(1);
+    });
+  });
+
+  describe("bulkCreateRules", () => {
+    it("should create multiple rules at once", async () => {
+      const rules: PolicyRuleInput[] = [
+        {
+          name: "Rule 1",
+          description: "First rule",
+          category: "CONTENT_GUIDELINES",
+          ruleType: "KEYWORD_MATCH",
+          conditions: { keywords: ["test1"] },
+        },
+        {
+          name: "Rule 2",
+          description: "Second rule",
+          platform: "TWITTER",
+          category: "CHARACTER_LIMITS",
+          ruleType: "CHARACTER_COUNT",
+          conditions: { maxLength: 280 },
+          severity: "CRITICAL",
+          isBlocking: true,
+        },
+      ];
+
+      vi.mocked(prisma.policyRule.createMany).mockResolvedValue({ count: 2 });
+
+      const count = await bulkCreateRules(rules);
+
+      expect(prisma.policyRule.createMany).toHaveBeenCalledWith({
+        data: expect.arrayContaining([
+          expect.objectContaining({
+            workspaceId: null,
+            name: "Rule 1",
+            severity: "WARNING",
+            isBlocking: false,
+            isActive: true,
+          }),
+          expect.objectContaining({
+            workspaceId: null,
+            name: "Rule 2",
+            platform: "TWITTER",
+            severity: "CRITICAL",
+            isBlocking: true,
+          }),
+        ]),
+        skipDuplicates: true,
+      });
+      expect(count).toBe(2);
+    });
+
+    it("should handle empty array", async () => {
+      vi.mocked(prisma.policyRule.createMany).mockResolvedValue({ count: 0 });
+
+      const count = await bulkCreateRules([]);
+
+      expect(count).toBe(0);
+    });
+  });
+
+  describe("markRuleVerified", () => {
+    it("should update lastVerifiedAt timestamp", async () => {
+      const mockResult = {
+        id: "rule-1",
+        lastVerifiedAt: new Date(),
+      };
+
+      vi.mocked(prisma.policyRule.update).mockResolvedValue(mockResult as never);
+
+      const result = await markRuleVerified("rule-1");
+
+      expect(prisma.policyRule.update).toHaveBeenCalledWith({
+        where: { id: "rule-1" },
+        data: { lastVerifiedAt: expect.any(Date) },
+      });
+      expect(result.lastVerifiedAt).toBeDefined();
+    });
+  });
+
+  describe("getRulesNeedingVerification", () => {
+    it("should return rules not verified in last 30 days", async () => {
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - 45);
+
+      const mockRules = [
+        {
+          id: "rule-1",
+          lastVerifiedAt: null,
+          isActive: true,
+        },
+        {
+          id: "rule-2",
+          lastVerifiedAt: oldDate,
+          isActive: true,
+        },
+      ];
+
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue(mockRules as never);
+
+      const result = await getRulesNeedingVerification();
+
+      expect(prisma.policyRule.findMany).toHaveBeenCalledWith({
+        where: {
+          isActive: true,
+          OR: [{ lastVerifiedAt: null }, { lastVerifiedAt: { lt: expect.any(Date) } }],
+        },
+        orderBy: { lastVerifiedAt: "asc" },
+      });
+      expect(result).toHaveLength(2);
+    });
+  });
+
+  describe("cloneRule", () => {
+    it("should clone a rule to a workspace", async () => {
+      const sourceRule = {
+        id: "source-rule",
+        workspaceId: null,
+        name: "Original Rule",
+        description: "Original description",
+        platform: "TWITTER",
+        category: "CONTENT_GUIDELINES",
+        ruleType: "KEYWORD_MATCH",
+        conditions: { keywords: ["test"] },
+        severity: "WARNING",
+        isBlocking: false,
+        isActive: true,
+        sourceUrl: "https://example.com",
+        version: 1,
+        lastVerifiedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const clonedRule = {
+        ...sourceRule,
+        id: "cloned-rule",
+        workspaceId: "workspace-1",
+        name: "Original Rule (Copy)",
+      };
+
+      vi.mocked(prisma.policyRule.findUnique).mockResolvedValue(sourceRule as never);
+      vi.mocked(prisma.policyRule.create).mockResolvedValue(clonedRule as never);
+
+      const result = await cloneRule("source-rule", "workspace-1");
+
+      expect(prisma.policyRule.findUnique).toHaveBeenCalledWith({
+        where: { id: "source-rule" },
+      });
+      expect(prisma.policyRule.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          workspaceId: "workspace-1",
+          name: "Original Rule (Copy)",
+          description: "Original description",
+          isActive: true,
+        }),
+      });
+      expect(result.name).toBe("Original Rule (Copy)");
+      expect(result.workspaceId).toBe("workspace-1");
+    });
+
+    it("should throw error when source rule not found", async () => {
+      vi.mocked(prisma.policyRule.findUnique).mockResolvedValue(null);
+
+      await expect(cloneRule("non-existent", "workspace-1")).rejects.toThrow("Rule not found");
     });
   });
 });
