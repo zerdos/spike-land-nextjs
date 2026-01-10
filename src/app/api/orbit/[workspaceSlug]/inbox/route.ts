@@ -1,16 +1,25 @@
-
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
-import { listInboxItems } from '@/lib/inbox/inbox-manager';
-import { InboxItemFilter, InboxItemStatus, InboxItemType, SocialPlatform } from '@/lib/inbox/types';
-import { requireWorkspacePermission } from '@/lib/permissions/workspace-middleware';
-import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
+import { auth } from "@/auth";
+import { listInboxItems } from "@/lib/inbox/inbox-manager";
+import type { InboxItemFilter } from "@/lib/inbox/types";
+import { InboxItemStatus, InboxItemType, SocialPlatform } from "@/lib/inbox/types";
+import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
+import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 const schema = z.object({
-  status: z.union([z.enum(Object.values(InboxItemStatus) as [string, ...string[]]), z.array(z.enum(Object.values(InboxItemStatus) as [string, ...string[]]))]).optional(),
-  type: z.union([z.enum(Object.values(InboxItemType) as [string, ...string[]]), z.array(z.enum(Object.values(InboxItemType) as [string, ...string[]]))]).optional(),
-  platform: z.union([z.enum(Object.values(SocialPlatform) as [string, ...string[]]), z.array(z.enum(Object.values(SocialPlatform) as [string, ...string[]]))]).optional(),
+  status: z.union([
+    z.enum(Object.values(InboxItemStatus) as [string, ...string[]]),
+    z.array(z.enum(Object.values(InboxItemStatus) as [string, ...string[]])),
+  ]).optional(),
+  type: z.union([
+    z.enum(Object.values(InboxItemType) as [string, ...string[]]),
+    z.array(z.enum(Object.values(InboxItemType) as [string, ...string[]])),
+  ]).optional(),
+  platform: z.union([
+    z.enum(Object.values(SocialPlatform) as [string, ...string[]]),
+    z.array(z.enum(Object.values(SocialPlatform) as [string, ...string[]])),
+  ]).optional(),
   assignedToId: z.string().optional(),
   accountId: z.string().optional(),
   receivedAfter: z.string().optional(),
@@ -23,7 +32,7 @@ const schema = z.object({
 
 export async function GET(
   request: Request,
-  { params }: { params: { workspaceSlug: string } },
+  { params }: { params: { workspaceSlug: string; }; },
 ) {
   const session = await auth();
   const { searchParams } = new URL(request.url);
@@ -32,7 +41,7 @@ export async function GET(
   const validated = schema.safeParse(query);
   if (!validated.success) {
     return NextResponse.json(
-      { error: validated.error.errors },
+      { error: validated.error.issues },
       { status: 400 },
     );
   }
@@ -57,15 +66,21 @@ export async function GET(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
     }
 
-    await requireWorkspacePermission(session, workspace.id, 'inbox:view');
+    await requireWorkspacePermission(session, workspace.id, "inbox:view");
 
     const filter: InboxItemFilter = { workspaceId: workspace.id };
-    if (status) filter.status = Array.isArray(status) ? status : [status];
-    if (type) filter.type = Array.isArray(type) ? type : [type];
-    if (platform) filter.platform = Array.isArray(platform) ? platform : [platform];
+    if (status) {
+      filter.status = (Array.isArray(status) ? status : [status]) as InboxItemStatus[];
+    }
+    if (type) {
+      filter.type = (Array.isArray(type) ? type : [type]) as InboxItemType[];
+    }
+    if (platform) {
+      filter.platform = (Array.isArray(platform) ? platform : [platform]) as SocialPlatform[];
+    }
     if (assignedToId) filter.assignedToId = assignedToId;
     if (accountId) filter.accountId = accountId;
     if (receivedAfter) filter.receivedAfter = new Date(receivedAfter);
@@ -74,8 +89,8 @@ export async function GET(
     const pagination = {
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
-      orderBy: orderBy as any,
-      orderDirection: orderDirection as any,
+      orderBy: orderBy as "receivedAt" | "createdAt" | "updatedAt" | undefined,
+      orderDirection: orderDirection as "asc" | "desc" | undefined,
     };
 
     const data = await listInboxItems(filter, pagination);
@@ -84,17 +99,20 @@ export async function GET(
   } catch (error: unknown) {
     console.error(error);
 
-    const status =
-      typeof (error as any)?.status === 'number'
-        ? (error as any).status
-        : typeof (error as any)?.statusCode === 'number'
-          ? (error as any).statusCode
-          : 500;
+    let status = 500;
+    let message = "Failed to list inbox items";
 
-    const message =
-      typeof (error as any)?.message === 'string' && (error as any).message.length > 0
-        ? (error as any).message
-        : 'Failed to list inbox items';
+    if (error instanceof Error) {
+      const errWithStatus = error as Error & { status?: number; statusCode?: number; };
+      if (typeof errWithStatus.status === "number") {
+        status = errWithStatus.status;
+      } else if (typeof errWithStatus.statusCode === "number") {
+        status = errWithStatus.statusCode;
+      }
+      if (error.message) {
+        message = error.message;
+      }
+    }
 
     return NextResponse.json(
       { error: message },

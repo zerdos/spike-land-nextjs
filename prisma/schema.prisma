@@ -1379,9 +1379,10 @@ model AnalyticsEvent {
 
 // Campaign attribution linking users to campaigns
 model CampaignAttribution {
-  id        String @id @default(cuid())
-  userId    String
-  sessionId String
+  id           String @id @default(cuid())
+  userId       String
+  sessionId    String
+  conversionId String // Groups attribution records for a single conversion
 
   // Attribution model
   attributionType AttributionType
@@ -1401,6 +1402,7 @@ model CampaignAttribution {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([conversionId])
   @@index([utmCampaign])
   @@index([externalCampaignId])
   @@index([convertedAt])
@@ -1487,6 +1489,7 @@ enum AudioStorageType {
 enum AttributionType {
   FIRST_TOUCH
   LAST_TOUCH
+  LINEAR
 }
 
 enum ConversionType {

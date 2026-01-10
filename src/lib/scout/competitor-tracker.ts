@@ -6,20 +6,20 @@
  * collected data in the database using Prisma.
  */
 
-import { SocialPlatform } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
-import { PublicTwitterClient } from './public-api-clients/twitter';
-import { PublicFacebookClient } from './public-api-clients/facebook';
-import { PublicInstagramClient } from './public-api-clients/instagram';
+import prisma from "@/lib/prisma";
+import type { SocialPlatform } from "@prisma/client";
+import { PublicFacebookClient } from "./public-api-clients/facebook";
+import { PublicInstagramClient } from "./public-api-clients/instagram";
+import { PublicTwitterClient } from "./public-api-clients/twitter";
 
 // A factory to get the correct public API client for a given platform.
 function getPublicApiClient(platform: SocialPlatform) {
   switch (platform) {
-    case 'TWITTER':
+    case "TWITTER":
       return new PublicTwitterClient();
-    case 'FACEBOOK':
+    case "FACEBOOK":
       return new PublicFacebookClient();
-    case 'INSTAGRAM':
+    case "INSTAGRAM":
       return new PublicInstagramClient();
     default:
       throw new Error(`No public API client available for platform: ${platform}`);
@@ -35,12 +35,12 @@ function getPublicApiClient(platform: SocialPlatform) {
  */
 export async function addCompetitor(workspaceId: string, platform: SocialPlatform, handle: string) {
   // Validate handle is not empty
-  if (!handle || typeof handle !== 'string' || handle.trim() === '') {
+  if (!handle || typeof handle !== "string" || handle.trim() === "") {
     return null;
   }
 
   const trimmedHandle = handle.trim();
-  
+
   const client = getPublicApiClient(platform);
 
   const accountInfo = await client.getAccountInfo(trimmedHandle);
@@ -82,15 +82,19 @@ export async function syncCompetitorPosts(competitorId: string) {
     return;
   }
 
-  const postData = posts.map(post => ({
-    competitorId: competitor.id,
-    platformPostId: post.id,
-    content: post.content,
-    postedAt: post.publishedAt,
-    likes: post.likes || 0,
-    comments: post.comments || 0,
-    shares: 'shares' in post ? post.shares || 0 : 0,
-  }));
+  const postData = posts.map(post => {
+    // Extract shares count - Instagram posts don't have shares, Twitter/Facebook do
+    const shares = "shares" in post && typeof post.shares === "number" ? post.shares : 0;
+    return {
+      competitorId: competitor.id,
+      platformPostId: post.id,
+      content: post.content,
+      postedAt: post.publishedAt,
+      likes: post.likes || 0,
+      comments: post.comments || 0,
+      shares,
+    };
+  });
 
   // Use createMany with skipDuplicates to avoid errors for existing posts.
   await prisma.scoutCompetitorPost.createMany({
@@ -107,9 +111,9 @@ export async function syncCompetitorPosts(competitorId: string) {
  * @param delayMs Delay in milliseconds between batches (default: 1000)
  */
 export async function syncAllCompetitorsForWorkspace(
-  workspaceId: string, 
+  workspaceId: string,
   concurrency: number = 3,
-  delayMs: number = 1000
+  delayMs: number = 1000,
 ) {
   const competitors = await prisma.scoutCompetitor.findMany({
     where: {
@@ -119,27 +123,32 @@ export async function syncAllCompetitorsForWorkspace(
   });
 
   // Process competitors in batches with controlled concurrency
-  const results: Array<{ id: string; handle: string; success: boolean; error?: string }> = [];
-  
+  const results: Array<{ id: string; handle: string; success: boolean; error?: string; }> = [];
+
   for (let i = 0; i < competitors.length; i += concurrency) {
     const batch = competitors.slice(i, i + concurrency);
-    
+
     const batchResults = await Promise.allSettled(
       batch.map(async (competitor) => {
         try {
           await syncCompetitorPosts(competitor.id);
           return { id: competitor.id, handle: competitor.handle, success: true };
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          const errorMessage = error instanceof Error ? error.message : "Unknown error";
           console.error(`Failed to sync posts for competitor ${competitor.handle}:`, error);
-          return { id: competitor.id, handle: competitor.handle, success: false, error: errorMessage };
+          return {
+            id: competitor.id,
+            handle: competitor.handle,
+            success: false,
+            error: errorMessage,
+          };
         }
-      })
+      }),
     );
 
     // Collect results
     for (const result of batchResults) {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         results.push(result.value);
       }
     }

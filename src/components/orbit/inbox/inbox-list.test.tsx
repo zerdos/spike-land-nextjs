@@ -1,23 +1,22 @@
-
-import { render, screen, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
-import { InboxList } from './inbox-list';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { InboxItem as InboxItemType } from '@prisma/client';
+import type { InboxItem as InboxItemType } from "@prisma/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { InboxList } from "./inbox-list";
 
 // Mock useParams
-vi.mock('next/navigation', () => ({
-  useParams: () => ({ workspaceSlug: 'test-workspace' }),
+vi.mock("next/navigation", () => ({
+  useParams: () => ({ workspaceSlug: "test-workspace" }),
 }));
 
-// Mock react-virtual
-vi.mock('react-virtual', () => ({
-  useVirtual: () => ({
-    virtualItems: [
+// Mock @tanstack/react-virtual
+vi.mock("@tanstack/react-virtual", () => ({
+  useVirtualizer: () => ({
+    getVirtualItems: () => [
       { index: 0, size: 100, start: 0 },
       { index: 1, size: 100, start: 100 },
     ],
-    totalSize: 200,
+    getTotalSize: () => 200,
   }),
 }));
 
@@ -31,24 +30,24 @@ const createWrapper = () => {
       mutations: { retry: false },
     },
   });
-  return ({ children }: { children: React.ReactNode }) => (
+  return ({ children }: { children: React.ReactNode; }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 };
 
 const mockItems: InboxItemType[] = [
   {
-    id: '1',
-    platform: 'TWITTER',
-    type: 'MENTION',
-    status: 'UNREAD',
-    content: 'Test message 1',
-    senderName: 'John Doe',
+    id: "1",
+    platform: "TWITTER",
+    type: "MENTION",
+    status: "UNREAD",
+    content: "Test message 1",
+    senderName: "John Doe",
     senderAvatarUrl: null,
-    receivedAt: new Date('2026-01-10T10:00:00Z'),
-    workspaceId: '1',
-    accountId: '1',
-    platformItemId: '123',
+    receivedAt: new Date("2026-01-10T10:00:00Z"),
+    workspaceId: "1",
+    accountId: "1",
+    platformItemId: "123",
     createdAt: new Date(),
     updatedAt: new Date(),
     assignedToId: null,
@@ -61,17 +60,17 @@ const mockItems: InboxItemType[] = [
     metadata: null,
   },
   {
-    id: '2',
-    platform: 'FACEBOOK',
-    type: 'MESSAGE',
-    status: 'READ',
-    content: 'Test message 2',
-    senderName: 'Jane Smith',
+    id: "2",
+    platform: "FACEBOOK",
+    type: "MENTION",
+    status: "READ",
+    content: "Test message 2",
+    senderName: "Jane Smith",
     senderAvatarUrl: null,
-    receivedAt: new Date('2026-01-10T11:00:00Z'),
-    workspaceId: '1',
-    accountId: '1',
-    platformItemId: '456',
+    receivedAt: new Date("2026-01-10T11:00:00Z"),
+    workspaceId: "1",
+    accountId: "1",
+    platformItemId: "456",
     createdAt: new Date(),
     updatedAt: new Date(),
     assignedToId: null,
@@ -85,12 +84,12 @@ const mockItems: InboxItemType[] = [
   },
 ];
 
-describe('InboxList', () => {
+describe("InboxList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders loading state initially', async () => {
+  it("renders loading state initially", async () => {
     const mockFetch = vi.fn().mockImplementation(
       () =>
         new Promise((resolve) =>
@@ -100,9 +99,9 @@ describe('InboxList', () => {
                 ok: true,
                 json: async () => ({ items: mockItems, hasNext: false, page: 1 }),
               }),
-            100
+            100,
           )
-        )
+        ),
     );
     global.fetch = mockFetch;
 
@@ -116,7 +115,7 @@ describe('InboxList', () => {
     });
   });
 
-  it('renders inbox items when data is loaded', async () => {
+  it("renders inbox items when data is loaded", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ items: mockItems, hasNext: false, page: 1 }),
@@ -128,17 +127,17 @@ describe('InboxList', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument();
-      expect(screen.getByText('Test message 1')).toBeInTheDocument();
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+      expect(screen.getByText("Test message 1")).toBeInTheDocument();
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
-      expect(screen.getByText('Test message 2')).toBeInTheDocument();
+      expect(screen.getByText("Jane Smith")).toBeInTheDocument();
+      expect(screen.getByText("Test message 2")).toBeInTheDocument();
     });
   });
 
-  it('calls onItemSelected when an item is clicked', async () => {
+  it("calls onItemSelected when an item is clicked", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ items: mockItems, hasNext: false, page: 1 }),
@@ -152,22 +151,22 @@ describe('InboxList', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
     });
 
-    const firstItem = screen.getByText('John Doe').closest('[role="button"]');
+    const firstItem = screen.getByText("John Doe").closest('[role="button"]');
     if (firstItem) {
-      firstItem.click();
+      (firstItem as HTMLElement).click();
       expect(onItemSelected).toHaveBeenCalledWith(mockItems[0]);
     }
   });
 
-  it('handles fetch errors gracefully', async () => {
+  it("handles fetch errors gracefully", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 500,
-      statusText: 'Internal Server Error',
-      text: async () => 'Server error',
+      statusText: "Internal Server Error",
+      text: async () => "Server error",
     });
     global.fetch = mockFetch;
 
@@ -180,7 +179,7 @@ describe('InboxList', () => {
     });
   });
 
-  it('displays loading message when fetching more items', async () => {
+  it("displays loading message when fetching more items", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ items: mockItems, hasNext: true, page: 1 }),
@@ -196,14 +195,14 @@ describe('InboxList', () => {
     });
   });
 
-  it('applies filters when provided', async () => {
+  it("applies filters when provided", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ items: mockItems, hasNext: false, page: 1 }),
     });
     global.fetch = mockFetch;
 
-    const filters = { platform: 'TWITTER', status: 'UNREAD' };
+    const filters = { platform: "TWITTER", status: "UNREAD" };
 
     render(<InboxList filters={filters} onItemSelected={() => {}} />, {
       wrapper: createWrapper(),
@@ -211,12 +210,10 @@ describe('InboxList', () => {
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('platform=TWITTER'),
-        undefined
+        expect.stringContaining("platform=TWITTER"),
       );
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('status=UNREAD'),
-        undefined
+        expect.stringContaining("status=UNREAD"),
       );
     });
   });

@@ -1,7 +1,7 @@
 ---
 active: true
-iteration: 95
-max_iterations: 200
+iteration: 14
+max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
 ---
@@ -49,30 +49,53 @@ The Status column in the Active Task Registry uses these values:
 
 <!-- Ralph: UPDATE THIS EVERY ITERATION! This is your memory. -->
 
-| Issue #        | Session ID           | Status      | PR #    | Retries | Last Updated     |
-| -------------- | -------------------- | ----------- | ------- | ------- | ---------------- |
-| CI-FIX-RETRY   | 2071026505896574240  | PLANNING    | -       | 1       | 2026-01-10T17:25 |
-| #545 (ORB-042) | 10448440558500030178 | PLANNING    | -       | 0       | 2026-01-10T17:25 |
-| #530 (ORB-022) | 1223874300114515623  | IN_PROGRESS | -       | 0       | 2026-01-10T17:25 |
-| #536 (ORB-036) | 12268363689474090994 | IN_PROGRESS | -       | 0       | 2026-01-10T17:25 |
-| PR-659-FIX     | 12847152019524036796 | IN_PROGRESS | -       | 0       | 2026-01-10T17:25 |
-| PR-660-FIX     | 12880711734109548513 | IN_PROGRESS | -       | 0       | 2026-01-10T17:25 |
-| #546 (ORB-027) | 13204058962977056689 | COMPLETED   | ⚠️ No PR | 1       | 2026-01-10T17:10 |
-| #544 (ORB-026) | 8018068239388301596  | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T14:15 |
-| #538 (ORB-037) | 13964044312522937140 | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T17:05 |
-| #540 (ORB-039) | 16859514757019367340 | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T16:00 |
-| #532 (ORB-024) | 3272942138734267585  | COMPLETED   | #659    | 0       | 2026-01-10T14:15 |
-| #531 (ORB-023) | 12664520598883814187 | COMPLETED   | ⚠️ No PR | 0       | 2026-01-10T12:10 |
-| #529 (ORB-021) | 12716452045721348213 | COMPLETED   | #660    | 0       | 2026-01-10T16:00 |
+| Issue #        | Session ID           | Status        | PR #    | Retries | Last Updated     |
+| -------------- | -------------------- | ------------- | ------- | ------- | ---------------- |
+| UNIT-TEST-FIX  | 5134072663804435110  | IN_PROGRESS   | #669    | 0       | 2026-01-10T18:30 |
+| #545 (ORB-042) | 10448440558500030178 | IN_PROGRESS   | -       | 0       | 2026-01-10T18:30 |
+| PR-659-FIX     | 12847152019524036796 | IN_PROGRESS   | -       | 0       | 2026-01-10T18:30 |
+| PR-665-FIX     | 3633172326393439913  | PLANNING      | -       | 0       | 2026-01-10T18:30 |
+| PR-667-FIX     | 17258562081963162276 | PLANNING      | -       | 0       | 2026-01-10T18:30 |
+| #544 (ORB-026) | 8018068239388301596  | PR_CREATED    | #666    | 0       | 2026-01-10T18:30 |
+| #540 (ORB-039) | 16859514757019367340 | PR_CREATED    | #668    | 0       | 2026-01-10T18:30 |
+| #532 (ORB-024) | 3272942138734267585  | COMPLETED     | #659 ✅ | 0       | 2026-01-10T18:05 |
+| #531 (ORB-023) | 12664520598883814187 | PR_CI_FAILING | #667    | 0       | 2026-01-10T18:30 |
+| #529 (ORB-021) | 12716452045721348213 | COMPLETED     | #660 ✅ | 0       | 2026-01-10T18:05 |
+| #530 (ORB-022) | 1223874300114515623  | COMPLETED     | -       | 0       | 2026-01-10T18:30 |
+| #536 (ORB-036) | 12268363689474090994 | COMPLETED     | -       | 0       | 2026-01-10T18:00 |
+| #538 (ORB-037) | 13964044312522937140 | COMPLETED     | -       | 0       | 2026-01-10T17:05 |
+| #546 (ORB-027) | 13204058962977056689 | COMPLETED     | -       | 1       | 2026-01-10T17:10 |
 
-**PRs Pending Review:**
+**Active Count: 5/6** (1 slot available)
 
-- PR #659 (ORB-024): Scout competitor tracking - ⚠️ CONFLICTING, 29 review comments, follow-up task active
-- PR #660 (ORB-021): Unified inbox UI - BEHIND main, 28 review comments, follow-up task active
+**PRs Open (5):**
+
+| PR # | Issue         | Status             | Next Action                |
+| ---- | ------------- | ------------------ | -------------------------- |
+| #669 | UNIT-TEST-FIX | Draft, BEHIND main | Jules notified to fix      |
+| #668 | #540 ORB-039  | Draft              | Wait for CI check          |
+| #667 | #531 ORB-023  | CI FAILING         | PR-667-FIX session created |
+| #666 | #544 ORB-026  | Draft              | Wait for CI check          |
+| #665 | #532 ORB-024  | DIRTY (conflicts)  | PR-665-FIX session created |
+
+**Build Status (main):**
+
+- unit-tests-1: ❌ FAILING
+- unit-tests-2: ❌ FAILING (GitHubIssuesPanel, OverviewTab, FunnelTab)
+- unit-tests-3: ✅ PASSING
+- unit-tests-4: ✅ PASSING
+
+**Actions This Iteration:**
+
+- ✅ Approved #545 (ORB-042) plan
+- ✅ Messaged Jules about PR #669 being behind main
+- ✅ Created PR-665-FIX session for merge conflicts
+- ✅ Created PR-667-FIX session for CI failures
+- ✅ Updated PR mappings in registry
 
 **Issues Flagged for Human Review:**
 
-- ORB-023, ORB-026, ORB-027, ORB-037, ORB-039: Jules sessions COMPLETED but no PRs created
+- ORB-027, ORB-037: Jules sessions COMPLETED but no PRs created (retry exhausted)
 
 ---
 
@@ -640,4 +663,179 @@ Each iteration should output structured logs:
 
 ---
 
-_Last updated: Iteration 93 at 2026-01-10T18:00:00Z_
+## 🔧 Git Worktree Policy
+
+**CRITICAL**: Always work on the `main` branch directly.
+
+### Rules
+
+1. **Ralph operates on `main`** - All status checks, commits, and pushes happen on main
+2. **Subagents use worktrees** - When spawning subagents for merge conflicts or complex fixes:
+   ```bash
+   # Create worktree for subagent work
+   git worktree add ../fix-[issue] -b fix-[issue]
+
+   # Subagent works in worktree
+   cd ../fix-[issue]
+   # ... do work ...
+
+   # Merge back to main
+   cd ../main
+   git merge fix-[issue]
+   git worktree remove ../fix-[issue]
+   ```
+3. **Never leave main** - Ralph's iteration loop always runs from main branch
+
+---
+
+## 🚨 Build Fixing Priority (STEP 0 - BEFORE ALL ELSE)
+
+**Build health is the #1 priority.** Before any iteration workflow, verify and fix the build.
+
+### Step 0.1: Verify on Main Branch
+
+```bash
+git branch --show-current  # Must output "main"
+```
+
+### Step 0.2: Run Docker Build Tests (Max 3 Parallel)
+
+Run these in batches of 3 to identify failures:
+
+**Batch 1 - Unit Tests:**
+
+```bash
+docker build . --target=unit-tests-1 &
+docker build . --target=unit-tests-2 &
+docker build . --target=unit-tests-3 &
+wait
+docker build . --target=unit-tests-4
+```
+
+**Batch 2 - E2E Tests (run sequentially or in small batches):**
+
+```bash
+docker build . --target=e2e-tests-1
+docker build . --target=e2e-tests-2
+# ... through ...
+docker build . --target=e2e-tests-16
+```
+
+**Final - Full CI:**
+
+```bash
+docker build . --target=ci
+```
+
+### Step 0.3: On Failure - Create Jules Task Immediately
+
+When any build target fails:
+
+1. **Capture the error output**
+2. **Create GitHub issue with error details**
+3. **Create Jules task immediately** (exceeds WIP_LIMIT - priority override)
+
+```bash
+# Create issue
+gh issue create --title "🚨 Build failing: [target] - [summary]" \
+  --body "Build target \`[target]\` is failing.\n\n\`\`\`\n[error log]\n\`\`\`" \
+  --label "bug,priority:critical"
+```
+
+````
+mcp__spike-land__jules_create_session {
+  title: "🚨 Fix Build: [target] failure",
+  task: "Build is failing on target [target].\n\nError:\n```\n[error output]\n```\n\nFix this immediately. This blocks all other work.",
+  source_repo: "zerdos/spike-land-nextjs"
+}
+````
+
+### Build Target Reference
+
+| Target         | Description          |
+| -------------- | -------------------- |
+| unit-tests-1   | Unit test shard 1    |
+| unit-tests-2   | Unit test shard 2    |
+| unit-tests-3   | Unit test shard 3    |
+| unit-tests-4   | Unit test shard 4    |
+| e2e-tests-1-16 | E2E test shards 1-16 |
+| ci             | Full CI validation   |
+
+---
+
+## 🔄 Continuous Improvement
+
+**Each iteration, look for opportunities to improve the process.**
+
+### Self-Improvement Rules
+
+1. **If stuck on same issue for 2+ iterations**: Modify approach, try different strategy
+2. **If Jules reports critical issue**: Kill task immediately, start fresh with new context
+3. **If pattern of failures emerges**: Update this document with lessons learned
+4. **If process feels inefficient**: Adjust workflow steps for next iteration
+
+### Handling Critical Issues from Jules
+
+When Jules messages that it encountered a **critical issue** (blocked, can't proceed, fundamental problem):
+
+#### Step 1: Kill the Task Immediately
+
+Do NOT retry with same context. The task is poisoned.
+
+#### Step 2: Archive via Browser
+
+```
+mcp__playwright__browser_navigate { url: "https://jules.google.com/session/[session_id]" }
+mcp__playwright__browser_snapshot {}
+```
+
+Look for "Archive" or "Close" button and click it to clean up.
+
+#### Step 3: Start Fresh
+
+Create a new Jules session with:
+
+- Simplified task description
+- Different approach angle
+- Lessons from the failure
+
+```
+mcp__spike-land__jules_create_session {
+  title: "Retry #[n]: [issue] - Fresh approach",
+  task: "[Simplified task]\n\n⚠️ Previous attempt failed due to: [reason]\n\nTry this approach instead: [new approach]",
+  source_repo: "zerdos/spike-land-nextjs"
+}
+```
+
+### Iteration Improvement Log
+
+<!-- Track what was learned/changed each iteration -->
+
+| Iteration | Change Made               | Reason                   |
+| --------- | ------------------------- | ------------------------ |
+| 12        | Added build priority step | Build health is critical |
+| 12        | Added worktree policy     | Prevent branch confusion |
+| 12        | Added critical issue kill | Stop wasting retries     |
+
+---
+
+## 🗑️ Session Cleanup via Browser
+
+For completed, failed, or stuck sessions, clean up via jules.google.com:
+
+### Archive a Session
+
+```
+mcp__playwright__browser_navigate { url: "https://jules.google.com" }
+mcp__playwright__browser_snapshot {}
+```
+
+Find session in list, click to open, then:
+
+```
+mcp__playwright__browser_click { element: "Archive button or menu", ref: "[ref]" }
+```
+
+### Bulk Cleanup
+
+Periodically (every 5 iterations), archive all COMPLETED and FAILED sessions that are older than 24 hours to keep the Jules dashboard clean
