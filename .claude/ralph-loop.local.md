@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 27
+iteration: 28
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -86,10 +86,9 @@ The Status column in the Active Task Registry uses these values:
 
 - CI/CD Pipeline: ⏳ PENDING (post-merge run)
 
-**Actions This Iteration (27):**
+**Actions This Iteration (28):**
 
-- ✅ Approved plan: #545 (ORB-042) - now IN_PROGRESS
-- 🔄 Updated registry: PR-667-CI-FIX session is IN_PROGRESS (not COMPLETED)
+- ✅ Re-approved plan: #545 (ORB-042) - was AWAITING_PLAN_APPROVAL again
 - 📊 7 active sessions (6 IN_PROGRESS + 1 PLANNING)
 
 **Issues Flagged for Human Review:**
