@@ -1,39 +1,38 @@
-
-import { render, screen, fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
-import { InboxFilters } from './inbox-filters';
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { InboxFilters } from "./inbox-filters";
 
 const teamMembers = [
-  { id: '1', name: 'Alice' },
-  { id: '2', name: 'Bob' },
+  { id: "1", name: "Alice" },
+  { id: "2", name: "Bob" },
 ];
 
-describe('InboxFilters', () => {
-  it('renders all filter dropdowns', () => {
+describe("InboxFilters", () => {
+  it("renders all filter dropdowns", () => {
     render(<InboxFilters onFilterChange={() => {}} teamMembers={teamMembers} />);
-    expect(screen.getByLabelText('Platform')).toBeInTheDocument();
-    expect(screen.getByLabelText('Status')).toBeInTheDocument();
-    expect(screen.getByLabelText('Type')).toBeInTheDocument();
-    expect(screen.getByLabelText('Assigned To')).toBeInTheDocument();
+    expect(screen.getByLabelText("Platform")).toBeInTheDocument();
+    expect(screen.getByLabelText("Status")).toBeInTheDocument();
+    expect(screen.getByLabelText("Type")).toBeInTheDocument();
+    expect(screen.getByLabelText("Assigned To")).toBeInTheDocument();
   });
 
-  it('calls onFilterChange with the correct values when the form is submitted', async () => {
+  it("calls onFilterChange with the correct values when the form is submitted", async () => {
     const onFilterChange = vi.fn();
     render(<InboxFilters onFilterChange={onFilterChange} teamMembers={teamMembers} />);
     // This is a workaround for the fact that shadcn/ui select is not easily testable
     // In a real app, you'd want to use a more robust testing strategy for forms
-    const form = screen.getByTestId('inbox-filters-form');
-    
+    const form = screen.getByTestId("inbox-filters-form");
+
     // Note: The following test attempts to submit the form but cannot properly interact with
     // shadcn/ui Select components in a test environment. To properly test this component,
     // consider using Playwright or Cypress for E2E testing, or refactor to use more
     // test-friendly form controls.
     fireEvent.submit(form, {
       target: {
-        platform: { value: 'TWITTER' },
-        status: { value: 'UNREAD' },
-        type: { value: 'MENTION' },
-        assignedToId: { value: '1' },
+        platform: { value: "TWITTER" },
+        status: { value: "UNREAD" },
+        type: { value: "MENTION" },
+        assignedToId: { value: "1" },
       },
     });
 

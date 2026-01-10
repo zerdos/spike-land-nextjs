@@ -28,7 +28,7 @@ export interface PublicInstagramPost {
 
 export class PublicInstagramClient {
   // Disable delays in test/CI environments for faster test execution
-  private readonly enableDelays = process.env.NODE_ENV !== 'test' && !process.env.CI;
+  private readonly enableDelays = process.env.NODE_ENV !== "test" && !process.env.CI;
 
   /**
    * Fetches mock information for an Instagram account.
@@ -69,7 +69,9 @@ export class PublicInstagramClient {
       const publishedAt = new Date(Date.now() - i * 36 * 60 * 60 * 1000); // Posts every 1.5 days
       return {
         id: postId,
-        content: `Mock photo post #${i + 1} from ${handle}. Imagine a beautiful picture here. #instagram #mock #test`,
+        content: `Mock photo post #${
+          i + 1
+        } from ${handle}. Imagine a beautiful picture here. #instagram #mock #test`,
         authorHandle: handle,
         url: `https://www.instagram.com/p/${postId}`,
         publishedAt,

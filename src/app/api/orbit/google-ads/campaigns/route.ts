@@ -1,14 +1,10 @@
-
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import {
-  safeDecryptToken,
-  safeEncryptToken,
-} from "@/lib/crypto/token-encryption";
+import { safeDecryptToken, safeEncryptToken } from "@/lib/crypto/token-encryption";
 import { GoogleAdsClient } from "@/lib/marketing/google-ads-client";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 
 const routeSchema = z.object({
@@ -141,7 +137,7 @@ export async function POST(req: Request) {
             status: campaign.status,
             spend: 0,
           },
-        }),
+        })
       ),
     ),
   );

@@ -1,13 +1,25 @@
+"use client";
 
-'use client';
-
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SocialPlatform, InboxItemStatus, InboxItemType } from '@prisma/client';
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { InboxItemStatus, InboxItemType, SocialPlatform } from "@prisma/client";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const filterSchema = z.object({
   platform: z.enum(Object.values(SocialPlatform) as [string, ...string[]]).optional(),
@@ -20,7 +32,7 @@ export type FilterFormValues = z.infer<typeof filterSchema>;
 
 interface InboxFiltersProps {
   onFilterChange: (filters: FilterFormValues) => void;
-  teamMembers: { id: string; name: string }[];
+  teamMembers: { id: string; name: string; }[];
 }
 
 export function InboxFilters({ onFilterChange, teamMembers }: InboxFiltersProps) {
@@ -35,7 +47,11 @@ export function InboxFilters({ onFilterChange, teamMembers }: InboxFiltersProps)
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" data-testid="inbox-filters-form">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4"
+        data-testid="inbox-filters-form"
+      >
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <FormField
             control={form.control}

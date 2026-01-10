@@ -1,16 +1,16 @@
-
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { POST } from "./route";
-import { prisma } from "@/lib/prisma";
-import { GoogleAdsClient } from "@/lib/marketing/google-ads-client";
 import { safeDecryptToken, safeEncryptToken } from "@/lib/crypto/token-encryption";
+import { GoogleAdsClient } from "@/lib/marketing/google-ads-client";
+import prisma from "@/lib/prisma";
+import type { Mock } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { POST } from "./route";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
-  prisma: {
+  default: {
     marketingAccount: {
       findFirst: vi.fn(),
       update: vi.fn(),
@@ -18,11 +18,13 @@ vi.mock("@/lib/prisma", () => ({
     googleAdsCampaign: {
       upsert: vi.fn(),
     },
-    $transaction: vi.fn((callback) => callback(prisma)),
+    $transaction: vi.fn((operations: unknown[]) => Promise.all(operations)),
   },
 }));
 
-vi.mock("@/lib/marketing/google-ads-client");
+vi.mock("@/lib/marketing/google-ads-client", () => ({
+  GoogleAdsClient: vi.fn(),
+}));
 vi.mock("@/lib/crypto/token-encryption");
 
 describe("POST /api/orbit/google-ads/campaigns", () => {
@@ -32,7 +34,7 @@ describe("POST /api/orbit/google-ads/campaigns", () => {
 
   it("should return 401 if user is not authenticated", async () => {
     const { auth } = await import("@/auth");
-    (auth as vi.Mock).mockResolvedValue(null);
+    (auth as Mock).mockResolvedValue(null);
 
     const req = new Request("http://localhost/api/orbit/google-ads/campaigns", {
       method: "POST",
@@ -45,8 +47,8 @@ describe("POST /api/orbit/google-ads/campaigns", () => {
 
   it("should return 404 if marketing account is not found", async () => {
     const { auth } = await import("@/auth");
-    (auth as vi.Mock).mockResolvedValue({ user: { id: "user-123" } });
-    (prisma.marketingAccount.findFirst as vi.Mock).mockResolvedValue(null);
+    (auth as Mock).mockResolvedValue({ user: { id: "user-123" } });
+    (prisma.marketingAccount.findFirst as Mock).mockResolvedValue(null);
 
     const req = new Request("http://localhost/api/orbit/google-ads/campaigns", {
       method: "POST",
@@ -59,7 +61,7 @@ describe("POST /api/orbit/google-ads/campaigns", () => {
 
   it("should fetch and save campaigns successfully", async () => {
     const { auth } = await import("@/auth");
-    (auth as vi.Mock).mockResolvedValue({ user: { id: "user-123" } });
+    (auth as Mock).mockResolvedValue({ user: { id: "user-123" } });
 
     const mockMarketingAccount = {
       id: "marketing-account-123",
@@ -71,9 +73,11 @@ describe("POST /api/orbit/google-ads/campaigns", () => {
       expiresAt: new Date(Date.now() + 3600 * 1000), // Expires in 1 hour
     };
 
-    (prisma.marketingAccount.findFirst as vi.Mock).mockResolvedValue(mockMarketingAccount);
-    (safeDecryptToken as vi.Mock).mockImplementation((token) => token.replace("encrypted-", ""));
-    (safeEncryptToken as vi.Mock).mockImplementation((token) => `encrypted-${token}`);
+    (prisma.marketingAccount.findFirst as Mock).mockResolvedValue(mockMarketingAccount);
+    (safeDecryptToken as Mock).mockImplementation((token: string) =>
+      token.replace("encrypted-", "")
+    );
+    (safeEncryptToken as Mock).mockImplementation((token: string) => `encrypted-${token}`);
 
     const mockCampaigns = [
       { id: "campaign-1", name: "Campaign 1", status: "ENABLED", budgetAmount: 10000 },
@@ -81,13 +85,16 @@ describe("POST /api/orbit/google-ads/campaigns", () => {
     ];
 
     const mockListCampaigns = vi.fn().mockResolvedValue(mockCampaigns);
-    (GoogleAdsClient as vi.Mock).mockImplementation(() => ({
-      setAccessToken: vi.fn(),
-      setCustomerId: vi.fn(),
+    const mockSetAccessToken = vi.fn();
+    const mockSetCustomerId = vi.fn();
+
+    (GoogleAdsClient as Mock).mockImplementation(() => ({
+      setAccessToken: mockSetAccessToken,
+      setCustomerId: mockSetCustomerId,
       listCampaigns: mockListCampaigns,
     }));
 
-    (prisma.googleAdsCampaign.upsert as vi.Mock).mockResolvedValue({});
+    (prisma.googleAdsCampaign.upsert as Mock).mockResolvedValue({});
 
     const req = new Request("http://localhost/api/orbit/google-ads/campaigns", {
       method: "POST",

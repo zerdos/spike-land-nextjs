@@ -5,7 +5,7 @@
  * metrics, identify top content, and create benchmarks.
  */
 
-import { prisma } from '@/lib/prisma';
+import prisma from "@/lib/prisma";
 
 export interface EngagementMetrics {
   averageLikes: number;
@@ -78,13 +78,13 @@ export async function analyzeCompetitorEngagement(
  */
 export async function getTopCompetitorPosts(
   competitorId: string,
-  metric: 'likes' | 'comments' | 'shares' = 'likes',
+  metric: "likes" | "comments" | "shares" = "likes",
   limit = 5,
 ) {
   const topPosts = await prisma.scoutCompetitorPost.findMany({
     where: { competitorId },
     orderBy: {
-      [metric]: 'desc',
+      [metric]: "desc",
     },
     take: limit,
   });
@@ -126,7 +126,7 @@ export async function generateBenchmarkReport(
   let totalCompetitorPosts = 0;
 
   // Parallelize metric calculations for all competitors to avoid sequential queries
-  const metricsPromises = competitors.map(competitor => 
+  const metricsPromises = competitors.map(competitor =>
     analyzeCompetitorEngagement(competitor.id, startDate, endDate)
   );
   const metricsResults = await Promise.all(metricsPromises);
@@ -158,12 +158,12 @@ export async function generateBenchmarkReport(
 
   // Save the benchmark to the database.
   const benchmark = await prisma.scoutBenchmark.create({
-      data: {
-          workspaceId,
-          period,
-          ownMetrics,
-          competitorMetrics,
-      }
+    data: {
+      workspaceId,
+      period,
+      ownMetrics,
+      competitorMetrics,
+    },
   });
 
   return benchmark;

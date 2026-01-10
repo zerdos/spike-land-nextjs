@@ -29,7 +29,7 @@ export interface PublicFacebookPost {
 
 export class PublicFacebookClient {
   // Disable delays in test/CI environments for faster test execution
-  private readonly enableDelays = process.env.NODE_ENV !== 'test' && !process.env.CI;
+  private readonly enableDelays = process.env.NODE_ENV !== "test" && !process.env.CI;
 
   /**
    * Fetches mock information for a Facebook account.
@@ -70,7 +70,9 @@ export class PublicFacebookClient {
       const publishedAt = new Date(Date.now() - i * 24 * 60 * 60 * 1000); // One post per day
       return {
         id: postId,
-        content: `This is mock post number ${i + 1} from ${handle}. It's a great day for some fake content! #mock #testing`,
+        content: `This is mock post number ${
+          i + 1
+        } from ${handle}. It's a great day for some fake content! #mock #testing`,
         authorHandle: handle,
         url: `https://www.facebook.com/${handle}/posts/${postId}`,
         publishedAt,

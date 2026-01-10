@@ -6,13 +6,13 @@
  * Note: Nitter instances can be unreliable. The implementation cycles through a list of fallback instances.
  */
 
-import { XMLParser } from 'fast-xml-parser';
+import { XMLParser } from "fast-xml-parser";
 
 // Configurable Nitter instances with fallbacks
 const NITTER_INSTANCES = [
-  process.env.NITTER_INSTANCE_URL || 'https://nitter.net',
-  'https://nitter.privacydev.net',
-  'https://nitter.poast.org',
+  process.env.NITTER_INSTANCE_URL || "https://nitter.net",
+  "https://nitter.privacydev.net",
+  "https://nitter.poast.org",
 ];
 
 let currentInstanceIndex = 0;
@@ -21,7 +21,7 @@ let currentInstanceIndex = 0;
  * Get the current Nitter instance URL and cycle to next on failure
  */
 function getNitterInstance(): string {
-  return NITTER_INSTANCES[currentInstanceIndex % NITTER_INSTANCES.length];
+  return NITTER_INSTANCES[currentInstanceIndex % NITTER_INSTANCES.length] ?? NITTER_INSTANCES[0]!;
 }
 
 /**
@@ -49,13 +49,21 @@ export interface PublicTweet {
   shares: number; // Retweets
 }
 
+interface RssItem {
+  link?: string;
+  title?: string;
+  description?: string;
+  pubDate?: string;
+  "dc:creator"?: string;
+}
+
 export class PublicTwitterClient {
   private parser: XMLParser;
 
   constructor() {
     this.parser = new XMLParser({
       ignoreAttributes: false,
-      attributeNamePrefix: '@_',
+      attributeNamePrefix: "@_",
     });
   }
 
@@ -73,11 +81,13 @@ export class PublicTwitterClient {
     for (let attempt = 0; attempt < NITTER_INSTANCES.length; attempt++) {
       const rssUrl = this.getRssFeedUrl(handle);
       const instanceUrl = getNitterInstance();
-      
+
       try {
         const response = await fetch(rssUrl);
         if (!response.ok) {
-          console.error(`Failed to fetch Nitter feed for ${handle} from ${instanceUrl}: ${response.statusText}`);
+          console.error(
+            `Failed to fetch Nitter feed for ${handle} from ${instanceUrl}: ${response.statusText}`,
+          );
           cycleToNextInstance();
           continue;
         }
@@ -90,20 +100,23 @@ export class PublicTwitterClient {
           return null;
         }
 
-        const avatarUrl = channel.image?.url || '';
+        const avatarUrl = channel.image?.url || "";
 
         return {
           handle,
-          name: channel.title.replace(` (@${handle})`, ''),
+          name: channel.title.replace(` (@${handle})`, ""),
           profileUrl: channel.link || `${instanceUrl}/${handle}`,
           avatarUrl,
         };
       } catch (error) {
-        console.error(`Error fetching or parsing Nitter feed for ${handle} from ${instanceUrl}:`, error);
+        console.error(
+          `Error fetching or parsing Nitter feed for ${handle} from ${instanceUrl}:`,
+          error,
+        );
         cycleToNextInstance();
       }
     }
-    
+
     // All instances failed
     return null;
   }
@@ -118,14 +131,14 @@ export class PublicTwitterClient {
     for (let attempt = 0; attempt < NITTER_INSTANCES.length; attempt++) {
       const rssUrl = this.getRssFeedUrl(handle);
       const instanceUrl = getNitterInstance();
-      
+
       try {
         const response = await fetch(rssUrl);
         if (!response.ok) {
           cycleToNextInstance();
           continue;
         }
-        
+
         const rssText = await response.text();
         const feed = this.parser.parse(rssText);
 
@@ -134,37 +147,44 @@ export class PublicTwitterClient {
           return [];
         }
 
-        const posts: PublicTweet[] = (Array.isArray(items) ? items : [items]).map((item: any) => {
-          const url = item.link || '';
-          const id = url.split('/').pop()?.split('#')[0] || '';
+        const posts: PublicTweet[] = (Array.isArray(items) ? items : [items]).map(
+          (item: RssItem) => {
+            const url = item.link || "";
+            const id = url.split("/").pop()?.split("#")[0] || "";
 
-          // Nitter RSS feed descriptions sometimes contain engagement stats, but it's not guaranteed.
-          const description = item.description || '';
-          const commentsMatch = description.match(/💬\s*([\d,]+)/);
-          const likesMatch = description.match(/♥\s*([\d,]+)/) || description.match(/♥️\s*([\d,]+)/);
-          const sharesMatch = description.match(/🔁\s*([\d,]+)/);
+            // Nitter RSS feed descriptions sometimes contain engagement stats, but it's not guaranteed.
+            const description = item.description || "";
+            const commentsMatch = description.match(/💬\s*([\d,]+)/);
+            const likesMatch = description.match(/♥\s*([\d,]+)/) ||
+              description.match(/♥️\s*([\d,]+)/);
+            const sharesMatch = description.match(/🔁\s*([\d,]+)/);
 
-          const parseCount = (match: RegExpMatchArray | null) => match ? parseInt(match[1].replace(/,/g, ''), 10) : 0;
+            const parseCount = (match: RegExpMatchArray | null) =>
+              match?.[1] ? parseInt(match[1].replace(/,/g, ""), 10) : 0;
 
-          return {
-            id,
-            content: item.title || '',
-            authorHandle: item['dc:creator'] ? item['dc:creator'].replace(/^@/, '') : handle,
-            url,
-            publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
-            likes: parseCount(likesMatch),
-            comments: parseCount(commentsMatch),
-            shares: parseCount(sharesMatch),
-          };
-        });
+            return {
+              id,
+              content: item.title || "",
+              authorHandle: item["dc:creator"] ? item["dc:creator"].replace(/^@/, "") : handle,
+              url,
+              publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
+              likes: parseCount(likesMatch),
+              comments: parseCount(commentsMatch),
+              shares: parseCount(sharesMatch),
+            };
+          },
+        );
 
         return posts;
       } catch (error) {
-        console.error(`Error fetching or parsing Nitter feed for ${handle} from ${instanceUrl}:`, error);
+        console.error(
+          `Error fetching or parsing Nitter feed for ${handle} from ${instanceUrl}:`,
+          error,
+        );
         cycleToNextInstance();
       }
     }
-    
+
     // All instances failed
     return [];
   }
