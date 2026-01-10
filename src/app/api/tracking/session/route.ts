@@ -262,6 +262,28 @@ export async function PATCH(request: NextRequest) {
 
   const { sessionId, sessionEnd, userId, exitPage } = parseResult.data;
 
+  // If userId is provided, verify the user exists before linking
+  if (userId) {
+    const { data: existingUser, error: userLookupError } = await tryCatch(
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true },
+      }),
+    );
+
+    if (userLookupError) {
+      console.error("[Tracking] User lookup error:", userLookupError);
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
+    }
+
+    if (!existingUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 400 });
+    }
+  }
+
   // Build update data
   const updateData: Record<string, unknown> = {};
   if (sessionEnd) {
@@ -296,6 +318,12 @@ export async function PATCH(request: NextRequest) {
       updateError.message.includes("Record to update not found")
     ) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    // Handle foreign key constraint violation (user deleted between check and update)
+    const errorCode = (updateError as { code?: string; }).code;
+    if (errorCode === "P2003") {
+      return NextResponse.json({ error: "User not found" }, { status: 400 });
     }
 
     console.error("[Tracking] Session patch error:", updateError);
