@@ -4,10 +4,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
-      "next/server": path.resolve(
-        __dirname,
-        "../../../node_modules/next/dist/server/web/exports/index.js",
-      ),
+      "next/server": path.resolve(__dirname, "../../../node_modules/next/server.js"),
       "@": path.resolve(__dirname, "../../../src"),
       "@/components": path.resolve(__dirname, "../../../src/components"),
       "@/ui": path.resolve(__dirname, "../../../src/components/ui"),
@@ -22,5 +19,8 @@ export default defineConfig({
     env: {
       DATABASE_URL: "postgresql://mock:5432/mock",
     },
+  },
+  ssr: {
+    noExternal: ["next-auth"],
   },
 });

@@ -4,18 +4,25 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET, POST } from "./route";
 
-vi.mock("next/server", () => ({
-  NextResponse: {
-    json: vi.fn().mockImplementation(data => ({
-      json: () => Promise.resolve(data),
-      status: 200,
-    })),
-  },
-}));
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return {
+    ...actual,
+    NextResponse: {
+      ...actual.NextResponse,
+      json: vi.fn().mockImplementation((data, init) => {
+        return {
+          json: () => Promise.resolve(data),
+          status: init?.status ?? 200,
+        };
+      }),
+    },
+  };
+});
 
 vi.mock("@/auth");
 vi.mock("@/lib/prisma", () => ({
-  prisma: {
+  default: {
     workspace: {
       findFirst: vi.fn(),
     },
@@ -28,7 +35,7 @@ vi.mock("@/lib/prisma", () => ({
 
 describe("/api/orbit/[workspaceSlug]/scout/topics", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("GET", () => {
@@ -103,6 +110,7 @@ describe("/api/orbit/[workspaceSlug]/scout/topics", () => {
         data: {
           workspaceId: "ws-123",
           ...newTopic,
+          isActive: true,
         },
       });
     });
