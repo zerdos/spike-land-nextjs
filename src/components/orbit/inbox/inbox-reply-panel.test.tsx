@@ -121,9 +121,7 @@ describe("InboxReplyPanel", () => {
     await waitFor(() => {
       // Expect fetch to have been called (we can inspect arguments if needed)
       // We check if it was called at least once for the reply endpoint
-      const replyCall = mockFetch.mock.calls.find((call) =>
-        call[0].toString().includes("/reply")
-      );
+      const replyCall = mockFetch.mock.calls.find((call) => call[0].toString().includes("/reply"));
       expect(replyCall).toBeDefined();
     });
   });

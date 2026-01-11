@@ -30,7 +30,7 @@ describe("NewAppPage", () => {
   it("should render loading state initially", () => {
     render(<NewAppPage />);
     expect(
-      screen.getByText("Initializing workspace...")
+      screen.getByText("Initializing workspace..."),
     ).toBeInTheDocument();
   });
 
@@ -41,11 +41,11 @@ describe("NewAppPage", () => {
       expect(mockReplace).toHaveBeenCalledTimes(1);
     });
 
-    const redirectPath = mockReplace.mock.calls[0][0];
+    const redirectPath = mockReplace.mock.calls[0]![0];
     // Check format: /my-apps/new/[generated-id]
     // ID format is adj-noun-verb-suffix
     expect(redirectPath).toMatch(
-      /^\/my-apps\/new\/[a-z]+-[a-z]+-[a-z]+-[a-z0-9]+$/
+      /^\/my-apps\/new\/[a-z]+-[a-z]+-[a-z]+-[a-z0-9]+$/,
     );
   });
 });
