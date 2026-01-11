@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,10 +22,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AutopilotExecutionResult } from "@/lib/allocator/autopilot-types";
 import { formatDistanceToNow } from "date-fns";
 import { RotateCcw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface AutopilotExecutionHistoryProps {
@@ -39,8 +48,10 @@ interface ExecutionRecord {
 export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionHistoryProps) {
   const [executions, setExecutions] = useState<ExecutionRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [rollbackDialogOpen, setRollbackDialogOpen] = useState(false);
+  const [selectedExecutionId, setSelectedExecutionId] = useState<string | null>(null);
 
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       setIsLoading(true);
       const res = await fetch(`/api/orbit/${workspaceSlug}/allocator/autopilot/executions`);
@@ -53,22 +64,23 @@ export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionH
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [workspaceSlug]);
 
   useEffect(() => {
     fetchHistory();
-  }, [workspaceSlug]);
+  }, [fetchHistory]);
 
-  const handleRollback = async (executionId: string) => {
-    if (
-      !confirm(
-        "Are you sure you want to rollback this change? This will create a new budget adjustment.",
-      )
-    ) return;
+  const openRollbackDialog = (executionId: string) => {
+    setSelectedExecutionId(executionId);
+    setRollbackDialogOpen(true);
+  };
+
+  const handleRollbackConfirm = async () => {
+    if (!selectedExecutionId) return;
 
     try {
       const res = await fetch(
-        `/api/orbit/${workspaceSlug}/allocator/autopilot/executions/${executionId}/rollback`,
+        `/api/orbit/${workspaceSlug}/allocator/autopilot/executions/${selectedExecutionId}/rollback`,
         {
           method: "POST",
         },
@@ -81,6 +93,9 @@ export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionH
     } catch (err) {
       toast.error("Failed to rollback");
       console.error(err);
+    } finally {
+      setRollbackDialogOpen(false);
+      setSelectedExecutionId(null);
     }
   };
 
@@ -149,7 +164,7 @@ export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionH
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleRollback(exec.id)}
+                        onClick={() => openRollbackDialog(exec.id)}
                         title="Rollback this change"
                       >
                         <RotateCcw className="h-4 w-4" />
@@ -172,6 +187,22 @@ export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionH
           </Table>
         </ScrollArea>
       </CardContent>
+
+      <AlertDialog open={rollbackDialogOpen} onOpenChange={setRollbackDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Rollback</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to rollback this change? This will create a new budget
+              adjustment to reverse the previous change.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRollbackConfirm}>Rollback</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

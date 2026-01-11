@@ -27,10 +27,9 @@ import type {
 } from "@/lib/allocator/allocator-types";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { useAutopilotConfig } from "@/hooks/useAutopilotConfig";
-import { ChevronDown, ChevronUp, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { AutopilotConfigPanel } from "./AutopilotConfigPanel";
 import { AutopilotExecutionHistory } from "./AutopilotExecutionHistory";
 import { AutopilotToggle } from "./AutopilotToggle";

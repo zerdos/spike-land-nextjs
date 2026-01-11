@@ -1,4 +1,8 @@
--- Create new tables first
+-- Create Enums FIRST (must be defined before tables that reference them)
+CREATE TYPE "AutopilotMode" AS ENUM ('CONSERVATIVE', 'MODERATE', 'AGGRESSIVE');
+CREATE TYPE "AutopilotExecutionStatus" AS ENUM ('PENDING', 'EXECUTING', 'COMPLETED', 'FAILED', 'SKIPPED', 'ROLLED_BACK', 'PAUSED');
+
+-- Create new tables
 CREATE TABLE "allocator_autopilot_configs" (
     "id" TEXT NOT NULL,
     "workspaceId" TEXT NOT NULL,
@@ -63,10 +67,6 @@ CREATE TABLE "feature_flags" (
     CONSTRAINT "feature_flags_pkey" PRIMARY KEY ("id")
 );
 
--- Create Enums
-CREATE TYPE "AutopilotMode" AS ENUM ('CONSERVATIVE', 'MODERATE', 'AGGRESSIVE');
-CREATE TYPE "AutopilotExecutionStatus" AS ENUM ('PENDING', 'EXECUTING', 'COMPLETED', 'FAILED', 'SKIPPED', 'ROLLED_BACK', 'PAUSED');
-
 -- Create Indexes for new tables
 CREATE UNIQUE INDEX "allocator_autopilot_configs_workspaceId_campaignId_key" ON "allocator_autopilot_configs"("workspaceId", "campaignId");
 CREATE INDEX "allocator_autopilot_configs_workspaceId_idx" ON "allocator_autopilot_configs"("workspaceId");
@@ -92,5 +92,14 @@ ALTER TABLE "allocator_autopilot_executions" ADD CONSTRAINT "allocator_autopilot
 
 ALTER TABLE "allocator_daily_budget_moves" ADD CONSTRAINT "allocator_daily_budget_moves_campaignId_fkey" FOREIGN KEY ("campaignId") REFERENCES "allocator_campaigns"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- Other constraints from original diff (excluding ones that might already exist if re-run)
--- This file is intended to be a clean 'up' migration for the new feature.
+-- Seed the allocator_autopilot feature flag (required for autopilot to work)
+INSERT INTO "feature_flags" ("id", "name", "isEnabled", "percentage", "enabledFor", "createdAt", "updatedAt")
+VALUES (
+  'cuid_allocator_autopilot',
+  'allocator_autopilot',
+  false,
+  0,
+  '{}',
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
+) ON CONFLICT ("name") DO NOTHING;
