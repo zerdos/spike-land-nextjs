@@ -52,12 +52,12 @@ The Status column in the Active Task Registry uses these values:
 
 | Issue #        | Session ID           | Status           | PR #    | Retries | Last Updated     |
 | -------------- | -------------------- | ---------------- | ------- | ------- | ---------------- |
-| #547 (ORB-043) | 6575646228061348411  | PR_BEHIND_MAIN   | #670    | 0       | 2026-01-11T07:20 |
-| #532 (ORB-024) | 440787502780889745   | REVIEW_REQUESTED | #671    | 0       | 2026-01-11T07:20 |
-| #553 (ORB-045) | 8138470443526940844  | IN_PROGRESS      | -       | 0       | 2026-01-11T07:20 |
-| #556 (ORB-046) | 6929007678145876615  | COMPLETED        | -       | 0       | 2026-01-11T07:20 |
-| #545 (ORB-042) | 10448440558500030178 | COMPLETED        | -       | 0       | 2026-01-11T07:20 |
-| BUILD-FIX-TS   | 15900753798124342819 | PLANNING         | -       | 0       | 2026-01-11T07:20 |
+| #547 (ORB-043) | 6575646228061348411  | COMPLETED        | #670 ✅ | 0       | 2026-01-11T07:22 |
+| #532 (ORB-024) | 440787502780889745   | COMPLETED        | #671 ✅ | 0       | 2026-01-11T07:22 |
+| #553 (ORB-045) | 8138470443526940844  | IN_PROGRESS      | -       | 0       | 2026-01-11T07:22 |
+| #556 (ORB-046) | 6929007678145876615  | REVIEW_REQUESTED | #673    | 0       | 2026-01-11T07:22 |
+| #545 (ORB-042) | 10448440558500030178 | COMPLETED        | -       | 0       | 2026-01-11T07:22 |
+| BUILD-FIX-TS   | 15900753798124342819 | PLANNING         | -       | 0       | 2026-01-11T07:22 |
 | PR-667-CI-FIX  | 17258562081963162276 | COMPLETED        | #667 ✅ | 0       | 2026-01-10T20:00 |
 | UNIT-TEST-FIX  | 5134072663804435110  | COMPLETED        | #669 ✅ | 0       | 2026-01-10T19:00 |
 | PR-666-FIX     | 909302481420016346   | COMPLETED        | #666 ✅ | 0       | 2026-01-10T19:00 |
@@ -70,14 +70,15 @@ The Status column in the Active Task Registry uses these values:
 | #538 (ORB-037) | 13964044312522937140 | COMPLETED        | -       | 0       | 2026-01-10T17:05 |
 | #546 (ORB-027) | 13204058962977056689 | COMPLETED        | -       | 1       | 2026-01-10T17:10 |
 
-**Active Count: 4/6** (2 slots available)
+**Active Count: 3/6** (3 slots available)
 
 **PRs Status:**
 
 | PR # | Issue        | Status        | Notes                     |
 | ---- | ------------ | ------------- | ------------------------- |
-| #671 | #532 ORB-024 | 🔍 CI_PENDING | Scout Competitor Tracking |
-| #670 | #547 ORB-043 | ⚠️ BEHIND_MAIN | Messaged to rebase        |
+| #673 | #556 ORB-046 | 🔍 CI_PENDING | A/B Test Framework        |
+| #671 | #532 ORB-024 | ✅ MERGED     | Scout Competitor Tracking |
+| #670 | #547 ORB-043 | ✅ MERGED     | Visual Workflow Editor    |
 | #669 | UNIT-TEST    | ✅ MERGED     | Unit tests fixed          |
 | #668 | #540 ORB-039 | ✅ MERGED     | Linear Attribution        |
 | #667 | #531 ORB-023 | ✅ MERGED     | Scout Topic Monitoring    |
@@ -91,14 +92,15 @@ The Status column in the Active Task Registry uses these values:
 
 - 💬 Messaged ORB-043 about PR #670 needing rebase
 - 💬 Messaged ORB-045 to proceed and finalize PR
-- 🔍 Checked ORB-046 session - no Publish PR button visible yet
-- 📊 Updated registry: ORB-043 → PR_BEHIND_MAIN, ORB-045 → IN_PROGRESS
-- 📊 Updated registry: BUILD-FIX-TS → PLANNING (still active, not dead)
+- 🎉 PR #670 (ORB-043) MERGED! Visual Workflow Editor
+- 🎉 PR #671 (ORB-024) MERGED! Scout Competitor Tracking
+- 🆕 PR #673 created for ORB-046 A/B Test Framework
+- 📊 Updated registry with merged PRs
 
 **Issues Flagged for Human Review:**
 
 - ORB-027, ORB-037: Sessions COMPLETED but no PRs (retry exhausted - historical)
-- ORB-046, ORB-042: COMPLETED but no PRs yet (may need browser PR creation)
+- ORB-042: COMPLETED but no PR yet
 
 ---
 
