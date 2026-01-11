@@ -64,12 +64,12 @@ RUN tar -xzf /tmp/repo.tar.gz -C /app --strip-components=1 \
 RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
     yarn install --immutable || true
 
-# Overlay current build context
-COPY --link --from=dep-context /app /app
-
 # Final install with pre-warmed cache
 RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
     yarn install --immutable
+
+    # Overlay current build context
+COPY --link --from=dep-context /app /app
 
 # ============================================================================
 # STAGE 3: Source Code
