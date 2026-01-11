@@ -20,7 +20,7 @@
     "test:coverage": "vitest run --coverage",
     "test:changed": "vitest --changed $(yarn find-last-passing-ci test)",
     "test:run": "vitest run",
-    "test:packages": "yarn workspace @spike-npm-land/code test && yarn workspace @spike-npm-land/spike-land-backend test:unit && yarn workspace @spike-npm-land/transpile test && yarn workspace @spike-npm-land/renderer test && yarn workspace @spike-npm-land/opfs-node-adapter test",
+    "test:packages": "yarn workspace @spike-npm-land/code test && yarn workspace @spike-npm-land/code build && yarn workspace @spike-npm-land/spike-land-backend test:unit && yarn workspace @spike-npm-land/transpile test && yarn workspace @spike-npm-land/renderer test && yarn workspace @spike-npm-land/opfs-node-adapter test",
     "test:all": "vitest run && yarn test:packages",
     "test:cached": "VITEST_COVERAGE=true CI=true vitest run --coverage",
     "test:cache:check": "tsx scripts/test-cache-manager.ts should-skip-all",
