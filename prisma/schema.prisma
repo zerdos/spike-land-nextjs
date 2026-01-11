@@ -1331,6 +1331,7 @@ model VisitorSession {
   user      User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   pageViews PageView[]
   events    AnalyticsEvent[]
+  abTestResults AbTestResult[]
 
   @@index([visitorId])
   @@index([userId])
@@ -3113,4 +3114,54 @@ model AllocatorAdSet {
   @@unique([campaignId, platformAdSetId])
   @@index([campaignId])
   @@map("allocator_ad_sets")
+}
+
+// =============================================================================
+// A/B Testing Models
+// =============================================================================
+
+model AbTest {
+  id                String          @id @default(cuid())
+  name              String
+  description       String?
+  status            AbTestStatus    @default(DRAFT)
+  winnerVariantId   String?
+  significanceLevel Float           @default(0.95)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  variants          AbTestVariant[]
+
+  @@index([status])
+}
+
+model AbTestVariant {
+  id              String         @id @default(cuid())
+  abTestId        String
+  name            String
+  splitPercentage Float
+  abTest          AbTest         @relation(fields: [abTestId], references: [id], onDelete: Cascade)
+  results         AbTestResult[]
+
+  @@unique([abTestId, name])
+  @@index([abTestId])
+}
+
+model AbTestResult {
+  id              String         @id @default(cuid())
+  visitorSessionId String
+  abTestVariantId  String
+  converted       Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  visitorSession  VisitorSession @relation(fields: [visitorSessionId], references: [id], onDelete: Cascade)
+  abTestVariant   AbTestVariant  @relation(fields: [abTestVariantId], references: [id], onDelete: Cascade)
+
+  @@index([visitorSessionId])
+  @@index([abTestVariantId])
+}
+
+enum AbTestStatus {
+  DRAFT
+  RUNNING
+  COMPLETED
+  ARCHIVED
 }
