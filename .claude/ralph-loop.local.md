@@ -100,7 +100,7 @@ The Status column in the Active Task Registry uses these values:
 - 🚨 Created TS-ERRORS-FIX task to fix TypeScript errors from merges
 - 📊 Updated registry with merged PRs
 
-**Issues Flagged for Human Review:**
+**Actions This Iteration:**
 
 - ORB-027, ORB-037: Sessions COMPLETED but no PRs (retry exhausted - historical)
 - ORB-042: COMPLETED but no PR yet
