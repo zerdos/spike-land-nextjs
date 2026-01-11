@@ -7,8 +7,27 @@ import type { EmotionCache } from "@emotion/cache";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/services/RenderService");
-vi.mock("@/services/editorUtils");
+vi.mock("@/services/RenderService", () => ({
+  RenderService: vi.fn().mockImplementation(function() {
+    return {
+      updateRenderedApp: vi.fn().mockResolvedValue({
+        cssCache: { key: "css-key", sheet: { tags: [] } },
+        rootElement: { innerHTML: "<div>rendered</div>" },
+        cleanup: vi.fn(),
+      }),
+      handleRender: vi.fn().mockResolvedValue({
+        html: "<div>rendered</div>",
+        css: ".class { color: red; }",
+      }),
+      cleanup: vi.fn(),
+    };
+  }),
+}));
+
+vi.mock("@/services/editorUtils", () => ({
+  formatCode: vi.fn(async (code: string) => code),
+  transpileCode: vi.fn(async (code: string) => `transpiled:${code}`),
+}));
 vi.mock("react-dom/client", () => ({
   createRoot: vi.fn(),
 }));

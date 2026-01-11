@@ -12,6 +12,7 @@ import { tryCatch } from "@/lib/try-catch";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 export const maxDuration = 300; // 5 minutes
 
@@ -266,17 +267,25 @@ async function generateAppDetails(appId: string, agentResponse: string, userProm
     // Clean up JSON string (remove markdown code blocks if present)
     jsonStr = jsonStr.replace(/```json/g, "").replace(/```/g, "").trim();
 
-    const details = JSON.parse(jsonStr);
+    // Validate the parsed JSON with Zod schema
+    const appDetailsSchema = z.object({
+      name: z.string().min(1).max(50),
+      description: z.string().min(1).max(200),
+    });
 
-    if (details.name && details.description) {
+    const parsed = appDetailsSchema.safeParse(JSON.parse(jsonStr));
+
+    if (parsed.success) {
       await prisma.app.update({
         where: { id: appId },
         data: {
-          name: details.name,
-          description: details.description,
+          name: parsed.data.name,
+          description: parsed.data.description,
         },
       });
-      console.log(`[agent/chat] Updated app details: ${details.name}`);
+      console.log(`[agent/chat] Updated app details: ${parsed.data.name}`);
+    } else {
+      console.warn("[agent/chat] Invalid app details format:", parsed.error.message);
     }
   } catch (e) {
     console.error("[agent/chat] Failed to generate app details:", e);
