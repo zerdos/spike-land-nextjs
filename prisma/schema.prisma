@@ -58,7 +58,6 @@ model User {
   socialPosts              SocialPost[]
   // Workspace relations
   workspaceMembers         WorkspaceMember[]
-  escalatedItems           InboxItem[]            @relation("EscalatedItems")
   workspaceInvitations     WorkspaceMember[]      @relation("WorkspaceInvitations")
   // Brand Brain relations
   createdBrandProfiles     BrandProfile[]         @relation("BrandProfileCreator")
@@ -2218,6 +2217,7 @@ model WorkspaceMember {
 
   // Inbox items assigned to this team member
   assignedInboxItems InboxItem[]
+  escalatedItems     InboxItem[]  @relation("EscalatedItems")
 
   @@unique([workspaceId, userId])
   @@index([workspaceId])

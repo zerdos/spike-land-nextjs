@@ -7,6 +7,7 @@
 import type { Prisma } from "@prisma/client";
 
 import prisma from "@/lib/prisma";
+import { RoutingEngine } from "@/lib/smart-routing/routing-engine";
 
 import type {
   AssignmentResult,
@@ -209,6 +210,28 @@ function buildWhereClause(filter: InboxItemFilter): Prisma.InboxItemWhereInput {
     }
   }
 
+  if (filter.sentiment) {
+    where.sentiment = Array.isArray(filter.sentiment)
+      ? { in: filter.sentiment }
+      : filter.sentiment;
+  }
+
+  if (filter.minPriority !== undefined || filter.maxPriority !== undefined) {
+    where.priorityScore = {};
+    if (filter.minPriority !== undefined) {
+      where.priorityScore.gte = filter.minPriority;
+    }
+    if (filter.maxPriority !== undefined) {
+      where.priorityScore.lte = filter.maxPriority;
+    }
+  }
+
+  if (filter.escalated !== undefined) {
+    where.escalationStatus = filter.escalated
+      ? { not: "NONE" }
+      : "NONE";
+  }
+
   return where;
 }
 
@@ -241,6 +264,17 @@ export async function listInboxItems(
     }),
     prisma.inboxItem.count({ where }),
   ]);
+
+  // Fire-and-forget analysis for items needing it
+  const unanalyzed = items.filter((i: InboxItem) => !i.routingAnalyzedAt && i.content && i.type !== "review"); // Avoid reviews/system if needed
+  if (unanalyzed.length > 0) {
+    // Determine unique workspaceIds involved filtering
+    // Actually items might belong to different workspaces if not filtered by workspaceId (but filter requires workspaceId)
+    // filter.workspaceId is mandatory in InboxItemFilter? Yes.
+
+    Promise.all(unanalyzed.map(i => RoutingEngine.processItem(i.id, i.workspaceId)))
+      .catch(error => console.error("Auto-analysis trigger failed:", error));
+  }
 
   const totalPages = Math.ceil(total / limit);
 

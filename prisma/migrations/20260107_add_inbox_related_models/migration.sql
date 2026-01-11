@@ -1,4 +1,48 @@
 -- CreateEnum
+CREATE TYPE "SocialPlatform" AS ENUM ('TWITTER', 'LINKEDIN', 'FACEBOOK', 'INSTAGRAM', 'TIKTOK', 'YOUTUBE', 'DISCORD');
+
+-- CreateEnum
+CREATE TYPE "SocialAccountStatus" AS ENUM ('ACTIVE', 'EXPIRED', 'ERROR', 'RATE_LIMITED', 'RESTRICTED');
+
+-- CreateTable
+CREATE TABLE "social_accounts" (
+    "id" TEXT NOT NULL,
+    "platform" "SocialPlatform" NOT NULL,
+    "accountId" TEXT NOT NULL,
+    "accountName" TEXT NOT NULL,
+    "accessTokenEncrypted" TEXT NOT NULL,
+    "refreshTokenEncrypted" TEXT,
+    "tokenExpiresAt" TIMESTAMP(3),
+    "connectedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "status" "SocialAccountStatus" NOT NULL DEFAULT 'ACTIVE',
+    "metadata" JSONB,
+    "userId" TEXT NOT NULL,
+    "workspaceId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "social_accounts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "social_accounts_workspaceId_platform_accountId_key" ON "social_accounts"("workspaceId", "platform", "accountId");
+
+-- CreateIndex
+CREATE INDEX "social_accounts_userId_idx" ON "social_accounts"("userId");
+
+-- CreateIndex
+CREATE INDEX "social_accounts_workspaceId_idx" ON "social_accounts"("workspaceId");
+
+-- CreateIndex
+CREATE INDEX "social_accounts_status_idx" ON "social_accounts"("status");
+
+-- AddForeignKey
+ALTER TABLE "social_accounts" ADD CONSTRAINT "social_accounts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "social_accounts" ADD CONSTRAINT "social_accounts_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "workspaces"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- CreateEnum
 CREATE TYPE "InboxItemType" AS ENUM ('MENTION', 'COMMENT', 'DIRECT_MESSAGE', 'REPLY', 'REVIEW');
 
 -- CreateEnum

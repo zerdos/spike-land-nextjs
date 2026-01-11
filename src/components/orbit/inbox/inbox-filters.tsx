@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { InboxItemStatus, InboxItemType, SocialPlatform } from "@prisma/client";
+import { InboxItemStatus, InboxItemType, SocialPlatform, InboxSentiment } from "@prisma/client";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -26,6 +26,8 @@ const filterSchema = z.object({
   status: z.enum(Object.values(InboxItemStatus) as [string, ...string[]]).optional(),
   type: z.enum(Object.values(InboxItemType) as [string, ...string[]]).optional(),
   assignedToId: z.string().optional(),
+  sentiment: z.enum(Object.values(InboxSentiment) as [string, ...string[]]).optional(),
+  escalated: z.enum(["true", "false"]).optional(),
 });
 
 export type FilterFormValues = z.infer<typeof filterSchema>;
@@ -143,6 +145,52 @@ export function InboxFilters({ onFilterChange, teamMembers }: InboxFiltersProps)
                         {member.name}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="sentiment"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sentiment</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Any Sentiment" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Object.values(InboxSentiment).map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="escalated"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Escalation</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="true">Escalated</SelectItem>
+                    <SelectItem value="false">Not Escalated</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

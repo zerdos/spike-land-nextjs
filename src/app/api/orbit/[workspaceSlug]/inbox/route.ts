@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { listInboxItems } from "@/lib/inbox/inbox-manager";
 import type { InboxItemFilter } from "@/lib/inbox/types";
-import { InboxItemStatus, InboxItemType, SocialPlatform } from "@/lib/inbox/types";
+import { InboxItemStatus, InboxItemType, SocialPlatform, InboxSentiment } from "@/lib/inbox/types";
 import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -28,6 +28,13 @@ const schema = z.object({
   limit: z.string().optional(),
   orderBy: z.string().optional(),
   orderDirection: z.string().optional(),
+  sentiment: z.union([
+    z.enum(Object.values(InboxSentiment) as [string, ...string[]]),
+    z.array(z.enum(Object.values(InboxSentiment) as [string, ...string[]])),
+  ]).optional(),
+  minPriority: z.string().optional(),
+  maxPriority: z.string().optional(),
+  escalated: z.string().optional(),
 });
 
 export async function GET(
@@ -57,6 +64,10 @@ export async function GET(
     limit,
     orderBy,
     orderDirection,
+    sentiment,
+    minPriority,
+    maxPriority,
+    escalated,
   } = validated.data;
 
   try {
@@ -85,6 +96,12 @@ export async function GET(
     if (accountId) filter.accountId = accountId;
     if (receivedAfter) filter.receivedAfter = new Date(receivedAfter);
     if (receivedBefore) filter.receivedBefore = new Date(receivedBefore);
+    if (sentiment) {
+      filter.sentiment = (Array.isArray(sentiment) ? sentiment : [sentiment]) as InboxSentiment[];
+    }
+    if (minPriority) filter.minPriority = parseInt(minPriority, 10);
+    if (maxPriority) filter.maxPriority = parseInt(maxPriority, 10);
+    if (escalated) filter.escalated = escalated === "true";
 
     const pagination = {
       page: page ? parseInt(page, 10) : undefined,
