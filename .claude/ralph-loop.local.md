@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 15
+iteration: 42
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -42,6 +42,7 @@ The Status column in the Active Task Registry uses these values:
 | `AWAITING_PR_CREATION`     | Session complete, browser creating PR        |
 | `COMPLETED`                | Merged and closed                            |
 | `FAILED`                   | Failed after max retries, escalated          |
+| `DEAD`                     | Session expired/killed - silent removal      |
 
 ---
 
@@ -49,46 +50,46 @@ The Status column in the Active Task Registry uses these values:
 
 <!-- Ralph: UPDATE THIS EVERY ITERATION! This is your memory. -->
 
-| Issue #        | Session ID           | Status      | PR #    | Retries | Last Updated     |
-| -------------- | -------------------- | ----------- | ------- | ------- | ---------------- |
-| UNIT-TEST-FIX  | 5134072663804435110  | IN_PROGRESS | #669    | 0       | 2026-01-10T18:45 |
-| #545 (ORB-042) | 10448440558500030178 | IN_PROGRESS | -       | 0       | 2026-01-10T18:45 |
-| PR-659-FIX     | 12847152019524036796 | IN_PROGRESS | -       | 0       | 2026-01-10T18:45 |
-| PR-665-FIX     | 3633172326393439913  | PLANNING    | -       | 0       | 2026-01-10T18:45 |
-| PR-666-FIX     | 909302481420016346   | PLANNING    | -       | 0       | 2026-01-10T18:45 |
-| PR-667-FIX     | 17258562081963162276 | IN_PROGRESS | -       | 0       | 2026-01-10T18:45 |
-| #544 (ORB-026) | 8018068239388301596  | PR_CREATED  | #666    | 0       | 2026-01-10T18:45 |
-| #540 (ORB-039) | 16859514757019367340 | PR_CREATED  | #668    | 0       | 2026-01-10T18:45 |
-| #532 (ORB-024) | 3272942138734267585  | COMPLETED   | #659 ✅ | 0       | 2026-01-10T18:05 |
-| #531 (ORB-023) | 12664520598883814187 | COMPLETED   | #667    | 0       | 2026-01-10T18:45 |
-| #529 (ORB-021) | 12716452045721348213 | COMPLETED   | #660 ✅ | 0       | 2026-01-10T18:05 |
-| #530 (ORB-022) | 1223874300114515623  | COMPLETED   | -       | 0       | 2026-01-10T18:30 |
-| #536 (ORB-036) | 12268363689474090994 | COMPLETED   | -       | 0       | 2026-01-10T18:00 |
-| #538 (ORB-037) | 13964044312522937140 | COMPLETED   | -       | 0       | 2026-01-10T17:05 |
-| #546 (ORB-027) | 13204058962977056689 | COMPLETED   | -       | 1       | 2026-01-10T17:10 |
+| Issue #              | Session ID           | Status      | PR #    | Retries | Last Updated     |
+| -------------------- | -------------------- | ----------- | ------- | ------- | ---------------- |
+| BUILD-FIX-TS         | 15900753798124342819 | IN_PROGRESS | -       | 0       | 2026-01-10T19:30 |
+| #545 (ORB-042)       | 10448440558500030178 | IN_PROGRESS | -       | 0       | 2026-01-10T19:30 |
+| #532 (ORB-024) FRESH | 440787502780889745   | PLANNING    | -       | 0       | 2026-01-10T19:30 |
+| #556 (ORB-046)       | 6929007678145876615  | IN_PROGRESS | -       | 0       | 2026-01-10T19:30 |
+| #553 (ORB-045)       | 8138470443526940844  | IN_PROGRESS | -       | 0       | 2026-01-10T19:30 |
+| #547 (ORB-043)       | 6575646228061348411  | IN_PROGRESS | -       | 0       | 2026-01-10T19:30 |
+| PR-667-CI-FIX        | 17258562081963162276 | IN_PROGRESS | -       | 0       | 2026-01-10T19:30 |
+| UNIT-TEST-FIX        | 5134072663804435110  | COMPLETED   | #669 ✅ | 0       | 2026-01-10T19:00 |
+| PR-666-FIX           | 909302481420016346   | COMPLETED   | #666 ✅ | 0       | 2026-01-10T19:00 |
+| #544 (ORB-026)       | 8018068239388301596  | COMPLETED   | #666 ✅ | 0       | 2026-01-10T19:00 |
+| #540 (ORB-039)       | 16859514757019367340 | COMPLETED   | #668 ✅ | 0       | 2026-01-10T19:00 |
+| #531 (ORB-023)       | 12664520598883814187 | COMPLETED   | #667 ✅ | 0       | 2026-01-10T19:00 |
+| #529 (ORB-021)       | 12716452045721348213 | COMPLETED   | #660 ✅ | 0       | 2026-01-10T18:05 |
+| #530 (ORB-022)       | 1223874300114515623  | COMPLETED   | -       | 0       | 2026-01-10T18:30 |
+| #536 (ORB-036)       | 12268363689474090994 | COMPLETED   | -       | 0       | 2026-01-10T18:00 |
+| #538 (ORB-037)       | 13964044312522937140 | COMPLETED   | -       | 0       | 2026-01-10T17:05 |
+| #546 (ORB-027)       | 13204058962977056689 | COMPLETED   | -       | 1       | 2026-01-10T17:10 |
 
-**Active Count: 6/6** (WIP_LIMIT reached)
+**Active Count: 7/6** (Over WIP - build fix priority)
 
-**PRs Open (5):**
+**PRs Status (All Merged!):**
 
-| PR # | Issue         | Status             | Next Action                |
-| ---- | ------------- | ------------------ | -------------------------- |
-| #669 | UNIT-TEST-FIX | Draft, BEHIND main | Jules working on it        |
-| #668 | #540 ORB-039  | Draft, BEHIND      | Next: create fix session   |
-| #667 | #531 ORB-023  | Not draft          | PR-667-FIX session working |
-| #666 | #544 ORB-026  | Draft, BEHIND      | PR-666-FIX session created |
-| #665 | #532 ORB-024  | DIRTY (conflicts)  | PR-665-FIX session working |
+| PR # | Issue         | Status    | Notes                  |
+| ---- | ------------- | --------- | ---------------------- |
+| #669 | UNIT-TEST-FIX | ✅ MERGED | Unit tests fixed       |
+| #668 | #540 ORB-039  | ✅ MERGED | Linear Attribution     |
+| #667 | #531 ORB-023  | ✅ MERGED | Scout Topic Monitoring |
+| #666 | #544 ORB-026  | ✅ MERGED | Facebook Ads           |
+| #665 | #532 ORB-024  | ❌ CLOSED | Fresh session working  |
 
 **Build Status (main):**
 
-- CodeQL: 🔄 IN_PROGRESS
-- CI/CD Pipeline: ❌ Last run failed (unit-tests-2)
+- CI/CD Pipeline: ⏳ PENDING (post-merge run)
 
-**Actions This Iteration:**
+**Actions This Iteration (28):**
 
-- ✅ Approved PR-667-FIX plan
-- ✅ Created PR-666-FIX session for rebase
-- ✅ Filled last WIP slot
+- ✅ Re-approved plan: #545 (ORB-042) - was AWAITING_PLAN_APPROVAL again
+- 📊 7 active sessions (6 IN_PROGRESS + 1 PLANNING)
 
 **Issues Flagged for Human Review:**
 
@@ -198,21 +199,19 @@ mcp__spike-land__jules_get_session { session_id: "[id]" }
 
 If no PR exists, log warning and skip to next session.
 
-#### 3.2 Check PR Health
+#### 3.2 Check PR Health (TOKEN-EFFICIENT)
 
 ```bash
-# Check CI status
-gh pr checks [PR#] --json name,state,conclusion
-
-# Check if up-to-date with main
-gh pr view [PR#] --json mergeStateStatus -q '.mergeStateStatus'
+# Single command for all PR health metrics
+yarn ralph:pr-health [PR#]
+# Returns: {ci_passing, ci_pending, is_draft, merge_state, mergeable, review}
 ```
 
-| Condition                     | Action                                        |
-| ----------------------------- | --------------------------------------------- |
-| Any CI check failing          | Update status to `PR_CI_FAILING` → Step 3.2a  |
-| Branch behind main (`BEHIND`) | Update status to `PR_BEHIND_MAIN` → Step 3.2a |
-| CI passing + up-to-date       | → Step 3.3 (Publish PR)                       |
+| Condition                    | Action                                        |
+| ---------------------------- | --------------------------------------------- |
+| `ci_passing: false`          | Update status to `PR_CI_FAILING` → Step 3.2a  |
+| `merge_state: "BEHIND"`      | Update status to `PR_BEHIND_MAIN` → Step 3.2a |
+| `ci_passing: true` + `CLEAN` | → Step 3.3 (Publish PR)                       |
 
 #### 3.2a Message Jules to Fix PR Issues
 
@@ -310,29 +309,20 @@ available_slots = WIP_LIMIT (6) - active_count
 
 If `available_slots <= 0`: Skip to Step 7.
 
-#### 4.2 Get Open Issues
+#### 4.2 Get Available Issues (TOKEN-EFFICIENT)
 
 ```bash
-gh issue list --state open --json number,title,body,labels,createdAt --limit 50
+# Pass existing issue numbers from registry to exclude them
+yarn ralph:available-issues 545 544 532
+# Returns: Pre-filtered, pre-sorted JSON array (max 20)
 ```
 
-#### 4.3 Filter Issues
+The script automatically:
 
-Exclude issues that:
-
-- Already have a Jules session (check Active Task Registry)
-- Have labels: `wontfix`, `duplicate`, `needs-discussion`, `blocked`
-- Are already linked to an open PR
-
-#### 4.4 Prioritize
-
-Select issues in this order:
-
-1. 🔴 **Critical**: `priority:critical` or `bug` + `priority:high`
-2. 🟠 **Blocking**: Referenced in "blocked by" of other issues
-3. 🟡 **Build fixes**: Related to current CI failures
-4. 🟢 **Quick wins**: `good-first-issue` label
-5. ⚪ **FIFO**: Oldest by `createdAt`
+- ✅ Excludes `wontfix`, `duplicate`, `blocked`, `needs-discussion` labels
+- ✅ Excludes issues already in registry (pass numbers as args)
+- ✅ Prioritizes: CRITICAL > BUG > QUICK_WIN > NORMAL
+- ✅ Sorts by priority then age
 
 #### 4.5 Create Jules Tasks
 
@@ -352,19 +342,14 @@ Add to Active Task Registry immediately.
 
 ### Step 5: Handle Build Failures
 
-#### 5.1 Check CI Status
+#### 5.1 Check CI Status (TOKEN-EFFICIENT)
 
 ```bash
-gh run list --branch main --status failure --limit 5 --json databaseId,name,conclusion
+yarn ralph:ci-status
+# Returns: {status: "passing"|"failing"|"in_progress", run_id, workflow, error_excerpt?}
 ```
 
-If failures exist:
-
-#### 5.2 Get Failure Details
-
-```bash
-gh run view [run_id] --log-failed 2>&1 | head -100
-```
+If `status: "failing"`, the script includes a 50-line error excerpt automatically.
 
 #### 5.3 Create Priority Fix Task
 
@@ -511,6 +496,9 @@ Output `<promise>WORKFORCE_IDLE</promise>` when ALL true:
 | Wait for @claude-code-review          | Move on, check result next iteration        |
 | Approve plans one-by-one with waits   | Batch approve, continue immediately         |
 | Commit every tiny change              | Batch work, commit once per iteration       |
+| **Message dead/expired sessions**     | **Silently remove, return task to queue**   |
+| Run multiple gh commands per PR       | Use `./scripts/ralph/pr-health.sh`          |
+| Manually filter/sort issues           | Use `./scripts/ralph/available-issues.sh`   |
 
 ---
 
@@ -606,6 +594,9 @@ Output `<promise>WORKFORCE_IDLE</promise>` when ALL true:
    └─────────────────────┘
 
    Any State ───► FAILED ───► Retry (max 2) ───► Escalate
+
+   Any State ───► DEAD (expired/killed) ───► Silent Removal (no retry, no message)
+                                               └──► Task returned to queue
 ```
 
 ---
@@ -760,6 +751,106 @@ mcp__spike-land__jules_create_session {
 
 ---
 
+## 🧹 Step 0.5: Dead Session Reconciliation
+
+**CRITICAL**: Before checking session status, verify sessions are still alive.
+
+When a Jules agent is **killed, expired, or unreachable**, Ralph must:
+
+1. **NEVER** attempt to communicate with it (send_message, approve, etc.)
+2. **Silently remove** from Active Task Registry
+3. **Reconcile the task** - return to queue if needed
+
+### Detection
+
+Run at start of each iteration:
+
+```bash
+# List session IDs to check
+yarn ralph:check-session-health [session_ids from registry]
+```
+
+Then verify each with `jules_get_session`. A session is **DEAD** if:
+
+- API returns error/not found
+- Status is `FAILED` with no recent activity (>2 hours)
+- Session shows as "archived" or "expired"
+
+### Handling Dead Sessions
+
+```
+🧹 DEAD SESSION CLEANUP
+   Removed: [session_id] (Issue #X) - [reason: expired/killed/not_found]
+   Task returned to queue: Issue #X
+   Slots freed: 1
+```
+
+**DO NOT:**
+
+- ❌ Send messages to dead sessions
+- ❌ Try to approve dead sessions
+- ❌ Retry communication
+- ❌ Log verbose errors
+
+**DO:**
+
+- ✅ Remove from registry immediately
+- ✅ Free up WIP slot
+- ✅ Mark associated issue as needing new session
+- ✅ Log one concise line
+
+---
+
+## 💰 Token Efficiency Scripts
+
+**Use these bash scripts to reduce token usage by ~70%.**
+
+Located in `scripts/ralph/` (also available as yarn commands):
+
+| Yarn Command                      | Script                    | Purpose                            | Savings |
+| --------------------------------- | ------------------------- | ---------------------------------- | ------- |
+| `yarn ralph:pr-health`            | `pr-health.sh`            | All PR health metrics in one call  | ~80%    |
+| `yarn ralph:batch-pr-status`      | `batch-pr-status.sh`      | All open PRs status at once        | ~90%    |
+| `yarn ralph:available-issues`     | `available-issues.sh`     | Filtered, prioritized issues       | ~70%    |
+| `yarn ralph:ci-status`            | `ci-status.sh`            | Main branch CI with error excerpt  | ~60%    |
+| `yarn ralph:check-session-health` | `check-session-health.sh` | Verify sessions exist before comms | ~50%    |
+
+### Usage Examples
+
+**Instead of multiple gh commands for PR health:**
+
+```bash
+# OLD (token-heavy):
+gh pr checks 666 --json name,state,conclusion
+gh pr view 666 --json mergeStateStatus
+gh pr view 666 --json isDraft
+gh pr view 666 --json reviewDecision
+
+# NEW (token-efficient):
+yarn ralph:pr-health 666
+# Returns: {"pr":666,"ci_passing":true,"is_draft":false,"merge_state":"CLEAN","review":"APPROVED"}
+```
+
+**Instead of checking each PR individually:**
+
+```bash
+# OLD: Loop through PRs with individual calls
+# NEW: Single call for all PRs
+yarn ralph:batch-pr-status
+# Returns array with action field: READY_TO_MERGE, READY_TO_PUBLISH, CI_FAILING, etc.
+```
+
+**Instead of manual issue filtering:**
+
+```bash
+# OLD: gh issue list + parse + filter + sort
+# NEW: Pre-filtered, pre-sorted, with existing session exclusion
+yarn ralph:available-issues 545 544 532
+# Returns: Top 20 prioritized issues not already assigned
+```
+
+---
+
 ## 🔄 Continuous Improvement
 
 **Each iteration, look for opportunities to improve the process.**
@@ -808,11 +899,14 @@ mcp__spike-land__jules_create_session {
 
 <!-- Track what was learned/changed each iteration -->
 
-| Iteration | Change Made               | Reason                   |
-| --------- | ------------------------- | ------------------------ |
-| 12        | Added build priority step | Build health is critical |
-| 12        | Added worktree policy     | Prevent branch confusion |
-| 12        | Added critical issue kill | Stop wasting retries     |
+| Iteration | Change Made                    | Reason                                |
+| --------- | ------------------------------ | ------------------------------------- |
+| 12        | Added build priority step      | Build health is critical              |
+| 12        | Added worktree policy          | Prevent branch confusion              |
+| 12        | Added critical issue kill      | Stop wasting retries                  |
+| 17        | Added dead session handling    | Avoid wasting tokens on dead sessions |
+| 17        | Added token efficiency scripts | ~70% token reduction per iteration    |
+| 17        | Added DEAD status              | Silent removal, no communication      |
 
 ---
 

@@ -1,9 +1,8 @@
-
+import prisma from "@/lib/prisma";
+import type { SocialAccount } from "@prisma/client";
 import { vi } from "vitest";
 import { syncFacebookCampaigns } from "./campaign-sync";
 import { FacebookMarketingApiClient } from "./client";
-import prisma from "@/lib/prisma";
-import { SocialAccount } from "@prisma/client";
 
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -38,13 +37,23 @@ describe("syncFacebookCampaigns", () => {
 
     const getAdAccountsSpy = vi
       .spyOn(FacebookMarketingApiClient.prototype, "getAdAccounts")
-      .mockResolvedValue([{ account_id: "ad_acc_1", name: "Ad Account 1" }]);
+      .mockResolvedValue([{ id: "ad_acc_1", account_id: "ad_acc_1", name: "Ad Account 1" }]);
     const getCampaignsSpy = vi
       .spyOn(FacebookMarketingApiClient.prototype, "getCampaigns")
-      .mockResolvedValue([{ id: "camp_1", name: "Campaign 1", status: "ACTIVE" }]);
+      .mockResolvedValue([{
+        id: "camp_1",
+        name: "Campaign 1",
+        status: "ACTIVE",
+        objective: "OUTCOME_SALES",
+      }]);
     const getAdSetsSpy = vi
       .spyOn(FacebookMarketingApiClient.prototype, "getAdSets")
-      .mockResolvedValue([{ id: "ad_set_1", name: "Ad Set 1", status: "ACTIVE" }]);
+      .mockResolvedValue([{
+        id: "ad_set_1",
+        name: "Ad Set 1",
+        status: "ACTIVE",
+        bid_strategy: "LOWEST_COST_WITHOUT_CAP",
+      }]);
     const getInsightsSpy = vi
       .spyOn(FacebookMarketingApiClient.prototype, "getInsights")
       .mockResolvedValue({ spend: "100.00", impressions: "1000", clicks: "10" });

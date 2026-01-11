@@ -7,6 +7,9 @@ expect.extend(matchers);
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeAll, vi } from "vitest";
 
+// Mock env vars
+process.env.DATABASE_URL = "postgresql://mock:5432/mock";
+
 // Polyfill for jsdom - missing pointer capture methods and scrollIntoView
 if (typeof Element !== "undefined") {
   Element.prototype.hasPointerCapture = Element.prototype.hasPointerCapture ||

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ScoutResult } from '@prisma/client';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { ScoutResult } from "@prisma/client";
+import { useEffect, useState } from "react";
 
 interface TopicFeedProps {
   workspaceSlug: string;
@@ -25,7 +25,7 @@ export function TopicFeed({ workspaceSlug }: TopicFeedProps) {
     const fetchResults = async () => {
       setLoading(true);
       const response = await fetch(
-        `/api/orbit/${workspaceSlug}/scout/monitor?page=${page}`
+        `/api/orbit/${workspaceSlug}/scout/monitor?page=${page}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -43,9 +43,7 @@ export function TopicFeed({ workspaceSlug }: TopicFeedProps) {
         <CardTitle>Results Feed</CardTitle>
       </CardHeader>
       <CardContent>
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
+        {loading ? <p>Loading...</p> : (
           <div className="space-y-4">
             {results.map(result => (
               <div key={result.id} className="border p-4 rounded-md">

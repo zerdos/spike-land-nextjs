@@ -1,8 +1,7 @@
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -10,23 +9,24 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { createTopicSchema, topicKeywordsSchema } from '@/lib/scout/topic-config';
-import { toast } from 'sonner';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import type { createTopicSchema, topicKeywordsSchema } from "@/lib/scout/topic-config";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 interface TopicConfigFormProps {
   workspaceSlug: string;
-  initialData?: z.infer<typeof createTopicSchema>;
+  initialData?: z.infer<typeof createTopicSchema> & { id?: string; };
   onSave: () => void;
 }
 
 // Simplified schema for the form
 const formSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, "Name is required"),
   andKeywords: z.string().optional(),
   orKeywords: z.string().optional(),
   notKeywords: z.string().optional(),
@@ -43,19 +43,19 @@ export function TopicConfigForm({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: initialData?.name ?? '',
-      andKeywords: (initialData?.keywords as any)?.and?.join(', ') ?? '',
-      orKeywords: (initialData?.keywords as any)?.or?.join(', ') ?? '',
-      notKeywords: (initialData?.keywords as any)?.not?.join(', ') ?? '',
+      name: initialData?.name ?? "",
+      andKeywords: initialData?.keywords?.and?.join(", ") ?? "",
+      orKeywords: initialData?.keywords?.or?.join(", ") ?? "",
+      notKeywords: initialData?.keywords?.not?.join(", ") ?? "",
       isActive: initialData?.isActive ?? true,
     },
   });
 
   const onSubmit = async (values: FormValues) => {
     const keywords: z.infer<typeof topicKeywordsSchema> = {
-      and: values.andKeywords?.split(',').map(kw => kw.trim()).filter(Boolean),
-      or: values.orKeywords?.split(',').map(kw => kw.trim()).filter(Boolean),
-      not: values.notKeywords?.split(',').map(kw => kw.trim()).filter(Boolean),
+      and: values.andKeywords?.split(",").map(kw => kw.trim()).filter(Boolean),
+      or: values.orKeywords?.split(",").map(kw => kw.trim()).filter(Boolean),
+      not: values.notKeywords?.split(",").map(kw => kw.trim()).filter(Boolean),
     };
 
     const payload = {
@@ -65,28 +65,28 @@ export function TopicConfigForm({
     };
 
     const endpoint = initialData
-      ? `/api/orbit/${workspaceSlug}/scout/topics/${(initialData as any).id}`
+      ? `/api/orbit/${workspaceSlug}/scout/topics/${initialData.id}`
       : `/api/orbit/${workspaceSlug}/scout/topics`;
-    const method = initialData ? 'PUT' : 'POST';
+    const method = initialData ? "PUT" : "POST";
 
     const response = await fetch(endpoint, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
     if (response.ok) {
-      toast.success(`Topic ${initialData ? 'updated' : 'created'} successfully.`);
+      toast.success(`Topic ${initialData ? "updated" : "created"} successfully.`);
       onSave();
     } else {
-      toast.error('Failed to save topic.');
+      toast.error("Failed to save topic.");
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{initialData ? 'Edit Topic' : 'Create Topic'}</CardTitle>
+        <CardTitle>{initialData ? "Edit Topic" : "Create Topic"}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -161,7 +161,7 @@ export function TopicConfigForm({
               )}
             />
             <Button type="submit">
-              {initialData ? 'Save Changes' : 'Create Topic'}
+              {initialData ? "Save Changes" : "Create Topic"}
             </Button>
           </form>
         </Form>
