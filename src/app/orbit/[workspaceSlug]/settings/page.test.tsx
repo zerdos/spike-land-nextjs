@@ -7,6 +7,6 @@ describe("SettingsPage", () => {
     render(<SettingsPage />);
     expect(screen.getByRole("heading", { name: "Settings" }))
       .toBeInTheDocument();
-    expect(screen.getByText("Settings coming soon.")).toBeInTheDocument();
+    expect(screen.getByText("General settings coming soon.")).toBeInTheDocument();
   });
 });
