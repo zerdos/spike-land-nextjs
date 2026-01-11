@@ -1,4 +1,4 @@
-import { Given, Then, When } from "@cucumber/cucumber";
+import { type DataTable, Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import type { CustomWorld } from "../support/world";
 
@@ -34,8 +34,9 @@ Given(
   },
 );
 
-Given("I have an inbox item with:", async function(this: CustomWorld, dataTable: any) {
+Given("I have an inbox item with:", async function(this: CustomWorld, dataTable: DataTable) {
   const data = dataTable.rowsHash();
+  const content = data.content ?? "";
   // Use API to seed data for test reliability
   // Assuming we have a seeding utility or direct API calls available in world or page context
   // For E2E, we often mock or use a seed script.
@@ -54,7 +55,7 @@ Given("I have an inbox item with:", async function(this: CustomWorld, dataTable:
     // Inject our fake item
     const fakeItem = {
       id: "e2e-test-item-" + Date.now(),
-      content: data.content,
+      content,
       senderName: data.sender,
       platform: "twitter",
       type: "social_mention",
@@ -65,14 +66,14 @@ Given("I have an inbox item with:", async function(this: CustomWorld, dataTable:
       // Simplified: We assume backend analysis runs.
       // For pure UI test without backend logic running, we might mock the Analyzed fields directly.
       routingAnalyzedAt: new Date().toISOString(),
-      sentiment: data.content.includes("love")
+      sentiment: content.includes("love")
         ? "POSITIVE"
-        : data.content.includes("terrible")
+        : content.includes("terrible")
         ? "NEGATIVE"
         : "NEUTRAL",
-      sentimentScore: data.content.includes("love") ? 0.9 : -0.9,
-      priorityScore: data.content.includes("terrible") ? 90 : 50,
-      escalationStatus: data.content.includes("terrible") ? "ESCALATED" : "NONE",
+      sentimentScore: content.includes("love") ? 0.9 : -0.9,
+      priorityScore: content.includes("terrible") ? 90 : 50,
+      escalationStatus: content.includes("terrible") ? "ESCALATED" : "NONE",
     };
 
     // Add to top

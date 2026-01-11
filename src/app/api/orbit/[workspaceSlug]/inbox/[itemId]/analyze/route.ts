@@ -34,11 +34,10 @@ export async function POST(
     });
 
     return NextResponse.json(updatedItem);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Analysis API Error:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to analyze item" },
-      { status: error.status || 500 },
-    );
+    const message = error instanceof Error ? error.message : "Failed to analyze item";
+    const status = (error as { status?: number; })?.status || 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
