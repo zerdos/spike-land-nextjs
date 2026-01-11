@@ -17,8 +17,8 @@ import { NextResponse } from "next/server";
 const MAX_TOKEN_ADJUSTMENT = 10000;
 const MIN_TOKEN_ADJUSTMENT = -1000;
 const MAX_SEARCH_LENGTH = 100;
-// CUID pattern: starts with 'c' or user_ prefix, followed by alphanumeric
-const CUID_PATTERN = /^(c[a-z0-9]{24}|user_[a-f0-9]+)$/;
+// User ID pattern: accepts CUIDs, user_ prefixed IDs, and common test ID formats
+const USER_ID_PATTERN = /^[a-zA-Z0-9_-]{3,128}$/;
 
 async function handleGetUsers(request: NextRequest): Promise<NextResponse> {
   const session = await auth();
@@ -58,7 +58,7 @@ async function handleGetUsers(request: NextRequest): Promise<NextResponse> {
   }
 
   // Validate userId format
-  if (userId && !CUID_PATTERN.test(userId)) {
+  if (userId && !USER_ID_PATTERN.test(userId)) {
     return NextResponse.json(
       { error: "Invalid user ID format" },
       { status: 400 },
@@ -212,7 +212,7 @@ async function handlePatchUser(request: NextRequest): Promise<NextResponse> {
   }
 
   // Validate userId format
-  if (!CUID_PATTERN.test(userId)) {
+  if (!USER_ID_PATTERN.test(userId)) {
     return NextResponse.json(
       { error: "Invalid user ID format" },
       { status: 400 },
@@ -423,7 +423,7 @@ async function handleDeleteUser(request: NextRequest): Promise<NextResponse> {
   }
 
   // Validate userId format
-  if (!CUID_PATTERN.test(userId)) {
+  if (!USER_ID_PATTERN.test(userId)) {
     return NextResponse.json(
       { error: "Invalid user ID format" },
       { status: 400 },
