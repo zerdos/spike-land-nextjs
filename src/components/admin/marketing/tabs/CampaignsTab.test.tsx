@@ -3,11 +3,27 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CampaignsTab } from "./CampaignsTab";
 
+// Mock the response structure expected by the component
+const mockResponse = {
+  campaigns: mockCampaignsData.map(c => ({
+    ...c,
+    visitors: 1000,
+    signups: 50,
+    conversionRate: 5.0,
+    revenue: 500,
+  })),
+  total: 2,
+  page: 1,
+  pageSize: 10,
+};
+
 describe("CampaignsTab", () => {
+  const originalFetch = global.fetch;
+
   beforeEach(() => {
-    global.fetch = createFetchMock({
-      "/api/admin/marketing/analytics/campaigns": mockCampaignsData,
-    });
+    global.fetch = vi.fn(createFetchMock({
+      "/api/admin/marketing/analytics/campaigns": mockResponse,
+    }));
 
     // Mock URL methods for CSV export
     global.URL.createObjectURL = vi.fn(() => "blob:test");
@@ -15,6 +31,7 @@ describe("CampaignsTab", () => {
   });
 
   afterEach(() => {
+    global.fetch = originalFetch;
     vi.restoreAllMocks();
   });
 
@@ -23,18 +40,18 @@ describe("CampaignsTab", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Campaign Performance")).toBeInTheDocument();
-      expect(screen.getByText("Campaign 1")).toBeInTheDocument();
+      expect(screen.getByText("Test Campaign 1")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Campaign 2")).toBeInTheDocument();
-    expect(screen.getByText("500")).toBeInTheDocument(); // Visitors for Camp 1
+    expect(screen.getByText("Test Campaign 2")).toBeInTheDocument();
+    expect(screen.getAllByText("1,000").length).toBeGreaterThan(0); // Visitors
   });
 
   it("handles sorting", async () => {
     render(<CampaignsTab />);
 
     await waitFor(() => {
-      expect(screen.getByText("Campaign 1")).toBeInTheDocument();
+      expect(screen.getByText("Test Campaign 1")).toBeInTheDocument();
     });
 
     // Click on Visitors header to sort
@@ -64,13 +81,23 @@ describe("CampaignsTab", () => {
   it("pagination controls render when needed", async () => {
     // Update mock to have more pages
     const manyPagesData = {
-      ...mockCampaignsData,
+      campaigns: Array(11).fill(null).map((_, i) => ({
+        id: `campaign-${i}`,
+        name: `Campaign ${i}`,
+        platform: "GOOGLE_ADS",
+        visitors: 100,
+        signups: 10,
+        conversionRate: 10,
+        revenue: 100,
+      })),
       total: 50,
       pageSize: 10,
+      page: 1,
     };
-    global.fetch = createFetchMock({
+
+    global.fetch = vi.fn(createFetchMock({
       "/api/admin/marketing/analytics/campaigns": manyPagesData,
-    });
+    }));
 
     render(<CampaignsTab />);
 

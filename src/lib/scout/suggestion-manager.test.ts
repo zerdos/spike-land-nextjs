@@ -89,7 +89,6 @@ describe("Suggestion Manager", () => {
 
   describe("saveSuggestion", () => {
     it("should save a suggestion", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(prisma.contentSuggestion.create).mockResolvedValue(mockDbRecord as any);
 
       const result = await saveSuggestion(mockSuggestion);
@@ -109,7 +108,6 @@ describe("Suggestion Manager", () => {
     it("should save multiple suggestions in transaction", async () => {
       const suggestions = [mockSuggestion, { ...mockSuggestion, id: "sug_def456" }];
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(prisma.$transaction).mockImplementation(
         (async (ops: any[]) => {
           return ops.map(() => mockDbRecord);
@@ -125,7 +123,6 @@ describe("Suggestion Manager", () => {
 
   describe("getSuggestionById", () => {
     it("should return suggestion by ID", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(prisma.contentSuggestion.findFirst).mockResolvedValue(mockDbRecord as any);
 
       const result = await getSuggestionById("sug_abc123", "ws-1");
@@ -147,7 +144,7 @@ describe("Suggestion Manager", () => {
 
   describe("querySuggestions", () => {
     it("should query with basic options", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const options: SuggestionQueryOptions = {
@@ -161,7 +158,7 @@ describe("Suggestion Manager", () => {
     });
 
     it("should filter by status", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const options: SuggestionQueryOptions = {
@@ -181,7 +178,7 @@ describe("Suggestion Manager", () => {
     });
 
     it("should filter by content types", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const options: SuggestionQueryOptions = {
@@ -201,7 +198,7 @@ describe("Suggestion Manager", () => {
     });
 
     it("should filter by platforms", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const options: SuggestionQueryOptions = {
@@ -221,7 +218,7 @@ describe("Suggestion Manager", () => {
     });
 
     it("should filter by minimum score", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const options: SuggestionQueryOptions = {
@@ -241,7 +238,7 @@ describe("Suggestion Manager", () => {
     });
 
     it("should support pagination", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(50);
 
       const options: SuggestionQueryOptions = {
@@ -261,7 +258,7 @@ describe("Suggestion Manager", () => {
     });
 
     it("should support sorting", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const options: SuggestionQueryOptions = {
@@ -282,7 +279,7 @@ describe("Suggestion Manager", () => {
 
   describe("getPendingSuggestions", () => {
     it("should get pending suggestions sorted by score", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const result = await getPendingSuggestions("ws-1", 5);
@@ -303,7 +300,7 @@ describe("Suggestion Manager", () => {
   describe("updateSuggestionStatus", () => {
     it("should update status to DISMISSED with reason", async () => {
       vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({ count: 1 });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       vi.mocked(prisma.contentSuggestion.findFirst).mockResolvedValue({
         ...mockDbRecord,
         status: "DISMISSED",
@@ -321,7 +318,7 @@ describe("Suggestion Manager", () => {
 
     it("should update status to USED", async () => {
       vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({ count: 1 });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       vi.mocked(prisma.contentSuggestion.findFirst).mockResolvedValue({
         ...mockDbRecord,
         status: "USED",
@@ -346,7 +343,7 @@ describe("Suggestion Manager", () => {
   describe("acceptSuggestion", () => {
     it("should accept a suggestion", async () => {
       vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({ count: 1 });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       vi.mocked(prisma.contentSuggestion.findFirst).mockResolvedValue({
         ...mockDbRecord,
         status: "ACCEPTED",
@@ -361,7 +358,7 @@ describe("Suggestion Manager", () => {
   describe("dismissSuggestion", () => {
     it("should dismiss a suggestion with reason", async () => {
       vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({ count: 1 });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       vi.mocked(prisma.contentSuggestion.findFirst).mockResolvedValue({
         ...mockDbRecord,
         status: "DISMISSED",

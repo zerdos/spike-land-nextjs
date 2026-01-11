@@ -4,13 +4,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FunnelTab } from "./FunnelTab";
 
 describe("FunnelTab", () => {
+  const originalFetch = global.fetch;
+
   beforeEach(() => {
-    global.fetch = createFetchMock({
+    global.fetch = vi.fn(createFetchMock({
       "/api/admin/marketing/analytics/funnel": mockFunnelData,
-    });
+    }));
   });
 
   afterEach(() => {
+    global.fetch = originalFetch;
     vi.restoreAllMocks();
   });
 
