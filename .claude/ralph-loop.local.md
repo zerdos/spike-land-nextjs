@@ -58,6 +58,7 @@ The Status column in the Active Task Registry uses these values:
 | #556 (ORB-046) | 6929007678145876615  | REVIEW_REQUESTED | #673    | 0       | 2026-01-11T07:22 |
 | #545 (ORB-042) | 10448440558500030178 | COMPLETED        | -       | 0       | 2026-01-11T07:22 |
 | BUILD-FIX-TS   | 15900753798124342819 | PLANNING         | -       | 0       | 2026-01-11T07:22 |
+| TS-ERRORS-FIX  | 14959951267380457679 | PLANNING         | -       | 0       | 2026-01-11T07:24 |
 | PR-667-CI-FIX  | 17258562081963162276 | COMPLETED        | #667 ✅ | 0       | 2026-01-10T20:00 |
 | UNIT-TEST-FIX  | 5134072663804435110  | COMPLETED        | #669 ✅ | 0       | 2026-01-10T19:00 |
 | PR-666-FIX     | 909302481420016346   | COMPLETED        | #666 ✅ | 0       | 2026-01-10T19:00 |
@@ -70,7 +71,7 @@ The Status column in the Active Task Registry uses these values:
 | #538 (ORB-037) | 13964044312522937140 | COMPLETED        | -       | 0       | 2026-01-10T17:05 |
 | #546 (ORB-027) | 13204058962977056689 | COMPLETED        | -       | 1       | 2026-01-10T17:10 |
 
-**Active Count: 3/6** (3 slots available)
+**Active Count: 5/6** (1 slot available)
 
 **PRs Status:**
 
@@ -95,6 +96,8 @@ The Status column in the Active Task Registry uses these values:
 - 🎉 PR #670 (ORB-043) MERGED! Visual Workflow Editor
 - 🎉 PR #671 (ORB-024) MERGED! Scout Competitor Tracking
 - 🆕 PR #673 created for ORB-046 A/B Test Framework
+- ✅ Closed issues #547 and #532
+- 🚨 Created TS-ERRORS-FIX task to fix TypeScript errors from merges
 - 📊 Updated registry with merged PRs
 
 **Issues Flagged for Human Review:**
