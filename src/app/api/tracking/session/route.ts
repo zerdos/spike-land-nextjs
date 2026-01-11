@@ -312,16 +312,18 @@ export async function PATCH(request: NextRequest) {
   );
 
   if (updateError) {
-    // Handle not found error
+    const errorCode = (updateError as { code?: string; }).code;
+
+    // Handle not found error (P2025 = record not found)
     if (
-      updateError instanceof Error &&
-      updateError.message.includes("Record to update not found")
+      errorCode === "P2025" ||
+      (updateError instanceof Error &&
+        updateError.message.includes("Record to update not found"))
     ) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
     // Handle foreign key constraint violation (user deleted between check and update)
-    const errorCode = (updateError as { code?: string; }).code;
     if (errorCode === "P2003") {
       return NextResponse.json({ error: "User not found" }, { status: 400 });
     }

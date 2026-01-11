@@ -120,17 +120,21 @@ const mockAgentsData: any = {
 };
 
 describe("AgentsDashboardClient", () => {
+  const originalFetch = global.fetch;
+
   beforeEach(() => {
-    global.fetch = createFetchMock({
-      "/api/admin/agents": mockAgentsData,
+    // Ensure we spy on fetch properly
+    global.fetch = vi.fn(createFetchMock({
       "/api/admin/agents/sess_2/approve-plan": { success: true },
       "/api/admin/agents/resources": mockResourcesData,
       "/api/admin/agents/git": mockGitInfoData,
       "/api/admin/agents/github/issues": mockGitHubData,
-    });
+      "/api/admin/agents": mockAgentsData,
+    }));
   });
 
   afterEach(() => {
+    global.fetch = originalFetch;
     vi.restoreAllMocks();
   });
 
@@ -219,6 +223,12 @@ describe("AgentsDashboardClient", () => {
   it("renders Resources panel with data", async () => {
     render(<AgentsDashboardClient initialData={mockAgentsData} />);
 
+    // The fetch calls happen on mount
+    await waitFor(() => {
+      // Assert that fetch was called for resources
+      expect(global.fetch).toHaveBeenCalledWith("/api/admin/agents/resources");
+    });
+
     await waitFor(() => {
       expect(screen.getByText("Resources")).toBeInTheDocument();
     });
@@ -234,6 +244,10 @@ describe("AgentsDashboardClient", () => {
     render(<AgentsDashboardClient initialData={mockAgentsData} />);
 
     await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith("/api/admin/agents/git");
+    });
+
+    await waitFor(() => {
       expect(screen.getByText("Git Info")).toBeInTheDocument();
     });
 
@@ -246,6 +260,10 @@ describe("AgentsDashboardClient", () => {
 
   it("renders GitHub Issues panel with data", async () => {
     render(<AgentsDashboardClient initialData={mockAgentsData} />);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith("/api/admin/agents/github/issues");
+    });
 
     await waitFor(() => {
       expect(screen.getByText("GitHub Issues")).toBeInTheDocument();

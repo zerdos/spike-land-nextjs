@@ -1331,6 +1331,7 @@ model VisitorSession {
   user      User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   pageViews PageView[]
   events    AnalyticsEvent[]
+  abTestResults AbTestResult[]
 
   @@index([visitorId])
   @@index([userId])
@@ -2127,6 +2128,10 @@ model Workspace {
   // Scout content suggestions
   contentSuggestions    ContentSuggestion[]
 
+  // Scout Topic Monitoring
+  scoutTopics           ScoutTopic[]
+  allocatorCampaigns    AllocatorCampaign[]
+
   @@index([slug])
   @@index([isPersonal])
   @@map("workspaces")
@@ -2901,6 +2906,52 @@ model PolicyViolation {
   @@map("policy_violations")
 }
 
+// =============================================================================
+// Scout Topic Monitoring Models
+// Resolves #531
+// =============================================================================
+
+model ScoutTopic {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  name      String
+  // Example: { "and": ["ai", "development"], "or": ["gpt-4"], "not": ["crypto"] }
+  keywords  Json
+  isActive  Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  results ScoutResult[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@map("scout_topics")
+}
+
+model ScoutResult {
+  id         String   @id @default(cuid())
+  topicId    String
+  topic      ScoutTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  platform   SocialPlatform
+  platformId String   // Platform-specific ID for the post/comment
+  content    String   @db.Text
+  author     String   // Author's username/handle
+  authorUrl  String?  // URL to author's profile
+  postUrl    String   // URL to the post/comment
+  engagement Json     // { "likes": 123, "comments": 45, "shares": 67 }
+
+  foundAt    DateTime @default(now())
+
+  @@unique([platform, platformId, topicId])
+  @@index([topicId])
+  @@index([foundAt])
+  @@map("scout_results")
+}
+
 enum PolicyCategory {
   CONTENT_GUIDELINES // General content policies
   AD_COMPLIANCE // Advertising-specific rules
@@ -3014,4 +3065,103 @@ enum SuggestionStatus {
   ACCEPTED
   DISMISSED
   USED
+}
+
+// =============================================================================
+// Allocator Models
+// =============================================================================
+
+enum AllocatorPlatform {
+  FACEBOOK_ADS
+  GOOGLE_ADS
+  LINKEDIN_ADS
+}
+
+model AllocatorCampaign {
+  id                 String            @id @default(cuid())
+  workspaceId        String
+  workspace          Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  platform           AllocatorPlatform
+  platformCampaignId String
+  name               String
+  status             String // Platform-specific status (e.g., "ACTIVE", "PAUSED")
+  budget             Decimal?          @db.Decimal(10, 2)
+  spend              Decimal           @default(0) @db.Decimal(10, 2)
+  metrics            Json? // Store other relevant metrics
+  lastSyncAt         DateTime
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  adSets             AllocatorAdSet[]
+
+  @@unique([workspaceId, platform, platformCampaignId])
+  @@index([workspaceId])
+  @@index([platform])
+  @@map("allocator_campaigns")
+}
+
+model AllocatorAdSet {
+  id              String   @id @default(cuid())
+  campaignId      String
+  campaign        AllocatorCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  platformAdSetId String
+  name            String
+  status          String
+  budget          Decimal? @db.Decimal(10, 2)
+  spend           Decimal  @default(0) @db.Decimal(10, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([campaignId, platformAdSetId])
+  @@index([campaignId])
+  @@map("allocator_ad_sets")
+}
+
+// =============================================================================
+// A/B Testing Models
+// =============================================================================
+
+model AbTest {
+  id                String          @id @default(cuid())
+  name              String
+  description       String?
+  status            AbTestStatus    @default(DRAFT)
+  winnerVariantId   String?
+  significanceLevel Float           @default(0.95)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  variants          AbTestVariant[]
+
+  @@index([status])
+}
+
+model AbTestVariant {
+  id              String         @id @default(cuid())
+  abTestId        String
+  name            String
+  splitPercentage Float
+  abTest          AbTest         @relation(fields: [abTestId], references: [id], onDelete: Cascade)
+  results         AbTestResult[]
+
+  @@unique([abTestId, name])
+  @@index([abTestId])
+}
+
+model AbTestResult {
+  id              String         @id @default(cuid())
+  visitorSessionId String
+  abTestVariantId  String
+  converted       Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  visitorSession  VisitorSession @relation(fields: [visitorSessionId], references: [id], onDelete: Cascade)
+  abTestVariant   AbTestVariant  @relation(fields: [abTestVariantId], references: [id], onDelete: Cascade)
+
+  @@index([visitorSessionId])
+  @@index([abTestVariantId])
+}
+
+enum AbTestStatus {
+  DRAFT
+  RUNNING
+  COMPLETED
+  ARCHIVED
 }

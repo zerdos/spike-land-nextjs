@@ -61,7 +61,13 @@
     "dead-code:files": "knip --include files",
     "dead-code:exports": "knip --include exports",
     "dead-code:deps": "knip --include dependencies",
-    "find-last-passing-ci": "./scripts/find-last-passing-ci.sh"
+    "find-last-passing-ci": "./scripts/find-last-passing-ci.sh",
+    "ralph:pr-health": "./scripts/ralph/pr-health.sh",
+    "ralph:batch-pr-status": "./scripts/ralph/batch-pr-status.sh",
+    "ralph:available-issues": "./scripts/ralph/available-issues.sh",
+    "ralph:ci-status": "./scripts/ralph/ci-status.sh",
+    "ralph:check-session-health": "./scripts/ralph/check-session-health.sh",
+    "ralph:publish-pr": "node scripts/ralph/publish-jules-pr.mjs"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.2",
@@ -100,6 +106,7 @@
     "@react-three/drei": "10.7.7",
     "@react-three/fiber": "9.5.0",
     "@react-three/rapier": "2.2.0",
+    "@reactflow/node-toolbar": "^1.3.14",
     "@stripe/react-stripe-js": "5.4.1",
     "@stripe/stripe-js": "8.6.1",
     "@tanstack/react-query": "^5.90.16",
@@ -133,6 +140,7 @@
     "react-dom": "19.2.3",
     "react-hook-form": "7.70.0",
     "react-masonry-css": "1.0.16",
+    "reactflow": "^11.11.4",
     "reading-time": "1.5.0",
     "recharts": "3.6.0",
     "resend": "6.6.0",

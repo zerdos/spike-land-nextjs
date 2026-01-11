@@ -39,17 +39,37 @@ export interface MockMarketingData {
 }
 
 export interface MockOverviewData {
-  totalSpend: number;
-  totalClicks: number;
-  totalImpressions: number;
-  campaigns: number;
+  metrics: {
+    visitors: number;
+    visitorsChange: number;
+    signups: number;
+    signupsChange: number;
+    conversionRate: number;
+    conversionRateChange: number;
+    revenue: number;
+    revenueChange: number;
+  };
+  daily: Array<{
+    date: string;
+    visitors: number;
+    conversions: number;
+  }>;
+  trafficSources: Array<{
+    name: string;
+    value: number;
+  }>;
 }
 
 export interface MockFunnelData {
-  steps: Array<{
+  stages: Array<{
     name: string;
     count: number;
-    rate: number;
+    conversionRate: number;
+    dropoffRate: number;
+  }>;
+  campaigns: Array<{
+    id: string;
+    name: string;
   }>;
 }
 
@@ -118,17 +138,35 @@ export const mockCampaignsData: MockCampaign[] = [
 ];
 
 export const mockOverviewData: MockOverviewData = {
-  totalSpend: 5000,
-  totalClicks: 10000,
-  totalImpressions: 500000,
-  campaigns: 5,
+  metrics: {
+    visitors: 1000,
+    visitorsChange: 10,
+    signups: 50,
+    signupsChange: 5,
+    conversionRate: 5.0,
+    conversionRateChange: 0.5,
+    revenue: 5000,
+    revenueChange: 1000,
+  },
+  daily: [
+    { date: "2023-01-01", visitors: 100, conversions: 5 },
+    { date: "2023-01-02", visitors: 150, conversions: 8 },
+  ],
+  trafficSources: [
+    { name: "Direct", value: 400 },
+    { name: "Social", value: 300 },
+    { name: "Organic", value: 300 },
+  ],
 };
 
 export const mockFunnelData: MockFunnelData = {
-  steps: [
-    { name: "Impressions", count: 100000, rate: 100 },
-    { name: "Clicks", count: 5000, rate: 5 },
-    { name: "Conversions", count: 500, rate: 10 },
+  stages: [
+    { name: "Visitors", count: 1000, conversionRate: 100, dropoffRate: 0 },
+    { name: "Signups", count: 500, conversionRate: 50, dropoffRate: 50 },
+    { name: "Purchases", count: 300, conversionRate: 60, dropoffRate: 40 },
+  ],
+  campaigns: [
+    { id: "campaign-1", name: "Test Campaign 1" },
   ],
 };
 
@@ -153,6 +191,8 @@ export function createFetchMock(
         } as Response);
       }
     }
+
+    // console.warn(`Mock fetch 404 for URL: ${url}`); // Debugging help
 
     // Default 404 response
     return Promise.resolve({
