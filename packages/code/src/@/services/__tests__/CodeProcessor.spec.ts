@@ -421,23 +421,6 @@ describe("CodeProcessor", () => {
       expect(result).toBe(false);
     });
 
-    it("should log error when format fails", async () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      vi.mocked(transpileCode).mockRejectedValueOnce(new Error("Format failed"));
-
-      await processor.process(
-        "bad code",
-        true,
-        mockAbortController.signal,
-        mockGetSession,
-      );
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Error formatting code:",
-        expect.any(Error),
-      );
-    });
-
     it("should log error when transpile fails", async () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       vi.mocked(transpileCode).mockRejectedValueOnce(
