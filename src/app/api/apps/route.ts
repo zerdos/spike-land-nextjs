@@ -167,7 +167,7 @@ async function createAppFromPrompt(
   // If codespaceId is provided, use it. Otherwise generate a new slug.
   const slug = data.codespaceId ? data.codespaceId : generateSlug();
 
-  // Create a name from the slug (stripping potential random suffix if it's long entough)
+  // Create a name from the slug (stripping potential random suffix if it's long enough)
   const name = slug
     .split("-")
     // Simple heuristic: if it looks like our generated id (adj-noun-verb-suffix), try to keep just the words
