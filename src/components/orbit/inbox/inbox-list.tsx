@@ -75,7 +75,7 @@ export function InboxList({ onItemSelected, filters }: InboxListProps) {
     fetchNextPage,
     allItems.length,
     isFetchingNextPage,
-    rowVirtualizer.getVirtualItems(),
+    rowVirtualizer,
   ]);
 
   const handleItemClick = (item: InboxItemType) => {
