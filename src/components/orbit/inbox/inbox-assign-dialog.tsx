@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -68,13 +68,16 @@ async function assignItem(workspaceSlug: string, itemId: string, assignedToId: s
 export function InboxAssignDialog({ itemId, teamMembers, onAssign }: InboxAssignDialogProps) {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
+  const queryClient = useQueryClient();
   const form = useForm<AssignFormValues>({
     resolver: zodResolver(assignSchema),
+    defaultValues: {},
   });
 
   const mutation = useMutation({
     mutationFn: (assignedToId: string) => assignItem(workspaceSlug, itemId, assignedToId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inboxItems", workspaceSlug] });
       onAssign();
     },
   });

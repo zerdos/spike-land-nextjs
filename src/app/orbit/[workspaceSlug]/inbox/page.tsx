@@ -1,25 +1,25 @@
 "use client";
 
+import { InboxActionButtons } from "@/components/orbit/inbox/inbox-action-buttons";
 import { InboxAssignDialog } from "@/components/orbit/inbox/inbox-assign-dialog";
 import type { FilterFormValues } from "@/components/orbit/inbox/inbox-filters";
 import { InboxFilters } from "@/components/orbit/inbox/inbox-filters";
 import { InboxList } from "@/components/orbit/inbox/inbox-list";
 import { InboxReplyPanel } from "@/components/orbit/inbox/inbox-reply-panel";
+import { useWorkspaceMembers } from "@/hooks/useWorkspaceMembers";
 import type { InboxItem } from "@prisma/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
-// Mock team members for now
-const teamMembers = [
-  { id: "1", name: "Alice" },
-  { id: "2", name: "Bob" },
-  { id: "3", name: "Charlie" },
-];
-
 export default function InboxPage() {
+  const params = useParams();
+  const workspaceSlug = params?.workspaceSlug as string;
   const queryClient = useMemo(() => new QueryClient(), []);
   const [filters, setFilters] = useState<FilterFormValues>({});
   const [selectedItem, setSelectedItem] = useState<InboxItem | null>(null);
+
+  const { data: members = [] } = useWorkspaceMembers(workspaceSlug);
 
   const handleFilterChange = (newFilters: FilterFormValues) => {
     setFilters(newFilters);
@@ -34,7 +34,7 @@ export default function InboxPage() {
       <div className="flex h-screen">
         <div className="w-1/3 border-r">
           <div className="p-4 border-b">
-            <InboxFilters onFilterChange={handleFilterChange} teamMembers={teamMembers} />
+            <InboxFilters onFilterChange={handleFilterChange} teamMembers={members} />
           </div>
           <InboxList filters={filters} onItemSelected={setSelectedItem} />
         </div>
@@ -42,11 +42,18 @@ export default function InboxPage() {
           {selectedItem
             ? (
               <>
+                <div className="flex justify-end mb-4">
+                  <InboxActionButtons
+                    itemId={selectedItem.id}
+                    workspaceSlug={workspaceSlug}
+                    onActionComplete={() => setSelectedItem(null)}
+                  />
+                </div>
                 <InboxReplyPanel itemId={selectedItem.id} />
                 <div className="mt-4">
                   <InboxAssignDialog
                     itemId={selectedItem.id}
-                    teamMembers={teamMembers}
+                    teamMembers={members}
                     onAssign={handleAssign}
                   />
                 </div>
