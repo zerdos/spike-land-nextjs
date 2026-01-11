@@ -58,6 +58,7 @@ model User {
   socialPosts              SocialPost[]
   // Workspace relations
   workspaceMembers         WorkspaceMember[]
+  escalatedItems           InboxItem[]            @relation("EscalatedItems")
   workspaceInvitations     WorkspaceMember[]      @relation("WorkspaceInvitations")
   // Brand Brain relations
   createdBrandProfiles     BrandProfile[]         @relation("BrandProfileCreator")
@@ -799,6 +800,69 @@ enum AppBuildStatus {
   LIVE // Published and active
   ARCHIVED // User archived
   FAILED // Build failed
+}
+
+enum InboxSentiment {
+  POSITIVE
+  NEGATIVE
+  NEUTRAL
+  MIXED
+}
+
+enum EscalationStatus {
+  NONE
+  PENDING
+  ESCALATED
+  RESOLVED
+}
+
+enum EscalationEventType {
+  ESCALATED
+  DE_ESCALATED
+  ASSIGNED
+  SLA_WARNING
+  SLA_BREACH
+  RESOLVED
+}
+
+enum EscalationTrigger {
+  SENTIMENT
+  PRIORITY
+  SLA_TIMEOUT
+  MANUAL
+  RULE
+}
+
+model InboxSuggestedResponse {
+  id              String    @id @default(cuid())
+  inboxItemId     String
+  inboxItem       InboxItem @relation(fields: [inboxItemId], references: [id], onDelete: Cascade)
+  content         String    @db.Text
+  tone            String
+  confidenceScore Float
+  category        String
+  isPreferred     Boolean   @default(false)
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  @@index([inboxItemId])
+  @@map("inbox_suggested_responses")
+}
+
+model EscalationEvent {
+  id            String              @id @default(cuid())
+  inboxItemId   String
+  inboxItem     InboxItem           @relation(fields: [inboxItemId], references: [id], onDelete: Cascade)
+  eventType     EscalationEventType
+  fromLevel     Int
+  toLevel       Int
+  fromUserId    String?
+  toUserId      String?
+  reason        String?
+  triggeredBy   EscalationTrigger
+  metadata      Json?
+  createdAt     DateTime            @default(now())
+  @@index([inboxItemId])
+  @@map("escalation_events")
 }
 
 // Message role in app chat
@@ -2407,6 +2471,27 @@ model InboxItem {
 
   // Relations
   drafts RelayDraft[]
+
+  // Smart Routing Fields
+  sentiment          InboxSentiment?
+  sentimentScore     Float?              // -1 to 1
+  priorityScore      Int?                // 0-100
+  priorityFactors    Json?
+  routingAnalyzedAt  DateTime?
+  routingMetadata    Json?
+
+  // Escalation Fields
+  escalationStatus   EscalationStatus?   @default(NONE)
+  escalationLevel    Int?                @default(0)
+  escalatedAt        DateTime?
+  escalatedToId      String?
+  escalatedTo        WorkspaceMember?    @relation("EscalatedItems", fields: [escalatedToId], references: [id], onDelete: SetNull)
+  slaDeadline        DateTime?
+  slaBreach          Boolean             @default(false)
+
+  // New Relations
+  suggestedResponses InboxSuggestedResponse[]
+  escalationHistory  EscalationEvent[]
 
   @@unique([workspaceId, platform, platformItemId])
   @@index([workspaceId])
