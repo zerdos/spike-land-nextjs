@@ -130,7 +130,7 @@ describe("User Management API", () => {
       } as any);
 
       const request = new NextRequest(
-        "http://localhost/api/admin/users?userId=invalid",
+        "http://localhost/api/admin/users?userId=ab",
       );
 
       const response = await GET(request);
@@ -218,7 +218,7 @@ describe("User Management API", () => {
       const request = new NextRequest("http://localhost/api/admin/users", {
         method: "PATCH",
         body: JSON.stringify({
-          userId: "invalid",
+          userId: "ab",
           action: "setRole",
           value: "ADMIN",
         }),
@@ -490,7 +490,7 @@ describe("User Management API", () => {
       } as any);
 
       const request = new NextRequest(
-        "http://localhost/api/admin/users?userId=invalid",
+        "http://localhost/api/admin/users?userId=ab",
         {
           method: "DELETE",
         },
