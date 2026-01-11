@@ -10,6 +10,9 @@ export default defineConfig({
     projects: ["./src/app/api/vite.config.ts"],
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
+    env: {
+      DATABASE_URL: "postgresql://mock:5432/mock",
+    },
     include: ["src/**/*.{test,spec}.{ts,tsx}", "apps/**/*.{test,spec}.{ts,tsx}"],
     // Exclude git worktrees, mobile app (uses Jest), and packages (have their own configs)
     exclude: [
@@ -96,6 +99,11 @@ export default defineConfig({
       // Fix ESM module resolution for next-auth imports
       "next/link": path.resolve(__dirname, "./node_modules/next/link.js"),
       "next/image": path.resolve(__dirname, "./node_modules/next/image.js"),
+      "@/auth": path.resolve(__dirname, "./src/auth.ts"),
+      "next/server": path.resolve(
+        __dirname,
+        "./node_modules/next/dist/server/web/spec-extension/request.js"
+      ),
     },
   },
 });
