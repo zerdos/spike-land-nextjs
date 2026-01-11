@@ -2,6 +2,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { config } from "dotenv";
 
+import { getE2EDatabaseUrl } from "./lib/db-protection";
+
 // Load environment variables from .env.local
 // Use quiet: true to suppress verbose logging
 config({ path: ".env.local", quiet: true });
@@ -25,26 +27,14 @@ config({ path: ".env.local", quiet: true });
  *   DATABASE_URL_E2E=<url> npx tsx prisma/cleanup-e2e.ts
  *
  * All E2E test data is identified by "e2e-" prefix in IDs.
+ *
+ * SAFETY: This script has production database protection.
+ * It will refuse to run against production databases.
+ * See prisma/lib/db-protection.ts for details.
  */
 
-// Use DATABASE_URL_E2E if available, otherwise fall back to DATABASE_URL
-const connectionString = process.env.DATABASE_URL_E2E ||
-  process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error(
-    "DATABASE_URL_E2E or DATABASE_URL environment variable is required",
-  );
-}
-
-// Production database protection - prevent accidental cleanup of production
-if (
-  connectionString.includes("production") || connectionString.includes("prod-")
-) {
-  throw new Error(
-    "SAFETY: Refusing to cleanup what appears to be a production database. " +
-      "Use DATABASE_URL_E2E for test databases only.",
-  );
-}
+// Get connection string with production protection
+const connectionString = getE2EDatabaseUrl();
 
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });

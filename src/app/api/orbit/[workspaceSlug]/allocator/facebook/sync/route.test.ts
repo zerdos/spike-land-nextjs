@@ -1,8 +1,7 @@
-
-import { POST } from "./route";
-import prisma from "@/lib/prisma";
 import { syncFacebookCampaigns } from "@/lib/allocator/facebook-ads/campaign-sync";
+import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
+import { POST } from "./route";
 
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -31,7 +30,9 @@ describe("POST /api/orbit/[workspaceSlug]/allocator/facebook/sync", () => {
   it("should return 404 if workspace is not found", async () => {
     (prisma.workspace.findUnique as any).mockResolvedValue(null);
 
-    const req = new NextRequest("http://localhost/api/orbit/non-existent-ws/allocator/facebook/sync");
+    const req = new NextRequest(
+      "http://localhost/api/orbit/non-existent-ws/allocator/facebook/sync",
+    );
     const res = await POST(req, { params: { workspaceSlug: "non-existent-ws" } });
     const json = await res.json();
 

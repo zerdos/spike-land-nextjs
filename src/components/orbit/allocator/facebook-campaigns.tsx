@@ -1,8 +1,7 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
 import type { AllocatorCampaign } from "@prisma/client";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface FacebookCampaignsProps {
@@ -50,10 +49,11 @@ export default function FacebookCampaigns({
       }
       toast.success("Sync process started successfully!");
     } catch (err) {
-      toast.error(`Error starting sync: ${err instanceof Error ? err.message : "An unknown error occurred"}`);
+      toast.error(
+        `Error starting sync: ${err instanceof Error ? err.message : "An unknown error occurred"}`,
+      );
     }
   };
-
 
   if (isLoading) {
     return <div>Loading campaigns...</div>;
@@ -74,9 +74,7 @@ export default function FacebookCampaigns({
           Sync Now
         </button>
       </div>
-      {campaigns.length === 0 ? (
-        <p>No campaigns found.</p>
-      ) : (
+      {campaigns.length === 0 ? <p>No campaigns found.</p> : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">

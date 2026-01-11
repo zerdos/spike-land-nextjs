@@ -1,4 +1,3 @@
-
 export interface FacebookAdAccount {
   id: string;
   name: string;
@@ -7,7 +6,7 @@ export interface FacebookAdAccount {
 
 export interface FacebookCampaign {
   id: string;
-  name:string;
+  name: string;
   status: string;
   objective: string;
   daily_budget?: string;
