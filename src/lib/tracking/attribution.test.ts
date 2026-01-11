@@ -219,6 +219,7 @@ describe("attribution", () => {
         utmSource: "google",
         utmMedium: "cpc",
         convertedAt: new Date("2024-01-01"),
+        conversionId: "conv-1",
       };
 
       vi.mocked(prisma.campaignAttribution.findFirst).mockResolvedValue(
@@ -263,6 +264,7 @@ describe("attribution", () => {
         utmSource: "facebook",
         utmMedium: "paid",
         convertedAt: new Date("2024-01-15"),
+        conversionId: "conv-2",
       };
 
       vi.mocked(prisma.campaignAttribution.findFirst).mockResolvedValue(
@@ -308,6 +310,7 @@ describe("attribution", () => {
           utmSource: "google",
           utmMedium: "cpc",
           convertedAt: new Date("2024-01-01"),
+          conversionId: "conv-1",
         },
         {
           id: "attr-2",
@@ -322,6 +325,7 @@ describe("attribution", () => {
           utmSource: null,
           utmMedium: null,
           convertedAt: new Date("2024-01-15"),
+          conversionId: "conv-2",
         },
       ];
 
@@ -405,7 +409,7 @@ describe("attribution", () => {
       expect(prisma.campaignAttribution.create).toHaveBeenCalledTimes(4); // FT, LT, Linear x2
 
       const calls = vi.mocked(prisma.campaignAttribution.create).mock.calls;
-      const conversionId = calls[0][0]!.data!.conversionId;
+      const conversionId = calls[0]![0]!.data!.conversionId;
 
       // All calls should have the same conversionId
       calls.forEach((call) => {
@@ -413,7 +417,7 @@ describe("attribution", () => {
       });
 
       // First Touch
-      expect(calls[0][0]!.data).toMatchObject({
+      expect(calls[0]![0]!.data).toMatchObject({
         attributionType: "FIRST_TOUCH",
         sessionId: "session-1",
         platform: "GOOGLE_ADS",
@@ -421,7 +425,7 @@ describe("attribution", () => {
       });
 
       // Last Touch
-      expect(calls[1][0]!.data).toMatchObject({
+      expect(calls[1]![0]!.data).toMatchObject({
         attributionType: "LAST_TOUCH",
         sessionId: "session-2",
         platform: "FACEBOOK",
@@ -429,13 +433,13 @@ describe("attribution", () => {
       });
 
       // Linear
-      expect(calls[2][0]!.data).toMatchObject({
+      expect(calls[2]![0]!.data).toMatchObject({
         attributionType: "LINEAR",
         sessionId: "session-1",
         platform: "GOOGLE_ADS",
         conversionValue: 50,
       });
-      expect(calls[3][0]!.data).toMatchObject({
+      expect(calls[3]![0]!.data).toMatchObject({
         attributionType: "LINEAR",
         sessionId: "session-2",
         platform: "FACEBOOK",
@@ -624,15 +628,15 @@ describe("attribution", () => {
         .calls;
 
       // Check that FT, LT, and Linear calls have correct platform
-      expect(createCalls[0][0]!.data).toMatchObject({
+      expect(createCalls[0]![0]!.data).toMatchObject({
         platform: "FACEBOOK",
         externalCampaignId: "fb-click-id",
       });
-      expect(createCalls[1][0]!.data).toMatchObject({
+      expect(createCalls[1]![0]!.data).toMatchObject({
         platform: "FACEBOOK",
         externalCampaignId: "fb-click-id",
       });
-      expect(createCalls[2][0]!.data).toMatchObject({
+      expect(createCalls[2]![0]!.data).toMatchObject({
         platform: "FACEBOOK",
         externalCampaignId: "fb-click-id",
       });

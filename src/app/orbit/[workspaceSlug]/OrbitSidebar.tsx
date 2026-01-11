@@ -27,6 +27,11 @@ const getNavItems = (workspaceSlug: string) => [
     icon: "🧠",
   },
   { href: `/orbit/${workspaceSlug}/ai-agents`, label: "AI Agents", icon: "🤖" },
+  {
+    href: `/orbit/${workspaceSlug}/workflows`,
+    label: "Workflows",
+    icon: "⚡️",
+  },
   { href: `/orbit/${workspaceSlug}/settings`, label: "Settings", icon: "⚙️" },
 ];
 

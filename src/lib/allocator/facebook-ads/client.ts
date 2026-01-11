@@ -19,12 +19,12 @@ export class FacebookMarketingApiClient {
   }
 
   private async facebookRequest<
-    T extends { data: any[]; paging?: { next?: string; }; },
+    T extends { data: unknown[]; paging?: { next?: string; }; },
   >(
     path: string,
     params: Record<string, string> = {},
   ): Promise<T["data"]> {
-    let allData: T["data"] = [];
+    const allData: T["data"] = [];
     let url: URL | null = new URL(`${GRAPH_API_BASE}/${path}`);
     url.searchParams.set("access_token", this.accessToken);
     for (const key in params) {

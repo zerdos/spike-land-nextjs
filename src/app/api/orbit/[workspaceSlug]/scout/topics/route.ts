@@ -1,14 +1,6 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import {
-  createTopic,
-  createTopicSchema,
-  deleteTopic,
-  listTopicsByWorkspace,
-  updateTopic,
-  updateTopicSchema,
-} from "@/lib/scout/topic-config";
-import { tryCatch } from "@/lib/try-catch";
+import prisma from "@/lib/prisma";
+import { createTopic, createTopicSchema, listTopicsByWorkspace } from "@/lib/scout/topic-config";
 import { type NextRequest, NextResponse } from "next/server";
 
 interface RouteContext {
@@ -26,8 +18,8 @@ async function getWorkspaceId(slug: string, userId: string): Promise<string | nu
 }
 
 // List all topics for a workspace
-export async function GET(req: NextRequest, { params }: RouteContext) {
-  return tryCatch(async () => {
+export async function GET(_req: NextRequest, { params }: RouteContext) {
+  try {
     const session = await auth();
     if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
 
@@ -36,12 +28,15 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
 
     const topics = await listTopicsByWorkspace(workspaceId);
     return NextResponse.json(topics);
-  });
+  } catch (error) {
+    console.error("Error in GET /topics:", error);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }
 
 // Create a new topic
 export async function POST(req: NextRequest, { params }: RouteContext) {
-  return tryCatch(async () => {
+  try {
     const session = await auth();
     if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
 
@@ -53,5 +48,11 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     const newTopic = await createTopic(workspaceId, data);
 
     return NextResponse.json(newTopic, { status: 201 });
-  });
+  } catch (error) {
+    if (error instanceof Error) {
+      // Zod error or other
+      return new Response(error.message, { status: 400 });
+    }
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }
