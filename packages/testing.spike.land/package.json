@@ -47,7 +47,7 @@
     "rimraf": "6.1.2",
     "rollup": "4.55.1",
     "typescript": "5.9.3",
-    "vitest": "3.2.4"
+    "vitest": "4.0.16"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "3.0.9",
