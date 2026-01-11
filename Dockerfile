@@ -53,8 +53,8 @@ RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/
     --mount=type=cache,id=${CACHE_NS}-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
     apt-get update \
     && apt-get install -y --no-install-recommends \
-       python3 make g++ \
-       libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
+    python3 make g++ \
+    libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
 
 # Pre-warm yarn cache from pinned commit (stable layer)
 ADD https://github.com/zerdos/spike-land-nextjs/archive/${DEP_CACHE_COMMIT}.tar.gz /tmp/repo.tar.gz
@@ -68,7 +68,7 @@ RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn
 RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
     yarn install --immutable
 
-    # Overlay current build context
+# Overlay current build context
 COPY --link --from=dep-context /app /app
 
 # ============================================================================
@@ -116,7 +116,7 @@ RUN --mount=type=cache,id=${CACHE_NS}-next-cache-${TARGETARCH},target=/app/.next
 # STAGE 6: Type Check
 # ============================================================================
 FROM source AS tsc
-RUN yarn tsc --noEmit
+RUN NODE_OPTIONS="--max-old-space-size=4096" yarn tsc --noEmit
 
 # ============================================================================
 # STAGE 7: Test Context
@@ -465,9 +465,9 @@ WORKDIR /app
 ARG BUILD_SHA
 ARG BUILD_DATE
 LABEL org.opencontainers.image.revision="${BUILD_SHA}" \
-      org.opencontainers.image.created="${BUILD_DATE}" \
-      org.opencontainers.image.title="spike.land" \
-      org.opencontainers.image.description="Next.js production image"
+    org.opencontainers.image.created="${BUILD_DATE}" \
+    org.opencontainers.image.title="spike.land" \
+    org.opencontainers.image.description="Next.js production image"
 
 RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs nextjs
 
