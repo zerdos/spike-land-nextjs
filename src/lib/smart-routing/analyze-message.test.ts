@@ -12,30 +12,25 @@ describe("analyzeMessage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (getGeminiClient as any).mockReturnValue({
-      getGenerativeModel: vi.fn().mockReturnValue({
+      models: {
         generateContent: mockGenerateContent,
-      }),
+      },
     });
   });
 
   it("should analyze message successfully", async () => {
-    const mockResponse = {
-      response: {
-        text: () =>
-          JSON.stringify({
-            sentiment: "POSITIVE",
-            sentimentScore: 0.8,
-            urgency: "medium",
-            category: "feedback",
-            intent: "praise",
-            summary: "Good job",
-            suggestedResponses: ["Thanks"],
-            reasoning: "Positive words",
-            confidenceScore: 0.9,
-          }),
-      },
-    };
-    mockGenerateContent.mockResolvedValue(mockResponse);
+    // Mock response matches actual API structure (result.text property)
+    mockGenerateContent.mockResolvedValue({
+      text: JSON.stringify({
+        sentiment: "POSITIVE",
+        sentimentScore: 0.8,
+        urgency: "medium",
+        category: "feedback",
+        intent: "praise",
+        suggestedResponses: ["Thanks"],
+        reasoning: "Positive words",
+      }),
+    });
 
     const result = await analyzeMessage({
       content: "Great job on the update!",
@@ -49,12 +44,10 @@ describe("analyzeMessage", () => {
   });
 
   it("should handle invalid JSON from Gemini", async () => {
-    const mockResponse = {
-      response: {
-        text: () => "Invalid JSON",
-      },
-    };
-    mockGenerateContent.mockResolvedValue(mockResponse);
+    // Mock response with invalid JSON in text property
+    mockGenerateContent.mockResolvedValue({
+      text: "Invalid JSON",
+    });
 
     await expect(analyzeMessage({
       content: "Bad response",

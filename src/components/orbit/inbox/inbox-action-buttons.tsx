@@ -14,7 +14,7 @@ interface InboxActionButtonsProps {
 type ActionType = "RESOLVE" | "ARCHIVE" | "IGNORE" | null;
 
 export function InboxActionButtons({
-  itemId,
+  itemId: _itemId, // TODO: Will be used with actual API mutation
   workspaceSlug,
   onActionComplete,
 }: InboxActionButtonsProps) {
@@ -25,10 +25,8 @@ export function InboxActionButtons({
     if (!actionType) return;
 
     try {
-      // Simulate API call for now since we don't have the mutation hook yet
+      // TODO: Replace with actual API mutation hook
       await new Promise((resolve) => setTimeout(resolve, 500));
-
-      console.log(`Performing action ${actionType} on item ${itemId}`);
 
       toast.success(`Item ${actionType.toLowerCase()}d successfully`);
 

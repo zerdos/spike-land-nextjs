@@ -275,7 +275,12 @@ export async function listInboxItems(
     // filter.workspaceId is mandatory in InboxItemFilter? Yes.
 
     Promise.all(unanalyzed.map(i => RoutingEngine.processItem(i.id, i.workspaceId)))
-      .catch(error => console.error("Auto-analysis trigger failed:", error));
+      .then((results) => {
+        console.info(`[InboxManager] Auto-analysis triggered for ${results.length} items`);
+      })
+      .catch(error => {
+        console.error("[InboxManager] Auto-analysis trigger failed:", error);
+      });
   }
 
   const totalPages = Math.ceil(total / limit);

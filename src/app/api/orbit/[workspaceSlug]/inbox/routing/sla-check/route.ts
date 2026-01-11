@@ -1,17 +1,21 @@
 import { auth } from "@/auth";
+import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
 import { EscalationService } from "@/lib/smart-routing/escalation-service";
 import { NextResponse } from "next/server";
 
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: { workspaceSlug: string; }; },
 ) {
-  // This endpoint might be called by a cron job service (e.g., Vercel Cron)
-  // Need to secure it, possibly with a CRON_SECRET header check
-
-  // For now, allow workspace admins to trigger it manually too
   const session = await auth();
+  const cronSecret = request.headers.get("x-cron-secret");
+  const isValidCronCall = cronSecret === process.env.CRON_SECRET && process.env.CRON_SECRET;
+
+  // Require either valid session or valid cron secret
+  if (!session && !isValidCronCall) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     const workspace = await prisma.workspace.findUnique({
@@ -21,12 +25,9 @@ export async function POST(
 
     if (!workspace) return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
 
-    // If called by user, check permissions
-    // If called by cron, check secret (TODO)
-    // For now, assuming user context or internal call
+    // If called by user, verify permissions
     if (session) {
-      // Check perms if session exists
-      //  await requireWorkspacePermission(session, workspace.id, "inbox:manage");
+      await requireWorkspacePermission(session, workspace.id, "inbox:manage");
     }
 
     const service = new EscalationService(workspace.id);
@@ -35,6 +36,12 @@ export async function POST(
     return NextResponse.json({ success: true, message: "SLA check completed" });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
+    if (message.includes("Unauthorized")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (message.includes("Forbidden")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
