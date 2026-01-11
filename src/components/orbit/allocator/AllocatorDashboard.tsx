@@ -70,7 +70,7 @@ export function AllocatorDashboard({ workspaceSlug }: AllocatorDashboardProps) {
     isLoading: isAutopilotLoading,
     toggleAutopilot,
     updateConfig: updateAutopilotConfig,
-    refreshConfig: refreshAutopilotConfig,
+    refreshConfig: _refreshAutopilotConfig,
   } = useAutopilotConfig(workspaceSlug);
 
   const fetchData = useCallback(async () => {

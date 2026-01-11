@@ -1,7 +1,4 @@
 import type { AutopilotExecutionStatus, AutopilotMode } from "@prisma/client";
-// Use any for Decimal in types to avoid runtime import issues in test environment
-// import { Decimal } from '@prisma/client/runtime/library';
-type Decimal = any;
 
 // Configuration Types
 export interface AutopilotConfig {
@@ -31,7 +28,7 @@ export interface AutopilotRecommendation {
   suggestedBudget: number;
   reason: string;
   confidence: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AutopilotExecutionResult {

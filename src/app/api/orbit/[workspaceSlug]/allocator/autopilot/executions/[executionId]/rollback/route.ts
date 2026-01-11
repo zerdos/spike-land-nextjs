@@ -6,7 +6,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export async function POST(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { workspaceSlug: string; executionId: string; }; },
 ) {
   const session = await auth();

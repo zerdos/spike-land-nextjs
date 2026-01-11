@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { AutopilotExecutionStatus, AutopilotMode, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { FeatureFlagService } from "../feature-flags/feature-flag-service";
 import { AutopilotAnomalyIntegration } from "./autopilot-anomaly-integration";
 import type {
@@ -68,10 +68,6 @@ export class AutopilotService {
       throw new Error("Autopilot feature is not enabled for this workspace.");
     }
 
-    const where = campaignId
-      ? { workspaceId_campaignId: { workspaceId, campaignId } }
-      : { workspaceId_campaignId: { workspaceId, campaignId: null } as any }; // Prisma typing workaround if needed, but schema allows null campaignId
-
     // Note: workspaceId_campaignId composite unique index requires both fields.
     // However, campaignId can be null. Prisma handling of null in composite unique varies by DB.
     // In Postgres, multiple NULLs are distinct unless specified otherwise, but Prisma schema defines it.
@@ -124,7 +120,6 @@ export class AutopilotService {
           requireApprovalAbove: data.requireApprovalAbove
             ? new Decimal(data.requireApprovalAbove)
             : null,
-          encryptedSettings: data.encryptedSettings,
         },
       });
     }

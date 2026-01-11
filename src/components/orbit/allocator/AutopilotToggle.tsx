@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
 
 interface AutopilotToggleProps {
   isEnabled: boolean;

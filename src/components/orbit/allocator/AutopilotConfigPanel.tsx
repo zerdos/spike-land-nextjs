@@ -43,7 +43,10 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
     }
   };
 
-  const updateField = (field: keyof AutopilotConfig, value: any) => {
+  const updateField = (
+    field: keyof AutopilotConfig,
+    value: AutopilotConfig[keyof AutopilotConfig],
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 

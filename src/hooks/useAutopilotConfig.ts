@@ -1,5 +1,4 @@
 import type { AutopilotConfig, UpdateAutopilotConfigInput } from "@/lib/allocator/autopilot-types";
-import { useRouter } from "next-view-transitions";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 

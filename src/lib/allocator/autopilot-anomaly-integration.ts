@@ -20,15 +20,17 @@ export class AutopilotAnomalyIntegration {
     });
 
     if (recentAnomalies.length > 0) {
-      anomalies.push({
-        workspaceId,
-        type: "SOCIAL_METRIC_SPIKE",
-        severity: "critical",
-        detectedAt: recentAnomalies[0].detectedAt,
-        description: `Critical social metric anomaly detected: ${recentAnomalies[0].direction} in ${
-          recentAnomalies[0].metricType
-        }`,
-      });
+      const firstAnomaly = recentAnomalies[0];
+      if (firstAnomaly) {
+        anomalies.push({
+          workspaceId,
+          type: "SOCIAL_METRIC_SPIKE",
+          severity: "critical",
+          detectedAt: firstAnomaly.detectedAt,
+          description:
+            `Critical social metric anomaly detected: ${firstAnomaly.direction} in ${firstAnomaly.metricType}`,
+        });
+      }
     }
 
     // 2. Check for unexpected spending spikes (Allocator internal check)
