@@ -136,6 +136,9 @@ describe("MyAppsPage", () => {
           status: {
             notIn: ["ARCHIVED"],
           },
+          messages: {
+            some: {}, // Only show apps that have at least one message
+          },
         },
         select: {
           id: true,
