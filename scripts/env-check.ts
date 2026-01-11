@@ -11,6 +11,10 @@
  */
 
 import { ListBucketsCommand, S3Client } from "@aws-sdk/client-s3";
+import { config } from "dotenv";
+
+// Load .env.local for local development
+config({ path: ".env.local", quiet: true });
 
 // Types
 interface CheckResult {
