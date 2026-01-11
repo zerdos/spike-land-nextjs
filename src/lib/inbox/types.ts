@@ -5,7 +5,7 @@
  */
 
 import type { InboxItem } from "@prisma/client";
-import { InboxItemStatus, InboxItemType, SocialPlatform, InboxSentiment } from "@prisma/client";
+import { InboxItemStatus, InboxItemType, InboxSentiment, SocialPlatform } from "@prisma/client";
 
 /**
  * Options for creating an inbox item
@@ -102,4 +102,4 @@ export interface AssignmentResult {
 
 // Re-export Prisma types for convenience
 export type { InboxItem } from "@prisma/client";
-export { InboxItemStatus, InboxItemType, SocialPlatform, InboxSentiment };
+export { InboxItemStatus, InboxItemType, InboxSentiment, SocialPlatform };

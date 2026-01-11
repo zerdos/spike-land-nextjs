@@ -12,8 +12,8 @@ import {
   Youtube,
 } from "lucide-react";
 import React from "react";
-import { InboxSentimentBadge } from "./inbox-sentiment-badge";
 import { InboxPriorityBadge } from "./inbox-priority-badge";
+import { InboxSentimentBadge } from "./inbox-sentiment-badge";
 
 interface InboxItemProps {
   item: InboxItemType;
