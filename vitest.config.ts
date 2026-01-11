@@ -96,6 +96,11 @@ export default defineConfig({
       // Fix ESM module resolution for next-auth imports
       "next/link": path.resolve(__dirname, "./node_modules/next/link.js"),
       "next/image": path.resolve(__dirname, "./node_modules/next/image.js"),
+      "@/auth": path.resolve(__dirname, "./src/auth.ts"),
+      "next/server": path.resolve(
+        __dirname,
+        "./node_modules/next/dist/server/web/spec-extension/request.js"
+      ),
     },
   },
 });
