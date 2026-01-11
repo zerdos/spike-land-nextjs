@@ -11,3 +11,6 @@ export {
   isHighImpactRecommendation,
 } from "./allocator-service";
 export * from "./allocator-types";
+export * from "./autopilot-anomaly-integration";
+export * from "./autopilot-service";
+export * from "./autopilot-types";

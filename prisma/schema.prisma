@@ -2195,6 +2195,10 @@ model Workspace {
   scoutTopics           ScoutTopic[]
   allocatorCampaigns    AllocatorCampaign[]
 
+  // Allocator Autopilot relations
+  autopilotConfigs       AllocatorAutopilotConfig[]
+  autopilotExecutions    AllocatorAutopilotExecution[]
+
   @@index([slug])
   @@index([isPersonal])
   @@map("workspaces")
@@ -3178,6 +3182,10 @@ model AllocatorCampaign {
   updatedAt          DateTime          @updatedAt
   adSets             AllocatorAdSet[]
 
+  autopilotConfig        AllocatorAutopilotConfig[]
+  autopilotExecutions    AllocatorAutopilotExecution[]
+  dailyBudgetMoves       AllocatorDailyBudgetMove[]
+
   @@unique([workspaceId, platform, platformCampaignId])
   @@index([workspaceId])
   @@index([platform])
@@ -3199,6 +3207,78 @@ model AllocatorAdSet {
   @@unique([campaignId, platformAdSetId])
   @@index([campaignId])
   @@map("allocator_ad_sets")
+}
+
+model AllocatorAutopilotConfig {
+  id                   String           @id @default(cuid())
+  workspaceId          String
+  campaignId           String?
+  isEnabled            Boolean          @default(false)
+  mode                 AutopilotMode    @default(CONSERVATIVE)
+  maxDailyBudgetChange Decimal          @default(10.0) @db.Decimal(10, 2)
+  maxSingleChange      Decimal          @default(5.0) @db.Decimal(10, 2)
+  minRoasThreshold     Decimal?         @db.Decimal(10, 2)
+  maxCpaThreshold      Decimal?         @db.Decimal(10, 2)
+  pauseOnAnomaly       Boolean          @default(true)
+  requireApprovalAbove Decimal?         @db.Decimal(10, 2)
+  encryptedSettings    String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  workspace            Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  campaign             AllocatorCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, campaignId])
+  @@index([workspaceId])
+  @@index([campaignId])
+  @@map("allocator_autopilot_configs")
+}
+
+model AllocatorAutopilotExecution {
+  id                 String                   @id @default(cuid())
+  workspaceId        String
+  campaignId         String
+  recommendationId   String?
+  recommendationType String
+  status             AutopilotExecutionStatus
+  previousBudget     Decimal                  @db.Decimal(10, 2)
+  newBudget          Decimal                  @db.Decimal(10, 2)
+  budgetChange       Decimal                  @db.Decimal(10, 2)
+  executedAt         DateTime                 @default(now())
+  metadata           Json?
+
+  // Rollback tracking
+  rollbackOfId       String?                  @unique
+  rolledBackAt       DateTime?
+  rolledBackReason   String?
+  rolledBackByUserId String?
+
+  workspace          Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  campaign           AllocatorCampaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  rollbackOf         AllocatorAutopilotExecution? @relation("RollbackHistory", fields: [rollbackOfId], references: [id])
+  rolledBackExecution AllocatorAutopilotExecution? @relation("RollbackHistory")
+
+  @@index([workspaceId])
+  @@index([campaignId])
+  @@index([executedAt])
+  @@map("allocator_autopilot_executions")
+}
+
+model AllocatorDailyBudgetMove {
+  id           String   @id @default(cuid())
+  campaignId   String
+  date         DateTime @db.Date
+  totalMoved   Decimal  @default(0) @db.Decimal(10, 2)
+  netChange    Decimal  @default(0) @db.Decimal(10, 2)
+  executionCount Int    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campaign     AllocatorCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, date])
+  @@index([campaignId])
+  @@map("allocator_daily_budget_moves")
 }
 
 // =============================================================================
@@ -3249,4 +3329,32 @@ enum AbTestStatus {
   RUNNING
   COMPLETED
   ARCHIVED
+}
+
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  isEnabled   Boolean  @default(false)
+  percentage  Int      @default(0)
+  enabledFor  String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("feature_flags")
+}
+
+enum AutopilotMode {
+  CONSERVATIVE
+  MODERATE
+  AGGRESSIVE
+}
+
+enum AutopilotExecutionStatus {
+  PENDING
+  EXECUTING
+  COMPLETED
+  FAILED
+  SKIPPED
+  ROLLED_BACK
+  PAUSED
 }
