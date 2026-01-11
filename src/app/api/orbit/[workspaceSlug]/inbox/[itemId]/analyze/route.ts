@@ -5,7 +5,7 @@ import { RoutingEngine } from "@/lib/smart-routing/routing-engine";
 import { NextResponse } from "next/server";
 
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: { params: { workspaceSlug: string; itemId: string; }; },
 ) {
   const session = await auth();

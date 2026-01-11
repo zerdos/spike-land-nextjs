@@ -3,10 +3,9 @@ import {
   EscalationEventType,
   EscalationStatus,
   EscalationTrigger,
-  InboxItem,
+  type InboxItem,
 } from "@prisma/client";
 import { getSmartRoutingSettings } from "./settings";
-import { SmartRoutingSettings } from "./types";
 
 export class EscalationService {
   constructor(private workspaceId: string) {}
@@ -76,7 +75,7 @@ export class EscalationService {
         workspaceId: this.workspaceId,
         slaDeadline: { lt: new Date() },
         slaBreach: false,
-        status: { notIn: ["RESOLVED", "ARCHIVED", "IGNORED"] },
+        status: { notIn: ["REPLIED", "ARCHIVED", "IGNORED"] },
       },
     });
 

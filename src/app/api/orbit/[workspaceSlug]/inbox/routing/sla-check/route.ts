@@ -4,7 +4,7 @@ import { EscalationService } from "@/lib/smart-routing/escalation-service";
 import { NextResponse } from "next/server";
 
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: { params: { workspaceSlug: string; }; },
 ) {
   // This endpoint might be called by a cron job service (e.g., Vercel Cron)
@@ -14,7 +14,7 @@ export async function POST(
   const session = await auth();
 
   try {
-    const workspace = await db.workspace.findUnique({
+    const workspace = await prisma.workspace.findUnique({
       where: { slug: params.workspaceSlug },
       select: { id: true },
     });

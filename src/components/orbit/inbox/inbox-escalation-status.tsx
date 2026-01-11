@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { EscalationStatus } from "@prisma/client";
+import type { EscalationStatus } from "@prisma/client";
 import { CheckCircle, Clock, ShieldAlert } from "lucide-react";
 
 interface InboxEscalationStatusProps {

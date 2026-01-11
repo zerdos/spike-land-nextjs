@@ -2,8 +2,9 @@ import { auth } from "@/auth";
 import { RoutingSettingsForm } from "@/components/orbit/settings/routing-settings-form";
 import { Separator } from "@/components/ui/separator";
 import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
+import prisma from "@/lib/prisma";
 import { getSmartRoutingSettings } from "@/lib/smart-routing/settings";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Inbox Smart Routing Settings",
@@ -15,17 +16,25 @@ export default async function InboxRoutingSettingsPage({
   params: { workspaceSlug: string; };
 }) {
   const session = await auth();
-  const workspace = await requireWorkspacePermission(
-    session,
-    params.workspaceSlug,
-    "settings:manage",
-  );
 
-  if (!workspace) {
+  // First, look up the workspace by slug
+  const workspaceRecord = await prisma.workspace.findUnique({
+    where: { slug: params.workspaceSlug },
+    select: { id: true },
+  });
+
+  if (!workspaceRecord) {
     return <div>Workspace not found</div>;
   }
 
-  const settings = await getSmartRoutingSettings(workspace.id);
+  // Check permissions
+  await requireWorkspacePermission(
+    session,
+    workspaceRecord.id,
+    "workspace:settings:read",
+  );
+
+  const settings = await getSmartRoutingSettings(workspaceRecord.id);
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,6 @@
-import { prisma } from "../prisma";
+import prisma from "../prisma";
 import { SmartRoutingSettingsSchema } from "../validations/smart-routing";
-import { SmartRoutingSettings } from "./types";
+import type { SmartRoutingSettings } from "./types";
 
 const DEFAULT_SETTINGS: SmartRoutingSettings = {
   enabled: true,

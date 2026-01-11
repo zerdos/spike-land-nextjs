@@ -12,11 +12,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { SmartRoutingSettings } from "@/lib/smart-routing/types";
+import type { SmartRoutingSettings } from "@/lib/smart-routing/types";
 import { SmartRoutingSettingsSchema } from "@/lib/validations/smart-routing";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import type { Resolver } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -29,7 +30,7 @@ export function RoutingSettingsForm({ initialSettings, workspaceSlug }: RoutingS
   const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<SmartRoutingSettings>({
-    resolver: zodResolver(SmartRoutingSettingsSchema),
+    resolver: zodResolver(SmartRoutingSettingsSchema) as Resolver<SmartRoutingSettings>,
     defaultValues: initialSettings,
   });
 

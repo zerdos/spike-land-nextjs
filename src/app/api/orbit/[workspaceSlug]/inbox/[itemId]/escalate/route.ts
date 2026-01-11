@@ -13,7 +13,7 @@ export async function POST(
   const session = await auth();
 
   try {
-    const workspace = await db.workspace.findUnique({
+    const workspace = await prisma.workspace.findUnique({
       where: { slug: params.workspaceSlug },
       select: { id: true },
     });

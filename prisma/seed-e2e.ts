@@ -10,6 +10,7 @@ import {
   PrismaClient,
   VoucherStatus,
   VoucherType,
+  WorkspaceRole,
 } from "@prisma/client";
 import { createHash } from "crypto";
 import { config } from "dotenv";
@@ -99,6 +100,42 @@ async function main() {
     },
   });
   console.log("Created admin user:", adminUser.id);
+
+  // 1c. Create test workspace
+  const workspace = await prisma.workspace.upsert({
+    where: { slug: "orbit-test-workspace" },
+    update: {},
+    create: {
+      name: "Orbit Test Workspace",
+      slug: "orbit-test-workspace",
+      isPersonal: false,
+      members: {
+        create: {
+          userId: ADMIN_USER_ID,
+          role: WorkspaceRole.ADMIN,
+          joinedAt: new Date(),
+        },
+      },
+    },
+  });
+  console.log("Created workspace:", workspace.slug);
+
+  // Add Test User as well
+  await prisma.workspaceMember.upsert({
+    where: {
+      workspaceId_userId: {
+        workspaceId: workspace.id,
+        userId: TEST_USER_ID,
+      },
+    },
+    update: {},
+    create: {
+      workspaceId: workspace.id,
+      userId: TEST_USER_ID,
+      role: WorkspaceRole.MEMBER,
+      joinedAt: new Date(),
+    },
+  });
 
   // 2. Ensure test user has token balance
   await prisma.userTokenBalance.upsert({

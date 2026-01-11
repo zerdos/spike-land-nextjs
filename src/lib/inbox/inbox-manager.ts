@@ -267,7 +267,7 @@ export async function listInboxItems(
 
   // Fire-and-forget analysis for items needing it
   const unanalyzed = items.filter((i: InboxItem) =>
-    !i.routingAnalyzedAt && i.content && i.type !== "review"
+    !i.routingAnalyzedAt && i.content && i.type !== "REVIEW"
   ); // Avoid reviews/system if needed
   if (unanalyzed.length > 0) {
     // Determine unique workspaceIds involved filtering

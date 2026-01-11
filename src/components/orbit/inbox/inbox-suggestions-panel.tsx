@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { InboxSuggestedResponse } from "@prisma/client";
+import type { InboxSuggestedResponse } from "@prisma/client";
 import { RefreshCw, Sparkles } from "lucide-react";
 
 interface InboxSuggestionsPanelProps {

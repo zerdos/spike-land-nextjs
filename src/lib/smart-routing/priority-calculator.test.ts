@@ -1,7 +1,8 @@
-import { InboxItem } from "@prisma/client";
+import type { InboxItem } from "@prisma/client";
 import { describe, expect, it } from "vitest";
+import type { AnalysisResult } from "./analyze-message";
 import { calculatePriorityScore } from "./priority-calculator";
-import { AnalysisResult, SmartRoutingSettings } from "./types";
+import type { SmartRoutingSettings } from "./types";
 
 describe("calculatePriorityScore", () => {
   const mockSettings: SmartRoutingSettings = {
@@ -16,13 +17,12 @@ describe("calculatePriorityScore", () => {
     },
     negativeSentimentThreshold: -0.5,
     escalation: {
+      enabled: true,
       levels: [],
       slaTimeoutMinutes: 120,
+      autoAssign: false,
     },
-    autoResponse: {
-      enabled: false,
-      confidenceThreshold: 0.9,
-    },
+    rules: [],
   };
 
   const mockItem = {

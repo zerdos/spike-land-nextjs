@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { InboxSentiment } from "@prisma/client";
+import type { InboxSentiment } from "@prisma/client";
 import { Frown, HelpCircle, Meh, Smile } from "lucide-react";
 
 interface InboxSentimentBadgeProps {

@@ -4,10 +4,12 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react()],
+  ssr: {
+    noExternal: ["next-auth"],
+  },
   test: {
     name: "root",
     environment: "jsdom",
-    projects: ["./src/app/api/vite.config.ts"],
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     env: {
@@ -236,7 +238,7 @@ export default defineConfig({
       "@/auth": path.resolve(__dirname, "./src/auth.ts"),
       "next/server": path.resolve(
         __dirname,
-        "./node_modules/next/dist/server/web/spec-extension/request.js",
+        "./node_modules/next/server.js",
       ),
     },
   },
