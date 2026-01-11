@@ -1,5 +1,4 @@
-import { ActionSettings } from "@/lib/relay/approval-workflow-types";
-import { EscalationStatus, EscalationTrigger, InboxItem, InboxSentiment } from "@prisma/client";
+import type { InboxSentiment } from "@prisma/client";
 
 export interface SmartRoutingSettings {
   enabled: boolean;

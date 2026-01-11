@@ -1,5 +1,6 @@
-import { InboxItem } from "@prisma/client";
-import { AnalysisResult, SmartRoutingSettings } from "./types";
+import type { InboxItem } from "@prisma/client";
+import type { AnalysisResult } from "./analyze-message";
+import type { SmartRoutingSettings } from "./types";
 
 interface OptimizationInput {
   analysis: AnalysisResult;

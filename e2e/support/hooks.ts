@@ -13,13 +13,14 @@ setDefaultTimeout(30 * 1000);
 // when running with the 'db' profile which only includes @requires-db scenarios
 BeforeAll(async function() {
   // Only verify if we appear to be running database tests (db profile)
-  const isDbProfile = process.env.npm_lifecycle_event?.includes("db") ||
-    process.argv.some((arg) =>
-      arg.includes("--profile") &&
-      process.argv[process.argv.indexOf(arg) + 1] === "db"
-    );
+  // const isDbProfile = process.env.npm_lifecycle_event?.includes("db") ||
+  //   process.argv.some((arg) =>
+  //     arg.includes("--profile") &&
+  //     process.argv[process.argv.indexOf(arg) + 1] === "db"
+  //   );
 
-  if (!isDbProfile) return;
+  // Always check DB safety when running E2E tests
+  // if (!isDbProfile) return;
 
   const dbUrl = process.env.DATABASE_URL_E2E || process.env.DATABASE_URL;
 

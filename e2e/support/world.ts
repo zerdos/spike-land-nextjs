@@ -66,7 +66,7 @@ export class CustomWorld extends World {
     // Docker/CI environment needs additional Chromium flags for stability
     const isCI = process.env.CI === "true";
     this.browser = await chromium.launch({
-      headless: isCI,
+      headless: process.env.HEADLESS !== "false",
       args: isCI
         ? [
           "--no-sandbox",

@@ -1,5 +1,4 @@
-import { InboxItem } from "@prisma/client";
-import { z } from "zod";
+import type { z } from "zod";
 import { getGeminiClient } from "../ai/gemini-client";
 import { AnalyzeMessageResponseSchema } from "../validations/smart-routing";
 
@@ -17,10 +16,9 @@ export type AnalysisResult = z.infer<typeof AnalyzeMessageResponseSchema>;
 
 export async function analyzeMessage(
   input: AnalysisInput,
-  apiKey?: string, // Optional override
+  _apiKey?: string, // Optional override (reserved for future use)
 ): Promise<AnalysisResult> {
   const genAI = getGeminiClient();
-  const model = genAI.getGenerativeModel({ model: ANALYSIS_MODEL });
 
   const prompt = `
 You are an expert customer service AI agent. Analyze the following inbox message and provide structured routing data.
@@ -52,15 +50,16 @@ Format the output as a valid JSON object matching this schema:
 `;
 
   try {
-    const result = await model.generateContent({
+    const result = await genAI.models.generateContent({
+      model: ANALYSIS_MODEL,
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
+      config: {
         responseMimeType: "application/json",
         temperature: 0.2, // Low temp for consistent analysis
       },
     });
 
-    const responseText = result.response.text();
+    const responseText = result?.text || "";
     const json = JSON.parse(responseText);
 
     // Validate with Zod

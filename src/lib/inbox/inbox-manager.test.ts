@@ -65,6 +65,20 @@ const createMockInboxItem = (overrides: Partial<InboxItem> = {}): InboxItem => (
   assignedToId: null,
   createdAt: new Date("2024-01-15T10:00:00Z"),
   updatedAt: new Date("2024-01-15T10:00:00Z"),
+  // Smart Routing Fields
+  sentiment: null,
+  sentimentScore: null,
+  priorityScore: null,
+  priorityFactors: null,
+  routingAnalyzedAt: null,
+  routingMetadata: null,
+  // Escalation Fields
+  escalationStatus: "NONE",
+  escalationLevel: 0,
+  escalatedAt: null,
+  escalatedToId: null,
+  slaDeadline: null,
+  slaBreach: false,
   ...overrides,
 });
 

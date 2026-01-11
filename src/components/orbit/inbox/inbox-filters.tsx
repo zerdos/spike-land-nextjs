@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { InboxItemStatus, InboxItemType, SocialPlatform, InboxSentiment } from "@prisma/client";
+import { InboxItemStatus, InboxItemType, InboxSentiment, SocialPlatform } from "@prisma/client";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -149,7 +149,6 @@ export function InboxFilters({ onFilterChange, teamMembers }: InboxFiltersProps)
                 </Select>
                 <FormMessage />
               </FormItem>
-            )}
             )}
           />
           <FormField

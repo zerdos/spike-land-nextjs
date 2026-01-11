@@ -1,5 +1,4 @@
 import prisma from "@/lib/prisma";
-import { InboxItem, InboxSentiment } from "@prisma/client";
 import { analyzeMessage } from "./analyze-message";
 import { EscalationService } from "./escalation-service";
 import { calculatePriorityScore } from "./priority-calculator";
