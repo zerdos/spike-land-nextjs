@@ -8,7 +8,16 @@ import ReactFlow, {
   applyEdgeChanges,
   addEdge,
 } from "reactflow";
-import type { Node, Edge, OnNodesChange, OnEdgesChange, OnConnect } from "reactflow";
+import type {
+  Node,
+  Edge,
+  OnNodesChange,
+  OnEdgesChange,
+  OnConnect,
+  NodeChange,
+  EdgeChange,
+  Connection,
+} from "reactflow";
 
 import "reactflow/dist/style.css";
 
@@ -26,17 +35,17 @@ const WorkflowEditor = () => {
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
 
   const onNodesChange: OnNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
     [setNodes]
   );
 
   const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
     [setEdges]
   );
 
   const onConnect: OnConnect = useCallback(
-    (connection) => setEdges((eds) => addEdge(connection, eds)),
+    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
     [setEdges]
   );
 
