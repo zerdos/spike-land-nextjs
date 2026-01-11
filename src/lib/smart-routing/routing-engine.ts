@@ -37,7 +37,8 @@ export class RoutingEngine {
         const { score, factors } = calculatePriorityScore({
           analysis,
           item,
-          senderFollowers: (item.metadata as any)?.followers_count || 0,
+          senderFollowers: (item.metadata as Record<string, unknown>)?.followers_count as number ||
+            0,
           settings,
         });
 

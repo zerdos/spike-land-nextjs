@@ -61,7 +61,8 @@ export async function PUT(
     const validated = SmartRoutingSettingsSchema.partial().parse(json);
     const updated = await updateSmartRoutingSettings(workspaceRecord.id, validated);
     return NextResponse.json(updated);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }

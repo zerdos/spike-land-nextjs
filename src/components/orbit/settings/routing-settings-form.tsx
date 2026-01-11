@@ -48,7 +48,7 @@ export function RoutingSettingsForm({ initialSettings, workspaceSlug }: RoutingS
       const updated = await resp.json();
       form.reset(updated);
       toast.success("Settings saved successfully");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);

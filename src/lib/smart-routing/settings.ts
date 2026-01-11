@@ -43,7 +43,7 @@ export async function getSmartRoutingSettings(workspaceId: string): Promise<Smar
 
   if (!workspace?.settings) return DEFAULT_SETTINGS;
 
-  const settings = (workspace.settings as any)?.[SETTINGS_KEY];
+  const settings = (workspace.settings as Record<string, unknown>)?.[SETTINGS_KEY];
   if (!settings) return DEFAULT_SETTINGS;
 
   // Validate and parse, falling back to defaults for missing fields
@@ -80,12 +80,15 @@ export async function updateSmartRoutingSettings(
     select: { settings: true },
   });
 
-  const fullSettings = (workspace?.settings as any) || {};
+  const fullSettings: Record<string, unknown> = (workspace?.settings as Record<string, unknown>) ||
+    {};
   fullSettings[SETTINGS_KEY] = newSettings;
 
   await prisma.workspace.update({
     where: { id: workspaceId },
-    data: { settings: fullSettings },
+    data: {
+      settings: fullSettings as Parameters<typeof prisma.workspace.update>[0]["data"]["settings"],
+    },
   });
 
   return newSettings;

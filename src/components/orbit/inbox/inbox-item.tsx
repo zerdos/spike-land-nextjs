@@ -21,7 +21,7 @@ interface InboxItemProps {
   onClick: () => void;
 }
 
-const PLATFORM_ICONS: Record<string, React.ElementType> = {
+const PLATFORM_ICONS: Record<string, React.ComponentType<{ className?: string; }>> = {
   TWITTER: Twitter,
   FACEBOOK: Facebook,
   INSTAGRAM: Instagram,
@@ -33,8 +33,7 @@ const PLATFORM_ICONS: Record<string, React.ElementType> = {
 
 function PlatformIcon({ platform }: { platform: string; }) {
   const Icon = PLATFORM_ICONS[platform] || MessageCircle;
-  const IconComponent = Icon as any;
-  return <IconComponent className="h-4 w-4" />;
+  return <Icon className="h-4 w-4" />;
 }
 
 export function InboxItem({ item, isSelected, onClick }: InboxItemProps) {
