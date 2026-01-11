@@ -77,6 +77,49 @@ export class TwitterClient implements ISocialClient {
   }
 
   /**
+   * Search recent tweets
+   */
+  async search(query: string, limit = 20): Promise<TwitterTweet[]> {
+    const token = this.getAccessTokenOrThrow();
+
+    const params = new URLSearchParams({
+      query,
+      max_results: limit.toString(),
+      expansions: "author_id",
+      "tweet.fields": "id,text,created_at,public_metrics,author_id",
+      "user.fields": "id,name,username,profile_image_url",
+    });
+
+    const response = await fetch(
+      `${TWITTER_API_BASE}/2/tweets/search/recent?${params.toString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = (await response.json().catch(() => ({}))) as TwitterApiError;
+      throw new TwitterHttpError(
+        `Failed to search tweets: ${errorData.detail || errorData.title || response.statusText}`,
+        response.status,
+        response.statusText,
+      );
+    }
+
+    const result = await response.json();
+    const tweets = result.data ?? [];
+    const users = result.includes?.users ?? [];
+
+    // Map authors to their tweets
+    return tweets.map((tweet: TwitterTweet) => ({
+      ...tweet,
+      author: users.find((user: TwitterUser) => user.id === tweet.author_id),
+    }));
+  }
+
+  /**
    * Generate Twitter OAuth 2.0 authorization URL with PKCE
    */
   getAuthUrl(

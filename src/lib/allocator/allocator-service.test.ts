@@ -106,6 +106,7 @@ describe("allocator-service", () => {
           utmCampaign: "Summer Sale",
           utmSource: "facebook",
           utmMedium: "cpc",
+          conversionId: `conv-${i}`,
           conversionType: "PURCHASE" as const,
           conversionValue: 5000 + (i % 5) * 1000, // $50-$90
           convertedAt: date,
@@ -154,6 +155,7 @@ describe("allocator-service", () => {
           utmCampaign: "High Performer",
           utmSource: "facebook",
           utmMedium: "cpc",
+          conversionId: `conv-${i}`,
           conversionType: "PURCHASE" as const,
           conversionValue: 10000, // $100 value
           convertedAt: date,
@@ -210,6 +212,7 @@ describe("allocator-service", () => {
           utmCampaign: "Low Performer",
           utmSource: "google",
           utmMedium: "cpc",
+          conversionId: `conv-${i}`,
           conversionType: "PURCHASE" as const,
           conversionValue: 1000, // Low $10 value
           convertedAt: date,
@@ -261,6 +264,7 @@ describe("allocator-service", () => {
           utmCampaign: "Test Campaign",
           utmSource: "facebook",
           utmMedium: "cpc",
+          conversionId: `conv-${i}`,
           conversionType: "PURCHASE" as const,
           conversionValue: 5000,
           convertedAt: new Date(now.getTime() - i * 24 * 60 * 60 * 1000),
