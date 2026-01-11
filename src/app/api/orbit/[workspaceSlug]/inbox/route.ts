@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { listInboxItems } from "@/lib/inbox/inbox-manager";
 import type { InboxItemFilter } from "@/lib/inbox/types";
-import { InboxItemStatus, InboxItemType, SocialPlatform, InboxSentiment } from "@/lib/inbox/types";
+import { InboxItemStatus, InboxItemType, InboxSentiment, SocialPlatform } from "@/lib/inbox/types";
 import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
