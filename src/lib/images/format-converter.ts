@@ -1,6 +1,12 @@
 import { tryCatch } from "@/lib/try-catch";
-import sharp from "sharp";
+import type sharp from "sharp";
 import { type ExportFormat } from "./format-utils";
+
+// Dynamic import to avoid Vercel build failures
+// (sharp requires native binaries that aren't available at build time)
+async function getSharp(): Promise<typeof sharp> {
+  return (await import("sharp")).default;
+}
 
 // Re-export for backward compatibility
 export { type ExportFormat, getFileExtension, isValidFormat } from "./format-utils";
@@ -36,7 +42,9 @@ export async function convertImageFormat(
     throw new Error("Quality must be between 1 and 100");
   }
 
-  let sharpInstance = sharp(inputBuffer);
+  // Get sharp instance (dynamically loaded)
+  const sharpModule = await getSharp();
+  let sharpInstance = sharpModule(inputBuffer);
 
   // Apply format-specific conversion
   switch (format) {

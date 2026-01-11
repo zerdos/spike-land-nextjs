@@ -1,7 +1,13 @@
 import { tryCatch } from "@/lib/try-catch";
 import crypto from "crypto";
-import sharp from "sharp";
+import type sharp from "sharp";
 import { uploadToR2 } from "./r2-client";
+
+// Dynamic import to avoid Vercel build failures
+// (sharp requires native binaries that aren't available at build time)
+async function getSharp(): Promise<typeof sharp> {
+  return (await import("sharp")).default;
+}
 
 interface ProcessImageParams {
   buffer: Buffer;
@@ -48,9 +54,12 @@ export async function processAndUploadImage(
     error: errorMessage,
   });
 
+  // Get sharp instance (dynamically loaded)
+  const sharpModule = await getSharp();
+
   // Get image metadata
   const { data: metadata, error: metadataError } = await tryCatch(
-    sharp(buffer).metadata(),
+    sharpModule(buffer).metadata(),
   );
 
   if (metadataError) {
@@ -83,7 +92,7 @@ export async function processAndUploadImage(
 
   // Process image: resize if needed and convert to WebP
   const { data: processedBuffer, error: processError } = await tryCatch(
-    sharp(buffer)
+    sharpModule(buffer)
       .resize(finalWidth, finalHeight, {
         fit: "inside",
         withoutEnlargement: true,
