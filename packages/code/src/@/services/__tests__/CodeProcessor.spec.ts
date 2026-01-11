@@ -191,8 +191,8 @@ describe("CodeProcessor", () => {
       expect(result).toBe(false);
     });
 
-    it("should return existing session when code is unchanged", async () => {
-      vi.mocked(transpileCode).mockResolvedValueOnce("const x = 1;");
+    it("should return existing session when transpiled code is unchanged", async () => {
+      vi.mocked(transpileCode).mockResolvedValueOnce("transpiled:const x = 1;");
 
       const result = await processor.process(
         "const x = 1;",
