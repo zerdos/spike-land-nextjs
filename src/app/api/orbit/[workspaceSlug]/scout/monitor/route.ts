@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import { tryCatch } from "@/lib/try-catch";
+import prisma from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 
 interface RouteContext {
@@ -11,7 +11,7 @@ interface RouteContext {
 
 // List all monitoring results for a workspace
 export async function GET(req: NextRequest, { params }: RouteContext) {
-  return tryCatch(async () => {
+  try {
     const session = await auth();
     if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
 
@@ -32,14 +32,15 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
     const limit = parseInt(searchParams.get("limit") ?? "20", 10);
     const offset = (page - 1) * limit;
 
-    const where: any = {
+    const where: Prisma.ScoutResultWhereInput = {
       topic: {
         workspaceId: workspace.id,
       },
     };
 
     if (topicId) where.topicId = topicId;
-    if (platform) where.platform = platform;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (platform) where.platform = platform as any;
 
     const results = await prisma.scoutResult.findMany({
       where,
@@ -64,5 +65,8 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
         totalPages: Math.ceil(totalResults / limit),
       },
     });
-  });
+  } catch (error) {
+    console.error("Error in GET /monitor:", error);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }

@@ -1,8 +1,9 @@
 import { TwitterClient } from "@/lib/social/clients/twitter";
-import { TwitterTweet, TwitterUser } from "@/lib/social/types";
-import { ScoutResult, SocialPlatform } from "@prisma/client";
-import { z } from "zod";
-import { topicKeywordsSchema } from "../topic-config";
+import type { TwitterTweet, TwitterUser } from "@/lib/social/types";
+import type { ScoutResult } from "@prisma/client";
+import { SocialPlatform } from "@prisma/client";
+import type { z } from "zod";
+import type { topicKeywordsSchema } from "../topic-config";
 
 // The search result from the client will have the author expanded.
 type TweetWithAuthor = TwitterTweet & { author?: TwitterUser; };

@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { runTopicMonitoring } from "@/lib/scout/topic-monitor";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -7,7 +7,7 @@ import { POST } from "./route";
 
 vi.mock("@/auth");
 vi.mock("@/lib/prisma", () => ({
-  prisma: {
+  default: {
     workspace: {
       findFirst: vi.fn(),
     },

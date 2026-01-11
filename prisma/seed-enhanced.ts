@@ -1,4 +1,12 @@
+import { PrismaPg } from "@prisma/adapter-pg";
 import { EnhancementTier, JobStatus, PrismaClient } from "@prisma/client";
+import { config } from "dotenv";
+
+import { getE2EDatabaseUrl } from "./lib/db-protection";
+
+// Load environment variables
+config({ path: ".env.local", quiet: true });
+
 /**
  * Seed script for testing image enhancement UI
  *
@@ -7,9 +15,16 @@ import { EnhancementTier, JobStatus, PrismaClient } from "@prisma/client";
  *
  * Creates mock data for testing the enhancement comparison slider
  * with a test image from /public/test-image.png
+ *
+ * SAFETY: This script has production database protection.
+ * It will refuse to run against production databases.
+ * See prisma/lib/db-protection.ts for details.
  */
 
-const prisma = new PrismaClient();
+// Get connection string with production protection
+const connectionString = getE2EDatabaseUrl();
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const userId = "e2e-test-user";

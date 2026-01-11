@@ -2,15 +2,25 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { config } from "dotenv";
 
+import { getE2EDatabaseUrl } from "./lib/db-protection";
+
 // Load .env.local first, then .env
 // Use quiet: true to suppress verbose logging
 config({ path: ".env.local", quiet: true });
 config({ path: ".env", quiet: true });
 
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error("DATABASE_URL is required");
-}
+/**
+ * Database Seed Script
+ *
+ * Creates initial test data for development.
+ *
+ * SAFETY: This script has production database protection.
+ * It will refuse to run against production databases.
+ * See prisma/lib/db-protection.ts for details.
+ */
+
+// Get connection string with production protection
+const connectionString = getE2EDatabaseUrl();
 
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });

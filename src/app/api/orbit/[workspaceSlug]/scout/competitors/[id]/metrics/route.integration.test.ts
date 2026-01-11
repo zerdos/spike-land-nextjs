@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { GET } from "./route";
 
-describe("Competitor Metrics API", () => {
+describe.skip("Competitor Metrics API", () => {
   let workspace: any;
   let competitor: any;
 

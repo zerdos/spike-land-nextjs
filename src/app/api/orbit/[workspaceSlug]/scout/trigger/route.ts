@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { runTopicMonitoring } from "@/lib/scout/topic-monitor";
-import { tryCatch } from "@/lib/try-catch";
 import { type NextRequest, NextResponse } from "next/server";
 
 interface RouteContext {
@@ -11,8 +10,8 @@ interface RouteContext {
 }
 
 // Trigger the topic monitoring process for a workspace
-export async function POST(req: NextRequest, { params }: RouteContext) {
-  return tryCatch(async () => {
+export async function POST(_req: NextRequest, { params }: RouteContext) {
+  try {
     const session = await auth();
     if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
 
@@ -34,5 +33,8 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     return NextResponse.json({
       message: "Topic monitoring has been triggered.",
     });
-  });
+  } catch (error) {
+    console.error("Error in POST /trigger:", error);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }

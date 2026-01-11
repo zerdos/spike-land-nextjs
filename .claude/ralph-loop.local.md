@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 20
+iteration: 47
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -50,50 +50,59 @@ The Status column in the Active Task Registry uses these values:
 
 <!-- Ralph: UPDATE THIS EVERY ITERATION! This is your memory. -->
 
-| Issue #              | Session ID           | Status      | PR #    | Retries | Last Updated     |
-| -------------------- | -------------------- | ----------- | ------- | ------- | ---------------- |
-| UNIT-TEST-FIX        | 5134072663804435110  | IN_PROGRESS | #669    | 0       | 2026-01-10T18:50 |
-| #545 (ORB-042)       | 10448440558500030178 | IN_PROGRESS | -       | 0       | 2026-01-10T18:50 |
-| PR-666-FIX           | 909302481420016346   | IN_PROGRESS | -       | 0       | 2026-01-10T18:50 |
-| PR-667-FIX           | 17258562081963162276 | IN_PROGRESS | -       | 0       | 2026-01-10T18:50 |
-| #532 (ORB-024) FRESH | 440787502780889745   | PLANNING    | -       | 0       | 2026-01-10T18:50 |
-| #544 (ORB-026)       | 8018068239388301596  | PR_CREATED  | #666    | 0       | 2026-01-10T18:50 |
-| #540 (ORB-039)       | 16859514757019367340 | COMPLETED   | #668 ✅ | 0       | 2026-01-10T18:50 |
-| #532 (ORB-024) OLD   | 3272942138734267585  | COMPLETED   | #659 ✅ | 0       | 2026-01-10T18:05 |
-| #531 (ORB-023)       | 12664520598883814187 | COMPLETED   | #667    | 0       | 2026-01-10T18:45 |
-| #529 (ORB-021)       | 12716452045721348213 | COMPLETED   | #660 ✅ | 0       | 2026-01-10T18:05 |
-| #530 (ORB-022)       | 1223874300114515623  | COMPLETED   | -       | 0       | 2026-01-10T18:30 |
-| #536 (ORB-036)       | 12268363689474090994 | COMPLETED   | -       | 0       | 2026-01-10T18:00 |
-| #538 (ORB-037)       | 13964044312522937140 | COMPLETED   | -       | 0       | 2026-01-10T17:05 |
-| #546 (ORB-027)       | 13204058962977056689 | COMPLETED   | -       | 1       | 2026-01-10T17:10 |
+| Issue #        | Session ID           | Status           | PR #    | Retries | Last Updated     |
+| -------------- | -------------------- | ---------------- | ------- | ------- | ---------------- |
+| #547 (ORB-043) | 6575646228061348411  | PR_CI_FAILING    | #670    | 0       | 2026-01-11T00:00 |
+| #532 (ORB-024) | 440787502780889745   | REVIEW_REQUESTED | #671    | 0       | 2026-01-11T00:00 |
+| #553 (ORB-045) | 8138470443526940844  | COMPLETED        | -       | 0       | 2026-01-11T00:00 |
+| #556 (ORB-046) | 6929007678145876615  | COMPLETED        | -       | 0       | 2026-01-11T00:00 |
+| #545 (ORB-042) | 10448440558500030178 | COMPLETED        | -       | 0       | 2026-01-11T00:00 |
+| BUILD-FIX-TS   | 15900753798124342819 | DEAD             | -       | 0       | 2026-01-11T00:00 |
+| PR-667-CI-FIX  | 17258562081963162276 | COMPLETED        | #667 ✅ | 0       | 2026-01-10T20:00 |
+| UNIT-TEST-FIX  | 5134072663804435110  | COMPLETED        | #669 ✅ | 0       | 2026-01-10T19:00 |
+| PR-666-FIX     | 909302481420016346   | COMPLETED        | #666 ✅ | 0       | 2026-01-10T19:00 |
+| #544 (ORB-026) | 8018068239388301596  | COMPLETED        | #666 ✅ | 0       | 2026-01-10T19:00 |
+| #540 (ORB-039) | 16859514757019367340 | COMPLETED        | #668 ✅ | 0       | 2026-01-10T19:00 |
+| #531 (ORB-023) | 12664520598883814187 | COMPLETED        | #667 ✅ | 0       | 2026-01-10T19:00 |
+| #529 (ORB-021) | 12716452045721348213 | COMPLETED        | #660 ✅ | 0       | 2026-01-10T18:05 |
+| #530 (ORB-022) | 1223874300114515623  | COMPLETED        | -       | 0       | 2026-01-10T18:30 |
+| #536 (ORB-036) | 12268363689474090994 | COMPLETED        | -       | 0       | 2026-01-10T18:00 |
+| #538 (ORB-037) | 13964044312522937140 | COMPLETED        | -       | 0       | 2026-01-10T17:05 |
+| #546 (ORB-027) | 13204058962977056689 | COMPLETED        | -       | 1       | 2026-01-10T17:10 |
 
-**Active Count: 5/6** (1 slot available)
+**Active Count: 2/6** (4 slots available)
 
-**PRs Open (3) + Merged (1):**
+**PRs Status:**
 
-| PR # | Issue         | Status    | Next Action              |
-| ---- | ------------- | --------- | ------------------------ |
-| #669 | UNIT-TEST-FIX | Draft     | Jules working on it      |
-| #668 | #540 ORB-039  | ✅ MERGED | Done!                    |
-| #667 | #531 ORB-023  | Not draft | PR-667-FIX working on it |
-| #666 | #544 ORB-026  | Draft     | PR-666-FIX working on it |
-| #665 | #532 ORB-024  | ❌ CLOSED | Fresh session created    |
+| PR # | Issue        | Status            | Notes                      |
+| ---- | ------------ | ----------------- | -------------------------- |
+| #671 | #532 ORB-024 | 🔍 REVIEW_PENDING | Scout Competitor Tracking  |
+| #670 | #547 ORB-043 | ❌ CI_FAILING     | E2E + lint failing, behind |
+| #669 | UNIT-TEST    | ✅ MERGED         | Unit tests fixed           |
+| #668 | #540 ORB-039 | ✅ MERGED         | Linear Attribution         |
+| #667 | #531 ORB-023 | ✅ MERGED         | Scout Topic Monitoring     |
+| #666 | #544 ORB-026 | ✅ MERGED         | Facebook Ads               |
 
 **Build Status (main):**
 
-- CI/CD Pipeline: ❌ Last run failed (unit-tests-2)
+- CI/CD Pipeline: ✅ Build passing (run 20891184835)
 
-**Actions This Iteration:**
+**Actions This Iteration (46):**
 
-- ✅ Approved PR-665-FIX and PR-666-FIX plans
-- ✅ Responded to PR-659-FIX (obsolete - PR merged)
-- ✅ Closed PR #665 per user request
-- ✅ Created fresh session for #532 (ORB-024)
-- 🎉 PR #668 (ORB-039) was MERGED!
+- ✅ Approved plan for ORB-045 (#553) - now IN_PROGRESS → COMPLETED
+- ✅ Approved plan for ORB-043 (#547) - re-planning after CI message
+- 💬 Responded to ORB-046 feedback (test env issues) - proceed with impl
+- 💬 Messaged BUILD-FIX-TS - build already fixed, can archive
+- 💬 Messaged ORB-043 about PR #670 CI failures + behind main
+- 🚀 Published PR #671 for ORB-024 Scout Competitor Tracking
+- 📤 Marked PR #671 as ready for review
+- 📊 Updated registry: BUILD-FIX-TS → DEAD (issue resolved)
+- 🔓 Freed 4 WIP slots (2/6 active)
 
 **Issues Flagged for Human Review:**
 
-- ORB-027, ORB-037: Jules sessions COMPLETED but no PRs created (retry exhausted)
+- ORB-027, ORB-037: Sessions COMPLETED but no PRs (retry exhausted - historical)
+- ORB-045, ORB-046, ORB-042: COMPLETED but no PRs yet (may need browser PR creation)
 
 ---
 
@@ -814,6 +823,49 @@ Located in `scripts/ralph/` (also available as yarn commands):
 | `yarn ralph:available-issues`     | `available-issues.sh`     | Filtered, prioritized issues       | ~70%    |
 | `yarn ralph:ci-status`            | `ci-status.sh`            | Main branch CI with error excerpt  | ~60%    |
 | `yarn ralph:check-session-health` | `check-session-health.sh` | Verify sessions exist before comms | ~50%    |
+| `yarn ralph:publish-pr`           | `publish-jules-pr.mjs`    | Publish PR from Jules session      | ~95%    |
+
+### Token-Efficient PR Publishing
+
+**When browser is already open to Jules session, use `browser_run_code` instead of snapshot-click-wait:**
+
+```javascript
+// ONE call instead of snapshot + find ref + click + wait + snapshot
+mcp__playwright__browser_run_code({
+  code: `async (page) => {
+    // Navigate to session if not already there
+    if (!page.url().includes('jules.google.com/session')) {
+      await page.goto('https://jules.google.com/session/SESSION_ID');
+      await page.waitForLoadState('networkidle');
+    }
+
+    // Click Publish PR button
+    const btn = page.getByRole('button', { name: 'Publish PR' });
+    if (await btn.isVisible()) {
+      await btn.click();
+      await page.waitForFunction(() =>
+        document.body.innerText.includes('View PR')
+      , { timeout: 60000 });
+
+      // Get the PR URL from new tab
+      const pages = page.context().pages();
+      for (const p of pages) {
+        if (p.url().includes('/pull/')) {
+          return { success: true, pr_url: p.url() };
+        }
+      }
+    }
+    return { success: false, error: 'No Publish PR button' };
+  }`,
+});
+```
+
+**Or from CLI (requires browser login):**
+
+```bash
+yarn ralph:publish-pr 6575646228061348411
+# Returns: {"success":true,"pr_number":670,"pr_url":"https://github.com/..."}
+```
 
 ### Usage Examples
 
