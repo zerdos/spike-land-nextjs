@@ -156,6 +156,45 @@ export function AllocatorDashboard({ workspaceSlug }: AllocatorDashboardProps) {
             </SelectContent>
           </Select>
         </div>
+
+        <div className="flex gap-2 ml-auto">
+          <button
+            onClick={async () => {
+              setIsLoading(true);
+              try {
+                await fetch(`/api/orbit/${workspaceSlug}/allocator/google/sync`, {
+                  method: "POST",
+                });
+                await fetchData();
+              } catch (_err) {
+                setError("Failed to sync Google Ads");
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            className="text-xs px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+          >
+            Sync Google Ads
+          </button>
+          <button
+            onClick={async () => {
+              setIsLoading(true);
+              try {
+                await fetch(`/api/orbit/${workspaceSlug}/allocator/facebook/sync`, {
+                  method: "POST",
+                });
+                await fetchData();
+              } catch (_err) {
+                setError("Failed to sync Facebook Ads");
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            className="text-xs px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+          >
+            Sync Facebook Ads
+          </button>
+        </div>
       </div>
 
       {/* Data Quality Warning */}
