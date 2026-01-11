@@ -1,11 +1,7 @@
-import {
-  WorkflowAction,
-  ActionInput,
-  ActionOutput,
-} from "./action-types";
-import { z } from "zod";
-import { TwitterClient } from "@/lib/social/clients/twitter";
 import { LinkedInClient } from "@/lib/social/clients/linkedin";
+import { TwitterClient } from "@/lib/social/clients/twitter";
+import { z } from "zod";
+import type { ActionInput, ActionOutput, WorkflowAction } from "./action-types";
 import { retry } from "./retry";
 
 // Define the input schema for the post-to-platform action

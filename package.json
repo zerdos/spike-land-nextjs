@@ -123,6 +123,7 @@
     "clsx": "2.1.1",
     "date-fns": "^4.1.0",
     "diff": "^8.0.2",
+    "expr-eval": "^2.0.2",
     "fast-xml-parser": "^5.3.3",
     "framer-motion": "^12.24.10",
     "gray-matter": "4.0.3",

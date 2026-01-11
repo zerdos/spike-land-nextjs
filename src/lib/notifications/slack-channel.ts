@@ -212,6 +212,35 @@ export async function sendSlackNotification(
 }
 
 /**
+ * Simple wrapper to post a text message to Slack via webhook.
+ * Used by workflow actions for simple notifications.
+ *
+ * @param webhookUrl - The Slack webhook URL
+ * @param message - The message object with text property
+ */
+export async function postToSlack(
+  webhookUrl: string,
+  message: { text: string; },
+): Promise<void> {
+  if (!webhookUrl) {
+    throw new Error("Slack webhook URL not configured");
+  }
+
+  const response = await fetch(webhookUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(message),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Slack API error: ${response.status} - ${body}`);
+  }
+}
+
+/**
  * Validate a Slack webhook URL
  */
 export function isValidSlackWebhookUrl(url: string): boolean {

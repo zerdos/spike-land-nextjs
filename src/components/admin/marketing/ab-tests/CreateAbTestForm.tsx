@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { Resolver } from "react-hook-form";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -22,24 +23,32 @@ const formSchema = z.object({
       z.object({
         name: z.string().min(1, "Variant name is required"),
         splitPercentage: z.coerce.number().min(0).max(100),
-      })
+      }),
     )
     .min(2, "At least two variants are required"),
 });
 
-const CreateAbTestForm = ({
-  onSubmit,
-  isLoading,
-}: {
-  onSubmit: (values: z.infer<typeof formSchema>) => void;
+type FormData = {
+  name: string;
+  description?: string;
+  variants: { name: string; splitPercentage: number; }[];
+};
+
+interface CreateAbTestFormProps {
+  onSubmit: (values: FormData) => void;
   isLoading: boolean;
-}) => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+}
+
+const CreateAbTestForm = ({ onSubmit, isLoading }: CreateAbTestFormProps) => {
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema) as Resolver<FormData>,
     defaultValues: {
       name: "",
       description: "",
-      variants: [{ name: "Control", splitPercentage: 50 }, { name: "Variant A", splitPercentage: 50 }],
+      variants: [
+        { name: "Control", splitPercentage: 50 },
+        { name: "Variant A", splitPercentage: 50 },
+      ],
     },
   });
 

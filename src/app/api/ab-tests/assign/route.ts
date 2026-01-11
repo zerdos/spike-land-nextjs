@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     console.error("Error assigning variant:", bodyError);
     return NextResponse.json(
       { error: "Failed to assign variant" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   if (!visitorId) {
     return NextResponse.json(
       { error: "visitorId is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -26,14 +26,14 @@ export async function POST(request: Request) {
     prisma.abTest.findMany({
       where: { status: "RUNNING" },
       include: { variants: true },
-    })
+    }),
   );
 
   if (testsError) {
     console.error("Error fetching active A/B tests:", testsError);
     return NextResponse.json(
       { error: "Failed to fetch active A/B tests" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
             visitorSessionId: visitorId,
             abTestVariantId: assignedVariant.id,
           },
-        })
+        }),
       );
 
       if (createError) {

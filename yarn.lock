@@ -19961,6 +19961,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expr-eval@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "expr-eval@npm:2.0.2"
+  checksum: 10c9/b603f1ed2423636d84fd9984ed47af5cf90b42139faf5c535a778a12e916347b1e722364e3946ff3fc59537e01ea2eb3b4c3cc32a47bf80a097d1796e0b56fa6
+  languageName: node
+  linkType: hard
+
 "express-rate-limit@npm:^7.5.0":
   version: 7.5.1
   resolution: "express-rate-limit@npm:7.5.1"
@@ -32678,6 +32685,7 @@ __metadata:
     dprint: "npm:0.51.1"
     eslint: "npm:9.39.2"
     eslint-config-next: "npm:16.1.1"
+    expr-eval: "npm:^2.0.2"
     fast-xml-parser: "npm:^5.3.3"
     framer-motion: "npm:^12.24.10"
     gray-matter: "npm:4.0.3"

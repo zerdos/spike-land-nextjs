@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     console.error("Error converting variant:", bodyError);
     return NextResponse.json(
       { error: "Failed to convert variant" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   if (!abTestResultId) {
     return NextResponse.json(
       { error: "abTestResultId is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -26,17 +26,17 @@ export async function POST(request: Request) {
     prisma.abTestResult.update({
       where: { id: abTestResultId },
       data: { converted: true },
-    })
+    }),
   );
 
   if (updateError) {
     console.error(
       `Error updating A/B test result ${abTestResultId}:`,
-      updateError
+      updateError,
     );
     return NextResponse.json(
       { error: "Failed to update A/B test result" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 

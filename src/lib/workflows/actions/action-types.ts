@@ -1,4 +1,3 @@
-
 /**
  * Defines the type of a workflow action.
  */
@@ -22,7 +21,7 @@ export interface WorkflowAction<TInput, TOutput> {
  * Base interface for action inputs.
  */
 export interface ActionInput {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -31,5 +30,5 @@ export interface ActionInput {
 export interface ActionOutput {
   success: boolean;
   error?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }

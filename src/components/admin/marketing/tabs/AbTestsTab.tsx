@@ -17,22 +17,42 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import CreateAbTestForm from "../ab-tests/CreateAbTestForm";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import CreateAbTestForm from "../ab-tests/CreateAbTestForm";
+
+interface AbTestVariant {
+  id: string;
+  name: string;
+  splitPercentage: number;
+}
+
+interface AbTest {
+  id: string;
+  name: string;
+  status: string;
+  variants: AbTestVariant[];
+  createdAt: string;
+}
+
+interface CreateTestInput {
+  name: string;
+  description?: string;
+  variants: { name: string; splitPercentage: number; }[];
+}
 
 const AbTestsTab = () => {
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
   const router = useRouter();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<{ tests: AbTest[]; }>({
     queryKey: ["ab-tests"],
     queryFn: () => fetch("/api/ab-tests").then((res) => res.json()),
   });
 
-  const createTestMutation = useMutation({
+  const createTestMutation = useMutation<unknown, Error, CreateTestInput>({
     mutationFn: (newTest) =>
       fetch("/api/ab-tests", {
         method: "POST",
@@ -49,7 +69,7 @@ const AbTestsTab = () => {
     },
   });
 
-  const handleRowClick = (testId) => {
+  const handleRowClick = (testId: string) => {
     router.push(`/admin/marketing/ab-tests/${testId}`);
   };
 
@@ -72,9 +92,7 @@ const AbTestsTab = () => {
           </DialogContent>
         </Dialog>
       </div>
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
+      {isLoading ? <p>Loading...</p> : (
         <Table>
           <TableHeader>
             <TableRow>

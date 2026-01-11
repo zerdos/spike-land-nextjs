@@ -1,6 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -8,20 +17,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getPersonalWorkspaceId } from '@/lib/workspace';
-import { toast } from 'sonner';
-import { SocialPlatform } from '@prisma/client';
+} from "@/components/ui/table";
+import { SocialPlatform } from "@prisma/client";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type Competitor = {
   id: string;
@@ -35,31 +34,35 @@ export default function CompetitorsPage() {
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [newCompetitor, setNewCompetitor] = useState({
-    platform: '',
-    handle: '',
-    name: '',
+    platform: "",
+    handle: "",
+    name: "",
   });
 
   useEffect(() => {
     const fetchWorkspaceId = async () => {
       try {
-        const id = await getPersonalWorkspaceId();
-        setWorkspaceId(id);
-      } catch (error) {
-        toast.error('Failed to get workspace ID.');
+        const res = await fetch("/api/workspace/personal");
+        if (!res.ok) {
+          throw new Error("Failed to get workspace ID");
+        }
+        const data = await res.json();
+        setWorkspaceId(data.workspaceId);
+      } catch (_error) {
+        toast.error("Failed to get workspace ID.");
       }
     };
 
     const fetchCompetitors = async () => {
       try {
-        const res = await fetch('/api/competitors');
+        const res = await fetch("/api/competitors");
         if (!res.ok) {
-          throw new Error('Failed to fetch competitors');
+          throw new Error("Failed to fetch competitors");
         }
         const data = await res.json();
         setCompetitors(data);
-      } catch (error) {
-        toast.error('Failed to fetch competitors.');
+      } catch (_error) {
+        toast.error("Failed to fetch competitors.");
       }
     };
 
@@ -78,48 +81,48 @@ export default function CompetitorsPage() {
 
   const handleAddCompetitor = async () => {
     if (!workspaceId) {
-      toast.error('You must be in a workspace to add a competitor.');
+      toast.error("You must be in a workspace to add a competitor.");
       return;
     }
 
     try {
-      const res = await fetch('/api/competitors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/competitors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...newCompetitor, workspaceId }),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to add competitor');
+        throw new Error("Failed to add competitor");
       }
 
       const addedCompetitor = await res.json();
       setCompetitors((prev) => [...prev, addedCompetitor]);
       setNewCompetitor({
-        platform: '',
-        handle: '',
-        name: '',
+        platform: "",
+        handle: "",
+        name: "",
       });
-      toast.success('Competitor added successfully.');
-    } catch (error) {
-      toast.error('Failed to add competitor.');
+      toast.success("Competitor added successfully.");
+    } catch (_error) {
+      toast.error("Failed to add competitor.");
     }
   };
 
   const handleDeleteCompetitor = async (id: string) => {
     try {
       const res = await fetch(`/api/competitors/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!res.ok) {
-        throw new Error('Failed to delete competitor');
+        throw new Error("Failed to delete competitor");
       }
 
       setCompetitors((prev) => prev.filter((c) => c.id !== id));
-      toast.success('Competitor deleted successfully.');
-    } catch (error) {
-      toast.error('Failed to delete competitor.');
+      toast.success("Competitor deleted successfully.");
+    } catch (_error) {
+      toast.error("Failed to delete competitor.");
     }
   };
 

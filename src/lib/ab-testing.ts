@@ -7,7 +7,7 @@
  * @returns The chi-squared statistic.
  */
 export function calculateChiSquared(
-  variants: { visitors: number; conversions: number }[]
+  variants: { visitors: number; conversions: number; }[],
 ) {
   const totalVisitors = variants.reduce((sum, v) => sum + v.visitors, 0);
   const totalConversions = variants.reduce((sum, v) => sum + v.conversions, 0);
@@ -21,20 +21,17 @@ export function calculateChiSquared(
   let chiSquared = 0;
   for (const variant of variants) {
     const expectedConversions = variant.visitors * overallConversionRate;
-    const expectedNonConversions =
-      variant.visitors * (1 - overallConversionRate);
+    const expectedNonConversions = variant.visitors * (1 - overallConversionRate);
 
     const observedConversions = variant.conversions;
     const observedNonConversions = variant.visitors - variant.conversions;
 
     if (expectedConversions > 0) {
-      chiSquared +=
-        Math.pow(observedConversions - expectedConversions, 2) /
+      chiSquared += Math.pow(observedConversions - expectedConversions, 2) /
         expectedConversions;
     }
     if (expectedNonConversions > 0) {
-      chiSquared +=
-        Math.pow(observedNonConversions - expectedNonConversions, 2) /
+      chiSquared += Math.pow(observedNonConversions - expectedNonConversions, 2) /
         expectedNonConversions;
     }
   }

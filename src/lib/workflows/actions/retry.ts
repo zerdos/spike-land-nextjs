@@ -26,7 +26,7 @@ interface RetryOptions {
  */
 export async function retry<T>(
   fn: () => Promise<T>,
-  options: RetryOptions = { retries: 3, delay: 1000 }
+  options: RetryOptions = { retries: 3, delay: 1000 },
 ): Promise<T> {
   let lastError: Error | undefined;
 

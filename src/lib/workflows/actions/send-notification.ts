@@ -1,11 +1,7 @@
-import {
-  WorkflowAction,
-  ActionInput,
-  ActionOutput,
-} from "./action-types";
-import { z } from "zod";
-import { sendEmail } from "@/lib/email/client";
+import { sendTextEmail } from "@/lib/email/client";
 import { postToSlack } from "@/lib/notifications/slack-channel";
+import { z } from "zod";
+import type { ActionInput, ActionOutput, WorkflowAction } from "./action-types";
 import { retry } from "./retry";
 
 // Define the input schema for the send-notification action
@@ -44,23 +40,27 @@ export const sendNotificationAction: WorkflowAction<
   execute: async (input) => {
     return retry(async () => {
       switch (input.channel) {
-        case "email":
-          await sendEmail({
+        case "email": {
+          const result = await sendTextEmail({
             to: input.recipient,
             subject: input.subject || "Notification",
             text: input.message,
           });
+          if (!result.success) {
+            throw new Error(result.error || "Failed to send email");
+          }
           return {
             success: true,
             deliveryStatus: "EMAIL_SENT",
           };
+        }
         case "slack":
           await postToSlack(input.recipient, { text: input.message });
           return {
             success: true,
             deliveryStatus: "SLACK_MESSAGE_SENT",
           };
-        case "webhook":
+        case "webhook": {
           if (!input.webhookUrl) {
             throw new Error("Webhook URL is required for webhook notifications");
           }
@@ -76,6 +76,7 @@ export const sendNotificationAction: WorkflowAction<
             success: true,
             deliveryStatus: "WEBHOOK_SUCCESS",
           };
+        }
         default:
           throw new Error("Unsupported notification channel");
       }

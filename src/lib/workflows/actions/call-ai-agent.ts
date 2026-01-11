@@ -1,10 +1,6 @@
-import {
-  WorkflowAction,
-  ActionInput,
-  ActionOutput,
-} from "./action-types";
-import { z } from "zod";
 import { generateAgentResponse } from "@/lib/ai/gemini-client";
+import { z } from "zod";
+import type { ActionInput, ActionOutput, WorkflowAction } from "./action-types";
 import { retry } from "./retry";
 
 // Define the input schema for the call-ai-agent action
