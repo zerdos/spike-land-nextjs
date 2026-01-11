@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next-view-transitions';
 import { toast } from 'sonner';
-import { AutopilotConfig, UpdateAutopilotConfigInput } from '@/lib/allocator/autopilot-types';
+import type { AutopilotConfig, UpdateAutopilotConfigInput } from '@/lib/allocator/autopilot-types';
 
 export function useAutopilotConfig(workspaceSlug: string) {
   const [config, setConfig] = useState<AutopilotConfig | null>(null);

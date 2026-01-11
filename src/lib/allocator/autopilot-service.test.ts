@@ -3,7 +3,7 @@ import { AutopilotService } from './autopilot-service';
 import prisma from '@/lib/prisma';
 import { FeatureFlagService } from '../feature-flags/feature-flag-service';
 import { AutopilotAnomalyIntegration } from './autopilot-anomaly-integration';
-import { AutopilotRecommendation, AutopilotConfig } from './autopilot-types';
+import type { AutopilotRecommendation, AutopilotConfig } from './autopilot-types';
 
 // Mock Decimal class
 class MockDecimal {

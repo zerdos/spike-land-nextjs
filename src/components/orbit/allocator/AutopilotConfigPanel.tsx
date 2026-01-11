@@ -7,8 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AutopilotConfig, UpdateAutopilotConfigInput } from '@/lib/allocator/autopilot-types';
-import { AutopilotMode } from '@prisma/client';
+import type { AutopilotConfig, UpdateAutopilotConfigInput } from '@/lib/allocator/autopilot-types';
+import type { AutopilotMode } from '@prisma/client';
 
 interface AutopilotConfigPanelProps {
   config: AutopilotConfig | null;

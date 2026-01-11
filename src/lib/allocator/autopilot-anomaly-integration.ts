@@ -1,5 +1,5 @@
 import prisma from '@/lib/prisma';
-import { AutopilotAnomaly } from './autopilot-types';
+import type { AutopilotAnomaly } from './autopilot-types';
 
 export class AutopilotAnomalyIntegration {
   /**

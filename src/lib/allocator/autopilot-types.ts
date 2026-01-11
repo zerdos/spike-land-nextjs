@@ -1,4 +1,4 @@
-import { AutopilotMode, AutopilotExecutionStatus } from '@prisma/client';
+import type { AutopilotMode, AutopilotExecutionStatus } from '@prisma/client';
 // Use any for Decimal in types to avoid runtime import issues in test environment
 // import { Decimal } from '@prisma/client/runtime/library';
 type Decimal = any;

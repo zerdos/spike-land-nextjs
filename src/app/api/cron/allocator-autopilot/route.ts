@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { AutopilotService } from '@/lib/allocator/autopilot-service';
 import { getAllocatorRecommendations } from '@/lib/allocator';
-import { AutopilotRecommendation } from '@/lib/allocator/autopilot-types';
+import type { AutopilotRecommendation } from '@/lib/allocator/autopilot-types';
 
 export const runtime = 'nodejs'; // Ensure this runs in Node.js environment (needed for prisma)
 

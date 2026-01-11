@@ -1,7 +1,7 @@
 import prisma from '@/lib/prisma';
 import { FeatureFlagService } from '../feature-flags/feature-flag-service';
 import { AutopilotAnomalyIntegration } from './autopilot-anomaly-integration';
-import {
+import type {
   AutopilotConfig,
   AutopilotRecommendation,
   AutopilotExecutionResult,
