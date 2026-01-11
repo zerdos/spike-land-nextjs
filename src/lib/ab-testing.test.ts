@@ -16,8 +16,8 @@ describe("A/B Testing Utilities", () => {
         { visitors: 100, conversions: 10 }, // 10% conversion rate
         { visitors: 100, conversions: 20 }, // 20% conversion rate
       ];
-      // Expected chi-squared value for this data is approximately 4.76
-      expect(calculateChiSquared(variants)).toBeCloseTo(4.76, 2);
+      // Expected chi-squared value for this data is approximately 3.92
+      expect(calculateChiSquared(variants)).toBeCloseTo(3.92, 2);
     });
 
     it("should handle cases with zero conversions", () => {
