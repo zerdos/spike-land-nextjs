@@ -32613,6 +32613,7 @@ __metadata:
   resolution: "vercel-app@workspace:."
   dependencies:
     "@anthropic-ai/claude-agent-sdk": "npm:^0.2.2"
+    "@anthropic-ai/sdk": "npm:0.71.2"
     "@aws-sdk/client-s3": "npm:3.964.0"
     "@aws-sdk/lib-storage": "npm:3.964.0"
     "@cucumber/cucumber": "npm:12.5.0"

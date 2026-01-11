@@ -20,6 +20,8 @@
     "test:coverage": "vitest run --coverage",
     "test:changed": "vitest --changed $(yarn find-last-passing-ci test)",
     "test:run": "vitest run",
+    "test:packages": "yarn workspace @spike-npm-land/code test && yarn workspace @spike-npm-land/spike-land-backend test:unit && yarn workspace @spike-npm-land/transpile test && yarn workspace @spike-npm-land/renderer test && yarn workspace @spike-npm-land/opfs-node-adapter test",
+    "test:all": "vitest run && yarn test:packages",
     "test:cached": "VITEST_COVERAGE=true CI=true vitest run --coverage",
     "test:cache:check": "tsx scripts/test-cache-manager.ts should-skip-all",
     "test:cache:stats": "tsx scripts/test-cache-manager.ts stats",
@@ -72,6 +74,7 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.2",
+    "@anthropic-ai/sdk": "0.71.2",
     "@aws-sdk/client-s3": "3.964.0",
     "@aws-sdk/lib-storage": "3.964.0",
     "@dnd-kit/core": "6.3.1",

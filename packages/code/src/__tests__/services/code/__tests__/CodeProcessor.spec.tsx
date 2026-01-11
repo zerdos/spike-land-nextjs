@@ -119,7 +119,7 @@ describe("CodeProcessor", () => {
 
       expect(result).toMatchInlineSnapshot(`
         {
-          "code": "formatted",
+          "code": "const x = 6;",
           "codeSpace": "test-space",
           "css": "css",
           "html": "<div></div>",
@@ -177,7 +177,7 @@ describe("CodeProcessor", () => {
       // Set up success case directly
       const processResult = {
         ...sessionMock,
-        code: "formatted",
+        code: mockCode,
         transpiled: "transpiled",
         html: "<div>Mocked HTML</div>",
         css: "/* Mocked CSS */",
