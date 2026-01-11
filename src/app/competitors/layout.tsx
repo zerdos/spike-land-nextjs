@@ -1,7 +1,7 @@
-import { Metadata } from 'next';
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Competitor Tracking',
+  title: "Competitor Tracking",
 };
 
 export default function CompetitorsLayout({

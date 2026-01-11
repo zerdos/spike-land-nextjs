@@ -9,17 +9,19 @@ const prismaClientSingleton = () => {
     // Instead of throwing, we'll return a mock client. This allows the build to
     // succeed. If any code *actually* tries to query the DB during build, it will
     // fail, which is the desired behavior.
-    if (process.env.NEXT_PHASE === 'phase-production-build') {
-      console.warn('DATABASE_URL not available during build. Using mocked Prisma Client.');
+    if (process.env.NEXT_PHASE === "phase-production-build") {
+      console.warn("DATABASE_URL not available during build. Using mocked Prisma Client.");
       return new Proxy(
         {},
         {
           get: (_, prop) => {
             // This proxy will throw an error if any prisma method is called.
             throw new Error(
-              `Attempted to access Prisma a build time (property: ${String(
-                prop,
-              )}), but DATABASE_URL was not provided.`,
+              `Attempted to access Prisma a build time (property: ${
+                String(
+                  prop,
+                )
+              }), but DATABASE_URL was not provided.`,
             );
           },
         },

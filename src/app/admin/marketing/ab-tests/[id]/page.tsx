@@ -2,24 +2,49 @@
 
 import AbTestResults from "@/components/admin/marketing/ab-tests/AbTestResults";
 import { Button } from "@/components/ui/button";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import { toast } from "sonner";
 import { calculateChiSquared, chiSquaredToPValue } from "@/lib/ab-testing";
-import { useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
+import { useCallback, useEffect } from "react";
+import { toast } from "sonner";
+
+interface VariantResult {
+  converted: boolean;
+}
+
+interface Variant {
+  id: string;
+  name: string;
+  results: VariantResult[];
+}
+
+interface AbTest {
+  id: string;
+  name: string;
+  description: string | null;
+  status: string;
+  significanceLevel: number;
+  winnerVariantId: string | null;
+  variants: Variant[];
+}
+
+interface UpdateTestData {
+  status?: string;
+  winnerVariantId?: string;
+}
 
 export default function AbTestDetailsPage() {
   const params = useParams();
   const id = params.id as string;
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<{ test: AbTest; }>({
     queryKey: ["ab-test", id],
     queryFn: () => fetch(`/api/ab-tests/${id}`).then((res) => res.json()),
   });
 
-  const updateTestMutation = useMutation({
-    mutationFn: (updateData: any) =>
+  const updateTestMutation = useMutation<unknown, Error, UpdateTestData>({
+    mutationFn: (updateData) =>
       fetch(`/api/ab-tests/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -35,15 +60,12 @@ export default function AbTestDetailsPage() {
     },
   });
 
-  useEffect(() => {
-    if (data?.test) {
-      const test = data.test;
+  const checkAndUpdateWinner = useCallback(
+    (test: AbTest) => {
       if (test.status === "RUNNING") {
         const variantsWithStats = test.variants.map((variant) => {
           const visitors = variant.results.length;
-          const conversions = variant.results.filter(
-            (r) => r.converted
-          ).length;
+          const conversions = variant.results.filter((r) => r.converted).length;
           const conversionRate = visitors > 0 ? conversions / visitors : 0;
           return { ...variant, visitors, conversions, conversionRate };
         });
@@ -62,14 +84,25 @@ export default function AbTestDetailsPage() {
           });
         }
       }
+    },
+    [updateTestMutation],
+  );
+
+  useEffect(() => {
+    if (data?.test) {
+      checkAndUpdateWinner(data.test);
     }
-  }, [data]);
+  }, [data, checkAndUpdateWinner]);
 
   if (isLoading) {
     return <p>Loading...</p>;
   }
 
   const test = data?.test;
+
+  if (!test) {
+    return <p>Test not found</p>;
+  }
 
   return (
     <div>
@@ -85,16 +118,12 @@ export default function AbTestDetailsPage() {
             </Button>
           )}
           {test.status === "RUNNING" && (
-            <Button
-              onClick={() => updateTestMutation.mutate({ status: "COMPLETED" })}
-            >
+            <Button onClick={() => updateTestMutation.mutate({ status: "COMPLETED" })}>
               End Test
             </Button>
           )}
           {test.status === "COMPLETED" && (
-            <Button
-              onClick={() => updateTestMutation.mutate({ status: "ARCHIVED" })}
-            >
+            <Button onClick={() => updateTestMutation.mutate({ status: "ARCHIVED" })}>
               Archive Test
             </Button>
           )}

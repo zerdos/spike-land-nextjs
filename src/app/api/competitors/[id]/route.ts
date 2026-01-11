@@ -1,18 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
 export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  _request: Request,
+  { params }: { params: Promise<{ id: string; }>; },
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     await prisma.scoutCompetitor.delete({
       where: { id },
     });
-    return NextResponse.json({ message: 'Competitor deleted successfully' });
+    return NextResponse.json({ message: "Competitor deleted successfully" });
   } catch (error) {
-    console.error('Failed to delete competitor:', error);
-    return NextResponse.json({ message: 'Failed to delete competitor' }, { status: 500 });
+    console.error("Failed to delete competitor:", error);
+    return NextResponse.json({ message: "Failed to delete competitor" }, { status: 500 });
   }
 }

@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -15,14 +15,14 @@ export async function GET(request: Request) {
       include: {
         variants: true,
       },
-    })
+    }),
   );
 
   if (error) {
     console.error("Error listing A/B tests:", error);
     return NextResponse.json(
       { error: "Failed to list A/B tests" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     console.error("Error creating A/B test:", bodyError);
     return NextResponse.json(
       { error: "Failed to create A/B test" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -51,26 +51,26 @@ export async function POST(request: Request) {
   if (!name || typeof name !== "string" || name.trim().length === 0) {
     return NextResponse.json(
       { error: "Test name is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (!variants || !Array.isArray(variants) || variants.length < 2) {
     return NextResponse.json(
       { error: "At least two variants are required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const totalSplit = variants.reduce(
     (sum, v) => sum + v.splitPercentage,
-    0
+    0,
   );
 
   if (totalSplit !== 100) {
     return NextResponse.json(
       { error: "Total split percentage must be 100" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -89,14 +89,14 @@ export async function POST(request: Request) {
       include: {
         variants: true,
       },
-    })
+    }),
   );
 
   if (createError) {
     console.error("Error creating A/B test:", createError);
     return NextResponse.json(
       { error: "Failed to create A/B test" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 

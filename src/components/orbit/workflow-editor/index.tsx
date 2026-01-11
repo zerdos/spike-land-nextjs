@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import ReactFlow, {
-  Controls,
-  Background,
-  applyNodeChanges,
-  applyEdgeChanges,
   addEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
+  Background,
+  Controls,
 } from "reactflow";
-import type { Node, Edge, OnNodesChange, OnEdgesChange, OnConnect } from "reactflow";
+import type { Edge, Node, OnConnect, OnEdgesChange, OnNodesChange } from "reactflow";
 
 import "reactflow/dist/style.css";
 
@@ -27,17 +27,17 @@ const WorkflowEditor = () => {
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes]
+    [setNodes],
   );
 
   const onEdgesChange: OnEdgesChange = useCallback(
     (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [setEdges]
+    [setEdges],
   );
 
   const onConnect: OnConnect = useCallback(
     (connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges]
+    [setEdges],
   );
 
   return (

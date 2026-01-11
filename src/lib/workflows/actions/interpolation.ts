@@ -4,8 +4,14 @@
  * @param path The dot-notation path (e.g., "user.name").
  * @returns The value at the specified path or undefined if not found.
  */
-function resolvePath(obj: any, path: string): any {
-  return path.split('.').reduce((prev, curr) => (prev ? prev[curr] : undefined), obj);
+function resolvePath(obj: Record<string, unknown>, path: string): unknown {
+  return path.split(".").reduce<unknown>(
+    (
+      prev,
+      curr,
+    ) => (prev && typeof prev === "object" ? (prev as Record<string, unknown>)[curr] : undefined),
+    obj,
+  );
 }
 
 /**
@@ -16,30 +22,30 @@ function resolvePath(obj: any, path: string): any {
  * @param context The context object with values for interpolation.
  * @returns The interpolated template.
  */
-export function interpolate<T>(template: T, context: Record<string, any>): T {
-  if (typeof template === 'string') {
+export function interpolate<T>(template: T, context: Record<string, unknown>): T {
+  if (typeof template === "string") {
     // If the entire string is a single placeholder, return the raw value
     const singlePlaceholderMatch = template.match(/^\{\{\s*([\w\d._-]+)\s*\}\}$/);
-    if (singlePlaceholderMatch) {
-      return resolvePath(context, singlePlaceholderMatch[1]);
+    if (singlePlaceholderMatch && singlePlaceholderMatch[1]) {
+      return resolvePath(context, singlePlaceholderMatch[1]) as T;
     }
 
     // Otherwise, replace all placeholders with their string-coerced values
-    return template.replace(/\{\{\s*([\w\d._-]+)\s*\}\}/g, (match, path) => {
+    return template.replace(/\{\{\s*([\w\d._-]+)\s*\}\}/g, (_match, path: string) => {
       const value = resolvePath(context, path);
-      return value !== undefined && value !== null ? String(value) : '';
-    }) as any;
+      return value !== undefined && value !== null ? String(value) : "";
+    }) as T;
   }
 
   if (Array.isArray(template)) {
-    return template.map(item => interpolate(item, context)) as any;
+    return template.map((item) => interpolate(item, context)) as T;
   }
 
-  if (typeof template === 'object' && template !== null) {
-    const newObj: { [key: string]: any } = {};
+  if (typeof template === "object" && template !== null) {
+    const newObj: Record<string, unknown> = {};
     for (const key in template) {
       if (Object.prototype.hasOwnProperty.call(template, key)) {
-        newObj[key] = interpolate(template[key], context);
+        newObj[key] = interpolate((template as Record<string, unknown>)[key], context);
       }
     }
     return newObj as T;

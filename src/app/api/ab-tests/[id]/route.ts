@@ -4,8 +4,8 @@ import { tryCatch } from "@/lib/try-catch";
 import { NextResponse } from "next/server";
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  _request: Request,
+  { params }: { params: Promise<{ id: string; }>; },
 ) {
   const session = await auth();
 
@@ -13,9 +13,11 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = await params;
+
   const { data: test, error } = await tryCatch(
     prisma.abTest.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         variants: {
           include: {
@@ -23,14 +25,14 @@ export async function GET(
           },
         },
       },
-    })
+    }),
   );
 
   if (error) {
-    console.error(`Error fetching A/B test ${params.id}:`, error);
+    console.error(`Error fetching A/B test ${id}:`, error);
     return NextResponse.json(
       { error: "Failed to fetch A/B test" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -43,7 +45,7 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string; }>; },
 ) {
   const session = await auth();
 
@@ -51,13 +53,15 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = await params;
+
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    console.error(`Error updating A/B test ${params.id}:`, bodyError);
+    console.error(`Error updating A/B test ${id}:`, bodyError);
     return NextResponse.json(
       { error: "Failed to update A/B test" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -65,7 +69,7 @@ export async function PUT(
 
   const { data: test, error: updateError } = await tryCatch(
     prisma.abTest.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         description,
@@ -75,14 +79,14 @@ export async function PUT(
       include: {
         variants: true,
       },
-    })
+    }),
   );
 
   if (updateError) {
-    console.error(`Error updating A/B test ${params.id}:`, updateError);
+    console.error(`Error updating A/B test ${id}:`, updateError);
     return NextResponse.json(
       { error: "Failed to update A/B test" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -90,8 +94,8 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  _request: Request,
+  { params }: { params: Promise<{ id: string; }>; },
 ) {
   const session = await auth();
 
@@ -99,17 +103,19 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = await params;
+
   const { error } = await tryCatch(
     prisma.abTest.delete({
-      where: { id: params.id },
-    })
+      where: { id },
+    }),
   );
 
   if (error) {
-    console.error(`Error deleting A/B test ${params.id}:`, error);
+    console.error(`Error deleting A/B test ${id}:`, error);
     return NextResponse.json(
       { error: "Failed to delete A/B test" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 

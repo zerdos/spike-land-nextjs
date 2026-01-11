@@ -1,11 +1,7 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,9 +11,28 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { calculateChiSquared, chiSquaredToPValue } from "@/lib/ab-testing";
-import { Badge } from "@/components/ui/badge";
 
-const AbTestResults = ({ test }) => {
+interface VariantResult {
+  converted: boolean;
+}
+
+interface Variant {
+  id: string;
+  name: string;
+  results: VariantResult[];
+}
+
+interface AbTest {
+  variants: Variant[];
+  significanceLevel: number;
+  winnerVariantId: string | null;
+}
+
+interface AbTestResultsProps {
+  test: AbTest;
+}
+
+const AbTestResults = ({ test }: AbTestResultsProps) => {
   const variantsWithStats = test.variants.map((variant) => {
     const visitors = variant.results.length;
     const conversions = variant.results.filter((r) => r.converted).length;
@@ -37,8 +52,7 @@ const AbTestResults = ({ test }) => {
       <CardContent>
         <div className="mb-4">
           <p>
-            <strong>Statistical Significance:</strong>{" "}
-            {(significance * 100).toFixed(2)}%
+            <strong>Statistical Significance:</strong> {(significance * 100).toFixed(2)}%
           </p>
           {significance >= test.significanceLevel && (
             <p className="text-green-600">
@@ -60,15 +74,10 @@ const AbTestResults = ({ test }) => {
             {variantsWithStats.map((variant) => (
               <TableRow
                 key={variant.id}
-                className={
-                  test.winnerVariantId === variant.id ? "bg-green-100" : ""
-                }
+                className={test.winnerVariantId === variant.id ? "bg-green-100" : ""}
               >
                 <TableCell>
-                  {variant.name}{" "}
-                  {test.winnerVariantId === variant.id && (
-                    <Badge>Winner</Badge>
-                  )}
+                  {variant.name} {test.winnerVariantId === variant.id && <Badge>Winner</Badge>}
                 </TableCell>
                 <TableCell>{variant.visitors}</TableCell>
                 <TableCell>{variant.conversions}</TableCell>

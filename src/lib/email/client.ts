@@ -45,6 +45,13 @@ interface SendEmailParams {
   from?: string;
 }
 
+interface SendTextEmailParams {
+  to: string | string[];
+  subject: string;
+  text: string;
+  from?: string;
+}
+
 interface SendEmailResult {
   success: boolean;
   id?: string;
@@ -293,5 +300,71 @@ export async function sendEmail(
     success: false,
     error: lastError || "Failed after all retry attempts",
     retriesUsed,
+  };
+}
+
+/**
+ * Send a plain text email using Resend
+ * Simpler version for workflow actions that don't need React templates
+ *
+ * @param params Email parameters with text content
+ * @returns Result with success status and email ID or error
+ */
+export async function sendTextEmail(
+  params: SendTextEmailParams,
+): Promise<SendEmailResult> {
+  // Validate email format
+  const recipients = Array.isArray(params.to) ? params.to : [params.to];
+  for (const email of recipients) {
+    if (!isValidEmail(email)) {
+      return {
+        success: false,
+        error: `Invalid email format: ${email}`,
+      };
+    }
+  }
+
+  // Check rate limit
+  const rateLimit = checkRateLimit();
+  if (!rateLimit.allowed) {
+    return {
+      success: false,
+      error: "Daily email limit exceeded. Please try again later.",
+    };
+  }
+
+  const { data: result, error: sendError } = await tryCatch(
+    (async () => {
+      const resend = getResend();
+      const from = params.from || process.env.EMAIL_FROM || "noreply@spike.land";
+      return resend.emails.send({
+        from,
+        to: params.to,
+        subject: params.subject,
+        text: params.text,
+      });
+    })(),
+  );
+
+  if (sendError) {
+    const errorMessage = sendError instanceof Error ? sendError.message : "Unknown error";
+    return {
+      success: false,
+      error: errorMessage,
+    };
+  }
+
+  if (result?.data?.id) {
+    incrementRateLimit();
+    return {
+      success: true,
+      id: result.data.id,
+      rateLimitWarning: rateLimit.warning,
+    };
+  }
+
+  return {
+    success: false,
+    error: "Failed to send email - no ID returned",
   };
 }

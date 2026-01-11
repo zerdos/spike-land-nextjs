@@ -102,7 +102,7 @@ export default defineConfig({
       "@/auth": path.resolve(__dirname, "./src/auth.ts"),
       "next/server": path.resolve(
         __dirname,
-        "./node_modules/next/dist/server/web/spec-extension/request.js"
+        "./node_modules/next/dist/server/web/spec-extension/request.js",
       ),
     },
   },

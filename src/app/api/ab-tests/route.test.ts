@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET, POST } from "./route";
 import { NextRequest } from "next/server";
-import { headers } from "next/headers";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { GET, POST } from "./route";
+
+import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -25,8 +27,12 @@ describe("A/B Tests API", () => {
     it("should return a list of A/B tests", async () => {
       const session = { user: { id: "1" } };
       const tests = [{ id: "1", name: "Test 1", variants: [] }];
-      require("@/auth").auth.mockResolvedValue(session);
-      require("@/lib/prisma").default.abTest.findMany.mockResolvedValue(tests);
+      vi.mocked(auth).mockResolvedValue(
+        session as ReturnType<typeof auth> extends Promise<infer T> ? T : never,
+      );
+      vi.mocked(prisma.abTest.findMany).mockResolvedValue(
+        tests as unknown as Awaited<ReturnType<typeof prisma.abTest.findMany>>,
+      );
 
       const req = new NextRequest("http://localhost/api/ab-tests");
       const res = await GET(req);
@@ -49,8 +55,12 @@ describe("A/B Tests API", () => {
         ],
       };
       const createdTest = { id: "2", ...newTest };
-      require("@/auth").auth.mockResolvedValue(session);
-      require("@/lib/prisma").default.abTest.create.mockResolvedValue(createdTest);
+      vi.mocked(auth).mockResolvedValue(
+        session as ReturnType<typeof auth> extends Promise<infer T> ? T : never,
+      );
+      vi.mocked(prisma.abTest.create).mockResolvedValue(
+        createdTest as unknown as Awaited<ReturnType<typeof prisma.abTest.create>>,
+      );
 
       const req = new NextRequest("http://localhost/api/ab-tests", {
         method: "POST",
