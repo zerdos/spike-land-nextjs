@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -49,6 +49,7 @@ async function postReply(workspaceSlug: string, itemId: string, content: string)
 export function InboxReplyPanel({ itemId }: InboxReplyPanelProps) {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
+  const queryClient = useQueryClient();
   const form = useForm<ReplyFormValues>({
     resolver: zodResolver(replySchema),
     defaultValues: { content: "" },
@@ -58,7 +59,7 @@ export function InboxReplyPanel({ itemId }: InboxReplyPanelProps) {
     mutationFn: (content: string) => postReply(workspaceSlug, itemId, content),
     onSuccess: () => {
       form.reset();
-      // In a real app, you'd probably want to refetch the inbox item
+      queryClient.invalidateQueries({ queryKey: ["inboxItems", workspaceSlug] });
     },
   });
 

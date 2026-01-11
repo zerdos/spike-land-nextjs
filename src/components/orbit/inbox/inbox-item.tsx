@@ -2,6 +2,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import type { InboxItem as InboxItemType } from "@prisma/client";
+import {
+  Facebook,
+  Instagram,
+  Linkedin,
+  MessageCircle,
+  Music2,
+  Twitter,
+  Youtube,
+} from "lucide-react";
+import React from "react";
 
 interface InboxItemProps {
   item: InboxItemType;
@@ -9,9 +19,20 @@ interface InboxItemProps {
   onClick: () => void;
 }
 
-function getPlatformIcon(platform: string) {
-  // In a real app, you'd have icons for each platform
-  return platform.substring(0, 1).toUpperCase();
+const PLATFORM_ICONS: Record<string, React.ElementType> = {
+  TWITTER: Twitter,
+  FACEBOOK: Facebook,
+  INSTAGRAM: Instagram,
+  LINKEDIN: Linkedin,
+  TIKTOK: Music2,
+  YOUTUBE: Youtube,
+  DISCORD: MessageCircle,
+};
+
+function PlatformIcon({ platform }: { platform: string; }) {
+  const Icon = PLATFORM_ICONS[platform] || MessageCircle;
+  const IconComponent = Icon as any;
+  return <IconComponent className="h-4 w-4" />;
 }
 
 export function InboxItem({ item, isSelected, onClick }: InboxItemProps) {
@@ -31,7 +52,9 @@ export function InboxItem({ item, isSelected, onClick }: InboxItemProps) {
       <CardContent className="p-4 flex items-start space-x-4">
         <Avatar>
           <AvatarImage src={item.senderAvatarUrl ?? undefined} alt={item.senderName} />
-          <AvatarFallback>{getPlatformIcon(item.platform)}</AvatarFallback>
+          <AvatarFallback>
+            <PlatformIcon platform={item.platform} />
+          </AvatarFallback>
         </Avatar>
         <div className="flex-1">
           <div className="flex items-center justify-between">

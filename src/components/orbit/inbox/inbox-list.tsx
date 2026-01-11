@@ -1,5 +1,6 @@
 "use client";
 
+import { useDocumentVisibility } from "@/hooks/useDocumentVisibility";
 import type { InboxItem as InboxItemType } from "@prisma/client";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -47,12 +48,14 @@ export function InboxList({ onItemSelected, filters }: InboxListProps) {
   const workspaceSlug = params.workspaceSlug as string;
   const [selectedItem, setSelectedItem] = useState<InboxItemType | null>(null);
   const parentRef = useRef<HTMLDivElement>(null);
+  const isVisible = useDocumentVisibility();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ["inboxItems", workspaceSlug, filters],
     queryFn: ({ pageParam }) => fetchInboxItems(workspaceSlug, filters, pageParam),
     initialPageParam: 1,
     getNextPageParam: (lastPage: PageData) => (lastPage.hasNext ? lastPage.page + 1 : undefined),
+    refetchInterval: isVisible ? 30000 : false,
   });
 
   const allItems = data ? data.pages.flatMap((page: PageData) => page.items) : [];

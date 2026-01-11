@@ -9,6 +9,10 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/hooks/useDocumentVisibility", () => ({
+  useDocumentVisibility: () => true,
+}));
+
 function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: {
