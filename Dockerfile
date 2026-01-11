@@ -81,6 +81,7 @@ COPY --link src ./src
 COPY --link apps ./apps
 COPY --link public ./public
 COPY --link content ./content
+RUN yarn db:generate
 
 # ============================================================================
 # STAGE: Development
@@ -115,7 +116,7 @@ RUN --mount=type=cache,id=${CACHE_NS}-next-cache-${TARGETARCH},target=/app/.next
 # STAGE 6: Type Check
 # ============================================================================
 FROM source AS tsc
-RUN yarn db:generate && yarn tsc --noEmit
+RUN yarn tsc --noEmit
 
 # ============================================================================
 # STAGE 7: Test Context
