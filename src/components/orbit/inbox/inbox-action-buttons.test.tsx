@@ -1,13 +1,14 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { toast } from "sonner";
 import { describe, expect, it, vi } from "vitest";
 import { InboxActionButtons } from "./inbox-action-buttons";
 
-// Mock useToast
-const mockToast = vi.fn();
-vi.mock("@/components/ui/use-toast", () => ({
-  useToast: () => ({
-    toast: mockToast,
-  }),
+// Mock sonner
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
 }));
 
 // Mock useQueryClient
@@ -83,9 +84,9 @@ describe("InboxActionButtons", () => {
     fireEvent.click(screen.getByText("Confirm"));
 
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
-        title: "Success",
-      }));
+      expect(toast.success).toHaveBeenCalledWith(
+        expect.stringContaining("successfully"),
+      );
     });
 
     expect(mockInvalidateQueries).toHaveBeenCalledWith({
