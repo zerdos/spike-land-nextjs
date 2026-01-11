@@ -146,47 +146,23 @@ Do NOT wait for approval to take effect - continue to next step.
 
 For sessions with a PR (status contains `PR_`, `REVIEW_`, or `JULES_`), or `COMPLETED` sessions:
 
-#### 3.0 Create PR via Browser (for COMPLETED sessions with no PR)
+#### 3.0 PR Creation (AUTOMATED)
 
-For sessions in registry marked `COMPLETED` with "⚠️ No PR":
+With `automationMode: "AUTO_CREATE_PR"` enabled, Jules automatically creates PRs when tasks complete.
+No browser automation needed!
 
-**Step 3.0.1: Navigate to Jules session**
+For sessions marked `COMPLETED`:
 
-```
-mcp__playwright__browser_navigate { url: "https://jules.google.com/session/[session_id]" }
-```
+1. Get session details: `mcp__spike-land__jules_get_session { session_id: "[id]" }`
+2. Extract PR URL from `outputs` field (contains `{ url: "https://github.com/.../pull/N" }`)
+3. Parse PR number from URL
+4. Update registry status to `PR_CREATED` with PR number
+5. Proceed to Step 3.2 (PR Health check)
 
-**Step 3.0.2: Check login status / Get page snapshot**
+**Fallback (if no PR in outputs):**
 
-```
-mcp__playwright__browser_snapshot {}
-```
-
-If login required, notify user: "🔐 Please log in to jules.google.com - browser is open"
-Wait for user confirmation, then re-snapshot.
-
-**Step 3.0.3: Find and click PR creation button**
-
-Look for button with text like "Create pull request", "Open PR", or similar.
-
-```
-mcp__playwright__browser_click { element: "Create pull request button", ref: "[ref]" }
-```
-
-**Step 3.0.4: Wait for PR creation**
-
-```
-mcp__playwright__browser_wait_for { text: "pull request", time: 30 }
-```
-
-**Step 3.0.5: Extract PR URL/number**
-
-Snapshot the page, find the GitHub PR link, extract PR number.
-
-**Step 3.0.6: Update registry**
-
-Change status from `COMPLETED` + "⚠️ No PR" to `PR_CREATED` with PR number.
-Continue to Step 3.1 for normal PR lifecycle handling.
+If `outputs` is empty after `COMPLETED` status, wait one iteration and re-check.
+Jules may still be finalizing the PR. If still empty after 2 iterations, escalate to user.
 
 ---
 

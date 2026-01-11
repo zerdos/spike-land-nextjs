@@ -53,6 +53,7 @@ interface CreateSessionRequest {
   sourceContext: JulesSourceContext;
   title?: string;
   requirePlanApproval?: boolean;
+  automationMode?: "AUTO_CREATE_PR" | "MANUAL";
 }
 
 export class JulesClient {
