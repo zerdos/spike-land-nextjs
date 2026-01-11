@@ -248,7 +248,9 @@ export default function UserManagementPage() {
         {/* Users List */}
         <Card className="overflow-hidden">
           <div className="border-b border-border bg-muted p-4">
-            <h2 className="font-semibold">Users ({users.length})</h2>
+            <h2 className="font-semibold">
+              Users {loading ? "(Loading...)" : `(${users.length})`}
+            </h2>
           </div>
           <div className="max-h-[600px] overflow-y-auto">
             {loading

@@ -122,7 +122,7 @@ export function CalendarHeader({
           size="icon"
           onClick={onPreviousMonth}
           disabled={isLoading}
-          data-testid="previous-month-button"
+          data-testid="calendar-prev-month"
           aria-label="Previous month"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -137,7 +137,7 @@ export function CalendarHeader({
           size="icon"
           onClick={onNextMonth}
           disabled={isLoading}
-          data-testid="next-month-button"
+          data-testid="calendar-next-month"
           aria-label="Next month"
         >
           <ChevronRight className="h-4 w-4" />

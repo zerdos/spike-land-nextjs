@@ -58,6 +58,7 @@ export const appPromptCreationSchema = z.object({
     .string()
     .min(10, "Prompt must be at least 10 characters")
     .max(4000, "Prompt must be less than 4000 characters"),
+  codespaceId: z.string().optional(),
   imageIds: z.array(z.string()).optional(),
 });
 

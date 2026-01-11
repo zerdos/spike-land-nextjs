@@ -186,7 +186,7 @@ export function CalendarClient() {
   // No accounts connected state
   if (!isLoading && accounts.length === 0) {
     return (
-      <div className="space-y-6" data-testid="calendar-client">
+      <div className="space-y-6" data-testid="calendar-view">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
@@ -210,7 +210,7 @@ export function CalendarClient() {
   }
 
   return (
-    <div className="space-y-6" data-testid="calendar-client">
+    <div className="space-y-6" data-testid="calendar-view">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

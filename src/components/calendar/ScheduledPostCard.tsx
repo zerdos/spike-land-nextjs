@@ -117,9 +117,11 @@ export function ScheduledPostCard({
           "group flex cursor-pointer items-center gap-1 rounded px-1 py-0.5 text-xs transition-colors hover:bg-accent",
           statusConfig.color,
           isDragging && "opacity-50",
-          post.status === "CANCELLED" && "opacity-60 line-through",
+          post.status === "CANCELLED" && "opacity-60 line-through cancelled",
         )}
-        data-testid={`scheduled-post-${post.id}`}
+        data-testid="calendar-post-marker"
+        data-post-id={post.id}
+        data-status={post.status.toLowerCase()}
         aria-label={`Scheduled post: ${post.content.substring(0, 50)}`}
       >
         {/* Platform indicators */}
@@ -132,6 +134,8 @@ export function ScheduledPostCard({
                 PLATFORM_COLORS[platform],
               )}
               title={platform}
+              data-testid={`platform-icon-${platform.toLowerCase()}`}
+              data-platform={platform.toLowerCase()}
             >
               {PLATFORM_ICONS[platform]}
             </span>
@@ -143,11 +147,24 @@ export function ScheduledPostCard({
           )}
         </div>
 
+        {/* Status indicator */}
+        <span
+          data-testid={`status-indicator-${post.status.toLowerCase()}`}
+          className="sr-only"
+        >
+          {statusConfig.label}
+        </span>
+
         {/* Time */}
         <span className="font-medium">{format(post.scheduledAt, "HH:mm")}</span>
 
         {/* Recurring indicator */}
-        {post.isRecurring && <Repeat className="h-3 w-3 text-muted-foreground" />}
+        {post.isRecurring && (
+          <Repeat
+            className="h-3 w-3 text-muted-foreground"
+            data-testid="recurring-indicator"
+          />
+        )}
       </div>
     );
   }
@@ -161,9 +178,11 @@ export function ScheduledPostCard({
       className={cn(
         "group flex cursor-pointer flex-col gap-2 rounded-lg border p-3 transition-all hover:border-primary hover:shadow-sm",
         isDragging && "opacity-50 ring-2 ring-primary",
-        post.status === "CANCELLED" && "opacity-60",
+        post.status === "CANCELLED" && "opacity-60 cancelled",
       )}
-      data-testid={`scheduled-post-${post.id}`}
+      data-testid="calendar-post-marker"
+      data-post-id={post.id}
+      data-status={post.status.toLowerCase()}
       aria-label={`Scheduled post: ${post.content.substring(0, 50)}`}
     >
       {/* Header */}
@@ -178,6 +197,8 @@ export function ScheduledPostCard({
                 PLATFORM_COLORS[platform],
               )}
               title={platform}
+              data-testid={`platform-icon-${platform.toLowerCase()}`}
+              data-platform={platform.toLowerCase()}
             >
               {PLATFORM_ICONS[platform]}
             </span>
@@ -185,7 +206,11 @@ export function ScheduledPostCard({
         </div>
 
         {/* Status badge */}
-        <Badge variant="outline" className={cn("text-xs", statusConfig.color)}>
+        <Badge
+          variant="outline"
+          className={cn("text-xs", statusConfig.color)}
+          data-testid={`status-indicator-${post.status.toLowerCase()}`}
+        >
           {statusConfig.icon}
           <span className="ml-1">{statusConfig.label}</span>
         </Badge>
@@ -205,7 +230,7 @@ export function ScheduledPostCard({
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{format(post.scheduledAt, "h:mm a")}</span>
         {post.isRecurring && (
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1" data-testid="recurring-indicator">
             <Repeat className="h-3 w-3" />
             Recurring
           </span>

@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -63,12 +64,10 @@ const PLATFORM_LABELS: Record<SocialPlatform, string> = {
   DISCORD: "Discord",
 };
 
-const RECURRENCE_OPTIONS = [
-  { value: "", label: "No recurrence" },
-  { value: "FREQ=DAILY", label: "Daily" },
-  { value: "FREQ=WEEKLY", label: "Weekly" },
-  { value: "FREQ=WEEKLY;BYDAY=MO,WE,FR", label: "Mon, Wed, Fri" },
-  { value: "FREQ=MONTHLY", label: "Monthly" },
+const RECURRENCE_FREQUENCY_OPTIONS = [
+  { value: "DAILY", label: "Daily" },
+  { value: "WEEKLY", label: "Weekly" },
+  { value: "MONTHLY", label: "Monthly" },
 ];
 
 export function CreatePostDialog({
@@ -85,7 +84,8 @@ export function CreatePostDialog({
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
-  const [recurrenceRule, setRecurrenceRule] = useState("");
+  const [recurrenceEnabled, setRecurrenceEnabled] = useState(false);
+  const [recurrenceFrequency, setRecurrenceFrequency] = useState("WEEKLY");
   const [error, setError] = useState<string | null>(null);
 
   // Initialize form when dialog opens or editing post changes
@@ -97,14 +97,16 @@ export function CreatePostDialog({
         setSelectedAccounts([]);
         setScheduledDate(format(editingPost.scheduledAt, "yyyy-MM-dd"));
         setScheduledTime(format(editingPost.scheduledAt, "HH:mm"));
-        setRecurrenceRule(editingPost.isRecurring ? "FREQ=WEEKLY" : ""); // Simplified
+        setRecurrenceEnabled(editingPost.isRecurring);
+        setRecurrenceFrequency("WEEKLY"); // Default
       } else {
         const targetDate = initialDate || new Date();
         setContent("");
         setSelectedAccounts([]);
         setScheduledDate(format(targetDate, "yyyy-MM-dd"));
         setScheduledTime(format(targetDate, "HH:mm"));
-        setRecurrenceRule("");
+        setRecurrenceEnabled(false);
+        setRecurrenceFrequency("WEEKLY");
       }
       setError(null);
     }
@@ -158,7 +160,7 @@ export function CreatePostDialog({
       scheduledAt,
       timezone,
       accountIds: selectedAccounts,
-      recurrenceRule: recurrenceRule || undefined,
+      recurrenceRule: recurrenceEnabled ? `FREQ=${recurrenceFrequency}` : undefined,
     });
   };
 
@@ -215,30 +217,33 @@ export function CreatePostDialog({
                     </p>
                   )
                   : (
-                    accounts.map((account) => (
-                      <div
-                        key={account.id}
-                        className={cn(
-                          "flex items-center gap-3 rounded-lg border p-3 transition-colors cursor-pointer",
-                          selectedAccounts.includes(account.id)
-                            ? "border-primary bg-primary/5"
-                            : "hover:bg-muted",
-                        )}
-                        onClick={() => handleAccountToggle(account.id)}
-                        data-testid={`account-option-${account.id}`}
-                      >
-                        <Checkbox
-                          checked={selectedAccounts.includes(account.id)}
-                          onCheckedChange={() => handleAccountToggle(account.id)}
-                        />
-                        <div className="flex-1">
-                          <p className="font-medium">{account.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {PLATFORM_LABELS[account.platform]}
-                          </p>
+                    accounts.map((account) => {
+                      const slugifiedName = account.name.toLowerCase().replace(/\s+/g, "-");
+                      return (
+                        <div
+                          key={account.id}
+                          className={cn(
+                            "flex items-center gap-3 rounded-lg border p-3 transition-colors cursor-pointer",
+                            selectedAccounts.includes(account.id)
+                              ? "border-primary bg-primary/5"
+                              : "hover:bg-muted",
+                          )}
+                          onClick={() => handleAccountToggle(account.id)}
+                          data-testid={`account-select-${account.platform.toLowerCase()}-${slugifiedName}`}
+                        >
+                          <Checkbox
+                            checked={selectedAccounts.includes(account.id)}
+                            onCheckedChange={() => handleAccountToggle(account.id)}
+                          />
+                          <div className="flex-1">
+                            <p className="font-medium">{account.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {PLATFORM_LABELS[account.platform]}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
               </div>
             </div>
@@ -255,7 +260,7 @@ export function CreatePostDialog({
                   type="date"
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
-                  data-testid="scheduled-date-input"
+                  data-testid="post-date-input"
                 />
               </div>
               <div className="space-y-2">
@@ -268,7 +273,7 @@ export function CreatePostDialog({
                   type="time"
                   value={scheduledTime}
                   onChange={(e) => setScheduledTime(e.target.value)}
-                  data-testid="scheduled-time-input"
+                  data-testid="post-time-input"
                 />
               </div>
             </div>
@@ -279,23 +284,33 @@ export function CreatePostDialog({
             </p>
 
             {/* Recurrence */}
-            <div className="space-y-2">
-              <Label htmlFor="recurrence">
-                <Repeat className="mr-1 inline h-4 w-4" />
-                Recurrence
-              </Label>
-              <Select value={recurrenceRule} onValueChange={setRecurrenceRule}>
-                <SelectTrigger data-testid="recurrence-select">
-                  <SelectValue placeholder="No recurrence" />
-                </SelectTrigger>
-                <SelectContent>
-                  {RECURRENCE_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value || "none"}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="recurrence-toggle" className="flex items-center">
+                  <Repeat className="mr-1 h-4 w-4" />
+                  Enable Recurrence
+                </Label>
+                <Switch
+                  id="recurrence-toggle"
+                  checked={recurrenceEnabled}
+                  onCheckedChange={setRecurrenceEnabled}
+                  data-testid="recurrence-toggle"
+                />
+              </div>
+              {recurrenceEnabled && (
+                <Select value={recurrenceFrequency} onValueChange={setRecurrenceFrequency}>
+                  <SelectTrigger data-testid="recurrence-frequency">
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RECURRENCE_FREQUENCY_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
 

@@ -9,12 +9,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { MessageSquare, Sparkles } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { RelayDraftsPanel } from "../relay/relay-drafts-panel";
 
 const replySchema = z.object({
   content: z.string().trim().min(1, "Reply content cannot be empty"),
@@ -46,7 +49,7 @@ async function postReply(workspaceSlug: string, itemId: string, content: string)
   return res.json();
 }
 
-export function InboxReplyPanel({ itemId }: InboxReplyPanelProps) {
+function ManualReplyForm({ itemId }: { itemId: string; }) {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const queryClient = useQueryClient();
@@ -88,5 +91,28 @@ export function InboxReplyPanel({ itemId }: InboxReplyPanelProps) {
         </Button>
       </form>
     </Form>
+  );
+}
+
+export function InboxReplyPanel({ itemId }: InboxReplyPanelProps) {
+  return (
+    <Tabs defaultValue="ai-drafts" className="w-full">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="ai-drafts" className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4" />
+          AI Drafts
+        </TabsTrigger>
+        <TabsTrigger value="manual" className="flex items-center gap-2">
+          <MessageSquare className="h-4 w-4" />
+          Manual Reply
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="ai-drafts" className="mt-4">
+        <RelayDraftsPanel inboxItemId={itemId} />
+      </TabsContent>
+      <TabsContent value="manual" className="mt-4">
+        <ManualReplyForm itemId={itemId} />
+      </TabsContent>
+    </Tabs>
   );
 }
