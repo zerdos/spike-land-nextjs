@@ -93,7 +93,7 @@ The JSON MUST strictly adhere to this structure, with no additional text before 
 
 let genAI: GoogleGenAI | null = null;
 
-function getGeminiClient(): GoogleGenAI {
+export function getGeminiClient(): GoogleGenAI {
   if (!genAI) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -309,8 +309,7 @@ export function buildDynamicEnhancementPrompt(
   ) {
     instruction += `\nStyle Reference:\n`;
     instruction +=
-      `- Match the visual style, color grading, and overall aesthetic of the provided reference image${
-        promptConfig.referenceImages.length > 1 ? "s" : ""
+      `- Match the visual style, color grading, and overall aesthetic of the provided reference image${promptConfig.referenceImages.length > 1 ? "s" : ""
       }.\n`;
 
     // Add descriptions if available
@@ -604,8 +603,8 @@ export async function analyzeImageV2(
   const quality: "low" | "medium" | "high" = defectCount >= 3
     ? "low"
     : defectCount >= 1
-    ? "medium"
-    : "high";
+      ? "medium"
+      : "high";
 
   return {
     description: structuredAnalysis.mainSubject,
@@ -740,10 +739,9 @@ async function processGeminiStream(
   if (streamInitError) {
     console.error("Failed to initiate Gemini API stream:", streamInitError);
     throw new Error(
-      `${errorPrefixMap[operationType]}: ${
-        streamInitError instanceof Error
-          ? streamInitError.message
-          : "Unknown error"
+      `${errorPrefixMap[operationType]}: ${streamInitError instanceof Error
+        ? streamInitError.message
+        : "Unknown error"
       }`,
     );
   }
@@ -760,7 +758,7 @@ async function processGeminiStream(
       reject(
         new Error(
           `Gemini API request timed out after ${timeoutMs / 1000} seconds. ` +
-            `Processed ${chunkCount} chunks before timeout.`,
+          `Processed ${chunkCount} chunks before timeout.`,
         ),
       );
     }, timeoutMs);
@@ -809,8 +807,7 @@ async function processGeminiStream(
         chunkError,
       );
       throw new Error(
-        `Stream processing failed: ${
-          chunkError instanceof Error ? chunkError.message : "Unknown error"
+        `Stream processing failed: ${chunkError instanceof Error ? chunkError.message : "Unknown error"
         }`,
       );
     }
@@ -946,8 +943,7 @@ export async function enhanceImageWithGemini(
     `Generating enhanced image with Gemini API using model: ${modelToUse}`,
   );
   console.log(
-    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}, Aspect Ratio: ${
-      detectedAspectRatio || "auto"
+    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}, Aspect Ratio: ${detectedAspectRatio || "auto"
     }`,
   );
   console.log(`Timeout: ${GEMINI_TIMEOUT_MS / 1000}s`);
@@ -1017,8 +1013,7 @@ Be concise, helpful, and provide practical solutions.`;
   if (error) {
     console.error("[GEMINI_CHAT] Error generating response:", error);
     throw new Error(
-      `Failed to generate agent response: ${
-        error instanceof Error ? error.message : "Unknown error"
+      `Failed to generate agent response: ${error instanceof Error ? error.message : "Unknown error"
       }`,
     );
   }
@@ -1079,8 +1074,7 @@ export async function generateStructuredResponse<T>(
   if (error) {
     console.error("[GEMINI_STRUCTURED] Error generating response:", error);
     throw new Error(
-      `Failed to generate structured response: ${
-        error instanceof Error ? error.message : "Unknown error"
+      `Failed to generate structured response: ${error instanceof Error ? error.message : "Unknown error"
       }`,
     );
   }
@@ -1113,8 +1107,7 @@ export async function generateStructuredResponse<T>(
       jsonText.slice(0, 500),
     );
     throw new Error(
-      `Failed to parse structured response: ${
-        parseError instanceof Error ? parseError.message : "Invalid JSON"
+      `Failed to parse structured response: ${parseError instanceof Error ? parseError.message : "Invalid JSON"
       }`,
     );
   }
@@ -1183,8 +1176,7 @@ export async function generateImageWithGemini(
   };
 
   let fullPrompt =
-    `${GENERATION_BASE_PROMPT}\n\nImage to generate: ${params.prompt}\n\nGenerate at ${
-      resolutionMap[params.tier]
+    `${GENERATION_BASE_PROMPT}\n\nImage to generate: ${params.prompt}\n\nGenerate at ${resolutionMap[params.tier]
     } resolution.`;
 
   if (params.negativePrompt) {
@@ -1204,8 +1196,7 @@ export async function generateImageWithGemini(
 
   console.log(`Generating image with Gemini API using model: ${DEFAULT_MODEL}`);
   console.log(
-    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}, Aspect Ratio: ${
-      params.aspectRatio || "1:1 (default)"
+    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}, Aspect Ratio: ${params.aspectRatio || "1:1 (default)"
     }`,
   );
   console.log(`Prompt: ${params.prompt.substring(0, 100)}...`);
@@ -1256,8 +1247,7 @@ export async function modifyImageWithGemini(
   };
 
   const fullPrompt =
-    `${MODIFICATION_BASE_PROMPT}\n\nModification instructions: ${params.prompt}\n\nGenerate at ${
-      resolutionMap[params.tier]
+    `${MODIFICATION_BASE_PROMPT}\n\nModification instructions: ${params.prompt}\n\nGenerate at ${resolutionMap[params.tier]
     } resolution.`;
 
   const contents = [
@@ -1279,8 +1269,7 @@ export async function modifyImageWithGemini(
 
   console.log(`Modifying image with Gemini API using model: ${DEFAULT_MODEL}`);
   console.log(
-    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}, Aspect Ratio: ${
-      params.aspectRatio || "auto-detected"
+    `Tier: ${params.tier}, Resolution: ${resolutionMap[params.tier]}, Aspect Ratio: ${params.aspectRatio || "auto-detected"
     }`,
   );
   console.log(`Prompt: ${params.prompt.substring(0, 100)}...`);

@@ -12,6 +12,8 @@ import {
   Youtube,
 } from "lucide-react";
 import React from "react";
+import { InboxSentimentBadge } from "./inbox-sentiment-badge";
+import { InboxPriorityBadge } from "./inbox-priority-badge";
 
 interface InboxItemProps {
   item: InboxItemType;
@@ -68,8 +70,10 @@ export function InboxItem({ item, isSelected, onClick }: InboxItemProps) {
             </div>
           </div>
           <div className="text-sm text-gray-700 mt-1">{item.content}</div>
-          <div className="mt-2">
+          <div className="mt-2 flex items-center gap-2">
             <Badge variant="outline">{item.type}</Badge>
+            <InboxSentimentBadge sentiment={item.sentiment} score={item.sentimentScore} />
+            <InboxPriorityBadge score={item.priorityScore} />
           </div>
         </div>
       </CardContent>

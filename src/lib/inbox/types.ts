@@ -5,7 +5,7 @@
  */
 
 import type { InboxItem } from "@prisma/client";
-import { InboxItemStatus, InboxItemType, SocialPlatform } from "@prisma/client";
+import { InboxItemStatus, InboxItemType, SocialPlatform, InboxSentiment } from "@prisma/client";
 
 /**
  * Options for creating an inbox item
@@ -50,6 +50,10 @@ export interface InboxItemFilter {
   accountId?: string;
   receivedAfter?: Date;
   receivedBefore?: Date;
+  sentiment?: InboxSentiment | InboxSentiment[];
+  minPriority?: number;
+  maxPriority?: number;
+  escalated?: boolean;
 }
 
 /**
@@ -58,7 +62,7 @@ export interface InboxItemFilter {
 export interface PaginationOptions {
   page?: number;
   limit?: number;
-  orderBy?: "receivedAt" | "createdAt" | "updatedAt";
+  orderBy?: "receivedAt" | "createdAt" | "updatedAt" | "priorityScore";
   orderDirection?: "asc" | "desc";
 }
 
@@ -98,4 +102,4 @@ export interface AssignmentResult {
 
 // Re-export Prisma types for convenience
 export type { InboxItem } from "@prisma/client";
-export { InboxItemStatus, InboxItemType, SocialPlatform };
+export { InboxItemStatus, InboxItemType, SocialPlatform, InboxSentiment };
