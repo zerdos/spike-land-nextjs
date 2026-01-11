@@ -34,6 +34,10 @@
       "schedule": "0 * * * *"
     },
     {
+      "path": "/api/cron/allocator-autopilot",
+      "schedule": "*/15 * * * *"
+    },
+    {
       "path": "/api/cron/cleanup-tracking",
       "schedule": "0 3 * * *"
     },

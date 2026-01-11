@@ -285,6 +285,7 @@ export async function handleJulesToolCall(
           },
           title: params.title,
           requirePlanApproval: true,
+          automationMode: "AUTO_CREATE_PR",
         });
 
         if (result.error) {
