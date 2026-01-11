@@ -45,7 +45,7 @@ export default function CompetitorsPage() {
       try {
         const id = await getPersonalWorkspaceId();
         setWorkspaceId(id);
-      } catch (error) {
+      } catch (_error) {
         toast.error('Failed to get workspace ID.');
       }
     };
@@ -58,7 +58,7 @@ export default function CompetitorsPage() {
         }
         const data = await res.json();
         setCompetitors(data);
-      } catch (error) {
+      } catch (_error) {
         toast.error('Failed to fetch competitors.');
       }
     };
@@ -101,7 +101,7 @@ export default function CompetitorsPage() {
         name: '',
       });
       toast.success('Competitor added successfully.');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to add competitor.');
     }
   };
@@ -118,7 +118,7 @@ export default function CompetitorsPage() {
 
       setCompetitors((prev) => prev.filter((c) => c.id !== id));
       toast.success('Competitor deleted successfully.');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to delete competitor.');
     }
   };
