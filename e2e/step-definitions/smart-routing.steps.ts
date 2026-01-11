@@ -183,7 +183,7 @@ When(
   "I toggle {string} to {string}",
   async function(this: CustomWorld, toggleLabel: string, state: string) {
     // Robust strategy: Find the container (FormItem) that has the label text, then find the switch inside it.
-    let container = this.page.locator("div.rounded-lg").filter({ hasText: toggleLabel }).last();
+    const container = this.page.locator("div.rounded-lg").filter({ hasText: toggleLabel }).last();
     let toggle = container.getByRole("switch");
 
     // Fallback
