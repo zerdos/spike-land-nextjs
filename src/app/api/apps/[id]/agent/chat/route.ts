@@ -12,6 +12,7 @@ import { tryCatch } from "@/lib/try-catch";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 export const maxDuration = 300; // 5 minutes
 
@@ -194,6 +195,18 @@ export async function POST(
               },
             }),
           );
+
+          // Attempt to extract name and description if this is one of the first interactions
+          // We check if the name looks like a slug (contains dashes and potentially matches the patterns)
+          const isDefaultName = app.codespaceId && app.codespaceId.includes("-");
+
+          if (isDefaultName) {
+            // We fire this off without awaiting it to not block the stream closing immediately
+            // (Next.js might kill it if we don't await, but `waitUntil` is not standard here yet.
+            //  However, since we have maxDuration 300s, we can just await it. It's better for UX if we don't, but safer if we do.)
+            // Let's await it to ensure it runs.
+            await generateAppDetails(id, finalResponse, content);
+          }
         }
 
         controller.close();
@@ -216,4 +229,65 @@ export async function POST(
       "Connection": "keep-alive",
     },
   });
+}
+
+// Helper to generate app name and description
+async function generateAppDetails(appId: string, agentResponse: string, userPrompt: string) {
+  try {
+    const namingPrompt = `
+      Based on the following conversation, generate a short, creative name (max 3-4 words) and a brief description (max 20 words) for the application being built.
+      
+      User: "${userPrompt.substring(0, 500)}..."
+      Agent: "${agentResponse.substring(0, 500)}..."
+      
+      Return ONLY a JSON object with keys "name" and "description". Do not include markdown formatting.
+    `;
+
+    const result = await query({
+      prompt: namingPrompt,
+      options: {
+        // No tools for this, just pure LLM
+        systemPrompt:
+          "You are a helpful assistant that generates names and descriptions for software applications.",
+      },
+    });
+
+    let jsonStr = "";
+    for await (const message of result) {
+      if (message.type === "assistant") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const betaMessage = (message as any).message;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const text = betaMessage?.content?.filter((c: any) => c.type === "text" // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ).map((c: any) => c.text).join("") || "";
+        jsonStr += text;
+      }
+    }
+
+    // Clean up JSON string (remove markdown code blocks if present)
+    jsonStr = jsonStr.replace(/```json/g, "").replace(/```/g, "").trim();
+
+    // Validate the parsed JSON with Zod schema
+    const appDetailsSchema = z.object({
+      name: z.string().min(1).max(50),
+      description: z.string().min(1).max(200),
+    });
+
+    const parsed = appDetailsSchema.safeParse(JSON.parse(jsonStr));
+
+    if (parsed.success) {
+      await prisma.app.update({
+        where: { id: appId },
+        data: {
+          name: parsed.data.name,
+          description: parsed.data.description,
+        },
+      });
+      console.log(`[agent/chat] Updated app details: ${parsed.data.name}`);
+    } else {
+      console.warn("[agent/chat] Invalid app details format:", parsed.error.message);
+    }
+  } catch (e) {
+    console.error("[agent/chat] Failed to generate app details:", e);
+  }
 }

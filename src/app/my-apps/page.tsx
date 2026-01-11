@@ -26,6 +26,9 @@ export default async function MyAppsPage() {
       status: {
         notIn: ["ARCHIVED"],
       },
+      messages: {
+        some: {}, // Only show apps that have at least one message (i.e., not drafts)
+      },
     },
     select: {
       id: true,

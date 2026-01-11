@@ -8,7 +8,7 @@
 
 "use client";
 
-import { format, isSameMonth, isToday } from "date-fns";
+import { format, isFuture, isSameMonth, isToday } from "date-fns";
 
 import { cn } from "@/lib/utils";
 
@@ -42,6 +42,8 @@ export function CalendarDayCell({
 }: CalendarDayCellProps) {
   const isCurrentMonth = isSameMonth(date, currentMonth);
   const isTodayDate = isToday(date);
+  const isFutureDate = isFuture(date);
+  const dayName = format(date, "EEEE").toLowerCase();
   const visiblePosts = posts.slice(0, maxVisiblePosts);
   const hiddenPostsCount = posts.length - maxVisiblePosts;
 
@@ -94,7 +96,10 @@ export function CalendarDayCell({
         isDragOver && "bg-primary/10 ring-2 ring-inset ring-primary",
         "hover:bg-accent/50 cursor-pointer",
       )}
-      data-testid={`calendar-day-${format(date, "yyyy-MM-dd")}`}
+      data-testid="calendar-date-cell"
+      data-date={format(date, "yyyy-MM-dd")}
+      data-future={isFutureDate ? "true" : "false"}
+      data-day={dayName}
       aria-label={`${format(date, "EEEE, MMMM d, yyyy")}${
         posts.length > 0 ? `, ${posts.length} scheduled posts` : ""
       }`}

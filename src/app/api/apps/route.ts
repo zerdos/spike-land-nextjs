@@ -162,12 +162,16 @@ export async function POST(request: NextRequest) {
  */
 async function createAppFromPrompt(
   userId: string,
-  data: { prompt: string; imageIds?: string[]; },
+  data: { prompt: string; imageIds?: string[]; codespaceId?: string; },
 ) {
-  const slug = generateSlug();
+  // If codespaceId is provided, use it. Otherwise generate a new slug.
+  const slug = data.codespaceId ? data.codespaceId : generateSlug();
+
+  // Create a name from the slug (stripping potential random suffix if it's long enough)
   const name = slug
     .split("-")
-    .slice(0, 3)
+    // Simple heuristic: if it looks like our generated id (adj-noun-verb-suffix), try to keep just the words
+    // But since the user sees the slug, using it as the name initially is fine
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 
@@ -180,7 +184,7 @@ async function createAppFromPrompt(
           slug,
           userId,
           status: "WAITING", // Skip PROMPTING since we have the prompt
-          codespaceId: slug, // Use slug as codespaceId
+          codespaceId: slug, // Use slug as codespaceId (since we set slug = codespaceId if provided)
           codespaceUrl: `https://testing.spike.land/live/${slug}/`,
         },
         select: {

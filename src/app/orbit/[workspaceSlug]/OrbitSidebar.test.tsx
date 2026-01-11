@@ -174,7 +174,8 @@ describe("OrbitSidebar", () => {
     expect(links[5]).toHaveTextContent("Content Library");
     expect(links[6]).toHaveTextContent("Brand Brain");
     expect(links[7]).toHaveTextContent("AI Agents");
-    expect(links[8]).toHaveTextContent("Settings");
+    expect(links[8]).toHaveTextContent("Workflows");
+    expect(links[9]).toHaveTextContent("Settings");
   });
 
   it("renders with different workspace slugs", async () => {

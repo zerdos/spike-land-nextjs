@@ -7,8 +7,38 @@ import type { EmotionCache } from "@emotion/cache";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/services/RenderService");
-vi.mock("@/services/editorUtils");
+vi.mock("@/services/RenderService", () => {
+  // Create mock methods inside the factory to ensure proper hoisting
+  const mockUpdateRenderedApp = vi.fn().mockResolvedValue({
+    cssCache: { key: "css-key", sheet: { tags: [] } },
+    rootElement: { innerHTML: "<div>rendered</div>" },
+    cleanup: vi.fn(),
+  });
+  const mockHandleRender = vi.fn().mockResolvedValue({
+    html: "<div>rendered</div>",
+    css: ".class { color: red; }",
+  });
+  const mockCleanup = vi.fn();
+
+  // Create mock class with mockable prototype methods
+  class MockRenderService {
+    updateRenderedApp = mockUpdateRenderedApp;
+    handleRender = mockHandleRender;
+    cleanup = mockCleanup;
+  }
+
+  // Add methods to prototype for vi.mocked(RenderService.prototype.method) to work
+  MockRenderService.prototype.updateRenderedApp = mockUpdateRenderedApp;
+  MockRenderService.prototype.handleRender = mockHandleRender;
+  MockRenderService.prototype.cleanup = mockCleanup;
+
+  return { RenderService: MockRenderService };
+});
+
+vi.mock("@/services/editorUtils", () => ({
+  formatCode: vi.fn(async (code: string) => code),
+  transpileCode: vi.fn(async (code: string) => `transpiled:${code}`),
+}));
 vi.mock("react-dom/client", () => ({
   createRoot: vi.fn(),
 }));

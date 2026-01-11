@@ -17,7 +17,7 @@ import { NextResponse } from "next/server";
 const MAX_TOKEN_ADJUSTMENT = 10000;
 const MIN_TOKEN_ADJUSTMENT = -1000;
 const MAX_SEARCH_LENGTH = 100;
-// CUID pattern: starts with 'c' or user_ prefix, followed by alphanumeric
+// User ID pattern: accepts CUIDs and user_ prefixed IDs (stable IDs)
 const CUID_PATTERN = /^(c[a-z0-9]{24}|user_[a-f0-9]+)$/;
 
 async function handleGetUsers(request: NextRequest): Promise<NextResponse> {
