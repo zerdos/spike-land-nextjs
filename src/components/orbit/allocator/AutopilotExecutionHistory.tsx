@@ -1,15 +1,22 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AutopilotExecutionResult } from '@/lib/allocator/autopilot-types';
-import { formatDistanceToNow } from 'date-fns';
-import { RotateCcw } from 'lucide-react';
-import { toast } from 'sonner';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { AutopilotExecutionResult } from "@/lib/allocator/autopilot-types";
+import { formatDistanceToNow } from "date-fns";
+import { RotateCcw } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface AutopilotExecutionHistoryProps {
   workspaceSlug: string;
@@ -53,19 +60,26 @@ export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionH
   }, [workspaceSlug]);
 
   const handleRollback = async (executionId: string) => {
-    if (!confirm('Are you sure you want to rollback this change? This will create a new budget adjustment.')) return;
+    if (
+      !confirm(
+        "Are you sure you want to rollback this change? This will create a new budget adjustment.",
+      )
+    ) return;
 
     try {
-      const res = await fetch(`/api/orbit/${workspaceSlug}/allocator/autopilot/executions/${executionId}/rollback`, {
-        method: 'POST'
-      });
+      const res = await fetch(
+        `/api/orbit/${workspaceSlug}/allocator/autopilot/executions/${executionId}/rollback`,
+        {
+          method: "POST",
+        },
+      );
 
-      if (!res.ok) throw new Error('Rollback failed');
+      if (!res.ok) throw new Error("Rollback failed");
 
-      toast.success('Rollback successful');
+      toast.success("Rollback successful");
       fetchHistory(); // Refresh
     } catch (err) {
-      toast.error('Failed to rollback');
+      toast.error("Failed to rollback");
       console.error(err);
     }
   };
@@ -94,41 +108,44 @@ export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionH
             </TableHeader>
             <TableBody>
               {executions.map((exec) => (
-                <TableRow key={exec.id} className={exec.rolledBackAt ? 'opacity-50' : ''}>
+                <TableRow key={exec.id} className={exec.rolledBackAt ? "opacity-50" : ""}>
                   <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(exec.executedAt), { addSuffix: true })}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
                       <span className="font-medium text-sm">{exec.campaign.name}</span>
-                      <span className="text-xs text-muted-foreground">{exec.campaign.platform}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {exec.campaign.platform}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-xs">
-                      {exec.recommendationType.replace(/_/g, ' ')}
+                      {exec.recommendationType.replace(/_/g, " ")}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
                       <span className="text-muted-foreground">{exec.previousBudget}</span>
-                      {' → '}
+                      {" → "}
                       <span className="font-bold">{exec.newBudget}</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={
-                        exec.status === 'COMPLETED' ? 'default' :
-                        exec.status === 'FAILED' ? 'destructive' : 'secondary'
-                      }
+                      variant={exec.status === "COMPLETED"
+                        ? "default"
+                        : exec.status === "FAILED"
+                        ? "destructive"
+                        : "secondary"}
                       className="text-xs"
                     >
                       {exec.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    {exec.status === 'COMPLETED' && !exec.rolledBackAt && (
+                    {exec.status === "COMPLETED" && !exec.rolledBackAt && (
                       <Button
                         variant="ghost"
                         size="icon"

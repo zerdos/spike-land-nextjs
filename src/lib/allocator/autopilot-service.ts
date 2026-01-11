@@ -1,13 +1,13 @@
-import prisma from '@/lib/prisma';
-import { FeatureFlagService } from '../feature-flags/feature-flag-service';
-import { AutopilotAnomalyIntegration } from './autopilot-anomaly-integration';
+import prisma from "@/lib/prisma";
+import { AutopilotExecutionStatus, AutopilotMode, Prisma } from "@prisma/client";
+import { FeatureFlagService } from "../feature-flags/feature-flag-service";
+import { AutopilotAnomalyIntegration } from "./autopilot-anomaly-integration";
 import type {
   AutopilotConfig,
-  AutopilotRecommendation,
   AutopilotExecutionResult,
-  UpdateAutopilotConfigInput
-} from './autopilot-types';
-import { AutopilotExecutionStatus, AutopilotMode, Prisma } from '@prisma/client';
+  AutopilotRecommendation,
+  UpdateAutopilotConfigInput,
+} from "./autopilot-types";
 
 const Decimal = Prisma.Decimal;
 
@@ -15,7 +15,10 @@ export class AutopilotService {
   /**
    * Get autopilot configuration for a workspace or specific campaign.
    */
-  static async getAutopilotConfig(workspaceId: string, campaignId?: string): Promise<AutopilotConfig | null> {
+  static async getAutopilotConfig(
+    workspaceId: string,
+    campaignId?: string,
+  ): Promise<AutopilotConfig | null> {
     let config = null;
 
     if (campaignId) {
@@ -23,9 +26,9 @@ export class AutopilotService {
         where: {
           workspaceId_campaignId: {
             workspaceId,
-            campaignId
-          }
-        }
+            campaignId,
+          },
+        },
       });
     }
 
@@ -34,8 +37,8 @@ export class AutopilotService {
       config = await prisma.allocatorAutopilotConfig.findFirst({
         where: {
           workspaceId,
-          campaignId: null
-        }
+          campaignId: null,
+        },
       });
     }
 
@@ -57,12 +60,12 @@ export class AutopilotService {
   static async setAutopilotConfig(
     workspaceId: string,
     data: UpdateAutopilotConfigInput,
-    campaignId?: string
+    campaignId?: string,
   ): Promise<AutopilotConfig> {
     // Check feature flag
-    const enabled = await FeatureFlagService.isFeatureEnabled('allocator_autopilot', workspaceId);
+    const enabled = await FeatureFlagService.isFeatureEnabled("allocator_autopilot", workspaceId);
     if (!enabled && data.isEnabled) {
-      throw new Error('Autopilot feature is not enabled for this workspace.');
+      throw new Error("Autopilot feature is not enabled for this workspace.");
     }
 
     const where = campaignId
@@ -81,8 +84,8 @@ export class AutopilotService {
     const existing = await prisma.allocatorAutopilotConfig.findFirst({
       where: {
         workspaceId,
-        campaignId: campaignId || null
-      }
+        campaignId: campaignId || null,
+      },
     });
 
     let config;
@@ -91,12 +94,20 @@ export class AutopilotService {
         where: { id: existing.id },
         data: {
           ...data,
-          maxDailyBudgetChange: data.maxDailyBudgetChange ? new Decimal(data.maxDailyBudgetChange) : undefined,
+          maxDailyBudgetChange: data.maxDailyBudgetChange
+            ? new Decimal(data.maxDailyBudgetChange)
+            : undefined,
           maxSingleChange: data.maxSingleChange ? new Decimal(data.maxSingleChange) : undefined,
-          minRoasThreshold: data.minRoasThreshold !== undefined ? (data.minRoasThreshold ? new Decimal(data.minRoasThreshold) : null) : undefined,
-          maxCpaThreshold: data.maxCpaThreshold !== undefined ? (data.maxCpaThreshold ? new Decimal(data.maxCpaThreshold) : null) : undefined,
-          requireApprovalAbove: data.requireApprovalAbove !== undefined ? (data.requireApprovalAbove ? new Decimal(data.requireApprovalAbove) : null) : undefined,
-        }
+          minRoasThreshold: data.minRoasThreshold !== undefined
+            ? (data.minRoasThreshold ? new Decimal(data.minRoasThreshold) : null)
+            : undefined,
+          maxCpaThreshold: data.maxCpaThreshold !== undefined
+            ? (data.maxCpaThreshold ? new Decimal(data.maxCpaThreshold) : null)
+            : undefined,
+          requireApprovalAbove: data.requireApprovalAbove !== undefined
+            ? (data.requireApprovalAbove ? new Decimal(data.requireApprovalAbove) : null)
+            : undefined,
+        },
       });
     } else {
       config = await prisma.allocatorAutopilotConfig.create({
@@ -104,15 +115,17 @@ export class AutopilotService {
           workspaceId,
           campaignId: campaignId || null,
           isEnabled: data.isEnabled ?? false,
-          mode: data.mode ?? 'CONSERVATIVE',
+          mode: data.mode ?? "CONSERVATIVE",
           maxDailyBudgetChange: new Decimal(data.maxDailyBudgetChange ?? 10.0),
           maxSingleChange: new Decimal(data.maxSingleChange ?? 5.0),
           minRoasThreshold: data.minRoasThreshold ? new Decimal(data.minRoasThreshold) : null,
           maxCpaThreshold: data.maxCpaThreshold ? new Decimal(data.maxCpaThreshold) : null,
           pauseOnAnomaly: data.pauseOnAnomaly ?? true,
-          requireApprovalAbove: data.requireApprovalAbove ? new Decimal(data.requireApprovalAbove) : null,
-          encryptedSettings: data.encryptedSettings
-        }
+          requireApprovalAbove: data.requireApprovalAbove
+            ? new Decimal(data.requireApprovalAbove)
+            : null,
+          encryptedSettings: data.encryptedSettings,
+        },
       });
     }
 
@@ -131,30 +144,40 @@ export class AutopilotService {
    */
   static async evaluateRecommendation(
     recommendation: AutopilotRecommendation,
-    config?: AutopilotConfig | null
-  ): Promise<{ shouldExecute: boolean; reason?: string }> {
+    config?: AutopilotConfig | null,
+  ): Promise<{ shouldExecute: boolean; reason?: string; }> {
     if (!config) {
       config = await this.getAutopilotConfig(recommendation.workspaceId, recommendation.campaignId);
     }
 
     if (!config || !config.isEnabled) {
-      return { shouldExecute: false, reason: 'Autopilot disabled' };
+      return { shouldExecute: false, reason: "Autopilot disabled" };
     }
 
     // Check Anomaly Pause
     if (config.pauseOnAnomaly) {
-      const anomalies = await AutopilotAnomalyIntegration.checkForAnomalies(recommendation.workspaceId);
+      const anomalies = await AutopilotAnomalyIntegration.checkForAnomalies(
+        recommendation.workspaceId,
+      );
       if (anomalies.length > 0) {
-        return { shouldExecute: false, reason: `Paused due to anomalies: ${anomalies.map(a => a.type).join(', ')}` };
+        return {
+          shouldExecute: false,
+          reason: `Paused due to anomalies: ${anomalies.map(a => a.type).join(", ")}`,
+        };
       }
     }
 
     // Check Single Change Limit
-    const proposedChangePercent = Math.abs((recommendation.suggestedBudget - recommendation.currentBudget) / recommendation.currentBudget * 100);
+    const proposedChangePercent = Math.abs(
+      (recommendation.suggestedBudget - recommendation.currentBudget) /
+        recommendation.currentBudget * 100,
+    );
     if (proposedChangePercent > config.maxSingleChange) {
       return {
         shouldExecute: false,
-        reason: `Change ${proposedChangePercent.toFixed(2)}% exceeds single move limit of ${config.maxSingleChange}%`
+        reason: `Change ${
+          proposedChangePercent.toFixed(2)
+        }% exceeds single move limit of ${config.maxSingleChange}%`,
       };
     }
 
@@ -164,7 +187,8 @@ export class AutopilotService {
       if (absChange > config.requireApprovalAbove) {
         return {
           shouldExecute: false,
-          reason: `Change amount ${absChange} exceeds auto-approval threshold ${config.requireApprovalAbove}`
+          reason:
+            `Change amount ${absChange} exceeds auto-approval threshold ${config.requireApprovalAbove}`,
         };
       }
     }
@@ -174,11 +198,11 @@ export class AutopilotService {
       recommendation.campaignId,
       recommendation.suggestedBudget - recommendation.currentBudget,
       config.maxDailyBudgetChange,
-      recommendation.currentBudget
+      recommendation.currentBudget,
     );
 
     if (!canMove) {
-      return { shouldExecute: false, reason: 'Daily budget move limit reached' };
+      return { shouldExecute: false, reason: "Daily budget move limit reached" };
     }
 
     return { shouldExecute: true };
@@ -189,9 +213,12 @@ export class AutopilotService {
    */
   static async executeRecommendation(
     recommendation: AutopilotRecommendation,
-    triggerSource: string = 'CRON'
+    triggerSource: string = "CRON",
   ): Promise<AutopilotExecutionResult> {
-    const config = await this.getAutopilotConfig(recommendation.workspaceId, recommendation.campaignId);
+    const config = await this.getAutopilotConfig(
+      recommendation.workspaceId,
+      recommendation.campaignId,
+    );
     const evaluation = await this.evaluateRecommendation(recommendation, config);
 
     if (!evaluation.shouldExecute) {
@@ -202,20 +229,20 @@ export class AutopilotService {
           campaignId: recommendation.campaignId,
           recommendationId: recommendation.id,
           recommendationType: recommendation.type,
-          status: 'SKIPPED',
+          status: "SKIPPED",
           previousBudget: new Decimal(recommendation.currentBudget),
           newBudget: new Decimal(recommendation.suggestedBudget),
           budgetChange: new Decimal(recommendation.suggestedBudget - recommendation.currentBudget),
-          metadata: { reason: evaluation.reason, triggerSource }
-        }
+          metadata: { reason: evaluation.reason, triggerSource },
+        },
       });
 
       return {
-        executionId: 'skipped',
-        status: 'SKIPPED',
+        executionId: "skipped",
+        status: "SKIPPED",
         budgetChange: 0,
         newBudget: recommendation.currentBudget,
-        message: evaluation.reason
+        message: evaluation.reason,
       };
     }
 
@@ -230,12 +257,12 @@ export class AutopilotService {
         campaignId: recommendation.campaignId,
         recommendationId: recommendation.id,
         recommendationType: recommendation.type,
-        status: 'EXECUTING',
+        status: "EXECUTING",
         previousBudget: new Decimal(recommendation.currentBudget),
         newBudget: new Decimal(recommendation.suggestedBudget),
         budgetChange: new Decimal(budgetChange),
-        metadata: { triggerSource }
-      }
+        metadata: { triggerSource },
+      },
     });
 
     try {
@@ -243,7 +270,7 @@ export class AutopilotService {
         // 1. Update Campaign Budget in DB
         await tx.allocatorCampaign.update({
           where: { id: recommendation.campaignId },
-          data: { budget: new Decimal(recommendation.suggestedBudget) }
+          data: { budget: new Decimal(recommendation.suggestedBudget) },
         });
 
         // 2. Track Daily Move
@@ -254,44 +281,46 @@ export class AutopilotService {
           where: {
             campaignId_date: {
               campaignId: recommendation.campaignId,
-              date: today
-            }
+              date: today,
+            },
           },
           create: {
             campaignId: recommendation.campaignId,
             date: today,
             totalMoved: new Decimal(Math.abs(budgetChange)),
             netChange: new Decimal(budgetChange),
-            executionCount: 1
+            executionCount: 1,
           },
           update: {
             totalMoved: { increment: new Decimal(Math.abs(budgetChange)) },
             netChange: { increment: new Decimal(budgetChange) },
-            executionCount: { increment: 1 }
-          }
+            executionCount: { increment: 1 },
+          },
         });
 
         // 3. Update status to COMPLETED
         await tx.allocatorAutopilotExecution.update({
           where: { id: execution.id },
-          data: { status: 'COMPLETED' }
+          data: { status: "COMPLETED" },
         });
 
         return {
           executionId: execution.id,
-          status: 'COMPLETED',
+          status: "COMPLETED",
           budgetChange,
-          newBudget: recommendation.suggestedBudget
+          newBudget: recommendation.suggestedBudget,
         };
       });
-
     } catch (error) {
       await prisma.allocatorAutopilotExecution.update({
         where: { id: execution.id },
         data: {
-          status: 'FAILED',
-          metadata: { error: error instanceof Error ? error.message : 'Unknown error', triggerSource }
-        }
+          status: "FAILED",
+          metadata: {
+            error: error instanceof Error ? error.message : "Unknown error",
+            triggerSource,
+          },
+        },
       });
       throw error;
     }
@@ -300,35 +329,41 @@ export class AutopilotService {
   /**
    * Rollback a previous execution.
    */
-  static async rollbackExecution(executionId: string, userId: string): Promise<AutopilotExecutionResult> {
+  static async rollbackExecution(
+    executionId: string,
+    userId: string,
+  ): Promise<AutopilotExecutionResult> {
     const execution = await prisma.allocatorAutopilotExecution.findUnique({
-      where: { id: executionId }
+      where: { id: executionId },
     });
 
-    if (!execution || execution.status !== 'COMPLETED') {
-      throw new Error('Execution not found or not completed');
+    if (!execution || execution.status !== "COMPLETED") {
+      throw new Error("Execution not found or not completed");
     }
 
     if (execution.rolledBackAt) {
-      throw new Error('Execution already rolled back');
+      throw new Error("Execution already rolled back");
     }
 
     // Create a new execution that is the inverse
     const rollbackRecommendation: AutopilotRecommendation = {
       id: `rollback-${execution.id}`,
-      type: execution.recommendationType === 'BUDGET_INCREASE' ? 'BUDGET_DECREASE' : 'BUDGET_INCREASE', // Invert type approximately
+      type: execution.recommendationType === "BUDGET_INCREASE"
+        ? "BUDGET_DECREASE"
+        : "BUDGET_INCREASE", // Invert type approximately
       workspaceId: execution.workspaceId,
       campaignId: execution.campaignId,
       currentBudget: execution.newBudget.toNumber(),
       suggestedBudget: execution.previousBudget.toNumber(),
       reason: `Rollback of execution ${execution.id} by user ${userId}`,
-      confidence: 1.0
+      confidence: 1.0,
     };
 
     // Force execution (bypass checks?) - usually yes for manual rollback
     // But we reuse logic to record it.
 
-    const budgetChange = rollbackRecommendation.suggestedBudget - rollbackRecommendation.currentBudget;
+    const budgetChange = rollbackRecommendation.suggestedBudget -
+      rollbackRecommendation.currentBudget;
 
     // Record rollback record
     const rollback = await prisma.allocatorAutopilotExecution.create({
@@ -336,14 +371,14 @@ export class AutopilotService {
         workspaceId: rollbackRecommendation.workspaceId,
         campaignId: rollbackRecommendation.campaignId,
         recommendationId: rollbackRecommendation.id,
-        recommendationType: 'ROLLBACK',
-        status: 'EXECUTING',
+        recommendationType: "ROLLBACK",
+        status: "EXECUTING",
         previousBudget: new Decimal(rollbackRecommendation.currentBudget),
         newBudget: new Decimal(rollbackRecommendation.suggestedBudget),
         budgetChange: new Decimal(budgetChange),
         metadata: { originalExecutionId: executionId, rolledBackBy: userId },
-        rollbackOfId: executionId // Link to original
-      }
+        rollbackOfId: executionId, // Link to original
+      },
     });
 
     try {
@@ -351,7 +386,7 @@ export class AutopilotService {
         // 1. Update Campaign Budget
         await tx.allocatorCampaign.update({
           where: { id: rollbackRecommendation.campaignId },
-          data: { budget: new Decimal(rollbackRecommendation.suggestedBudget) }
+          data: { budget: new Decimal(rollbackRecommendation.suggestedBudget) },
         });
 
         // 2. Track Daily Move (Reverse change for net, but still counts as a move for total)
@@ -362,21 +397,21 @@ export class AutopilotService {
           where: {
             campaignId_date: {
               campaignId: rollbackRecommendation.campaignId,
-              date: today
-            }
+              date: today,
+            },
           },
           create: {
             campaignId: rollbackRecommendation.campaignId,
             date: today,
             totalMoved: new Decimal(Math.abs(budgetChange)),
             netChange: new Decimal(budgetChange),
-            executionCount: 1
+            executionCount: 1,
           },
           update: {
             totalMoved: { increment: new Decimal(Math.abs(budgetChange)) },
             netChange: { increment: new Decimal(budgetChange) },
-            executionCount: { increment: 1 }
-          }
+            executionCount: { increment: 1 },
+          },
         });
 
         // 3. Mark original as rolled back
@@ -385,30 +420,30 @@ export class AutopilotService {
           data: {
             rolledBackAt: new Date(),
             rolledBackByUserId: userId,
-            status: 'ROLLED_BACK'
-          }
+            status: "ROLLED_BACK",
+          },
         });
 
         // 4. Update status to COMPLETED
         await tx.allocatorAutopilotExecution.update({
           where: { id: rollback.id },
-          data: { status: 'COMPLETED' }
+          data: { status: "COMPLETED" },
         });
 
         return {
           executionId: rollback.id,
-          status: 'COMPLETED',
+          status: "COMPLETED",
           budgetChange: budgetChange,
-          newBudget: rollbackRecommendation.suggestedBudget
+          newBudget: rollbackRecommendation.suggestedBudget,
         };
       });
     } catch (error) {
-       await prisma.allocatorAutopilotExecution.update({
+      await prisma.allocatorAutopilotExecution.update({
         where: { id: rollback.id },
         data: {
-          status: 'FAILED',
-          metadata: { error: error instanceof Error ? error.message : 'Unknown error' }
-        }
+          status: "FAILED",
+          metadata: { error: error instanceof Error ? error.message : "Unknown error" },
+        },
       });
       throw error;
     }
@@ -418,7 +453,7 @@ export class AutopilotService {
     campaignId: string,
     amountChange: number,
     limitPercent: number,
-    baseBudget: number
+    baseBudget: number,
   ): Promise<boolean> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -427,9 +462,9 @@ export class AutopilotService {
       where: {
         campaignId_date: {
           campaignId,
-          date: today
-        }
-      }
+          date: today,
+        },
+      },
     });
 
     const currentTotalMoved = dailyMove ? dailyMove.totalMoved.toNumber() : 0;

@@ -1,4 +1,4 @@
-import type { AutopilotMode, AutopilotExecutionStatus } from '@prisma/client';
+import type { AutopilotExecutionStatus, AutopilotMode } from "@prisma/client";
 // Use any for Decimal in types to avoid runtime import issues in test environment
 // import { Decimal } from '@prisma/client/runtime/library';
 type Decimal = any;
@@ -18,13 +18,13 @@ export interface AutopilotConfig {
   requireApprovalAbove?: number | null;
 }
 
-export type CreateAutopilotConfigInput = Omit<AutopilotConfig, 'id'>;
+export type CreateAutopilotConfigInput = Omit<AutopilotConfig, "id">;
 export type UpdateAutopilotConfigInput = Partial<CreateAutopilotConfigInput>;
 
 // Execution Types
 export interface AutopilotRecommendation {
   id: string;
-  type: 'BUDGET_INCREASE' | 'BUDGET_DECREASE' | 'REALLOCATE';
+  type: "BUDGET_INCREASE" | "BUDGET_DECREASE" | "REALLOCATE";
   workspaceId: string;
   campaignId: string;
   currentBudget: number;
@@ -46,7 +46,7 @@ export interface AutopilotAnomaly {
   workspaceId: string;
   campaignId?: string;
   type: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   detectedAt: Date;
   description: string;
 }

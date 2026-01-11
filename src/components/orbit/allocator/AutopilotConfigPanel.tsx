@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { AutopilotConfig, UpdateAutopilotConfigInput } from '@/lib/allocator/autopilot-types';
-import type { AutopilotMode } from '@prisma/client';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import type { AutopilotConfig, UpdateAutopilotConfigInput } from "@/lib/allocator/autopilot-types";
+import type { AutopilotMode } from "@prisma/client";
+import { useState } from "react";
 
 interface AutopilotConfigPanelProps {
   config: AutopilotConfig | null;
@@ -16,13 +22,15 @@ interface AutopilotConfigPanelProps {
 }
 
 export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelProps) {
-  const [formData, setFormData] = useState<Partial<AutopilotConfig>>(config || {
-    mode: 'CONSERVATIVE',
-    maxDailyBudgetChange: 10,
-    maxSingleChange: 5,
-    pauseOnAnomaly: true,
-    requireApprovalAbove: undefined,
-  });
+  const [formData, setFormData] = useState<Partial<AutopilotConfig>>(
+    config || {
+      mode: "CONSERVATIVE",
+      maxDailyBudgetChange: 10,
+      maxSingleChange: 5,
+      pauseOnAnomaly: true,
+      requireApprovalAbove: undefined,
+    },
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,7 +51,9 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
     <Card>
       <CardHeader>
         <CardTitle>Autopilot Configuration</CardTitle>
-        <CardDescription>Set the rules and safety limits for automatic budget adjustments.</CardDescription>
+        <CardDescription>
+          Set the rules and safety limits for automatic budget adjustments.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -51,7 +61,7 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
             <Label>Aggressiveness Mode</Label>
             <Select
               value={formData.mode}
-              onValueChange={(val) => updateField('mode', val as AutopilotMode)}
+              onValueChange={(val) => updateField("mode", val as AutopilotMode)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select mode" />
@@ -73,7 +83,7 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
                 min="1"
                 max="100"
                 value={formData.maxDailyBudgetChange}
-                onChange={(e) => updateField('maxDailyBudgetChange', parseFloat(e.target.value))}
+                onChange={(e) => updateField("maxDailyBudgetChange", parseFloat(e.target.value))}
               />
             </div>
             <div className="space-y-2">
@@ -84,7 +94,7 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
                 min="1"
                 max="100"
                 value={formData.maxSingleChange}
-                onChange={(e) => updateField('maxSingleChange', parseFloat(e.target.value))}
+                onChange={(e) => updateField("maxSingleChange", parseFloat(e.target.value))}
               />
             </div>
           </div>
@@ -93,31 +103,39 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
             <div className="flex items-center justify-between space-x-2">
               <Label htmlFor="pauseAnomaly" className="flex flex-col space-y-1">
                 <span>Pause on Anomaly</span>
-                <span className="font-normal text-xs text-muted-foreground">Automatically stop changes if performance metrics spike unexpectedly.</span>
+                <span className="font-normal text-xs text-muted-foreground">
+                  Automatically stop changes if performance metrics spike unexpectedly.
+                </span>
               </Label>
               <Switch
                 id="pauseAnomaly"
                 checked={formData.pauseOnAnomaly}
-                onCheckedChange={(checked) => updateField('pauseOnAnomaly', checked)}
+                onCheckedChange={(checked) => updateField("pauseOnAnomaly", checked)}
               />
             </div>
           </div>
 
           <div className="space-y-2 pt-4 border-t">
-             <Label htmlFor="approvalThreshold">Require Approval Above (Amount)</Label>
-             <Input
-                id="approvalThreshold"
-                type="number"
-                placeholder="e.g. 500"
-                value={formData.requireApprovalAbove || ''}
-                onChange={(e) => updateField('requireApprovalAbove', e.target.value ? parseFloat(e.target.value) : null)}
-              />
-              <p className="text-xs text-muted-foreground">Changes exceeding this absolute amount will require manual approval.</p>
+            <Label htmlFor="approvalThreshold">Require Approval Above (Amount)</Label>
+            <Input
+              id="approvalThreshold"
+              type="number"
+              placeholder="e.g. 500"
+              value={formData.requireApprovalAbove || ""}
+              onChange={(e) =>
+                updateField(
+                  "requireApprovalAbove",
+                  e.target.value ? parseFloat(e.target.value) : null,
+                )}
+            />
+            <p className="text-xs text-muted-foreground">
+              Changes exceeding this absolute amount will require manual approval.
+            </p>
           </div>
 
           <div className="flex justify-end">
             <Button type="submit" disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Save Configuration'}
+              {isSaving ? "Saving..." : "Save Configuration"}
             </Button>
           </div>
         </form>

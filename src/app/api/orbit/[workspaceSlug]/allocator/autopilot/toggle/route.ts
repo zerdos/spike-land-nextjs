@@ -1,17 +1,17 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
-import { AutopilotService } from '@/lib/allocator/autopilot-service';
-import { tryCatch } from '@/lib/try-catch';
+import { auth } from "@/auth";
+import { AutopilotService } from "@/lib/allocator/autopilot-service";
+import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { workspaceSlug: string } }
+  { params }: { params: { workspaceSlug: string; }; },
 ) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Resolve params
@@ -21,28 +21,32 @@ export async function POST(
     where: { slug: workspaceSlug },
     include: {
       members: {
-        where: { userId: session.user.id, role: { in: ['OWNER', 'ADMIN'] } }
-      }
-    }
+        where: { userId: session.user.id, role: { in: ["OWNER", "ADMIN"] } },
+      },
+    },
   });
 
   if (!workspace || workspace.members.length === 0) {
-    return NextResponse.json({ error: 'Access denied: Admin privileges required' }, { status: 403 });
+    return NextResponse.json({ error: "Access denied: Admin privileges required" }, {
+      status: 403,
+    });
   }
 
   const { isEnabled } = await req.json();
 
-  if (typeof isEnabled !== 'boolean') {
-    return NextResponse.json({ error: 'Invalid input: isEnabled must be boolean' }, { status: 400 });
+  if (typeof isEnabled !== "boolean") {
+    return NextResponse.json({ error: "Invalid input: isEnabled must be boolean" }, {
+      status: 400,
+    });
   }
 
   const { data: config, error } = await tryCatch(
-    AutopilotService.setAutopilotConfig(workspace.id, { isEnabled })
+    AutopilotService.setAutopilotConfig(workspace.id, { isEnabled }),
   );
 
   if (error) {
-    console.error('Error toggling autopilot:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    console.error("Error toggling autopilot:", error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 
   return NextResponse.json({ config });

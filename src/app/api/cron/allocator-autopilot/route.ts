@@ -1,24 +1,24 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import { AutopilotService } from '@/lib/allocator/autopilot-service';
-import { getAllocatorRecommendations } from '@/lib/allocator';
-import type { AutopilotRecommendation } from '@/lib/allocator/autopilot-types';
+import { getAllocatorRecommendations } from "@/lib/allocator";
+import { AutopilotService } from "@/lib/allocator/autopilot-service";
+import type { AutopilotRecommendation } from "@/lib/allocator/autopilot-types";
+import prisma from "@/lib/prisma";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-export const runtime = 'nodejs'; // Ensure this runs in Node.js environment (needed for prisma)
+export const runtime = "nodejs"; // Ensure this runs in Node.js environment (needed for prisma)
 
 export async function GET(req: NextRequest) {
   // Cron jobs should be authenticated
-  const authHeader = req.headers.get('authorization');
+  const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     // 1. Get enabled workspaces
     const enabledConfigs = await prisma.allocatorAutopilotConfig.findMany({
       where: { isEnabled: true },
-      distinct: ['workspaceId'] // Process each workspace once (though config is unique per workspace/campaign, we start with workspace level)
+      distinct: ["workspaceId"], // Process each workspace once (though config is unique per workspace/campaign, we start with workspace level)
     });
 
     const results = [];
@@ -43,17 +43,20 @@ export async function GET(req: NextRequest) {
           currentBudget: rec.currentBudget,
           suggestedBudget: rec.suggestedBudget,
           reason: rec.reason,
-          confidence: rec.confidence
+          confidence: rec.confidence,
         };
 
-        const result = await AutopilotService.executeRecommendation(autopilotRec, 'CRON');
+        const result = await AutopilotService.executeRecommendation(autopilotRec, "CRON");
         results.push(result);
       }
     }
 
     return NextResponse.json({ success: true, processed: results.length, results });
   } catch (error) {
-    console.error('Autopilot Cron Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    console.error("Autopilot Cron Error:", error);
+    return NextResponse.json({
+      error: "Internal Server Error",
+      details: error instanceof Error ? error.message : String(error),
+    }, { status: 500 });
   }
 }

@@ -1,5 +1,5 @@
-import prisma from '@/lib/prisma';
-import type { AutopilotAnomaly } from './autopilot-types';
+import prisma from "@/lib/prisma";
+import type { AutopilotAnomaly } from "./autopilot-types";
 
 export class AutopilotAnomalyIntegration {
   /**
@@ -14,7 +14,7 @@ export class AutopilotAnomalyIntegration {
     const recentAnomalies = await prisma.socialMetricAnomaly.findMany({
       where: {
         account: { workspaceId },
-        severity: 'critical',
+        severity: "critical",
         detectedAt: { gt: new Date(Date.now() - 24 * 60 * 60 * 1000) }, // Last 24 hours
       },
     });
@@ -22,10 +22,12 @@ export class AutopilotAnomalyIntegration {
     if (recentAnomalies.length > 0) {
       anomalies.push({
         workspaceId,
-        type: 'SOCIAL_METRIC_SPIKE',
-        severity: 'critical',
+        type: "SOCIAL_METRIC_SPIKE",
+        severity: "critical",
         detectedAt: recentAnomalies[0].detectedAt,
-        description: `Critical social metric anomaly detected: ${recentAnomalies[0].direction} in ${recentAnomalies[0].metricType}`,
+        description: `Critical social metric anomaly detected: ${recentAnomalies[0].direction} in ${
+          recentAnomalies[0].metricType
+        }`,
       });
     }
 

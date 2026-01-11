@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 
 interface AutopilotToggleProps {
   isEnabled: boolean;
@@ -24,13 +24,13 @@ export function AutopilotToggle({ isEnabled, isLoading, onToggle }: AutopilotTog
       <Label htmlFor="autopilot-mode" className="font-medium cursor-pointer">
         Autopilot
       </Label>
-      {isLoading ? (
-        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-      ) : (
-        <Badge variant={isEnabled ? 'default' : 'outline'} className="text-xs h-5">
-          {isEnabled ? 'ON' : 'OFF'}
-        </Badge>
-      )}
+      {isLoading
+        ? <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+        : (
+          <Badge variant={isEnabled ? "default" : "outline"} className="text-xs h-5">
+            {isEnabled ? "ON" : "OFF"}
+          </Badge>
+        )}
     </div>
   );
 }

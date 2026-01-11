@@ -26,17 +26,17 @@ import type {
   CampaignPerformanceAnalysis,
 } from "@/lib/allocator/allocator-types";
 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useAutopilotConfig } from "@/hooks/useAutopilotConfig";
+import { ChevronDown, ChevronUp, Settings } from "lucide-react";
+import { AutopilotConfigPanel } from "./AutopilotConfigPanel";
+import { AutopilotExecutionHistory } from "./AutopilotExecutionHistory";
+import { AutopilotToggle } from "./AutopilotToggle";
 import { PerformanceChart } from "./PerformanceChart";
 import { RecommendationCard } from "./RecommendationCard";
 import { SpendOverviewCards } from "./SpendOverviewCards";
-import { AutopilotToggle } from "./AutopilotToggle";
-import { AutopilotConfigPanel } from "./AutopilotConfigPanel";
-import { AutopilotExecutionHistory } from "./AutopilotExecutionHistory";
-import { useAutopilotConfig } from "@/hooks/useAutopilotConfig";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface AllocatorDashboardProps {
   workspaceSlug: string;
@@ -71,7 +71,7 @@ export function AllocatorDashboard({ workspaceSlug }: AllocatorDashboardProps) {
     isLoading: isAutopilotLoading,
     toggleAutopilot,
     updateConfig: updateAutopilotConfig,
-    refreshConfig: refreshAutopilotConfig
+    refreshConfig: refreshAutopilotConfig,
   } = useAutopilotConfig(workspaceSlug);
 
   const fetchData = useCallback(async () => {

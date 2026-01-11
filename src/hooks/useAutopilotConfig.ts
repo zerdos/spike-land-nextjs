@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next-view-transitions';
-import { toast } from 'sonner';
-import type { AutopilotConfig, UpdateAutopilotConfigInput } from '@/lib/allocator/autopilot-types';
+import type { AutopilotConfig, UpdateAutopilotConfigInput } from "@/lib/allocator/autopilot-types";
+import { useRouter } from "next-view-transitions";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export function useAutopilotConfig(workspaceSlug: string) {
   const [config, setConfig] = useState<AutopilotConfig | null>(null);
@@ -18,12 +18,12 @@ export function useAutopilotConfig(workspaceSlug: string) {
           setConfig(null);
           return;
         }
-        throw new Error('Failed to fetch configuration');
+        throw new Error("Failed to fetch configuration");
       }
       const data = await res.json();
       setConfig(data.config);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -39,21 +39,21 @@ export function useAutopilotConfig(workspaceSlug: string) {
   const updateConfig = async (data: UpdateAutopilotConfigInput) => {
     try {
       const res = await fetch(`/api/orbit/${workspaceSlug}/allocator/autopilot`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to update configuration');
+        throw new Error("Failed to update configuration");
       }
 
       const result = await res.json();
       setConfig(result.config);
-      toast.success('Autopilot configuration updated');
+      toast.success("Autopilot configuration updated");
       return result.config;
     } catch (err) {
-      toast.error('Failed to update configuration');
+      toast.error("Failed to update configuration");
       console.error(err);
       throw err;
     }
@@ -62,21 +62,21 @@ export function useAutopilotConfig(workspaceSlug: string) {
   const toggleAutopilot = async (isEnabled: boolean) => {
     try {
       const res = await fetch(`/api/orbit/${workspaceSlug}/allocator/autopilot/toggle`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isEnabled }),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to toggle autopilot');
+        throw new Error("Failed to toggle autopilot");
       }
 
       const result = await res.json();
       setConfig(result.config);
-      toast.success(`Autopilot ${isEnabled ? 'enabled' : 'disabled'}`);
+      toast.success(`Autopilot ${isEnabled ? "enabled" : "disabled"}`);
       return result.config;
     } catch (err) {
-      toast.error('Failed to toggle autopilot');
+      toast.error("Failed to toggle autopilot");
       console.error(err);
       throw err;
     }
@@ -88,6 +88,6 @@ export function useAutopilotConfig(workspaceSlug: string) {
     error,
     updateConfig,
     toggleAutopilot,
-    refreshConfig: fetchConfig
+    refreshConfig: fetchConfig,
   };
 }
