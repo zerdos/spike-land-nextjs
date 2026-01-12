@@ -53,7 +53,6 @@ export async function GET(
         });
 
         if (initialLogs.logs.length > 0) {
-
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({ type: "initial", logs: initialLogs.logs })}\n\n`,
@@ -88,7 +87,6 @@ export async function GET(
           });
 
           if (newLogs.logs.length > 0) {
-
             // Send update
             controller.enqueue(
               encoder.encode(`data: ${JSON.stringify({ type: "update", logs: newLogs.logs })}\n\n`),

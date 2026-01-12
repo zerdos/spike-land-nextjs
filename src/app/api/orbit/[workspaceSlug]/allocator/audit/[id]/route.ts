@@ -42,7 +42,6 @@ export async function GET(
       return NextResponse.json({ error: "Audit log not found" }, { status: 404 });
     }
 
-
     return NextResponse.json(log);
   } catch (error) {
     console.error("Error fetching allocator audit log detail:", error);

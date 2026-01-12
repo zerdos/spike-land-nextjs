@@ -240,8 +240,8 @@ function generateRecommendations(
   const riskMultiplier = options.riskTolerance === "aggressive"
     ? 1.5
     : options.riskTolerance === "conservative"
-      ? 0.5
-      : 1.0;
+    ? 0.5
+    : 1.0;
 
   // Sort by performance score
   const sortedByPerformance = [...analyses].sort(
@@ -281,7 +281,8 @@ function generateRecommendations(
         },
       },
       reason:
-        `Campaign "${winner.campaignName}" has a performance score of ${winner.performanceScore}% with ${winner.trend.conversions === "improving" ? "improving" : "stable"
+        `Campaign "${winner.campaignName}" has a performance score of ${winner.performanceScore}% with ${
+          winner.trend.conversions === "improving" ? "improving" : "stable"
         } conversions. Increasing budget could capture additional high-quality traffic.`,
       supportingData: [
         `ROAS: ${winner.metrics.roas.toFixed(2)}x`,
@@ -383,8 +384,9 @@ function generateRecommendations(
             high: 40,
           },
         },
-        reason: `Reallocating $${(reallocateAmount / 100).toFixed(2)
-          } from underperforming "${worstLoser.campaignName}" to high-performer "${topWinner.campaignName}" can improve overall ROAS without increasing total spend.`,
+        reason: `Reallocating $${
+          (reallocateAmount / 100).toFixed(2)
+        } from underperforming "${worstLoser.campaignName}" to high-performer "${topWinner.campaignName}" can improve overall ROAS without increasing total spend.`,
         supportingData: [
           `Source performance: ${worstLoser.performanceScore}%`,
           `Target performance: ${topWinner.performanceScore}%`,
