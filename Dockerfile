@@ -116,7 +116,12 @@ RUN --mount=type=cache,id=${CACHE_NS}-next-cache-${TARGETARCH},target=/app/.next
 # STAGE 6: Type Check
 # ============================================================================
 FROM source AS tsc
-RUN NODE_OPTIONS="--max-old-space-size=4096" yarn tsc --noEmit
+ARG CACHE_NS
+ARG TARGETARCH
+RUN --mount=type=cache,id=${CACHE_NS}-tsbuildinfo-${TARGETARCH},target=/app/.tsbuildinfo-cache,sharing=locked \
+    cp /app/.tsbuildinfo-cache/tsconfig.tsbuildinfo /app/ 2>/dev/null || true && \
+    NODE_OPTIONS="--max-old-space-size=4096" yarn tsc --noEmit && \
+    cp /app/tsconfig.tsbuildinfo /app/.tsbuildinfo-cache/ 2>/dev/null || true
 
 # ============================================================================
 # STAGE 7: Test Context
