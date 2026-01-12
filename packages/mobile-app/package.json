@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@expo/vector-icons": "15.0.3",
-    "@react-navigation/drawer": "7.7.10",
-    "@react-navigation/native": "7.1.26",
+    "@react-navigation/drawer": "7.7.11",
+    "@react-navigation/native": "7.1.27",
     "@spike-npm-land/shared": "workspace:*",
     "@tamagui/animations-react-native": "1.144.1",
     "@tamagui/config": "1.144.1",
