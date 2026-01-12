@@ -14,7 +14,7 @@ Feature: Allocator Audit Trail
     And I have enabled autopilot for "Audit Campaign 1"
     When I trigger the allocator autopilot cron job
     And I navigate to the Allocator Audit page
-    Then I should see an audit log entry for "BUDGET_INCREASE"
+    Then I should see an audit log entry for "RECOMMENDATION_GENERATED"
     And the audit log trigger should be "CRON"
     And the audit log outcome should be "EXECUTED"
 

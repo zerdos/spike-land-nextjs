@@ -523,3 +523,85 @@ export async function hasExistingAttribution(
 
   return count > 0;
 }
+
+/**
+ * Get global attribution summary for all campaigns
+ *
+ * @param startDate - Start of analysis period
+ * @param endDate - End of analysis period
+ * @returns Global attribution summary statistics with platform breakdown
+ */
+export async function getGlobalAttributionSummary(
+  startDate: Date,
+  endDate: Date,
+): Promise<{
+  totalConversions: number;
+  comparison: {
+    model: AttributionType | "LINEAR";
+    value: number;
+    conversionCount: number;
+  }[];
+  platformBreakdown: {
+    platform: string;
+    conversionCount: number;
+    value: number;
+    model: AttributionType | "LINEAR";
+  }[];
+}> {
+  const where = {
+    convertedAt: {
+      gte: startDate,
+      lte: endDate,
+    },
+  };
+
+  const [totalConversions, modelStats, platformStats] = await Promise.all([
+    // Total conversions is simply the count of FIRST_TOUCH records
+    prisma.campaignAttribution.count({
+      where: { ...where, attributionType: "FIRST_TOUCH" },
+    }),
+    // Aggregated stats by model
+    prisma.campaignAttribution.groupBy({
+      by: ["attributionType"],
+      where,
+      _sum: { conversionValue: true },
+      _count: { _all: true },
+    }),
+    // Aggregated stats by platform and model
+    prisma.campaignAttribution.groupBy({
+      by: ["platform", "attributionType"],
+      where,
+      _sum: { conversionValue: true },
+      _count: { _all: true },
+    }),
+  ]);
+
+  // Map model stats to comparison array
+  const models: (AttributionType | "LINEAR")[] = ["FIRST_TOUCH", "LAST_TOUCH", "LINEAR"];
+  const comparison = models.map(model => {
+    const stat = modelStats.find(s => s.attributionType === model);
+    return {
+      model,
+      value: stat?._sum?.conversionValue || 0,
+      // For First/Last, count is conversion count. For Linear, count of attributions is usually higher,
+      // but the total conversion count remains the same.
+      // The original code used conversion count (unique conversionIds) for comparison.
+      conversionCount: model === "LINEAR"
+        ? totalConversions // Each conversion has linear attribution
+        : (stat?._count?._all || 0),
+    };
+  });
+
+  const platformBreakdown = platformStats.map(s => ({
+    platform: s.platform || "UNKNOWN",
+    conversionCount: s._count?._all || 0,
+    value: s._sum?.conversionValue || 0,
+    model: s.attributionType as AttributionType | "LINEAR",
+  }));
+
+  return {
+    totalConversions,
+    comparison,
+    platformBreakdown,
+  };
+}
