@@ -138,9 +138,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@anthropic-ai/claude-agent-sdk@npm:^0.2.4":
-  version: 0.2.4
-  resolution: "@anthropic-ai/claude-agent-sdk@npm:0.2.4"
+"@anthropic-ai/claude-agent-sdk@npm:^0.2.5":
+  version: 0.2.5
+  resolution: "@anthropic-ai/claude-agent-sdk@npm:0.2.5"
   dependencies:
     "@img/sharp-darwin-arm64": "npm:^0.33.5"
     "@img/sharp-darwin-x64": "npm:^0.33.5"
@@ -169,7 +169,7 @@ __metadata:
       optional: true
     "@img/sharp-win32-x64":
       optional: true
-  checksum: 10c9/0ce600cb5e7472a12798f68dedd9234a32e516bfee9f96645173471ea4d511226ecc6c8a118aa6b16cd2ceb9814a6eb6eaf2b45eba0ea1a99d7c7479ffacb98f
+  checksum: 10c9/8d1b22b91b5535b71d725bf19a8d2744763a4a78fbed1067131d0d52625560695d927620b0467a601aa602830a6527ed6ad3f127e0a408d07a0a4c72123667bb
   languageName: node
   linkType: hard
 
@@ -9938,7 +9938,7 @@ __metadata:
     "@typescript/ata": "npm:0.9.8"
     "@uidotdev/usehooks": "npm:2.4.1"
     "@vitejs/plugin-react-swc": "npm:4.2.2"
-    ai: "npm:6.0.27"
+    ai: "npm:6.0.28"
     assert: "npm:2.1.0"
     async-mutex: "npm:0.5.0"
     autoprefixer: "npm:10.4.23"
@@ -9963,7 +9963,7 @@ __metadata:
     eslint-plugin-react-refresh: "npm:0.4.26"
     events: "npm:3.3.0"
     fetch-retry: "npm:6.0.0"
-    framer-motion: "npm:12.25.0"
+    framer-motion: "npm:12.26.0"
     globals: "npm:17.0.0"
     happy-dom: "npm:20.1.0"
     html2canvas-pro: "npm:1.6.4"
@@ -9991,7 +9991,7 @@ __metadata:
     react-is: "npm:19.2.3"
     react-markdown: "npm:10.1.0"
     react-qrious: "npm:2.5.6"
-    react-resizable-panels: "npm:4.3.3"
+    react-resizable-panels: "npm:4.4.0"
     react-syntax-highlighter: "npm:16.1.0"
     react-use: "npm:17.6.0"
     recharts: "npm:3.6.0"
@@ -10093,7 +10093,7 @@ __metadata:
     tamagui: "npm:1.144.1"
     typescript: "npm:5.9.3"
     zod: "npm:4.3.5"
-    zustand: "npm:5.0.9"
+    zustand: "npm:5.0.10"
   languageName: unknown
   linkType: soft
 
@@ -10153,7 +10153,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:8.52.0"
     "@vitest/runner": "npm:4.0.16"
     "@vitest/snapshot": "npm:4.0.16"
-    ai: "npm:6.0.27"
+    ai: "npm:6.0.28"
     async-mutex: "npm:0.5.0"
     avl: "npm:2.0.0"
     cross-env: "npm:10.1.0"
@@ -14836,9 +14836,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ai@npm:6.0.27":
-  version: 6.0.27
-  resolution: "ai@npm:6.0.27"
+"ai@npm:6.0.28":
+  version: 6.0.28
+  resolution: "ai@npm:6.0.28"
   dependencies:
     "@ai-sdk/gateway": "npm:3.0.11"
     "@ai-sdk/provider": "npm:3.0.2"
@@ -14846,7 +14846,7 @@ __metadata:
     "@opentelemetry/api": "npm:1.9.0"
   peerDependencies:
     zod: ^3.25.76 || ^4.1.8
-  checksum: 10c9/1911d0f777575538ff6457871d65d5d14412936a70f92dc5f09c098a5ca242aace286fff419cca4824c432f2744e87091b1124ab345d050ac484d154667e9a34
+  checksum: 10c9/3c7a0352f95a842c281edb9e8aa8a0887fdcfed63862b006c4388a744cb93027d063f2910c32a3b97745fb8e74388c48d56845b34a9faa75958b8d5d1586461e
   languageName: node
   linkType: hard
 
@@ -20569,9 +20569,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"framer-motion@npm:12.25.0, framer-motion@npm:^12.25.0":
-  version: 12.25.0
-  resolution: "framer-motion@npm:12.25.0"
+"framer-motion@npm:12.26.0, framer-motion@npm:^12.26.0":
+  version: 12.26.0
+  resolution: "framer-motion@npm:12.26.0"
   dependencies:
     motion-dom: "npm:^12.24.11"
     motion-utils: "npm:^12.24.10"
@@ -20587,7 +20587,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 10c9/984d292424b4dd16155f3a74b07433acea12e08fe15228bf23088a7141c100dac5efe62c159eaf6ab3a61e752fdaecdf8b8e8d78f8af8a50d17420eed45951ff
+  checksum: 10c9/f2f957368581251ac0d70256cd02dd1999dab5424e97c162bc0db6c53c1dfe5f19ded1d28d04d8366cb6b4578387d11f3b0db27c2662a755eb3384c3d289b617
   languageName: node
   linkType: hard
 
@@ -28245,13 +28245,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-resizable-panels@npm:4.3.3":
-  version: 4.3.3
-  resolution: "react-resizable-panels@npm:4.3.3"
+"react-resizable-panels@npm:4.4.0":
+  version: 4.4.0
+  resolution: "react-resizable-panels@npm:4.4.0"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0
     react-dom: ^18.0.0 || ^19.0.0
-  checksum: 10c9/ca6a5e64df3100488e3a87d2ca0f16e3a2d239fdddd61afe3e15c311f770fe2a397293fa35454c471552ae224f203c7d19cd0cfee9e27af3ce613ebcfde9fd51
+  checksum: 10c9/9c4a368acab2744f9d16584d9d6de9359adc338f5924da4a98e5e649903775a03ee75fabc1d83e298f337c97c26211efc369e0edb6a298a7bedfb119993cd119
   languageName: node
   linkType: hard
 
@@ -32739,7 +32739,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "vercel-app@workspace:."
   dependencies:
-    "@anthropic-ai/claude-agent-sdk": "npm:^0.2.4"
+    "@anthropic-ai/claude-agent-sdk": "npm:^0.2.5"
     "@anthropic-ai/sdk": "npm:0.71.2"
     "@aws-sdk/client-s3": "npm:3.966.0"
     "@aws-sdk/lib-storage": "npm:3.966.0"
@@ -32815,7 +32815,7 @@ __metadata:
     eslint-config-next: "npm:16.1.1"
     expr-eval: "npm:^2.0.2"
     fast-xml-parser: "npm:^5.3.3"
-    framer-motion: "npm:^12.25.0"
+    framer-motion: "npm:^12.26.0"
     gray-matter: "npm:4.0.3"
     happy-dom: "npm:20.1.0"
     husky: "npm:9.1.7"
@@ -34099,9 +34099,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zustand@npm:5.0.9, zustand@npm:^5.0.1, zustand@npm:^5.0.3, zustand@npm:^5.0.9":
-  version: 5.0.9
-  resolution: "zustand@npm:5.0.9"
+"zustand@npm:5.0.10":
+  version: 5.0.10
+  resolution: "zustand@npm:5.0.10"
   peerDependencies:
     "@types/react": ">=18.0.0"
     immer: ">=9.0.6"
@@ -34116,7 +34116,7 @@ __metadata:
       optional: true
     use-sync-external-store:
       optional: true
-  checksum: 10c9/650069769552592db7c5923e17fd85a71287dec5c7af8f37fc1633a513f78b6a982802b680c7bc70b715f034e5ff95292b1dc39ba99e4527b67c55d00635a4e9
+  checksum: 10c9/0c8bd5bdb1e8f04e06576676e50d3ec5aaa0c9ff69e13528bb18ea1240e9a24684667982dfba0eca0d938d47282cfe5cf6d53febe88ee457e2313fde73bb3834
   languageName: node
   linkType: hard
 
@@ -34137,6 +34137,27 @@ __metadata:
     react:
       optional: true
   checksum: 10c9/21c47ea1c9bb0363b714a7e371a91b9afaeabc5c9c2f522803a0fb412605b1e037c4f975a7377529de8f2857e60d1f4586e7ade18444168ecc492e38779e605d
+  languageName: node
+  linkType: hard
+
+"zustand@npm:^5.0.1, zustand@npm:^5.0.3, zustand@npm:^5.0.9":
+  version: 5.0.9
+  resolution: "zustand@npm:5.0.9"
+  peerDependencies:
+    "@types/react": ">=18.0.0"
+    immer: ">=9.0.6"
+    react: ">=18.0.0"
+    use-sync-external-store: ">=1.2.0"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    immer:
+      optional: true
+    react:
+      optional: true
+    use-sync-external-store:
+      optional: true
+  checksum: 10c9/650069769552592db7c5923e17fd85a71287dec5c7af8f37fc1633a513f78b6a982802b680c7bc70b715f034e5ff95292b1dc39ba99e4527b67c55d00635a4e9
   languageName: node
   linkType: hard
 
