@@ -2198,6 +2198,7 @@ model Workspace {
   // Allocator Autopilot relations
   autopilotConfigs       AllocatorAutopilotConfig[]
   autopilotExecutions    AllocatorAutopilotExecution[]
+  allocatorAuditLogs     AllocatorAuditLog[]
   guardrailAlerts        AllocatorGuardrailAlert[]
 
   @@index([slug])
@@ -3306,6 +3307,7 @@ model AllocatorAutopilotExecution {
   campaign           AllocatorCampaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   rollbackOf         AllocatorAutopilotExecution? @relation("RollbackHistory", fields: [rollbackOfId], references: [id])
   rolledBackExecution AllocatorAutopilotExecution? @relation("RollbackHistory")
+  auditLogs           AllocatorAuditLog[]
 
   @@index([workspaceId])
   @@index([campaignId])
@@ -3328,6 +3330,73 @@ model AllocatorDailyBudgetMove {
   @@unique([campaignId, date])
   @@index([campaignId])
   @@map("allocator_daily_budget_moves")
+}
+
+model AllocatorAuditLog {
+  id              String   @id @default(cuid())
+  workspaceId     String
+  campaignId      String?
+
+  // Decision type
+  decisionType    AllocatorDecisionType
+  decisionOutcome AllocatorDecisionOutcome
+
+  // Context snapshots (immutable)
+  recommendationSnapshot  Json?   // Full BudgetRecommendation
+  performanceSnapshot     Json?   // CampaignPerformanceAnalysis
+  configSnapshot          Json?   // AllocatorAutopilotConfig at decision time
+  guardrailEvaluation     Json?   // Array of {check, passed, reason, values}
+
+  // State changes
+  previousState   Json?   // {budget, status, etc.}
+  newState        Json?   // {budget, status, etc.}
+
+  // AI reasoning
+  aiReasoning     String? // Human-readable explanation
+  supportingData  Json?   // Evidence that led to decision
+  confidence      String? // high/medium/low
+
+  // Execution reference
+  executionId     String?
+  
+  // Metadata
+  triggeredBy     String  // "CRON", "API", "MANUAL"
+  userId          String? // If manual trigger
+  correlationId   String  // For tracing related decisions
+
+  createdAt       DateTime @default(now())
+
+  // Relations
+  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  execution       AllocatorAutopilotExecution? @relation(fields: [executionId], references: [id])
+
+  @@index([workspaceId, createdAt])
+  @@index([campaignId, createdAt])
+  @@index([decisionType])
+  @@index([correlationId])
+  @@map("allocator_audit_logs")
+}
+
+enum AllocatorDecisionType {
+  RECOMMENDATION_GENERATED
+  RECOMMENDATION_EVALUATED
+  EXECUTION_STARTED
+  EXECUTION_COMPLETED
+  EXECUTION_FAILED
+  EXECUTION_SKIPPED
+  ROLLBACK_INITIATED
+  ROLLBACK_COMPLETED
+  GUARDRAIL_TRIGGERED
+  EMERGENCY_STOP
+}
+
+enum AllocatorDecisionOutcome {
+  APPROVED
+  REJECTED
+  EXECUTED
+  FAILED
+  SKIPPED
+  ROLLED_BACK
 }
 
 // =============================================================================
