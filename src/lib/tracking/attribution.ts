@@ -523,3 +523,139 @@ export async function hasExistingAttribution(
 
   return count > 0;
 }
+
+/**
+ * Get global attribution summary for all campaigns
+ *
+ * @param startDate - Start of analysis period
+ * @param endDate - End of analysis period
+ * @returns Global attribution summary statistics with platform breakdown
+ */
+export async function getGlobalAttributionSummary(
+  startDate: Date,
+  endDate: Date,
+): Promise<{
+  totalConversions: number;
+  comparison: {
+    model: AttributionType | "LINEAR";
+    value: number;
+    conversionCount: number;
+  }[];
+  platformBreakdown: {
+    platform: string;
+    conversionCount: number;
+    value: number;
+    model: AttributionType | "LINEAR";
+  }[];
+}> {
+  const attributions = await prisma.campaignAttribution.findMany({
+    where: {
+      convertedAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+  });
+
+  // Group by conversionId
+  const conversions = new Map<string, CampaignAttribution[]>();
+  for (const attr of attributions) {
+    if (!conversions.has(attr.conversionId)) {
+      conversions.set(attr.conversionId, []);
+    }
+    conversions.get(attr.conversionId)!.push(attr);
+  }
+
+  const comparison = {
+    FIRST_TOUCH: { value: 0, count: 0 },
+    LAST_TOUCH: { value: 0, count: 0 },
+    LINEAR: { value: 0, count: 0 },
+  };
+
+  const platformStats = new Map<string, {
+    platform: string;
+    model: AttributionType | "LINEAR";
+    value: number;
+    count: number;
+  }>();
+
+  const getKey = (platform: string, model: string) => `${platform}|${model}`;
+
+  for (const conversionAttrs of conversions.values()) {
+    // Process each model type
+    const firstTouch = conversionAttrs.find(a => a.attributionType === "FIRST_TOUCH");
+    const lastTouch = conversionAttrs.find(a => a.attributionType === "LAST_TOUCH");
+    const linearAttrs = conversionAttrs.filter(a => a.attributionType === "LINEAR");
+
+    // First Touch
+    if (firstTouch) {
+      comparison.FIRST_TOUCH.value += firstTouch.conversionValue || 0;
+      comparison.FIRST_TOUCH.count++;
+
+      const platform = firstTouch.platform || "UNKNOWN";
+      const key = getKey(platform, "FIRST_TOUCH");
+      if (!platformStats.has(key)) {
+        platformStats.set(key, { platform, model: "FIRST_TOUCH", value: 0, count: 0 });
+      }
+      const stat = platformStats.get(key)!;
+      stat.value += firstTouch.conversionValue || 0;
+      stat.count++;
+    }
+
+    // Last Touch
+    if (lastTouch) {
+      comparison.LAST_TOUCH.value += lastTouch.conversionValue || 0;
+      comparison.LAST_TOUCH.count++;
+
+      const platform = lastTouch.platform || "UNKNOWN";
+      const key = getKey(platform, "LAST_TOUCH");
+      if (!platformStats.has(key)) {
+        platformStats.set(key, { platform, model: "LAST_TOUCH", value: 0, count: 0 });
+      }
+      const stat = platformStats.get(key)!;
+      stat.value += lastTouch.conversionValue || 0;
+      stat.count++;
+    }
+
+    // Linear
+    if (linearAttrs.length > 0) {
+      const totalLinearValue = linearAttrs.reduce((sum, a) => sum + (a.conversionValue || 0), 0);
+      comparison.LINEAR.value += totalLinearValue;
+      comparison.LINEAR.count++; // Count conversion once for Linear model
+
+      for (const attr of linearAttrs) {
+        const platform = attr.platform || "UNKNOWN";
+        const key = getKey(platform, "LINEAR");
+        if (!platformStats.has(key)) {
+          platformStats.set(key, { platform, model: "LINEAR", value: 0, count: 0 });
+        }
+        const stat = platformStats.get(key)!;
+        stat.value += attr.conversionValue || 0;
+        stat.count += 1; // Touchpoint count
+      }
+    }
+  }
+
+  return {
+    totalConversions: conversions.size,
+    comparison: [
+      {
+        model: "FIRST_TOUCH",
+        ...comparison.FIRST_TOUCH,
+        conversionCount: comparison.FIRST_TOUCH.count,
+      },
+      {
+        model: "LAST_TOUCH",
+        ...comparison.LAST_TOUCH,
+        conversionCount: comparison.LAST_TOUCH.count,
+      },
+      { model: "LINEAR", ...comparison.LINEAR, conversionCount: comparison.LINEAR.count },
+    ],
+    platformBreakdown: Array.from(platformStats.values()).map(s => ({
+      platform: s.platform,
+      conversionCount: s.count,
+      value: s.value,
+      model: s.model,
+    })),
+  };
+}
