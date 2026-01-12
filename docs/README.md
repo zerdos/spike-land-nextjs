@@ -96,6 +96,7 @@ docs/
 | Document                                         | Description                                               |
 | ------------------------------------------------ | --------------------------------------------------------- |
 | [FEATURES.md](./FEATURES.md)                     | Complete feature list, Pixel app phases, platform roadmap |
+| [ZOLTAN_ERDOS.md](./ZOLTAN_ERDOS.md)             | Founder profile, background, and vision                   |
 | [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md) | Company information and legal structure                   |
 | [CEO_DECISIONS.md](./CEO_DECISIONS.md)           | Strategic decisions and technology choices                |
 | [ROADMAP.md](./ROADMAP.md)                       | Future development plans                                  |
