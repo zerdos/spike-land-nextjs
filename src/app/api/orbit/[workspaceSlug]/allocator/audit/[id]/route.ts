@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { workspaceSlug: string; id: string; }; },
+  { params }: { params: Promise<{ workspaceSlug: string; id: string; }>; },
 ) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -30,17 +30,16 @@ export async function GET(
   }
 
   try {
-    const log = await prisma.allocatorAuditLog.findUnique({
-      where: { id },
+    // Securely fetch log belonging to workspace
+    const log = await prisma.allocatorAuditLog.findFirst({
+      where: {
+        id,
+        workspaceId: workspace.id,
+      },
     });
 
     if (!log) {
       return NextResponse.json({ error: "Audit log not found" }, { status: 404 });
-    }
-
-    // Ensure log belongs to workspace
-    if (log.workspaceId !== workspace.id) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     return NextResponse.json(log);

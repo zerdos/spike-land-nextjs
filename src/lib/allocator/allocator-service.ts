@@ -579,26 +579,33 @@ export async function getAllocatorRecommendations(
 
   // Log recommendations if correlation ID is provided (Audit Trail)
   if (options.correlationId) {
-    // Fire and forget - don't block response
+    // Fire and forget - don't block response, but capture errors
     Promise.all(recommendations.map(async (rec) => {
       // Find related performance analysis
       const campaignId = rec.targetCampaign.id;
       const analysis = campaignAnalyses.find(a => a.campaignId === campaignId);
 
       if (analysis) {
-        await allocatorAuditLogger.logRecommendationGenerated({
-          workspaceId,
-          campaignId,
-          recommendation: rec,
-          performance: analysis,
-          // Capture the options as the configuration state at time of decision
-          config: options as any,
-          correlationId: options.correlationId!,
-          triggeredBy: options.triggeredBy || "UNKNOWN",
-          userId: options.userId,
-        }).catch(err => console.error("Failed to log recommendation audit:", err));
+        try {
+          await allocatorAuditLogger.logRecommendationGenerated({
+            workspaceId,
+            campaignId,
+            recommendation: rec,
+            performance: analysis,
+            // Capture the options as the configuration state at time of decision
+            config: options as any,
+            correlationId: options.correlationId!,
+            triggeredBy: options.triggeredBy || "UNKNOWN",
+            userId: options.userId,
+          });
+        } catch (err) {
+          // In a real app, this should go to Sentry/Error Service
+          console.error(`Failed to log audit for recommendation ${rec.id}:`, err);
+        }
       }
-    })).catch(err => console.error("Error in audit logging batch:", err));
+    })).catch(err => {
+      console.error("Critical error in audit logging batch:", err);
+    });
   }
 
   return response;

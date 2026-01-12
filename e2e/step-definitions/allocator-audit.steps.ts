@@ -2,15 +2,14 @@ import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import type { CustomWorld } from "../support/world";
 
-Given("I navigate to the Allocator Audit page", async function(this: CustomWorld) {
-  // Assuming the URL structure
+When("I navigate to the Allocator Audit page", async function(this: CustomWorld) {
   await this.page.goto(`/orbit/${this.workspaceSlug}/allocator/audit`);
 });
 
 Then(
   "I should see an audit log entry for {string}",
   async function(this: CustomWorld, type: string) {
-    // Refresh until found or timeout (simple check for now)
+    // Retry finding the text as it might take time to load or appear
     await expect(this.page.getByText(type)).toBeVisible({ timeout: 10000 });
   },
 );
@@ -29,15 +28,15 @@ Then(
   },
 );
 
-Then("I should see the audit log table", async function(this: CustomWorld) {
+Given("I see the audit log table", async function(this: CustomWorld) {
   await expect(this.page.locator("table")).toBeVisible();
 });
 
 When("I search for {string}", async function(this: CustomWorld, query: string) {
   const searchInput = this.page.getByPlaceholder("Search by Execution ID or content...");
   await searchInput.fill(query);
-  await searchInput.press("Enter"); // Or wait for debounce
-  await this.page.waitForTimeout(1000); // Wait for fetch
+  await searchInput.press("Enter");
+  // Waiting for network idle or results update is handled by the next assertion's retry mechanism
 });
 
 Then("I should see {string} in the results", async function(this: CustomWorld, content: string) {
