@@ -45,7 +45,7 @@ describe("NewAppPage", () => {
     // Check format: /my-apps/new/[generated-id]
     // ID format is adj-noun-verb-suffix
     expect(redirectPath).toMatch(
-      /^\/my-apps\/new\/[a-z]+-[a-z]+-[a-z]+-[a-z0-9]+$/,
+      /^\/my-apps\/new\/[a-z]+\.[a-z]+\.[a-z]+\.[a-z0-9]+$/,
     );
   });
 });
