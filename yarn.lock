@@ -8661,12 +8661,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@revenuecat/purchases-js-hybrid-mappings@npm:17.26.1":
-  version: 17.26.1
-  resolution: "@revenuecat/purchases-js-hybrid-mappings@npm:17.26.1"
+"@revenuecat/purchases-js-hybrid-mappings@npm:17.27.0":
+  version: 17.27.0
+  resolution: "@revenuecat/purchases-js-hybrid-mappings@npm:17.27.0"
   dependencies:
     "@revenuecat/purchases-js": "npm:1.23.0"
-  checksum: 10c9/c2a90f22f6b27ac41a1ae674bd8409310327c077c2e092ea58d4ca1a859200606b31fdd103c3e043c91721b28ab8e8c9dd4b31cd639647b41c06ef424d4a91bf
+  checksum: 10c9/346b82c04eb99e3d2b6077f5e54e89d6875f1d94d1ee9dbda4edc7c30d74e1ec324f22a4b4526ba9157d624b326af9558d75a8a641b5592d54c44ea49211820c
   languageName: node
   linkType: hard
 
@@ -8677,10 +8677,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@revenuecat/purchases-typescript-internal@npm:17.26.1":
-  version: 17.26.1
-  resolution: "@revenuecat/purchases-typescript-internal@npm:17.26.1"
-  checksum: 10c9/450d210992b8c0fe26bc104f8cf27d9806e16455c2ecb00a7e0375c4850ccc7e3e3d85c335621f44fb6edfbe77c8bd6e7b2662c928a14cedf48ab5116ef7f6cf
+"@revenuecat/purchases-typescript-internal@npm:17.27.0":
+  version: 17.27.0
+  resolution: "@revenuecat/purchases-typescript-internal@npm:17.27.0"
+  checksum: 10c9/12f0e72e39d95470b28c773d5510070127aa14e11ff874ac12fd477385ff17598b41b3d6c87ee076c22648ceee3def6dfae86ca97b2b096c990c244ac1b12f83
   languageName: node
   linkType: hard
 
@@ -9938,7 +9938,7 @@ __metadata:
     "@typescript/ata": "npm:0.9.8"
     "@uidotdev/usehooks": "npm:2.4.1"
     "@vitejs/plugin-react-swc": "npm:4.2.2"
-    ai: "npm:6.0.27"
+    ai: "npm:6.0.28"
     assert: "npm:2.1.0"
     async-mutex: "npm:0.5.0"
     autoprefixer: "npm:10.4.23"
@@ -10082,7 +10082,7 @@ __metadata:
     react-dom: "npm:19.2.3"
     react-native: "npm:0.83.1"
     react-native-gesture-handler: "npm:2.30.0"
-    react-native-purchases: "npm:9.6.14"
+    react-native-purchases: "npm:9.6.15"
     react-native-reanimated: "npm:4.2.1"
     react-native-safe-area-context: "npm:5.6.2"
     react-native-screens: "npm:4.19.0"
@@ -10153,7 +10153,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:8.52.0"
     "@vitest/runner": "npm:4.0.16"
     "@vitest/snapshot": "npm:4.0.16"
-    ai: "npm:6.0.27"
+    ai: "npm:6.0.28"
     async-mutex: "npm:0.5.0"
     avl: "npm:2.0.0"
     cross-env: "npm:10.1.0"
@@ -14836,9 +14836,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ai@npm:6.0.27":
-  version: 6.0.27
-  resolution: "ai@npm:6.0.27"
+"ai@npm:6.0.28":
+  version: 6.0.28
+  resolution: "ai@npm:6.0.28"
   dependencies:
     "@ai-sdk/gateway": "npm:3.0.11"
     "@ai-sdk/provider": "npm:3.0.2"
@@ -14846,7 +14846,7 @@ __metadata:
     "@opentelemetry/api": "npm:1.9.0"
   peerDependencies:
     zod: ^3.25.76 || ^4.1.8
-  checksum: 10c9/1911d0f777575538ff6457871d65d5d14412936a70f92dc5f09c098a5ca242aace286fff419cca4824c432f2744e87091b1124ab345d050ac484d154667e9a34
+  checksum: 10c9/3c7a0352f95a842c281edb9e8aa8a0887fdcfed63862b006c4388a744cb93027d063f2910c32a3b97745fb8e74388c48d56845b34a9faa75958b8d5d1586461e
   languageName: node
   linkType: hard
 
@@ -28006,12 +28006,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-purchases@npm:9.6.14":
-  version: 9.6.14
-  resolution: "react-native-purchases@npm:9.6.14"
+"react-native-purchases@npm:9.6.15":
+  version: 9.6.15
+  resolution: "react-native-purchases@npm:9.6.15"
   dependencies:
-    "@revenuecat/purchases-js-hybrid-mappings": "npm:17.26.1"
-    "@revenuecat/purchases-typescript-internal": "npm:17.26.1"
+    "@revenuecat/purchases-js-hybrid-mappings": "npm:17.27.0"
+    "@revenuecat/purchases-typescript-internal": "npm:17.27.0"
   peerDependencies:
     react: ">= 16.6.3"
     react-native: ">= 0.73.0"
@@ -28019,7 +28019,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-web:
       optional: true
-  checksum: 10c9/717d6cc8826f57bddc7b8a56aa014f28016d5d5493c66be3df9a7f9cf5e709061952265dc3b9d1815d7f3d176cad5814b952b9dbc90c09e3f2e8a66985b578a8
+  checksum: 10c9/a18d0632fa5afb351ff557a00f4b3eac3bf381ff5c9764c28e4d34ea2fa187a0c0188f67042c9509f4ddee2fefbff46098e3077400781ae7adf6aa5f16ee2669
   languageName: node
   linkType: hard
 
