@@ -127,7 +127,7 @@
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "date-fns": "4.1.0",
-    "diff": "8.0.2",
+    "diff": "8.0.3",
     "expr-eval-fork": "3.0.1",
     "fast-xml-parser": "5.3.3",
     "framer-motion": "12.26.1",
