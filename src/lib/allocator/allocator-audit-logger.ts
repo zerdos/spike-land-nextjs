@@ -46,8 +46,7 @@ export class AllocatorAuditLogger {
       });
     } catch (error) {
       console.error("Failed to create allocator audit log", error);
-      // Fail gracefully - audit logging shouldn't crash the main process unless critical
-      // But we should probably capture this in the main error logger
+      // Logs errors and rethrows to ensure calling services are aware of failures.
       throw error;
     }
   }

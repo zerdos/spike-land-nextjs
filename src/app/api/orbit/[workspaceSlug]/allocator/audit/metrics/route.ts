@@ -1,11 +1,20 @@
-import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
+
+export interface AllocatorAuditMetricsResponse {
+  breakdown: {
+    byType: { decisionType: string; _count: number }[];
+    byOutcome: { decisionOutcome: string; _count: number }[];
+  };
+  volume: { date: string; count: number }[];
+  total: number;
+}
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -52,9 +61,9 @@ export async function GET(
         },
         _count: true,
       }),
-      // For volume over time, we might need a raw query or just fetch dates and aggregate in code if volume is low.
-      // Or just return total count for now.
-      // Let's do a basic aggregation.
+      // Optimized volume query using findMany is still okay for moderate volume,
+      // but strictly we should use raw query for time bucketing if volume is huge.
+      // For now, fetching date only is better than full objects.
       prisma.allocatorAuditLog.findMany({
         where: {
           workspaceId: workspace.id,
@@ -64,7 +73,7 @@ export async function GET(
       }),
     ]);
 
-    // Aggregate volume by day in memory (assuming not millions of logs per month yet)
+    // Aggregate volume by day in memory
     const volumeByDay: Record<string, number> = {};
     for (const log of volume) {
       const date = log.createdAt.toISOString().split("T")[0] as string;
