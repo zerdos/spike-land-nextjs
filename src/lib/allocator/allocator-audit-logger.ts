@@ -255,10 +255,9 @@ export class AllocatorAuditLogger {
     };
 
     if (startDate || endDate) {
-      where.createdAt = {
-        gte: startDate,
-        lte: endDate,
-      };
+      where.createdAt = {};
+      if (startDate) (where.createdAt as Prisma.DateTimeFilter).gte = startDate;
+      if (endDate) (where.createdAt as Prisma.DateTimeFilter).lte = endDate;
     }
 
     const [logs, total] = await Promise.all([
