@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
   const session = await auth();
   if (!session?.user?.id) {

@@ -1,14 +1,14 @@
+import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 
 export interface AllocatorAuditMetricsResponse {
   breakdown: {
-    byType: { decisionType: string; _count: number }[];
-    byOutcome: { decisionOutcome: string; _count: number }[];
+    byType: { decisionType: string; _count: number; }[];
+    byOutcome: { decisionOutcome: string; _count: number; }[];
   };
-  volume: { date: string; count: number }[];
+  volume: { date: string; count: number; }[];
   total: number;
 }
 

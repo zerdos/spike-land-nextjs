@@ -1,9 +1,7 @@
 import prisma from "@/lib/prisma";
-import type {
-  AllocatorAuditLog,
-} from "@prisma/client";
+import type { AllocatorAuditLog } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AllocatorAuditLogger, type AllocatorAuditLogCreateInput } from "./allocator-audit-logger";
+import { type AllocatorAuditLogCreateInput, AllocatorAuditLogger } from "./allocator-audit-logger";
 
 // Mock Prisma
 vi.mock("@/lib/prisma", () => ({

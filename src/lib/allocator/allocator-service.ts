@@ -593,13 +593,13 @@ export async function getAllocatorRecommendations(
             recommendation: rec,
             performance: analysis,
             // Capture the options as the configuration state at time of decision
-            config: options as any,
+            config: options as unknown as import("@prisma/client").AllocatorAutopilotConfig,
             correlationId: options.correlationId!,
             triggeredBy: options.triggeredBy || "UNKNOWN",
             userId: options.userId,
           });
         } catch (err) {
-          // In a real app, this should go to Sentry/Error Service
+          // Consider: Add metrics/telemetry for production monitoring
           console.error(`Failed to log audit for recommendation ${rec.id}:`, err);
         }
       }

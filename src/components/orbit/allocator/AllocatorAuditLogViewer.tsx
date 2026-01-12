@@ -125,7 +125,7 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by Execution ID or content..."
+            placeholder="Search by Execution ID..."
             className="pl-8"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -156,7 +156,7 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
               <Calendar
                 mode="range"
                 selected={dateRange}
-                onSelect={(range: any) => setDateRange(range || {})}
+                onSelect={(range: DateRange | undefined) => setDateRange(range)}
                 initialFocus
               />
             </PopoverContent>

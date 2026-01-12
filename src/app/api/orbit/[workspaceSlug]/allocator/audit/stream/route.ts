@@ -45,7 +45,7 @@ export async function GET(
       // Send initial connection message
       controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "connected" })}\n\n`));
 
-      // 1. Send recent logs (last 50)
+      // 1. Send recent logs (last 20)
       try {
         const initialLogs = await allocatorAuditLogger.search({
           workspaceId: workspace.id,
@@ -70,11 +70,11 @@ export async function GET(
         if (isClosed || (Date.now() - startTime > MAX_STREAM_DURATION)) {
           clearInterval(interval);
           if (!isClosed) {
-             try {
-                 controller.close();
-             } catch (e) {
-                 // ignore
-             }
+            try {
+              controller.close();
+            } catch (_e) {
+              // ignore
+            }
           }
           return;
         }
@@ -107,9 +107,9 @@ export async function GET(
         isClosed = true;
         clearInterval(interval);
         try {
-            controller.close();
-        } catch (e) {
-            // ignore
+          controller.close();
+        } catch (_e) {
+          // ignore
         }
       };
     },
