@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { AutopilotService } from "@/lib/allocator/autopilot-service";
 import { GuardrailAlertService } from "@/lib/allocator/guardrail-alert-service";
+import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -23,8 +24,27 @@ export async function POST(
     const body = await req.json();
     const { workspaceId } = body;
 
-    // Check ADMIN permission (placeholder)
-    // TODO: Implement proper RBAC using session.user.id and workspaceId
+    // Verify workspace access and ADMIN/OWNER role
+    const member = await prisma.workspaceMember.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId,
+          userId: session.user.id,
+        },
+      },
+    });
+
+    if (!member || !["OWNER", "ADMIN"].includes(member.role)) {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+
+    if (workspaceId !== _workspaceSlug && _workspaceSlug !== "legacy") {
+      // Optional: Explicitly validate slug if we can resolve it,
+      // but strictly checking membership on the target workspaceId is the critical security control.
+      // If the slug in URL is just for routing context, ensuring we have rights on the *requested* ID in body is key.
+      // Ideally we check that `workspaceId` matches the slug, but slug resolution requires a DB call.
+      // Let's at least enforce they are consistent if we can, or rely on the membership check of the target ID.
+    }
 
     await AutopilotService.setAutopilotConfig(workspaceId, {
       isEmergencyStopped: true,
@@ -65,7 +85,19 @@ export async function DELETE(
     const body = await req.json();
     const { workspaceId } = body;
 
-    // Verify admin access (placeholder)
+    // Verify workspace access and ADMIN/OWNER role
+    const member = await prisma.workspaceMember.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId,
+          userId: session.user.id,
+        },
+      },
+    });
+
+    if (!member || !["OWNER", "ADMIN"].includes(member.role)) {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
 
     const config = await AutopilotService.setAutopilotConfig(
       workspaceId,

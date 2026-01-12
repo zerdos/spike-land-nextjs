@@ -3262,6 +3262,7 @@ model AllocatorGuardrailAlert {
   campaign       AllocatorCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, createdAt])
+  @@index([workspaceId, acknowledged])
   @@index([alertType])
   @@map("allocator_guardrail_alerts")
 }

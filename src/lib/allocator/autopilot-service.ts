@@ -180,6 +180,7 @@ export class AutopilotService {
       const message =
         `Suggested budget ${recommendation.suggestedBudget} is below floor ${config.minBudget}`;
       // Async alert creation
+      // Fire-and-forget alert with error logging
       GuardrailAlertService.createAlert({
         workspaceId: recommendation.workspaceId,
         campaignId: recommendation.campaignId,
@@ -190,7 +191,12 @@ export class AutopilotService {
           suggested: recommendation.suggestedBudget,
           min: config.minBudget,
         },
-      }).catch(console.error);
+      }).catch(err => {
+        console.error(
+          `[GapAlert] Failed to create BUDGET_FLOOR_HIT alert for ${recommendation.campaignId}:`,
+          err,
+        );
+      });
 
       return { shouldExecute: false, reason: message };
     }
@@ -200,6 +206,7 @@ export class AutopilotService {
       const message =
         `Suggested budget ${recommendation.suggestedBudget} exceeds ceiling ${config.maxBudget}`;
       // Async alert creation
+      // Fire-and-forget alert with error logging
       GuardrailAlertService.createAlert({
         workspaceId: recommendation.workspaceId,
         campaignId: recommendation.campaignId,
@@ -208,9 +215,14 @@ export class AutopilotService {
         message,
         metadata: {
           suggested: recommendation.suggestedBudget,
-          max: config.maxBudget,
+          min: config.maxBudget,
         },
-      }).catch(console.error);
+      }).catch(err => {
+        console.error(
+          `[GapAlert] Failed to create BUDGET_CEILING_HIT alert for ${recommendation.campaignId}:`,
+          err,
+        );
+      });
 
       return { shouldExecute: false, reason: message };
     }
@@ -232,13 +244,30 @@ export class AutopilotService {
           timeSinceLast.toFixed(0)
         }m vs ${config.cooldownMinutes}m required`;
         // Async alert creation (only if it's a new occurrence? might be spammy, keeping generic severity info)
-        GuardrailAlertService.createAlert({
-          workspaceId: recommendation.workspaceId,
-          campaignId: recommendation.campaignId,
-          alertType: "COOLDOWN_ACTIVE",
-          severity: "INFO",
-          message,
-        }).catch(console.error);
+        // Check if we already alerted recently (within last hour) for cooldown to prevent spam
+        const recentAlert = await prisma.allocatorGuardrailAlert.findFirst({
+          where: {
+            workspaceId: recommendation.workspaceId,
+            campaignId: recommendation.campaignId,
+            alertType: "COOLDOWN_ACTIVE",
+            createdAt: { gt: new Date(Date.now() - 60 * 60 * 1000) }, // 1 hour
+          },
+        });
+
+        if (!recentAlert) {
+          GuardrailAlertService.createAlert({
+            workspaceId: recommendation.workspaceId,
+            campaignId: recommendation.campaignId,
+            alertType: "COOLDOWN_ACTIVE",
+            severity: "INFO",
+            message,
+          }).catch(err =>
+            console.error(
+              `[GapAlert] Failed to create COOLDOWN_ACTIVE alert for ${recommendation.campaignId}:`,
+              err,
+            )
+          );
+        }
         return { shouldExecute: false, reason: message };
       }
     }

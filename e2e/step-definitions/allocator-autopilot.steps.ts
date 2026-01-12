@@ -1,5 +1,6 @@
 import { AutopilotService } from "@/lib/allocator/autopilot-service";
 import type {
+  AutopilotConfig,
   AutopilotExecutionResult,
   AutopilotRecommendation,
 } from "@/lib/allocator/autopilot-types";
@@ -117,7 +118,7 @@ async function ensureWorkspaceAndCampaign() {
   });
 }
 
-async function setAutopilotConfig(data: any) {
+async function setAutopilotConfig(data: Partial<AutopilotConfig>) {
   await ensureWorkspaceAndCampaign();
   // Delete existing to avoid complex upsert unique handling with nulls if needed, or just upsert
   // Schema: @@unique([workspaceId, campaignId])
