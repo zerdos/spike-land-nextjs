@@ -8,6 +8,7 @@ import type {
   AutopilotRecommendation,
   UpdateAutopilotConfigInput,
 } from "./autopilot-types";
+import { GuardrailAlertService } from "./guardrail-alert-service";
 
 const Decimal = Prisma.Decimal;
 
@@ -51,6 +52,10 @@ export class AutopilotService {
       minRoasThreshold: config.minRoasThreshold?.toNumber() ?? null,
       maxCpaThreshold: config.maxCpaThreshold?.toNumber() ?? null,
       requireApprovalAbove: config.requireApprovalAbove?.toNumber() ?? null,
+      minBudget: config.minBudget?.toNumber() ?? null,
+      maxBudget: config.maxBudget?.toNumber() ?? null,
+      cooldownMinutes: config.cooldownMinutes,
+      isEmergencyStopped: config.isEmergencyStopped,
     };
   }
 
@@ -103,6 +108,14 @@ export class AutopilotService {
           requireApprovalAbove: data.requireApprovalAbove !== undefined
             ? (data.requireApprovalAbove ? new Decimal(data.requireApprovalAbove) : null)
             : undefined,
+          minBudget: data.minBudget !== undefined
+            ? (data.minBudget ? new Decimal(data.minBudget) : null)
+            : undefined,
+          maxBudget: data.maxBudget !== undefined
+            ? (data.maxBudget ? new Decimal(data.maxBudget) : null)
+            : undefined,
+          cooldownMinutes: data.cooldownMinutes,
+          isEmergencyStopped: data.isEmergencyStopped,
         },
       });
     } else {
@@ -120,6 +133,10 @@ export class AutopilotService {
           requireApprovalAbove: data.requireApprovalAbove
             ? new Decimal(data.requireApprovalAbove)
             : null,
+          minBudget: data.minBudget ? new Decimal(data.minBudget) : null,
+          maxBudget: data.maxBudget ? new Decimal(data.maxBudget) : null,
+          cooldownMinutes: data.cooldownMinutes ?? 60,
+          isEmergencyStopped: data.isEmergencyStopped ?? false,
         },
       });
     }
@@ -131,6 +148,10 @@ export class AutopilotService {
       minRoasThreshold: config.minRoasThreshold?.toNumber() ?? null,
       maxCpaThreshold: config.maxCpaThreshold?.toNumber() ?? null,
       requireApprovalAbove: config.requireApprovalAbove?.toNumber() ?? null,
+      minBudget: config.minBudget?.toNumber() ?? null,
+      maxBudget: config.maxBudget?.toNumber() ?? null,
+      cooldownMinutes: config.cooldownMinutes,
+      isEmergencyStopped: config.isEmergencyStopped,
     };
   }
 
@@ -147,6 +168,108 @@ export class AutopilotService {
 
     if (!config || !config.isEnabled) {
       return { shouldExecute: false, reason: "Autopilot disabled" };
+    }
+
+    // Check Emergency Stop
+    if (config.isEmergencyStopped) {
+      return { shouldExecute: false, reason: "Emergency stop is active" };
+    }
+
+    // Check Budget Floor
+    if (config.minBudget && recommendation.suggestedBudget < config.minBudget) {
+      const message =
+        `Suggested budget ${recommendation.suggestedBudget} is below floor ${config.minBudget}`;
+      // Async alert creation
+      // Fire-and-forget alert with error logging
+      GuardrailAlertService.createAlert({
+        workspaceId: recommendation.workspaceId,
+        campaignId: recommendation.campaignId,
+        alertType: "BUDGET_FLOOR_HIT",
+        severity: "WARNING",
+        message,
+        metadata: {
+          suggested: recommendation.suggestedBudget,
+          min: config.minBudget,
+        },
+      }).catch(err => {
+        console.error(
+          `[GapAlert] Failed to create BUDGET_FLOOR_HIT alert for ${recommendation.campaignId}:`,
+          err,
+        );
+      });
+
+      return { shouldExecute: false, reason: message };
+    }
+
+    // Check Budget Ceiling
+    if (config.maxBudget && recommendation.suggestedBudget > config.maxBudget) {
+      const message =
+        `Suggested budget ${recommendation.suggestedBudget} exceeds ceiling ${config.maxBudget}`;
+      // Async alert creation
+      // Fire-and-forget alert with error logging
+      GuardrailAlertService.createAlert({
+        workspaceId: recommendation.workspaceId,
+        campaignId: recommendation.campaignId,
+        alertType: "BUDGET_CEILING_HIT",
+        severity: "WARNING",
+        message,
+        metadata: {
+          suggested: recommendation.suggestedBudget,
+          min: config.maxBudget,
+        },
+      }).catch(err => {
+        console.error(
+          `[GapAlert] Failed to create BUDGET_CEILING_HIT alert for ${recommendation.campaignId}:`,
+          err,
+        );
+      });
+
+      return { shouldExecute: false, reason: message };
+    }
+
+    // Check Cool-down Period
+    const lastExecution = await prisma.allocatorAutopilotExecution.findFirst({
+      where: {
+        workspaceId: recommendation.workspaceId,
+        campaignId: recommendation.campaignId,
+        status: "COMPLETED",
+      },
+      orderBy: { executedAt: "desc" },
+    });
+
+    if (lastExecution && config.cooldownMinutes > 0) {
+      const timeSinceLast = (Date.now() - lastExecution.executedAt.getTime()) / (1000 * 60);
+      if (timeSinceLast < config.cooldownMinutes) {
+        const message = `Cool-down active. ${
+          timeSinceLast.toFixed(0)
+        }m vs ${config.cooldownMinutes}m required`;
+        // Async alert creation (only if it's a new occurrence? might be spammy, keeping generic severity info)
+        // Check if we already alerted recently (within last hour) for cooldown to prevent spam
+        const recentAlert = await prisma.allocatorGuardrailAlert.findFirst({
+          where: {
+            workspaceId: recommendation.workspaceId,
+            campaignId: recommendation.campaignId,
+            alertType: "COOLDOWN_ACTIVE",
+            createdAt: { gt: new Date(Date.now() - 60 * 60 * 1000) }, // 1 hour
+          },
+        });
+
+        if (!recentAlert) {
+          GuardrailAlertService.createAlert({
+            workspaceId: recommendation.workspaceId,
+            campaignId: recommendation.campaignId,
+            alertType: "COOLDOWN_ACTIVE",
+            severity: "INFO",
+            message,
+          }).catch(err =>
+            console.error(
+              `[GapAlert] Failed to create COOLDOWN_ACTIVE alert for ${recommendation.campaignId}:`,
+              err,
+            )
+          );
+        }
+        return { shouldExecute: false, reason: message };
+      }
     }
 
     // Check Anomaly Pause
@@ -214,6 +337,18 @@ export class AutopilotService {
       recommendation.workspaceId,
       recommendation.campaignId,
     );
+
+    // Immediate Emergency Stop Check (double check at execution time)
+    if (config?.isEmergencyStopped) {
+      return {
+        executionId: "emergency_stopped",
+        status: "SKIPPED",
+        budgetChange: 0,
+        newBudget: recommendation.currentBudget,
+        message: "Emergency stop is active",
+      };
+    }
+
     const evaluation = await this.evaluateRecommendation(recommendation, config);
 
     if (!evaluation.shouldExecute) {
