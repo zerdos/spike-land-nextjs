@@ -252,11 +252,14 @@ export class AllocatorAuditLogger {
       decisionType,
       decisionOutcome,
       correlationId,
-      createdAt: {
+    };
+
+    if (startDate || endDate) {
+      where.createdAt = {
         gte: startDate,
         lte: endDate,
-      },
-    };
+      };
+    }
 
     const [logs, total] = await Promise.all([
       prisma.allocatorAuditLog.findMany({
