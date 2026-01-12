@@ -230,6 +230,33 @@ describe("AllocatorAuditLogger", () => {
     });
   });
 
+  it("only adds createdAt filter when startDate or endDate is provided", async () => {
+    vi.mocked(prisma.allocatorAuditLog.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.allocatorAuditLog.count).mockResolvedValue(0);
+
+    await logger.search({ workspaceId: "ws-1" });
+
+    expect(prisma.allocatorAuditLog.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.not.objectContaining({
+          createdAt: expect.anything(),
+        }),
+      }),
+    );
+
+    await logger.search({ workspaceId: "ws-1", startDate: new Date() });
+
+    expect(prisma.allocatorAuditLog.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          createdAt: expect.objectContaining({
+            gte: expect.any(Date),
+          }),
+        }),
+      }),
+    );
+  });
+
   describe("getByCorrelationId", () => {
     it("returns logs for a correlation ID", async () => {
       const mockLogs = [{ id: "log-1" }];

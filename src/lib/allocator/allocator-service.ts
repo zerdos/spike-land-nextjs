@@ -9,6 +9,7 @@
 
 import type { MarketingPlatform } from "@/lib/marketing/types";
 import prisma from "@/lib/prisma";
+import type { AllocatorAutopilotConfig } from "@prisma/client";
 import { allocatorAuditLogger } from "./allocator-audit-logger";
 import type {
   AllocatorAnalysisOptions,
@@ -593,18 +594,18 @@ export async function getAllocatorRecommendations(
             recommendation: rec,
             performance: analysis,
             // Capture the options as the configuration state at time of decision
-            config: options as unknown as import("@prisma/client").AllocatorAutopilotConfig,
+            config: options as unknown as AllocatorAutopilotConfig,
             correlationId: options.correlationId!,
             triggeredBy: options.triggeredBy || "UNKNOWN",
             userId: options.userId,
           });
         } catch (err) {
-          // Consider: Add metrics/telemetry for production monitoring
-          console.error(`Failed to log audit for recommendation ${rec.id}:`, err);
+          // No silent failures - but don't block the caller
+          console.error(`AllocatorAuditLogger: Failed to log recommendation ${rec.id}:`, err);
         }
       }
     })).catch(err => {
-      console.error("Critical error in audit logging batch:", err);
+      console.error("AllocatorAuditLogger: Critical error in audit logging batch:", err);
     });
   }
 

@@ -33,7 +33,7 @@ Given("I see the audit log table", async function(this: CustomWorld) {
 });
 
 When("I search for {string}", async function(this: CustomWorld, query: string) {
-  const searchInput = this.page.getByPlaceholder("Search by Execution ID or content...");
+  const searchInput = this.page.getByPlaceholder("Search by Execution ID...");
   await searchInput.fill(query);
   await searchInput.press("Enter");
   // Waiting for network idle or results update is handled by the next assertion's retry mechanism

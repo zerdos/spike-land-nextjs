@@ -29,6 +29,7 @@ interface AllocatorAuditLogViewerProps {
 export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogViewerProps) {
   const [logs, setLogs] = useState<AllocatorAuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isRealtime, setIsRealtime] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,6 +39,7 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
 
   const fetchLogs = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams();
       if (dateRange?.from) params.set("fromDate", dateRange.from.toISOString());
@@ -47,6 +49,8 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
       const response = await fetch(
         `/api/orbit/${workspaceSlug}/allocator/audit?${params.toString()}`,
       );
+      if (!response.ok) throw new Error("Failed to fetch logs");
+
       const data = await response.json();
       if (data.data) {
         setLogs(data.data);
@@ -54,6 +58,7 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
       }
     } catch (error) {
       console.error("Failed to fetch logs:", error);
+      setError("Failed to load audit logs. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -102,8 +107,7 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div /> {/* Spacer or secondary title if needed, else empty to keep button alignment */}
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-end">
         <div className="flex items-center gap-2">
           <Button
             variant={isRealtime ? "default" : "outline"}
@@ -156,7 +160,7 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
               <Calendar
                 mode="range"
                 selected={dateRange}
-                onSelect={(range: DateRange | undefined) => setDateRange(range)}
+                onSelect={setDateRange}
                 initialFocus
               />
             </PopoverContent>
@@ -186,7 +190,14 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
               </TableRow>
             </TableHeader>
             <TableBody>
-              {logs.length === 0 && !isLoading
+              {error && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center h-24 text-destructive">
+                    {error}
+                  </TableCell>
+                </TableRow>
+              )}
+              {logs.length === 0 && !isLoading && !error
                 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">

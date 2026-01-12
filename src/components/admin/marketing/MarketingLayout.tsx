@@ -50,6 +50,7 @@ const TABS = [
   { href: "/admin/marketing", label: "Overview", exact: true },
   { href: "/admin/marketing/campaigns", label: "Campaigns", exact: false },
   { href: "/admin/marketing/funnel", label: "Funnel", exact: false },
+  { href: "/admin/marketing/attribution", label: "Attribution", exact: false },
   { href: "/admin/marketing/accounts", label: "Accounts", exact: false },
 ];
 

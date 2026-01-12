@@ -42,8 +42,20 @@ export async function GET(
 
   const stream = new ReadableStream({
     async start(controller) {
+      const safeEnqueue = (data: string) => {
+        if (isClosed) return false;
+        try {
+          controller.enqueue(encoder.encode(data));
+          return true;
+        } catch (e) {
+          console.error("Failed to enqueue SSE data", e);
+          isClosed = true;
+          return false;
+        }
+      };
+
       // Send initial connection message
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "connected" })}\n\n`));
+      if (!safeEnqueue(`data: ${JSON.stringify({ type: "connected" })}\n\n`)) return;
 
       // 1. Send recent logs (last 20)
       try {
@@ -53,11 +65,11 @@ export async function GET(
         });
 
         if (initialLogs.logs.length > 0) {
-          controller.enqueue(
-            encoder.encode(
+          if (
+            !safeEnqueue(
               `data: ${JSON.stringify({ type: "initial", logs: initialLogs.logs })}\n\n`,
-            ),
-          );
+            )
+          ) return;
         }
       } catch (error) {
         console.error("Error fetching initial logs", error);
@@ -88,9 +100,14 @@ export async function GET(
 
           if (newLogs.logs.length > 0) {
             // Send update
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ type: "update", logs: newLogs.logs })}\n\n`),
-            );
+            if (
+              !safeEnqueue(
+                `data: ${JSON.stringify({ type: "update", logs: newLogs.logs })}\n\n`,
+              )
+            ) {
+              clearInterval(interval);
+              return;
+            }
 
             // Update lastCheck to the newest log's date
             const latestLog = newLogs.logs[0];
@@ -103,7 +120,7 @@ export async function GET(
         }
       }, POLL_INTERVAL);
 
-      req.signal.onabort = () => {
+      const cleanup = () => {
         isClosed = true;
         clearInterval(interval);
         try {
@@ -112,6 +129,8 @@ export async function GET(
           // ignore
         }
       };
+
+      req.signal.onabort = cleanup;
     },
   });
 
