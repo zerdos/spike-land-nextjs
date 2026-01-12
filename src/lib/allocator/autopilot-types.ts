@@ -36,6 +36,7 @@ export interface AutopilotRecommendation {
   reason: string;
   confidence: number;
   metadata?: Record<string, unknown>;
+  correlationId?: string; // Audit Trail
 }
 
 export interface AutopilotExecutionResult {

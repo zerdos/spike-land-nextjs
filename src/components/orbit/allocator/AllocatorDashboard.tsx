@@ -29,7 +29,8 @@ import type {
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { useAutopilotConfig } from "@/hooks/useAutopilotConfig";
-import { Settings } from "lucide-react";
+import { History, Settings } from "lucide-react";
+import Link from "next/link";
 import { AutopilotConfigPanel } from "./AutopilotConfigPanel";
 import { AutopilotExecutionHistory } from "./AutopilotExecutionHistory";
 import { AutopilotToggle } from "./AutopilotToggle";
@@ -190,6 +191,17 @@ export function AllocatorDashboard({ workspaceSlug }: AllocatorDashboardProps) {
               title="Autopilot Settings"
             >
               <Settings className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              title="Audit Logs"
+              asChild
+            >
+              <Link href={`/orbit/${workspaceSlug}/allocator/audit`}>
+                <History className="h-4 w-4" />
+              </Link>
             </Button>
           </div>
 

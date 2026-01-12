@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { FeatureFlagService } from "../feature-flags/feature-flag-service";
+import { allocatorAuditLogger } from "./allocator-audit-logger";
 import { AutopilotAnomalyIntegration } from "./autopilot-anomaly-integration";
 import type {
   AutopilotConfig,
@@ -376,6 +377,21 @@ export class AutopilotService {
       };
     }
 
+    // Log Execution Start (Audit)
+    if (recommendation.correlationId) {
+      await allocatorAuditLogger.logExecution({
+        workspaceId: recommendation.workspaceId,
+        campaignId: recommendation.campaignId,
+        executionId: "pending", // Will correspond to DB record
+        stage: "STARTED",
+        outcome: "APPROVED", // It passed evaluation
+        correlationId: recommendation.correlationId,
+        triggeredBy: triggerSource,
+        userId: recommendation.metadata?.userId as string,
+        newState: { suggestedBudget: recommendation.suggestedBudget },
+      }).catch(e => console.error("Audit log error:", e));
+    }
+
     // Execute Change (Simulated for now, would call platform API)
     // TODO: Integrate with Facebook/Google Ads API via Allocator Service
     const budgetChange = recommendation.suggestedBudget - recommendation.currentBudget;
@@ -396,7 +412,7 @@ export class AutopilotService {
     });
 
     try {
-      return await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx) => {
         // 1. Update Campaign Budget in DB
         await tx.allocatorCampaign.update({
           where: { id: recommendation.campaignId },
@@ -436,11 +452,29 @@ export class AutopilotService {
 
         return {
           executionId: execution.id,
-          status: "COMPLETED",
+          status: "COMPLETED" as const,
           budgetChange,
           newBudget: recommendation.suggestedBudget,
         };
       });
+
+      // Log Completion (Audit)
+      if (recommendation.correlationId) {
+        await allocatorAuditLogger.logExecution({
+          workspaceId: recommendation.workspaceId,
+          campaignId: recommendation.campaignId,
+          executionId: execution.id,
+          stage: "COMPLETED",
+          outcome: "EXECUTED",
+          correlationId: recommendation.correlationId,
+          triggeredBy: triggerSource,
+          userId: recommendation.metadata?.userId as string,
+          previousState: { budget: recommendation.currentBudget },
+          newState: { budget: recommendation.suggestedBudget },
+        }).catch(e => console.error("Audit log error:", e));
+      }
+
+      return result;
     } catch (error) {
       await prisma.allocatorAutopilotExecution.update({
         where: { id: execution.id },
@@ -452,6 +486,22 @@ export class AutopilotService {
           },
         },
       });
+
+      // Log Failure (Audit)
+      if (recommendation.correlationId) {
+        await allocatorAuditLogger.logExecution({
+          workspaceId: recommendation.workspaceId,
+          campaignId: recommendation.campaignId,
+          executionId: execution.id,
+          stage: "FAILED",
+          outcome: "FAILED",
+          correlationId: recommendation.correlationId,
+          triggeredBy: triggerSource,
+          userId: recommendation.metadata?.userId as string,
+          error: error instanceof Error ? error.message : "Unknown error",
+        }).catch(e => console.error("Audit log error:", e));
+      }
+
       throw error;
     }
   }
@@ -510,6 +560,18 @@ export class AutopilotService {
         rollbackOfId: executionId, // Link to original
       },
     });
+
+    // Log Rollback Initiated (Audit)
+    const correlationId = `rollback-${executionId}-${Date.now()}`;
+    await allocatorAuditLogger.logRollback({
+      workspaceId: execution.workspaceId,
+      campaignId: execution.campaignId,
+      executionId: rollback.id,
+      originalExecutionId: executionId,
+      stage: "INITIATED",
+      correlationId,
+      userId,
+    }).catch(e => console.error("Audit log error:", e));
 
     try {
       return await prisma.$transaction(async (tx) => {
