@@ -7,12 +7,19 @@ export interface AutopilotConfig {
   campaignId?: string | null;
   isEnabled: boolean;
   mode: AutopilotMode;
-  maxDailyBudgetChange: number; // percentage or fixed amount depending on implementation logic, likely percentage based on typical autopilot systems
-  maxSingleChange: number;
+  maxDailyBudgetChange: number; // percentage
+  maxSingleChange: number; // percentage
   minRoasThreshold?: number | null;
   maxCpaThreshold?: number | null;
   pauseOnAnomaly: boolean;
   requireApprovalAbove?: number | null;
+  minBudget?: number | null;
+  maxBudget?: number | null;
+  cooldownMinutes: number;
+  isEmergencyStopped: boolean;
+  emergencyStoppedAt?: Date | null;
+  emergencyStoppedBy?: string | null;
+  emergencyStopReason?: string | null;
 }
 
 export type CreateAutopilotConfigInput = Omit<AutopilotConfig, "id">;

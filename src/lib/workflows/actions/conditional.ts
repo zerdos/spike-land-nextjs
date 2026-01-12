@@ -1,5 +1,5 @@
-import type { Values } from "expr-eval";
-import { Parser } from "expr-eval";
+import type { Values } from "expr-eval-fork";
+import { Parser } from "expr-eval-fork";
 import { z } from "zod";
 import type { ActionInput, ActionOutput, WorkflowAction } from "./action-types";
 
