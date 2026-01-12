@@ -54,7 +54,12 @@ export async function GET(req: NextRequest) {
     for (const config of enabledConfigs) {
       // 2. Get recommendations for this workspace
       // Using existing recommendation engine
-      const response = await getAllocatorRecommendations({ workspaceId: config.workspaceId });
+      const correlationId = `cron-${config.workspaceId}-${Date.now()}`;
+      const response = await getAllocatorRecommendations({
+        workspaceId: config.workspaceId,
+        correlationId,
+        triggeredBy: "CRON",
+      });
 
       // 3. Process each recommendation
       for (const rec of response.recommendations) {
@@ -68,6 +73,7 @@ export async function GET(req: NextRequest) {
           suggestedBudget: rec.suggestedNewBudget,
           reason: rec.reason,
           confidence: mapConfidenceToNumber(rec.confidence),
+          correlationId: rec.correlationId, // Pass through from generation
         };
 
         const result = await AutopilotService.executeRecommendation(autopilotRec, "CRON");

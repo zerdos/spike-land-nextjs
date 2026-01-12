@@ -9,6 +9,7 @@
 
 import type { MarketingPlatform } from "@/lib/marketing/types";
 import prisma from "@/lib/prisma";
+import { allocatorAuditLogger } from "./allocator-audit-logger";
 import type {
   AllocatorAnalysisOptions,
   AllocatorConfidenceLevel,
@@ -291,6 +292,7 @@ function generateRecommendations(
       ],
       createdAt: now,
       expiresAt,
+      correlationId: options.correlationId,
     });
   }
 
@@ -337,6 +339,7 @@ function generateRecommendations(
       ],
       createdAt: now,
       expiresAt,
+      correlationId: options.correlationId,
     });
   }
 
@@ -392,6 +395,7 @@ function generateRecommendations(
         ],
         createdAt: now,
         expiresAt,
+        correlationId: options.correlationId,
       });
     }
   }
@@ -411,9 +415,7 @@ export async function getAllocatorRecommendations(
   options: AllocatorAnalysisOptions,
 ): Promise<AllocatorRecommendationsResponse> {
   const {
-    // workspaceId is currently unused - MarketingAccount links to users not workspaces
-    // Future: Filter accounts by workspace when model is updated
-    workspaceId: _workspaceId,
+    workspaceId,
     accountIds,
     lookbackDays = DEFAULT_LOOKBACK_DAYS,
     minimumSpend = 1000, // $10 minimum
@@ -552,7 +554,7 @@ export async function getAllocatorRecommendations(
     100,
   );
 
-  return {
+  const response: AllocatorRecommendationsResponse = {
     campaignAnalyses,
     recommendations,
     summary: {
@@ -574,6 +576,39 @@ export async function getAllocatorRecommendations(
     hasEnoughData: campaignAnalyses.length > 0 && avgDays >= MIN_DAYS_LOW_CONFIDENCE,
     dataQualityScore,
   };
+
+  // Log recommendations if correlation ID is provided (Audit Trail)
+  if (options.correlationId) {
+    // Fire and forget - don't block response, but capture errors
+    Promise.all(recommendations.map(async (rec) => {
+      // Find related performance analysis
+      const campaignId = rec.targetCampaign.id;
+      const analysis = campaignAnalyses.find(a => a.campaignId === campaignId);
+
+      if (analysis) {
+        try {
+          await allocatorAuditLogger.logRecommendationGenerated({
+            workspaceId,
+            campaignId,
+            recommendation: rec,
+            performance: analysis,
+            // Capture the options as the configuration state at time of decision
+            config: options as unknown as import("@prisma/client").AllocatorAutopilotConfig,
+            correlationId: options.correlationId!,
+            triggeredBy: options.triggeredBy || "UNKNOWN",
+            userId: options.userId,
+          });
+        } catch (err) {
+          // Consider: Add metrics/telemetry for production monitoring
+          console.error(`Failed to log audit for recommendation ${rec.id}:`, err);
+        }
+      }
+    })).catch(err => {
+      console.error("Critical error in audit logging batch:", err);
+    });
+  }
+
+  return response;
 }
 
 /**

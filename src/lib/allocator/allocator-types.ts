@@ -116,6 +116,9 @@ export interface BudgetRecommendation {
   // Timing
   createdAt: Date;
   expiresAt: Date; // Recommendation validity
+
+  // Audit Context
+  correlationId?: string;
 }
 
 /**
@@ -128,6 +131,11 @@ export interface AllocatorAnalysisOptions {
   minimumSpend?: number; // Minimum spend in cents to consider a campaign
   targetRoas?: number; // Target ROAS for recommendations
   riskTolerance?: "conservative" | "moderate" | "aggressive";
+
+  // Audit Context
+  correlationId?: string; // If provided, recommendations will be auditable
+  triggeredBy?: string; // "CRON", "API", "MANUAL"
+  userId?: string; // If triggered by user
 }
 
 /**
