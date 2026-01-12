@@ -4,7 +4,7 @@ ARG NODE_IMAGE=node:24.12.0-bookworm-slim
 ARG DUMMY_DATABASE_URL=postgresql://build:build@localhost:5432/build
 ARG CACHE_NS=vercel-app
 ARG TEST_CACHE_NS=test-cache
-ARG DEP_CACHE_COMMIT=c2364562
+ARG DEP_CACHE_COMMIT=ead7c6b9
 
 # ============================================================================
 # STAGE 0: Base
@@ -64,12 +64,12 @@ RUN tar -xzf /tmp/repo.tar.gz -C /app --strip-components=1 \
 RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
     yarn install --immutable || true
 
-# Final install with pre-warmed cache
+# Overlay current build context BEFORE final install
+COPY --link --from=dep-context /app /app
+
+# Final install with pre-warmed cache (now uses current package.json/yarn.lock)
 RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
     yarn install --immutable
-
-# Overlay current build context
-COPY --link --from=dep-context /app /app
 
 # ============================================================================
 # STAGE 3: Source Code
