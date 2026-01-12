@@ -50,7 +50,7 @@
     "vitest": "4.0.17"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "3.0.9",
+    "@ai-sdk/anthropic": "3.0.11",
     "@anthropic-ai/sdk": "0.71.2",
     "@spike-npm-land/code": "0.9.56",
     "@types/node": "25.0.6",

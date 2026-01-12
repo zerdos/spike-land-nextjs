@@ -67,7 +67,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "3.0.9",
+    "@ai-sdk/anthropic": "3.0.11",
     "@assistant-ui/react": "0.11.53",
     "@assistant-ui/react-ai-sdk": "1.1.20",
     "@assistant-ui/react-markdown": "0.11.9",
@@ -131,7 +131,7 @@
     "d3-time": "3.1.0",
     "deep-eql": "5.0.2",
     "detective-typescript": "14.0.0",
-    "diff": "8.0.2",
+    "diff": "8.0.3",
     "embla-carousel-react": "8.6.0",
     "encoding": "0.1.13",
     "esbuild-plugin-copy": "2.1.1",
