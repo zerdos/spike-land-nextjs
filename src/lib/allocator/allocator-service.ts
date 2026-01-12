@@ -240,8 +240,8 @@ function generateRecommendations(
   const riskMultiplier = options.riskTolerance === "aggressive"
     ? 1.5
     : options.riskTolerance === "conservative"
-    ? 0.5
-    : 1.0;
+      ? 0.5
+      : 1.0;
 
   // Sort by performance score
   const sortedByPerformance = [...analyses].sort(
@@ -281,8 +281,7 @@ function generateRecommendations(
         },
       },
       reason:
-        `Campaign "${winner.campaignName}" has a performance score of ${winner.performanceScore}% with ${
-          winner.trend.conversions === "improving" ? "improving" : "stable"
+        `Campaign "${winner.campaignName}" has a performance score of ${winner.performanceScore}% with ${winner.trend.conversions === "improving" ? "improving" : "stable"
         } conversions. Increasing budget could capture additional high-quality traffic.`,
       supportingData: [
         `ROAS: ${winner.metrics.roas.toFixed(2)}x`,
@@ -384,9 +383,8 @@ function generateRecommendations(
             high: 40,
           },
         },
-        reason: `Reallocating $${
-          (reallocateAmount / 100).toFixed(2)
-        } from underperforming "${worstLoser.campaignName}" to high-performer "${topWinner.campaignName}" can improve overall ROAS without increasing total spend.`,
+        reason: `Reallocating $${(reallocateAmount / 100).toFixed(2)
+          } from underperforming "${worstLoser.campaignName}" to high-performer "${topWinner.campaignName}" can improve overall ROAS without increasing total spend.`,
         supportingData: [
           `Source performance: ${worstLoser.performanceScore}%`,
           `Target performance: ${topWinner.performanceScore}%`,
@@ -579,26 +577,33 @@ export async function getAllocatorRecommendations(
 
   // Log recommendations if correlation ID is provided (Audit Trail)
   if (options.correlationId) {
-    // Fire and forget - don't block response
+    // Fire and forget - don't block response, but capture errors
     Promise.all(recommendations.map(async (rec) => {
       // Find related performance analysis
       const campaignId = rec.targetCampaign.id;
       const analysis = campaignAnalyses.find(a => a.campaignId === campaignId);
 
       if (analysis) {
-        await allocatorAuditLogger.logRecommendationGenerated({
-          workspaceId,
-          campaignId,
-          recommendation: rec,
-          performance: analysis,
-          // Capture the options as the configuration state at time of decision
-          config: options as any,
-          correlationId: options.correlationId!,
-          triggeredBy: options.triggeredBy || "UNKNOWN",
-          userId: options.userId,
-        }).catch(err => console.error("Failed to log recommendation audit:", err));
+        try {
+          await allocatorAuditLogger.logRecommendationGenerated({
+            workspaceId,
+            campaignId,
+            recommendation: rec,
+            performance: analysis,
+            // Capture the options as the configuration state at time of decision
+            config: options as unknown as import("@prisma/client").AllocatorAutopilotConfig,
+            correlationId: options.correlationId!,
+            triggeredBy: options.triggeredBy || "UNKNOWN",
+            userId: options.userId,
+          });
+        } catch (err) {
+          // Consider: Add metrics/telemetry for production monitoring
+          console.error(`Failed to log audit for recommendation ${rec.id}:`, err);
+        }
       }
-    })).catch(err => console.error("Error in audit logging batch:", err));
+    })).catch(err => {
+      console.error("Critical error in audit logging batch:", err);
+    });
   }
 
   return response;
