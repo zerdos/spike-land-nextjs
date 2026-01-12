@@ -61,7 +61,7 @@ function generateCodespaceId(): string {
   const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
   const verb = VERBS[Math.floor(Math.random() * VERBS.length)];
   const suffix = Math.random().toString(36).substring(2, 6);
-  return `${adj}-${noun}-${verb}-${suffix}`;
+  return `${adj}.${noun}.${verb}.${suffix}`;
 }
 
 export default function NewAppPage() {
