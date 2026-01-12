@@ -29,6 +29,10 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
       maxSingleChange: 5,
       pauseOnAnomaly: true,
       requireApprovalAbove: undefined,
+      minBudget: undefined,
+      maxBudget: undefined,
+      cooldownMinutes: 60,
+      isEmergencyStopped: false,
     },
   );
   const [isSaving, setIsSaving] = useState(false);
@@ -102,6 +106,33 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="minBudget">Min Budget Floor ($)</Label>
+              <Input
+                id="minBudget"
+                type="number"
+                min="0"
+                placeholder="No floor"
+                value={formData.minBudget || ""}
+                onChange={(e) =>
+                  updateField("minBudget", e.target.value ? parseFloat(e.target.value) : null)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="maxBudget">Max Budget Ceiling ($)</Label>
+              <Input
+                id="maxBudget"
+                type="number"
+                min="0"
+                placeholder="No ceiling"
+                value={formData.maxBudget || ""}
+                onChange={(e) =>
+                  updateField("maxBudget", e.target.value ? parseFloat(e.target.value) : null)}
+              />
+            </div>
+          </div>
+
           <div className="space-y-4">
             <div className="flex items-center justify-between space-x-2">
               <Label htmlFor="pauseAnomaly" className="flex flex-col space-y-1">
@@ -134,6 +165,40 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
             <p className="text-xs text-muted-foreground">
               Changes exceeding this absolute amount will require manual approval.
             </p>
+          </div>
+
+          <div className="space-y-2 pt-4 border-t">
+            <Label htmlFor="cooldown">Cool-down Period (Minutes)</Label>
+            <div className="flex items-center gap-4">
+              <Input
+                id="cooldown"
+                type="number"
+                min="15"
+                max="1440"
+                className="max-w-[120px]"
+                value={formData.cooldownMinutes ?? 60}
+                onChange={(e) => updateField("cooldownMinutes", parseInt(e.target.value) || 60)}
+              />
+              <span className="text-sm text-muted-foreground">
+                Minimum time between automated changes.
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t">
+            <div className="flex items-center justify-between space-x-2 text-destructive">
+              <Label htmlFor="emergencyStop" className="flex flex-col space-y-1">
+                <span className="font-bold">Emergency Stop</span>
+                <span className="font-normal text-xs text-muted-foreground">
+                  Immediately halt all automated budget adjustments.
+                </span>
+              </Label>
+              <Switch
+                id="emergencyStop"
+                checked={formData.isEmergencyStopped || false}
+                onCheckedChange={(checked) => updateField("isEmergencyStopped", checked)}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end">

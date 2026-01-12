@@ -56,6 +56,7 @@ vi.mock("@/lib/prisma", () => ({
       create: vi.fn(),
       update: vi.fn(),
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
     },
     allocatorCampaign: {
       update: vi.fn(),
@@ -93,6 +94,8 @@ describe("AutopilotService", () => {
     maxCpaThreshold: null,
     pauseOnAnomaly: true,
     requireApprovalAbove: null,
+    cooldownMinutes: 60,
+    isEmergencyStopped: false,
   };
 
   const mockRecommendation: AutopilotRecommendation = {

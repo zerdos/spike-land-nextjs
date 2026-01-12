@@ -2198,6 +2198,7 @@ model Workspace {
   // Allocator Autopilot relations
   autopilotConfigs       AllocatorAutopilotConfig[]
   autopilotExecutions    AllocatorAutopilotExecution[]
+  guardrailAlerts        AllocatorGuardrailAlert[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -3185,6 +3186,7 @@ model AllocatorCampaign {
   autopilotConfig        AllocatorAutopilotConfig[]
   autopilotExecutions    AllocatorAutopilotExecution[]
   dailyBudgetMoves       AllocatorDailyBudgetMove[]
+  guardrailAlerts        AllocatorGuardrailAlert[]
 
   @@unique([workspaceId, platform, platformCampaignId])
   @@index([workspaceId])
@@ -3222,6 +3224,15 @@ model AllocatorAutopilotConfig {
   pauseOnAnomaly       Boolean          @default(true)
   requireApprovalAbove Decimal?         @db.Decimal(10, 2)
   encryptedSettings    String?
+  // Guardrails
+  minBudget            Decimal?            @db.Decimal(12, 2)
+  maxBudget            Decimal?            @db.Decimal(12, 2)
+  cooldownMinutes      Int                 @default(60) // Minutes between adjustments
+  isEmergencyStopped   Boolean             @default(false)
+  emergencyStoppedAt   DateTime?
+  emergencyStoppedBy   String?
+  emergencyStopReason  String?
+
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
 
@@ -3232,6 +3243,43 @@ model AllocatorAutopilotConfig {
   @@index([workspaceId])
   @@index([campaignId])
   @@map("allocator_autopilot_configs")
+}
+
+model AllocatorGuardrailAlert {
+  id             String             @id @default(cuid())
+  workspaceId    String
+  campaignId     String?
+  alertType      AllocatorAlertType
+  severity       AlertSeverity
+  message        String
+  metadata       Json?
+  acknowledged   Boolean            @default(false)
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+  createdAt      DateTime           @default(now())
+
+  workspace      Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  campaign       AllocatorCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, createdAt])
+  @@index([alertType])
+  @@map("allocator_guardrail_alerts")
+}
+
+enum AllocatorAlertType {
+  BUDGET_FLOOR_HIT
+  BUDGET_CEILING_HIT
+  DAILY_LIMIT_REACHED
+  COOLDOWN_ACTIVE
+  EMERGENCY_STOP_ACTIVATED
+  CONSECUTIVE_FAILURES
+  UNUSUAL_ACTIVITY
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
 }
 
 model AllocatorAutopilotExecution {
