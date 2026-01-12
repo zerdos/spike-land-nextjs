@@ -133,10 +133,14 @@ _(None recorded yet)_
 
 ---
 
-**Document Owner**: Zoltan Erdos (CEO) **Last Updated**: December 11, 2025
-**Version**: 1.0
+## Related Documentation
 
-➜ spike-land-nextjs git:(main) ✗ npm whoami\
-spike-npm-land
+| Document                                         | Description                             |
+| ------------------------------------------------ | --------------------------------------- |
+| [ZOLTAN_ERDOS.md](./ZOLTAN_ERDOS.md)             | Founder profile, background, and vision |
+| [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md) | Company legal structure                 |
 
-so the correct package names: @spike-npm-land/mcp-server
+---
+
+**Document Owner**: [Zoltan Erdos](./ZOLTAN_ERDOS.md) (CEO) | **Last Updated**:
+December 11, 2025 | **Version**: 1.0

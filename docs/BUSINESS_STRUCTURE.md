@@ -223,3 +223,12 @@ As a company director, you must:
 - [Companies House - Check Name Availability](https://find-and-update.company-information.service.gov.uk/)
 - [Gov.uk - Running a Limited Company](https://www.gov.uk/running-a-limited-company)
 - [ICO - GDPR for Small Business](https://ico.org.uk/for-organisations/sme-web-hub/)
+
+---
+
+## Related Documentation
+
+| Document                               | Description                             |
+| -------------------------------------- | --------------------------------------- |
+| [ZOLTAN_ERDOS.md](./ZOLTAN_ERDOS.md)   | Founder profile, background, and vision |
+| [CEO_DECISIONS.md](./CEO_DECISIONS.md) | Strategic decisions log                 |
