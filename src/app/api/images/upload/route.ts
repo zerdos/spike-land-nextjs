@@ -15,6 +15,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { start } from "workflow/api";
 
+// Force dynamic rendering - skip static page data collection (sharp requires native modules)
+export const dynamic = "force-dynamic";
+
 // Allow longer execution time for image processing
 export const maxDuration = 300;
 
