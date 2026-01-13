@@ -7,6 +7,9 @@
  * Supports both EnhancementJob and McpGenerationJob
  */
 
+// Force dynamic rendering - skip static page data collection (imports sharp via mcp service)
+export const dynamic = "force-dynamic";
+
 import { auth } from "@/auth";
 import { isAdminByUserId } from "@/lib/auth/admin-middleware";
 import { cancelMcpJob } from "@/lib/mcp/generation-service";
