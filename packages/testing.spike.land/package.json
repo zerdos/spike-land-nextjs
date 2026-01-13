@@ -60,7 +60,7 @@
     "esbuild-wasm": "0.27.2",
     "eslint": "9.39.2",
     "esm-worker": "0.135.18",
-    "hono": "4.11.3",
+    "hono": "4.11.4",
     "immutable": "5.1.4",
     "jiti": "2.6.1",
     "mime-db": "1.54.0",
