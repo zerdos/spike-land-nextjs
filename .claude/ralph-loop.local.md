@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 135
+iteration: 139
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -136,56 +136,67 @@ The Status column in the Active Task Registry uses these values:
 
 | Issue #        | Session ID           | Status              | PR # | Retries | Last Updated     |
 | -------------- | -------------------- | ------------------- | ---- | ------- | ---------------- |
-| TS-Build-Perf  | 743965185831409437   | COMPLETED→PR_REVIEW | 695  | 0       | 2026-01-14T00:10 |
 | #560 ORB-050   | 9990519144520915308  | COMPLETED→PR_REVIEW | 696  | 0       | 2026-01-14T00:10 |
-| #681 DB-Backup | 6931936060370703380  | IN_PROGRESS         | 697  | 0       | 2026-01-14T00:20 |
-| #559 ORB-049   | 5418198425599883351  | IN_PROGRESS         | -    | 0       | 2026-01-14T00:20 |
-| #557 ORB-047   | 6461916275207593573  | IN_PROGRESS         | -    | 0       | 2026-01-14T00:20 |
-| #550 ORB-044   | 9029505413509658765  | PLANNING            | -    | 0       | 2026-01-14T00:20 |
-| #545 ORB-042   | 14061592581795539866 | COMPLETED→AWAIT_PR  | -    | 0       | 2026-01-14T00:20 |
-| #543 ORB-041   | 16700969269248228994 | IN_PROGRESS         | -    | 0       | 2026-01-14T00:20 |
-| #525 ORB-053   | 1231231942038418903  | IN_PROGRESS         | -    | 0       | 2026-01-14T00:20 |
-| #524 ORB-052   | 15307375469365040653 | IN_PROGRESS         | -    | 0       | 2026-01-14T00:10 |
-| #523 ORB-051   | 6459174606168775495  | PLANNING            | -    | 0       | 2026-01-14T00:10 |
-| TS-Strictness  | 4593656897822469129  | PLANNING            | -    | 0       | 2026-01-14T00:10 |
-| Batch-Platform | 7518177175950263084  | PLANNING            | -    | 0       | 2026-01-14T00:10 |
-| E2E-Auth-Tests | 14385720697892655834 | PLANNING            | -    | 0       | 2026-01-14T00:10 |
-| Unit-Orbit     | 1396081266021328535  | PLANNING            | -    | 0       | 2026-01-14T00:10 |
+| #681 DB-Backup | 6931936060370703380  | IN_PROGRESS         | 697  | 0       | 2026-01-14T00:30 |
+| #559 ORB-049   | 5418198425599883351  | IN_PROGRESS         | -    | 0       | 2026-01-14T00:30 |
+| #550 ORB-044   | 9029505413509658765  | PLANNING            | -    | 0       | 2026-01-14T00:30 |
+| #545 ORB-042   | 14061592581795539866 | COMPLETED→AWAIT_PR  | -    | 0       | 2026-01-14T00:30 |
+| #543 ORB-041   | 16700969269248228994 | COMPLETED→AWAIT_PR  | -    | 0       | 2026-01-14T00:30 |
+| #525 ORB-053   | 1231231942038418903  | IN_PROGRESS         | -    | 0       | 2026-01-14T00:30 |
+| #524 ORB-052   | 15307375469365040653 | IN_PROGRESS         | -    | 0       | 2026-01-14T00:30 |
+| TS-Strictness  | 4593656897822469129  | PLANNING            | -    | 0       | 2026-01-14T00:30 |
+| Batch-Platform | 7518177175950263084  | PLANNING            | -    | 0       | 2026-01-14T00:30 |
+| E2E-Auth-Tests | 14385720697892655834 | PLANNING            | -    | 0       | 2026-01-14T00:30 |
+| Unit-Orbit     | 1396081266021328535  | IN_PROGRESS         | -    | 0       | 2026-01-14T00:30 |
 
-**Active Count: 15/30** (15 slots available) | **Daily: 14/100 sessions used**
+**Active Count: 12/30** (18 slots available) | **Daily: 14/100 sessions used**
 
-- **7 IN_PROGRESS** (#681, #559, #557, #543, #525, #524 + #545 completing)
-- **6 PLANNING** (Jules creating plans)
-- **1 COMPLETED→AWAIT_PR** (#545 - waiting for PR creation)
-- **2 PRs in Review** (#695, #696)
+- **5 IN_PROGRESS** (#681, #559, #525, #524, Unit-Orbit)
+- **4 PLANNING** (#550, TS-Strictness, Batch-Platform, E2E-Auth-Tests)
+- **2 COMPLETED→AWAIT_PR** (#545, #543 - waiting for PR creation)
+- **1 PR in Review** (#696) | **1 PR with feedback** (#697)
 
 **Completed Sessions (archived from registry):**
 
+- 743965185831409437: TS-Build-Perf - MERGED (PR #695)
 - 9105450551840217556: Allocator Audit Trail - COMPLETED
 - 12623008819824620283: Dev Environment - COMPLETED
 - 10381636092810946070: Allocator Autopilot Plan - COMPLETED
 - 3283041034249796510: #536 Allocator Autopilot - COMPLETED
 
+**Dead Sessions (removed):**
+
+- 6461916275207593573: #557 ORB-047 - DEAD (session expired)
+- 6459174606168775495: #523 ORB-051 - DEAD (session expired)
+
 **Open PRs Status:**
 
 | PR # | Issue/Task     | CI Status           | Review Status     | Action Needed              |
 | ---- | -------------- | ------------------- | ----------------- | -------------------------- |
-| #695 | TS-Build-Perf  | ⚠️ Package Tests     | Pending           | Check if `yarn tsc` passes |
 | #696 | #560 ORB-050   | ❌ Build/Test fails | CHANGES_REQUESTED | Need Jules fix (COMPLETED) |
-| #697 | #681 DB-Backup | ❌ Build/Test fails | CHANGES_REQUESTED | Sent fix instructions      |
+| #697 | #681 DB-Backup | ❌ Build/Test fails | CHANGES_REQUESTED | Jules fixing via session   |
 | #698 | Hono bump      | ❌ Lint/Pkg fails   | Pending           | Dependabot - needs review  |
 | #699 | Hono bump      | ⚠️ Package Tests     | Pending           | Dependabot - needs review  |
+
+**Recently Merged:**
+
+| PR # | Issue/Task    | Merged At               |
+| ---- | ------------- | ----------------------- |
+| #695 | TS-Build-Perf | 2026-01-13T22:52:37Z ✅ |
 
 **IMPORTANT TIPS:**
 
 - **Draft → non-Draft**: Must push a commit AFTER converting from Draft to trigger claude-code-review
 - **Publish condition**: Only turn off Draft mode when `yarn tsc` passes on the branch
 
-**Actions This Iteration (135):**
+**Actions This Iteration (139):**
 
-- 📊 #545 ORB-042 Workflow data model → COMPLETED (awaiting PR)
-- 📊 #525 YouTube, #681 DB-Backup now IN_PROGRESS
-- 📊 Status: 7 IN_PROGRESS, 6 PLANNING, 1 awaiting PR
+- ✅ PR #695 TS-Build-Perf → MERGED
+- 🧹 #557 ORB-047, #523 ORB-051 sessions DEAD (removed from registry)
+- 📊 #543 ORB-041 Cross-platform attribution → COMPLETED (awaiting PR)
+- 📊 Unit-Orbit → IN_PROGRESS (plan approved)
+- 📊 Status: 5 IN_PROGRESS, 4 PLANNING, 2 awaiting PR
+- 💤 No AWAITING_PLAN_APPROVAL sessions - idle state
 
 ---
 
