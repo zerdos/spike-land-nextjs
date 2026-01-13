@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 104
+iteration: 108
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -12,14 +12,26 @@ started_at: "2026-01-10T00:00:00Z"
 
 ## Configuration
 
-| Setting      | Value                    | Notes                                |
-| ------------ | ------------------------ | ------------------------------------ |
-| WIP_LIMIT    | 6                        | Max parallel Jules tasks             |
-| AUTO_APPROVE | **MANUAL**               | Requires TUI/web approval            |
-| AUTO_MERGE   | true                     | Squash merge when all checks pass    |
-| MAX_RETRIES  | 2                        | Retry failed tasks before escalating |
-| REPO         | zerdos/spike-land-nextjs | Target repository                    |
-| CLI_MODE     | **true**                 | Use Jules CLI instead of MCP/browser |
+| Setting      | Value                    | Notes                                         |
+| ------------ | ------------------------ | --------------------------------------------- |
+| WIP_LIMIT    | **30**                   | Max parallel Jules tasks (up from 6!)         |
+| AUTO_APPROVE | **MANUAL**               | Requires TUI/web approval                     |
+| AUTO_MERGE   | true                     | Squash merge when all checks pass             |
+| AUTO_PUBLISH | **true**                 | Auto-publish PR when CI passes + no conflicts |
+| MAX_RETRIES  | 2                        | Retry failed tasks before escalating          |
+| REPO         | zerdos/spike-land-nextjs | Target repository                             |
+| CLI_MODE     | **true**                 | Use Jules CLI instead of MCP/browser          |
+
+### Work Stream Distribution (Balanced)
+
+| Stream      | Limit  | Focus                              |
+| ----------- | ------ | ---------------------------------- |
+| Features    | 8      | Orbit platform features (#514-570) |
+| Testing     | 8      | Add tests, increase coverage       |
+| Bug Fixes   | 6      | Issues labeled `bug`               |
+| Tech Debt   | 5      | Refactoring, cleanup               |
+| Experiments | 3      | Novel ideas, improvements          |
+| **TOTAL**   | **30** |                                    |
 
 ---
 
@@ -103,7 +115,7 @@ The Status column in the Active Task Registry uses these values:
 | #559 ORB-049   | 5418198425599883351 | AWAITING_USER_FEEDBACK | -    | 0       | 2026-01-13T21:35 |
 | #557 ORB-047   | 6461916275207593573 | AWAITING_USER_FEEDBACK | -    | 0       | 2026-01-13T21:10 |
 
-**Active Count: 6/6** (0 slots available - queue full!)
+**Active Count: 16/30** (14 slots available - keep filling!)
 
 **Completed Sessions (archived from registry):**
 
@@ -675,16 +687,41 @@ Output `<promise>WORKFORCE_IDLE</promise>` when ALL true:
       │               │
       │               ▼
       │    ┌─────────────────────┐
-      │    │ JULES_FIXING_REVIEW │◄────────┐
+      │    │ JULES_FIXING_REVIEW │
+      │    └──────────┬──────────┘
+      │               │
+      │               ▼
+      │    ┌─────────────────────┐
+      │    │ JULES_FIX_COMPLETED │
+      │    │ (Jules pushed fix)  │
+      │    └──────────┬──────────┘
+      │               │
+      │               ▼
+      │    ┌─────────────────────┐
+      │    │ Re-check CI/branch  │◄────────┐
+      │    │ (wait for CI pass)  │         │
       │    └──────────┬──────────┘         │
       │               │                    │
-      │               ▼                    │
-      │    ┌─────────────────────┐         │
-      │    │ JULES_FIX_COMPLETED │         │
-      │    │ (Re-check CI/branch)│─────────┘
-      │    └─────────────────────┘
-      │
-      ▼
+      │        CI passes?                  │
+      │         /     \                    │
+      │       YES      NO ─────────────────┘
+      │        │
+      │        ▼
+      │    ┌─────────────────────┐
+      │    │ REVIEW_REQUESTED    │ ◄─── Triggers claude-code-review AGAIN!
+      │    └──────────┬──────────┘
+      │               │
+      │               ▼
+      │    ┌─────────────────────┐
+      │    │   REVIEW_STARTED    │ (claude-code-review reviews fix)
+      │    └──────────┬──────────┘
+      │               │
+      │        ┌──────┴──────┐
+      │        │             │
+      │        ▼             ▼
+      │    APPROVED    CHANGES_REQUESTED ───► (loop back to JULES_FIXING)
+      │        │
+      ▼        ▼
    ┌─────────────────────┐
    │   REVIEW_APPROVED   │
    │   (Auto-merge)      │
@@ -1098,6 +1135,140 @@ Try this approach instead: [new approach]" | jules new --repo zerdos/spike-land-
 | 97        | Added incomplete change detection     | Jules may miss updating test mocks        |
 | 97        | Added post-teleport TypeScript check  | Verify changes compile before PR          |
 | 97        | Added PR conflict resolution workflow | Rebase PRs with merge conflicts           |
+| 108       | Increased WIP_LIMIT to 30             | Unlock full Jules capacity (100/day)      |
+| 108       | Added experimentation protocol        | 5+ experiments/iteration, aggressive      |
+| 108       | Added auto-publish workflow           | Remove manual bottleneck                  |
+| 108       | Fixed state diagram for review loop   | Jules fix → CI check → re-review          |
+
+---
+
+## 🧪 Experimentation Protocol
+
+**CRITICAL**: Each iteration MUST include experimentation to improve the system.
+
+### Step E1: Generate Ideas (Every 5 Iterations)
+
+Review and capture improvement opportunities:
+
+- What repeated manual work could be automated?
+- What patterns in successes/failures could be exploited?
+- What would make Jules 10x more effective?
+- What unconventional approaches haven't been tried?
+
+Add ideas to `.claude/jules-ideas.md` backlog.
+
+### Step E2: Try Something New (AGGRESSIVE - Every Iteration)
+
+Pick **5+ experiments** per iteration (expect ~50% failure rate):
+
+- [ ] New task decomposition strategy
+- [ ] Different prompt engineering for Jules
+- [ ] Parallel vs sequential task approach
+- [ ] New issue prioritization logic
+- [ ] Alternative PR creation workflow
+- [ ] Batch similar issues together
+- [ ] Run competing approaches on same issue
+- [ ] Test boundary conditions of Jules capabilities
+- [ ] Try unconventional task descriptions
+- [ ] Push parallelism limits (20+ concurrent?)
+
+**Failure is expected and valuable** - document what doesn't work too!
+
+### Step E3: Capture Results
+
+After each experiment, record in `.claude/jules-ideas.md`:
+
+| Iteration | Experiment | Result | Keep/Discard |
+| --------- | ---------- | ------ | ------------ |
+| 108       | Example    | Worked | Keep         |
+
+### Step E4: Promote Successes
+
+If experiment improves outcomes:
+
+1. Document the improvement in this file
+2. Update workflow steps to include it permanently
+3. Add to Iteration Improvement Log above
+
+---
+
+## 🚀 Auto-Publish Workflow (NEW)
+
+**When CI passes + no conflicts → auto-publish → trigger review → auto-merge**
+
+### Step 3.3a: Check PR Prerequisites
+
+For each PR in `PR_CREATED` or `PR_CI_FAILING` status:
+
+```bash
+yarn ralph:pr-health [PR#]
+# Returns: {ci_passing, merge_state, is_draft, mergeable}
+```
+
+| Condition                                       | Action                                    |
+| ----------------------------------------------- | ----------------------------------------- |
+| `ci_passing: false`                             | Status = `PR_CI_FAILING`, wait            |
+| `merge_state: BEHIND`                           | Status = `PR_BEHIND_MAIN`, wait for Jules |
+| `mergeable: CONFLICTING`                        | Resolve conflicts (Step 3.2b)             |
+| `ci_passing: true` + `CLEAN` + `is_draft: true` | **Auto-publish** → Step 3.3b              |
+
+### Step 3.3b: Auto-Publish and Trigger Review
+
+When all prerequisites pass:
+
+```bash
+# 1. Mark PR as ready (remove draft)
+gh pr ready [PR#]
+
+# 2. Trigger review workflow with empty commit
+git fetch origin
+BRANCH=$(gh pr view [PR#] --json headRefName -q '.headRefName')
+git checkout $BRANCH
+git commit --allow-empty -m "chore: request PR review"
+git push
+
+# Or use the helper script:
+yarn ralph:auto-publish [PR#]
+```
+
+Update status to `REVIEW_REQUESTED`.
+
+### Review Feedback Fix Chain
+
+When `claude-code-review` requests changes:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ REVIEW FEEDBACK FIX CHAIN (Priority Order)                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ Priority 1: Claude Code Review fixes directly               │
+│ ├── Reviewer pushes fixes to PR branch                      │
+│ ├── Re-triggers review automatically                        │
+│ └── Fastest path to merge                                   │
+│                                                             │
+│ Priority 2: Jules fixes (via TUI/web)                       │
+│ ├── Ralph logs: "PR #X needs fix: [summary]"                │
+│ ├── Operator sends fix request via jules TUI/web            │
+│ ├── Jules pushes fix                                        │
+│ ├── CI runs → passes → triggers claude-code-review AGAIN    │
+│ └── Good for complex changes                                │
+│                                                             │
+│ Priority 3: Ralph fixes (fallback)                          │
+│ ├── Ralph spawns subagent in worktree                       │
+│ ├── Fixes issues, pushes to PR branch                       │
+│ ├── CI runs → passes → triggers claude-code-review AGAIN    │
+│ └── Emergency fallback only                                 │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**IMPORTANT**: After ANY fix is pushed:
+
+1. Wait for CI to pass
+2. claude-code-review runs automatically on new commits
+3. Review cycle repeats until APPROVED
+4. Only then can we auto-merge
 
 ---
 
