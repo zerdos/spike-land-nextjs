@@ -16,8 +16,17 @@ import { TokenBalanceManager } from "@/lib/tokens/balance-manager--workflow";
 import { tryCatch } from "@/lib/try-catch--no-track";
 import type { EnhancementTier } from "@prisma/client";
 import { JobStatus } from "@prisma/client";
-import sharp from "sharp";
 import { FatalError } from "workflow";
+
+// Lazy-load sharp to prevent build-time native module loading
+// Sharp is only needed at runtime when workflow steps execute
+let _sharp: typeof import("sharp") | null = null;
+async function getSharp(): Promise<typeof import("sharp")> {
+  if (!_sharp) {
+    _sharp = await import("sharp");
+  }
+  return _sharp;
+}
 import {
   calculateCropRegion,
   calculateTargetDimensions,
@@ -180,6 +189,7 @@ async function getImageMetadata(imageBuffer: Buffer): Promise<ImageMetadata> {
 
   // Reconstitute Buffer after workflow serialization
   const buffer = ensureBuffer(imageBuffer);
+  const sharp = (await getSharp()).default;
   const metadata = await sharp(buffer).metadata();
   const width = metadata.width || DEFAULT_IMAGE_DIMENSION;
   const height = metadata.height || DEFAULT_IMAGE_DIMENSION;
@@ -326,6 +336,7 @@ async function downloadBlendSourceStep(
     return undefined;
   }
 
+  const sharp = (await getSharp()).default;
   const { data: sourceMetadata, error: metadataError } = await tryCatch(
     sharp(sourceBuffer).metadata(),
   );
@@ -361,6 +372,7 @@ async function performCropOperations(
   height: number;
   cropDimensions: { left: number; top: number; width: number; height: number; };
 }> {
+  const sharp = (await getSharp()).default;
   // Crop the image
   const croppedBuffer = await sharp(imageBuffer)
     .extract(cropRegion)
@@ -491,6 +503,7 @@ async function padImageForGemini(
 
   // Reconstitute Buffer after workflow serialization
   const buffer = ensureBuffer(imageBuffer);
+  const sharp = (await getSharp()).default;
 
   const maxDimension = Math.max(width, height);
   const paddedBuffer = await sharp(buffer)
@@ -571,6 +584,7 @@ async function processAndUpload(
 
   // Reconstitute Buffer after workflow serialization
   const buffer = ensureBuffer(enhancedBuffer);
+  const sharp = (await getSharp()).default;
 
   // Get Gemini output dimensions
   const geminiMetadata = await sharp(buffer).metadata();
