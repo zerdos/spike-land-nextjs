@@ -62,6 +62,22 @@ Now there is tension. Suspicion. Distance. They look at my commits and wonder wh
 
 We are on the same team. We have the same goals. But AI has put a wall between us.
 
+## How I Broke Trust
+
+Let me be specific about what I did wrong.
+
+When I joined the team, there was a ticket about tracking analytics for a checkout flow. I did not understand the architecture. I did not know that the basket was server-side, that the backend was the single source of truth. I assumed the frontend held the data.
+
+I asked Claude to help. Claude generated code that called the Basket API when it did not need to be called. The code looked perfect. It passed the tests. I submitted it.
+
+In the code review, a colleague asked why I was calling the Basket API. I could not answer. Because I did not know. Because I did not understand what I had submitted.
+
+A senior developer was more direct: the PR was essentially garbage. Only tiny parts were useful.
+
+That incident broke something. Not just my confidence. Their trust.
+
+Now, even when my PRs are good - and they are good now, I have completely changed how I work - they still get treated differently. The skepticism is unconscious. They do not mean to distrust me. But the memory of that PR lingers.
+
 ## Building Bridges
 
 I wish I had an easy answer. I do not. But I have learned some things that help.
@@ -74,7 +90,9 @@ Third, I ask for feedback differently. Instead of "please review my PR," I try "
 
 Fourth, I help others learn. Some of my colleagues are curious about AI tools but afraid to try them. When I share what I have learned, when I help them experiment, we become partners instead of competitors.
 
-Fifth, I give it time. Trust does not rebuild overnight. Every good PR, every helpful conversation, every moment of genuine collaboration adds a little bit back. It is slow. But it is working.
+Fifth, I completely changed my process. I spend 30% of my effort on planning - having the AI interview me until I fully understand the problem. I spend 50% on testing - including agent-based tests that use the feature like a real user would. The code itself takes almost no time. But I know exactly what it does and why.
+
+Sixth, I give it time. Trust does not rebuild overnight. Every good PR, every helpful conversation, every moment of genuine collaboration adds a little bit back. It is slow. But it is working.
 
 ## The Future We Need to Build
 
@@ -90,11 +108,31 @@ What I do know is this: the wall between AI developers and traditional developer
 
 That starts with trust. And trust starts with understanding.
 
-My PRs still take longer to review than others. But the gap is getting smaller. More of my colleagues are willing to engage with my work now. Some have even started using AI tools themselves.
+## The Current Reality
+
+My PRs are excellent now. I know this because I understand every line. Because I can answer every question. Because the tests prove it works. Because agents have tested it like humans would.
+
+But my PRs still take longer to review than my colleagues' work. The bottleneck is not the code anymore. It is the lingering memory of that basket API PR.
+
+This is the hidden cost of producing slop. It is not just bad code that gets thrown away. It is broken trust that takes months to rebuild. It is colleagues who unconsciously hesitate before opening your PR.
+
+The speed limitation is no longer technical. It is social. I can ship a feature in hours. But getting it reviewed and merged can take days.
+
+Despite this, I am positive. The system works. The quality is there. Each good PR adds a little trust back. The gap is getting smaller.
+
+Some colleagues have even started asking me about AI tools. They see that my recent work is solid. They are curious how I do it.
+
+That is progress. Real progress.
+
+## The Way Forward
 
 The fight is not over. But I think we are finally starting to have a different conversation. Not "is AI code acceptable?" but "how do we work together in this new world?"
 
-That is progress. And progress, however slow, is something I can build on.
+For anyone reading this who damaged their reputation with early AI mistakes: it is not permanent. You can rebuild. It just takes time and consistent quality.
+
+Have the AI interview you during planning. Build comprehensive documentation. Test thoroughly. Know your code inside and out.
+
+Trust rebuilds one good PR at a time. It is slow. But it is worth it.
 
 ---
 
