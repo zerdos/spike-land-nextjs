@@ -15,12 +15,12 @@ started_at: "2026-01-10T00:00:00Z"
 | Setting      | Value                    | Notes                                         |
 | ------------ | ------------------------ | --------------------------------------------- |
 | WIP_LIMIT    | **30**                   | Max parallel Jules tasks (up from 6!)         |
-| AUTO_APPROVE | **MANUAL**               | Requires TUI/web approval                     |
+| AUTO_APPROVE | **MCP**                  | Use MCP tools to approve plans automatically! |
 | AUTO_MERGE   | true                     | Squash merge when all checks pass             |
 | AUTO_PUBLISH | **true**                 | Auto-publish PR when CI passes + no conflicts |
 | MAX_RETRIES  | 2                        | Retry failed tasks before escalating          |
 | REPO         | zerdos/spike-land-nextjs | Target repository                             |
-| CLI_MODE     | **true**                 | Use Jules CLI instead of MCP/browser          |
+| CLI_MODE     | **true**                 | Use Jules CLI + MCP tools                     |
 
 ### Work Stream Distribution (Balanced)
 
@@ -227,22 +227,28 @@ Update the Active Task Registry table above with current state.
 
 ---
 
-### Step 2: Log Pending Approvals (MANUAL)
+### Step 2: Auto-Approve Pending Plans (MCP!)
 
-**CLI Limitation**: The Jules CLI doesn't support approving plans.
+**Use MCP tools to approve plans automatically!**
 
 For each `AWAITING_PLAN_APPROVAL` session:
 
-1. **Log the pending approval:**
+1. **List pending approvals:**
    ```
-   ⏳ AWAITING APPROVAL: [session_id] (Issue #X) - requires manual approval
+   mcp__spike-land__jules_list_sessions(status="AWAITING_PLAN_APPROVAL")
    ```
 
-2. **Skip to next step** - approvals require manual intervention via:
-   - `jules` TUI command (interactive mode)
-   - jules.google.com web interface
+2. **Approve each plan:**
+   ```
+   mcp__spike-land__jules_approve_plan(session_id="[id]")
+   ```
 
-Ralph will continue monitoring these sessions in future iterations.
+3. **Update registry** status to `IN_PROGRESS`
+
+**Fallback** (if MCP unavailable):
+
+- `jules` TUI command (interactive mode)
+- jules.google.com web interface
 
 ---
 
@@ -524,25 +530,25 @@ Fix the build. This is highest priority." | jules new --repo zerdos/spike-land-n
 
 ---
 
-### Step 6: Log Feedback Requests (MANUAL)
+### Step 6: Respond to Feedback Requests (MCP!)
 
-**CLI Limitation**: The Jules CLI doesn't support sending messages or getting session activities.
+**Use MCP tools to get session details and respond!**
 
 For each `AWAITING_USER_FEEDBACK` session:
 
-#### 6.1 Log the Feedback Request
+#### 6.1 Get Session Details
 
 ```
-⏳ AWAITING FEEDBACK: [session_id] (Issue #X)
-   Action: Requires manual response via jules TUI or web
+mcp__spike-land__jules_get_session(session_id="[id]", include_activities=true)
 ```
 
-#### 6.2 Manual Intervention Required
+Review Jules's question/request from the activities.
 
-Operator must use:
+#### 6.2 Send Response via MCP
 
-- `jules` TUI command (interactive mode)
-- jules.google.com web interface
+```
+mcp__spike-land__jules_send_message(session_id="[id]", message="[response]")
+```
 
 Common scenarios to respond to:
 
@@ -553,7 +559,10 @@ Common scenarios to respond to:
 | "Tests are failing, should I skip?" | "No. Fix the tests. Here's the likely issue: [analysis]"    |
 | "Clarify requirement [X]"           | Re-read issue body, provide specific guidance               |
 
-Ralph will continue monitoring these sessions in future iterations.
+**Fallback** (if MCP unavailable):
+
+- `jules` TUI command (interactive mode)
+- jules.google.com web interface
 
 ---
 
