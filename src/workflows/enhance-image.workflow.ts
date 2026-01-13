@@ -253,6 +253,14 @@ async function saveAnalysisToDb(
 ): Promise<void> {
   "use step";
 
+  const qualityScoreMap = {
+    low: 0.33,
+    medium: 0.66,
+    high: 1.0,
+  };
+
+  const qualityScore = qualityScoreMap[analysisResult.quality] ?? 0.5;
+
   await prisma.imageEnhancementJob.update({
     where: { id: jobId },
     data: {
@@ -260,6 +268,8 @@ async function saveAnalysisToDb(
         JSON.stringify(analysisResult.structuredAnalysis),
       ),
       analysisSource: DEFAULT_MODEL,
+      altText: analysisResult.description,
+      qualityScore: qualityScore,
     },
   });
 }
