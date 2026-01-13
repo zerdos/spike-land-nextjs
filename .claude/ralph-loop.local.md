@@ -171,12 +171,12 @@ The Status column in the Active Task Registry uses these values:
 
 **Open PRs Status:**
 
-| PR # | Issue/Task     | CI Status           | Review Status     | Action Needed              |
-| ---- | -------------- | ------------------- | ----------------- | -------------------------- |
-| #696 | #560 ORB-050   | ❌ Build/Test fails | CHANGES_REQUESTED | Need Jules fix (COMPLETED) |
-| #697 | #681 DB-Backup | ❌ Build/Test fails | CHANGES_REQUESTED | Jules fixing via session   |
-| #698 | Hono bump      | ❌ Lint/Pkg fails   | Pending           | Dependabot - needs review  |
-| #699 | Hono bump      | ⚠️ Package Tests     | Pending           | Dependabot - needs review  |
+| PR # | Issue/Task     | CI Status           | Review Status     | Action Needed                        |
+| ---- | -------------- | ------------------- | ----------------- | ------------------------------------ |
+| #696 | #560 ORB-050   | ⏳ Running CI       | CHANGES_REQUESTED | Fixed tests, waiting for CI + review |
+| #697 | #681 DB-Backup | ❌ Build/Test fails | CHANGES_REQUESTED | Jules fixing via session             |
+| #698 | Hono bump      | ❌ Lint/Pkg fails   | Pending           | Dependabot - needs review            |
+| #699 | Hono bump      | ⚠️ Package Tests     | Pending           | Dependabot - needs review            |
 
 **Recently Merged:**
 
@@ -193,8 +193,8 @@ The Status column in the Active Task Registry uses these values:
 
 - 📊 #525 ORB-053 YouTube → COMPLETED (awaiting PR)
 - 📊 Batch-Platform experiment → COMPLETED (awaiting PR)
+- 🔧 **Fixed PR #696** - added missing test cases for review feedback
 - 📊 Status: 4 IN_PROGRESS, 3 PLANNING, 4 awaiting PR
-- 💤 No AWAITING_PLAN_APPROVAL sessions - idle state
 
 ---
 
