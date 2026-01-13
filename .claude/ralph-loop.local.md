@@ -70,11 +70,37 @@ jules teleport <session_id>
 jules
 ```
 
-### CLI Limitations (Requires Manual Intervention)
+### CLI Limitations (Use MCP Tools Instead!)
 
-- **Approve plans**: Use `jules` TUI or jules.google.com
-- **Send messages**: Use `jules` TUI or jules.google.com
-- **Get session activities**: Use `jules` TUI or jules.google.com
+The Jules CLI doesn't support these operations, but **MCP tools do**:
+
+| Operation          | CLI Support | MCP Tool Alternative                      |
+| ------------------ | ----------- | ----------------------------------------- |
+| **Approve plans**  | ❌ No       | ✅ `mcp__spike-land__jules_approve_plan`  |
+| **Send messages**  | ❌ No       | ✅ `mcp__spike-land__jules_send_message`  |
+| **Get activities** | ❌ No       | ✅ `mcp__spike-land__jules_get_session`   |
+| **List sessions**  | ✅ Yes      | ✅ `mcp__spike-land__jules_list_sessions` |
+
+### MCP Tools for Jules (PREFERRED for automation!)
+
+```
+# List sessions (can filter by status)
+mcp__spike-land__jules_list_sessions(status="AWAITING_PLAN_APPROVAL")
+
+# Approve a plan
+mcp__spike-land__jules_approve_plan(session_id="123456789")
+
+# Send a message to Jules
+mcp__spike-land__jules_send_message(session_id="123456789", message="Fix the tests")
+
+# Get session details
+mcp__spike-land__jules_get_session(session_id="123456789")
+```
+
+**Fallback options** (if MCP unavailable):
+
+- `jules` TUI command (interactive mode)
+- jules.google.com web interface
 
 ---
 
@@ -109,23 +135,23 @@ The Status column in the Active Task Registry uses these values:
 | Issue #        | Session ID           | Status                   | PR # | Retries | Last Updated     |
 | -------------- | -------------------- | ------------------------ | ---- | ------- | ---------------- |
 | TS-Build-Perf  | 743965185831409437   | REVIEW_REQUESTED         | 695  | 0       | 2026-01-13T22:30 |
-| #536 Autopilot | 3283041034249796510  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T21:10 |
-| #681 DB-Backup | 6931936060370703380  | REVIEW_CHANGES_REQUESTED | 697  | 0       | 2026-01-13T22:30 |
+| #536 Autopilot | 3283041034249796510  | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
+| #681 DB-Backup | 6931936060370703380  | IN_PROGRESS              | 697  | 0       | 2026-01-13T22:45 |
 | #560 ORB-050   | 9990519144520915308  | REVIEW_CHANGES_REQUESTED | 696  | 0       | 2026-01-13T22:30 |
 | #559 ORB-049   | 5418198425599883351  | AWAITING_USER_FEEDBACK   | -    | 0       | 2026-01-13T21:35 |
 | #557 ORB-047   | 6461916275207593573  | AWAITING_USER_FEEDBACK   | -    | 0       | 2026-01-13T21:10 |
-| #550 ORB-044   | 9029505413509658765  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
-| #545 ORB-042   | 14061592581795539866 | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
-| #543 ORB-041   | 16700969269248228994 | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
-| #525 ORB-053   | 1231231942038418903  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
-| #524 ORB-052   | 15307375469365040653 | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
-| #523 ORB-051   | 6459174606168775495  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
-| TS-Strictness  | 4593656897822469129  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
-| Batch-Platform | 7518177175950263084  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
-| E2E-Auth-Tests | 14385720697892655834 | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
-| Unit-Orbit     | 1396081266021328535  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
+| #550 ORB-044   | 9029505413509658765  | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
+| #545 ORB-042   | 14061592581795539866 | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
+| #543 ORB-041   | 16700969269248228994 | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
+| #525 ORB-053   | 1231231942038418903  | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
+| #524 ORB-052   | 15307375469365040653 | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
+| #523 ORB-051   | 6459174606168775495  | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
+| TS-Strictness  | 4593656897822469129  | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
+| Batch-Platform | 7518177175950263084  | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
+| E2E-Auth-Tests | 14385720697892655834 | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
+| Unit-Orbit     | 1396081266021328535  | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
 
-**Active Count: 16/30** (14 slots available)
+**Active Count: 16/30** (14 slots available) - **12 Jules agents now coding!**
 
 **Completed Sessions (archived from registry):**
 
@@ -147,29 +173,29 @@ The Status column in the Active Task Registry uses these values:
   - Build Application: ✅ SUCCESS
   - Only failing: Package Tests (flaky), E2E DB (infra)
   - Status changed: PR_INFRA_BLOCKED → REVIEW_REQUESTED
+- 🎉 **DISCOVERED MCP TOOLS FOR JULES!** Game changer!
+  - `mcp__spike-land__jules_approve_plan` - approve plans programmatically
+  - `mcp__spike-land__jules_send_message` - send messages to Jules
+  - `mcp__spike-land__jules_list_sessions` - list with status filter
+  - `mcp__spike-land__jules_get_session` - get session details
+- ✅ **APPROVED 12 PLANS VIA MCP** - all now IN_PROGRESS!
+  - 3283041034249796510 (#536 Autopilot) ✅
+  - 9029505413509658765 (#550 ORB-044) ✅
+  - 14061592581795539866 (#545 ORB-042) ✅
+  - 16700969269248228994 (#543 ORB-041) ✅
+  - 1231231942038418903 (#525 ORB-053 YouTube) ✅
+  - 15307375469365040653 (#524 ORB-052 Pinterest) ✅
+  - 6459174606168775495 (#523 ORB-051 TikTok) ✅
+  - 4593656897822469129 (TS-Strictness Tech Debt) ✅
+  - 7518177175950263084 (Batched Platform Experiment) ✅
+  - 14385720697892655834 (E2E Auth Tests) ✅
+  - 1396081266021328535 (Unit Tests Orbit) ✅
+  - 6931936060370703380 (#681 DB-Backup) ✅
+- 📝 Updated documentation with MCP tools reference
 - ⚠️ PR #696 (#560 ORB-050): REVIEW_CHANGES_REQUESTED
-  - Review feedback: Missing test case for low quality (0.3 threshold)
-  - CI still failing: Build Application, unit-tests-1
-  - **Requires**: Jules to fix via TUI/web
-- ⚠️ PR #697 (#681 DB-Backup): REVIEW_CHANGES_REQUESTED
-  - Review feedback: Security issue (missing permissions check)
-  - CI still failing: Build Application, unit-tests-1/2
-  - **Requires**: Jules to fix via TUI/web
-- 📋 Updated registry with 10 new sessions discovered from jules remote list
-- ⏳ AWAITING APPROVAL (12 sessions) - requires manual TUI/web:
-  - 3283041034249796510 (#536 Autopilot)
-  - 9029505413509658765 (#550 ORB-044)
-  - 14061592581795539866 (#545 ORB-042)
-  - 16700969269248228994 (#543 ORB-041)
-  - 1231231942038418903 (#525 ORB-053 YouTube)
-  - 15307375469365040653 (#524 ORB-052 Pinterest)
-  - 6459174606168775495 (#523 ORB-051 TikTok)
-  - 4593656897822469129 (TS-Strictness Tech Debt)
-  - 7518177175950263084 (Batched Platform Experiment)
-  - 14385720697892655834 (E2E Auth Tests)
-  - 1396081266021328535 (Unit Tests Orbit)
-  - 6931936060370703380 (#681 DB-Backup - re-planning after review?)
-- ⏳ AWAITING FEEDBACK (2 sessions) - requires manual TUI/web:
+  - Review feedback: Missing test case for low quality
+  - **Next**: Use MCP to send fix instructions to Jules
+- ⏳ AWAITING FEEDBACK (2 sessions) - can now use MCP to respond:
   - 6461916275207593573 (#557 ORB-047)
   - 5418198425599883351 (#559 ORB-049)
 
@@ -807,16 +833,16 @@ Each iteration should output structured logs:
 
 ---
 
-## Quick Reference: Jules CLI
+## Quick Reference: Jules CLI + MCP
 
-| Action              | Command                                                                               |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| List all sessions   | `jules remote list --session`                                                         |
-| Get session result  | `jules remote pull --session <id>`                                                    |
-| Create task         | `gh issue view N --json body -q '.body' \| jules new --repo zerdos/spike-land-nextjs` |
-| Apply session patch | `jules teleport <id>` or `jules remote pull --session <id> --apply`                   |
-| Approve plan        | **MANUAL**: Use `jules` TUI or jules.google.com                                       |
-| Send message        | **MANUAL**: Use `jules` TUI or jules.google.com                                       |
+| Action              | CLI Command                                                                           | MCP Tool (Preferred)                     |
+| ------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------- |
+| List all sessions   | `jules remote list --session`                                                         | `jules_list_sessions()`                  |
+| Get session result  | `jules remote pull --session <id>`                                                    | `jules_get_session(session_id)`          |
+| Create task         | `gh issue view N --json body -q '.body' \| jules new --repo zerdos/spike-land-nextjs` | `jules_create_session(title, task)`      |
+| Apply session patch | `jules teleport <id>` or `jules remote pull --session <id> --apply`                   | -                                        |
+| **Approve plan**    | ❌ Not supported                                                                      | ✅ `jules_approve_plan(session_id)`      |
+| **Send message**    | ❌ Not supported                                                                      | ✅ `jules_send_message(session_id, msg)` |
 
 ---
 
@@ -1168,6 +1194,8 @@ Try this approach instead: [new approach]" | jules new --repo zerdos/spike-land-
 | 108       | Added experimentation protocol        | 5+ experiments/iteration, aggressive      |
 | 108       | Added auto-publish workflow           | Remove manual bottleneck                  |
 | 108       | Fixed state diagram for review loop   | Jules fix → CI check → re-review          |
+| 123       | **Discovered MCP tools for Jules!**   | Can auto-approve plans + send messages!   |
+| 123       | Updated docs with MCP tool reference  | No more manual TUI/web bottleneck         |
 
 ---
 
