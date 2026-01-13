@@ -10200,7 +10200,7 @@ __metadata:
     eslint-plugin-react-refresh: "npm:0.4.26"
     esm-worker: "npm:0.135.18"
     globals: "npm:17.0.0"
-    hono: "npm:4.11.3"
+    hono: "npm:4.11.4"
     immutable: "npm:5.1.4"
     jiti: "npm:2.6.1"
     mime-db: "npm:1.54.0"
@@ -21643,10 +21643,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hono@npm:4.11.3":
-  version: 4.11.3
-  resolution: "hono@npm:4.11.3"
-  checksum: 10c9/3e2881fc3784b57419bcc24a4499e290c3ca84d2c74cf9ab905bae5c1fddbe81cce0fbeb4e2040ae19c65db1a085e87b165e07b2011338621928b06911ec0e45
+"hono@npm:4.11.4":
+  version: 4.11.4
+  resolution: "hono@npm:4.11.4"
+  checksum: 10c9/1646b11c7f2718cd897100cc45607bd1a2125fc3940c4a28aadac877b533ae2230344289016495aa80f811299abd4a49a5900bd22d6ee4f7732aa4766a99ac57
   languageName: node
   linkType: hard
 
