@@ -34,18 +34,18 @@
 
 ### Features (10/8) - Over capacity!
 
-| Issue # | Session ID           | Title                       | Status                 | PR   |
-| ------- | -------------------- | --------------------------- | ---------------------- | ---- |
-| #536    | 3283041034249796510  | Allocator Autopilot         | AWAITING_PLAN_APPROVAL | -    |
-| #557    | 6461916275207593573  | ORB-047 Content Experiments | AWAITING_USER_FEEDBACK | -    |
-| #559    | 5418198425599883351  | ORB-049 Template Library    | AWAITING_USER_FEEDBACK | -    |
-| #560    | 9990519144520915308  | ORB-050 Asset AI Analysis   | PR_CI_FAILING          | #696 |
-| #543    | 16700969269248228994 | Cross-platform attribution  | AWAITING_PLAN_APPROVAL | -    |
-| #545    | 14061592581795539866 | Workflow data model         | AWAITING_PLAN_APPROVAL | -    |
-| #523    | 6459174606168775495  | TikTok integration          | AWAITING_PLAN_APPROVAL | -    |
-| #524    | 15307375469365040653 | Pinterest integration       | AWAITING_PLAN_APPROVAL | -    |
-| #525    | 1231231942038418903  | YouTube full integration    | AWAITING_PLAN_APPROVAL | -    |
-| #550    | 9029505413509658765  | Workflow triggers           | AWAITING_PLAN_APPROVAL | -    |
+| Issue # | Session ID           | Title                       | Status                   | PR   |
+| ------- | -------------------- | --------------------------- | ------------------------ | ---- |
+| #536    | 3283041034249796510  | Allocator Autopilot         | AWAITING_PLAN_APPROVAL   | -    |
+| #557    | 6461916275207593573  | ORB-047 Content Experiments | AWAITING_USER_FEEDBACK   | -    |
+| #559    | 5418198425599883351  | ORB-049 Template Library    | AWAITING_USER_FEEDBACK   | -    |
+| #560    | 9990519144520915308  | ORB-050 Asset AI Analysis   | REVIEW_CHANGES_REQUESTED | #696 |
+| #543    | 16700969269248228994 | Cross-platform attribution  | AWAITING_PLAN_APPROVAL   | -    |
+| #545    | 14061592581795539866 | Workflow data model         | AWAITING_PLAN_APPROVAL   | -    |
+| #523    | 6459174606168775495  | TikTok integration          | AWAITING_PLAN_APPROVAL   | -    |
+| #524    | 15307375469365040653 | Pinterest integration       | AWAITING_PLAN_APPROVAL   | -    |
+| #525    | 1231231942038418903  | YouTube full integration    | AWAITING_PLAN_APPROVAL   | -    |
+| #550    | 9029505413509658765  | Workflow triggers           | AWAITING_PLAN_APPROVAL   | -    |
 
 ### Testing (2/8)
 
@@ -56,10 +56,10 @@
 
 ### Bug Fixes (2/6)
 
-| Issue #  | Session ID          | Title                        | Status    | PR   |
-| -------- | ------------------- | ---------------------------- | --------- | ---- |
-| TS-Build | 743965185831409437  | TypeScript Build Performance | COMPLETED | #695 |
-| #681     | 6931936060370703380 | Database Backups             | COMPLETED | #697 |
+| Issue #  | Session ID          | Title                        | Status                   | PR   |
+| -------- | ------------------- | ---------------------------- | ------------------------ | ---- |
+| TS-Build | 743965185831409437  | TypeScript Build Performance | PR_CI_PENDING (draft)    | #695 |
+| #681     | 6931936060370703380 | Database Backups             | REVIEW_CHANGES_REQUESTED | #697 |
 
 ### Tech Debt (1/5)
 
@@ -102,11 +102,12 @@
 
 ## Bottlenecks & Blockers
 
-| Type                      | Count | Details                                                          |
-| ------------------------- | ----- | ---------------------------------------------------------------- |
-| AWAITING_PLAN_APPROVAL    | 10    | #536, #543, #545, #523, #524, #525, #550, TEST-02, TD-01, EXP-01 |
-| AWAITING_USER_FEEDBACK    | 2     | #557, #559 - needs manual TUI/web response                       |
-| COMPLETED (need PR check) | 2     | #695, #697 - sessions done, check PRs for merge readiness        |
+| Type                     | Count | Details                                                          |
+| ------------------------ | ----- | ---------------------------------------------------------------- |
+| AWAITING_PLAN_APPROVAL   | 10    | #536, #543, #545, #523, #524, #525, #550, TEST-02, TD-01, EXP-01 |
+| AWAITING_USER_FEEDBACK   | 2     | #557, #559 - needs manual TUI/web response                       |
+| REVIEW_CHANGES_REQUESTED | 2     | PR #696 (#560), PR #697 (#681) - Jules needs to fix              |
+| PR_CI_PENDING            | 1     | PR #695 (TS-Build) - still draft, CI running                     |
 
 ---
 
