@@ -189,12 +189,14 @@ The Status column in the Active Task Registry uses these values:
 - **Draft → non-Draft**: Must push a commit AFTER converting from Draft to trigger claude-code-review
 - **Publish condition**: Only turn off Draft mode when `yarn tsc` passes on the branch
 
-**Actions This Iteration (142):**
+**Actions This Iteration (142-143):**
 
 - ✅ PR #696 review APPROVED! (claude-code-review passed after test fix)
-- 🔄 Triggered CI rerun for PR #696 (sharp module issue - possibly transient)
+- 🔍 Investigated sharp module failure in Build Application
+- 🔍 Found: Build passes on main, fails only on PR branches (cache issue)
+- 🔄 Rebased PR #696 from main to get fresh cache
 - 📊 Jules #681 still IN_PROGRESS fixing PR #697 review feedback
-- 📊 Status: 2 IN_PROGRESS, 2 PLANNING, 5 awaiting PR, 1 PR approved awaiting CI
+- 📊 Status: 2 IN_PROGRESS, 2 PLANNING, 5 awaiting PR, 1 PR rebased+approved
 
 ---
 
