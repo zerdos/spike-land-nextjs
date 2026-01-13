@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 122
+iteration: 123
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -106,16 +106,26 @@ The Status column in the Active Task Registry uses these values:
 
 <!-- Ralph: UPDATE THIS EVERY ITERATION! This is your memory. -->
 
-| Issue #        | Session ID          | Status                 | PR # | Retries | Last Updated     |
-| -------------- | ------------------- | ---------------------- | ---- | ------- | ---------------- |
-| TS-Build-Perf  | 743965185831409437  | PR_INFRA_BLOCKED       | 695  | 0       | 2026-01-13T22:10 |
-| #536 Autopilot | 3283041034249796510 | AWAITING_PLAN_APPROVAL | -    | 0       | 2026-01-13T21:10 |
-| #681 DB-Backup | 6931936060370703380 | PR_CI_FAILING          | 697  | 0       | 2026-01-13T22:10 |
-| #560 ORB-050   | 9990519144520915308 | PR_CI_FAILING          | 696  | 0       | 2026-01-13T22:10 |
-| #559 ORB-049   | 5418198425599883351 | AWAITING_USER_FEEDBACK | -    | 0       | 2026-01-13T21:35 |
-| #557 ORB-047   | 6461916275207593573 | AWAITING_USER_FEEDBACK | -    | 0       | 2026-01-13T21:10 |
+| Issue #        | Session ID           | Status                   | PR # | Retries | Last Updated     |
+| -------------- | -------------------- | ------------------------ | ---- | ------- | ---------------- |
+| TS-Build-Perf  | 743965185831409437   | REVIEW_REQUESTED         | 695  | 0       | 2026-01-13T22:30 |
+| #536 Autopilot | 3283041034249796510  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T21:10 |
+| #681 DB-Backup | 6931936060370703380  | REVIEW_CHANGES_REQUESTED | 697  | 0       | 2026-01-13T22:30 |
+| #560 ORB-050   | 9990519144520915308  | REVIEW_CHANGES_REQUESTED | 696  | 0       | 2026-01-13T22:30 |
+| #559 ORB-049   | 5418198425599883351  | AWAITING_USER_FEEDBACK   | -    | 0       | 2026-01-13T21:35 |
+| #557 ORB-047   | 6461916275207593573  | AWAITING_USER_FEEDBACK   | -    | 0       | 2026-01-13T21:10 |
+| #550 ORB-044   | 9029505413509658765  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
+| #545 ORB-042   | 14061592581795539866 | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
+| #543 ORB-041   | 16700969269248228994 | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
+| #525 ORB-053   | 1231231942038418903  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
+| #524 ORB-052   | 15307375469365040653 | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
+| #523 ORB-051   | 6459174606168775495  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
+| TS-Strictness  | 4593656897822469129  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
+| Batch-Platform | 7518177175950263084  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
+| E2E-Auth-Tests | 14385720697892655834 | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
+| Unit-Orbit     | 1396081266021328535  | AWAITING_PLAN_APPROVAL   | -    | 0       | 2026-01-13T22:30 |
 
-**Active Count: 16/30** (14 slots available - keep filling!)
+**Active Count: 16/30** (14 slots available)
 
 **Completed Sessions (archived from registry):**
 
@@ -130,19 +140,38 @@ The Status column in the Active Task Registry uses these values:
   - Build Application: Sharp module loading issue (libvips-cpp.so.8.17.3)
   - Package Tests: Flaky test ("should render the Thread component")
 
-**Actions This Iteration (104):**
+**Actions This Iteration (123):**
 
-- 🔍 Monitored CI status for PRs #695, #696, #697
-- ✅ PR #695 (TS-Build-Perf): All real tests PASSING!
+- 🚀 **PUBLISHED PR #695** (TS-Build-Perf): Marked as ready for review!
+  - All unit tests passing (1/2/3/4)
   - Build Application: ✅ SUCCESS
-  - unit-tests-1/2/3/4: ✅ SUCCESS
-  - Package Tests: ❌ Only flaky "should render the Thread component" failing
-  - Status: BLOCKED by infrastructure only (flaky test + E2E DB config)
-- ⚠️ PR #696 (#560 ORB-050): Build Application + unit-tests-1 failing (code issues)
-- ⚠️ PR #697 (#681 DB-Backup): Build Application + unit-tests-1/2 failing (code issues)
-- ⏳ AWAITING APPROVAL: 3283041034249796510 (#536 Autopilot) - requires manual TUI/web
-- ⏳ AWAITING FEEDBACK: 6461916275207593573 (#557 ORB-047) - requires manual TUI/web
-- ⏳ AWAITING FEEDBACK: 5418198425599883351 (#559 ORB-049) - requires manual TUI/web
+  - Only failing: Package Tests (flaky), E2E DB (infra)
+  - Status changed: PR_INFRA_BLOCKED → REVIEW_REQUESTED
+- ⚠️ PR #696 (#560 ORB-050): REVIEW_CHANGES_REQUESTED
+  - Review feedback: Missing test case for low quality (0.3 threshold)
+  - CI still failing: Build Application, unit-tests-1
+  - **Requires**: Jules to fix via TUI/web
+- ⚠️ PR #697 (#681 DB-Backup): REVIEW_CHANGES_REQUESTED
+  - Review feedback: Security issue (missing permissions check)
+  - CI still failing: Build Application, unit-tests-1/2
+  - **Requires**: Jules to fix via TUI/web
+- 📋 Updated registry with 10 new sessions discovered from jules remote list
+- ⏳ AWAITING APPROVAL (12 sessions) - requires manual TUI/web:
+  - 3283041034249796510 (#536 Autopilot)
+  - 9029505413509658765 (#550 ORB-044)
+  - 14061592581795539866 (#545 ORB-042)
+  - 16700969269248228994 (#543 ORB-041)
+  - 1231231942038418903 (#525 ORB-053 YouTube)
+  - 15307375469365040653 (#524 ORB-052 Pinterest)
+  - 6459174606168775495 (#523 ORB-051 TikTok)
+  - 4593656897822469129 (TS-Strictness Tech Debt)
+  - 7518177175950263084 (Batched Platform Experiment)
+  - 14385720697892655834 (E2E Auth Tests)
+  - 1396081266021328535 (Unit Tests Orbit)
+  - 6931936060370703380 (#681 DB-Backup - re-planning after review?)
+- ⏳ AWAITING FEEDBACK (2 sessions) - requires manual TUI/web:
+  - 6461916275207593573 (#557 ORB-047)
+  - 5418198425599883351 (#559 ORB-049)
 
 ---
 
