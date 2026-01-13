@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 126
+iteration: 133
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -136,27 +136,28 @@ The Status column in the Active Task Registry uses these values:
 
 | Issue #        | Session ID           | Status              | PR # | Retries | Last Updated     |
 | -------------- | -------------------- | ------------------- | ---- | ------- | ---------------- |
-| TS-Build-Perf  | 743965185831409437   | COMPLETED→PR_REVIEW | 695  | 0       | 2026-01-13T23:30 |
-| #560 ORB-050   | 9990519144520915308  | COMPLETED→PR_REVIEW | 696  | 0       | 2026-01-13T23:30 |
-| #681 DB-Backup | 6931936060370703380  | IN_PROGRESS         | 697  | 0       | 2026-01-13T23:30 |
-| #557 ORB-047   | 6461916275207593573  | IN_PROGRESS         | -    | 0       | 2026-01-13T23:30 |
-| #559 ORB-049   | 5418198425599883351  | PLANNING            | -    | 0       | 2026-01-13T23:30 |
-| #550 ORB-044   | 9029505413509658765  | PLANNING            | -    | 0       | 2026-01-13T23:30 |
-| #545 ORB-042   | 14061592581795539866 | PLANNING            | -    | 0       | 2026-01-13T23:30 |
-| #543 ORB-041   | 16700969269248228994 | PLANNING            | -    | 0       | 2026-01-13T23:30 |
-| #525 ORB-053   | 1231231942038418903  | PLANNING            | -    | 0       | 2026-01-13T23:30 |
-| #524 ORB-052   | 15307375469365040653 | PLANNING            | -    | 0       | 2026-01-13T23:30 |
-| #523 ORB-051   | 6459174606168775495  | PLANNING            | -    | 0       | 2026-01-13T23:30 |
-| TS-Strictness  | 4593656897822469129  | PLANNING            | -    | 0       | 2026-01-13T23:30 |
-| Batch-Platform | 7518177175950263084  | PLANNING            | -    | 0       | 2026-01-13T23:30 |
-| E2E-Auth-Tests | 14385720697892655834 | PLANNING            | -    | 0       | 2026-01-13T23:30 |
-| Unit-Orbit     | 1396081266021328535  | PLANNING            | -    | 0       | 2026-01-13T23:30 |
+| TS-Build-Perf  | 743965185831409437   | COMPLETED→PR_REVIEW | 695  | 0       | 2026-01-14T00:10 |
+| #560 ORB-050   | 9990519144520915308  | COMPLETED→PR_REVIEW | 696  | 0       | 2026-01-14T00:10 |
+| #681 DB-Backup | 6931936060370703380  | JULES_FIXING_REVIEW | 697  | 0       | 2026-01-14T00:10 |
+| #559 ORB-049   | 5418198425599883351  | IN_PROGRESS         | -    | 0       | 2026-01-14T00:10 |
+| #557 ORB-047   | 6461916275207593573  | PLANNING            | -    | 0       | 2026-01-14T00:10 |
+| #550 ORB-044   | 9029505413509658765  | PLANNING            | -    | 0       | 2026-01-14T00:10 |
+| #545 ORB-042   | 14061592581795539866 | PLANNING            | -    | 0       | 2026-01-14T00:10 |
+| #543 ORB-041   | 16700969269248228994 | IN_PROGRESS         | -    | 0       | 2026-01-14T00:10 |
+| #525 ORB-053   | 1231231942038418903  | PLANNING            | -    | 0       | 2026-01-14T00:10 |
+| #524 ORB-052   | 15307375469365040653 | IN_PROGRESS         | -    | 0       | 2026-01-14T00:10 |
+| #523 ORB-051   | 6459174606168775495  | PLANNING            | -    | 0       | 2026-01-14T00:10 |
+| TS-Strictness  | 4593656897822469129  | PLANNING            | -    | 0       | 2026-01-14T00:10 |
+| Batch-Platform | 7518177175950263084  | PLANNING            | -    | 0       | 2026-01-14T00:10 |
+| E2E-Auth-Tests | 14385720697892655834 | PLANNING            | -    | 0       | 2026-01-14T00:10 |
+| Unit-Orbit     | 1396081266021328535  | PLANNING            | -    | 0       | 2026-01-14T00:10 |
 
-**Active Count: 14/30** (16 slots available) | **Daily: 14/100 sessions used**
+**Active Count: 15/30** (15 slots available) | **Daily: 14/100 sessions used**
 
-- **2 IN_PROGRESS** (Jules actively coding)
-- **10 PLANNING** (Jules creating plans - not yet ready for approval)
-- **2 PRs in Review** (Jules sessions COMPLETED, PRs need attention)
+- **3 IN_PROGRESS** (#559 approved, #543, #524)
+- **1 JULES_FIXING_REVIEW** (#681 DB-Backup - sent fix instructions)
+- **9 PLANNING** (Jules creating plans)
+- **2 PRs in Review** (#695, #696 - COMPLETED sessions)
 
 **Completed Sessions (archived from registry):**
 
@@ -167,19 +168,25 @@ The Status column in the Active Task Registry uses these values:
 
 **Open PRs Status:**
 
-| PR # | Issue/Task     | CI Status           | Review Status     | Action Needed             |
-| ---- | -------------- | ------------------- | ----------------- | ------------------------- |
-| #695 | TS-Build-Perf  | ⚠️ Flaky only        | Pending           | Waiting for review        |
-| #696 | #560 ORB-050   | ❌ Build/Test fails | CHANGES_REQUESTED | Need Jules fix review     |
-| #697 | #681 DB-Backup | ❌ Build/Test fails | CHANGES_REQUESTED | Need Jules fix review     |
-| #698 | Hono bump      | ❌ Lint fails       | Pending           | Dependabot - needs review |
-| #699 | Hono bump      | ⚠️ Flaky only        | Pending           | Dependabot - needs review |
+| PR # | Issue/Task     | CI Status           | Review Status     | Action Needed              |
+| ---- | -------------- | ------------------- | ----------------- | -------------------------- |
+| #695 | TS-Build-Perf  | ⚠️ Package Tests     | Pending           | Check if `yarn tsc` passes |
+| #696 | #560 ORB-050   | ❌ Build/Test fails | CHANGES_REQUESTED | Need Jules fix (COMPLETED) |
+| #697 | #681 DB-Backup | ❌ Build/Test fails | CHANGES_REQUESTED | Sent fix instructions      |
+| #698 | Hono bump      | ❌ Lint/Pkg fails   | Pending           | Dependabot - needs review  |
+| #699 | Hono bump      | ⚠️ Package Tests     | Pending           | Dependabot - needs review  |
 
-**Actions This Iteration (126):**
+**IMPORTANT TIPS:**
 
-- 📊 Updated session statuses from MCP (most sessions still PLANNING)
-- 📝 Added daily session limit tracking (14/100)
-- ⏳ Waiting for 10 PLANNING sessions to create plans for approval
+- **Draft → non-Draft**: Must push a commit AFTER converting from Draft to trigger claude-code-review
+- **Publish condition**: Only turn off Draft mode when `yarn tsc` passes on the branch
+
+**Actions This Iteration (133):**
+
+- ✅ Approved plan for #559 ORB-049 Template Library (now IN_PROGRESS)
+- 💬 Sent fix instructions to Jules #681 DB-Backup (JULES_FIXING_REVIEW)
+- 📊 Updated session statuses: 3 IN_PROGRESS, 9 PLANNING
+- 📝 Added tips about Draft mode and PR review triggering
 
 ---
 
@@ -361,10 +368,23 @@ Both were trivial whitespace/comment conflicts resolved by keeping HEAD version.
 gh pr view [PR#] --json isDraft -q '.isDraft'
 ```
 
-If draft AND CI passing AND up-to-date:
+**CRITICAL**: Only publish if `yarn tsc` passes on the branch!
+
+```bash
+# Check TypeScript compilation on PR branch
+git fetch origin
+BRANCH=$(gh pr view [PR#] --json headRefName -q '.headRefName')
+git checkout $BRANCH
+yarn tsc --noEmit
+```
+
+If draft AND `yarn tsc` passes AND up-to-date:
 
 ```bash
 gh pr ready [PR#]
+# IMPORTANT: Push a commit after converting from Draft to trigger claude-code-review!
+git commit --allow-empty -m "chore: request PR review"
+git push
 ```
 
 Update status to `REVIEW_REQUESTED`. This triggers `claude-code-review.yml` workflow.
