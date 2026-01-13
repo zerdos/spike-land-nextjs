@@ -3358,7 +3358,7 @@ model AllocatorAuditLog {
 
   // Execution reference
   executionId     String?
-  
+
   // Metadata
   triggeredBy     String  // "CRON", "API", "MANUAL"
   userId          String? // If manual trigger
