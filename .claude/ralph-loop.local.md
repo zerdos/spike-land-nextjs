@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 64
+iteration: 96
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -15,10 +15,54 @@ started_at: "2026-01-10T00:00:00Z"
 | Setting      | Value                    | Notes                                |
 | ------------ | ------------------------ | ------------------------------------ |
 | WIP_LIMIT    | 6                        | Max parallel Jules tasks             |
-| AUTO_APPROVE | true                     | Auto-approve Jules plans             |
+| AUTO_APPROVE | **MANUAL**               | Requires TUI/web approval            |
 | AUTO_MERGE   | true                     | Squash merge when all checks pass    |
 | MAX_RETRIES  | 2                        | Retry failed tasks before escalating |
 | REPO         | zerdos/spike-land-nextjs | Target repository                    |
+| CLI_MODE     | **true**                 | Use Jules CLI instead of MCP/browser |
+
+---
+
+## Jules CLI Setup
+
+Ralph uses the `jules` CLI tool (v0.1.42) for managing Jules sessions.
+
+### Quick Reference
+
+```bash
+# List all sessions
+jules remote list --session
+
+# Create new task (from current directory's repo)
+jules new "task description"
+
+# Create task for specific repo
+jules new --repo zerdos/spike-land-nextjs "task description"
+
+# Create from GitHub issue (preferred)
+gh issue view 123 --json body -q '.body' | jules new --repo zerdos/spike-land-nextjs
+
+# Create multiple parallel sessions
+jules new --parallel 3 "task description"
+
+# Pull session result
+jules remote pull --session <session_id>
+
+# Apply session changes locally
+jules remote pull --session <session_id> --apply
+
+# Or clone repo + apply in one step
+jules teleport <session_id>
+
+# Interactive TUI (for approve/message - MANUAL operations)
+jules
+```
+
+### CLI Limitations (Requires Manual Intervention)
+
+- **Approve plans**: Use `jules` TUI or jules.google.com
+- **Send messages**: Use `jules` TUI or jules.google.com
+- **Get session activities**: Use `jules` TUI or jules.google.com
 
 ---
 
@@ -50,14 +94,14 @@ The Status column in the Active Task Registry uses these values:
 
 <!-- Ralph: UPDATE THIS EVERY ITERATION! This is your memory. -->
 
-| Issue #        | Session ID          | Status         | PR # | Retries | Last Updated     |
-| -------------- | ------------------- | -------------- | ---- | ------- | ---------------- |
-| TS-Build-Perf  | 743965185831409437  | PR_BEHIND_MAIN | 695  | 0       | 2026-01-13T12:15 |
-| #536 Autopilot | 3283041034249796510 | IN_PROGRESS    | -    | 0       | 2026-01-13T12:15 |
-| #681 DB-Backup | 6931936060370703380 | IN_PROGRESS    | -    | 0       | 2026-01-13T12:15 |
-| #560 ORB-050   | 9990519144520915308 | IN_PROGRESS    | -    | 0       | 2026-01-13T12:15 |
-| #559 ORB-049   | 5418198425599883351 | IN_PROGRESS    | -    | 0       | 2026-01-13T12:15 |
-| #557 ORB-047   | 6461916275207593573 | IN_PROGRESS    | -    | 0       | 2026-01-13T12:15 |
+| Issue #        | Session ID          | Status                 | PR # | Retries | Last Updated     |
+| -------------- | ------------------- | ---------------------- | ---- | ------- | ---------------- |
+| TS-Build-Perf  | 743965185831409437  | AWAITING_PR_CREATION   | 695  | 0       | 2026-01-13T21:10 |
+| #536 Autopilot | 3283041034249796510 | AWAITING_PLAN_APPROVAL | -    | 0       | 2026-01-13T21:10 |
+| #681 DB-Backup | 6931936060370703380 | AWAITING_PR_CREATION   | -    | 0       | 2026-01-13T21:10 |
+| #560 ORB-050   | 9990519144520915308 | AWAITING_PR_CREATION   | -    | 0       | 2026-01-13T21:10 |
+| #559 ORB-049   | 5418198425599883351 | PLANNING               | -    | 0       | 2026-01-13T21:10 |
+| #557 ORB-047   | 6461916275207593573 | AWAITING_USER_FEEDBACK | -    | 0       | 2026-01-13T21:10 |
 
 **Active Count: 6/6** (0 slots available - queue full!)
 
@@ -71,11 +115,13 @@ The Status column in the Active Task Registry uses these values:
 
 - CI/CD Pipeline: ✅ PASSING (run 20960942296)
 
-**Actions This Iteration (64):**
+**Actions This Iteration (96):**
 
-- ✅ Approved 4 plans: #557 ORB-047, #559 ORB-049, #560 ORB-050, #681 DB-Backup → all IN_PROGRESS
-- 🔧 Found PR #695 (TS-Build-Perf) with merge conflicts → notified Jules to rebase
-- 💬 Resumed #536 Autopilot session (was inactive) → now IN_PROGRESS
+- 📊 Status refresh: 3 sessions completed (TS-Build-Perf, #560 ORB-050, #681 DB-Backup)
+- ⚠️ PR #695 has **merge conflicts** (CONFLICTING) - needs manual resolution
+- ⏳ AWAITING APPROVAL: 3283041034249796510 (#536 Autopilot) - requires manual TUI/web
+- ⏳ AWAITING FEEDBACK: 6461916275207593573 (#557 ORB-047) - requires manual TUI/web
+- 🔄 #559 ORB-049 still PLANNING (2h stale)
 - 📊 CI Status: ✅ PASSING (run 20968906031)
 
 ---
@@ -84,8 +130,8 @@ The Status column in the Active Task Registry uses these values:
 
 ### Step 1: Batch Status Check (ALWAYS FIRST)
 
-```
-mcp__spike-land__jules_list_sessions
+```bash
+jules remote list --session
 ```
 
 Parse response and categorize ALL sessions into:
@@ -106,21 +152,22 @@ Update the Active Task Registry table above with current state.
 
 ---
 
-### Step 2: Auto-Approve All Pending Plans
+### Step 2: Log Pending Approvals (MANUAL)
 
-For each `AWAITING_PLAN_APPROVAL` session, approve immediately:
+**CLI Limitation**: The Jules CLI doesn't support approving plans.
 
-```
-mcp__spike-land__jules_approve_plan { session_id: "[id]" }
-```
+For each `AWAITING_PLAN_APPROVAL` session:
 
-**Batch logging:**
+1. **Log the pending approval:**
+   ```
+   ⏳ AWAITING APPROVAL: [session_id] (Issue #X) - requires manual approval
+   ```
 
-```
-✅ Approved plans: [session1] (Issue #X), [session2] (Issue #Y)
-```
+2. **Skip to next step** - approvals require manual intervention via:
+   - `jules` TUI command (interactive mode)
+   - jules.google.com web interface
 
-Do NOT wait for approval to take effect - continue to next step.
+Ralph will continue monitoring these sessions in future iterations.
 
 ---
 
@@ -130,30 +177,37 @@ For sessions with a PR (status contains `PR_`, `REVIEW_`, or `JULES_`), or `COMP
 
 #### 3.0 PR Creation (AUTOMATED)
 
-With `automationMode: "AUTO_CREATE_PR"` enabled, Jules automatically creates PRs when tasks complete.
-No browser automation needed!
+Jules automatically creates PRs when tasks complete.
 
 For sessions marked `COMPLETED`:
 
-1. Get session details: `mcp__spike-land__jules_get_session { session_id: "[id]" }`
-2. Extract PR URL from `outputs` field (contains `{ url: "https://github.com/.../pull/N" }`)
-3. Parse PR number from URL
-4. Update registry status to `PR_CREATED` with PR number
-5. Proceed to Step 3.2 (PR Health check)
+1. Check for PR via GitHub:
+   ```bash
+   # List recent PRs from Jules
+   gh pr list --author "@me" --state open --json number,title,headRefName
+   ```
+2. Or pull session result to apply locally:
+   ```bash
+   jules remote pull --session [id]
+   jules teleport [id]  # Clone + apply changes
+   ```
+3. Update registry status to `PR_CREATED` with PR number
+4. Proceed to Step 3.2 (PR Health check)
 
-**Fallback (if no PR in outputs):**
+**Fallback (if no PR found):**
 
-If `outputs` is empty after `COMPLETED` status, wait one iteration and re-check.
-Jules may still be finalizing the PR. If still empty after 2 iterations, escalate to user.
+If no PR exists after `COMPLETED` status, wait one iteration and re-check.
+Jules may still be finalizing. If still empty after 2 iterations, use `jules teleport` to apply locally and create PR manually.
 
 ---
 
 #### 3.1 Check for PR
 
-Get session details to find PR number:
+Check for PR via GitHub CLI:
 
-```
-mcp__spike-land__jules_get_session { session_id: "[id]" }
+```bash
+# Find PR by branch pattern (Jules typically names branches)
+gh pr list --state open --json number,title,headRefName | jq '.[] | select(.headRefName | contains("jules"))'
 ```
 
 If no PR exists, log warning and skip to next session.
@@ -172,18 +226,25 @@ yarn ralph:pr-health [PR#]
 | `merge_state: "BEHIND"`      | Update status to `PR_BEHIND_MAIN` → Step 3.2a |
 | `ci_passing: true` + `CLEAN` | → Step 3.3 (Publish PR)                       |
 
-#### 3.2a Message Jules to Fix PR Issues
+#### 3.2a Log PR Issues (MANUAL)
 
-Use the existing session to request fixes:
+**CLI Limitation**: The Jules CLI doesn't support sending messages.
+
+Log the issue for manual intervention:
 
 ```
-mcp__spike-land__jules_send_message {
-  session_id: "[session id from registry]",
-  message: "Your PR #[n] needs attention:\n\n[IF CI FAILING]: CI checks are failing. Please fix the failing tests/build.\n\n[IF BEHIND MAIN]: Your branch is behind main. Please rebase onto main and resolve any conflicts.\n\nPush your fixes when ready."
-}
+⚠️ PR #[n] needs attention:
+   Session: [session_id]
+   Issue: [CI_FAILING | BEHIND_MAIN]
+   Action: Requires manual message via jules TUI or web
 ```
 
-Update registry status accordingly. Check again next iteration.
+Update registry status accordingly. Jules must self-monitor PRs or use:
+
+- `jules` TUI command (interactive mode)
+- jules.google.com web interface
+
+Check again next iteration.
 
 #### 3.3 Publish Draft PR (Take Out of Draft Mode)
 
@@ -214,25 +275,32 @@ gh pr view [PR#] --json reviews,reviewDecision -q '{reviews: .reviews, decision:
 | `APPROVED`          | Status = `REVIEW_APPROVED` → Step 3.6 (Merge)  |
 | `CHANGES_REQUESTED` | Status = `REVIEW_CHANGES_REQUESTED` → Step 3.5 |
 
-#### 3.5 Handle Review Feedback
+#### 3.5 Handle Review Feedback (MANUAL)
 
-Extract review comments:
+**CLI Limitation**: The Jules CLI doesn't support sending messages.
+
+Extract review comments for logging:
 
 ```bash
 gh pr view [PR#] --json reviews -q '.reviews[] | select(.state == "CHANGES_REQUESTED") | .body'
 gh api repos/zerdos/spike-land-nextjs/pulls/[PR#]/comments --jq '.[].body'
 ```
 
-Message Jules with feedback:
+Log the feedback for manual intervention:
 
 ```
-mcp__spike-land__jules_send_message {
-  session_id: "[session id from registry]",
-  message: "Review feedback for PR #[n]:\n\n[paste review comments]\n\nPlease address these comments and push fixes."
-}
+⚠️ PR #[n] has review feedback:
+   Session: [session_id]
+   Reviewer comments: [summary]
+   Action: Requires manual message via jules TUI or web
 ```
 
-Update status to `JULES_FIXING_REVIEW`.
+Update status to `REVIEW_CHANGES_REQUESTED`.
+
+Jules must self-monitor or operator must use:
+
+- `jules` TUI command (interactive mode)
+- jules.google.com web interface
 
 When Jules pushes (detected by checking PR updated_at):
 
@@ -285,17 +353,21 @@ The script automatically:
 
 #### 4.5 Create Jules Tasks
 
-For each issue up to `available_slots`:
+For each issue up to `available_slots`, use the Jules CLI with gh issue integration:
 
-```
-mcp__spike-land__jules_create_session {
-  title: "Issue #[n]: [title]",
-  task: "[Full issue body]\n\n---\nAcceptance Criteria:\n- All tests passing\n- No linter errors\n- Update docs if needed",
-  source_repo: "zerdos/spike-land-nextjs"
-}
+```bash
+# Create task from GitHub issue (preferred)
+gh issue view [ISSUE#] --json title,body --jq '"Issue #" + (.number|tostring) + ": " + .title + "\n\n" + .body + "\n\n---\nAcceptance Criteria:\n- All tests passing\n- No linter errors\n- Update docs if needed"' | \
+  jules new --repo zerdos/spike-land-nextjs
+
+# Or simpler version
+gh issue view [ISSUE#] --json body -q '.body' | jules new --repo zerdos/spike-land-nextjs
 ```
 
 Add to Active Task Registry immediately.
+
+**Note:** Sessions will start in `PLANNING` → `AWAITING_PLAN_APPROVAL` status.
+Approval requires manual intervention via `jules` TUI or jules.google.com.
 
 ---
 
@@ -314,47 +386,54 @@ If `status: "failing"`, the script includes a 50-line error excerpt automaticall
 
 This can **exceed WIP_LIMIT** (priority override):
 
-````
-mcp__spike-land__jules_create_session {
-  title: "🚨 Fix CI: [failure summary]",
-  task: "CI is failing on main branch.\n\nError log:\n```\n[paste log excerpt]\n```\n\nFix the build. This is highest priority.",
-  source_repo: "zerdos/spike-land-nextjs"
-}
-````
+```bash
+# Create CI fix task with error details
+echo "🚨 Fix CI: [failure summary]
+
+CI is failing on main branch.
+
+Error log:
+\`\`\`
+[paste log excerpt]
+\`\`\`
+
+Fix the build. This is highest priority." | jules new --repo zerdos/spike-land-nextjs
+```
+
+**Note:** Session will need manual approval via `jules` TUI or jules.google.com.
 
 ---
 
-### Step 6: Respond to Jules Feedback Requests
+### Step 6: Log Feedback Requests (MANUAL)
+
+**CLI Limitation**: The Jules CLI doesn't support sending messages or getting session activities.
 
 For each `AWAITING_USER_FEEDBACK` session:
 
-#### 6.1 Get Context
+#### 6.1 Log the Feedback Request
 
 ```
-mcp__spike-land__jules_get_session { session_id: "[id]", include_activities: true }
+⏳ AWAITING FEEDBACK: [session_id] (Issue #X)
+   Action: Requires manual response via jules TUI or web
 ```
 
-#### 6.2 Read Jules's Question
+#### 6.2 Manual Intervention Required
 
-Parse the latest activity to understand what Jules needs.
+Operator must use:
 
-#### 6.3 Provide Response
+- `jules` TUI command (interactive mode)
+- jules.google.com web interface
 
-Common scenarios:
+Common scenarios to respond to:
 
-| Jules Asks                          | Ralph Responds                                              |
+| Jules Asks                          | Suggested Response                                          |
 | ----------------------------------- | ----------------------------------------------------------- |
 | "Which approach should I use?"      | "Use approach [A] because [reason]. Prioritize simplicity." |
 | "I need access to [X]"              | "You have access via [method]. Check [file/docs]."          |
 | "Tests are failing, should I skip?" | "No. Fix the tests. Here's the likely issue: [analysis]"    |
 | "Clarify requirement [X]"           | Re-read issue body, provide specific guidance               |
 
-```
-mcp__spike-land__jules_send_message {
-  session_id: "[id]",
-  message: "[your response]"
-}
-```
+Ralph will continue monitoring these sessions in future iterations.
 
 ---
 
@@ -375,15 +454,22 @@ Look up session in Active Task Registry.
 
 #### 7.3 Create Retry Task (if applicable)
 
-```
-mcp__spike-land__jules_create_session {
-  title: "Retry: Issue #[n] (attempt [x])",
-  task: "[Original task]\n\n---\n⚠️ Previous attempt failed:\n[failure reason]\n\nTry alternative approach.",
-  source_repo: "zerdos/spike-land-nextjs"
-}
+```bash
+# Create retry task with failure context
+echo "Retry: Issue #[n] (attempt [x])
+
+[Original task from gh issue view [n] --json body -q '.body']
+
+---
+⚠️ Previous attempt failed:
+[failure reason]
+
+Try alternative approach." | jules new --repo zerdos/spike-land-nextjs
 ```
 
 Update retry count in registry.
+
+**Note:** Session will need manual approval via `jules` TUI or jules.google.com.
 
 ---
 
@@ -453,11 +539,15 @@ Output `<promise>WORKFORCE_IDLE</promise>` when ALL true:
 | Ignore FAILED sessions                | Log, retry with context, or escalate        |
 | Exceed WIP_LIMIT casually             | Only exceed for CI fixes                    |
 | Wait for @claude-code-review          | Move on, check result next iteration        |
-| Approve plans one-by-one with waits   | Batch approve, continue immediately         |
 | Commit every tiny change              | Batch work, commit once per iteration       |
 | **Message dead/expired sessions**     | **Silently remove, return task to queue**   |
 | Run multiple gh commands per PR       | Use `./scripts/ralph/pr-health.sh`          |
 | Manually filter/sort issues           | Use `./scripts/ralph/available-issues.sh`   |
+| Use MCP to list sessions              | Use `jules remote list --session`           |
+| Use MCP/browser to create tasks       | Use `jules new --repo owner/repo "..."`     |
+| Use browser to pull session changes   | Use `jules teleport <id>`                   |
+| Try to auto-approve via code          | Log and skip - requires manual TUI/web      |
+| Try to send messages via code         | Log and skip - requires manual TUI/web      |
 
 ---
 
@@ -598,15 +688,16 @@ Each iteration should output structured logs:
 
 ---
 
-## Quick Reference: MCP Tools
+## Quick Reference: Jules CLI
 
-| Action              | Tool                                                                     |
-| ------------------- | ------------------------------------------------------------------------ |
-| List all sessions   | `mcp__spike-land__jules_list_sessions`                                   |
-| Get session details | `mcp__spike-land__jules_get_session { session_id, include_activities? }` |
-| Approve plan        | `mcp__spike-land__jules_approve_plan { session_id }`                     |
-| Send message        | `mcp__spike-land__jules_send_message { session_id, message }`            |
-| Create task         | `mcp__spike-land__jules_create_session { title, task, source_repo }`     |
+| Action              | Command                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| List all sessions   | `jules remote list --session`                                                         |
+| Get session result  | `jules remote pull --session <id>`                                                    |
+| Create task         | `gh issue view N --json body -q '.body' \| jules new --repo zerdos/spike-land-nextjs` |
+| Apply session patch | `jules teleport <id>` or `jules remote pull --session <id> --apply`                   |
+| Approve plan        | **MANUAL**: Use `jules` TUI or jules.google.com                                       |
+| Send message        | **MANUAL**: Use `jules` TUI or jules.google.com                                       |
 
 ---
 
@@ -687,15 +778,21 @@ When any build target fails:
 gh issue create --title "🚨 Build failing: [target] - [summary]" \
   --body "Build target \`[target]\` is failing.\n\n\`\`\`\n[error log]\n\`\`\`" \
   --label "bug,priority:critical"
+
+# Create Jules task via CLI
+echo "🚨 Fix Build: [target] failure
+
+Build is failing on target [target].
+
+Error:
+\`\`\`
+[error output]
+\`\`\`
+
+Fix this immediately. This blocks all other work." | jules new --repo zerdos/spike-land-nextjs
 ```
 
-````
-mcp__spike-land__jules_create_session {
-  title: "🚨 Fix Build: [target] failure",
-  task: "Build is failing on target [target].\n\nError:\n```\n[error output]\n```\n\nFix this immediately. This blocks all other work.",
-  source_repo: "zerdos/spike-land-nextjs"
-}
-````
+**Note:** Session will need manual approval via `jules` TUI or jules.google.com.
 
 ### Build Target Reference
 
@@ -725,11 +822,11 @@ When a Jules agent is **killed, expired, or unreachable**, Ralph must:
 Run at start of each iteration:
 
 ```bash
-# List session IDs to check
-yarn ralph:check-session-health [session_ids from registry]
+# List all sessions and compare with registry
+jules remote list --session
 ```
 
-Then verify each with `jules_get_session`. A session is **DEAD** if:
+Compare output with Active Task Registry. A session is **DEAD** if:
 
 - API returns error/not found
 - Status is `FAILED` with no recent activity (>2 hours)
@@ -762,60 +859,42 @@ Then verify each with `jules_get_session`. A session is **DEAD** if:
 
 ## 💰 Token Efficiency Scripts
 
-**Use these bash scripts to reduce token usage by ~70%.**
+**Use these bash scripts and Jules CLI to reduce token usage by ~70%.**
+
+### Jules CLI Commands (Preferred)
+
+| Command                                   | Purpose                   | Savings |
+| ----------------------------------------- | ------------------------- | ------- |
+| `jules remote list --session`             | List all sessions         | ~95%    |
+| `jules new --repo owner/repo "..."`       | Create new session        | ~95%    |
+| `gh issue view N -q '.body' \| jules new` | Create task from issue    | ~95%    |
+| `jules remote pull --session <id>`        | Get session status/result | ~90%    |
+| `jules teleport <id>`                     | Clone + apply changes     | ~95%    |
+
+### Helper Scripts
 
 Located in `scripts/ralph/` (also available as yarn commands):
 
-| Yarn Command                      | Script                    | Purpose                            | Savings |
-| --------------------------------- | ------------------------- | ---------------------------------- | ------- |
-| `yarn ralph:pr-health`            | `pr-health.sh`            | All PR health metrics in one call  | ~80%    |
-| `yarn ralph:batch-pr-status`      | `batch-pr-status.sh`      | All open PRs status at once        | ~90%    |
-| `yarn ralph:available-issues`     | `available-issues.sh`     | Filtered, prioritized issues       | ~70%    |
-| `yarn ralph:ci-status`            | `ci-status.sh`            | Main branch CI with error excerpt  | ~60%    |
-| `yarn ralph:check-session-health` | `check-session-health.sh` | Verify sessions exist before comms | ~50%    |
-| `yarn ralph:publish-pr`           | `publish-jules-pr.mjs`    | Publish PR from Jules session      | ~95%    |
+| Yarn Command                  | Script                | Purpose                           | Savings |
+| ----------------------------- | --------------------- | --------------------------------- | ------- |
+| `yarn ralph:pr-health`        | `pr-health.sh`        | All PR health metrics in one call | ~80%    |
+| `yarn ralph:batch-pr-status`  | `batch-pr-status.sh`  | All open PRs status at once       | ~90%    |
+| `yarn ralph:available-issues` | `available-issues.sh` | Filtered, prioritized issues      | ~70%    |
+| `yarn ralph:ci-status`        | `ci-status.sh`        | Main branch CI with error excerpt | ~60%    |
 
-### Token-Efficient PR Publishing
+### Applying Session Changes Locally
 
-**When browser is already open to Jules session, use `browser_run_code` instead of snapshot-click-wait:**
-
-```javascript
-// ONE call instead of snapshot + find ref + click + wait + snapshot
-mcp__playwright__browser_run_code({
-  code: `async (page) => {
-    // Navigate to session if not already there
-    if (!page.url().includes('jules.google.com/session')) {
-      await page.goto('https://jules.google.com/session/SESSION_ID');
-      await page.waitForLoadState('networkidle');
-    }
-
-    // Click Publish PR button
-    const btn = page.getByRole('button', { name: 'Publish PR' });
-    if (await btn.isVisible()) {
-      await btn.click();
-      await page.waitForFunction(() =>
-        document.body.innerText.includes('View PR')
-      , { timeout: 60000 });
-
-      // Get the PR URL from new tab
-      const pages = page.context().pages();
-      for (const p of pages) {
-        if (p.url().includes('/pull/')) {
-          return { success: true, pr_url: p.url() };
-        }
-      }
-    }
-    return { success: false, error: 'No Publish PR button' };
-  }`,
-});
-```
-
-**Or from CLI (requires browser login):**
+Use the Jules CLI to apply completed session changes:
 
 ```bash
-yarn ralph:publish-pr 6575646228061348411
-# Returns: {"success":true,"pr_number":670,"pr_url":"https://github.com/..."}
+# Pull and apply patch to current repo
+jules remote pull --session <session_id> --apply
+
+# Or clone repo + checkout branch + apply in one step
+jules teleport <session_id>
 ```
+
+This replaces browser automation for PR creation - changes are applied locally and you can create the PR via `gh pr create`.
 
 ### Usage Examples
 
@@ -872,30 +951,29 @@ When Jules messages that it encountered a **critical issue** (blocked, can't pro
 
 Do NOT retry with same context. The task is poisoned.
 
-#### Step 2: Archive via Browser
+#### Step 2: Archive via TUI/Web
 
-```
-mcp__playwright__browser_navigate { url: "https://jules.google.com/session/[session_id]" }
-mcp__playwright__browser_snapshot {}
-```
-
-Look for "Archive" or "Close" button and click it to clean up.
+Use `jules` TUI command or visit jules.google.com to archive the failed session.
 
 #### Step 3: Start Fresh
 
-Create a new Jules session with:
+Create a new Jules session via CLI with:
 
 - Simplified task description
 - Different approach angle
 - Lessons from the failure
 
+```bash
+echo "Retry #[n]: [issue] - Fresh approach
+
+[Simplified task]
+
+⚠️ Previous attempt failed due to: [reason]
+
+Try this approach instead: [new approach]" | jules new --repo zerdos/spike-land-nextjs
 ```
-mcp__spike-land__jules_create_session {
-  title: "Retry #[n]: [issue] - Fresh approach",
-  task: "[Simplified task]\n\n⚠️ Previous attempt failed due to: [reason]\n\nTry this approach instead: [new approach]",
-  source_repo: "zerdos/spike-land-nextjs"
-}
-```
+
+**Note:** Session will need manual approval via `jules` TUI or jules.google.com.
 
 ### Iteration Improvement Log
 
@@ -909,26 +987,35 @@ mcp__spike-land__jules_create_session {
 | 17        | Added dead session handling    | Avoid wasting tokens on dead sessions |
 | 17        | Added token efficiency scripts | ~70% token reduction per iteration    |
 | 17        | Added DEAD status              | Silent removal, no communication      |
+| 90        | Migrated to Jules CLI          | Replace MCP/browser with `jules` CLI  |
+| 90        | Added gh issue integration     | Pipe issues directly to `jules new`   |
+| 90        | Made approve/message manual    | CLI doesn't support - use TUI/web     |
 
 ---
 
-## 🗑️ Session Cleanup via Browser
+## 🗑️ Session Cleanup
 
-For completed, failed, or stuck sessions, clean up via jules.google.com:
+For completed, failed, or stuck sessions:
 
-### Archive a Session
+### Via Jules TUI
 
+```bash
+# Open interactive TUI to manage sessions
+jules
 ```
-mcp__playwright__browser_navigate { url: "https://jules.google.com" }
-mcp__playwright__browser_snapshot {}
-```
 
-Find session in list, click to open, then:
+Navigate to the session and use archive/close options.
 
-```
-mcp__playwright__browser_click { element: "Archive button or menu", ref: "[ref]" }
-```
+### Via jules.google.com
+
+Visit https://jules.google.com and use the web interface to:
+
+- Archive completed sessions
+- Close failed sessions
+- Remove stale entries
 
 ### Bulk Cleanup
 
-Periodically (every 5 iterations), archive all COMPLETED and FAILED sessions that are older than 24 hours to keep the Jules dashboard clean
+Periodically (every 5 iterations), archive all COMPLETED and FAILED sessions that are older than 24 hours to keep the Jules dashboard clean.
+
+Use the TUI or web interface for bulk operations.
