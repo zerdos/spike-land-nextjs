@@ -165,4 +165,72 @@ describe("enhanceImage workflow", () => {
       },
     });
   });
+
+  it("should save alt text and quality score for low quality", async () => {
+    mockAnalyzeImageV2.mockResolvedValue({
+      description: "A dark, noisy photo",
+      quality: "low",
+      structuredAnalysis: {
+        mainSubject: "A dark, noisy photo",
+        imageStyle: "photograph",
+        defects: {
+          isDark: true,
+          isBlurry: true,
+          hasNoise: true,
+          hasVHSArtifacts: false,
+          isLowResolution: true,
+          isOverexposed: false,
+          hasColorCast: false,
+        },
+        lightingCondition: "low-light",
+        cropping: { isCroppingNeeded: false },
+      },
+    });
+
+    await enhanceImage(validInput);
+
+    expect(mockPrismaUpdate).toHaveBeenCalledWith({
+      where: { id: "job-123" },
+      data: {
+        analysisResult: expect.any(Object),
+        analysisSource: "gemini-3-pro-image-preview",
+        altText: "A dark, noisy photo",
+        qualityScore: 0.33,
+      },
+    });
+  });
+
+  it("should use fallback quality score for unknown quality values", async () => {
+    mockAnalyzeImageV2.mockResolvedValue({
+      description: "An unusual photo",
+      quality: "unknown" as "high" | "medium" | "low",
+      structuredAnalysis: {
+        mainSubject: "An unusual photo",
+        imageStyle: "photograph",
+        defects: {
+          isDark: false,
+          isBlurry: false,
+          hasNoise: false,
+          hasVHSArtifacts: false,
+          isLowResolution: false,
+          isOverexposed: false,
+          hasColorCast: false,
+        },
+        lightingCondition: "unknown",
+        cropping: { isCroppingNeeded: false },
+      },
+    });
+
+    await enhanceImage(validInput);
+
+    expect(mockPrismaUpdate).toHaveBeenCalledWith({
+      where: { id: "job-123" },
+      data: {
+        analysisResult: expect.any(Object),
+        analysisSource: "gemini-3-pro-image-preview",
+        altText: "An unusual photo",
+        qualityScore: 0.5,
+      },
+    });
+  });
 });
