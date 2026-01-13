@@ -204,6 +204,18 @@ For sessions marked `COMPLETED`:
 If no PR exists after `COMPLETED` status, wait one iteration and re-check.
 Jules may still be finalizing. If still empty after 2 iterations, use `jules teleport` to apply locally and create PR manually.
 
+**Post-Teleport Validation Checklist:**
+
+Before creating PR from teleported changes:
+
+1. [ ] Run `yarn tsc --noEmit` - verify no TypeScript errors
+2. [ ] Check for new dependencies: `git diff package.json`
+3. [ ] Run `yarn prisma generate` if schema changed
+4. [ ] Quick test: `yarn test:run` (or `yarn test:run --changed`)
+5. [ ] Verify no conflict markers: `grep -r "<<<<<<" src/`
+
+If TypeScript errors exist, fix them before creating PR (see "Handling Teleport Failures" section).
+
 ---
 
 #### 3.1 Check for PR
@@ -250,6 +262,39 @@ Update registry status accordingly. Jules must self-monitor PRs or use:
 - jules.google.com web interface
 
 Check again next iteration.
+
+#### 3.2b Resolve PR Conflicts (When Mergeable = CONFLICTING)
+
+When a PR has merge conflicts (detected via `gh pr view [PR#] --json mergeable`):
+
+1. **Checkout the PR branch:**
+   ```bash
+   git fetch origin <pr-branch>
+   git checkout <pr-branch>
+   ```
+
+2. **Rebase onto main:**
+   ```bash
+   git rebase origin/main
+   ```
+
+3. **Resolve conflicts:**
+   - For trivial whitespace: Keep either version
+   - For code conflicts: Analyze both changes, merge manually
+   - For schema conflicts: Ensure all fields from both versions are present
+   - Check for `<<<<<<` markers after resolution
+
+4. **Verify and force push:**
+   ```bash
+   yarn tsc --noEmit  # Verify no TS errors
+   git push --force-with-lease
+   ```
+
+5. **Update registry status:** `PR_CREATED` (conflicts resolved)
+
+**Example (from iteration 97):**
+PR #695 had conflicts in `Dockerfile` and `prisma/schema.prisma`.
+Both were trivial whitespace/comment conflicts resolved by keeping HEAD version.
 
 #### 3.3 Publish Draft PR (Take Out of Draft Mode)
 
@@ -901,6 +946,57 @@ jules teleport <session_id>
 
 This replaces browser automation for PR creation - changes are applied locally and you can create the PR via `gh pr create`.
 
+### Handling Teleport Failures
+
+#### Common Failure: Patch Conflicts
+
+When `jules teleport <id>` fails with conflicts (usually `package.json`, `yarn.lock`):
+
+1. **Pull the raw diff:**
+   ```bash
+   jules remote pull --session <id> > /tmp/session.patch
+   ```
+
+2. **Identify conflicting files:**
+   ```bash
+   grep "^diff --git" /tmp/session.patch | grep -E "(package.json|yarn.lock)"
+   ```
+
+3. **Apply non-conflicting changes manually:**
+   - Extract new files from the diff (copy content directly)
+   - Add dependencies with `yarn add <package>` instead of patching yarn.lock
+   - Create new directories/files as needed
+
+4. **Verify and commit:**
+   ```bash
+   yarn tsc --noEmit  # Check for TypeScript errors
+   yarn test:run      # Quick test validation
+   ```
+
+#### Common Failure: Incomplete Jules Changes
+
+Jules may update schema/types but miss updating dependent code:
+
+- Test mock factories (missing new required fields)
+- Component default values
+- Type assertions in test files
+
+**Detection:**
+
+```bash
+yarn tsc --noEmit 2>&1 | grep "error TS"
+```
+
+**Common fix patterns:**
+
+- Missing fields in mocks: Add `fieldName: null` to mock objects
+- Type mismatches: Update type assertions to include new optional fields
+- Prisma changes: Run `yarn prisma generate` then fix consuming code
+
+**Example (from iteration 97):**
+Jules added `altText` and `qualityScore` to Prisma schema but didn't update 5 test files.
+Fix: Added `altText: null, qualityScore: null` to each mock factory.
+
 ### Usage Examples
 
 **Instead of multiple gh commands for PR health:**
@@ -984,17 +1080,21 @@ Try this approach instead: [new approach]" | jules new --repo zerdos/spike-land-
 
 <!-- Track what was learned/changed each iteration -->
 
-| Iteration | Change Made                    | Reason                                |
-| --------- | ------------------------------ | ------------------------------------- |
-| 12        | Added build priority step      | Build health is critical              |
-| 12        | Added worktree policy          | Prevent branch confusion              |
-| 12        | Added critical issue kill      | Stop wasting retries                  |
-| 17        | Added dead session handling    | Avoid wasting tokens on dead sessions |
-| 17        | Added token efficiency scripts | ~70% token reduction per iteration    |
-| 17        | Added DEAD status              | Silent removal, no communication      |
-| 90        | Migrated to Jules CLI          | Replace MCP/browser with `jules` CLI  |
-| 90        | Added gh issue integration     | Pipe issues directly to `jules new`   |
-| 90        | Made approve/message manual    | CLI doesn't support - use TUI/web     |
+| Iteration | Change Made                           | Reason                                    |
+| --------- | ------------------------------------- | ----------------------------------------- |
+| 12        | Added build priority step             | Build health is critical                  |
+| 12        | Added worktree policy                 | Prevent branch confusion                  |
+| 12        | Added critical issue kill             | Stop wasting retries                      |
+| 17        | Added dead session handling           | Avoid wasting tokens on dead sessions     |
+| 17        | Added token efficiency scripts        | ~70% token reduction per iteration        |
+| 17        | Added DEAD status                     | Silent removal, no communication          |
+| 90        | Migrated to Jules CLI                 | Replace MCP/browser with `jules` CLI      |
+| 90        | Added gh issue integration            | Pipe issues directly to `jules new`       |
+| 90        | Made approve/message manual           | CLI doesn't support - use TUI/web         |
+| 97        | Added teleport conflict handling      | Patch conflicts in package.json/yarn.lock |
+| 97        | Added incomplete change detection     | Jules may miss updating test mocks        |
+| 97        | Added post-teleport TypeScript check  | Verify changes compile before PR          |
+| 97        | Added PR conflict resolution workflow | Rebase PRs with merge conflicts           |
 
 ---
 
