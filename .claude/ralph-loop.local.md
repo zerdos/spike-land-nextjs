@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 123
+iteration: 124
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -138,8 +138,8 @@ The Status column in the Active Task Registry uses these values:
 | #536 Autopilot | 3283041034249796510  | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
 | #681 DB-Backup | 6931936060370703380  | IN_PROGRESS              | 697  | 0       | 2026-01-13T22:45 |
 | #560 ORB-050   | 9990519144520915308  | REVIEW_CHANGES_REQUESTED | 696  | 0       | 2026-01-13T22:30 |
-| #559 ORB-049   | 5418198425599883351  | AWAITING_USER_FEEDBACK   | -    | 0       | 2026-01-13T21:35 |
-| #557 ORB-047   | 6461916275207593573  | AWAITING_USER_FEEDBACK   | -    | 0       | 2026-01-13T21:10 |
+| #559 ORB-049   | 5418198425599883351  | IN_PROGRESS              | -    | 0       | 2026-01-13T22:50 |
+| #557 ORB-047   | 6461916275207593573  | IN_PROGRESS              | -    | 0       | 2026-01-13T22:50 |
 | #550 ORB-044   | 9029505413509658765  | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
 | #545 ORB-042   | 14061592581795539866 | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
 | #543 ORB-041   | 16700969269248228994 | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
@@ -151,7 +151,7 @@ The Status column in the Active Task Registry uses these values:
 | E2E-Auth-Tests | 14385720697892655834 | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
 | Unit-Orbit     | 1396081266021328535  | IN_PROGRESS              | -    | 0       | 2026-01-13T22:45 |
 
-**Active Count: 16/30** (14 slots available) - **12 Jules agents now coding!**
+**Active Count: 16/30** (14 slots available) - **14 Jules agents now coding!**
 
 **Completed Sessions (archived from registry):**
 
@@ -195,9 +195,10 @@ The Status column in the Active Task Registry uses these values:
 - ⚠️ PR #696 (#560 ORB-050): REVIEW_CHANGES_REQUESTED
   - Review feedback: Missing test case for low quality
   - **Next**: Use MCP to send fix instructions to Jules
-- ⏳ AWAITING FEEDBACK (2 sessions) - can now use MCP to respond:
-  - 6461916275207593573 (#557 ORB-047)
-  - 5418198425599883351 (#559 ORB-049)
+- 💬 **RESPONDED TO 2 FEEDBACK SESSIONS VIA MCP** - now IN_PROGRESS!
+  - 6461916275207593573 (#557 ORB-047) - sent implementation guidance
+  - 5418198425599883351 (#559 ORB-049) - sent implementation guidance
+- 📝 Fixed Anti-Patterns table (removed outdated "manual only" advice)
 
 ---
 
@@ -672,11 +673,10 @@ Output `<promise>WORKFORCE_IDLE</promise>` when ALL true:
 | **Message dead/expired sessions**     | **Silently remove, return task to queue**   |
 | Run multiple gh commands per PR       | Use `./scripts/ralph/pr-health.sh`          |
 | Manually filter/sort issues           | Use `./scripts/ralph/available-issues.sh`   |
-| Use MCP to list sessions              | Use `jules remote list --session`           |
-| Use MCP/browser to create tasks       | Use `jules new --repo owner/repo "..."`     |
-| Use browser to pull session changes   | Use `jules teleport <id>`                   |
-| Try to auto-approve via code          | Log and skip - requires manual TUI/web      |
-| Try to send messages via code         | Log and skip - requires manual TUI/web      |
+| Use CLI to approve plans              | ✅ Use MCP: `jules_approve_plan()`          |
+| Use CLI to send messages              | ✅ Use MCP: `jules_send_message()`          |
+| Use browser for approvals/messages    | ✅ Use MCP tools (faster, automated!)       |
+| Rely on manual TUI for automation     | ✅ Use MCP for full automation              |
 
 ---
 
