@@ -212,7 +212,7 @@ const experience = [
     company: "Virgin Media O2 Limited",
     type: "Contractor",
     achievements: [
-      "Led a small team to deliver 4 critical user journeys on the My O2 mobile platform",
+      "Delivered 10 critical user journeys on the My O2 mobile platform",
       "Reduced CSS build size by 80% via PostCSS plugins",
       "Built automated Figma-to-PR pipeline for the Component Library",
       "Key role in cloud migration of virginmediao2.co.uk",

@@ -4,17 +4,19 @@ _By Zoltan Erdos | Brighton, UK | January 2026_
 
 I need to tell you something. Something I am not proud of.
 
-For a brief period in 2025, when I joined a new team, my pull requests were pure AI slop. Even with my very best effort to avoid it.
+For a brief period in 2025, when I started on a new project, my pull requests were pure AI slop. Even with my very best effort to avoid it.
 
 Let me tell you exactly what happened.
 
-## The New Job
+## The New Project
 
-I was excited. A new team. A new challenge. The tech stack looked interesting - a Next.js app for customer cancellations, an Angular app for the main e-commerce store. The people seemed smart. I was ready to prove myself.
+I joined a team working on two connected applications. A Next.js app handling customer cancellations. An Angular app running the main e-commerce store. The tech stack looked interesting. The people seemed smart. I was ready to prove myself.
 
-The codebase was old. Very old. It had years of history. Thousands of files. Patterns I had never seen before. Decisions made long before I arrived.
+The codebase was pragmatic. You could tell previous developers had put care into it. Yes, there was some tech debt - what codebase does not have that? But the architecture was deliberate. Certain things had to be done in certain ways because that is how the system was designed to work.
 
-But I had a secret weapon. Or so I thought.
+I had never built an e-commerce site before. This would become important.
+
+I had a secret weapon. Or so I thought.
 
 AI coding tools had become incredibly powerful by 2025. Claude Code. These were not simple autocomplete tools anymore. They could understand complex codebases. They could write entire features. They could refactor large amounts of code.
 
@@ -26,11 +28,13 @@ I was not a hero. I was building on sand.
 
 ## The Basket API Incident
 
-Let me tell you about the PR that changed everything.
+It was one of my first tickets on the project.
 
-The ticket seemed simple. Track analytics when a user accepts a retention offer. The flow was straightforward: user goes to cancel their account in the Next.js app, sees a retention offer with an ID in the URL, clicks it, goes to the Angular app, and checks out. I needed to track that checkout event.
+The task seemed simple. Track analytics when a user accepts a retention offer. The flow went like this: a customer goes to cancel their account in the Next.js app, sees a retention offer with an ID in the URL, clicks it, gets redirected to the Angular app with that ID, and checks out. I needed to track that checkout event.
 
-I had never built an e-commerce site before. I assumed the frontend holds the basket in memory until checkout. That is how it worked in my head. The user adds things to their cart, the frontend stores it, then sends everything to the server when they click "buy."
+Here is where my inexperience killed me.
+
+I had never built an e-commerce site. In my head, the frontend holds the basket in memory until checkout. The user adds things to their cart, the frontend stores it, then sends everything to the server when they click "buy." That made sense to me.
 
 So I asked Claude to help me implement the tracking. And Claude generated code. Beautiful code. It called the Basket API to fetch the basket data so we could track the checkout.
 
@@ -60,7 +64,7 @@ I did not understand.
 
 Then a more senior developer reviewed the PR. She was direct. The PR was essentially garbage. Only tiny parts were useful.
 
-The basket was server-side. That was the architecture. The backend was the single source of truth. The ID from the cancellation app was just for double-checking against what was already stored. There was no need to call the Basket API at all.
+The basket was server-side. That was the architecture. The backend was the single source of truth. The ID from the cancellation app was just for double-checking against what was already stored on the server. There was no need to call the Basket API at all.
 
 I sat there, staring at my screen. I had no answer for why I wrote this code. Because I did not write it. Claude did. And I approved it without understanding.
 
@@ -68,13 +72,13 @@ I sat there, staring at my screen. I had no answer for why I wrote this code. Be
 
 The AI is not the problem. I was the problem.
 
-I did not know what I did not know. The ticket requirements were unclear, but I did not know enough to ask the right questions. I did not understand the architecture, so I could not verify what the AI assumed.
+I did not know what I did not know. The ticket requirements were not clear, but I did not know enough to ask the right questions. I had never built e-commerce before. I did not understand the architecture. So I could not verify what the AI assumed.
+
+The codebase was well-designed. The previous developers had put thought into how the basket system worked. There were good reasons for the three-layer architecture. But I did not take the time to understand those reasons before asking Claude to generate code.
 
 I was using AI as a shortcut instead of a tool. There is a big difference.
 
 A shortcut replaces your work. A tool helps you do your work better. I was treating AI like a shortcut. I needed to treat it like a tool.
-
-The AI makes assumptions. On a legacy codebase, as a new developer, I had no way to verify those assumptions. The AI saw patterns and made guesses. Sometimes those guesses were wrong. And I had no safety net to catch them.
 
 ## What Changed
 
@@ -82,9 +86,11 @@ After that incident, everything changed.
 
 **First, I created comprehensive documentation.** I gathered everything - Confluence docs, code comments, API documentation, other team's codebases. I used NotebookLM to generate learning tutorials, system diagrams, flashcards, quizzes. In one weekend, I mastered the domain knowledge that I had been missing.
 
-**Second, I encoded project patterns into Claude's instructions.** Custom skills. Team conventions. Coding standards. Now the AI follows our patterns automatically instead of guessing.
+**Second, I encoded project patterns into Claude's instructions.** Custom skills. Team conventions. Coding standards. How the basket architecture actually works. Now the AI follows our patterns automatically instead of guessing.
 
 **Third - and this is the most important change - the agent now interviews me during planning.** Before any code is written, the agent asks me questions. It keeps asking until I have a full picture. If I cannot answer a question, I go back to the documentation. Or I run another agent to find out. This ensures I understand what I am building before I build it.
+
+If the agent had interviewed me before that basket PR, it would have asked: "What data already exists on the server?" And I would have had no answer. That would have stopped me from making the mistake.
 
 **Fourth, I test differently now.** The agent spins up a browser. Logs in with test credentials. Tries to pass the feature like a human tester would. Takes screenshots. Compares them with Figma designs. It catches bugs that manual testing would catch.
 
@@ -98,13 +104,17 @@ But my reputation at work is still damaged. My PRs still take longer to review t
 
 That is the hidden cost of AI slop. It is not just bad code. It is broken trust. And trust rebuilds slowly.
 
+Despite this, I am positive. The system works. The quality is there. Each good PR adds a little trust back.
+
 ## My Advice to You
 
-If you are new to a team and using AI tools, please hear me.
+If you are new to a project and using AI tools, please hear me.
 
 The AI will make you feel productive. You will ship code fast. Your PRs will look clean. But you might be building on assumptions you cannot verify.
 
-Slow down. Ask questions. Read the old code. Talk to your teammates. Create documentation. Have the AI interview you about the problem before it writes any code.
+Slow down. Ask questions. Understand the architecture. Talk to your teammates. Create documentation. Have the AI interview you about the problem before it writes any code.
+
+The codebase you are working on probably has good reasons for being the way it is. Previous developers made thoughtful decisions. Take time to understand those decisions before you let AI generate code that ignores them.
 
 AI coding tools are incredible. They have changed how I work forever. But they are not a replacement for understanding. They are a multiplier. And if you multiply zero understanding by a powerful AI, you still get zero.
 
