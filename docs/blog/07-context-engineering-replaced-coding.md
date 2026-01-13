@@ -58,6 +58,58 @@ The issue is never the AI's coding ability. The issue is always my context engin
 
 This changes who succeeds in software development. The best developers are no longer the ones who type fastest. They are the ones who explain clearest.
 
+## Building Context Systematically
+
+After I joined a new team and completely misunderstood their basket architecture, I learned something important: context does not build itself. You have to construct it deliberately.
+
+Here is my system.
+
+**Gather everything.** Confluence pages. Slack conversations. Code comments. API documentation. Architecture diagrams. Old PRs. Meeting notes. I pull it all into one place.
+
+**Use NotebookLM to accelerate learning.** I feed all this documentation into NotebookLM and ask it to generate learning materials:
+
+- **Tutorials** that walk through the domain step by step
+- **System diagrams** that visualize how pieces connect
+- **Flashcards** for memorizing key concepts
+- **Quizzes** to test my understanding
+
+After that basket incident, I used this approach. In one weekend, I mastered domain knowledge that would have taken weeks to learn traditionally.
+
+**Encode patterns into CLAUDE.md.** Every project now has a file that contains everything the AI needs to know. Team conventions. Architectural decisions. Common pitfalls. Which patterns are deprecated. Which APIs to use.
+
+When the AI reads this file, it stops guessing. It follows the playbook.
+
+## Have the AI Interview You
+
+This is the most important technique I discovered.
+
+During planning, I have the AI ask me questions. Not just any questions. It keeps asking until we both have a complete picture.
+
+"What is the user flow?"
+"What data already exists on the server?"
+"What happens if this fails?"
+"Why does this ID appear in the URL?"
+
+If I cannot answer a question, I stop. I go back to the documentation. Or I run another agent to investigate. I do not proceed until I understand.
+
+This catches wrong assumptions before they become wrong code. If I had done this during the basket API incident, I would have realized immediately that I did not understand the architecture. The AI would have asked "what happens to the basket data before checkout?" and I would have had no answer.
+
+## Opus 4.5: Not Just a Copilot Anymore
+
+In December 2025, Opus 4.5 was released. It changed what context engineering means.
+
+With proper instructions, the AI can now orchestrate multiple agents as a coordinated team. One agent explores the codebase. Another reads documentation. Another checks for similar patterns. Another reviews code. Another writes tests.
+
+You do not have a copilot anymore. You have a whole dev team. Or a flock of dev teams.
+
+This sounds like marketing speak. It is not. I use this daily.
+
+When I start a complex task, I spawn multiple agents in parallel. They work simultaneously. They report back. I synthesize their findings. Then we proceed together with full context.
+
+The key is "with proper instructions." You need to tell each agent exactly what to focus on. What questions to answer. What to look for. What to report back.
+
+Multi-agent orchestration is context engineering at scale. Instead of giving context to one AI, you give specialized context to many AIs working together.
+
 ## How to Get Good at Context Engineering
 
 I have been practicing this skill every day for over a year. Here is what I learned.
@@ -68,9 +120,11 @@ I have been practicing this skill every day for over a year. Here is what I lear
 
 **Create clear instructions.** Tell the AI about your patterns. What libraries do you use? What coding style do you prefer? What mistakes should it avoid? Put this in files the AI can reference. In my projects, I use a file called CLAUDE.md. It contains everything the AI needs to know.
 
+**Have the AI interview you.** Before any code is written, have the AI ask you questions about the problem. If you cannot answer, stop and learn more. This catches wrong assumptions before they become wrong code.
+
 **Test your context.** Give your AI a small task. Review the output carefully. Did it make assumptions you did not expect? Add that context. Did it miss a pattern? Explain that pattern. Treat it like onboarding a new team member.
 
-**Use the new abstractions.** Set up MCP servers for your databases. Create tools for common tasks. Build skills for repeated workflows. The more context you can provide automatically, the less you need to explain manually.
+**Use the new abstractions.** Set up MCP servers for your databases. Create tools for common tasks. Build skills for repeated workflows. Orchestrate multiple agents for complex tasks. The more context you can provide automatically, the less you need to explain manually.
 
 **Iterate constantly.** Your context is never complete. Every mistake is a chance to improve. Every wrong assumption is a documentation gap. Every failure teaches you what to add.
 

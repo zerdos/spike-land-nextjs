@@ -77,6 +77,50 @@
 
 ---
 
+## The Basket API Incident: A Case Study
+
+_This specific example illustrates the "AI slop" problem in concrete detail._
+
+### The Setup
+
+> "I was working on two apps - a Next.js cancellation flow and an Angular e-commerce store. The ticket was about tracking analytics when users accept a retention offer. Simple, right?"
+
+> "The flow was: user goes to cancel, sees a retention offer with an ID in the URL, clicks it, goes to the Angular app, and checks out. I needed to track that checkout event."
+
+### The Misunderstanding
+
+> "I assumed the frontend holds the basket in memory until checkout. That's what made sense to me. But the basket was server-side - the backend was the single source of truth. The ID in the URL was just for double-checking."
+
+> "I didn't know what I didn't know. The ticket requirements weren't clear, but I didn't know enough to ask the right questions."
+
+### The Perfect Storm
+
+> "Claude was having technical issues at that time. There's actually a [postmortem from Anthropic](https://www.anthropic.com/engineering/a-postmortem-of-three-recent-issues) about it. Context window routing errors affected 30% of Claude Code users. The tool I trusted was producing good-looking but low-quality output."
+
+> "When the AI hallucinates confidently, it makes you hallucinate too. Claude generated code that called the Basket API when it shouldn't have. It looked right. It felt right. So I submitted the PR."
+
+### The Review
+
+> "One colleague kept asking questions I couldn't answer. A more senior developer was more direct - she said the PR was essentially garbage. Only tiny parts were useful."
+
+> "The basket was already there on the server. Why was I calling the Basket API? I had no answer. Because I didn't make that decision. Claude did."
+
+### The Solution
+
+> "After that incident, I created a comprehensive developer guide. I used NotebookLM to generate learning tutorials, system diagrams, flashcards, quizzes. In one weekend, I mastered all of it."
+
+> "But the biggest change is how I plan now. During planning, the agent interviews me. It asks questions until I have a full picture. If I can't answer something, I go back to the documentation or run another agent to find out."
+
+> "Then Opus 4.5 came out in December. It can orchestrate multiple agents as a coordinated team. You don't just have a copilot anymore - you have a whole dev team. Or a flock of dev teams."
+
+### The New Process
+
+> "My effort now is 30% planning, 50% testing, 20% quality improvement. The agent spins up a browser, logs in with test credentials, tries to pass the feature like a human tester would. It takes screenshots, compares with Figma."
+
+> "I stopped producing slop. But my reputation at work is still damaged. My PRs still take longer to review than others. That will take time to rebuild."
+
+---
+
 ## Context & Background
 
 - **Personal:** Hungarian developer living in Brighton, UK. Has two dogs. Practices daily routine (gym at 6:30am, dog walks, structured work schedule).
