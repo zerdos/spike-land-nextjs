@@ -5,6 +5,9 @@ import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+// Force dynamic rendering - skip static page data collection
+export const dynamic = "force-dynamic";
+
 interface RouteParams {
   params: Promise<{ jobId: string; }>;
 }

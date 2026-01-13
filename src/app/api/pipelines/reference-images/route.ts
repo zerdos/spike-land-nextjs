@@ -8,6 +8,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import sharp from "sharp";
 
+// Force dynamic rendering - skip static page data collection (sharp requires native modules)
+export const dynamic = "force-dynamic";
+
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file
 const MAX_REFERENCE_IMAGES = 3; // Maximum reference images per pipeline
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
