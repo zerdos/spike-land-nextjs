@@ -1,15 +1,201 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import type { Metadata } from "next";
-import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import {
+  ArrowRight,
+  BookOpen,
+  Briefcase,
+  Code2,
+  ExternalLink,
+  Github,
+  LayoutDashboard,
+  Linkedin,
+  type LucideIcon,
+  Mail,
+  MapPin,
+  Sparkles,
+  Terminal,
+  Zap,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
-export const metadata: Metadata = {
-  title: "Zoltan Erdos - Full Stack Developer & AI Pioneer | CV",
-  description:
-    "Full Stack Developer with 12+ years experience. Founder of Spike Land. Expert in TypeScript, React, Next.js, and AI-driven development.",
-};
+// Floating particle component
+function FloatingParticle({ delay, duration }: { delay: number; duration: number; }) {
+  return (
+    <div
+      className="absolute w-1 h-1 rounded-full bg-aurora-teal/40 animate-float"
+      style={{
+        left: `${Math.random() * 100}%`,
+        animationDelay: `${delay}s`,
+        animationDuration: `${duration}s`,
+      }}
+    />
+  );
+}
+
+// Typing animation hook
+function useTypingEffect(
+  texts: string[],
+  typingSpeed = 100,
+  deletingSpeed = 50,
+  pauseTime = 2000,
+) {
+  const [displayText, setDisplayText] = useState("");
+  const [textIndex, setTextIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentText = texts[textIndex] ?? "";
+
+    const timeout = setTimeout(
+      () => {
+        if (!isDeleting) {
+          if (displayText.length < currentText.length) {
+            setDisplayText(currentText.slice(0, displayText.length + 1));
+          } else {
+            setTimeout(() => setIsDeleting(true), pauseTime);
+          }
+        } else {
+          if (displayText.length > 0) {
+            setDisplayText(displayText.slice(0, -1));
+          } else {
+            setIsDeleting(false);
+            setTextIndex((prev) => (prev + 1) % texts.length);
+          }
+        }
+      },
+      isDeleting ? deletingSpeed : typingSpeed,
+    );
+
+    return () => clearTimeout(timeout);
+  }, [displayText, isDeleting, textIndex, texts, typingSpeed, deletingSpeed, pauseTime]);
+
+  return displayText;
+}
+
+// Project card component
+function ProjectCard({
+  title,
+  description,
+  tags,
+  link,
+  gradient,
+}: {
+  title: string;
+  description: string;
+  tags: string[];
+  link?: string;
+  gradient: string;
+}) {
+  return (
+    <Card
+      variant="magic"
+      className="group hover:scale-[1.02] transition-all duration-500 overflow-hidden"
+    >
+      <div className={cn("h-2 w-full", gradient)} />
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between text-xl">
+          {title}
+          {link && (
+            <a
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ExternalLink className="h-5 w-5 text-aurora-teal" />
+            </a>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground mb-4">{description}</p>
+        <div className="flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <Badge key={tag} variant="secondary">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Metric card component
+function MetricCard({
+  label,
+  value,
+  icon: Icon,
+  delay,
+}: {
+  label: string;
+  value: string;
+  icon: LucideIcon;
+  delay: number;
+}) {
+  return (
+    <Card
+      className="bg-white/5 border-white/10 hover:border-aurora-teal/50 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 fill-mode-forwards opacity-0"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <CardContent className="p-6 flex flex-col items-center text-center">
+        <div className="mb-3 p-3 rounded-full bg-aurora-teal/10 text-aurora-teal">
+          <Icon className="h-6 w-6" />
+        </div>
+        <h3 className="text-3xl font-black mb-1 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+          {value}
+        </h3>
+        <p className="text-sm text-muted-foreground">{label}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Timeline item
+function TimelineItem({
+  period,
+  title,
+  company,
+  description,
+  current,
+  achievements,
+}: {
+  period: string;
+  title: string;
+  company: string;
+  description?: string;
+  current?: boolean;
+  achievements: string[];
+}) {
+  return (
+    <div className="relative pl-8 pb-12 border-l border-white/10 last:border-l-0 group">
+      <div
+        className={cn(
+          "absolute left-0 top-0 w-4 h-4 -translate-x-[9px] rounded-full border-2 transition-all duration-300",
+          current
+            ? "bg-aurora-green border-aurora-green shadow-glow-cyan"
+            : "bg-background border-white/20 group-hover:border-aurora-teal",
+        )}
+      />
+      <div className="text-xs text-aurora-teal font-mono mb-1">{period}</div>
+      <h4 className="font-bold text-lg">{title}</h4>
+      <div className="text-muted-foreground text-sm mb-4">{company}</div>
+      {description && <p className="text-sm text-muted-foreground/80 mb-2">{description}</p>}
+      <ul className="space-y-2">
+        {achievements.map((item, i) => (
+          <li key={i} className="text-sm text-muted-foreground flex items-start">
+            <span className="mr-2 mt-1.5 w-1 h-1 rounded-full bg-aurora-teal/50" />
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 const skills = {
   frontend: ["TypeScript", "React", "Next.js 15", "Angular", "Tailwind CSS"],
@@ -97,373 +283,354 @@ const blogPosts = [
   { title: "A Letter to the Junior Developer of 2026", file: "15" },
 ];
 
-export default function CVPage() {
+export default function CSPage() {
+  const typedText = useTypingEffect([
+    "Full-Stack Developer",
+    "AI Pioneer",
+    "System Architect",
+    "Problem Solver",
+  ]);
+
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto pt-24 pb-12 px-4 max-w-5xl">
-        {/* Hero Section */}
-        <section className="mb-12">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-2">Zoltan Erdos</h1>
-              <p className="text-xl text-muted-foreground mb-4">
-                Full Stack Developer & AI-Driven Product Builder
-              </p>
-              <p className="text-lg text-primary font-medium">
-                Founder of Spike Land
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 text-sm">
-              <a
-                href="mailto:zoltan.erdos@me.com"
-                className="hover:text-primary transition-colors"
-              >
-                zoltan.erdos@me.com
-              </a>
-              <a
-                href="tel:+447514727998"
-                className="hover:text-primary transition-colors"
-              >
-                +44 7514 727998
-              </a>
-              <a
-                href="https://github.com/zerdos"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-primary transition-colors"
-              >
-                github.com/zerdos
-              </a>
-              <span className="text-muted-foreground">Brighton, UK</span>
-            </div>
-          </div>
-        </section>
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      <div
+        className="fixed inset-0 pointer-events-none opacity-30"
+        style={{
+          background:
+            `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(0, 229, 255, 0.1), transparent 40%)`,
+        }}
+      />
 
-        <Separator className="mb-12" />
-
-        {/* About Section */}
-        <section className="mb-12">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">About</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>
-                Passionate Full Stack Developer with 12+ years of experience and a strong focus on
-                frontend development backed by substantial backend expertise. I believe in
-                Test-Driven Development, clean code, and staying current with the latest tech.
-              </p>
-              <p>
-                In 2025, I discovered something that changed everything: with AI tools like Claude
-                Code and Opus 4.5, developers can be 50x more productive. But only if they
-                understand context engineering - the skill of giving AI the right information to
-                succeed.
-              </p>
-              <p className="text-primary font-medium">
-                "With AI, the impossible triangle is broken. High quality, fast delivery, AND low
-                cost are now achievable together."
-              </p>
-              <p>
-                I'm building Spike Land to prove that one person with the right tools and processes
-                can build enterprise-grade software. No excuses. No compromises.
-              </p>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Key Metrics */}
-        <section className="mb-12">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <Card className="text-center p-4">
-              <div className="text-3xl font-bold text-primary">12+</div>
-              <div className="text-sm text-muted-foreground">Years Experience</div>
-            </Card>
-            <Card className="text-center p-4">
-              <div className="text-3xl font-bold text-primary">5</div>
-              <div className="text-sm text-muted-foreground">Packages in Monorepo</div>
-            </Card>
-            <Card className="text-center p-4">
-              <div className="text-3xl font-bold text-primary">54</div>
-              <div className="text-sm text-muted-foreground">Database Models</div>
-            </Card>
-            <Card className="text-center p-4">
-              <div className="text-3xl font-bold text-primary">100+</div>
-              <div className="text-sm text-muted-foreground">API Endpoints</div>
-            </Card>
-            <Card className="text-center p-4">
-              <div className="text-3xl font-bold text-primary">100%</div>
-              <div className="text-sm text-muted-foreground">Test Coverage</div>
-            </Card>
-          </div>
-        </section>
-
-        {/* Technical Skills */}
-        <section className="mb-12">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Technical Skills</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold mb-2 text-muted-foreground">Frontend</h3>
-                <div className="flex flex-wrap gap-2">
-                  {skills.frontend.map((skill) => (
-                    <Badge key={skill} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2 text-muted-foreground">Backend</h3>
-                <div className="flex flex-wrap gap-2">
-                  {skills.backend.map((skill) => (
-                    <Badge key={skill} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2 text-muted-foreground">DevOps & Cloud</h3>
-                <div className="flex flex-wrap gap-2">
-                  {skills.devops.map((skill) => (
-                    <Badge key={skill} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2 text-muted-foreground">Testing</h3>
-                <div className="flex flex-wrap gap-2">
-                  {skills.testing.map((skill) => (
-                    <Badge key={skill} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2 text-muted-foreground">AI & Automation</h3>
-                <div className="flex flex-wrap gap-2">
-                  {skills.ai.map((skill) => (
-                    <Badge key={skill} variant="default">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Featured Project */}
-        <section className="mb-12">
-          <Card className="border-primary">
-            <CardHeader>
-              <CardTitle className="text-2xl">Featured Project: Spike Land</CardTitle>
-              <CardDescription>
-                AI-powered platform for creating, modifying, and deploying applications
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>
-                Spike Land started as my playground to push the boundaries of browser-based
-                development. Now it's a full production platform proving that one developer with AI
-                can build enterprise-grade software.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-semibold mb-2">What I Built:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li>Pixel - AI image enhancement app</li>
-                    <li>Live code editor with real-time preview</li>
-                    <li>MCP Server for Claude integration</li>
-                    <li>Mobile apps (iOS, Android, Web)</li>
-                    <li>E-commerce with Prodigi integration</li>
-                    <li>Complete token economy system</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Tech Stack:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li>Next.js 15 + TypeScript</li>
-                    <li>Cloudflare Workers + Durable Objects</li>
-                    <li>PostgreSQL + Prisma</li>
-                    <li>Expo 52 for mobile</li>
-                    <li>100% test coverage (Vitest + Playwright)</li>
-                  </ul>
-                </div>
-              </div>
-              <div className="pt-4">
-                <Button asChild>
-                  <Link href="/">Visit spike.land</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Work Experience */}
-        <section className="mb-12">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Work Experience</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="border-l-2 border-primary/30 pl-6 ml-2 space-y-8">
-                {experience.map((job, index) => (
-                  <div key={index} className="relative">
-                    <div className="absolute -left-[29px] top-1 w-4 h-4 rounded-full bg-primary" />
-                    <div className="mb-2">
-                      <span className="text-sm text-muted-foreground">{job.period}</span>
-                      <span className="text-sm text-muted-foreground mx-2">|</span>
-                      <Badge variant="outline">{job.type}</Badge>
-                    </div>
-                    <h3 className="text-lg font-semibold">{job.role}</h3>
-                    <p className="text-primary mb-2">{job.company}</p>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                      {job.achievements.map((achievement, i) => <li key={i}>{achievement}</li>)}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Education */}
-        <section className="mb-12">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Education</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row md:justify-between md:items-start">
-                <div>
-                  <h3 className="font-semibold">Computer Scientist and Mathematician</h3>
-                  <p className="text-primary">Eotvos Lorand University, Budapest</p>
-                  <p className="text-sm text-muted-foreground">
-                    Focus: Parallel programming and distributed systems
-                  </p>
-                </div>
-                <div className="text-sm text-muted-foreground mt-2 md:mt-0">
-                  2003 - 2010
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Insights / Blog */}
-        <section className="mb-12">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Insights & Writing</CardTitle>
-              <CardDescription>
-                My thoughts on AI, development, and the changing industry
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {blogPosts.map((post) => (
-                  <div
-                    key={post.file}
-                    className="text-sm p-2 rounded hover:bg-muted/50 transition-colors"
-                  >
-                    <span className="text-muted-foreground mr-2">{post.file}.</span>
-                    {post.title}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Personal */}
-        <section className="mb-12">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Personal</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>
-                I live in Brighton, UK with my two dogs. I have ADHD, which makes my communication
-                style a bit different - but I've learned to turn it into a strength through practice
-                and self-improvement.
-              </p>
-              <p>
-                My daily routine is sacred: gym at 6:30am, dog walks throughout the day, structured
-                work sessions. Consistency keeps me productive and happy.
-              </p>
-              <p>
-                I'm a geek who loves JavaScript, TypeScript, Docker, distributed systems, and
-                mathematics. I still code because I love it - even when AI does it better.
-              </p>
-              <p className="text-primary font-medium">
-                My dream: Build Spike Land into something big. Have an office in Brighton. Work with
-                nice people who share the vision.
-              </p>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Philosophy */}
-        <section className="mb-12">
-          <Card className="bg-muted/30">
-            <CardHeader>
-              <CardTitle className="text-2xl">Philosophy</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <h4 className="font-semibold mb-2">On Quality</h4>
-                  <p className="text-sm text-muted-foreground">
-                    100% test coverage is not optional. TDD, CI/CD, zero technical debt. If the
-                    tests don't pass, it doesn't ship.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">On AI</h4>
-                  <p className="text-sm text-muted-foreground">
-                    AI output equals function of context plus instructions. Get the context right,
-                    and AI becomes your 10x multiplier.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">On Work</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Money won't make you happy. You need to feel useful, need something interesting,
-                    something challenging.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* CTA */}
-        <section className="text-center">
-          <p className="text-lg mb-4">
-            Available for interesting projects and collaborations.
-          </p>
-          <div className="flex justify-center gap-4">
-            <Button asChild>
-              <a href="mailto:zoltan.erdos@me.com">Get in Touch</a>
-            </Button>
-            <Button variant="outline" asChild>
-              <a
-                href="https://github.com/zerdos"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View GitHub
-              </a>
-            </Button>
-          </div>
-        </section>
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <FloatingParticle key={i} delay={i * 0.5} duration={10 + Math.random() * 10} />
+        ))}
       </div>
+
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex items-center justify-center px-4">
+        <div className="absolute inset-0 bg-gradient-to-b from-aurora-teal/5 via-transparent to-transparent" />
+
+        <div className="relative z-10 text-center max-w-4xl mx-auto">
+          <div className="relative inline-block mb-8">
+            <div className="w-40 h-40 rounded-full bg-gradient-to-r from-aurora-green via-aurora-teal to-aurora-lime p-1 animate-spin-slow">
+              <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
+                <span className="text-6xl font-black bg-gradient-to-r from-aurora-green to-aurora-teal bg-clip-text text-transparent">
+                  ZE
+                </span>
+              </div>
+            </div>
+            <div className="absolute -bottom-2 -right-2 bg-aurora-green rounded-full p-2 shadow-glow-cyan">
+              <Sparkles className="h-5 w-5 text-white" />
+            </div>
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-black mb-4 tracking-tight">
+            <span className="bg-gradient-to-r from-white via-aurora-teal to-aurora-green bg-clip-text text-transparent">
+              Zoltan Erdos
+            </span>
+          </h1>
+
+          <div className="h-8 mb-6">
+            <span className="text-xl md:text-2xl text-muted-foreground font-mono">
+              {typedText}
+              <span className="animate-pulse">|</span>
+            </span>
+          </div>
+
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+            Full Stack Developer with 12+ years experience. Founder of Spike Land. Expert in
+            TypeScript, React, Next.js, and AI-driven development.
+          </p>
+
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-8">
+            <MapPin className="h-4 w-4" />
+            <span>Brighton, UK</span>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button variant="default" size="lg" asChild>
+              <a href="mailto:zoltan.erdos@me.com">
+                <Mail className="h-5 w-5 mr-2" />
+                Get In Touch
+              </a>
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <a href="https://github.com/zerdos" target="_blank" rel="noopener noreferrer">
+                <Github className="h-5 w-5 mr-2" />
+                GitHub
+              </a>
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+                <Linkedin className="h-5 w-5 mr-2" />
+                LinkedIn
+              </a>
+            </Button>
+          </div>
+
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+            <ArrowRight className="h-6 w-6 rotate-90 text-muted-foreground" />
+          </div>
+        </div>
+      </section>
+
+      {/* Metrics Section */}
+      <section className="py-12 px-4 relative z-10 -mt-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <MetricCard label="Years Experience" value="12+" icon={Briefcase} delay={0} />
+            <MetricCard label="Packages" value="5" icon={Code2} delay={100} />
+            <MetricCard label="DB Models" value="54" icon={LayoutDashboard} delay={200} />
+            <MetricCard label="API Endpoints" value="100+" icon={Zap} delay={300} />
+            <MetricCard label="Test Coverage" value="100%" icon={Terminal} delay={400} />
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="py-24 px-4 relative">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-start">
+            <div className="space-y-6">
+              <Badge variant="secondary" className="mb-2">
+                <Terminal className="h-3 w-3 mr-1" /> About Me
+              </Badge>
+              <h2 className="text-4xl font-bold">
+                Building the future,{" "}
+                <span className="bg-gradient-to-r from-aurora-teal to-aurora-green bg-clip-text text-transparent">
+                  with AI
+                </span>
+              </h2>
+              <div className="prose prose-invert text-muted-foreground">
+                <p>
+                  Passionate Full Stack Developer with 12+ years of experience and a strong focus on
+                  frontend development backed by substantial backend expertise. I believe in
+                  Test-Driven Development, clean code, and staying current with the latest tech.
+                </p>
+                <p>
+                  In 2025, I discovered something that changed everything: with AI tools like Claude
+                  Code and Opus 4.5, developers can be 50x more productive. But only if they
+                  understand context engineering.
+                </p>
+                <blockquote className="border-l-4 border-aurora-teal pl-4 italic text-white/80 my-4">
+                  "With AI, the impossible triangle is broken. High quality, fast delivery, AND low
+                  cost are now achievable together."
+                </blockquote>
+              </div>
+            </div>
+
+            <Card variant="layers" className="p-8">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <Zap className="h-5 w-5 text-aurora-yellow" />
+                Technical Skills
+              </h3>
+              <div className="space-y-6">
+                {(Object.entries(skills) as [string, string[]][]).map(([category, items]) => (
+                  <div key={category}>
+                    <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-3 text-xs tracking-wider">
+                      {category}
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {items.map((skill) => (
+                        <Badge
+                          key={skill}
+                          variant={category === "ai" ? "default" : "secondary"}
+                          className={cn(
+                            category === "ai" && "bg-aurora-teal hover:bg-aurora-teal/80",
+                          )}
+                        >
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Experience Section */}
+      <section className="py-24 px-4 bg-gradient-to-b from-transparent via-aurora-teal/5 to-transparent">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <Badge variant="secondary" className="mb-4">
+              <Briefcase className="h-3 w-3 mr-1" /> Experience
+            </Badge>
+            <h2 className="text-4xl font-bold">
+              Professional{" "}
+              <span className="bg-gradient-to-r from-aurora-teal to-aurora-green bg-clip-text text-transparent">
+                Journey
+              </span>
+            </h2>
+          </div>
+
+          <div>
+            {experience.map((job, index) => (
+              <TimelineItem
+                key={index}
+                period={job.period}
+                title={job.role}
+                company={job.company}
+                description={job.type}
+                achievements={job.achievements}
+                current={index === 0}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Projects Section */}
+      <section className="py-24 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <Badge variant="secondary" className="mb-4">
+              <Code2 className="h-3 w-3 mr-1" /> Projects
+            </Badge>
+            <h2 className="text-4xl font-bold">
+              Featured{" "}
+              <span className="bg-gradient-to-r from-aurora-teal to-aurora-green bg-clip-text text-transparent">
+                Work
+              </span>
+            </h2>
+          </div>
+
+          <div className="max-w-2xl mx-auto">
+            <ProjectCard
+              title="Spike Land"
+              description="AI-powered platform for creating, modifying, and deploying applications. Starting as a playground to push browser-based development boundaries, it's now a full production platform proving that one developer with AI can build enterprise-grade software."
+              tags={[
+                "Next.js 15",
+                "Cloudflare Workers",
+                "PostgreSQL",
+                "Expo 52",
+                "Context Engineering",
+              ]}
+              link="/"
+              gradient="bg-gradient-to-r from-aurora-teal to-aurora-green"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Thoughts Section */}
+      <section className="py-24 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <Badge variant="secondary" className="mb-4">
+              <BookOpen className="h-3 w-3 mr-1" /> Writing
+            </Badge>
+            <h2 className="text-4xl font-bold">
+              Recent{" "}
+              <span className="bg-gradient-to-r from-aurora-teal to-aurora-green bg-clip-text text-transparent">
+                Insights
+              </span>
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {blogPosts.map((post, i) => (
+              <Card
+                key={i}
+                className="group hover:border-aurora-teal/50 transition-colors cursor-pointer"
+              >
+                <CardContent className="p-6">
+                  <div className="text-xs text-aurora-teal font-mono mb-2">{post.file}</div>
+                  <h3 className="font-bold group-hover:text-aurora-teal transition-colors">
+                    {post.title}
+                  </h3>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 px-4 border-t border-white/10">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} Zoltan Erdos. Built with AI & Passion.
+          </p>
+          <div className="flex gap-4">
+            <a
+              href="https://github.com/zerdos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-aurora-teal transition-colors"
+            >
+              <Github className="h-5 w-5" />
+            </a>
+            <a
+              href="https://linkedin.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-aurora-teal transition-colors"
+            >
+              <Linkedin className="h-5 w-5" />
+            </a>
+            <a
+              href="mailto:zoltan.erdos@me.com"
+              className="text-muted-foreground hover:text-aurora-teal transition-colors"
+            >
+              <Mail className="h-5 w-5" />
+            </a>
+          </div>
+        </div>
+      </footer>
+
+      <style jsx global>
+        {`
+        @keyframes float {
+          0%,
+          100% {
+            transform: translateY(100vh) scale(0);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+            transform: translateY(90vh) scale(1);
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-10vh) scale(0.5);
+            opacity: 0;
+          }
+        }
+
+        @keyframes spin-slow {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        .animate-float {
+          animation: float linear infinite;
+        }
+
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
+        }
+      `}
+      </style>
     </div>
   );
 }
