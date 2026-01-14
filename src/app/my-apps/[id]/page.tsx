@@ -180,8 +180,10 @@ export default function AppWorkspacePage() {
             break;
 
           case "code_updated":
-            // Reload iframe
+            // Reload iframe to show new code
             setIframeKey((prev) => prev + 1);
+            // Also refresh app data in case codespaceUrl or other details changed
+            fetchApp();
             break;
         }
       } catch {
@@ -198,7 +200,7 @@ export default function AppWorkspacePage() {
       eventSource.close();
       eventSourceRef.current = null;
     };
-  }, [appId]);
+  }, [appId, fetchApp]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
