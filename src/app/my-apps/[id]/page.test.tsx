@@ -451,7 +451,10 @@ describe("AppWorkspacePage", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("No messages yet. Start a conversation!"),
+        screen.getByText("No messages yet"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Start a conversation to begin building your app."),
       ).toBeInTheDocument();
     });
   });

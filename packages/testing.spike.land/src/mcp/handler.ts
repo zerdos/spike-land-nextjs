@@ -216,18 +216,21 @@ export class McpHandler {
         if (!args.code || typeof args.code !== "string") {
           throw new Error("Code parameter is required and must be a string");
         }
-        return executeUpdateCode(session, requestedCodeSpace, args.code, updateSession);
+        const origin = this.durableObject.getOrigin();
+        return executeUpdateCode(session, requestedCodeSpace, args.code, updateSession, origin);
       }
 
       case "edit_code": {
         if (!args.edits || !Array.isArray(args.edits)) {
           throw new Error("Edits parameter is required and must be an array");
         }
+        const editOrigin = this.durableObject.getOrigin();
         return executeEditCode(
           session,
           requestedCodeSpace,
           args.edits as LineEdit[],
           updateSession,
+          editOrigin,
         );
       }
 
@@ -250,6 +253,7 @@ export class McpHandler {
         if (typeof args.replace !== "string") {
           throw new Error("Replace parameter is required and must be a string");
         }
+        const replaceOrigin = this.durableObject.getOrigin();
         return executeSearchAndReplace(
           session,
           requestedCodeSpace,
@@ -258,6 +262,7 @@ export class McpHandler {
           args.isRegex === true,
           args.global !== false,
           updateSession,
+          replaceOrigin,
         );
       }
 

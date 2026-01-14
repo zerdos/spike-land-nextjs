@@ -360,33 +360,57 @@ export default function AppWorkspacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-24 pb-8">
+    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 overflow-x-hidden relative selection:bg-teal-500/30">
+      {/* Ambient Glow Effects */}
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-1/4 -left-64 w-96 h-96 bg-teal-500/20 rounded-full blur-[128px]" />
+        <div className="absolute bottom-1/4 -right-64 w-96 h-96 bg-purple-500/10 rounded-full blur-[128px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 bg-gradient-to-b from-teal-500/5 to-transparent blur-3xl opacity-50" />
+      </div>
+
+      <div className="container mx-auto px-4 pt-24 pb-8 relative z-10">
         {/* Header */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/my-apps"
-              className="text-muted-foreground hover:text-foreground"
+              className="group flex items-center gap-2 text-zinc-400 hover:text-white transition-colors duration-200"
             >
-              &larr; Back
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 border border-white/10 group-hover:bg-white/10 group-hover:border-white/20 transition-all">
+                &larr;
+              </div>
+              <span className="font-medium">Back</span>
             </Link>
-            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-              {app.name}
-            </h1>
-            <Badge variant={getStatusVariant(app.status)}>
-              {app.status.replace("_", " ")}
-            </Badge>
-            {agentWorking && (
-              <Badge variant="secondary" className="animate-pulse">
-                Agent Working
-              </Badge>
-            )}
+            <div className="h-8 w-px bg-white/10 mx-2" />
+            <div className="flex flex-col">
+              <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-400">
+                {app.name}
+              </h1>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge
+                  variant={getStatusVariant(app.status)}
+                  className="bg-white/5 hover:bg-white/10 border-white/10 text-zinc-300 pointer-events-none"
+                >
+                  {app.status.replace("_", " ")}
+                </Badge>
+                {agentWorking && (
+                  <Badge
+                    variant="secondary"
+                    className="bg-teal-500/20 text-teal-200 border-teal-500/30 animate-pulse"
+                  >
+                    Agent Working
+                  </Badge>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             {app.codespaceUrl && (
               <Link href={app.codespaceUrl} target="_blank">
-                <Button variant="outline" size="sm">
+                <Button
+                  className="rounded-full bg-white/5 border-white/10 hover:bg-white/10 text-white hover:text-white transition-all shadow-lg hover:shadow-xl backdrop-blur-sm"
+                  variant="outline"
+                >
                   Open in New Tab
                 </Button>
               </Link>
@@ -395,40 +419,60 @@ export default function AppWorkspacePage() {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-2 lg:h-[calc(100vh-200px)] min-h-[600px]">
           {/* Chat Panel */}
-          <Card className="flex flex-col h-[calc(100vh-200px)] min-h-[500px]">
-            <CardHeader className="border-b">
+          <Card className="flex flex-col h-full bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl overflow-hidden ring-1 ring-white/5">
+            <CardHeader className="border-b border-white/5 bg-white/[0.02] px-6 py-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg">Chat</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-xl font-semibold text-zinc-100">Chat</CardTitle>
+                  <CardDescription className="text-zinc-400">
                     Communicate with the AI agent to refine your app
                   </CardDescription>
                 </div>
                 {messages.length > 0 && (
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={handleClearChat}
                     disabled={clearingChat || app.status === "ARCHIVED"}
+                    className="text-zinc-400 hover:text-white hover:bg-white/5 rounded-full px-4"
                   >
                     {clearingChat ? "Clearing..." : "Clear Chat"}
                   </Button>
                 )}
               </div>
             </CardHeader>
-            <CardContent className="flex-1 overflow-hidden p-0">
+            <CardContent className="flex-1 overflow-hidden p-0 relative">
               {/* Messages */}
-              <div className="h-full overflow-y-auto p-4">
+              <div className="h-full overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                 {messages.length === 0
                   ? (
-                    <div className="flex h-full items-center justify-center text-center text-muted-foreground">
-                      <p>No messages yet. Start a conversation!</p>
+                    <div className="flex h-full items-center justify-center text-center text-zinc-500">
+                      <div className="space-y-4 max-w-xs">
+                        <div className="w-16 h-16 rounded-2xl bg-white/5 mx-auto flex items-center justify-center border border-white/5">
+                          <svg
+                            className="w-8 h-8 text-zinc-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                            />
+                          </svg>
+                        </div>
+                        <p className="text-lg font-medium text-zinc-300">No messages yet</p>
+                        <p className="text-sm">Start a conversation to begin building your app.</p>
+                      </div>
                     </div>
                   )
                   : (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       {messages.map((message) => (
                         <div
                           key={message.id}
@@ -439,22 +483,22 @@ export default function AppWorkspacePage() {
                           }`}
                         >
                           <div
-                            className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                            className={`max-w-[85%] rounded-2xl px-5 py-3 shadow-sm ${
                               message.role === "USER"
-                                ? "bg-primary text-primary-foreground"
+                                ? "bg-teal-600/90 text-white backdrop-blur-sm shadow-[0_4px_20px_-4px_rgba(20,184,166,0.3)]"
                                 : message.role === "SYSTEM"
-                                ? "bg-muted text-muted-foreground text-sm italic"
-                                : "bg-secondary text-secondary-foreground"
+                                ? "bg-white/5 text-zinc-400 text-sm border border-white/5"
+                                : "bg-white/10 text-zinc-100 backdrop-blur-md border border-white/5"
                             }`}
                           >
-                            <p className="whitespace-pre-wrap">
+                            <p className="whitespace-pre-wrap leading-relaxed">
                               {message.role === "AGENT"
                                 ? formatWithParagraphs(message.content)
                                 : message.content}
                             </p>
                             {message.attachments &&
                               message.attachments.length > 0 && (
-                              <div className="mt-2 flex flex-wrap gap-2">
+                              <div className="mt-3 flex flex-wrap gap-2">
                                 {message.attachments.map((attachment) => (
                                   <Image
                                     key={attachment.image.id}
@@ -462,14 +506,21 @@ export default function AppWorkspacePage() {
                                     alt="Attachment"
                                     width={80}
                                     height={80}
-                                    className="h-20 w-20 rounded object-cover"
+                                    className="h-20 w-20 rounded-lg object-cover ring-1 ring-white/10"
                                     unoptimized
                                   />
                                 ))}
                               </div>
                             )}
-                            <p className="mt-1 text-xs opacity-70">
-                              {new Date(message.createdAt).toLocaleTimeString()}
+                            <p
+                              className={`mt-1.5 text-xs ${
+                                message.role === "USER" ? "text-teal-100/70" : "text-zinc-500"
+                              }`}
+                            >
+                              {new Date(message.createdAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                             </p>
                           </div>
                         </div>
@@ -477,70 +528,107 @@ export default function AppWorkspacePage() {
                     </div>
                   )}
                 {isStreaming && streamingResponse && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[80%] rounded-lg px-4 py-2 bg-secondary text-secondary-foreground">
-                      <p className="whitespace-pre-wrap">
+                  <div className="flex justify-start mt-6">
+                    <div className="max-w-[85%] rounded-2xl px-5 py-3 bg-white/10 text-zinc-100 backdrop-blur-md border border-white/5">
+                      <p className="whitespace-pre-wrap leading-relaxed">
                         {formatWithParagraphs(streamingResponse)}
-                        <span className="animate-pulse">▊</span>
+                        <span className="inline-block w-2 h-4 ml-1 bg-teal-500 animate-pulse rounded-full align-middle" />
                       </p>
-                      <p className="mt-1 text-xs opacity-70">Thinking...</p>
+                      <p className="mt-1.5 text-xs text-zinc-500">Thinking...</p>
                     </div>
                   </div>
                 )}
-                <div ref={messagesEndRef} />
+                <div ref={messagesEndRef} className="h-4" />
               </div>
             </CardContent>
             {/* Message Input */}
-            <div className="border-t p-4">
-              <div className="flex gap-2">
+            <div className="border-t border-white/5 bg-white/[0.02] p-4">
+              <div className="flex gap-3 relative">
                 <Textarea
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Type your message... (Press Enter to send)"
-                  className="min-h-[60px] resize-none"
+                  placeholder="Type your message..."
+                  className="min-h-[60px] max-h-[200px] resize-none bg-black/20 border-white/10 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 rounded-2xl pl-4 pr-4 py-3 text-zinc-200 placeholder:text-zinc-600 backdrop-blur-sm transition-all"
                   disabled={sendingMessage || app.status === "ARCHIVED"}
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={!newMessage.trim() || sendingMessage ||
                     app.status === "ARCHIVED"}
-                  className="shrink-0"
+                  aria-label="Send message"
+                  className={`absolute right-2 bottom-2 h-10 w-10 p-0 rounded-xl transition-all duration-300 ${
+                    !newMessage.trim() || sendingMessage
+                      ? "bg-white/5 text-zinc-500"
+                      : "bg-teal-500 hover:bg-teal-400 text-white shadow-[0_0_20px_-5px_rgba(20,184,166,0.6)]"
+                  }`}
                 >
-                  {sendingMessage ? "Sending..." : "Send"}
+                  {sendingMessage
+                    ? (
+                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    )
+                    : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="w-5 h-5 ml-0.5"
+                      >
+                        <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                      </svg>
+                    )}
                 </Button>
+              </div>
+              <div className="mt-2 text-center">
+                <p className="text-[10px] text-zinc-600">
+                  Press{" "}
+                  <kbd className="font-sans px-1 py-0.5 bg-white/5 rounded border border-white/10 text-zinc-500">
+                    Enter
+                  </kbd>{" "}
+                  to send
+                </p>
               </div>
             </div>
           </Card>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3 h-full">
             {/* Codespace URL label */}
             {app.codespaceUrl && (
-              <div className="text-xs text-muted-foreground text-right pr-1">
+              <div className="text-xs text-zinc-500 text-right pr-2 font-mono">
                 {app.codespaceUrl.replace("https://", "")}
               </div>
             )}
             {/* Preview Panel */}
-            <motion.div layoutId={`app-card-${app.id}`}>
-              <Card className="flex flex-col h-[500px] overflow-hidden bg-zinc-950 border-zinc-800">
+            <motion.div layoutId={`app-card-${app.id}`} className="flex-1 h-full min-h-[500px]">
+              <Card className="flex flex-col h-full overflow-hidden bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl ring-1 ring-white/5 relative group">
+                {/* Glow effect for preview card */}
+                <div className="absolute -inset-[1px] bg-gradient-to-br from-white/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
                 {/* Browser Toolbar */}
-                <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900/50 px-4 py-3">
-                  <div className="flex gap-1.5">
-                    <div className="h-3 w-3 rounded-full bg-red-500/20 hover:bg-red-500 transition-colors" />
-                    <div className="h-3 w-3 rounded-full bg-yellow-500/20 hover:bg-yellow-500 transition-colors" />
-                    <div className="h-3 w-3 rounded-full bg-green-500/20 hover:bg-green-500 transition-colors" />
+                <div className="flex items-center justify-between border-b border-white/5 bg-white/[0.02] px-5 py-4 relative z-10">
+                  <div className="flex gap-2">
+                    <div className="h-3 w-3 rounded-full bg-[#FF5F56] border border-white/5 shadow-inner" />
+                    <div className="h-3 w-3 rounded-full bg-[#FFBD2E] border border-white/5 shadow-inner" />
+                    <div className="h-3 w-3 rounded-full bg-[#27C93F] border border-white/5 shadow-inner" />
+                  </div>
+
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/20 px-32 py-1.5 rounded-lg border border-white/5 hidden md:block w-1/2">
+                    <div className="text-[10px] text-zinc-600 truncate text-center font-mono">
+                      {app.codespaceUrl || "localhost"}
+                    </div>
                   </div>
 
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-zinc-500 hover:text-zinc-300"
+                    className="h-8 w-8 text-zinc-500 hover:text-white hover:bg-white/10 rounded-full transition-colors"
                     onClick={() => setIframeKey((prev) => prev + 1)}
+                    title="Refresh Preview"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
+                      width="16"
+                      height="16"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -554,17 +642,16 @@ export default function AppWorkspacePage() {
                   </Button>
                 </div>
 
-                <CardContent className="flex-1 overflow-hidden p-0 md:p-0 relative bg-zinc-950">
+                <CardContent className="flex-1 overflow-hidden p-0 relative bg-zinc-950/50 z-10">
                   {app.codespaceUrl
                     ? (
                       <iframe
                         key={iframeKey}
                         src={app.codespaceUrl}
-                        className="border-0"
+                        className="border-0 w-full h-full"
                         style={{
-                          display: "block",
-                          width: "200.5%",
-                          height: "200.5%",
+                          width: "200%",
+                          height: "200%",
                           transform: "scale(0.5)",
                           transformOrigin: "0 0",
                         }}
@@ -573,17 +660,17 @@ export default function AppWorkspacePage() {
                       />
                     )
                     : (
-                      <div className="flex h-full items-center justify-center text-center text-muted-foreground bg-zinc-950">
-                        <div className="space-y-2">
-                          <div className="mx-auto h-12 w-12 rounded-xl bg-zinc-900 flex items-center justify-center text-zinc-700 mb-4">
+                      <div className="flex h-full items-center justify-center text-center text-zinc-500">
+                        <div className="space-y-4">
+                          <div className="mx-auto h-16 w-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-zinc-600 mb-2 shadow-lg">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
+                              width="32"
+                              height="32"
                               viewBox="0 0 24 24"
                               fill="none"
                               stroke="currentColor"
-                              strokeWidth="2"
+                              strokeWidth="1.5"
                               strokeLinecap="round"
                               strokeLinejoin="round"
                             >
@@ -599,10 +686,12 @@ export default function AppWorkspacePage() {
                               <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
                             </svg>
                           </div>
-                          <p>Preview will appear here</p>
-                          <p className="text-sm opacity-50">
-                            Start chatting to generate your app
-                          </p>
+                          <div>
+                            <p className="text-zinc-400 font-medium">Preview will appear here</p>
+                            <p className="text-sm opacity-50 mt-1">
+                              Start chatting to generate your app
+                            </p>
+                          </div>
                         </div>
                       </div>
                     )}
