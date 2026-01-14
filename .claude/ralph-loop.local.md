@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 144
+iteration: 145
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -134,26 +134,25 @@ The Status column in the Active Task Registry uses these values:
 
 <!-- Ralph: UPDATE THIS EVERY ITERATION! This is your memory. -->
 
-| Issue #        | Session ID           | Status              | PR # | Retries | Last Updated     |
-| -------------- | -------------------- | ------------------- | ---- | ------- | ---------------- |
-| #560 ORB-050   | 9990519144520915308  | REVIEW_APPROVED→CI  | 696  | 0       | 2026-01-14T01:30 |
-| #681 DB-Backup | 6931936060370703380  | JULES_FIXING_REVIEW | 697  | 0       | 2026-01-14T01:30 |
-| #559 ORB-049   | 5418198425599883351  | IN_PROGRESS         | -    | 0       | 2026-01-14T01:30 |
-| #550 ORB-044   | 9029505413509658765  | PLANNING            | -    | 0       | 2026-01-14T01:30 |
-| #545 ORB-042   | 14061592581795539866 | COMPLETED→AWAIT_PR  | -    | 0       | 2026-01-14T00:30 |
-| #543 ORB-041   | 16700969269248228994 | COMPLETED→AWAIT_PR  | -    | 0       | 2026-01-14T00:30 |
-| #525 ORB-053   | 1231231942038418903  | COMPLETED→AWAIT_PR  | -    | 0       | 2026-01-14T00:40 |
-| TS-Strictness  | 4593656897822469129  | IN_PROGRESS         | -    | 0       | 2026-01-14T01:30 |
-| Batch-Platform | 7518177175950263084  | COMPLETED→AWAIT_PR  | -    | 0       | 2026-01-14T00:40 |
-| E2E-Auth-Tests | 14385720697892655834 | PLANNING            | -    | 0       | 2026-01-14T01:30 |
-| Unit-Orbit     | 1396081266021328535  | COMPLETED→AWAIT_PR  | -    | 0       | 2026-01-14T01:00 |
+| Issue #        | Session ID           | Status               | PR # | Retries | Last Updated     |
+| -------------- | -------------------- | -------------------- | ---- | ------- | ---------------- |
+| #560 ORB-050   | 9990519144520915308  | PR_CI_RERUNNING      | 696  | 0       | 2026-01-14T07:10 |
+| #681 DB-Backup | 6931936060370703380  | JULES_FIXING_REVIEW  | 697  | 0       | 2026-01-14T07:10 |
+| #559 ORB-049   | 5418198425599883351  | COMPLETED→AWAIT_PR   | -    | 0       | 2026-01-14T07:10 |
+| #550 ORB-044   | 9029505413509658765  | AWAIT_USER_FEEDBACK  | -    | 0       | 2026-01-14T07:10 |
+| #545 ORB-042   | 14061592581795539866 | COMPLETED→AWAIT_PR   | -    | 0       | 2026-01-14T00:30 |
+| #543 ORB-041   | 16700969269248228994 | COMPLETED→AWAIT_PR   | -    | 0       | 2026-01-14T00:30 |
+| #525 ORB-053   | 1231231942038418903  | COMPLETED→AWAIT_PR   | -    | 0       | 2026-01-14T00:40 |
+| TS-Strictness  | 4593656897822469129  | COMPLETED→AWAIT_PR   | -    | 0       | 2026-01-14T07:10 |
+| Batch-Platform | 7518177175950263084  | COMPLETED→AWAIT_PR   | -    | 0       | 2026-01-14T00:40 |
+| E2E-Auth-Tests | 14385720697892655834 | AWAIT_USER_FEEDBACK  | -    | 0       | 2026-01-14T07:10 |
+| Unit-Orbit     | 1396081266021328535  | COMPLETED→AWAIT_PR   | -    | 0       | 2026-01-14T01:00 |
 
 **Active Count: 11/30** (19 slots available) | **Daily: 14/100 sessions used**
 
-- **3 IN_PROGRESS** (#559, TS-Strictness)
-- **2 PLANNING** (#550, E2E-Auth-Tests)
-- **5 COMPLETED→AWAIT_PR** (#545, #543, #525, Batch-Platform, Unit-Orbit)
-- **1 PR Approved, CI rerunning** (#696) | **1 Jules fixing** (#697)
+- **7 COMPLETED→AWAIT_PR** (#559, #545, #543, #525, TS-Strictness, Batch-Platform, Unit-Orbit)
+- **2 AWAIT_USER_FEEDBACK** (#550, E2E-Auth-Tests) - sent messages
+- **1 PR with test fix pushed, CI rerunning** (#696) | **1 Jules fixing** (#697)
 
 **Completed Sessions (archived from registry):**
 
@@ -163,20 +162,20 @@ The Status column in the Active Task Registry uses these values:
 - 10381636092810946070: Allocator Autopilot Plan - COMPLETED
 - 3283041034249796510: #536 Allocator Autopilot - COMPLETED
 
-**Dead Sessions (removed):**
+**Dead Sessions (previously removed, now showing AWAIT_USER_FEEDBACK in Jules):**
 
-- 15307375469365040653: #524 ORB-052 Pinterest - DEAD (session expired)
-- 6461916275207593573: #557 ORB-047 - DEAD (session expired)
-- 6459174606168775495: #523 ORB-051 - DEAD (session expired)
+- 15307375469365040653: #524 ORB-052 Pinterest - sent continuation message
+- 6461916275207593573: #557 ORB-047 - sent continuation message
+- 6459174606168775495: #523 ORB-051 TikTok - sent continuation message
 
 **Open PRs Status:**
 
-| PR # | Issue/Task     | CI Status         | Review Status     | Action Needed              |
-| ---- | -------------- | ----------------- | ----------------- | -------------------------- |
-| #696 | #560 ORB-050   | 🔄 Rerunning CI   | ✅ APPROVED       | Wait for CI to pass, merge |
-| #697 | #681 DB-Backup | ❌ Build failing  | CHANGES_REQUESTED | Jules fixing via session   |
-| #698 | Hono bump      | ❌ Lint/Pkg fails | Pending           | Dependabot - needs review  |
-| #699 | Hono bump      | ⚠️ Package Tests   | Pending           | Dependabot - needs review  |
+| PR # | Issue/Task     | CI Status           | Review Status     | Action Needed               |
+| ---- | -------------- | ------------------- | ----------------- | --------------------------- |
+| #696 | #560 ORB-050   | 🔄 Test fix pushed  | Pending re-review | Wait for CI pass, re-review |
+| #697 | #681 DB-Backup | ❌ Build failing    | CHANGES_REQUESTED | Jules fixing via session    |
+| #698 | Hono bump      | ❌ BEHIND main      | Pending           | Dependabot - needs rebase   |
+| #699 | Hono bump      | 🔄 CI pending       | Pending           | Dependabot - awaiting CI    |
 
 **Recently Merged:**
 
@@ -189,15 +188,16 @@ The Status column in the Active Task Registry uses these values:
 - **Draft → non-Draft**: Must push a commit AFTER converting from Draft to trigger claude-code-review
 - **Publish condition**: Only turn off Draft mode when `yarn tsc` passes on the branch
 
-**Actions This Iteration (142-144):**
+**Actions This Iteration (145):**
 
-- ✅ PR #696 review APPROVED! (claude-code-review passed after test fix)
-- 🔍 Investigated sharp module failure - yarn.lock has newer libvips requirement
-- 🔍 Found: sharp 0.34.5 needs libvips 8.17, not pre-installed in CI
-- 🔧 **Fixed CI**: Added libvips-dev installation to Build Application job
-- 🔄 Pushed fix to PR #696 - new CI run triggered
-- 📊 Jules #681 still IN_PROGRESS fixing PR #697 review feedback
-- 📊 Status: 2 IN_PROGRESS, 2 PLANNING, 5 awaiting PR, 1 PR with CI fix
+- 🔧 **Fixed test failure** in PR #696: AssistantChatTransport mock needed class syntax
+- 🔧 Fixed fetch mock in assistant-ui-drawer tests (default mock in beforeEach)
+- 🔄 Pushed test fix to PR #696 - new CI run triggered
+- 💬 Sent continuation messages to 6 AWAITING_USER_FEEDBACK sessions:
+  - E2E-Auth-Tests, #550 Workflow triggers, #681 DB-Backup
+  - #524 Pinterest, #523 TikTok, #557 ORB-047 (previously marked DEAD, still alive)
+- 📊 Updated registry: #559 & TS-Strictness now COMPLETED
+- 📊 Status: 7 COMPLETED→AWAIT_PR, 2 AWAIT_FEEDBACK, 1 PR rerunning, 1 Jules fixing
 
 ---
 
