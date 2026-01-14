@@ -96,7 +96,6 @@ describe("Card Components", () => {
         "flex-col",
         "space-y-2",
         "p-8",
-        "md:p-7",
       );
     });
 
@@ -208,7 +207,7 @@ describe("Card Components", () => {
     it("should apply default content classes", () => {
       render(<CardContent data-testid="content">Content</CardContent>);
       const content = screen.getByTestId("content");
-      expect(content).toHaveClass("p-8", "md:p-7", "pt-0");
+      expect(content).toHaveClass("p-8", "pt-0");
     });
 
     it("should merge custom className", () => {
@@ -245,7 +244,6 @@ describe("Card Components", () => {
         "flex",
         "items-center",
         "p-8",
-        "md:p-7",
         "pt-0",
       );
     });

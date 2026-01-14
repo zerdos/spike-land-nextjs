@@ -7,6 +7,9 @@ import { Link } from "@/components/ui/link";
 import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
+// Ensure this page is always dynamically rendered to show latest apps
+export const dynamic = "force-dynamic";
+
 export default async function MyAppsPage() {
   const session = await auth();
 

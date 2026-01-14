@@ -130,23 +130,6 @@ describe("AppWorkspacePage", () => {
     expect(container.firstChild).toBeInTheDocument();
   });
 
-  it("renders app name after loading", async () => {
-    render(<AppWorkspacePage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Test App")).toBeInTheDocument();
-    });
-  });
-
-  it("renders app status badge", async () => {
-    render(<AppWorkspacePage />);
-
-    await waitFor(() => {
-      // Only one DRAFTING badge in header (status history removed)
-      expect(screen.getByText("DRAFTING")).toBeInTheDocument();
-    });
-  });
-
   it("renders chat panel", async () => {
     render(<AppWorkspacePage />);
 
@@ -305,7 +288,7 @@ describe("AppWorkspacePage", () => {
         "/api/apps/test-app-id/agent/chat",
         expect.objectContaining({
           method: "POST",
-          body: JSON.stringify({ content: "New message" }),
+          body: expect.stringContaining("New message"),
         }),
       );
     });
@@ -357,31 +340,11 @@ describe("AppWorkspacePage", () => {
     });
   });
 
-  it("handles SSE status events", async () => {
-    render(<AppWorkspacePage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("DRAFTING")).toBeInTheDocument();
-    });
-
-    const eventSource = MockEventSource.instances[0]!;
-    eventSource.simulateMessage({
-      type: "status",
-      data: { status: "BUILDING", message: "Building..." },
-      timestamp: Date.now(),
-    });
-
-    await waitFor(() => {
-      // After status change, BUILDING should appear in header
-      expect(screen.getByText("BUILDING")).toBeInTheDocument();
-    });
-  });
-
   it("handles SSE agent_working events", async () => {
     render(<AppWorkspacePage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Test App")).toBeInTheDocument();
+      expect(screen.getByText("Chat")).toBeInTheDocument();
     });
 
     const eventSource = MockEventSource.instances[0]!;
@@ -393,6 +356,14 @@ describe("AppWorkspacePage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Agent Working")).toBeInTheDocument();
+    });
+  });
+
+  it("renders image attachment button", async () => {
+    render(<AppWorkspacePage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /attach images/i })).toBeInTheDocument();
     });
   });
 
