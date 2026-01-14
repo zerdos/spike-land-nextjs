@@ -75,7 +75,7 @@ export async function runIteration(
   await step3a_clearBacklog(result, registry);
 
   console.log("\n🚀 STEP 4: Fill Pipeline Queue");
-  await step4_fillQueue(result, registry);
+  await step4_fillQueue(result, registry, sessions);
 
   console.log("\n🔧 STEP 5: Handle Build Failures");
   await step5_buildFailures(result);
@@ -403,14 +403,42 @@ async function step3a_clearBacklog(
 async function step4_fillQueue(
   result: IterationResult,
   registry: RalphRegistry,
+  sessions: JulesSession[],
 ): Promise<void> {
+  // Jules has a hard limit of 15 concurrent sessions
+  // Only non-terminal sessions (not COMPLETED/FAILED) count against this limit
+  const JULES_SESSION_LIMIT = 15;
+  const terminalStatuses = ["COMPLETED", "FAILED"];
+  const nonTerminalSessions = sessions.filter(
+    (s) => !terminalStatuses.includes(s.status),
+  );
+  const julesActiveCount = nonTerminalSessions.length;
+
+  console.log(
+    `   Jules sessions: ${julesActiveCount} active, ${
+      sessions.length - julesActiveCount
+    } terminal (${sessions.length} total)`,
+  );
+
+  // Check Jules' hard limit first
+  if (julesActiveCount >= JULES_SESSION_LIMIT) {
+    console.log(
+      `   ⚠️ Jules at capacity: ${julesActiveCount}/${JULES_SESSION_LIMIT} active sessions`,
+    );
+    console.log("   Skipping queue fill - wait for sessions to complete");
+    return;
+  }
+
   // Get WIP limit from registry config, with fallback to default
   const wipLimit = registry.config.wip_limit || DEFAULT_WIP_LIMIT;
-
   const activeSlots = countActiveSlots(result.updatedTasks);
-  const availableSlots = wipLimit - activeSlots;
 
-  console.log(`   Current: ${activeSlots}/${wipLimit} slots used`);
+  // Use the smaller of: WIP limit remaining OR Jules capacity remaining
+  const wipAvailable = wipLimit - activeSlots;
+  const julesAvailable = JULES_SESSION_LIMIT - julesActiveCount;
+  const availableSlots = Math.min(wipAvailable, julesAvailable);
+
+  console.log(`   Ralph: ${activeSlots}/${wipLimit} WIP slots, ${availableSlots} can be filled`);
 
   if (availableSlots <= 0) {
     console.log("   📊 Queue full, no slots available");

@@ -1,3 +1,4 @@
 {
-  "backlog_clear_rate": 7
+  "backlog_clear_rate": 7,
+  "aggressive_queue": true
 }
