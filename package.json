@@ -15,6 +15,8 @@
     "start:server:and:test:ci": "start-server-and-test start:e2e http://localhost:3000 test:e2e:shard",
     "start:server:and:test:pr": "start-server-and-test dev:silent http://localhost:3000 test:e2e:shard",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "typecheck:prod": "tsc --project tsconfig.build.json --noEmit",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
