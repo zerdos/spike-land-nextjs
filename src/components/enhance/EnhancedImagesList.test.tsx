@@ -133,6 +133,8 @@ const createMockJob = (
   sourceImageId: null,
   isBlend: false,
   isAnonymous: false,
+  altText: null,
+  qualityScore: null,
   ...overrides,
 });
 

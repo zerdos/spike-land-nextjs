@@ -7,6 +7,9 @@ import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+// Force dynamic rendering - skip static page data collection
+export const dynamic = "force-dynamic";
+
 const VALID_TIERS: EnhancementTier[] = ["TIER_1K", "TIER_2K", "TIER_4K"];
 const VALID_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
