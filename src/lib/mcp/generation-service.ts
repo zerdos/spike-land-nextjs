@@ -11,9 +11,29 @@ import type { EnhancementTier } from "@/lib/tokens/costs";
 import { getMcpGenerationCost } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, McpJobType } from "@prisma/client";
-import sharp from "sharp";
 import { classifyError as classifyErrorImpl } from "./error-classifier";
 import type { ClassifiedError } from "./errors";
+
+// Lazy-load sharp to prevent build-time native module loading
+// Sharp is only needed at runtime when processing jobs
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _sharp: any = null;
+async function getSharp() {
+  if (!_sharp) {
+    // Dynamic import for CommonJS module
+    const mod = await import("sharp");
+    // Handle both ESM default export and CommonJS module.exports
+    _sharp = mod.default || mod;
+  }
+  return _sharp;
+}
+
+// Type for sharp metadata results
+interface SharpMetadata {
+  width?: number;
+  height?: number;
+  format?: string;
+}
 
 // Security: Maximum concurrent PROCESSING jobs per user to prevent burst attacks
 const MAX_CONCURRENT_JOBS_PER_USER = 3;
@@ -254,8 +274,9 @@ async function processGenerationJob(
     return;
   }
 
+  const sharp = await getSharp();
   const { data: metadata, error: metadataError } = await tryCatch(
-    sharp(imageBuffer).metadata(),
+    sharp(imageBuffer).metadata() as Promise<SharpMetadata>,
   );
 
   if (metadataError) {
@@ -370,8 +391,9 @@ async function processModificationJob(
   const inputR2Key = `mcp-input/${params.userId}/${jobId}.${inputExtension}`;
 
   // Get input image metadata to detect aspect ratio
+  const sharp = await getSharp();
   const { data: inputMetadata, error: inputMetadataError } = await tryCatch(
-    sharp(inputBuffer).metadata(),
+    sharp(inputBuffer).metadata() as Promise<SharpMetadata>,
   );
 
   if (inputMetadataError) {
@@ -433,9 +455,9 @@ async function processModificationJob(
     return;
   }
 
-  // Get image metadata
+  // Get image metadata (sharp already loaded above)
   const { data: metadata, error: metadataError } = await tryCatch(
-    sharp(imageBuffer).metadata(),
+    sharp(imageBuffer).metadata() as Promise<SharpMetadata>,
   );
 
   if (metadataError) {
