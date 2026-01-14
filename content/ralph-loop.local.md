@@ -16,7 +16,7 @@ daily_session_limit: 100
 
 | Setting      | Value                    | Notes                                         |
 | ------------ | ------------------------ | --------------------------------------------- |
-| WIP_LIMIT    | **30**                   | Max parallel Jules tasks (up from 6!)         |
+| WIP_LIMIT    | **15**                   | Max parallel Jules tasks (actual limit!)      |
 | AUTO_APPROVE | **MCP**                  | Use MCP tools to approve plans automatically! |
 | AUTO_MERGE   | true                     | Squash merge when all checks pass             |
 | AUTO_PUBLISH | **true**                 | Auto-publish PR when CI passes + no conflicts |
@@ -28,12 +28,36 @@ daily_session_limit: 100
 
 | Stream      | Limit  | Focus                              |
 | ----------- | ------ | ---------------------------------- |
-| Features    | 8      | Orbit platform features (#514-570) |
-| Testing     | 8      | Add tests, increase coverage       |
-| Bug Fixes   | 6      | Issues labeled `bug`               |
-| Tech Debt   | 5      | Refactoring, cleanup               |
-| Experiments | 3      | Novel ideas, improvements          |
-| **TOTAL**   | **30** |                                    |
+| Features    | 5      | Orbit platform features (#514-570) |
+| Testing     | 4      | Add tests, increase coverage       |
+| Bug Fixes   | 3      | Issues labeled `bug`               |
+| Tech Debt   | 2      | Refactoring, cleanup               |
+| Experiments | 1      | Novel ideas, improvements          |
+| **TOTAL**   | **15** | Match actual Jules parallel limit  |
+
+### Batch Timing Model (Measured)
+
+| Phase               | Duration  | Notes                      |
+| ------------------- | --------- | -------------------------- |
+| Planning (parallel) | ~10 min   | All 15 plan simultaneously |
+| Implementation      | ~2.5 min  | After approval             |
+| Total per batch     | ~12.5 min | Full cycle time            |
+| Batches/hour        | ~6        | With pipeline overlap      |
+
+### Pipeline Tracking
+
+| Batch | Sessions | Status | Started | Est. Complete |
+| ----- | -------- | ------ | ------- | ------------- |
+| A     | -        | -      | -       | -             |
+| B     | -        | -      | -       | -             |
+
+**Pipeline Rules:**
+
+1. Max 2 active batches at any time
+2. PLANNING phase uses 15 parallel slots
+3. IMPLEMENTING phase runs on Jules backend (no slots)
+4. Start Batch B when Batch A enters IMPLEMENTING
+5. Graduate B→A when A completes, create new B
 
 ---
 
@@ -1238,27 +1262,28 @@ Try this approach instead: [new approach]" | jules new --repo zerdos/spike-land-
 
 <!-- Track what was learned/changed each iteration -->
 
-| Iteration | Change Made                           | Reason                                    |
-| --------- | ------------------------------------- | ----------------------------------------- |
-| 12        | Added build priority step             | Build health is critical                  |
-| 12        | Added worktree policy                 | Prevent branch confusion                  |
-| 12        | Added critical issue kill             | Stop wasting retries                      |
-| 17        | Added dead session handling           | Avoid wasting tokens on dead sessions     |
-| 17        | Added token efficiency scripts        | ~70% token reduction per iteration        |
-| 17        | Added DEAD status                     | Silent removal, no communication          |
-| 90        | Migrated to Jules CLI                 | Replace MCP/browser with `jules` CLI      |
-| 90        | Added gh issue integration            | Pipe issues directly to `jules new`       |
-| 90        | Made approve/message manual           | CLI doesn't support - use TUI/web         |
-| 97        | Added teleport conflict handling      | Patch conflicts in package.json/yarn.lock |
-| 97        | Added incomplete change detection     | Jules may miss updating test mocks        |
-| 97        | Added post-teleport TypeScript check  | Verify changes compile before PR          |
-| 97        | Added PR conflict resolution workflow | Rebase PRs with merge conflicts           |
-| 108       | Increased WIP_LIMIT to 30             | Unlock full Jules capacity (100/day)      |
-| 108       | Added experimentation protocol        | 5+ experiments/iteration, aggressive      |
-| 108       | Added auto-publish workflow           | Remove manual bottleneck                  |
-| 108       | Fixed state diagram for review loop   | Jules fix → CI check → re-review          |
-| 123       | **Discovered MCP tools for Jules!**   | Can auto-approve plans + send messages!   |
-| 123       | Updated docs with MCP tool reference  | No more manual TUI/web bottleneck         |
+| Iteration | Change Made | Reason |
+| --------- | ----------- | ------ |
+
+| 153 | Increased backlog clearing rate from 5 to 7 per iteration; Captured successful patterns for future reference; Added known issue pattern: "TypeScript compilation error" (seen 5 times) | Auto-improvement || 12 | Added build priority step | Build health is critical |
+| 12 | Added worktree policy | Prevent branch confusion |
+| 12 | Added critical issue kill | Stop wasting retries |
+| 17 | Added dead session handling | Avoid wasting tokens on dead sessions |
+| 17 | Added token efficiency scripts | ~70% token reduction per iteration |
+| 17 | Added DEAD status | Silent removal, no communication |
+| 90 | Migrated to Jules CLI | Replace MCP/browser with `jules` CLI |
+| 90 | Added gh issue integration | Pipe issues directly to `jules new` |
+| 90 | Made approve/message manual | CLI doesn't support - use TUI/web |
+| 97 | Added teleport conflict handling | Patch conflicts in package.json/yarn.lock |
+| 97 | Added incomplete change detection | Jules may miss updating test mocks |
+| 97 | Added post-teleport TypeScript check | Verify changes compile before PR |
+| 97 | Added PR conflict resolution workflow | Rebase PRs with merge conflicts |
+| 108 | Increased WIP_LIMIT to 30 | Unlock full Jules capacity (100/day) |
+| 108 | Added experimentation protocol | 5+ experiments/iteration, aggressive |
+| 108 | Added auto-publish workflow | Remove manual bottleneck |
+| 108 | Fixed state diagram for review loop | Jules fix → CI check → re-review |
+| 123 | **Discovered MCP tools for Jules!** | Can auto-approve plans + send messages! |
+| 123 | Updated docs with MCP tool reference | No more manual TUI/web bottleneck |
 
 ---
 
