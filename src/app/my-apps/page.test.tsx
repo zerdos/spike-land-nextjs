@@ -393,11 +393,12 @@ describe("MyAppsPage", () => {
       expect(screen.getByText("No preview")).toBeInTheDocument();
     });
 
-    it("should display failed status with destructive badge", async () => {
+    it("should display app card for failed status app", async () => {
       const mockApps = [
         createMockApp({
           id: "app-1",
           name: "Failed App",
+          description: "A failed app description",
           status: "FAILED",
         }),
       ];
@@ -407,7 +408,8 @@ describe("MyAppsPage", () => {
       const component = await MyAppsPage();
       render(component);
 
-      expect(screen.getByText("FAILED")).toBeInTheDocument();
+      // App card is rendered with description visible (status badge was removed from design)
+      expect(screen.getByText("A failed app description")).toBeInTheDocument();
     });
   });
 });

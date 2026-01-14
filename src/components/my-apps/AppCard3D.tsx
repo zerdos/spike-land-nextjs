@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { APP_BUILD_STATUSES } from "@/lib/validations/app";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
@@ -22,19 +21,6 @@ interface AppData {
 
 interface AppCard3DProps {
   app: AppData;
-}
-
-function getStatusVariant(
-  status: string,
-): "default" | "secondary" | "destructive" {
-  switch (status) {
-    case "LIVE":
-      return "default";
-    case "FAILED":
-      return "destructive";
-    default:
-      return "secondary";
-  }
 }
 
 export function AppCard3D({ app }: AppCard3DProps) {
@@ -141,14 +127,8 @@ export function AppCard3D({ app }: AppCard3DProps) {
 
         {/* Content */}
         <div className="absolute inset-x-0 bottom-0 p-5">
-          <div className="mb-2 flex items-center gap-2">
-            <Badge variant={getStatusVariant(app.status)} className="text-xs">
-              {app.status.replace("_", " ")}
-            </Badge>
-          </div>
-          <h3 className="mb-1 text-lg font-bold text-white">{app.name}</h3>
           {app.description && (
-            <p className="line-clamp-2 text-sm text-zinc-400">
+            <p className="line-clamp-3 text-sm text-zinc-300">
               {app.description}
             </p>
           )}

@@ -1,5 +1,16 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import type { APP_BUILD_STATUSES } from "@/lib/validations/app";
 import { motion } from "framer-motion";
+import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -52,22 +64,10 @@ interface AppData {
   };
 }
 
-type StatusVariant = "default" | "secondary" | "destructive" | "outline";
-
-function getStatusVariant(status: string): StatusVariant {
-  switch (status) {
-    case "LIVE":
-      return "default";
-    case "FAILED":
-    case "ARCHIVED":
-      return "destructive";
-    case "BUILDING":
-    case "DRAFTING":
-    case "FINE_TUNING":
-      return "secondary";
-    default:
-      return "outline";
-  }
+interface PendingImage {
+  id: string;
+  file: File;
+  previewUrl: string;
 }
 
 /**
@@ -102,6 +102,9 @@ export default function AppWorkspacePage() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [agentWorking, setAgentWorking] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -212,9 +215,71 @@ export default function AppWorkspacePage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingResponse]);
 
+  // Handle image selection
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newImages: PendingImage[] = [];
+    for (let i = 0; i < Math.min(files.length, 5); i++) {
+      const file = files[i];
+      if (file && file.type.startsWith("image/")) {
+        newImages.push({
+          id: `pending-${Date.now()}-${i}`,
+          file,
+          previewUrl: URL.createObjectURL(file),
+        });
+      }
+    }
+    setPendingImages((prev) => [...prev, ...newImages].slice(0, 5));
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Remove pending image
+  const handleRemoveImage = (id: string) => {
+    setPendingImages((prev) => {
+      const image = prev.find((img) => img.id === id);
+      if (image) {
+        URL.revokeObjectURL(image.previewUrl);
+      }
+      return prev.filter((img) => img.id !== id);
+    });
+  };
+
+  // Upload images and get IDs
+  const uploadImages = async (): Promise<string[]> => {
+    if (pendingImages.length === 0) return [];
+
+    setUploadingImages(true);
+    try {
+      const formData = new FormData();
+      pendingImages.forEach((img) => {
+        formData.append("images", img.file);
+      });
+
+      const response = await fetch(`/api/apps/${appId}/images`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to upload images");
+
+      const data = await response.json();
+      return data.images.map((img: { id: string; }) => img.id);
+    } finally {
+      setUploadingImages(false);
+      // Clean up preview URLs
+      pendingImages.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+      setPendingImages([]);
+    }
+  };
+
   // Send message
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || sendingMessage || isStreaming) return;
+    if ((!newMessage.trim() && pendingImages.length === 0) || sendingMessage || isStreaming) return;
 
     const content = newMessage.trim();
     setNewMessage("");
@@ -223,6 +288,9 @@ export default function AppWorkspacePage() {
     setStreamingResponse("");
 
     try {
+      // Upload images first if any
+      const imageIds = await uploadImages();
+
       // Optimistically add user message
       const optimId = `temp-${Date.now()}`;
       setMessages((prev) => [
@@ -230,7 +298,7 @@ export default function AppWorkspacePage() {
         {
           id: optimId,
           role: "USER",
-          content,
+          content: content || "[Image attached]",
           createdAt: new Date().toISOString(),
         },
       ]);
@@ -238,7 +306,7 @@ export default function AppWorkspacePage() {
       const response = await fetch(`/api/apps/${appId}/agent/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content: content || "[Image attached]", imageIds }),
       });
 
       if (!response.ok) throw new Error("Failed to send message");
@@ -381,28 +449,14 @@ export default function AppWorkspacePage() {
               </div>
               <span className="font-medium">Back</span>
             </Link>
-            <div className="h-8 w-px bg-white/10 mx-2" />
-            <div className="flex flex-col">
-              <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-400">
-                {app.name}
-              </h1>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge
-                  variant={getStatusVariant(app.status)}
-                  className="bg-white/5 hover:bg-white/10 border-white/10 text-zinc-300 pointer-events-none"
-                >
-                  {app.status.replace("_", " ")}
-                </Badge>
-                {agentWorking && (
-                  <Badge
-                    variant="secondary"
-                    className="bg-teal-500/20 text-teal-200 border-teal-500/30 animate-pulse"
-                  >
-                    Agent Working
-                  </Badge>
-                )}
-              </div>
-            </div>
+            {agentWorking && (
+              <Badge
+                variant="secondary"
+                className="bg-teal-500/20 text-teal-200 border-teal-500/30 animate-pulse"
+              >
+                Agent Working
+              </Badge>
+            )}
           </div>
           <div className="flex gap-3">
             {app.codespaceUrl && (
@@ -422,24 +476,44 @@ export default function AppWorkspacePage() {
         <div className="grid gap-8 lg:grid-cols-2 lg:h-[calc(100vh-200px)] min-h-[600px]">
           {/* Chat Panel */}
           <Card className="flex flex-col h-full bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl overflow-hidden ring-1 ring-white/5">
-            <CardHeader className="border-b border-white/5 bg-white/[0.02] px-6 py-4">
+            <CardHeader className="border-b border-white/5 bg-white/[0.02] px-6 py-3">
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl font-semibold text-zinc-100">Chat</CardTitle>
-                  <CardDescription className="text-zinc-400">
-                    Communicate with the AI agent to refine your app
-                  </CardDescription>
-                </div>
+                <CardTitle className="text-lg font-semibold text-zinc-100">Chat</CardTitle>
                 {messages.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClearChat}
-                    disabled={clearingChat || app.status === "ARCHIVED"}
-                    className="text-zinc-400 hover:text-white hover:bg-white/5 rounded-full px-4"
-                  >
-                    {clearingChat ? "Clearing..." : "Clear Chat"}
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={clearingChat || app.status === "ARCHIVED"}
+                        className="text-zinc-400 hover:text-white hover:bg-white/5 rounded-full px-4 h-8 text-sm"
+                      >
+                        {clearingChat ? "Clearing..." : "Clear"}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-zinc-900 border-white/10">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-zinc-100">
+                          Clear chat history?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-zinc-400">
+                          This will permanently delete all messages in this conversation. This
+                          action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-white/5 border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white">
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleClearChat}
+                          className="bg-red-600 hover:bg-red-500 text-white"
+                        >
+                          Clear Chat
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 )}
               </div>
             </CardHeader>
@@ -543,28 +617,76 @@ export default function AppWorkspacePage() {
             </CardContent>
             {/* Message Input */}
             <div className="border-t border-white/5 bg-white/[0.02] p-4">
+              {/* Pending Images Preview */}
+              {pendingImages.length > 0 && (
+                <div className="flex gap-2 mb-3 flex-wrap">
+                  {pendingImages.map((img) => (
+                    <div key={img.id} className="relative group">
+                      <Image
+                        src={img.previewUrl}
+                        alt="Pending upload"
+                        width={64}
+                        height={64}
+                        className="h-16 w-16 rounded-lg object-cover ring-1 ring-white/10"
+                        unoptimized
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(img.id)}
+                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Remove image"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex gap-3 relative">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageSelect}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={sendingMessage || uploadingImages || app.status === "ARCHIVED" ||
+                    pendingImages.length >= 5}
+                  className="h-10 w-10 rounded-xl text-zinc-500 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+                  aria-label="Attach images"
+                >
+                  <ImagePlus className="h-5 w-5" />
+                </Button>
                 <Textarea
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type your message..."
                   autoComplete="off"
-                  className="min-h-[60px] max-h-[200px] resize-none bg-black/20 border-white/10 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 rounded-2xl pl-4 pr-4 py-3 text-zinc-200 placeholder:text-zinc-600 backdrop-blur-sm transition-all"
+                  className="min-h-[60px] max-h-[200px] resize-none bg-black/20 border-white/10 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 rounded-2xl pl-4 pr-14 py-3 text-zinc-200 placeholder:text-zinc-600 backdrop-blur-sm transition-all"
                   disabled={sendingMessage || app.status === "ARCHIVED"}
                 />
                 <Button
                   onClick={handleSendMessage}
-                  disabled={!newMessage.trim() || sendingMessage ||
+                  disabled={(!newMessage.trim() && pendingImages.length === 0) || sendingMessage ||
+                    uploadingImages ||
                     app.status === "ARCHIVED"}
                   aria-label="Send message"
                   className={`absolute right-2 bottom-2 h-10 w-10 p-0 rounded-xl transition-all duration-300 ${
-                    !newMessage.trim() || sendingMessage
+                    (!newMessage.trim() && pendingImages.length === 0) || sendingMessage ||
+                      uploadingImages
                       ? "bg-white/5 text-zinc-500"
                       : "bg-teal-500 hover:bg-teal-400 text-white shadow-[0_0_20px_-5px_rgba(20,184,166,0.6)]"
                   }`}
                 >
-                  {sendingMessage
+                  {sendingMessage || uploadingImages
                     ? (
                       <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     )
@@ -586,7 +708,7 @@ export default function AppWorkspacePage() {
                   <kbd className="font-sans px-1 py-0.5 bg-white/5 rounded border border-white/10 text-zinc-500">
                     Enter
                   </kbd>{" "}
-                  to send
+                  to send • Click <ImagePlus className="inline h-3 w-3" /> to attach images
                 </p>
               </div>
             </div>
@@ -600,18 +722,19 @@ export default function AppWorkspacePage() {
                 <div className="absolute -inset-[1px] bg-gradient-to-br from-white/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                 {/* Browser Toolbar */}
-                <div className="flex items-center justify-between border-b border-white/5 bg-white/[0.02] px-5 py-4 relative z-10">
-                  <div className="flex gap-2">
+                <div className="flex items-center gap-4 border-b border-white/5 bg-white/[0.02] px-5 py-4 relative z-10 overflow-hidden">
+                  <div className="flex gap-2 shrink-0">
                     <div className="h-3 w-3 rounded-full bg-[#FF5F56] border border-white/5 shadow-inner" />
                     <div className="h-3 w-3 rounded-full bg-[#FFBD2E] border border-white/5 shadow-inner" />
                     <div className="h-3 w-3 rounded-full bg-[#27C93F] border border-white/5 shadow-inner" />
                   </div>
 
-                  <div className="flex-1 mx-4 max-w-xl">
-                    <div className="bg-black/20 rounded-lg border border-white/5 py-1.5 px-3 flex items-center justify-center">
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <div className="bg-black/20 rounded-lg border border-white/5 py-1.5 px-3 flex items-center overflow-hidden">
                       <div
                         data-testid="address-bar"
-                        className="text-[11px] text-zinc-400 truncate font-mono w-full text-center"
+                        className="text-[11px] text-zinc-400 truncate font-mono w-full"
+                        style={{ direction: "rtl", textAlign: "left" }}
                       >
                         {app.codespaceUrl || "localhost"}
                       </div>
