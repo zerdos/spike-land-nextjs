@@ -143,18 +143,18 @@ async function step05_deadSessionCleanup(
 
   let removedCount = 0;
   result.updatedTasks = result.updatedTasks.filter((task) => {
-    // If session is in registry but not in Jules, it's dead
+    // If session is in registry but not in Jules, check if we should keep it
     if (task.sessionId && !activeSessionIds.has(task.sessionId)) {
-      // Only remove if it's not in a terminal state
-      // OR if it's COMPLETED (Jules status) - we can stop tracking it
-      if (
-        !["FAILED", "DEAD"].includes(task.status) &&
-        task.status !== "COMPLETED" // Legacy check, can probably remove
-      ) {
-        // Double check if it's really dead or just completed
-        // For completed sessions, we want to stop tracking them in activeTasks
-        // once they are gone from Jules list (which they are if they are not in activeSessionIds)
-        console.log(`   🗑️ Removing dead/completed session: ${task.sessionId} (${task.issue})`);
+      // PRESERVE sessions that still need PR creation or are awaiting PR merge
+      // These might be gone from Jules but we still need to process them
+      if (task.status === "COMPLETED→AWAIT_PR" || task.status === "PR_CREATED") {
+        console.log(`   ⏳ Preserving ${task.sessionId} (${task.issue}) - status: ${task.status}`);
+        return true; // Keep it
+      }
+
+      // Only remove if it's in a terminal state or truly dead
+      if (!["FAILED", "DEAD"].includes(task.status)) {
+        console.log(`   🗑️ Removing dead session: ${task.sessionId} (${task.issue})`);
         removedCount++;
         return false;
       }
@@ -201,16 +201,38 @@ async function step1_statusCheck(
     console.log(`   ├─ COMPLETED: ${categories.completed}`);
     console.log(`   └─ FAILED: ${categories.failed}`);
 
-    // Update task statuses from Jules
+    // Build task entries from ALL sessions (not just update existing)
+    // This ensures COMPLETED sessions are tracked for PR creation
+    let newTasksCreated = 0;
     for (const session of sessions) {
-      const taskIndex = result.updatedTasks.findIndex(
+      const existingTaskIndex = result.updatedTasks.findIndex(
         (t) => t.sessionId === session.id,
       );
-      const task = result.updatedTasks[taskIndex];
-      if (taskIndex !== -1 && task) {
-        task.status = mapJulesStatusToTaskStatus(session.status);
-        task.lastUpdated = new Date().toISOString();
+
+      if (existingTaskIndex !== -1) {
+        // Update existing task
+        const task = result.updatedTasks[existingTaskIndex];
+        if (task) {
+          task.status = mapJulesStatusToTaskStatus(session.status);
+          task.lastUpdated = new Date().toISOString();
+        }
+      } else {
+        // CREATE NEW task entry for sessions not in registry
+        const issue = extractIssueFromTitle(session.title);
+        result.updatedTasks.push({
+          issue: issue || `session:${session.id.slice(-8)}`,
+          sessionId: session.id,
+          status: mapJulesStatusToTaskStatus(session.status),
+          prNumber: session.prUrl ? extractPRNumber(session.prUrl) : null,
+          retries: 0,
+          lastUpdated: session.createdAt || new Date().toISOString(),
+        });
+        newTasksCreated++;
       }
+    }
+
+    if (newTasksCreated > 0) {
+      console.log(`   📝 Created ${newTasksCreated} task entries from existing sessions`);
     }
 
     return sessions;
@@ -232,6 +254,22 @@ function mapJulesStatusToTaskStatus(status: string): TaskStatus {
     FAILED: "FAILED",
   };
   return map[status] || "PLANNING";
+}
+
+/**
+ * Extract issue number from session title (e.g., "#701" from "Fix bug #701")
+ */
+function extractIssueFromTitle(title: string): string | null {
+  const match = title.match(/#(\d+)/);
+  return match?.[1] ? `#${match[1]}` : null;
+}
+
+/**
+ * Extract PR number from PR URL
+ */
+function extractPRNumber(prUrl: string): string | null {
+  const match = prUrl.match(/\/pull\/(\d+)/);
+  return match?.[1] ?? null;
 }
 
 // ============================================================================
@@ -490,24 +528,67 @@ async function step3a_clearBacklog(
     console.log(`   📦 Processing ${task.issue} (${task.sessionId})...`);
 
     try {
-      // Teleport the session
+      // Step 1: Teleport the session
       const teleported = await teleportSession(task.sessionId);
       if (!teleported) {
         console.log(`   ⚠️ Teleport failed for ${task.sessionId}`);
         continue;
       }
 
-      // Verify TypeScript
-      console.log(`   🔍 Verifying TypeScript...`);
+      // Step 2: Merge main branch to ensure we're up to date
+      console.log(`   🔀 Merging main branch...`);
       try {
-        execSync("yarn tsc --noEmit", { encoding: "utf-8", timeout: 120000 });
-      } catch (_tsError) {
-        console.log(`   ⚠️ TypeScript errors found, needs manual fix`);
+        execSync("git fetch origin main && git merge origin/main --no-edit", {
+          encoding: "utf-8",
+          timeout: 60000,
+        });
+        console.log(`   ✅ Merged main successfully`);
+      } catch (mergeError: unknown) {
+        // Check if it's a conflict
+        const errorMsg = mergeError instanceof Error ? mergeError.message : String(mergeError);
+        if (errorMsg.includes("CONFLICT") || errorMsg.includes("Automatic merge failed")) {
+          console.log(`   ⚠️ Merge conflict detected, notifying agent...`);
+          await sendMessage(
+            task.sessionId,
+            "Merge conflict with main branch. Please resolve conflicts in the codebase and ensure code builds.",
+          );
+          result.messagesSent.push(task.sessionId);
+          // Abort the merge to leave clean state
+          try {
+            execSync("git merge --abort", { encoding: "utf-8", timeout: 10000 });
+          } catch {
+            // Ignore abort errors
+          }
+        } else {
+          console.log(`   ⚠️ Merge failed: ${errorMsg}`);
+          result.errors.push(`Merge failed for ${task.issue}: ${errorMsg}`);
+        }
+        continue;
+      }
+
+      // Step 3: Verify TypeScript
+      console.log(`   🔍 Running typecheck...`);
+      try {
+        execSync("yarn typecheck", { encoding: "utf-8", timeout: 180000 });
+        console.log(`   ✅ Typecheck passed`);
+      } catch (tsError: unknown) {
+        // Extract error message for the agent
+        const errorOutput = tsError instanceof Error
+          ? (tsError as any).stdout || (tsError as any).stderr || tsError.message
+          : String(tsError);
+        const truncatedError = errorOutput.slice(0, 1500);
+
+        console.log(`   ⚠️ TypeScript errors found, notifying agent...`);
+        await sendMessage(
+          task.sessionId,
+          `TypeScript errors after merging main branch. Please fix these errors:\n\n\`\`\`\n${truncatedError}\n...\n\`\`\``,
+        );
+        result.messagesSent.push(task.sessionId);
         result.errors.push(`TypeScript errors in ${task.issue}`);
         continue;
       }
 
-      // Create PR
+      // Step 4: Create PR
       const prTitle = `feat: ${task.issue}`;
       const prBody = `Resolves ${task.issue}\n\nAutomated by Ralph`;
       const prUrl = createPR(prTitle, prBody);
@@ -528,6 +609,9 @@ async function step3a_clearBacklog(
             updatedTask.prNumber = prNumber;
           }
         }
+      } else {
+        console.log(`   ⚠️ PR creation failed`);
+        result.errors.push(`PR creation failed for ${task.issue}`);
       }
     } catch (error) {
       result.errors.push(`Backlog clear failed for ${task.issue}: ${error}`);
