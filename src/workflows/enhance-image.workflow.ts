@@ -20,10 +20,13 @@ import { FatalError } from "workflow";
 
 // Lazy-load sharp to prevent build-time native module loading
 // Sharp is only needed at runtime when workflow steps execute
-let _sharp: typeof import("sharp") | null = null;
-async function getSharp(): Promise<typeof import("sharp")> {
+type SharpModule = typeof import("sharp");
+type SharpDefault = SharpModule["default"];
+let _sharp: SharpDefault | null = null;
+async function getSharp(): Promise<SharpDefault> {
   if (!_sharp) {
-    _sharp = await import("sharp");
+    const mod = await import("sharp");
+    _sharp = mod.default;
   }
   return _sharp;
 }
@@ -189,7 +192,7 @@ async function getImageMetadata(imageBuffer: Buffer): Promise<ImageMetadata> {
 
   // Reconstitute Buffer after workflow serialization
   const buffer = ensureBuffer(imageBuffer);
-  const sharp = (await getSharp()).default;
+  const sharp = await getSharp();
   const metadata = await sharp(buffer).metadata();
   const width = metadata.width || DEFAULT_IMAGE_DIMENSION;
   const height = metadata.height || DEFAULT_IMAGE_DIMENSION;
@@ -336,7 +339,7 @@ async function downloadBlendSourceStep(
     return undefined;
   }
 
-  const sharp = (await getSharp()).default;
+  const sharp = await getSharp();
   const { data: sourceMetadata, error: metadataError } = await tryCatch(
     sharp(sourceBuffer).metadata(),
   );
@@ -372,7 +375,7 @@ async function performCropOperations(
   height: number;
   cropDimensions: { left: number; top: number; width: number; height: number; };
 }> {
-  const sharp = (await getSharp()).default;
+  const sharp = await getSharp();
   // Crop the image
   const croppedBuffer = await sharp(imageBuffer)
     .extract(cropRegion)
@@ -503,7 +506,7 @@ async function padImageForGemini(
 
   // Reconstitute Buffer after workflow serialization
   const buffer = ensureBuffer(imageBuffer);
-  const sharp = (await getSharp()).default;
+  const sharp = await getSharp();
 
   const maxDimension = Math.max(width, height);
   const paddedBuffer = await sharp(buffer)
@@ -584,7 +587,7 @@ async function processAndUpload(
 
   // Reconstitute Buffer after workflow serialization
   const buffer = ensureBuffer(enhancedBuffer);
-  const sharp = (await getSharp()).default;
+  const sharp = await getSharp();
 
   // Get Gemini output dimensions
   const geminiMetadata = await sharp(buffer).metadata();
