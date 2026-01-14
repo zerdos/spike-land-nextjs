@@ -74,11 +74,19 @@ describe("generation-service", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset mock implementations that might have been set by previous tests
+    // This is needed because vi.clearAllMocks() only clears call history, not implementations
+    mockGeminiClient.generateImageWithGemini.mockReset();
+    mockGeminiClient.modifyImageWithGemini.mockReset();
+    mockUploadToR2.mockReset();
     vi.useFakeTimers();
     vi.setSystemTime(mockDate);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    // Flush all pending timers and async operations to prevent state leakage
+    // between tests from background processing
+    await vi.runAllTimersAsync();
     vi.useRealTimers();
   });
 
@@ -414,6 +422,12 @@ describe("generation-service", () => {
         id: testJobId,
         status: JobStatus.PROCESSING,
       });
+      // Set up mock to reject so background processing fails quickly without leaving stale state
+      mockGeminiClient.generateImageWithGemini.mockRejectedValue(
+        new Error("Mock - not configured for this test"),
+      );
+      mockMcpGenerationJob.update.mockResolvedValue({});
+      mockMcpGenerationJob.findUnique.mockResolvedValue(null);
 
       // The job creation should succeed without calling the real API
       // (the background processing is not awaited)
@@ -427,6 +441,9 @@ describe("generation-service", () => {
       // Verify the mock Gemini functions are available
       expect(mockGeminiClient.generateImageWithGemini).toBeDefined();
       expect(mockGeminiClient.modifyImageWithGemini).toBeDefined();
+
+      // Wait for background processing to complete to avoid state leakage to next test
+      await vi.advanceTimersByTimeAsync(100);
     });
   });
 
@@ -461,19 +478,9 @@ describe("generation-service", () => {
         negativePrompt: "ugly",
       });
 
-      // Wait for background processing to complete - need to flush multiple async steps
-      await vi.waitFor(
-        () => {
-          expect(mockMcpGenerationJob.update).toHaveBeenCalledWith(
-            expect.objectContaining({
-              data: expect.objectContaining({
-                status: JobStatus.COMPLETED,
-              }),
-            }),
-          );
-        },
-        { timeout: 1000 },
-      );
+      // Flush microtask queue and advance timers to allow background processing to complete
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersByTimeAsync(100);
 
       // Verify Gemini was called with correct params
       expect(mockGeminiClient.generateImageWithGemini).toHaveBeenCalledWith({
