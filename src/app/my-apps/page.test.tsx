@@ -258,22 +258,23 @@ describe("MyAppsPage", () => {
       const component = await MyAppsPage();
       render(component);
 
-      expect(screen.getByText("Test App 1")).toBeInTheDocument();
-      expect(screen.getByText("Test App 2")).toBeInTheDocument();
+      // App cards show descriptions (app names no longer displayed in card design)
       expect(screen.getByText("Description 1")).toBeInTheDocument();
       expect(screen.getByText("Description 2")).toBeInTheDocument();
     });
 
-    it("should display app status badges", async () => {
+    it("should render app cards with descriptions for different statuses", async () => {
       const mockApps = [
         createMockApp({
           id: "app-1",
           name: "Prompting App",
+          description: "First app description",
           status: "PROMPTING",
         }),
         createMockApp({
           id: "app-2",
           name: "Live App",
+          description: "Second app description",
           status: "LIVE",
         }),
       ];
@@ -283,8 +284,9 @@ describe("MyAppsPage", () => {
       const component = await MyAppsPage();
       render(component);
 
-      expect(screen.getByText("PROMPTING")).toBeInTheDocument();
-      expect(screen.getByText("LIVE")).toBeInTheDocument();
+      // App cards show descriptions (status badges removed from card design)
+      expect(screen.getByText("First app description")).toBeInTheDocument();
+      expect(screen.getByText("Second app description")).toBeInTheDocument();
     });
 
     it("should display message count", async () => {
