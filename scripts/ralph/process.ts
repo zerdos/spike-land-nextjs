@@ -101,13 +101,12 @@ async function runSingleIteration(dryRun: boolean): Promise<void> {
       console.log("   No improvements needed");
     }
 
-    // 5. Update registry (unless dry run)
+    // 5. Update registry (unless dry run) - only frontmatter counters
     if (!dryRun) {
-      console.log("\n💾 Updating registry...");
+      console.log("\n💾 Updating registry counters...");
       await updateRegistry(REGISTRY_PATH, {
         iteration: registry.iteration + 1,
         daily_sessions_used: registry.daily_sessions_used + result.sessionsCreated,
-        activeTasks: result.updatedTasks,
       });
 
       // 6. Commit if meaningful work done

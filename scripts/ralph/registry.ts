@@ -1,15 +1,18 @@
 /**
  * Ralph Registry Parser
- * Parse and update ralph-loop.local.md
+ * Parse config from ralph-loop.local.md
+ *
+ * NOTE: This file only parses CONFIG. All session state is fetched
+ * live from Jules API by mcp-client.ts - no state stored in markdown.
  */
 
 import { readFileSync, writeFileSync } from "fs";
-import type { PipelineTracking, RalphConfig, RalphRegistry, TaskEntry, TaskStatus } from "./types";
+import type { RalphConfig, RalphRegistry } from "./types";
 
 const REGISTRY_PATH = "content/ralph-loop.local.md";
 
 // ============================================================================
-// Parse Registry
+// Parse Registry (Config Only)
 // ============================================================================
 
 export async function parseRegistry(
@@ -23,12 +26,6 @@ export async function parseRegistry(
   // Parse config from markdown tables
   const config = parseConfig(content);
 
-  // Parse active tasks from registry table
-  const activeTasks = parseActiveTasksTable(content);
-
-  // Parse pipeline tracking
-  const pipelineTracking = parsePipelineTracking(content);
-
   return {
     active: (frontmatter.active as boolean) ?? true,
     iteration: (frontmatter.iteration as number) ?? 0,
@@ -38,8 +35,9 @@ export async function parseRegistry(
     daily_sessions_used: (frontmatter.daily_sessions_used as number) ?? 0,
     daily_session_limit: (frontmatter.daily_session_limit as number) ?? 100,
     config,
-    activeTasks,
-    pipelineTracking,
+    // State is fetched live from Jules API - not stored here
+    activeTasks: [],
+    pipelineTracking: { batchA: null, batchB: null },
   };
 }
 
@@ -101,75 +99,13 @@ function parseConfig(content: string): RalphConfig {
   };
 }
 
-function parseActiveTasksTable(content: string): TaskEntry[] {
-  const tasks: TaskEntry[] = [];
-
-  // Find the Active Task Registry table
-  const tableMatch = content.match(
-    /## Active Task Registry[\s\S]*?\|([\s\S]*?)\n\n\*\*Active Count/,
-  );
-  if (!tableMatch || !tableMatch[1]) return tasks;
-
-  const tableContent = tableMatch[1];
-  const lines = tableContent.split("\n").filter((line) => line.startsWith("|"));
-
-  // Skip header rows (Issue # | Session ID | Status | PR # | Retries | Last Updated)
-  for (let i = 2; i < lines.length; i++) {
-    const line = lines[i];
-    if (!line) continue;
-
-    const cells = line
-      .split("|")
-      .map((c) => c.trim())
-      .filter(Boolean);
-
-    if (cells.length >= 6) {
-      const issue = cells[0];
-      const sessionId = cells[1];
-      const status = cells[2];
-      const prNumber = cells[3];
-      const retries = cells[4];
-      const lastUpdated = cells[5];
-
-      if (issue && sessionId && status && lastUpdated) {
-        tasks.push({
-          issue: issue.replace(/^#/, ""),
-          sessionId,
-          status: status as TaskStatus,
-          prNumber: prNumber === "-" ? null : prNumber ?? null,
-          retries: parseInt(retries ?? "0") || 0,
-          lastUpdated,
-        });
-      }
-    }
-  }
-
-  return tasks;
-}
-
-function parsePipelineTracking(content: string): PipelineTracking {
-  // Find Pipeline Tracking table
-  const tableMatch = content.match(
-    /### Pipeline Tracking[\s\S]*?\|([\s\S]*?)\n\n\*\*Pipeline Rules/,
-  );
-
-  if (!tableMatch) {
-    return { batchA: null, batchB: null };
-  }
-
-  // For now, return empty tracking - will be populated by iteration
-  return { batchA: null, batchB: null };
-}
-
 // ============================================================================
-// Update Registry
+// Update Registry (Frontmatter Only)
 // ============================================================================
 
 export interface RegistryUpdate {
   iteration?: number;
   daily_sessions_used?: number;
-  activeTasks?: TaskEntry[];
-  pipelineTracking?: PipelineTracking;
 }
 
 export async function updateRegistry(
@@ -178,7 +114,7 @@ export async function updateRegistry(
 ): Promise<void> {
   let content = readFileSync(path, "utf-8");
 
-  // Update frontmatter
+  // Update frontmatter only
   if (updates.iteration !== undefined) {
     content = content.replace(
       /iteration: \d+/,
@@ -193,115 +129,7 @@ export async function updateRegistry(
     );
   }
 
-  // Update active tasks table
-  if (updates.activeTasks) {
-    content = updateActiveTasksTable(content, updates.activeTasks);
-  }
-
-  // Update pipeline tracking
-  if (updates.pipelineTracking) {
-    content = updatePipelineTracking(content, updates.pipelineTracking);
-  }
-
   writeFileSync(path, content);
-}
-
-function updateActiveTasksTable(
-  content: string,
-  tasks: TaskEntry[],
-): string {
-  // Find the table section
-  const tableStart = content.indexOf("## Active Task Registry");
-  const tableEnd = content.indexOf("**Active Count:");
-
-  if (tableStart === -1 || tableEnd === -1) return content;
-
-  // Build new table
-  const header = `## Active Task Registry
-
-<!-- Ralph: UPDATE THIS EVERY ITERATION! This is your memory. -->
-
-| Issue #        | Session ID           | Status             | PR # | Retries | Last Updated     |
-| -------------- | -------------------- | ------------------ | ---- | ------- | ---------------- |
-`;
-
-  const rows = tasks
-    .map(
-      (t) =>
-        `| ${t.issue.startsWith("#") ? t.issue : "#" + t.issue} | ${t.sessionId} | ${t.status} | ${
-          t.prNumber || "-"
-        } | ${t.retries} | ${t.lastUpdated} |`,
-    )
-    .join("\n");
-
-  // Calculate counts
-  const activeCount = tasks.length;
-  const completedAwaitPr = tasks.filter(
-    (t) => t.status === "COMPLETED→AWAIT_PR",
-  ).length;
-  const inProgress = tasks.filter((t) => t.status === "IN_PROGRESS").length;
-  const planning = tasks.filter((t) => t.status === "PLANNING").length;
-  const reviewChanges = tasks.filter(
-    (t) =>
-      t.status === "REVIEW_CHANGES_REQUESTED" ||
-      t.status === "REVIEW_CHANGES_REQ",
-  ).length;
-
-  const summary = `
-
-**Active Count: ${activeCount}/15** (${
-    15 - activeCount
-  } slots available) | **Daily: [daily_sessions_used]/100 sessions used**
-
-- **${completedAwaitPr} COMPLETED→AWAIT_PR**
-- **${inProgress} IN_PROGRESS**
-- **${planning} PLANNING**
-- **${reviewChanges} REVIEW_CHANGES_REQ**
-`;
-
-  const newTable = header + rows + summary;
-
-  // Find where to insert (after Active Task Registry, before next section)
-  const sectionEnd = content.indexOf("\n\n**Completed Sessions", tableStart);
-  if (sectionEnd === -1) return content;
-
-  return (
-    content.slice(0, tableStart) + newTable + content.slice(sectionEnd)
-  );
-}
-
-function updatePipelineTracking(
-  content: string,
-  tracking: PipelineTracking,
-): string {
-  // Find Pipeline Tracking table
-  const startMarker = "### Pipeline Tracking";
-  const endMarker = "**Pipeline Rules:**";
-
-  const startIndex = content.indexOf(startMarker);
-  const endIndex = content.indexOf(endMarker);
-
-  if (startIndex === -1 || endIndex === -1) return content;
-
-  const formatBatch = (batch: typeof tracking.batchA) => {
-    if (!batch) return "| -        | -      | -       | -             |";
-    return `| ${
-      batch.sessions.join(",")
-    } | ${batch.status} | ${batch.started} | ${batch.estComplete} |`;
-  };
-
-  const newTracking = `### Pipeline Tracking
-
-| Batch | Sessions | Status | Started | Est. Complete |
-| ----- | -------- | ------ | ------- | ------------- |
-| A     ${formatBatch(tracking.batchA)}
-| B     ${formatBatch(tracking.batchB)}
-
-`;
-
-  return (
-    content.slice(0, startIndex) + newTracking + content.slice(endIndex)
-  );
 }
 
 // ============================================================================
@@ -312,20 +140,26 @@ export function getRegistryPath(): string {
   return REGISTRY_PATH;
 }
 
-export function countActiveSlots(tasks: TaskEntry[]): number {
-  const activeStatuses: TaskStatus[] = [
-    "PLANNING",
-    "AWAITING_PLAN_APPROVAL",
-    "IN_PROGRESS",
-  ];
+/**
+ * Count active slots (tasks currently using Jules capacity)
+ * Works on task arrays from any source (API or otherwise)
+ */
+export function countActiveSlots(tasks: Array<{ status: string; }>): number {
+  const activeStatuses = ["PLANNING", "AWAITING_PLAN_APPROVAL", "IN_PROGRESS"];
   return tasks.filter((t) => activeStatuses.includes(t.status)).length;
 }
 
-export function countBacklog(tasks: TaskEntry[]): number {
+/**
+ * Count tasks waiting for PR creation
+ */
+export function countBacklog(tasks: Array<{ status: string; }>): number {
   return tasks.filter((t) => t.status === "COMPLETED→AWAIT_PR").length;
 }
 
-export function sortTasksByAge(tasks: TaskEntry[]): TaskEntry[] {
+/**
+ * Sort tasks by last updated (oldest first)
+ */
+export function sortTasksByAge<T extends { lastUpdated: string; }>(tasks: T[]): T[] {
   return [...tasks].sort((a, b) => {
     const dateA = new Date(a.lastUpdated).getTime();
     const dateB = new Date(b.lastUpdated).getTime();
