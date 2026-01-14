@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 148
+iteration: 149
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -136,17 +136,17 @@ The Status column in the Active Task Registry uses these values:
 
 | Issue #        | Session ID           | Status             | PR # | Retries | Last Updated     |
 | -------------- | -------------------- | ------------------ | ---- | ------- | ---------------- |
-| #560 ORB-050   | 9990519144520915308  | PR_CI_RERUNNING    | 696  | 0       | 2026-01-14T07:24 |
-| #681 DB-Backup | 6931936060370703380  | IN_PROGRESS        | 697  | 0       | 2026-01-14T07:24 |
-| #557 ORB-047   | 6461916275207593573  | AWAIT_USER_FDBK    | -    | 0       | 2026-01-14T07:24 |
+| #560 ORB-050   | 9990519144520915308  | PR_CI_INFRA_ISSUE  | 696  | 0       | 2026-01-14T07:30 |
+| #681 DB-Backup | 6931936060370703380  | IN_PROGRESS        | 697  | 0       | 2026-01-14T07:30 |
+| #557 ORB-047   | 6461916275207593573  | AWAIT_USER_FDBK    | -    | 0       | 2026-01-14T07:30 |
 | #559 ORB-049   | 5418198425599883351  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:10 |
-| #550 ORB-044   | 9029505413509658765  | PLANNING           | -    | 0       | 2026-01-14T07:24 |
+| #550 ORB-044   | 9029505413509658765  | IN_PROGRESS        | -    | 0       | 2026-01-14T07:30 |
 | #545 ORB-042   | 14061592581795539866 | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T00:30 |
 | #543 ORB-041   | 16700969269248228994 | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T00:30 |
 | #525 ORB-053   | 1231231942038418903  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T00:40 |
 | TS-Strictness  | 4593656897822469129  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:10 |
 | Batch-Platform | 7518177175950263084  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T00:40 |
-| E2E-Auth-Tests | 14385720697892655834 | IN_PROGRESS        | -    | 0       | 2026-01-14T07:24 |
+| E2E-Auth-Tests | 14385720697892655834 | IN_PROGRESS        | -    | 0       | 2026-01-14T07:30 |
 | Unit-Orbit     | 1396081266021328535  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T01:00 |
 | #524 ORB-052   | 15307375469365040653 | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:24 |
 | #523 ORB-051   | 6459174606168775495  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:24 |
@@ -154,10 +154,9 @@ The Status column in the Active Task Registry uses these values:
 **Active Count: 14/30** (16 slots available) | **Daily: 14/100 sessions used**
 
 - **9 COMPLETED→AWAIT_PR** (#559, #545, #543, #525, #524, #523, TS-Strictness, Batch-Platform, Unit-Orbit)
-- **2 IN_PROGRESS** (E2E-Auth-Tests, #681 DB-Backup)
-- **1 PLANNING** (#550 Workflow triggers)
+- **3 IN_PROGRESS** (E2E-Auth-Tests, #681 DB-Backup, #550 Workflow triggers)
 - **1 AWAIT_USER_FDBK** (#557 ORB-047 - sent continuation message)
-- **1 PR with build fix pushed, CI rerunning** (#696)
+- **1 PR with CI infra issues** (#696 - Cloudflare pool + DATABASE_URL_E2E)
 
 **Completed Sessions (archived from registry):**
 
@@ -178,12 +177,12 @@ The Status column in the Active Task Registry uses these values:
 
 **Open PRs Status:**
 
-| PR # | Issue/Task     | CI Status              | Review Status     | Action Needed             |
-| ---- | -------------- | ---------------------- | ----------------- | ------------------------- |
-| #696 | #560 ORB-050   | 🔄 CI running (robust) | Pending re-review | Wait for CI pass          |
-| #697 | #681 DB-Backup | ❌ Build/test failing  | CHANGES_REQUESTED | Jules IN_PROGRESS fixing  |
-| #698 | Hono bump      | ❌ BEHIND main         | Pending           | Dependabot - needs rebase |
-| #699 | Hono bump      | 🔄 CI pending          | Pending           | Dependabot - awaiting CI  |
+| PR # | Issue/Task     | CI Status                 | Review Status     | Action Needed                     |
+| ---- | -------------- | ------------------------- | ----------------- | --------------------------------- |
+| #696 | #560 ORB-050   | ❌ Infra issues (2)       | Pending re-review | Fix CI: CF pool + DATABASE_URL_E2E |
+| #697 | #681 DB-Backup | ❌ Build/test failing     | CHANGES_REQUESTED | Jules IN_PROGRESS fixing          |
+| #698 | Hono bump      | ❌ BEHIND main            | Pending           | Dependabot - needs rebase         |
+| #699 | Hono bump      | 🔄 CI pending             | Pending           | Dependabot - awaiting CI          |
 
 **Recently Merged:**
 
@@ -196,26 +195,26 @@ The Status column in the Active Task Registry uses these values:
 - **Draft → non-Draft**: Must push a commit AFTER converting from Draft to trigger claude-code-review
 - **Publish condition**: Only turn off Draft mode when `yarn tsc` passes on the branch
 
-**Actions This Iteration (147):**
+**Actions This Iteration (148):**
 
-- ✅ **Auto-approved plan** for #681 DB-Backup (6931936060370703380) → IN_PROGRESS
-- 🔧 **Fixed PR #696 build script** (more robust): `rm -f` → `(rm -f ... 2>/dev/null || true)`
+- ✅ **Auto-approved plan** for #550 Workflow triggers (9029505413509658765) → IN_PROGRESS
 - 💬 Sent continuation message to #557 ORB-047 (still AWAIT_USER_FDBK)
-- 📊 Many sessions now COMPLETED: #524 Pinterest, #523 TikTok both done!
-- 📊 Status: 9 COMPLETED→AWAIT_PR, 2 IN_PROGRESS, 1 PLANNING, 1 AWAIT_FDBK
+- 🔍 **Identified CI infrastructure issues** in PR #696:
+  - Package Tests: `@cloudflare/vitest-pool-workers` not supported in CI
+  - Seed E2E Database: `DATABASE_URL_E2E` not configured (production protection triggered)
+- 📊 Status: 9 COMPLETED, 3 IN_PROGRESS, 1 AWAIT_FDBK, 1 PR blocked by infra
 
-**Actions Previous Iteration (146):**
+**Actions Previous Iteration (147):**
+
+- ✅ Auto-approved plan for #681 DB-Backup → IN_PROGRESS
+- 🔧 Fixed PR #696 build script (more robust): `rm -f` → `(rm -f ... 2>/dev/null || true)`
+- 💬 Sent continuation message to #557 ORB-047
+
+**Actions Iteration 146:**
 
 - ✅ Auto-approved 2 plans via MCP: E2E-Auth-Tests, #524 Pinterest
 - 🔧 Fixed build script in PR #696: `rm` → `rm -f` in remove-extraneous
-- 💬 Sent follow-up message to #557 ORB-047
 - 📊 Sessions #524, #523 recovered from DEAD status
-
-**Actions Iteration 145:**
-
-- 🔧 Fixed test failure in PR #696: AssistantChatTransport mock class syntax
-- 🔧 Fixed fetch mock in assistant-ui-drawer tests
-- 💬 Sent continuation messages to 6 AWAITING_USER_FEEDBACK sessions
 
 ---
 
