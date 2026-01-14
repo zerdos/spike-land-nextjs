@@ -17,6 +17,7 @@ import {
   mergePR,
   publishPR,
   sendMessage,
+  teleportAndMerge,
   teleportSession,
 } from "./mcp-client";
 import { countActiveSlots, sortTasksByAge } from "./registry";
@@ -29,6 +30,10 @@ import type {
   RalphRegistry,
   TaskStatus,
 } from "./types";
+
+// Thresholds for stuck session detection
+const STUCK_WARNING_HOURS = 1; // Exclude from capacity after 1 hour
+const STUCK_DEAD_HOURS = 2; // Mark as DEAD after 2 hours
 
 // Default fallback values (used only if config is missing)
 const DEFAULT_WIP_LIMIT = 15;
@@ -65,6 +70,9 @@ export async function runIteration(
   console.log("\n📋 STEP 1: Batch Status Check");
   const sessions = await step1_statusCheck(result);
 
+  console.log("\n⏱️ STEP 1.5: Handle Stuck Sessions");
+  const deadSessionIds = await step15_handleStuckSessions(result, sessions);
+
   console.log("\n✅ STEP 2: Auto-Approve Pending Plans");
   await step2_autoApprove(result, sessions);
 
@@ -75,7 +83,7 @@ export async function runIteration(
   await step3a_clearBacklog(result, registry);
 
   console.log("\n🚀 STEP 4: Fill Pipeline Queue");
-  await step4_fillQueue(result, registry, sessions);
+  await step4_fillQueue(result, registry, sessions, deadSessionIds);
 
   console.log("\n🔧 STEP 5: Handle Build Failures");
   await step5_buildFailures(result);
@@ -138,8 +146,15 @@ async function step05_deadSessionCleanup(
     // If session is in registry but not in Jules, it's dead
     if (task.sessionId && !activeSessionIds.has(task.sessionId)) {
       // Only remove if it's not in a terminal state
-      if (!["COMPLETED", "FAILED", "DEAD"].includes(task.status)) {
-        console.log(`   🗑️ Removing dead session: ${task.sessionId} (${task.issue})`);
+      // OR if it's COMPLETED (Jules status) - we can stop tracking it
+      if (
+        !["FAILED", "DEAD"].includes(task.status) &&
+        task.status !== "COMPLETED" // Legacy check, can probably remove
+      ) {
+        // Double check if it's really dead or just completed
+        // For completed sessions, we want to stop tracking them in activeTasks
+        // once they are gone from Jules list (which they are if they are not in activeSessionIds)
+        console.log(`   🗑️ Removing dead/completed session: ${task.sessionId} (${task.issue})`);
         removedCount++;
         return false;
       }
@@ -217,6 +232,131 @@ function mapJulesStatusToTaskStatus(status: string): TaskStatus {
     FAILED: "FAILED",
   };
   return map[status] || "PLANNING";
+}
+
+// ============================================================================
+// Step 1.5: Handle Stuck Sessions
+// ============================================================================
+
+async function step15_handleStuckSessions(
+  result: IterationResult,
+  sessions: JulesSession[],
+): Promise<Set<string>> {
+  const JULES_SESSION_LIMIT = 15;
+  const now = Date.now();
+  const warningThresholdMs = STUCK_WARNING_HOURS * 60 * 60 * 1000;
+  const deadThresholdMs = STUCK_DEAD_HOURS * 60 * 60 * 1000;
+
+  // Track dead session IDs to exclude from capacity calculation
+  const deadSessionIds = new Set<string>();
+
+  // Find sessions by status
+  const planningSessions = sessions.filter((s) => s.status === "PLANNING");
+  const inProgressSessions = sessions.filter((s) => s.status === "IN_PROGRESS");
+  const awaitingApprovalSessions = sessions.filter((s) => s.status === "AWAITING_PLAN_APPROVAL");
+
+  let stuckCount = 0;
+  let markedDeadCount = 0;
+
+  // Heuristic 1: Check for stuck state pattern
+  // If we have many PLANNING sessions but nothing is progressing, something is stuck
+  const activeProgressingSessions = inProgressSessions.length + awaitingApprovalSessions.length;
+
+  if (
+    planningSessions.length >= JULES_SESSION_LIMIT &&
+    activeProgressingSessions === 0
+  ) {
+    console.log(
+      `   🚨 Stuck state detected: ${planningSessions.length} PLANNING, 0 progressing`,
+    );
+
+    // Mark excess PLANNING sessions as DEAD to unblock the pipeline
+    // Keep up to (JULES_SESSION_LIMIT - 1) sessions as a buffer
+    const excessCount = planningSessions.length - (JULES_SESSION_LIMIT - 1);
+
+    if (excessCount > 0) {
+      console.log(`   📌 Marking ${excessCount} excess sessions as DEAD to unblock`);
+
+      // Mark the sessions without a task entry as DEAD first (orphaned sessions)
+      // Then mark oldest by session ID (higher IDs are newer)
+      const sortedByIdDesc = [...planningSessions].sort((a, b) => b.id.localeCompare(a.id));
+      const toMarkDead = sortedByIdDesc.slice(-excessCount);
+
+      for (const session of toMarkDead) {
+        // Add to dead session IDs for capacity exclusion
+        deadSessionIds.add(session.id);
+
+        // Try to find and update task entry (if exists)
+        const taskIndex = result.updatedTasks.findIndex(
+          (t) => t.sessionId === session.id,
+        );
+        if (taskIndex !== -1 && result.updatedTasks[taskIndex]) {
+          result.updatedTasks[taskIndex].status = "DEAD";
+          result.updatedTasks[taskIndex].lastUpdated = new Date().toISOString();
+        }
+        markedDeadCount++;
+        console.log(`   💀 Marked DEAD: ${session.id} (stuck in PLANNING, no progress)`);
+      }
+    }
+  }
+
+  // Heuristic 2: Check individual session timestamps (if available from MCP)
+  for (const session of planningSessions) {
+    const createdAt = new Date(session.createdAt).getTime();
+    const ageMs = now - createdAt;
+
+    // Skip if createdAt is recent (likely from CLI fallback which sets it to "now")
+    if (ageMs < warningThresholdMs) {
+      continue;
+    }
+
+    const ageHours = ageMs / (60 * 60 * 1000);
+
+    if (ageMs > deadThresholdMs) {
+      // Skip if already marked dead
+      if (deadSessionIds.has(session.id)) {
+        continue;
+      }
+
+      // Add to dead session IDs for capacity exclusion
+      deadSessionIds.add(session.id);
+
+      // Try to find and update task entry (if exists)
+      const taskIndex = result.updatedTasks.findIndex(
+        (t) => t.sessionId === session.id,
+      );
+      if (taskIndex !== -1 && result.updatedTasks[taskIndex]) {
+        result.updatedTasks[taskIndex].status = "DEAD";
+        result.updatedTasks[taskIndex].lastUpdated = new Date().toISOString();
+      }
+      markedDeadCount++;
+      console.log(
+        `   💀 Marked DEAD: ${session.id} (stuck ${ageHours.toFixed(1)}h in PLANNING)`,
+      );
+    } else if (ageMs > warningThresholdMs) {
+      stuckCount++;
+      console.log(
+        `   ⚠️ Stuck: ${session.id} (${ageHours.toFixed(1)}h in PLANNING)`,
+      );
+    }
+  }
+
+  if (markedDeadCount > 0) {
+    console.log(`   Marked ${markedDeadCount} sessions as DEAD`);
+    result.meaningfulWork = true;
+  }
+
+  if (stuckCount > 0) {
+    console.log(
+      `   ${stuckCount} sessions stuck but not yet DEAD (warning threshold: ${STUCK_WARNING_HOURS}h)`,
+    );
+  }
+
+  if (stuckCount === 0 && markedDeadCount === 0 && planningSessions.length < JULES_SESSION_LIMIT) {
+    console.log("   No stuck sessions found");
+  }
+
+  return deadSessionIds;
 }
 
 // ============================================================================
@@ -404,6 +544,7 @@ async function step4_fillQueue(
   result: IterationResult,
   registry: RalphRegistry,
   sessions: JulesSession[],
+  deadSessionIds: Set<string>,
 ): Promise<void> {
   // Jules has a hard limit of 15 concurrent sessions
   // Only non-terminal sessions (not COMPLETED/FAILED) count against this limit
@@ -414,17 +555,63 @@ async function step4_fillQueue(
   );
   const julesActiveCount = nonTerminalSessions.length;
 
+  // Calculate "effective" active count by excluding sessions marked as DEAD in step 1.5
+  // Also exclude stuck PLANNING sessions (> 1 hour in PLANNING) if timestamps are reliable
+  const now = Date.now();
+  const stuckThresholdMs = STUCK_WARNING_HOURS * 60 * 60 * 1000;
+
+  // Filter out DEAD sessions from non-terminal count (deadSessionIds passed from step 1.5)
+  const nonTerminalNonDeadSessions = nonTerminalSessions.filter(
+    (s) => !deadSessionIds.has(s.id),
+  );
+
+  // Also check for stuck PLANNING sessions by timestamp (if available from MCP)
+  const stuckPlanningSessions = nonTerminalNonDeadSessions.filter((s) => {
+    if (s.status !== "PLANNING") return false;
+    const createdAt = new Date(s.createdAt).getTime();
+    return (now - createdAt) > stuckThresholdMs;
+  });
+
+  const effectiveActiveCount = nonTerminalNonDeadSessions.length - stuckPlanningSessions.length;
+
   console.log(
     `   Jules sessions: ${julesActiveCount} active, ${
       sessions.length - julesActiveCount
     } terminal (${sessions.length} total)`,
   );
 
-  // Check Jules' hard limit first
-  if (julesActiveCount >= JULES_SESSION_LIMIT) {
+  // Log excluded sessions
+  const totalExcluded = deadSessionIds.size + stuckPlanningSessions.length;
+  if (totalExcluded > 0) {
+    if (deadSessionIds.size > 0) {
+      console.log(`   🗑️ ${deadSessionIds.size} sessions marked DEAD excluded from capacity`);
+    }
+    if (stuckPlanningSessions.length > 0) {
+      console.log(
+        `   ⚠️ ${stuckPlanningSessions.length} stuck PLANNING sessions excluded from capacity`,
+      );
+    }
+    console.log(`   Effective active: ${effectiveActiveCount}/${JULES_SESSION_LIMIT}`);
+  }
+
+  // Check Jules' hard limit using effective count (excludes stuck sessions)
+  if (effectiveActiveCount >= JULES_SESSION_LIMIT) {
     console.log(
-      `   ⚠️ Jules at capacity: ${julesActiveCount}/${JULES_SESSION_LIMIT} active sessions`,
+      `   ⚠️ Jules at capacity: ${effectiveActiveCount}/${JULES_SESSION_LIMIT} active sessions`,
     );
+
+    // Diagnostic logging - show what's consuming capacity
+    const statusCounts = new Map<string, number>();
+    for (const s of nonTerminalSessions) {
+      if (!stuckPlanningSessions.includes(s)) {
+        statusCounts.set(s.status, (statusCounts.get(s.status) || 0) + 1);
+      }
+    }
+    console.log("   Capacity breakdown:");
+    for (const [status, count] of statusCounts) {
+      console.log(`      - ${status}: ${count}`);
+    }
+
     console.log("   Skipping queue fill - wait for sessions to complete");
     return;
   }
@@ -434,8 +621,9 @@ async function step4_fillQueue(
   const activeSlots = countActiveSlots(result.updatedTasks);
 
   // Use the smaller of: WIP limit remaining OR Jules capacity remaining
+  // Use effectiveActiveCount (excludes stuck sessions) for Jules capacity
   const wipAvailable = wipLimit - activeSlots;
-  const julesAvailable = JULES_SESSION_LIMIT - julesActiveCount;
+  const julesAvailable = JULES_SESSION_LIMIT - effectiveActiveCount;
   const availableSlots = Math.min(wipAvailable, julesAvailable);
 
   console.log(`   Ralph: ${activeSlots}/${wipLimit} WIP slots, ${availableSlots} can be filled`);
@@ -564,45 +752,92 @@ async function step6_respondFeedback(
         continue;
       }
 
-      // Determine appropriate response based on activities
-      const lastActivity = details.activities[details.activities.length - 1];
-      const response = generateFeedbackResponse(lastActivity?.message || "");
-
-      if (response) {
-        const success = await sendMessage(session.id, response);
-        if (success) {
-          result.messagesSent.push(session.id);
-          console.log(`   💬 Responded to ${session.id}`);
-        }
-      }
+      // Process feedback: Teleport -> Merge Main -> TS Check -> PR
+      await handleFeedbackSession(session, details, result);
     } catch (error) {
       result.errors.push(`Feedback response failed for ${session.id}: ${error}`);
     }
   }
 }
 
-function generateFeedbackResponse(question: string): string | null {
-  const lowercaseQ = question.toLowerCase();
+async function handleFeedbackSession(
+  session: JulesSession,
+  _details: any,
+  result: IterationResult,
+): Promise<void> {
+  // Check if we should teleport and merge main (standard feedback loop)
+  // Logic: Teleport -> Merge Main -> Check Typescript -> Create PR or Report Errors
+  console.log(`   🔄 Processing feedback loop for ${session.id}...`);
 
-  // Common questions and responses
-  if (lowercaseQ.includes("which approach")) {
-    return "Use the simpler approach. Prioritize maintainability and readability.";
+  const mergeResult = teleportAndMerge(session.id);
+
+  if (mergeResult.conflict) {
+    // Conflict detected: Push with conflict markers and tell Jules
+    console.log(`   ⚠️ Conflict detected, notifying session ${session.id}`);
+    const msg =
+      "There was a merge conflict when merging main. I have pushed the changes with conflict markers. Please resolve the conflicts and ensure the code builds.";
+    await sendMessage(session.id, msg);
+    result.messagesSent.push(session.id);
+    return;
   }
 
-  if (lowercaseQ.includes("skip") && lowercaseQ.includes("test")) {
-    return "No, do not skip tests. Fix the failing tests.";
+  if (!mergeResult.success) {
+    // Other merge failure
+    console.log(`   ❌ Merge failed: ${mergeResult.message}`);
+    result.errors.push(`Merge failed for ${session.id}`);
+    return;
   }
 
-  if (lowercaseQ.includes("access") || lowercaseQ.includes("permission")) {
-    return "You should have access via the standard methods. Check the documentation or existing patterns in the codebase.";
-  }
+  // Merge successful, run typescript check
+  console.log("   🔍 Running TypeScript check...");
+  try {
+    execSync("yarn typescript", { encoding: "utf-8", timeout: 120000 });
+    console.log("   ✅ TypeScript passed");
 
-  if (lowercaseQ.includes("clarify") || lowercaseQ.includes("requirement")) {
-    return "Please proceed with your best interpretation of the requirements. Focus on the acceptance criteria in the issue.";
-  }
+    // Create PR
+    const prTitle = `feat: ${session.title || session.id}`;
+    // Extract issue number if possible
+    const issueMatch = (session.title || "").match(/#(\d+)/);
+    const issueNum = issueMatch ? issueMatch[1] : "";
+    const prBody = issueNum
+      ? `Resolves #${issueNum}\n\nAutomated by Jules`
+      : "Automated by Jules";
 
-  // Generic response for unknown questions
-  return "Please proceed with your best judgment. Focus on simplicity and following existing patterns in the codebase.";
+    const prUrl = createPR(prTitle, prBody);
+
+    if (prUrl) {
+      console.log(`   ✅ PR Created: ${prUrl}`);
+      // Notify Jules
+      await sendMessage(session.id, `I have created a PR: ${prUrl}`);
+      result.prsCreated.push(prUrl);
+      result.messagesSent.push(session.id);
+
+      // Update task status
+      const taskIndex = result.updatedTasks.findIndex(
+        (t) => t.sessionId === session.id,
+      );
+      if (taskIndex !== -1 && result.updatedTasks[taskIndex]) {
+        result.updatedTasks[taskIndex].status = "PR_CREATED";
+        const prNum = prUrl.match(/\/pull\/(\d+)/)?.[1];
+        if (prNum) {
+          result.updatedTasks[taskIndex].prNumber = prNum;
+        }
+      }
+    } else {
+      result.errors.push("Failed to create PR after TS pass");
+    }
+  } catch (tsError: any) {
+    // TypeScript failed
+    console.log("   ❌ TypeScript check failed");
+    // Extract error message (truncated)
+    const errorMsg = tsError.stdout || tsError.message || "Unknown error";
+    const truncatedError = errorMsg.slice(0, 500);
+
+    const msg =
+      `I merged the latest main, but TypeScript check failed. Please fix the following errors:\n\n\`\`\`\n${truncatedError}\n...\n\`\`\``;
+    await sendMessage(session.id, msg);
+    result.messagesSent.push(session.id);
+  }
 }
 
 // ============================================================================

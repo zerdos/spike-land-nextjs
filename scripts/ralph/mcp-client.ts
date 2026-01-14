@@ -167,6 +167,72 @@ export function teleportSession(sessionId: string): boolean {
   }
 }
 
+/**
+ * Result of a teleport and merge operation
+ */
+export interface TeleportMergeResult {
+  success: boolean;
+  conflict: boolean;
+  message: string;
+}
+
+/**
+ * Teleport a session and merge the latest main branch
+ * Handles conflicts by pushing them back to the session
+ */
+export function teleportAndMerge(sessionId: string): TeleportMergeResult {
+  // 1. Teleport the session
+  if (!teleportSession(sessionId)) {
+    return {
+      success: false,
+      conflict: false,
+      message: "Failed to teleport session",
+    };
+  }
+
+  try {
+    // 2. Fetch latest main
+    console.log("   🔄 Fetching origin main...");
+    execSync("git fetch origin main", { encoding: "utf-8", timeout: 30000 });
+
+    // 3. Attempt merge
+    console.log("   🔀 Merging origin/main...");
+    try {
+      execSync("git merge origin/main --no-edit", {
+        encoding: "utf-8",
+        timeout: 30000,
+      });
+      return {
+        success: true,
+        conflict: false,
+        message: "Successfully merged main",
+      };
+    } catch (mergeError) {
+      // Merge failed - likely conflict
+      console.log("   ⚠️ Merge conflict detected");
+
+      // Check if it's actually a conflict
+      const status = execSync("git status --porcelain", { encoding: "utf-8" });
+      if (status.includes("UU ")) {
+        // Unmerged paths exist
+        return {
+          success: false,
+          conflict: true,
+          message: "Merge conflict detected. Please resolve the conflicts in the codebase.",
+        };
+      }
+
+      throw mergeError;
+    }
+  } catch (error) {
+    return {
+      success: false,
+      conflict: false,
+      message: `Merge failed: ${error}`,
+    };
+  }
+}
+
 // ============================================================================
 // MCP Tool Invocations (for operations that CLI doesn't support)
 // These call the MCP tools via the spike.land API
