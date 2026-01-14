@@ -1,3 +1,4 @@
+import { broadcastCodeUpdated } from "@/app/api/apps/[id]/messages/stream/route";
 import { auth } from "@/auth";
 import {
   CODESPACE_SYSTEM_PROMPT,
@@ -137,6 +138,7 @@ export async function POST(
         });
 
         let finalResponse = "";
+        let codeUpdated = false; // Track if any code-modifying tools were used
 
         for await (const message of result) {
           console.log("[agent/chat] Message type:", message.type);
@@ -158,12 +160,20 @@ export async function POST(
               controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
             }
 
-            // Notify about tool use
+            // Notify about tool use and track code-modifying tools
             const toolUseParts = contentArray.filter(c => c.type === "tool_use");
             for (const toolUse of toolUseParts) {
+              const toolName = toolUse.name || "";
+              // Track if any code-modifying tools are used
+              if (
+                toolName.includes("update_code") || toolName.includes("edit_code") ||
+                toolName.includes("search_and_replace")
+              ) {
+                codeUpdated = true;
+              }
               const statusData = JSON.stringify({
                 type: "status",
-                content: `Executing ${toolUse.name || "tool"}...`,
+                content: `Executing ${toolName || "tool"}...`,
               });
               controller.enqueue(new TextEncoder().encode(`data: ${statusData}\n\n`));
             }
@@ -207,6 +217,12 @@ export async function POST(
             // Let's await it to ensure it runs.
             await generateAppDetails(id, finalResponse, content);
           }
+        }
+
+        // Broadcast code update to SSE clients if any code-modifying tools were used
+        if (codeUpdated) {
+          console.log("[agent/chat] Code was updated, broadcasting to SSE clients");
+          broadcastCodeUpdated(id);
         }
 
         controller.close();

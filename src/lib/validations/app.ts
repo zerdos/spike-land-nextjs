@@ -61,8 +61,8 @@ export const appPromptCreationSchema = z.object({
   codespaceId: z
     .string()
     .regex(
-      /^[a-z0-9-]{10,50}$/,
-      "Codespace ID must be 10-50 characters with only lowercase letters, numbers, and hyphens",
+      /^[a-z0-9.-]{10,50}$/,
+      "Codespace ID must be 10-50 characters with only lowercase letters, numbers, dots, and hyphens",
     )
     .optional(),
   imageIds: z.array(z.string()).optional(),
