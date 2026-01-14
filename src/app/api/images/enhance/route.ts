@@ -15,6 +15,9 @@ import { JobStatus } from "@prisma/client";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+// Force dynamic rendering - skip static page data collection
+export const dynamic = "force-dynamic";
+
 // Allow longer execution time for 4K image enhancements (10 minutes)
 export const maxDuration = 600;
 

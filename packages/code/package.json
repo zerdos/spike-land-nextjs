@@ -27,7 +27,7 @@
     "build:types": "tsc --build && yarn types:cp",
     "post-build-delete": "yarn remove-extraneous",
     "post-build": "cp -a -f dist-vite/. dist/  && yarn remove-extraneous",
-    "remove-extraneous": "cd dist && rm *.tsbuildinfo && cd @/workers/monaco && rm css.worker.js html.worker.js json.worker.js",
+    "remove-extraneous": "cd dist && (rm -f *.tsbuildinfo 2>/dev/null || true) && cd @/workers/monaco && (rm -f css.worker.js html.worker.js json.worker.js 2>/dev/null || true)",
     "// Types": "",
     "types:check": "tsc --noEmit",
     "types:build": "tsc --build",

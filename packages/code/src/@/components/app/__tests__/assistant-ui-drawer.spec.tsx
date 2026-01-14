@@ -72,6 +72,11 @@ describe("AssistantUIDrawer", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCodeSession = createMockCodeSession();
+    // Set up default fetch mock to prevent "Cannot read properties of undefined" errors
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: async () => ({ messages: [] }),
+    } as Response);
   });
 
   afterEach(() => {

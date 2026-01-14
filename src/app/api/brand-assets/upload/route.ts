@@ -4,10 +4,27 @@ import { isR2Configured, uploadToR2 } from "@/lib/storage/r2-client";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import sharp from "sharp";
 
 // Force dynamic rendering - skip static page data collection (sharp requires native modules)
 export const dynamic = "force-dynamic";
+
+// Lazy-load sharp to prevent build-time native module loading
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _sharp: any = null;
+async function getSharp() {
+  if (!_sharp) {
+    const mod = await import("sharp");
+    _sharp = mod.default || mod;
+  }
+  return _sharp;
+}
+
+// Type for sharp metadata results
+interface SharpMetadata {
+  width?: number;
+  height?: number;
+  format?: string;
+}
 
 // Maximum file size: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -126,8 +143,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // Process image with sharp (except SVG)
   if (file.type !== "image/svg+xml") {
+    const sharp = await getSharp();
     const { data: metadata, error: metadataError } = await tryCatch(
-      sharp(buffer).metadata(),
+      sharp(buffer).metadata() as Promise<SharpMetadata>,
     );
 
     if (!metadataError && metadata) {
@@ -147,7 +165,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               withoutEnlargement: true,
             })
             .webp({ quality: 85 })
-            .toBuffer(),
+            .toBuffer() as Promise<Buffer>,
         );
 
         if (!resizeError && optimizedBuffer) {
@@ -156,7 +174,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
           // Get new dimensions
           const { data: newMetadata } = await tryCatch(
-            sharp(buffer).metadata(),
+            sharp(buffer).metadata() as Promise<SharpMetadata>,
           );
           if (newMetadata) {
             width = newMetadata.width;
