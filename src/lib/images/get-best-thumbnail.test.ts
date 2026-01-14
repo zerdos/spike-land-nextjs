@@ -25,6 +25,8 @@ function createMockImage(
     shareToken: null,
     createdAt: new Date(),
     updatedAt: new Date(),
+    altText: null,
+    qualityScore: null,
     ...overrides,
   };
 }
