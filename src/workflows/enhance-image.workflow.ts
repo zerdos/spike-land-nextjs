@@ -31,6 +31,13 @@ async function getSharp() {
   }
   return _sharp;
 }
+
+// Type for sharp metadata results
+interface SharpMetadata {
+  width?: number;
+  height?: number;
+  format?: string;
+}
 import {
   calculateCropRegion,
   calculateTargetDimensions,
@@ -194,7 +201,7 @@ async function getImageMetadata(imageBuffer: Buffer): Promise<ImageMetadata> {
   // Reconstitute Buffer after workflow serialization
   const buffer = ensureBuffer(imageBuffer);
   const sharp = await getSharp();
-  const metadata = await sharp(buffer).metadata();
+  const metadata: SharpMetadata = await sharp(buffer).metadata();
   const width = metadata.width || DEFAULT_IMAGE_DIMENSION;
   const height = metadata.height || DEFAULT_IMAGE_DIMENSION;
 
@@ -342,10 +349,10 @@ async function downloadBlendSourceStep(
 
   const sharp = await getSharp();
   const { data: sourceMetadata, error: metadataError } = await tryCatch(
-    sharp(sourceBuffer).metadata(),
+    sharp(sourceBuffer).metadata() as Promise<SharpMetadata>,
   );
 
-  if (metadataError) {
+  if (metadataError || !sourceMetadata) {
     console.warn("Failed to get blend source metadata:", metadataError);
     return undefined;
   }
@@ -383,7 +390,7 @@ async function performCropOperations(
     .toBuffer();
 
   // Get new dimensions
-  const croppedMetadata = await sharp(croppedBuffer).metadata();
+  const croppedMetadata: SharpMetadata = await sharp(croppedBuffer).metadata();
   const newWidth = croppedMetadata.width || cropRegion.width;
   const newHeight = croppedMetadata.height || cropRegion.height;
 
@@ -591,7 +598,7 @@ async function processAndUpload(
   const sharp = await getSharp();
 
   // Get Gemini output dimensions
-  const geminiMetadata = await sharp(buffer).metadata();
+  const geminiMetadata: SharpMetadata = await sharp(buffer).metadata();
   const geminiWidth = geminiMetadata.width;
   const geminiHeight = geminiMetadata.height;
 
@@ -629,7 +636,7 @@ async function processAndUpload(
     .jpeg({ quality: ENHANCED_JPEG_QUALITY })
     .toBuffer();
 
-  const finalMetadata = await sharp(finalBuffer).metadata();
+  const finalMetadata: SharpMetadata = await sharp(finalBuffer).metadata();
 
   // Generate R2 key for enhanced image
   const enhancedR2Key = generateEnhancedR2Key(originalR2Key, jobId);
