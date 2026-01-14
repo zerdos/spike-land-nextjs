@@ -65,6 +65,8 @@ function createMockJob(
     sourceImageId: null,
     isBlend: false,
     isAnonymous: false,
+    altText: null,
+    qualityScore: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
