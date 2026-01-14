@@ -6,10 +6,27 @@ import type { Prisma } from "@prisma/client";
 import crypto from "crypto";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import sharp from "sharp";
 
 // Force dynamic rendering - skip static page data collection (sharp requires native modules)
 export const dynamic = "force-dynamic";
+
+// Lazy-load sharp to prevent build-time native module loading
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _sharp: any = null;
+async function getSharp() {
+  if (!_sharp) {
+    const mod = await import("sharp");
+    _sharp = mod.default || mod;
+  }
+  return _sharp;
+}
+
+// Type for sharp metadata results
+interface SharpMetadata {
+  width?: number;
+  height?: number;
+  format?: string;
+}
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file
 const MAX_REFERENCE_IMAGES = 3; // Maximum reference images per pipeline
@@ -164,9 +181,12 @@ export async function POST(
   }
   const buffer = Buffer.from(arrayBuffer);
 
+  // Load sharp for image processing
+  const sharp = await getSharp();
+
   // Get image metadata and validate
   const { data: metadata, error: sharpError } = await tryCatch(
-    sharp(buffer).metadata(),
+    sharp(buffer).metadata() as Promise<SharpMetadata>,
   );
 
   if (
@@ -191,9 +211,9 @@ export async function POST(
           fit: "inside",
           withoutEnlargement: true,
         })
-        .toBuffer(),
+        .toBuffer() as Promise<Buffer>,
     );
-    if (resizeError) {
+    if (resizeError || !resized) {
       return NextResponse.json(
         { success: false, error: "Failed to process image" },
         { status: 500 },
