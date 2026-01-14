@@ -159,8 +159,8 @@ describe("AppWorkspacePage", () => {
     render(<AppWorkspacePage />);
 
     await waitFor(() => {
-      expect(screen.getByText("testing.spike.land/live/test-codespace/"))
-        .toBeInTheDocument();
+      const addressBar = screen.getByTestId("address-bar");
+      expect(addressBar).toHaveTextContent("testing.spike.land/live/test-codespace/");
     });
   });
 

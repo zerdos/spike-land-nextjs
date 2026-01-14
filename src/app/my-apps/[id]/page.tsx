@@ -549,6 +549,7 @@ export default function AppWorkspacePage() {
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type your message..."
+                  autoComplete="off"
                   className="min-h-[60px] max-h-[200px] resize-none bg-black/20 border-white/10 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 rounded-2xl pl-4 pr-4 py-3 text-zinc-200 placeholder:text-zinc-600 backdrop-blur-sm transition-all"
                   disabled={sendingMessage || app.status === "ARCHIVED"}
                 />
@@ -592,12 +593,6 @@ export default function AppWorkspacePage() {
           </Card>
 
           <div className="flex flex-col gap-3 h-full">
-            {/* Codespace URL label */}
-            {app.codespaceUrl && (
-              <div className="text-xs text-zinc-500 text-right pr-2 font-mono">
-                {app.codespaceUrl.replace("https://", "")}
-              </div>
-            )}
             {/* Preview Panel */}
             <motion.div layoutId={`app-card-${app.id}`} className="flex-1 h-full min-h-[500px]">
               <Card className="flex flex-col h-full overflow-hidden bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl ring-1 ring-white/5 relative group">
@@ -612,16 +607,21 @@ export default function AppWorkspacePage() {
                     <div className="h-3 w-3 rounded-full bg-[#27C93F] border border-white/5 shadow-inner" />
                   </div>
 
-                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/20 px-32 py-1.5 rounded-lg border border-white/5 hidden md:block w-1/2">
-                    <div className="text-[10px] text-zinc-600 truncate text-center font-mono">
-                      {app.codespaceUrl || "localhost"}
+                  <div className="flex-1 mx-4 max-w-xl">
+                    <div className="bg-black/20 rounded-lg border border-white/5 py-1.5 px-3 flex items-center justify-center">
+                      <div
+                        data-testid="address-bar"
+                        className="text-[11px] text-zinc-400 truncate font-mono w-full text-center"
+                      >
+                        {app.codespaceUrl || "localhost"}
+                      </div>
                     </div>
                   </div>
 
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-zinc-500 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                    className="h-8 w-8 text-zinc-500 hover:text-white hover:bg-white/10 rounded-full transition-colors shrink-0"
                     onClick={() => setIframeKey((prev) => prev + 1)}
                     title="Refresh Preview"
                   >
@@ -642,13 +642,13 @@ export default function AppWorkspacePage() {
                   </Button>
                 </div>
 
-                <CardContent className="flex-1 overflow-hidden p-0 relative bg-zinc-950/50 z-10">
+                <CardContent className="flex-1 overflow-hidden p-0 md:p-0 relative bg-zinc-950/50 z-10 rounded-b-3xl">
                   {app.codespaceUrl
                     ? (
                       <iframe
                         key={iframeKey}
                         src={app.codespaceUrl}
-                        className="border-0 w-full h-full"
+                        className="border-0 w-full h-full rounded-b-3xl"
                         style={{
                           width: "200%",
                           height: "200%",
