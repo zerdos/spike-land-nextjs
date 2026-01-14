@@ -49,8 +49,10 @@ const main = {
     if (path[0] === "mcp") {
       // Extract codeSpace from agent context or headers
       // The agent should provide the codeSpace it wants to work with
+      // Support both "codeSpace" and "codespaceId" for compatibility
       const agentCodeSpace = request.headers.get("X-CodeSpace") ||
         url.searchParams.get("codeSpace") ||
+        url.searchParams.get("codespaceId") ||
         "default";
 
       // Create a temporary durable object stub to handle MCP requests
