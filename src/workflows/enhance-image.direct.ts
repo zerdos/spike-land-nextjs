@@ -28,7 +28,6 @@ import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, PipelineStage } from "@prisma/client";
-import sharp from "sharp";
 import {
   calculateCropRegion,
   calculateTargetDimensions,
@@ -44,6 +43,20 @@ import {
 } from "./enhance-image.shared";
 
 export type { EnhanceImageInput };
+
+// Lazy-load sharp to prevent build-time native module loading
+// Sharp is only needed at runtime when processing jobs
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _sharp: any = null;
+async function getSharp() {
+  if (!_sharp) {
+    // Dynamic import for CommonJS module
+    const mod = await import("sharp");
+    // Handle both ESM default export and CommonJS module.exports
+    _sharp = mod.default || mod;
+  }
+  return _sharp;
+}
 
 /**
  * Safely update the job's current stage with error handling.
@@ -88,8 +101,9 @@ async function performCrop(
   wasCropped: boolean;
   cropDimensions: typeof cropRegion | null;
 }> {
+  const sharp = await getSharp();
   const { data: croppedBuffer, error: cropError } = await tryCatch(
-    sharp(imageBuffer).extract(cropRegion).toBuffer(),
+    sharp(imageBuffer).extract(cropRegion).toBuffer() as Promise<Buffer>,
   );
 
   if (cropError) {
@@ -145,6 +159,9 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   if (!imageBuffer) {
     throw new Error("Failed to download original image from R2");
   }
+
+  // Load sharp for image processing
+  const sharp = await getSharp();
 
   // Step 1b: Prepare blend source data (if provided - already base64 from client upload)
   let sourceImageData: ReferenceImageData | null = null;
