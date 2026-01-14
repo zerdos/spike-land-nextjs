@@ -6,6 +6,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import sharp from "sharp";
 
+// Force dynamic rendering - skip static page data collection (sharp requires native modules)
+export const dynamic = "force-dynamic";
+
 // Maximum file size: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 

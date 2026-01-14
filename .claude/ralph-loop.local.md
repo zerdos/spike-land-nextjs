@@ -1,9 +1,11 @@
 ---
 active: true
-iteration: 0
+iteration: 152
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
+daily_sessions_used: 14
+daily_session_limit: 100
 ---
 
 # Ralph Wiggum - Jules Workforce Manager
@@ -12,14 +14,26 @@ started_at: "2026-01-10T00:00:00Z"
 
 ## Configuration
 
-| Setting      | Value                    | Notes                                |
-| ------------ | ------------------------ | ------------------------------------ |
-| WIP_LIMIT    | 6                        | Max parallel Jules tasks             |
-| AUTO_APPROVE | **MANUAL**               | Requires TUI/web approval            |
-| AUTO_MERGE   | true                     | Squash merge when all checks pass    |
-| MAX_RETRIES  | 2                        | Retry failed tasks before escalating |
-| REPO         | zerdos/spike-land-nextjs | Target repository                    |
-| CLI_MODE     | **true**                 | Use Jules CLI instead of MCP/browser |
+| Setting      | Value                    | Notes                                         |
+| ------------ | ------------------------ | --------------------------------------------- |
+| WIP_LIMIT    | **30**                   | Max parallel Jules tasks (up from 6!)         |
+| AUTO_APPROVE | **MCP**                  | Use MCP tools to approve plans automatically! |
+| AUTO_MERGE   | true                     | Squash merge when all checks pass             |
+| AUTO_PUBLISH | **true**                 | Auto-publish PR when CI passes + no conflicts |
+| MAX_RETRIES  | 2                        | Retry failed tasks before escalating          |
+| REPO         | zerdos/spike-land-nextjs | Target repository                             |
+| CLI_MODE     | **true**                 | Use Jules CLI + MCP tools                     |
+
+### Work Stream Distribution (Balanced)
+
+| Stream      | Limit  | Focus                              |
+| ----------- | ------ | ---------------------------------- |
+| Features    | 8      | Orbit platform features (#514-570) |
+| Testing     | 8      | Add tests, increase coverage       |
+| Bug Fixes   | 6      | Issues labeled `bug`               |
+| Tech Debt   | 5      | Refactoring, cleanup               |
+| Experiments | 3      | Novel ideas, improvements          |
+| **TOTAL**   | **30** |                                    |
 
 ---
 
@@ -58,11 +72,37 @@ jules teleport <session_id>
 jules
 ```
 
-### CLI Limitations (Requires Manual Intervention)
+### CLI Limitations (Use MCP Tools Instead!)
 
-- **Approve plans**: Use `jules` TUI or jules.google.com
-- **Send messages**: Use `jules` TUI or jules.google.com
-- **Get session activities**: Use `jules` TUI or jules.google.com
+The Jules CLI doesn't support these operations, but **MCP tools do**:
+
+| Operation          | CLI Support | MCP Tool Alternative                      |
+| ------------------ | ----------- | ----------------------------------------- |
+| **Approve plans**  | ❌ No       | ✅ `mcp__spike-land__jules_approve_plan`  |
+| **Send messages**  | ❌ No       | ✅ `mcp__spike-land__jules_send_message`  |
+| **Get activities** | ❌ No       | ✅ `mcp__spike-land__jules_get_session`   |
+| **List sessions**  | ✅ Yes      | ✅ `mcp__spike-land__jules_list_sessions` |
+
+### MCP Tools for Jules (PREFERRED for automation!)
+
+```
+# List sessions (can filter by status)
+mcp__spike-land__jules_list_sessions(status="AWAITING_PLAN_APPROVAL")
+
+# Approve a plan
+mcp__spike-land__jules_approve_plan(session_id="123456789")
+
+# Send a message to Jules
+mcp__spike-land__jules_send_message(session_id="123456789", message="Fix the tests")
+
+# Get session details
+mcp__spike-land__jules_get_session(session_id="123456789")
+```
+
+**Fallback options** (if MCP unavailable):
+
+- `jules` TUI command (interactive mode)
+- jules.google.com web interface
 
 ---
 
@@ -94,51 +134,97 @@ The Status column in the Active Task Registry uses these values:
 
 <!-- Ralph: UPDATE THIS EVERY ITERATION! This is your memory. -->
 
-| Issue #        | Session ID           | Status      | PR #    | Retries | Last Updated     |
-| -------------- | -------------------- | ----------- | ------- | ------- | ---------------- |
-| TS-ERRORS-FIX  | 14959951267380457679 | IN_PROGRESS | -       | 0       | 2026-01-11T07:50 |
-| #553 (ORB-045) | 8138470443526940844  | COMPLETED   | #674 ✅ | 0       | 2026-01-11T07:50 |
-| #556 (ORB-046) | 6929007678145876615  | COMPLETED   | #673 ✅ | 0       | 2026-01-11T07:50 |
-| #547 (ORB-043) | 6575646228061348411  | COMPLETED   | #670 ✅ | 0       | 2026-01-11T07:22 |
-| #532 (ORB-024) | 440787502780889745   | COMPLETED   | #671 ✅ | 0       | 2026-01-11T07:22 |
-| #545 (ORB-042) | 10448440558500030178 | COMPLETED   | -       | 0       | 2026-01-11T07:22 |
-| BUILD-FIX-TS   | 15900753798124342819 | COMPLETED   | #678    | 0       | 2026-01-11T07:50 |
-| PR-667-CI-FIX  | 17258562081963162276 | COMPLETED   | #667 ✅ | 0       | 2026-01-10T20:00 |
-| UNIT-TEST-FIX  | 5134072663804435110  | COMPLETED   | #669 ✅ | 0       | 2026-01-10T19:00 |
-| #544 (ORB-026) | 8018068239388301596  | COMPLETED   | #666 ✅ | 0       | 2026-01-10T19:00 |
-| #540 (ORB-039) | 16859514757019367340 | COMPLETED   | #668 ✅ | 0       | 2026-01-10T19:00 |
-| #531 (ORB-023) | 12664520598883814187 | COMPLETED   | #667 ✅ | 0       | 2026-01-10T19:00 |
-| #529 (ORB-021) | 12716452045721348213 | COMPLETED   | #660 ✅ | 0       | 2026-01-10T18:05 |
+| Issue #        | Session ID           | Status             | PR # | Retries | Last Updated     |
+| -------------- | -------------------- | ------------------ | ---- | ------- | ---------------- |
+| #560 ORB-050   | 9990519144520915308  | PR_CI_INFRA_ISSUE  | 696  | 0       | 2026-01-14T07:35 |
+| #681 DB-Backup | 6931936060370703380  | IN_PROGRESS        | 697  | 0       | 2026-01-14T08:00 |
+| #557 ORB-047   | 6461916275207593573  | AWAIT_USER_FDBK    | -    | 0       | 2026-01-14T08:00 |
+| #559 ORB-049   | 5418198425599883351  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:10 |
+| #550 ORB-044   | 9029505413509658765  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:35 |
+| #545 ORB-042   | 14061592581795539866 | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T00:30 |
+| #543 ORB-041   | 16700969269248228994 | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T00:30 |
+| #525 ORB-053   | 1231231942038418903  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T00:40 |
+| TS-Strictness  | 4593656897822469129  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:10 |
+| Batch-Platform | 7518177175950263084  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T00:40 |
+| E2E-Auth-Tests | 14385720697892655834 | PLANNING           | -    | 0       | 2026-01-14T08:00 |
+| Unit-Orbit     | 1396081266021328535  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T01:00 |
+| #524 ORB-052   | 15307375469365040653 | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:24 |
+| #523 ORB-051   | 6459174606168775495  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:24 |
+| #701 TS-Mocks  | 1484696181896423876  | PLANNING           | -    | 0       | 2026-01-14T08:10 |
 
-**Active Count: 1/6** (5 slots available)
+**Active Count: 15/30** (15 slots available) | **Daily: 15/100 sessions used**
 
-**PRs Status:**
+- **10 COMPLETED→AWAIT_PR** (#559, #550, #545, #543, #525, #524, #523, TS-Strictness, Batch-Platform, Unit-Orbit)
+- **1 IN_PROGRESS** (#681 DB-Backup)
+- **2 PLANNING** (E2E-Auth-Tests, #701 TS-Mocks)
+- **1 AWAIT_USER_FDBK** (#557 ORB-047 - sent continuation message)
+- **1 PR with CI infra issues** (#696 - unit tests pass, infra tests fail)
 
-| PR # | Issue        | Status        | Notes                    |
-| ---- | ------------ | ------------- | ------------------------ |
-| #679 | ORB-021      | 🔍 CI_PENDING | Unified Inbox UI         |
-| #678 | BUILD-FIX-TS | 🔍 CI_PENDING | Prisma Schema Fix        |
-| #674 | #553 ORB-045 | ✅ MERGED     | Workflow Actions Library |
-| #673 | #556 ORB-046 | ✅ MERGED     | A/B Test Framework       |
-| #671 | #532 ORB-024 | ✅ MERGED     | Scout Competitor Track   |
-| #670 | #547 ORB-043 | ✅ MERGED     | Visual Workflow Editor   |
-| #669 | UNIT-TEST    | ✅ MERGED     | Unit tests fixed         |
-| #668 | #540 ORB-039 | ✅ MERGED     | Linear Attribution       |
-| #667 | #531 ORB-023 | ✅ MERGED     | Scout Topic Monitoring   |
-| #666 | #544 ORB-026 | ✅ MERGED     | Facebook Ads             |
+**Completed Sessions (archived from registry):**
 
-**Build Status (main):**
+- 743965185831409437: TS-Build-Perf - MERGED (PR #695)
+- 9105450551840217556: Allocator Audit Trail - COMPLETED
+- 12623008819824620283: Dev Environment - COMPLETED
+- 10381636092810946070: Allocator Autopilot Plan - COMPLETED
+- 3283041034249796510: #536 Allocator Autopilot - COMPLETED
 
-- CI/CD Pipeline: ✅ PASSING (run 20891628598)
+**Recovered Sessions (previously marked DEAD, now active):**
 
-**Actions This Iteration (52):**
+- 15307375469365040653: #524 ORB-052 Pinterest - ✅ RECOVERED, plan approved, IN_PROGRESS
+- 6459174606168775495: #523 ORB-051 TikTok - ✅ RECOVERED, now PLANNING
 
-- 🎉 PR #673 (ORB-046) MERGED! A/B Test Framework
-- 🎉 PR #674 (ORB-045) MERGED! Workflow Actions Library
-- ✅ Closed issues #553 and #556
-- 📊 Updated registry - cleaned up completed tasks
-- ⏳ TS-ERRORS-FIX still IN_PROGRESS
-- 🔍 Monitoring PR #678 (Prisma fix) and PR #679 (Unified Inbox) - CI pending
+**Still Waiting (AWAIT_USER_FEEDBACK):**
+
+- 6461916275207593573: #557 ORB-047 - sent follow-up message
+
+**Open PRs Status:**
+
+| PR # | Issue/Task     | CI Status             | Review Status     | Action Needed                      |
+| ---- | -------------- | --------------------- | ----------------- | ---------------------------------- |
+| #696 | #560 ORB-050   | ❌ Infra issues (2)   | Pending re-review | Fix CI: CF pool + DATABASE_URL_E2E |
+| #697 | #681 DB-Backup | ❌ Build/test failing | CHANGES_REQUESTED | Jules IN_PROGRESS fixing           |
+| #698 | Hono bump      | ❌ BEHIND main        | Pending           | Dependabot - needs rebase          |
+| #699 | Hono bump      | 🔄 CI pending         | Pending           | Dependabot - awaiting CI           |
+
+**Recently Merged:**
+
+| PR # | Issue/Task    | Merged At               |
+| ---- | ------------- | ----------------------- |
+| #695 | TS-Build-Perf | 2026-01-13T22:52:37Z ✅ |
+
+**IMPORTANT TIPS:**
+
+- **Draft → non-Draft**: Must push a commit AFTER converting from Draft to trigger claude-code-review
+- **Publish condition**: Only turn off Draft mode when `yarn tsc` passes on the branch
+
+**Actions This Iteration (150):**
+
+- 💬 Sent continuation message to #557 ORB-047 (AWAITING_USER_FEEDBACK)
+- 🐛 Discovered TypeScript errors on main branch (altText/qualityScore missing)
+- 🎫 Created issue #701 for the TypeScript errors
+- 🚀 Created Jules session 1484696181896423876 to fix #701
+- 📊 E2E-Auth-Tests now PLANNING (responding to prev message)
+- 📊 PR #696 unit tests all PASS - only infra tests failing
+- 📊 Status: 10 COMPLETED, 1 IN_PROGRESS, 2 PLANNING, 1 AWAIT_FDBK
+
+**Actions Previous Iteration (149):**
+
+- 💬 Sent continuation message to E2E-Auth-Tests (now AWAIT_USER_FDBK)
+- 📊 #550 Workflow triggers now COMPLETED!
+- 📊 PR #696 unit tests all PASS - only infra tests failing (CF pool, DATABASE_URL_E2E)
+- 📊 Status: 10 COMPLETED, 1 IN_PROGRESS, 1 PLANNING, 1 AWAIT_FDBK
+
+**Actions Iteration (148):**
+
+- ✅ Auto-approved plan for #550 Workflow triggers → IN_PROGRESS
+- 💬 Sent continuation message to #557 ORB-047
+- 🔍 Identified CI infrastructure issues in PR #696
+
+**Actions Iteration 147:**
+
+- ✅ Auto-approved plan for #681 DB-Backup → IN_PROGRESS
+- 🔧 Fixed PR #696 build script (more robust)
+- 💬 Sent continuation message to #557 ORB-047
 
 ---
 
@@ -168,22 +254,28 @@ Update the Active Task Registry table above with current state.
 
 ---
 
-### Step 2: Log Pending Approvals (MANUAL)
+### Step 2: Auto-Approve Pending Plans (MCP!)
 
-**CLI Limitation**: The Jules CLI doesn't support approving plans.
+**Use MCP tools to approve plans automatically!**
 
 For each `AWAITING_PLAN_APPROVAL` session:
 
-1. **Log the pending approval:**
+1. **List pending approvals:**
    ```
-   ⏳ AWAITING APPROVAL: [session_id] (Issue #X) - requires manual approval
+   mcp__spike-land__jules_list_sessions(status="AWAITING_PLAN_APPROVAL")
    ```
 
-2. **Skip to next step** - approvals require manual intervention via:
-   - `jules` TUI command (interactive mode)
-   - jules.google.com web interface
+2. **Approve each plan:**
+   ```
+   mcp__spike-land__jules_approve_plan(session_id="[id]")
+   ```
 
-Ralph will continue monitoring these sessions in future iterations.
+3. **Update registry** status to `IN_PROGRESS`
+
+**Fallback** (if MCP unavailable):
+
+- `jules` TUI command (interactive mode)
+- jules.google.com web interface
 
 ---
 
@@ -214,6 +306,18 @@ For sessions marked `COMPLETED`:
 
 If no PR exists after `COMPLETED` status, wait one iteration and re-check.
 Jules may still be finalizing. If still empty after 2 iterations, use `jules teleport` to apply locally and create PR manually.
+
+**Post-Teleport Validation Checklist:**
+
+Before creating PR from teleported changes:
+
+1. [ ] Run `yarn tsc --noEmit` - verify no TypeScript errors
+2. [ ] Check for new dependencies: `git diff package.json`
+3. [ ] Run `yarn prisma generate` if schema changed
+4. [ ] Quick test: `yarn test:run` (or `yarn test:run --changed`)
+5. [ ] Verify no conflict markers: `grep -r "<<<<<<" src/`
+
+If TypeScript errors exist, fix them before creating PR (see "Handling Teleport Failures" section).
 
 ---
 
@@ -262,6 +366,39 @@ Update registry status accordingly. Jules must self-monitor PRs or use:
 
 Check again next iteration.
 
+#### 3.2b Resolve PR Conflicts (When Mergeable = CONFLICTING)
+
+When a PR has merge conflicts (detected via `gh pr view [PR#] --json mergeable`):
+
+1. **Checkout the PR branch:**
+   ```bash
+   git fetch origin <pr-branch>
+   git checkout <pr-branch>
+   ```
+
+2. **Rebase onto main:**
+   ```bash
+   git rebase origin/main
+   ```
+
+3. **Resolve conflicts:**
+   - For trivial whitespace: Keep either version
+   - For code conflicts: Analyze both changes, merge manually
+   - For schema conflicts: Ensure all fields from both versions are present
+   - Check for `<<<<<<` markers after resolution
+
+4. **Verify and force push:**
+   ```bash
+   yarn tsc --noEmit  # Verify no TS errors
+   git push --force-with-lease
+   ```
+
+5. **Update registry status:** `PR_CREATED` (conflicts resolved)
+
+**Example (from iteration 97):**
+PR #695 had conflicts in `Dockerfile` and `prisma/schema.prisma`.
+Both were trivial whitespace/comment conflicts resolved by keeping HEAD version.
+
 #### 3.3 Publish Draft PR (Take Out of Draft Mode)
 
 ```bash
@@ -269,10 +406,23 @@ Check again next iteration.
 gh pr view [PR#] --json isDraft -q '.isDraft'
 ```
 
-If draft AND CI passing AND up-to-date:
+**CRITICAL**: Only publish if `yarn tsc` passes on the branch!
+
+```bash
+# Check TypeScript compilation on PR branch
+git fetch origin
+BRANCH=$(gh pr view [PR#] --json headRefName -q '.headRefName')
+git checkout $BRANCH
+yarn tsc --noEmit
+```
+
+If draft AND `yarn tsc` passes AND up-to-date:
 
 ```bash
 gh pr ready [PR#]
+# IMPORTANT: Push a commit after converting from Draft to trigger claude-code-review!
+git commit --allow-empty -m "chore: request PR review"
+git push
 ```
 
 Update status to `REVIEW_REQUESTED`. This triggers `claude-code-review.yml` workflow.
@@ -420,25 +570,25 @@ Fix the build. This is highest priority." | jules new --repo zerdos/spike-land-n
 
 ---
 
-### Step 6: Log Feedback Requests (MANUAL)
+### Step 6: Respond to Feedback Requests (MCP!)
 
-**CLI Limitation**: The Jules CLI doesn't support sending messages or getting session activities.
+**Use MCP tools to get session details and respond!**
 
 For each `AWAITING_USER_FEEDBACK` session:
 
-#### 6.1 Log the Feedback Request
+#### 6.1 Get Session Details
 
 ```
-⏳ AWAITING FEEDBACK: [session_id] (Issue #X)
-   Action: Requires manual response via jules TUI or web
+mcp__spike-land__jules_get_session(session_id="[id]", include_activities=true)
 ```
 
-#### 6.2 Manual Intervention Required
+Review Jules's question/request from the activities.
 
-Operator must use:
+#### 6.2 Send Response via MCP
 
-- `jules` TUI command (interactive mode)
-- jules.google.com web interface
+```
+mcp__spike-land__jules_send_message(session_id="[id]", message="[response]")
+```
 
 Common scenarios to respond to:
 
@@ -449,7 +599,10 @@ Common scenarios to respond to:
 | "Tests are failing, should I skip?" | "No. Fix the tests. Here's the likely issue: [analysis]"    |
 | "Clarify requirement [X]"           | Re-read issue body, provide specific guidance               |
 
-Ralph will continue monitoring these sessions in future iterations.
+**Fallback** (if MCP unavailable):
+
+- `jules` TUI command (interactive mode)
+- jules.google.com web interface
 
 ---
 
@@ -559,11 +712,10 @@ Output `<promise>WORKFORCE_IDLE</promise>` when ALL true:
 | **Message dead/expired sessions**     | **Silently remove, return task to queue**   |
 | Run multiple gh commands per PR       | Use `./scripts/ralph/pr-health.sh`          |
 | Manually filter/sort issues           | Use `./scripts/ralph/available-issues.sh`   |
-| Use MCP to list sessions              | Use `jules remote list --session`           |
-| Use MCP/browser to create tasks       | Use `jules new --repo owner/repo "..."`     |
-| Use browser to pull session changes   | Use `jules teleport <id>`                   |
-| Try to auto-approve via code          | Log and skip - requires manual TUI/web      |
-| Try to send messages via code         | Log and skip - requires manual TUI/web      |
+| Use CLI to approve plans              | ✅ Use MCP: `jules_approve_plan()`          |
+| Use CLI to send messages              | ✅ Use MCP: `jules_send_message()`          |
+| Use browser for approvals/messages    | ✅ Use MCP tools (faster, automated!)       |
+| Rely on manual TUI for automation     | ✅ Use MCP for full automation              |
 
 ---
 
@@ -638,16 +790,41 @@ Output `<promise>WORKFORCE_IDLE</promise>` when ALL true:
       │               │
       │               ▼
       │    ┌─────────────────────┐
-      │    │ JULES_FIXING_REVIEW │◄────────┐
+      │    │ JULES_FIXING_REVIEW │
+      │    └──────────┬──────────┘
+      │               │
+      │               ▼
+      │    ┌─────────────────────┐
+      │    │ JULES_FIX_COMPLETED │
+      │    │ (Jules pushed fix)  │
+      │    └──────────┬──────────┘
+      │               │
+      │               ▼
+      │    ┌─────────────────────┐
+      │    │ Re-check CI/branch  │◄────────┐
+      │    │ (wait for CI pass)  │         │
       │    └──────────┬──────────┘         │
       │               │                    │
-      │               ▼                    │
-      │    ┌─────────────────────┐         │
-      │    │ JULES_FIX_COMPLETED │         │
-      │    │ (Re-check CI/branch)│─────────┘
-      │    └─────────────────────┘
-      │
-      ▼
+      │        CI passes?                  │
+      │         /     \                    │
+      │       YES      NO ─────────────────┘
+      │        │
+      │        ▼
+      │    ┌─────────────────────┐
+      │    │ REVIEW_REQUESTED    │ ◄─── Triggers claude-code-review AGAIN!
+      │    └──────────┬──────────┘
+      │               │
+      │               ▼
+      │    ┌─────────────────────┐
+      │    │   REVIEW_STARTED    │ (claude-code-review reviews fix)
+      │    └──────────┬──────────┘
+      │               │
+      │        ┌──────┴──────┐
+      │        │             │
+      │        ▼             ▼
+      │    APPROVED    CHANGES_REQUESTED ───► (loop back to JULES_FIXING)
+      │        │
+      ▼        ▼
    ┌─────────────────────┐
    │   REVIEW_APPROVED   │
    │   (Auto-merge)      │
@@ -704,16 +881,16 @@ Each iteration should output structured logs:
 
 ---
 
-## Quick Reference: Jules CLI
+## Quick Reference: Jules CLI + MCP
 
-| Action              | Command                                                                               |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| List all sessions   | `jules remote list --session`                                                         |
-| Get session result  | `jules remote pull --session <id>`                                                    |
-| Create task         | `gh issue view N --json body -q '.body' \| jules new --repo zerdos/spike-land-nextjs` |
-| Apply session patch | `jules teleport <id>` or `jules remote pull --session <id> --apply`                   |
-| Approve plan        | **MANUAL**: Use `jules` TUI or jules.google.com                                       |
-| Send message        | **MANUAL**: Use `jules` TUI or jules.google.com                                       |
+| Action              | CLI Command                                                                           | MCP Tool (Preferred)                     |
+| ------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------- |
+| List all sessions   | `jules remote list --session`                                                         | `jules_list_sessions()`                  |
+| Get session result  | `jules remote pull --session <id>`                                                    | `jules_get_session(session_id)`          |
+| Create task         | `gh issue view N --json body -q '.body' \| jules new --repo zerdos/spike-land-nextjs` | `jules_create_session(title, task)`      |
+| Apply session patch | `jules teleport <id>` or `jules remote pull --session <id> --apply`                   | -                                        |
+| **Approve plan**    | ❌ Not supported                                                                      | ✅ `jules_approve_plan(session_id)`      |
+| **Send message**    | ❌ Not supported                                                                      | ✅ `jules_send_message(session_id, msg)` |
 
 ---
 
@@ -912,6 +1089,57 @@ jules teleport <session_id>
 
 This replaces browser automation for PR creation - changes are applied locally and you can create the PR via `gh pr create`.
 
+### Handling Teleport Failures
+
+#### Common Failure: Patch Conflicts
+
+When `jules teleport <id>` fails with conflicts (usually `package.json`, `yarn.lock`):
+
+1. **Pull the raw diff:**
+   ```bash
+   jules remote pull --session <id> > /tmp/session.patch
+   ```
+
+2. **Identify conflicting files:**
+   ```bash
+   grep "^diff --git" /tmp/session.patch | grep -E "(package.json|yarn.lock)"
+   ```
+
+3. **Apply non-conflicting changes manually:**
+   - Extract new files from the diff (copy content directly)
+   - Add dependencies with `yarn add <package>` instead of patching yarn.lock
+   - Create new directories/files as needed
+
+4. **Verify and commit:**
+   ```bash
+   yarn tsc --noEmit  # Check for TypeScript errors
+   yarn test:run      # Quick test validation
+   ```
+
+#### Common Failure: Incomplete Jules Changes
+
+Jules may update schema/types but miss updating dependent code:
+
+- Test mock factories (missing new required fields)
+- Component default values
+- Type assertions in test files
+
+**Detection:**
+
+```bash
+yarn tsc --noEmit 2>&1 | grep "error TS"
+```
+
+**Common fix patterns:**
+
+- Missing fields in mocks: Add `fieldName: null` to mock objects
+- Type mismatches: Update type assertions to include new optional fields
+- Prisma changes: Run `yarn prisma generate` then fix consuming code
+
+**Example (from iteration 97):**
+Jules added `altText` and `qualityScore` to Prisma schema but didn't update 5 test files.
+Fix: Added `altText: null, qualityScore: null` to each mock factory.
+
 ### Usage Examples
 
 **Instead of multiple gh commands for PR health:**
@@ -995,17 +1223,157 @@ Try this approach instead: [new approach]" | jules new --repo zerdos/spike-land-
 
 <!-- Track what was learned/changed each iteration -->
 
-| Iteration | Change Made                    | Reason                                |
-| --------- | ------------------------------ | ------------------------------------- |
-| 12        | Added build priority step      | Build health is critical              |
-| 12        | Added worktree policy          | Prevent branch confusion              |
-| 12        | Added critical issue kill      | Stop wasting retries                  |
-| 17        | Added dead session handling    | Avoid wasting tokens on dead sessions |
-| 17        | Added token efficiency scripts | ~70% token reduction per iteration    |
-| 17        | Added DEAD status              | Silent removal, no communication      |
-| 90        | Migrated to Jules CLI          | Replace MCP/browser with `jules` CLI  |
-| 90        | Added gh issue integration     | Pipe issues directly to `jules new`   |
-| 90        | Made approve/message manual    | CLI doesn't support - use TUI/web     |
+| Iteration | Change Made                           | Reason                                    |
+| --------- | ------------------------------------- | ----------------------------------------- |
+| 12        | Added build priority step             | Build health is critical                  |
+| 12        | Added worktree policy                 | Prevent branch confusion                  |
+| 12        | Added critical issue kill             | Stop wasting retries                      |
+| 17        | Added dead session handling           | Avoid wasting tokens on dead sessions     |
+| 17        | Added token efficiency scripts        | ~70% token reduction per iteration        |
+| 17        | Added DEAD status                     | Silent removal, no communication          |
+| 90        | Migrated to Jules CLI                 | Replace MCP/browser with `jules` CLI      |
+| 90        | Added gh issue integration            | Pipe issues directly to `jules new`       |
+| 90        | Made approve/message manual           | CLI doesn't support - use TUI/web         |
+| 97        | Added teleport conflict handling      | Patch conflicts in package.json/yarn.lock |
+| 97        | Added incomplete change detection     | Jules may miss updating test mocks        |
+| 97        | Added post-teleport TypeScript check  | Verify changes compile before PR          |
+| 97        | Added PR conflict resolution workflow | Rebase PRs with merge conflicts           |
+| 108       | Increased WIP_LIMIT to 30             | Unlock full Jules capacity (100/day)      |
+| 108       | Added experimentation protocol        | 5+ experiments/iteration, aggressive      |
+| 108       | Added auto-publish workflow           | Remove manual bottleneck                  |
+| 108       | Fixed state diagram for review loop   | Jules fix → CI check → re-review          |
+| 123       | **Discovered MCP tools for Jules!**   | Can auto-approve plans + send messages!   |
+| 123       | Updated docs with MCP tool reference  | No more manual TUI/web bottleneck         |
+
+---
+
+## 🧪 Experimentation Protocol
+
+**CRITICAL**: Each iteration MUST include experimentation to improve the system.
+
+### Step E1: Generate Ideas (Every 5 Iterations)
+
+Review and capture improvement opportunities:
+
+- What repeated manual work could be automated?
+- What patterns in successes/failures could be exploited?
+- What would make Jules 10x more effective?
+- What unconventional approaches haven't been tried?
+
+Add ideas to `.claude/jules-ideas.md` backlog.
+
+### Step E2: Try Something New (AGGRESSIVE - Every Iteration)
+
+Pick **5+ experiments** per iteration (expect ~50% failure rate):
+
+- [ ] New task decomposition strategy
+- [ ] Different prompt engineering for Jules
+- [ ] Parallel vs sequential task approach
+- [ ] New issue prioritization logic
+- [ ] Alternative PR creation workflow
+- [ ] Batch similar issues together
+- [ ] Run competing approaches on same issue
+- [ ] Test boundary conditions of Jules capabilities
+- [ ] Try unconventional task descriptions
+- [ ] Push parallelism limits (20+ concurrent?)
+
+**Failure is expected and valuable** - document what doesn't work too!
+
+### Step E3: Capture Results
+
+After each experiment, record in `.claude/jules-ideas.md`:
+
+| Iteration | Experiment | Result | Keep/Discard |
+| --------- | ---------- | ------ | ------------ |
+| 108       | Example    | Worked | Keep         |
+
+### Step E4: Promote Successes
+
+If experiment improves outcomes:
+
+1. Document the improvement in this file
+2. Update workflow steps to include it permanently
+3. Add to Iteration Improvement Log above
+
+---
+
+## 🚀 Auto-Publish Workflow (NEW)
+
+**When CI passes + no conflicts → auto-publish → trigger review → auto-merge**
+
+### Step 3.3a: Check PR Prerequisites
+
+For each PR in `PR_CREATED` or `PR_CI_FAILING` status:
+
+```bash
+yarn ralph:pr-health [PR#]
+# Returns: {ci_passing, merge_state, is_draft, mergeable}
+```
+
+| Condition                                       | Action                                    |
+| ----------------------------------------------- | ----------------------------------------- |
+| `ci_passing: false`                             | Status = `PR_CI_FAILING`, wait            |
+| `merge_state: BEHIND`                           | Status = `PR_BEHIND_MAIN`, wait for Jules |
+| `mergeable: CONFLICTING`                        | Resolve conflicts (Step 3.2b)             |
+| `ci_passing: true` + `CLEAN` + `is_draft: true` | **Auto-publish** → Step 3.3b              |
+
+### Step 3.3b: Auto-Publish and Trigger Review
+
+When all prerequisites pass:
+
+```bash
+# 1. Mark PR as ready (remove draft)
+gh pr ready [PR#]
+
+# 2. Trigger review workflow with empty commit
+git fetch origin
+BRANCH=$(gh pr view [PR#] --json headRefName -q '.headRefName')
+git checkout $BRANCH
+git commit --allow-empty -m "chore: request PR review"
+git push
+
+# Or use the helper script:
+yarn ralph:auto-publish [PR#]
+```
+
+Update status to `REVIEW_REQUESTED`.
+
+### Review Feedback Fix Chain
+
+When `claude-code-review` requests changes:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ REVIEW FEEDBACK FIX CHAIN (Priority Order)                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ Priority 1: Claude Code Review fixes directly               │
+│ ├── Reviewer pushes fixes to PR branch                      │
+│ ├── Re-triggers review automatically                        │
+│ └── Fastest path to merge                                   │
+│                                                             │
+│ Priority 2: Jules fixes (via TUI/web)                       │
+│ ├── Ralph logs: "PR #X needs fix: [summary]"                │
+│ ├── Operator sends fix request via jules TUI/web            │
+│ ├── Jules pushes fix                                        │
+│ ├── CI runs → passes → triggers claude-code-review AGAIN    │
+│ └── Good for complex changes                                │
+│                                                             │
+│ Priority 3: Ralph fixes (fallback)                          │
+│ ├── Ralph spawns subagent in worktree                       │
+│ ├── Fixes issues, pushes to PR branch                       │
+│ ├── CI runs → passes → triggers claude-code-review AGAIN    │
+│ └── Emergency fallback only                                 │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**IMPORTANT**: After ANY fix is pushed:
+
+1. Wait for CI to pass
+2. claude-code-review runs automatically on new commits
+3. Review cycle repeats until APPROVED
+4. Only then can we auto-merge
 
 ---
 
