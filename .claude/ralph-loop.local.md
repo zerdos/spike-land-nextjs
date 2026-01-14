@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 150
+iteration: 152
 max_iterations: 2000
 completion_promise: "WORKFORCE_IDLE"
 started_at: "2026-01-10T00:00:00Z"
@@ -137,8 +137,8 @@ The Status column in the Active Task Registry uses these values:
 | Issue #        | Session ID           | Status             | PR # | Retries | Last Updated     |
 | -------------- | -------------------- | ------------------ | ---- | ------- | ---------------- |
 | #560 ORB-050   | 9990519144520915308  | PR_CI_INFRA_ISSUE  | 696  | 0       | 2026-01-14T07:35 |
-| #681 DB-Backup | 6931936060370703380  | IN_PROGRESS        | 697  | 0       | 2026-01-14T07:35 |
-| #557 ORB-047   | 6461916275207593573  | PLANNING           | -    | 0       | 2026-01-14T07:35 |
+| #681 DB-Backup | 6931936060370703380  | IN_PROGRESS        | 697  | 0       | 2026-01-14T08:00 |
+| #557 ORB-047   | 6461916275207593573  | AWAIT_USER_FDBK    | -    | 0       | 2026-01-14T08:00 |
 | #559 ORB-049   | 5418198425599883351  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:10 |
 | #550 ORB-044   | 9029505413509658765  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:35 |
 | #545 ORB-042   | 14061592581795539866 | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T00:30 |
@@ -146,7 +146,7 @@ The Status column in the Active Task Registry uses these values:
 | #525 ORB-053   | 1231231942038418903  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T00:40 |
 | TS-Strictness  | 4593656897822469129  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:10 |
 | Batch-Platform | 7518177175950263084  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T00:40 |
-| E2E-Auth-Tests | 14385720697892655834 | AWAIT_USER_FDBK    | -    | 0       | 2026-01-14T07:35 |
+| E2E-Auth-Tests | 14385720697892655834 | PLANNING           | -    | 0       | 2026-01-14T08:00 |
 | Unit-Orbit     | 1396081266021328535  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T01:00 |
 | #524 ORB-052   | 15307375469365040653 | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:24 |
 | #523 ORB-051   | 6459174606168775495  | COMPLETED→AWAIT_PR | -    | 0       | 2026-01-14T07:24 |
@@ -155,8 +155,8 @@ The Status column in the Active Task Registry uses these values:
 
 - **10 COMPLETED→AWAIT_PR** (#559, #550, #545, #543, #525, #524, #523, TS-Strictness, Batch-Platform, Unit-Orbit)
 - **1 IN_PROGRESS** (#681 DB-Backup)
-- **1 PLANNING** (#557 ORB-047)
-- **1 AWAIT_USER_FDBK** (E2E-Auth-Tests - sent continuation message)
+- **1 PLANNING** (E2E-Auth-Tests - now responding to prev msg)
+- **1 AWAIT_USER_FDBK** (#557 ORB-047 - sent continuation message)
 - **1 PR with CI infra issues** (#696 - unit tests pass, infra tests fail)
 
 **Completed Sessions (archived from registry):**
@@ -178,12 +178,12 @@ The Status column in the Active Task Registry uses these values:
 
 **Open PRs Status:**
 
-| PR # | Issue/Task     | CI Status                 | Review Status     | Action Needed                     |
-| ---- | -------------- | ------------------------- | ----------------- | --------------------------------- |
-| #696 | #560 ORB-050   | ❌ Infra issues (2)       | Pending re-review | Fix CI: CF pool + DATABASE_URL_E2E |
-| #697 | #681 DB-Backup | ❌ Build/test failing     | CHANGES_REQUESTED | Jules IN_PROGRESS fixing          |
-| #698 | Hono bump      | ❌ BEHIND main            | Pending           | Dependabot - needs rebase         |
-| #699 | Hono bump      | 🔄 CI pending             | Pending           | Dependabot - awaiting CI          |
+| PR # | Issue/Task     | CI Status             | Review Status     | Action Needed                      |
+| ---- | -------------- | --------------------- | ----------------- | ---------------------------------- |
+| #696 | #560 ORB-050   | ❌ Infra issues (2)   | Pending re-review | Fix CI: CF pool + DATABASE_URL_E2E |
+| #697 | #681 DB-Backup | ❌ Build/test failing | CHANGES_REQUESTED | Jules IN_PROGRESS fixing           |
+| #698 | Hono bump      | ❌ BEHIND main        | Pending           | Dependabot - needs rebase          |
+| #699 | Hono bump      | 🔄 CI pending         | Pending           | Dependabot - awaiting CI           |
 
 **Recently Merged:**
 
@@ -196,14 +196,21 @@ The Status column in the Active Task Registry uses these values:
 - **Draft → non-Draft**: Must push a commit AFTER converting from Draft to trigger claude-code-review
 - **Publish condition**: Only turn off Draft mode when `yarn tsc` passes on the branch
 
-**Actions This Iteration (149):**
+**Actions This Iteration (150):**
+
+- 💬 Sent continuation message to #557 ORB-047 (AWAITING_USER_FEEDBACK)
+- 📊 E2E-Auth-Tests now PLANNING (responding to prev message)
+- 📊 PR #696 unit tests all PASS - only infra tests failing
+- 📊 Status: 10 COMPLETED, 1 IN_PROGRESS, 1 PLANNING, 1 AWAIT_FDBK
+
+**Actions Previous Iteration (149):**
 
 - 💬 Sent continuation message to E2E-Auth-Tests (now AWAIT_USER_FDBK)
 - 📊 #550 Workflow triggers now COMPLETED!
 - 📊 PR #696 unit tests all PASS - only infra tests failing (CF pool, DATABASE_URL_E2E)
 - 📊 Status: 10 COMPLETED, 1 IN_PROGRESS, 1 PLANNING, 1 AWAIT_FDBK
 
-**Actions Previous Iteration (148):**
+**Actions Iteration (148):**
 
 - ✅ Auto-approved plan for #550 Workflow triggers → IN_PROGRESS
 - 💬 Sent continuation message to #557 ORB-047
