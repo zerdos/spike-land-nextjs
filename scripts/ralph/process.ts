@@ -14,6 +14,7 @@ import { execSync } from "child_process";
 import { improveFromResults, isInCooldown } from "./improver";
 import { runIteration } from "./iteration";
 import { parseRegistry, updateRegistry } from "./registry";
+import { escapeForShell, sleep } from "./utils";
 import { analyzeThroughput, validateIteration } from "./validator";
 
 const REGISTRY_PATH = "content/ralph-loop.local.md";
@@ -74,9 +75,9 @@ async function runSingleIteration(dryRun: boolean): Promise<void> {
     console.log("\n🚀 Running iteration...");
     const result = await runIteration(registry);
 
-    // 3. Validate results
+    // 3. Validate results (pass wipLimit from registry config)
     console.log("\n📋 Validating results...");
-    const validation = await validateIteration(result);
+    const validation = await validateIteration(result, registry.config.wip_limit);
 
     if (validation.success) {
       console.log("   ✅ Validation PASSED");
@@ -255,17 +256,7 @@ function outputIdleStatus(registry: Awaited<ReturnType<typeof parseRegistry>>): 
   console.log("═══════════════════════════════════════════════════════════");
 }
 
-function escapeForShell(str: string): string {
-  return str
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
-    .replace(/\$/g, "\\$")
-    .replace(/`/g, "\\`");
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+// Note: escapeForShell and sleep are imported from ./utils
 
 // ============================================================================
 // Entry Point

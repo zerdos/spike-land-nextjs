@@ -219,6 +219,18 @@ export interface ConfigUpdate {
   pre_pr_tsc_check?: boolean;
 }
 
+/**
+ * Runtime configuration that can be dynamically adjusted during execution
+ * Stored in .claude/ralph-runtime-config.json
+ */
+export interface RalphRuntimeConfig {
+  backlog_clear_rate?: number;
+  aggressive_queue?: boolean;
+  pre_pr_tsc_check?: boolean;
+  pr_lifecycle_priority?: boolean;
+  cooldown_until?: string;
+}
+
 export interface KnownIssue {
   pattern: string;
   firstSeen: string;

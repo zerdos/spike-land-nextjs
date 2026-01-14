@@ -4,6 +4,7 @@
  */
 
 import { execSync } from "child_process";
+import { getRuntimeConfig } from "./improver";
 import {
   approvePlan,
   createJulesSession,
@@ -29,8 +30,9 @@ import type {
   TaskStatus,
 } from "./types";
 
-const WIP_LIMIT = 15;
-const BACKLOG_CLEAR_RATE = 5;
+// Default fallback values (used only if config is missing)
+const DEFAULT_WIP_LIMIT = 15;
+const DEFAULT_BACKLOG_CLEAR_RATE = 5;
 
 // ============================================================================
 // Main Iteration Runner
@@ -332,9 +334,13 @@ async function step3a_clearBacklog(
     return;
   }
 
+  // Get backlog clear rate from runtime config, with fallback to default
+  const runtimeConfig = getRuntimeConfig();
+  const backlogClearRate = runtimeConfig.backlog_clear_rate ?? DEFAULT_BACKLOG_CLEAR_RATE;
+
   // Sort by age (oldest first)
   const sortedBacklog = sortTasksByAge(backlogTasks);
-  const toProcess = sortedBacklog.slice(0, BACKLOG_CLEAR_RATE);
+  const toProcess = sortedBacklog.slice(0, backlogClearRate);
 
   console.log(
     `   Processing ${toProcess.length}/${backlogTasks.length} backlog items`,
@@ -355,7 +361,7 @@ async function step3a_clearBacklog(
       console.log(`   🔍 Verifying TypeScript...`);
       try {
         execSync("yarn tsc --noEmit", { encoding: "utf-8", timeout: 120000 });
-      } catch (tsError) {
+      } catch (_tsError) {
         console.log(`   ⚠️ TypeScript errors found, needs manual fix`);
         result.errors.push(`TypeScript errors in ${task.issue}`);
         continue;
@@ -396,12 +402,15 @@ async function step3a_clearBacklog(
 
 async function step4_fillQueue(
   result: IterationResult,
-  _registry: RalphRegistry,
+  registry: RalphRegistry,
 ): Promise<void> {
-  const activeSlots = countActiveSlots(result.updatedTasks);
-  const availableSlots = WIP_LIMIT - activeSlots;
+  // Get WIP limit from registry config, with fallback to default
+  const wipLimit = registry.config.wip_limit || DEFAULT_WIP_LIMIT;
 
-  console.log(`   Current: ${activeSlots}/${WIP_LIMIT} slots used`);
+  const activeSlots = countActiveSlots(result.updatedTasks);
+  const availableSlots = wipLimit - activeSlots;
+
+  console.log(`   Current: ${activeSlots}/${wipLimit} slots used`);
 
   if (availableSlots <= 0) {
     console.log("   📊 Queue full, no slots available");
