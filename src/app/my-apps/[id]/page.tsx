@@ -7,6 +7,7 @@ import { Link } from "@/components/ui/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import type { APP_BUILD_STATUSES } from "@/lib/validations/app";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -202,14 +203,14 @@ export default function AppWorkspacePage() {
     };
   }, [appId, fetchApp]);
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
   // Stream state
   const [streamingResponse, setStreamingResponse] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+
+  // Scroll to bottom when messages change or during streaming
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, streamingResponse]);
 
   // Send message
   const handleSendMessage = async () => {
@@ -473,7 +474,6 @@ export default function AppWorkspacePage() {
                           </div>
                         </div>
                       ))}
-                      <div ref={messagesEndRef} />
                     </div>
                   )}
                 {isStreaming && streamingResponse && (
@@ -487,6 +487,7 @@ export default function AppWorkspacePage() {
                     </div>
                   </div>
                 )}
+                <div ref={messagesEndRef} />
               </div>
             </CardContent>
             {/* Message Input */}
@@ -512,192 +513,104 @@ export default function AppWorkspacePage() {
             </div>
           </Card>
 
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            {/* Codespace URL label */}
+            {app.codespaceUrl && (
+              <div className="text-xs text-muted-foreground text-right pr-1">
+                {app.codespaceUrl.replace("https://", "")}
+              </div>
+            )}
             {/* Preview Panel */}
-            <Card className="flex flex-col h-[500px] overflow-hidden bg-zinc-950 border-zinc-800">
-              {/* Browser Toolbar */}
-              <div className="flex items-center gap-4 border-b border-zinc-800 bg-zinc-900/50 px-4 py-3">
-                <div className="flex gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-red-500/20 hover:bg-red-500 transition-colors" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-500/20 hover:bg-yellow-500 transition-colors" />
-                  <div className="h-3 w-3 rounded-full bg-green-500/20 hover:bg-green-500 transition-colors" />
-                </div>
-
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="flex w-full max-w-sm items-center gap-2 rounded-md bg-zinc-950/50 px-3 py-1.5 text-xs text-zinc-500">
-                    <div className="h-2 w-2 rounded-full bg-zinc-700" />
-                    <span>
-                      {app.codespaceUrl?.replace("https://", "") ||
-                        "localhost:3000"}
-                    </span>
+            <motion.div layoutId={`app-card-${app.id}`}>
+              <Card className="flex flex-col h-[500px] overflow-hidden bg-zinc-950 border-zinc-800">
+                {/* Browser Toolbar */}
+                <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900/50 px-4 py-3">
+                  <div className="flex gap-1.5">
+                    <div className="h-3 w-3 rounded-full bg-red-500/20 hover:bg-red-500 transition-colors" />
+                    <div className="h-3 w-3 rounded-full bg-yellow-500/20 hover:bg-yellow-500 transition-colors" />
+                    <div className="h-3 w-3 rounded-full bg-green-500/20 hover:bg-green-500 transition-colors" />
                   </div>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-zinc-500 hover:text-zinc-300"
+                    onClick={() => setIframeKey((prev) => prev + 1)}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12" />
+                      <path d="M3 3v9h9" />
+                    </svg>
+                  </Button>
                 </div>
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-zinc-500 hover:text-zinc-300"
-                  onClick={() => setIframeKey((prev) => prev + 1)}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12" />
-                    <path d="M3 3v9h9" />
-                  </svg>
-                </Button>
-              </div>
-
-              <CardContent className="flex-1 overflow-hidden p-0 md:p-0 relative bg-zinc-950">
-                {app.codespaceUrl
-                  ? (
-                    <iframe
-                      key={iframeKey}
-                      src={app.codespaceUrl}
-                      className="border-0"
-                      style={{
-                        display: "block",
-                        width: "200.5%",
-                        height: "200.5%",
-                        transform: "scale(0.5)",
-                        transformOrigin: "0 0",
-                      }}
-                      title={`Preview of ${app.name}`}
-                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                    />
-                  )
-                  : (
-                    <div className="flex h-full items-center justify-center text-center text-muted-foreground bg-zinc-950">
-                      <div className="space-y-2">
-                        <div className="mx-auto h-12 w-12 rounded-xl bg-zinc-900 flex items-center justify-center text-zinc-700 mb-4">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <rect
-                              width="18"
-                              height="18"
-                              x="3"
-                              y="3"
-                              rx="2"
-                              ry="2"
-                            />
-                            <circle cx="9" cy="9" r="2" />
-                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                          </svg>
+                <CardContent className="flex-1 overflow-hidden p-0 md:p-0 relative bg-zinc-950">
+                  {app.codespaceUrl
+                    ? (
+                      <iframe
+                        key={iframeKey}
+                        src={app.codespaceUrl}
+                        className="border-0"
+                        style={{
+                          display: "block",
+                          width: "200.5%",
+                          height: "200.5%",
+                          transform: "scale(0.5)",
+                          transformOrigin: "0 0",
+                        }}
+                        title={`Preview of ${app.name}`}
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                      />
+                    )
+                    : (
+                      <div className="flex h-full items-center justify-center text-center text-muted-foreground bg-zinc-950">
+                        <div className="space-y-2">
+                          <div className="mx-auto h-12 w-12 rounded-xl bg-zinc-900 flex items-center justify-center text-zinc-700 mb-4">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <rect
+                                width="18"
+                                height="18"
+                                x="3"
+                                y="3"
+                                rx="2"
+                                ry="2"
+                              />
+                              <circle cx="9" cy="9" r="2" />
+                              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                            </svg>
+                          </div>
+                          <p>Preview will appear here</p>
+                          <p className="text-sm opacity-50">
+                            Start chatting to generate your app
+                          </p>
                         </div>
-                        <p>Preview will appear here</p>
-                        <p className="text-sm opacity-50">
-                          Start chatting to generate your app
-                        </p>
                       </div>
-                    </div>
-                  )}
-              </CardContent>
-            </Card>
-
-            {/* Console Log */}
-            <Card className="flex flex-col h-[200px] bg-[#0d0d0d] border-zinc-800 font-mono text-xs">
-              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2">
-                <div className="flex items-center gap-2 text-zinc-500">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="4 17 10 11 4 5" />
-                    <line x1="12" x2="20" y1="19" y2="19" />
-                  </svg>
-                  <span>Terminal</span>
-                </div>
-                <div className="flex gap-1">
-                  <div className="h-1.5 w-1.5 rounded-full bg-zinc-700" />
-                  <div className="h-1.5 w-1.5 rounded-full bg-zinc-700" />
-                  <div className="h-1.5 w-1.5 rounded-full bg-zinc-700" />
-                </div>
-              </div>
-              <CardContent className="flex-1 overflow-y-auto p-4 space-y-1">
-                <div className="text-zinc-500 mb-2">
-                  <span className="text-green-500">➜</span>
-                  <span className="text-cyan-500 ml-2">~</span>
-                  <span className="ml-2">tailing logs...</span>
-                </div>
-                <div className="text-zinc-400 font-mono">
-                  <span className="text-blue-400">[Claude Code Agent]</span>{" "}
-                  Fetching latest changes...
-                </div>
-                <div className="text-zinc-400 font-mono">
-                  <span className="text-blue-400">[Claude Code Agent]</span>{" "}
-                  <span className="text-green-400">
-                    App updated successfully.
-                  </span>
-                </div>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="text-zinc-600 font-mono">
-                    <span className="text-zinc-700">[Claude Code Agent]</span>{" "}
-                    [{new Date().toLocaleDateString()}, {new Date().toLocaleTimeString()}]
-                  </div>
-                ))}
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-green-500">➜</span>
-                  <span className="h-4 w-2 bg-zinc-500 animate-pulse" />
-                </div>
-              </CardContent>
-            </Card>
+                    )}
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
         </div>
-
-        {/* Status History */}
-        {app.statusHistory && app.statusHistory.length > 0 && (
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="text-lg">Activity Log</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {app.statusHistory.slice(0, 5).map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="flex items-center justify-between text-sm"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        {entry.status.replace("_", " ")}
-                      </Badge>
-                      <span className="text-muted-foreground">
-                        {entry.message || "Status changed"}
-                      </span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(entry.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );

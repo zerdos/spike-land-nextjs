@@ -301,9 +301,8 @@ describe("MyAppsPage", () => {
       const component = await MyAppsPage();
       render(component);
 
-      const messagesText = screen.getByText(/Messages:/);
-      expect(messagesText).toBeInTheDocument();
-      expect(messagesText.parentElement?.textContent).toContain("5");
+      // New 3D cards show "5 messages" format
+      expect(screen.getByText("5 messages")).toBeInTheDocument();
     });
 
     it("should display image count", async () => {
@@ -320,9 +319,8 @@ describe("MyAppsPage", () => {
       const component = await MyAppsPage();
       render(component);
 
-      const imagesText = screen.getByText(/Images:/);
-      expect(imagesText).toBeInTheDocument();
-      expect(imagesText.parentElement?.textContent).toContain("7");
+      // New 3D cards show "7 images" format
+      expect(screen.getByText("7 images")).toBeInTheDocument();
     });
 
     it("should show filter badges with counts", async () => {
@@ -354,7 +352,7 @@ describe("MyAppsPage", () => {
       expect(screen.getByText(/Building \(1\)/)).toBeInTheDocument();
     });
 
-    it("should show Preview button for apps with codespaceUrl", async () => {
+    it("should show iframe preview for apps with codespaceUrl", async () => {
       const mockApps = [
         createMockApp({
           id: "app-1",
@@ -370,10 +368,13 @@ describe("MyAppsPage", () => {
       const component = await MyAppsPage();
       render(component);
 
-      expect(screen.getByText("Preview")).toBeInTheDocument();
+      // New 3D cards show live iframe preview
+      const iframe = document.querySelector("iframe");
+      expect(iframe).toBeInTheDocument();
+      expect(iframe?.src).toBe("https://testing.spike.land/live/live-app/");
     });
 
-    it("should not show Preview button for apps without codespaceUrl", async () => {
+    it("should show placeholder for apps without codespaceUrl", async () => {
       const mockApps = [
         createMockApp({
           id: "app-1",
@@ -388,7 +389,8 @@ describe("MyAppsPage", () => {
       const component = await MyAppsPage();
       render(component);
 
-      expect(screen.queryByText("Preview")).not.toBeInTheDocument();
+      // No iframe when codespaceUrl is null - shows placeholder
+      expect(screen.getByText("No preview")).toBeInTheDocument();
     });
 
     it("should display failed status with destructive badge", async () => {

@@ -142,9 +142,8 @@ describe("AppWorkspacePage", () => {
     render(<AppWorkspacePage />);
 
     await waitFor(() => {
-      // There are multiple DRAFTING badges (header and status history)
-      const badges = screen.getAllByText("DRAFTING");
-      expect(badges.length).toBeGreaterThan(0);
+      // Only one DRAFTING badge in header (status history removed)
+      expect(screen.getByText("DRAFTING")).toBeInTheDocument();
     });
   });
 
@@ -209,14 +208,6 @@ describe("AppWorkspacePage", () => {
       expect(iframe?.src).toBe(
         "https://testing.spike.land/live/test-codespace/",
       );
-    });
-  });
-
-  it("renders status history", async () => {
-    render(<AppWorkspacePage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Activity Log")).toBeInTheDocument();
     });
   });
 
@@ -370,8 +361,7 @@ describe("AppWorkspacePage", () => {
     render(<AppWorkspacePage />);
 
     await waitFor(() => {
-      const badges = screen.getAllByText("DRAFTING");
-      expect(badges.length).toBeGreaterThan(0);
+      expect(screen.getByText("DRAFTING")).toBeInTheDocument();
     });
 
     const eventSource = MockEventSource.instances[0]!;
