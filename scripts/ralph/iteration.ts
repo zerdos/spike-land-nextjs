@@ -26,10 +26,17 @@ import type {
   GitHubIssue,
   IterationResult,
   JulesSession,
+  JulesSessionDetails,
   PRBatchStatus,
   RalphRegistry,
   TaskStatus,
 } from "./types";
+
+// Type for execSync errors which include stdout/stderr
+interface ExecSyncError extends Error {
+  stdout?: string;
+  stderr?: string;
+}
 
 // Thresholds for stuck session detection
 const STUCK_WARNING_HOURS = 1; // Exclude from capacity after 1 hour
@@ -573,9 +580,9 @@ async function step3a_clearBacklog(
         console.log(`   ✅ Typecheck passed`);
       } catch (tsError: unknown) {
         // Extract error message for the agent
-        const errorOutput = tsError instanceof Error
-          ? (tsError as any).stdout || (tsError as any).stderr || tsError.message
-          : String(tsError);
+        const execError = tsError as ExecSyncError;
+        const errorOutput = execError.stdout || execError.stderr || execError.message ||
+          String(tsError);
         const truncatedError = errorOutput.slice(0, 1500);
 
         console.log(`   ⚠️ TypeScript errors found, notifying agent...`);
@@ -846,7 +853,7 @@ async function step6_respondFeedback(
 
 async function handleFeedbackSession(
   session: JulesSession,
-  _details: any,
+  _details: JulesSessionDetails,
   result: IterationResult,
 ): Promise<void> {
   // Check if we should teleport and merge main (standard feedback loop)
@@ -910,11 +917,12 @@ async function handleFeedbackSession(
     } else {
       result.errors.push("Failed to create PR after TS pass");
     }
-  } catch (tsError: any) {
+  } catch (tsError: unknown) {
     // TypeScript failed
     console.log("   ❌ TypeScript check failed");
     // Extract error message (truncated)
-    const errorMsg = tsError.stdout || tsError.message || "Unknown error";
+    const execError = tsError as ExecSyncError;
+    const errorMsg = execError.stdout || execError.message || "Unknown error";
     const truncatedError = errorMsg.slice(0, 500);
 
     const msg =
