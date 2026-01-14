@@ -133,6 +133,9 @@ export async function POST(
               codespace: codespaceServer,
             },
             allowedTools: CODESPACE_TOOL_NAMES,
+            tools: [], // Disable built-in tools (Read, Write, Bash)
+            permissionMode: "dontAsk", // Critical: Don't prompt, deny non-allowed tools
+            persistSession: false, // No session persistence in server context
             systemPrompt,
           },
         });
@@ -222,6 +225,26 @@ export async function POST(
         // Broadcast code update to SSE clients if any code-modifying tools were used
         if (codeUpdated) {
           console.log("[agent/chat] Code was updated, broadcasting to SSE clients");
+
+          // Verify the update actually happened
+          const { data: verifyResponse } = await tryCatch(
+            fetch(`https://testing.spike.land/live/${app.codespaceId}/session.json`, {
+              headers: { "Accept": "application/json" },
+            }),
+          );
+
+          if (verifyResponse?.ok) {
+            const { data: verifyData } = await tryCatch(verifyResponse.json());
+            const actuallyChanged = verifyData?.code !== currentCode;
+            console.log(
+              `[agent/chat] Code verification: ${actuallyChanged ? "SUCCESS" : "FAILED"}`,
+            );
+
+            if (!actuallyChanged) {
+              console.error("[agent/chat] Tool claimed success but code unchanged!");
+            }
+          }
+
           broadcastCodeUpdated(id);
         }
 
