@@ -20,13 +20,14 @@ import { FatalError } from "workflow";
 
 // Lazy-load sharp to prevent build-time native module loading
 // Sharp is only needed at runtime when workflow steps execute
-type SharpModule = typeof import("sharp");
-type SharpDefault = SharpModule["default"];
-let _sharp: SharpDefault | null = null;
-async function getSharp(): Promise<SharpDefault> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _sharp: any = null;
+async function getSharp() {
   if (!_sharp) {
+    // Dynamic import for CommonJS module
     const mod = await import("sharp");
-    _sharp = mod.default;
+    // Handle both ESM default export and CommonJS module.exports
+    _sharp = mod.default || mod;
   }
   return _sharp;
 }
