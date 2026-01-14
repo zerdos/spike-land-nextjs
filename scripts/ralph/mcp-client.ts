@@ -3,8 +3,9 @@
  * Wrapper for Jules MCP tools and CLI commands
  */
 
-import { execSync } from "child_process";
+import { execSync, spawnSync } from "child_process";
 import type { JulesSession, JulesSessionDetails, JulesStatus } from "./types";
+import { isNumericIssue, validateIssueNumber, validateRepoFormat } from "./utils";
 
 // ============================================================================
 // Jules CLI Commands (for operations that CLI supports)
@@ -14,7 +15,7 @@ import type { JulesSession, JulesSessionDetails, JulesStatus } from "./types";
  * List all Jules sessions using CLI
  * Returns parsed session data
  */
-export async function listJulesSessions(): Promise<JulesSession[]> {
+export function listJulesSessions(): JulesSession[] {
   try {
     const output = execSync("jules remote list --session", {
       encoding: "utf-8",
@@ -93,26 +94,48 @@ function mapJulesStatus(status: string): JulesStatus {
 
 /**
  * Create a new Jules session from an issue
+ * SECURITY: Validates inputs before shell execution to prevent command injection
  */
-export async function createJulesSession(
+export function createJulesSession(
   issueNumber: number,
   repo: string = "zerdos/spike-land-nextjs",
-): Promise<string | null> {
+): string | null {
+  // Validate inputs to prevent command injection
+  if (!validateIssueNumber(issueNumber)) {
+    console.error(`Invalid issue number: ${issueNumber}`);
+    return null;
+  }
+  if (!validateRepoFormat(repo)) {
+    console.error(`Invalid repo format: ${repo}`);
+    return null;
+  }
+
   try {
-    // Get issue body
+    // Get issue body using validated parameters
     const issueBody = execSync(
       `gh issue view ${issueNumber} --repo ${repo} --json title,body -q '.title + "\\n\\n" + .body'`,
       { encoding: "utf-8", timeout: 10000 },
     );
 
-    // Create Jules session
-    const result = execSync(
-      `echo "${escapeForShell(issueBody)}" | jules new --repo ${repo}`,
-      { encoding: "utf-8", timeout: 60000 },
-    );
+    // Create Jules session using stdin instead of shell echo to prevent injection
+    const result = spawnSync("jules", ["new", "--repo", repo], {
+      input: issueBody,
+      encoding: "utf-8",
+      timeout: 60000,
+    });
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    if (result.status !== 0) {
+      console.error(`Jules command failed with exit code ${result.status}: ${result.stderr}`);
+      return null;
+    }
 
     // Extract session ID from output
-    const idMatch = result.match(/(\d{15,})/);
+    const output = result.stdout;
+    const idMatch = output.match(/(\d{15,})/);
     return idMatch && idMatch[1] ? idMatch[1] : null;
   } catch (error) {
     console.error(`Failed to create Jules session for issue #${issueNumber}:`, error);
@@ -122,8 +145,15 @@ export async function createJulesSession(
 
 /**
  * Teleport (apply) a completed Jules session locally
+ * SECURITY: Validates session ID format before shell execution
  */
-export async function teleportSession(sessionId: string): Promise<boolean> {
+export function teleportSession(sessionId: string): boolean {
+  // Validate session ID is numeric (Jules session IDs are 15+ digit numbers)
+  if (!/^\d{15,}$/.test(sessionId)) {
+    console.error(`Invalid session ID format: ${sessionId}`);
+    return false;
+  }
+
   try {
     execSync(`jules teleport ${sessionId}`, {
       encoding: "utf-8",
@@ -285,9 +315,9 @@ export async function listSessions(
     return mcpResult.data;
   }
 
-  // Fall back to CLI
+  // Fall back to CLI (synchronous)
   console.log("MCP unavailable, falling back to Jules CLI...");
-  const sessions = await listJulesSessions();
+  const sessions = listJulesSessions();
 
   // Filter by status if needed
   if (status) {
@@ -340,8 +370,14 @@ export async function getSessionDetails(
 
 /**
  * Get PR health metrics
+ * SECURITY: Validates PR number before shell execution
  */
 export function getPRHealth(prNumber: number): string {
+  // Validate PR number
+  if (!Number.isInteger(prNumber) || prNumber <= 0) {
+    return JSON.stringify({ error: `Invalid PR number: ${prNumber}` });
+  }
+
   try {
     return execSync(`yarn ralph:pr-health ${prNumber}`, {
       encoding: "utf-8",
@@ -361,22 +397,27 @@ export function getBatchPRStatus(): string {
       encoding: "utf-8",
       timeout: 30000,
     });
-  } catch (error) {
+  } catch (_error) {
     return JSON.stringify([]);
   }
 }
 
 /**
  * Get available issues
+ * SECURITY: Validates exclude list contains only numeric issue numbers
  */
 export function getAvailableIssues(excludeIssues: string[] = []): string {
   try {
-    const exclude = excludeIssues.join(" ");
-    return execSync(`yarn ralph:available-issues ${exclude}`, {
+    // Filter to only allow numeric issue numbers to prevent injection
+    const validatedExcludes = excludeIssues
+      .filter(isNumericIssue)
+      .join(" ");
+
+    return execSync(`yarn ralph:available-issues ${validatedExcludes}`, {
       encoding: "utf-8",
       timeout: 30000,
     });
-  } catch (error) {
+  } catch (_error) {
     return JSON.stringify([]);
   }
 }
@@ -397,15 +438,28 @@ export function getCIStatus(): string {
 
 /**
  * Create PR
+ * SECURITY: Uses spawnSync with args array to prevent shell injection
  */
 export function createPR(title: string, body: string): string | null {
   try {
-    const result = execSync(
-      `gh pr create --title "${escapeForShell(title)}" --body "${escapeForShell(body)}"`,
-      { encoding: "utf-8", timeout: 60000 },
-    );
-    // Extract PR URL
-    const urlMatch = result.match(/https:\/\/github\.com\/[\w-]+\/[\w-]+\/pull\/\d+/);
+    // Use spawnSync with args array to avoid shell injection
+    const result = spawnSync("gh", ["pr", "create", "--title", title, "--body", body], {
+      encoding: "utf-8",
+      timeout: 60000,
+    });
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    if (result.status !== 0) {
+      console.error(`gh pr create failed with exit code ${result.status}: ${result.stderr}`);
+      return null;
+    }
+
+    // Extract PR URL from output
+    const output = result.stdout;
+    const urlMatch = output.match(/https:\/\/github\.com\/[\w-]+\/[\w.-]+\/pull\/\d+/);
     return urlMatch ? urlMatch[0] : null;
   } catch (error) {
     console.error("Failed to create PR:", error);
@@ -415,8 +469,15 @@ export function createPR(title: string, body: string): string | null {
 
 /**
  * Merge PR
+ * SECURITY: Validates PR number before shell execution
  */
 export function mergePR(prNumber: number): boolean {
+  // Validate PR number
+  if (!Number.isInteger(prNumber) || prNumber <= 0) {
+    console.error(`Invalid PR number: ${prNumber}`);
+    return false;
+  }
+
   try {
     execSync(`gh pr merge ${prNumber} --squash --delete-branch`, {
       encoding: "utf-8",
@@ -431,8 +492,15 @@ export function mergePR(prNumber: number): boolean {
 
 /**
  * Publish (un-draft) PR
+ * SECURITY: Validates PR number before shell execution
  */
 export function publishPR(prNumber: number): boolean {
+  // Validate PR number
+  if (!Number.isInteger(prNumber) || prNumber <= 0) {
+    console.error(`Invalid PR number: ${prNumber}`);
+    return false;
+  }
+
   try {
     execSync(`gh pr ready ${prNumber}`, {
       encoding: "utf-8",
@@ -443,16 +511,4 @@ export function publishPR(prNumber: number): boolean {
     console.error(`Failed to publish PR #${prNumber}:`, error);
     return false;
   }
-}
-
-// ============================================================================
-// Utility Functions
-// ============================================================================
-
-function escapeForShell(str: string): string {
-  return str
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
-    .replace(/\$/g, "\\$")
-    .replace(/`/g, "\\`");
 }

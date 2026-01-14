@@ -5,7 +5,8 @@
 
 import type { IterationResult, TaskEntry, ValidationMetrics, ValidationResult } from "./types";
 
-const WIP_LIMIT = 15;
+// Default fallback value (used only if wipLimit not provided)
+const DEFAULT_WIP_LIMIT = 15;
 
 // ============================================================================
 // Main Validation
@@ -13,9 +14,10 @@ const WIP_LIMIT = 15;
 
 export async function validateIteration(
   result: IterationResult,
+  wipLimit: number = DEFAULT_WIP_LIMIT,
 ): Promise<ValidationResult> {
   const issues: string[] = [];
-  const metrics = calculateMetrics(result);
+  const metrics = calculateMetrics(result, wipLimit);
 
   // Check for errors
   if (result.errors.length > 0) {
@@ -71,7 +73,10 @@ export async function validateIteration(
 // Metrics Calculation
 // ============================================================================
 
-function calculateMetrics(result: IterationResult): ValidationMetrics {
+function calculateMetrics(
+  result: IterationResult,
+  wipLimit: number = DEFAULT_WIP_LIMIT,
+): ValidationMetrics {
   const tasks = result.updatedTasks;
 
   // Approval rate
@@ -111,7 +116,7 @@ function calculateMetrics(result: IterationResult): ValidationMetrics {
   const activeSlots =
     tasks.filter((t) => ["PLANNING", "AWAITING_PLAN_APPROVAL", "IN_PROGRESS"].includes(t.status))
       .length;
-  const pipelineUtilization = activeSlots / WIP_LIMIT;
+  const pipelineUtilization = activeSlots / wipLimit;
 
   // Backlog size
   const backlogSize = tasks.filter(
@@ -198,9 +203,11 @@ export function findRecurringErrors(
     const pattern = categorizeError(error);
 
     if (patterns.has(pattern)) {
-      const existing = patterns.get(pattern)!;
-      existing.occurrences++;
-      existing.lastSeen = new Date().toISOString();
+      const existing = patterns.get(pattern);
+      if (existing) {
+        existing.occurrences++;
+        existing.lastSeen = new Date().toISOString();
+      }
     } else {
       patterns.set(pattern, {
         pattern,

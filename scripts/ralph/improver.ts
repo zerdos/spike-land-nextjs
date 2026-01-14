@@ -9,6 +9,7 @@ import type {
   ImprovementRule,
   IterationResult,
   KnownIssue,
+  RalphRuntimeConfig,
   ValidationResult,
 } from "./types";
 import { type ErrorPattern, findRecurringErrors } from "./validator";
@@ -135,13 +136,7 @@ const IMPROVEMENT_RULES: ImprovementRule[] = [
 // Configuration Updates
 // ============================================================================
 
-interface RalphRuntimeConfig {
-  backlog_clear_rate?: number;
-  aggressive_queue?: boolean;
-  pre_pr_tsc_check?: boolean;
-  pr_lifecycle_priority?: boolean;
-  cooldown_until?: string;
-}
+// Note: RalphRuntimeConfig is imported from ./types
 
 function loadConfig(): RalphRuntimeConfig {
   const configPath = ".claude/ralph-runtime-config.json";

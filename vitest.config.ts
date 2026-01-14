@@ -15,7 +15,11 @@ export default defineConfig({
     env: {
       DATABASE_URL: "postgresql://mock:5432/mock",
     },
-    include: ["src/**/*.{test,spec}.{ts,tsx}", "apps/**/*.{test,spec}.{ts,tsx}"],
+    include: [
+      "src/**/*.{test,spec}.{ts,tsx}",
+      "apps/**/*.{test,spec}.{ts,tsx}",
+      "scripts/**/*.{test,spec}.{ts,tsx}",
+    ],
     // Exclude git worktrees, mobile app (uses Jest), and packages (have their own configs)
     exclude: [
       "**/node_modules/**",
