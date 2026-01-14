@@ -23,6 +23,8 @@ import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { Components } from "react-markdown";
+import ReactMarkdown from "react-markdown";
 
 interface AppMessage {
   id: string;
@@ -71,23 +73,55 @@ interface PendingImage {
 }
 
 /**
- * Format agent response with proper paragraph breaks.
- * Detects sentence endings followed by capital letters and adds line breaks.
+ * Custom markdown components for chat message rendering.
+ * Provides styling consistent with the chat UI.
  */
-function formatWithParagraphs(text: string): string {
-  if (!text) return text;
+const markdownComponents: Components = {
+  p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+  strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+  em: ({ children }) => <em className="italic">{children}</em>,
+  code: ({ children }) => (
+    <code className="bg-white/10 text-teal-300 px-1.5 py-0.5 rounded text-sm font-mono">
+      {children}
+    </code>
+  ),
+  pre: ({ children }) => (
+    <pre className="bg-black/30 border border-white/10 rounded-lg p-3 overflow-x-auto my-2 text-sm">
+      {children}
+    </pre>
+  ),
+  ul: ({ children }) => <ul className="list-disc list-inside space-y-1 my-2">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 my-2">{children}</ol>,
+  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+  a: ({ href, children }) => (
+    <a
+      href={href}
+      className="text-teal-400 hover:text-teal-300 underline"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {children}
+    </a>
+  ),
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-2 border-teal-500/50 pl-3 my-2 text-zinc-300 italic">
+      {children}
+    </blockquote>
+  ),
+  h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
+  h2: ({ children }) => <h2 className="text-base font-bold mb-2">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-sm font-bold mb-1">{children}</h3>,
+};
 
-  // Add line breaks after sentence endings (. ! ?) followed by a space and capital letter
-  // But don't break inside code blocks or after abbreviations like "Dr." or "e.g."
-  return text
-    // Preserve existing double newlines
-    .replace(/\n\n/g, "\n\n")
-    // Add paragraph breaks after sentences followed by capital letters
-    // Excludes cases like "Dr. Smith" or "e.g. Example" or URLs
-    .replace(/([.!?])(\s+)([A-Z])/g, (_match, punct, _space, letter) => {
-      // Add paragraph break after sentence endings followed by capital letters
-      return `${punct}\n\n${letter}`;
-    });
+/**
+ * Renders markdown content for agent messages.
+ */
+function MarkdownContent({ content }: { content: string; }) {
+  return (
+    <ReactMarkdown components={markdownComponents}>
+      {content}
+    </ReactMarkdown>
+  );
 }
 
 export default function AppWorkspacePage() {
@@ -565,11 +599,11 @@ export default function AppWorkspacePage() {
                                 : "bg-white/10 text-zinc-100 backdrop-blur-md border border-white/5"
                             }`}
                           >
-                            <p className="whitespace-pre-wrap leading-relaxed">
+                            <div className="leading-relaxed">
                               {message.role === "AGENT"
-                                ? formatWithParagraphs(message.content)
-                                : message.content}
-                            </p>
+                                ? <MarkdownContent content={message.content} />
+                                : <p className="whitespace-pre-wrap">{message.content}</p>}
+                            </div>
                             {message.attachments &&
                               message.attachments.length > 0 && (
                               <div className="mt-3 flex flex-wrap gap-2">
@@ -604,10 +638,10 @@ export default function AppWorkspacePage() {
                 {isStreaming && streamingResponse && (
                   <div className="flex justify-start mt-6">
                     <div className="max-w-[85%] rounded-2xl px-5 py-3 bg-white/10 text-zinc-100 backdrop-blur-md border border-white/5">
-                      <p className="whitespace-pre-wrap leading-relaxed">
-                        {formatWithParagraphs(streamingResponse)}
+                      <div className="leading-relaxed">
+                        <MarkdownContent content={streamingResponse} />
                         <span className="inline-block w-2 h-4 ml-1 bg-teal-500 animate-pulse rounded-full align-middle" />
-                      </p>
+                      </div>
                       <p className="mt-1.5 text-xs text-zinc-500">Thinking...</p>
                     </div>
                   </div>
