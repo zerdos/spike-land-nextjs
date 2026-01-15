@@ -74,6 +74,18 @@ const eslintConfig = tseslint.config(
       // React Hooks rules
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
+      // JSX Accessibility rules (set to warn to surface issues without blocking builds)
+      ...Object.fromEntries(
+        Object.entries(jsxA11yPlugin.flatConfigs.recommended.rules).map(
+          ([key, value]) => {
+            if (value === "error" || value === 2) return [key, "warn"];
+            if (Array.isArray(value) && (value[0] === "error" || value[0] === 2)) {
+              return [key, ["warn", ...value.slice(1)]];
+            }
+            return [key, value];
+          },
+        ),
+      ),
     },
     settings: {
       react: {
@@ -83,7 +95,7 @@ const eslintConfig = tseslint.config(
   },
   // Test files configuration
   {
-    files: ["**/*.test.ts", "**/*.test.tsx"],
+    files: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
     },

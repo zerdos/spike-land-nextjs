@@ -12,8 +12,8 @@ interface PixelImagePageProps {
 export default async function PixelImagePage({ params }: PixelImagePageProps) {
   const session = await auth();
 
-  if (!session) {
-    redirect("/auth/signin");
+  if (!session?.user?.id) {
+    redirect("/auth/signin?callbackUrl=/apps/pixel");
   }
 
   const { imageId } = await params;

@@ -1,17 +1,6 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "ESNext",
-    "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "DOM"
-    ],
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "resolveJsonModule": true,
-    "moduleResolution": "bundler",
     "types": [
       "node",
       "@cucumber/cucumber",

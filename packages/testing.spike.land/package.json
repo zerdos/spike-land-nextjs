@@ -6,13 +6,12 @@
   "module": "dist/index.js",
   "private": true,
   "peerDependencies": {
-    "react": "19.0.0",
-    "react-dom": "19.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "scripts": {
     "dev": "npx wrangler dev",
     "dev:remote": "npx wrangler dev --remote",
-    "// build": "yarn clean",
     "build:worker": "echo 'No build required - using direct deployment'",
     "w:deploy:dev": "npx wrangler deploy --env testing --minify",
     "w:deploy:prod": "npx wrangler deploy --minify",
@@ -38,6 +37,7 @@
     "@vitest/snapshot": "4.0.17",
     "cross-env": "10.1.0",
     "esbuild": "0.27.2",
+    "eslint": "9.39.2",
     "eslint-plugin-react-hooks": "7.0.1",
     "eslint-plugin-react-refresh": "0.4.26",
     "globals": "17.0.0",
@@ -57,7 +57,6 @@
     "async-mutex": "0.5.0",
     "avl": "2.0.0",
     "esbuild-wasm": "0.27.2",
-    "eslint": "9.39.2",
     "esm-worker": "0.135.18",
     "hono": "4.11.4",
     "immutable": "5.1.4",
