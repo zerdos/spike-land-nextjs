@@ -41,6 +41,9 @@ export function WorkspaceProvider({
   // Current workspace slug from URL or localStorage
   const [currentSlug, setCurrentSlug] = useState<string | null>(null);
 
+  // Extract URL slug from params
+  const urlSlug = params?.["workspaceSlug"] as string | undefined;
+
   // Fetch workspaces
   const {
     data,
@@ -63,8 +66,6 @@ export function WorkspaceProvider({
 
   // Initialize from URL param or localStorage
   useEffect(() => {
-    const urlSlug = params?.["workspaceSlug"] as string | undefined;
-
     if (urlSlug) {
       setCurrentSlug(urlSlug);
       if (typeof window !== "undefined") {
@@ -76,7 +77,7 @@ export function WorkspaceProvider({
         setCurrentSlug(stored);
       }
     }
-  }, [params?.["workspaceSlug"]]);
+  }, [urlSlug]);
 
   // Auto-select first workspace if none selected
   useEffect(() => {
