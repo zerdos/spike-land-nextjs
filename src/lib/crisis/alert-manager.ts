@@ -56,13 +56,13 @@ export class CrisisAlertManager {
     for (const channel of channels) {
       switch (channel) {
         case "email":
-          results.email = await this.sendEmailAlerts(members, content);
+          results["email"] = await this.sendEmailAlerts(members, content);
           break;
         case "slack":
-          results.slack = await this.sendSlackAlert(event.workspaceId, content);
+          results["slack"] = await this.sendSlackAlert(event.workspaceId, content);
           break;
         case "in_app":
-          results.in_app = await this.createInAppNotifications(
+          results["in_app"] = await this.createInAppNotifications(
             members,
             event,
             content,
@@ -166,19 +166,19 @@ export class CrisisAlertManager {
       `A ${event.severity.toLowerCase()} severity crisis has been detected.`,
     );
 
-    if (triggerData.description) {
-      parts.push(String(triggerData.description));
+    if (triggerData["description"]) {
+      parts.push(String(triggerData["description"]));
     }
 
-    if (triggerData.percentChange) {
-      const change = Number(triggerData.percentChange);
+    if (triggerData["percentChange"]) {
+      const change = Number(triggerData["percentChange"]);
       parts.push(
         `Metric change: ${change > 0 ? "+" : ""}${change.toFixed(1)}%`,
       );
     }
 
-    if (triggerData.sentimentScore !== undefined) {
-      const score = Number(triggerData.sentimentScore);
+    if (triggerData["sentimentScore"] !== undefined) {
+      const score = Number(triggerData["sentimentScore"]);
       parts.push(`Sentiment score: ${score.toFixed(2)}`);
     }
 
