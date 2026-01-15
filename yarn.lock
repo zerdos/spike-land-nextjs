@@ -2416,27 +2416,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cloudflare/vitest-pool-workers@npm:0.12.3":
-  version: 0.12.3
-  resolution: "@cloudflare/vitest-pool-workers@npm:0.12.3"
-  dependencies:
-    birpc: "npm:0.2.14"
-    cjs-module-lexer: "npm:^1.2.3"
-    devalue: "npm:^5.3.2"
-    esbuild: "npm:0.27.0"
-    get-port: "npm:^7.1.0"
-    miniflare: "npm:4.20260111.0"
-    semver: "npm:^7.7.1"
-    wrangler: "npm:4.59.1"
-    zod: "npm:^3.25.76"
-  peerDependencies:
-    "@vitest/runner": 2.0.x - 3.2.x
-    "@vitest/snapshot": 2.0.x - 3.2.x
-    vitest: 2.0.x - 3.2.x
-  checksum: 10c9/56a6ae32b220c143adc3837f2ccf3dc1d0c7ca91c3a1737e3f5ec7c45ea0c631c2c2c7dd8149d1934153d37048fc94c64bb4bbf412f802b17e62232dd1f4573b
-  languageName: node
-  linkType: hard
-
 "@cloudflare/workerd-darwin-64@npm:1.20260111.0":
   version: 1.20260111.0
   resolution: "@cloudflare/workerd-darwin-64@npm:1.20260111.0"
@@ -10063,7 +10042,6 @@ __metadata:
   resolution: "@spike-npm-land/renderer@workspace:packages/spike-land-renderer"
   dependencies:
     "@cloudflare/puppeteer": "npm:1.0.4"
-    "@cloudflare/vitest-pool-workers": "npm:0.12.3"
     "@cloudflare/workers-types": "npm:4.20260115.0"
     "@types/node": "npm:25.0.8"
     "@vitest/runner": "npm:4.0.17"
@@ -10092,7 +10070,6 @@ __metadata:
     "@ai-sdk/anthropic": "npm:3.0.13"
     "@anthropic-ai/sdk": "npm:0.71.2"
     "@cloudflare/kv-asset-handler": "npm:0.4.1"
-    "@cloudflare/vitest-pool-workers": "npm:0.12.3"
     "@cloudflare/workers-types": "npm:4.20260115.0"
     "@eslint/js": "npm:9.39.2"
     "@rollup/plugin-commonjs": "npm:29.0.0"
@@ -10144,7 +10121,6 @@ __metadata:
   resolution: "@spike-npm-land/transpile@workspace:packages/js.spike.land"
   dependencies:
     "@cloudflare/kv-asset-handler": "npm:0.4.1"
-    "@cloudflare/vitest-pool-workers": "npm:0.12.3"
     "@spike-npm-land/code": "npm:0.9.56"
     "@vitest/runner": "npm:4.0.17"
     "@vitest/snapshot": "npm:4.0.17"
@@ -16024,13 +16000,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"birpc@npm:0.2.14":
-  version: 0.2.14
-  resolution: "birpc@npm:0.2.14"
-  checksum: 10c9/4c6329a05f6fc27ac524d3b94f44c3532ee9be75e8a773db950f8ad7a64962905cbe589873cb390294d770e67fd1a1fe4df98f1eab59874aa62d6dd07abe163b
-  languageName: node
-  linkType: hard
-
 "blake3-wasm@npm:2.1.5":
   version: 2.1.5
   resolution: "blake3-wasm@npm:2.1.5"
@@ -16685,13 +16654,6 @@ __metadata:
   version: 1.2.3
   resolution: "cjs-module-lexer@npm:1.2.3"
   checksum: 10c9/f96a5118b0a012627a2b1c13bd2fcb92509778422aaa825c5da72300d6dcadfb47134dd2e9d97dfa31acd674891dd91642742772d19a09a8adc3e56bd2f5928c
-  languageName: node
-  linkType: hard
-
-"cjs-module-lexer@npm:^1.2.3":
-  version: 1.4.3
-  resolution: "cjs-module-lexer@npm:1.4.3"
-  checksum: 10c9/d2b92f919a2dedbfd61d016964fce8da0035f827182ed6839c97cac56e8a8077cfa6a59388adfe2bc588a19cef9bbe830d683a76a6e93c51f65852062cfe2591
   languageName: node
   linkType: hard
 
@@ -17954,13 +17916,6 @@ __metadata:
   version: 5.6.0
   resolution: "devalue@npm:5.6.0"
   checksum: 10c9/60bdc9015beb1784d0bfa3f0fa0227261a900e996d264039125bf4035f64f03ddc6bf792c06eb7714f710ea613b9e4918ac5a04b320d826e2f4b0aa7d55d0821
-  languageName: node
-  linkType: hard
-
-"devalue@npm:^5.3.2":
-  version: 5.6.1
-  resolution: "devalue@npm:5.6.1"
-  checksum: 10c9/6da13a080514048a4fca231459c44222dd43b9c89cba0586c206592a8f7fa91a5e37952b11769daeaafbd2c4eb5df0b121234adb753a5dc737406312a314545f
   languageName: node
   linkType: hard
 
@@ -20933,13 +20888,6 @@ __metadata:
   version: 3.1.2
   resolution: "get-port-please@npm:3.1.2"
   checksum: 10c9/ec8b8da9f816edde114b76742ec29695730094904bb0e94309081e4adf3f797b483b9d648abcf5e0511c4e21a7bf68334672b9575f8b23bccf93bf97eb517f0e
-  languageName: node
-  linkType: hard
-
-"get-port@npm:^7.1.0":
-  version: 7.1.0
-  resolution: "get-port@npm:7.1.0"
-  checksum: 10c9/f4d23b43026124007663a899578cc87ff37bfcf645c5c72651e9810ebafc759857784e409fb8e0ada9b90e5c5db089b0ae2f5f6b49fba1ce2e0aff86094ab17d
   languageName: node
   linkType: hard
 
