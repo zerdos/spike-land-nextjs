@@ -274,6 +274,7 @@ jobs:
       - name: Seed E2E test database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
+          E2E_DATABASE_CONFIRMED: true
         run: yarn db:seed-e2e
 
   # ============================================================================
@@ -399,4 +400,5 @@ jobs:
       - name: Cleanup E2E test database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
+          E2E_DATABASE_CONFIRMED: true
         run: yarn db:cleanup-e2e
