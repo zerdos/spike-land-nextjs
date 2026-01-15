@@ -127,8 +127,10 @@ jobs:
       - name: Run tests (shard ${{ matrix.shard }}/4)
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            # On main branch: run all tests with coverage enforcement
-            yarn test:coverage --shard=${{ matrix.shard }}/4 --reporter=github-actions
+            # On main branch: run all tests with coverage generation (thresholds disabled for shards)
+            # Coverage thresholds cannot be enforced per-shard since each shard only covers part of the codebase
+            # Thresholds are checked via Codecov which merges all shards
+            yarn vitest run --coverage --coverage.thresholds.lines=0 --coverage.thresholds.functions=0 --coverage.thresholds.branches=0 --coverage.thresholds.statements=0 --shard=${{ matrix.shard }}/4 --reporter=github-actions
           else
             # On PR/feature branch: run only changed tests (no coverage threshold enforcement)
             yarn test:run --changed $(yarn find-last-passing-ci unit-tests-${{ matrix.shard }}) --shard=${{ matrix.shard }}/4 --reporter=github-actions
