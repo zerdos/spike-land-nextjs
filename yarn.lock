@@ -9795,6 +9795,7 @@ __metadata:
   dependencies:
     "@modelcontextprotocol/sdk": "npm:1.25.2"
     "@types/node": "npm:25.0.8"
+    eslint: "npm:9.39.2"
     typescript: "npm:5.9.3"
     zod: "npm:4.3.5"
   bin:
@@ -9865,6 +9866,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@spike-npm-land/opfs-node-adapter@workspace:packages/opfs-node-adapter"
   dependencies:
+    eslint: "npm:9.39.2"
     typescript: "npm:5.9.3"
     vitest: "npm:4.0.17"
   languageName: unknown
@@ -9879,6 +9881,7 @@ __metadata:
     "@types/node": "npm:25.0.8"
     "@vitest/runner": "npm:4.0.17"
     "@vitest/snapshot": "npm:4.0.17"
+    eslint: "npm:9.39.2"
     rimraf: "npm:6.1.2"
     typescript: "npm:5.9.3"
     vitest: "npm:4.0.17"
@@ -9958,6 +9961,7 @@ __metadata:
     "@vitest/runner": "npm:4.0.17"
     "@vitest/snapshot": "npm:4.0.17"
     esbuild-wasm: "npm:0.27.2"
+    eslint: "npm:9.39.2"
     rimraf: "npm:6.1.2"
     typescript: "npm:5.9.3"
     vitest: "npm:4.0.17"

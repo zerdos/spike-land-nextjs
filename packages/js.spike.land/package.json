@@ -16,12 +16,14 @@
     "clean": "rimraf dist",
     "types:check": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint": "eslint ."
   },
   "devDependencies": {
     "@cloudflare/kv-asset-handler": "0.4.1",
     "@vitest/runner": "4.0.17",
     "@vitest/snapshot": "4.0.17",
+    "eslint": "9.39.2",
     "rimraf": "6.1.2",
     "typescript": "5.9.3",
     "vitest": "4.0.17",
