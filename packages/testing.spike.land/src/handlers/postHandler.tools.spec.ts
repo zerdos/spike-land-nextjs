@@ -87,15 +87,15 @@ describe("PostHandler - Tool Schema Validation", () => {
       }),
     } as unknown as Code;
 
-    // Mock StorageService
+    // Mock StorageService - use function expression for Vitest 4 constructor mocking
     const mockStorageService = {
       saveRequestBody: vi.fn().mockResolvedValue(undefined),
-    };
-    vi.mocked(StorageService).mockImplementation(() => ({
-      ...mockStorageService,
       loadRequestBody: vi.fn(),
       env: mockEnv,
-    } as unknown as StorageService));
+    };
+    vi.mocked(StorageService).mockImplementation(function() {
+      return mockStorageService as unknown as StorageService;
+    });
 
     postHandler = new PostHandler(mockCode, mockEnv);
   });

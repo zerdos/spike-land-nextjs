@@ -1,20 +1,16 @@
-import { defineWorkersConfig } from "@cloudflare/vitest-pool-workers/config";
-
 import path from "path";
+import { defineConfig } from "vitest/config";
 
-export default defineWorkersConfig({
+// Note: @cloudflare/vitest-pool-workers does not support Vitest 4.x
+// Using standard Vitest configuration until Cloudflare releases compatible version
+// See: https://github.com/cloudflare/workers-sdk/issues/11064
+export default defineConfig({
   test: {
     name: "testing.spike.land",
     reporters: ["hanging-process", "dot"],
     include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     setupFiles: ["./vitest.setup.ts"],
-    poolOptions: {
-      workers: {
-        wrangler: {
-          configPath: "./wrangler.toml",
-        },
-      },
-    },
+    environment: "node",
   },
 
   resolve: {

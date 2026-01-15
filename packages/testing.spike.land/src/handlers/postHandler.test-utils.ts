@@ -5,13 +5,14 @@ import type Env from "../env";
 import type { McpTool } from "../mcp";
 import type { StorageService } from "../services/storageService";
 
-// Mock crypto.randomUUID
+// Mock crypto.randomUUID - use vi.stubGlobal for Node.js compatibility
 export const mockRandomUUID = vi.fn(() => "test-uuid-123");
 
 export const setupCrypto = () => {
-  global.crypto = {
+  vi.stubGlobal("crypto", {
+    ...globalThis.crypto,
     randomUUID: mockRandomUUID,
-  } as unknown as Crypto;
+  });
 };
 
 // Helper function to create mock tools for Anthropic provider
@@ -152,12 +153,15 @@ export const createMockStorageService = (): StorageService =>
 
 // Setup StorageService mock implementation
 // Note: The caller must pass in the mocked StorageService constructor from their module
+// Use function expression for Vitest 4 constructor mocking
 export const setupStorageServiceMock = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   StorageServiceMock: new(...args: any[]) => StorageService,
   mockStorageService: StorageService,
 ) => {
-  vi.mocked(StorageServiceMock).mockImplementation(() => mockStorageService);
+  vi.mocked(StorageServiceMock).mockImplementation(function() {
+    return mockStorageService;
+  });
 };
 
 // Create mock URL

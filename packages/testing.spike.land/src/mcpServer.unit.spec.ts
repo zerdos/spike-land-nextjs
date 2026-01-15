@@ -27,6 +27,7 @@ const createMockDurableObject = (session: ICodeSession): Code => {
     session,
     initialized: true,
     getSession: vi.fn(() => session),
+    getOrigin: vi.fn(() => "https://testing.spike.land"),
     initializeSession: vi.fn(),
     updateAndBroadcastSession: vi.fn(),
   } as unknown as Code;
