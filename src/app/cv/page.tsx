@@ -207,7 +207,7 @@ const skills = {
 
 const experience = [
   {
-    period: "2023 - 2024",
+    period: "2023 - Present",
     role: "Frontend Developer",
     company: "Virgin Media O2 Limited",
     type: "Contractor",
@@ -216,7 +216,8 @@ const experience = [
       "Reduced CSS build size by 80% via PostCSS plugins",
       "Built automated Figma-to-PR pipeline for the Component Library",
       "Key role in cloud migration of virginmediao2.co.uk",
-      "Mastered Angular 16 for modern frontend development",
+      "Pioneering AI-assisted development with Claude Code and context engineering",
+      "Driving 50x productivity gains through AI-powered workflows",
     ],
   },
   {
@@ -511,12 +512,12 @@ export default function CSPage() {
           <div className="max-w-2xl mx-auto">
             <ProjectCard
               title="Spike Land"
-              description="AI-powered platform for creating, modifying, and deploying applications. Starting as a playground to push browser-based development boundaries, it's now a full production platform proving that one developer with AI can build enterprise-grade software."
+              description="AI-powered platform for creating, modifying, and deploying applications in under 30 seconds. Send a message and a Cloud Run devcontainer spins up with your code and dependencies. Claude Code makes changes that appear instantly via hot reload. On your final message, it builds, deploys, and the container shuts down. Cost-efficient, fast, and apps can import each other like components. Started 5 years ago, wrapped up with AI in a weekend."
               tags={[
                 "Next.js 15",
                 "Cloudflare Workers",
-                "PostgreSQL",
-                "Expo 52",
+                "Cloud Run",
+                "Claude Code",
                 "Context Engineering",
               ]}
               link="/"
