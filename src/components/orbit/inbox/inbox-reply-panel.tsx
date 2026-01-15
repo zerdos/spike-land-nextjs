@@ -51,7 +51,7 @@ async function postReply(workspaceSlug: string, itemId: string, content: string)
 
 function ManualReplyForm({ itemId }: { itemId: string; }) {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
   const queryClient = useQueryClient();
   const form = useForm<ReplyFormValues>({
     resolver: zodResolver(replySchema),

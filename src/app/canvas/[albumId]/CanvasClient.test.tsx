@@ -557,7 +557,7 @@ describe("CanvasClient", () => {
         window,
         "ontouchstart",
       );
-      delete (window as unknown as Record<string, unknown>).ontouchstart;
+      delete (window as unknown as Record<string, unknown>)["ontouchstart"];
 
       render(
         <CanvasClient

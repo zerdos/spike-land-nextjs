@@ -192,7 +192,7 @@ export class InstagramCollector extends BaseCollector {
       };
 
       if (options?.cursor) {
-        params.after = options.cursor;
+        params["after"] = options.cursor;
       }
 
       try {
@@ -251,7 +251,7 @@ export class InstagramCollector extends BaseCollector {
       };
 
       if (options?.cursor) {
-        params.after = options.cursor;
+        params["after"] = options.cursor;
       }
 
       try {
@@ -364,7 +364,7 @@ export class InstagramCollector extends BaseCollector {
         };
 
         if (options?.cursor) {
-          commentsParams.after = options.cursor;
+          commentsParams["after"] = options.cursor;
         }
 
         try {

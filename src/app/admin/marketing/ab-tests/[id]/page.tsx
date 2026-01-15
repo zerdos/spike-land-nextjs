@@ -35,7 +35,7 @@ interface UpdateTestData {
 
 export default function AbTestDetailsPage() {
   const params = useParams();
-  const id = params.id as string;
+  const id = params["id"] as string;
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery<{ test: AbTest; }>({

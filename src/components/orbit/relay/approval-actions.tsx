@@ -59,7 +59,7 @@ async function performDraftAction(
 
 export function ApprovalActions({ draft, onActionComplete }: ApprovalActionsProps) {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
   const queryClient = useQueryClient();
 
   const [rejectionReason, setRejectionReason] = useState("");

@@ -250,8 +250,8 @@ export class CrisisAlertManager {
     }
 
     const settings = workspace.settings as Record<string, unknown> | null;
-    const slackWebhook = (settings?.notifications as Record<string, unknown>)
-      ?.slackWebhookUrl as string | undefined;
+    const slackWebhook = (settings?.["notifications"] as Record<string, unknown>)
+      ?.["slackWebhookUrl"] as string | undefined;
 
     if (!slackWebhook) {
       return false;

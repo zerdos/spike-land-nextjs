@@ -26,27 +26,27 @@ export function calculatePriorityScore(
   // If sentiment is positive (0.8), priority adds 0 or small.
   const sentimentVal = analysis.sentimentScore;
   const sentimentFactor = sentimentVal < 0 ? Math.abs(sentimentVal) * 100 : 0;
-  factors.sentiment = (sentimentFactor * weights.sentiment) / 100;
-  score += factors.sentiment;
+  factors["sentiment"] = (sentimentFactor * weights.sentiment) / 100;
+  score += factors["sentiment"];
 
   // 2. Urgency
   const urgencyMap = { low: 0, medium: 30, high: 70, critical: 100 };
   const urgencyVal = urgencyMap[analysis.urgency] || 0;
-  factors.urgency = (urgencyVal * weights.urgency) / 100;
-  score += factors.urgency;
+  factors["urgency"] = (urgencyVal * weights.urgency) / 100;
+  score += factors["urgency"];
 
   // 3. Follower Count (Logarithmic scale)
   // 1000 followers = 10pts, 100k = 50pts, 1M = 100pts approx
   // log10(1000) = 3. log10(1M) = 6.
   const followerScore = Math.min(100, Math.max(0, Math.log10(senderFollowers + 1) * 15));
-  factors.followerCount = (followerScore * weights.followerCount) / 100;
-  score += factors.followerCount;
+  factors["followerCount"] = (followerScore * weights.followerCount) / 100;
+  score += factors["followerCount"];
 
   // 4. Account Tier
   const tierMap = { FREE: 0, PRO: 50, ENTERPRISE: 100 };
   const tierVal = tierMap[senderTier] || 0;
-  factors.accountTier = (tierVal * weights.accountTier) / 100;
-  score += factors.accountTier;
+  factors["accountTier"] = (tierVal * weights.accountTier) / 100;
+  score += factors["accountTier"];
 
   // Normalize to 0-100
   // Total weights = 30+25+20+15+10 = 100 (if engagement used)

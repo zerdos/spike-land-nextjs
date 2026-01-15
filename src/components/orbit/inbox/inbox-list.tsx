@@ -45,7 +45,7 @@ interface InboxListProps {
 
 export function InboxList({ onItemSelected, filters }: InboxListProps) {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
   const [selectedItem, setSelectedItem] = useState<InboxItemType | null>(null);
   const parentRef = useRef<HTMLDivElement>(null);
   const isVisible = useDocumentVisibility();

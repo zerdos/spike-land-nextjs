@@ -14,7 +14,7 @@ import { useMemo, useState } from "react";
 
 export default function InboxPage() {
   const params = useParams();
-  const workspaceSlug = params?.workspaceSlug as string;
+  const workspaceSlug = params?.["workspaceSlug"] as string;
   const queryClient = useMemo(() => new QueryClient(), []);
   const [filters, setFilters] = useState<FilterFormValues>({});
   const [selectedItem, setSelectedItem] = useState<InboxItem | null>(null);

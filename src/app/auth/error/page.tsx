@@ -87,7 +87,7 @@ function AuthErrorContent() {
   };
 
   const currentError = (error ? errorDetails[error] : undefined) ??
-    errorDetails.default;
+    errorDetails["default"];
   const { title, description } = currentError!;
 
   return (

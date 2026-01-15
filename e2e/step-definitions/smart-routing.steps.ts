@@ -36,7 +36,7 @@ Given(
 
 Given("I have an inbox item with:", async function(this: CustomWorld, dataTable: DataTable) {
   const data = dataTable.rowsHash();
-  const content = data.content ?? "";
+  const content = data["content"] ?? "";
   // Use API to seed data for test reliability
   // Assuming we have a seeding utility or direct API calls available in world or page context
   // For E2E, we often mock or use a seed script.
@@ -56,7 +56,7 @@ Given("I have an inbox item with:", async function(this: CustomWorld, dataTable:
     const fakeItem = {
       id: "e2e-test-item-" + Date.now(),
       content,
-      senderName: data.sender,
+      senderName: data["sender"],
       platform: "twitter",
       type: "social_mention",
       status: "OPEN",

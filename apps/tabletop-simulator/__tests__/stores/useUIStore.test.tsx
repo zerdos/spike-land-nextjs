@@ -228,7 +228,7 @@ describe("useUIStore", () => {
         writable: true,
         value: 1024,
       });
-      delete (window as unknown as Record<string, unknown>).ontouchstart;
+      delete (window as unknown as Record<string, unknown>)["ontouchstart"];
 
       const { result } = renderHook(() => useUIStore());
       expect(result.current.isMobile).toBe(false);

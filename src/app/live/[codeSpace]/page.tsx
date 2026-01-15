@@ -16,7 +16,7 @@ interface CodespaceData {
 
 export default function CodespacePage() {
   const params = useParams();
-  const codeSpace = params.codeSpace as string;
+  const codeSpace = params["codeSpace"] as string;
 
   const [_data, setData] = useState<CodespaceData | null>(null);
   const [code, setCode] = useState("");

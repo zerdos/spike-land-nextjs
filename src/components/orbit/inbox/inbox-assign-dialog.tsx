@@ -67,7 +67,7 @@ async function assignItem(workspaceSlug: string, itemId: string, assignedToId: s
 
 export function InboxAssignDialog({ itemId, teamMembers, onAssign }: InboxAssignDialogProps) {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
   const queryClient = useQueryClient();
   const form = useForm<AssignFormValues>({
     resolver: zodResolver(assignSchema),

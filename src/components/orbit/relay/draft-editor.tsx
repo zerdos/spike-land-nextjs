@@ -63,7 +63,7 @@ async function editDraft(
 
 export function DraftEditor({ draft, onSaved }: DraftEditorProps) {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
   const queryClient = useQueryClient();
 
   const form = useForm<EditDraftFormValues>({

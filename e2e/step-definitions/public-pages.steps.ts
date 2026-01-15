@@ -10,7 +10,7 @@ Then(
     const rows = dataTable.hashes();
 
     for (const row of rows) {
-      const linkName = row.Link;
+      const linkName = row["Link"];
       if (!linkName) {
         throw new Error("Link column is required in data table");
       }

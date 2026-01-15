@@ -126,7 +126,7 @@ function MarkdownContent({ content }: { content: string; }) {
 
 export default function AppWorkspacePage() {
   const params = useParams();
-  const appId = params.id as string;
+  const appId = params["id"] as string;
 
   const [app, setApp] = useState<AppData | null>(null);
   const [messages, setMessages] = useState<AppMessage[]>([]);

@@ -563,7 +563,7 @@ Then(
       (el: HTMLElement) => {
         return el.classList.contains("text-green") ||
           el.classList.contains("status-good") ||
-          el.dataset.status === "connected";
+          el.dataset["status"] === "connected";
       },
     );
     expect(hasGreenStatus).toBeTruthy();
