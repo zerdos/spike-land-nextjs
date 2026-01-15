@@ -209,7 +209,7 @@ Then(
     const body = this.apiResponseBody;
     expect(body).toBeDefined();
     expect(
-      (body as Record<string, unknown>)?.campaignAnalyses || [],
+      (body as Record<string, unknown>)?.["campaignAnalyses"] || [],
     ).toHaveLength(0);
   },
 );
@@ -220,7 +220,7 @@ Then(
     const body = this.apiResponseBody;
     expect(body).toBeDefined();
     expect(
-      (body as Record<string, unknown>)?.recommendations || [],
+      (body as Record<string, unknown>)?.["recommendations"] || [],
     ).toHaveLength(0);
   },
 );
@@ -477,7 +477,7 @@ Then(
   async function(this: CustomWorld) {
     const body = this.apiResponseBody;
     const score = (body?.dataQualityScore as number) ||
-      ((body?.summary as Record<string, unknown>)?.dataQualityScore as number);
+      ((body?.summary as Record<string, unknown>)?.["dataQualityScore"] as number);
     expect(score).toBeDefined();
     expect(score).toBeGreaterThanOrEqual(0);
     expect(score).toBeLessThanOrEqual(100);

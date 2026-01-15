@@ -36,7 +36,7 @@ describe("useUIStore", () => {
     });
     // Delete ontouchstart to simulate non-touch device
     // Using "in" operator, property must not exist
-    delete (window as unknown as Record<string, unknown>).ontouchstart;
+    delete (window as unknown as Record<string, unknown>)["ontouchstart"];
   });
 
   afterAll(() => {
@@ -240,7 +240,7 @@ describe("useUIStore", () => {
         writable: true,
         value: 600,
       });
-      delete (window as unknown as Record<string, unknown>).ontouchstart;
+      delete (window as unknown as Record<string, unknown>)["ontouchstart"];
 
       const { result } = renderHook(() => useUIStore());
       expect(result.current.isMobile).toBe(true);

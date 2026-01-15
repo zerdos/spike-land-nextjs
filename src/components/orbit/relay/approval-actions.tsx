@@ -34,7 +34,7 @@ async function performDraftAction(
 ) {
   const body: Record<string, unknown> = { action };
   if (reason) {
-    body.reason = reason;
+    body["reason"] = reason;
   }
 
   const res = await fetch(`/api/orbit/${workspaceSlug}/relay/drafts/${draftId}`, {

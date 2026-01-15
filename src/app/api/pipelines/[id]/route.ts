@@ -144,16 +144,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     );
   }
 
-  const {
-    name,
-    description,
-    tier,
-    visibility,
-    analysisConfig,
-    autoCropConfig,
-    promptConfig,
-    generationConfig,
-  } = body;
+  const name = body["name"];
+  const description = body["description"];
+  const tier = body["tier"];
+  const visibility = body["visibility"];
+  const analysisConfig = body["analysisConfig"];
+  const autoCropConfig = body["autoCropConfig"];
+  const promptConfig = body["promptConfig"];
+  const generationConfig = body["generationConfig"];
 
   // Validate name if provided
   if (name !== undefined) {

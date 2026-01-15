@@ -57,7 +57,7 @@ describe("calculatePriorityScore", () => {
       settings: mockSettings,
     });
     // Urgency high = 70. Weight 25%. -> 70 * 0.25 = 17.5
-    expect(result.factors.urgency).toBe(17.5);
+    expect(result.factors["urgency"]).toBe(17.5);
     expect(result.score).toBe(18); // Rounded
   });
 
@@ -69,7 +69,7 @@ describe("calculatePriorityScore", () => {
       settings: mockSettings,
     });
     // Sentiment -0.8 -> 80 * 0.30 = 24
-    expect(result.factors.sentiment).toBe(24);
+    expect(result.factors["sentiment"]).toBe(24);
   });
 
   it("should boost score for VIP/Enterprise", () => {
@@ -80,6 +80,6 @@ describe("calculatePriorityScore", () => {
       settings: mockSettings,
     });
     // Enterprise = 100 * 0.15 = 15
-    expect(result.factors.accountTier).toBe(15);
+    expect(result.factors["accountTier"]).toBe(15);
   });
 });

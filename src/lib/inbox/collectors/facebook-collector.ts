@@ -116,9 +116,9 @@ export class FacebookCollector extends BaseCollector {
     const appUsage = response.headers.get("x-app-usage");
     if (appUsage) {
       try {
-        const usage = JSON.parse(appUsage);
+        const usage = JSON.parse(appUsage) as Record<string, unknown>;
         // If call_count or total_time approaches 100%, we're near rate limit
-        const callCount = usage.call_count ?? 0;
+        const callCount = (usage["call_count"] as number) ?? 0;
         if (callCount >= 80) {
           this.updateRateLimitStatus(
             100 - callCount,

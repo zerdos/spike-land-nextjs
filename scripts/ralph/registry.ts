@@ -27,13 +27,13 @@ export async function parseRegistry(
   const config = parseConfig(content);
 
   return {
-    active: (frontmatter.active as boolean) ?? true,
-    iteration: (frontmatter.iteration as number) ?? 0,
-    max_iterations: (frontmatter.max_iterations as number) ?? 2000,
-    completion_promise: (frontmatter.completion_promise as string) ?? "WORKFORCE_IDLE",
-    started_at: (frontmatter.started_at as string) ?? new Date().toISOString(),
-    daily_sessions_used: (frontmatter.daily_sessions_used as number) ?? 0,
-    daily_session_limit: (frontmatter.daily_session_limit as number) ?? 100,
+    active: (frontmatter["active"] as boolean) ?? true,
+    iteration: (frontmatter["iteration"] as number) ?? 0,
+    max_iterations: (frontmatter["max_iterations"] as number) ?? 2000,
+    completion_promise: (frontmatter["completion_promise"] as string) ?? "WORKFORCE_IDLE",
+    started_at: (frontmatter["started_at"] as string) ?? new Date().toISOString(),
+    daily_sessions_used: (frontmatter["daily_sessions_used"] as number) ?? 0,
+    daily_session_limit: (frontmatter["daily_session_limit"] as number) ?? 100,
     config,
     // State is fetched live from Jules API - not stored here
     activeTasks: [],
