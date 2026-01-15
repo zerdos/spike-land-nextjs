@@ -6,9 +6,11 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "types:check": "tsc --noEmit"
+    "types:check": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "devDependencies": {
+    "eslint": "9.39.2",
     "typescript": "5.9.3",
     "vitest": "4.0.17"
   }
