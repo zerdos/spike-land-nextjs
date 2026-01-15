@@ -5,9 +5,9 @@
       "@cloudflare/vitest-pool-workers",
       "vitest/globals"
     ],
-    "module": "esnext",
-    "target": "esnext",
-    "lib": ["esnext", "webworker"],
+    "module": "ESNext",
+    "target": "ESNext",
+    "lib": ["ESNext", "WebWorker"],
     "moduleResolution": "bundler",
     "strict": true,
     "isolatedModules": true,
