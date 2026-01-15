@@ -16,7 +16,7 @@ describe("PostHandler - Tool Schema Validation", () => {
   let postHandler: PostHandler;
   let mockCode: Code;
   let mockEnv: Env;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   let mockStreamResponse: StreamTextResult<any, any>;
   let mockToDataStreamResponse: ReturnType<typeof vi.fn>;
 
@@ -31,7 +31,6 @@ describe("PostHandler - Tool Schema Validation", () => {
       warnings: [],
       usage: {},
       experimental_providerMetadata: undefined,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as unknown as StreamTextResult<any, any>;
 
     // Default mock for streamText
@@ -118,11 +117,9 @@ describe("PostHandler - Tool Schema Validation", () => {
 
       // Mock streamText to capture the tools being passed
       vi.mocked(streamText).mockImplementation(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ((options: any) => {
           capturedTools = options.tools;
           return Promise.resolve(mockStreamResponse);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }) as any,
       );
 
@@ -221,14 +218,11 @@ describe("PostHandler - Tool Schema Validation", () => {
       // Set the environment variable
       mockEnv.DISABLE_AI_TOOLS = "true";
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let capturedOptions: any;
       vi.mocked(streamText).mockImplementation(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ((options: any) => {
           capturedOptions = options;
           return Promise.resolve(mockStreamResponse);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }) as any,
       );
 
@@ -256,15 +250,12 @@ describe("PostHandler - Tool Schema Validation", () => {
 
   describe("Tool Format Sent to API", () => {
     it("should not wrap tools in 'custom' property", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let capturedTools: any;
 
       vi.mocked(streamText).mockImplementation(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ((options: any) => {
           capturedTools = options.tools;
           return Promise.resolve(mockStreamResponse);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }) as any,
       );
 
@@ -294,15 +285,12 @@ describe("PostHandler - Tool Schema Validation", () => {
     });
 
     it("should create valid tool execute functions", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let capturedTools: any;
 
       vi.mocked(streamText).mockImplementation(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ((options: any) => {
           capturedTools = options.tools;
           return Promise.resolve(mockStreamResponse);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }) as any,
       );
 

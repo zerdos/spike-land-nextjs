@@ -19,7 +19,6 @@ import {
   setupStorageServiceMock,
 } from "./postHandler.test-utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type StreamResult = StreamTextResult<any, unknown>;
 
 // Mock all external dependencies
@@ -155,7 +154,7 @@ describe("PostHandler - Response", () => {
         experimental_telemetry: {},
         experimental_usage: {},
       } as unknown as StreamResult;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       vi.mocked(streamText).mockResolvedValue(mockStreamResponse as any);
 
       const anthropicProvider = vi.fn().mockReturnValue(
@@ -261,7 +260,7 @@ describe("PostHandler - Response", () => {
         experimental_telemetry: {},
         experimental_usage: {},
       } as unknown as StreamResult;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       vi.mocked(streamText).mockResolvedValue(mockStreamResponse as any);
 
       // Mock createAnthropic properly

@@ -17,10 +17,10 @@ interface ErrorProps {
   reset: () => void;
 }
 
-export default function AppWorkspaceError({ error, reset }: ErrorProps) {
+export default function CodeSpaceError({ error, reset }: ErrorProps) {
   useEffect(() => {
     // Log error to monitoring service
-    console.error("App workspace error:", error);
+    console.error("CodeSpace error:", error);
   }, [error]);
 
   return (
@@ -30,7 +30,7 @@ export default function AppWorkspaceError({ error, reset }: ErrorProps) {
           <CardHeader>
             <CardTitle>Something went wrong</CardTitle>
             <CardDescription>
-              We encountered an error while loading this app workspace.
+              We encountered an error while loading this codespace.
             </CardDescription>
           </CardHeader>
           <CardContent>

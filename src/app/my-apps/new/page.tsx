@@ -68,9 +68,9 @@ export default function NewAppPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Generate a random ID and redirect immediately to the temp workspace
+    // Generate a random ID and redirect immediately to the codespace
     const tempId = generateCodespaceId();
-    router.replace(`/my-apps/new/${tempId}`);
+    router.replace(`/my-apps/${tempId}`);
   }, [router]);
 
   return (

@@ -19,7 +19,6 @@ import {
   setupStorageServiceMock,
 } from "./postHandler.test-utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type StreamResult = StreamTextResult<any, unknown>;
 
 // Mock type that matches what the test needs
@@ -104,7 +103,6 @@ describe("PostHandler", () => {
         experimental_usage: {},
       } as unknown as StreamResult;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(streamText).mockResolvedValue(mockStreamResponse as any);
 
       // Mock createAnthropic to return a proper AnthropicProvider

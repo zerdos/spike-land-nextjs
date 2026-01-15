@@ -19,13 +19,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import type { APP_BUILD_STATUSES } from "@/lib/validations/app";
 import { motion } from "framer-motion";
-import { ImagePlus, X } from "lucide-react";
+import { FileText, ImagePlus, Paperclip, X } from "lucide-react";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
+import { toast } from "sonner";
 
+// Types
 interface AppMessage {
   id: string;
   role: "USER" | "AGENT" | "SYSTEM";
@@ -72,10 +75,21 @@ interface PendingImage {
   previewUrl: string;
 }
 
-/**
- * Custom markdown components for chat message rendering.
- * Provides styling consistent with the chat UI.
- */
+interface PendingFile {
+  id: string;
+  file: File;
+}
+
+type PageMode = "loading" | "prompt" | "workspace";
+
+// Helper functions
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+// Markdown components for chat rendering
 const markdownComponents: Components = {
   p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
   strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
@@ -113,83 +127,217 @@ const markdownComponents: Components = {
   h3: ({ children }) => <h3 className="text-sm font-bold mb-1">{children}</h3>,
 };
 
-/**
- * Renders markdown content for agent messages.
- */
 function MarkdownContent({ content }: { content: string; }) {
+  return <ReactMarkdown components={markdownComponents}>{content}</ReactMarkdown>;
+}
+
+// Preview placeholder component (when no content)
+function PreviewPlaceholder() {
   return (
-    <ReactMarkdown components={markdownComponents}>
-      {content}
-    </ReactMarkdown>
+    <div className="flex h-full items-center justify-center text-center text-zinc-500">
+      <div className="space-y-4">
+        <div className="mx-auto h-16 w-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-zinc-600 mb-2 shadow-lg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+            <circle cx="9" cy="9" r="2" />
+            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-zinc-400 font-medium">Preview will appear here</p>
+          <p className="text-sm opacity-50 mt-1">Start chatting to generate your app</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
-export default function AppWorkspacePage() {
-  const params = useParams();
-  const appId = params["id"] as string;
+// Browser toolbar component
+function BrowserToolbar({
+  url,
+  onRefresh,
+}: {
+  url: string;
+  onRefresh: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-4 border-b border-white/5 bg-white/[0.02] px-5 py-4 relative z-10 overflow-hidden">
+      <div className="flex gap-2 shrink-0">
+        <div className="h-3 w-3 rounded-full bg-[#FF5F56] border border-white/5 shadow-inner" />
+        <div className="h-3 w-3 rounded-full bg-[#FFBD2E] border border-white/5 shadow-inner" />
+        <div className="h-3 w-3 rounded-full bg-[#27C93F] border border-white/5 shadow-inner" />
+      </div>
 
+      <div className="flex-1 min-w-0 overflow-hidden">
+        <div className="bg-black/20 rounded-lg border border-white/5 py-1.5 px-3 flex items-center overflow-hidden">
+          <div
+            data-testid="address-bar"
+            className="text-[11px] text-zinc-400 truncate font-mono w-full"
+            style={{ direction: "rtl", textAlign: "left" }}
+          >
+            {url}
+          </div>
+        </div>
+      </div>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-zinc-500 hover:text-white hover:bg-white/10 rounded-full transition-colors shrink-0"
+        onClick={onRefresh}
+        title="Refresh Preview"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12" />
+          <path d="M3 3v9h9" />
+        </svg>
+      </Button>
+    </div>
+  );
+}
+
+// Main page component
+export default function CodeSpacePage() {
+  const router = useRouter();
+  const params = useParams();
+  const codeSpace = params["codeSpace"] as string;
+
+  // Page state
+  const [mode, setMode] = useState<PageMode>("loading");
+  const [hasContent, setHasContent] = useState(false);
   const [app, setApp] = useState<AppData | null>(null);
-  const [messages, setMessages] = useState<AppMessage[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Workspace state
+  const [messages, setMessages] = useState<AppMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   const [agentWorking, setAgentWorking] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [streamingResponse, setStreamingResponse] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [clearingChat, setClearingChat] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
 
-  // Fetch app data
-  const fetchApp = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/apps/${appId}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          setError("App not found");
+  const codespaceUrl = `https://testing.spike.land/live/${codeSpace}/`;
+
+  // Validate codespace name and check for backward compatibility
+  useEffect(() => {
+    // Check if this looks like a cuid (backward compatibility)
+    if (/^c[a-z0-9]{20,}$/i.test(codeSpace)) {
+      // This might be an old URL format - try to find the app by ID
+      fetch(`/api/apps/${codeSpace}`)
+        .then((res) => {
+          if (res.ok) return res.json();
+          throw new Error("Not found");
+        })
+        .then((appData) => {
+          // If app has codespaceId, redirect to the new URL format
+          if (appData.codespaceId && appData.codespaceId !== codeSpace) {
+            redirect(`/my-apps/${appData.codespaceId}`);
+          }
+        })
+        .catch(() => {
+          // Not found by ID, continue with normal flow
+        });
+    }
+  }, [codeSpace]);
+
+  // Initial load - check if app exists
+  useEffect(() => {
+    async function checkCodeSpace() {
+      try {
+        const response = await fetch(`/api/apps/by-codespace/${encodeURIComponent(codeSpace)}`);
+
+        if (response.status === 401) {
+          // Not authenticated - redirect to sign in
+          router.push(`/auth/signin?callbackUrl=${encodeURIComponent(`/my-apps/${codeSpace}`)}`);
           return;
         }
-        throw new Error("Failed to fetch app");
-      }
-      const data = await response.json();
-      setApp(data);
-      setAgentWorking(data.agentWorking || false);
-    } catch {
-      setError("Failed to load app");
-    }
-  }, [appId]);
 
-  // Fetch messages
+        if (!response.ok) {
+          if (response.status === 400) {
+            setError("Invalid codespace name");
+          } else {
+            setError("Failed to load codespace");
+          }
+          setMode("prompt");
+          return;
+        }
+
+        const data = await response.json();
+        setHasContent(data.hasContent || false);
+
+        if (data.app) {
+          // App exists - show workspace
+          setApp(data.app);
+          setAgentWorking(data.app.agentWorking || false);
+          setMode("workspace");
+        } else {
+          // No app yet - show prompt form
+          setMode("prompt");
+        }
+      } catch {
+        setError("Failed to load codespace");
+        setMode("prompt");
+      }
+    }
+
+    checkCodeSpace();
+  }, [codeSpace, router]);
+
+  // Fetch messages when in workspace mode
   const fetchMessages = useCallback(async () => {
+    if (!app?.id) return;
+
     try {
-      const response = await fetch(`/api/apps/${appId}/messages`);
+      const response = await fetch(`/api/apps/${app.id}/messages`);
       if (!response.ok) throw new Error("Failed to fetch messages");
       const data = await response.json();
-      // Messages come in descending order, reverse for display
       setMessages((data.messages || []).reverse());
     } catch {
       console.error("Failed to load messages");
     }
-  }, [appId]);
+  }, [app?.id]);
 
-  // Initial load
   useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      await Promise.all([fetchApp(), fetchMessages()]);
-      setLoading(false);
+    if (mode === "workspace" && app?.id) {
+      fetchMessages();
     }
-    loadData();
-  }, [fetchApp, fetchMessages]);
+  }, [mode, app?.id, fetchMessages]);
 
-  // Set up SSE connection
+  // Set up SSE connection for workspace mode
   useEffect(() => {
-    if (!appId) return;
+    if (mode !== "workspace" || !app?.id) return;
 
-    const eventSource = new EventSource(`/api/apps/${appId}/messages/stream`);
+    const eventSource = new EventSource(`/api/apps/${app.id}/messages/stream`);
     eventSourceRef.current = eventSource;
 
     eventSource.onmessage = (event) => {
@@ -199,18 +347,17 @@ export default function AppWorkspacePage() {
         switch (data.type) {
           case "message":
             setMessages((prev) => {
-              // Check if message already exists
               if (prev.some((m) => m.id === data.data.id)) return prev;
               return [...prev, data.data];
             });
-            // Reload iframe when agent responds
             if (data.data.role === "AGENT") {
               setIframeKey((prev) => prev + 1);
+              setHasContent(true);
             }
             break;
 
           case "status":
-            setApp((prev) => prev ? { ...prev, status: data.data.status } : null);
+            setApp((prev) => (prev ? { ...prev, status: data.data.status } : null));
             break;
 
           case "agent_working":
@@ -218,10 +365,8 @@ export default function AppWorkspacePage() {
             break;
 
           case "code_updated":
-            // Reload iframe to show new code
             setIframeKey((prev) => prev + 1);
-            // Also refresh app data in case codespaceUrl or other details changed
-            fetchApp();
+            setHasContent(true);
             break;
         }
       } catch {
@@ -238,18 +383,39 @@ export default function AppWorkspacePage() {
       eventSource.close();
       eventSourceRef.current = null;
     };
-  }, [appId, fetchApp]);
+  }, [mode, app?.id]);
 
-  // Stream state
-  const [streamingResponse, setStreamingResponse] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-
-  // Scroll to bottom when messages change or during streaming
+  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingResponse]);
 
-  // Handle image selection
+  // File handling for prompt mode
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles: PendingFile[] = [];
+    for (let i = 0; i < Math.min(files.length, 10); i++) {
+      const file = files[i];
+      if (file && !file.type.startsWith("image/")) {
+        newFiles.push({
+          id: `pending-${Date.now()}-${i}`,
+          file,
+        });
+      }
+    }
+    setPendingFiles((prev) => [...prev, ...newFiles].slice(0, 10));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveFile = (id: string) => {
+    setPendingFiles((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  // Image handling for workspace mode
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
@@ -266,13 +432,11 @@ export default function AppWorkspacePage() {
       }
     }
     setPendingImages((prev) => [...prev, ...newImages].slice(0, 5));
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
     }
   };
 
-  // Remove pending image
   const handleRemoveImage = (id: string) => {
     setPendingImages((prev) => {
       const image = prev.find((img) => img.id === id);
@@ -283,9 +447,8 @@ export default function AppWorkspacePage() {
     });
   };
 
-  // Upload images and get IDs
   const uploadImages = async (): Promise<string[]> => {
-    if (pendingImages.length === 0) return [];
+    if (pendingImages.length === 0 || !app?.id) return [];
 
     setUploadingImages(true);
     try {
@@ -294,7 +457,7 @@ export default function AppWorkspacePage() {
         formData.append("images", img.file);
       });
 
-      const response = await fetch(`/api/apps/${appId}/images`, {
+      const response = await fetch(`/api/apps/${app.id}/images`, {
         method: "POST",
         body: formData,
       });
@@ -305,15 +468,68 @@ export default function AppWorkspacePage() {
       return data.images.map((img: { id: string; }) => img.id);
     } finally {
       setUploadingImages(false);
-      // Clean up preview URLs
       pendingImages.forEach((img) => URL.revokeObjectURL(img.previewUrl));
       setPendingImages([]);
     }
   };
 
-  // Send message
+  // Create app from prompt (prompt mode)
+  const handleCreateApp = async () => {
+    if ((!newMessage.trim() && pendingFiles.length === 0) || sendingMessage) return;
+
+    const content = newMessage.trim();
+    setSendingMessage(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("prompt", content || "[Files attached]");
+      formData.append("codespaceId", codeSpace);
+
+      pendingFiles.forEach((pf) => {
+        formData.append("files", pf.file);
+      });
+
+      const response = await fetch("/api/apps", {
+        method: "POST",
+        body: pendingFiles.length > 0
+          ? formData
+          : JSON.stringify({
+            prompt: content,
+            codespaceId: codeSpace,
+          }),
+        headers: pendingFiles.length > 0 ? undefined : { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create app");
+      }
+
+      const newApp = await response.json();
+
+      // Update state to show workspace
+      setApp(newApp);
+      setNewMessage("");
+      setPendingFiles([]);
+      setMode("workspace");
+
+      // Fetch messages for the new app
+      const messagesResponse = await fetch(`/api/apps/${newApp.id}/messages`);
+      if (messagesResponse.ok) {
+        const data = await messagesResponse.json();
+        setMessages((data.messages || []).reverse());
+      }
+    } catch (e) {
+      console.error("Failed to create app", e);
+      toast.error("Failed to create app. Please try again.");
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // Send message in workspace mode
   const handleSendMessage = async () => {
     if ((!newMessage.trim() && pendingImages.length === 0) || sendingMessage || isStreaming) return;
+    if (!app?.id) return;
 
     const content = newMessage.trim();
     setNewMessage("");
@@ -322,7 +538,6 @@ export default function AppWorkspacePage() {
     setStreamingResponse("");
 
     try {
-      // Upload images first if any
       const imageIds = await uploadImages();
 
       // Optimistically add user message
@@ -337,7 +552,7 @@ export default function AppWorkspacePage() {
         },
       ]);
 
-      const response = await fetch(`/api/apps/${appId}/agent/chat`, {
+      const response = await fetch(`/api/apps/${app.id}/agent/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: content || "[Image attached]", imageIds }),
@@ -345,7 +560,6 @@ export default function AppWorkspacePage() {
 
       if (!response.ok) throw new Error("Failed to send message");
 
-      // Handle streaming response
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
 
@@ -360,7 +574,6 @@ export default function AppWorkspacePage() {
         buffer += chunk;
 
         const lines = buffer.split("\n");
-        // Keep the last line in the buffer as it might be incomplete
         buffer = lines.pop() || "";
 
         for (const line of lines) {
@@ -369,23 +582,19 @@ export default function AppWorkspacePage() {
               const data = JSON.parse(line.substring(6));
               if (data.type === "chunk") {
                 setStreamingResponse((prev) => prev + data.content);
-              } else if (data.type === "status") {
-                console.log("Agent status:", data.content);
               }
-            } catch (e) {
-              console.error("Error parsing SSE data", e);
+            } catch {
+              // Skip invalid JSON
             }
           }
         }
       }
 
-      // Refresh messages to get the persisted agent message
       await fetchMessages();
-      // Reload iframe to show changes
       setIframeKey((prev) => prev + 1);
+      setHasContent(true);
     } catch (e) {
       console.error("Failed to send message", e);
-      // Revert optimistic message on error (optional, or show error)
     } finally {
       setSendingMessage(false);
       setIsStreaming(false);
@@ -394,18 +603,16 @@ export default function AppWorkspacePage() {
   };
 
   // Clear chat
-  const [clearingChat, setClearingChat] = useState(false);
   const handleClearChat = async () => {
-    if (clearingChat) return;
+    if (clearingChat || !app?.id) return;
 
     setClearingChat(true);
     try {
-      const response = await fetch(`/api/apps/${appId}/messages`, {
+      const response = await fetch(`/api/apps/${app.id}/messages`, {
         method: "DELETE",
       });
 
       if (!response.ok) throw new Error("Failed to clear chat");
-
       setMessages([]);
     } catch {
       console.error("Failed to clear chat");
@@ -414,15 +621,19 @@ export default function AppWorkspacePage() {
     }
   };
 
-  // Handle key press for send
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      if (mode === "prompt") {
+        handleCreateApp();
+      } else {
+        handleSendMessage();
+      }
     }
   };
 
-  if (loading) {
+  // Loading state
+  if (mode === "loading") {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 pt-24 pb-8">
@@ -439,16 +650,15 @@ export default function AppWorkspacePage() {
     );
   }
 
-  if (error || !app) {
+  // Error state (invalid codespace name)
+  if (error && !app) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 pt-24 pb-8">
           <Card className="mx-auto max-w-md">
             <CardHeader>
-              <CardTitle>Error</CardTitle>
-              <CardDescription>
-                {error || "App not found"}
-              </CardDescription>
+              <CardTitle>Invalid Codespace</CardTitle>
+              <CardDescription>{error}</CardDescription>
             </CardHeader>
             <CardContent>
               <Link href="/my-apps">
@@ -461,6 +671,7 @@ export default function AppWorkspacePage() {
     );
   }
 
+  // Render based on mode
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 overflow-x-hidden relative selection:bg-teal-500/30">
       {/* Ambient Glow Effects */}
@@ -483,7 +694,15 @@ export default function AppWorkspacePage() {
               </div>
               <span className="font-medium">Back</span>
             </Link>
-            {agentWorking && (
+            {mode === "prompt" && (
+              <Badge
+                variant="secondary"
+                className="bg-amber-500/20 text-amber-200 border-amber-500/30"
+              >
+                New App
+              </Badge>
+            )}
+            {mode === "workspace" && agentWorking && (
               <Badge
                 variant="secondary"
                 className="bg-teal-500/20 text-teal-200 border-teal-500/30 animate-pulse"
@@ -492,9 +711,9 @@ export default function AppWorkspacePage() {
               </Badge>
             )}
           </div>
-          <div className="flex gap-3">
-            {app.codespaceUrl && (
-              <Link href={app.codespaceUrl} target="_blank">
+          {mode === "workspace" && (
+            <div className="flex gap-3">
+              <Link href={codespaceUrl} target="_blank">
                 <Button
                   className="rounded-full bg-white/5 border-white/10 hover:bg-white/10 text-white hover:text-white transition-all shadow-lg hover:shadow-xl backdrop-blur-sm"
                   variant="outline"
@@ -502,8 +721,8 @@ export default function AppWorkspacePage() {
                   Open in New Tab
                 </Button>
               </Link>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Main Content Grid */}
@@ -512,14 +731,16 @@ export default function AppWorkspacePage() {
           <Card className="flex flex-col h-full bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl overflow-hidden ring-1 ring-white/5">
             <CardHeader className="border-b border-white/5 bg-white/[0.02] px-6 py-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold text-zinc-100">Chat</CardTitle>
-                {messages.length > 0 && (
+                <CardTitle className="text-lg font-semibold text-zinc-100">
+                  {mode === "prompt" ? "What would you like to build?" : "Chat"}
+                </CardTitle>
+                {mode === "workspace" && messages.length > 0 && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
-                        disabled={clearingChat || app.status === "ARCHIVED"}
+                        disabled={clearingChat || app?.status === "ARCHIVED"}
                         className="text-zinc-400 hover:text-white hover:bg-white/5 rounded-full px-4 h-8 text-sm"
                       >
                         {clearingChat ? "Clearing..." : "Clear"}
@@ -531,8 +752,7 @@ export default function AppWorkspacePage() {
                           Clear chat history?
                         </AlertDialogTitle>
                         <AlertDialogDescription className="text-zinc-400">
-                          This will permanently delete all messages in this conversation. This
-                          action cannot be undone.
+                          This will permanently delete all messages. This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -550,12 +770,65 @@ export default function AppWorkspacePage() {
                   </AlertDialog>
                 )}
               </div>
+              {mode === "prompt" && (
+                <p className="text-sm text-zinc-400 mt-1">
+                  Describe your app idea and attach any relevant files
+                </p>
+              )}
             </CardHeader>
+
             <CardContent className="flex-1 overflow-hidden p-0 relative">
-              {/* Messages */}
               <div className="h-full overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-                {messages.length === 0
+                {mode === "prompt"
                   ? (
+                    // Prompt mode - welcome state
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                      className="flex h-full items-center justify-center text-center"
+                    >
+                      <div className="space-y-6 max-w-md">
+                        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-teal-500/20 to-purple-500/20 mx-auto flex items-center justify-center border border-white/10 shadow-lg shadow-teal-500/5">
+                          <svg
+                            className="w-10 h-10 text-teal-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                            />
+                          </svg>
+                        </div>
+                        <div className="space-y-3">
+                          <h3 className="text-2xl font-semibold text-zinc-100">
+                            Start with a prompt
+                          </h3>
+                          <p className="text-zinc-400 leading-relaxed">
+                            Describe what you want to build and our AI will create it for you.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap justify-center gap-2 pt-2">
+                          {["PDF", "TXT", "JSON", "CSV", "MD"].map((type) => (
+                            <span
+                              key={type}
+                              className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-zinc-400"
+                            >
+                              .{type.toLowerCase()}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )
+                  : messages.length === 0
+                  ? (
+                    // Workspace mode - no messages yet
                     <div className="flex h-full items-center justify-center text-center text-zinc-500">
                       <div className="space-y-4 max-w-xs">
                         <div className="w-16 h-16 rounded-2xl bg-white/5 mx-auto flex items-center justify-center border border-white/5">
@@ -580,14 +853,13 @@ export default function AppWorkspacePage() {
                     </div>
                   )
                   : (
+                    // Workspace mode - messages
                     <div className="space-y-6">
                       {messages.map((message) => (
                         <div
                           key={message.id}
                           className={`flex ${
-                            message.role === "USER"
-                              ? "justify-end"
-                              : "justify-start"
+                            message.role === "USER" ? "justify-end" : "justify-start"
                           }`}
                         >
                           <div
@@ -604,8 +876,7 @@ export default function AppWorkspacePage() {
                                 ? <MarkdownContent content={message.content} />
                                 : <p className="whitespace-pre-wrap">{message.content}</p>}
                             </div>
-                            {message.attachments &&
-                              message.attachments.length > 0 && (
+                            {message.attachments && message.attachments.length > 0 && (
                               <div className="mt-3 flex flex-wrap gap-2">
                                 {message.attachments.map((attachment) => (
                                   <Image
@@ -649,10 +920,41 @@ export default function AppWorkspacePage() {
                 <div ref={messagesEndRef} className="h-4" />
               </div>
             </CardContent>
+
             {/* Message Input */}
             <div className="border-t border-white/5 bg-white/[0.02] p-4">
-              {/* Pending Images Preview */}
-              {pendingImages.length > 0 && (
+              {/* Pending Files Preview (prompt mode) */}
+              {mode === "prompt" && pendingFiles.length > 0 && (
+                <div className="flex gap-2 mb-3 flex-wrap">
+                  {pendingFiles.map((pf) => (
+                    <div
+                      key={pf.id}
+                      className="relative group flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10"
+                    >
+                      <FileText className="h-5 w-5 text-zinc-400" />
+                      <div className="flex flex-col">
+                        <span className="text-xs text-zinc-300 truncate max-w-[120px]">
+                          {pf.file.name}
+                        </span>
+                        <span className="text-[10px] text-zinc-500">
+                          {formatFileSize(pf.file.size)}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFile(pf.id)}
+                        className="ml-1 h-5 w-5 rounded-full bg-white/10 text-zinc-400 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all"
+                        aria-label="Remove file"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Pending Images Preview (workspace mode) */}
+              {mode === "workspace" && pendingImages.length > 0 && (
                 <div className="flex gap-2 mb-3 flex-wrap">
                   {pendingImages.map((img) => (
                     <div key={img.id} className="relative group">
@@ -676,45 +978,76 @@ export default function AppWorkspacePage() {
                   ))}
                 </div>
               )}
+
               <div className="flex gap-3 relative">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageSelect}
-                  className="hidden"
-                  id="image-upload"
-                />
+                {mode === "prompt"
+                  ? (
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".txt,.pdf,.doc,.docx,.md,.json,.csv,.xml,.yaml,.yml,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.go,.rb,.php,.swift,.kt,.rs,.sql,.sh,.bash,.zsh"
+                      multiple
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      id="file-upload"
+                    />
+                  )
+                  : (
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageSelect}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                  )}
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={sendingMessage || uploadingImages || app.status === "ARCHIVED" ||
-                    pendingImages.length >= 5}
+                  onClick={() => (mode === "prompt"
+                    ? fileInputRef.current?.click()
+                    : imageInputRef.current?.click())}
+                  disabled={sendingMessage ||
+                    uploadingImages ||
+                    (mode === "prompt" ? pendingFiles.length >= 10 : pendingImages.length >= 5)}
                   className="h-10 w-10 rounded-xl text-zinc-500 hover:text-white hover:bg-white/10 transition-colors shrink-0"
-                  aria-label="Attach images"
+                  aria-label={mode === "prompt" ? "Attach files" : "Attach images"}
                 >
-                  <ImagePlus className="h-5 w-5" />
+                  {mode === "prompt"
+                    ? <Paperclip className="h-5 w-5" />
+                    : <ImagePlus className="h-5 w-5" />}
                 </Button>
                 <Textarea
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Type your message..."
+                  placeholder={mode === "prompt"
+                    ? "E.g., A personal finance tracker with charts..."
+                    : "Type your message..."}
                   autoComplete="off"
                   className="min-h-[60px] max-h-[200px] resize-none bg-black/20 border-white/10 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 rounded-2xl pl-4 pr-14 py-3 text-zinc-200 placeholder:text-zinc-600 backdrop-blur-sm transition-all"
-                  disabled={sendingMessage || app.status === "ARCHIVED"}
+                  disabled={sendingMessage || (mode === "workspace" && app?.status === "ARCHIVED")}
+                  autoFocus={mode === "prompt"}
                 />
                 <Button
-                  onClick={handleSendMessage}
-                  disabled={(!newMessage.trim() && pendingImages.length === 0) || sendingMessage ||
+                  onClick={mode === "prompt" ? handleCreateApp : handleSendMessage}
+                  disabled={(mode === "prompt"
+                    ? !newMessage.trim() && pendingFiles.length === 0
+                    : !newMessage.trim() && pendingImages.length === 0) ||
+                    sendingMessage ||
                     uploadingImages ||
-                    app.status === "ARCHIVED"}
-                  aria-label="Send message"
-                  className={`absolute right-2 bottom-2 h-10 w-10 p-0 rounded-xl transition-all duration-300 ${
-                    (!newMessage.trim() && pendingImages.length === 0) || sendingMessage ||
+                    (mode === "workspace" && app?.status === "ARCHIVED")}
+                  aria-label={mode === "prompt" ? "Start building" : "Send message"}
+                  className={`absolute right-2 bottom-2 h-10 ${
+                    mode === "prompt" ? "px-4" : "w-10 p-0"
+                  } rounded-xl transition-all duration-300 ${
+                    (mode === "prompt"
+                        ? !newMessage.trim() && pendingFiles.length === 0
+                        : !newMessage.trim() && pendingImages.length === 0) ||
+                      sendingMessage ||
                       uploadingImages
                       ? "bg-white/5 text-zinc-500"
                       : "bg-teal-500 hover:bg-teal-400 text-white shadow-[0_0_20px_-5px_rgba(20,184,166,0.6)]"
@@ -724,6 +1057,8 @@ export default function AppWorkspacePage() {
                     ? (
                       <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     )
+                    : mode === "prompt"
+                    ? <span className="font-medium">Start</span>
                     : (
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -742,69 +1077,32 @@ export default function AppWorkspacePage() {
                   <kbd className="font-sans px-1 py-0.5 bg-white/5 rounded border border-white/10 text-zinc-500">
                     Enter
                   </kbd>{" "}
-                  to send • Click <ImagePlus className="inline h-3 w-3" /> to attach images
+                  to {mode === "prompt" ? "start" : "send"} • Click {mode === "prompt"
+                    ? <Paperclip className="inline h-3 w-3" />
+                    : <ImagePlus className="inline h-3 w-3" />} to attach{" "}
+                  {mode === "prompt" ? "files" : "images"}
                 </p>
               </div>
             </div>
           </Card>
 
+          {/* Preview Panel */}
           <div className="flex flex-col gap-3 h-full">
-            {/* Preview Panel */}
-            <motion.div layoutId={`app-card-${app.id}`} className="flex-1 h-full min-h-[500px]">
+            <motion.div layoutId={`app-card-${codeSpace}`} className="flex-1 h-full min-h-[500px]">
               <Card className="flex flex-col h-full overflow-hidden bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl ring-1 ring-white/5 relative group">
-                {/* Glow effect for preview card */}
                 <div className="absolute -inset-[1px] bg-gradient-to-br from-white/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-                {/* Browser Toolbar */}
-                <div className="flex items-center gap-4 border-b border-white/5 bg-white/[0.02] px-5 py-4 relative z-10 overflow-hidden">
-                  <div className="flex gap-2 shrink-0">
-                    <div className="h-3 w-3 rounded-full bg-[#FF5F56] border border-white/5 shadow-inner" />
-                    <div className="h-3 w-3 rounded-full bg-[#FFBD2E] border border-white/5 shadow-inner" />
-                    <div className="h-3 w-3 rounded-full bg-[#27C93F] border border-white/5 shadow-inner" />
-                  </div>
-
-                  <div className="flex-1 min-w-0 overflow-hidden">
-                    <div className="bg-black/20 rounded-lg border border-white/5 py-1.5 px-3 flex items-center overflow-hidden">
-                      <div
-                        data-testid="address-bar"
-                        className="text-[11px] text-zinc-400 truncate font-mono w-full"
-                        style={{ direction: "rtl", textAlign: "left" }}
-                      >
-                        {app.codespaceUrl || "localhost"}
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-zinc-500 hover:text-white hover:bg-white/10 rounded-full transition-colors shrink-0"
-                    onClick={() => setIframeKey((prev) => prev + 1)}
-                    title="Refresh Preview"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12" />
-                      <path d="M3 3v9h9" />
-                    </svg>
-                  </Button>
-                </div>
+                <BrowserToolbar
+                  url={codespaceUrl}
+                  onRefresh={() => setIframeKey((prev) => prev + 1)}
+                />
 
                 <CardContent className="flex-1 overflow-hidden p-0 md:p-0 relative bg-zinc-950/50 z-10 rounded-b-3xl">
-                  {app.codespaceUrl
+                  {hasContent
                     ? (
                       <iframe
                         key={iframeKey}
-                        src={app.codespaceUrl}
+                        src={codespaceUrl}
                         className="border-0 w-full h-full rounded-b-3xl"
                         style={{
                           width: "200%",
@@ -812,46 +1110,11 @@ export default function AppWorkspacePage() {
                           transform: "scale(0.5)",
                           transformOrigin: "0 0",
                         }}
-                        title={`Preview of ${app.name}`}
+                        title={`Preview of ${codeSpace}`}
                         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                       />
                     )
-                    : (
-                      <div className="flex h-full items-center justify-center text-center text-zinc-500">
-                        <div className="space-y-4">
-                          <div className="mx-auto h-16 w-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-zinc-600 mb-2 shadow-lg">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="32"
-                              height="32"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <rect
-                                width="18"
-                                height="18"
-                                x="3"
-                                y="3"
-                                rx="2"
-                                ry="2"
-                              />
-                              <circle cx="9" cy="9" r="2" />
-                              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                            </svg>
-                          </div>
-                          <div>
-                            <p className="text-zinc-400 font-medium">Preview will appear here</p>
-                            <p className="text-sm opacity-50 mt-1">
-                              Start chatting to generate your app
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    : <PreviewPlaceholder />}
                 </CardContent>
               </Card>
             </motion.div>
