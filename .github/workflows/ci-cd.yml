@@ -241,9 +241,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-build
-          path: |
-            .next
-            !.next/cache
+          path: .next
           retention-days: 1
 
   # ============================================================================
@@ -364,7 +362,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: nextjs-build
-          path: .
+          path: .next
 
       - name: Run E2E tests (shard ${{ matrix.shard }}/8)
         env:
