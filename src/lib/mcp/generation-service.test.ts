@@ -470,7 +470,7 @@ describe("generation-service", () => {
       });
       mockMcpGenerationJob.update.mockResolvedValue({});
 
-      await createGenerationJob({
+      const result = await createGenerationJob({
         userId: testUserId,
         apiKeyId: testApiKeyId,
         prompt: "A beautiful sunset",
@@ -478,9 +478,23 @@ describe("generation-service", () => {
         negativePrompt: "ugly",
       });
 
-      // Flush microtask queue and advance timers to allow background processing to complete
-      await vi.advanceTimersToNextTimerAsync();
-      await vi.advanceTimersByTimeAsync(100);
+      // Ensure job was created successfully
+      expect(result.success).toBe(true);
+      expect(result.jobId).toBe(testJobId);
+
+      // Wait for background processing to complete - need to poll until async work finishes
+      await vi.waitFor(
+        () => {
+          expect(mockMcpGenerationJob.update).toHaveBeenCalledWith(
+            expect.objectContaining({
+              data: expect.objectContaining({
+                status: JobStatus.COMPLETED,
+              }),
+            }),
+          );
+        },
+        { timeout: 1000 },
+      );
 
       // Verify Gemini was called with correct params
       expect(mockGeminiClient.generateImageWithGemini).toHaveBeenCalledWith({
