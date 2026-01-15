@@ -5,19 +5,21 @@ import type Env from "../src/env"; // Assuming Env type is exported from env.ts
 import { RouteHandler } from "../src/routeHandler";
 import { WebSocketHandler } from "../src/websocketHandler";
 
-// Mock external dependencies
+// Mock external dependencies - use function expression for Vitest 4 constructor mocking
 vi.mock("../src/routeHandler", () => ({
-  RouteHandler: vi.fn().mockImplementation(() => ({
-    handleRoute: vi.fn(),
-  })),
+  RouteHandler: vi.fn().mockImplementation(function() {
+    return { handleRoute: vi.fn() };
+  }),
 }));
 
 vi.mock("../src/websocketHandler", () => ({
-  WebSocketHandler: vi.fn().mockImplementation(() => ({
-    broadcast: vi.fn(),
-    handleWebSocket: vi.fn(),
-    getWsSessions: vi.fn().mockReturnValue([]), // Add missing method
-  })),
+  WebSocketHandler: vi.fn().mockImplementation(function() {
+    return {
+      broadcast: vi.fn(),
+      handleWebSocket: vi.fn(),
+      getWsSessions: vi.fn().mockReturnValue([]),
+    };
+  }),
 }));
 
 // Mock global fetch
@@ -87,14 +89,17 @@ describe("Code Durable Object", () => {
     } as unknown as Env;
 
     // Re-instantiate mocks for handlers for each test
-    (RouteHandler as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-      handleRoute: vi.fn().mockResolvedValue(new Response("OK")), // Ensure fetch can complete
-    }));
-    (WebSocketHandler as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-      broadcast: vi.fn(),
-      handleWebSocket: vi.fn(),
-      getWsSessions: vi.fn().mockReturnValue([]), // Add missing method
-    }));
+    // Use function expression for Vitest 4 constructor mocking
+    (RouteHandler as ReturnType<typeof vi.fn>).mockImplementation(function() {
+      return { handleRoute: vi.fn().mockResolvedValue(new Response("OK")) };
+    });
+    (WebSocketHandler as ReturnType<typeof vi.fn>).mockImplementation(function() {
+      return {
+        broadcast: vi.fn(),
+        handleWebSocket: vi.fn(),
+        getWsSessions: vi.fn().mockReturnValue([]),
+      };
+    });
 
     codeInstance = new Code(mockState, mockEnv);
   });
@@ -229,15 +234,18 @@ describe("Code Durable Object", () => {
       // Clear mocks from initialization that happened via fetch
       vi.clearAllMocks();
       // Resetup RouteHandler mock as it might have been called during fetch
-      (RouteHandler as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-        handleRoute: vi.fn().mockResolvedValue(new Response("OK")),
-      }));
+      // Use function expression for Vitest 4 constructor mocking
+      (RouteHandler as ReturnType<typeof vi.fn>).mockImplementation(function() {
+        return { handleRoute: vi.fn().mockResolvedValue(new Response("OK")) };
+      });
       // Resetup WebSocketHandler mock for broadcast
-      (WebSocketHandler as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-        broadcast: vi.fn(), // This is the important one for this test suite
-        handleWebSocket: vi.fn(),
-        getWsSessions: vi.fn().mockReturnValue([]), // Add missing method
-      }));
+      (WebSocketHandler as ReturnType<typeof vi.fn>).mockImplementation(function() {
+        return {
+          broadcast: vi.fn(),
+          handleWebSocket: vi.fn(),
+          getWsSessions: vi.fn().mockReturnValue([]),
+        };
+      });
       // Create a new instance of Code with the same state and env, but it will have the mocked WebSocketHandler
       codeInstance = new Code(mockState, mockEnv);
       // Manually set the session for this new instance to avoid re-initializing and re-triggering puts
