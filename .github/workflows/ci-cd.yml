@@ -250,6 +250,7 @@ jobs:
           name: nextjs-build
           path: .next
           retention-days: 1
+          include-hidden-files: true
 
   # ============================================================================
   # TIER 2: E2E Database Seed - prepares test database before sharded E2E tests
