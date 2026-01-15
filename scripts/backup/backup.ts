@@ -4,7 +4,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
-import { execa } from "execa";
+import { spawn } from "child_process";
 import { createReadStream, createWriteStream } from "fs";
 import { unlink } from "fs/promises";
 import { pipeline } from "stream/promises";
@@ -81,7 +81,17 @@ export async function runBackup(deps: BackupDependencies): Promise<void> {
   console.log("Starting database backup...");
   // pg_dump reads DATABASE_URL from environment automatically
   // Passing it as CLI argument would expose it in process list
-  await execa("pg_dump", ["--format=p", `--file=${filepath}`]);
+  await new Promise<void>((resolve, reject) => {
+    const proc = spawn("pg_dump", ["--format=p", `--file=${filepath}`], {
+      stdio: "inherit",
+      env: process.env,
+    });
+    proc.on("close", (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`pg_dump exited with code ${code}`));
+    });
+    proc.on("error", reject);
+  });
   console.log("Database backup completed.");
 
   console.log("Compressing backup file...");
