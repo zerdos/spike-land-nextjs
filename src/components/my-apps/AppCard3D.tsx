@@ -9,8 +9,10 @@ import { useRef, useState } from "react";
 interface AppData {
   id: string;
   name: string;
+  slug: string | null;
   description: string | null;
   status: (typeof APP_BUILD_STATUSES)[number];
+  codespaceId: string | null;
   codespaceUrl: string | null;
   _count: {
     messages: number;
@@ -55,11 +57,14 @@ export function AppCard3D({ app }: AppCard3DProps) {
     setIsHovered(false);
   };
 
+  // Use codespaceId for the URL (preferred), fall back to slug, then id for backward compat
+  const appIdentifier = app.codespaceId || app.slug || app.id;
+
   return (
-    <Link href={`/my-apps/${app.id}`}>
+    <Link href={`/my-apps/${appIdentifier}`}>
       <motion.div
         ref={cardRef}
-        layoutId={`app-card-${app.id}`}
+        layoutId={`app-card-${appIdentifier}`}
         style={{
           rotateX,
           rotateY,

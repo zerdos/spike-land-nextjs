@@ -274,7 +274,7 @@ vi.mock("../tooltip-icon-button", () => ({
   ) => (
     // Render as button with filtered props
     // The variant and className are component-specific props that should be kept
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     <button {...(filterDomProps(props) as any)} className={className} title={tooltip}>
       {children}
     </button>
