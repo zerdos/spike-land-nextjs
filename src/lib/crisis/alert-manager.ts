@@ -362,7 +362,7 @@ export class CrisisAlertManager {
     }
 
     const settings = (workspace.settings as Record<string, unknown>) || {};
-    const notifications = (settings.inAppNotifications as Array<Record<string, unknown>>) || [];
+    const notifications = (settings["inAppNotifications"] as Array<Record<string, unknown>>) || [];
 
     notifications.unshift({
       id: `crisis-${event.id}`,
@@ -430,7 +430,7 @@ export class CrisisAlertManager {
 
     for (const event of events) {
       const triggerData = event.triggerData as Record<string, unknown>;
-      const ruleId = triggerData.detectionRuleId as string | undefined;
+      const ruleId = triggerData["detectionRuleId"] as string | undefined;
 
       if (!ruleId) continue;
 
@@ -512,7 +512,7 @@ export class CrisisAlertManager {
     }
 
     const settings = (workspace.settings as Record<string, unknown>) || {};
-    const timeline = (settings.crisisTimeline as Array<Record<string, unknown>>) || [];
+    const timeline = (settings["crisisTimeline"] as Array<Record<string, unknown>>) || [];
 
     timeline.unshift({
       id: `timeline-${Date.now()}-${Math.random().toString(36).slice(2)}`,

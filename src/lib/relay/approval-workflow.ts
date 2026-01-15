@@ -758,11 +758,11 @@ export async function getDraftWithHistory(
 export function getApprovalSettings(
   workspaceSettings: Record<string, unknown> | null,
 ): RelayApprovalSettings {
-  if (!workspaceSettings || !workspaceSettings.relay) {
+  if (!workspaceSettings || !workspaceSettings["relay"]) {
     return DEFAULT_APPROVAL_SETTINGS;
   }
 
-  const relaySettings = workspaceSettings.relay as Partial<RelayApprovalSettings>;
+  const relaySettings = workspaceSettings["relay"] as Partial<RelayApprovalSettings>;
 
   return {
     requireApproval: relaySettings.requireApproval ?? DEFAULT_APPROVAL_SETTINGS.requireApproval,

@@ -136,8 +136,8 @@ export class InstagramCollector extends BaseCollector {
     const appUsage = response.headers.get("x-app-usage");
     if (appUsage) {
       try {
-        const usage = JSON.parse(appUsage);
-        const callCount = usage.call_count ?? 0;
+        const usage = JSON.parse(appUsage) as Record<string, unknown>;
+        const callCount = (usage["call_count"] as number) ?? 0;
         if (callCount >= 80) {
           this.updateRateLimitStatus(
             100 - callCount,

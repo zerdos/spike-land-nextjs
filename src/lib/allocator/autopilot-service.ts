@@ -387,7 +387,7 @@ export class AutopilotService {
         outcome: "APPROVED", // It passed evaluation
         correlationId: recommendation.correlationId,
         triggeredBy: triggerSource,
-        userId: recommendation.metadata?.userId as string,
+        userId: recommendation.metadata?.["userId"] as string,
         newState: { suggestedBudget: recommendation.suggestedBudget },
       }).catch(e => console.error("Audit log error:", e));
     }
@@ -468,7 +468,7 @@ export class AutopilotService {
           outcome: "EXECUTED",
           correlationId: recommendation.correlationId,
           triggeredBy: triggerSource,
-          userId: recommendation.metadata?.userId as string,
+          userId: recommendation.metadata?.["userId"] as string,
           previousState: { budget: recommendation.currentBudget },
           newState: { budget: recommendation.suggestedBudget },
         }).catch(e => console.error("Audit log error:", e));
@@ -497,7 +497,7 @@ export class AutopilotService {
           outcome: "FAILED",
           correlationId: recommendation.correlationId,
           triggeredBy: triggerSource,
-          userId: recommendation.metadata?.userId as string,
+          userId: recommendation.metadata?.["userId"] as string,
           error: error instanceof Error ? error.message : "Unknown error",
         }).catch(e => console.error("Audit log error:", e));
       }

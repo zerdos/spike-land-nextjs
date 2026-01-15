@@ -60,11 +60,11 @@ describe("Toaster", () => {
     render(<Toaster />);
 
     const toaster = screen.getByTestId("sonner-toaster");
-    expect(toaster.dataset.toastClass).toContain("group-[.toaster]:bg-card");
-    expect(toaster.dataset.toastClass).toContain(
+    expect(toaster.dataset["toastClass"]).toContain("group-[.toaster]:bg-card");
+    expect(toaster.dataset["toastClass"]).toContain(
       "group-[.toaster]:text-foreground",
     );
-    expect(toaster.dataset.toastClass).toContain(
+    expect(toaster.dataset["toastClass"]).toContain(
       "group-[.toaster]:rounded-xl",
     );
   });
@@ -73,7 +73,7 @@ describe("Toaster", () => {
     render(<Toaster />);
 
     const toaster = screen.getByTestId("sonner-toaster");
-    expect(toaster.dataset.descriptionClass).toContain(
+    expect(toaster.dataset["descriptionClass"]).toContain(
       "group-[.toast]:text-muted-foreground",
     );
   });
@@ -82,8 +82,8 @@ describe("Toaster", () => {
     render(<Toaster />);
 
     const toaster = screen.getByTestId("sonner-toaster");
-    expect(toaster.dataset.actionClass).toContain("group-[.toast]:bg-primary");
-    expect(toaster.dataset.actionClass).toContain(
+    expect(toaster.dataset["actionClass"]).toContain("group-[.toast]:bg-primary");
+    expect(toaster.dataset["actionClass"]).toContain(
       "group-[.toast]:text-primary-foreground",
     );
   });
@@ -92,8 +92,8 @@ describe("Toaster", () => {
     render(<Toaster />);
 
     const toaster = screen.getByTestId("sonner-toaster");
-    expect(toaster.dataset.cancelClass).toContain("group-[.toast]:bg-muted");
-    expect(toaster.dataset.cancelClass).toContain(
+    expect(toaster.dataset["cancelClass"]).toContain("group-[.toast]:bg-muted");
+    expect(toaster.dataset["cancelClass"]).toContain(
       "group-[.toast]:text-muted-foreground",
     );
   });

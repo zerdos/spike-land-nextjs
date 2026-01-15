@@ -158,15 +158,15 @@ export function isValidPipelineConfig(
   if (typeof config !== "object" || config === null) return false;
   const c = config as Record<string, unknown>;
   return (
-    typeof c.tier === "string" &&
-    ["TIER_1K", "TIER_2K", "TIER_4K"].includes(c.tier) &&
-    typeof c.analysis === "object" &&
-    c.analysis !== null &&
-    typeof c.autoCrop === "object" &&
-    c.autoCrop !== null &&
-    typeof c.prompt === "object" &&
-    c.prompt !== null &&
-    typeof c.generation === "object" &&
-    c.generation !== null
+    typeof c["tier"] === "string" &&
+    ["TIER_1K", "TIER_2K", "TIER_4K"].includes(c["tier"]) &&
+    typeof c["analysis"] === "object" &&
+    c["analysis"] !== null &&
+    typeof c["autoCrop"] === "object" &&
+    c["autoCrop"] !== null &&
+    typeof c["prompt"] === "object" &&
+    c["prompt"] !== null &&
+    typeof c["generation"] === "object" &&
+    c["generation"] !== null
   );
 }

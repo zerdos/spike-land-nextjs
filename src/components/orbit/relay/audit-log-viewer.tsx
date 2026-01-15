@@ -206,14 +206,14 @@ export function AuditLogViewer({ draftId }: AuditLogViewerProps) {
 
                   {log.details && Object.keys(log.details).length > 0 && (
                     <div className="mt-2 text-xs text-muted-foreground bg-muted/50 rounded p-2">
-                      {log.action === "REJECTED" && !!log.details.reason && (
-                        <p>Reason: {String(log.details.reason)}</p>
+                      {log.action === "REJECTED" && !!log.details["reason"] && (
+                        <p>Reason: {String(log.details["reason"])}</p>
                       )}
-                      {log.action === "SEND_FAILED" && !!log.details.errorMessage && (
-                        <p>Error: {String(log.details.errorMessage)}</p>
+                      {log.action === "SEND_FAILED" && !!log.details["errorMessage"] && (
+                        <p>Error: {String(log.details["errorMessage"])}</p>
                       )}
-                      {log.action === "EDITED" && !!log.details.editType && (
-                        <p>Edit type: {String(log.details.editType)}</p>
+                      {log.action === "EDITED" && !!log.details["editType"] && (
+                        <p>Edit type: {String(log.details["editType"])}</p>
                       )}
                     </div>
                   )}

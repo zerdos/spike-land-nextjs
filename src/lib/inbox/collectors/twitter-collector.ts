@@ -155,11 +155,11 @@ export class TwitterCollector extends BaseCollector {
       };
 
       if (options?.sinceId) {
-        params.since_id = options.sinceId;
+        params["since_id"] = options.sinceId;
       }
 
       if (options?.cursor) {
-        params.pagination_token = options.cursor;
+        params["pagination_token"] = options.cursor;
       }
 
       const response = await this.makeRequest<TwitterMentionsResponse>(
@@ -225,7 +225,7 @@ export class TwitterCollector extends BaseCollector {
       };
 
       if (options?.cursor) {
-        params.pagination_token = options.cursor;
+        params["pagination_token"] = options.cursor;
       }
 
       try {

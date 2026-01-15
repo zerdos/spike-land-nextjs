@@ -263,12 +263,12 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
 
       // Verify campaign structure
       const brandCampaign = data.campaigns.find(
-        (c: Record<string, unknown>) => c.name === "brand",
+        (c: Record<string, unknown>) => c["name"] === "brand",
       );
       expect(brandCampaign).toBeDefined();
-      expect(brandCampaign.platform).toBe("Google");
-      expect(brandCampaign.sessions).toBe(100);
-      expect(brandCampaign.visitors).toBe(500);
+      expect(brandCampaign["platform"]).toBe("Google");
+      expect(brandCampaign["sessions"]).toBe(100);
+      expect(brandCampaign["visitors"]).toBe(500);
     });
 
     it("should handle empty campaign data", async () => {
@@ -352,10 +352,10 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
 
       expect(response.status).toBe(200);
       const directCampaign = data.campaigns.find(
-        (c: Record<string, unknown>) => c.name === "Direct",
+        (c: Record<string, unknown>) => c["name"] === "Direct",
       );
       expect(directCampaign).toBeDefined();
-      expect(directCampaign.platform).toBe("Direct");
+      expect(directCampaign["platform"]).toBe("Direct");
     });
   });
 
@@ -381,7 +381,7 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(data.campaigns[0].platform).toBe("Facebook");
+      expect(data.campaigns[0]["platform"]).toBe("Facebook");
     });
 
     it("should detect Google platform from source", async () => {
@@ -405,7 +405,7 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(data.campaigns[0].platform).toBe("Google");
+      expect(data.campaigns[0]["platform"]).toBe("Google");
     });
 
     it("should detect Twitter/X platform from source", async () => {
@@ -429,7 +429,7 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(data.campaigns[0].platform).toBe("Twitter/X");
+      expect(data.campaigns[0]["platform"]).toBe("Twitter/X");
     });
 
     it("should detect LinkedIn platform from source", async () => {
@@ -453,7 +453,7 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(data.campaigns[0].platform).toBe("LinkedIn");
+      expect(data.campaigns[0]["platform"]).toBe("LinkedIn");
     });
 
     it("should detect TikTok platform from source", async () => {
@@ -477,7 +477,7 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(data.campaigns[0].platform).toBe("TikTok");
+      expect(data.campaigns[0]["platform"]).toBe("TikTok");
     });
 
     it("should detect Email platform from source", async () => {
@@ -501,7 +501,7 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(data.campaigns[0].platform).toBe("Email");
+      expect(data.campaigns[0]["platform"]).toBe("Email");
     });
 
     it("should detect Referral platform from source", async () => {
@@ -525,7 +525,7 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(data.campaigns[0].platform).toBe("Referral");
+      expect(data.campaigns[0]["platform"]).toBe("Referral");
     });
 
     it("should default to Organic for unknown sources", async () => {
@@ -549,7 +549,7 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(data.campaigns[0].platform).toBe("Organic");
+      expect(data.campaigns[0]["platform"]).toBe("Organic");
     });
   });
 
@@ -670,9 +670,9 @@ describe("GET /api/admin/marketing/analytics/campaigns", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.campaigns[0].name).toBe("high");
-      expect(data.campaigns[1].name).toBe("medium");
-      expect(data.campaigns[2].name).toBe("low");
+      expect(data.campaigns[0]["name"]).toBe("high");
+      expect(data.campaigns[1]["name"]).toBe("medium");
+      expect(data.campaigns[2]["name"]).toBe("low");
     });
   });
 

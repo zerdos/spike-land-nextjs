@@ -343,7 +343,7 @@ export function AgentsDashboardClient({ initialData }: Props) {
             Completed
           </p>
           <p className="mt-1 text-2xl font-bold text-green-600">
-            {data.statusCounts.COMPLETED || 0}
+            {data.statusCounts["COMPLETED"] || 0}
           </p>
         </Card>
         <Card className="p-4">
@@ -351,7 +351,7 @@ export function AgentsDashboardClient({ initialData }: Props) {
             Failed
           </p>
           <p className="mt-1 text-2xl font-bold text-red-600">
-            {data.statusCounts.FAILED || 0}
+            {data.statusCounts["FAILED"] || 0}
           </p>
         </Card>
       </div>

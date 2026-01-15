@@ -156,7 +156,7 @@ export async function POST(
   // Check current reference image count
   const promptConfig = (pipeline.promptConfig as Record<string, unknown>) ||
     {};
-  const existingRefs = (promptConfig.referenceImages as ReferenceImage[]) ||
+  const existingRefs = (promptConfig["referenceImages"] as ReferenceImage[]) ||
     [];
 
   if (existingRefs.length >= MAX_REFERENCE_IMAGES) {
@@ -375,7 +375,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   // Update pipeline's promptConfig to remove the reference image
   const promptConfig = (pipeline.promptConfig as Record<string, unknown>) ||
     {};
-  const existingRefs = (promptConfig.referenceImages as ReferenceImage[]) ||
+  const existingRefs = (promptConfig["referenceImages"] as ReferenceImage[]) ||
     [];
   const updatedRefs = existingRefs.filter((ref) => ref.r2Key !== r2Key);
 

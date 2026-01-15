@@ -190,11 +190,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         { status: 400 },
       );
     }
-    updateData.name = name.trim();
+    updateData["name"] = name.trim();
   }
 
   if (description !== undefined) {
-    updateData.description = description?.trim() || null;
+    updateData["description"] = description?.trim() || null;
   }
 
   if (privacy !== undefined) {
@@ -205,15 +205,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         { status: 400 },
       );
     }
-    updateData.privacy = privacy;
+    updateData["privacy"] = privacy;
 
     // Generate share token if changing from private to public/unlisted
     if (privacy !== "PRIVATE" && !album.shareToken) {
-      updateData.shareToken = nanoid(12);
+      updateData["shareToken"] = nanoid(12);
     }
     // Remove share token if changing to private
     if (privacy === "PRIVATE") {
-      updateData.shareToken = null;
+      updateData["shareToken"] = null;
     }
   }
 
@@ -239,7 +239,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         );
       }
     }
-    updateData.coverImageId = coverImageId;
+    updateData["coverImageId"] = coverImageId;
   }
 
   // Handle pipelineId - validate access to the pipeline
@@ -279,7 +279,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         );
       }
     }
-    updateData.pipelineId = pipelineId;
+    updateData["pipelineId"] = pipelineId;
   }
 
   // Handle defaultTier update
@@ -291,7 +291,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         { status: 400 },
       );
     }
-    updateData.defaultTier = defaultTier;
+    updateData["defaultTier"] = defaultTier;
   }
 
   const { data: updatedAlbum, error: updateError } = await tryCatch(

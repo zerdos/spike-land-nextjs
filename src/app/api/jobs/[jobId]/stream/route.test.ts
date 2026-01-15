@@ -263,7 +263,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
 
     // Stream should close after COMPLETED status
     expect(events.length).toBe(2);
-    expect(events[1]?.status).toBe("COMPLETED");
+    expect(events[1]?.["status"]).toBe("COMPLETED");
   });
 
   it("closes stream on FAILED status", async () => {
@@ -330,7 +330,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
     const events = await readSSEEvents(response, 5);
 
     expect(events.length).toBe(2);
-    expect(events[1]?.status).toBe("CANCELLED");
+    expect(events[1]?.["status"]).toBe("CANCELLED");
   });
 
   it("closes stream on REFUNDED status", async () => {
@@ -360,7 +360,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
     const events = await readSSEEvents(response, 5);
 
     expect(events.length).toBe(2);
-    expect(events[1]?.status).toBe("REFUNDED");
+    expect(events[1]?.["status"]).toBe("REFUNDED");
   });
 
   it("sends error event when job not found during polling", async () => {
@@ -389,7 +389,7 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
     const events = await readSSEEvents(response, 5);
 
     expect(events.length).toBeGreaterThanOrEqual(2);
-    expect(events[0]?.type).toBe("connected");
+    expect(events[0]?.["type"]).toBe("connected");
     // The second event should be an error since job not found
     expect(events[1]).toEqual({
       type: "error",
@@ -436,14 +436,14 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
     const events = await readSSEEvents(response, 10);
 
     expect(events.length).toBeGreaterThanOrEqual(3);
-    expect(events[0]?.type).toBe("connected");
+    expect(events[0]?.["type"]).toBe("connected");
     expect(events[1]).toEqual({
       type: "error",
       message: "Failed to check job status",
     });
     // Stream should continue and eventually get COMPLETED status
-    expect(events[2]?.type).toBe("status");
-    expect(events[2]?.status).toBe("COMPLETED");
+    expect(events[2]?.["type"]).toBe("status");
+    expect(events[2]?.["status"]).toBe("COMPLETED");
 
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error checking job status:",
@@ -509,9 +509,9 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
       const events = await readSSEEvents(response, 5);
 
       expect(events.length).toBeGreaterThanOrEqual(3);
-      expect(events[0]?.type).toBe("connected");
-      expect(events[1]?.status).toBe("PENDING");
-      expect(events[2]?.status).toBe("COMPLETED");
+      expect(events[0]?.["type"]).toBe("connected");
+      expect(events[1]?.["status"]).toBe("PENDING");
+      expect(events[2]?.["status"]).toBe("COMPLETED");
     },
     15000,
   );
@@ -570,9 +570,9 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
     const events = await readSSEEvents(response, 5);
 
     expect(events.length).toBeGreaterThanOrEqual(3);
-    expect(events[0]?.type).toBe("connected");
-    expect(events[1]?.status).toBe("PROCESSING");
-    expect(events[2]?.status).toBe("COMPLETED");
+    expect(events[0]?.["type"]).toBe("connected");
+    expect(events[1]?.["status"]).toBe("PROCESSING");
+    expect(events[2]?.["status"]).toBe("COMPLETED");
   });
 
   it("handles abort signal from client", async () => {
@@ -709,14 +709,14 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
 
       // Should have connected + processing status updates + completed
       expect(events.length).toBeGreaterThanOrEqual(3);
-      expect(events[0]?.type).toBe("connected");
+      expect(events[0]?.["type"]).toBe("connected");
 
       // Verify we got status updates (backoff affects timing, not events)
-      const statusEvents = events.filter((e) => e.type === "status");
+      const statusEvents = events.filter((e) => e["type"] === "status");
       expect(statusEvents.length).toBeGreaterThanOrEqual(2);
-      expect(statusEvents[0]?.status).toBe("PROCESSING");
+      expect(statusEvents[0]?.["status"]).toBe("PROCESSING");
       // The last status event should be COMPLETED
-      expect(statusEvents[statusEvents.length - 1]?.status).toBe("COMPLETED");
+      expect(statusEvents[statusEvents.length - 1]?.["status"]).toBe("COMPLETED");
     },
     15000,
   );
@@ -749,8 +749,8 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
     const events = await readSSEEvents(response, 10);
 
     expect(events.length).toBe(2);
-    expect(events[0]?.type).toBe("connected");
-    expect(events[1]?.status).toBe("COMPLETED");
+    expect(events[0]?.["type"]).toBe("connected");
+    expect(events[1]?.["status"]).toBe("COMPLETED");
   });
 
   it("handles checkStatus when stream is already closed", async () => {

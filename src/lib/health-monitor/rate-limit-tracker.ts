@@ -131,8 +131,8 @@ export function parseLinkedInRateLimits(
   if (body && typeof body === "object") {
     const errorBody = body as Record<string, unknown>;
     if (
-      errorBody.status === 429 ||
-      (errorBody.message && String(errorBody.message).toLowerCase().includes("rate limit"))
+      errorBody["status"] === 429 ||
+      (errorBody["message"] && String(errorBody["message"]).toLowerCase().includes("rate limit"))
     ) {
       return {
         remaining: 0,

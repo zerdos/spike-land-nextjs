@@ -558,26 +558,26 @@ When(
     // Wait for form to be visible
     await waitForModalState(this.page, "visible", { timeout: TIMEOUTS.LONG });
 
-    if (data.title) {
+    if (data["title"]) {
       const titleInput = this.page.locator(
         'input[name="title"], input[placeholder*="title" i]',
       );
       await expect(titleInput).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-      await titleInput.fill(data.title);
+      await titleInput.fill(data["title"]);
     }
-    if (data.description) {
+    if (data["description"]) {
       const descInput = this.page.locator(
         'textarea[name="description"], textarea[placeholder*="description" i]',
       );
       await expect(descInput).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-      await descInput.fill(data.description);
+      await descInput.fill(data["description"]);
     }
-    if (data.category) {
+    if (data["category"]) {
       const categorySelect = this.page.locator('[role="combobox"]').first();
       await expect(categorySelect).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       await categorySelect.click();
       const option = this.page.locator(`[role="option"]`).filter({
-        hasText: data.category,
+        hasText: data["category"],
       });
       await expect(option).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
       await option.click();

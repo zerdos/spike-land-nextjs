@@ -79,19 +79,19 @@ describe("Reply API Route", () => {
 
   describe("PLATFORM_CHARACTER_LIMITS", () => {
     it("has correct limit for Twitter", () => {
-      expect(PLATFORM_CHARACTER_LIMITS.TWITTER).toBe(280);
+      expect(PLATFORM_CHARACTER_LIMITS["TWITTER"]).toBe(280);
     });
 
     it("has correct limit for Facebook", () => {
-      expect(PLATFORM_CHARACTER_LIMITS.FACEBOOK).toBe(8000);
+      expect(PLATFORM_CHARACTER_LIMITS["FACEBOOK"]).toBe(8000);
     });
 
     it("has correct limit for Instagram", () => {
-      expect(PLATFORM_CHARACTER_LIMITS.INSTAGRAM).toBe(2200);
+      expect(PLATFORM_CHARACTER_LIMITS["INSTAGRAM"]).toBe(2200);
     });
 
     it("has correct limit for LinkedIn", () => {
-      expect(PLATFORM_CHARACTER_LIMITS.LINKEDIN).toBe(3000);
+      expect(PLATFORM_CHARACTER_LIMITS["LINKEDIN"]).toBe(3000);
     });
   });
 

@@ -181,12 +181,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   if (createError) {
     console.error("Failed to create brand profile:", createError);
     console.error("Create error details:", {
-      message: createError.message,
-      name: createError.name,
-      stack: createError.stack,
+      message: createError["message"],
+      name: createError["name"],
+      stack: createError["stack"],
     });
     return NextResponse.json(
-      { error: "Failed to create brand profile", details: createError.message },
+      { error: "Failed to create brand profile", details: createError["message"] },
       { status: 500 },
     );
   }
