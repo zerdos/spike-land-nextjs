@@ -237,6 +237,13 @@ jobs:
           # Actual database connection only happens at runtime with real credentials
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
 
+      - name: Verify build output
+        run: |
+          echo "=== Checking .next directory ==="
+          ls -la .next/ || echo ".next directory not found!"
+          echo "=== Checking for BUILD_ID ==="
+          cat .next/BUILD_ID || echo "BUILD_ID not found!"
+
       - name: Upload build artifacts for E2E tests
         uses: actions/upload-artifact@v4
         with:
