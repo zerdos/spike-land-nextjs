@@ -20,7 +20,6 @@
   },
   "devDependencies": {
     "@cloudflare/kv-asset-handler": "0.4.1",
-    "@cloudflare/vitest-pool-workers": "0.12.3",
     "@vitest/runner": "4.0.17",
     "@vitest/snapshot": "4.0.17",
     "rimraf": "6.1.2",
