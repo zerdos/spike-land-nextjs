@@ -14,8 +14,7 @@ const createSignInResponse = (
   overrides: Partial<SignInResponse> = {},
 ): SignInResponse => ({
   ok: true,
-  error: undefined,
-  code: undefined,
+  error: null,
   status: 200,
   url: "/",
   ...overrides,
