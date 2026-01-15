@@ -836,9 +836,9 @@ export async function getEditFeedbackData(
   };
 
   if (startDate || endDate) {
-    whereClause.createdAt = {};
-    if (startDate) (whereClause.createdAt as Record<string, unknown>).gte = startDate;
-    if (endDate) (whereClause.createdAt as Record<string, unknown>).lte = endDate;
+    whereClause["createdAt"] = {};
+    if (startDate) (whereClause["createdAt"] as Record<string, unknown>)["gte"] = startDate;
+    if (endDate) (whereClause["createdAt"] as Record<string, unknown>)["lte"] = endDate;
   }
 
   const editHistory = await prisma.draftEditHistory.findMany({
@@ -883,9 +883,9 @@ export async function getAggregatedFeedback(
   };
 
   if (startDate || endDate) {
-    whereClause.createdAt = {};
-    if (startDate) (whereClause.createdAt as Record<string, unknown>).gte = startDate;
-    if (endDate) (whereClause.createdAt as Record<string, unknown>).lte = endDate;
+    whereClause["createdAt"] = {};
+    if (startDate) (whereClause["createdAt"] as Record<string, unknown>)["gte"] = startDate;
+    if (endDate) (whereClause["createdAt"] as Record<string, unknown>)["lte"] = endDate;
   }
 
   const editHistory = await prisma.draftEditHistory.findMany({

@@ -273,7 +273,7 @@ Then(
     expect(execution?.status).toBe("SKIPPED");
 
     const metadata = execution?.metadata as Record<string, unknown> | null;
-    const reason = metadata?.reason as string | undefined;
+    const reason = metadata?.["reason"] as string | undefined;
     expect(reason || "").toContain(reasonFragment);
   },
 );

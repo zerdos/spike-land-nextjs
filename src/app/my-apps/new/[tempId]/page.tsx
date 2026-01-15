@@ -33,7 +33,7 @@ function getFileIcon(_filename: string): React.ReactNode {
 export default function TempAppWorkspacePage() {
   const router = useRouter();
   const params = useParams();
-  const tempId = params?.tempId as string;
+  const tempId = params?.["tempId"] as string;
 
   const [newMessage, setNewMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);

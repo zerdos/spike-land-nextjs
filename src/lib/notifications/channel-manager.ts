@@ -97,7 +97,7 @@ export async function getWorkspacePreferences(
 
   // Extract notification settings from workspace settings JSON
   const settings = workspace.settings as Record<string, unknown> | null;
-  const notificationSettings = settings?.notifications as
+  const notificationSettings = settings?.["notifications"] as
     | Partial<WorkspaceNotificationPreferences>
     | undefined;
 

@@ -101,7 +101,7 @@ async function regenerateDrafts(
 
 export function RelayDraftsPanel({ inboxItemId }: RelayDraftsPanelProps) {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
   const queryClient = useQueryClient();
 
   const [selectedDraft, setSelectedDraft] = useState<DraftWithMetadata | null>(null);

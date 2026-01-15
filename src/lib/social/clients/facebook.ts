@@ -313,16 +313,16 @@ export class FacebookClient implements ISocialClient {
     };
 
     // Add link if provided in metadata
-    const link = options?.metadata?.link as string | undefined;
+    const link = options?.metadata?.["link"] as string | undefined;
     if (link) {
-      body.link = link;
+      body["link"] = link;
     }
 
     // Handle scheduled posts
     if (options?.scheduledAt) {
       const timestamp = Math.floor(options.scheduledAt.getTime() / 1000);
-      body.published = "false";
-      body.scheduled_publish_time = timestamp.toString();
+      body["published"] = "false";
+      body["scheduled_publish_time"] = timestamp.toString();
     }
 
     const response = await fetch(`${GRAPH_API_BASE}/${this.pageId}/feed`, {

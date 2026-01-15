@@ -217,13 +217,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
   // Build update data
   const updateData: Record<string, unknown> = {};
-  if (name !== undefined) updateData.name = name.trim();
+  if (name !== undefined) updateData["name"] = name.trim();
   if (description !== undefined) {
-    updateData.description = description?.trim() || null;
+    updateData["description"] = description?.trim() || null;
   }
-  if (tier !== undefined) updateData.tier = tier;
+  if (tier !== undefined) updateData["tier"] = tier;
   if (visibility !== undefined) {
-    updateData.visibility = visibility;
+    updateData["visibility"] = visibility;
     // Generate share token when switching to LINK visibility
     if (visibility === "LINK") {
       const { data: current, error: currentError } = await tryCatch(
@@ -240,19 +240,19 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         );
       }
       if (!current?.shareToken) {
-        updateData.shareToken = crypto.randomUUID();
+        updateData["shareToken"] = crypto.randomUUID();
       }
     }
   }
   if (analysisConfig !== undefined) {
-    updateData.analysisConfig = analysisConfig;
+    updateData["analysisConfig"] = analysisConfig;
   }
   if (autoCropConfig !== undefined) {
-    updateData.autoCropConfig = autoCropConfig;
+    updateData["autoCropConfig"] = autoCropConfig;
   }
-  if (promptConfig !== undefined) updateData.promptConfig = promptConfig;
+  if (promptConfig !== undefined) updateData["promptConfig"] = promptConfig;
   if (generationConfig !== undefined) {
-    updateData.generationConfig = generationConfig;
+    updateData["generationConfig"] = generationConfig;
   }
 
   const { data: pipeline, error: updateError } = await tryCatch(

@@ -249,7 +249,7 @@ Then(
   "each analysis should include performanceScore",
   async function(this: CustomWorld) {
     const body = this.apiResponseBody;
-    const analyses = body?.campaignAnalyses;
+    const analyses = body?.campaignAnalyses ?? [];
     for (const analysis of analyses) {
       expect(analysis.performanceScore).toBeDefined();
       expect(typeof analysis.performanceScore).toBe("number");
@@ -261,12 +261,12 @@ Then(
   "each analysis should include metrics with roas and cpa",
   async function(this: CustomWorld) {
     const body = this.apiResponseBody;
-    const analyses = body?.campaignAnalyses;
+    const analyses = body?.campaignAnalyses ?? [];
     for (const analysis of analyses) {
       const metrics = analysis.metrics;
       expect(metrics).toBeDefined();
-      expect(metrics.roas).toBeDefined();
-      expect(metrics.cpa).toBeDefined();
+      expect(metrics?.roas).toBeDefined();
+      expect(metrics?.cpa).toBeDefined();
     }
   },
 );
@@ -275,7 +275,7 @@ Then(
   "each campaign analysis should include trend data",
   async function(this: CustomWorld) {
     const body = this.apiResponseBody;
-    const analyses = body?.campaignAnalyses;
+    const analyses = body?.campaignAnalyses ?? [];
     for (const analysis of analyses) {
       expect(analysis.trend).toBeDefined();
     }
@@ -286,7 +286,7 @@ Then(
   "trend should indicate if roas is improving, stable, or declining",
   async function(this: CustomWorld) {
     const body = this.apiResponseBody;
-    const analyses = body?.campaignAnalyses;
+    const analyses = body?.campaignAnalyses ?? [];
     const validTrends = ["improving", "stable", "declining"];
     for (const analysis of analyses) {
       const trend = analysis.trend;
@@ -365,7 +365,7 @@ Then(
   "the recommendation should include projected impact",
   async function(this: CustomWorld) {
     const body = this.apiResponseBody;
-    const recommendations = body?.recommendations;
+    const recommendations = body?.recommendations ?? [];
     expect(recommendations).toBeDefined();
     expect(recommendations.length).toBeGreaterThan(0);
     const rec = recommendations[0];
@@ -535,10 +535,10 @@ Then(
   "the projected impact should include estimatedRoasChange",
   async function(this: CustomWorld) {
     const body = this.apiResponseBody;
-    const recommendations = body?.recommendations;
+    const recommendations = body?.recommendations ?? [];
     expect(recommendations).toBeDefined();
     expect(recommendations.length).toBeGreaterThan(0);
-    const firstRec = recommendations![0];
+    const firstRec = recommendations[0];
     const impact = firstRec?.projectedImpact;
     expect(
       impact?.estimatedRoasChange ||
@@ -552,10 +552,10 @@ Then(
   "the projected impact should include estimatedCpaChange",
   async function(this: CustomWorld) {
     const body = this.apiResponseBody;
-    const recommendations = body?.recommendations;
+    const recommendations = body?.recommendations ?? [];
     expect(recommendations).toBeDefined();
     expect(recommendations.length).toBeGreaterThan(0);
-    const firstRec = recommendations![0];
+    const firstRec = recommendations[0];
     const impact = firstRec?.projectedImpact;
     expect(
       impact?.estimatedCpaChange ||
@@ -569,10 +569,10 @@ Then(
   "the projected impact should include confidenceInterval",
   async function(this: CustomWorld) {
     const body = this.apiResponseBody;
-    const recommendations = body?.recommendations;
+    const recommendations = body?.recommendations ?? [];
     expect(recommendations).toBeDefined();
     expect(recommendations.length).toBeGreaterThan(0);
-    const firstRec = recommendations![0];
+    const firstRec = recommendations[0];
     const impact = firstRec?.projectedImpact;
     expect(
       impact?.confidenceInterval ||

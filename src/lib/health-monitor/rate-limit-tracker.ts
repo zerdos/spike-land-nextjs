@@ -98,12 +98,12 @@ export function parseFacebookRateLimits(
 
   // Check response body for error info
   if (body && typeof body === "object" && "error" in body) {
-    const error = (body as Record<string, unknown>).error;
+    const error = (body as Record<string, unknown>)["error"];
     if (
       error &&
       typeof error === "object" &&
       "code" in error &&
-      (error as Record<string, unknown>).code === 4
+      (error as Record<string, unknown>)["code"] === 4
     ) {
       // Rate limit error
       return {

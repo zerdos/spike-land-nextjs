@@ -278,16 +278,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         version: { increment: 1 },
       };
 
-      if (name !== undefined) updateData.name = name;
-      if (mission !== undefined) updateData.mission = mission || null;
-      if (values !== undefined) updateData.values = values || [];
+      if (name !== undefined) updateData["name"] = name;
+      if (mission !== undefined) updateData["mission"] = mission || null;
+      if (values !== undefined) updateData["values"] = values || [];
       if (toneDescriptors !== undefined) {
-        updateData.toneDescriptors = toneDescriptors;
+        updateData["toneDescriptors"] = toneDescriptors;
       }
-      if (logoUrl !== undefined) updateData.logoUrl = logoUrl || null;
-      if (logoR2Key !== undefined) updateData.logoR2Key = logoR2Key || null;
+      if (logoUrl !== undefined) updateData["logoUrl"] = logoUrl || null;
+      if (logoR2Key !== undefined) updateData["logoR2Key"] = logoR2Key || null;
       if (colorPalette !== undefined) {
-        updateData.colorPalette = colorPalette || [];
+        updateData["colorPalette"] = colorPalette || [];
       }
 
       // Update the brand profile

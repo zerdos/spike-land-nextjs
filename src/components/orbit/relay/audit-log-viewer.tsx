@@ -132,7 +132,7 @@ function AuditLogSkeleton() {
 
 export function AuditLogViewer({ draftId }: AuditLogViewerProps) {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["draftAuditLog", workspaceSlug, draftId],

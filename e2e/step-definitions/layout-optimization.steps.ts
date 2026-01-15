@@ -413,7 +413,7 @@ Then(
       `[data-client-name="${_clientName}"]`,
     );
     const isActive = await feed.evaluate((el: HTMLElement) => {
-      return el.dataset.active === "true" || el.classList.contains("active");
+      return el.dataset["active"] === "true" || el.classList.contains("active");
     });
     expect(isActive).toBeFalsy();
   },
