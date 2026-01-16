@@ -43,7 +43,9 @@ describe("PostHandler - Validation", () => {
 
   describe("validateMessages", () => {
     const callValidateMessages = (messages: unknown) => {
-      return (postHandler as unknown as { validateMessages: (messages: unknown) => string | null; })
+      return (postHandler as unknown as {
+        validateMessages: (messages: unknown) => string | null;
+      })
         .validateMessages(messages);
     };
 
@@ -200,7 +202,9 @@ describe("PostHandler - Validation", () => {
 
   describe("isValidRole", () => {
     const callIsValidRole = (role: unknown) => {
-      return (postHandler as unknown as { isValidRole: (role: unknown) => boolean; }).isValidRole(
+      return (postHandler as unknown as {
+        isValidRole: (role: unknown) => boolean;
+      }).isValidRole(
         role,
       );
     };

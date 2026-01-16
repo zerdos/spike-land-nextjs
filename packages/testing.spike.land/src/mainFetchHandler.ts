@@ -67,13 +67,15 @@ export async function handleMainFetch(
         env,
         ctx,
       );
-      const finalResponse = response || new Response("Not Found", { status: 404 });
+      const finalResponse = response ||
+        new Response("Not Found", { status: 404 });
       return addSecurityHeaders(finalResponse);
     }
 
     const path = url.pathname.slice(1).split("/");
     const response = await handleFetchApi(path, request, env, ctx);
-    const finalResponse = response || new Response("Not Found", { status: 404 });
+    const finalResponse = response ||
+      new Response("Not Found", { status: 404 });
     return addSecurityHeaders(finalResponse);
   });
 }

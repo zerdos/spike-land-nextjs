@@ -79,10 +79,16 @@ describe("Chat Handler", () => {
     it("should return swVersion.mjs with correct hash", async () => {
       const request = new Request("https://example.com/swVersion.mjs");
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(response.status).toBe(200);
-      expect(response.headers.get("Content-Type")).toBe("application/javascript");
+      expect(response.headers.get("Content-Type")).toBe(
+        "application/javascript",
+      );
       expect(response.headers.get("x-hash")).toBe("test-hash-12345");
 
       const text = await response.text();
@@ -93,20 +99,32 @@ describe("Chat Handler", () => {
     it("should return swVersion.mjs for aliased path", async () => {
       const request = new Request("https://example.com/@/lib/swVersion.mjs");
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(response.status).toBe(200);
-      expect(response.headers.get("Content-Type")).toBe("application/javascript");
+      expect(response.headers.get("Content-Type")).toBe(
+        "application/javascript",
+      );
     });
 
     it("should return swVersion.json with correct format", async () => {
       const request = new Request("https://example.com/swVersion.json");
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(response.status).toBe(200);
       expect(response.headers.get("Content-Type")).toBe("application/json");
-      expect(response.headers.get("cache-control")).toBe("public, max-age=0, must-revalidate");
+      expect(response.headers.get("cache-control")).toBe(
+        "public, max-age=0, must-revalidate",
+      );
 
       const json = await response.json();
       expect(json).toHaveProperty("swVersion", "test-hash-12345");
@@ -115,10 +133,16 @@ describe("Chat Handler", () => {
     it("should return swVersion.js with files data", async () => {
       const request = new Request("https://example.com/swVersion.js");
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(response.status).toBe(200);
-      expect(response.headers.get("Content-Type")).toBe("application/javascript");
+      expect(response.headers.get("Content-Type")).toBe(
+        "application/javascript",
+      );
 
       const text = await response.text();
       expect(text).toContain("self.swVersion");
@@ -139,7 +163,11 @@ describe("Chat Handler", () => {
       (mockEnv.CODE.idFromName as Mock).mockReturnValue(mockId);
       (mockEnv.CODE.get as Mock).mockReturnValue(mockStub);
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(mockEnv.CODE.idFromName).toHaveBeenCalledWith("my-codespace");
       expect(mockEnv.CODE.get).toHaveBeenCalledWith(mockId);
@@ -148,7 +176,9 @@ describe("Chat Handler", () => {
     });
 
     it("should handle MCP routes with codeSpace from query param", async () => {
-      const request = new Request("https://example.com/mcp/test?codeSpace=query-space");
+      const request = new Request(
+        "https://example.com/mcp/test?codeSpace=query-space",
+      );
 
       const mockStub = {
         fetch: vi.fn().mockResolvedValue(new Response("MCP response")),
@@ -184,7 +214,11 @@ describe("Chat Handler", () => {
       const mockResponse = new Response("Anthropic response");
       (handleAnthropicRequest as Mock).mockResolvedValue(mockResponse);
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(handleAnthropicRequest).toHaveBeenCalledWith(request, mockEnv);
       expect(mockCtx.waitUntil).toHaveBeenCalled();
@@ -196,7 +230,11 @@ describe("Chat Handler", () => {
       const mockResponse = new Response("OpenAI response");
       (handleGPT4Request as Mock).mockResolvedValue(mockResponse);
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(handleGPT4Request).toHaveBeenCalledWith(request, mockEnv);
       expect(response).toBe(mockResponse);
@@ -207,9 +245,17 @@ describe("Chat Handler", () => {
       const mockResponse = new Response("Replicate response");
       (handleReplicateRequest as Mock).mockResolvedValue(mockResponse);
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
-      expect(handleReplicateRequest).toHaveBeenCalledWith(request, mockEnv, mockCtx);
+      expect(handleReplicateRequest).toHaveBeenCalledWith(
+        request,
+        mockEnv,
+        mockCtx,
+      );
       expect(response).toBe(mockResponse);
     });
   });
@@ -226,7 +272,11 @@ describe("Chat Handler", () => {
       const mockAI = mockEnv.AI as { run: Mock; };
       (mockAI.run as Mock).mockResolvedValue(mockAiResponse);
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(mockAI.run).toHaveBeenCalledWith(
         "@cf/facebook/bart-large-cnn",
@@ -252,7 +302,11 @@ describe("Chat Handler", () => {
       const mockAI = mockEnv.AI as { run: Mock; };
       (mockAI.run as Mock).mockResolvedValue(mockTranscription);
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(mockAI.run).toHaveBeenCalledWith(
         "@cf/openai/whisper-tiny-en",
@@ -276,7 +330,11 @@ describe("Chat Handler", () => {
         return null;
       });
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(response.status).toBe(200);
       expect(response.headers.get("Content-Type")).toBe("application/json");
@@ -297,7 +355,11 @@ describe("Chat Handler", () => {
       const transpiledCode = "const x = 42;";
       global.fetch = vi.fn().mockResolvedValue(new Response(transpiledCode));
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://esbuild.spikeland.workers.dev",
@@ -306,7 +368,9 @@ describe("Chat Handler", () => {
           body: codeToTranspile,
         }),
       );
-      expect(response.headers.get("Content-Type")).toBe("application/javascript");
+      expect(response.headers.get("Content-Type")).toBe(
+        "application/javascript",
+      );
     });
   });
 
@@ -314,7 +378,11 @@ describe("Chat Handler", () => {
     it("should return service worker config", async () => {
       const request = new Request("https://example.com/sw-config.json");
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(response.status).toBe(200);
       expect(response.headers.get("Content-Type")).toBe("application/json");
@@ -331,7 +399,11 @@ describe("Chat Handler", () => {
     it("should return asset manifest", async () => {
       const request = new Request("https://example.com/ASSET_MANIFEST");
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(response.status).toBe(200);
       expect(response.headers.get("Content-Type")).toBe("application/json");
@@ -369,7 +441,11 @@ describe("Chat Handler", () => {
         new Response(JSON.stringify(mockTurnResponse), { status: 200 }),
       );
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(global.fetch).toHaveBeenCalledWith(
         expect.stringContaining("cloudflare.com"),
@@ -390,7 +466,11 @@ describe("Chat Handler", () => {
         new Response("Unauthorized", { status: 401 }),
       );
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(response.status).toBe(500);
       const json = await response.json();
@@ -415,7 +495,11 @@ describe("Chat Handler", () => {
       const mockResponse = new Response("Main handler response");
       (handleMainFetch as Mock).mockResolvedValue(mockResponse);
 
-      const response = await main.fetch(request, mockEnv as unknown as Env, mockCtx);
+      const response = await main.fetch(
+        request,
+        mockEnv as unknown as Env,
+        mockCtx,
+      );
 
       expect(handleMainFetch).toHaveBeenCalledWith(request, mockEnv, mockCtx);
       expect(response).toBe(mockResponse);
@@ -441,7 +525,10 @@ describe("handleCMSIndexRequest", () => {
 
       (mockEnv.R2.put as Mock).mockResolvedValue({});
 
-      const response = await handleCMSIndexRequest(request, mockEnv as unknown as Env);
+      const response = await handleCMSIndexRequest(
+        request,
+        mockEnv as unknown as Env,
+      );
 
       expect(mockEnv.R2.put).toHaveBeenCalledWith(
         request.url,
@@ -461,7 +548,10 @@ describe("handleCMSIndexRequest", () => {
 
       (mockEnv.R2.delete as Mock).mockResolvedValue({});
 
-      const response = await handleCMSIndexRequest(request, mockEnv as unknown as Env);
+      const response = await handleCMSIndexRequest(
+        request,
+        mockEnv as unknown as Env,
+      );
 
       expect(mockEnv.R2.delete).toHaveBeenCalledWith(request.url);
       expect(response.status).toBe(200);
@@ -477,7 +567,10 @@ describe("handleCMSIndexRequest", () => {
 
       (mockEnv.R2.get as Mock).mockResolvedValue(null);
 
-      const response = await handleCMSIndexRequest(request, mockEnv as unknown as Env);
+      const response = await handleCMSIndexRequest(
+        request,
+        mockEnv as unknown as Env,
+      );
 
       expect(response.status).toBe(404);
       const text = await response.text();
@@ -491,7 +584,10 @@ describe("handleCMSIndexRequest", () => {
         method: "PATCH",
       });
 
-      const response = await handleCMSIndexRequest(request, mockEnv as unknown as Env);
+      const response = await handleCMSIndexRequest(
+        request,
+        mockEnv as unknown as Env,
+      );
 
       expect(response.status).toBe(405);
       const text = await response.text();
@@ -503,7 +599,10 @@ describe("handleCMSIndexRequest", () => {
         method: "POST",
       });
 
-      const response = await handleCMSIndexRequest(request, mockEnv as unknown as Env);
+      const response = await handleCMSIndexRequest(
+        request,
+        mockEnv as unknown as Env,
+      );
 
       expect(response.status).toBe(405);
     });

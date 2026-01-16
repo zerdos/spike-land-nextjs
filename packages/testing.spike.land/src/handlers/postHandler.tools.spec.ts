@@ -147,18 +147,21 @@ describe("PostHandler - Tool Schema Validation", () => {
       expect(typeof capturedTools).toBe("object");
 
       // Each tool should have description, parameters (Zod schema), and execute function
-      Object.entries(capturedTools!).forEach(([_toolName, tool]: [string, unknown]) => {
-        expect(tool).toHaveProperty("description");
-        expect(tool).toHaveProperty("parameters");
-        expect(tool).toHaveProperty("execute");
-        expect(typeof (tool as { execute: unknown; }).execute).toBe("function");
-      });
+      Object.entries(capturedTools!).forEach(
+        ([_toolName, tool]: [string, unknown]) => {
+          expect(tool).toHaveProperty("description");
+          expect(tool).toHaveProperty("parameters");
+          expect(tool).toHaveProperty("execute");
+          expect(typeof (tool as { execute: unknown; }).execute).toBe(
+            "function",
+          );
+        },
+      );
     });
 
     it("should validate that Zod schemas are created from inputSchema", async () => {
-      const JsonSchemaToZodConverter = await import("../utils/jsonSchemaToZod").then(m =>
-        m.JsonSchemaToZodConverter
-      );
+      const JsonSchemaToZodConverter = await import("../utils/jsonSchemaToZod")
+        .then((m) => m.JsonSchemaToZodConverter);
       const converter = new JsonSchemaToZodConverter();
 
       const mcpServer = mockCode.getMcpServer();
@@ -276,11 +279,13 @@ describe("PostHandler - Tool Schema Validation", () => {
 
       // Ensure tools don't have a 'custom' wrapper
       if (capturedTools) {
-        Object.entries(capturedTools).forEach(([_, tool]: [string, unknown]) => {
-          if (tool && typeof tool === "object") {
-            expect(tool).not.toHaveProperty("custom");
-          }
-        });
+        Object.entries(capturedTools).forEach(
+          ([_, tool]: [string, unknown]) => {
+            if (tool && typeof tool === "object") {
+              expect(tool).not.toHaveProperty("custom");
+            }
+          },
+        );
       }
     });
 
@@ -301,8 +306,9 @@ describe("PostHandler - Tool Schema Validation", () => {
 
       // Mock executeTool to return a response
       const mockExecuteTool = vi.fn().mockResolvedValue({ success: true });
-      (mockCode.getMcpServer() as unknown as { executeTool: typeof mockExecuteTool; }).executeTool =
-        mockExecuteTool;
+      (mockCode.getMcpServer() as unknown as {
+        executeTool: typeof mockExecuteTool;
+      }).executeTool = mockExecuteTool;
 
       const request = new Request("https://test.spike.land/api/post", {
         method: "POST",
@@ -316,9 +322,13 @@ describe("PostHandler - Tool Schema Validation", () => {
 
       // Test execute function for read_code tool
       if (capturedTools! && capturedTools!.read_code) {
-        const result = await capturedTools.read_code.execute({ codeSpace: "test" });
+        const result = await capturedTools.read_code.execute({
+          codeSpace: "test",
+        });
         // The execute function merges the codeSpace from session ("test-space") with the args
-        expect(mockExecuteTool).toHaveBeenCalledWith("read_code", { codeSpace: "test-space" });
+        expect(mockExecuteTool).toHaveBeenCalledWith("read_code", {
+          codeSpace: "test-space",
+        });
         expect(result).toEqual({ success: true });
       }
     });
@@ -347,12 +357,12 @@ describe("PostHandler - Tool Schema Validation", () => {
 
       // Check that tool processing logs show correct schema type
       // The actual log message is "[AI Routes][requestId] Processing tool 'toolname':"
-      const toolLogs = consoleSpy.mock.calls.filter(call =>
+      const toolLogs = consoleSpy.mock.calls.filter((call) =>
         typeof call[0] === "string" && call[0].includes("Processing tool")
       );
 
       expect(toolLogs.length).toBeGreaterThan(0);
-      toolLogs.forEach(log => {
+      toolLogs.forEach((log) => {
         // The log data is in the second argument
         const logData = log[1] as Record<string, unknown>;
         if (logData && logData.inputSchemaType) {
@@ -391,8 +401,8 @@ describe("PostHandler - Tool Schema Validation", () => {
 
       // Verify warning was logged - check all warn calls
       const warnCalls = consoleWarnSpy.mock.calls;
-      const hasExpectedWarning = warnCalls.some(call =>
-        call.some(arg =>
+      const hasExpectedWarning = warnCalls.some((call) =>
+        call.some((arg) =>
           typeof arg === "string" &&
           arg.includes("Tool 'invalid_tool' has no inputSchema, skipping")
         )

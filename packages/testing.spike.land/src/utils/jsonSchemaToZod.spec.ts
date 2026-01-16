@@ -28,7 +28,7 @@ describe("JsonSchemaToZodConverter", () => {
     });
 
     it("should validate read_code tool parameters", () => {
-      const readCodeTool = mcpServer.getTools().find(t => t.name === "read_code");
+      const readCodeTool = mcpServer.getTools().find((t) => t.name === "read_code");
       expect(readCodeTool).toBeDefined();
 
       const zodSchema = converter.convert(readCodeTool!.inputSchema);
@@ -43,11 +43,12 @@ describe("JsonSchemaToZodConverter", () => {
       expect(() => zodSchema.parse({ codeSpace: 123 })).toThrow();
 
       // Extra fields are allowed in Zod by default
-      expect(() => zodSchema.parse({ codeSpace: "test", extra: "field" })).not.toThrow();
+      expect(() => zodSchema.parse({ codeSpace: "test", extra: "field" })).not
+        .toThrow();
     });
 
     it("should validate update_code tool parameters", () => {
-      const updateCodeTool = mcpServer.getTools().find(t => t.name === "update_code");
+      const updateCodeTool = mcpServer.getTools().find((t) => t.name === "update_code");
       expect(updateCodeTool).toBeDefined();
 
       const zodSchema = converter.convert(updateCodeTool!.inputSchema);
@@ -71,7 +72,7 @@ describe("JsonSchemaToZodConverter", () => {
     });
 
     it("should validate search_and_replace tool parameters", () => {
-      const searchReplaceTool = mcpServer.getTools().find(t => t.name === "search_and_replace");
+      const searchReplaceTool = mcpServer.getTools().find((t) => t.name === "search_and_replace");
       expect(searchReplaceTool).toBeDefined();
 
       const zodSchema = converter.convert(searchReplaceTool!.inputSchema);
@@ -116,7 +117,7 @@ describe("JsonSchemaToZodConverter", () => {
     });
 
     it("should validate edit_code tool parameters with nested array schema", () => {
-      const editCodeTool = mcpServer.getTools().find(t => t.name === "edit_code");
+      const editCodeTool = mcpServer.getTools().find((t) => t.name === "edit_code");
       expect(editCodeTool).toBeDefined();
 
       const zodSchema = converter.convert(editCodeTool!.inputSchema);
@@ -169,7 +170,7 @@ describe("JsonSchemaToZodConverter", () => {
     });
 
     it("should validate find_lines tool parameters with optional fields", () => {
-      const findLinesTool = mcpServer.getTools().find(t => t.name === "find_lines");
+      const findLinesTool = mcpServer.getTools().find((t) => t.name === "find_lines");
       expect(findLinesTool).toBeDefined();
 
       const zodSchema = converter.convert(findLinesTool!.inputSchema);
@@ -210,13 +211,16 @@ describe("JsonSchemaToZodConverter", () => {
         { name: "read_html", data: { codeSpace: "test" } },
         { name: "read_session", data: { codeSpace: "test" } },
         { name: "update_code", data: { codeSpace: "test", code: "code" } },
-        { name: "search_and_replace", data: { codeSpace: "test", search: "a", replace: "b" } },
+        {
+          name: "search_and_replace",
+          data: { codeSpace: "test", search: "a", replace: "b" },
+        },
         { name: "edit_code", data: { codeSpace: "test", edits: [] } },
         { name: "find_lines", data: { codeSpace: "test", pattern: "pattern" } },
       ];
 
       for (const testCase of testCases) {
-        const tool = tools.find(t => t.name === testCase.name);
+        const tool = tools.find((t) => t.name === testCase.name);
         expect(tool).toBeDefined();
 
         const zodSchema = converter.convert(tool!.inputSchema);
@@ -348,7 +352,9 @@ describe("JsonSchemaToZodConverter", () => {
       const zodSchema = converter.convert(readCodeSchema);
 
       // Valid data
-      expect(zodSchema.parse({ codeSpace: "test" })).toEqual({ codeSpace: "test" });
+      expect(zodSchema.parse({ codeSpace: "test" })).toEqual({
+        codeSpace: "test",
+      });
 
       // Missing required field
       expect(() => zodSchema.parse({})).toThrow();
@@ -506,7 +512,8 @@ describe("JsonSchemaToZodConverter", () => {
       const zodSchema = converter.convert(schemaWithoutDescriptions);
 
       // Should still work without descriptions
-      expect(() => zodSchema.parse({ codeSpace: "test", data: "value" })).not.toThrow();
+      expect(() => zodSchema.parse({ codeSpace: "test", data: "value" })).not
+        .toThrow();
       expect(() => zodSchema.parse({ codeSpace: "test" })).not.toThrow();
       expect(() => zodSchema.parse({})).toThrow();
     });
@@ -527,7 +534,8 @@ describe("JsonSchemaToZodConverter", () => {
       expect(() => zodSchema.parse({})).not.toThrow();
       expect(() => zodSchema.parse({ codeSpace: "test" })).not.toThrow();
       expect(() => zodSchema.parse({ optional: "value" })).not.toThrow();
-      expect(() => zodSchema.parse({ codeSpace: "test", optional: "value" })).not.toThrow();
+      expect(() => zodSchema.parse({ codeSpace: "test", optional: "value" }))
+        .not.toThrow();
     });
 
     it("should handle tool schemas without required field", () => {
@@ -568,7 +576,8 @@ describe("JsonSchemaToZodConverter", () => {
 
         // Each tool should fail on empty object except those with no required fields
         const result = testValidation({});
-        const hasRequiredFields = tool.inputSchema.required && tool.inputSchema.required.length > 0;
+        const hasRequiredFields = tool.inputSchema.required &&
+          tool.inputSchema.required.length > 0;
 
         if (hasRequiredFields) {
           expect(result.success).toBe(false);
@@ -600,7 +609,7 @@ describe("JsonSchemaToZodConverter", () => {
         { type: "array" },
       ];
 
-      invalidSchemas.forEach(schema => {
+      invalidSchemas.forEach((schema) => {
         // For tool schemas, we expect type to be "object"
         expect(schema.type).not.toBe("object");
       });

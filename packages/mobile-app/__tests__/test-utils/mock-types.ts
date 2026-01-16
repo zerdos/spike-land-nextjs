@@ -100,8 +100,14 @@ export interface MockSettingsStore {
   apiKeysError: string | null;
   newlyCreatedKey: MockApiKeyWithFullKey | null;
   fetchApiKeys: jest.Mock<Promise<void>, []>;
-  createApiKey: jest.Mock<Promise<{ success: boolean; error?: string; }>, [string]>;
-  deleteApiKey: jest.Mock<Promise<{ success: boolean; error?: string; }>, [string]>;
+  createApiKey: jest.Mock<
+    Promise<{ success: boolean; error?: string; }>,
+    [string]
+  >;
+  deleteApiKey: jest.Mock<
+    Promise<{ success: boolean; error?: string; }>,
+    [string]
+  >;
   clearNewlyCreatedKey: jest.Mock<void, []>;
   notifications: {
     emailNotifications: boolean;
@@ -136,7 +142,10 @@ export interface MockRouter {
 /**
  * Creates a typed mock function with proper Jest types
  */
-export function createMockFn<TReturn, TArgs extends unknown[]>(): jest.Mock<TReturn, TArgs> {
+export function createMockFn<TReturn, TArgs extends unknown[]>(): jest.Mock<
+  TReturn,
+  TArgs
+> {
   return jest.fn<TReturn, TArgs>();
 }
 

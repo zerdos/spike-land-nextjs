@@ -67,7 +67,9 @@ jest.mock("tamagui", () => {
   } = RN;
 
   return {
-    Button: ({ children, onPress, disabled, icon, ...props }: MockButtonProps) => (
+    Button: (
+      { children, onPress, disabled, icon, ...props }: MockButtonProps,
+    ) => (
       <TouchableOpacity
         onPress={onPress}
         disabled={disabled}
@@ -98,7 +100,9 @@ jest.mock("tamagui", () => {
     ),
     H3: ({ children }: MockTextProps) => <Text>{children}</Text>,
     H4: ({ children }: MockTextProps) => <Text>{children}</Text>,
-    Input: ({ value, onChangeText, placeholder, testID, ...props }: MockInputProps) => (
+    Input: (
+      { value, onChangeText, placeholder, testID, ...props }: MockInputProps,
+    ) => (
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -112,7 +116,9 @@ jest.mock("tamagui", () => {
       <RNScrollView {...props}>{children}</RNScrollView>
     ),
     Separator: () => <View />,
-    Switch: ({ checked, onCheckedChange, disabled, ...props }: MockSwitchProps) => (
+    Switch: (
+      { checked, onCheckedChange, disabled, ...props }: MockSwitchProps,
+    ) => (
       <RNSwitch
         value={checked}
         onValueChange={onCheckedChange}
@@ -167,8 +173,8 @@ const defaultSettingsStore: Partial<MockSettingsStore> & {
   isDeletingAccount: false,
   deleteAccountError: null as string | null,
   updatePrivacyPreference: jest.fn<Promise<void>, [string, boolean]>(() => Promise.resolve()),
-  deleteAccount: jest.fn<Promise<{ success: boolean; error?: string; }>, []>(() =>
-    Promise.resolve({ success: true })
+  deleteAccount: jest.fn<Promise<{ success: boolean; error?: string; }>, []>(
+    () => Promise.resolve({ success: true }),
   ),
   initialize: jest.fn<Promise<void>, []>(() => Promise.resolve()),
 };
@@ -190,14 +196,18 @@ function setupMocks(
   mockSettingsStore = {
     ...defaultSettingsStore,
     updatePrivacyPreference: jest.fn<Promise<void>, [string, boolean]>(() => Promise.resolve()),
-    deleteAccount: jest.fn<Promise<{ success: boolean; error?: string; }>, []>(() =>
-      Promise.resolve({ success: true })
+    deleteAccount: jest.fn<Promise<{ success: boolean; error?: string; }>, []>(
+      () => Promise.resolve({ success: true }),
     ),
     initialize: jest.fn<Promise<void>, []>(() => Promise.resolve()),
     ...settingsOverrides,
   };
-  mockedUseAuthStore.mockReturnValue(mockAuthStore as ReturnType<typeof useAuthStore>);
-  mockedUseSettingsStore.mockReturnValue(mockSettingsStore as ReturnType<typeof useSettingsStore>);
+  mockedUseAuthStore.mockReturnValue(
+    mockAuthStore as ReturnType<typeof useAuthStore>,
+  );
+  mockedUseSettingsStore.mockReturnValue(
+    mockSettingsStore as ReturnType<typeof useSettingsStore>,
+  );
 }
 
 function resetMocks() {
