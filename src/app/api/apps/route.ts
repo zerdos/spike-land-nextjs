@@ -6,6 +6,74 @@ import { appCreationSchema, appPromptCreationSchema } from "@/lib/validations/ap
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+/**
+ * Ensures the user exists in the database.
+ * This is a defensive check for cases where the auth sign-in callback
+ * failed to create the user but still allowed authentication to proceed.
+ */
+async function ensureUserExists(session: {
+  user: { id: string; email?: string | null; name?: string | null; image?: string | null; };
+}): Promise<{ success: boolean; userId: string; }> {
+  const { user } = session;
+
+  // First, check if user exists
+  const { data: existingUser, error: findError } = await tryCatch(
+    prisma.user.findUnique({
+      where: { id: user.id },
+      select: { id: true },
+    }),
+  );
+
+  if (findError) {
+    console.error("Error checking user existence:", findError);
+    return { success: false, userId: user.id };
+  }
+
+  if (existingUser) {
+    return { success: true, userId: existingUser.id };
+  }
+
+  // User doesn't exist, create them
+  // This handles the edge case where auth sign-in failed to create the user
+  console.warn(`User ${user.id} authenticated but not in database, creating now`);
+
+  const { data: newUser, error: createError } = await tryCatch(
+    prisma.user.create({
+      data: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+      },
+      select: { id: true },
+    }),
+  );
+
+  if (createError) {
+    // If creation fails due to unique constraint (email), try to find by email
+    // Prisma uses code P2002 for unique constraint violations
+    const isUniqueViolation = (createError as { code?: string; }).code === "P2002" ||
+      String(createError.message || "").includes("Unique constraint");
+    if (user.email && isUniqueViolation) {
+      const { data: userByEmail } = await tryCatch(
+        prisma.user.findUnique({
+          where: { email: user.email },
+          select: { id: true },
+        }),
+      );
+      if (userByEmail) {
+        // User exists with different ID (shouldn't happen, but handle it)
+        console.warn(`User found by email with different ID: ${userByEmail.id} vs ${user.id}`);
+        return { success: true, userId: userByEmail.id };
+      }
+    }
+    console.error("Error creating user:", createError);
+    return { success: false, userId: user.id };
+  }
+
+  return { success: true, userId: newUser.id };
+}
+
 // Word lists for generating descriptive app names
 const ADJECTIVES = [
   "swift",
@@ -83,6 +151,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Ensure user exists in database (defensive check for auth edge cases)
+  const { success: userExists, userId } = await ensureUserExists(session);
+  if (!userExists) {
+    console.error("Failed to ensure user exists for app creation");
+    return NextResponse.json(
+      { error: "User account not properly initialized. Please sign out and sign in again." },
+      { status: 500 },
+    );
+  }
+
   const { data: body, error: jsonError } = await tryCatch(request.json());
 
   if (jsonError) {
@@ -92,7 +170,7 @@ export async function POST(request: NextRequest) {
   // Try prompt-based creation first (new flow)
   const promptResult = appPromptCreationSchema.safeParse(body);
   if (promptResult.success) {
-    return createAppFromPrompt(session.user.id, promptResult.data);
+    return createAppFromPrompt(userId, promptResult.data);
   }
 
   // Fall back to legacy creation flow
@@ -117,7 +195,7 @@ export async function POST(request: NextRequest) {
       data: {
         name: validatedData.name,
         description: validatedData.description,
-        userId: session.user.id,
+        userId,
         status: "PROMPTING",
         ...(validatedData.codespaceId && {
           codespaceId: validatedData.codespaceId,
