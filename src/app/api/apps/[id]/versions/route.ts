@@ -24,9 +24,10 @@ export async function GET(
     return NextResponse.json({ error: "App not found" }, { status: 404 });
   }
 
-  // Pagination
+  // Pagination with NaN handling
   const searchParams = request.nextUrl.searchParams;
-  const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
+  const parsedLimit = parseInt(searchParams.get("limit") || "20");
+  const limit = Math.min(Number.isNaN(parsedLimit) ? 20 : parsedLimit, 50);
   const cursor = searchParams.get("cursor");
 
   const versions = await prisma.appCodeVersion.findMany({
