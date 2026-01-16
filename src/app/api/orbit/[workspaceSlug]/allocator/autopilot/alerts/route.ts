@@ -78,7 +78,10 @@ export async function PATCH(
       return new NextResponse("Forbidden", { status: 403 });
     }
 
-    const updated = await GuardrailAlertService.acknowledgeAlert(alertId, session.user.id);
+    const updated = await GuardrailAlertService.acknowledgeAlert(
+      alertId,
+      session.user.id,
+    );
     return NextResponse.json(updated);
   } catch (error) {
     console.error("[ACK_ALERT]", error);

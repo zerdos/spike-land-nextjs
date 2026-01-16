@@ -43,7 +43,9 @@ describe("GuardrailAlertService", () => {
         metadata: { suggested: 100, min: 200 },
       };
 
-      (prisma.allocatorGuardrailAlert.create as any).mockResolvedValue(mockAlert);
+      (prisma.allocatorGuardrailAlert.create as any).mockResolvedValue(
+        mockAlert,
+      );
 
       (prisma.workspace.findUnique as any).mockResolvedValue({
         id: "ws-1",
@@ -89,7 +91,9 @@ describe("GuardrailAlertService", () => {
         message: "Stop",
       };
 
-      (prisma.allocatorGuardrailAlert.create as any).mockResolvedValue(mockAlert);
+      (prisma.allocatorGuardrailAlert.create as any).mockResolvedValue(
+        mockAlert,
+      );
       (prisma.workspace.findUnique as any).mockResolvedValue({
         id: "ws-1",
         name: "Test Workspace",

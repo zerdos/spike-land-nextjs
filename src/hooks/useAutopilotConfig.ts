@@ -10,7 +10,9 @@ export function useAutopilotConfig(workspaceSlug: string) {
   const fetchConfig = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`/api/orbit/${workspaceSlug}/allocator/autopilot`);
+      const res = await fetch(
+        `/api/orbit/${workspaceSlug}/allocator/autopilot`,
+      );
       if (!res.ok) {
         if (res.status === 404) {
           // No config found, this is fine
@@ -37,11 +39,14 @@ export function useAutopilotConfig(workspaceSlug: string) {
 
   const updateConfig = async (data: UpdateAutopilotConfigInput) => {
     try {
-      const res = await fetch(`/api/orbit/${workspaceSlug}/allocator/autopilot`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const res = await fetch(
+        `/api/orbit/${workspaceSlug}/allocator/autopilot`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        },
+      );
 
       if (!res.ok) {
         throw new Error("Failed to update configuration");
@@ -60,11 +65,14 @@ export function useAutopilotConfig(workspaceSlug: string) {
 
   const toggleAutopilot = async (isEnabled: boolean) => {
     try {
-      const res = await fetch(`/api/orbit/${workspaceSlug}/allocator/autopilot/toggle`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isEnabled }),
-      });
+      const res = await fetch(
+        `/api/orbit/${workspaceSlug}/allocator/autopilot/toggle`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isEnabled }),
+        },
+      );
 
       if (!res.ok) {
         throw new Error("Failed to toggle autopilot");

@@ -64,7 +64,10 @@ describe("GET /api/orbit/[workspaceSlug]/inbox", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (prisma.workspace.findUnique as Mock).mockResolvedValue(mockWorkspace);
-    (requireWorkspacePermission as Mock).mockResolvedValue({ userId: "1", role: "ADMIN" });
+    (requireWorkspacePermission as Mock).mockResolvedValue({
+      userId: "1",
+      role: "ADMIN",
+    });
   });
 
   afterEach(() => {
@@ -81,8 +84,12 @@ describe("GET /api/orbit/[workspaceSlug]/inbox", () => {
       totalPages: 1,
     });
 
-    const req = new NextRequest(`https://localhost/api/orbit/${mockWorkspace.slug}/inbox`);
-    const res = await GET(req, { params: { workspaceSlug: mockWorkspace.slug } });
+    const req = new NextRequest(
+      `https://localhost/api/orbit/${mockWorkspace.slug}/inbox`,
+    );
+    const res = await GET(req, {
+      params: { workspaceSlug: mockWorkspace.slug },
+    });
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -111,7 +118,9 @@ describe("GET /api/orbit/[workspaceSlug]/inbox", () => {
     const req = new NextRequest(
       `https://localhost/api/orbit/${mockWorkspace.slug}/inbox?platform=TWITTER`,
     );
-    const res = await GET(req, { params: { workspaceSlug: mockWorkspace.slug } });
+    const res = await GET(req, {
+      params: { workspaceSlug: mockWorkspace.slug },
+    });
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -131,8 +140,12 @@ describe("GET /api/orbit/[workspaceSlug]/inbox", () => {
       Object.assign(new Error("Unauthorized"), { status: 401 }),
     );
 
-    const req = new NextRequest(`https://localhost/api/orbit/${mockWorkspace.slug}/inbox`);
-    const res = await GET(req, { params: { workspaceSlug: mockWorkspace.slug } });
+    const req = new NextRequest(
+      `https://localhost/api/orbit/${mockWorkspace.slug}/inbox`,
+    );
+    const res = await GET(req, {
+      params: { workspaceSlug: mockWorkspace.slug },
+    });
 
     expect(res.status).toBe(401);
   });
@@ -141,7 +154,9 @@ describe("GET /api/orbit/[workspaceSlug]/inbox", () => {
     (auth as Mock).mockResolvedValue({ user: { id: "1" } });
     (prisma.workspace.findUnique as Mock).mockResolvedValue(null);
 
-    const req = new NextRequest(`https://localhost/api/orbit/non-existent/inbox`);
+    const req = new NextRequest(
+      `https://localhost/api/orbit/non-existent/inbox`,
+    );
     const res = await GET(req, { params: { workspaceSlug: "non-existent" } });
     const data = await res.json();
 

@@ -76,18 +76,18 @@ async function handleGetEmailLogs(request: NextRequest) {
   const where: Record<string, unknown> = {};
 
   if (search) {
-    where.OR = [
+    where["OR"] = [
       { to: { contains: search, mode: "insensitive" } },
       { subject: { contains: search, mode: "insensitive" } },
     ];
   }
 
   if (status) {
-    where.status = status;
+    where["status"] = status;
   }
 
   if (template) {
-    where.template = template;
+    where["template"] = template;
   }
 
   // Get total count for pagination

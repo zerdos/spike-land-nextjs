@@ -13,7 +13,9 @@ interface RouteContext {
 export async function POST(_req: NextRequest, { params }: RouteContext) {
   try {
     const session = await auth();
-    if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
+    if (!session?.user?.id) {
+      return new Response("Unauthorized", { status: 401 });
+    }
 
     const workspace = await prisma.workspace.findFirst({
       where: {

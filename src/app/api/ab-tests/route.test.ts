@@ -59,7 +59,9 @@ describe("A/B Tests API", () => {
         session as ReturnType<typeof auth> extends Promise<infer T> ? T : never,
       );
       vi.mocked(prisma.abTest.create).mockResolvedValue(
-        createdTest as unknown as Awaited<ReturnType<typeof prisma.abTest.create>>,
+        createdTest as unknown as Awaited<
+          ReturnType<typeof prisma.abTest.create>
+        >,
       );
 
       const req = new NextRequest("http://localhost/api/ab-tests", {

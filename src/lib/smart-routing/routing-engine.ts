@@ -37,7 +37,8 @@ export class RoutingEngine {
         const { score, factors } = calculatePriorityScore({
           analysis,
           item,
-          senderFollowers: (item.metadata as Record<string, unknown>)?.followers_count as number ||
+          senderFollowers: (item.metadata as Record<string, unknown>)
+            ?.["followers_count"] as number ||
             0,
           settings,
         });
@@ -87,7 +88,10 @@ export class RoutingEngine {
           );
         }
       } catch (error) {
-        console.error(`Failed to process smart routing for item ${itemId}`, error);
+        console.error(
+          `Failed to process smart routing for item ${itemId}`,
+          error,
+        );
       }
     }
   }

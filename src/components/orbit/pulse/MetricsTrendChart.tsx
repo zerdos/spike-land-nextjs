@@ -165,7 +165,9 @@ export function MetricsTrendChart({
               isPositive ? "text-emerald-400" : "text-red-400",
             )}
           >
-            {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+            {isPositive
+              ? <TrendingUp className="h-4 w-4" />
+              : <TrendingDown className="h-4 w-4" />}
             <span>{isPositive ? "+" : ""}{trend.toFixed(1)}%</span>
           </div>
         </div>

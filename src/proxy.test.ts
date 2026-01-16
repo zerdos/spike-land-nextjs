@@ -455,21 +455,23 @@ describe("proxy", () => {
           process.env.E2E_BYPASS_SECRET = originalEnv;
         }
         if (originalNodeEnv === undefined) {
-          delete (process.env as Record<string, string | undefined>).NODE_ENV;
+          delete (process.env as Record<string, string | undefined>)[
+            "NODE_ENV"
+          ];
         } else {
-          (process.env as Record<string, string | undefined>).NODE_ENV = originalNodeEnv;
+          (process.env as Record<string, string | undefined>)["NODE_ENV"] = originalNodeEnv;
         }
         if (originalVercelEnv === undefined) {
           delete process.env.VERCEL_ENV;
         } else {
-          process.env.VERCEL_ENV = originalVercelEnv;
+          process.env.VERCEL_ENV = originalVercelEnv as unknown as typeof process.env.VERCEL_ENV;
         }
         consoleWarnSpy.mockRestore();
       });
 
       it("should BLOCK E2E bypass in production environment (both NODE_ENV and VERCEL_ENV)", async () => {
         process.env.E2E_BYPASS_SECRET = "test-secret-123";
-        (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+        (process.env as Record<string, string | undefined>)["NODE_ENV"] = "production";
         process.env.VERCEL_ENV = "production";
 
         vi.mocked(auth).mockResolvedValue(null);
@@ -488,7 +490,7 @@ describe("proxy", () => {
 
       it("should ALLOW E2E bypass in development environment", async () => {
         process.env.E2E_BYPASS_SECRET = "test-secret-123";
-        (process.env as Record<string, string | undefined>).NODE_ENV = "development";
+        (process.env as Record<string, string | undefined>)["NODE_ENV"] = "development";
         delete process.env.VERCEL_ENV;
 
         vi.mocked(auth).mockResolvedValue(null);
@@ -515,7 +517,7 @@ describe("proxy", () => {
 
       it("should ALLOW E2E bypass when NODE_ENV is production but VERCEL_ENV is preview", async () => {
         process.env.E2E_BYPASS_SECRET = "test-secret-123";
-        (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+        (process.env as Record<string, string | undefined>)["NODE_ENV"] = "production";
         process.env.VERCEL_ENV = "preview";
 
         vi.mocked(auth).mockResolvedValue(null);
@@ -533,7 +535,7 @@ describe("proxy", () => {
 
       it("should ALLOW E2E bypass when VERCEL_ENV is production but NODE_ENV is development", async () => {
         process.env.E2E_BYPASS_SECRET = "test-secret-123";
-        (process.env as Record<string, string | undefined>).NODE_ENV = "development";
+        (process.env as Record<string, string | undefined>)["NODE_ENV"] = "development";
         process.env.VERCEL_ENV = "production";
 
         vi.mocked(auth).mockResolvedValue(null);
@@ -551,7 +553,7 @@ describe("proxy", () => {
 
       it("should log audit information when bypass is used", async () => {
         process.env.E2E_BYPASS_SECRET = "test-secret-123";
-        (process.env as Record<string, string | undefined>).NODE_ENV = "test";
+        (process.env as Record<string, string | undefined>)["NODE_ENV"] = "test";
         process.env.VERCEL_ENV = "preview";
 
         vi.mocked(auth).mockResolvedValue(null);
@@ -574,7 +576,7 @@ describe("proxy", () => {
 
       it("should NOT log when bypass is blocked in production", async () => {
         process.env.E2E_BYPASS_SECRET = "test-secret-123";
-        (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+        (process.env as Record<string, string | undefined>)["NODE_ENV"] = "production";
         process.env.VERCEL_ENV = "production";
 
         vi.mocked(auth).mockResolvedValue(null);

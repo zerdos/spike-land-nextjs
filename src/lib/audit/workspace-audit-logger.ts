@@ -26,7 +26,9 @@ export class WorkspaceAuditLogger {
   /**
    * Create a workspace audit log entry
    */
-  static async log(options: CreateWorkspaceAuditLogOptions): Promise<string | null> {
+  static async log(
+    options: CreateWorkspaceAuditLogOptions,
+  ): Promise<string | null> {
     const { data, error } = await tryCatch(
       prisma.workspaceAuditLog.create({
         data: {
@@ -174,7 +176,10 @@ export class WorkspaceAuditLogger {
   static async logIntegrationAction(
     workspaceId: string,
     userId: string,
-    action: "INTEGRATION_CONNECT" | "INTEGRATION_DISCONNECT" | "INTEGRATION_SYNC",
+    action:
+      | "INTEGRATION_CONNECT"
+      | "INTEGRATION_DISCONNECT"
+      | "INTEGRATION_SYNC",
     integrationId: string,
     integrationType: string,
     metadata?: Record<string, unknown>,
@@ -402,12 +407,18 @@ export class WorkspaceAuditLogger {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const dailyLogs = await prisma.$queryRaw<Array<{ date: Date; count: bigint; }>>`
+    const dailyLogs = await prisma.$queryRaw<
+      Array<{ date: Date; count: bigint; }>
+    >`
       SELECT DATE(created_at) as date, COUNT(*) as count
       FROM workspace_audit_logs
       WHERE workspace_id = ${workspaceId}
         AND created_at >= ${startDate || thirtyDaysAgo}
-        ${endDate ? prisma.$queryRaw`AND created_at <= ${endDate}` : prisma.$queryRaw``}
+        ${
+      endDate
+        ? prisma.$queryRaw`AND created_at <= ${endDate}`
+        : prisma.$queryRaw``
+    }
       GROUP BY DATE(created_at)
       ORDER BY date DESC
     `.catch(() => []);

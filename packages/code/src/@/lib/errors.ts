@@ -20,7 +20,11 @@ export class AppError extends Error {
   readonly details?: unknown;
   readonly timestamp: number;
 
-  constructor(message: string, code: ErrorCode = ErrorCode.UNKNOWN_ERROR, details?: unknown) {
+  constructor(
+    message: string,
+    code: ErrorCode = ErrorCode.UNKNOWN_ERROR,
+    details?: unknown,
+  ) {
     super(message);
     this.name = this.constructor.name;
     this.code = code;
@@ -159,8 +163,14 @@ export function createError(
     case ErrorCode.MESSAGE_ERROR:
       return new MessageHandlingError(message, details);
     case ErrorCode.NETWORK_ERROR: {
-      const networkDetails = details as { url?: string; statusCode?: number; } | undefined;
-      return new NetworkError(message, networkDetails?.url, networkDetails?.statusCode);
+      const networkDetails = details as
+        | { url?: string; statusCode?: number; }
+        | undefined;
+      return new NetworkError(
+        message,
+        networkDetails?.url,
+        networkDetails?.statusCode,
+      );
     }
     case ErrorCode.CACHE_ERROR:
       return new CacheError(
@@ -212,5 +222,7 @@ export const wrapError = (error: unknown, code?: ErrorCode): AppError => {
     return error;
   }
   const message = getErrorMessage(error);
-  return new AppError(message, code ?? ErrorCode.UNKNOWN_ERROR, { originalError: error });
+  return new AppError(message, code ?? ErrorCode.UNKNOWN_ERROR, {
+    originalError: error,
+  });
 };

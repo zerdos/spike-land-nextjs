@@ -21,7 +21,8 @@ export function calculateChiSquared(
   let chiSquared = 0;
   for (const variant of variants) {
     const expectedConversions = variant.visitors * overallConversionRate;
-    const expectedNonConversions = variant.visitors * (1 - overallConversionRate);
+    const expectedNonConversions = variant.visitors *
+      (1 - overallConversionRate);
 
     const observedConversions = variant.conversions;
     const observedNonConversions = variant.visitors - variant.conversions;

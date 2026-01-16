@@ -29,7 +29,9 @@ describe("DraftStatusBadge", () => {
   });
 
   it("applies custom className", () => {
-    const { container } = render(<DraftStatusBadge status="PENDING" className="custom-class" />);
+    const { container } = render(
+      <DraftStatusBadge status="PENDING" className="custom-class" />,
+    );
     expect(container.querySelector(".custom-class")).toBeInTheDocument();
   });
 

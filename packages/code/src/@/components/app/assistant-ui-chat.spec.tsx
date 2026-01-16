@@ -57,7 +57,9 @@ describe("AssistantUIChat", () => {
     render(<AssistantUIChat codeSpace={mockCodeSpace} />);
 
     expect(AssistantRuntimeProvider).toHaveBeenCalled();
-    const mockFn = AssistantRuntimeProvider as unknown as ReturnType<typeof vi.fn>;
+    const mockFn = AssistantRuntimeProvider as unknown as ReturnType<
+      typeof vi.fn
+    >;
     const callArgs = mockFn.mock?.calls[0]?.[0];
     expect(callArgs).toHaveProperty("runtime", mockRuntime);
   });

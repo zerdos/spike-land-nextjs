@@ -26,7 +26,10 @@ export async function GET(
   });
 
   if (!workspace || workspace.members.length === 0) {
-    return NextResponse.json({ error: "Workspace not found or access denied" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Workspace not found or access denied" },
+      { status: 404 },
+    );
   }
 
   try {
@@ -39,12 +42,16 @@ export async function GET(
     });
 
     if (!log) {
-      return NextResponse.json({ error: "Audit log not found" }, { status: 404 });
+      return NextResponse.json({ error: "Audit log not found" }, {
+        status: 404,
+      });
     }
 
     return NextResponse.json(log);
   } catch (error) {
     console.error("Error fetching allocator audit log detail:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 }

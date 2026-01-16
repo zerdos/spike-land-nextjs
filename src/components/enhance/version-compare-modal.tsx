@@ -145,7 +145,9 @@ export function VersionCompareModal({
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Left Image</label>
+              <label htmlFor="version1-select" className="text-sm font-medium">
+                Left Image
+              </label>
               <Select
                 value={version1?.jobId || "original"}
                 onValueChange={(jobId) =>
@@ -153,7 +155,10 @@ export function VersionCompareModal({
                     jobId === "original" ? null : getVersionById(jobId),
                   )}
               >
-                <SelectTrigger data-testid="version1-select">
+                <SelectTrigger
+                  id="version1-select"
+                  data-testid="version1-select"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -201,7 +206,9 @@ export function VersionCompareModal({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Right Image</label>
+              <label htmlFor="version2-select" className="text-sm font-medium">
+                Right Image
+              </label>
               <Select
                 value={version2?.jobId || "original"}
                 onValueChange={(jobId) =>
@@ -209,7 +216,10 @@ export function VersionCompareModal({
                     jobId === "original" ? null : getVersionById(jobId),
                   )}
               >
-                <SelectTrigger data-testid="version2-select">
+                <SelectTrigger
+                  id="version2-select"
+                  data-testid="version2-select"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

@@ -6,7 +6,9 @@ export class AutopilotAnomalyIntegration {
    * Check for anomalies that should pause the autopilot.
    * This integrates with existing monitoring systems or simple heuristics.
    */
-  static async checkForAnomalies(workspaceId: string): Promise<AutopilotAnomaly[]> {
+  static async checkForAnomalies(
+    workspaceId: string,
+  ): Promise<AutopilotAnomaly[]> {
     const anomalies: AutopilotAnomaly[] = [];
 
     // 1. Check for Social Metric Anomalies (Pulse integration)

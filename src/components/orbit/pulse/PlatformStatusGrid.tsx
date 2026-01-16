@@ -144,7 +144,9 @@ function PlatformCard({ platform }: { platform: PlatformStatus; }) {
           <span
             className={cn(
               "text-sm",
-              platform.followerChange >= 0 ? "text-emerald-400" : "text-red-400",
+              platform.followerChange >= 0
+                ? "text-emerald-400"
+                : "text-red-400",
             )}
           >
             {formatChange(platform.followerChange)}

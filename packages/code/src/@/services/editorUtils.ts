@@ -214,7 +214,10 @@ export const screenshot = (): Promise<ImageData> => {
     const iframe = document.querySelector("iframe");
 
     const messageHandler = (event: MessageEvent<unknown>): void => {
-      if (iframe && event.source === iframe.contentWindow && isScreenshotMessage(event.data)) {
+      if (
+        iframe && event.source === iframe.contentWindow &&
+        isScreenshotMessage(event.data)
+      ) {
         window.removeEventListener("message", messageHandler);
         resolve(event.data.imageData);
       }

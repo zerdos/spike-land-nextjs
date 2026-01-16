@@ -86,7 +86,9 @@ export class McpHandler {
       try {
         const mcpRequest: McpRequest = await request.json();
         const response = await this.handleMcpRequest(mcpRequest);
-        return new Response(JSON.stringify(response), { headers: RESPONSE_HEADERS });
+        return new Response(JSON.stringify(response), {
+          headers: RESPONSE_HEADERS,
+        });
       } catch (_error) {
         const errorResponse: McpResponse = {
           jsonrpc: "2.0",
@@ -104,7 +106,10 @@ export class McpHandler {
       }
     }
 
-    return new Response("Method not allowed", { status: 405, headers: RESPONSE_HEADERS });
+    return new Response("Method not allowed", {
+      status: 405,
+      headers: RESPONSE_HEADERS,
+    });
   }
 
   private async handleMcpRequest(request: McpRequest): Promise<McpResponse> {
@@ -217,7 +222,13 @@ export class McpHandler {
           throw new Error("Code parameter is required and must be a string");
         }
         const origin = this.durableObject.getOrigin();
-        return executeUpdateCode(session, requestedCodeSpace, args.code, updateSession, origin);
+        return executeUpdateCode(
+          session,
+          requestedCodeSpace,
+          args.code,
+          updateSession,
+          origin,
+        );
       }
 
       case "edit_code": {

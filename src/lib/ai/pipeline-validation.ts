@@ -197,7 +197,7 @@ export function validatePipelineConfigs(data: {
   if (data.analysisConfig !== undefined) {
     const result = validateAnalysisConfig(data.analysisConfig);
     if (!result.success) {
-      errors.analysisConfig = result.errors ?? ["Invalid analysis config"];
+      errors["analysisConfig"] = result.errors ?? ["Invalid analysis config"];
     } else {
       validatedData.analysisConfig = result.data;
     }
@@ -206,7 +206,7 @@ export function validatePipelineConfigs(data: {
   if (data.autoCropConfig !== undefined) {
     const result = validateAutoCropConfig(data.autoCropConfig);
     if (!result.success) {
-      errors.autoCropConfig = result.errors ?? ["Invalid auto-crop config"];
+      errors["autoCropConfig"] = result.errors ?? ["Invalid auto-crop config"];
     } else {
       validatedData.autoCropConfig = result.data;
     }
@@ -215,7 +215,7 @@ export function validatePipelineConfigs(data: {
   if (data.promptConfig !== undefined) {
     const result = validatePromptConfig(data.promptConfig);
     if (!result.success) {
-      errors.promptConfig = result.errors ?? ["Invalid prompt config"];
+      errors["promptConfig"] = result.errors ?? ["Invalid prompt config"];
     } else {
       validatedData.promptConfig = result.data;
     }
@@ -224,7 +224,8 @@ export function validatePipelineConfigs(data: {
   if (data.generationConfig !== undefined) {
     const result = validateGenerationConfig(data.generationConfig);
     if (!result.success) {
-      errors.generationConfig = result.errors ?? ["Invalid generation config"];
+      errors["generationConfig"] = result.errors ??
+        ["Invalid generation config"];
     } else {
       validatedData.generationConfig = result.data;
     }

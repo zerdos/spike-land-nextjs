@@ -136,7 +136,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const { name, category, platform, content, variables, isActive } = body as Partial<
@@ -148,7 +150,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
 
   if (!category) {
-    return NextResponse.json({ error: "category is required" }, { status: 400 });
+    return NextResponse.json({ error: "category is required" }, {
+      status: 400,
+    });
   }
 
   if (!content) {

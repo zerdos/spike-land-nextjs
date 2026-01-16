@@ -21,7 +21,11 @@ export default function GuardrailAlertEmail({
   actionUrl = "https://spike.land",
 }: GuardrailAlertEmailProps) {
   const isCritical = severity === "CRITICAL";
-  const color = isCritical ? "#dc2626" : severity === "WARNING" ? "#f59e0b" : "#3b82f6";
+  const color = isCritical
+    ? "#dc2626"
+    : severity === "WARNING"
+    ? "#f59e0b"
+    : "#3b82f6";
 
   return (
     <BaseEmail
@@ -29,7 +33,9 @@ export default function GuardrailAlertEmail({
       preview={`Guardrail Alert: ${message}`}
     >
       <Section style={emailStyles.alert}>
-        <Text style={{ ...emailStyles.alertText, color: color, fontWeight: "bold" }}>
+        <Text
+          style={{ ...emailStyles.alertText, color: color, fontWeight: "bold" }}
+        >
           Severity: {severity}
         </Text>
         <Text style={emailStyles.text}>

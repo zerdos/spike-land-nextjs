@@ -32,12 +32,20 @@ describe("syncFacebookCampaigns", () => {
       },
     ] as any;
 
-    (prisma.socialAccount.findMany as any).mockResolvedValue(mockSocialAccounts);
-    (prisma.allocatorCampaign.upsert as any).mockResolvedValue({ id: "saved_camp_1" });
+    (prisma.socialAccount.findMany as any).mockResolvedValue(
+      mockSocialAccounts,
+    );
+    (prisma.allocatorCampaign.upsert as any).mockResolvedValue({
+      id: "saved_camp_1",
+    });
 
     const getAdAccountsSpy = vi
       .spyOn(FacebookMarketingApiClient.prototype, "getAdAccounts")
-      .mockResolvedValue([{ id: "ad_acc_1", account_id: "ad_acc_1", name: "Ad Account 1" }]);
+      .mockResolvedValue([{
+        id: "ad_acc_1",
+        account_id: "ad_acc_1",
+        name: "Ad Account 1",
+      }]);
     const getCampaignsSpy = vi
       .spyOn(FacebookMarketingApiClient.prototype, "getCampaigns")
       .mockResolvedValue([{
@@ -56,7 +64,11 @@ describe("syncFacebookCampaigns", () => {
       }]);
     const getInsightsSpy = vi
       .spyOn(FacebookMarketingApiClient.prototype, "getInsights")
-      .mockResolvedValue({ spend: "100.00", impressions: "1000", clicks: "10" });
+      .mockResolvedValue({
+        spend: "100.00",
+        impressions: "1000",
+        clicks: "10",
+      });
 
     await syncFacebookCampaigns("ws1");
 

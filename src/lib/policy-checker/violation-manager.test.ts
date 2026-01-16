@@ -74,7 +74,9 @@ describe("Violation Manager", () => {
         },
       };
 
-      vi.mocked(prisma.policyViolation.findUnique).mockResolvedValue(mockViolation as never);
+      vi.mocked(prisma.policyViolation.findUnique).mockResolvedValue(
+        mockViolation as never,
+      );
 
       const result = await getViolation("violation-1");
 
@@ -111,7 +113,9 @@ describe("Violation Manager", () => {
         },
       ];
 
-      vi.mocked(prisma.policyViolation.findMany).mockResolvedValue(mockViolations as never);
+      vi.mocked(prisma.policyViolation.findMany).mockResolvedValue(
+        mockViolations as never,
+      );
 
       const result = await getViolationsForCheck("check-1");
 
@@ -131,7 +135,9 @@ describe("Violation Manager", () => {
         { id: "v2", severity: "WARNING" },
       ];
 
-      vi.mocked(prisma.policyViolation.findMany).mockResolvedValue(mockViolations as never);
+      vi.mocked(prisma.policyViolation.findMany).mockResolvedValue(
+        mockViolations as never,
+      );
       vi.mocked(prisma.policyViolation.count).mockResolvedValue(100);
 
       const result = await getViolationHistory("workspace-1", {
@@ -190,9 +196,15 @@ describe("Violation Manager", () => {
         overriddenAt: new Date(),
       };
 
-      vi.mocked(prisma.policyViolation.update).mockResolvedValue(mockResult as never);
+      vi.mocked(prisma.policyViolation.update).mockResolvedValue(
+        mockResult as never,
+      );
 
-      const result = await overrideViolation("violation-1", "user-1", "Approved by manager");
+      const result = await overrideViolation(
+        "violation-1",
+        "user-1",
+        "Approved by manager",
+      );
 
       expect(prisma.policyViolation.update).toHaveBeenCalledWith({
         where: { id: "violation-1" },
@@ -217,7 +229,9 @@ describe("Violation Manager", () => {
         overriddenAt: null,
       };
 
-      vi.mocked(prisma.policyViolation.update).mockResolvedValue(mockResult as never);
+      vi.mocked(prisma.policyViolation.update).mockResolvedValue(
+        mockResult as never,
+      );
 
       const result = await removeOverride("violation-1");
 
@@ -263,7 +277,9 @@ describe("Violation Manager", () => {
         },
       ];
 
-      vi.mocked(prisma.policyViolation.findMany).mockResolvedValue(mockViolations as never);
+      vi.mocked(prisma.policyViolation.findMany).mockResolvedValue(
+        mockViolations as never,
+      );
 
       const stats = await getViolationStatistics("workspace-1", 30);
 
@@ -402,7 +418,9 @@ describe("Violation Manager", () => {
         ],
       };
 
-      vi.mocked(prisma.policyCheck.findUnique).mockResolvedValue(mockCheck as never);
+      vi.mocked(prisma.policyCheck.findUnique).mockResolvedValue(
+        mockCheck as never,
+      );
 
       const result = await getCheck("check-1");
 
@@ -415,7 +433,8 @@ describe("Violation Manager", () => {
         },
       });
       expect(result!.id).toBe("check-1");
-      expect((result as { violations: unknown[]; } & typeof result)!.violations).toHaveLength(1);
+      expect((result as { violations: unknown[]; } & typeof result)!.violations)
+        .toHaveLength(1);
     });
 
     it("should return null when check not found", async () => {
@@ -434,10 +453,15 @@ describe("Violation Manager", () => {
         { id: "check-2", status: "COMPLETED", overallResult: "FAILED" },
       ];
 
-      vi.mocked(prisma.policyCheck.findMany).mockResolvedValue(mockChecks as never);
+      vi.mocked(prisma.policyCheck.findMany).mockResolvedValue(
+        mockChecks as never,
+      );
       vi.mocked(prisma.policyCheck.count).mockResolvedValue(100);
 
-      const result = await getCheckHistory("workspace-1", { limit: 50, offset: 0 });
+      const result = await getCheckHistory("workspace-1", {
+        limit: 50,
+        offset: 0,
+      });
 
       expect(result.checks).toHaveLength(2);
       expect(result.total).toBe(100);
@@ -540,7 +564,9 @@ describe("Violation Manager", () => {
         { id: "check-2", contentType: "SCHEDULED_POST", contentId: "post-1" },
       ];
 
-      vi.mocked(prisma.policyCheck.findMany).mockResolvedValue(mockChecks as never);
+      vi.mocked(prisma.policyCheck.findMany).mockResolvedValue(
+        mockChecks as never,
+      );
 
       const result = await getChecksForContent("SCHEDULED_POST", "post-1");
 
@@ -562,7 +588,10 @@ describe("Violation Manager", () => {
     it("should return empty array when no checks found", async () => {
       vi.mocked(prisma.policyCheck.findMany).mockResolvedValue([]);
 
-      const result = await getChecksForContent("SCHEDULED_POST", "non-existent");
+      const result = await getChecksForContent(
+        "SCHEDULED_POST",
+        "non-existent",
+      );
 
       expect(result).toHaveLength(0);
     });

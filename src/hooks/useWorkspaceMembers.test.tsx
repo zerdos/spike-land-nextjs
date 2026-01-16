@@ -29,7 +29,12 @@ describe("useWorkspaceMembers", () => {
   it("fetches members successfully", async () => {
     const mockMembers = [
       { id: "1", name: "Alice", avatarUrl: null, role: "ADMIN" },
-      { id: "2", name: "Bob", avatarUrl: "http://example.com/bob.jpg", role: "USER" },
+      {
+        id: "2",
+        name: "Bob",
+        avatarUrl: "http://example.com/bob.jpg",
+        role: "USER",
+      },
     ];
 
     mockFetch.mockResolvedValueOnce({

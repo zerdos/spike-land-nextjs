@@ -516,41 +516,43 @@ export async function markDraftAsSent(
     );
   }
 
-  const [updatedDraft, _updatedInboxItem, auditLog] = await prisma.$transaction([
-    prisma.relayDraft.update({
-      where: { id: draftId },
-      data: {
-        status: "SENT",
-        sentAt: new Date(),
-      },
-    }),
-    // Update inbox item status to replied
-    prisma.inboxItem.update({
-      where: { id: currentDraft.inboxItemId },
-      data: {
-        status: "REPLIED",
-        repliedAt: new Date(),
-      },
-    }),
-    prisma.draftAuditLog.create({
-      data: {
-        draftId,
-        action: "SENT",
-        performedById: userId,
-        ipAddress,
-        userAgent,
-      },
-      include: {
-        performedBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+  const [updatedDraft, _updatedInboxItem, auditLog] = await prisma.$transaction(
+    [
+      prisma.relayDraft.update({
+        where: { id: draftId },
+        data: {
+          status: "SENT",
+          sentAt: new Date(),
+        },
+      }),
+      // Update inbox item status to replied
+      prisma.inboxItem.update({
+        where: { id: currentDraft.inboxItemId },
+        data: {
+          status: "REPLIED",
+          repliedAt: new Date(),
+        },
+      }),
+      prisma.draftAuditLog.create({
+        data: {
+          draftId,
+          action: "SENT",
+          performedById: userId,
+          ipAddress,
+          userAgent,
+        },
+        include: {
+          performedBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
-    }),
-  ]);
+      }),
+    ],
+  );
 
   return {
     draft: {
@@ -758,20 +760,25 @@ export async function getDraftWithHistory(
 export function getApprovalSettings(
   workspaceSettings: Record<string, unknown> | null,
 ): RelayApprovalSettings {
-  if (!workspaceSettings || !workspaceSettings.relay) {
+  if (!workspaceSettings || !workspaceSettings["relay"]) {
     return DEFAULT_APPROVAL_SETTINGS;
   }
 
-  const relaySettings = workspaceSettings.relay as Partial<RelayApprovalSettings>;
+  const relaySettings = workspaceSettings["relay"] as Partial<
+    RelayApprovalSettings
+  >;
 
   return {
-    requireApproval: relaySettings.requireApproval ?? DEFAULT_APPROVAL_SETTINGS.requireApproval,
-    approverRoles: relaySettings.approverRoles ?? DEFAULT_APPROVAL_SETTINGS.approverRoles,
+    requireApproval: relaySettings.requireApproval ??
+      DEFAULT_APPROVAL_SETTINGS.requireApproval,
+    approverRoles: relaySettings.approverRoles ??
+      DEFAULT_APPROVAL_SETTINGS.approverRoles,
     autoApproveHighConfidence: relaySettings.autoApproveHighConfidence ??
       DEFAULT_APPROVAL_SETTINGS.autoApproveHighConfidence,
     autoApproveThreshold: relaySettings.autoApproveThreshold ??
       DEFAULT_APPROVAL_SETTINGS.autoApproveThreshold,
-    notifyApprovers: relaySettings.notifyApprovers ?? DEFAULT_APPROVAL_SETTINGS.notifyApprovers,
+    notifyApprovers: relaySettings.notifyApprovers ??
+      DEFAULT_APPROVAL_SETTINGS.notifyApprovers,
     escalationTimeoutHours: relaySettings.escalationTimeoutHours ??
       DEFAULT_APPROVAL_SETTINGS.escalationTimeoutHours,
   };
@@ -836,9 +843,13 @@ export async function getEditFeedbackData(
   };
 
   if (startDate || endDate) {
-    whereClause.createdAt = {};
-    if (startDate) (whereClause.createdAt as Record<string, unknown>).gte = startDate;
-    if (endDate) (whereClause.createdAt as Record<string, unknown>).lte = endDate;
+    whereClause["createdAt"] = {};
+    if (startDate) {
+      (whereClause["createdAt"] as Record<string, unknown>)["gte"] = startDate;
+    }
+    if (endDate) {
+      (whereClause["createdAt"] as Record<string, unknown>)["lte"] = endDate;
+    }
   }
 
   const editHistory = await prisma.draftEditHistory.findMany({
@@ -883,9 +894,13 @@ export async function getAggregatedFeedback(
   };
 
   if (startDate || endDate) {
-    whereClause.createdAt = {};
-    if (startDate) (whereClause.createdAt as Record<string, unknown>).gte = startDate;
-    if (endDate) (whereClause.createdAt as Record<string, unknown>).lte = endDate;
+    whereClause["createdAt"] = {};
+    if (startDate) {
+      (whereClause["createdAt"] as Record<string, unknown>)["gte"] = startDate;
+    }
+    if (endDate) {
+      (whereClause["createdAt"] as Record<string, unknown>)["lte"] = endDate;
+    }
   }
 
   const editHistory = await prisma.draftEditHistory.findMany({
@@ -921,7 +936,9 @@ export async function getAggregatedFeedback(
   }
 
   const totalEdits = editHistory.length;
-  const averageEditDistance = totalEdits > 0 ? totalEditDistance / totalEdits : 0;
+  const averageEditDistance = totalEdits > 0
+    ? totalEditDistance / totalEdits
+    : 0;
   const editRate = totalDrafts > 0 ? (totalEdits / totalDrafts) * 100 : 0;
 
   return {
@@ -981,7 +998,9 @@ export async function getWorkflowMetrics(
     }
   }
 
-  const averageApprovalTime = approvalTimeCount > 0 ? totalApprovalTime / approvalTimeCount : 0;
+  const averageApprovalTime = approvalTimeCount > 0
+    ? totalApprovalTime / approvalTimeCount
+    : 0;
   const approvalRate = reviewedDrafts.length > 0
     ? (approvedDrafts.length / reviewedDrafts.length) * 100
     : 0;
@@ -997,7 +1016,9 @@ export async function getWorkflowMetrics(
   for (const draft of drafts) {
     totalEdits += draft.editHistory.length;
   }
-  const averageEditsPerDraft = drafts.length > 0 ? totalEdits / drafts.length : 0;
+  const averageEditsPerDraft = drafts.length > 0
+    ? totalEdits / drafts.length
+    : 0;
 
   // Send success rate
   const totalSendAttempts = sentDrafts.length + failedDrafts.length;

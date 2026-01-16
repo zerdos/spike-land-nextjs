@@ -7,8 +7,10 @@ import { AppCard3D } from "./AppCard3D";
 interface AppData {
   id: string;
   name: string;
+  slug: string | null;
   description: string | null;
   status: (typeof APP_BUILD_STATUSES)[number];
+  codespaceId: string | null;
   codespaceUrl: string | null;
   _count: {
     messages: number;

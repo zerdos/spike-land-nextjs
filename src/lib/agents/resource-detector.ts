@@ -69,7 +69,7 @@ async function getMcpServers(): Promise<ResourceStatus["mcpServers"]> {
       const cfg = serverConfig as Record<string, unknown>;
       return {
         name,
-        type: (cfg.type as string) || "stdio",
+        type: (cfg["type"] as string) || "stdio",
         configured: true,
       };
     });

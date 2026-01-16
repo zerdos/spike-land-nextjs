@@ -78,15 +78,15 @@ describe("r2-client", () => {
     MockS3Client.mock.instances = [];
     clearEnvVars();
     // Reset global cache
-    (global as Record<string, unknown>).__r2Client = undefined;
-    (global as Record<string, unknown>).__r2BucketName = undefined;
+    (global as Record<string, unknown>)["__r2Client"] = undefined;
+    (global as Record<string, unknown>)["__r2BucketName"] = undefined;
   });
 
   afterEach(() => {
     process.env = { ...originalEnv };
     // Reset global cache
-    (global as Record<string, unknown>).__r2Client = undefined;
-    (global as Record<string, unknown>).__r2BucketName = undefined;
+    (global as Record<string, unknown>)["__r2Client"] = undefined;
+    (global as Record<string, unknown>)["__r2BucketName"] = undefined;
   });
 
   describe("isR2Configured", () => {
@@ -469,11 +469,11 @@ describe("r2-client", () => {
       const result = await listR2StorageStats();
 
       expect(result.success).toBe(true);
-      expect(result.stats?.byFileType.unknown).toEqual({
+      expect(result.stats?.byFileType["unknown"]).toEqual({
         count: 1,
         sizeBytes: 500,
       });
-      expect(result.stats?.byFileType.txt).toEqual({
+      expect(result.stats?.byFileType["txt"]).toEqual({
         count: 1,
         sizeBytes: 500,
       });
@@ -492,7 +492,7 @@ describe("r2-client", () => {
       const result = await listR2StorageStats();
 
       expect(result.success).toBe(true);
-      expect(result.stats?.byFileType.unknown).toEqual({
+      expect(result.stats?.byFileType["unknown"]).toEqual({
         count: 1,
         sizeBytes: 100,
       });
@@ -512,7 +512,7 @@ describe("r2-client", () => {
 
       expect(result.success).toBe(true);
       expect(result.stats?.totalSizeBytes).toBe(1000);
-      expect(result.stats?.byFileType.jpg?.sizeBytes).toBe(1000);
+      expect(result.stats?.byFileType["jpg"]?.sizeBytes).toBe(1000);
     });
 
     it("should handle uppercase extensions", async () => {
@@ -528,11 +528,11 @@ describe("r2-client", () => {
       const result = await listR2StorageStats();
 
       expect(result.success).toBe(true);
-      expect(result.stats?.byFileType.jpg).toEqual({
+      expect(result.stats?.byFileType["jpg"]).toEqual({
         count: 1,
         sizeBytes: 1000,
       });
-      expect(result.stats?.byFileType.png).toEqual({
+      expect(result.stats?.byFileType["png"]).toEqual({
         count: 1,
         sizeBytes: 2000,
       });
@@ -613,7 +613,7 @@ describe("r2-client", () => {
 
       // In production mode, client should be cached (only created once per test)
       // Note: Due to module caching, we check that global cache is used
-      expect((global as Record<string, unknown>).__r2Client).toBeDefined();
+      expect((global as Record<string, unknown>)["__r2Client"]).toBeDefined();
     });
 
     it("should cache bucket name in production mode", async () => {
@@ -624,7 +624,7 @@ describe("r2-client", () => {
 
       await deleteFromR2("key1.jpg");
 
-      expect((global as Record<string, unknown>).__r2BucketName).toBe(
+      expect((global as Record<string, unknown>)["__r2BucketName"]).toBe(
         "test-bucket",
       );
     });
@@ -634,7 +634,7 @@ describe("r2-client", () => {
       mockSend.mockResolvedValue({});
 
       // Pre-set the global bucket name to simulate it was already cached
-      (global as Record<string, unknown>).__r2BucketName = "test-bucket";
+      (global as Record<string, unknown>)["__r2BucketName"] = "test-bucket";
 
       const { deleteFromR2 } = await importModule();
 
@@ -642,7 +642,7 @@ describe("r2-client", () => {
       await deleteFromR2("key2.jpg");
 
       // Bucket name should still be the cached value
-      expect((global as Record<string, unknown>).__r2BucketName).toBe(
+      expect((global as Record<string, unknown>)["__r2BucketName"]).toBe(
         "test-bucket",
       );
     });
@@ -652,8 +652,8 @@ describe("r2-client", () => {
       mockSend.mockResolvedValue({});
 
       // Ensure global is undefined
-      (global as Record<string, unknown>).__r2BucketName = undefined;
-      (global as Record<string, unknown>).__r2Client = undefined;
+      (global as Record<string, unknown>)["__r2BucketName"] = undefined;
+      (global as Record<string, unknown>)["__r2Client"] = undefined;
 
       const { deleteFromR2 } = await importModule();
 
@@ -661,7 +661,7 @@ describe("r2-client", () => {
       await deleteFromR2("key1.jpg");
 
       // Verify the bucket name was cached
-      expect((global as Record<string, unknown>).__r2BucketName).toBe(
+      expect((global as Record<string, unknown>)["__r2BucketName"]).toBe(
         "test-bucket",
       );
     });
@@ -677,13 +677,13 @@ describe("r2-client", () => {
 
       // Now simulate the scenario where client is cached but bucket name is cleared
       // This can happen in edge cases
-      (global as Record<string, unknown>).__r2BucketName = undefined;
+      (global as Record<string, unknown>)["__r2BucketName"] = undefined;
 
       // Second call should re-cache the bucket name via getBucketName() line 68
       await deleteFromR2("key2.jpg");
 
       // Verify the bucket name was cached from config
-      expect((global as Record<string, unknown>).__r2BucketName).toBe(
+      expect((global as Record<string, unknown>)["__r2BucketName"]).toBe(
         "test-bucket",
       );
     });

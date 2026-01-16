@@ -60,7 +60,9 @@ export class AllocatorAuditExportService {
     // CSV Escaping Helper
     const escapeField = (field: unknown): string => {
       if (field === null || field === undefined) return "";
-      const str = typeof field === "object" ? JSON.stringify(field) : String(field);
+      const str = typeof field === "object"
+        ? JSON.stringify(field)
+        : String(field);
       if (str.includes(",") || str.includes('"') || str.includes("\n")) {
         return `"${str.replace(/"/g, '""')}"`;
       }

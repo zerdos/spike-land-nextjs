@@ -42,10 +42,10 @@ describe("NewAppPage", () => {
     });
 
     const redirectPath = mockReplace.mock.calls[0]![0];
-    // Check format: /my-apps/new/[generated-id]
-    // ID format is adj-noun-verb-suffix
+    // Check format: /my-apps/[generated-id]
+    // ID format is adj.noun.verb.suffix (e.g., swift.forge.launch.a1b2)
     expect(redirectPath).toMatch(
-      /^\/my-apps\/new\/[a-z]+\.[a-z]+\.[a-z]+\.[a-z0-9]+$/,
+      /^\/my-apps\/[a-z]+\.[a-z]+\.[a-z]+\.[a-z0-9]+$/,
     );
   });
 });

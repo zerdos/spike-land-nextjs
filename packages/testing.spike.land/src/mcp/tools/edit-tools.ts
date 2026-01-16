@@ -11,7 +11,9 @@ import type {
  * Transpile React/JSX code to JavaScript via js.spike.land service
  */
 async function transpileCode(code: string, origin: string): Promise<string> {
-  console.log(`[MCP] Transpiling code (${code.length} chars) with origin: ${origin}`);
+  console.log(
+    `[MCP] Transpiling code (${code.length} chars) with origin: ${origin}`,
+  );
 
   const response = await fetch("https://js.spike.land", {
     method: "POST",
@@ -123,7 +125,11 @@ export const editCodeTool: McpTool = {
   },
 };
 
-export const editTools: McpTool[] = [updateCodeTool, searchAndReplaceTool, editCodeTool];
+export const editTools: McpTool[] = [
+  updateCodeTool,
+  searchAndReplaceTool,
+  editCodeTool,
+];
 
 export async function executeUpdateCode(
   session: ICodeSession,
@@ -149,7 +155,9 @@ export async function executeUpdateCode(
       // Continue with empty transpiled - client can trigger re-transpilation
     }
   } else {
-    console.warn(`[MCP] No origin provided, skipping server-side transpilation`);
+    console.warn(
+      `[MCP] No origin provided, skipping server-side transpilation`,
+    );
   }
 
   const updatedSession = {
@@ -280,7 +288,10 @@ export async function executeSearchAndReplace(
       try {
         transpiled = await transpileCode(newCode, origin);
       } catch (error) {
-        console.error(`[MCP] Transpilation error in search_and_replace:`, error);
+        console.error(
+          `[MCP] Transpilation error in search_and_replace:`,
+          error,
+        );
         // Continue with empty transpiled
       }
     }

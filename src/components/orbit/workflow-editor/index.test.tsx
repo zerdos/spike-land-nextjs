@@ -18,6 +18,7 @@ import { vi } from "vitest";
 describe("WorkflowEditor", () => {
   it("renders the editor", () => {
     const { container } = render(<WorkflowEditor />);
-    expect(container.querySelector('[data-testid="react-flow"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-testid="react-flow"]'))
+      .toBeInTheDocument();
   });
 });

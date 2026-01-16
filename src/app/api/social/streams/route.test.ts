@@ -293,7 +293,7 @@ describe("GET /api/social/streams", () => {
       ];
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient(mockPosts) as any,
       );
 
@@ -347,8 +347,8 @@ describe("GET /api/social/streams", () => {
       ]);
 
       vi.mocked(createSocialClient)
-        .mockReturnValueOnce(createMockSocialClient(twitterPosts) as any)
-        .mockReturnValueOnce(createMockSocialClient(facebookPosts) as any);
+        .mockResolvedValueOnce(createMockSocialClient(twitterPosts) as any)
+        .mockResolvedValueOnce(createMockSocialClient(facebookPosts) as any);
 
       const request = createMockRequest({ workspaceId: "workspace-123" });
       const response = await GET(request as any);
@@ -375,7 +375,7 @@ describe("GET /api/social/streams", () => {
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
         twitterAccount,
       ]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient(mockPosts) as any,
       );
 
@@ -410,7 +410,7 @@ describe("GET /api/social/streams", () => {
       ];
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient(mockPosts) as any,
       );
 
@@ -439,7 +439,7 @@ describe("GET /api/social/streams", () => {
       }));
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient(mockPosts) as any,
       );
 
@@ -481,7 +481,7 @@ describe("GET /api/social/streams", () => {
       ];
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient(mockPosts) as any,
       );
 
@@ -520,7 +520,7 @@ describe("GET /api/social/streams", () => {
       ];
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient(mockPosts) as any,
       );
 
@@ -573,7 +573,7 @@ describe("GET /api/social/streams", () => {
 
       // Twitter succeeds, Facebook fails
       vi.mocked(createSocialClient)
-        .mockReturnValueOnce(createMockSocialClient(twitterPosts) as any)
+        .mockResolvedValueOnce(createMockSocialClient(twitterPosts) as any)
         .mockReturnValueOnce({
           platform: "FACEBOOK",
           getPosts: vi.fn().mockRejectedValue(new Error("Facebook API error")),
@@ -608,7 +608,7 @@ describe("GET /api/social/streams", () => {
       const mockAccount = createMockAccount();
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue({
+      vi.mocked(createSocialClient).mockResolvedValue({
         platform: "TWITTER",
         getPosts: vi.fn().mockRejectedValue("String error"),
       } as any);
@@ -639,7 +639,7 @@ describe("GET /api/social/streams", () => {
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
         facebookAccount,
       ]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient([]) as any,
       );
 
@@ -663,7 +663,7 @@ describe("GET /api/social/streams", () => {
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
         instagramAccount,
       ]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient([]) as any,
       );
 
@@ -684,7 +684,7 @@ describe("GET /api/social/streams", () => {
       });
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient([]) as any,
       );
 
@@ -725,7 +725,7 @@ describe("GET /api/social/streams", () => {
     it("should handle platforms with spaces", async () => {
       const mockAccount = createMockAccount();
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient([]) as any,
       );
 
@@ -748,7 +748,7 @@ describe("GET /api/social/streams", () => {
     it("should handle lowercase platform names", async () => {
       const mockAccount = createMockAccount();
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient([]) as any,
       );
 
@@ -764,7 +764,7 @@ describe("GET /api/social/streams", () => {
     it("should cap limit at 100", async () => {
       const mockAccount = createMockAccount();
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient([]) as any,
       );
 
@@ -793,7 +793,7 @@ describe("GET /api/social/streams", () => {
       ];
 
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient(mockPosts) as any,
       );
 
@@ -819,7 +819,7 @@ describe("GET /api/social/streams", () => {
     it("should handle startDate only filter", async () => {
       const mockAccount = createMockAccount();
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient([]) as any,
       );
 
@@ -837,7 +837,7 @@ describe("GET /api/social/streams", () => {
     it("should handle endDate only filter", async () => {
       const mockAccount = createMockAccount();
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient([]) as any,
       );
 
@@ -903,7 +903,7 @@ describe("Exported Functions", () => {
   describe("fetchAccountPosts", () => {
     it("should decrypt token and create client with correct options", async () => {
       const mockAccount = createMockAccount();
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient([]) as any,
       );
 
@@ -929,7 +929,7 @@ describe("Exported Functions", () => {
         },
       ];
 
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient(mockPosts) as any,
       );
 
@@ -951,7 +951,7 @@ describe("Exported Functions", () => {
       const account1 = createMockAccount({ id: "acc-1" });
       const account2 = createMockAccount({ id: "acc-2" });
 
-      vi.mocked(createSocialClient).mockReturnValue(
+      vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient([]) as any,
       );
 
@@ -967,7 +967,7 @@ describe("Exported Functions", () => {
       const account2 = createMockAccount({ id: "acc-2" });
 
       vi.mocked(createSocialClient)
-        .mockReturnValueOnce(createMockSocialClient([]) as any)
+        .mockResolvedValueOnce(createMockSocialClient([]) as any)
         .mockReturnValueOnce({
           platform: "TWITTER",
           getPosts: vi.fn().mockRejectedValue(new Error("API Error")),

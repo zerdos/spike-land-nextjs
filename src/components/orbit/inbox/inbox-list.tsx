@@ -32,7 +32,9 @@ async function fetchInboxItems(
       // Ignore errors while reading the response body; we still want to throw the original error.
     }
     const baseMessage = `Failed to fetch inbox items: ${res.status} ${res.statusText}`;
-    const detailedMessage = responseBody ? `${baseMessage} - ${responseBody}` : baseMessage;
+    const detailedMessage = responseBody
+      ? `${baseMessage} - ${responseBody}`
+      : baseMessage;
     throw new Error(detailedMessage);
   }
   return res.json();
@@ -45,7 +47,7 @@ interface InboxListProps {
 
 export function InboxList({ onItemSelected, filters }: InboxListProps) {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
   const [selectedItem, setSelectedItem] = useState<InboxItemType | null>(null);
   const parentRef = useRef<HTMLDivElement>(null);
   const isVisible = useDocumentVisibility();
@@ -54,11 +56,15 @@ export function InboxList({ onItemSelected, filters }: InboxListProps) {
     queryKey: ["inboxItems", workspaceSlug, filters],
     queryFn: ({ pageParam }) => fetchInboxItems(workspaceSlug, filters, pageParam),
     initialPageParam: 1,
-    getNextPageParam: (lastPage: PageData) => (lastPage.hasNext ? lastPage.page + 1 : undefined),
+    getNextPageParam: (
+      lastPage: PageData,
+    ) => (lastPage.hasNext ? lastPage.page + 1 : undefined),
     refetchInterval: isVisible ? 30000 : false,
   });
 
-  const allItems = data ? data.pages.flatMap((page: PageData) => page.items) : [];
+  const allItems = data
+    ? data.pages.flatMap((page: PageData) => page.items)
+    : [];
 
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? allItems.length + 1 : allItems.length,
@@ -70,7 +76,10 @@ export function InboxList({ onItemSelected, filters }: InboxListProps) {
   useEffect(() => {
     const virtualItems = rowVirtualizer.getVirtualItems();
     const lastItem = virtualItems[virtualItems.length - 1];
-    if (lastItem && lastItem.index >= allItems.length - 1 && hasNextPage && !isFetchingNextPage) {
+    if (
+      lastItem && lastItem.index >= allItems.length - 1 && hasNextPage &&
+      !isFetchingNextPage
+    ) {
       fetchNextPage();
     }
   }, [
@@ -87,7 +96,10 @@ export function InboxList({ onItemSelected, filters }: InboxListProps) {
   };
 
   return (
-    <div ref={parentRef} className="h-full max-h-[calc(100vh-200px)] overflow-auto">
+    <div
+      ref={parentRef}
+      className="h-full max-h-[calc(100vh-200px)] overflow-auto"
+    >
       <div
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,

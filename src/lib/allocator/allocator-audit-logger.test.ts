@@ -34,11 +34,15 @@ describe("AllocatorAuditLogger", () => {
       };
 
       const mockLog = { ...input, id: "log-1", createdAt: new Date() };
-      vi.mocked(prisma.allocatorAuditLog.create).mockResolvedValue(mockLog as any);
+      vi.mocked(prisma.allocatorAuditLog.create).mockResolvedValue(
+        mockLog as any,
+      );
 
       const result = await logger.log(input);
 
-      expect(prisma.allocatorAuditLog.create).toHaveBeenCalledWith({ data: input });
+      expect(prisma.allocatorAuditLog.create).toHaveBeenCalledWith({
+        data: input,
+      });
       expect(result).toEqual(mockLog);
     });
 
@@ -54,7 +58,9 @@ describe("AllocatorAuditLogger", () => {
 
       const error = new Error("DB Error");
       vi.mocked(prisma.allocatorAuditLog.create).mockRejectedValue(error);
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
 
       await expect(logger.log(input)).rejects.toThrow("DB Error");
       expect(consoleSpy).toHaveBeenCalled();
@@ -187,7 +193,9 @@ describe("AllocatorAuditLogger", () => {
   describe("search", () => {
     it("returns search results and total count", async () => {
       const mockLogs = [{ id: "log-1" }, { id: "log-2" }];
-      vi.mocked(prisma.allocatorAuditLog.findMany).mockResolvedValue(mockLogs as any);
+      vi.mocked(prisma.allocatorAuditLog.findMany).mockResolvedValue(
+        mockLogs as any,
+      );
       vi.mocked(prisma.allocatorAuditLog.count).mockResolvedValue(2);
 
       const result = await logger.search({
@@ -260,7 +268,9 @@ describe("AllocatorAuditLogger", () => {
   describe("getByCorrelationId", () => {
     it("returns logs for a correlation ID", async () => {
       const mockLogs = [{ id: "log-1" }];
-      vi.mocked(prisma.allocatorAuditLog.findMany).mockResolvedValue(mockLogs as any);
+      vi.mocked(prisma.allocatorAuditLog.findMany).mockResolvedValue(
+        mockLogs as any,
+      );
 
       const result = await logger.getByCorrelationId("ws-1", "corr-1");
 

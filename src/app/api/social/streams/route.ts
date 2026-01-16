@@ -243,13 +243,13 @@ export async function fetchAccountPosts(
   // Platform-specific client options
   if (account.platform === "FACEBOOK") {
     // Facebook needs pageId set
-    clientOptions.pageId = account.accountId;
+    clientOptions["pageId"] = account.accountId;
   } else if (account.platform === "INSTAGRAM") {
     // Instagram needs igUserId set
-    clientOptions.igUserId = account.accountId;
+    clientOptions["igUserId"] = account.accountId;
   }
 
-  const client = createSocialClient(account.platform, clientOptions);
+  const client = await createSocialClient(account.platform, clientOptions);
 
   // Fetch posts from the social platform API
   const posts = await client.getPosts(limit);
@@ -301,7 +301,7 @@ export async function fetchAllAccountPosts(
         platform: account.platform,
         accountName: account.accountName,
         avatarUrl: (account.metadata as { avatarUrl?: string; } | null)
-          ?.avatarUrl,
+          ?.["avatarUrl"],
       });
     } else {
       // Account failed to fetch - log error and continue
@@ -322,7 +322,7 @@ export async function fetchAllAccountPosts(
         platform: account.platform,
         accountName: account.accountName,
         avatarUrl: (account.metadata as { avatarUrl?: string; } | null)
-          ?.avatarUrl,
+          ?.["avatarUrl"],
       });
     }
   });

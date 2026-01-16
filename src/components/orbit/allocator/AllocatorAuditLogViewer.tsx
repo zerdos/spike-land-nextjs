@@ -26,7 +26,9 @@ interface AllocatorAuditLogViewerProps {
   workspaceSlug: string;
 }
 
-export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogViewerProps) {
+export function AllocatorAuditLogViewer(
+  { workspaceSlug }: AllocatorAuditLogViewerProps,
+) {
   const [logs, setLogs] = useState<AllocatorAuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +75,9 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
   useEffect(() => {
     if (!isRealtime) return;
 
-    const eventSource = new EventSource(`/api/orbit/${workspaceSlug}/allocator/audit/stream`);
+    const eventSource = new EventSource(
+      `/api/orbit/${workspaceSlug}/allocator/audit/stream`,
+    );
 
     eventSource.onmessage = (event) => {
       try {
@@ -82,8 +86,8 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
           setLogs((prev) => {
             // Merge new logs at the top, avoiding duplicates if any
             const inputLogs = data.logs as AllocatorAuditLog[];
-            const existingIds = new Set(prev.map(l => l.id));
-            const uniqueNewLogs = inputLogs.filter(l => !existingIds.has(l.id));
+            const existingIds = new Set(prev.map((l) => l.id));
+            const uniqueNewLogs = inputLogs.filter((l) => !existingIds.has(l.id));
             return [...uniqueNewLogs, ...prev];
           });
         }
@@ -99,7 +103,9 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
 
   const handleExport = () => {
     const params = new URLSearchParams();
-    if (dateRange?.from) params.append("fromDate", dateRange.from.toISOString());
+    if (dateRange?.from) {
+      params.append("fromDate", dateRange.from.toISOString());
+    }
     if (dateRange?.to) params.append("toDate", dateRange.to.toISOString());
     window.location.href =
       `/api/orbit/${workspaceSlug}/allocator/audit/export?${params.toString()}`;
@@ -115,7 +121,9 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
             onClick={() => setIsRealtime(!isRealtime)}
             className={cn(isRealtime && "bg-green-600 hover:bg-green-700")}
           >
-            {isRealtime ? <Zap className="mr-2 h-4 w-4" /> : <ZapOff className="mr-2 h-4 w-4" />}
+            {isRealtime
+              ? <Zap className="mr-2 h-4 w-4" />
+              : <ZapOff className="mr-2 h-4 w-4" />}
             {isRealtime ? "Live" : "Real-time Off"}
           </Button>
           <Button variant="outline" size="sm" onClick={handleExport}>
@@ -138,7 +146,11 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
         <div className="flex gap-2">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className={cn(dateRange?.from && "bg-secondary")}>
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(dateRange?.from && "bg-secondary")}
+              >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {dateRange?.from
                   ? (
@@ -165,7 +177,12 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
               />
             </PopoverContent>
           </Popover>
-          <Button variant="ghost" size="icon" onClick={() => fetchLogs()} disabled={isLoading}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => fetchLogs()}
+            disabled={isLoading}
+          >
             <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
           </Button>
         </div>
@@ -192,7 +209,10 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
             <TableBody>
               {error && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center h-24 text-destructive">
+                  <TableCell
+                    colSpan={5}
+                    className="text-center h-24 text-destructive"
+                  >
                     {error}
                   </TableCell>
                 </TableRow>
@@ -200,7 +220,10 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
               {logs.length === 0 && !isLoading && !error
                 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                    <TableCell
+                      colSpan={5}
+                      className="text-center h-24 text-muted-foreground"
+                    >
                       No logs found
                     </TableCell>
                   </TableRow>
@@ -216,12 +239,17 @@ export function AllocatorAuditLogViewer({ workspaceSlug }: AllocatorAuditLogView
                     <TableCell>
                       <StatusBadge status={log.decisionOutcome} />
                     </TableCell>
-                    <TableCell className="max-w-md truncate" title={log.aiReasoning || ""}>
-                      <span className="font-medium text-sm">{log.aiReasoning}</span>
+                    <TableCell
+                      className="max-w-md truncate"
+                      title={log.aiReasoning || ""}
+                    >
+                      <span className="font-medium text-sm">
+                        {log.aiReasoning}
+                      </span>
                       {log.previousState && (
                         <div className="text-xs text-muted-foreground mt-1">
-                          Budget: {(log.previousState as { budget?: number; })?.budget ?? "?"}{" "}
-                          &rarr; {(log.newState as { budget?: number; })?.budget ?? "?"}
+                          Budget: {(log.previousState as { budget?: number; })?.budget ??
+                            "?"} &rarr; {(log.newState as { budget?: number; })?.budget ?? "?"}
                         </div>
                       )}
                     </TableCell>

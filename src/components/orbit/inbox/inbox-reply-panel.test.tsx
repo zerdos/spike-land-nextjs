@@ -10,7 +10,10 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Helper to create a smart fetch mock
-const createFetchMock = (replyResponse: any = { success: true }, replyOk = true) => {
+const createFetchMock = (
+  replyResponse: any = { success: true },
+  replyOk = true,
+) => {
   return vi.fn().mockImplementation((url: string | URL | Request) => {
     const urlString = url.toString();
 
@@ -70,8 +73,10 @@ describe("InboxReplyPanel", () => {
 
     // Wait for form to appear
     expect(await screen.findByLabelText("Reply")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Type your reply here...")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Send Reply" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Type your reply here..."))
+      .toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Send Reply" }))
+      .toBeInTheDocument();
   });
 
   it("submits the reply when form is submitted", async () => {
@@ -84,7 +89,9 @@ describe("InboxReplyPanel", () => {
     // Switch to Manual Reply tab
     await user.click(screen.getByRole("tab", { name: /Manual Reply/i }));
 
-    const textarea = await screen.findByPlaceholderText("Type your reply here...");
+    const textarea = await screen.findByPlaceholderText(
+      "Type your reply here...",
+    );
     const submitButton = screen.getByRole("button", { name: "Send Reply" });
 
     await user.type(textarea, "Test reply");
@@ -112,7 +119,9 @@ describe("InboxReplyPanel", () => {
     // Switch to Manual Reply tab
     await user.click(screen.getByRole("tab", { name: /Manual Reply/i }));
 
-    const textarea = await screen.findByPlaceholderText("Type your reply here...");
+    const textarea = await screen.findByPlaceholderText(
+      "Type your reply here...",
+    );
     const submitButton = screen.getByRole("button", { name: "Send Reply" });
 
     await user.type(textarea, "Test reply");
@@ -156,11 +165,14 @@ describe("InboxReplyPanel", () => {
     // Switch to Manual Reply tab
     await user.click(screen.getByRole("tab", { name: /Manual Reply/i }));
 
-    const submitButton = await screen.findByRole("button", { name: "Send Reply" });
+    const submitButton = await screen.findByRole("button", {
+      name: "Send Reply",
+    });
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Reply content cannot be empty")).toBeInTheDocument();
+      expect(screen.getByText("Reply content cannot be empty"))
+        .toBeInTheDocument();
     });
   });
 });

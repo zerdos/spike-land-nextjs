@@ -94,8 +94,10 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       codeChanged,
-      codeBefore: codeBefore.substring(0, 500) + (codeBefore.length > 500 ? "..." : ""),
-      codeAfter: codeAfter.substring(0, 500) + (codeAfter.length > 500 ? "..." : ""),
+      codeBefore: codeBefore.substring(0, 500) +
+        (codeBefore.length > 500 ? "..." : ""),
+      codeAfter: codeAfter.substring(0, 500) +
+        (codeAfter.length > 500 ? "..." : ""),
       agentResponse: finalText,
       messageCount: messages.length,
     });

@@ -352,7 +352,12 @@ export const AD_COMPLIANCE_RULES: PolicyRuleInput[] = [
     category: "AD_COMPLIANCE",
     ruleType: "KEYWORD_MATCH",
     conditions: {
-      keywords: ["limited time only", "offer expires soon", "last chance", "final sale"],
+      keywords: [
+        "limited time only",
+        "offer expires soon",
+        "last chance",
+        "final sale",
+      ],
       caseSensitive: false,
     },
     severity: "INFO",

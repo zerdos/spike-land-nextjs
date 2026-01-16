@@ -50,9 +50,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     ? accountIdsParam.split(",").map((id) => id.trim())
     : undefined;
 
-  const lookbackDays = lookbackDaysParam
-    ? parseInt(lookbackDaysParam, 10)
-    : 30;
+  const lookbackDays = lookbackDaysParam ? parseInt(lookbackDaysParam, 10) : 30;
 
   if (isNaN(lookbackDays) || lookbackDays < 1 || lookbackDays > 365) {
     return NextResponse.json(
@@ -93,7 +91,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   if (permError) {
     const httpStatus = permError.message.includes("Unauthorized") ? 401 : 403;
-    return NextResponse.json({ error: permError.message }, { status: httpStatus });
+    return NextResponse.json({ error: permError.message }, {
+      status: httpStatus,
+    });
   }
 
   try {

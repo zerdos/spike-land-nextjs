@@ -1,6 +1,7 @@
 import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
+import type { Prisma } from "@prisma/client";
 import { SubscriptionTier, TokenTransactionType } from "@prisma/client";
 import { TOKEN_REGENERATION_INTERVAL_MS } from "./constants";
 
@@ -214,8 +215,7 @@ export class TierManager {
     tierLogger.info("Processing tier upgrade");
 
     const { data: result, error } = await tryCatch(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      prisma.$transaction(async (tx: any) => {
+      prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Get current balance and tier
         let tokenBalance = await tx.userTokenBalance.findUnique({
           where: { userId },
@@ -326,8 +326,7 @@ export class TierManager {
     this.validateUserId(userId);
 
     const { data: result, error } = await tryCatch(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      prisma.$transaction(async (tx: any) => {
+      prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Get current tier within transaction to prevent race conditions
         const tokenBalance = await tx.userTokenBalance.findUnique({
           where: { userId },
@@ -401,8 +400,7 @@ export class TierManager {
     this.validateUserId(userId);
 
     const { data: result, error } = await tryCatch(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      prisma.$transaction(async (tx: any) => {
+      prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const subscription = await tx.subscription.findUnique({
           where: { userId },
           select: { downgradeTo: true },

@@ -23,7 +23,9 @@ import {
 import { useEffect, useState } from "react";
 
 // Floating particle component
-function FloatingParticle({ delay, duration }: { delay: number; duration: number; }) {
+function FloatingParticle(
+  { delay, duration }: { delay: number; duration: number; },
+) {
   return (
     <div
       className="absolute w-1 h-1 rounded-full bg-aurora-teal/40 animate-float"
@@ -71,7 +73,15 @@ function useTypingEffect(
     );
 
     return () => clearTimeout(timeout);
-  }, [displayText, isDeleting, textIndex, texts, typingSpeed, deletingSpeed, pauseTime]);
+  }, [
+    displayText,
+    isDeleting,
+    textIndex,
+    texts,
+    typingSpeed,
+    deletingSpeed,
+    pauseTime,
+  ]);
 
   return displayText;
 }
@@ -187,7 +197,10 @@ function TimelineItem({
       {description && <p className="text-sm text-muted-foreground/80 mb-2">{description}</p>}
       <ul className="space-y-2">
         {achievements.map((item, i) => (
-          <li key={i} className="text-sm text-muted-foreground flex items-start">
+          <li
+            key={i}
+            className="text-sm text-muted-foreground flex items-start"
+          >
             <span className="mr-2 mt-1.5 w-1 h-1 rounded-full bg-aurora-teal/50" />
             {item}
           </li>
@@ -202,12 +215,17 @@ const skills = {
   backend: ["Node.js", "Deno", ".NET Core", "PostgreSQL", "MSSQL", "Prisma"],
   devops: ["Docker", "Kubernetes", "AWS", "GCP", "Azure", "Cloudflare Workers"],
   testing: ["Vitest", "Playwright", "Cucumber", "TDD", "100% Coverage"],
-  ai: ["Claude Opus 4.5", "MCP Servers", "Context Engineering", "Coding Agents"],
+  ai: [
+    "Claude Opus 4.5",
+    "MCP Servers",
+    "Context Engineering",
+    "Coding Agents",
+  ],
 };
 
 const experience = [
   {
-    period: "2023 - 2024",
+    period: "2023 - Present",
     role: "Frontend Developer",
     company: "Virgin Media O2 Limited",
     type: "Contractor",
@@ -216,7 +234,8 @@ const experience = [
       "Reduced CSS build size by 80% via PostCSS plugins",
       "Built automated Figma-to-PR pipeline for the Component Library",
       "Key role in cloud migration of virginmediao2.co.uk",
-      "Mastered Angular 16 for modern frontend development",
+      "Pioneering AI-assisted development with Claude Code and context engineering",
+      "Driving 50x productivity gains through AI-powered workflows",
     ],
   },
   {
@@ -267,7 +286,10 @@ const experience = [
 
 const blogPosts = [
   { title: "My PRs Were Pure AI Slop: A Developer's Confession", file: "01" },
-  { title: "I'm More Productive Than Ever and It's Ruining My Career", file: "02" },
+  {
+    title: "I'm More Productive Than Ever and It's Ruining My Career",
+    file: "02",
+  },
   { title: "The Last Two Days of Every Sprint: A Horror Story", file: "03" },
   { title: "2025: The Year Coding Agents Outperformed Developers", file: "04" },
   { title: "The Trust Gap: Why Teams Reject AI-Generated Code", file: "05" },
@@ -277,8 +299,14 @@ const blogPosts = [
   { title: "The New Developer Onboarding: AI Edition", file: "09" },
   { title: "What Do Developers Become?", file: "10" },
   { title: "The Requirement Is the Product", file: "11" },
-  { title: "Earning Less Than Five Years Ago: The Developer's Economic Reality", file: "12" },
-  { title: "Brighton, Dogs, and ADHD: Building a Startup While Everything Burns", file: "13" },
+  {
+    title: "Earning Less Than Five Years Ago: The Developer's Economic Reality",
+    file: "12",
+  },
+  {
+    title: "Brighton, Dogs, and ADHD: Building a Startup While Everything Burns",
+    file: "13",
+  },
   { title: "Why I Still Code When AI Does It Better", file: "14" },
   { title: "A Letter to the Junior Developer of 2026", file: "15" },
 ];
@@ -313,7 +341,11 @@ export default function CSPage() {
 
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {[...Array(20)].map((_, i) => (
-          <FloatingParticle key={i} delay={i * 0.5} duration={10 + Math.random() * 10} />
+          <FloatingParticle
+            key={i}
+            delay={i * 0.5}
+            duration={10 + Math.random() * 10}
+          />
         ))}
       </div>
 
@@ -366,13 +398,21 @@ export default function CSPage() {
               </a>
             </Button>
             <Button variant="outline" size="lg" asChild>
-              <a href="https://github.com/zerdos" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://github.com/zerdos"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Github className="h-5 w-5 mr-2" />
                 GitHub
               </a>
             </Button>
             <Button variant="outline" size="lg" asChild>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Linkedin className="h-5 w-5 mr-2" />
                 LinkedIn
               </a>
@@ -389,11 +429,31 @@ export default function CSPage() {
       <section className="py-12 px-4 relative z-10 -mt-20">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <MetricCard label="Years Experience" value="12+" icon={Briefcase} delay={0} />
+            <MetricCard
+              label="Years Experience"
+              value="12+"
+              icon={Briefcase}
+              delay={0}
+            />
             <MetricCard label="Packages" value="5" icon={Code2} delay={100} />
-            <MetricCard label="DB Models" value="54" icon={LayoutDashboard} delay={200} />
-            <MetricCard label="API Endpoints" value="100+" icon={Zap} delay={300} />
-            <MetricCard label="Test Coverage" value="100%" icon={Terminal} delay={400} />
+            <MetricCard
+              label="DB Models"
+              value="54"
+              icon={LayoutDashboard}
+              delay={200}
+            />
+            <MetricCard
+              label="API Endpoints"
+              value="100+"
+              icon={Zap}
+              delay={300}
+            />
+            <MetricCard
+              label="Test Coverage"
+              value="100%"
+              icon={Terminal}
+              delay={400}
+            />
           </div>
         </div>
       </section>
@@ -436,7 +496,9 @@ export default function CSPage() {
                 Technical Skills
               </h3>
               <div className="space-y-6">
-                {(Object.entries(skills) as [string, string[]][]).map(([category, items]) => (
+                {(Object.entries(skills) as [string, string[]][]).map((
+                  [category, items],
+                ) => (
                   <div key={category}>
                     <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-3 text-xs tracking-wider">
                       {category}
@@ -447,7 +509,8 @@ export default function CSPage() {
                           key={skill}
                           variant={category === "ai" ? "default" : "secondary"}
                           className={cn(
-                            category === "ai" && "bg-aurora-teal hover:bg-aurora-teal/80",
+                            category === "ai" &&
+                              "bg-aurora-teal hover:bg-aurora-teal/80",
                           )}
                         >
                           {skill}
@@ -511,12 +574,12 @@ export default function CSPage() {
           <div className="max-w-2xl mx-auto">
             <ProjectCard
               title="Spike Land"
-              description="AI-powered platform for creating, modifying, and deploying applications. Starting as a playground to push browser-based development boundaries, it's now a full production platform proving that one developer with AI can build enterprise-grade software."
+              description="AI-powered platform for creating, modifying, and deploying applications in under 30 seconds. Send a message and a Cloud Run devcontainer spins up with your code and dependencies. Claude Code makes changes that appear instantly via hot reload. On your final message, it builds, deploys, and the container shuts down. Cost-efficient, fast, and apps can import each other like components. Started 5 years ago, wrapped up with AI in a weekend."
               tags={[
                 "Next.js 15",
                 "Cloudflare Workers",
-                "PostgreSQL",
-                "Expo 52",
+                "Cloud Run",
+                "Claude Code",
                 "Context Engineering",
               ]}
               link="/"
@@ -548,7 +611,9 @@ export default function CSPage() {
                 className="group hover:border-aurora-teal/50 transition-colors cursor-pointer"
               >
                 <CardContent className="p-6">
-                  <div className="text-xs text-aurora-teal font-mono mb-2">{post.file}</div>
+                  <div className="text-xs text-aurora-teal font-mono mb-2">
+                    {post.file}
+                  </div>
                   <h3 className="font-bold group-hover:text-aurora-teal transition-colors">
                     {post.title}
                   </h3>

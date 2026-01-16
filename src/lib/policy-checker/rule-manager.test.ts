@@ -69,7 +69,9 @@ describe("Rule Manager", () => {
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.policyRule.create).mockResolvedValue(mockResult as never);
+      vi.mocked(prisma.policyRule.create).mockResolvedValue(
+        mockResult as never,
+      );
 
       const result = await createRule("workspace-1", input);
 
@@ -110,7 +112,9 @@ describe("Rule Manager", () => {
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.policyRule.create).mockResolvedValue(mockResult as never);
+      vi.mocked(prisma.policyRule.create).mockResolvedValue(
+        mockResult as never,
+      );
 
       const result = await createRule(null, input);
 
@@ -144,7 +148,9 @@ describe("Rule Manager", () => {
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.policyRule.update).mockResolvedValue(mockResult as never);
+      vi.mocked(prisma.policyRule.update).mockResolvedValue(
+        mockResult as never,
+      );
 
       const result = await updateRule("rule-1", {
         name: "Updated Rule",
@@ -186,7 +192,9 @@ describe("Rule Manager", () => {
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.policyRule.delete).mockResolvedValue(mockResult as never);
+      vi.mocked(prisma.policyRule.delete).mockResolvedValue(
+        mockResult as never,
+      );
 
       const result = await deleteRule("rule-1");
 
@@ -218,7 +226,9 @@ describe("Rule Manager", () => {
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.policyRule.findUnique).mockResolvedValue(mockRule as never);
+      vi.mocked(prisma.policyRule.findUnique).mockResolvedValue(
+        mockRule as never,
+      );
 
       const result = await getRule("rule-1");
 
@@ -278,7 +288,9 @@ describe("Rule Manager", () => {
         },
       ];
 
-      vi.mocked(prisma.policyRule.findMany).mockResolvedValue(mockRules as never);
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue(
+        mockRules as never,
+      );
 
       const result = await getRulesForWorkspace("workspace-1");
 
@@ -336,7 +348,9 @@ describe("Rule Manager", () => {
         },
       ];
 
-      vi.mocked(prisma.policyRule.findMany).mockResolvedValue(mockRules as never);
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue(
+        mockRules as never,
+      );
 
       const result = await getGlobalRules();
 
@@ -358,7 +372,9 @@ describe("Rule Manager", () => {
         },
       ];
 
-      vi.mocked(prisma.policyRule.findMany).mockResolvedValue(mockRules as never);
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue(
+        mockRules as never,
+      );
 
       const result = await getWorkspaceRules("workspace-1");
 
@@ -377,7 +393,9 @@ describe("Rule Manager", () => {
         isActive: false,
       };
 
-      vi.mocked(prisma.policyRule.update).mockResolvedValue(mockResult as never);
+      vi.mocked(prisma.policyRule.update).mockResolvedValue(
+        mockResult as never,
+      );
 
       const result = await toggleRuleActive("rule-1", false);
 
@@ -415,7 +433,9 @@ describe("Rule Manager", () => {
         },
       ];
 
-      vi.mocked(prisma.policyRule.findMany).mockResolvedValue(mockRules as never);
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue(
+        mockRules as never,
+      );
 
       const stats = await getRuleStatistics("workspace-1");
 
@@ -494,7 +514,9 @@ describe("Rule Manager", () => {
         lastVerifiedAt: new Date(),
       };
 
-      vi.mocked(prisma.policyRule.update).mockResolvedValue(mockResult as never);
+      vi.mocked(prisma.policyRule.update).mockResolvedValue(
+        mockResult as never,
+      );
 
       const result = await markRuleVerified("rule-1");
 
@@ -524,14 +546,18 @@ describe("Rule Manager", () => {
         },
       ];
 
-      vi.mocked(prisma.policyRule.findMany).mockResolvedValue(mockRules as never);
+      vi.mocked(prisma.policyRule.findMany).mockResolvedValue(
+        mockRules as never,
+      );
 
       const result = await getRulesNeedingVerification();
 
       expect(prisma.policyRule.findMany).toHaveBeenCalledWith({
         where: {
           isActive: true,
-          OR: [{ lastVerifiedAt: null }, { lastVerifiedAt: { lt: expect.any(Date) } }],
+          OR: [{ lastVerifiedAt: null }, {
+            lastVerifiedAt: { lt: expect.any(Date) },
+          }],
         },
         orderBy: { lastVerifiedAt: "asc" },
       });
@@ -567,8 +593,12 @@ describe("Rule Manager", () => {
         name: "Original Rule (Copy)",
       };
 
-      vi.mocked(prisma.policyRule.findUnique).mockResolvedValue(sourceRule as never);
-      vi.mocked(prisma.policyRule.create).mockResolvedValue(clonedRule as never);
+      vi.mocked(prisma.policyRule.findUnique).mockResolvedValue(
+        sourceRule as never,
+      );
+      vi.mocked(prisma.policyRule.create).mockResolvedValue(
+        clonedRule as never,
+      );
 
       const result = await cloneRule("source-rule", "workspace-1");
 
@@ -590,7 +620,9 @@ describe("Rule Manager", () => {
     it("should throw error when source rule not found", async () => {
       vi.mocked(prisma.policyRule.findUnique).mockResolvedValue(null);
 
-      await expect(cloneRule("non-existent", "workspace-1")).rejects.toThrow("Rule not found");
+      await expect(cloneRule("non-existent", "workspace-1")).rejects.toThrow(
+        "Rule not found",
+      );
     });
   });
 });

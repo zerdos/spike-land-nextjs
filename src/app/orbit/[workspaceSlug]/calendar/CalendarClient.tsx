@@ -33,7 +33,9 @@ interface SocialAccount {
 }
 
 async function fetchAccounts(workspaceId: string): Promise<SocialAccount[]> {
-  const response = await fetch(`/api/social/accounts?workspaceId=${workspaceId}`);
+  const response = await fetch(
+    `/api/social/accounts?workspaceId=${workspaceId}`,
+  );
   if (!response.ok) {
     throw new Error("Failed to fetch accounts");
   }
@@ -51,7 +53,9 @@ async function createScheduledPost(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: "Failed to create post" }));
+    const error = await response.json().catch(() => ({
+      error: "Failed to create post",
+    }));
     throw new Error(error.error || "Failed to create post");
   }
 }
@@ -67,7 +71,9 @@ async function reschedulePost(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: "Failed to reschedule post" }));
+    const error = await response.json().catch(() => ({
+      error: "Failed to reschedule post",
+    }));
     throw new Error(error.error || "Failed to reschedule post");
   }
 }
@@ -80,8 +86,12 @@ export function CalendarClient() {
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [_selectedPost, setSelectedPost] = useState<CalendarPostItem | null>(null);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string; } | null>(null);
+  const [_selectedPost, setSelectedPost] = useState<CalendarPostItem | null>(
+    null,
+  );
+  const [message, setMessage] = useState<
+    { type: "success" | "error"; text: string; } | null
+  >(null);
 
   const {
     posts,
@@ -219,7 +229,10 @@ export function CalendarClient() {
             Schedule and manage your social media posts
           </p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)} data-testid="create-post-button">
+        <Button
+          onClick={() => setCreateDialogOpen(true)}
+          data-testid="create-post-button"
+        >
           <Plus className="mr-2 h-4 w-4" />
           New Post
         </Button>

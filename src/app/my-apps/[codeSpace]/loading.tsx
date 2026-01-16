@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function AppWorkspaceLoading() {
+export default function CodeSpaceLoading() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 pt-24 pb-8">

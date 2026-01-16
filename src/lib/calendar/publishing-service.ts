@@ -145,7 +145,7 @@ async function publishToAccount(
   }
 
   try {
-    const client = createSocialClient(platform, {
+    const client = await createSocialClient(platform, {
       accessToken: account.accessToken,
       pageId: account.pageId,
       igUserId: account.igUserId,
@@ -154,7 +154,10 @@ async function publishToAccount(
     const platformContent = getContentForPlatform(content, platform, metadata);
     const options = buildPostOptions(platform, metadata);
 
-    const result: PostResult = await client.createPost(platformContent, options);
+    const result: PostResult = await client.createPost(
+      platformContent,
+      options,
+    );
 
     return {
       accountId,
@@ -186,7 +189,12 @@ export async function publishScheduledPost(
 
   // Publish to all accounts in parallel
   const publishPromises = accounts.map(async ({ accountId, platform }) => {
-    const result = await publishToAccount(content, platform, accountId, metadata);
+    const result = await publishToAccount(
+      content,
+      platform,
+      accountId,
+      metadata,
+    );
 
     // Record the result for this account
     await recordAccountPublishResult(postId, accountId, result);

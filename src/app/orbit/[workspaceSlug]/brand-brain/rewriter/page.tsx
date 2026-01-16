@@ -13,7 +13,7 @@ import { RewriteForm } from "./components/RewriteForm";
 
 export default function RewriterPage() {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
 
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [rewriteResult, setRewriteResult] = useState<

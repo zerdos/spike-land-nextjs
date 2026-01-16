@@ -60,34 +60,44 @@ export const createWorkflowWithStringReplace = (initialState: AgentState) => {
       !messageData["additional_kwargs"] ||
       typeof messageData["additional_kwargs"] !== "object" ||
       messageData["additional_kwargs"] === null ||
-      !("tool_responses" in (messageData["additional_kwargs"] as Record<string, unknown>)) ||
+      !("tool_responses" in
+        (messageData["additional_kwargs"] as Record<string, unknown>)) ||
       !Array.isArray(
-        (messageData["additional_kwargs"] as Record<string, unknown>)["tool_responses"],
+        (messageData["additional_kwargs"] as Record<string, unknown>)[
+          "tool_responses"
+        ],
       ) ||
-      ((messageData["additional_kwargs"] as Record<string, unknown>)["tool_responses"] as Array<
+      ((messageData["additional_kwargs"] as Record<string, unknown>)[
+          "tool_responses"
+        ] as Array<
           unknown
         >).length === 0
     ) {
       return state;
     }
 
-    const toolResponses =
-      (messageData["additional_kwargs"] as Record<string, unknown>)["tool_responses"] as Array<
-        unknown
-      >;
+    const toolResponses = (messageData["additional_kwargs"] as Record<string, unknown>)[
+      "tool_responses"
+    ] as Array<
+      unknown
+    >;
     const toolResponse = toolResponses[0];
     // Expect 'enhanced_replace_in_file' which is the name of the tool from getEnhancedReplaceInFileTool
     if (
-      !toolResponse || typeof toolResponse !== "object" || toolResponse === null ||
+      !toolResponse || typeof toolResponse !== "object" ||
+      toolResponse === null ||
       !("name" in toolResponse) ||
-      (toolResponse as Record<string, unknown>)["name"] !== "enhanced_replace_in_file"
+      (toolResponse as Record<string, unknown>)["name"] !==
+        "enhanced_replace_in_file"
     ) {
       return state;
     }
 
     try {
       const toolResponseData = toolResponse as Record<string, unknown>;
-      const modification = JSON.parse(toolResponseData["content"] as string) as CodeModification;
+      const modification = JSON.parse(
+        toolResponseData["content"] as string,
+      ) as CodeModification;
 
       if (typeof modification === "string") {
         return {
@@ -148,9 +158,10 @@ export const createWorkflowWithStringReplace = (initialState: AgentState) => {
         ] as BaseMessage[];
 
         // Invoke the model with tools
-        const response =
-          await (modelWithTools as { invoke: (messages: BaseMessage[]) => Promise<AIMessage>; })
-            .invoke(messages);
+        const response = await (modelWithTools as {
+          invoke: (messages: BaseMessage[]) => Promise<AIMessage>;
+        })
+          .invoke(messages);
 
         // Process the response
         const newState = await processToolResponse(response);

@@ -114,7 +114,9 @@ describe("approval-workflow", () => {
       const edited = "Completely different text here now.";
       const distance = _levenshteinDistance(original, edited);
 
-      expect(_classifyEditType(original, edited, distance)).toBe("COMPLETE_REWRITE");
+      expect(_classifyEditType(original, edited, distance)).toBe(
+        "COMPLETE_REWRITE",
+      );
     });
 
     it("classifies platform formatting changes correctly", () => {
@@ -123,7 +125,9 @@ describe("approval-workflow", () => {
       const edited = "Check this out today! #awesome";
       const distance = _levenshteinDistance(original, edited);
 
-      expect(_classifyEditType(original, edited, distance)).toBe("PLATFORM_FORMATTING");
+      expect(_classifyEditType(original, edited, distance)).toBe(
+        "PLATFORM_FORMATTING",
+      );
     });
 
     it("classifies mention changes as platform formatting", () => {
@@ -131,7 +135,9 @@ describe("approval-workflow", () => {
       const edited = "Thanks for the feedback! @user123";
       const distance = _levenshteinDistance(original, edited);
 
-      expect(_classifyEditType(original, edited, distance)).toBe("PLATFORM_FORMATTING");
+      expect(_classifyEditType(original, edited, distance)).toBe(
+        "PLATFORM_FORMATTING",
+      );
     });
 
     it("classifies tone adjustments correctly", () => {
@@ -146,7 +152,9 @@ describe("approval-workflow", () => {
       expect(editRatio).toBeLessThan(0.3);
       expect(editRatio).toBeGreaterThanOrEqual(0.05);
 
-      expect(_classifyEditType(original, edited, distance)).toBe("TONE_ADJUSTMENT");
+      expect(_classifyEditType(original, edited, distance)).toBe(
+        "TONE_ADJUSTMENT",
+      );
     });
 
     it("classifies content revisions correctly", () => {
@@ -161,7 +169,9 @@ describe("approval-workflow", () => {
       expect(editRatio).toBeLessThan(0.7);
       expect(editRatio).toBeGreaterThan(0.3);
 
-      expect(_classifyEditType(original, edited, distance)).toBe("CONTENT_REVISION");
+      expect(_classifyEditType(original, edited, distance)).toBe(
+        "CONTENT_REVISION",
+      );
     });
   });
 
@@ -187,7 +197,9 @@ describe("approval-workflow", () => {
         },
       };
 
-      vi.mocked(prisma.draftAuditLog.create).mockResolvedValue(mockAuditLog as never);
+      vi.mocked(prisma.draftAuditLog.create).mockResolvedValue(
+        mockAuditLog as never,
+      );
 
       const result = await createAuditLog({
         draftId: "draft-123",
@@ -239,7 +251,9 @@ describe("approval-workflow", () => {
         },
       ];
 
-      vi.mocked(prisma.draftAuditLog.findMany).mockResolvedValue(mockLogs as never);
+      vi.mocked(prisma.draftAuditLog.findMany).mockResolvedValue(
+        mockLogs as never,
+      );
 
       const result = await getAuditLogs("draft-123");
 
@@ -272,7 +286,9 @@ describe("approval-workflow", () => {
     };
 
     it("edits a draft and creates edit history", async () => {
-      vi.mocked(prisma.relayDraft.findUnique).mockResolvedValue(mockDraft as never);
+      vi.mocked(prisma.relayDraft.findUnique).mockResolvedValue(
+        mockDraft as never,
+      );
 
       const updatedDraft = { ...mockDraft, content: "Edited content here!" };
       const editHistory = {
@@ -375,7 +391,9 @@ describe("approval-workflow", () => {
         },
       ];
 
-      vi.mocked(prisma.draftEditHistory.findMany).mockResolvedValue(mockHistory as never);
+      vi.mocked(prisma.draftEditHistory.findMany).mockResolvedValue(
+        mockHistory as never,
+      );
 
       const result = await getEditHistory("draft-123");
 
@@ -408,7 +426,9 @@ describe("approval-workflow", () => {
     };
 
     it("approves a pending draft", async () => {
-      vi.mocked(prisma.relayDraft.findUnique).mockResolvedValue(mockDraft as never);
+      vi.mocked(prisma.relayDraft.findUnique).mockResolvedValue(
+        mockDraft as never,
+      );
 
       const approvedDraft = {
         ...mockDraft,
@@ -432,7 +452,9 @@ describe("approval-workflow", () => {
         },
       };
 
-      vi.mocked(prisma.$transaction).mockResolvedValue([approvedDraft, auditLog] as never);
+      vi.mocked(prisma.$transaction).mockResolvedValue(
+        [approvedDraft, auditLog] as never,
+      );
 
       const result = await approveDraftWorkflow(
         { draftId: "draft-123" },
@@ -483,7 +505,9 @@ describe("approval-workflow", () => {
     };
 
     it("rejects a pending draft with reason", async () => {
-      vi.mocked(prisma.relayDraft.findUnique).mockResolvedValue(mockDraft as never);
+      vi.mocked(prisma.relayDraft.findUnique).mockResolvedValue(
+        mockDraft as never,
+      );
 
       const rejectedDraft = {
         ...mockDraft,
@@ -507,7 +531,9 @@ describe("approval-workflow", () => {
         },
       };
 
-      vi.mocked(prisma.$transaction).mockResolvedValue([rejectedDraft, auditLog] as never);
+      vi.mocked(prisma.$transaction).mockResolvedValue(
+        [rejectedDraft, auditLog] as never,
+      );
 
       const result = await rejectDraftWorkflow(
         { draftId: "draft-123", reason: "Tone is too casual" },
@@ -542,7 +568,9 @@ describe("approval-workflow", () => {
     };
 
     it("marks an approved draft as sent", async () => {
-      vi.mocked(prisma.relayDraft.findUnique).mockResolvedValue(mockDraft as never);
+      vi.mocked(prisma.relayDraft.findUnique).mockResolvedValue(
+        mockDraft as never,
+      );
 
       const sentDraft = {
         ...mockDraft,
@@ -610,7 +638,9 @@ describe("approval-workflow", () => {
     };
 
     it("marks a draft as failed with error message", async () => {
-      vi.mocked(prisma.relayDraft.findUnique).mockResolvedValue(mockDraft as never);
+      vi.mocked(prisma.relayDraft.findUnique).mockResolvedValue(
+        mockDraft as never,
+      );
 
       const failedDraft = {
         ...mockDraft,
@@ -633,7 +663,9 @@ describe("approval-workflow", () => {
         },
       };
 
-      vi.mocked(prisma.$transaction).mockResolvedValue([failedDraft, auditLog] as never);
+      vi.mocked(prisma.$transaction).mockResolvedValue(
+        [failedDraft, auditLog] as never,
+      );
 
       const result = await markDraftAsFailed(
         "draft-123",
@@ -674,8 +706,12 @@ describe("approval-workflow", () => {
 
       expect(result.requireApproval).toBe(false);
       expect(result.autoApproveThreshold).toBe(0.9);
-      expect(result.approverRoles).toEqual(DEFAULT_APPROVAL_SETTINGS.approverRoles);
-      expect(result.notifyApprovers).toBe(DEFAULT_APPROVAL_SETTINGS.notifyApprovers);
+      expect(result.approverRoles).toEqual(
+        DEFAULT_APPROVAL_SETTINGS.approverRoles,
+      );
+      expect(result.notifyApprovers).toBe(
+        DEFAULT_APPROVAL_SETTINGS.notifyApprovers,
+      );
     });
   });
 

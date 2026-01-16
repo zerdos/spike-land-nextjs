@@ -183,11 +183,19 @@ describe("BatchUpload Component", () => {
 
     fireEvent.change(input);
 
+    // Wait for file to be processed (status changes from "processing" to "pending")
+    // The remove button only appears when status is "pending"
     await waitFor(() => {
-      expect(screen.getByText("test.png")).toBeInTheDocument();
+      expect(screen.getByText("1 ready")).toBeInTheDocument();
     });
 
-    const removeButton = screen.getAllByRole("button").find((btn) => btn.querySelector("svg"));
+    // Find the X (remove) button - it's a ghost button with the lucide-x icon
+    // This is more specific than just looking for any button with an SVG
+    const removeButton = screen.getAllByRole("button").find((btn) => {
+      const svg = btn.querySelector("svg");
+      return svg && svg.classList.contains("lucide-x");
+    });
+    expect(removeButton).toBeDefined();
     if (removeButton) {
       fireEvent.click(removeButton);
     }

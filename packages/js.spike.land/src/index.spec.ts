@@ -34,9 +34,12 @@ describe("js.spike.land worker", () => {
     });
 
     it("should parse codeSpace from query params", async () => {
-      const request = new Request("https://js.spike.land/?codeSpace=test-space", {
-        method: "DELETE",
-      });
+      const request = new Request(
+        "https://js.spike.land/?codeSpace=test-space",
+        {
+          method: "DELETE",
+        },
+      );
 
       const response = await worker.fetch(request);
 

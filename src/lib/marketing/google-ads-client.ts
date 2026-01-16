@@ -148,7 +148,10 @@ export class GoogleAdsClient implements IMarketingClient {
   /**
    * Execute Google Ads Query Language (GAQL) query
    */
-  private async query<T>(customerId: string, gaqlQuery: string): Promise<T[]> {
+  protected async query<T>(
+    customerId: string,
+    gaqlQuery: string,
+  ): Promise<T[]> {
     const response = await this.request<{ results: T[]; }>(
       `/customers/${customerId}/googleAds:searchStream`,
       {

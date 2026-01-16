@@ -56,13 +56,16 @@ export class CrisisAlertManager {
     for (const channel of channels) {
       switch (channel) {
         case "email":
-          results.email = await this.sendEmailAlerts(members, content);
+          results["email"] = await this.sendEmailAlerts(members, content);
           break;
         case "slack":
-          results.slack = await this.sendSlackAlert(event.workspaceId, content);
+          results["slack"] = await this.sendSlackAlert(
+            event.workspaceId,
+            content,
+          );
           break;
         case "in_app":
-          results.in_app = await this.createInAppNotifications(
+          results["in_app"] = await this.createInAppNotifications(
             members,
             event,
             content,
@@ -166,19 +169,19 @@ export class CrisisAlertManager {
       `A ${event.severity.toLowerCase()} severity crisis has been detected.`,
     );
 
-    if (triggerData.description) {
-      parts.push(String(triggerData.description));
+    if (triggerData["description"]) {
+      parts.push(String(triggerData["description"]));
     }
 
-    if (triggerData.percentChange) {
-      const change = Number(triggerData.percentChange);
+    if (triggerData["percentChange"]) {
+      const change = Number(triggerData["percentChange"]);
       parts.push(
         `Metric change: ${change > 0 ? "+" : ""}${change.toFixed(1)}%`,
       );
     }
 
-    if (triggerData.sentimentScore !== undefined) {
-      const score = Number(triggerData.sentimentScore);
+    if (triggerData["sentimentScore"] !== undefined) {
+      const score = Number(triggerData["sentimentScore"]);
       parts.push(`Sentiment score: ${score.toFixed(2)}`);
     }
 
@@ -250,8 +253,8 @@ export class CrisisAlertManager {
     }
 
     const settings = workspace.settings as Record<string, unknown> | null;
-    const slackWebhook = (settings?.notifications as Record<string, unknown>)
-      ?.slackWebhookUrl as string | undefined;
+    const slackWebhook = (settings?.["notifications"] as Record<string, unknown>)
+      ?.["slackWebhookUrl"] as string | undefined;
 
     if (!slackWebhook) {
       return false;
@@ -362,7 +365,7 @@ export class CrisisAlertManager {
     }
 
     const settings = (workspace.settings as Record<string, unknown>) || {};
-    const notifications = (settings.inAppNotifications as Array<Record<string, unknown>>) || [];
+    const notifications = (settings["inAppNotifications"] as Array<Record<string, unknown>>) || [];
 
     notifications.unshift({
       id: `crisis-${event.id}`,
@@ -430,7 +433,7 @@ export class CrisisAlertManager {
 
     for (const event of events) {
       const triggerData = event.triggerData as Record<string, unknown>;
-      const ruleId = triggerData.detectionRuleId as string | undefined;
+      const ruleId = triggerData["detectionRuleId"] as string | undefined;
 
       if (!ruleId) continue;
 
@@ -512,7 +515,7 @@ export class CrisisAlertManager {
     }
 
     const settings = (workspace.settings as Record<string, unknown>) || {};
-    const timeline = (settings.crisisTimeline as Array<Record<string, unknown>>) || [];
+    const timeline = (settings["crisisTimeline"] as Array<Record<string, unknown>>) || [];
 
     timeline.unshift({
       id: `timeline-${Date.now()}-${Math.random().toString(36).slice(2)}`,

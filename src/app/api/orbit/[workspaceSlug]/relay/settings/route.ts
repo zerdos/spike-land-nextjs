@@ -109,7 +109,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const updates = body as Partial<RelayApprovalSettings>;
@@ -125,7 +127,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 
   if (updates.escalationTimeoutHours !== undefined) {
-    if (updates.escalationTimeoutHours !== null && updates.escalationTimeoutHours < 0) {
+    if (
+      updates.escalationTimeoutHours !== null &&
+      updates.escalationTimeoutHours < 0
+    ) {
       return NextResponse.json(
         { error: "escalationTimeoutHours must be null or a positive number" },
         { status: 400 },

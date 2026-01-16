@@ -40,7 +40,9 @@ export const postToPlatformAction: WorkflowAction<
     return retry(async () => {
       let result;
       if (input.platform === "twitter") {
-        const twitterClient = new TwitterClient({ accessToken: input.accessToken });
+        const twitterClient = new TwitterClient({
+          accessToken: input.accessToken,
+        });
         result = await twitterClient.createPost(input.content);
       } else if (input.platform === "linkedin") {
         if (!input.organizationId) {

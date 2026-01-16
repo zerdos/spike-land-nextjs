@@ -150,13 +150,15 @@ export async function POST(
           // SDKAssistantMessage has message.message.content (BetaMessage structure)
           if (message.type === "assistant") {
             const betaMessage = (message as {
-              message?: { content?: Array<{ type: string; text?: string; name?: string; }>; };
+              message?: {
+                content?: Array<{ type: string; text?: string; name?: string; }>;
+              };
             }).message;
             const contentArray = betaMessage?.content || [];
 
             // Extract text parts
-            const textParts = contentArray.filter(c => c.type === "text");
-            const text = textParts.map(c => c.text || "").join("");
+            const textParts = contentArray.filter((c) => c.type === "text");
+            const text = textParts.map((c) => c.text || "").join("");
             if (text) {
               finalResponse += text;
               const data = JSON.stringify({ type: "chunk", content: text });
@@ -164,12 +166,13 @@ export async function POST(
             }
 
             // Notify about tool use and track code-modifying tools
-            const toolUseParts = contentArray.filter(c => c.type === "tool_use");
+            const toolUseParts = contentArray.filter((c) => c.type === "tool_use");
             for (const toolUse of toolUseParts) {
               const toolName = toolUse.name || "";
               // Track if any code-modifying tools are used
               if (
-                toolName.includes("update_code") || toolName.includes("edit_code") ||
+                toolName.includes("update_code") ||
+                toolName.includes("edit_code") ||
                 toolName.includes("search_and_replace")
               ) {
                 codeUpdated = true;
@@ -178,7 +181,9 @@ export async function POST(
                 type: "status",
                 content: `Executing ${toolName || "tool"}...`,
               });
-              controller.enqueue(new TextEncoder().encode(`data: ${statusData}\n\n`));
+              controller.enqueue(
+                new TextEncoder().encode(`data: ${statusData}\n\n`),
+              );
             }
           }
 
@@ -192,7 +197,9 @@ export async function POST(
                 type: "error",
                 content: resultMsg.errors?.join(", ") || "Unknown error",
               });
-              controller.enqueue(new TextEncoder().encode(`data: ${errData}\n\n`));
+              controller.enqueue(
+                new TextEncoder().encode(`data: ${errData}\n\n`),
+              );
             }
           }
         }
@@ -211,7 +218,8 @@ export async function POST(
 
           // Attempt to extract name and description if this is one of the first interactions
           // We check if the name looks like a slug (contains dashes and potentially matches the patterns)
-          const isDefaultName = app.codespaceId && app.codespaceId.includes("-");
+          const isDefaultName = app.codespaceId &&
+            app.codespaceId.includes("-");
 
           if (isDefaultName) {
             // We fire this off without awaiting it to not block the stream closing immediately
@@ -224,13 +232,18 @@ export async function POST(
 
         // Broadcast code update to SSE clients if any code-modifying tools were used
         if (codeUpdated) {
-          console.log("[agent/chat] Code was updated, broadcasting to SSE clients");
+          console.log(
+            "[agent/chat] Code was updated, broadcasting to SSE clients",
+          );
 
           // Verify the update actually happened
           const { data: verifyResponse } = await tryCatch(
-            fetch(`https://testing.spike.land/live/${app.codespaceId}/session.json`, {
-              headers: { "Accept": "application/json" },
-            }),
+            fetch(
+              `https://testing.spike.land/live/${app.codespaceId}/session.json`,
+              {
+                headers: { "Accept": "application/json" },
+              },
+            ),
           );
 
           if (verifyResponse?.ok) {
@@ -241,7 +254,9 @@ export async function POST(
             );
 
             if (!actuallyChanged) {
-              console.error("[agent/chat] Tool claimed success but code unchanged!");
+              console.error(
+                "[agent/chat] Tool claimed success but code unchanged!",
+              );
             }
           }
 
@@ -271,7 +286,11 @@ export async function POST(
 }
 
 // Helper to generate app name and description
-async function generateAppDetails(appId: string, agentResponse: string, userPrompt: string) {
+async function generateAppDetails(
+  appId: string,
+  agentResponse: string,
+  userPrompt: string,
+) {
   try {
     const namingPrompt = `
       Based on the following conversation, generate a short, creative name (max 3-4 words) and a brief description (max 20 words) for the application being built.
@@ -324,7 +343,10 @@ async function generateAppDetails(appId: string, agentResponse: string, userProm
       });
       console.log(`[agent/chat] Updated app details: ${parsed.data.name}`);
     } else {
-      console.warn("[agent/chat] Invalid app details format:", parsed.error.message);
+      console.warn(
+        "[agent/chat] Invalid app details format:",
+        parsed.error.message,
+      );
     }
   } catch (e) {
     console.error("[agent/chat] Failed to generate app details:", e);

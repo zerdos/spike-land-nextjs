@@ -181,12 +181,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   if (createError) {
     console.error("Failed to create brand profile:", createError);
     console.error("Create error details:", {
-      message: createError.message,
-      name: createError.name,
-      stack: createError.stack,
+      message: createError["message"],
+      name: createError["name"],
+      stack: createError["stack"],
     });
     return NextResponse.json(
-      { error: "Failed to create brand profile", details: createError.message },
+      {
+        error: "Failed to create brand profile",
+        details: createError["message"],
+      },
       { status: 500 },
     );
   }
@@ -278,16 +281,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         version: { increment: 1 },
       };
 
-      if (name !== undefined) updateData.name = name;
-      if (mission !== undefined) updateData.mission = mission || null;
-      if (values !== undefined) updateData.values = values || [];
+      if (name !== undefined) updateData["name"] = name;
+      if (mission !== undefined) updateData["mission"] = mission || null;
+      if (values !== undefined) updateData["values"] = values || [];
       if (toneDescriptors !== undefined) {
-        updateData.toneDescriptors = toneDescriptors;
+        updateData["toneDescriptors"] = toneDescriptors;
       }
-      if (logoUrl !== undefined) updateData.logoUrl = logoUrl || null;
-      if (logoR2Key !== undefined) updateData.logoR2Key = logoR2Key || null;
+      if (logoUrl !== undefined) updateData["logoUrl"] = logoUrl || null;
+      if (logoR2Key !== undefined) updateData["logoR2Key"] = logoR2Key || null;
       if (colorPalette !== undefined) {
-        updateData.colorPalette = colorPalette || [];
+        updateData["colorPalette"] = colorPalette || [];
       }
 
       // Update the brand profile

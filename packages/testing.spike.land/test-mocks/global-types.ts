@@ -35,14 +35,20 @@ interface OpenAIChatCompletionResponse {
 
 interface OpenAIClient {
   audio: {
-    speech: { create(params: OpenAISpeechParams): Promise<OpenAISpeechResponse>; };
+    speech: {
+      create(params: OpenAISpeechParams): Promise<OpenAISpeechResponse>;
+    };
     transcriptions: {
-      create(params: OpenAITranscriptionParams): Promise<OpenAITranscriptionResponse>;
+      create(
+        params: OpenAITranscriptionParams,
+      ): Promise<OpenAITranscriptionResponse>;
     };
   };
   chat: {
     completions: {
-      create(params: OpenAIChatCompletionParams): Promise<OpenAIChatCompletionResponse>;
+      create(
+        params: OpenAIChatCompletionParams,
+      ): Promise<OpenAIChatCompletionResponse>;
     };
   };
 }

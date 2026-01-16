@@ -21,7 +21,10 @@ interface InboxItemProps {
   onClick: () => void;
 }
 
-const PLATFORM_ICONS: Record<string, React.ComponentType<{ className?: string; }>> = {
+const PLATFORM_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string; }>
+> = {
   TWITTER: Twitter,
   FACEBOOK: Facebook,
   INSTAGRAM: Instagram,
@@ -52,7 +55,10 @@ export function InboxItem({ item, isSelected, onClick }: InboxItemProps) {
     >
       <CardContent className="p-4 flex items-start space-x-4">
         <Avatar>
-          <AvatarImage src={item.senderAvatarUrl ?? undefined} alt={item.senderName} />
+          <AvatarImage
+            src={item.senderAvatarUrl ?? undefined}
+            alt={item.senderName}
+          />
           <AvatarFallback>
             <PlatformIcon platform={item.platform} />
           </AvatarFallback>
@@ -71,7 +77,10 @@ export function InboxItem({ item, isSelected, onClick }: InboxItemProps) {
           <div className="text-sm text-gray-700 mt-1">{item.content}</div>
           <div className="mt-2 flex items-center gap-2">
             <Badge variant="outline">{item.type}</Badge>
-            <InboxSentimentBadge sentiment={item.sentiment} score={item.sentimentScore} />
+            <InboxSentimentBadge
+              sentiment={item.sentiment}
+              score={item.sentimentScore}
+            />
             <InboxPriorityBadge score={item.priorityScore} />
           </div>
         </div>

@@ -181,9 +181,7 @@ function buildWhereClause(filter: InboxItemFilter): Prisma.InboxItemWhereInput {
   }
 
   if (filter.type) {
-    where.type = Array.isArray(filter.type)
-      ? { in: filter.type }
-      : filter.type;
+    where.type = Array.isArray(filter.type) ? { in: filter.type } : filter.type;
   }
 
   if (filter.platform) {
@@ -227,9 +225,7 @@ function buildWhereClause(filter: InboxItemFilter): Prisma.InboxItemWhereInput {
   }
 
   if (filter.escalated !== undefined) {
-    where.escalationStatus = filter.escalated
-      ? { not: "NONE" }
-      : "NONE";
+    where.escalationStatus = filter.escalated ? { not: "NONE" } : "NONE";
   }
 
   return where;
@@ -274,11 +270,15 @@ export async function listInboxItems(
     // Actually items might belong to different workspaces if not filtered by workspaceId (but filter requires workspaceId)
     // filter.workspaceId is mandatory in InboxItemFilter? Yes.
 
-    Promise.all(unanalyzed.map(i => RoutingEngine.processItem(i.id, i.workspaceId)))
+    Promise.all(
+      unanalyzed.map((i) => RoutingEngine.processItem(i.id, i.workspaceId)),
+    )
       .then((results) => {
-        console.info(`[InboxManager] Auto-analysis triggered for ${results.length} items`);
+        console.info(
+          `[InboxManager] Auto-analysis triggered for ${results.length} items`,
+        );
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("[InboxManager] Auto-analysis trigger failed:", error);
       });
   }

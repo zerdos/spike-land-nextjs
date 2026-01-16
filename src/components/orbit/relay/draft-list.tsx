@@ -52,9 +52,11 @@ function DraftListSkeleton() {
   );
 }
 
-export function DraftList({ inboxItemId, selectedDraftId, onSelectDraft }: DraftListProps) {
+export function DraftList(
+  { inboxItemId, selectedDraftId, onSelectDraft }: DraftListProps,
+) {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
 
   const {
     data: drafts,

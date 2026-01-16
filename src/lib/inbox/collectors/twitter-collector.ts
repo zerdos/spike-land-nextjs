@@ -155,11 +155,11 @@ export class TwitterCollector extends BaseCollector {
       };
 
       if (options?.sinceId) {
-        params.since_id = options.sinceId;
+        params["since_id"] = options.sinceId;
       }
 
       if (options?.cursor) {
-        params.pagination_token = options.cursor;
+        params["pagination_token"] = options.cursor;
       }
 
       const response = await this.makeRequest<TwitterMentionsResponse>(
@@ -173,7 +173,10 @@ export class TwitterCollector extends BaseCollector {
       }
 
       const messages: RawSocialMessage[] = response.data.map((tweet) => {
-        const sender = this.getUserInfo(tweet.author_id, response.includes?.users);
+        const sender = this.getUserInfo(
+          tweet.author_id,
+          response.includes?.users,
+        );
         const referencedTweet = tweet.referenced_tweets?.find(
           (ref) => ref.type === "replied_to",
         );
@@ -225,7 +228,7 @@ export class TwitterCollector extends BaseCollector {
       };
 
       if (options?.cursor) {
-        params.pagination_token = options.cursor;
+        params["pagination_token"] = options.cursor;
       }
 
       try {
@@ -242,7 +245,10 @@ export class TwitterCollector extends BaseCollector {
         const messages: RawSocialMessage[] = response.data
           .filter((event) => event.event_type === "MessageCreate")
           .map((event) => {
-            const sender = this.getUserInfo(event.sender_id, response.includes?.users);
+            const sender = this.getUserInfo(
+              event.sender_id,
+              response.includes?.users,
+            );
 
             return {
               platformItemId: event.id,

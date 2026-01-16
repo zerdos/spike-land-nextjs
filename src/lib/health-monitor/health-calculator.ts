@@ -55,7 +55,8 @@ export function calculateSyncScore(
   }
 
   const now = new Date();
-  const hoursSinceSync = (now.getTime() - lastSuccessfulSync.getTime()) / (1000 * 60 * 60);
+  const hoursSinceSync = (now.getTime() - lastSuccessfulSync.getTime()) /
+    (1000 * 60 * 60);
 
   // Base score from sync time
   let score = 100;
@@ -148,7 +149,8 @@ export function calculateTokenScore(
   }
 
   const now = new Date();
-  const hoursUntilExpiry = (tokenExpiresAt.getTime() - now.getTime()) / (1000 * 60 * 60);
+  const hoursUntilExpiry = (tokenExpiresAt.getTime() - now.getTime()) /
+    (1000 * 60 * 60);
 
   // Already expired
   if (hoursUntilExpiry <= 0) {
@@ -302,7 +304,9 @@ export async function recalculateWorkspaceHealth(
 
     const { score, status } = calculateFullHealth(account.health);
 
-    if (score !== account.health.healthScore || status !== account.health.status) {
+    if (
+      score !== account.health.healthScore || status !== account.health.status
+    ) {
       await prisma.socialAccountHealth.update({
         where: { accountId: account.id },
         data: {

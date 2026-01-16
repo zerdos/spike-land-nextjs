@@ -120,7 +120,9 @@ describe("best-time-service", () => {
       expect(result).toBeDefined();
       expect(result.platformRecommendations).toHaveLength(1);
       expect(result.platformRecommendations[0]?.platform).toBe("LINKEDIN");
-      expect(result.platformRecommendations[0]?.accountName).toBe("Test Company");
+      expect(result.platformRecommendations[0]?.accountName).toBe(
+        "Test Company",
+      );
     });
 
     it("uses industry benchmarks when no historical data", async () => {
@@ -181,7 +183,9 @@ describe("best-time-service", () => {
         });
       }
 
-      vi.mocked(prisma.socialMetrics.findMany).mockResolvedValue(mockMetrics as never);
+      vi.mocked(prisma.socialMetrics.findMany).mockResolvedValue(
+        mockMetrics as never,
+      );
       vi.mocked(prisma.scheduledPost.findMany).mockResolvedValue([]);
 
       const result = await getBestTimeRecommendations(defaultOptions);

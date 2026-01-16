@@ -79,7 +79,11 @@ export function PulseHealthWidget({
 
   return (
     <Card
-      variant={status === "critical" ? "orange" : status === "warning" ? "orange" : "green"}
+      variant={status === "critical"
+        ? "orange"
+        : status === "warning"
+        ? "orange"
+        : "green"}
       className="relative overflow-hidden"
     >
       <CardHeader className="pb-2">
@@ -107,7 +111,9 @@ export function PulseHealthWidget({
                   "absolute inset-0 rounded-full animate-ping opacity-40",
                   config.pulseColor,
                 )}
-                style={{ animationDuration: status === "critical" ? "1s" : "2s" }}
+                style={{
+                  animationDuration: status === "critical" ? "1s" : "2s",
+                }}
               />
             )}
           </div>
@@ -130,7 +136,9 @@ export function PulseHealthWidget({
                   </span>
                 )}
                 {criticalCount === 0 && warningCount === 0 && (
-                  <span className="text-emerald-400/70">No issues detected</span>
+                  <span className="text-emerald-400/70">
+                    No issues detected
+                  </span>
                 )}
               </div>
             )}

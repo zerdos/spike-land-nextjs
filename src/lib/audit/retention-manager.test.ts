@@ -292,7 +292,9 @@ describe("AuditRetentionManager", () => {
         workspacePolicy,
       );
 
-      const result = await AuditRetentionManager.getEffectivePolicy("workspace-1");
+      const result = await AuditRetentionManager.getEffectivePolicy(
+        "workspace-1",
+      );
 
       expect(result?.id).toBe("ws-policy");
       expect(result?.name).toBe("Workspace Policy");
@@ -316,7 +318,9 @@ describe("AuditRetentionManager", () => {
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(systemPolicy);
 
-      const result = await AuditRetentionManager.getEffectivePolicy("workspace-1");
+      const result = await AuditRetentionManager.getEffectivePolicy(
+        "workspace-1",
+      );
 
       expect(result?.id).toBe("sys-policy");
       expect(result?.workspaceId).toBeNull();
@@ -325,7 +329,9 @@ describe("AuditRetentionManager", () => {
     it("should return null if no policies exist", async () => {
       mockPrisma.auditRetentionPolicy.findFirst.mockResolvedValue(null);
 
-      const result = await AuditRetentionManager.getEffectivePolicy("workspace-1");
+      const result = await AuditRetentionManager.getEffectivePolicy(
+        "workspace-1",
+      );
 
       expect(result).toBeNull();
     });
@@ -335,7 +341,9 @@ describe("AuditRetentionManager", () => {
     it("should return error if policy not found", async () => {
       mockPrisma.auditRetentionPolicy.findUnique.mockResolvedValue(null);
 
-      const result = await AuditRetentionManager.executeRetentionJob("nonexistent");
+      const result = await AuditRetentionManager.executeRetentionJob(
+        "nonexistent",
+      );
 
       expect(result.archivedCount).toBe(0);
       expect(result.deletedCount).toBe(0);
@@ -357,7 +365,9 @@ describe("AuditRetentionManager", () => {
         updatedAt: new Date(),
       });
 
-      const result = await AuditRetentionManager.executeRetentionJob("policy-1");
+      const result = await AuditRetentionManager.executeRetentionJob(
+        "policy-1",
+      );
 
       expect(result.errors).toContain("Policy is not active");
     });
@@ -397,7 +407,9 @@ describe("AuditRetentionManager", () => {
       mockPrisma.workspaceAuditLog.deleteMany.mockResolvedValue({ count: 1 });
       mockPrisma.archivedAuditLog.deleteMany.mockResolvedValue({ count: 0 });
 
-      const result = await AuditRetentionManager.executeRetentionJob("policy-1");
+      const result = await AuditRetentionManager.executeRetentionJob(
+        "policy-1",
+      );
 
       expect(result.archivedCount).toBe(1);
       expect(result.policyId).toBe("policy-1");
@@ -416,7 +428,9 @@ describe("AuditRetentionManager", () => {
       });
       mockPrisma.auditRetentionPolicy.findFirst.mockResolvedValue(null);
 
-      const result = await AuditRetentionManager.getRetentionStats("workspace-1");
+      const result = await AuditRetentionManager.getRetentionStats(
+        "workspace-1",
+      );
 
       expect(result.totalActiveLogs).toBe(100);
       expect(result.totalArchivedLogs).toBe(50);

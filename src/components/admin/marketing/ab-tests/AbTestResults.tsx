@@ -74,7 +74,9 @@ const AbTestResults = ({ test }: AbTestResultsProps) => {
             {variantsWithStats.map((variant) => (
               <TableRow
                 key={variant.id}
-                className={test.winnerVariantId === variant.id ? "bg-green-100" : ""}
+                className={test.winnerVariantId === variant.id
+                  ? "bg-green-100"
+                  : ""}
               >
                 <TableCell>
                   {variant.name} {test.winnerVariantId === variant.id && <Badge>Winner</Badge>}

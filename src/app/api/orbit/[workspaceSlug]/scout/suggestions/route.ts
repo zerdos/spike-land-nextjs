@@ -48,12 +48,16 @@ export async function GET(request: Request, context: RouteContext) {
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     // Parse query params
     const url = new URL(request.url);
-    const status = url.searchParams.get("status")?.split(",") as SuggestionStatus[] | undefined;
+    const status = url.searchParams.get("status")?.split(",") as
+      | SuggestionStatus[]
+      | undefined;
     const contentTypes = url.searchParams.get("contentTypes")?.split(",") as
       | ContentType[]
       | undefined;
@@ -69,9 +73,13 @@ export async function GET(request: Request, context: RouteContext) {
     const offset = url.searchParams.get("offset")
       ? parseInt(url.searchParams.get("offset")!, 10)
       : 0;
-    const sortBy = (url.searchParams.get("sortBy") as "score" | "generatedAt" | "expiresAt") ??
+    const sortBy = (url.searchParams.get("sortBy") as
+      | "score"
+      | "generatedAt"
+      | "expiresAt") ??
       "score";
-    const sortOrder = (url.searchParams.get("sortOrder") as "asc" | "desc") ?? "desc";
+    const sortOrder = (url.searchParams.get("sortOrder") as "asc" | "desc") ??
+      "desc";
     const includeStats = url.searchParams.get("includeStats") === "true";
 
     // Query suggestions
@@ -102,7 +110,9 @@ export async function GET(request: Request, context: RouteContext) {
     });
   } catch (error) {
     console.error("Failed to list suggestions:", error);
-    return NextResponse.json({ error: "Failed to list suggestions" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to list suggestions" }, {
+      status: 500,
+    });
   }
 }
 
@@ -136,7 +146,9 @@ export async function POST(request: Request, context: RouteContext) {
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     // Parse request body
@@ -183,6 +195,8 @@ export async function POST(request: Request, context: RouteContext) {
     });
   } catch (error) {
     console.error("Failed to generate suggestions:", error);
-    return NextResponse.json({ error: "Failed to generate suggestions" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to generate suggestions" }, {
+      status: 500,
+    });
   }
 }

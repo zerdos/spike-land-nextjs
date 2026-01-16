@@ -1,4 +1,5 @@
-const isMac = typeof navigator !== "undefined" && /Mac/.test(navigator.platform);
+const isMac = typeof navigator !== "undefined" &&
+  /Mac/.test(navigator.platform);
 const modKey = isMac ? "Cmd" : "Ctrl";
 
 export interface EditorCommand {

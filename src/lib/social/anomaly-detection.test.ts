@@ -125,7 +125,9 @@ describe("detectAnomalies", () => {
       platform: "LINKEDIN" as SocialPlatform,
     };
 
-    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount] as never);
+    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue(
+      [mockAccount] as never,
+    );
 
     // Create 8 days of metrics with a spike on the last day
     const mockMetrics = createMockMetricsWithSpike(
@@ -148,7 +150,9 @@ describe("detectAnomalies", () => {
       platform: "INSTAGRAM" as SocialPlatform,
     };
 
-    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount] as never);
+    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue(
+      [mockAccount] as never,
+    );
 
     // Create metrics with a significant drop
     const mockMetrics = createMockMetricsWithSpike(
@@ -169,7 +173,9 @@ describe("detectAnomalies", () => {
       platform: "TWITTER" as SocialPlatform,
     };
 
-    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount] as never);
+    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue(
+      [mockAccount] as never,
+    );
 
     // Normal fluctuations within 1 standard deviation
     const mockMetrics = createMockMetricsWithSpike(
@@ -189,7 +195,9 @@ describe("detectAnomalies", () => {
       platform: "FACEBOOK" as SocialPlatform,
     };
 
-    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount] as never);
+    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue(
+      [mockAccount] as never,
+    );
 
     // Extreme spike for critical severity (Z > 3)
     // Need some variation in historical data so stdDev is not 0
@@ -211,7 +219,9 @@ describe("detectAnomalies", () => {
       platform: "YOUTUBE" as SocialPlatform,
     };
 
-    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount] as never);
+    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue(
+      [mockAccount] as never,
+    );
 
     // All zeros for impressions
     const mockMetrics = createMockMetricsWithSpike(
@@ -231,7 +241,9 @@ describe("detectAnomalies", () => {
       { id: "account-2", platform: "INSTAGRAM" as SocialPlatform },
     ];
 
-    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue(mockAccounts as never);
+    vi.mocked(prisma.socialAccount.findMany).mockResolvedValue(
+      mockAccounts as never,
+    );
     vi.mocked(prisma.socialMetrics.findMany).mockResolvedValue([]);
 
     const result = await detectAnomalies("workspace-1");
@@ -411,11 +423,16 @@ function createMockMetricsWithSpike(
   return followerValues.map((followers, index) => ({
     id: `metrics-${index}`,
     accountId,
-    date: new Date(baseDate.getTime() - (followerValues.length - 1 - index) * 24 * 60 * 60 * 1000),
+    date: new Date(
+      baseDate.getTime() -
+        (followerValues.length - 1 - index) * 24 * 60 * 60 * 1000,
+    ),
     followers,
     following: 100,
     postsCount: 50,
-    engagementRate: { toNumber: () => 5.0 } as unknown as SocialMetrics["engagementRate"],
+    engagementRate: {
+      toNumber: () => 5.0,
+    } as unknown as SocialMetrics["engagementRate"],
     impressions: 1000,
     reach: 800,
     likes: 100,

@@ -46,7 +46,7 @@ describe("/api/cron/cleanup-errors", () => {
       const originalEnv = process.env.NODE_ENV;
       const originalSecret = process.env.CRON_SECRET;
 
-      (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+      (process.env as Record<string, string | undefined>)["NODE_ENV"] = "production";
       process.env.CRON_SECRET = "test-secret";
 
       try {
@@ -57,7 +57,7 @@ describe("/api/cron/cleanup-errors", () => {
         const data = await response.json();
         expect(data.error).toBe("Unauthorized");
       } finally {
-        (process.env as Record<string, string | undefined>).NODE_ENV = originalEnv;
+        (process.env as Record<string, string | undefined>)["NODE_ENV"] = originalEnv;
         process.env.CRON_SECRET = originalSecret;
       }
     });

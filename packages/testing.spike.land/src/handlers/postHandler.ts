@@ -70,7 +70,10 @@ function hasValidInputSchemaType(toolObj: ToolWithInputSchema): boolean {
   }
 
   // Check custom.input_schema (AI SDK format)
-  if (toolObj.custom?.input_schema && typeof toolObj.custom.input_schema === "object") {
+  if (
+    toolObj.custom?.input_schema &&
+    typeof toolObj.custom.input_schema === "object"
+  ) {
     if (toolObj.custom.input_schema.type !== "object") {
       return false;
     }
@@ -178,7 +181,9 @@ export class PostHandler {
       }
 
       const codeSpace = this.code.getSession().codeSpace;
-      const messages = this.convertMessages(body.messages as MessageWithParts[]);
+      const messages = this.convertMessages(
+        body.messages as MessageWithParts[],
+      );
 
       await this.storageService.saveRequestBody(codeSpace, body);
 
@@ -229,7 +234,11 @@ export class PostHandler {
 
       // Check for custom.input_schema pattern (AI SDK format)
       if (toolObj.custom?.input_schema) {
-        if (!hasValidInputSchemaType({ custom: { input_schema: toolObj.custom.input_schema } })) {
+        if (
+          !hasValidInputSchemaType({
+            custom: { input_schema: toolObj.custom.input_schema },
+          })
+        ) {
           invalidTools.push({
             index,
             reason: "custom.input_schema.type is not 'object'",
@@ -315,7 +324,8 @@ export class PostHandler {
       // Validate content structure if present
       if (hasContent) {
         if (
-          typeof typedMsg.content !== "string" && !Array.isArray(typedMsg.content)
+          typeof typedMsg.content !== "string" &&
+          !Array.isArray(typedMsg.content)
         ) {
           return `Message at index ${i} content must be a string or array`;
         }
@@ -548,20 +558,27 @@ export class PostHandler {
       }
 
       // If no methods are available, return a fallback response
-      return new Response(JSON.stringify({ error: "Streaming not supported" }), {
-        status: 500,
-        headers: this.getCorsHeaders(),
-      });
+      return new Response(
+        JSON.stringify({ error: "Streaming not supported" }),
+        {
+          status: 500,
+          headers: this.getCorsHeaders(),
+        },
+      );
 
       // If no methods are available, we have an issue
-      console.error(`[AI Routes][${requestId}] No streaming methods available on result`);
+      console.error(
+        `[AI Routes][${requestId}] No streaming methods available on result`,
+      );
       throw new Error("Streaming methods not available on streamText result");
     } catch (streamErrorCaught) {
       console.error(`[AI Routes][${requestId}] Stream error details:`, {
         message: streamErrorCaught instanceof Error
           ? streamErrorCaught.message
           : "Unknown error",
-        stack: streamErrorCaught instanceof Error ? streamErrorCaught.stack : undefined,
+        stack: streamErrorCaught instanceof Error
+          ? streamErrorCaught.stack
+          : undefined,
       });
       throw streamErrorCaught;
     }
@@ -589,7 +606,9 @@ export class PostHandler {
         {
           hasInputSchema: !!mcpTool.inputSchema,
           inputSchemaType: mcpTool.inputSchema?.type,
-          inputSchemaKeys: mcpTool.inputSchema ? Object.keys(mcpTool.inputSchema) : [],
+          inputSchemaKeys: mcpTool.inputSchema
+            ? Object.keys(mcpTool.inputSchema)
+            : [],
         },
       );
 

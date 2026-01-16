@@ -8,7 +8,9 @@ import type { topicKeywordsSchema } from "../topic-config";
 // The search result from the client will have the author expanded.
 type TweetWithAuthor = TwitterTweet & { author?: TwitterUser; };
 
-export function buildTwitterQuery(keywords: z.infer<typeof topicKeywordsSchema>): string {
+export function buildTwitterQuery(
+  keywords: z.infer<typeof topicKeywordsSchema>,
+): string {
   const parts: string[] = [];
 
   // AND keywords are basic terms
@@ -23,13 +25,15 @@ export function buildTwitterQuery(keywords: z.infer<typeof topicKeywordsSchema>)
 
   // NOT keywords are prefixed with a hyphen
   if (keywords.not?.length) {
-    parts.push(...keywords.not.map(kw => `-${kw}`));
+    parts.push(...keywords.not.map((kw) => `-${kw}`));
   }
 
   return parts.join(" ");
 }
 
-function formatTweetAsScoutResult(tweet: TweetWithAuthor): Omit<ScoutResult, "id" | "topicId"> {
+function formatTweetAsScoutResult(
+  tweet: TweetWithAuthor,
+): Omit<ScoutResult, "id" | "topicId"> {
   const authorUsername = tweet.author?.username ?? "unknown";
   return {
     platform: SocialPlatform.TWITTER,
@@ -41,7 +45,8 @@ function formatTweetAsScoutResult(tweet: TweetWithAuthor): Omit<ScoutResult, "id
     engagement: {
       likes: tweet.public_metrics?.like_count ?? 0,
       comments: tweet.public_metrics?.reply_count ?? 0,
-      shares: (tweet.public_metrics?.retweet_count ?? 0) + (tweet.public_metrics?.quote_count ?? 0),
+      shares: (tweet.public_metrics?.retweet_count ?? 0) +
+        (tweet.public_metrics?.quote_count ?? 0),
     },
     foundAt: new Date(),
   };

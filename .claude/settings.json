@@ -1,6 +1,7 @@
 {
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
-    "ralph-wiggum@claude-plugins-official": true
+    "ralph-wiggum@claude-plugins-official": true,
+    "shell-scripting@claude-code-workflows": true
   }
 }

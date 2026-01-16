@@ -136,8 +136,8 @@ export class InstagramCollector extends BaseCollector {
     const appUsage = response.headers.get("x-app-usage");
     if (appUsage) {
       try {
-        const usage = JSON.parse(appUsage);
-        const callCount = usage.call_count ?? 0;
+        const usage = JSON.parse(appUsage) as Record<string, unknown>;
+        const callCount = (usage["call_count"] as number) ?? 0;
         if (callCount >= 80) {
           this.updateRateLimitStatus(
             100 - callCount,
@@ -192,7 +192,7 @@ export class InstagramCollector extends BaseCollector {
       };
 
       if (options?.cursor) {
-        params.after = options.cursor;
+        params["after"] = options.cursor;
       }
 
       try {
@@ -251,12 +251,14 @@ export class InstagramCollector extends BaseCollector {
       };
 
       if (options?.cursor) {
-        params.after = options.cursor;
+        params["after"] = options.cursor;
       }
 
       try {
         // Get conversations
-        const conversationsResponse = await this.makeRequest<InstagramConversationsResponse>(
+        const conversationsResponse = await this.makeRequest<
+          InstagramConversationsResponse
+        >(
           `/${accountId}/conversations`,
           accessToken,
           { ...params, platform: "instagram" },
@@ -274,7 +276,9 @@ export class InstagramCollector extends BaseCollector {
         // Fetch messages from each conversation
         for (const conversation of conversationsResponse.data.slice(0, 10)) {
           try {
-            const messagesResponse = await this.makeRequest<InstagramMessagesResponse>(
+            const messagesResponse = await this.makeRequest<
+              InstagramMessagesResponse
+            >(
               `/${conversation.id}/messages`,
               accessToken,
               {
@@ -364,11 +368,13 @@ export class InstagramCollector extends BaseCollector {
         };
 
         if (options?.cursor) {
-          commentsParams.after = options.cursor;
+          commentsParams["after"] = options.cursor;
         }
 
         try {
-          const commentsResponse = await this.makeRequest<InstagramCommentsResponse>(
+          const commentsResponse = await this.makeRequest<
+            InstagramCommentsResponse
+          >(
             `/${media.id}/comments`,
             accessToken,
             commentsParams,
@@ -377,7 +383,9 @@ export class InstagramCollector extends BaseCollector {
           if (commentsResponse.data) {
             const comments = commentsResponse.data.map((comment) => ({
               platformItemId: comment.id,
-              type: (comment.parent_id ? "REPLY" : "COMMENT") as "REPLY" | "COMMENT",
+              type: (comment.parent_id ? "REPLY" : "COMMENT") as
+                | "REPLY"
+                | "COMMENT",
               content: comment.text,
               senderName: comment.from.name ?? comment.from.username,
               senderHandle: `@${comment.from.username}`,

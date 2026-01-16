@@ -143,7 +143,7 @@ Given("I have an enhanced image", async function(this: CustomWorld) {
 
   // Store for use in steps
   await this.page.evaluate((data) => {
-    (window as unknown as Record<string, unknown>).__mockImage = data;
+    (window as unknown as Record<string, unknown>)["__mockImage"] = data;
   }, imageWithEnhancement);
 
   await mockTokenBalance(this, 10);
@@ -174,7 +174,7 @@ Given(
     };
 
     await this.page.evaluate((data) => {
-      (window as unknown as Record<string, unknown>).__mockImage = data;
+      (window as unknown as Record<string, unknown>)["__mockImage"] = data;
     }, imageWithMultipleVersions);
 
     await mockTokenBalance(this, 20);

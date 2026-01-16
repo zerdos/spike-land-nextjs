@@ -16,7 +16,9 @@ import type {
 /**
  * Save a new content suggestion
  */
-export async function saveSuggestion(suggestion: ContentSuggestion): Promise<ContentSuggestion> {
+export async function saveSuggestion(
+  suggestion: ContentSuggestion,
+): Promise<ContentSuggestion> {
   const saved = await prisma.contentSuggestion.create({
     data: {
       id: suggestion.id,
@@ -101,19 +103,19 @@ export async function querySuggestions(
   };
 
   if (options.status && options.status.length > 0) {
-    where.status = { in: options.status };
+    where["status"] = { in: options.status };
   }
 
   if (options.contentTypes && options.contentTypes.length > 0) {
-    where.contentType = { in: options.contentTypes };
+    where["contentType"] = { in: options.contentTypes };
   }
 
   if (options.platforms && options.platforms.length > 0) {
-    where.suggestedPlatforms = { hasSome: options.platforms };
+    where["suggestedPlatforms"] = { hasSome: options.platforms };
   }
 
   if (options.minScore !== undefined) {
-    where.overallScore = { gte: options.minScore };
+    where["overallScore"] = { gte: options.minScore };
   }
 
   // Build orderBy
@@ -122,13 +124,13 @@ export async function querySuggestions(
   const sortOrder = options.sortOrder ?? "desc";
 
   if (sortField === "score") {
-    orderBy.overallScore = sortOrder;
+    orderBy["overallScore"] = sortOrder;
   } else if (sortField === "generatedAt") {
-    orderBy.generatedAt = sortOrder;
+    orderBy["generatedAt"] = sortOrder;
   } else if (sortField === "expiresAt") {
-    orderBy.expiresAt = sortOrder;
+    orderBy["expiresAt"] = sortOrder;
   } else {
-    orderBy.overallScore = sortOrder;
+    orderBy["overallScore"] = sortOrder;
   }
 
   const [suggestions, total] = await Promise.all([
@@ -182,18 +184,18 @@ export async function updateSuggestionStatus(
   };
 
   if (status === "DISMISSED") {
-    updateData.dismissedAt = new Date();
+    updateData["dismissedAt"] = new Date();
     if (metadata?.dismissalReason) {
-      updateData.dismissalReason = metadata.dismissalReason;
+      updateData["dismissalReason"] = metadata.dismissalReason;
     }
   }
 
   if (status === "USED") {
-    updateData.usedAt = new Date();
+    updateData["usedAt"] = new Date();
   }
 
   if (metadata?.feedback) {
-    updateData.feedback = metadata.feedback;
+    updateData["feedback"] = metadata.feedback;
   }
 
   const updated = await prisma.contentSuggestion.updateMany({
@@ -273,7 +275,9 @@ export async function submitFeedback(
 /**
  * Delete expired suggestions
  */
-export async function deleteExpiredSuggestions(workspaceId?: string): Promise<number> {
+export async function deleteExpiredSuggestions(
+  workspaceId?: string,
+): Promise<number> {
   const where: Record<string, unknown> = {
     status: "PENDING",
     expiresAt: {
@@ -282,7 +286,7 @@ export async function deleteExpiredSuggestions(workspaceId?: string): Promise<nu
   };
 
   if (workspaceId) {
-    where.workspaceId = workspaceId;
+    where["workspaceId"] = workspaceId;
   }
 
   const result = await prisma.contentSuggestion.deleteMany({ where });
@@ -366,7 +370,8 @@ function mapToContentSuggestion(record: {
     description: record.description,
     draftContent: record.draftContent,
     contentType: record.contentType as ContentSuggestion["contentType"],
-    suggestedPlatforms: record.suggestedPlatforms as ContentSuggestion["suggestedPlatforms"],
+    suggestedPlatforms: record
+      .suggestedPlatforms as ContentSuggestion["suggestedPlatforms"],
     trendData: record.trendData as ContentSuggestion["trendData"],
     relevanceScore: record.relevanceScore,
     timelinessScore: record.timelinessScore,

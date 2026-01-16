@@ -9,7 +9,9 @@ import { cn } from "@/lib/utils";
 
 import { useSidebar } from "./SidebarContext";
 
-export function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
+export function SidebarMenu(
+  { className, ...props }: React.ComponentProps<"ul">,
+) {
   return (
     <ul
       data-slot="sidebar-menu"
@@ -20,7 +22,9 @@ export function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">)
   );
 }
 
-export function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
+export function SidebarMenuItem(
+  { className, ...props }: React.ComponentProps<"li">,
+) {
   return (
     <li
       data-slot="sidebar-menu-item"
@@ -191,7 +195,9 @@ export function SidebarMenuSkeleton({
   );
 }
 
-export function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">) {
+export function SidebarMenuSub(
+  { className, ...props }: React.ComponentProps<"ul">,
+) {
   return (
     <ul
       data-slot="sidebar-menu-sub"

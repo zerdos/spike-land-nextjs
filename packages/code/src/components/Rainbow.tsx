@@ -42,36 +42,36 @@ const Rainbow = () => {
     `;
 
   const gradientStyle = css`
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100dvh;
-      height: 100svh;
-      width: 100vw;
-      background-blend-mode: overlay;
-      background: 
-        repeating-radial-gradient(
-          circle at bottom left,
-          ${createGradientString(gradientColors)}
-        ),
-        repeating-radial-gradient(
-          circle at bottom right,
-          ${createGradientString(gradientColors)}
-        );
-      background-size: 200% 200%;
-      animation: ${rotateAnimation} 10s forwards;
-      animation-delay: 2s;
-    `;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    height: 100svh;
+    width: 100vw;
+    background-blend-mode: overlay;
+    background:
+      repeating-radial-gradient(
+        circle at bottom left,
+        ${createGradientString(gradientColors)}
+      ),
+      repeating-radial-gradient(
+      circle at bottom right,
+      ${createGradientString(gradientColors)}
+    );
+    background-size: 200% 200%;
+    animation: ${rotateAnimation} 10s forwards;
+    animation-delay: 2s;
+  `;
 
   return <div css={gradientStyle}></div>;
 };
 
 const RainbowContainer = styled.div`
-    display: flex;
-    position: relative;
-    height: 100%;
-    width: 100%;
-  `;
+  display: flex;
+  position: relative;
+  height: 100%;
+  width: 100%;
+`;
 
 export const RainbowWrapper: FC<{ children: ReactNode; }> = ({ children }) => (
   <RainbowContainer>

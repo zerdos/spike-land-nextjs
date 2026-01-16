@@ -54,7 +54,8 @@ export class AuditRetentionManager {
       retentionDays: data.retentionDays,
       archiveAfterDays: data.archiveAfterDays,
       deleteAfterDays: data.deleteAfterDays,
-      actionTypes: data.actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
+      actionTypes: data
+        .actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
       isActive: data.isActive,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -112,7 +113,8 @@ export class AuditRetentionManager {
       retentionDays: data.retentionDays,
       archiveAfterDays: data.archiveAfterDays,
       deleteAfterDays: data.deleteAfterDays,
-      actionTypes: data.actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
+      actionTypes: data
+        .actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
       isActive: data.isActive,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -157,7 +159,8 @@ export class AuditRetentionManager {
       retentionDays: policy.retentionDays,
       archiveAfterDays: policy.archiveAfterDays,
       deleteAfterDays: policy.deleteAfterDays,
-      actionTypes: policy.actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
+      actionTypes: policy
+        .actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
       isActive: policy.isActive,
       createdAt: policy.createdAt,
       updatedAt: policy.updatedAt,
@@ -167,7 +170,9 @@ export class AuditRetentionManager {
   /**
    * List retention policies for a workspace (or system-wide if null)
    */
-  static async listPolicies(workspaceId: string | null): Promise<RetentionPolicy[]> {
+  static async listPolicies(
+    workspaceId: string | null,
+  ): Promise<RetentionPolicy[]> {
     const policies = await prisma.auditRetentionPolicy.findMany({
       where: { workspaceId },
       orderBy: { createdAt: "desc" },
@@ -181,7 +186,8 @@ export class AuditRetentionManager {
       retentionDays: policy.retentionDays,
       archiveAfterDays: policy.archiveAfterDays,
       deleteAfterDays: policy.deleteAfterDays,
-      actionTypes: policy.actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
+      actionTypes: policy
+        .actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
       isActive: policy.isActive,
       createdAt: policy.createdAt,
       updatedAt: policy.updatedAt,
@@ -191,7 +197,9 @@ export class AuditRetentionManager {
   /**
    * Get effective policy for a workspace (workspace policy or system default)
    */
-  static async getEffectivePolicy(workspaceId: string): Promise<RetentionPolicy | null> {
+  static async getEffectivePolicy(
+    workspaceId: string,
+  ): Promise<RetentionPolicy | null> {
     // First try to get workspace-specific policy
     const workspacePolicy = await prisma.auditRetentionPolicy.findFirst({
       where: {
@@ -209,7 +217,8 @@ export class AuditRetentionManager {
         retentionDays: workspacePolicy.retentionDays,
         archiveAfterDays: workspacePolicy.archiveAfterDays,
         deleteAfterDays: workspacePolicy.deleteAfterDays,
-        actionTypes: workspacePolicy.actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
+        actionTypes: workspacePolicy
+          .actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
         isActive: workspacePolicy.isActive,
         createdAt: workspacePolicy.createdAt,
         updatedAt: workspacePolicy.updatedAt,
@@ -233,7 +242,8 @@ export class AuditRetentionManager {
         retentionDays: systemPolicy.retentionDays,
         archiveAfterDays: systemPolicy.archiveAfterDays,
         deleteAfterDays: systemPolicy.deleteAfterDays,
-        actionTypes: systemPolicy.actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
+        actionTypes: systemPolicy
+          .actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
         isActive: systemPolicy.isActive,
         createdAt: systemPolicy.createdAt,
         updatedAt: systemPolicy.updatedAt,
@@ -246,7 +256,9 @@ export class AuditRetentionManager {
   /**
    * Execute retention job for a policy (archive and delete old logs)
    */
-  static async executeRetentionJob(policyId: string): Promise<RetentionJobResult> {
+  static async executeRetentionJob(
+    policyId: string,
+  ): Promise<RetentionJobResult> {
     const errors: string[] = [];
     let archivedCount = 0;
     let deletedCount = 0;
@@ -278,7 +290,9 @@ export class AuditRetentionManager {
     // Archive logs older than archiveAfterDays
     if (policy.archiveAfterDays) {
       const archiveThreshold = new Date(now);
-      archiveThreshold.setDate(archiveThreshold.getDate() - policy.archiveAfterDays);
+      archiveThreshold.setDate(
+        archiveThreshold.getDate() - policy.archiveAfterDays,
+      );
 
       // Build where clause for workspace audit logs
       const archiveWhere: Prisma.WorkspaceAuditLogWhereInput = {
@@ -331,14 +345,18 @@ export class AuditRetentionManager {
           archivedCount = logsToArchive.length;
         }
       } catch (error) {
-        errors.push(`Archive error: ${error instanceof Error ? error.message : String(error)}`);
+        errors.push(
+          `Archive error: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
     // Delete archived logs older than deleteAfterDays
     if (policy.deleteAfterDays) {
       const deleteThreshold = new Date(now);
-      deleteThreshold.setDate(deleteThreshold.getDate() - policy.deleteAfterDays);
+      deleteThreshold.setDate(
+        deleteThreshold.getDate() - policy.deleteAfterDays,
+      );
 
       const deleteWhere: Prisma.ArchivedAuditLogWhereInput = {
         originalCreatedAt: { lt: deleteThreshold },
@@ -355,7 +373,9 @@ export class AuditRetentionManager {
 
         deletedCount = deleteResult.count;
       } catch (error) {
-        errors.push(`Delete error: ${error instanceof Error ? error.message : String(error)}`);
+        errors.push(
+          `Delete error: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
@@ -447,7 +467,8 @@ export class AuditRetentionManager {
         retentionDays: existingDefault.retentionDays,
         archiveAfterDays: existingDefault.archiveAfterDays,
         deleteAfterDays: existingDefault.deleteAfterDays,
-        actionTypes: existingDefault.actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
+        actionTypes: existingDefault
+          .actionTypes as unknown as RetentionPolicyConfig["actionTypes"],
         isActive: existingDefault.isActive,
         createdAt: existingDefault.createdAt,
         updatedAt: existingDefault.updatedAt,

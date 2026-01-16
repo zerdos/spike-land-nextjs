@@ -42,7 +42,9 @@ export class WebSocketHandler {
   private safeSend(ws: WebSocket, message: string | object) {
     if (ws.readyState === 1) {
       try {
-        ws.send(typeof message === "string" ? message : JSON.stringify(message));
+        ws.send(
+          typeof message === "string" ? message : JSON.stringify(message),
+        );
       } catch (err) {
         console.error("WebSocket send error:", err);
       }
@@ -76,7 +78,9 @@ export class WebSocketHandler {
       // Only check for timeout if we've sent at least one ping
       if (session.lastPingTime) {
         // Check if the last pong is older than our ping timeout
-        if (!session.lastPongTime || (now - session.lastPongTime) > pingTimeout) {
+        if (
+          !session.lastPongTime || (now - session.lastPongTime) > pingTimeout
+        ) {
           // No pong received within timeout period, close the connection
           webSocket.close();
           clearInterval(pingInterval);
@@ -183,7 +187,9 @@ export class WebSocketHandler {
       }
 
       const patchedSession = applySessionDelta(currentSession, data);
-      const { error } = await tryCatch(this.code.updateAndBroadcastSession(patchedSession));
+      const { error } = await tryCatch(
+        this.code.updateAndBroadcastSession(patchedSession),
+      );
       if (error) {
         this.safeSend(session.webSocket, {
           type: "error",

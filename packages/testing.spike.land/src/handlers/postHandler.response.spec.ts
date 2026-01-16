@@ -19,7 +19,6 @@ import {
   setupStorageServiceMock,
 } from "./postHandler.test-utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type StreamResult = StreamTextResult<any, unknown>;
 
 // Mock all external dependencies
@@ -60,7 +59,11 @@ describe("PostHandler - Response", () => {
       details?: string,
     ) => {
       return (postHandler as unknown as {
-        createErrorResponse: (error: string, status: number, details?: string) => Response;
+        createErrorResponse: (
+          error: string,
+          status: number,
+          details?: string,
+        ) => Response;
       }).createErrorResponse(error, status, details);
     };
 
@@ -92,7 +95,9 @@ describe("PostHandler - Response", () => {
 
   describe("createSystemPrompt", () => {
     const callCreateSystemPrompt = (codeSpace: string) => {
-      return (postHandler as unknown as { createSystemPrompt: (codeSpace: string) => string; })
+      return (postHandler as unknown as {
+        createSystemPrompt: (codeSpace: string) => string;
+      })
         .createSystemPrompt(codeSpace);
     };
 
@@ -108,7 +113,9 @@ describe("PostHandler - Response", () => {
 
   describe("getCorsHeaders", () => {
     const callGetCorsHeaders = () => {
-      return (postHandler as unknown as { getCorsHeaders: () => Record<string, string>; })
+      return (postHandler as unknown as {
+        getCorsHeaders: () => Record<string, string>;
+      })
         .getCorsHeaders();
     };
 
@@ -155,7 +162,7 @@ describe("PostHandler - Response", () => {
         experimental_telemetry: {},
         experimental_usage: {},
       } as unknown as StreamResult;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       vi.mocked(streamText).mockResolvedValue(mockStreamResponse as any);
 
       const anthropicProvider = vi.fn().mockReturnValue(
@@ -207,7 +214,9 @@ describe("PostHandler - Response", () => {
         }, {} as Record<string, {
           description: string;
           parameters: z.ZodTypeAny;
-          execute: (args: Record<string, unknown>) => Promise<Record<string, unknown>>;
+          execute: (
+            args: Record<string, unknown>,
+          ) => Promise<Record<string, unknown>>;
         }>),
         toolChoice: "auto",
         maxSteps: 10,
@@ -225,7 +234,9 @@ describe("PostHandler - Response", () => {
     it("should handle getErrorMessage callback", async () => {
       const consoleErrorSpy = vi.spyOn(console, "error");
       // Capture the callback to verify it was passed correctly
-      let capturedGetErrorMessageCallback: ((error: Error) => string) | undefined;
+      let capturedGetErrorMessageCallback:
+        | ((error: Error) => string)
+        | undefined;
 
       const mockToDataStreamResponse = vi.fn().mockImplementation((options) => {
         capturedGetErrorMessageCallback = options.getErrorMessage;
@@ -261,7 +272,7 @@ describe("PostHandler - Response", () => {
         experimental_telemetry: {},
         experimental_usage: {},
       } as unknown as StreamResult;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       vi.mocked(streamText).mockResolvedValue(mockStreamResponse as any);
 
       // Mock createAnthropic properly

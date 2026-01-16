@@ -17,7 +17,9 @@ export async function POST(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     await requireWorkspacePermission(session, workspace.id, "inbox:manage");
@@ -36,7 +38,9 @@ export async function POST(
     return NextResponse.json(updatedItem);
   } catch (error: unknown) {
     console.error("Analysis API Error:", error);
-    const message = error instanceof Error ? error.message : "Failed to analyze item";
+    const message = error instanceof Error
+      ? error.message
+      : "Failed to analyze item";
     const status = (error as { status?: number; })?.status || 500;
     return NextResponse.json({ error: message }, { status });
   }

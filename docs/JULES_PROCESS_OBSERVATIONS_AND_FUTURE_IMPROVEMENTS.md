@@ -1,6 +1,7 @@
 # Jules Process Observations and Future Improvements
 
-This document captures observations from running the Ralph Jules automation system and identifies areas for improvement.
+This document captures observations from running the Ralph Jules automation
+system and identifies areas for improvement.
 
 ## Date: 2025-01-14
 
@@ -17,15 +18,21 @@ The Ralph automation was stuck in a deadlock state:
 
 ### 1. No Stuck Session Cleanup
 
-The `findStuckSessions()` function existed in `validator.ts` but was only used for reporting, not for taking action. Sessions could remain stuck in PLANNING indefinitely, blocking capacity.
+The `findStuckSessions()` function existed in `validator.ts` but was only used
+for reporting, not for taking action. Sessions could remain stuck in PLANNING
+indefinitely, blocking capacity.
 
 ### 2. Capacity Calculation Counted All Non-Terminal Sessions
 
-All non-terminal sessions (PLANNING, AWAITING_PLAN_APPROVAL, IN_PROGRESS, etc.) counted against the 15-session Jules limit, even if they were stuck and not progressing.
+All non-terminal sessions (PLANNING, AWAITING_PLAN_APPROVAL, IN_PROGRESS, etc.)
+counted against the 15-session Jules limit, even if they were stuck and not
+progressing.
 
 ### 3. CLI Fallback Lacks Accurate Timestamps
 
-When MCP API is unavailable, the CLI fallback sets `createdAt` to the current time for all sessions, making it impossible to detect genuinely stuck sessions based on age.
+When MCP API is unavailable, the CLI fallback sets `createdAt` to the current
+time for all sessions, making it impossible to detect genuinely stuck sessions
+based on age.
 
 ## Fixes Implemented
 
@@ -57,20 +64,30 @@ When at capacity, the script now shows:
 
 ### What's Working
 
-1. **Stuck detection is functional**: Correctly identifies when PLANNING sessions aren't progressing
-2. **Capacity exclusion works**: Dead sessions are excluded, allowing new work to proceed
-3. **New sessions created**: Queue fill now creates sessions when capacity is available
+1. **Stuck detection is functional**: Correctly identifies when PLANNING
+   sessions aren't progressing
+2. **Capacity exclusion works**: Dead sessions are excluded, allowing new work
+   to proceed
+3. **New sessions created**: Queue fill now creates sessions when capacity is
+   available
 4. **Logging is clear**: Easy to understand what's happening at each step
 
 ### Issues Discovered
 
-1. **All PLANNING sessions stay stuck**: Every new session goes to PLANNING and never transitions to AWAITING_PLAN_APPROVAL or IN_PROGRESS. This suggests Jules itself may not be processing these sessions.
+1. **All PLANNING sessions stay stuck**: Every new session goes to PLANNING and
+   never transitions to AWAITING_PLAN_APPROVAL or IN_PROGRESS. This suggests
+   Jules itself may not be processing these sessions.
 
-2. **Duplicate session creation**: Since task state isn't persisted between iterations, the script keeps trying to create sessions for the same issue (#701). The existing session check compares against `result.updatedTasks` which starts empty each iteration.
+2. **Duplicate session creation**: Since task state isn't persisted between
+   iterations, the script keeps trying to create sessions for the same issue
+   (#701). The existing session check compares against `result.updatedTasks`
+   which starts empty each iteration.
 
-3. **Growing dead session count**: Each iteration marks more sessions as DEAD (2→3→4→5→6→7→8), but Jules keeps accepting new sessions that also get stuck.
+3. **Growing dead session count**: Each iteration marks more sessions as DEAD
+   (2→3→4→5→6→7→8), but Jules keeps accepting new sessions that also get stuck.
 
-4. **MCP consistently unavailable**: Every iteration shows "MCP unavailable, falling back to Jules CLI..." which limits functionality:
+4. **MCP consistently unavailable**: Every iteration shows "MCP unavailable,
+   falling back to Jules CLI..." which limits functionality:
    - No accurate timestamps for stuck detection by age
    - Can't approve plans via API
    - Can't send messages to sessions
@@ -153,6 +170,11 @@ yarn jules:process:dry
 
 ## Conclusion
 
-The capacity deadlock has been resolved by implementing stuck session detection and exclusion from capacity calculation. However, there are deeper issues with Jules sessions not progressing that need investigation. The MCP connection also needs to be restored for full functionality.
+The capacity deadlock has been resolved by implementing stuck session detection
+and exclusion from capacity calculation. However, there are deeper issues with
+Jules sessions not progressing that need investigation. The MCP connection also
+needs to be restored for full functionality.
 
-The immediate fix allows the automation to continue creating new sessions, but the underlying cause of sessions getting stuck in PLANNING should be addressed for long-term stability.
+The immediate fix allows the automation to continue creating new sessions, but
+the underlying cause of sessions getting stuck in PLANNING should be addressed
+for long-term stability.

@@ -1205,7 +1205,10 @@ export class LRUCache<
     k: K,
     fetchOptions: LRUCacheFetchOptions<K, V, FC> = {},
   ): Promise<V> {
-    const v = await this.fetch(k, fetchOptions as unknown as Parameters<typeof this.fetch>[1]);
+    const v = await this.fetch(
+      k,
+      fetchOptions as unknown as Parameters<typeof this.fetch>[1],
+    );
     if (v === undefined) throw new Error("fetch() returned undefined");
     return v;
   }

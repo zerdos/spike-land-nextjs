@@ -34,7 +34,9 @@ export async function PATCH(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     await requireWorkspacePermission(session, workspace.id, "inbox:manage");
@@ -46,11 +48,15 @@ export async function PATCH(
     });
 
     if (!existingItem) {
-      return NextResponse.json({ error: "Inbox item not found" }, { status: 404 });
+      return NextResponse.json({ error: "Inbox item not found" }, {
+        status: 404,
+      });
     }
 
     if (existingItem.workspaceId !== workspace.id) {
-      return NextResponse.json({ error: "Inbox item does not belong to this workspace" }, {
+      return NextResponse.json({
+        error: "Inbox item does not belong to this workspace",
+      }, {
         status: 403,
       });
     }
@@ -86,7 +92,10 @@ export async function PATCH(
     let message = "Failed to update inbox item";
 
     if (error instanceof Error) {
-      const errWithStatus = error as Error & { status?: number; statusCode?: number; };
+      const errWithStatus = error as Error & {
+        status?: number;
+        statusCode?: number;
+      };
       if (typeof errWithStatus.status === "number") {
         status = errWithStatus.status;
       } else if (typeof errWithStatus.statusCode === "number") {

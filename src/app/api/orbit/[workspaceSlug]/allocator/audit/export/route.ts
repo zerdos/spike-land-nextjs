@@ -28,7 +28,10 @@ export async function GET(
   });
 
   if (!workspace || workspace.members.length === 0) {
-    return NextResponse.json({ error: "Workspace not found or access denied" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Workspace not found or access denied" },
+      { status: 404 },
+    );
   }
 
   // Parse query params
@@ -69,7 +72,10 @@ export async function GET(
 
     const headers = new Headers();
     headers.set("Content-Type", exportData.mimeType);
-    headers.set("Content-Disposition", `attachment; filename="${exportData.filename}"`);
+    headers.set(
+      "Content-Disposition",
+      `attachment; filename="${exportData.filename}"`,
+    );
 
     return new NextResponse(exportData.data, {
       status: 200,
@@ -77,6 +83,8 @@ export async function GET(
     });
   } catch (error) {
     console.error("Error exporting allocator audit logs:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 }

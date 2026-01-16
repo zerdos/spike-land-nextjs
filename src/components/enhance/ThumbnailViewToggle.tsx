@@ -35,6 +35,14 @@ export function ThumbnailViewToggle({
     >
       <span
         onClick={handleLabelClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleLabelClick();
+          }
+        }}
+        role="button"
+        tabIndex={isDisabled ? -1 : 0}
         className={cn(
           "text-xs select-none",
           isDisabled
@@ -57,6 +65,14 @@ export function ThumbnailViewToggle({
       />
       <span
         onClick={handleLabelClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleLabelClick();
+          }
+        }}
+        role="button"
+        tabIndex={isDisabled ? -1 : 0}
         className={cn(
           "text-xs select-none",
           isDisabled

@@ -10,7 +10,9 @@ const prismaClientSingleton = () => {
     // succeed. If any code *actually* tries to query the DB during build, it will
     // fail, which is the desired behavior.
     if (process.env.NEXT_PHASE === "phase-production-build") {
-      console.warn("DATABASE_URL not available during build. Using mocked Prisma Client.");
+      console.warn(
+        "DATABASE_URL not available during build. Using mocked Prisma Client.",
+      );
       return new Proxy(
         {},
         {

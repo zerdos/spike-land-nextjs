@@ -17,7 +17,9 @@ async function readCode(codespaceId: string): Promise<string> {
       },
     );
 
-    console.log(`[codespace-tools] readCode response status: ${response.status}`);
+    console.log(
+      `[codespace-tools] readCode response status: ${response.status}`,
+    );
 
     if (!response.ok) {
       const error = `Error reading code: ${response.status} ${response.statusText}`;
@@ -27,7 +29,9 @@ async function readCode(codespaceId: string): Promise<string> {
 
     const data = await response.json();
     const code = data.code || "";
-    console.log(`[codespace-tools] readCode success, code length: ${code.length}`);
+    console.log(
+      `[codespace-tools] readCode success, code length: ${code.length}`,
+    );
     return code;
   } catch (error) {
     const msg = `Network error reading code: ${
@@ -58,7 +62,9 @@ async function updateCode(
       body: JSON.stringify({ code, run: true }),
     });
 
-    console.log(`[codespace-tools] updateCode response status: ${response.status}`);
+    console.log(
+      `[codespace-tools] updateCode response status: ${response.status}`,
+    );
 
     if (!response.ok) {
       const text = await response.text();
@@ -68,7 +74,10 @@ async function updateCode(
     }
 
     const data = await response.json();
-    console.log(`[codespace-tools] updateCode response data:`, JSON.stringify(data));
+    console.log(
+      `[codespace-tools] updateCode response data:`,
+      JSON.stringify(data),
+    );
 
     if (data.success) {
       console.log(`[codespace-tools] updateCode SUCCESS for: ${codespaceId}`);
@@ -99,7 +108,9 @@ async function editCode(
 
   // First read the current code
   const currentCode = await readCode(codespaceId);
-  if (currentCode.startsWith("Error") || currentCode.startsWith("Network error")) {
+  if (
+    currentCode.startsWith("Error") || currentCode.startsWith("Network error")
+  ) {
     return currentCode;
   }
 
@@ -119,7 +130,9 @@ async function editCode(
   }
 
   const newCode = lines.join("\n");
-  console.log(`[codespace-tools] editCode resulting code length: ${newCode.length}`);
+  console.log(
+    `[codespace-tools] editCode resulting code length: ${newCode.length}`,
+  );
   return updateCode(codespaceId, newCode);
 }
 
@@ -146,7 +159,9 @@ async function searchAndReplace(
   console.log(`[codespace-tools] searchAndReplace isRegex: ${isRegex}`);
 
   const currentCode = await readCode(codespaceId);
-  if (currentCode.startsWith("Error") || currentCode.startsWith("Network error")) {
+  if (
+    currentCode.startsWith("Error") || currentCode.startsWith("Network error")
+  ) {
     return currentCode;
   }
 
@@ -164,7 +179,9 @@ async function searchAndReplace(
     return "No matches found for the search pattern";
   }
 
-  console.log(`[codespace-tools] searchAndReplace: Found matches, updating code`);
+  console.log(
+    `[codespace-tools] searchAndReplace: Found matches, updating code`,
+  );
   return updateCode(codespaceId, newCode);
 }
 
@@ -179,7 +196,9 @@ async function findLines(
   console.log(`[codespace-tools] findLines search: "${search}"`);
 
   const currentCode = await readCode(codespaceId);
-  if (currentCode.startsWith("Error") || currentCode.startsWith("Network error")) {
+  if (
+    currentCode.startsWith("Error") || currentCode.startsWith("Network error")
+  ) {
     return currentCode;
   }
 
@@ -208,8 +227,12 @@ async function findLines(
  * Create an MCP server with codespace tools for the given codespaceId
  */
 export function createCodespaceServer(codespaceId: string) {
-  console.log(`[codespace-tools] Creating MCP server for codespace: ${codespaceId}`);
-  console.log(`[codespace-tools] Available tools: ${CODESPACE_TOOL_NAMES.join(", ")}`);
+  console.log(
+    `[codespace-tools] Creating MCP server for codespace: ${codespaceId}`,
+  );
+  console.log(
+    `[codespace-tools] Available tools: ${CODESPACE_TOOL_NAMES.join(", ")}`,
+  );
 
   return createSdkMcpServer({
     name: "codespace",
@@ -239,9 +262,15 @@ export function createCodespaceServer(codespaceId: string) {
         {
           edits: z.array(
             z.object({
-              startLine: z.number().describe("1-based line number to start editing from"),
-              endLine: z.number().describe("1-based line number to end editing at (inclusive)"),
-              content: z.string().describe("New content to replace the lines with"),
+              startLine: z.number().describe(
+                "1-based line number to start editing from",
+              ),
+              endLine: z.number().describe(
+                "1-based line number to end editing at (inclusive)",
+              ),
+              content: z.string().describe(
+                "New content to replace the lines with",
+              ),
             }),
           ).describe("List of edits to apply"),
         },
@@ -254,9 +283,13 @@ export function createCodespaceServer(codespaceId: string) {
         "search_and_replace",
         "Search for a pattern and replace it. Best for small, precise changes like renaming variables or changing colors.",
         {
-          search: z.string().describe("The string or regex pattern to search for"),
+          search: z.string().describe(
+            "The string or regex pattern to search for",
+          ),
           replace: z.string().describe("The string to replace the match with"),
-          isRegex: z.boolean().optional().describe("Whether the search pattern is a regex"),
+          isRegex: z.boolean().optional().describe(
+            "Whether the search pattern is a regex",
+          ),
         },
         async (args) => {
           const result = await searchAndReplace(

@@ -43,7 +43,11 @@ interface InboxAssignDialogProps {
   onAssign: () => void;
 }
 
-async function assignItem(workspaceSlug: string, itemId: string, assignedToId: string) {
+async function assignItem(
+  workspaceSlug: string,
+  itemId: string,
+  assignedToId: string,
+) {
   const res = await fetch(`/api/orbit/${workspaceSlug}/inbox/${itemId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -65,9 +69,11 @@ async function assignItem(workspaceSlug: string, itemId: string, assignedToId: s
   return res.json();
 }
 
-export function InboxAssignDialog({ itemId, teamMembers, onAssign }: InboxAssignDialogProps) {
+export function InboxAssignDialog(
+  { itemId, teamMembers, onAssign }: InboxAssignDialogProps,
+) {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
   const queryClient = useQueryClient();
   const form = useForm<AssignFormValues>({
     resolver: zodResolver(assignSchema),
@@ -77,7 +83,9 @@ export function InboxAssignDialog({ itemId, teamMembers, onAssign }: InboxAssign
   const mutation = useMutation({
     mutationFn: (assignedToId: string) => assignItem(workspaceSlug, itemId, assignedToId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["inboxItems", workspaceSlug] });
+      queryClient.invalidateQueries({
+        queryKey: ["inboxItems", workspaceSlug],
+      });
       onAssign();
     },
   });
@@ -106,7 +114,10 @@ export function InboxAssignDialog({ itemId, teamMembers, onAssign }: InboxAssign
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Team Member</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a team member" />

@@ -100,7 +100,9 @@ export const getRegexReplaceTool = createTool(
             const pattern = regexLiteralMatch[1];
             const flags = regexLiteralMatch[2];
             const safeFlags = flags || "";
-            const normalizedFlags = safeFlags.includes("g") ? safeFlags : safeFlags + "g";
+            const normalizedFlags = safeFlags.includes("g")
+              ? safeFlags
+              : safeFlags + "g";
             if (pattern) {
               regex = new RegExp(pattern, normalizedFlags);
             } else {

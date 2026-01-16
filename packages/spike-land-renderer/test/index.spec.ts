@@ -11,7 +11,9 @@ vi.mock("../src/index", () => ({
       const url = new URL(request.url);
       const targetUrl = url.searchParams.get("url");
       if (!targetUrl) {
-        return new Response("Please add an ?url=https://example.com/ parameter");
+        return new Response(
+          "Please add an ?url=https://example.com/ parameter",
+        );
       }
       return new Response(`Rendered: ${targetUrl}`);
     }),
