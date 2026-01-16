@@ -46,12 +46,13 @@ troubleshooting.
 1. [Prerequisites](#prerequisites)
 2. [Local Development Setup](#local-development-setup)
 3. [Production Database Options](#production-database-options)
-4. [Schema Overview](#schema-overview)
-5. [Running Migrations](#running-migrations)
-6. [Database Seeding](#database-seeding)
-7. [Backup and Recovery](#backup-and-recovery)
-8. [Monitoring and Maintenance](#monitoring-and-maintenance)
-9. [Troubleshooting](#troubleshooting)
+4. [Staging Environment (next.spike.land)](#staging-environment-nextspikelland)
+5. [Schema Overview](#schema-overview)
+6. [Running Migrations](#running-migrations)
+7. [Database Seeding](#database-seeding)
+8. [Backup and Recovery](#backup-and-recovery)
+9. [Monitoring and Maintenance](#monitoring-and-maintenance)
+10. [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
@@ -152,6 +153,108 @@ DIRECT_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:54
 
 - Production-grade, scalable
 - More complex setup, higher cost
+
+## Staging Environment (next.spike.land)
+
+Spike Land uses **Neon Database Branching** to create an instant staging environment
+that mirrors production data. This allows testing with real-world data without
+affecting production.
+
+### How Staging Works
+
+1. **Neon Branch**: A `staging` branch is created from the `main` (production) branch
+2. **Copy-on-Write**: Uses Neon's instant branching - no actual data copying
+3. **Isolated Endpoint**: Staging has its own database connection string
+4. **Daily Reset**: Automatically resets to match production at 3 AM UTC
+
+### Setting Up the Staging Branch
+
+#### Prerequisites
+
+1. **Neon API Key**: Get from https://console.neon.tech/app/settings/api-keys
+2. **Neon CLI** (optional): `npm install -g neonctl`
+
+#### Create Staging Branch
+
+```bash
+# Using Neon CLI
+neonctl branches create \
+  --project-id dark-flower-44506554 \
+  --name staging \
+  --parent main \
+  --compute-endpoint-type read_write
+
+# Note the new endpoint URL for staging
+```
+
+#### GitHub Secrets Required
+
+Add these secrets to your GitHub repository:
+
+| Secret            | Description                                     |
+| ----------------- | ----------------------------------------------- |
+| `NEON_API_KEY`    | Neon API key with branch management permissions |
+| `NEON_PROJECT_ID` | `dark-flower-44506554`                          |
+
+### Vercel Configuration for Staging
+
+Configure `next.spike.land` in Vercel:
+
+| Variable       | Value                         |
+| -------------- | ----------------------------- |
+| `DATABASE_URL` | Staging branch connection URL |
+| `NEXTAUTH_URL` | `https://next.spike.land`     |
+
+### Resetting the Staging Database
+
+#### Automatic Daily Reset
+
+A GitHub Action runs daily at 3 AM UTC to reset the staging database:
+
+- See `.github/workflows/staging-reset.yml`
+- Can be manually triggered from GitHub Actions UI
+
+#### Manual Reset
+
+```bash
+# Show warning and instructions
+yarn reset:db
+
+# Actually perform reset (requires confirmation)
+yarn reset:db --confirm
+```
+
+This calls the Neon API to reset the `staging` branch to match `main` (production).
+
+### Environment Variables for Staging
+
+Add to `.env.local` for local staging development:
+
+```env
+# Neon Database Branching
+NEON_API_KEY=your-neon-api-key
+NEON_PROJECT_ID=dark-flower-44506554
+```
+
+### Database Protection
+
+The staging environment is recognized as safe by the db-protection utility:
+
+- Connection strings containing `next.spike.land` are allowed
+- Connection strings containing `staging` are allowed
+- Production patterns (`spike.land` without `next.`) are blocked
+
+See `prisma/lib/db-protection.ts` for the full pattern matching logic.
+
+### Staging vs Production
+
+| Aspect       | Production (spike.land) | Staging (next.spike.land)        |
+| ------------ | ----------------------- | -------------------------------- |
+| Branch       | `main`                  | `staging`                        |
+| Data         | Live user data          | Copy of production (reset daily) |
+| Endpoint     | Production compute      | Staging compute                  |
+| Reset        | Never                   | Daily at 3 AM UTC                |
+| Safe for E2E | No                      | Yes                              |
 
 ### Connection Pooling for Production
 
