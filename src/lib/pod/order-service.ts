@@ -7,9 +7,10 @@
 
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
+import type { ShippingAddress } from "@/types/shipping";
 import type { Prisma } from "@prisma/client";
 import { prodigiProvider } from "./prodigi/client";
-import type { PodOrderRequest, PodOrderResult, PodProvider, ShippingAddress } from "./types";
+import type { PodOrderRequest, PodOrderResult, PodProvider } from "./types";
 
 /**
  * Get the appropriate POD provider for a given provider name.
@@ -79,15 +80,7 @@ export async function submitOrderToPod(
   }
 
   // Parse shipping address
-  const shippingAddress = order.shippingAddress as unknown as {
-    name: string;
-    line1: string;
-    line2?: string;
-    city: string;
-    postalCode: string;
-    countryCode: string;
-    phone?: string;
-  };
+  const shippingAddress = order.shippingAddress as unknown as ShippingAddress;
 
   const podRequest: PodOrderRequest = {
     orderId: order.id,

@@ -2,7 +2,12 @@ import { sendEmail } from "@/lib/email/client";
 import GuardrailAlertEmail from "@/lib/email/templates/guardrail-alert";
 import { postToSlack } from "@/lib/notifications/slack-channel";
 import prisma from "@/lib/prisma";
-import type { AlertSeverity, AllocatorAlertType, AllocatorGuardrailAlert } from "@prisma/client";
+import type {
+  AlertSeverity,
+  AllocatorAlertType,
+  AllocatorGuardrailAlert,
+  Prisma,
+} from "@prisma/client";
 
 export class GuardrailAlertService {
   /**
@@ -23,8 +28,7 @@ export class GuardrailAlertService {
         alertType: data.alertType,
         severity: data.severity,
         message: data.message,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        metadata: (data.metadata as any) || undefined,
+        metadata: (data.metadata as Prisma.InputJsonValue) || undefined,
       },
     });
 
