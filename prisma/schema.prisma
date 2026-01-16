@@ -186,6 +186,7 @@ model App {
   messages           AppMessage[] // Chat messages for this app
   statusHistory      AppStatusHistory[] // Status change history
   images             AppImage[] // Uploaded images for this app
+  codeVersions       AppCodeVersion[] // Code snapshots for undo/restore
 
   @@index([userId])
   @@index([forkedFrom])
@@ -250,6 +251,7 @@ model AppMessage {
   @@index([appId, isRead])
   @@index([role, isRead]) // For efficient agent polling queries
   @@map("app_messages")
+  codeVersion    AppCodeVersion? // Code version created by this message
 }
 
 // Status change history for audit trail
@@ -302,6 +304,24 @@ model AppAttachment {
   @@index([messageId])
   @@index([imageId])
   @@map("app_attachments")
+}
+
+// Code version snapshots for undo/restore functionality
+model AppCodeVersion {
+  id          String      @id @default(cuid())
+  appId       String
+  messageId   String?     @unique // The agent message that created this version
+  code        String      @db.Text // Full code snapshot
+  hash        String      // SHA-256 hash for quick comparison
+  description String? // Auto-generated description of changes
+  createdAt   DateTime    @default(now())
+
+  app         App         @relation(fields: [appId], references: [id], onDelete: Cascade)
+  message     AppMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([appId, createdAt])
+  @@index([hash])
+  @@map("app_code_versions")
 }
 
 model UserTokenBalance {
