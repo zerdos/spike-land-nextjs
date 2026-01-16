@@ -75,7 +75,9 @@ export function isTextContentPart(part: unknown): part is TextContentPart {
 /**
  * Type guard for ImageUrlContentPart
  */
-export function isImageUrlContentPart(part: unknown): part is ImageUrlContentPart {
+export function isImageUrlContentPart(
+  part: unknown,
+): part is ImageUrlContentPart {
   return (
     part !== null &&
     typeof part === "object" &&
@@ -105,7 +107,9 @@ export function isImageContentPart(part: unknown): part is ImageContentPart {
 /**
  * Type guard for ToolUseContentPart
  */
-export function isToolUseContentPart(part: unknown): part is ToolUseContentPart {
+export function isToolUseContentPart(
+  part: unknown,
+): part is ToolUseContentPart {
   return (
     part !== null &&
     typeof part === "object" &&
@@ -123,7 +127,9 @@ export function isToolUseContentPart(part: unknown): part is ToolUseContentPart 
 /**
  * Type guard for ToolResultContentPart
  */
-export function isToolResultContentPart(part: unknown): part is ToolResultContentPart {
+export function isToolResultContentPart(
+  part: unknown,
+): part is ToolResultContentPart {
   return (
     part !== null &&
     typeof part === "object" &&
@@ -138,7 +144,9 @@ export function isToolResultContentPart(part: unknown): part is ToolResultConten
 /**
  * Type guard for any MessageContentPart
  */
-export function isMessageContentPart(part: unknown): part is MessageContentPart {
+export function isMessageContentPart(
+  part: unknown,
+): part is MessageContentPart {
   return (
     isTextContentPart(part) ||
     isImageUrlContentPart(part) ||
@@ -249,7 +257,13 @@ export interface StreamErrorChunk {
 
 export interface StreamFinishChunk {
   type: "finish";
-  finishReason: "stop" | "length" | "tool-calls" | "content-filter" | "error" | "other";
+  finishReason:
+    | "stop"
+    | "length"
+    | "tool-calls"
+    | "content-filter"
+    | "error"
+    | "other";
   usage?: {
     promptTokens: number;
     completionTokens: number;

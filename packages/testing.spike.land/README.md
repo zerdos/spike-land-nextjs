@@ -181,4 +181,5 @@ Common issues and solutions:
 
 For more detailed information on each endpoint and its functionality, please
 refer to the source code in `packages/testing.spike.land/src/chat.ts`,
-`packages/testing.spike.land/src/chatRoom.ts`, and other relevant files in the project.
+`packages/testing.spike.land/src/chatRoom.ts`, and other relevant files in the
+project.

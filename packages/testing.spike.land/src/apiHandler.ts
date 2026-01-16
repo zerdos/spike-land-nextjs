@@ -27,7 +27,9 @@ function isAllowedUrl(urlString: string): boolean {
     }
 
     // Block cloud metadata endpoints
-    if (hostname === "169.254.169.254" || hostname === "metadata.google.internal") {
+    if (
+      hostname === "169.254.169.254" || hostname === "metadata.google.internal"
+    ) {
       return false;
     }
 
@@ -40,7 +42,9 @@ function isAllowedUrl(urlString: string): boolean {
       // 10.x.x.x
       if (firstOctet === 10) return false;
       // 172.16.x.x - 172.31.x.x
-      if (firstOctet === 172 && secondOctet >= 16 && secondOctet <= 31) return false;
+      if (firstOctet === 172 && secondOctet >= 16 && secondOctet <= 31) {
+        return false;
+      }
       // 192.168.x.x
       if (firstOctet === 192 && secondOctet === 168) return false;
       // 169.254.x.x (link-local)

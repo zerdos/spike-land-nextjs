@@ -315,5 +315,7 @@ export const setupTest = () => {
   });
 
   // Reset navigator mock
-  mockNavigator.storage.getDirectory = vi.fn().mockResolvedValue(mockDirectoryHandle);
+  mockNavigator.storage.getDirectory = vi.fn().mockResolvedValue(
+    mockDirectoryHandle,
+  );
 };

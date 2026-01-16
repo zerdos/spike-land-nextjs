@@ -266,7 +266,9 @@ describe("PostHandler", () => {
             note: "See https://github.com/vercel/ai/issues/7333",
           }),
         ]),
-        expect.stringContaining("This is a known issue with AI SDK v4 and Claude Sonnet 4"),
+        expect.stringContaining(
+          "This is a known issue with AI SDK v4 and Claude Sonnet 4",
+        ),
       );
     });
 
@@ -305,7 +307,9 @@ describe("PostHandler", () => {
             value: "string",
           }),
         ]),
-        expect.stringContaining("This is a known issue with AI SDK v4 and Claude Sonnet 4"),
+        expect.stringContaining(
+          "This is a known issue with AI SDK v4 and Claude Sonnet 4",
+        ),
       );
     });
 
@@ -367,7 +371,9 @@ describe("PostHandler", () => {
             note: "See https://github.com/vercel/ai/issues/7333",
           }),
         ]),
-        expect.stringContaining("This is a known issue with AI SDK v4 and Claude Sonnet 4"),
+        expect.stringContaining(
+          "This is a known issue with AI SDK v4 and Claude Sonnet 4",
+        ),
       );
     });
 
@@ -486,7 +492,9 @@ describe("PostHandler", () => {
     });
 
     it.skip("should handle tool execution in onStepFinish", async () => {
-      let onStepFinishCallback: Parameters<typeof streamText>[0]["onStepFinish"];
+      let onStepFinishCallback: Parameters<
+        typeof streamText
+      >[0]["onStepFinish"];
       vi.mocked(streamText).mockImplementation(
         (async (options: Parameters<typeof streamText>[0]) => {
           onStepFinishCallback = options.onStepFinish;
@@ -537,7 +545,9 @@ describe("PostHandler", () => {
 
     it.skip("should handle errors during tool result saving", async () => {
       const consoleErrorSpy = vi.spyOn(console, "error");
-      let onStepFinishCallback: Parameters<typeof streamText>[0]["onStepFinish"];
+      let onStepFinishCallback: Parameters<
+        typeof streamText
+      >[0]["onStepFinish"];
       vi.mocked(streamText).mockImplementation(
         (async (options: Parameters<typeof streamText>[0]) => {
           onStepFinishCallback = options.onStepFinish;

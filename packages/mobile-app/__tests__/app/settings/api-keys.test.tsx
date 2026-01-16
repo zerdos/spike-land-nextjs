@@ -62,8 +62,14 @@ const mockSettingsStore: {
   apiKeysError: string | null;
   newlyCreatedKey: MockApiKeyWithFullKey | null;
   fetchApiKeys: jest.Mock<Promise<void>, []>;
-  createApiKey: jest.Mock<Promise<{ success: boolean; error?: string; }>, [string]>;
-  deleteApiKey: jest.Mock<Promise<{ success: boolean; error?: string; }>, [string]>;
+  createApiKey: jest.Mock<
+    Promise<{ success: boolean; error?: string; }>,
+    [string]
+  >;
+  deleteApiKey: jest.Mock<
+    Promise<{ success: boolean; error?: string; }>,
+    [string]
+  >;
   clearNewlyCreatedKey: jest.Mock<void, []>;
 } = {
   apiKeys: [],
@@ -71,12 +77,14 @@ const mockSettingsStore: {
   apiKeysError: null,
   newlyCreatedKey: null,
   fetchApiKeys: jest.fn<Promise<void>, []>(() => Promise.resolve()),
-  createApiKey: jest.fn<Promise<{ success: boolean; error?: string; }>, [string]>(() =>
-    Promise.resolve({ success: true })
-  ),
-  deleteApiKey: jest.fn<Promise<{ success: boolean; error?: string; }>, [string]>(() =>
-    Promise.resolve({ success: true })
-  ),
+  createApiKey: jest.fn<
+    Promise<{ success: boolean; error?: string; }>,
+    [string]
+  >(() => Promise.resolve({ success: true })),
+  deleteApiKey: jest.fn<
+    Promise<{ success: boolean; error?: string; }>,
+    [string]
+  >(() => Promise.resolve({ success: true })),
   clearNewlyCreatedKey: jest.fn<void, []>(),
 };
 jest.mock("@/stores/settings-store", () => ({
@@ -93,7 +101,9 @@ jest.mock("tamagui", () => {
   );
 
   return {
-    Button: ({ children, onPress, disabled, icon, ...props }: MockButtonProps) => (
+    Button: (
+      { children, onPress, disabled, icon, ...props }: MockButtonProps,
+    ) => (
       <TouchableOpacity
         onPress={onPress}
         disabled={disabled}
@@ -124,7 +134,9 @@ jest.mock("tamagui", () => {
     ),
     H3: ({ children }: MockTextProps) => <Text>{children}</Text>,
     H4: ({ children }: MockTextProps) => <Text>{children}</Text>,
-    Input: ({ value, onChangeText, placeholder, id, ...props }: MockInputProps) => (
+    Input: (
+      { value, onChangeText, placeholder, id, ...props }: MockInputProps,
+    ) => (
       <TextInput
         value={value}
         onChangeText={onChangeText}

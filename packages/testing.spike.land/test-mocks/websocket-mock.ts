@@ -19,8 +19,8 @@ declare global {
 
 export function setupWebSocketPairMock() {
   if (!("WebSocketPair" in globalThis)) {
-    (globalThis as { WebSocketPair?: () => [MockWebSocket, MockWebSocket]; }).WebSocketPair =
-      function() {
+    (globalThis as { WebSocketPair?: () => [MockWebSocket, MockWebSocket]; })
+      .WebSocketPair = function() {
         const wsStub: MockWebSocket = {
           send: vi.fn(),
           close: vi.fn(),

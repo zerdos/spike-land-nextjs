@@ -5,7 +5,9 @@ import { vi } from "vitest";
 class MockReplicate {
   constructor(options) {
     this.auth = options?.auth;
-    this.run = vi.fn().mockResolvedValue(["https://replicate.delivery/mock-image.webp"]);
+    this.run = vi.fn().mockResolvedValue([
+      "https://replicate.delivery/mock-image.webp",
+    ]);
     this.models = {
       get: vi.fn().mockResolvedValue({
         name: "mock-model",
