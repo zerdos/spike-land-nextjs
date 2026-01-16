@@ -182,8 +182,8 @@ export async function POST(
         // Emit connecting stage immediately
         emitStage(controller, "connecting");
 
-        // Emit processing stage when query starts
-        emitStage(controller, "processing");
+        // Note: "processing" stage will be emitted when first message arrives
+        // to avoid UI flicker from back-to-back stage emissions
 
         const result = query({
           prompt: content,
@@ -201,8 +201,14 @@ export async function POST(
 
         let finalResponse = "";
         let codeUpdated = false; // Track if any code-modifying tools were used
+        let processingEmitted = false; // Track if processing stage was emitted
 
         for await (const message of result) {
+          // Emit processing stage on first message to avoid UI flicker
+          if (!processingEmitted) {
+            emitStage(controller, "processing");
+            processingEmitted = true;
+          }
           console.log("[agent/chat] Message type:", message.type);
 
           // Handle assistant text messages
@@ -265,9 +271,10 @@ export async function POST(
           }
         }
 
-        // Save agent response to DB
+        // Save agent response to DB and capture the message ID for code version linking
+        let agentMessageId: string | undefined;
         if (finalResponse) {
-          await tryCatch(
+          const agentMessageResult = await tryCatch(
             prisma.appMessage.create({
               data: {
                 appId: id,
@@ -276,6 +283,9 @@ export async function POST(
               },
             }),
           );
+          if (agentMessageResult.data) {
+            agentMessageId = agentMessageResult.data.id;
+          }
 
           // Attempt to extract name and description if this is one of the first interactions
           // We check if the name looks like a slug (contains dashes and potentially matches the patterns)
@@ -328,17 +338,11 @@ export async function POST(
                 .update(verifyData.code)
                 .digest("hex");
 
-              // Get the agent message we just created
-              const agentMessage = await prisma.appMessage.findFirst({
-                where: { appId: id, role: "AGENT" },
-                orderBy: { createdAt: "desc" },
-                select: { id: true },
-              });
-
+              // Use the captured agentMessageId directly (no query needed)
               await prisma.appCodeVersion.create({
                 data: {
                   appId: id,
-                  messageId: agentMessage?.id,
+                  messageId: agentMessageId,
                   code: verifyData.code,
                   hash,
                 },
