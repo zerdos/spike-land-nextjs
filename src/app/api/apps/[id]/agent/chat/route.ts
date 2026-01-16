@@ -17,6 +17,43 @@ import { z } from "zod";
 
 export const maxDuration = 300; // 5 minutes
 
+// Timeout for external fetches (5 seconds)
+const FETCH_TIMEOUT_MS = 5000;
+
+// Helper to emit stage events to stream
+function emitStage(
+  controller: ReadableStreamDefaultController,
+  stage: string,
+  tool?: string,
+) {
+  const data = JSON.stringify({
+    type: "stage",
+    stage,
+    ...(tool && { tool }),
+  });
+  controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
+}
+
+// Fetch with timeout
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs: number = FETCH_TIMEOUT_MS,
+): Promise<Response> {
+  const abortController = new AbortController();
+  const timeout = setTimeout(() => abortController.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: abortController.signal,
+    });
+    return response;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string; }>; },
@@ -94,11 +131,13 @@ export async function POST(
   const codespaceServer = createCodespaceServer(app.codespaceId);
 
   // Fetch current code from testing.spike.land to include in context
+  // Using timeout to prevent hangs
   let currentCode = "";
   const { data: sessionResponse, error: sessionError } = await tryCatch(
-    fetch(`https://testing.spike.land/live/${app.codespaceId}/session.json`, {
-      headers: { "Accept": "application/json" },
-    }),
+    fetchWithTimeout(
+      `https://testing.spike.land/live/${app.codespaceId}/session.json`,
+      { headers: { "Accept": "application/json" } },
+    ),
   );
 
   if (!sessionError && sessionResponse.ok) {
@@ -126,6 +165,12 @@ export async function POST(
   const stream = new ReadableStream({
     async start(controller) {
       try {
+        // Emit connecting stage immediately
+        emitStage(controller, "connecting");
+
+        // Emit processing stage when query starts
+        emitStage(controller, "processing");
+
         const result = query({
           prompt: content,
           options: {
@@ -177,6 +222,8 @@ export async function POST(
               ) {
                 codeUpdated = true;
               }
+              // Emit executing_tool stage with tool name
+              emitStage(controller, "executing_tool", toolName || "tool");
               const statusData = JSON.stringify({
                 type: "status",
                 content: `Executing ${toolName || "tool"}...`,
@@ -222,11 +269,11 @@ export async function POST(
             app.codespaceId.includes("-");
 
           if (isDefaultName) {
-            // We fire this off without awaiting it to not block the stream closing immediately
-            // (Next.js might kill it if we don't await, but `waitUntil` is not standard here yet.
-            //  However, since we have maxDuration 300s, we can just await it. It's better for UX if we don't, but safer if we do.)
-            // Let's await it to ensure it runs.
-            await generateAppDetails(id, finalResponse, content);
+            // Fire and forget - don't block the stream
+            // This runs in the background to improve cold response time
+            generateAppDetails(id, finalResponse, content).catch((e) => {
+              console.error("[agent/chat] Background generateAppDetails failed:", e);
+            });
           }
         }
 
@@ -236,13 +283,14 @@ export async function POST(
             "[agent/chat] Code was updated, broadcasting to SSE clients",
           );
 
-          // Verify the update actually happened
+          // Emit validating stage
+          emitStage(controller, "validating");
+
+          // Verify the update actually happened (with timeout)
           const { data: verifyResponse } = await tryCatch(
-            fetch(
+            fetchWithTimeout(
               `https://testing.spike.land/live/${app.codespaceId}/session.json`,
-              {
-                headers: { "Accept": "application/json" },
-              },
+              { headers: { "Accept": "application/json" } },
             ),
           );
 
@@ -263,9 +311,14 @@ export async function POST(
           broadcastCodeUpdated(id);
         }
 
+        // Emit complete stage
+        emitStage(controller, "complete");
+
         controller.close();
       } catch (error) {
         console.error("[agent/chat] Streaming error:", error);
+        // Emit error stage
+        emitStage(controller, "error");
         const errData = JSON.stringify({
           type: "error",
           content: error instanceof Error ? error.message : "Unknown error",

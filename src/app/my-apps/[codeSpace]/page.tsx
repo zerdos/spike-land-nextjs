@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  AgentProgressIndicator,
+  type AgentStage,
+} from "@/components/my-apps/AgentProgressIndicator";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -243,6 +247,12 @@ export default function CodeSpacePage() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [clearingChat, setClearingChat] = useState(false);
 
+  // Agent progress state
+  const [agentStage, setAgentStage] = useState<AgentStage | null>(null);
+  const [currentTool, setCurrentTool] = useState<string | undefined>();
+  const [agentStartTime, setAgentStartTime] = useState<number | undefined>();
+  const [agentError, setAgentError] = useState<string | undefined>();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -481,6 +491,27 @@ export default function CodeSpacePage() {
     }
   };
 
+  // Retry logic for fetching messages with exponential backoff
+  const fetchMessagesWithRetry = useCallback(
+    async (appId: string, retries = 3): Promise<AppMessage[]> => {
+      for (let i = 0; i < retries; i++) {
+        // Exponential backoff: 500ms, 1000ms, 2000ms
+        await new Promise((r) => setTimeout(r, 500 * Math.pow(2, i)));
+        try {
+          const response = await fetch(`/api/apps/${appId}/messages`);
+          if (response.ok) {
+            const data = await response.json();
+            return (data.messages || []).reverse();
+          }
+        } catch {
+          console.error(`Retry ${i + 1}/${retries} failed for messages fetch`);
+        }
+      }
+      return [];
+    },
+    [],
+  );
+
   // Create app from prompt (prompt mode)
   const handleCreateApp = async () => {
     if ((!newMessage.trim() && pendingFiles.length === 0) || sendingMessage) {
@@ -522,12 +553,9 @@ export default function CodeSpacePage() {
       setPendingFiles([]);
       setMode("workspace");
 
-      // Fetch messages for the new app
-      const messagesResponse = await fetch(`/api/apps/${newApp.id}/messages`);
-      if (messagesResponse.ok) {
-        const data = await messagesResponse.json();
-        setMessages((data.messages || []).reverse());
-      }
+      // Fetch messages for the new app with retry logic
+      const fetchedMessages = await fetchMessagesWithRetry(newApp.id);
+      setMessages(fetchedMessages);
     } catch (e) {
       console.error("Failed to create app", e);
       toast.error("Failed to create app. Please try again.");
@@ -549,6 +577,12 @@ export default function CodeSpacePage() {
     setSendingMessage(true);
     setIsStreaming(true);
     setStreamingResponse("");
+
+    // Initialize agent progress tracking
+    setAgentStage("connecting");
+    setAgentStartTime(Date.now());
+    setCurrentTool(undefined);
+    setAgentError(undefined);
 
     try {
       const imageIds = await uploadImages();
@@ -596,8 +630,18 @@ export default function CodeSpacePage() {
           if (line.startsWith("data: ")) {
             try {
               const data = JSON.parse(line.substring(6));
+              // Handle different event types
               if (data.type === "chunk") {
                 setStreamingResponse((prev) => prev + data.content);
+              } else if (data.type === "stage") {
+                // Update agent stage
+                setAgentStage(data.stage as AgentStage);
+                if (data.tool) {
+                  setCurrentTool(data.tool);
+                }
+              } else if (data.type === "error") {
+                setAgentStage("error");
+                setAgentError(data.content);
               }
             } catch {
               // Skip invalid JSON
@@ -611,10 +655,19 @@ export default function CodeSpacePage() {
       setHasContent(true);
     } catch (e) {
       console.error("Failed to send message", e);
+      setAgentStage("error");
+      setAgentError(e instanceof Error ? e.message : "Unknown error");
     } finally {
       setSendingMessage(false);
       setIsStreaming(false);
       setStreamingResponse("");
+      // Reset agent progress after a short delay to show completion
+      setTimeout(() => {
+        setAgentStage(null);
+        setAgentStartTime(undefined);
+        setCurrentTool(undefined);
+        setAgentError(undefined);
+      }, 1500);
     }
   };
 
@@ -938,16 +991,24 @@ export default function CodeSpacePage() {
                       ))}
                     </div>
                   )}
+                {/* Agent Progress Indicator */}
+                {isStreaming && (
+                  <AgentProgressIndicator
+                    stage={agentStage}
+                    currentTool={currentTool}
+                    errorMessage={agentError}
+                    isVisible={isStreaming}
+                    startTime={agentStartTime}
+                    className="mt-4 mb-4"
+                  />
+                )}
                 {isStreaming && streamingResponse && (
-                  <div className="flex justify-start mt-6">
+                  <div className="flex justify-start mt-2">
                     <div className="max-w-[85%] rounded-2xl px-5 py-3 bg-white/10 text-zinc-100 backdrop-blur-md border border-white/5">
                       <div className="leading-relaxed">
                         <MarkdownContent content={streamingResponse} />
                         <span className="inline-block w-2 h-4 ml-1 bg-teal-500 animate-pulse rounded-full align-middle" />
                       </div>
-                      <p className="mt-1.5 text-xs text-zinc-500">
-                        Thinking...
-                      </p>
                     </div>
                   </div>
                 )}
