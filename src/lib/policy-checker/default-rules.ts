@@ -49,6 +49,25 @@ export const TWITTER_RULES: PolicyRuleInput[] = [
 ];
 
 /**
+ * General rules (not specific to any platform)
+ */
+export const GENERAL_RULES: PolicyRuleInput[] = [
+  {
+    name: "Threads Mention",
+    description: "Content mentions the new social media platform 'Threads'",
+    platform: null,
+    category: "CONTENT_GUIDELINES",
+    ruleType: "KEYWORD_MATCH",
+    conditions: {
+      keywords: ["Threads", "#threads"],
+      caseSensitive: false,
+    },
+    severity: "INFO",
+    isBlocking: false,
+  },
+];
+
+/**
  * Facebook rules
  */
 export const FACEBOOK_RULES: PolicyRuleInput[] = [
@@ -352,6 +371,7 @@ export const ALL_DEFAULT_RULES: PolicyRuleInput[] = [
   ...TIKTOK_RULES,
   ...GLOBAL_CONTENT_RULES,
   ...AD_COMPLIANCE_RULES,
+  ...GENERAL_RULES,
 ];
 
 /**
