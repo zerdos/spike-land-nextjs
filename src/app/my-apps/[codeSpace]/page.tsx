@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import type { APP_BUILD_STATUSES } from "@/lib/validations/app";
 import { motion } from "framer-motion";
-import { FileText, ImagePlus, Paperclip, X } from "lucide-react";
+import { FileText, ImagePlus, Paperclip, StopCircle, X } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { redirect, useParams } from "next/navigation";
@@ -257,6 +257,7 @@ export default function CodeSpacePage() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const codespaceUrl = `https://testing.spike.land/live/${codeSpace}/`;
 
@@ -512,7 +513,108 @@ export default function CodeSpacePage() {
     [],
   );
 
+  // Shared helper to process a message with the agent (streaming)
+  const processMessageWithAgent = useCallback(
+    async (appId: string, content: string, imageIds: string[] = []) => {
+      setIsStreaming(true);
+      setStreamingResponse("");
+
+      // Initialize agent progress tracking
+      setAgentStage("connecting");
+      setAgentStartTime(Date.now());
+      setCurrentTool(undefined);
+      setAgentError(undefined);
+
+      // Create new AbortController for this request
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
+
+      try {
+        const response = await fetch(`/api/apps/${appId}/agent/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: content || "[Image attached]",
+            imageIds,
+          }),
+          signal,
+        });
+
+        if (!response.ok) throw new Error("Failed to send message to agent");
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (!reader) throw new Error("No reader available");
+
+        let buffer = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
+
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              try {
+                const data = JSON.parse(line.substring(6));
+                // Handle different event types
+                if (data.type === "chunk") {
+                  setStreamingResponse((prev) => prev + data.content);
+                } else if (data.type === "stage") {
+                  // Update agent stage
+                  setAgentStage(data.stage as AgentStage);
+                  if (data.tool) {
+                    setCurrentTool(data.tool);
+                  }
+                } else if (data.type === "error") {
+                  setAgentStage("error");
+                  setAgentError(data.content);
+                }
+              } catch {
+                // Skip invalid JSON
+              }
+            }
+          }
+        }
+
+        // Fetch final messages and update preview
+        await fetchMessages();
+        setIframeKey((prev) => prev + 1);
+        setHasContent(true);
+      } catch (e) {
+        // Handle abort gracefully
+        if (e instanceof Error && e.name === "AbortError") {
+          console.log("Agent request cancelled by user");
+          setAgentStage(null);
+          setAgentError(undefined);
+        } else {
+          console.error("Failed to process message with agent", e);
+          setAgentStage("error");
+          setAgentError(e instanceof Error ? e.message : "Unknown error");
+        }
+      } finally {
+        abortControllerRef.current = null;
+        setIsStreaming(false);
+        setStreamingResponse("");
+        // Reset agent progress after a short delay to show completion
+        setTimeout(() => {
+          setAgentStage(null);
+          setAgentStartTime(undefined);
+          setCurrentTool(undefined);
+          setAgentError(undefined);
+        }, 1500);
+      }
+    },
+    [fetchMessages],
+  );
+
   // Create app from prompt (prompt mode)
+
   const handleCreateApp = async () => {
     if ((!newMessage.trim() && pendingFiles.length === 0) || sendingMessage) {
       return;
@@ -556,6 +658,11 @@ export default function CodeSpacePage() {
       // Fetch messages for the new app with retry logic
       const fetchedMessages = await fetchMessagesWithRetry(newApp.id);
       setMessages(fetchedMessages);
+
+      // Trigger agent to process the initial message
+      // NOTE: The user's message is already saved to DB by POST /api/apps
+      // Now we call the agent to generate a response
+      await processMessageWithAgent(newApp.id, content || "[Files attached]");
     } catch (e) {
       console.error("Failed to create app", e);
       toast.error("Failed to create app. Please try again.");
@@ -575,14 +682,6 @@ export default function CodeSpacePage() {
     const content = newMessage.trim();
     setNewMessage("");
     setSendingMessage(true);
-    setIsStreaming(true);
-    setStreamingResponse("");
-
-    // Initialize agent progress tracking
-    setAgentStage("connecting");
-    setAgentStartTime(Date.now());
-    setCurrentTool(undefined);
-    setAgentError(undefined);
 
     try {
       const imageIds = await uploadImages();
@@ -599,75 +698,14 @@ export default function CodeSpacePage() {
         },
       ]);
 
-      const response = await fetch(`/api/apps/${app.id}/agent/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: content || "[Image attached]",
-          imageIds,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to send message");
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (!reader) throw new Error("No reader available");
-
-      let buffer = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        buffer += chunk;
-
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const data = JSON.parse(line.substring(6));
-              // Handle different event types
-              if (data.type === "chunk") {
-                setStreamingResponse((prev) => prev + data.content);
-              } else if (data.type === "stage") {
-                // Update agent stage
-                setAgentStage(data.stage as AgentStage);
-                if (data.tool) {
-                  setCurrentTool(data.tool);
-                }
-              } else if (data.type === "error") {
-                setAgentStage("error");
-                setAgentError(data.content);
-              }
-            } catch {
-              // Skip invalid JSON
-            }
-          }
-        }
-      }
-
-      await fetchMessages();
-      setIframeKey((prev) => prev + 1);
-      setHasContent(true);
+      // Use shared helper for agent processing
+      await processMessageWithAgent(app.id, content, imageIds);
     } catch (e) {
       console.error("Failed to send message", e);
       setAgentStage("error");
       setAgentError(e instanceof Error ? e.message : "Unknown error");
     } finally {
       setSendingMessage(false);
-      setIsStreaming(false);
-      setStreamingResponse("");
-      // Reset agent progress after a short delay to show completion
-      setTimeout(() => {
-        setAgentStage(null);
-        setAgentStartTime(undefined);
-        setCurrentTool(undefined);
-        setAgentError(undefined);
-      }, 1500);
     }
   };
 
@@ -698,6 +736,14 @@ export default function CodeSpacePage() {
       } else {
         handleSendMessage();
       }
+    }
+  };
+
+  // Cancel agent processing
+  const handleCancelAgent = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      toast.info("Agent processing cancelled");
     }
   };
 
@@ -991,17 +1037,6 @@ export default function CodeSpacePage() {
                       ))}
                     </div>
                   )}
-                {/* Agent Progress Indicator */}
-                {isStreaming && (
-                  <AgentProgressIndicator
-                    stage={agentStage}
-                    currentTool={currentTool}
-                    errorMessage={agentError}
-                    isVisible={isStreaming}
-                    startTime={agentStartTime}
-                    className="mt-4 mb-4"
-                  />
-                )}
                 {isStreaming && streamingResponse && (
                   <div className="flex justify-start mt-2">
                     <div className="max-w-[85%] rounded-2xl px-5 py-3 bg-white/10 text-zinc-100 backdrop-blur-md border border-white/5">
@@ -1015,6 +1050,31 @@ export default function CodeSpacePage() {
                 <div ref={messagesEndRef} className="h-4" />
               </div>
             </CardContent>
+
+            {/* Sticky Agent Progress Indicator - between scroll and input */}
+            {isStreaming && (
+              <div className="mx-4 mb-2">
+                <AgentProgressIndicator
+                  stage={agentStage}
+                  currentTool={currentTool}
+                  errorMessage={agentError}
+                  isVisible={isStreaming}
+                  startTime={agentStartTime}
+                  className="shadow-lg"
+                />
+                <div className="flex justify-center mt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancelAgent}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-full px-4 h-8 text-sm gap-2"
+                  >
+                    <StopCircle className="h-4 w-4" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Message Input */}
             <div className="border-t border-white/5 bg-white/[0.02] p-4">

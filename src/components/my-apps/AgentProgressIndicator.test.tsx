@@ -49,7 +49,8 @@ describe("AgentProgressIndicator", () => {
       />,
     );
     expect(screen.getByText("Agent Working")).toBeInTheDocument();
-    expect(screen.getByText("Connecting to AI...")).toBeInTheDocument();
+    // Component shows first simulated log message
+    expect(screen.getByText("Resolving neuron endpoint...")).toBeInTheDocument();
   });
 
   it("renders progress indicator with processing stage", () => {
@@ -59,7 +60,8 @@ describe("AgentProgressIndicator", () => {
         isVisible={true}
       />,
     );
-    expect(screen.getByText("Processing your request...")).toBeInTheDocument();
+    // Component shows first simulated log message for processing stage
+    expect(screen.getByText("Inferring user intent...")).toBeInTheDocument();
   });
 
   it("shows tool name when executing_tool stage with tool", () => {
@@ -80,7 +82,8 @@ describe("AgentProgressIndicator", () => {
         isVisible={true}
       />,
     );
-    expect(screen.getByText("Executing tool...")).toBeInTheDocument();
+    // Without currentTool, shows first simulated log message
+    expect(screen.getByText("Spawning subprocess...")).toBeInTheDocument();
   });
 
   it("shows error message on error stage", () => {
@@ -101,7 +104,8 @@ describe("AgentProgressIndicator", () => {
         isVisible={true}
       />,
     );
-    expect(screen.getByText("An error occurred")).toBeInTheDocument();
+    // Without errorMessage, shows first simulated error log
+    expect(screen.getByText("Process interrupted.")).toBeInTheDocument();
   });
 
   it("shows complete stage", () => {
@@ -111,7 +115,8 @@ describe("AgentProgressIndicator", () => {
         isVisible={true}
       />,
     );
-    expect(screen.getByText("Done!")).toBeInTheDocument();
+    // Shows first simulated complete log
+    expect(screen.getByText("Operation completed successfully.")).toBeInTheDocument();
   });
 
   it("updates elapsed time when startTime is provided", () => {
