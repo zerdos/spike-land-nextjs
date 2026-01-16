@@ -145,7 +145,7 @@ async function publishToAccount(
   }
 
   try {
-    const client = createSocialClient(platform, {
+    const client = await createSocialClient(platform, {
       accessToken: account.accessToken,
       pageId: account.pageId,
       igUserId: account.igUserId,

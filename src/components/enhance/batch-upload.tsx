@@ -326,6 +326,15 @@ export function BatchUpload({ albumId, onUploadComplete }: BatchUploadProps) {
           }
           `}
           onClick={() => files.length < MAX_BATCH_SIZE && fileInputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              if (files.length < MAX_BATCH_SIZE) fileInputRef.current?.click();
+            }
+          }}
+          role="button"
+          tabIndex={files.length >= MAX_BATCH_SIZE ? -1 : 0}
+          aria-label="Upload images drop zone"
         >
           <div className="flex flex-col items-center gap-2">
             <Upload className="h-8 w-8 text-muted-foreground" />

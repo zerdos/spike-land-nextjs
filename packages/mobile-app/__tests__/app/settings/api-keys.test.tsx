@@ -6,6 +6,18 @@
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import * as Clipboard from "expo-clipboard";
 import { Alert } from "react-native";
+import type {
+  AlertButton,
+  MockApiKey,
+  MockApiKeyWithFullKey,
+  MockButtonProps,
+  MockCardProps,
+  MockDialogProps,
+  MockDialogSubComponentProps,
+  MockInputProps,
+  MockStackProps,
+  MockTextProps,
+} from "../../test-utils/mock-types";
 
 // ============================================================================
 // Mocks
@@ -13,8 +25,8 @@ import { Alert } from "react-native";
 
 // Mock expo-router
 const mockRouter = {
-  back: jest.fn(),
-  push: jest.fn(),
+  back: jest.fn<void, []>(),
+  push: jest.fn<void, [string]>(),
 };
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
@@ -45,38 +57,27 @@ jest.mock("@/stores", () => ({
 
 // Mock settings store
 const mockSettingsStore: {
-  apiKeys: Array<{
-    id: string;
-    name: string;
-    keyPrefix: string;
-    lastUsedAt: string | null;
-    isActive: boolean;
-    createdAt: string;
-  }>;
+  apiKeys: MockApiKey[];
   isLoadingApiKeys: boolean;
   apiKeysError: string | null;
-  newlyCreatedKey: {
-    id: string;
-    name: string;
-    key: string;
-    keyPrefix: string;
-    lastUsedAt: string | null;
-    isActive: boolean;
-    createdAt: string;
-  } | null;
-  fetchApiKeys: jest.Mock;
-  createApiKey: jest.Mock;
-  deleteApiKey: jest.Mock;
-  clearNewlyCreatedKey: jest.Mock;
+  newlyCreatedKey: MockApiKeyWithFullKey | null;
+  fetchApiKeys: jest.Mock<Promise<void>, []>;
+  createApiKey: jest.Mock<Promise<{ success: boolean; error?: string; }>, [string]>;
+  deleteApiKey: jest.Mock<Promise<{ success: boolean; error?: string; }>, [string]>;
+  clearNewlyCreatedKey: jest.Mock<void, []>;
 } = {
   apiKeys: [],
   isLoadingApiKeys: false,
   apiKeysError: null,
   newlyCreatedKey: null,
-  fetchApiKeys: jest.fn(),
-  createApiKey: jest.fn(() => Promise.resolve({ success: true })),
-  deleteApiKey: jest.fn(() => Promise.resolve({ success: true })),
-  clearNewlyCreatedKey: jest.fn(),
+  fetchApiKeys: jest.fn<Promise<void>, []>(() => Promise.resolve()),
+  createApiKey: jest.fn<Promise<{ success: boolean; error?: string; }>, [string]>(() =>
+    Promise.resolve({ success: true })
+  ),
+  deleteApiKey: jest.fn<Promise<{ success: boolean; error?: string; }>, [string]>(() =>
+    Promise.resolve({ success: true })
+  ),
+  clearNewlyCreatedKey: jest.fn<void, []>(),
 };
 jest.mock("@/stores/settings-store", () => ({
   useSettingsStore: () => mockSettingsStore,
@@ -92,7 +93,7 @@ jest.mock("tamagui", () => {
   );
 
   return {
-    Button: ({ children, onPress, disabled, icon, ...props }: any) => (
+    Button: ({ children, onPress, disabled, icon, ...props }: MockButtonProps) => (
       <TouchableOpacity
         onPress={onPress}
         disabled={disabled}
@@ -103,27 +104,27 @@ jest.mock("tamagui", () => {
         {typeof children === "string" ? <Text>{children}</Text> : children}
       </TouchableOpacity>
     ),
-    Card: ({ children, ...props }: any) => <View {...props}>{children}</View>,
+    Card: ({ children, ...props }: MockCardProps) => <View {...props}>{children}</View>,
     Dialog: Object.assign(
-      ({ children, open, onOpenChange }: any) => (
+      ({ children, open, onOpenChange }: MockDialogProps) => (
         <Modal
           visible={open}
-          onRequestClose={() => onOpenChange(false)}
+          onRequestClose={() => onOpenChange?.(false)}
         >
           {children}
         </Modal>
       ),
       {
-        Portal: ({ children }: any) => <>{children}</>,
+        Portal: ({ children }: MockDialogSubComponentProps) => <>{children}</>,
         Overlay: () => null,
-        Content: ({ children }: any) => <View>{children}</View>,
-        Title: ({ children }: any) => <Text>{children}</Text>,
-        Description: ({ children }: any) => <View>{children}</View>,
+        Content: ({ children }: MockDialogSubComponentProps) => <View>{children}</View>,
+        Title: ({ children }: MockTextProps) => <Text>{children}</Text>,
+        Description: ({ children }: MockDialogSubComponentProps) => <View>{children}</View>,
       },
     ),
-    H3: ({ children }: any) => <Text>{children}</Text>,
-    H4: ({ children }: any) => <Text>{children}</Text>,
-    Input: ({ value, onChangeText, placeholder, id, ...props }: any) => (
+    H3: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    H4: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    Input: ({ value, onChangeText, placeholder, id, ...props }: MockInputProps) => (
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -132,11 +133,11 @@ jest.mock("tamagui", () => {
         {...props}
       />
     ),
-    Label: ({ children }: any) => <Text>{children}</Text>,
-    Paragraph: ({ children }: any) => <Text>{children}</Text>,
-    Text: ({ children }: any) => <Text>{children}</Text>,
-    XStack: ({ children, ...props }: any) => <View {...props}>{children}</View>,
-    YStack: ({ children, ...props }: any) => <View {...props}>{children}</View>,
+    Label: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    Paragraph: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    Text: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    XStack: ({ children, ...props }: MockStackProps) => <View {...props}>{children}</View>,
+    YStack: ({ children, ...props }: MockStackProps) => <View {...props}>{children}</View>,
   };
 });
 
@@ -160,10 +161,16 @@ function resetMocks() {
   mockSettingsStore.apiKeysError = null;
   mockSettingsStore.newlyCreatedKey = null;
   // Reset mock function implementations (they get reset by resetMocks: true in jest config)
-  mockSettingsStore.fetchApiKeys = jest.fn();
-  mockSettingsStore.createApiKey = jest.fn(() => Promise.resolve({ success: true }));
-  mockSettingsStore.deleteApiKey = jest.fn(() => Promise.resolve({ success: true }));
-  mockSettingsStore.clearNewlyCreatedKey = jest.fn();
+  mockSettingsStore.fetchApiKeys = jest.fn<Promise<void>, []>(() => Promise.resolve());
+  mockSettingsStore.createApiKey = jest.fn<
+    Promise<{ success: boolean; error?: string; }>,
+    [string]
+  >(() => Promise.resolve({ success: true }));
+  mockSettingsStore.deleteApiKey = jest.fn<
+    Promise<{ success: boolean; error?: string; }>,
+    [string]
+  >(() => Promise.resolve({ success: true }));
+  mockSettingsStore.clearNewlyCreatedKey = jest.fn<void, []>();
 }
 
 // ============================================================================
@@ -401,12 +408,13 @@ describe("ApiKeysScreen", () => {
 
       // Get the onPress handler from the Alert mock
       const alertCall = alertSpy.mock.calls[0];
-      const deleteButton = alertCall[2].find(
-        (btn: any) => btn.text === "Delete",
+      const buttons = alertCall[2] as AlertButton[];
+      const deleteButton = buttons.find(
+        (btn) => btn.text === "Delete",
       );
 
       await act(async () => {
-        deleteButton.onPress();
+        deleteButton?.onPress?.();
       });
 
       expect(mockSettingsStore.deleteApiKey).toHaveBeenCalledWith("key-1");
@@ -433,12 +441,13 @@ describe("ApiKeysScreen", () => {
       fireEvent.press(getByText("Delete"));
 
       const alertCall = alertSpy.mock.calls[0];
-      const deleteButton = alertCall[2].find(
-        (btn: any) => btn.text === "Delete",
+      const buttons = alertCall[2] as AlertButton[];
+      const deleteButton = buttons.find(
+        (btn) => btn.text === "Delete",
       );
 
       await act(async () => {
-        deleteButton.onPress();
+        deleteButton?.onPress?.();
       });
 
       expect(alertSpy).toHaveBeenCalledWith("Error", "Cannot delete key");

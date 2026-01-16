@@ -249,7 +249,7 @@ export async function fetchAccountPosts(
     clientOptions["igUserId"] = account.accountId;
   }
 
-  const client = createSocialClient(account.platform, clientOptions);
+  const client = await createSocialClient(account.platform, clientOptions);
 
   // Fetch posts from the social platform API
   const posts = await client.getPosts(limit);
