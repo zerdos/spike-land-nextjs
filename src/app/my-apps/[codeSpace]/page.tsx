@@ -517,8 +517,10 @@ export default function CodeSpacePage() {
   const fetchMessagesWithRetry = useCallback(
     async (appId: string, retries = 3): Promise<AppMessage[]> => {
       for (let i = 0; i < retries; i++) {
-        // Exponential backoff: 500ms, 1000ms, 2000ms
-        await new Promise((r) => setTimeout(r, 500 * Math.pow(2, i)));
+        // Only delay between retries, not before first attempt
+        if (i > 0) {
+          await new Promise((r) => setTimeout(r, 500 * Math.pow(2, i - 1)));
+        }
         try {
           const response = await fetch(`/api/apps/${appId}/messages`);
           if (response.ok) {
@@ -623,12 +625,13 @@ export default function CodeSpacePage() {
         setIsStreaming(false);
         setStreamingResponse("");
         // Reset agent progress after a short delay to show completion
+        const AGENT_COMPLETION_DISPLAY_MS = 1500;
         setTimeout(() => {
           setAgentStage(null);
           setAgentStartTime(undefined);
           setCurrentTool(undefined);
           setAgentError(undefined);
-        }, 1500);
+        }, AGENT_COMPLETION_DISPLAY_MS);
       }
     },
     [fetchMessages],
@@ -683,6 +686,7 @@ export default function CodeSpacePage() {
       // Trigger agent to process the initial message
       // NOTE: The user's message is already saved to DB by POST /api/apps
       // Now we call the agent to generate a response
+      // Note: Images are currently only supported in workspace mode - prompt mode uses files only
       await processMessageWithAgent(newApp.id, content || "[Files attached]");
     } catch (e) {
       console.error("Failed to create app", e);
@@ -1067,8 +1071,6 @@ export default function CodeSpacePage() {
                             {/* Version preview for agent messages */}
                             {message.role === "AGENT" && message.codeVersion && (
                               <ChatMessagePreview
-                                appId={app?.id || ""}
-                                versionId={message.codeVersion.id}
                                 codespaceUrl={codespaceUrl}
                                 timestamp={new Date(message.codeVersion.createdAt)}
                                 onRestore={() => handleRestoreVersion(message.codeVersion!.id)}

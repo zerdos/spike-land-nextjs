@@ -5,8 +5,6 @@ import { RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface ChatMessagePreviewProps {
-  appId: string;
-  versionId: string;
   codespaceUrl: string;
   timestamp: Date;
   onRestore: () => void;
@@ -14,8 +12,6 @@ interface ChatMessagePreviewProps {
 }
 
 export function ChatMessagePreview({
-  appId: _appId,
-  versionId: _versionId,
   codespaceUrl,
   timestamp,
   onRestore,
