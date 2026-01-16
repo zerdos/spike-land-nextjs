@@ -43,15 +43,22 @@ export async function POST(
   }
 
   try {
-    // Update code in the codespace
+    // Update code in the codespace with timeout
+    const RESTORE_TIMEOUT_MS = 10000;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), RESTORE_TIMEOUT_MS);
+
     const response = await fetch(
       `https://testing.spike.land/live/${app.codespaceId}/`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: version.code }),
+        signal: controller.signal,
       },
     );
+
+    clearTimeout(timeout);
 
     if (!response.ok) {
       throw new Error("Failed to update codespace");

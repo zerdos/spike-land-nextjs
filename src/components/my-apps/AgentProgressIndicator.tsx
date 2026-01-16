@@ -199,6 +199,8 @@ export function AgentProgressIndicator({
     }, 50);
 
     return () => clearInterval(interval);
+    // Note: displayProgress is intentionally in dependencies to create smooth animation
+    // by continuously re-running the interval until target is reached
   }, [isVisible, currentOrder, targetProgress, displayProgress]);
 
   // Log message cycling
@@ -272,7 +274,6 @@ export function AgentProgressIndicator({
           />
         </div>
 
-        {/* Stage indicators */}
         {/* Stage indicators - Continuous Flow */}
         <div className="flex items-center w-full px-2 mb-4">
           {ORDERED_STAGES.map((s, index) => {
