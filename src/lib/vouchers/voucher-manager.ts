@@ -5,7 +5,7 @@ import type {
   VoucherStatus as VoucherStatusType,
   VoucherType as VoucherTypeEnum,
 } from "@prisma/client";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 // Use string literals to avoid runtime dependency on Prisma enums
 // These match the Prisma schema enum values
