@@ -1,6 +1,7 @@
 # My-Apps Architecture
 
-This document provides comprehensive developer documentation for the `/my-apps` feature in spike.land.
+This document provides comprehensive developer documentation for the `/my-apps`
+feature in spike.land.
 
 ## Table of Contents
 
@@ -18,9 +19,11 @@ This document provides comprehensive developer documentation for the `/my-apps` 
 
 ## Overview
 
-**My-Apps** (`/my-apps`) is a dashboard where users can create, manage, and interact with AI-powered React applications. It provides:
+**My-Apps** (`/my-apps`) is a dashboard where users can create, manage, and
+interact with AI-powered React applications. It provides:
 
-- **App Creation**: Users describe what they want to build, and an AI agent writes the code
+- **App Creation**: Users describe what they want to build, and an AI agent
+  writes the code
 - **Live Preview**: Real-time iframe preview of running React applications
 - **Chat Interface**: Conversational UI to iterate on the app with AI assistance
 - **Persistent Storage**: Apps are saved and can be resumed anytime
@@ -262,7 +265,8 @@ Creates app with `status: PROMPTING`.
 "heartbeat"; // 30-second keep-alive
 ```
 
-**Note**: Current implementation uses in-memory connections. Does not scale across multiple Vercel instances. TODO: Implement Redis Pub/Sub.
+**Note**: Current implementation uses in-memory connections. Does not scale
+across multiple Vercel instances. TODO: Implement Redis Pub/Sub.
 
 ### Components
 
@@ -334,7 +338,9 @@ model AppMessage {
 
 ### What It Is
 
-**testing.spike.land** is a Cloudflare Worker that hosts live React applications. Each "codespace" is an isolated environment where React code runs in real-time.
+**testing.spike.land** is a Cloudflare Worker that hosts live React
+applications. Each "codespace" is an isolated environment where React code runs
+in real-time.
 
 **Key Technologies**:
 
@@ -449,7 +455,8 @@ bucket = "../code/dist" # Static editor UI assets
 
 **Location**: `packages/testing.spike.land/src/mcp/`
 
-The Cloudflare Worker implements an MCP server that AI agents can connect to for code manipulation.
+The Cloudflare Worker implements an MCP server that AI agents can connect to for
+code manipulation.
 
 **Endpoint**: `POST /mcp`
 
@@ -469,7 +476,8 @@ The Cloudflare Worker implements an MCP server that AI agents can connect to for
 
 **Location**: `src/lib/claude-agent/tools/codespace-tools.ts`
 
-When a user sends a message in the app workspace, the backend creates an MCP server instance:
+When a user sends a message in the app workspace, the backend creates an MCP
+server instance:
 
 ```typescript
 export function createCodespaceServer(codespaceId: string) {
@@ -480,16 +488,24 @@ export function createCodespaceServer(codespaceId: string) {
       tool("read_code", "Read the current code...", {}, async () => {
         const code = await fetch(
           `https://testing.spike.land/live/${codespaceId}/session.json`,
-        ).then(r => r.json()).then(d => d.code);
+        ).then((r) => r.json()).then((d) => d.code);
         return { content: [{ type: "text", text: code }] };
       }),
-      tool("update_code", "Replace the entire code...", { code: z.string() }, async (args) => {
-        await fetch(`https://testing.spike.land/live/${codespaceId}/api/code`, {
-          method: "PUT",
-          body: JSON.stringify({ code: args.code, run: true }),
-        });
-        return { content: [{ type: "text", text: "success" }] };
-      }),
+      tool(
+        "update_code",
+        "Replace the entire code...",
+        { code: z.string() },
+        async (args) => {
+          await fetch(
+            `https://testing.spike.land/live/${codespaceId}/api/code`,
+            {
+              method: "PUT",
+              body: JSON.stringify({ code: args.code, run: true }),
+            },
+          );
+          return { content: [{ type: "text", text: "success" }] };
+        },
+      ),
       // ... more tools
     ],
   });
@@ -690,7 +706,8 @@ yarn dev  # http://localhost:8787
 
 ```typescript
 // In src/lib/claude-agent/tools/codespace-tools.ts
-const TESTING_SPIKE_LAND = process.env.TESTING_SPIKE_LAND_URL || "https://testing.spike.land";
+const TESTING_SPIKE_LAND = process.env.TESTING_SPIKE_LAND_URL ||
+  "https://testing.spike.land";
 ```
 
 3. **Start Next.js**:

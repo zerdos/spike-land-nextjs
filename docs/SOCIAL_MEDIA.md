@@ -1,6 +1,7 @@
 # Social Media Integration Guide
 
-This document covers spike.land's social media presence, API integrations, and admin dashboard usage.
+This document covers spike.land's social media presence, API integrations, and
+admin dashboard usage.
 
 ## Table of Contents
 
@@ -33,7 +34,8 @@ This document covers spike.land's social media presence, API integrations, and a
 
 ## API Integrations Overview
 
-spike.land integrates with six social media platforms through their official APIs:
+spike.land integrates with six social media platforms through their official
+APIs:
 
 | Platform  | API Version     | Auth Method        | Features                        |
 | --------- | --------------- | ------------------ | ------------------------------- |
@@ -109,7 +111,8 @@ src/app/api/social/
 2. Create a new App (Type: Business)
 3. Add products: **Facebook Login**, **Instagram Graph API**
 4. Configure OAuth:
-   - Valid OAuth Redirect URIs: `https://spike.land/api/social/facebook/callback`
+   - Valid OAuth Redirect URIs:
+     `https://spike.land/api/social/facebook/callback`
 5. Request permissions:
    - `pages_manage_posts`
    - `pages_read_engagement`
@@ -118,7 +121,8 @@ src/app/api/social/
    - `instagram_content_publish`
 6. Copy **App ID** and **App Secret**
 
-Note: Instagram Business accounts are automatically discovered when connecting Facebook pages.
+Note: Instagram Business accounts are automatically discovered when connecting
+Facebook pages.
 
 ### LinkedIn Developer Account
 
@@ -198,7 +202,8 @@ The social media admin dashboard is located at `/admin/social-media`.
 3. Log in with your Facebook account
 4. Select the Pages you want to connect
 5. Grant all requested permissions
-6. Instagram Business accounts linked to those Pages are automatically discovered
+6. Instagram Business accounts linked to those Pages are automatically
+   discovered
 
 ### Connect LinkedIn
 
@@ -218,7 +223,8 @@ The social media admin dashboard is located at `/admin/social-media`.
 
 ### Connect Discord
 
-Discord uses a bot token and doesn't require OAuth connection through the dashboard:
+Discord uses a bot token and doesn't require OAuth connection through the
+dashboard:
 
 1. Set up the bot following the [Discord Bot](#discord-bot) instructions above
 2. Add environment variables to your deployment
@@ -366,7 +372,8 @@ Returns:
 
 ### YouTube Channel Metrics
 
-**API Endpoint**: `GET /api/social/youtube/metrics?accessToken={token}&channelId={id}`
+**API Endpoint**:
+`GET /api/social/youtube/metrics?accessToken={token}&channelId={id}`
 
 Returns:
 
@@ -392,9 +399,12 @@ Returns:
 
 ### Brand Voice
 
-- **Professional but approachable**: Balance technical expertise with friendly communication
-- **Helpful and educational**: Share tips, tutorials, and insights about photo enhancement
-- **Authentic**: Share genuine updates about product development and company news
+- **Professional but approachable**: Balance technical expertise with friendly
+  communication
+- **Helpful and educational**: Share tips, tutorials, and insights about photo
+  enhancement
+- **Authentic**: Share genuine updates about product development and company
+  news
 
 ### Posting Frequency
 
