@@ -4,6 +4,7 @@ import {
   AgentProgressIndicator,
   type AgentStage,
 } from "@/components/my-apps/AgentProgressIndicator";
+import { ChatMessagePreview } from "@/components/my-apps/ChatMessagePreview";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,11 @@ interface AppMessage {
       originalUrl: string;
     };
   }>;
+  // Version associated with this message (for AGENT messages)
+  codeVersion?: {
+    id: string;
+    createdAt: string;
+  };
 }
 
 interface AppData {
@@ -246,6 +252,7 @@ export default function CodeSpacePage() {
   const [streamingResponse, setStreamingResponse] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [clearingChat, setClearingChat] = useState(false);
+  const [restoringVersionId, setRestoringVersionId] = useState<string | null>(null);
 
   // Agent progress state
   const [agentStage, setAgentStage] = useState<AgentStage | null>(null);
@@ -761,6 +768,32 @@ export default function CodeSpacePage() {
     }
   };
 
+  // Restore a code version
+  const handleRestoreVersion = useCallback(async (versionId: string) => {
+    if (!app?.id || restoringVersionId) return;
+
+    setRestoringVersionId(versionId);
+    try {
+      const response = await fetch(
+        `/api/apps/${app.id}/versions/${versionId}/restore`,
+        { method: "POST" },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to restore version");
+      }
+
+      toast.success("Version restored successfully");
+      setIframeKey((prev) => prev + 1);
+      await fetchMessages();
+    } catch (e) {
+      console.error("Failed to restore version", e);
+      toast.error("Failed to restore version");
+    } finally {
+      setRestoringVersionId(null);
+    }
+  }, [app?.id, restoringVersionId, fetchMessages]);
+
   // Loading state
   if (mode === "loading") {
     return (
@@ -1030,6 +1063,17 @@ export default function CodeSpacePage() {
                                   />
                                 ))}
                               </div>
+                            )}
+                            {/* Version preview for agent messages */}
+                            {message.role === "AGENT" && message.codeVersion && (
+                              <ChatMessagePreview
+                                appId={app?.id || ""}
+                                versionId={message.codeVersion.id}
+                                codespaceUrl={codespaceUrl}
+                                timestamp={new Date(message.codeVersion.createdAt)}
+                                onRestore={() => handleRestoreVersion(message.codeVersion!.id)}
+                                isRestoring={restoringVersionId === message.codeVersion.id}
+                              />
                             )}
                             <p
                               className={`mt-1.5 text-xs ${
