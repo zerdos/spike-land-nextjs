@@ -31,7 +31,13 @@ export async function setConnectionsWrapper(
   codeSpace: string,
   sess: ICodeSession,
 ): Promise<void> {
-  return setConnections(user, codeSpace, sess, connections, sessionSynchronizers);
+  return setConnections(
+    user,
+    codeSpace,
+    sess,
+    connections,
+    sessionSynchronizers,
+  );
 }
 
 self.addEventListener("connect", (event: MessageEvent) => {

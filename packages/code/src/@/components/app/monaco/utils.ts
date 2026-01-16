@@ -222,7 +222,9 @@ export async function checkTypeScriptErrors(
     }
 
     // Now check for errors
-    const typeScriptWorker = await (await typescript.getTypeScriptWorker())(uri);
+    const typeScriptWorker = await (await typescript.getTypeScriptWorker())(
+      uri,
+    );
 
     const [syntacticDiagnostics, semanticDiagnostics, suggestionDiagnostics] = await Promise.all([
       typeScriptWorker.getSyntacticDiagnostics(uri.toString()),

@@ -65,15 +65,15 @@ describe("CodeProcessor", () => {
 
     // Mock URL methods if not available in test environment
     if (typeof URL.createObjectURL !== "function") {
-      (URL as unknown as { createObjectURL: (blob: Blob) => string; }).createObjectURL = vi.fn(() =>
-        "blob:mock-url"
-      );
+      (URL as unknown as { createObjectURL: (blob: Blob) => string; })
+        .createObjectURL = vi.fn(() => "blob:mock-url");
     } else {
       vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-url");
     }
 
     if (typeof URL.revokeObjectURL !== "function") {
-      (URL as unknown as { revokeObjectURL: (url: string) => void; }).revokeObjectURL = vi.fn();
+      (URL as unknown as { revokeObjectURL: (url: string) => void; })
+        .revokeObjectURL = vi.fn();
     }
 
     processor = new CodeProcessor("test-code-space");
@@ -181,7 +181,9 @@ describe("CodeProcessor", () => {
     });
 
     it("should return false when transpilation fails", async () => {
-      vi.mocked(transpileCode).mockRejectedValueOnce(new Error("Transpile error"));
+      vi.mocked(transpileCode).mockRejectedValueOnce(
+        new Error("Transpile error"),
+      );
 
       const result = await processor.process(
         "bad code",
@@ -427,7 +429,9 @@ describe("CodeProcessor", () => {
     });
 
     it("should log error when transpile fails", async () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
       vi.mocked(transpileCode).mockRejectedValueOnce(
         new Error("Transpile failed"),
       );

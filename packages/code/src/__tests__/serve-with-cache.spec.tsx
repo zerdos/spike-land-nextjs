@@ -190,7 +190,9 @@ describe("serveWithCache", () => {
     vi.mocked(assetFetcher).mockRejectedValue(new Error("Fetch error"));
 
     // Suppress expected error logging
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     const result = await serve(
       new Request("https://example.com/abc123/main.js"),
@@ -288,7 +290,9 @@ describe("serveWithCache", () => {
     vi.mocked(assetFetcher).mockResolvedValue(fetchedResponse);
 
     // Suppress expected error logging
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(
+      () => {},
+    );
 
     const result = await serve(
       new Request("https://example.com/abc123/main.js"),

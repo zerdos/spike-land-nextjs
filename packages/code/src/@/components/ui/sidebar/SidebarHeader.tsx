@@ -3,7 +3,9 @@ import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-export function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
+export function SidebarHeader(
+  { className, ...props }: React.ComponentProps<"div">,
+) {
   return (
     <div
       data-slot="sidebar-header"

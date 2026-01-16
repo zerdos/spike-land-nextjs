@@ -12,7 +12,9 @@ import {
 
 const mutex = new Mutex();
 
-export async function fetchInitialSession(codeSpace: string): Promise<ICodeSession> {
+export async function fetchInitialSession(
+  codeSpace: string,
+): Promise<ICodeSession> {
   const startTime = Date.now();
   const url = `/live/${codeSpace}/session.json`;
 

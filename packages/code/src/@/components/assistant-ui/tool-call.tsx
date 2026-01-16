@@ -75,7 +75,9 @@ export const ToolCall: FC<ToolCallProps> = ({
 };
 
 // Component to group multiple consecutive tool calls
-export const ToolCallGroup: FC<{ children: React.ReactNode; }> = ({ children }) => {
+export const ToolCallGroup: FC<{ children: React.ReactNode; }> = (
+  { children },
+) => {
   return (
     <div className="rounded-lg border border-border/50 bg-muted/10 p-2 my-2">
       <div className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">

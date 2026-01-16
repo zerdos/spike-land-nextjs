@@ -29,7 +29,9 @@ vi.mock("vaul", () => ({
   Drawer: {
     Root: ({ children, open }: { children: React.ReactNode; open: boolean; }) =>
       open ? <div data-testid="drawer-root">{children}</div> : null,
-    Trigger: ({ children, onClick }: { children: React.ReactNode; onClick: () => void; }) => (
+    Trigger: (
+      { children, onClick }: { children: React.ReactNode; onClick: () => void; },
+    ) => (
       <button onClick={onClick} data-testid="drawer-trigger">
         {children}
       </button>
@@ -38,9 +40,12 @@ vi.mock("vaul", () => ({
       <div data-testid="drawer-portal">{children}</div>
     ),
     Overlay: () => <div data-testid="drawer-overlay" />,
-    Content: ({ children, className }: { children: React.ReactNode; className?: string; }) => (
-      <div data-testid="drawer-content" className={className}>{children}</div>
-    ),
+    Content: (
+      { children, className }: {
+        children: React.ReactNode;
+        className?: string;
+      },
+    ) => <div data-testid="drawer-content" className={className}>{children}</div>,
     Title: ({ children }: { children: React.ReactNode; }) => (
       <h2 data-testid="drawer-title">{children}</h2>
     ),
@@ -144,7 +149,12 @@ describe("AssistantUIDrawer", () => {
       json: async () => ({ messages: [] }),
     } as Response);
 
-    render(<AssistantUIDrawer {...getDefaultProps()} initialPrompt={mockInitialPrompt} />);
+    render(
+      <AssistantUIDrawer
+        {...getDefaultProps()}
+        initialPrompt={mockInitialPrompt}
+      />,
+    );
 
     await waitFor(() => {
       expect(AssistantUIChat).toHaveBeenCalled();
@@ -208,7 +218,9 @@ describe("AssistantUIDrawer", () => {
   });
 
   it("should sync dark mode with document", () => {
-    const { rerender } = render(<AssistantUIDrawer {...getDefaultProps()} isDarkMode={false} />);
+    const { rerender } = render(
+      <AssistantUIDrawer {...getDefaultProps()} isDarkMode={false} />,
+    );
 
     expect(document.documentElement.classList.contains("dark")).toBe(false);
 
@@ -223,7 +235,7 @@ describe("AssistantUIDrawer", () => {
 
     // Find the close button (the second button in the drawer)
     const buttons = screen.getAllByRole("button");
-    const closeButton = buttons.find(button =>
+    const closeButton = buttons.find((button) =>
       button.className.includes("p-2 rounded-lg hover:bg-gray-200")
     );
 
@@ -286,7 +298,9 @@ describe("AssistantUIDrawer", () => {
       json: async () => ({ messages: [] }),
     } as Response);
 
-    render(<AssistantUIDrawer {...getDefaultProps()} initialPrompt={undefined} />);
+    render(
+      <AssistantUIDrawer {...getDefaultProps()} initialPrompt={undefined} />,
+    );
 
     await waitFor(() => {
       expect(AssistantUIChat).toHaveBeenCalled();
@@ -316,7 +330,9 @@ describe("AssistantUIDrawer", () => {
       } as Response);
 
     // First render with drawer open
-    const { rerender } = render(<AssistantUIDrawer {...getDefaultProps()} isOpen={true} />);
+    const { rerender } = render(
+      <AssistantUIDrawer {...getDefaultProps()} isOpen={true} />,
+    );
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledTimes(1);
@@ -369,7 +385,9 @@ describe("AssistantUIDrawer", () => {
       .mockReturnValueOnce(secondFetchPromise as Promise<Response>);
 
     // First render with drawer open
-    const { rerender } = render(<AssistantUIDrawer {...getDefaultProps()} isOpen={true} />);
+    const { rerender } = render(
+      <AssistantUIDrawer {...getDefaultProps()} isOpen={true} />,
+    );
 
     // Should show loading state
     expect(screen.getByText("Loading messages...")).toBeInTheDocument();
@@ -425,7 +443,9 @@ describe("AssistantUIDrawer", () => {
         json: async () => ({ messages: secondMessages }),
       } as Response);
 
-    const { rerender } = render(<AssistantUIDrawer {...getDefaultProps()} isOpen={true} />);
+    const { rerender } = render(
+      <AssistantUIDrawer {...getDefaultProps()} isOpen={true} />,
+    );
 
     await waitFor(() => {
       expect(AssistantUIChat).toHaveBeenCalledTimes(1);

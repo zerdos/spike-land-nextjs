@@ -25,14 +25,20 @@ export const extractToolResponseMetadata = (
     responseData["additional_kwargs"] &&
     typeof responseData["additional_kwargs"] === "object" &&
     responseData["additional_kwargs"] !== null &&
-    "tool_responses" in (responseData["additional_kwargs"] as Record<string, unknown>) &&
-    Array.isArray((responseData["additional_kwargs"] as Record<string, unknown>)["tool_responses"])
+    "tool_responses" in
+      (responseData["additional_kwargs"] as Record<string, unknown>) &&
+    Array.isArray(
+      (responseData["additional_kwargs"] as Record<string, unknown>)[
+        "tool_responses"
+      ],
+    )
   ) {
     // Look for hash in tool responses
-    const toolResponses =
-      (responseData["additional_kwargs"] as Record<string, unknown>)["tool_responses"] as Array<
-        unknown
-      >;
+    const toolResponses = (responseData["additional_kwargs"] as Record<string, unknown>)[
+      "tool_responses"
+    ] as Array<
+      unknown
+    >;
     for (const toolResponse of toolResponses) {
       if (
         typeof toolResponse === "object" &&

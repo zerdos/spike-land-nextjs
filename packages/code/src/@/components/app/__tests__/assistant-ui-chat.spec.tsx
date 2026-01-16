@@ -153,7 +153,9 @@ describe("AssistantUIChat", () => {
     );
 
     expect(AssistantRuntimeProvider).toHaveBeenCalled();
-    const mockFn = AssistantRuntimeProvider as unknown as ReturnType<typeof vi.fn>;
+    const mockFn = AssistantRuntimeProvider as unknown as ReturnType<
+      typeof vi.fn
+    >;
     const callArgs = mockFn.mock?.calls[0]?.[0];
     expect(callArgs).toHaveProperty("runtime", mockRuntime);
   });
@@ -221,7 +223,9 @@ describe("AssistantUIChat", () => {
       />,
     );
 
-    expect(mockComposerRuntime.setText).toHaveBeenCalledWith("Describe this image");
+    expect(mockComposerRuntime.setText).toHaveBeenCalledWith(
+      "Describe this image",
+    );
     expect(mockComposerRuntime.send).toHaveBeenCalled();
   });
 
@@ -260,7 +264,9 @@ describe("AssistantUIChat", () => {
   });
 
   it("should not send if thread runtime is not available", () => {
-    vi.mocked(useThreadRuntime).mockReturnValue(null as unknown as ThreadRuntime);
+    vi.mocked(useThreadRuntime).mockReturnValue(
+      null as unknown as ThreadRuntime,
+    );
 
     const initialPrompt = {
       prompt: "Test prompt",

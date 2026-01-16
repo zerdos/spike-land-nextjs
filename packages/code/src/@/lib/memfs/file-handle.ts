@@ -117,7 +117,10 @@ class FileHandleImpl implements FileHandle {
     _position?: ReadPosition | null,
   ): Promise<FileReadResult<T>> {
     // Handle case where options with buffer is passed
-    if (bufferOrOptions && typeof bufferOrOptions === "object" && "buffer" in bufferOrOptions) {
+    if (
+      bufferOrOptions && typeof bufferOrOptions === "object" &&
+      "buffer" in bufferOrOptions
+    ) {
       const opts = bufferOrOptions as ReadOptionsWithBuffer<T>;
       const buffer = opts.buffer as T;
       return {
@@ -183,7 +186,9 @@ class FileHandleImpl implements FileHandle {
     throw new Error("Method not implemented");
   }
 
-  readableWebStream(_options?: { autoClose?: boolean; }): ReadableStream<Uint8Array> {
+  readableWebStream(
+    _options?: { autoClose?: boolean; },
+  ): ReadableStream<Uint8Array> {
     // For now, return a basic implementation or throw
     throw new Error("Method not implemented");
   }
