@@ -1,9 +1,9 @@
 [
   {
     "pattern": "TypeScript compilation error",
-    "occurrences": 10,
+    "occurrences": 13,
     "firstSeen": "2026-01-14T09:45:23.911Z",
-    "lastSeen": "2026-01-16T08:52:03.624Z"
+    "lastSeen": "2026-01-16T11:48:13.460Z"
   },
   {
     "pattern": "PR creation error",
