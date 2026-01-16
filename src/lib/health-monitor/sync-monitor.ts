@@ -64,7 +64,8 @@ export async function getSyncStatus(accountId: string): Promise<{
 
   // Consider sync healthy if last successful sync was within 24 hours
   const syncHealthy = health.lastSuccessfulSync !== null &&
-    new Date().getTime() - health.lastSuccessfulSync.getTime() < 24 * 60 * 60 * 1000;
+    new Date().getTime() - health.lastSuccessfulSync.getTime() <
+      24 * 60 * 60 * 1000;
 
   return {
     lastSuccessfulSync: health.lastSuccessfulSync,

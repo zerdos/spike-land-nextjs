@@ -198,7 +198,10 @@ describe("app-lookup", () => {
       const mockAppData = createMockApp();
       mockApp.findFirst.mockResolvedValueOnce(mockAppData);
 
-      const result = await findAppByIdentifierSimple(testCodespaceId, testUserId);
+      const result = await findAppByIdentifierSimple(
+        testCodespaceId,
+        testUserId,
+      );
 
       expect(result).toEqual(mockAppData);
       expect(mockApp.findFirst).toHaveBeenCalledTimes(1);

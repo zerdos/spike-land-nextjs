@@ -100,7 +100,9 @@ describe("GET /api/orbit/[workspaceSlug]/allocator", () => {
     vi.mocked(auth).mockResolvedValue(mockSession);
     vi.mocked(prisma.workspace.findFirst).mockResolvedValue(mockWorkspace);
 
-    const request = createRequest("test-workspace", { lookbackDays: "invalid" });
+    const request = createRequest("test-workspace", {
+      lookbackDays: "invalid",
+    });
     const response = await GET(request, {
       params: Promise.resolve({ workspaceSlug: "test-workspace" }),
     });
@@ -207,7 +209,9 @@ describe("GET /api/orbit/[workspaceSlug]/allocator", () => {
       dataQualityScore: 85,
     };
 
-    vi.mocked(getAllocatorRecommendations).mockResolvedValue(mockRecommendations);
+    vi.mocked(getAllocatorRecommendations).mockResolvedValue(
+      mockRecommendations,
+    );
 
     const request = createRequest("test-workspace");
     const response = await GET(request, {

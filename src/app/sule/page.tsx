@@ -20,7 +20,9 @@ import {
 import { useEffect, useState } from "react";
 
 // Floating particle component
-function FloatingParticle({ delay, duration }: { delay: number; duration: number; }) {
+function FloatingParticle(
+  { delay, duration }: { delay: number; duration: number; },
+) {
   return (
     <div
       className="absolute w-1 h-1 rounded-full bg-aurora-teal/40 animate-float"
@@ -34,7 +36,12 @@ function FloatingParticle({ delay, duration }: { delay: number; duration: number
 }
 
 // Typing animation hook
-function useTypingEffect(texts: string[], typingSpeed = 100, deletingSpeed = 50, pauseTime = 2000) {
+function useTypingEffect(
+  texts: string[],
+  typingSpeed = 100,
+  deletingSpeed = 50,
+  pauseTime = 2000,
+) {
   const [displayText, setDisplayText] = useState("");
   const [textIndex, setTextIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -63,7 +70,15 @@ function useTypingEffect(texts: string[], typingSpeed = 100, deletingSpeed = 50,
     );
 
     return () => clearTimeout(timeout);
-  }, [displayText, isDeleting, textIndex, texts, typingSpeed, deletingSpeed, pauseTime]);
+  }, [
+    displayText,
+    isDeleting,
+    textIndex,
+    texts,
+    typingSpeed,
+    deletingSpeed,
+    pauseTime,
+  ]);
 
   return displayText;
 }
@@ -118,7 +133,9 @@ function ProjectCard({
 }
 
 // Skill bar component
-function SkillBar({ skill, level, color }: { skill: string; level: number; color: string; }) {
+function SkillBar(
+  { skill, level, color }: { skill: string; level: number; color: string; },
+) {
   const [animated, setAnimated] = useState(false);
 
   useEffect(() => {
@@ -134,7 +151,10 @@ function SkillBar({ skill, level, color }: { skill: string; level: number; color
       </div>
       <div className="h-2 rounded-full bg-white/10 overflow-hidden">
         <div
-          className={cn("h-full rounded-full transition-all duration-1000 ease-out", color)}
+          className={cn(
+            "h-full rounded-full transition-all duration-1000 ease-out",
+            color,
+          )}
           style={{ width: animated ? `${level}%` : "0%" }}
         />
       </div>
@@ -206,7 +226,11 @@ export default function ArnoldSulePortfolio() {
       {/* Floating particles */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {[...Array(20)].map((_, i) => (
-          <FloatingParticle key={i} delay={i * 0.5} duration={10 + Math.random() * 10} />
+          <FloatingParticle
+            key={i}
+            delay={i * 0.5}
+            duration={10 + Math.random() * 10}
+          />
         ))}
       </div>
 
@@ -307,10 +331,26 @@ export default function ArnoldSulePortfolio() {
                 <Zap className="h-5 w-5 text-aurora-yellow" />
                 Technical Skills
               </h3>
-              <SkillBar skill="TypeScript / JavaScript" level={95} color="bg-aurora-teal" />
-              <SkillBar skill="React / Next.js" level={92} color="bg-aurora-green" />
-              <SkillBar skill="Node.js / Backend" level={88} color="bg-aurora-lime" />
-              <SkillBar skill="Cloud Architecture (AWS/GCP)" level={85} color="bg-aurora-yellow" />
+              <SkillBar
+                skill="TypeScript / JavaScript"
+                level={95}
+                color="bg-aurora-teal"
+              />
+              <SkillBar
+                skill="React / Next.js"
+                level={92}
+                color="bg-aurora-green"
+              />
+              <SkillBar
+                skill="Node.js / Backend"
+                level={88}
+                color="bg-aurora-lime"
+              />
+              <SkillBar
+                skill="Cloud Architecture (AWS/GCP)"
+                level={85}
+                color="bg-aurora-yellow"
+              />
               <SkillBar
                 skill="System Design"
                 level={90}
@@ -460,13 +500,22 @@ export default function ArnoldSulePortfolio() {
             &copy; {new Date().getFullYear()} Arnold Sule. Built with passion and lots of coffee.
           </p>
           <div className="flex gap-4">
-            <a href="#" className="text-muted-foreground hover:text-aurora-teal transition-colors">
+            <a
+              href="#"
+              className="text-muted-foreground hover:text-aurora-teal transition-colors"
+            >
               <Github className="h-5 w-5" />
             </a>
-            <a href="#" className="text-muted-foreground hover:text-aurora-teal transition-colors">
+            <a
+              href="#"
+              className="text-muted-foreground hover:text-aurora-teal transition-colors"
+            >
               <Linkedin className="h-5 w-5" />
             </a>
-            <a href="#" className="text-muted-foreground hover:text-aurora-teal transition-colors">
+            <a
+              href="#"
+              className="text-muted-foreground hover:text-aurora-teal transition-colors"
+            >
               <Mail className="h-5 w-5" />
             </a>
           </div>

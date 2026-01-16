@@ -136,7 +136,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     params_.sortBy = sortBy;
   }
 
-  const sortOrder = searchParams.get("sortOrder") as AuditLogSearchParams["sortOrder"];
+  const sortOrder = searchParams.get(
+    "sortOrder",
+  ) as AuditLogSearchParams["sortOrder"];
   if (sortOrder && ["asc", "desc"].includes(sortOrder)) {
     params_.sortOrder = sortOrder;
   }
@@ -199,11 +201,21 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
-  const { action, targetId, targetType, resourceId, resourceType, oldValue, newValue, metadata } =
-    body as Partial<CreateWorkspaceAuditLogOptions>;
+  const {
+    action,
+    targetId,
+    targetType,
+    resourceId,
+    resourceType,
+    oldValue,
+    newValue,
+    metadata,
+  } = body as Partial<CreateWorkspaceAuditLogOptions>;
 
   if (!action) {
     return NextResponse.json({ error: "action is required" }, { status: 400 });

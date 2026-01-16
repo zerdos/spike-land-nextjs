@@ -58,7 +58,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
 
   // Get violation
-  const { data: violation, error: violationError } = await tryCatch(getViolation(violationId));
+  const { data: violation, error: violationError } = await tryCatch(
+    getViolation(violationId),
+  );
 
   if (violationError || !violation) {
     return NextResponse.json({ error: "Violation not found" }, { status: 404 });
@@ -90,7 +92,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
   if (overrideError) {
     console.error("Error overriding violation:", overrideError);
-    return NextResponse.json({ error: "Failed to override violation" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to override violation" }, {
+      status: 500,
+    });
   }
 
   return NextResponse.json(updatedViolation);
@@ -133,7 +137,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   }
 
   // Get violation
-  const { data: violation, error: violationError } = await tryCatch(getViolation(violationId));
+  const { data: violation, error: violationError } = await tryCatch(
+    getViolation(violationId),
+  );
 
   if (violationError || !violation) {
     return NextResponse.json({ error: "Violation not found" }, { status: 404 });
@@ -151,7 +157,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
 
   if (removeError) {
     console.error("Error removing override:", removeError);
-    return NextResponse.json({ error: "Failed to remove override" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to remove override" }, {
+      status: 500,
+    });
   }
 
   return NextResponse.json(updatedViolation);

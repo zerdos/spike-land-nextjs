@@ -86,7 +86,9 @@ export function PulseDashboard({ workspaceSlug }: PulseDashboardProps) {
     };
   }, []);
 
-  const queryFn = useCallback(() => fetchPulseData(workspaceSlug), [workspaceSlug]);
+  const queryFn = useCallback(() => fetchPulseData(workspaceSlug), [
+    workspaceSlug,
+  ]);
 
   const {
     data,

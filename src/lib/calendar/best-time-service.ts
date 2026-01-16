@@ -319,7 +319,8 @@ async function findCalendarGaps(
   let lastPostTime = startDate;
 
   for (const post of posts) {
-    const gapHours = (post.scheduledAt.getTime() - lastPostTime.getTime()) / (1000 * 60 * 60);
+    const gapHours = (post.scheduledAt.getTime() - lastPostTime.getTime()) /
+      (1000 * 60 * 60);
 
     if (gapHours >= minGapHours) {
       const gapStart = new Date(lastPostTime);
@@ -348,7 +349,8 @@ async function findCalendarGaps(
   }
 
   // Check gap from last post to end of range
-  const finalGapHours = (endDate.getTime() - lastPostTime.getTime()) / (1000 * 60 * 60);
+  const finalGapHours = (endDate.getTime() - lastPostTime.getTime()) /
+    (1000 * 60 * 60);
   if (finalGapHours >= minGapHours) {
     const dayOfWeek = lastPostTime.getDay() as DayOfWeek;
     const isHighEngagementSlot = platformRecommendations.some((pr) =>

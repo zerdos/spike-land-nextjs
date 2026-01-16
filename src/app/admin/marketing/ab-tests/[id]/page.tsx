@@ -113,17 +113,23 @@ export default function AbTestDetailsPage() {
         </div>
         <div className="flex gap-2">
           {test.status === "DRAFT" && (
-            <Button onClick={() => updateTestMutation.mutate({ status: "RUNNING" })}>
+            <Button
+              onClick={() => updateTestMutation.mutate({ status: "RUNNING" })}
+            >
               Start Test
             </Button>
           )}
           {test.status === "RUNNING" && (
-            <Button onClick={() => updateTestMutation.mutate({ status: "COMPLETED" })}>
+            <Button
+              onClick={() => updateTestMutation.mutate({ status: "COMPLETED" })}
+            >
               End Test
             </Button>
           )}
           {test.status === "COMPLETED" && (
-            <Button onClick={() => updateTestMutation.mutate({ status: "ARCHIVED" })}>
+            <Button
+              onClick={() => updateTestMutation.mutate({ status: "ARCHIVED" })}
+            >
               Archive Test
             </Button>
           )}

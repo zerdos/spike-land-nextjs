@@ -21,7 +21,8 @@ let currentInstanceIndex = 0;
  * Get the current Nitter instance URL and cycle to next on failure
  */
 function getNitterInstance(): string {
-  return NITTER_INSTANCES[currentInstanceIndex % NITTER_INSTANCES.length] ?? NITTER_INSTANCES[0]!;
+  return NITTER_INSTANCES[currentInstanceIndex % NITTER_INSTANCES.length] ??
+    NITTER_INSTANCES[0]!;
 }
 
 /**
@@ -147,33 +148,36 @@ export class PublicTwitterClient {
           return [];
         }
 
-        const posts: PublicTweet[] = (Array.isArray(items) ? items : [items]).map(
-          (item: RssItem) => {
-            const url = item.link || "";
-            const id = url.split("/").pop()?.split("#")[0] || "";
+        const posts: PublicTweet[] = (Array.isArray(items) ? items : [items])
+          .map(
+            (item: RssItem) => {
+              const url = item.link || "";
+              const id = url.split("/").pop()?.split("#")[0] || "";
 
-            // Nitter RSS feed descriptions sometimes contain engagement stats, but it's not guaranteed.
-            const description = item.description || "";
-            const commentsMatch = description.match(/💬\s*([\d,]+)/);
-            const likesMatch = description.match(/♥\s*([\d,]+)/) ||
-              description.match(/♥️\s*([\d,]+)/);
-            const sharesMatch = description.match(/🔁\s*([\d,]+)/);
+              // Nitter RSS feed descriptions sometimes contain engagement stats, but it's not guaranteed.
+              const description = item.description || "";
+              const commentsMatch = description.match(/💬\s*([\d,]+)/);
+              const likesMatch = description.match(/♥\s*([\d,]+)/) ||
+                description.match(/♥️\s*([\d,]+)/);
+              const sharesMatch = description.match(/🔁\s*([\d,]+)/);
 
-            const parseCount = (match: RegExpMatchArray | null) =>
-              match?.[1] ? parseInt(match[1].replace(/,/g, ""), 10) : 0;
+              const parseCount = (match: RegExpMatchArray | null) =>
+                match?.[1] ? parseInt(match[1].replace(/,/g, ""), 10) : 0;
 
-            return {
-              id,
-              content: item.title || "",
-              authorHandle: item["dc:creator"] ? item["dc:creator"].replace(/^@/, "") : handle,
-              url,
-              publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
-              likes: parseCount(likesMatch),
-              comments: parseCount(commentsMatch),
-              shares: parseCount(sharesMatch),
-            };
-          },
-        );
+              return {
+                id,
+                content: item.title || "",
+                authorHandle: item["dc:creator"]
+                  ? item["dc:creator"].replace(/^@/, "")
+                  : handle,
+                url,
+                publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
+                likes: parseCount(likesMatch),
+                comments: parseCount(commentsMatch),
+                shares: parseCount(sharesMatch),
+              };
+            },
+          );
 
         return posts;
       } catch (error) {

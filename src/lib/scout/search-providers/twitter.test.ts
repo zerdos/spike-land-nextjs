@@ -31,7 +31,9 @@ describe("buildTwitterQuery", () => {
       or: ["monitoring", "analytics"],
       not: ["jobs"],
     };
-    expect(buildTwitterQuery(keywords as any)).toBe("social media (monitoring OR analytics) -jobs");
+    expect(buildTwitterQuery(keywords as any)).toBe(
+      "social media (monitoring OR analytics) -jobs",
+    );
   });
 
   it("should handle an empty keywords object", () => {

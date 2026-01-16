@@ -113,7 +113,9 @@ describe("allocator-service", () => {
         });
       }
 
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(attributions);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(
+        attributions,
+      );
 
       const result = await getAllocatorRecommendations(defaultOptions);
 
@@ -162,7 +164,9 @@ describe("allocator-service", () => {
         });
       }
 
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(attributions);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(
+        attributions,
+      );
 
       const result = await getAllocatorRecommendations(defaultOptions);
 
@@ -172,7 +176,8 @@ describe("allocator-service", () => {
 
       // Should have a SCALE_WINNER recommendation for high performer
       if (
-        result.campaignAnalyses.length > 0 && result.campaignAnalyses[0]!.performanceScore >= 70
+        result.campaignAnalyses.length > 0 &&
+        result.campaignAnalyses[0]!.performanceScore >= 70
       ) {
         expect(scaleRecommendation).toBeDefined();
         expect(scaleRecommendation?.suggestedBudgetChange).toBeGreaterThan(0);
@@ -219,7 +224,9 @@ describe("allocator-service", () => {
         });
       }
 
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(attributions);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(
+        attributions,
+      );
 
       const result = await getAllocatorRecommendations(defaultOptions);
 
@@ -228,7 +235,10 @@ describe("allocator-service", () => {
       );
 
       // If campaign scores low, should have decrease/pause recommendation
-      if (result.campaignAnalyses.length > 0 && result.campaignAnalyses[0]!.performanceScore < 40) {
+      if (
+        result.campaignAnalyses.length > 0 &&
+        result.campaignAnalyses[0]!.performanceScore < 40
+      ) {
         expect(decreaseRecommendation).toBeDefined();
         expect(decreaseRecommendation?.suggestedBudgetChange).toBeLessThan(0);
       }
@@ -271,7 +281,9 @@ describe("allocator-service", () => {
         });
       }
 
-      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(attributions);
+      vi.mocked(prisma.campaignAttribution.findMany).mockResolvedValue(
+        attributions,
+      );
 
       const conservativeResult = await getAllocatorRecommendations({
         ...defaultOptions,

@@ -31,7 +31,9 @@ export async function POST(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     await requireWorkspacePermission(session, workspace.id, "inbox:respond");
@@ -43,11 +45,15 @@ export async function POST(
     });
 
     if (!existingItem) {
-      return NextResponse.json({ error: "Inbox item not found" }, { status: 404 });
+      return NextResponse.json({ error: "Inbox item not found" }, {
+        status: 404,
+      });
     }
 
     if (existingItem.workspaceId !== workspace.id) {
-      return NextResponse.json({ error: "Inbox item does not belong to this workspace" }, {
+      return NextResponse.json({
+        error: "Inbox item does not belong to this workspace",
+      }, {
         status: 403,
       });
     }
@@ -64,7 +70,10 @@ export async function POST(
     let message = "Failed to send reply";
 
     if (error instanceof Error) {
-      const errWithStatus = error as Error & { status?: number; statusCode?: number; };
+      const errWithStatus = error as Error & {
+        status?: number;
+        statusCode?: number;
+      };
       // Prefer explicit status/statusCode properties if available
       if (typeof errWithStatus.status === "number") {
         status = errWithStatus.status;

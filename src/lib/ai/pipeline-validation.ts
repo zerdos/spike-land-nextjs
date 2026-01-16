@@ -224,7 +224,8 @@ export function validatePipelineConfigs(data: {
   if (data.generationConfig !== undefined) {
     const result = validateGenerationConfig(data.generationConfig);
     if (!result.success) {
-      errors["generationConfig"] = result.errors ?? ["Invalid generation config"];
+      errors["generationConfig"] = result.errors ??
+        ["Invalid generation config"];
     } else {
       validatedData.generationConfig = result.data;
     }

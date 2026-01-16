@@ -68,10 +68,16 @@ function getConfidenceLevel(
   daysAnalyzed: number,
   conversions: number,
 ): AllocatorConfidenceLevel {
-  if (daysAnalyzed >= MIN_DAYS_HIGH_CONFIDENCE && conversions >= MIN_CONVERSIONS_FOR_ANALYSIS * 3) {
+  if (
+    daysAnalyzed >= MIN_DAYS_HIGH_CONFIDENCE &&
+    conversions >= MIN_CONVERSIONS_FOR_ANALYSIS * 3
+  ) {
     return "high";
   }
-  if (daysAnalyzed >= MIN_DAYS_MEDIUM_CONFIDENCE && conversions >= MIN_CONVERSIONS_FOR_ANALYSIS) {
+  if (
+    daysAnalyzed >= MIN_DAYS_MEDIUM_CONFIDENCE &&
+    conversions >= MIN_CONVERSIONS_FOR_ANALYSIS
+  ) {
     return "medium";
   }
   return "low";
@@ -111,9 +117,15 @@ function calculatePerformanceScore(
   benchmarks: PlatformBenchmarks,
 ): number {
   // Weight: ROAS 50%, CTR 25%, Conversion Rate 25%
-  const roasScore = Math.min((roas / benchmarks.benchmarks.averageRoas) * 50, 50);
+  const roasScore = Math.min(
+    (roas / benchmarks.benchmarks.averageRoas) * 50,
+    50,
+  );
   const ctrScore = Math.min((ctr / benchmarks.benchmarks.averageCtr) * 25, 25);
-  const crScore = Math.min((conversionRate / benchmarks.benchmarks.averageConversionRate) * 25, 25);
+  const crScore = Math.min(
+    (conversionRate / benchmarks.benchmarks.averageConversionRate) * 25,
+    25,
+  );
 
   return Math.round(roasScore + ctrScore + crScore);
 }
@@ -189,11 +201,20 @@ async function analyzeCampaignPerformance(
   // Calculate core metrics
   const roas = estimatedSpend > 0 ? (totalRevenue * 100) / estimatedSpend : 0;
   const cpa = totalConversions > 0 ? estimatedSpend / totalConversions : 0;
-  const ctr = estimatedImpressions > 0 ? (estimatedClicks / estimatedImpressions) * 100 : 0;
-  const conversionRate = estimatedClicks > 0 ? (totalConversions / estimatedClicks) * 100 : 0;
+  const ctr = estimatedImpressions > 0
+    ? (estimatedClicks / estimatedImpressions) * 100
+    : 0;
+  const conversionRate = estimatedClicks > 0
+    ? (totalConversions / estimatedClicks) * 100
+    : 0;
 
   // Calculate scores
-  const performanceScore = calculatePerformanceScore(roas, ctr, conversionRate, benchmarks);
+  const performanceScore = calculatePerformanceScore(
+    roas,
+    ctr,
+    conversionRate,
+    benchmarks,
+  );
   const efficiencyScore = calculateEfficiencyScore(cpa, benchmarks);
 
   return {
@@ -214,8 +235,12 @@ async function analyzeCampaignPerformance(
       clicks: estimatedClicks,
     },
     trend: {
-      roas: calculateTrend(conversionsTrend.map((c) => c * (roas / totalConversions || 0))),
-      cpa: calculateTrend(conversionsTrend.map((c) => c > 0 ? estimatedSpend / c : 0)),
+      roas: calculateTrend(
+        conversionsTrend.map((c) => c * (roas / totalConversions || 0)),
+      ),
+      cpa: calculateTrend(
+        conversionsTrend.map((c) => c > 0 ? estimatedSpend / c : 0),
+      ),
       conversions: calculateTrend(conversionsTrend),
     },
     performanceScore,
@@ -255,8 +280,13 @@ function generateRecommendations(
 
   // Generate SCALE_WINNER recommendations for top performers
   for (const winner of winners.slice(0, 3)) {
-    const confidence = getConfidenceLevel(winner.daysAnalyzed, winner.metrics.conversions);
-    const suggestedIncrease = Math.round(winner.currentBudget * 0.2 * riskMultiplier);
+    const confidence = getConfidenceLevel(
+      winner.daysAnalyzed,
+      winner.metrics.conversions,
+    );
+    const suggestedIncrease = Math.round(
+      winner.currentBudget * 0.2 * riskMultiplier,
+    );
 
     recommendations.push({
       id: generateRecommendationId(),
@@ -299,9 +329,15 @@ function generateRecommendations(
 
   // Generate DECREASE_BUDGET or PAUSE_CAMPAIGN for underperformers
   for (const loser of losers) {
-    const confidence = getConfidenceLevel(loser.daysAnalyzed, loser.metrics.conversions);
-    const shouldPause = loser.performanceScore < 20 && loser.trend.conversions === "declining";
-    const type: RecommendationType = shouldPause ? "PAUSE_CAMPAIGN" : "DECREASE_BUDGET";
+    const confidence = getConfidenceLevel(
+      loser.daysAnalyzed,
+      loser.metrics.conversions,
+    );
+    const shouldPause = loser.performanceScore < 20 &&
+      loser.trend.conversions === "declining";
+    const type: RecommendationType = shouldPause
+      ? "PAUSE_CAMPAIGN"
+      : "DECREASE_BUDGET";
     const suggestedDecrease = shouldPause
       ? loser.currentBudget
       : Math.round(loser.currentBudget * 0.3 * riskMultiplier);
@@ -317,7 +353,9 @@ function generateRecommendations(
         currentBudget: loser.currentBudget,
       },
       suggestedBudgetChange: -suggestedDecrease,
-      suggestedNewBudget: shouldPause ? 0 : loser.currentBudget - suggestedDecrease,
+      suggestedNewBudget: shouldPause
+        ? 0
+        : loser.currentBudget - suggestedDecrease,
       currency: loser.currency,
       projectedImpact: {
         estimatedRoasChange: 0, // Savings focus
@@ -526,8 +564,14 @@ export async function getAllocatorRecommendations(
   });
 
   // Calculate summary metrics
-  const totalSpend = campaignAnalyses.reduce((sum, a) => sum + a.metrics.spend, 0);
-  const totalConversions = campaignAnalyses.reduce((sum, a) => sum + a.metrics.conversions, 0);
+  const totalSpend = campaignAnalyses.reduce(
+    (sum, a) => sum + a.metrics.spend,
+    0,
+  );
+  const totalConversions = campaignAnalyses.reduce(
+    (sum, a) => sum + a.metrics.conversions,
+    0,
+  );
   const totalRevenue = campaignAnalyses.reduce(
     (sum, a) => sum + (a.metrics.roas * a.metrics.spend),
     0,
@@ -548,8 +592,13 @@ export async function getAllocatorRecommendations(
   }
 
   // Calculate data quality score
-  const totalDays = campaignAnalyses.reduce((sum, a) => sum + a.daysAnalyzed, 0);
-  const avgDays = campaignAnalyses.length > 0 ? totalDays / campaignAnalyses.length : 0;
+  const totalDays = campaignAnalyses.reduce(
+    (sum, a) => sum + a.daysAnalyzed,
+    0,
+  );
+  const avgDays = campaignAnalyses.length > 0
+    ? totalDays / campaignAnalyses.length
+    : 0;
   const dataQualityScore = Math.min(
     Math.round((avgDays / MIN_DAYS_HIGH_CONFIDENCE) * 100),
     100,
@@ -565,16 +614,20 @@ export async function getAllocatorRecommendations(
       averageRoas,
       averageCpa,
       projectedTotalImpact: {
-        estimatedRoasImprovement: projectedRoasImprovement / (recommendations.length || 1),
-        estimatedCpaSavings: projectedCpaSavings / (recommendations.length || 1),
-        estimatedConversionIncrease: projectedConversionIncrease / (recommendations.length || 1),
+        estimatedRoasImprovement: projectedRoasImprovement /
+          (recommendations.length || 1),
+        estimatedCpaSavings: projectedCpaSavings /
+          (recommendations.length || 1),
+        estimatedConversionIncrease: projectedConversionIncrease /
+          (recommendations.length || 1),
       },
     },
     analysisRange: {
       start: startDate,
       end: now,
     },
-    hasEnoughData: campaignAnalyses.length > 0 && avgDays >= MIN_DAYS_LOW_CONFIDENCE,
+    hasEnoughData: campaignAnalyses.length > 0 &&
+      avgDays >= MIN_DAYS_LOW_CONFIDENCE,
     dataQualityScore,
   };
 
@@ -584,7 +637,7 @@ export async function getAllocatorRecommendations(
     Promise.all(recommendations.map(async (rec) => {
       // Find related performance analysis
       const campaignId = rec.targetCampaign.id;
-      const analysis = campaignAnalyses.find(a => a.campaignId === campaignId);
+      const analysis = campaignAnalyses.find((a) => a.campaignId === campaignId);
 
       if (analysis) {
         try {
@@ -601,11 +654,17 @@ export async function getAllocatorRecommendations(
           });
         } catch (err) {
           // No silent failures - but don't block the caller
-          console.error(`AllocatorAuditLogger: Failed to log recommendation ${rec.id}:`, err);
+          console.error(
+            `AllocatorAuditLogger: Failed to log recommendation ${rec.id}:`,
+            err,
+          );
         }
       }
-    })).catch(err => {
-      console.error("AllocatorAuditLogger: Critical error in audit logging batch:", err);
+    })).catch((err) => {
+      console.error(
+        "AllocatorAuditLogger: Critical error in audit logging batch:",
+        err,
+      );
     });
   }
 

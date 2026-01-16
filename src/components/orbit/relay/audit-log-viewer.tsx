@@ -44,7 +44,11 @@ interface DraftWithHistory {
 
 const actionConfig: Record<
   DraftAuditAction,
-  { icon: React.ComponentType<{ className?: string; }>; label: string; color: string; }
+  {
+    icon: React.ComponentType<{ className?: string; }>;
+    label: string;
+    color: string;
+  }
 > = {
   CREATED: {
     icon: FileText,
@@ -190,7 +194,10 @@ export function AuditLogViewer({ draftId }: AuditLogViewerProps) {
                 {/* Content */}
                 <div className="flex-1 pt-1">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className={`text-xs ${config.color}`}>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${config.color}`}
+                    >
                       {config.label}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
@@ -200,7 +207,8 @@ export function AuditLogViewer({ draftId }: AuditLogViewerProps) {
 
                   {log.performedBy && (
                     <p className="text-sm text-muted-foreground mt-1">
-                      by {log.performedBy.name || log.performedBy.email || "Unknown"}
+                      by {log.performedBy.name || log.performedBy.email ||
+                        "Unknown"}
                     </p>
                   )}
 
@@ -209,7 +217,8 @@ export function AuditLogViewer({ draftId }: AuditLogViewerProps) {
                       {log.action === "REJECTED" && !!log.details["reason"] && (
                         <p>Reason: {String(log.details["reason"])}</p>
                       )}
-                      {log.action === "SEND_FAILED" && !!log.details["errorMessage"] && (
+                      {log.action === "SEND_FAILED" &&
+                        !!log.details["errorMessage"] && (
                         <p>Error: {String(log.details["errorMessage"])}</p>
                       )}
                       {log.action === "EDITED" && !!log.details["editType"] && (

@@ -166,12 +166,18 @@ function formatTopicContext(topics: TopicData[]): string {
   const sortedTopics = [...topics].sort((a, b) => b.volume - a.volume);
 
   sortedTopics.slice(0, 10).forEach((topic) => {
-    const trendEmoji = topic.trend === "RISING" ? "📈" : topic.trend === "DECLINING" ? "📉" : "➡️";
+    const trendEmoji = topic.trend === "RISING"
+      ? "📈"
+      : topic.trend === "DECLINING"
+      ? "📉"
+      : "➡️";
     lines.push(
       `- ${topic.keyword} ${trendEmoji} (volume: ${topic.volume}, sentiment: ${topic.sentiment})`,
     );
     if (topic.relatedHashtags && topic.relatedHashtags.length > 0) {
-      lines.push(`  Related hashtags: ${topic.relatedHashtags.slice(0, 5).join(", ")}`);
+      lines.push(
+        `  Related hashtags: ${topic.relatedHashtags.slice(0, 5).join(", ")}`,
+      );
     }
   });
 
@@ -185,10 +191,17 @@ function formatCompetitorContext(competitors: CompetitorData[]): string {
   const lines = ["## Competitor Content Analysis"];
 
   competitors.slice(0, 5).forEach((competitor) => {
-    lines.push(`\n### ${competitor.platform} Account (ID: ${competitor.accountId})`);
-    lines.push(`Engagement rate: ${(competitor.engagementRate * 100).toFixed(1)}%`);
+    lines.push(
+      `\n### ${competitor.platform} Account (ID: ${competitor.accountId})`,
+    );
+    lines.push(
+      `Engagement rate: ${(competitor.engagementRate * 100).toFixed(1)}%`,
+    );
 
-    if (competitor.topPerformingContent && competitor.topPerformingContent.length > 0) {
+    if (
+      competitor.topPerformingContent &&
+      competitor.topPerformingContent.length > 0
+    ) {
       lines.push("Top performing content themes:");
       competitor.topPerformingContent.slice(0, 3).forEach((content) => {
         lines.push(`- ${content}`);
@@ -201,7 +214,9 @@ function formatCompetitorContext(competitors: CompetitorData[]): string {
         .sort((a, b) => b.engagementScore - a.engagementScore)
         .slice(0, 3)
         .forEach((post) => {
-          lines.push(`- "${post.content.slice(0, 100)}..." (engagement: ${post.engagementScore})`);
+          lines.push(
+            `- "${post.content.slice(0, 100)}..." (engagement: ${post.engagementScore})`,
+          );
         });
     }
   });
@@ -300,7 +315,9 @@ function transformToSuggestion(
   config: SuggestionGeneratorConfig,
 ): ContentSuggestion {
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + config.expirationHours * 60 * 60 * 1000);
+  const expiresAt = new Date(
+    now.getTime() + config.expirationHours * 60 * 60 * 1000,
+  );
 
   // Calculate overall score using weights
   const weights = config.scoringWeights;

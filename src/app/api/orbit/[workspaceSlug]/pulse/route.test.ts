@@ -70,7 +70,11 @@ describe("Pulse API Route", () => {
 
     it("should return 404 when workspace not found", async () => {
       vi.mocked(auth).mockResolvedValueOnce({
-        user: { id: "user-1", email: "test@example.com", role: "USER" as const },
+        user: {
+          id: "user-1",
+          email: "test@example.com",
+          role: "USER" as const,
+        },
         expires: new Date().toISOString(),
       });
       vi.mocked(prisma.workspace.findFirst).mockResolvedValueOnce(null);
@@ -84,7 +88,11 @@ describe("Pulse API Route", () => {
 
     it("should return pulse data successfully", async () => {
       vi.mocked(auth).mockResolvedValueOnce({
-        user: { id: "user-1", email: "test@example.com", role: "USER" as const },
+        user: {
+          id: "user-1",
+          email: "test@example.com",
+          role: "USER" as const,
+        },
         expires: new Date().toISOString(),
       });
 
@@ -120,7 +128,11 @@ describe("Pulse API Route", () => {
 
     it("should return platform status data", async () => {
       vi.mocked(auth).mockResolvedValueOnce({
-        user: { id: "user-1", email: "test@example.com", role: "USER" as const },
+        user: {
+          id: "user-1",
+          email: "test@example.com",
+          role: "USER" as const,
+        },
         expires: new Date().toISOString(),
       });
 
@@ -184,7 +196,11 @@ describe("Pulse API Route", () => {
 
     it("should return trend data aggregated by date", async () => {
       vi.mocked(auth).mockResolvedValueOnce({
-        user: { id: "user-1", email: "test@example.com", role: "USER" as const },
+        user: {
+          id: "user-1",
+          email: "test@example.com",
+          role: "USER" as const,
+        },
         expires: new Date().toISOString(),
       });
 

@@ -66,10 +66,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   // Validate dates
   if (startDateParam && isNaN(startDate!.getTime())) {
-    return NextResponse.json({ error: "Invalid startDate format" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid startDate format" }, {
+      status: 400,
+    });
   }
   if (endDateParam && isNaN(endDate!.getTime())) {
-    return NextResponse.json({ error: "Invalid endDate format" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid endDate format" }, {
+      status: 400,
+    });
   }
 
   // Get workflow metrics

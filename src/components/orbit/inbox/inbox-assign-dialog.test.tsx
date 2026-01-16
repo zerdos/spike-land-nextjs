@@ -36,7 +36,11 @@ describe("InboxAssignDialog", () => {
 
   it("renders the assign button", () => {
     render(
-      <InboxAssignDialog itemId="123" teamMembers={teamMembers} onAssign={() => {}} />,
+      <InboxAssignDialog
+        itemId="123"
+        teamMembers={teamMembers}
+        onAssign={() => {}}
+      />,
       { wrapper: createWrapper() },
     );
     expect(screen.getByRole("button", { name: "Assign" })).toBeInTheDocument();
@@ -44,7 +48,11 @@ describe("InboxAssignDialog", () => {
 
   it("opens dialog when assign button is clicked", async () => {
     render(
-      <InboxAssignDialog itemId="123" teamMembers={teamMembers} onAssign={() => {}} />,
+      <InboxAssignDialog
+        itemId="123"
+        teamMembers={teamMembers}
+        onAssign={() => {}}
+      />,
       { wrapper: createWrapper() },
     );
 
@@ -53,14 +61,22 @@ describe("InboxAssignDialog", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Assign to a team member")).toBeInTheDocument();
-      expect(screen.getByText("Select a team member to assign this conversation to."))
+      expect(
+        screen.getByText(
+          "Select a team member to assign this conversation to.",
+        ),
+      )
         .toBeInTheDocument();
     });
   });
 
   it("displays team members in the select dropdown", async () => {
     render(
-      <InboxAssignDialog itemId="123" teamMembers={teamMembers} onAssign={() => {}} />,
+      <InboxAssignDialog
+        itemId="123"
+        teamMembers={teamMembers}
+        onAssign={() => {}}
+      />,
       { wrapper: createWrapper() },
     );
 
@@ -82,7 +98,11 @@ describe("InboxAssignDialog", () => {
     const onAssign = vi.fn();
 
     render(
-      <InboxAssignDialog itemId="123" teamMembers={teamMembers} onAssign={onAssign} />,
+      <InboxAssignDialog
+        itemId="123"
+        teamMembers={teamMembers}
+        onAssign={onAssign}
+      />,
       { wrapper: createWrapper() },
     );
 
@@ -108,7 +128,11 @@ describe("InboxAssignDialog", () => {
     global.fetch = mockFetch;
 
     render(
-      <InboxAssignDialog itemId="123" teamMembers={teamMembers} onAssign={() => {}} />,
+      <InboxAssignDialog
+        itemId="123"
+        teamMembers={teamMembers}
+        onAssign={() => {}}
+      />,
       { wrapper: createWrapper() },
     );
 

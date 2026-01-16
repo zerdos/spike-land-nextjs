@@ -78,10 +78,19 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
 
   if (!body.contentType) {
-    return NextResponse.json({ error: "contentType is required" }, { status: 400 });
+    return NextResponse.json({ error: "contentType is required" }, {
+      status: 400,
+    });
   }
 
-  const validContentTypes = ["POST", "AD", "COMMENT", "MESSAGE", "BIO", "STORY"];
+  const validContentTypes = [
+    "POST",
+    "AD",
+    "COMMENT",
+    "MESSAGE",
+    "BIO",
+    "STORY",
+  ];
   if (!validContentTypes.includes(body.contentType)) {
     return NextResponse.json(
       { error: `contentType must be one of: ${validContentTypes.join(", ")}` },

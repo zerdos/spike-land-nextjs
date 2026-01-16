@@ -22,7 +22,12 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 // Use vi.hoisted to ensure mock functions are available before vi.mock hoisting
-const { mockListCampaigns, mockSetAccessToken, mockSetCustomerId, mockRefreshAccessToken } = vi
+const {
+  mockListCampaigns,
+  mockSetAccessToken,
+  mockSetCustomerId,
+  mockRefreshAccessToken,
+} = vi
   .hoisted(() => ({
     mockListCampaigns: vi.fn(),
     mockSetAccessToken: vi.fn(),
@@ -86,15 +91,27 @@ describe("POST /api/orbit/google-ads/campaigns", () => {
       expiresAt: new Date(Date.now() + 3600 * 1000), // Expires in 1 hour
     };
 
-    (prisma.marketingAccount.findFirst as Mock).mockResolvedValue(mockMarketingAccount);
+    (prisma.marketingAccount.findFirst as Mock).mockResolvedValue(
+      mockMarketingAccount,
+    );
     (safeDecryptToken as Mock).mockImplementation((token: string) =>
       token.replace("encrypted-", "")
     );
     (safeEncryptToken as Mock).mockImplementation((token: string) => `encrypted-${token}`);
 
     const mockCampaigns = [
-      { id: "campaign-1", name: "Campaign 1", status: "ENABLED", budgetAmount: 10000 },
-      { id: "campaign-2", name: "Campaign 2", status: "PAUSED", budgetAmount: 20000 },
+      {
+        id: "campaign-1",
+        name: "Campaign 1",
+        status: "ENABLED",
+        budgetAmount: 10000,
+      },
+      {
+        id: "campaign-2",
+        name: "Campaign 2",
+        status: "PAUSED",
+        budgetAmount: 20000,
+      },
     ];
 
     mockListCampaigns.mockResolvedValue(mockCampaigns);

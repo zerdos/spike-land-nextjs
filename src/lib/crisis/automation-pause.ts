@@ -44,7 +44,9 @@ export class AutomationPauseManager {
     }
 
     const settings = workspace.settings as Record<string, unknown> | null;
-    const crisisSettings = settings?.["crisis"] as Record<string, unknown> | undefined;
+    const crisisSettings = settings?.["crisis"] as
+      | Record<string, unknown>
+      | undefined;
 
     if (!crisisSettings?.["automationPaused"]) {
       return { isPaused: false };
@@ -85,7 +87,8 @@ export class AutomationPauseManager {
       return false;
     }
 
-    const currentSettings = (workspace.settings as Record<string, unknown>) || {};
+    const currentSettings = (workspace.settings as Record<string, unknown>) ||
+      {};
 
     // Update settings with pause status
     const updatedSettings = {
@@ -137,7 +140,8 @@ export class AutomationPauseManager {
       return false;
     }
 
-    const currentSettings = (workspace.settings as Record<string, unknown>) || {};
+    const currentSettings = (workspace.settings as Record<string, unknown>) ||
+      {};
     const crisisSettings = (currentSettings["crisis"] as Record<string, unknown>) || {};
 
     // Update settings to clear pause status
@@ -219,7 +223,9 @@ export class AutomationPauseManager {
     }
 
     const settings = workspace.settings as Record<string, unknown> | null;
-    const crisisSettings = settings?.["crisis"] as Record<string, unknown> | undefined;
+    const crisisSettings = settings?.["crisis"] as
+      | Record<string, unknown>
+      | undefined;
     const history = (crisisSettings?.["pauseHistory"] as Array<{
       action: "paused" | "resumed";
       timestamp: string;

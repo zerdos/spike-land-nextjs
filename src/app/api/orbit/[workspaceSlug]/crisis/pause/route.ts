@@ -111,7 +111,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const { reason, relatedCrisisId, scheduledResumeAt } = body as {
@@ -126,7 +128,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     userId: session.user.id,
     reason,
     relatedCrisisId,
-    scheduledResumeAt: scheduledResumeAt ? new Date(scheduledResumeAt) : undefined,
+    scheduledResumeAt: scheduledResumeAt
+      ? new Date(scheduledResumeAt)
+      : undefined,
   });
 
   if (!success) {

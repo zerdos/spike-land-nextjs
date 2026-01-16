@@ -25,7 +25,7 @@ describe("AccountsTab", () => {
     // The component expects a response format with { campaigns: [...] }
     global.fetch = vi.fn(createFetchMock({
       "/api/admin/marketing/campaigns": {
-        campaigns: mockCampaignsData.map(c => ({
+        campaigns: mockCampaignsData.map((c) => ({
           ...c,
           status: "ACTIVE",
           objective: "CONVERSIONS",
@@ -76,7 +76,9 @@ describe("AccountsTab", () => {
     const accountName = screen.getByText("Test Meta Ads Account");
     // Find the disconnect button - it is the button with Trash2 icon in the same row
     // We can use the container to scope the search
-    const accountRow = accountName.closest("div.flex.items-center.justify-between");
+    const accountRow = accountName.closest(
+      "div.flex.items-center.justify-between",
+    );
     const deleteBtn = accountRow!.querySelector("button");
 
     expect(deleteBtn).toBeInTheDocument();

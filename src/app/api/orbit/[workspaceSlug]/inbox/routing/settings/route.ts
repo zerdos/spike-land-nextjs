@@ -59,7 +59,10 @@ export async function PUT(
   try {
     const json = await req.json();
     const validated = SmartRoutingSettingsSchema.partial().parse(json);
-    const updated = await updateSmartRoutingSettings(workspaceRecord.id, validated);
+    const updated = await updateSmartRoutingSettings(
+      workspaceRecord.id,
+      validated,
+    );
     return NextResponse.json(updated);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";

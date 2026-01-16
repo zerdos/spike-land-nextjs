@@ -54,7 +54,9 @@ export function parseFacebookRateLimits(
       const usage = JSON.parse(businessUsage);
       // Format: { "accountId": [{ "call_count": X, "total_cputime": Y, "total_time": Z }] }
       const values = Object.values(usage) as Array<
-        Array<{ call_count?: number; total_cputime?: number; total_time?: number; }>
+        Array<
+          { call_count?: number; total_cputime?: number; total_time?: number; }
+        >
       >;
       const firstValue = values[0];
       const data = firstValue?.[0];
@@ -132,7 +134,8 @@ export function parseLinkedInRateLimits(
     const errorBody = body as Record<string, unknown>;
     if (
       errorBody["status"] === 429 ||
-      (errorBody["message"] && String(errorBody["message"]).toLowerCase().includes("rate limit"))
+      (errorBody["message"] &&
+        String(errorBody["message"]).toLowerCase().includes("rate limit"))
     ) {
       return {
         remaining: 0,
@@ -245,7 +248,8 @@ export async function getRateLimitUsage(
   }
 
   const percentUsed = health.rateLimitTotal > 0
-    ? ((health.rateLimitTotal - health.rateLimitRemaining) / health.rateLimitTotal) * 100
+    ? ((health.rateLimitTotal - health.rateLimitRemaining) /
+      health.rateLimitTotal) * 100
     : 0;
 
   return {

@@ -95,17 +95,25 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-  const events = await CrisisTimelineService.getWorkspaceTimeline(workspace.id, {
-    startDate,
-    limit,
-    types,
-  });
+  const events = await CrisisTimelineService.getWorkspaceTimeline(
+    workspace.id,
+    {
+      startDate,
+      limit,
+      types,
+    },
+  );
 
   // Enrich with actor names
-  const enrichedEvents = await CrisisTimelineService.enrichTimelineWithActors(events);
+  const enrichedEvents = await CrisisTimelineService.enrichTimelineWithActors(
+    events,
+  );
 
   // Get summary
-  const summary = await CrisisTimelineService.getTimelineSummary(workspace.id, days);
+  const summary = await CrisisTimelineService.getTimelineSummary(
+    workspace.id,
+    days,
+  );
 
   return NextResponse.json({
     events: enrichedEvents,

@@ -9,7 +9,9 @@ import { NextResponse } from "next/server";
 /**
  * Maps RecommendationType from allocator-types to AutopilotRecommendation type
  */
-function mapRecommendationType(type: RecommendationType): AutopilotRecommendation["type"] {
+function mapRecommendationType(
+  type: RecommendationType,
+): AutopilotRecommendation["type"] {
   const mapping: Record<RecommendationType, AutopilotRecommendation["type"]> = {
     INCREASE_BUDGET: "BUDGET_INCREASE",
     DECREASE_BUDGET: "BUDGET_DECREASE",
@@ -76,12 +78,19 @@ export async function GET(req: NextRequest) {
           correlationId: rec.correlationId, // Pass through from generation
         };
 
-        const result = await AutopilotService.executeRecommendation(autopilotRec, "CRON");
+        const result = await AutopilotService.executeRecommendation(
+          autopilotRec,
+          "CRON",
+        );
         results.push(result);
       }
     }
 
-    return NextResponse.json({ success: true, processed: results.length, results });
+    return NextResponse.json({
+      success: true,
+      processed: results.length,
+      results,
+    });
   } catch (error) {
     console.error("Autopilot Cron Error:", error);
     return NextResponse.json({

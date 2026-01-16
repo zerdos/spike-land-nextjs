@@ -156,7 +156,8 @@ describe("SpendOverviewCards", () => {
 
     expect(screen.getByText("Data Quality")).toBeInTheDocument();
     expect(screen.getByText("85%")).toBeInTheDocument();
-    expect(screen.getByText("Excellent data for accurate recommendations")).toBeInTheDocument();
+    expect(screen.getByText("Excellent data for accurate recommendations"))
+      .toBeInTheDocument();
   });
 
   it("shows appropriate message for moderate data quality", () => {
@@ -169,7 +170,8 @@ describe("SpendOverviewCards", () => {
     );
 
     expect(screen.getByText("60%")).toBeInTheDocument();
-    expect(screen.getByText("Good data, recommendations may vary")).toBeInTheDocument();
+    expect(screen.getByText("Good data, recommendations may vary"))
+      .toBeInTheDocument();
   });
 
   it("shows appropriate message for low data quality", () => {
@@ -182,7 +184,8 @@ describe("SpendOverviewCards", () => {
     );
 
     expect(screen.getByText("30%")).toBeInTheDocument();
-    expect(screen.getByText("Limited data, connect more accounts")).toBeInTheDocument();
+    expect(screen.getByText("Limited data, connect more accounts"))
+      .toBeInTheDocument();
   });
 
   it("handles empty campaign analyses", () => {

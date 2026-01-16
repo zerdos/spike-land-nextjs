@@ -67,7 +67,9 @@ export async function GET(
 
     if (permError) {
       const httpStatus = permError.message.includes("Unauthorized") ? 401 : 403;
-      return NextResponse.json({ error: permError.message }, { status: httpStatus });
+      return NextResponse.json({ error: permError.message }, {
+        status: httpStatus,
+      });
     }
 
     // Now fetch the full post
@@ -122,7 +124,9 @@ export async function PATCH(
 
     if (permError) {
       const httpStatus = permError.message.includes("Unauthorized") ? 401 : 403;
-      return NextResponse.json({ error: permError.message }, { status: httpStatus });
+      return NextResponse.json({ error: permError.message }, {
+        status: httpStatus,
+      });
     }
 
     // Validate scheduledAt if provided
@@ -150,16 +154,24 @@ export async function PATCH(
       timezone: body.timezone,
       accountIds: body.accountIds,
       recurrenceRule: body.recurrenceRule,
-      recurrenceEndAt: body.recurrenceEndAt ? new Date(body.recurrenceEndAt) : undefined,
+      recurrenceEndAt: body.recurrenceEndAt
+        ? new Date(body.recurrenceEndAt)
+        : undefined,
       status: body.status,
-      metadata: body.metadata as { mediaUrls?: string[]; link?: string; } | undefined,
+      metadata: body.metadata as
+        | { mediaUrls?: string[]; link?: string; }
+        | undefined,
     });
 
     return NextResponse.json(updatedPost);
   } catch (error) {
     console.error("Failed to update scheduled post:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to update scheduled post" },
+      {
+        error: error instanceof Error
+          ? error.message
+          : "Failed to update scheduled post",
+      },
       { status: 500 },
     );
   }
@@ -193,7 +205,9 @@ export async function DELETE(
 
     if (permError) {
       const httpStatus = permError.message.includes("Unauthorized") ? 401 : 403;
-      return NextResponse.json({ error: permError.message }, { status: httpStatus });
+      return NextResponse.json({ error: permError.message }, {
+        status: httpStatus,
+      });
     }
 
     await deleteScheduledPost(id, workspaceId);
@@ -202,7 +216,11 @@ export async function DELETE(
   } catch (error) {
     console.error("Failed to delete scheduled post:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to delete scheduled post" },
+      {
+        error: error instanceof Error
+          ? error.message
+          : "Failed to delete scheduled post",
+      },
       { status: 500 },
     );
   }

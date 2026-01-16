@@ -12,7 +12,9 @@ export async function GET(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     const campaigns = await prisma.allocatorCampaign.findMany({

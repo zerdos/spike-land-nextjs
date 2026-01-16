@@ -271,6 +271,7 @@ describe("AllocatorDashboard", () => {
     });
 
     expect(screen.getByText("High Confidence")).toBeInTheDocument();
-    expect(screen.getByText("High performer with improving metrics")).toBeInTheDocument();
+    expect(screen.getByText("High performer with improving metrics"))
+      .toBeInTheDocument();
   });
 });

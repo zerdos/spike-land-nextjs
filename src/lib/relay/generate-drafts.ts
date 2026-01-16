@@ -458,7 +458,9 @@ export async function saveDraftsToDatabase(
       confidenceScore: draft.confidenceScore,
       isPreferred: draft.isPreferred,
       reason: draft.reason,
-      metadata: draft.metadata ? JSON.parse(JSON.stringify(draft.metadata)) : undefined,
+      metadata: draft.metadata
+        ? JSON.parse(JSON.stringify(draft.metadata))
+        : undefined,
     })),
   });
 

@@ -163,12 +163,13 @@ export async function logErrorEvent(
   health: SocialAccountHealth,
   error: string,
 ): Promise<void> {
-  const severity: IssueSeverity =
-    health.consecutiveErrors >= DEFAULT_ALERT_THRESHOLDS.consecutiveErrorsCritical
-      ? "CRITICAL"
-      : health.consecutiveErrors >= DEFAULT_ALERT_THRESHOLDS.consecutiveErrorsWarning
-      ? "ERROR"
-      : "WARNING";
+  const severity: IssueSeverity = health.consecutiveErrors >=
+      DEFAULT_ALERT_THRESHOLDS.consecutiveErrorsCritical
+    ? "CRITICAL"
+    : health.consecutiveErrors >=
+        DEFAULT_ALERT_THRESHOLDS.consecutiveErrorsWarning
+    ? "ERROR"
+    : "WARNING";
 
   await createHealthEvent({
     accountId: account.id,
@@ -269,7 +270,9 @@ export async function sendHealthAlerts(
         OR: [
           { healthScore: { lte: config.alertOnScoreBelow ?? 50 } },
           { isRateLimited: config.alertOnRateLimit ? true : undefined },
-          { tokenRefreshRequired: config.alertOnTokenExpiry ? true : undefined },
+          {
+            tokenRefreshRequired: config.alertOnTokenExpiry ? true : undefined,
+          },
         ],
       },
     },

@@ -71,7 +71,9 @@ function formatGuidance(guidance: RecoveryGuidance): RecoveryGuidanceInfo {
 /**
  * Get all recovery guidance templates
  */
-export async function getAllRecoveryGuidance(): Promise<RecoveryGuidanceInfo[]> {
+export async function getAllRecoveryGuidance(): Promise<
+  RecoveryGuidanceInfo[]
+> {
   const guidance = await prisma.recoveryGuidance.findMany({
     orderBy: [{ severity: "desc" }, { issueType: "asc" }],
   });

@@ -16,7 +16,9 @@ import type {
 /**
  * Save a new content suggestion
  */
-export async function saveSuggestion(suggestion: ContentSuggestion): Promise<ContentSuggestion> {
+export async function saveSuggestion(
+  suggestion: ContentSuggestion,
+): Promise<ContentSuggestion> {
   const saved = await prisma.contentSuggestion.create({
     data: {
       id: suggestion.id,
@@ -273,7 +275,9 @@ export async function submitFeedback(
 /**
  * Delete expired suggestions
  */
-export async function deleteExpiredSuggestions(workspaceId?: string): Promise<number> {
+export async function deleteExpiredSuggestions(
+  workspaceId?: string,
+): Promise<number> {
   const where: Record<string, unknown> = {
     status: "PENDING",
     expiresAt: {
@@ -366,7 +370,8 @@ function mapToContentSuggestion(record: {
     description: record.description,
     draftContent: record.draftContent,
     contentType: record.contentType as ContentSuggestion["contentType"],
-    suggestedPlatforms: record.suggestedPlatforms as ContentSuggestion["suggestedPlatforms"],
+    suggestedPlatforms: record
+      .suggestedPlatforms as ContentSuggestion["suggestedPlatforms"],
     trendData: record.trendData as ContentSuggestion["trendData"],
     relevanceScore: record.relevanceScore,
     timelinessScore: record.timelinessScore,

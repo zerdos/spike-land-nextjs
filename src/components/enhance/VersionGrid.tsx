@@ -243,7 +243,10 @@ export function VersionGrid({
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          toggleSelection(version.id, e as unknown as React.MouseEvent);
+                          toggleSelection(
+                            version.id,
+                            e as unknown as React.MouseEvent,
+                          );
                         }
                       }}
                       role="button"

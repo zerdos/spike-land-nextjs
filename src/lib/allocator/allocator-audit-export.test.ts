@@ -41,7 +41,10 @@ describe("AllocatorAuditExportService", () => {
 
   describe("export", () => {
     it("exports to CSV correctly", async () => {
-      vi.mocked(allocatorAuditLogger.search).mockResolvedValue({ logs: mockLogs, total: 2 });
+      vi.mocked(allocatorAuditLogger.search).mockResolvedValue({
+        logs: mockLogs,
+        total: 2,
+      });
 
       const result = await AllocatorAuditExportService.export({
         workspaceId: "ws-1",
@@ -62,7 +65,10 @@ describe("AllocatorAuditExportService", () => {
     });
 
     it("exports to JSON correctly", async () => {
-      vi.mocked(allocatorAuditLogger.search).mockResolvedValue({ logs: mockLogs, total: 2 });
+      vi.mocked(allocatorAuditLogger.search).mockResolvedValue({
+        logs: mockLogs,
+        total: 2,
+      });
 
       const result = await AllocatorAuditExportService.export({
         workspaceId: "ws-1",
@@ -80,7 +86,10 @@ describe("AllocatorAuditExportService", () => {
     });
 
     it("throws error for unsupported format", async () => {
-      vi.mocked(allocatorAuditLogger.search).mockResolvedValue({ logs: [], total: 0 });
+      vi.mocked(allocatorAuditLogger.search).mockResolvedValue({
+        logs: [],
+        total: 0,
+      });
 
       await expect(
         AllocatorAuditExportService.export({
@@ -97,7 +106,10 @@ describe("AllocatorAuditExportService", () => {
           aiReasoning: 'Reason with "quotes" and, commas',
         } as AllocatorAuditLog,
       ];
-      vi.mocked(allocatorAuditLogger.search).mockResolvedValue({ logs: complexLog, total: 1 });
+      vi.mocked(allocatorAuditLogger.search).mockResolvedValue({
+        logs: complexLog,
+        total: 1,
+      });
 
       const result = await AllocatorAuditExportService.export({
         workspaceId: "ws-1",

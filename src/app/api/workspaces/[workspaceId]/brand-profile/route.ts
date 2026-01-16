@@ -186,7 +186,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       stack: createError["stack"],
     });
     return NextResponse.json(
-      { error: "Failed to create brand profile", details: createError["message"] },
+      {
+        error: "Failed to create brand profile",
+        details: createError["message"],
+      },
       { status: 500 },
     );
   }

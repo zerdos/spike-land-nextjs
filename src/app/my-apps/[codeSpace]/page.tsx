@@ -155,7 +155,9 @@ function PreviewPlaceholder() {
         </div>
         <div>
           <p className="text-zinc-400 font-medium">Preview will appear here</p>
-          <p className="text-sm opacity-50 mt-1">Start chatting to generate your app</p>
+          <p className="text-sm opacity-50 mt-1">
+            Start chatting to generate your app
+          </p>
         </div>
       </div>
     </div>
@@ -274,11 +276,15 @@ export default function CodeSpacePage() {
   useEffect(() => {
     async function checkCodeSpace() {
       try {
-        const response = await fetch(`/api/apps/by-codespace/${encodeURIComponent(codeSpace)}`);
+        const response = await fetch(
+          `/api/apps/by-codespace/${encodeURIComponent(codeSpace)}`,
+        );
 
         if (response.status === 401) {
           // Not authenticated - redirect to sign in
-          router.push(`/auth/signin?callbackUrl=${encodeURIComponent(`/my-apps/${codeSpace}`)}`);
+          router.push(
+            `/auth/signin?callbackUrl=${encodeURIComponent(`/my-apps/${codeSpace}`)}`,
+          );
           return;
         }
 
@@ -357,7 +363,9 @@ export default function CodeSpacePage() {
             break;
 
           case "status":
-            setApp((prev) => (prev ? { ...prev, status: data.data.status } : null));
+            setApp((
+              prev,
+            ) => (prev ? { ...prev, status: data.data.status } : null));
             break;
 
           case "agent_working":
@@ -475,7 +483,9 @@ export default function CodeSpacePage() {
 
   // Create app from prompt (prompt mode)
   const handleCreateApp = async () => {
-    if ((!newMessage.trim() && pendingFiles.length === 0) || sendingMessage) return;
+    if ((!newMessage.trim() && pendingFiles.length === 0) || sendingMessage) {
+      return;
+    }
 
     const content = newMessage.trim();
     setSendingMessage(true);
@@ -491,13 +501,13 @@ export default function CodeSpacePage() {
 
       const response = await fetch("/api/apps", {
         method: "POST",
-        body: pendingFiles.length > 0
-          ? formData
-          : JSON.stringify({
-            prompt: content,
-            codespaceId: codeSpace,
-          }),
-        headers: pendingFiles.length > 0 ? undefined : { "Content-Type": "application/json" },
+        body: pendingFiles.length > 0 ? formData : JSON.stringify({
+          prompt: content,
+          codespaceId: codeSpace,
+        }),
+        headers: pendingFiles.length > 0
+          ? undefined
+          : { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
@@ -528,7 +538,10 @@ export default function CodeSpacePage() {
 
   // Send message in workspace mode
   const handleSendMessage = async () => {
-    if ((!newMessage.trim() && pendingImages.length === 0) || sendingMessage || isStreaming) return;
+    if (
+      (!newMessage.trim() && pendingImages.length === 0) || sendingMessage ||
+      isStreaming
+    ) return;
     if (!app?.id) return;
 
     const content = newMessage.trim();
@@ -555,7 +568,10 @@ export default function CodeSpacePage() {
       const response = await fetch(`/api/apps/${app.id}/agent/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: content || "[Image attached]", imageIds }),
+        body: JSON.stringify({
+          content: content || "[Image attached]",
+          imageIds,
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to send message");
@@ -847,8 +863,12 @@ export default function CodeSpacePage() {
                             />
                           </svg>
                         </div>
-                        <p className="text-lg font-medium text-zinc-300">No messages yet</p>
-                        <p className="text-sm">Start a conversation to begin building your app.</p>
+                        <p className="text-lg font-medium text-zinc-300">
+                          No messages yet
+                        </p>
+                        <p className="text-sm">
+                          Start a conversation to begin building your app.
+                        </p>
                       </div>
                     </div>
                   )
@@ -859,7 +879,9 @@ export default function CodeSpacePage() {
                         <div
                           key={message.id}
                           className={`flex ${
-                            message.role === "USER" ? "justify-end" : "justify-start"
+                            message.role === "USER"
+                              ? "justify-end"
+                              : "justify-start"
                           }`}
                         >
                           <div
@@ -874,9 +896,14 @@ export default function CodeSpacePage() {
                             <div className="leading-relaxed">
                               {message.role === "AGENT"
                                 ? <MarkdownContent content={message.content} />
-                                : <p className="whitespace-pre-wrap">{message.content}</p>}
+                                : (
+                                  <p className="whitespace-pre-wrap">
+                                    {message.content}
+                                  </p>
+                                )}
                             </div>
-                            {message.attachments && message.attachments.length > 0 && (
+                            {message.attachments &&
+                              message.attachments.length > 0 && (
                               <div className="mt-3 flex flex-wrap gap-2">
                                 {message.attachments.map((attachment) => (
                                   <Image
@@ -893,13 +920,18 @@ export default function CodeSpacePage() {
                             )}
                             <p
                               className={`mt-1.5 text-xs ${
-                                message.role === "USER" ? "text-teal-100/70" : "text-zinc-500"
+                                message.role === "USER"
+                                  ? "text-teal-100/70"
+                                  : "text-zinc-500"
                               }`}
                             >
-                              {new Date(message.createdAt).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {new Date(message.createdAt).toLocaleTimeString(
+                                [],
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
                             </p>
                           </div>
                         </div>
@@ -913,7 +945,9 @@ export default function CodeSpacePage() {
                         <MarkdownContent content={streamingResponse} />
                         <span className="inline-block w-2 h-4 ml-1 bg-teal-500 animate-pulse rounded-full align-middle" />
                       </div>
-                      <p className="mt-1.5 text-xs text-zinc-500">Thinking...</p>
+                      <p className="mt-1.5 text-xs text-zinc-500">
+                        Thinking...
+                      </p>
                     </div>
                   </div>
                 )}
@@ -1012,9 +1046,13 @@ export default function CodeSpacePage() {
                     : imageInputRef.current?.click())}
                   disabled={sendingMessage ||
                     uploadingImages ||
-                    (mode === "prompt" ? pendingFiles.length >= 10 : pendingImages.length >= 5)}
+                    (mode === "prompt"
+                      ? pendingFiles.length >= 10
+                      : pendingImages.length >= 5)}
                   className="h-10 w-10 rounded-xl text-zinc-500 hover:text-white hover:bg-white/10 transition-colors shrink-0"
-                  aria-label={mode === "prompt" ? "Attach files" : "Attach images"}
+                  aria-label={mode === "prompt"
+                    ? "Attach files"
+                    : "Attach images"}
                 >
                   {mode === "prompt"
                     ? <Paperclip className="h-5 w-5" />
@@ -1029,18 +1067,23 @@ export default function CodeSpacePage() {
                     : "Type your message..."}
                   autoComplete="off"
                   className="min-h-[60px] max-h-[200px] resize-none bg-black/20 border-white/10 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 rounded-2xl pl-4 pr-14 py-3 text-zinc-200 placeholder:text-zinc-600 backdrop-blur-sm transition-all"
-                  disabled={sendingMessage || (mode === "workspace" && app?.status === "ARCHIVED")}
+                  disabled={sendingMessage ||
+                    (mode === "workspace" && app?.status === "ARCHIVED")}
                   autoFocus={mode === "prompt"}
                 />
                 <Button
-                  onClick={mode === "prompt" ? handleCreateApp : handleSendMessage}
+                  onClick={mode === "prompt"
+                    ? handleCreateApp
+                    : handleSendMessage}
                   disabled={(mode === "prompt"
                     ? !newMessage.trim() && pendingFiles.length === 0
                     : !newMessage.trim() && pendingImages.length === 0) ||
                     sendingMessage ||
                     uploadingImages ||
                     (mode === "workspace" && app?.status === "ARCHIVED")}
-                  aria-label={mode === "prompt" ? "Start building" : "Send message"}
+                  aria-label={mode === "prompt"
+                    ? "Start building"
+                    : "Send message"}
                   className={`absolute right-2 bottom-2 h-10 ${
                     mode === "prompt" ? "px-4" : "w-10 p-0"
                   } rounded-xl transition-all duration-300 ${
@@ -1088,7 +1131,10 @@ export default function CodeSpacePage() {
 
           {/* Preview Panel */}
           <div className="flex flex-col gap-3 h-full">
-            <motion.div layoutId={`app-card-${codeSpace}`} className="flex-1 h-full min-h-[500px]">
+            <motion.div
+              layoutId={`app-card-${codeSpace}`}
+              className="flex-1 h-full min-h-[500px]"
+            >
               <Card className="flex flex-col h-full overflow-hidden bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl ring-1 ring-white/5 relative group">
                 <div className="absolute -inset-[1px] bg-gradient-to-br from-white/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 

@@ -66,10 +66,12 @@ function isQuietHours(preferences: WorkspaceNotificationPreferences): boolean {
 
   if (preferences.quietHoursStart < preferences.quietHoursEnd) {
     // Simple case: quiet hours don't cross midnight (e.g., 22:00 - 23:00)
-    return hour >= preferences.quietHoursStart && hour < preferences.quietHoursEnd;
+    return hour >= preferences.quietHoursStart &&
+      hour < preferences.quietHoursEnd;
   } else {
     // Quiet hours cross midnight (e.g., 22:00 - 07:00)
-    return hour >= preferences.quietHoursStart || hour < preferences.quietHoursEnd;
+    return hour >= preferences.quietHoursStart ||
+      hour < preferences.quietHoursEnd;
   }
 }
 
@@ -106,7 +108,8 @@ export async function getWorkspacePreferences(
     channels: notificationSettings?.channels ?? DEFAULT_PREFERENCES.channels,
     slackWebhookUrl: notificationSettings?.slackWebhookUrl,
     emailRecipients: notificationSettings?.emailRecipients,
-    minSeverity: notificationSettings?.minSeverity ?? DEFAULT_PREFERENCES.minSeverity,
+    minSeverity: notificationSettings?.minSeverity ??
+      DEFAULT_PREFERENCES.minSeverity,
     quietHoursStart: notificationSettings?.quietHoursStart,
     quietHoursEnd: notificationSettings?.quietHoursEnd,
     timezone: notificationSettings?.timezone,
@@ -131,7 +134,8 @@ async function sendEmailNotification(
   const { success, error, id } = await sendEmail({
     to: recipients,
     subject: `Pulse Alert: ${
-      notification.anomaly.severity.charAt(0).toUpperCase() + notification.anomaly.severity.slice(1)
+      notification.anomaly.severity.charAt(0).toUpperCase() +
+      notification.anomaly.severity.slice(1)
     } anomaly detected`,
     react: PulseAlertEmail({
       workspaceName: notification.workspaceName,
@@ -195,7 +199,8 @@ export async function sendNotification(
   if (notification.type === "pulse_anomaly") {
     const severityOrder = { warning: 1, critical: 2 };
     const minSeverity = severityOrder[preferences.minSeverity] || 1;
-    const notificationSeverity = severityOrder[notification.anomaly.severity] || 1;
+    const notificationSeverity = severityOrder[notification.anomaly.severity] ||
+      1;
 
     if (notificationSeverity < minSeverity) {
       return {
@@ -310,8 +315,10 @@ export async function sendAnomalyNotifications(
       timestamp: new Date(),
       anomaly: {
         ...anomaly,
-        platform: anomaly.platform as PulseAnomalyNotification["anomaly"]["platform"],
-        metricType: anomaly.metricType as PulseAnomalyNotification["anomaly"]["metricType"],
+        platform: anomaly
+          .platform as PulseAnomalyNotification["anomaly"]["platform"],
+        metricType: anomaly
+          .metricType as PulseAnomalyNotification["anomaly"]["metricType"],
       },
       dashboardUrl: options?.dashboardUrl,
     };

@@ -85,7 +85,8 @@ function TimeSlotItem({
             "flex items-center gap-2 rounded-md border p-2 text-left transition-colors",
             "hover:bg-accent/50",
             slot.confidence === "high" && "border-primary/50 bg-primary/5",
-            slot.confidence === "medium" && "border-secondary/50 bg-secondary/5",
+            slot.confidence === "medium" &&
+              "border-secondary/50 bg-secondary/5",
             slot.confidence === "low" && "border-muted",
           )}
           data-testid="time-slot-recommendation"

@@ -391,11 +391,16 @@ describe("generate-drafts", () => {
     it("ensures one draft is marked as preferred", async () => {
       const responseWithoutPreferred = {
         ...mockAIResponse,
-        drafts: mockAIResponse.drafts.map((d) => ({ ...d, isPreferred: false })),
+        drafts: mockAIResponse.drafts.map((d) => ({
+          ...d,
+          isPreferred: false,
+        })),
       };
 
       vi.mocked(prisma.brandProfile.findFirst).mockResolvedValue(null);
-      mockGenerateStructuredResponse.mockResolvedValue(responseWithoutPreferred);
+      mockGenerateStructuredResponse.mockResolvedValue(
+        responseWithoutPreferred,
+      );
 
       const result = await generateDrafts({
         inboxItem: mockInboxItem,
@@ -488,7 +493,9 @@ describe("generate-drafts", () => {
         { id: "draft-1", isPreferred: true, confidenceScore: 0.9 },
         { id: "draft-2", isPreferred: false, confidenceScore: 0.8 },
       ];
-      vi.mocked(prisma.relayDraft.findMany).mockResolvedValue(mockDrafts as never);
+      vi.mocked(prisma.relayDraft.findMany).mockResolvedValue(
+        mockDrafts as never,
+      );
 
       const result = await getDraftsForInboxItem("inbox-123");
 
@@ -512,7 +519,9 @@ describe("generate-drafts", () => {
         reviewedById: "user-123",
         reviewedAt: new Date(),
       };
-      vi.mocked(prisma.relayDraft.update).mockResolvedValue(mockUpdated as never);
+      vi.mocked(prisma.relayDraft.update).mockResolvedValue(
+        mockUpdated as never,
+      );
 
       const result = await approveDraft("draft-123", "user-123");
 
@@ -540,7 +549,9 @@ describe("generate-drafts", () => {
         reviewedById: "user-123",
         reviewedAt: new Date(),
       };
-      vi.mocked(prisma.relayDraft.update).mockResolvedValue(mockUpdated as never);
+      vi.mocked(prisma.relayDraft.update).mockResolvedValue(
+        mockUpdated as never,
+      );
 
       const result = await rejectDraft("draft-123", "user-123");
 
@@ -576,7 +587,10 @@ describe("generate-drafts", () => {
 
       vi.clearAllMocks();
 
-      const dmItem: InboxItemData = { ...mockInboxItem, type: "DIRECT_MESSAGE" };
+      const dmItem: InboxItemData = {
+        ...mockInboxItem,
+        type: "DIRECT_MESSAGE",
+      };
       await generateDrafts({
         inboxItem: dmItem,
         workspaceId: "workspace-123",

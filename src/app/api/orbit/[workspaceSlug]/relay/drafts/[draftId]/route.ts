@@ -69,7 +69,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const { action, content, reason, note, errorMessage } = body as {
@@ -80,7 +82,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     errorMessage?: string;
   };
 
-  const validActions: ActionType[] = ["approve", "reject", "edit", "send", "fail"];
+  const validActions: ActionType[] = [
+    "approve",
+    "reject",
+    "edit",
+    "send",
+    "fail",
+  ];
   if (!action || !validActions.includes(action as ActionType)) {
     return NextResponse.json(
       { error: `action must be one of: ${validActions.join(", ")}` },

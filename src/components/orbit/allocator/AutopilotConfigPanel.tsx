@@ -21,7 +21,9 @@ interface AutopilotConfigPanelProps {
   onSave: (data: UpdateAutopilotConfigInput) => Promise<void>;
 }
 
-export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelProps) {
+export function AutopilotConfigPanel(
+  { config, onSave }: AutopilotConfigPanelProps,
+) {
   const [formData, setFormData] = useState<Partial<AutopilotConfig>>(
     config || {
       mode: "CONSERVATIVE",
@@ -51,7 +53,7 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
     field: keyof AutopilotConfig,
     value: AutopilotConfig[keyof AutopilotConfig],
   ) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -74,9 +76,13 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
                 <SelectValue placeholder="Select mode" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="CONSERVATIVE">Conservative (Small, safe moves)</SelectItem>
+                <SelectItem value="CONSERVATIVE">
+                  Conservative (Small, safe moves)
+                </SelectItem>
                 <SelectItem value="MODERATE">Moderate (Balanced)</SelectItem>
-                <SelectItem value="AGGRESSIVE">Aggressive (Maximize growth)</SelectItem>
+                <SelectItem value="AGGRESSIVE">
+                  Aggressive (Maximize growth)
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -90,7 +96,11 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
                 min="1"
                 max="100"
                 value={formData.maxDailyBudgetChange}
-                onChange={(e) => updateField("maxDailyBudgetChange", parseFloat(e.target.value))}
+                onChange={(e) =>
+                  updateField(
+                    "maxDailyBudgetChange",
+                    parseFloat(e.target.value),
+                  )}
               />
             </div>
             <div className="space-y-2">
@@ -116,7 +126,10 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
                 placeholder="No floor"
                 value={formData.minBudget || ""}
                 onChange={(e) =>
-                  updateField("minBudget", e.target.value ? parseFloat(e.target.value) : null)}
+                  updateField(
+                    "minBudget",
+                    e.target.value ? parseFloat(e.target.value) : null,
+                  )}
               />
             </div>
             <div className="space-y-2">
@@ -128,7 +141,10 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
                 placeholder="No ceiling"
                 value={formData.maxBudget || ""}
                 onChange={(e) =>
-                  updateField("maxBudget", e.target.value ? parseFloat(e.target.value) : null)}
+                  updateField(
+                    "maxBudget",
+                    e.target.value ? parseFloat(e.target.value) : null,
+                  )}
               />
             </div>
           </div>
@@ -150,7 +166,9 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
           </div>
 
           <div className="space-y-2 pt-4 border-t">
-            <Label htmlFor="approvalThreshold">Require Approval Above (Amount)</Label>
+            <Label htmlFor="approvalThreshold">
+              Require Approval Above (Amount)
+            </Label>
             <Input
               id="approvalThreshold"
               type="number"
@@ -177,7 +195,11 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
                 max="1440"
                 className="max-w-[120px]"
                 value={formData.cooldownMinutes ?? 60}
-                onChange={(e) => updateField("cooldownMinutes", parseInt(e.target.value) || 60)}
+                onChange={(e) =>
+                  updateField(
+                    "cooldownMinutes",
+                    parseInt(e.target.value) || 60,
+                  )}
               />
               <span className="text-sm text-muted-foreground">
                 Minimum time between automated changes.
@@ -187,7 +209,10 @@ export function AutopilotConfigPanel({ config, onSave }: AutopilotConfigPanelPro
 
           <div className="space-y-4 pt-4 border-t">
             <div className="flex items-center justify-between space-x-2 text-destructive">
-              <Label htmlFor="emergencyStop" className="flex flex-col space-y-1">
+              <Label
+                htmlFor="emergencyStop"
+                className="flex flex-col space-y-1"
+              >
                 <span className="font-bold">Emergency Stop</span>
                 <span className="font-normal text-xs text-muted-foreground">
                   Immediately halt all automated budget adjustments.

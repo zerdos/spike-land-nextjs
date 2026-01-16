@@ -81,11 +81,16 @@ export function SpendOverviewCards({
           {/* Platform breakdown */}
           <div className="mt-3 space-y-2">
             {Object.entries(platformBreakdown).map(([platform, spend]) => (
-              <div key={platform} className="flex items-center justify-between text-xs">
+              <div
+                key={platform}
+                className="flex items-center justify-between text-xs"
+              >
                 <div className="flex items-center gap-2">
                   <span
                     className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: platformColors[platform] || "#888" }}
+                    style={{
+                      backgroundColor: platformColors[platform] || "#888",
+                    }}
                   />
                   <span className="text-muted-foreground">{platform}</span>
                 </div>
@@ -120,7 +125,9 @@ export function SpendOverviewCards({
                 {summary.projectedTotalImpact.estimatedRoasImprovement > 0
                   ? <TrendingUp className="h-4 w-4 mr-1" />
                   : <TrendingDown className="h-4 w-4 mr-1" />}
-                {formatPercent(summary.projectedTotalImpact.estimatedRoasImprovement)}
+                {formatPercent(
+                  summary.projectedTotalImpact.estimatedRoasImprovement,
+                )}
               </span>
             )}
           </div>
@@ -155,7 +162,9 @@ export function SpendOverviewCards({
                 {summary.projectedTotalImpact.estimatedCpaSavings < 0
                   ? <TrendingDown className="h-4 w-4 mr-1" />
                   : <TrendingUp className="h-4 w-4 mr-1" />}
-                {formatPercent(summary.projectedTotalImpact.estimatedCpaSavings)}
+                {formatPercent(
+                  summary.projectedTotalImpact.estimatedCpaSavings,
+                )}
               </span>
             )}
           </div>

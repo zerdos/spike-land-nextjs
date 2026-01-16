@@ -241,7 +241,9 @@ export class CrisisResponseTemplates {
   /**
    * Get default system templates
    */
-  static getDefaultTemplates(): Array<Omit<CreateTemplateOptions, "workspaceId">> {
+  static getDefaultTemplates(): Array<
+    Omit<CreateTemplateOptions, "workspaceId">
+  > {
     return [
       {
         name: "General Apology",

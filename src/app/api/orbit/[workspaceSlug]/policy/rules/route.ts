@@ -66,7 +66,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   const platform = searchParams.get("platform") as SocialPlatform | null;
   const category = searchParams.get("category");
   const isActiveParam = searchParams.get("isActive");
-  const isActive = isActiveParam === null ? undefined : isActiveParam === "true";
+  const isActive = isActiveParam === null
+    ? undefined
+    : isActiveParam === "true";
 
   // Get rules
   const { data: rules, error: rulesError } = await tryCatch(
@@ -79,7 +81,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   if (rulesError) {
     console.error("Error fetching rules:", rulesError);
-    return NextResponse.json({ error: "Failed to fetch rules" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch rules" }, {
+      status: 500,
+    });
   }
 
   return NextResponse.json({
@@ -146,11 +150,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
 
   if (!body.category) {
-    return NextResponse.json({ error: "category is required" }, { status: 400 });
+    return NextResponse.json({ error: "category is required" }, {
+      status: 400,
+    });
   }
 
   if (!body.ruleType) {
-    return NextResponse.json({ error: "ruleType is required" }, { status: 400 });
+    return NextResponse.json({ error: "ruleType is required" }, {
+      status: 400,
+    });
   }
 
   if (!body.conditions || typeof body.conditions !== "object") {
@@ -180,7 +188,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
   if (createError) {
     console.error("Error creating rule:", createError);
-    return NextResponse.json({ error: "Failed to create rule" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create rule" }, {
+      status: 500,
+    });
   }
 
   return NextResponse.json(rule, { status: 201 });

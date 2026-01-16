@@ -50,10 +50,13 @@ export function createMinimalSession(
  * Create a mock session object for testing.
  * Supports { id: "..." } shorthand for setting user.id, or full { user: { ... } } override.
  */
-export function createMockSession(overrides?: CreateMockSessionOptions): MockSession {
+export function createMockSession(
+  overrides?: CreateMockSessionOptions,
+): MockSession {
   // Support { id: "...", role: "..." } shorthand for backward compatibility
   const userId = overrides?.id ?? overrides?.user?.id ?? "test-user-id";
-  const userRole = overrides?.role ?? overrides?.user?.role ?? ("USER" as UserRole);
+  const userRole = overrides?.role ?? overrides?.user?.role ??
+    ("USER" as UserRole);
 
   return {
     user: {
@@ -63,14 +66,17 @@ export function createMockSession(overrides?: CreateMockSessionOptions): MockSes
       role: userRole,
       image: overrides?.user?.image,
     },
-    expires: overrides?.expires ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    expires: overrides?.expires ??
+      new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
   };
 }
 
 /**
  * Create a mock user object for testing (session user, not DB user).
  */
-export function createMockUser(overrides?: Partial<MockSession["user"]>): MockSession["user"] {
+export function createMockUser(
+  overrides?: Partial<MockSession["user"]>,
+): MockSession["user"] {
   return {
     id: overrides?.id ?? "test-user-id",
     email: overrides?.email ?? "test@example.com",

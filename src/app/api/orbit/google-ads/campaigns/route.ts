@@ -21,7 +21,9 @@ export async function POST(req: Request) {
   const { data: body, error: parseError } = await tryCatch(req.json());
 
   if (parseError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const parsed = routeSchema.safeParse(body);

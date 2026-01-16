@@ -256,7 +256,9 @@ export class InstagramCollector extends BaseCollector {
 
       try {
         // Get conversations
-        const conversationsResponse = await this.makeRequest<InstagramConversationsResponse>(
+        const conversationsResponse = await this.makeRequest<
+          InstagramConversationsResponse
+        >(
           `/${accountId}/conversations`,
           accessToken,
           { ...params, platform: "instagram" },
@@ -274,7 +276,9 @@ export class InstagramCollector extends BaseCollector {
         // Fetch messages from each conversation
         for (const conversation of conversationsResponse.data.slice(0, 10)) {
           try {
-            const messagesResponse = await this.makeRequest<InstagramMessagesResponse>(
+            const messagesResponse = await this.makeRequest<
+              InstagramMessagesResponse
+            >(
               `/${conversation.id}/messages`,
               accessToken,
               {
@@ -368,7 +372,9 @@ export class InstagramCollector extends BaseCollector {
         }
 
         try {
-          const commentsResponse = await this.makeRequest<InstagramCommentsResponse>(
+          const commentsResponse = await this.makeRequest<
+            InstagramCommentsResponse
+          >(
             `/${media.id}/comments`,
             accessToken,
             commentsParams,
@@ -377,7 +383,9 @@ export class InstagramCollector extends BaseCollector {
           if (commentsResponse.data) {
             const comments = commentsResponse.data.map((comment) => ({
               platformItemId: comment.id,
-              type: (comment.parent_id ? "REPLY" : "COMMENT") as "REPLY" | "COMMENT",
+              type: (comment.parent_id ? "REPLY" : "COMMENT") as
+                | "REPLY"
+                | "COMMENT",
               content: comment.text,
               senderName: comment.from.name ?? comment.from.username,
               senderHandle: `@${comment.from.username}`,

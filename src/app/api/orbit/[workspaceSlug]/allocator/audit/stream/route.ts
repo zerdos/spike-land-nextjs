@@ -33,7 +33,10 @@ export async function GET(
   });
 
   if (!workspace || workspace.members.length === 0) {
-    return NextResponse.json({ error: "Workspace not found or access denied" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Workspace not found or access denied" },
+      { status: 404 },
+    );
   }
 
   const encoder = new TextEncoder();
@@ -55,7 +58,9 @@ export async function GET(
       };
 
       // Send initial connection message
-      if (!safeEnqueue(`data: ${JSON.stringify({ type: "connected" })}\n\n`)) return;
+      if (!safeEnqueue(`data: ${JSON.stringify({ type: "connected" })}\n\n`)) {
+        return;
+      }
 
       // 1. Send recent logs (last 20)
       try {

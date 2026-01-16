@@ -45,16 +45,22 @@ interface ExecutionRecord {
   rolledBackAt?: string;
 }
 
-export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionHistoryProps) {
+export function AutopilotExecutionHistory(
+  { workspaceSlug }: AutopilotExecutionHistoryProps,
+) {
   const [executions, setExecutions] = useState<ExecutionRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [rollbackDialogOpen, setRollbackDialogOpen] = useState(false);
-  const [selectedExecutionId, setSelectedExecutionId] = useState<string | null>(null);
+  const [selectedExecutionId, setSelectedExecutionId] = useState<string | null>(
+    null,
+  );
 
   const fetchHistory = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`/api/orbit/${workspaceSlug}/allocator/autopilot/executions`);
+      const res = await fetch(
+        `/api/orbit/${workspaceSlug}/allocator/autopilot/executions`,
+      );
       if (res.ok) {
         const data = await res.json();
         setExecutions(data.executions);
@@ -123,13 +129,20 @@ export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionH
             </TableHeader>
             <TableBody>
               {executions.map((exec) => (
-                <TableRow key={exec.id} className={exec.rolledBackAt ? "opacity-50" : ""}>
+                <TableRow
+                  key={exec.id}
+                  className={exec.rolledBackAt ? "opacity-50" : ""}
+                >
                   <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(exec.executedAt), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(exec.executedAt), {
+                      addSuffix: true,
+                    })}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium text-sm">{exec.campaign.name}</span>
+                      <span className="font-medium text-sm">
+                        {exec.campaign.name}
+                      </span>
                       <span className="text-xs text-muted-foreground">
                         {exec.campaign.platform}
                       </span>
@@ -142,7 +155,9 @@ export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionH
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      <span className="text-muted-foreground">{exec.previousBudget}</span>
+                      <span className="text-muted-foreground">
+                        {exec.previousBudget}
+                      </span>
                       {" → "}
                       <span className="font-bold">{exec.newBudget}</span>
                     </div>
@@ -171,14 +186,19 @@ export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionH
                       </Button>
                     )}
                     {exec.rolledBackAt && (
-                      <span className="text-xs text-muted-foreground italic">Rolled back</span>
+                      <span className="text-xs text-muted-foreground italic">
+                        Rolled back
+                      </span>
                     )}
                   </TableCell>
                 </TableRow>
               ))}
               {executions.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-8 text-muted-foreground"
+                  >
                     No execution history found.
                   </TableCell>
                 </TableRow>
@@ -188,7 +208,10 @@ export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionH
         </ScrollArea>
       </CardContent>
 
-      <AlertDialog open={rollbackDialogOpen} onOpenChange={setRollbackDialogOpen}>
+      <AlertDialog
+        open={rollbackDialogOpen}
+        onOpenChange={setRollbackDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Rollback</AlertDialogTitle>
@@ -199,7 +222,9 @@ export function AutopilotExecutionHistory({ workspaceSlug }: AutopilotExecutionH
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRollbackConfirm}>Rollback</AlertDialogAction>
+            <AlertDialogAction onClick={handleRollbackConfirm}>
+              Rollback
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

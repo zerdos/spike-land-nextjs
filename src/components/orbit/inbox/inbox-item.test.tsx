@@ -57,7 +57,11 @@ describe("InboxItem", () => {
     };
 
     const { container } = render(
-      <InboxItem item={itemWithoutAvatar} isSelected={false} onClick={() => {}} />,
+      <InboxItem
+        item={itemWithoutAvatar}
+        isSelected={false}
+        onClick={() => {}}
+      />,
     );
 
     // Check if the fallback contains the lucide icon.

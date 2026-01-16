@@ -66,7 +66,9 @@ async function fetchCalendarView(
   const response = await fetch(`/api/calendar/view?${params.toString()}`);
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: "Failed to fetch calendar" }));
+    const error = await response.json().catch(() => ({
+      error: "Failed to fetch calendar",
+    }));
     throw new Error(error.error || "Failed to fetch calendar");
   }
 
@@ -77,8 +79,15 @@ async function fetchCalendarView(
   }));
 }
 
-export function useCalendarView(options: UseCalendarViewOptions): UseCalendarViewResult {
-  const { workspaceId, enabled = true, initialDate, initialViewMode = "month" } = options;
+export function useCalendarView(
+  options: UseCalendarViewOptions,
+): UseCalendarViewResult {
+  const {
+    workspaceId,
+    enabled = true,
+    initialDate,
+    initialViewMode = "month",
+  } = options;
 
   const [currentDate, setCurrentDate] = useState(() => initialDate ?? new Date());
   const [viewMode, setViewMode] = useState<CalendarViewMode>(initialViewMode);

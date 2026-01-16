@@ -6,7 +6,9 @@ interface InboxPriorityBadgeProps {
   className?: string;
 }
 
-export function InboxPriorityBadge({ score, className }: InboxPriorityBadgeProps) {
+export function InboxPriorityBadge(
+  { score, className }: InboxPriorityBadgeProps,
+) {
   if (score === undefined || score === null) return null;
 
   let color = "bg-gray-100 text-gray-800";
@@ -23,7 +25,10 @@ export function InboxPriorityBadge({ score, className }: InboxPriorityBadgeProps
   }
 
   return (
-    <Badge variant="outline" className={`flex items-center gap-1 ${color} ${className}`}>
+    <Badge
+      variant="outline"
+      className={`flex items-center gap-1 ${color} ${className}`}
+    >
       <Icon className="w-3 h-3" />
       <span>Priority {score}</span>
     </Badge>

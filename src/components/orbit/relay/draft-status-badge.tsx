@@ -11,7 +11,11 @@ interface DraftStatusBadgeProps {
 
 const statusConfig: Record<
   RelayDraftStatus,
-  { label: string; icon: React.ComponentType<{ className?: string; }>; color: string; }
+  {
+    label: string;
+    icon: React.ComponentType<{ className?: string; }>;
+    color: string;
+  }
 > = {
   PENDING: {
     label: "Pending",

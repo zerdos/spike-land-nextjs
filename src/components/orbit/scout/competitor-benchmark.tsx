@@ -18,7 +18,9 @@ interface CompetitorBenchmarkProps {
   workspaceSlug: string;
 }
 
-export function CompetitorBenchmark({ workspaceSlug }: CompetitorBenchmarkProps) {
+export function CompetitorBenchmark(
+  { workspaceSlug }: CompetitorBenchmarkProps,
+) {
   const [report, setReport] = useState<BenchmarkReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,9 @@ export function CompetitorBenchmark({ workspaceSlug }: CompetitorBenchmarkProps)
       // In a real app, this would fetch a pre-calculated benchmark.
       // For now, we simulate by fetching and aggregating all competitor data.
       try {
-        const response = await fetch(`/api/orbit/${workspaceSlug}/scout/competitors`);
+        const response = await fetch(
+          `/api/orbit/${workspaceSlug}/scout/competitors`,
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch competitors");
@@ -39,7 +43,12 @@ export function CompetitorBenchmark({ workspaceSlug }: CompetitorBenchmarkProps)
         if (competitors.length === 0) {
           setReport({
             // TODO: Replace with real SocialMetrics data from workspace
-            ownMetrics: { averageLikes: 0, averageComments: 0, averageShares: 0, totalPosts: 0 },
+            ownMetrics: {
+              averageLikes: 0,
+              averageComments: 0,
+              averageShares: 0,
+              totalPosts: 0,
+            },
             competitorMetrics: {
               averageLikes: 0,
               averageComments: 0,
@@ -72,16 +81,24 @@ export function CompetitorBenchmark({ workspaceSlug }: CompetitorBenchmarkProps)
             continue;
           }
           const engagementMetrics = result.value;
-          totalLikes += engagementMetrics.averageLikes * engagementMetrics.totalPosts;
-          totalComments += engagementMetrics.averageComments * engagementMetrics.totalPosts;
-          totalShares += engagementMetrics.averageShares * engagementMetrics.totalPosts;
+          totalLikes += engagementMetrics.averageLikes *
+            engagementMetrics.totalPosts;
+          totalComments += engagementMetrics.averageComments *
+            engagementMetrics.totalPosts;
+          totalShares += engagementMetrics.averageShares *
+            engagementMetrics.totalPosts;
           totalPosts += engagementMetrics.totalPosts;
         }
 
         setReport({
           // TODO: Replace with real SocialMetrics data from workspace
           // This should fetch from the SocialMetrics table for the workspace
-          ownMetrics: { averageLikes: 0, averageComments: 0, averageShares: 0, totalPosts: 0 },
+          ownMetrics: {
+            averageLikes: 0,
+            averageComments: 0,
+            averageShares: 0,
+            totalPosts: 0,
+          },
           competitorMetrics: {
             averageLikes: totalPosts > 0 ? totalLikes / totalPosts : 0,
             averageComments: totalPosts > 0 ? totalComments / totalPosts : 0,
@@ -109,7 +126,9 @@ export function CompetitorBenchmark({ workspaceSlug }: CompetitorBenchmarkProps)
 
   return (
     <div className="p-4 border rounded-lg shadow-sm">
-      <h2 className="text-lg font-semibold mb-4">Performance Benchmark (Last 30 Days)</h2>
+      <h2 className="text-lg font-semibold mb-4">
+        Performance Benchmark (Last 30 Days)
+      </h2>
       <div className="mb-2 text-sm text-amber-600 bg-amber-50 p-2 rounded">
         Note: &quot;Your Performance&quot; metrics are currently placeholder values. Integration
         with SocialMetrics data is pending.
@@ -126,17 +145,27 @@ export function CompetitorBenchmark({ workspaceSlug }: CompetitorBenchmarkProps)
           <tr className="border-b">
             <td className="p-2 font-semibold">Avg. Likes per Post</td>
             <td className="p-2">{report.ownMetrics.averageLikes.toFixed(0)}</td>
-            <td className="p-2">{report.competitorMetrics.averageLikes.toFixed(0)}</td>
+            <td className="p-2">
+              {report.competitorMetrics.averageLikes.toFixed(0)}
+            </td>
           </tr>
           <tr className="border-b">
             <td className="p-2 font-semibold">Avg. Comments per Post</td>
-            <td className="p-2">{report.ownMetrics.averageComments.toFixed(0)}</td>
-            <td className="p-2">{report.competitorMetrics.averageComments.toFixed(0)}</td>
+            <td className="p-2">
+              {report.ownMetrics.averageComments.toFixed(0)}
+            </td>
+            <td className="p-2">
+              {report.competitorMetrics.averageComments.toFixed(0)}
+            </td>
           </tr>
           <tr className="border-b">
             <td className="p-2 font-semibold">Avg. Shares per Post</td>
-            <td className="p-2">{report.ownMetrics.averageShares.toFixed(0)}</td>
-            <td className="p-2">{report.competitorMetrics.averageShares.toFixed(0)}</td>
+            <td className="p-2">
+              {report.ownMetrics.averageShares.toFixed(0)}
+            </td>
+            <td className="p-2">
+              {report.competitorMetrics.averageShares.toFixed(0)}
+            </td>
           </tr>
           <tr>
             <td className="p-2 font-semibold">Total Posts</td>

@@ -171,7 +171,11 @@ export function AttributionTab({ className }: AttributionTabProps) {
                     >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="model" />
-                      <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
+                      <YAxis
+                        yAxisId="left"
+                        orientation="left"
+                        stroke="#8884d8"
+                      />
                       <YAxis
                         yAxisId="right"
                         orientation="right"

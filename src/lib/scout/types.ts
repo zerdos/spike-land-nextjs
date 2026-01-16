@@ -17,7 +17,12 @@ export type ContentType = "POST" | "THREAD" | "STORY" | "REEL" | "ARTICLE";
 /**
  * Platform for content suggestions
  */
-export type SuggestionPlatform = "TWITTER" | "FACEBOOK" | "INSTAGRAM" | "LINKEDIN" | "TIKTOK";
+export type SuggestionPlatform =
+  | "TWITTER"
+  | "FACEBOOK"
+  | "INSTAGRAM"
+  | "LINKEDIN"
+  | "TIKTOK";
 
 /**
  * Source of trend data

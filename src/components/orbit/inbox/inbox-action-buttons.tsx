@@ -30,7 +30,9 @@ export function InboxActionButtons({
 
       toast.success(`Item ${actionType.toLowerCase()}d successfully`);
 
-      queryClient.invalidateQueries({ queryKey: ["inboxItems", workspaceSlug] });
+      queryClient.invalidateQueries({
+        queryKey: ["inboxItems", workspaceSlug],
+      });
       onActionComplete?.();
     } catch (error) {
       console.error(error);

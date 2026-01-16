@@ -53,8 +53,14 @@ export function VariantSelector({
     // Simple variant list (e.g., sizes)
     return (
       <div data-testid="variant-selector" className="space-y-2">
-        <span id="variant-selector-label" className="text-sm font-medium">Select Size</span>
-        <div className="flex flex-wrap gap-2" role="group" aria-labelledby="variant-selector-label">
+        <span id="variant-selector-label" className="text-sm font-medium">
+          Select Size
+        </span>
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-labelledby="variant-selector-label"
+        >
           {variants.map((variant) => {
             const totalPrice = basePrice + variant.priceDelta;
             const isSelected = selected === variant.id;
@@ -108,7 +114,10 @@ export function VariantSelector({
     <div data-testid="variant-selector" className="space-y-4">
       {Object.entries(attributeGroups).map(([attributeKey, values]) => (
         <div key={attributeKey} className="space-y-2">
-          <span id={`variant-group-${attributeKey}`} className="text-sm font-medium capitalize">
+          <span
+            id={`variant-group-${attributeKey}`}
+            className="text-sm font-medium capitalize"
+          >
             {attributeKey}
           </span>
           <div

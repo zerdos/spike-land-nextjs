@@ -104,7 +104,9 @@ describe("Base Collector", () => {
     it("should cap delay at maxDelayMs", () => {
       const delay10 = calculateBackoffDelay(10); // Would be 1024000ms without cap
 
-      expect(delay10).toBeLessThanOrEqual(DEFAULT_BACKOFF_CONFIG.maxDelayMs * 1.1);
+      expect(delay10).toBeLessThanOrEqual(
+        DEFAULT_BACKOFF_CONFIG.maxDelayMs * 1.1,
+      );
     });
 
     it("should use custom config", () => {
@@ -294,7 +296,10 @@ describe("Base Collector", () => {
     });
 
     it("should implement collectDirectMessages", async () => {
-      const result = await collector.collectDirectMessages("token", "account-1");
+      const result = await collector.collectDirectMessages(
+        "token",
+        "account-1",
+      );
       expect(result.platform).toBe("TWITTER");
     });
 

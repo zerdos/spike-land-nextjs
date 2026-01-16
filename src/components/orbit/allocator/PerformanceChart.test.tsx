@@ -121,7 +121,8 @@ describe("PerformanceChart", () => {
 
     expect(screen.getByRole("tab", { name: "ROAS" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "CPA" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Conversions" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Conversions" }))
+      .toBeInTheDocument();
   });
 
   it("renders chart container", () => {
@@ -189,7 +190,9 @@ describe("PerformanceChart", () => {
 
     // The full name should be in the document (for tooltip/display purposes)
     expect(
-      screen.getByText("This is a very long campaign name that should be truncated"),
+      screen.getByText(
+        "This is a very long campaign name that should be truncated",
+      ),
     ).toBeInTheDocument();
   });
 });

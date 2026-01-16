@@ -29,7 +29,11 @@ interface InboxReplyPanelProps {
   itemId: string;
 }
 
-async function postReply(workspaceSlug: string, itemId: string, content: string) {
+async function postReply(
+  workspaceSlug: string,
+  itemId: string,
+  content: string,
+) {
   const res = await fetch(`/api/orbit/${workspaceSlug}/inbox/${itemId}/reply`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -62,7 +66,9 @@ function ManualReplyForm({ itemId }: { itemId: string; }) {
     mutationFn: (content: string) => postReply(workspaceSlug, itemId, content),
     onSuccess: () => {
       form.reset();
-      queryClient.invalidateQueries({ queryKey: ["inboxItems", workspaceSlug] });
+      queryClient.invalidateQueries({
+        queryKey: ["inboxItems", workspaceSlug],
+      });
     },
   });
 

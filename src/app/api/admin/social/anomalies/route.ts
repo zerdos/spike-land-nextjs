@@ -108,7 +108,10 @@ export async function POST(request: NextRequest) {
 
   const { workspaceId, config } = body;
 
-  console.log("[AnomalyAPI] Starting anomaly detection for workspace:", workspaceId);
+  console.log(
+    "[AnomalyAPI] Starting anomaly detection for workspace:",
+    workspaceId,
+  );
 
   const { data: result, error } = await tryCatch(
     detectAnomalies(workspaceId, config),

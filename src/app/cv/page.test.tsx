@@ -20,7 +20,8 @@ describe("CV Page", () => {
 
     it("should display contact button", () => {
       render(<CVPage />);
-      expect(screen.getByRole("link", { name: /Get In Touch/i })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /Get In Touch/i }))
+        .toBeInTheDocument();
     });
 
     it("should have GitHub button", () => {
@@ -106,7 +107,9 @@ describe("CV Page", () => {
     it("should list tech stack tags", () => {
       render(<CVPage />);
       expect(screen.getAllByText(/Next.js 15/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText("Cloudflare Workers").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Cloudflare Workers").length).toBeGreaterThan(
+        0,
+      );
     });
   });
 
