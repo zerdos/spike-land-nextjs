@@ -7,6 +7,18 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import { useAuthStore } from "@/stores";
 import { useSettingsStore } from "@/stores/settings-store";
+import type {
+  MockAuthStore,
+  MockButtonProps,
+  MockCardProps,
+  MockDialogProps,
+  MockDialogSubComponentProps,
+  MockInputProps,
+  MockSettingsStore,
+  MockStackProps,
+  MockSwitchProps,
+  MockTextProps,
+} from "../../test-utils/mock-types";
 
 // ============================================================================
 // Mocks
@@ -14,9 +26,9 @@ import { useSettingsStore } from "@/stores/settings-store";
 
 // Mock expo-router
 const mockRouter = {
-  back: jest.fn(),
-  push: jest.fn(),
-  replace: jest.fn(),
+  back: jest.fn<void, []>(),
+  push: jest.fn<void, [string]>(),
+  replace: jest.fn<void, [string]>(),
 };
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
@@ -55,7 +67,7 @@ jest.mock("tamagui", () => {
   } = RN;
 
   return {
-    Button: ({ children, onPress, disabled, icon, ...props }: any) => (
+    Button: ({ children, onPress, disabled, icon, ...props }: MockButtonProps) => (
       <TouchableOpacity
         onPress={onPress}
         disabled={disabled}
@@ -66,27 +78,27 @@ jest.mock("tamagui", () => {
         {typeof children === "string" ? <Text>{children}</Text> : children}
       </TouchableOpacity>
     ),
-    Card: ({ children, ...props }: any) => <View {...props}>{children}</View>,
+    Card: ({ children, ...props }: MockCardProps) => <View {...props}>{children}</View>,
     Dialog: Object.assign(
-      ({ children, open, onOpenChange }: any) => (
+      ({ children, open, onOpenChange }: MockDialogProps) => (
         <Modal
           visible={open}
-          onRequestClose={() => onOpenChange(false)}
+          onRequestClose={() => onOpenChange?.(false)}
         >
           {children}
         </Modal>
       ),
       {
-        Portal: ({ children }: any) => <>{children}</>,
+        Portal: ({ children }: MockDialogSubComponentProps) => <>{children}</>,
         Overlay: () => null,
-        Content: ({ children }: any) => <View>{children}</View>,
-        Title: ({ children }: any) => <Text>{children}</Text>,
-        Description: ({ children }: any) => <View>{children}</View>,
+        Content: ({ children }: MockDialogSubComponentProps) => <View>{children}</View>,
+        Title: ({ children }: MockTextProps) => <Text>{children}</Text>,
+        Description: ({ children }: MockDialogSubComponentProps) => <View>{children}</View>,
       },
     ),
-    H3: ({ children }: any) => <Text>{children}</Text>,
-    H4: ({ children }: any) => <Text>{children}</Text>,
-    Input: ({ value, onChangeText, placeholder, testID, ...props }: any) => (
+    H3: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    H4: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    Input: ({ value, onChangeText, placeholder, testID, ...props }: MockInputProps) => (
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -95,10 +107,12 @@ jest.mock("tamagui", () => {
         {...props}
       />
     ),
-    Paragraph: ({ children }: any) => <Text>{children}</Text>,
-    ScrollView: ({ children, ...props }: any) => <RNScrollView {...props}>{children}</RNScrollView>,
+    Paragraph: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    ScrollView: ({ children, ...props }: MockStackProps) => (
+      <RNScrollView {...props}>{children}</RNScrollView>
+    ),
     Separator: () => <View />,
-    Switch: ({ checked, onCheckedChange, disabled, ...props }: any) => (
+    Switch: ({ checked, onCheckedChange, disabled, ...props }: MockSwitchProps) => (
       <RNSwitch
         value={checked}
         onValueChange={onCheckedChange}
@@ -106,9 +120,9 @@ jest.mock("tamagui", () => {
         testID={props.testID}
       />
     ),
-    Text: ({ children }: any) => <Text>{children}</Text>,
-    XStack: ({ children, ...props }: any) => <View {...props}>{children}</View>,
-    YStack: ({ children, ...props }: any) => <View {...props}>{children}</View>,
+    Text: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    XStack: ({ children, ...props }: MockStackProps) => <View {...props}>{children}</View>,
+    YStack: ({ children, ...props }: MockStackProps) => <View {...props}>{children}</View>,
   };
 });
 
@@ -120,14 +134,30 @@ import PrivacyScreen from "@/app/settings/privacy";
 // ============================================================================
 
 // Default mock data
-const defaultAuthStore = {
+const defaultAuthStore: MockAuthStore & {
+  signOut: jest.Mock<Promise<void>, []>;
+  initialize: jest.Mock<Promise<void>, []>;
+} = {
   isAuthenticated: true,
   isLoading: false,
   user: { id: "user-1", email: "test@example.com", name: "Test User" },
-  signOut: jest.fn(() => Promise.resolve()),
+  signOut: jest.fn<Promise<void>, []>(() => Promise.resolve()),
+  initialize: jest.fn<Promise<void>, []>(() => Promise.resolve()),
 };
 
-const defaultSettingsStore = {
+const defaultSettingsStore: Partial<MockSettingsStore> & {
+  privacy: {
+    publicProfile: boolean;
+    showActivity: boolean;
+  };
+  isSavingPreferences: boolean;
+  preferencesError: string | null;
+  isDeletingAccount: boolean;
+  deleteAccountError: string | null;
+  updatePrivacyPreference: jest.Mock<Promise<void>, [string, boolean]>;
+  deleteAccount: jest.Mock<Promise<{ success: boolean; error?: string; }>, []>;
+  initialize: jest.Mock<Promise<void>, []>;
+} = {
   privacy: {
     publicProfile: false,
     showActivity: true,
@@ -136,9 +166,11 @@ const defaultSettingsStore = {
   preferencesError: null as string | null,
   isDeletingAccount: false,
   deleteAccountError: null as string | null,
-  updatePrivacyPreference: jest.fn(() => Promise.resolve()),
-  deleteAccount: jest.fn(() => Promise.resolve({ success: true })),
-  initialize: jest.fn(() => Promise.resolve()),
+  updatePrivacyPreference: jest.fn<Promise<void>, [string, boolean]>(() => Promise.resolve()),
+  deleteAccount: jest.fn<Promise<{ success: boolean; error?: string; }>, []>(() =>
+    Promise.resolve({ success: true })
+  ),
+  initialize: jest.fn<Promise<void>, []>(() => Promise.resolve()),
 };
 
 // Mutable mock objects
@@ -151,18 +183,21 @@ function setupMocks(
 ) {
   mockAuthStore = {
     ...defaultAuthStore,
-    signOut: jest.fn(() => Promise.resolve()),
+    signOut: jest.fn<Promise<void>, []>(() => Promise.resolve()),
+    initialize: jest.fn<Promise<void>, []>(() => Promise.resolve()),
     ...authOverrides,
   };
   mockSettingsStore = {
     ...defaultSettingsStore,
-    updatePrivacyPreference: jest.fn(() => Promise.resolve()),
-    deleteAccount: jest.fn(() => Promise.resolve({ success: true })),
-    initialize: jest.fn(() => Promise.resolve()),
+    updatePrivacyPreference: jest.fn<Promise<void>, [string, boolean]>(() => Promise.resolve()),
+    deleteAccount: jest.fn<Promise<{ success: boolean; error?: string; }>, []>(() =>
+      Promise.resolve({ success: true })
+    ),
+    initialize: jest.fn<Promise<void>, []>(() => Promise.resolve()),
     ...settingsOverrides,
   };
-  mockedUseAuthStore.mockReturnValue(mockAuthStore as any);
-  mockedUseSettingsStore.mockReturnValue(mockSettingsStore as any);
+  mockedUseAuthStore.mockReturnValue(mockAuthStore as ReturnType<typeof useAuthStore>);
+  mockedUseSettingsStore.mockReturnValue(mockSettingsStore as ReturnType<typeof useSettingsStore>);
 }
 
 function resetMocks() {
@@ -408,11 +443,16 @@ describe("PrivacyScreen", () => {
 
     it("should call deleteAccount and handle failure", async () => {
       // Override the deleteAccount mock to return failure
-      mockSettingsStore.deleteAccount = jest.fn().mockResolvedValue({
+      mockSettingsStore.deleteAccount = jest.fn<
+        Promise<{ success: boolean; error?: string; }>,
+        []
+      >().mockResolvedValue({
         success: false,
         error: "Cannot delete account",
       });
-      mockedUseSettingsStore.mockReturnValue(mockSettingsStore as any);
+      mockedUseSettingsStore.mockReturnValue(
+        mockSettingsStore as ReturnType<typeof useSettingsStore>,
+      );
 
       const { getByText, getByTestId } = render(<PrivacyScreen />);
 

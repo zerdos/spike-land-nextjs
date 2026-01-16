@@ -14,18 +14,18 @@ export function HeroElegantProduct() {
         </p>
 
         <div className="flex justify-center gap-6 text-xl">
-          <a
-            href="#"
+          <button
+            type="button"
             className="text-[var(--landing-accent)] hover:underline flex items-center"
           >
             Get started <span className="ml-1 text-sm">›</span>
-          </a>
-          <a
-            href="#"
+          </button>
+          <button
+            type="button"
             className="text-[var(--landing-accent)] hover:underline flex items-center"
           >
             Watch the film <span className="ml-1 text-sm">›</span>
-          </a>
+          </button>
         </div>
 
         <div className="mt-24 max-w-5xl mx-auto shadow-2xl rounded-xl overflow-hidden">

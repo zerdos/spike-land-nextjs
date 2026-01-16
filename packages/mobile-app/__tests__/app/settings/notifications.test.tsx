@@ -5,6 +5,13 @@
 
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { Alert } from "react-native";
+import type {
+  MockButtonProps,
+  MockCardProps,
+  MockStackProps,
+  MockSwitchProps,
+  MockTextProps,
+} from "../../test-utils/mock-types";
 
 // ============================================================================
 // Mocks
@@ -12,8 +19,8 @@ import { Alert } from "react-native";
 
 // Mock expo-router
 const mockRouter = {
-  back: jest.fn(),
-  push: jest.fn(),
+  back: jest.fn<void, []>(),
+  push: jest.fn<void, [string]>(),
 };
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
@@ -51,8 +58,8 @@ const mockSettingsStore: {
   };
   isSavingPreferences: boolean;
   preferencesError: string | null;
-  updateNotificationPreference: jest.Mock;
-  initialize: jest.Mock;
+  updateNotificationPreference: jest.Mock<Promise<void>, [string, boolean]>;
+  initialize: jest.Mock<Promise<void>, []>;
 } = {
   notifications: {
     emailNotifications: true,
@@ -62,8 +69,8 @@ const mockSettingsStore: {
   },
   isSavingPreferences: false,
   preferencesError: null,
-  updateNotificationPreference: jest.fn(() => Promise.resolve()),
-  initialize: jest.fn(() => Promise.resolve()),
+  updateNotificationPreference: jest.fn<Promise<void>, [string, boolean]>(() => Promise.resolve()),
+  initialize: jest.fn<Promise<void>, []>(() => Promise.resolve()),
 };
 jest.mock("@/stores/settings-store", () => ({
   useSettingsStore: jest.fn(),
@@ -83,7 +90,7 @@ jest.mock("tamagui", () => {
   );
 
   return {
-    Button: ({ children, onPress, disabled, icon, ...props }: any) => (
+    Button: ({ children, onPress, disabled, icon, ...props }: MockButtonProps) => (
       <TouchableOpacity
         onPress={onPress}
         disabled={disabled}
@@ -94,13 +101,15 @@ jest.mock("tamagui", () => {
         {typeof children === "string" ? <Text>{children}</Text> : children}
       </TouchableOpacity>
     ),
-    Card: ({ children, ...props }: any) => <View {...props}>{children}</View>,
-    H3: ({ children }: any) => <Text>{children}</Text>,
-    H4: ({ children }: any) => <Text>{children}</Text>,
-    Paragraph: ({ children }: any) => <Text>{children}</Text>,
-    ScrollView: ({ children, ...props }: any) => <RNScrollView {...props}>{children}</RNScrollView>,
+    Card: ({ children, ...props }: MockCardProps) => <View {...props}>{children}</View>,
+    H3: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    H4: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    Paragraph: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    ScrollView: ({ children, ...props }: MockStackProps) => (
+      <RNScrollView {...props}>{children}</RNScrollView>
+    ),
     Separator: () => <View />,
-    Switch: ({ checked, onCheckedChange, disabled, ...props }: any) => (
+    Switch: ({ checked, onCheckedChange, disabled, ...props }: MockSwitchProps) => (
       <RNSwitch
         value={checked}
         onValueChange={onCheckedChange}
@@ -108,9 +117,9 @@ jest.mock("tamagui", () => {
         testID={props.testID}
       />
     ),
-    Text: ({ children }: any) => <Text>{children}</Text>,
-    XStack: ({ children, ...props }: any) => <View {...props}>{children}</View>,
-    YStack: ({ children, ...props }: any) => <View {...props}>{children}</View>,
+    Text: ({ children }: MockTextProps) => <Text>{children}</Text>,
+    XStack: ({ children, ...props }: MockStackProps) => <View {...props}>{children}</View>,
+    YStack: ({ children, ...props }: MockStackProps) => <View {...props}>{children}</View>,
   };
 });
 
@@ -133,8 +142,10 @@ function resetMocks() {
   };
   mockSettingsStore.isSavingPreferences = false;
   mockSettingsStore.preferencesError = null;
-  mockSettingsStore.updateNotificationPreference = jest.fn(() => Promise.resolve());
-  mockSettingsStore.initialize = jest.fn(() => Promise.resolve());
+  mockSettingsStore.updateNotificationPreference = jest.fn<Promise<void>, [string, boolean]>(() =>
+    Promise.resolve()
+  );
+  mockSettingsStore.initialize = jest.fn<Promise<void>, []>(() => Promise.resolve());
 
   // Configure mocks to return the mock store objects
   mockUseAuthStore.mockReturnValue(mockAuthStore);

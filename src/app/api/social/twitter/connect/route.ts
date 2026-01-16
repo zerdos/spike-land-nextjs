@@ -44,7 +44,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   // Generate PKCE code verifier and challenge
-  const { codeVerifier, codeChallenge } = generatePKCE();
+  const { codeVerifier, codeChallenge } = await generatePKCE();
 
   // Generate cryptographic nonce for CSRF protection
   const nonce = crypto.randomBytes(16).toString("hex");

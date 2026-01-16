@@ -39,6 +39,14 @@ export function InboxSuggestionsPanel(
               key={s.id}
               className="bg-white p-3 rounded-md border border-blue-100 text-sm hover:border-blue-300 cursor-pointer transition-colors shadow-sm text-gray-700"
               onClick={() => onSelect(s.content)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelect(s.content);
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               {s.content}
             </div>

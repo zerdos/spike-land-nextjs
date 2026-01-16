@@ -66,7 +66,7 @@ describe("Publishing Service", () => {
         publishedAt: new Date(),
       });
 
-      vi.mocked(createSocialClient).mockReturnValue({
+      vi.mocked(createSocialClient).mockResolvedValue({
         platform: "LINKEDIN" as SocialPlatform,
         createPost: mockCreatePost,
         getAuthUrl: vi.fn(),
@@ -164,7 +164,7 @@ describe("Publishing Service", () => {
         new Error("API rate limit exceeded"),
       );
 
-      vi.mocked(createSocialClient).mockReturnValue({
+      vi.mocked(createSocialClient).mockResolvedValue({
         platform: "TWITTER" as SocialPlatform,
         createPost: mockCreatePost,
         getAuthUrl: vi.fn(),
@@ -223,7 +223,7 @@ describe("Publishing Service", () => {
         publishedAt: new Date(),
       });
 
-      vi.mocked(createSocialClient).mockReturnValue({
+      vi.mocked(createSocialClient).mockResolvedValue({
         platform: "TWITTER" as SocialPlatform,
         createPost: mockCreatePost,
         getAuthUrl: vi.fn(),
@@ -276,7 +276,7 @@ describe("Publishing Service", () => {
         publishedAt: new Date(),
       });
 
-      vi.mocked(createSocialClient).mockReturnValue({
+      vi.mocked(createSocialClient).mockResolvedValue({
         platform: "LINKEDIN" as SocialPlatform,
         createPost: mockCreatePost,
         getAuthUrl: vi.fn(),
@@ -400,7 +400,7 @@ describe("Publishing Service", () => {
         metadata: null,
       } as never);
 
-      vi.mocked(createSocialClient).mockReturnValue({
+      vi.mocked(createSocialClient).mockResolvedValue({
         platform: "LINKEDIN" as SocialPlatform,
         createPost: vi.fn().mockResolvedValue({
           platformPostId: "post-id",
@@ -534,7 +534,7 @@ describe("Publishing Service", () => {
         metadata: null,
       } as never);
 
-      vi.mocked(createSocialClient).mockReturnValue({
+      vi.mocked(createSocialClient).mockResolvedValue({
         platform: "LINKEDIN" as SocialPlatform,
         createPost: vi.fn().mockResolvedValue({
           platformPostId: "post-id",
