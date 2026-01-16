@@ -1,6 +1,6 @@
 import { Thread } from "@/components/assistant-ui/thread";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
-import { AssistantChatTransport, useChatRuntime } from "@assistant-ui/react-ai-sdk";
+import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AssistantUIChat } from "./assistant-ui-chat";
@@ -20,12 +20,20 @@ vi.mock("@assistant-ui/react", () => ({
   })),
 }));
 
-vi.mock("@assistant-ui/react-ai-sdk", () => ({
-  useChatRuntime: vi.fn(),
-  AssistantChatTransport: vi.fn().mockImplementation(() => ({
-    // Mock transport implementation
-  })),
-}));
+vi.mock("@assistant-ui/react-ai-sdk", () => {
+  // Define mock class inside factory function since vi.mock is hoisted
+  const MockAssistantChatTransport = class {
+    api: string;
+    constructor(options: { api: string; }) {
+      this.api = options.api;
+    }
+  };
+
+  return {
+    useChatRuntime: vi.fn(),
+    AssistantChatTransport: MockAssistantChatTransport,
+  };
+});
 
 describe("AssistantUIChat", () => {
   const mockCodeSpace = "test-space";
@@ -49,7 +57,9 @@ describe("AssistantUIChat", () => {
     render(<AssistantUIChat codeSpace={mockCodeSpace} />);
 
     expect(AssistantRuntimeProvider).toHaveBeenCalled();
-    const mockFn = AssistantRuntimeProvider as unknown as ReturnType<typeof vi.fn>;
+    const mockFn = AssistantRuntimeProvider as unknown as ReturnType<
+      typeof vi.fn
+    >;
     const callArgs = mockFn.mock?.calls[0]?.[0];
     expect(callArgs).toHaveProperty("runtime", mockRuntime);
   });
@@ -67,9 +77,14 @@ describe("AssistantUIChat", () => {
   it("should create transport with correct API endpoint", () => {
     render(<AssistantUIChat codeSpace={mockCodeSpace} />);
 
-    expect(AssistantChatTransport).toHaveBeenCalledWith({
-      api: `/live/${mockCodeSpace}/messages`,
-    });
+    // Verify transport was created with correct API endpoint by checking useChatRuntime call
+    expect(useChatRuntime).toHaveBeenCalledWith(
+      expect.objectContaining({
+        transport: expect.objectContaining({
+          api: `/live/${mockCodeSpace}/messages`,
+        }),
+      }),
+    );
   });
 
   it("should handle rendering without errors", () => {

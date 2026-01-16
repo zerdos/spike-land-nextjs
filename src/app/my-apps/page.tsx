@@ -1,17 +1,14 @@
 import { auth } from "@/auth";
+import { AppCatalog } from "@/components/my-apps";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/components/ui/link";
 import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
+
+// Ensure this page is always dynamically rendered to show latest apps
+export const dynamic = "force-dynamic";
 
 export default async function MyAppsPage() {
   const session = await auth();
@@ -180,65 +177,8 @@ export default async function MyAppsPage() {
                 </div>
               </div>
 
-              {/* Grid Layout */}
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {apps.map((app) => (
-                  <Card key={app.id} className="flex flex-col">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <CardTitle className="text-xl">{app.name}</CardTitle>
-                        <Badge
-                          variant={app.status === "LIVE"
-                            ? "default"
-                            : app.status === "FAILED"
-                            ? "destructive"
-                            : "secondary"}
-                        >
-                          {app.status.replace("_", " ")}
-                        </Badge>
-                      </div>
-                      <CardDescription className="line-clamp-2">
-                        {app.description || "No description yet"}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                      <div className="space-y-2">
-                        <div className="text-sm">
-                          <span className="font-semibold">Messages:</span> {app._count.messages}
-                        </div>
-                        <div className="text-sm">
-                          <span className="font-semibold">Images:</span> {app._count.images}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Updated {new Date(app.updatedAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="flex gap-2">
-                      <Link href={`/my-apps/${app.id}`} className="flex-1">
-                        <Button variant="outline" className="w-full" size="sm">
-                          View
-                        </Button>
-                      </Link>
-                      {app.codespaceUrl && (
-                        <Link
-                          href={app.codespaceUrl}
-                          target="_blank"
-                          className="flex-1"
-                        >
-                          <Button
-                            variant="default"
-                            className="w-full"
-                            size="sm"
-                          >
-                            Preview
-                          </Button>
-                        </Link>
-                      )}
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
+              {/* 3D Card Grid with Live Previews */}
+              <AppCatalog apps={apps} />
             </>
           )}
       </div>

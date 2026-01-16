@@ -94,24 +94,24 @@ export async function PATCH(
     lastAgentActivity: new Date(),
   };
 
-  if (name !== undefined) updateData.name = name;
-  if (description !== undefined) updateData.description = description;
-  if (isPublic !== undefined) updateData.isPublic = isPublic;
-  if (isCurated !== undefined) updateData.isCurated = isCurated;
+  if (name !== undefined) updateData["name"] = name;
+  if (description !== undefined) updateData["description"] = description;
+  if (isPublic !== undefined) updateData["isPublic"] = isPublic;
+  if (isCurated !== undefined) updateData["isCurated"] = isCurated;
 
   // Handle codespace linking
   if (codespaceId !== undefined) {
-    updateData.codespaceId = codespaceId;
-    updateData.codespaceUrl = `https://testing.spike.land/live/${codespaceId}/`;
+    updateData["codespaceId"] = codespaceId;
+    updateData["codespaceUrl"] = `https://testing.spike.land/live/${codespaceId}/`;
     // Also update slug if not already set
     if (!existingApp.slug) {
-      updateData.slug = codespaceId;
+      updateData["slug"] = codespaceId;
     }
   }
 
   // Handle status update (with history)
   if (status !== undefined) {
-    updateData.status = status;
+    updateData["status"] = status;
   }
 
   // Execute database operations

@@ -223,35 +223,35 @@ describe("MetaPixel", () => {
     it("should have correct mappings for all events", async () => {
       const { EVENT_MAPPING } = await import("./MetaPixel");
 
-      expect(EVENT_MAPPING.signup_started).toEqual({
+      expect(EVENT_MAPPING["signup_started"]).toEqual({
         metaEvent: "Lead",
         isStandard: true,
       });
-      expect(EVENT_MAPPING.signup_completed).toEqual({
+      expect(EVENT_MAPPING["signup_completed"]).toEqual({
         metaEvent: "CompleteRegistration",
         isStandard: true,
       });
-      expect(EVENT_MAPPING.purchase_started).toEqual({
+      expect(EVENT_MAPPING["purchase_started"]).toEqual({
         metaEvent: "InitiateCheckout",
         isStandard: true,
       });
-      expect(EVENT_MAPPING.purchase_completed).toEqual({
+      expect(EVENT_MAPPING["purchase_completed"]).toEqual({
         metaEvent: "Purchase",
         isStandard: true,
       });
-      expect(EVENT_MAPPING.enhancement_started).toEqual({
+      expect(EVENT_MAPPING["enhancement_started"]).toEqual({
         metaEvent: "EnhancementStarted",
         isStandard: false,
       });
-      expect(EVENT_MAPPING.enhancement_completed).toEqual({
+      expect(EVENT_MAPPING["enhancement_completed"]).toEqual({
         metaEvent: "EnhancementCompleted",
         isStandard: false,
       });
-      expect(EVENT_MAPPING.album_created).toEqual({
+      expect(EVENT_MAPPING["album_created"]).toEqual({
         metaEvent: "AlbumCreated",
         isStandard: false,
       });
-      expect(EVENT_MAPPING.image_uploaded).toEqual({
+      expect(EVENT_MAPPING["image_uploaded"]).toEqual({
         metaEvent: "ImageUploaded",
         isStandard: false,
       });

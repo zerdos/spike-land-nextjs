@@ -15,7 +15,9 @@ import type { ViolationSummary } from "./types";
 /**
  * Get a specific violation by ID
  */
-export async function getViolation(violationId: string): Promise<PolicyViolation | null> {
+export async function getViolation(
+  violationId: string,
+): Promise<PolicyViolation | null> {
   return prisma.policyViolation.findUnique({
     where: { id: violationId },
     include: {
@@ -28,7 +30,9 @@ export async function getViolation(violationId: string): Promise<PolicyViolation
 /**
  * Get all violations for a check
  */
-export async function getViolationsForCheck(checkId: string): Promise<PolicyViolation[]> {
+export async function getViolationsForCheck(
+  checkId: string,
+): Promise<PolicyViolation[]> {
   return prisma.policyViolation.findMany({
     where: { checkId },
     include: { rule: true },
@@ -55,7 +59,8 @@ export async function getViolationHistory(
   };
 
   if (options?.severity) {
-    where.severity = options.severity as Prisma.EnumPolicySeverityFilter["equals"];
+    where.severity = options
+      .severity as Prisma.EnumPolicySeverityFilter["equals"];
   }
 
   if (options?.ruleId) {
@@ -108,7 +113,9 @@ export async function overrideViolation(
 /**
  * Remove override from a violation
  */
-export async function removeOverride(violationId: string): Promise<PolicyViolation> {
+export async function removeOverride(
+  violationId: string,
+): Promise<PolicyViolation> {
   return prisma.policyViolation.update({
     where: { id: violationId },
     data: {
@@ -147,7 +154,10 @@ export async function getViolationStatistics(
 
   const bySeverity: Record<string, number> = {};
   const byCategory: Record<string, number> = {};
-  const byRuleMap: Map<string, { ruleId: string; ruleName: string; count: number; }> = new Map();
+  const byRuleMap: Map<
+    string,
+    { ruleId: string; ruleName: string; count: number; }
+  > = new Map();
   const trendMap: Map<string, number> = new Map();
 
   let overriddenCount = 0;
@@ -233,11 +243,13 @@ export async function getCheckHistory(
   };
 
   if (options?.contentType) {
-    where.contentType = options.contentType as Prisma.EnumPolicyContentTypeFilter["equals"];
+    where.contentType = options
+      .contentType as Prisma.EnumPolicyContentTypeFilter["equals"];
   }
 
   if (options?.result) {
-    where.overallResult = options.result as Prisma.EnumPolicyCheckResultNullableFilter["equals"];
+    where.overallResult = options
+      .result as Prisma.EnumPolicyCheckResultNullableFilter["equals"];
   }
 
   if (options?.startDate || options?.endDate) {
@@ -293,7 +305,9 @@ export async function getChecksForContent(
  * Convert violation to summary format
  */
 export function violationToSummary(
-  violation: PolicyViolation & { rule: { name: string; category: string; isBlocking: boolean; }; },
+  violation: PolicyViolation & {
+    rule: { name: string; category: string; isBlocking: boolean; };
+  },
 ): ViolationSummary {
   return {
     ruleId: violation.ruleId,

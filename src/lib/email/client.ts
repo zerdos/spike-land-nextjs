@@ -336,7 +336,8 @@ export async function sendTextEmail(
   const { data: result, error: sendError } = await tryCatch(
     (async () => {
       const resend = getResend();
-      const from = params.from || process.env.EMAIL_FROM || "noreply@spike.land";
+      const from = params.from || process.env.EMAIL_FROM ||
+        "noreply@spike.land";
       return resend.emails.send({
         from,
         to: params.to,
@@ -347,7 +348,9 @@ export async function sendTextEmail(
   );
 
   if (sendError) {
-    const errorMessage = sendError instanceof Error ? sendError.message : "Unknown error";
+    const errorMessage = sendError instanceof Error
+      ? sendError.message
+      : "Unknown error";
     return {
       success: false,
       error: errorMessage,

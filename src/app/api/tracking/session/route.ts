@@ -287,13 +287,13 @@ export async function PATCH(request: NextRequest) {
   // Build update data
   const updateData: Record<string, unknown> = {};
   if (sessionEnd) {
-    updateData.sessionEnd = new Date(sessionEnd);
+    updateData["sessionEnd"] = new Date(sessionEnd);
   }
   if (userId) {
-    updateData.userId = userId;
+    updateData["userId"] = userId;
   }
   if (exitPage) {
-    updateData.exitPage = exitPage;
+    updateData["exitPage"] = exitPage;
   }
 
   if (Object.keys(updateData).length === 0) {

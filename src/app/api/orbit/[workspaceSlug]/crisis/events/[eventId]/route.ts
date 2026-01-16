@@ -123,7 +123,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const { action, notes, falseAlarm } = body as {

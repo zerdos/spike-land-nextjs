@@ -1,3 +1,4 @@
+import { broadcastCodeUpdated } from "@/app/api/apps/[id]/messages/stream/route";
 import { auth } from "@/auth";
 import {
   CODESPACE_SYSTEM_PROMPT,
@@ -132,11 +133,15 @@ export async function POST(
               codespace: codespaceServer,
             },
             allowedTools: CODESPACE_TOOL_NAMES,
+            tools: [], // Disable built-in tools (Read, Write, Bash)
+            permissionMode: "dontAsk", // Critical: Don't prompt, deny non-allowed tools
+            persistSession: false, // No session persistence in server context
             systemPrompt,
           },
         });
 
         let finalResponse = "";
+        let codeUpdated = false; // Track if any code-modifying tools were used
 
         for await (const message of result) {
           console.log("[agent/chat] Message type:", message.type);
@@ -145,27 +150,40 @@ export async function POST(
           // SDKAssistantMessage has message.message.content (BetaMessage structure)
           if (message.type === "assistant") {
             const betaMessage = (message as {
-              message?: { content?: Array<{ type: string; text?: string; name?: string; }>; };
+              message?: {
+                content?: Array<{ type: string; text?: string; name?: string; }>;
+              };
             }).message;
             const contentArray = betaMessage?.content || [];
 
             // Extract text parts
-            const textParts = contentArray.filter(c => c.type === "text");
-            const text = textParts.map(c => c.text || "").join("");
+            const textParts = contentArray.filter((c) => c.type === "text");
+            const text = textParts.map((c) => c.text || "").join("");
             if (text) {
               finalResponse += text;
               const data = JSON.stringify({ type: "chunk", content: text });
               controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
             }
 
-            // Notify about tool use
-            const toolUseParts = contentArray.filter(c => c.type === "tool_use");
+            // Notify about tool use and track code-modifying tools
+            const toolUseParts = contentArray.filter((c) => c.type === "tool_use");
             for (const toolUse of toolUseParts) {
+              const toolName = toolUse.name || "";
+              // Track if any code-modifying tools are used
+              if (
+                toolName.includes("update_code") ||
+                toolName.includes("edit_code") ||
+                toolName.includes("search_and_replace")
+              ) {
+                codeUpdated = true;
+              }
               const statusData = JSON.stringify({
                 type: "status",
-                content: `Executing ${toolUse.name || "tool"}...`,
+                content: `Executing ${toolName || "tool"}...`,
               });
-              controller.enqueue(new TextEncoder().encode(`data: ${statusData}\n\n`));
+              controller.enqueue(
+                new TextEncoder().encode(`data: ${statusData}\n\n`),
+              );
             }
           }
 
@@ -179,7 +197,9 @@ export async function POST(
                 type: "error",
                 content: resultMsg.errors?.join(", ") || "Unknown error",
               });
-              controller.enqueue(new TextEncoder().encode(`data: ${errData}\n\n`));
+              controller.enqueue(
+                new TextEncoder().encode(`data: ${errData}\n\n`),
+              );
             }
           }
         }
@@ -198,7 +218,8 @@ export async function POST(
 
           // Attempt to extract name and description if this is one of the first interactions
           // We check if the name looks like a slug (contains dashes and potentially matches the patterns)
-          const isDefaultName = app.codespaceId && app.codespaceId.includes("-");
+          const isDefaultName = app.codespaceId &&
+            app.codespaceId.includes("-");
 
           if (isDefaultName) {
             // We fire this off without awaiting it to not block the stream closing immediately
@@ -207,6 +228,39 @@ export async function POST(
             // Let's await it to ensure it runs.
             await generateAppDetails(id, finalResponse, content);
           }
+        }
+
+        // Broadcast code update to SSE clients if any code-modifying tools were used
+        if (codeUpdated) {
+          console.log(
+            "[agent/chat] Code was updated, broadcasting to SSE clients",
+          );
+
+          // Verify the update actually happened
+          const { data: verifyResponse } = await tryCatch(
+            fetch(
+              `https://testing.spike.land/live/${app.codespaceId}/session.json`,
+              {
+                headers: { "Accept": "application/json" },
+              },
+            ),
+          );
+
+          if (verifyResponse?.ok) {
+            const { data: verifyData } = await tryCatch(verifyResponse.json());
+            const actuallyChanged = verifyData?.code !== currentCode;
+            console.log(
+              `[agent/chat] Code verification: ${actuallyChanged ? "SUCCESS" : "FAILED"}`,
+            );
+
+            if (!actuallyChanged) {
+              console.error(
+                "[agent/chat] Tool claimed success but code unchanged!",
+              );
+            }
+          }
+
+          broadcastCodeUpdated(id);
         }
 
         controller.close();
@@ -232,7 +286,11 @@ export async function POST(
 }
 
 // Helper to generate app name and description
-async function generateAppDetails(appId: string, agentResponse: string, userPrompt: string) {
+async function generateAppDetails(
+  appId: string,
+  agentResponse: string,
+  userPrompt: string,
+) {
   try {
     const namingPrompt = `
       Based on the following conversation, generate a short, creative name (max 3-4 words) and a brief description (max 20 words) for the application being built.
@@ -285,7 +343,10 @@ async function generateAppDetails(appId: string, agentResponse: string, userProm
       });
       console.log(`[agent/chat] Updated app details: ${parsed.data.name}`);
     } else {
-      console.warn("[agent/chat] Invalid app details format:", parsed.error.message);
+      console.warn(
+        "[agent/chat] Invalid app details format:",
+        parsed.error.message,
+      );
     }
   } catch (e) {
     console.error("[agent/chat] Failed to generate app details:", e);

@@ -2,7 +2,7 @@ export const parse = (str) => {
   const cookies = {};
   if (!str) return cookies;
 
-  str.split(";").forEach(pair => {
+  str.split(";").forEach((pair) => {
     const eqIdx = pair.indexOf("=");
     if (eqIdx < 0) return;
 

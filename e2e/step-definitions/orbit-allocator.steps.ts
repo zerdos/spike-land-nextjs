@@ -9,22 +9,27 @@ import { expect } from "@playwright/test";
 import type { APIResponse } from "@playwright/test";
 
 import { waitForPageReady } from "../support/helpers/wait-helper";
+import type {
+  AllocatorApiResponse,
+  CampaignAnalysis,
+  Recommendation,
+} from "../support/types/allocator-api";
 import type { CustomWorld } from "../support/world";
 
 // Extend CustomWorld for API testing
 declare module "../support/world" {
   interface CustomWorld {
     apiResponse?: APIResponse;
-    apiResponseBody?: Record<string, unknown>;
+    apiResponseBody?: AllocatorApiResponse;
     isAuthenticated?: boolean;
     workspaceSlug?: string;
     mockCampaignData?: {
-      highPerforming?: Array<Record<string, unknown>>;
-      lowPerforming?: Array<Record<string, unknown>>;
-      allCampaigns?: Array<Record<string, unknown>>;
+      highPerforming?: CampaignAnalysis[];
+      lowPerforming?: CampaignAnalysis[];
+      allCampaigns?: CampaignAnalysis[];
     };
     riskTolerance?: string;
-    lastRecommendations?: Array<Record<string, unknown>>;
+    lastRecommendations?: Recommendation[];
   }
 }
 
@@ -204,7 +209,7 @@ Then(
     const body = this.apiResponseBody;
     expect(body).toBeDefined();
     expect(
-      (body as Record<string, unknown>)?.campaignAnalyses || [],
+      (body as Record<string, unknown>)?.["campaignAnalyses"] || [],
     ).toHaveLength(0);
   },
 );
@@ -215,25 +220,25 @@ Then(
     const body = this.apiResponseBody;
     expect(body).toBeDefined();
     expect(
-      (body as Record<string, unknown>)?.recommendations || [],
+      (body as Record<string, unknown>)?.["recommendations"] || [],
     ).toHaveLength(0);
   },
 );
 
 Then("hasEnoughData should be false", async function(this: CustomWorld) {
-  const body = this.apiResponseBody as Record<string, unknown>;
+  const body = this.apiResponseBody;
   expect(body?.hasEnoughData).toBe(false);
 });
 
 Then("hasEnoughData should reflect data sufficiency", async function(this: CustomWorld) {
-  const body = this.apiResponseBody as Record<string, unknown>;
+  const body = this.apiResponseBody;
   expect(typeof body?.hasEnoughData).toBe("boolean");
 });
 
 Then(
   "the response should contain campaign analyses",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
+    const body = this.apiResponseBody;
     expect(body?.campaignAnalyses).toBeDefined();
     expect(Array.isArray(body?.campaignAnalyses)).toBe(true);
     expect((body?.campaignAnalyses as unknown[]).length).toBeGreaterThan(0);
@@ -243,8 +248,8 @@ Then(
 Then(
   "each analysis should include performanceScore",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const analyses = body?.campaignAnalyses as Array<Record<string, unknown>>;
+    const body = this.apiResponseBody;
+    const analyses = body?.campaignAnalyses ?? [];
     for (const analysis of analyses) {
       expect(analysis.performanceScore).toBeDefined();
       expect(typeof analysis.performanceScore).toBe("number");
@@ -255,13 +260,13 @@ Then(
 Then(
   "each analysis should include metrics with roas and cpa",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const analyses = body?.campaignAnalyses as Array<Record<string, unknown>>;
+    const body = this.apiResponseBody;
+    const analyses = body?.campaignAnalyses ?? [];
     for (const analysis of analyses) {
-      const metrics = analysis.metrics as Record<string, unknown>;
+      const metrics = analysis.metrics;
       expect(metrics).toBeDefined();
-      expect(metrics.roas).toBeDefined();
-      expect(metrics.cpa).toBeDefined();
+      expect(metrics?.roas).toBeDefined();
+      expect(metrics?.cpa).toBeDefined();
     }
   },
 );
@@ -269,8 +274,8 @@ Then(
 Then(
   "each campaign analysis should include trend data",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const analyses = body?.campaignAnalyses as Array<Record<string, unknown>>;
+    const body = this.apiResponseBody;
+    const analyses = body?.campaignAnalyses ?? [];
     for (const analysis of analyses) {
       expect(analysis.trend).toBeDefined();
     }
@@ -280,11 +285,11 @@ Then(
 Then(
   "trend should indicate if roas is improving, stable, or declining",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const analyses = body?.campaignAnalyses as Array<Record<string, unknown>>;
+    const body = this.apiResponseBody;
+    const analyses = body?.campaignAnalyses ?? [];
     const validTrends = ["improving", "stable", "declining"];
     for (const analysis of analyses) {
-      const trend = analysis.trend as Record<string, unknown>;
+      const trend = analysis.trend;
       expect(validTrends).toContain(trend?.roas || trend?.direction);
     }
   },
@@ -293,10 +298,8 @@ Then(
 Then(
   "the response should contain a SCALE_WINNER recommendation",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations;
     const scaleWinner = recommendations?.find(
       (r) => r.type === "SCALE_WINNER" || r.type === "scale_winner",
     );
@@ -307,10 +310,8 @@ Then(
 Then(
   "the response should contain a DECREASE_BUDGET recommendation",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations;
     const decreaseBudget = recommendations?.find(
       (r) => r.type === "DECREASE_BUDGET" || r.type === "decrease_budget",
     );
@@ -322,7 +323,7 @@ Then(
   "the response may contain a REALLOCATE recommendation",
   async function(this: CustomWorld) {
     // This step uses "may contain" so we just verify the response is valid
-    const body = this.apiResponseBody as Record<string, unknown>;
+    const body = this.apiResponseBody;
     expect(body?.recommendations).toBeDefined();
     expect(Array.isArray(body?.recommendations)).toBe(true);
   },
@@ -331,10 +332,8 @@ Then(
 Then(
   "the recommendation should suggest a budget increase",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations;
     const scaleWinner = recommendations?.find(
       (r) => r.type === "SCALE_WINNER" || r.type === "scale_winner",
     );
@@ -349,10 +348,8 @@ Then(
 Then(
   "the recommendation should suggest a budget reduction",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations;
     const decreaseBudget = recommendations?.find(
       (r) => r.type === "DECREASE_BUDGET" || r.type === "decrease_budget",
     );
@@ -367,16 +364,13 @@ Then(
 Then(
   "the recommendation should include projected impact",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations ?? [];
     expect(recommendations).toBeDefined();
     expect(recommendations.length).toBeGreaterThan(0);
     const rec = recommendations[0];
     expect(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (rec as any).projectedImpact || (rec as any).impact || (rec as any).estimatedImpact,
+      rec?.projectedImpact || rec?.impact || rec?.estimatedImpact,
     ).toBeDefined();
   },
 );
@@ -384,10 +378,8 @@ Then(
 Then(
   "the recommendation should include sourceCampaign and targetCampaign",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations;
     const reallocate = recommendations?.find(
       (r) => r.type === "REALLOCATE" || r.type === "reallocate",
     );
@@ -401,10 +393,8 @@ Then(
 Then(
   "estimated spend change should be budget neutral",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations;
     const reallocate = recommendations?.find(
       (r) => r.type === "REALLOCATE" || r.type === "reallocate",
     );
@@ -420,10 +410,8 @@ Then(
   "recommendations should have smaller budget change suggestions",
   async function(this: CustomWorld) {
     // For conservative risk tolerance, budget changes should be smaller
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations;
     this.lastRecommendations = recommendations;
     // Just verify we have recommendations - comparison would need baseline
     expect(recommendations).toBeDefined();
@@ -434,10 +422,8 @@ Then(
   "recommendations should have larger budget change suggestions",
   async function(this: CustomWorld) {
     // For aggressive risk tolerance, budget changes should be larger
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations;
     // Just verify we have recommendations
     expect(recommendations).toBeDefined();
   },
@@ -446,8 +432,8 @@ Then(
 Then(
   "the response should only analyze campaigns from that account",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const analyses = body?.campaignAnalyses as Array<Record<string, unknown>>;
+    const body = this.apiResponseBody;
+    const analyses = body?.campaignAnalyses;
     // All campaigns should be from the filtered account
     if (analyses && analyses.length > 0) {
       // This is verified by the API, just ensure response is valid
@@ -459,8 +445,8 @@ Then(
 Then(
   "the response should include summary with totalCampaignsAnalyzed",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const summary = body?.summary as Record<string, unknown>;
+    const body = this.apiResponseBody;
+    const summary = body?.summary;
     expect(summary).toBeDefined();
     expect(summary?.totalCampaignsAnalyzed).toBeDefined();
     expect(typeof summary?.totalCampaignsAnalyzed).toBe("number");
@@ -470,8 +456,8 @@ Then(
 Then(
   "the summary should include averageRoas and averageCpa",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const summary = body?.summary as Record<string, unknown>;
+    const body = this.apiResponseBody;
+    const summary = body?.summary;
     expect(summary?.averageRoas).toBeDefined();
     expect(summary?.averageCpa).toBeDefined();
   },
@@ -480,8 +466,8 @@ Then(
 Then(
   "the summary should include projectedTotalImpact",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const summary = body?.summary as Record<string, unknown>;
+    const body = this.apiResponseBody;
+    const summary = body?.summary;
     expect(summary?.projectedTotalImpact || summary?.projectedImpact).toBeDefined();
   },
 );
@@ -489,9 +475,9 @@ Then(
 Then(
   "the response should include dataQualityScore between 0 and 100",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
+    const body = this.apiResponseBody;
     const score = (body?.dataQualityScore as number) ||
-      ((body?.summary as Record<string, unknown>)?.dataQualityScore as number);
+      ((body?.summary as Record<string, unknown>)?.["dataQualityScore"] as number);
     expect(score).toBeDefined();
     expect(score).toBeGreaterThanOrEqual(0);
     expect(score).toBeLessThanOrEqual(100);
@@ -501,10 +487,8 @@ Then(
 Then(
   "each recommendation should include confidence level",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations;
     for (const rec of recommendations || []) {
       expect(rec.confidence || rec.confidenceLevel).toBeDefined();
     }
@@ -514,10 +498,8 @@ Then(
 Then(
   "each recommendation should include reason explaining the suggestion",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations;
     for (const rec of recommendations || []) {
       expect(rec.reason || rec.reasoning || rec.explanation).toBeDefined();
     }
@@ -527,10 +509,8 @@ Then(
 Then(
   "each recommendation should include supportingData array",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations;
     for (const rec of recommendations || []) {
       expect(
         Array.isArray(rec.supportingData) || Array.isArray(rec.supporting_data),
@@ -542,10 +522,8 @@ Then(
 Then(
   "each recommendation should include createdAt and expiresAt",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations;
     for (const rec of recommendations || []) {
       expect(rec.createdAt || rec.created_at).toBeDefined();
       expect(rec.expiresAt || rec.expires_at).toBeDefined();
@@ -556,14 +534,12 @@ Then(
 Then(
   "the projected impact should include estimatedRoasChange",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations ?? [];
     expect(recommendations).toBeDefined();
     expect(recommendations.length).toBeGreaterThan(0);
-    const firstRec = recommendations![0];
-    const impact = (firstRec as Record<string, unknown>).projectedImpact as Record<string, unknown>;
+    const firstRec = recommendations[0];
+    const impact = firstRec?.projectedImpact;
     expect(
       impact?.estimatedRoasChange ||
         impact?.roasChange ||
@@ -575,14 +551,12 @@ Then(
 Then(
   "the projected impact should include estimatedCpaChange",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations ?? [];
     expect(recommendations).toBeDefined();
     expect(recommendations.length).toBeGreaterThan(0);
-    const firstRec = recommendations![0];
-    const impact = (firstRec as Record<string, unknown>).projectedImpact as Record<string, unknown>;
+    const firstRec = recommendations[0];
+    const impact = firstRec?.projectedImpact;
     expect(
       impact?.estimatedCpaChange ||
         impact?.cpaChange ||
@@ -594,14 +568,12 @@ Then(
 Then(
   "the projected impact should include confidenceInterval",
   async function(this: CustomWorld) {
-    const body = this.apiResponseBody as Record<string, unknown>;
-    const recommendations = body?.recommendations as Array<
-      Record<string, unknown>
-    >;
+    const body = this.apiResponseBody;
+    const recommendations = body?.recommendations ?? [];
     expect(recommendations).toBeDefined();
     expect(recommendations.length).toBeGreaterThan(0);
-    const firstRec = recommendations![0];
-    const impact = (firstRec as Record<string, unknown>).projectedImpact as Record<string, unknown>;
+    const firstRec = recommendations[0];
+    const impact = firstRec?.projectedImpact;
     expect(
       impact?.confidenceInterval ||
         impact?.confidence_interval ||

@@ -148,7 +148,9 @@ export function RecommendationCard({
           {recommendation.sourceCampaign && (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-muted-foreground">From:</span>
-              <span className="font-medium">{recommendation.sourceCampaign.name}</span>
+              <span className="font-medium">
+                {recommendation.sourceCampaign.name}
+              </span>
               <Badge variant="outline" className="text-xs">
                 {recommendation.sourceCampaign.platform}
               </Badge>
@@ -158,7 +160,9 @@ export function RecommendationCard({
             <span className="text-muted-foreground">
               {recommendation.sourceCampaign ? "To:" : "Campaign:"}
             </span>
-            <span className="font-medium">{recommendation.targetCampaign.name}</span>
+            <span className="font-medium">
+              {recommendation.targetCampaign.name}
+            </span>
             <Badge variant="outline" className="text-xs">
               {recommendation.targetCampaign.platform}
             </Badge>
@@ -177,7 +181,10 @@ export function RecommendationCard({
                   : "text-red-500",
               )}
             >
-              {formatCurrency(recommendation.suggestedBudgetChange, recommendation.currency)}
+              {formatCurrency(
+                recommendation.suggestedBudgetChange,
+                recommendation.currency,
+              )}
             </p>
           </div>
           <ArrowRight className="h-5 w-5 text-muted-foreground" />
@@ -207,7 +214,9 @@ export function RecommendationCard({
                     : "text-red-500",
                 )}
               >
-                {formatPercent(recommendation.projectedImpact.estimatedRoasChange)}
+                {formatPercent(
+                  recommendation.projectedImpact.estimatedRoasChange,
+                )}
               </p>
               <p className="text-xs text-muted-foreground">ROAS</p>
             </div>
@@ -221,7 +230,9 @@ export function RecommendationCard({
                     : "text-red-500",
                 )}
               >
-                {formatPercent(recommendation.projectedImpact.estimatedCpaChange)}
+                {formatPercent(
+                  recommendation.projectedImpact.estimatedCpaChange,
+                )}
               </p>
               <p className="text-xs text-muted-foreground">CPA</p>
             </div>
@@ -234,7 +245,9 @@ export function RecommendationCard({
                     : "text-red-500",
                 )}
               >
-                {formatPercent(recommendation.projectedImpact.estimatedConversionChange)}
+                {formatPercent(
+                  recommendation.projectedImpact.estimatedConversionChange,
+                )}
               </p>
               <p className="text-xs text-muted-foreground">Conv.</p>
             </div>

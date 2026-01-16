@@ -32,7 +32,9 @@ export function SidebarTrigger({
   );
 }
 
-export function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
+export function SidebarRail(
+  { className, ...props }: React.ComponentProps<"button">,
+) {
   const { toggleSidebar } = useSidebar();
 
   return (

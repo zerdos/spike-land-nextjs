@@ -123,7 +123,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const config = body as RetentionPolicyConfig;
@@ -197,13 +199,19 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
-  const { policyId, ...updates } = body as { policyId: string; } & Partial<RetentionPolicyConfig>;
+  const { policyId, ...updates } = body as
+    & { policyId: string; }
+    & Partial<RetentionPolicyConfig>;
 
   if (!policyId) {
-    return NextResponse.json({ error: "policyId is required" }, { status: 400 });
+    return NextResponse.json({ error: "policyId is required" }, {
+      status: 400,
+    });
   }
 
   // Verify the policy belongs to this workspace
@@ -276,7 +284,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   // Get policy ID from query params
   const policyId = request.nextUrl.searchParams.get("policyId");
   if (!policyId) {
-    return NextResponse.json({ error: "policyId is required" }, { status: 400 });
+    return NextResponse.json({ error: "policyId is required" }, {
+      status: 400,
+    });
   }
 
   // Verify the policy belongs to this workspace

@@ -40,7 +40,9 @@ function getSeverityEmoji(severity: "warning" | "critical"): string {
  * Get direction emoji
  */
 function getDirectionEmoji(direction: "spike" | "drop"): string {
-  return direction === "spike" ? ":chart_with_upwards_trend:" : ":chart_with_downwards_trend:";
+  return direction === "spike"
+    ? ":chart_with_upwards_trend:"
+    : ":chart_with_downwards_trend:";
 }
 
 /**
@@ -71,7 +73,8 @@ export function buildSlackMessage(
   notification: PulseAnomalyNotification,
 ): SlackMessage {
   const { anomaly, workspaceName, dashboardUrl } = notification;
-  const platformEmoji = PLATFORM_EMOJIS[anomaly.platform] || ":chart_with_upwards_trend:";
+  const platformEmoji = PLATFORM_EMOJIS[anomaly.platform] ||
+    ":chart_with_upwards_trend:";
   const severityEmoji = getSeverityEmoji(anomaly.severity);
   const directionEmoji = getDirectionEmoji(anomaly.direction);
 
@@ -102,7 +105,8 @@ export function buildSlackMessage(
         text: [
           `*Metric:* ${anomaly.metricType}`,
           `*Direction:* ${directionEmoji} ${
-            anomaly.direction.charAt(0).toUpperCase() + anomaly.direction.slice(1)
+            anomaly.direction.charAt(0).toUpperCase() +
+            anomaly.direction.slice(1)
           }`,
           `*Current Value:* ${formatNumber(anomaly.currentValue)}`,
           `*Expected Value:* ${formatNumber(anomaly.expectedValue)}`,

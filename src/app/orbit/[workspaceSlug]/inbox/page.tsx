@@ -14,7 +14,7 @@ import { useMemo, useState } from "react";
 
 export default function InboxPage() {
   const params = useParams();
-  const workspaceSlug = params?.workspaceSlug as string;
+  const workspaceSlug = params?.["workspaceSlug"] as string;
   const queryClient = useMemo(() => new QueryClient(), []);
   const [filters, setFilters] = useState<FilterFormValues>({});
   const [selectedItem, setSelectedItem] = useState<InboxItem | null>(null);
@@ -34,7 +34,10 @@ export default function InboxPage() {
       <div className="flex h-screen">
         <div className="w-1/3 border-r">
           <div className="p-4 border-b">
-            <InboxFilters onFilterChange={handleFilterChange} teamMembers={members} />
+            <InboxFilters
+              onFilterChange={handleFilterChange}
+              teamMembers={members}
+            />
           </div>
           <InboxList filters={filters} onItemSelected={setSelectedItem} />
         </div>

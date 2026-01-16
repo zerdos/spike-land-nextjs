@@ -69,7 +69,10 @@ export class AutopilotService {
     campaignId?: string,
   ): Promise<AutopilotConfig> {
     // Check feature flag
-    const enabled = await FeatureFlagService.isFeatureEnabled("allocator_autopilot", workspaceId);
+    const enabled = await FeatureFlagService.isFeatureEnabled(
+      "allocator_autopilot",
+      workspaceId,
+    );
     if (!enabled && data.isEnabled) {
       throw new Error("Autopilot feature is not enabled for this workspace.");
     }
@@ -99,15 +102,21 @@ export class AutopilotService {
           maxDailyBudgetChange: data.maxDailyBudgetChange
             ? new Decimal(data.maxDailyBudgetChange)
             : undefined,
-          maxSingleChange: data.maxSingleChange ? new Decimal(data.maxSingleChange) : undefined,
+          maxSingleChange: data.maxSingleChange
+            ? new Decimal(data.maxSingleChange)
+            : undefined,
           minRoasThreshold: data.minRoasThreshold !== undefined
-            ? (data.minRoasThreshold ? new Decimal(data.minRoasThreshold) : null)
+            ? (data.minRoasThreshold
+              ? new Decimal(data.minRoasThreshold)
+              : null)
             : undefined,
           maxCpaThreshold: data.maxCpaThreshold !== undefined
             ? (data.maxCpaThreshold ? new Decimal(data.maxCpaThreshold) : null)
             : undefined,
           requireApprovalAbove: data.requireApprovalAbove !== undefined
-            ? (data.requireApprovalAbove ? new Decimal(data.requireApprovalAbove) : null)
+            ? (data.requireApprovalAbove
+              ? new Decimal(data.requireApprovalAbove)
+              : null)
             : undefined,
           minBudget: data.minBudget !== undefined
             ? (data.minBudget ? new Decimal(data.minBudget) : null)
@@ -128,8 +137,12 @@ export class AutopilotService {
           mode: data.mode ?? "CONSERVATIVE",
           maxDailyBudgetChange: new Decimal(data.maxDailyBudgetChange ?? 10.0),
           maxSingleChange: new Decimal(data.maxSingleChange ?? 5.0),
-          minRoasThreshold: data.minRoasThreshold ? new Decimal(data.minRoasThreshold) : null,
-          maxCpaThreshold: data.maxCpaThreshold ? new Decimal(data.maxCpaThreshold) : null,
+          minRoasThreshold: data.minRoasThreshold
+            ? new Decimal(data.minRoasThreshold)
+            : null,
+          maxCpaThreshold: data.maxCpaThreshold
+            ? new Decimal(data.maxCpaThreshold)
+            : null,
           pauseOnAnomaly: data.pauseOnAnomaly ?? true,
           requireApprovalAbove: data.requireApprovalAbove
             ? new Decimal(data.requireApprovalAbove)
@@ -164,7 +177,10 @@ export class AutopilotService {
     config?: AutopilotConfig | null,
   ): Promise<{ shouldExecute: boolean; reason?: string; }> {
     if (!config) {
-      config = await this.getAutopilotConfig(recommendation.workspaceId, recommendation.campaignId);
+      config = await this.getAutopilotConfig(
+        recommendation.workspaceId,
+        recommendation.campaignId,
+      );
     }
 
     if (!config || !config.isEnabled) {
@@ -192,7 +208,7 @@ export class AutopilotService {
           suggested: recommendation.suggestedBudget,
           min: config.minBudget,
         },
-      }).catch(err => {
+      }).catch((err) => {
         console.error(
           `[GapAlert] Failed to create BUDGET_FLOOR_HIT alert for ${recommendation.campaignId}:`,
           err,
@@ -218,7 +234,7 @@ export class AutopilotService {
           suggested: recommendation.suggestedBudget,
           min: config.maxBudget,
         },
-      }).catch(err => {
+      }).catch((err) => {
         console.error(
           `[GapAlert] Failed to create BUDGET_CEILING_HIT alert for ${recommendation.campaignId}:`,
           err,
@@ -239,7 +255,8 @@ export class AutopilotService {
     });
 
     if (lastExecution && config.cooldownMinutes > 0) {
-      const timeSinceLast = (Date.now() - lastExecution.executedAt.getTime()) / (1000 * 60);
+      const timeSinceLast = (Date.now() - lastExecution.executedAt.getTime()) /
+        (1000 * 60);
       if (timeSinceLast < config.cooldownMinutes) {
         const message = `Cool-down active. ${
           timeSinceLast.toFixed(0)
@@ -262,7 +279,7 @@ export class AutopilotService {
             alertType: "COOLDOWN_ACTIVE",
             severity: "INFO",
             message,
-          }).catch(err =>
+          }).catch((err) =>
             console.error(
               `[GapAlert] Failed to create COOLDOWN_ACTIVE alert for ${recommendation.campaignId}:`,
               err,
@@ -281,7 +298,7 @@ export class AutopilotService {
       if (anomalies.length > 0) {
         return {
           shouldExecute: false,
-          reason: `Paused due to anomalies: ${anomalies.map(a => a.type).join(", ")}`,
+          reason: `Paused due to anomalies: ${anomalies.map((a) => a.type).join(", ")}`,
         };
       }
     }
@@ -302,7 +319,9 @@ export class AutopilotService {
 
     // Check Approval Threshold (Absolute Value)
     if (config.requireApprovalAbove) {
-      const absChange = Math.abs(recommendation.suggestedBudget - recommendation.currentBudget);
+      const absChange = Math.abs(
+        recommendation.suggestedBudget - recommendation.currentBudget,
+      );
       if (absChange > config.requireApprovalAbove) {
         return {
           shouldExecute: false,
@@ -321,7 +340,10 @@ export class AutopilotService {
     );
 
     if (!canMove) {
-      return { shouldExecute: false, reason: "Daily budget move limit reached" };
+      return {
+        shouldExecute: false,
+        reason: "Daily budget move limit reached",
+      };
     }
 
     return { shouldExecute: true };
@@ -350,7 +372,10 @@ export class AutopilotService {
       };
     }
 
-    const evaluation = await this.evaluateRecommendation(recommendation, config);
+    const evaluation = await this.evaluateRecommendation(
+      recommendation,
+      config,
+    );
 
     if (!evaluation.shouldExecute) {
       // Log skipped execution
@@ -363,7 +388,9 @@ export class AutopilotService {
           status: "SKIPPED",
           previousBudget: new Decimal(recommendation.currentBudget),
           newBudget: new Decimal(recommendation.suggestedBudget),
-          budgetChange: new Decimal(recommendation.suggestedBudget - recommendation.currentBudget),
+          budgetChange: new Decimal(
+            recommendation.suggestedBudget - recommendation.currentBudget,
+          ),
           metadata: { reason: evaluation.reason, triggerSource },
         },
       });
@@ -387,14 +414,15 @@ export class AutopilotService {
         outcome: "APPROVED", // It passed evaluation
         correlationId: recommendation.correlationId,
         triggeredBy: triggerSource,
-        userId: recommendation.metadata?.userId as string,
+        userId: recommendation.metadata?.["userId"] as string,
         newState: { suggestedBudget: recommendation.suggestedBudget },
-      }).catch(e => console.error("Audit log error:", e));
+      }).catch((e) => console.error("Audit log error:", e));
     }
 
     // Execute Change (Simulated for now, would call platform API)
     // TODO: Integrate with Facebook/Google Ads API via Allocator Service
-    const budgetChange = recommendation.suggestedBudget - recommendation.currentBudget;
+    const budgetChange = recommendation.suggestedBudget -
+      recommendation.currentBudget;
 
     // Log Execution (Initial record)
     const execution = await prisma.allocatorAutopilotExecution.create({
@@ -468,10 +496,10 @@ export class AutopilotService {
           outcome: "EXECUTED",
           correlationId: recommendation.correlationId,
           triggeredBy: triggerSource,
-          userId: recommendation.metadata?.userId as string,
+          userId: recommendation.metadata?.["userId"] as string,
           previousState: { budget: recommendation.currentBudget },
           newState: { budget: recommendation.suggestedBudget },
-        }).catch(e => console.error("Audit log error:", e));
+        }).catch((e) => console.error("Audit log error:", e));
       }
 
       return result;
@@ -497,9 +525,9 @@ export class AutopilotService {
           outcome: "FAILED",
           correlationId: recommendation.correlationId,
           triggeredBy: triggerSource,
-          userId: recommendation.metadata?.userId as string,
+          userId: recommendation.metadata?.["userId"] as string,
           error: error instanceof Error ? error.message : "Unknown error",
-        }).catch(e => console.error("Audit log error:", e));
+        }).catch((e) => console.error("Audit log error:", e));
       }
 
       throw error;
@@ -571,7 +599,7 @@ export class AutopilotService {
       stage: "INITIATED",
       correlationId,
       userId,
-    }).catch(e => console.error("Audit log error:", e));
+    }).catch((e) => console.error("Audit log error:", e));
 
     try {
       return await prisma.$transaction(async (tx) => {
@@ -634,7 +662,9 @@ export class AutopilotService {
         where: { id: rollback.id },
         data: {
           status: "FAILED",
-          metadata: { error: error instanceof Error ? error.message : "Unknown error" },
+          metadata: {
+            error: error instanceof Error ? error.message : "Unknown error",
+          },
         },
       });
       throw error;

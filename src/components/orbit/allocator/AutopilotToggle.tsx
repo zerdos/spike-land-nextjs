@@ -11,7 +11,9 @@ interface AutopilotToggleProps {
   onToggle: (checked: boolean) => void;
 }
 
-export function AutopilotToggle({ isEnabled, isLoading, onToggle }: AutopilotToggleProps) {
+export function AutopilotToggle(
+  { isEnabled, isLoading, onToggle }: AutopilotToggleProps,
+) {
   return (
     <div className="flex items-center space-x-2">
       <Switch
@@ -26,7 +28,10 @@ export function AutopilotToggle({ isEnabled, isLoading, onToggle }: AutopilotTog
       {isLoading
         ? <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
         : (
-          <Badge variant={isEnabled ? "default" : "outline"} className="text-xs h-5">
+          <Badge
+            variant={isEnabled ? "default" : "outline"}
+            className="text-xs h-5"
+          >
             {isEnabled ? "ON" : "OFF"}
           </Badge>
         )}

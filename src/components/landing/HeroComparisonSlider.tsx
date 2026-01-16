@@ -67,6 +67,17 @@ export function HeroComparisonSlider({
     [handleMove],
   );
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    const step = 5;
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      setSliderPosition((prev) => Math.max(0, prev - step));
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      setSliderPosition((prev) => Math.min(100, prev + step));
+    }
+  };
+
   return (
     <div
       ref={containerRef}
@@ -75,12 +86,19 @@ export function HeroComparisonSlider({
         className,
       )}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleMouseUp}
+      role="slider"
+      aria-label="Image comparison slider"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(sliderPosition)}
+      tabIndex={0}
     >
       {/* Enhanced image (full width, underneath) */}
       <div className="absolute inset-0">
@@ -125,6 +143,13 @@ export function HeroComparisonSlider({
         style={{ left: `${sliderPosition}%`, transform: "translateX(-50%)" }}
         onMouseDown={handleMouseDown}
         onTouchStart={handleMouseDown}
+        onKeyDown={handleKeyDown}
+        role="slider"
+        aria-label="Drag to compare images"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(sliderPosition)}
+        tabIndex={0}
       >
         {/* Handle circle with arrows and spark icon */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-glow-cyan cursor-ew-resize transition-transform hover:scale-110 active:scale-95">

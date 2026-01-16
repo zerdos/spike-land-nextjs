@@ -764,7 +764,8 @@ export class CrisisDetector {
     let averageTimeToAcknowledge: number | undefined;
     if (acknowledgedEvents.length > 0) {
       const totalTime = acknowledgedEvents.reduce((sum, event) => {
-        const diff = event.acknowledgedAt!.getTime() - event.detectedAt.getTime();
+        const diff = event.acknowledgedAt!.getTime() -
+          event.detectedAt.getTime();
         return sum + diff;
       }, 0);
       averageTimeToAcknowledge = totalTime / acknowledgedEvents.length / 60000; // minutes

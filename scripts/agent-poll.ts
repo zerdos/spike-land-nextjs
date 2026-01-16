@@ -234,17 +234,17 @@ async function addSystemMessage(appId: string, content: string): Promise<void> {
 async function updateApp(appId: string, update: AppUpdate): Promise<void> {
   const data: Record<string, unknown> = {};
 
-  if (update.name !== undefined) data.name = update.name;
-  if (update.description !== undefined) data.description = update.description;
-  if (update.codespaceId !== undefined) data.codespaceId = update.codespaceId;
-  if (update.codespaceUrl !== undefined) data.codespaceUrl = update.codespaceUrl;
-  if (update.isPublic !== undefined) data.isPublic = update.isPublic;
-  if (update.isCurated !== undefined) data.isCurated = update.isCurated;
-  if (update.slug !== undefined) data.slug = update.slug;
+  if (update.name !== undefined) data["name"] = update.name;
+  if (update.description !== undefined) data["description"] = update.description;
+  if (update.codespaceId !== undefined) data["codespaceId"] = update.codespaceId;
+  if (update.codespaceUrl !== undefined) data["codespaceUrl"] = update.codespaceUrl;
+  if (update.isPublic !== undefined) data["isPublic"] = update.isPublic;
+  if (update.isCurated !== undefined) data["isCurated"] = update.isCurated;
+  if (update.slug !== undefined) data["slug"] = update.slug;
 
   // Handle status update separately (with history)
   if (update.status !== undefined) {
-    data.status = update.status;
+    data["status"] = update.status;
   }
 
   if (Object.keys(data).length > 0) {

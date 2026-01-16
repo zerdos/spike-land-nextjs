@@ -7,6 +7,34 @@ import type {
   UpdateCodeResult,
 } from "../types";
 
+/**
+ * Transpile React/JSX code to JavaScript via js.spike.land service
+ */
+async function transpileCode(code: string, origin: string): Promise<string> {
+  console.log(
+    `[MCP] Transpiling code (${code.length} chars) with origin: ${origin}`,
+  );
+
+  const response = await fetch("https://js.spike.land", {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain",
+      "TR_ORIGIN": origin,
+    },
+    body: code,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[MCP] Transpilation failed: ${errorText}`);
+    throw new Error(`Transpilation failed: ${errorText}`);
+  }
+
+  const transpiled = await response.text();
+  console.log(`[MCP] Transpilation successful (${transpiled.length} chars)`);
+  return transpiled;
+}
+
 export const updateCodeTool: McpTool = {
   name: "update_code",
   description:
@@ -97,38 +125,66 @@ export const editCodeTool: McpTool = {
   },
 };
 
-export const editTools: McpTool[] = [updateCodeTool, searchAndReplaceTool, editCodeTool];
+export const editTools: McpTool[] = [
+  updateCodeTool,
+  searchAndReplaceTool,
+  editCodeTool,
+];
 
 export async function executeUpdateCode(
   session: ICodeSession,
   codeSpace: string,
   code: string,
   updateSession: (session: ICodeSession) => Promise<void>,
+  origin?: string,
 ): Promise<UpdateCodeResult> {
   console.log(`[MCP] update_code called for codeSpace: ${codeSpace}`);
   console.log(
     `[MCP] Current code length: ${session.code?.length || 0}, New code length: ${code.length}`,
   );
 
+  // Transpile the code server-side
+  let transpiled = "";
+  let transpilationFailed = false;
+  if (origin) {
+    try {
+      transpiled = await transpileCode(code, origin);
+    } catch (error) {
+      console.error(`[MCP] Transpilation error:`, error);
+      transpilationFailed = true;
+      // Continue with empty transpiled - client can trigger re-transpilation
+    }
+  } else {
+    console.warn(
+      `[MCP] No origin provided, skipping server-side transpilation`,
+    );
+  }
+
   const updatedSession = {
     ...session,
     code,
+    transpiled,
     html: "",
     css: "",
     codeSpace,
   };
 
   console.log(
-    `[MCP] Broadcasting session update with empty transpiled to trigger re-transpilation`,
+    `[MCP] Broadcasting session update with transpiled=${
+      transpiled.length > 0 ? transpiled.length + " chars" : "empty"
+    }`,
   );
   await updateSession(updatedSession);
 
   return {
     success: true,
-    message:
-      `Code updated successfully (${code.length}/500 chars). Transpilation will be triggered automatically.`,
+    message: transpiled
+      ? `Code updated and transpiled successfully (${code.length} chars).`
+      : transpilationFailed
+      ? `Code updated (${code.length} chars). Transpilation failed - will retry on next load.`
+      : `Code updated (${code.length} chars). Transpilation pending.`,
     codeSpace,
-    requiresTranspilation: true,
+    requiresTranspilation: !transpiled,
   };
 }
 
@@ -137,14 +193,26 @@ export async function executeEditCode(
   codeSpace: string,
   edits: LineEdit[],
   updateSession: (session: ICodeSession) => Promise<void>,
+  origin?: string,
 ): Promise<EditCodeResult> {
   const originalCode = session.code || "";
   const { newCode, diff } = applyLineEdits(originalCode, edits);
 
+  // Transpile the code server-side
+  let transpiled = "";
+  if (origin) {
+    try {
+      transpiled = await transpileCode(newCode, origin);
+    } catch (error) {
+      console.error(`[MCP] Transpilation error in edit_code:`, error);
+      // Continue with empty transpiled
+    }
+  }
+
   const updatedSession = {
     ...session,
     code: newCode,
-    transpiled: "",
+    transpiled,
     html: "",
     css: "",
     codeSpace,
@@ -154,11 +222,13 @@ export async function executeEditCode(
 
   return {
     success: true,
-    message: "Code edited successfully. Transpilation will be triggered automatically.",
+    message: transpiled
+      ? "Code edited and transpiled successfully."
+      : "Code edited. Transpilation pending.",
     codeSpace,
     diff,
     linesChanged: edits.length,
-    requiresTranspilation: true,
+    requiresTranspilation: !transpiled,
   };
 }
 
@@ -170,6 +240,7 @@ export async function executeSearchAndReplace(
   isRegex: boolean,
   global: boolean,
   updateSession: (session: ICodeSession) => Promise<void>,
+  origin?: string,
 ): Promise<SearchReplaceResult> {
   const originalCode = session.code || "";
   let newCode: string;
@@ -211,10 +282,24 @@ export async function executeSearchAndReplace(
   }
 
   if (replacements > 0) {
+    // Transpile the code server-side
+    let transpiled = "";
+    if (origin) {
+      try {
+        transpiled = await transpileCode(newCode, origin);
+      } catch (error) {
+        console.error(
+          `[MCP] Transpilation error in search_and_replace:`,
+          error,
+        );
+        // Continue with empty transpiled
+      }
+    }
+
     const updatedSession = {
       ...session,
       code: newCode,
-      transpiled: "",
+      transpiled,
       html: "",
       css: "",
       codeSpace,
@@ -226,7 +311,7 @@ export async function executeSearchAndReplace(
   return {
     success: true,
     message: replacements > 0
-      ? `Made ${replacements} replacement(s). Transpilation will be triggered automatically.`
+      ? `Made ${replacements} replacement(s). Code transpiled and updated.`
       : "No matches found",
     replacements,
     search,
@@ -234,7 +319,7 @@ export async function executeSearchAndReplace(
     isRegex,
     global,
     codeSpace,
-    requiresTranspilation: replacements > 0,
+    requiresTranspilation: replacements > 0 && !origin,
   };
 }
 

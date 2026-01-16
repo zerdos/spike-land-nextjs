@@ -126,7 +126,10 @@ describe("PostHandler - Messages", () => {
       const result = callConvertMessages(messages);
 
       // Since it fails the type guard, it returns "[invalid content]"
-      expect(result[0]?.content).toEqual([{ type: "text", text: "[invalid content]" }]);
+      expect(result[0]?.content).toEqual([{
+        type: "text",
+        text: "[invalid content]",
+      }]);
     });
 
     it("should handle invalid content format", () => {
@@ -203,7 +206,10 @@ describe("PostHandler - Messages", () => {
         {
           role: "user",
           parts: [
-            { type: "image_url", image_url: { url: "https://example.com/img.jpg" } },
+            {
+              type: "image_url",
+              image_url: { url: "https://example.com/img.jpg" },
+            },
           ],
         },
       ];

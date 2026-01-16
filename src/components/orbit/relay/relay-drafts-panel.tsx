@@ -101,10 +101,12 @@ async function regenerateDrafts(
 
 export function RelayDraftsPanel({ inboxItemId }: RelayDraftsPanelProps) {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
   const queryClient = useQueryClient();
 
-  const [selectedDraft, setSelectedDraft] = useState<DraftWithMetadata | null>(null);
+  const [selectedDraft, setSelectedDraft] = useState<DraftWithMetadata | null>(
+    null,
+  );
   const [customInstructions, setCustomInstructions] = useState("");
   const [regenerateFeedback, setRegenerateFeedback] = useState("");
   const [showRegenerateForm, setShowRegenerateForm] = useState(false);
@@ -153,7 +155,8 @@ export function RelayDraftsPanel({ inboxItemId }: RelayDraftsPanelProps) {
     regenerateMutation.mutate();
   };
 
-  const isGenerating = generateMutation.isPending || regenerateMutation.isPending;
+  const isGenerating = generateMutation.isPending ||
+    regenerateMutation.isPending;
 
   return (
     <div className="space-y-4" data-testid="relay-drafts-panel">
@@ -242,7 +245,8 @@ export function RelayDraftsPanel({ inboxItemId }: RelayDraftsPanelProps) {
             />
             <Button
               onClick={handleRegenerateDrafts}
-              disabled={!regenerateFeedback.trim() || regenerateMutation.isPending}
+              disabled={!regenerateFeedback.trim() ||
+                regenerateMutation.isPending}
               data-testid="regenerate-drafts-button"
             >
               {regenerateMutation.isPending

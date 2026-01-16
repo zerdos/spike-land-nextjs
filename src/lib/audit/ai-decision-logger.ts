@@ -25,7 +25,9 @@ export class AIDecisionLogger {
   /**
    * Create an AI decision log entry
    */
-  static async log(options: CreateAIDecisionLogOptions): Promise<string | null> {
+  static async log(
+    options: CreateAIDecisionLogOptions,
+  ): Promise<string | null> {
     const { data, error } = await tryCatch(
       prisma.aIDecisionLog.create({
         data: {
@@ -299,7 +301,9 @@ export class AIDecisionLogger {
 
     // Calculate success rate
     const successCount = decisionsByStatus["success"] || 0;
-    const successRate = totalDecisions > 0 ? (successCount / totalDecisions) * 100 : 0;
+    const successRate = totalDecisions > 0
+      ? (successCount / totalDecisions) * 100
+      : 0;
 
     return {
       totalDecisions,

@@ -326,7 +326,8 @@ describe("Suggestion Generator", () => {
       // Check expiration is approximately 24 hours from now
       const expiresAt = result.suggestions[0]!.expiresAt!;
       const expectedExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      expect(Math.abs(expiresAt.getTime() - expectedExpiry.getTime())).toBeLessThan(1000);
+      expect(Math.abs(expiresAt.getTime() - expectedExpiry.getTime()))
+        .toBeLessThan(1000);
     });
 
     it("should track processing time", async () => {
@@ -343,8 +344,20 @@ describe("Suggestion Generator", () => {
       const input: SuggestionGenerationInput = {
         workspaceId: "ws-1",
         topics: [
-          { id: "1", keyword: "a", volume: 1, trend: "STABLE", sentiment: "NEUTRAL" },
-          { id: "2", keyword: "b", volume: 2, trend: "RISING", sentiment: "POSITIVE" },
+          {
+            id: "1",
+            keyword: "a",
+            volume: 1,
+            trend: "STABLE",
+            sentiment: "NEUTRAL",
+          },
+          {
+            id: "2",
+            keyword: "b",
+            volume: 2,
+            trend: "RISING",
+            sentiment: "POSITIVE",
+          },
         ],
         competitors: [
           {

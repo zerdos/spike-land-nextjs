@@ -56,7 +56,9 @@ describe("/api/orbit/[workspaceSlug]/scout/topics", () => {
 
     it("should return topics for a valid workspace", async () => {
       vi.mocked(auth).mockResolvedValue({ user: { id: "123" } } as any);
-      vi.mocked(prisma.workspace.findFirst).mockResolvedValue({ id: "ws-123" } as any);
+      vi.mocked(prisma.workspace.findFirst).mockResolvedValue(
+        { id: "ws-123" } as any,
+      );
       vi.mocked(prisma.scoutTopic.findMany).mockResolvedValue(
         [{ id: "topic-1", name: "Test" }] as any,
       );
@@ -89,7 +91,9 @@ describe("/api/orbit/[workspaceSlug]/scout/topics", () => {
 
     it("should create a new topic and return it", async () => {
       vi.mocked(auth).mockResolvedValue({ user: { id: "123" } } as any);
-      vi.mocked(prisma.workspace.findFirst).mockResolvedValue({ id: "ws-123" } as any);
+      vi.mocked(prisma.workspace.findFirst).mockResolvedValue(
+        { id: "ws-123" } as any,
+      );
       const newTopic = { name: "New Topic", keywords: {} };
       vi.mocked(prisma.scoutTopic.create).mockResolvedValue(
         { id: "new-topic-1", ...newTopic } as any,

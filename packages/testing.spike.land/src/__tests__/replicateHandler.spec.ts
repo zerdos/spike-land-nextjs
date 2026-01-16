@@ -14,12 +14,17 @@ vi.mock("../utils/cache", () => ({
   }),
 }));
 
-// Mock Replicate - it's already aliased in vitest.config.ts but we need explicit mocking
+// Mock Replicate - use a proper class mock for Vitest 4 compatibility
 vi.mock("replicate", () => {
-  const mockReplicate = vi.fn().mockImplementation(() => ({
-    run: vi.fn().mockResolvedValue(["https://replicate.delivery/image.webp"]),
-  }));
-  return { default: mockReplicate };
+  const MockReplicate = vi.fn().mockImplementation(
+    function(this: Record<string, unknown>) {
+      this.run = vi.fn().mockResolvedValue([
+        "https://replicate.delivery/image.webp",
+      ]);
+      return this;
+    },
+  );
+  return { default: MockReplicate };
 });
 
 // Import after mocks are set up
@@ -291,9 +296,14 @@ describe("handleReplicateRequest", () => {
       (mockEnv.R2.get as Mock).mockResolvedValue(null);
 
       const mockReplicateInstance = {
-        run: vi.fn().mockResolvedValue(["https://replicate.delivery/image.webp"]),
+        run: vi.fn().mockResolvedValue([
+          "https://replicate.delivery/image.webp",
+        ]),
       };
-      (Replicate as unknown as Mock).mockImplementation(() => mockReplicateInstance);
+      // Use function expression for Vitest 4 constructor mocking
+      (Replicate as unknown as Mock).mockImplementation(function() {
+        return mockReplicateInstance;
+      });
 
       // Mock fetch for image download
       const mockImageData = new ArrayBuffer(100);
@@ -334,9 +344,14 @@ describe("handleReplicateRequest", () => {
       (mockEnv.R2.get as Mock).mockResolvedValue(null);
 
       const mockReplicateInstance = {
-        run: vi.fn().mockResolvedValue(["https://replicate.delivery/image.webp"]),
+        run: vi.fn().mockResolvedValue([
+          "https://replicate.delivery/image.webp",
+        ]),
       };
-      (Replicate as unknown as Mock).mockImplementation(() => mockReplicateInstance);
+      // Use function expression for Vitest 4 constructor mocking
+      (Replicate as unknown as Mock).mockImplementation(function() {
+        return mockReplicateInstance;
+      });
 
       const mockImageData = new ArrayBuffer(100);
       global.fetch = vi.fn().mockResolvedValue(
@@ -366,9 +381,14 @@ describe("handleReplicateRequest", () => {
       (mockEnv.R2.get as Mock).mockResolvedValue(null);
 
       const mockReplicateInstance = {
-        run: vi.fn().mockResolvedValue(["https://replicate.delivery/image.webp"]),
+        run: vi.fn().mockResolvedValue([
+          "https://replicate.delivery/image.webp",
+        ]),
       };
-      (Replicate as unknown as Mock).mockImplementation(() => mockReplicateInstance);
+      // Use function expression for Vitest 4 constructor mocking
+      (Replicate as unknown as Mock).mockImplementation(function() {
+        return mockReplicateInstance;
+      });
 
       const mockImageData = new ArrayBuffer(100);
       global.fetch = vi.fn().mockResolvedValue(
@@ -402,7 +422,10 @@ describe("handleReplicateRequest", () => {
       const mockReplicateInstance = {
         run: vi.fn().mockRejectedValue(new Error("API rate limit exceeded")),
       };
-      (Replicate as unknown as Mock).mockImplementation(() => mockReplicateInstance);
+      // Use function expression for Vitest 4 constructor mocking
+      (Replicate as unknown as Mock).mockImplementation(function() {
+        return mockReplicateInstance;
+      });
 
       const params = "prompt=test";
       const base64Params = btoa(params);
@@ -426,9 +449,14 @@ describe("handleReplicateRequest", () => {
       (mockEnv.R2.get as Mock).mockResolvedValue(null);
 
       const mockReplicateInstance = {
-        run: vi.fn().mockResolvedValue(["https://replicate.delivery/image.webp"]),
+        run: vi.fn().mockResolvedValue([
+          "https://replicate.delivery/image.webp",
+        ]),
       };
-      (Replicate as unknown as Mock).mockImplementation(() => mockReplicateInstance);
+      // Use function expression for Vitest 4 constructor mocking
+      (Replicate as unknown as Mock).mockImplementation(function() {
+        return mockReplicateInstance;
+      });
 
       global.fetch = vi.fn().mockResolvedValue(
         new Response("Not Found", { status: 404 }),
@@ -455,7 +483,10 @@ describe("handleReplicateRequest", () => {
       const mockReplicateInstance = {
         run: vi.fn().mockResolvedValue(null),
       };
-      (Replicate as unknown as Mock).mockImplementation(() => mockReplicateInstance);
+      // Use function expression for Vitest 4 constructor mocking
+      (Replicate as unknown as Mock).mockImplementation(function() {
+        return mockReplicateInstance;
+      });
 
       const params = "prompt=test";
       const base64Params = btoa(params);
@@ -481,7 +512,10 @@ describe("handleReplicateRequest", () => {
       const mockReplicateInstance = {
         run: vi.fn().mockResolvedValue([""]),
       };
-      (Replicate as unknown as Mock).mockImplementation(() => mockReplicateInstance);
+      // Use function expression for Vitest 4 constructor mocking
+      (Replicate as unknown as Mock).mockImplementation(function() {
+        return mockReplicateInstance;
+      });
 
       const params = "prompt=test";
       const base64Params = btoa(params);
@@ -504,7 +538,10 @@ describe("handleReplicateRequest", () => {
       const mockReplicateInstance = {
         run: vi.fn().mockRejectedValue("string error"),
       };
-      (Replicate as unknown as Mock).mockImplementation(() => mockReplicateInstance);
+      // Use function expression for Vitest 4 constructor mocking
+      (Replicate as unknown as Mock).mockImplementation(function() {
+        return mockReplicateInstance;
+      });
 
       const params = "prompt=test";
       const base64Params = btoa(params);
@@ -529,9 +566,14 @@ describe("handleReplicateRequest", () => {
       (mockEnv.R2.get as Mock).mockResolvedValue(null);
 
       const mockReplicateInstance = {
-        run: vi.fn().mockResolvedValue(["https://replicate.delivery/image.webp"]),
+        run: vi.fn().mockResolvedValue([
+          "https://replicate.delivery/image.webp",
+        ]),
       };
-      (Replicate as unknown as Mock).mockImplementation(() => mockReplicateInstance);
+      // Use function expression for Vitest 4 constructor mocking
+      (Replicate as unknown as Mock).mockImplementation(function() {
+        return mockReplicateInstance;
+      });
 
       const mockImageData = new ArrayBuffer(100);
       global.fetch = vi.fn().mockResolvedValue(
@@ -574,9 +616,14 @@ describe("handleReplicateRequest", () => {
       (mockEnv.R2.get as Mock).mockResolvedValue(null);
 
       const mockReplicateInstance = {
-        run: vi.fn().mockResolvedValue(["https://replicate.delivery/image.webp"]),
+        run: vi.fn().mockResolvedValue([
+          "https://replicate.delivery/image.webp",
+        ]),
       };
-      (Replicate as unknown as Mock).mockImplementation(() => mockReplicateInstance);
+      // Use function expression for Vitest 4 constructor mocking
+      (Replicate as unknown as Mock).mockImplementation(function() {
+        return mockReplicateInstance;
+      });
 
       const mockImageData = new ArrayBuffer(100);
       global.fetch = vi.fn().mockResolvedValue(

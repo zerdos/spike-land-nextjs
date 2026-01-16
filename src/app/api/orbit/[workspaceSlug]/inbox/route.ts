@@ -77,7 +77,9 @@ export async function GET(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     await requireWorkspacePermission(session, workspace.id, "inbox:view");
@@ -97,7 +99,9 @@ export async function GET(
     if (receivedAfter) filter.receivedAfter = new Date(receivedAfter);
     if (receivedBefore) filter.receivedBefore = new Date(receivedBefore);
     if (sentiment) {
-      filter.sentiment = (Array.isArray(sentiment) ? sentiment : [sentiment]) as InboxSentiment[];
+      filter.sentiment = (Array.isArray(sentiment)
+        ? sentiment
+        : [sentiment]) as InboxSentiment[];
     }
     if (minPriority) filter.minPriority = parseInt(minPriority, 10);
     if (maxPriority) filter.maxPriority = parseInt(maxPriority, 10);
@@ -120,7 +124,10 @@ export async function GET(
     let message = "Failed to list inbox items";
 
     if (error instanceof Error) {
-      const errWithStatus = error as Error & { status?: number; statusCode?: number; };
+      const errWithStatus = error as Error & {
+        status?: number;
+        statusCode?: number;
+      };
       if (typeof errWithStatus.status === "number") {
         status = errWithStatus.status;
       } else if (typeof errWithStatus.statusCode === "number") {

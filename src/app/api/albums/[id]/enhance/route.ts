@@ -11,6 +11,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { start } from "workflow/api";
 
+// Force dynamic rendering - skip static page data collection that requires sharp
+export const dynamic = "force-dynamic";
+
 const MAX_BATCH_SIZE = 20;
 
 // Check if we're running in Vercel environment

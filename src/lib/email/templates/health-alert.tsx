@@ -126,7 +126,13 @@ export function HealthAlertEmail({
       </Section>
 
       <Section style={detailsBoxStyle}>
-        <Text style={{ ...emailStyles.text, fontWeight: "bold", margin: "0 0 12px 0" }}>
+        <Text
+          style={{
+            ...emailStyles.text,
+            fontWeight: "bold",
+            margin: "0 0 12px 0",
+          }}
+        >
           Account Details
         </Text>
 
@@ -151,7 +157,9 @@ export function HealthAlertEmail({
               </td>
             </tr>
             <tr>
-              <td style={{ padding: "8px 0", color: "#6b7280" }}>Health Score:</td>
+              <td style={{ padding: "8px 0", color: "#6b7280" }}>
+                Health Score:
+              </td>
               <td
                 style={{
                   padding: "8px 0",

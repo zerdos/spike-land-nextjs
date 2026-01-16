@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { findAppByIdentifier, findAppByIdentifierSimple } from "@/lib/app-lookup";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { isAgentWorking } from "@/lib/upstash";
@@ -9,6 +10,7 @@ import { NextResponse } from "next/server";
 /**
  * GET /api/apps/[id]
  * Get a single app with full details
+ * Supports lookup by: codespaceId, slug, or database id (for backward compatibility)
  */
 export async function GET(
   _request: NextRequest,
@@ -26,38 +28,9 @@ export async function GET(
   }
   const { id } = params;
 
+  // Use flexible lookup that supports codespaceId, slug, or id
   const { data: app, error: fetchError } = await tryCatch(
-    prisma.app.findFirst({
-      where: {
-        id,
-        userId: session.user.id,
-        status: { not: "ARCHIVED" },
-      },
-      include: {
-        requirements: {
-          orderBy: { createdAt: "asc" },
-        },
-        monetizationModels: {
-          orderBy: { createdAt: "asc" },
-        },
-        statusHistory: {
-          orderBy: { createdAt: "desc" },
-          take: 10,
-          select: {
-            id: true,
-            status: true,
-            message: true,
-            createdAt: true,
-          },
-        },
-        _count: {
-          select: {
-            messages: true,
-            images: true,
-          },
-        },
-      },
-    }),
+    findAppByIdentifier(id, session.user.id),
   );
 
   if (fetchError) {
@@ -73,7 +46,7 @@ export async function GET(
   }
 
   // Check if agent is currently working on this app
-  const { data: agentWorking } = await tryCatch(isAgentWorking(id));
+  const { data: agentWorking } = await tryCatch(isAgentWorking(app.id));
 
   return NextResponse.json({
     ...app,
@@ -84,6 +57,7 @@ export async function GET(
 /**
  * PATCH /api/apps/[id]
  * Update app settings
+ * Supports lookup by: codespaceId, slug, or database id (for backward compatibility)
  */
 export async function PATCH(
   request: NextRequest,
@@ -101,14 +75,9 @@ export async function PATCH(
   }
   const { id } = params;
 
+  // Use flexible lookup
   const { data: existingApp, error: fetchError } = await tryCatch(
-    prisma.app.findFirst({
-      where: {
-        id,
-        userId: session.user.id,
-        status: { not: "ARCHIVED" },
-      },
-    }),
+    findAppByIdentifierSimple(id, session.user.id),
   );
 
   if (fetchError) {
@@ -175,7 +144,7 @@ export async function PATCH(
 
   const { data: app, error: updateError } = await tryCatch(
     prisma.app.update({
-      where: { id },
+      where: { id: existingApp.id },
       data: updateData,
       include: {
         requirements: {
@@ -209,6 +178,7 @@ export async function PATCH(
 /**
  * DELETE /api/apps/[id]
  * Archive an app (soft delete)
+ * Supports lookup by: codespaceId, slug, or database id (for backward compatibility)
  */
 export async function DELETE(
   _request: NextRequest,
@@ -226,14 +196,9 @@ export async function DELETE(
   }
   const { id } = params;
 
+  // Use flexible lookup
   const { data: existingApp, error: fetchError } = await tryCatch(
-    prisma.app.findFirst({
-      where: {
-        id,
-        userId: session.user.id,
-        status: { not: "ARCHIVED" },
-      },
-    }),
+    findAppByIdentifierSimple(id, session.user.id),
   );
 
   if (fetchError) {
@@ -251,12 +216,12 @@ export async function DELETE(
   const { error: deleteError } = await tryCatch(
     prisma.$transaction([
       prisma.app.update({
-        where: { id },
+        where: { id: existingApp.id },
         data: { status: "ARCHIVED" },
       }),
       prisma.appStatusHistory.create({
         data: {
-          appId: id,
+          appId: existingApp.id,
           status: "ARCHIVED",
           message: "App archived by user",
         },

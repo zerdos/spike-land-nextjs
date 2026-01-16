@@ -115,7 +115,9 @@ export function DraftCard({ draft, isSelected, onClick }: DraftCardProps) {
                 <span>Recommended</span>
               </div>
             )}
-            <p className="text-sm text-gray-700 line-clamp-3">{draft.content}</p>
+            <p className="text-sm text-gray-700 line-clamp-3">
+              {draft.content}
+            </p>
           </div>
         </div>
 

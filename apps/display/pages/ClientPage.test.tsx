@@ -162,7 +162,7 @@ describe("ClientPage", () => {
     );
 
     await act(async () => {
-      mockPeerInstances[0]!.handlers.open?.("peer-id-123");
+      mockPeerInstances[0]!.handlers["open"]?.("peer-id-123");
     });
   };
 
@@ -1004,7 +1004,7 @@ describe("ClientPage", () => {
 
     // Simulate peer 'open' event - this triggers camera initialization
     await act(async () => {
-      mockPeerInstances[0]!.handlers.open?.("peer-id-123");
+      mockPeerInstances[0]!.handlers["open"]?.("peer-id-123");
     });
 
     // Wait for camera to be initialized
@@ -1056,7 +1056,7 @@ describe("ClientPage", () => {
 
     // Simulate peer 'open' event
     await act(async () => {
-      mockPeerInstances[0]!.handlers.open?.("peer-id-123");
+      mockPeerInstances[0]!.handlers["open"]?.("peer-id-123");
     });
 
     // Wait for camera and call to be created
@@ -1075,12 +1075,12 @@ describe("ClientPage", () => {
 
     // Wait for call handlers to be registered
     await waitFor(() => {
-      expect(mockCallInstances[0]!.handlers.close).toBeDefined();
+      expect(mockCallInstances[0]!.handlers["close"]).toBeDefined();
     });
 
     // Simulate call 'close' event - this should set isConnected to false
     await act(async () => {
-      mockCallInstances[0]!.handlers.close?.();
+      mockCallInstances[0]!.handlers["close"]?.();
     });
 
     await waitFor(() => {
@@ -1104,7 +1104,7 @@ describe("ClientPage", () => {
 
     // Simulate peer 'open' event
     await act(async () => {
-      mockPeerInstances[0]!.handlers.open?.("peer-id-123");
+      mockPeerInstances[0]!.handlers["open"]?.("peer-id-123");
     });
 
     // Wait for camera and call to be created
@@ -1123,12 +1123,12 @@ describe("ClientPage", () => {
 
     // Wait for call handlers to be registered
     await waitFor(() => {
-      expect(mockCallInstances[0]!.handlers.error).toBeDefined();
+      expect(mockCallInstances[0]!.handlers["error"]).toBeDefined();
     });
 
     // Simulate call 'error' event
     await act(async () => {
-      mockCallInstances[0]!.handlers.error?.(new Error("Call error"));
+      mockCallInstances[0]!.handlers["error"]?.(new Error("Call error"));
     });
 
     await waitFor(() => {
@@ -1152,12 +1152,12 @@ describe("ClientPage", () => {
 
     // Wait for peer handlers to be registered
     await waitFor(() => {
-      expect(mockPeerInstances[0]!.handlers.error).toBeDefined();
+      expect(mockPeerInstances[0]!.handlers["error"]).toBeDefined();
     });
 
     // Simulate peer 'error' event
     await act(async () => {
-      mockPeerInstances[0]!.handlers.error?.(new Error("Peer error"));
+      mockPeerInstances[0]!.handlers["error"]?.(new Error("Peer error"));
     });
 
     await waitFor(() => {
@@ -1575,7 +1575,7 @@ describe("ClientPage", () => {
 
     // Simulate peer 'open' event
     await act(async () => {
-      mockPeerInstances[0]!.handlers.open?.("peer-id-123");
+      mockPeerInstances[0]!.handlers["open"]?.("peer-id-123");
     });
 
     // Wait for camera initialization
@@ -1640,7 +1640,7 @@ describe("ClientPage", () => {
 
     // Trigger peer open to start camera initialization
     await act(async () => {
-      mockPeerInstances[0]!.handlers.open?.("peer-id-123");
+      mockPeerInstances[0]!.handlers["open"]?.("peer-id-123");
     });
 
     // Wait for getUserMedia to be called
@@ -1777,7 +1777,7 @@ describe("ClientPage", () => {
 
     // Simulate peer 'open' event to establish connection
     await act(async () => {
-      mockPeerInstances[0]!.handlers.open?.("peer-id-123");
+      mockPeerInstances[0]!.handlers["open"]?.("peer-id-123");
     });
 
     // Wait for camera initialization
@@ -1816,7 +1816,7 @@ describe("ClientPage", () => {
     const latestCall = mockCallInstances[mockCallInstances.length - 1];
     if (latestCall) {
       await act(async () => {
-        latestCall.handlers.close?.();
+        latestCall.handlers["close"]?.();
       });
 
       await waitFor(() => {
@@ -1843,7 +1843,7 @@ describe("ClientPage", () => {
 
     // Simulate peer 'open' event
     await act(async () => {
-      mockPeerInstances[0]!.handlers.open?.("peer-id-123");
+      mockPeerInstances[0]!.handlers["open"]?.("peer-id-123");
     });
 
     // Wait for camera initialization and connection
@@ -1901,7 +1901,7 @@ describe("ClientPage", () => {
     const latestCall = mockCallInstances[mockCallInstances.length - 1];
     if (latestCall) {
       await act(async () => {
-        latestCall.handlers.close?.();
+        latestCall.handlers["close"]?.();
       });
 
       await waitFor(() => {
@@ -2069,8 +2069,8 @@ describe("ClientPage", () => {
 
       // Trigger both open events at once - cameras only initialize when both peers are open
       await act(async () => {
-        mockPeerInstances[0]!.handlers.open?.("peer-id-front");
-        mockPeerInstances[1]!.handlers.open?.("peer-id-back");
+        mockPeerInstances[0]!.handlers["open"]?.("peer-id-front");
+        mockPeerInstances[1]!.handlers["open"]?.("peer-id-back");
       });
     };
 

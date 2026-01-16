@@ -227,8 +227,12 @@ describe("Scheduled Posts Service", () => {
         status: "DRAFT",
       });
       mockPrisma.socialAccount.findMany.mockResolvedValue([mockAccount]);
-      mockPrisma.scheduledPostAccount.deleteMany.mockResolvedValue({ count: 1 });
-      mockPrisma.scheduledPostAccount.createMany.mockResolvedValue({ count: 1 });
+      mockPrisma.scheduledPostAccount.deleteMany.mockResolvedValue({
+        count: 1,
+      });
+      mockPrisma.scheduledPostAccount.createMany.mockResolvedValue({
+        count: 1,
+      });
       mockPrisma.scheduledPost.update.mockResolvedValue(mockPost);
 
       await updateScheduledPost(mockPostId, mockWorkspaceId, {

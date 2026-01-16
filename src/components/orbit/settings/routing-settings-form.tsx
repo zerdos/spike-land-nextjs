@@ -26,22 +26,29 @@ interface RoutingSettingsFormProps {
   workspaceSlug: string;
 }
 
-export function RoutingSettingsForm({ initialSettings, workspaceSlug }: RoutingSettingsFormProps) {
+export function RoutingSettingsForm(
+  { initialSettings, workspaceSlug }: RoutingSettingsFormProps,
+) {
   const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<SmartRoutingSettings>({
-    resolver: zodResolver(SmartRoutingSettingsSchema) as Resolver<SmartRoutingSettings>,
+    resolver: zodResolver(SmartRoutingSettingsSchema) as Resolver<
+      SmartRoutingSettings
+    >,
     defaultValues: initialSettings,
   });
 
   async function onSubmit(data: SmartRoutingSettings) {
     setIsSaving(true);
     try {
-      const resp = await fetch(`/api/orbit/${workspaceSlug}/inbox/routing/settings`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const resp = await fetch(
+        `/api/orbit/${workspaceSlug}/inbox/routing/settings`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        },
+      );
 
       if (!resp.ok) throw new Error("Failed to save settings");
 
@@ -66,7 +73,9 @@ export function RoutingSettingsForm({ initialSettings, workspaceSlug }: RoutingS
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">Enable Smart Routing</FormLabel>
+                  <FormLabel className="text-base">
+                    Enable Smart Routing
+                  </FormLabel>
                   <FormDescription>
                     Automatically analyze and route incoming inbox items.
                   </FormDescription>
@@ -109,7 +118,9 @@ export function RoutingSettingsForm({ initialSettings, workspaceSlug }: RoutingS
               <FormField
                 key={key}
                 control={form.control}
-                name={`priorityWeights.${key as keyof SmartRoutingSettings["priorityWeights"]}`}
+                name={`priorityWeights.${key as keyof SmartRoutingSettings[
+                  "priorityWeights"
+                ]}`}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="capitalize">
@@ -119,7 +130,7 @@ export function RoutingSettingsForm({ initialSettings, workspaceSlug }: RoutingS
                       <Input
                         type="number"
                         {...field}
-                        onChange={e => field.onChange(parseInt(e.target.value))}
+                        onChange={(e) => field.onChange(parseInt(e.target.value))}
                       />
                     </FormControl>
                     <FormMessage />

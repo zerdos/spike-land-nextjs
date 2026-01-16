@@ -4,7 +4,10 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
-      "next/server": path.resolve(__dirname, "../../../node_modules/next/server.js"),
+      "next/server": path.resolve(
+        __dirname,
+        "../../../node_modules/next/server.js",
+      ),
       "@": path.resolve(__dirname, "../../../src"),
       "@/components": path.resolve(__dirname, "../../../src/components"),
       "@/ui": path.resolve(__dirname, "../../../src/components/ui"),

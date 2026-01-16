@@ -101,7 +101,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   if (permError) {
     const httpStatus = permError.message.includes("Unauthorized") ? 401 : 403;
-    return NextResponse.json({ error: permError.message }, { status: httpStatus });
+    return NextResponse.json({ error: permError.message }, {
+      status: httpStatus,
+    });
   }
 
   try {
@@ -123,7 +125,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error("Failed to create scheduled post:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to create scheduled post" },
+      {
+        error: error instanceof Error
+          ? error.message
+          : "Failed to create scheduled post",
+      },
       { status: 500 },
     );
   }

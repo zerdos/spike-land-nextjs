@@ -62,7 +62,9 @@ export const sendNotificationAction: WorkflowAction<
           };
         case "webhook": {
           if (!input.webhookUrl) {
-            throw new Error("Webhook URL is required for webhook notifications");
+            throw new Error(
+              "Webhook URL is required for webhook notifications",
+            );
           }
           const response = await fetch(input.webhookUrl, {
             method: "POST",

@@ -23,7 +23,10 @@ export interface UpdateRecordOutput extends ActionOutput {
 }
 
 // Implement the update-record action
-export const updateRecordAction: WorkflowAction<UpdateRecordInput, UpdateRecordOutput> = {
+export const updateRecordAction: WorkflowAction<
+  UpdateRecordInput,
+  UpdateRecordOutput
+> = {
   type: "update_record",
 
   validate: (input) => {
@@ -51,7 +54,9 @@ export const updateRecordAction: WorkflowAction<UpdateRecordInput, UpdateRecordO
           });
           break;
         case "userAlbum":
-          throw new Error("userAlbum model is not supported for direct updates");
+          throw new Error(
+            "userAlbum model is not supported for direct updates",
+          );
         default:
           throw new Error(`Unsupported model: ${model}`);
       }

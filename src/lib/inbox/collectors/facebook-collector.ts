@@ -116,9 +116,9 @@ export class FacebookCollector extends BaseCollector {
     const appUsage = response.headers.get("x-app-usage");
     if (appUsage) {
       try {
-        const usage = JSON.parse(appUsage);
+        const usage = JSON.parse(appUsage) as Record<string, unknown>;
         // If call_count or total_time approaches 100%, we're near rate limit
-        const callCount = usage.call_count ?? 0;
+        const callCount = (usage["call_count"] as number) ?? 0;
         if (callCount >= 80) {
           this.updateRateLimitStatus(
             100 - callCount,
@@ -171,7 +171,7 @@ export class FacebookCollector extends BaseCollector {
       };
 
       if (options?.cursor) {
-        params.after = options.cursor;
+        params["after"] = options.cursor;
       }
 
       try {
@@ -230,12 +230,14 @@ export class FacebookCollector extends BaseCollector {
       };
 
       if (options?.cursor) {
-        params.after = options.cursor;
+        params["after"] = options.cursor;
       }
 
       try {
         // First get conversations
-        const conversationsResponse = await this.makeRequest<FacebookConversationsResponse>(
+        const conversationsResponse = await this.makeRequest<
+          FacebookConversationsResponse
+        >(
           `/${accountId}/conversations`,
           accessToken,
           params,
@@ -252,7 +254,9 @@ export class FacebookCollector extends BaseCollector {
         const allMessages: RawSocialMessage[] = [];
 
         for (const conversation of conversationsResponse.data.slice(0, 10)) {
-          const messagesResponse = await this.makeRequest<FacebookMessagesResponse>(
+          const messagesResponse = await this.makeRequest<
+            FacebookMessagesResponse
+          >(
             `/${conversation.id}/messages`,
             accessToken,
             {
@@ -335,11 +339,13 @@ export class FacebookCollector extends BaseCollector {
         };
 
         if (options?.cursor) {
-          commentsParams.after = options.cursor;
+          commentsParams["after"] = options.cursor;
         }
 
         try {
-          const commentsResponse = await this.makeRequest<FacebookCommentsResponse>(
+          const commentsResponse = await this.makeRequest<
+            FacebookCommentsResponse
+          >(
             `/${post.id}/comments`,
             accessToken,
             commentsParams,
@@ -348,7 +354,9 @@ export class FacebookCollector extends BaseCollector {
           if (commentsResponse.data) {
             const comments = commentsResponse.data.map((comment) => ({
               platformItemId: comment.id,
-              type: (comment.parent ? "REPLY" : "COMMENT") as "REPLY" | "COMMENT",
+              type: (comment.parent ? "REPLY" : "COMMENT") as
+                | "REPLY"
+                | "COMMENT",
               content: comment.message,
               senderName: comment.from.name,
               senderAvatarUrl: comment.from.picture?.data?.url,

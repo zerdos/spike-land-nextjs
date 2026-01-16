@@ -20,7 +20,9 @@ interface EmergencyStopBannerProps {
   workspaceSlug: string;
 }
 
-export function EmergencyStopBanner({ workspaceSlug }: EmergencyStopBannerProps) {
+export function EmergencyStopBanner(
+  { workspaceSlug }: EmergencyStopBannerProps,
+) {
   const { config, updateConfig, isLoading } = useAutopilotConfig(workspaceSlug);
   const [showConfirm, setShowConfirm] = useState(false);
 

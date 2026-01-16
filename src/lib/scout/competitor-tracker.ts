@@ -22,7 +22,9 @@ function getPublicApiClient(platform: SocialPlatform) {
     case "INSTAGRAM":
       return new PublicInstagramClient();
     default:
-      throw new Error(`No public API client available for platform: ${platform}`);
+      throw new Error(
+        `No public API client available for platform: ${platform}`,
+      );
   }
 }
 
@@ -33,7 +35,11 @@ function getPublicApiClient(platform: SocialPlatform) {
  * @param handle The competitor's handle/username.
  * @returns The newly created ScoutCompetitor object or null if validation fails.
  */
-export async function addCompetitor(workspaceId: string, platform: SocialPlatform, handle: string) {
+export async function addCompetitor(
+  workspaceId: string,
+  platform: SocialPlatform,
+  handle: string,
+) {
   // Validate handle is not empty
   if (!handle || typeof handle !== "string" || handle.trim() === "") {
     return null;
@@ -82,9 +88,11 @@ export async function syncCompetitorPosts(competitorId: string) {
     return;
   }
 
-  const postData = posts.map(post => {
+  const postData = posts.map((post) => {
     // Extract shares count - Instagram posts don't have shares, Twitter/Facebook do
-    const shares = "shares" in post && typeof post.shares === "number" ? post.shares : 0;
+    const shares = "shares" in post && typeof post.shares === "number"
+      ? post.shares
+      : 0;
     return {
       competitorId: competitor.id,
       platformPostId: post.id,
@@ -123,7 +131,9 @@ export async function syncAllCompetitorsForWorkspace(
   });
 
   // Process competitors in batches with controlled concurrency
-  const results: Array<{ id: string; handle: string; success: boolean; error?: string; }> = [];
+  const results: Array<
+    { id: string; handle: string; success: boolean; error?: string; }
+  > = [];
 
   for (let i = 0; i < competitors.length; i += concurrency) {
     const batch = competitors.slice(i, i + concurrency);
@@ -132,10 +142,19 @@ export async function syncAllCompetitorsForWorkspace(
       batch.map(async (competitor) => {
         try {
           await syncCompetitorPosts(competitor.id);
-          return { id: competitor.id, handle: competitor.handle, success: true };
+          return {
+            id: competitor.id,
+            handle: competitor.handle,
+            success: true,
+          };
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : "Unknown error";
-          console.error(`Failed to sync posts for competitor ${competitor.handle}:`, error);
+          const errorMessage = error instanceof Error
+            ? error.message
+            : "Unknown error";
+          console.error(
+            `Failed to sync posts for competitor ${competitor.handle}:`,
+            error,
+          );
           return {
             id: competitor.id,
             handle: competitor.handle,
@@ -155,7 +174,7 @@ export async function syncAllCompetitorsForWorkspace(
 
     // Add delay between batches (except for the last batch)
     if (i + concurrency < competitors.length) {
-      await new Promise(resolve => setTimeout(resolve, delayMs));
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
 

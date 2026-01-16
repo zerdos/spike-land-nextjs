@@ -28,7 +28,10 @@ export async function GET(
   });
 
   if (!workspace || workspace.members.length === 0) {
-    return NextResponse.json({ error: "Workspace not found or access denied" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Workspace not found or access denied" },
+      { status: 404 },
+    );
   }
 
   const { data: config, error } = await tryCatch(
@@ -37,7 +40,9 @@ export async function GET(
 
   if (error) {
     console.error("Error fetching autopilot config:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 
   return NextResponse.json({ config });
@@ -65,7 +70,9 @@ export async function POST(
   });
 
   if (!workspace || workspace.members.length === 0) {
-    return NextResponse.json({ error: "Access denied: Admin privileges required" }, {
+    return NextResponse.json({
+      error: "Access denied: Admin privileges required",
+    }, {
       status: 403,
     });
   }
@@ -78,7 +85,9 @@ export async function POST(
 
   if (error) {
     console.error("Error updating autopilot config:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({
+      error: error.message || "Internal Server Error",
+    }, { status: 500 });
   }
 
   return NextResponse.json({ config });

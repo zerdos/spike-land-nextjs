@@ -124,7 +124,9 @@ describe("StartWithPrompt Integration Flow", () => {
       render(<StartWithPrompt />);
 
       // 1. User enters a prompt (the mock already has the value)
-      const textarea = screen.getByPlaceholderText("Enter your prompt here or paste an image...");
+      const textarea = screen.getByPlaceholderText(
+        "Enter your prompt here or paste an image...",
+      );
       expect(textarea).toHaveValue(testPrompt);
 
       // 2. User clicks Generate
@@ -160,12 +162,18 @@ describe("StartWithPrompt Integration Flow", () => {
       render(<StartWithPrompt />);
 
       // 1. Verify prompt is set
-      const textarea = screen.getByPlaceholderText("Enter your prompt here or paste an image...");
+      const textarea = screen.getByPlaceholderText(
+        "Enter your prompt here or paste an image...",
+      );
       expect(textarea).toHaveValue(testPrompt);
 
       // 2. User uploads an image
-      const file = new File(["dummy content"], "design.png", { type: "image/png" });
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const file = new File(["dummy content"], "design.png", {
+        type: "image/png",
+      });
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
 
       await waitFor(() => {
         fireEvent.change(fileInput, { target: { files: [file] } });
@@ -214,10 +222,14 @@ describe("StartWithPrompt Integration Flow", () => {
       const user = userEvent.setup();
       render(<StartWithPrompt />);
 
-      const textarea = screen.getByPlaceholderText("Enter your prompt here or paste an image...");
+      const textarea = screen.getByPlaceholderText(
+        "Enter your prompt here or paste an image...",
+      );
 
       // Create a paste event with an image
-      const file = new File(["image data"], "pasted.png", { type: "image/png" });
+      const file = new File(["image data"], "pasted.png", {
+        type: "image/png",
+      });
       const clipboardData = {
         items: [{
           type: "image/png",
@@ -249,8 +261,11 @@ describe("StartWithPrompt Integration Flow", () => {
     it("should handle drag and drop images", async () => {
       render(<StartWithPrompt />);
 
-      const dropZone = screen.getByText("Generate a new app or website").closest("div");
-      const file = new File(["image data"], "dropped.png", { type: "image/png" });
+      const dropZone = screen.getByText("Generate a new app or website")
+        .closest("div");
+      const file = new File(["image data"], "dropped.png", {
+        type: "image/png",
+      });
 
       // Simulate drag over
       fireEvent.dragOver(dropZone!, {
@@ -273,12 +288,16 @@ describe("StartWithPrompt Integration Flow", () => {
       render(<StartWithPrompt />);
 
       // The component starts with 0 images, so upload button should be enabled
-      const uploadButton = screen.getByRole("button", { name: /upload image/i });
+      const uploadButton = screen.getByRole("button", {
+        name: /upload image/i,
+      });
       expect(uploadButton).toHaveAttribute("aria-disabled", "false");
 
       // We can't actually test 5 uploads without complex mocking of the component state,
       // so we'll test the basic functionality instead
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       const file = new File(["content"], "test.png", { type: "image/png" });
 
       fireEvent.change(fileInput, { target: { files: [file] } });
@@ -296,7 +315,9 @@ describe("StartWithPrompt Integration Flow", () => {
 
       // Upload an image
       const file = new File(["content"], "test.png", { type: "image/png" });
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
 
       fireEvent.change(fileInput, { target: { files: [file] } });
 
@@ -322,7 +343,9 @@ describe("StartWithPrompt Integration Flow", () => {
 
       // First prompt
       vi.mocked(md5).mockReturnValueOnce("hash-1");
-      const textarea = screen.getByPlaceholderText("Enter your prompt here or paste an image...");
+      const textarea = screen.getByPlaceholderText(
+        "Enter your prompt here or paste an image...",
+      );
       fireEvent.change(textarea, { target: { value: "First prompt" } });
       fireEvent.click(screen.getByRole("button", { name: /generate/i }));
 
@@ -336,7 +359,9 @@ describe("StartWithPrompt Integration Flow", () => {
       // Second prompt
       vi.mocked(md5).mockReturnValueOnce("hash-2");
       fireEvent.change(
-        screen.getByPlaceholderText("Enter your prompt here or paste an image..."),
+        screen.getByPlaceholderText(
+          "Enter your prompt here or paste an image...",
+        ),
         { target: { value: "Second prompt" } },
       );
       fireEvent.click(screen.getByRole("button", { name: /generate/i }));
@@ -368,20 +393,28 @@ describe("StartWithPrompt Integration Flow", () => {
 
       render(<StartWithPrompt />);
 
-      const templateButton = screen.getByRole("button", { name: /choose from templates/i });
+      const templateButton = screen.getByRole("button", {
+        name: /choose from templates/i,
+      });
       await user.click(templateButton);
 
       expect(mockLocation.href).toBe("/start");
     });
 
     it("should handle image processing errors gracefully", async () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      vi.mocked(processImage).mockRejectedValueOnce(new Error("Processing failed"));
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
+      vi.mocked(processImage).mockRejectedValueOnce(
+        new Error("Processing failed"),
+      );
 
       render(<StartWithPrompt />);
 
       const file = new File(["content"], "error.png", { type: "image/png" });
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
 
       fireEvent.change(fileInput, { target: { files: [file] } });
 
@@ -409,12 +442,17 @@ describe("StartWithPrompt Integration Flow", () => {
       render(<StartWithPrompt />);
 
       // Check dark mode classes
-      const container = screen.getByText("Generate a new app or website").closest("div");
-      expect(container?.className).toContain("bg-gradient-to-br from-gray-900 to-gray-800");
+      const container = screen.getByText("Generate a new app or website")
+        .closest("div");
+      expect(container?.className).toContain(
+        "bg-gradient-to-br from-gray-900 to-gray-800",
+      );
       expect(container?.className).toContain("text-white");
 
       // Check textarea dark mode
-      const textarea = screen.getByPlaceholderText("Enter your prompt here or paste an image...");
+      const textarea = screen.getByPlaceholderText(
+        "Enter your prompt here or paste an image...",
+      );
       expect(textarea.className).toContain("bg-gray-800");
       expect(textarea.className).toContain("text-white");
 

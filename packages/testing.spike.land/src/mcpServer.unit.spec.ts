@@ -27,6 +27,7 @@ const createMockDurableObject = (session: ICodeSession): Code => {
     session,
     initialized: true,
     getSession: vi.fn(() => session),
+    getOrigin: vi.fn(() => "https://testing.spike.land"),
     initializeSession: vi.fn(),
     updateAndBroadcastSession: vi.fn(),
   } as unknown as Code;
@@ -208,7 +209,10 @@ describe("MCP Server Unit Tests", () => {
 
       // Access private method through cast for testing
       const result = (mcpServer as unknown as {
-        applyLineEdits: (code: string, edits: Edits) => { newCode: string; diff: string; };
+        applyLineEdits: (
+          code: string,
+          edits: Edits,
+        ) => { newCode: string; diff: string; };
       }).applyLineEdits(originalCode, edits);
 
       expect(result.newCode).toBe("line1\nmodified line2\nline3\nline4");
@@ -234,7 +238,10 @@ describe("MCP Server Unit Tests", () => {
       type Edits = typeof edits;
 
       const result = (mcpServer as unknown as {
-        applyLineEdits: (code: string, edits: Edits) => { newCode: string; diff: string; };
+        applyLineEdits: (
+          code: string,
+          edits: Edits,
+        ) => { newCode: string; diff: string; };
       }).applyLineEdits(originalCode, edits);
 
       expect(result.newCode).toBe("line1\ncombined 2-3\nmodified line4\nline5");
@@ -251,7 +258,10 @@ describe("MCP Server Unit Tests", () => {
       type Edits = typeof edits;
 
       const result = (mcpServer as unknown as {
-        applyLineEdits: (code: string, edits: Edits) => { newCode: string; diff: string; };
+        applyLineEdits: (
+          code: string,
+          edits: Edits,
+        ) => { newCode: string; diff: string; };
       }).applyLineEdits(originalCode, edits);
 
       expect(result.newCode).toBe("line1\nline4");
@@ -271,7 +281,10 @@ describe("MCP Server Unit Tests", () => {
 
       expect(() => {
         (mcpServer as unknown as {
-          applyLineEdits: (code: string, edits: Edits) => { newCode: string; diff: string; };
+          applyLineEdits: (
+            code: string,
+            edits: Edits,
+          ) => { newCode: string; diff: string; };
         }).applyLineEdits(originalCode, edits);
       }).toThrow("exceeds code length");
     });
@@ -294,7 +307,10 @@ describe("MCP Server Unit Tests", () => {
 
       expect(() => {
         (mcpServer as unknown as {
-          applyLineEdits: (code: string, edits: Edits) => { newCode: string; diff: string; };
+          applyLineEdits: (
+            code: string,
+            edits: Edits,
+          ) => { newCode: string; diff: string; };
         }).applyLineEdits(originalCode, edits);
       }).toThrow("Overlapping edits detected");
     });

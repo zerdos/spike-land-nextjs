@@ -26,7 +26,9 @@ export async function POST(
   });
 
   if (!workspace || workspace.members.length === 0) {
-    return NextResponse.json({ error: "Access denied: Admin privileges required" }, {
+    return NextResponse.json({
+      error: "Access denied: Admin privileges required",
+    }, {
       status: 403,
     });
   }
@@ -37,7 +39,9 @@ export async function POST(
 
   if (error) {
     console.error("Error rolling back execution:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({
+      error: error.message || "Internal Server Error",
+    }, { status: 500 });
   }
 
   return NextResponse.json({ result });

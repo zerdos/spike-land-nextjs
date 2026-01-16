@@ -23,7 +23,9 @@ interface GuardrailAlertsPanelProps {
   workspaceId: string;
 }
 
-export function GuardrailAlertsPanel({ workspaceSlug, workspaceId }: GuardrailAlertsPanelProps) {
+export function GuardrailAlertsPanel(
+  { workspaceSlug, workspaceId }: GuardrailAlertsPanelProps,
+) {
   const [alerts, setAlerts] = useState<GuardrailAlert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -51,13 +53,16 @@ export function GuardrailAlertsPanel({ workspaceSlug, workspaceId }: GuardrailAl
 
   const handleAcknowledge = async (alertId: string) => {
     try {
-      const res = await fetch(`/api/orbit/${workspaceSlug}/allocator/autopilot/alerts`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ alertId }),
-      });
+      const res = await fetch(
+        `/api/orbit/${workspaceSlug}/allocator/autopilot/alerts`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ alertId }),
+        },
+      );
       if (res.ok) {
-        setAlerts(prev => prev.filter(a => a.id !== alertId));
+        setAlerts((prev) => prev.filter((a) => a.id !== alertId));
         toast.success("Alert acknowledged");
       }
     } catch (_error) {
@@ -83,7 +88,7 @@ export function GuardrailAlertsPanel({ workspaceSlug, workspaceId }: GuardrailAl
       <CardContent>
         <ScrollArea className="h-[200px] pr-4">
           <div className="space-y-4">
-            {alerts.map(alert => (
+            {alerts.map((alert) => (
               <div
                 key={alert.id}
                 className="flex items-start justify-between p-3 bg-white dark:bg-card rounded-lg border shadow-sm"
@@ -100,12 +105,16 @@ export function GuardrailAlertsPanel({ workspaceSlug, workspaceId }: GuardrailAl
                       {alert.alertType.replace(/_/g, " ")}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(alert.createdAt), {
+                        addSuffix: true,
+                      })}
                     </span>
                   </div>
                   <p className="text-sm font-medium">{alert.message}</p>
                   {alert.campaign && (
-                    <p className="text-xs text-muted-foreground">Campaign: {alert.campaign.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Campaign: {alert.campaign.name}
+                    </p>
                   )}
                 </div>
                 <Button

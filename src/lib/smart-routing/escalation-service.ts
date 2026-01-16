@@ -29,7 +29,7 @@ export class EscalationService {
     const nextLevel = targetLevel ?? (currentLevel + 1);
 
     // Validate level exists
-    const levelDef = settings.escalation.levels.find(l => l.level === nextLevel);
+    const levelDef = settings.escalation.levels.find((l) => l.level === nextLevel);
     if (!levelDef) {
       // Max level reached or invalid
       console.warn(`Cannot escalate item ${itemId} to level ${nextLevel}`);
@@ -45,7 +45,9 @@ export class EscalationService {
         escalatedAt: new Date(),
         escalatedToId: targetUserId, // Optionally assign
         // Reset or update SLA deadline for new level
-        slaDeadline: this.calculateSLADeadline(settings.escalation.slaTimeoutMinutes),
+        slaDeadline: this.calculateSLADeadline(
+          settings.escalation.slaTimeoutMinutes,
+        ),
       },
     });
 

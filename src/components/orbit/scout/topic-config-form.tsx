@@ -53,9 +53,13 @@ export function TopicConfigForm({
 
   const onSubmit = async (values: FormValues) => {
     const keywords: z.infer<typeof topicKeywordsSchema> = {
-      and: values.andKeywords?.split(",").map(kw => kw.trim()).filter(Boolean),
-      or: values.orKeywords?.split(",").map(kw => kw.trim()).filter(Boolean),
-      not: values.notKeywords?.split(",").map(kw => kw.trim()).filter(Boolean),
+      and: values.andKeywords?.split(",").map((kw) => kw.trim()).filter(
+        Boolean,
+      ),
+      or: values.orKeywords?.split(",").map((kw) => kw.trim()).filter(Boolean),
+      not: values.notKeywords?.split(",").map((kw) => kw.trim()).filter(
+        Boolean,
+      ),
     };
 
     const payload = {
@@ -76,7 +80,9 @@ export function TopicConfigForm({
     });
 
     if (response.ok) {
-      toast.success(`Topic ${initialData ? "updated" : "created"} successfully.`);
+      toast.success(
+        `Topic ${initialData ? "updated" : "created"} successfully.`,
+      );
       onSave();
     } else {
       toast.error("Failed to save topic.");
@@ -111,7 +117,10 @@ export function TopicConfigForm({
                 <FormItem>
                   <FormLabel>Keywords (AND)</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., ai, ml, deep learning" {...field} />
+                    <Input
+                      placeholder="e.g., ai, ml, deep learning"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -124,7 +133,10 @@ export function TopicConfigForm({
                 <FormItem>
                   <FormLabel>Keywords (OR)</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., gpt-4, claude, gemini" {...field} />
+                    <Input
+                      placeholder="e.g., gpt-4, claude, gemini"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

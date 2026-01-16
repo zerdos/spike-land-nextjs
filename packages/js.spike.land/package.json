@@ -8,25 +8,24 @@
   "scripts": {
     "dev": "wrangler dev",
     "dev:remote": "wrangler dev --remote",
-    "// build": "yarn clean",
     "build:worker": "esbuild src/index.ts --bundle --outfile=dist/index.js --platform=node --format=esm --target=es2020 --external:esbuild-wasm",
     "prebuild": "cp -r ../code/dist ./node_modules/@spike-npm-land/code/dist",
-    "//x build": "yarn prebuild && yarn build:worker",
     "w:deploy:prod": "wrangler deploy src/index.ts",
     "clean": "rimraf dist",
     "types:check": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint": "eslint ."
   },
   "devDependencies": {
-    "@cloudflare/kv-asset-handler": "0.4.1",
-    "@cloudflare/vitest-pool-workers": "0.12.3",
+    "@cloudflare/kv-asset-handler": "0.4.2",
     "@vitest/runner": "4.0.17",
     "@vitest/snapshot": "4.0.17",
+    "eslint": "9.39.2",
     "rimraf": "6.1.2",
     "typescript": "5.9.3",
     "vitest": "4.0.17",
-    "wrangler": "4.59.1"
+    "wrangler": "4.59.2"
   },
   "dependencies": {
     "@spike-npm-land/code": "0.9.56",

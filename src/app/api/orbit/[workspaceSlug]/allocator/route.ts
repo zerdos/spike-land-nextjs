@@ -66,9 +66,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     ? accountIdsParam.split(",").map((id) => id.trim())
     : undefined;
 
-  const lookbackDays = lookbackDaysParam
-    ? parseInt(lookbackDaysParam, 10)
-    : 30;
+  const lookbackDays = lookbackDaysParam ? parseInt(lookbackDaysParam, 10) : 30;
 
   if (isNaN(lookbackDays) || lookbackDays < 7 || lookbackDays > 90) {
     return NextResponse.json(
@@ -77,7 +75,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     );
   }
 
-  const validRiskTolerances = ["conservative", "moderate", "aggressive"] as const;
+  const validRiskTolerances = [
+    "conservative",
+    "moderate",
+    "aggressive",
+  ] as const;
   const riskTolerance = validRiskTolerances.includes(
       riskToleranceParam as typeof validRiskTolerances[number],
     )
@@ -95,7 +97,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   );
 
   if (recommendationsError) {
-    console.error("Failed to get allocator recommendations:", recommendationsError);
+    console.error(
+      "Failed to get allocator recommendations:",
+      recommendationsError,
+    );
     return NextResponse.json(
       { error: "Failed to generate recommendations" },
       { status: 500 },

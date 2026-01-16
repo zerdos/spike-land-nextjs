@@ -44,7 +44,11 @@ interface DraftWithHistory {
 
 const actionConfig: Record<
   DraftAuditAction,
-  { icon: React.ComponentType<{ className?: string; }>; label: string; color: string; }
+  {
+    icon: React.ComponentType<{ className?: string; }>;
+    label: string;
+    color: string;
+  }
 > = {
   CREATED: {
     icon: FileText,
@@ -132,7 +136,7 @@ function AuditLogSkeleton() {
 
 export function AuditLogViewer({ draftId }: AuditLogViewerProps) {
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params["workspaceSlug"] as string;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["draftAuditLog", workspaceSlug, draftId],
@@ -190,7 +194,10 @@ export function AuditLogViewer({ draftId }: AuditLogViewerProps) {
                 {/* Content */}
                 <div className="flex-1 pt-1">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className={`text-xs ${config.color}`}>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${config.color}`}
+                    >
                       {config.label}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
@@ -200,20 +207,22 @@ export function AuditLogViewer({ draftId }: AuditLogViewerProps) {
 
                   {log.performedBy && (
                     <p className="text-sm text-muted-foreground mt-1">
-                      by {log.performedBy.name || log.performedBy.email || "Unknown"}
+                      by {log.performedBy.name || log.performedBy.email ||
+                        "Unknown"}
                     </p>
                   )}
 
                   {log.details && Object.keys(log.details).length > 0 && (
                     <div className="mt-2 text-xs text-muted-foreground bg-muted/50 rounded p-2">
-                      {log.action === "REJECTED" && !!log.details.reason && (
-                        <p>Reason: {String(log.details.reason)}</p>
+                      {log.action === "REJECTED" && !!log.details["reason"] && (
+                        <p>Reason: {String(log.details["reason"])}</p>
                       )}
-                      {log.action === "SEND_FAILED" && !!log.details.errorMessage && (
-                        <p>Error: {String(log.details.errorMessage)}</p>
+                      {log.action === "SEND_FAILED" &&
+                        !!log.details["errorMessage"] && (
+                        <p>Error: {String(log.details["errorMessage"])}</p>
                       )}
-                      {log.action === "EDITED" && !!log.details.editType && (
-                        <p>Edit type: {String(log.details.editType)}</p>
+                      {log.action === "EDITED" && !!log.details["editType"] && (
+                        <p>Edit type: {String(log.details["editType"])}</p>
                       )}
                     </div>
                   )}

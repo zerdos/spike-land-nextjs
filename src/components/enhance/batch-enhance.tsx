@@ -347,6 +347,14 @@ export function BatchEnhance({
                   <div
                     key={image.id}
                     onClick={() => !isProcessing && toggleImageSelection(image.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        if (!isProcessing) toggleImageSelection(image.id);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={isProcessing ? -1 : 0}
                     className={`
                       relative cursor-pointer rounded-lg border-2 transition-all overflow-hidden
                       ${isSelected ? "border-primary" : "border-transparent"}

@@ -43,7 +43,9 @@ describe("syncGoogleAdsCampaigns", () => {
   });
 
   it("should sync campaigns for Google Ads accounts in a workspace", async () => {
-    (prisma.workspaceMember.findMany as any).mockResolvedValue([{ userId: "user1" }]);
+    (prisma.workspaceMember.findMany as any).mockResolvedValue([{
+      userId: "user1",
+    }]);
     (prisma.marketingAccount.findMany as any).mockResolvedValue([
       {
         id: "acc1",
@@ -54,7 +56,9 @@ describe("syncGoogleAdsCampaigns", () => {
       },
     ]);
 
-    (prisma.allocatorCampaign.upsert as any).mockResolvedValue({ id: "saved_c1" });
+    (prisma.allocatorCampaign.upsert as any).mockResolvedValue({
+      id: "saved_c1",
+    });
 
     // Run the sync
     await syncGoogleAdsCampaigns("ws1");
@@ -63,7 +67,10 @@ describe("syncGoogleAdsCampaigns", () => {
     const mockClientInstance = (vi.mocked(GoogleAdsAllocatorClient).mock.results[0] as any).value;
 
     // Setup instance mocks after it's created (or we could have done it in mockImplementation)
-    mockClientInstance.getAdAccounts.mockResolvedValue([{ id: "123", name: "Account 1" }]);
+    mockClientInstance.getAdAccounts.mockResolvedValue([{
+      id: "123",
+      name: "Account 1",
+    }]);
     mockClientInstance.getCampaigns.mockResolvedValue([{
       id: "c1",
       name: "Camp 1",

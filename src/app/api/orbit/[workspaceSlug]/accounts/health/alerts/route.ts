@@ -74,8 +74,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
   // Get alert config from workspace settings (or use defaults)
   const settings = workspace.settings as Record<string, unknown> | null;
-  const alertConfig: HealthAlertConfig = settings?.healthAlerts
-    ? (settings.healthAlerts as HealthAlertConfig)
+  const alertConfig: HealthAlertConfig = settings?.["healthAlerts"]
+    ? (settings["healthAlerts"] as HealthAlertConfig)
     : getDefaultAlertConfig(workspace.id);
 
   // Get recent health events
@@ -130,8 +130,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
   // Merge with existing settings
   const currentSettings = (workspace.settings as Record<string, unknown>) || {};
-  const currentAlertConfig = currentSettings.healthAlerts
-    ? (currentSettings.healthAlerts as HealthAlertConfig)
+  const currentAlertConfig = currentSettings["healthAlerts"]
+    ? (currentSettings["healthAlerts"] as HealthAlertConfig)
     : getDefaultAlertConfig(workspace.id);
 
   const newAlertConfig: HealthAlertConfig = {
@@ -196,8 +196,8 @@ export async function PUT(_request: NextRequest, { params }: RouteParams) {
 
   // Get alert config
   const settings = workspace.settings as Record<string, unknown> | null;
-  const alertConfig: HealthAlertConfig = settings?.healthAlerts
-    ? (settings.healthAlerts as HealthAlertConfig)
+  const alertConfig: HealthAlertConfig = settings?.["healthAlerts"]
+    ? (settings["healthAlerts"] as HealthAlertConfig)
     : getDefaultAlertConfig(workspace.id);
 
   // Check if alerts are enabled (via notification channels)

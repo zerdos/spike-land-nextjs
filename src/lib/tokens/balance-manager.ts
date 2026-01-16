@@ -58,39 +58,40 @@ export class TokenBalanceManager {
   static async getBalance(userId: string): Promise<TokenBalanceResult> {
     this.validateUserId(userId);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tokenBalance = await prisma.$transaction(async (tx: any) => {
-      let balance = await tx.userTokenBalance.findUnique({
-        where: { userId },
-      });
-
-      if (!balance) {
-        // Ensure User record exists before creating UserTokenBalance
-        // This handles cases where NextAuth uses JWT strategy without database adapter
-        await tx.user.upsert({
-          where: { id: userId },
-          update: {},
-          create: { id: userId },
+    const tokenBalance = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        let balance = await tx.userTokenBalance.findUnique({
+          where: { userId },
         });
 
-        // Get initial capacity for FREE tier (default)
-        const initialCapacity = TierManager.getTierCapacity(
-          SubscriptionTier.FREE,
-        );
+        if (!balance) {
+          // Ensure User record exists before creating UserTokenBalance
+          // This handles cases where NextAuth uses JWT strategy without database adapter
+          await tx.user.upsert({
+            where: { id: userId },
+            update: {},
+            create: { id: userId },
+          });
 
-        // Create initial token balance for new user
-        balance = await tx.userTokenBalance.create({
-          data: {
-            userId,
-            balance: initialCapacity,
-            tier: SubscriptionTier.FREE,
-            lastRegeneration: new Date(),
-          },
-        });
-      }
+          // Get initial capacity for FREE tier (default)
+          const initialCapacity = TierManager.getTierCapacity(
+            SubscriptionTier.FREE,
+          );
 
-      return balance;
-    });
+          // Create initial token balance for new user
+          balance = await tx.userTokenBalance.create({
+            data: {
+              userId,
+              balance: initialCapacity,
+              tier: SubscriptionTier.FREE,
+              lastRegeneration: new Date(),
+            },
+          });
+        }
+
+        return balance;
+      },
+    );
 
     const tier = tokenBalance.tier as SubscriptionTier;
     const maxBalance = TierManager.getTierCapacity(tier);
@@ -157,8 +158,7 @@ export class TokenBalanceManager {
     // Use transaction to ensure atomic update
 
     const { data: result, error } = await tryCatch(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      prisma.$transaction(async (tx: any) => {
+      prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Get or create balance
         let tokenBalance = await tx.userTokenBalance.findUnique({
           where: { userId },
@@ -302,8 +302,7 @@ export class TokenBalanceManager {
     }
 
     const { data: result, error } = await tryCatch(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      prisma.$transaction(async (tx: any) => {
+      prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Get or create balance
         let tokenBalance = await tx.userTokenBalance.findUnique({
           where: { userId },

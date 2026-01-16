@@ -230,7 +230,10 @@ export function ScheduledPostCard({
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{format(post.scheduledAt, "h:mm a")}</span>
         {post.isRecurring && (
-          <span className="flex items-center gap-1" data-testid="recurring-indicator">
+          <span
+            className="flex items-center gap-1"
+            data-testid="recurring-indicator"
+          >
             <Repeat className="h-3 w-3" />
             Recurring
           </span>

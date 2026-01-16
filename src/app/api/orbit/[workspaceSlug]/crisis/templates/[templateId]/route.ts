@@ -132,7 +132,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const { name, category, platform, content, variables, isActive } = body as Partial<

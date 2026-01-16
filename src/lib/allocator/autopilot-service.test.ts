@@ -118,14 +118,20 @@ describe("AutopilotService", () => {
       maxSingleChange: new MockDecimal(mockConfig.maxSingleChange),
     });
     (FeatureFlagService.isFeatureEnabled as any).mockResolvedValue(true);
-    (AutopilotAnomalyIntegration.checkForAnomalies as any).mockResolvedValue([]);
+    (AutopilotAnomalyIntegration.checkForAnomalies as any).mockResolvedValue(
+      [],
+    );
     (prisma.allocatorDailyBudgetMove.findUnique as any).mockResolvedValue(null); // No previous moves
-    (prisma.allocatorAutopilotExecution.create as any).mockResolvedValue({ id: "exec-1" });
+    (prisma.allocatorAutopilotExecution.create as any).mockResolvedValue({
+      id: "exec-1",
+    });
   });
 
   describe("evaluateRecommendation", () => {
     it("should approve valid recommendation", async () => {
-      const result = await AutopilotService.evaluateRecommendation(mockRecommendation);
+      const result = await AutopilotService.evaluateRecommendation(
+        mockRecommendation,
+      );
       expect(result.shouldExecute).toBe(true);
     });
 
@@ -136,23 +142,31 @@ describe("AutopilotService", () => {
         maxDailyBudgetChange: new MockDecimal(mockConfig.maxDailyBudgetChange),
         maxSingleChange: new MockDecimal(mockConfig.maxSingleChange),
       });
-      const result = await AutopilotService.evaluateRecommendation(mockRecommendation);
+      const result = await AutopilotService.evaluateRecommendation(
+        mockRecommendation,
+      );
       expect(result.shouldExecute).toBe(false);
       expect(result.reason).toContain("disabled");
     });
 
     it("should reject if anomalies detected", async () => {
-      (AutopilotAnomalyIntegration.checkForAnomalies as any).mockResolvedValue([{
-        type: "TEST_ANOMALY",
-      }]);
-      const result = await AutopilotService.evaluateRecommendation(mockRecommendation);
+      (AutopilotAnomalyIntegration.checkForAnomalies as any).mockResolvedValue([
+        {
+          type: "TEST_ANOMALY",
+        },
+      ]);
+      const result = await AutopilotService.evaluateRecommendation(
+        mockRecommendation,
+      );
       expect(result.shouldExecute).toBe(false);
       expect(result.reason).toContain("anomalies");
     });
 
     it("should reject if single change exceeds limit", async () => {
       const largeChangeRec = { ...mockRecommendation, suggestedBudget: 110 }; // 10% change > 5% limit
-      const result = await AutopilotService.evaluateRecommendation(largeChangeRec);
+      const result = await AutopilotService.evaluateRecommendation(
+        largeChangeRec,
+      );
       expect(result.shouldExecute).toBe(false);
       expect(result.reason).toContain("exceeds single move limit");
     });
@@ -166,7 +180,9 @@ describe("AutopilotService", () => {
       // Attempting to move 4 more. Total 12. Limit is 10 (10% of 100).
       // Wait, limit is percent of baseBudget. 10% of 100 = 10.
       // 8 + 4 = 12 > 10.
-      const result = await AutopilotService.evaluateRecommendation(mockRecommendation);
+      const result = await AutopilotService.evaluateRecommendation(
+        mockRecommendation,
+      );
       expect(result.shouldExecute).toBe(false);
       expect(result.reason).toContain("Daily budget move limit reached");
     });
@@ -216,11 +232,15 @@ describe("AutopilotService", () => {
     });
 
     it("should log skipped if evaluation fails", async () => {
-      (AutopilotAnomalyIntegration.checkForAnomalies as any).mockResolvedValue([{
-        type: "TEST_ANOMALY",
-      }]);
+      (AutopilotAnomalyIntegration.checkForAnomalies as any).mockResolvedValue([
+        {
+          type: "TEST_ANOMALY",
+        },
+      ]);
 
-      const result = await AutopilotService.executeRecommendation(mockRecommendation);
+      const result = await AutopilotService.executeRecommendation(
+        mockRecommendation,
+      );
 
       expect(result.status).toBe("SKIPPED");
       expect(prisma.allocatorAutopilotExecution.create).toHaveBeenCalledWith(

@@ -76,7 +76,10 @@ const AutoSendInitialPrompt: React.FC<{
 
         // TODO: Handle images if needed in the future
         if (initialPrompt.images.length > 0) {
-          console.log("Images detected in initial prompt:", initialPrompt.images);
+          console.log(
+            "Images detected in initial prompt:",
+            initialPrompt.images,
+          );
           // Images will need to be handled based on the API's capability
         }
       }

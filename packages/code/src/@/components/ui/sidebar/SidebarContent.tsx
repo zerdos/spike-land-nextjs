@@ -3,7 +3,9 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-export function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
+export function SidebarContent(
+  { className, ...props }: React.ComponentProps<"div">,
+) {
   return (
     <div
       data-slot="sidebar-content"
@@ -17,7 +19,9 @@ export function SidebarContent({ className, ...props }: React.ComponentProps<"di
   );
 }
 
-export function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
+export function SidebarGroup(
+  { className, ...props }: React.ComponentProps<"div">,
+) {
   return (
     <div
       data-slot="sidebar-group"

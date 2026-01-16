@@ -108,7 +108,8 @@ export function CalendarHeader({
     onFiltersChange({});
   };
 
-  const hasFilters = (filters.platforms?.length ?? 0) > 0 || (filters.status?.length ?? 0) > 0;
+  const hasFilters = (filters.platforms?.length ?? 0) > 0 ||
+    (filters.status?.length ?? 0) > 0;
 
   return (
     <div
@@ -128,7 +129,10 @@ export function CalendarHeader({
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
-        <h2 className="min-w-[140px] text-center text-lg font-semibold" data-testid="current-month">
+        <h2
+          className="min-w-[140px] text-center text-lg font-semibold"
+          data-testid="current-month"
+        >
           {format(currentDate, "MMMM yyyy")}
         </h2>
 
@@ -184,7 +188,8 @@ export function CalendarHeader({
               Filter
               {hasFilters && (
                 <span className="ml-1 rounded-full bg-primary-foreground px-1.5 text-xs text-primary">
-                  {(filters.platforms?.length ?? 0) + (filters.status?.length ?? 0)}
+                  {(filters.platforms?.length ?? 0) +
+                    (filters.status?.length ?? 0)}
                 </span>
               )}
             </Button>

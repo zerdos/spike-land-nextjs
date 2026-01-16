@@ -61,7 +61,11 @@ const createMockRule = (
     | "NLP_CLASSIFICATION"
     | "CUSTOM_LOGIC",
   conditions: (overrides.conditions ?? {}) as unknown as PolicyRule["conditions"],
-  severity: (overrides.severity ?? "WARNING") as "INFO" | "WARNING" | "ERROR" | "CRITICAL",
+  severity: (overrides.severity ?? "WARNING") as
+    | "INFO"
+    | "WARNING"
+    | "ERROR"
+    | "CRITICAL",
   isBlocking: overrides.isBlocking ?? false,
   isActive: true,
   sourceUrl: null,
@@ -101,7 +105,11 @@ describe("Policy Engine", () => {
         },
       });
 
-      const result = evaluateRule(rule, "Check out our new product!", undefined);
+      const result = evaluateRule(
+        rule,
+        "Check out our new product!",
+        undefined,
+      );
 
       expect(result.passed).toBe(true);
     });
@@ -211,7 +219,11 @@ describe("Policy Engine", () => {
         },
       });
 
-      const result = evaluateRule(rule, "This content is just right!", undefined);
+      const result = evaluateRule(
+        rule,
+        "This content is just right!",
+        undefined,
+      );
 
       expect(result.passed).toBe(true);
     });
@@ -327,7 +339,11 @@ describe("Policy Engine", () => {
         },
       });
 
-      const result = evaluateRule(rule, "This product cures cancer!", undefined);
+      const result = evaluateRule(
+        rule,
+        "This product cures cancer!",
+        undefined,
+      );
 
       expect(result.passed).toBe(false);
       expect(result.confidence).toBeGreaterThan(0.7);
@@ -342,7 +358,11 @@ describe("Policy Engine", () => {
         },
       });
 
-      const result = evaluateRule(rule, "Check out our new fitness app!", undefined);
+      const result = evaluateRule(
+        rule,
+        "Check out our new fitness app!",
+        undefined,
+      );
 
       expect(result.passed).toBe(true);
     });
@@ -465,7 +485,11 @@ describe("Policy Engine", () => {
         },
       });
 
-      const result = evaluateRule(rule, "Get guaranteed returns on your investment!", undefined);
+      const result = evaluateRule(
+        rule,
+        "Get guaranteed returns on your investment!",
+        undefined,
+      );
 
       expect(result.passed).toBe(false);
       expect(result.confidence).toBeGreaterThan(0.7);
@@ -620,9 +644,10 @@ describe("Policy Engine", () => {
         checkScope: "QUICK",
       });
 
-      const callArgs = vi.mocked(prisma.policyRule.findMany).mock.calls[0]?.[0] as {
-        where?: { severity?: unknown; };
-      } | undefined;
+      const callArgs = vi.mocked(prisma.policyRule.findMany).mock.calls[0]
+        ?.[0] as {
+          where?: { severity?: unknown; };
+        } | undefined;
       expect(callArgs?.where?.severity).toEqual({ in: ["CRITICAL", "ERROR"] });
     });
 
@@ -790,7 +815,9 @@ describe("Policy Engine", () => {
         status: "IN_PROGRESS",
       } as never);
 
-      vi.mocked(prisma.policyRule.findMany).mockRejectedValue(new Error("Database error"));
+      vi.mocked(prisma.policyRule.findMany).mockRejectedValue(
+        new Error("Database error"),
+      );
       vi.mocked(prisma.policyCheck.update).mockResolvedValue({} as never);
 
       await expect(

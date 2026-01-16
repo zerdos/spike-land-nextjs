@@ -196,7 +196,9 @@ export type MessageContentPart = TextContentPart | ToolCallContentPart;
  * Renders a message into content parts for display.
  * Handles both text content and tool calls.
  */
-export function renderMessage(message: MessageWithToolCalls): MessageContentPart[] {
+export function renderMessage(
+  message: MessageWithToolCalls,
+): MessageContentPart[] {
   const parts: MessageContentPart[] = [];
 
   // Add text content if present

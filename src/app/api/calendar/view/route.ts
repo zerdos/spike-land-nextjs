@@ -121,7 +121,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   if (permError) {
     const httpStatus = permError.message.includes("Unauthorized") ? 401 : 403;
-    return NextResponse.json({ error: permError.message }, { status: httpStatus });
+    return NextResponse.json({ error: permError.message }, {
+      status: httpStatus,
+    });
   }
 
   try {

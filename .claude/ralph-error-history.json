@@ -1,0 +1,14 @@
+[
+  {
+    "pattern": "TypeScript compilation error",
+    "occurrences": 5,
+    "firstSeen": "2026-01-14T09:45:23.911Z",
+    "lastSeen": "2026-01-14T09:45:23.911Z"
+  },
+  {
+    "pattern": "PR creation error",
+    "occurrences": 12,
+    "firstSeen": "2026-01-14T17:39:09.116Z",
+    "lastSeen": "2026-01-15T10:05:23.074Z"
+  }
+]

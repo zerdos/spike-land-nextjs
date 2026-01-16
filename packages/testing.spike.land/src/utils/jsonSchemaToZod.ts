@@ -3,7 +3,12 @@ import { z } from "zod";
 /**
  * Supported JSON Schema primitive types
  */
-export type JsonSchemaPrimitiveType = "string" | "number" | "integer" | "boolean" | "null";
+export type JsonSchemaPrimitiveType =
+  | "string"
+  | "number"
+  | "integer"
+  | "boolean"
+  | "null";
 
 /**
  * Supported JSON Schema composite types
@@ -128,7 +133,9 @@ export function isJsonSchemaType(value: unknown): value is JsonSchemaType {
 /**
  * Type guard to check if a schema is a valid MCP tool input schema
  */
-export function isMcpToolInputSchema(value: unknown): value is McpToolInputSchema {
+export function isMcpToolInputSchema(
+  value: unknown,
+): value is McpToolInputSchema {
   if (!isJsonSchemaType(value)) {
     return false;
   }

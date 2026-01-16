@@ -29,7 +29,10 @@ export const verifyCodeIntegrity = (code: string, hash: string): boolean => {
 /**
  * Calculate metrics about code changes
  */
-export const calculateCodeChanges = (oldCode: string, newCode: string): CodeChangeMetrics => {
+export const calculateCodeChanges = (
+  oldCode: string,
+  newCode: string,
+): CodeChangeMetrics => {
   const oldLines = oldCode ? oldCode.split("\n") : [""];
   const newLines = newCode ? newCode.split("\n") : [""];
 
@@ -78,7 +81,10 @@ export const logCodeChanges = (oldCode: string, newCode: string): void => {
 /**
  * Determine if full code should be returned based on size and complexity
  */
-export const shouldReturnFullCode = (instructions: string, code: string): boolean => {
+export const shouldReturnFullCode = (
+  instructions: string,
+  code: string,
+): boolean => {
   // For small files, always return full code
   if (code.length < SMALL_FILE_THRESHOLD) {
     return true;
@@ -95,7 +101,9 @@ export const shouldReturnFullCode = (instructions: string, code: string): boolea
 /**
  * Estimate token savings by not returning code
  */
-export const estimateTokenSavings = (code: string | null | undefined): number => {
+export const estimateTokenSavings = (
+  code: string | null | undefined,
+): number => {
   if (!code || typeof code !== "string") {
     return 0;
   }

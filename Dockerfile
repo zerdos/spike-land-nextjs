@@ -4,7 +4,7 @@ ARG NODE_IMAGE=node:24.12.0-bookworm-slim
 ARG DUMMY_DATABASE_URL=postgresql://build:build@localhost:5432/build
 ARG CACHE_NS=vercel-app
 ARG TEST_CACHE_NS=test-cache
-ARG DEP_CACHE_COMMIT=ead7c6b9
+ARG DEP_CACHE_COMMIT=0f4ab7f
 
 # ============================================================================
 # STAGE 0: Base

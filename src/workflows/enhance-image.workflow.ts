@@ -16,8 +16,28 @@ import { TokenBalanceManager } from "@/lib/tokens/balance-manager--workflow";
 import { tryCatch } from "@/lib/try-catch--no-track";
 import type { EnhancementTier } from "@prisma/client";
 import { JobStatus } from "@prisma/client";
-import sharp from "sharp";
 import { FatalError } from "workflow";
+
+// Lazy-load sharp to prevent build-time native module loading
+// Sharp is only needed at runtime when workflow steps execute
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _sharp: any = null;
+async function getSharp() {
+  if (!_sharp) {
+    // Dynamic import for CommonJS module
+    const mod = await import("sharp");
+    // Handle both ESM default export and CommonJS module.exports
+    _sharp = mod.default || mod;
+  }
+  return _sharp;
+}
+
+// Type for sharp metadata results
+interface SharpMetadata {
+  width?: number;
+  height?: number;
+  format?: string;
+}
 import {
   calculateCropRegion,
   calculateTargetDimensions,
@@ -180,7 +200,8 @@ async function getImageMetadata(imageBuffer: Buffer): Promise<ImageMetadata> {
 
   // Reconstitute Buffer after workflow serialization
   const buffer = ensureBuffer(imageBuffer);
-  const metadata = await sharp(buffer).metadata();
+  const sharp = await getSharp();
+  const metadata: SharpMetadata = await sharp(buffer).metadata();
   const width = metadata.width || DEFAULT_IMAGE_DIMENSION;
   const height = metadata.height || DEFAULT_IMAGE_DIMENSION;
 
@@ -253,6 +274,14 @@ async function saveAnalysisToDb(
 ): Promise<void> {
   "use step";
 
+  const qualityScoreMap = {
+    low: 0.33,
+    medium: 0.66,
+    high: 1.0,
+  };
+
+  const qualityScore = qualityScoreMap[analysisResult.quality] ?? 0.5;
+
   await prisma.imageEnhancementJob.update({
     where: { id: jobId },
     data: {
@@ -260,6 +289,8 @@ async function saveAnalysisToDb(
         JSON.stringify(analysisResult.structuredAnalysis),
       ),
       analysisSource: DEFAULT_MODEL,
+      altText: analysisResult.description,
+      qualityScore: qualityScore,
     },
   });
 }
@@ -316,11 +347,12 @@ async function downloadBlendSourceStep(
     return undefined;
   }
 
+  const sharp = await getSharp();
   const { data: sourceMetadata, error: metadataError } = await tryCatch(
-    sharp(sourceBuffer).metadata(),
+    sharp(sourceBuffer).metadata() as Promise<SharpMetadata>,
   );
 
-  if (metadataError) {
+  if (metadataError || !sourceMetadata) {
     console.warn("Failed to get blend source metadata:", metadataError);
     return undefined;
   }
@@ -351,13 +383,14 @@ async function performCropOperations(
   height: number;
   cropDimensions: { left: number; top: number; width: number; height: number; };
 }> {
+  const sharp = await getSharp();
   // Crop the image
   const croppedBuffer = await sharp(imageBuffer)
     .extract(cropRegion)
     .toBuffer();
 
   // Get new dimensions
-  const croppedMetadata = await sharp(croppedBuffer).metadata();
+  const croppedMetadata: SharpMetadata = await sharp(croppedBuffer).metadata();
   const newWidth = croppedMetadata.width || cropRegion.width;
   const newHeight = croppedMetadata.height || cropRegion.height;
 
@@ -481,6 +514,7 @@ async function padImageForGemini(
 
   // Reconstitute Buffer after workflow serialization
   const buffer = ensureBuffer(imageBuffer);
+  const sharp = await getSharp();
 
   const maxDimension = Math.max(width, height);
   const paddedBuffer = await sharp(buffer)
@@ -561,9 +595,10 @@ async function processAndUpload(
 
   // Reconstitute Buffer after workflow serialization
   const buffer = ensureBuffer(enhancedBuffer);
+  const sharp = await getSharp();
 
   // Get Gemini output dimensions
-  const geminiMetadata = await sharp(buffer).metadata();
+  const geminiMetadata: SharpMetadata = await sharp(buffer).metadata();
   const geminiWidth = geminiMetadata.width;
   const geminiHeight = geminiMetadata.height;
 
@@ -601,7 +636,7 @@ async function processAndUpload(
     .jpeg({ quality: ENHANCED_JPEG_QUALITY })
     .toBuffer();
 
-  const finalMetadata = await sharp(finalBuffer).metadata();
+  const finalMetadata: SharpMetadata = await sharp(finalBuffer).metadata();
 
   // Generate R2 key for enhanced image
   const enhancedR2Key = generateEnhancedR2Key(originalR2Key, jobId);

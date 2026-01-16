@@ -54,7 +54,9 @@ export function parseFacebookRateLimits(
       const usage = JSON.parse(businessUsage);
       // Format: { "accountId": [{ "call_count": X, "total_cputime": Y, "total_time": Z }] }
       const values = Object.values(usage) as Array<
-        Array<{ call_count?: number; total_cputime?: number; total_time?: number; }>
+        Array<
+          { call_count?: number; total_cputime?: number; total_time?: number; }
+        >
       >;
       const firstValue = values[0];
       const data = firstValue?.[0];
@@ -98,12 +100,12 @@ export function parseFacebookRateLimits(
 
   // Check response body for error info
   if (body && typeof body === "object" && "error" in body) {
-    const error = (body as Record<string, unknown>).error;
+    const error = (body as Record<string, unknown>)["error"];
     if (
       error &&
       typeof error === "object" &&
       "code" in error &&
-      (error as Record<string, unknown>).code === 4
+      (error as Record<string, unknown>)["code"] === 4
     ) {
       // Rate limit error
       return {
@@ -131,8 +133,9 @@ export function parseLinkedInRateLimits(
   if (body && typeof body === "object") {
     const errorBody = body as Record<string, unknown>;
     if (
-      errorBody.status === 429 ||
-      (errorBody.message && String(errorBody.message).toLowerCase().includes("rate limit"))
+      errorBody["status"] === 429 ||
+      (errorBody["message"] &&
+        String(errorBody["message"]).toLowerCase().includes("rate limit"))
     ) {
       return {
         remaining: 0,
@@ -245,7 +248,8 @@ export async function getRateLimitUsage(
   }
 
   const percentUsed = health.rateLimitTotal > 0
-    ? ((health.rateLimitTotal - health.rateLimitRemaining) / health.rateLimitTotal) * 100
+    ? ((health.rateLimitTotal - health.rateLimitRemaining) /
+      health.rateLimitTotal) * 100
     : 0;
 
   return {

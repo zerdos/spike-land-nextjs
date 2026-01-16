@@ -27,7 +27,9 @@ export async function POST(
   });
 
   if (!workspace || workspace.members.length === 0) {
-    return NextResponse.json({ error: "Access denied: Admin privileges required" }, {
+    return NextResponse.json({
+      error: "Access denied: Admin privileges required",
+    }, {
       status: 403,
     });
   }
@@ -35,7 +37,9 @@ export async function POST(
   const { isEnabled } = await req.json();
 
   if (typeof isEnabled !== "boolean") {
-    return NextResponse.json({ error: "Invalid input: isEnabled must be boolean" }, {
+    return NextResponse.json({
+      error: "Invalid input: isEnabled must be boolean",
+    }, {
       status: 400,
     });
   }
@@ -46,7 +50,9 @@ export async function POST(
 
   if (error) {
     console.error("Error toggling autopilot:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({
+      error: error.message || "Internal Server Error",
+    }, { status: 500 });
   }
 
   return NextResponse.json({ config });

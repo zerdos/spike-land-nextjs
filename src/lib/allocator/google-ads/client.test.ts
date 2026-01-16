@@ -5,10 +5,14 @@ import { GoogleAdsAllocatorClient } from "./client";
 vi.mock("@/lib/marketing/google-ads-client", () => {
   return {
     GoogleAdsClient: vi.fn().mockImplementation(function() {
+      const queryMock = vi.fn();
       return {
         getAccounts: vi.fn(),
         setCustomerId: vi.fn(),
-        query: vi.fn(),
+        query: queryMock,
+        // executeQuery is exposed by ExtendedGoogleAdsClient which extends GoogleAdsClient
+        // The mock needs to support the class extension pattern
+        executeQuery: queryMock,
         listCampaigns: vi.fn(),
         platform: "GOOGLE_ADS",
       };
@@ -18,12 +22,20 @@ vi.mock("@/lib/marketing/google-ads-client", () => {
 
 describe("GoogleAdsAllocatorClient", () => {
   let client: GoogleAdsAllocatorClient;
-  let mockMarketingClient: any;
+  let mockMarketingClient: {
+    getAccounts: ReturnType<typeof vi.fn>;
+    setCustomerId: ReturnType<typeof vi.fn>;
+    query: ReturnType<typeof vi.fn>;
+    executeQuery: ReturnType<typeof vi.fn>;
+    listCampaigns: ReturnType<typeof vi.fn>;
+    platform: string;
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
     client = new GoogleAdsAllocatorClient("fake_token", "fake_id");
-    mockMarketingClient = (vi.mocked(GoogleAdsClient).mock.results[0] as any).value;
+    const mockResult = vi.mocked(GoogleAdsClient).mock.results[0];
+    mockMarketingClient = mockResult?.value as typeof mockMarketingClient;
   });
 
   it("should get ad accounts and sub-accounts", async () => {
@@ -31,11 +43,11 @@ describe("GoogleAdsAllocatorClient", () => {
       { accountId: "manager_1", accountName: "Manager 1" },
     ]);
 
-    mockMarketingClient.query.mockResolvedValueOnce([
+    mockMarketingClient.executeQuery.mockResolvedValueOnce([
       { customer: { currencyCode: "USD", manager: true } },
     ]);
 
-    mockMarketingClient.query.mockResolvedValueOnce([
+    mockMarketingClient.executeQuery.mockResolvedValueOnce([
       {
         customerClient: {
           clientCustomer: "customers/sub_1",
@@ -73,11 +85,24 @@ describe("GoogleAdsAllocatorClient", () => {
   });
 
   it("should get metrics", async () => {
-    mockMarketingClient.query.mockResolvedValue([
-      { metrics: { costMicros: "1000000", impressions: "100", clicks: "10", conversions: "1" } },
+    mockMarketingClient.executeQuery.mockResolvedValue([
+      {
+        metrics: {
+          costMicros: "1000000",
+          impressions: "100",
+          clicks: "10",
+          conversions: "1",
+        },
+      },
     ]);
 
-    const metrics = await client.getMetrics("sub_1", "c1", "CAMPAIGN", new Date(), new Date());
+    const metrics = await client.getMetrics(
+      "sub_1",
+      "c1",
+      "CAMPAIGN",
+      new Date(),
+      new Date(),
+    );
 
     expect(metrics.spend).toBe(100);
     expect(metrics.impressions).toBe(100);

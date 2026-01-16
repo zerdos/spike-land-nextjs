@@ -754,7 +754,9 @@ describe("PATCH /api/tracking/session", () => {
     });
 
     it("should update session when userId exists", async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-123" } as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        { id: "user-123" } as any,
+      );
       vi.mocked(prisma.visitorSession.update).mockResolvedValue({
         id: "session-123",
         visitorId: "v_visitor-123",
@@ -907,7 +909,9 @@ describe("PATCH /api/tracking/session", () => {
     });
 
     it("should handle foreign key constraint violation gracefully", async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-123" } as any);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        { id: "user-123" } as any,
+      );
       const fkError = new Error("Foreign key constraint failed") as Error & {
         code: string;
       };

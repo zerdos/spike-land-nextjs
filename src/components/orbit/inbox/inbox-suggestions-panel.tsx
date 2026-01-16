@@ -33,17 +33,27 @@ export function InboxSuggestionsPanel(
         </Button>
       </CardHeader>
       <CardContent className="px-4 pb-3 space-y-2">
-        {isLoading ? <div className="text-xs text-gray-500 italic">Thinking...</div> : (
-          suggestions.map((s) => (
-            <div
-              key={s.id}
-              className="bg-white p-3 rounded-md border border-blue-100 text-sm hover:border-blue-300 cursor-pointer transition-colors shadow-sm text-gray-700"
-              onClick={() => onSelect(s.content)}
-            >
-              {s.content}
-            </div>
-          ))
-        )}
+        {isLoading
+          ? <div className="text-xs text-gray-500 italic">Thinking...</div>
+          : (
+            suggestions.map((s) => (
+              <div
+                key={s.id}
+                className="bg-white p-3 rounded-md border border-blue-100 text-sm hover:border-blue-300 cursor-pointer transition-colors shadow-sm text-gray-700"
+                onClick={() => onSelect(s.content)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelect(s.content);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                {s.content}
+              </div>
+            ))
+          )}
       </CardContent>
     </Card>
   );

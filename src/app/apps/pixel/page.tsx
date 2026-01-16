@@ -45,7 +45,7 @@ export default async function PixelPage() {
   }
 
   // For non-authenticated users, redirect to sign in
-  if (!session) {
+  if (!session?.user?.id) {
     redirect("/auth/signin?callbackUrl=/apps/pixel");
   }
 

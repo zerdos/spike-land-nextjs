@@ -28,6 +28,7 @@ documentation.
 | Token System               | [docs/TOKEN_SYSTEM.md](./docs/TOKEN_SYSTEM.md)                                   |
 | Database Schema            | [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md)                             |
 | Database Setup             | [docs/DATABASE_SETUP.md](./docs/DATABASE_SETUP.md)                               |
+| My-Apps Architecture       | [docs/MY_APPS_ARCHITECTURE.md](./docs/MY_APPS_ARCHITECTURE.md)                   |
 | Development Setup          | [README.md](./README.md)                                                         |
 | Mobile App                 | [packages/mobile-app/README.md](./packages/mobile-app/README.md)                 |
 | Shared Package             | [packages/shared/README.md](./packages/shared/README.md)                         |

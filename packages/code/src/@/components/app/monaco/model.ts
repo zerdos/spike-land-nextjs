@@ -270,7 +270,12 @@ async function createEditorModel(
         const startPos = model.getPositionAt(idx);
         const endPos = model.getPositionAt(idx + search.length);
         myEditor.executeEdits("api", [{
-          range: new Range(startPos.lineNumber, startPos.column, endPos.lineNumber, endPos.column),
+          range: new Range(
+            startPos.lineNumber,
+            startPos.column,
+            endPos.lineNumber,
+            endPos.column,
+          ),
           text: replacement,
           forceMoveMarkers: true,
         }]);
@@ -284,7 +289,12 @@ async function createEditorModel(
         const startPos = model.getPositionAt(idx);
         const endPos = model.getPositionAt(idx + search.length);
         edits.push({
-          range: new Range(startPos.lineNumber, startPos.column, endPos.lineNumber, endPos.column),
+          range: new Range(
+            startPos.lineNumber,
+            startPos.column,
+            endPos.lineNumber,
+            endPos.column,
+          ),
           text: replacement,
           forceMoveMarkers: true,
         });

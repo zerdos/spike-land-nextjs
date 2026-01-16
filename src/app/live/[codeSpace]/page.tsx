@@ -16,7 +16,7 @@ interface CodespaceData {
 
 export default function CodespacePage() {
   const params = useParams();
-  const codeSpace = params.codeSpace as string;
+  const codeSpace = params["codeSpace"] as string;
 
   const [_data, setData] = useState<CodespaceData | null>(null);
   const [code, setCode] = useState("");
@@ -196,7 +196,12 @@ export default function CodespacePage() {
               Last synced: {lastSynced.toLocaleTimeString()}
             </span>
           )}
-          <Button variant="outline" size="sm" onClick={handleManualSave} disabled={syncing}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleManualSave}
+            disabled={syncing}
+          >
             Save
           </Button>
           <Button variant="ghost" size="sm" onClick={handleRefresh}>

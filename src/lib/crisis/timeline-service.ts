@@ -19,7 +19,9 @@ export class CrisisTimelineService {
   /**
    * Get timeline for a specific crisis
    */
-  static async getCrisisTimeline(crisisId: string): Promise<CrisisTimeline | null> {
+  static async getCrisisTimeline(
+    crisisId: string,
+  ): Promise<CrisisTimeline | null> {
     // Get crisis event
     const { data: crisis, error } = await tryCatch(
       prisma.crisisDetectionEvent.findUnique({
@@ -45,21 +47,23 @@ export class CrisisTimelineService {
     );
 
     // Get timeline events from workspace settings
-    const settings = crisis.workspace.settings as Record<string, unknown> | null;
-    const allEvents = (settings?.crisisTimeline as Array<Record<string, unknown>>) || [];
+    const settings = crisis.workspace.settings as
+      | Record<string, unknown>
+      | null;
+    const allEvents = (settings?.["crisisTimeline"] as Array<Record<string, unknown>>) || [];
 
     // Filter events for this crisis
     const crisisEvents = allEvents
-      .filter((e) => e.crisisId === crisisId)
+      .filter((e) => e["crisisId"] === crisisId)
       .map((e) => ({
-        id: String(e.id),
-        type: e.type as CrisisTimelineEvent["type"],
-        timestamp: new Date(e.timestamp as string),
-        actorId: e.actorId as string | undefined,
-        actorName: e.actorName as string | undefined,
-        crisisId: e.crisisId as string | undefined,
-        severity: e.severity as CrisisTimelineEvent["severity"],
-        details: e.details as Record<string, unknown> | undefined,
+        id: String(e["id"]),
+        type: e["type"] as CrisisTimelineEvent["type"],
+        timestamp: new Date(e["timestamp"] as string),
+        actorId: e["actorId"] as string | undefined,
+        actorName: e["actorName"] as string | undefined,
+        crisisId: e["crisisId"] as string | undefined,
+        severity: e["severity"] as CrisisTimelineEvent["severity"],
+        details: e["details"] as Record<string, unknown> | undefined,
       }))
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
@@ -92,7 +96,9 @@ export class CrisisTimelineService {
     if (crisis.resolvedAt) {
       baseEvents.push({
         id: `resolved-${crisis.id}`,
-        type: crisis.status === "FALSE_ALARM" ? "crisis_resolved" : "crisis_resolved",
+        type: crisis.status === "FALSE_ALARM"
+          ? "crisis_resolved"
+          : "crisis_resolved",
         timestamp: crisis.resolvedAt,
         actorId: crisis.resolvedById || undefined,
         crisisId: crisis.id,
@@ -150,17 +156,17 @@ export class CrisisTimelineService {
     }
 
     const settings = workspace.settings as Record<string, unknown> | null;
-    const allEvents = (settings?.crisisTimeline as Array<Record<string, unknown>>) || [];
+    const allEvents = (settings?.["crisisTimeline"] as Array<Record<string, unknown>>) || [];
 
     let events = allEvents.map((e) => ({
-      id: String(e.id),
-      type: e.type as CrisisTimelineEvent["type"],
-      timestamp: new Date(e.timestamp as string),
-      actorId: e.actorId as string | undefined,
-      actorName: e.actorName as string | undefined,
-      crisisId: e.crisisId as string | undefined,
-      severity: e.severity as CrisisTimelineEvent["severity"],
-      details: e.details as Record<string, unknown> | undefined,
+      id: String(e["id"]),
+      type: e["type"] as CrisisTimelineEvent["type"],
+      timestamp: new Date(e["timestamp"] as string),
+      actorId: e["actorId"] as string | undefined,
+      actorName: e["actorName"] as string | undefined,
+      crisisId: e["crisisId"] as string | undefined,
+      severity: e["severity"] as CrisisTimelineEvent["severity"],
+      details: e["details"] as Record<string, unknown> | undefined,
     }));
 
     // Apply filters
@@ -258,7 +264,9 @@ export class CrisisTimelineService {
 
     return events.map((event) => ({
       ...event,
-      actorName: event.actorId ? (userMap.get(event.actorId) ?? undefined) : undefined,
+      actorName: event.actorId
+        ? (userMap.get(event.actorId) ?? undefined)
+        : undefined,
     }));
   }
 }

@@ -46,7 +46,11 @@ export const readSessionTool: McpTool = {
   },
 };
 
-export const readTools: McpTool[] = [readCodeTool, readHtmlTool, readSessionTool];
+export const readTools: McpTool[] = [
+  readCodeTool,
+  readHtmlTool,
+  readSessionTool,
+];
 
 export function executeReadCode(
   session: ICodeSession,

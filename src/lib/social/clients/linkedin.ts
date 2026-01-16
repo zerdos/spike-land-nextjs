@@ -491,7 +491,7 @@ export class LinkedInClient implements ISocialClient {
       }));
     } // Add link if provided in metadata (ARTICLE type - supports URL-based content)
     else {
-      const link = options?.metadata?.link as string | undefined;
+      const link = options?.metadata?.["link"] as string | undefined;
       if (link) {
         shareContent.shareMediaCategory = "ARTICLE";
         shareContent.media = [

@@ -15,18 +15,19 @@
     "types:check": "tsc --noEmit",
     "types:generate": "wrangler types",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint": "eslint ."
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "0.12.3",
-    "@cloudflare/workers-types": "4.20260113.0",
-    "@types/node": "25.0.8",
+    "@cloudflare/workers-types": "4.20260116.0",
+    "@types/node": "25.0.9",
     "@vitest/runner": "4.0.17",
     "@vitest/snapshot": "4.0.17",
+    "eslint": "9.39.2",
     "rimraf": "6.1.2",
     "typescript": "5.9.3",
     "vitest": "4.0.17",
-    "wrangler": "4.59.1"
+    "wrangler": "4.59.2"
   },
   "dependencies": {
     "@cloudflare/puppeteer": "1.0.4"

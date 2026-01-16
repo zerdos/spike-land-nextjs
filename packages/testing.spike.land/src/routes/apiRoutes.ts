@@ -96,7 +96,9 @@ export class ApiRoutes {
         });
         updated.push("transpiled");
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Transpilation failed";
+        const errorMessage = error instanceof Error
+          ? error.message
+          : "Transpilation failed";
         return this.errorResponse(errorMessage, 400);
       }
     }
@@ -144,13 +146,16 @@ export class ApiRoutes {
         message: "Code transpiled successfully. HTML/CSS rendering delegated to connected clients.",
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Transpilation failed";
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Transpilation failed";
       return this.errorResponse(errorMessage, 400);
     }
   }
 
   private async handleScreenshotGet(url: URL): Promise<Response> {
-    const codeSpace = url.searchParams.get("room") || this.code.getSession().codeSpace;
+    const codeSpace = url.searchParams.get("room") ||
+      this.code.getSession().codeSpace;
     const origin = this.code.getOrigin();
 
     try {
@@ -170,7 +175,9 @@ export class ApiRoutes {
         },
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Screenshot failed";
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Screenshot failed";
       return this.errorResponse(errorMessage, 500);
     }
   }

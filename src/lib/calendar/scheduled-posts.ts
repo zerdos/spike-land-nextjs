@@ -102,7 +102,9 @@ export async function updateScheduledPost(
   }
 
   // Don't allow updates to published or publishing posts
-  if (existingPost.status === "PUBLISHED" || existingPost.status === "PUBLISHING") {
+  if (
+    existingPost.status === "PUBLISHED" || existingPost.status === "PUBLISHING"
+  ) {
     throw new Error("Cannot update a published or publishing post");
   }
 
@@ -138,11 +140,15 @@ export async function updateScheduledPost(
     where: { id: postId },
     data: {
       ...(input.content !== undefined && { content: input.content }),
-      ...(input.scheduledAt !== undefined && { scheduledAt: input.scheduledAt }),
+      ...(input.scheduledAt !== undefined &&
+        { scheduledAt: input.scheduledAt }),
       ...(input.timezone !== undefined && { timezone: input.timezone }),
-      ...(input.recurrenceRule !== undefined && { recurrenceRule: input.recurrenceRule }),
-      ...(input.recurrenceEndAt !== undefined && { recurrenceEndAt: input.recurrenceEndAt }),
-      ...(input.metadata !== undefined && { metadata: input.metadata as Prisma.JsonObject }),
+      ...(input.recurrenceRule !== undefined &&
+        { recurrenceRule: input.recurrenceRule }),
+      ...(input.recurrenceEndAt !== undefined &&
+        { recurrenceEndAt: input.recurrenceEndAt }),
+      ...(input.metadata !== undefined &&
+        { metadata: input.metadata as Prisma.JsonObject }),
       ...(input.status !== undefined && { status: input.status }),
     },
     include: {
@@ -224,7 +230,15 @@ export async function getScheduledPost(
 export async function listScheduledPosts(
   options: ScheduledPostsQueryOptions,
 ): Promise<ScheduledPostsListResponse> {
-  const { workspaceId, dateRange, status, platforms, accountIds, limit = 50, offset = 0 } = options;
+  const {
+    workspaceId,
+    dateRange,
+    status,
+    platforms,
+    accountIds,
+    limit = 50,
+    offset = 0,
+  } = options;
 
   const where: Prisma.ScheduledPostWhereInput = {
     workspaceId,
@@ -440,7 +454,9 @@ export async function cancelScheduledPost(
 /**
  * Get posts that are due for publishing
  */
-export async function getDueScheduledPosts(limit = 100): Promise<ScheduledPostWithAccounts[]> {
+export async function getDueScheduledPosts(
+  limit = 100,
+): Promise<ScheduledPostWithAccounts[]> {
   const now = new Date();
 
   const posts = await prisma.scheduledPost.findMany({
@@ -607,51 +623,56 @@ export async function getScheduledPostsStats(
   endOfWeek.setDate(startOfWeek.getDate() + 6);
   endOfWeek.setHours(23, 59, 59, 999);
 
-  const [totalScheduled, todayCount, thisWeekCount, failedCount, publishedTodayCount] =
-    await Promise.all([
-      prisma.scheduledPost.count({
-        where: {
-          workspaceId,
-          status: "SCHEDULED",
+  const [
+    totalScheduled,
+    todayCount,
+    thisWeekCount,
+    failedCount,
+    publishedTodayCount,
+  ] = await Promise.all([
+    prisma.scheduledPost.count({
+      where: {
+        workspaceId,
+        status: "SCHEDULED",
+      },
+    }),
+    prisma.scheduledPost.count({
+      where: {
+        workspaceId,
+        status: "SCHEDULED",
+        scheduledAt: {
+          gte: startOfToday,
+          lte: endOfToday,
         },
-      }),
-      prisma.scheduledPost.count({
-        where: {
-          workspaceId,
-          status: "SCHEDULED",
-          scheduledAt: {
-            gte: startOfToday,
-            lte: endOfToday,
-          },
+      },
+    }),
+    prisma.scheduledPost.count({
+      where: {
+        workspaceId,
+        status: "SCHEDULED",
+        scheduledAt: {
+          gte: startOfWeek,
+          lte: endOfWeek,
         },
-      }),
-      prisma.scheduledPost.count({
-        where: {
-          workspaceId,
-          status: "SCHEDULED",
-          scheduledAt: {
-            gte: startOfWeek,
-            lte: endOfWeek,
-          },
+      },
+    }),
+    prisma.scheduledPost.count({
+      where: {
+        workspaceId,
+        status: "FAILED",
+      },
+    }),
+    prisma.scheduledPost.count({
+      where: {
+        workspaceId,
+        status: "PUBLISHED",
+        publishedAt: {
+          gte: startOfToday,
+          lte: endOfToday,
         },
-      }),
-      prisma.scheduledPost.count({
-        where: {
-          workspaceId,
-          status: "FAILED",
-        },
-      }),
-      prisma.scheduledPost.count({
-        where: {
-          workspaceId,
-          status: "PUBLISHED",
-          publishedAt: {
-            gte: startOfToday,
-            lte: endOfToday,
-          },
-        },
-      }),
-    ]);
+      },
+    }),
+  ]);
 
   return {
     totalScheduled,

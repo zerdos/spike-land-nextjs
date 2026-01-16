@@ -112,13 +112,17 @@ function EditHistoryItem({ entry }: { entry: EditHistoryEntry; }) {
 
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Original</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                Original
+              </p>
               <div className="p-2 rounded bg-red-50 border border-red-200 text-sm">
                 {entry.originalContent}
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Edited</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                Edited
+              </p>
               <div className="p-2 rounded bg-green-50 border border-green-200 text-sm">
                 {entry.editedContent}
               </div>

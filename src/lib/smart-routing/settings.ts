@@ -18,8 +18,18 @@ const DEFAULT_SETTINGS: SmartRoutingSettings = {
     slaTimeoutMinutes: 60,
     levels: [
       { level: 0, name: "Normal", notifyChannels: [] },
-      { level: 1, name: "Supervisor", notifyChannels: ["in_app"], triggerDelayMinutes: 60 },
-      { level: 2, name: "Manager", notifyChannels: ["email", "in_app"], triggerDelayMinutes: 240 },
+      {
+        level: 1,
+        name: "Supervisor",
+        notifyChannels: ["in_app"],
+        triggerDelayMinutes: 60,
+      },
+      {
+        level: 2,
+        name: "Manager",
+        notifyChannels: ["email", "in_app"],
+        triggerDelayMinutes: 240,
+      },
       {
         level: 3,
         name: "Director",
@@ -35,7 +45,9 @@ const DEFAULT_SETTINGS: SmartRoutingSettings = {
 // Key for storing settings in Workspace.settings JSON field
 const SETTINGS_KEY = "inboxRouting";
 
-export async function getSmartRoutingSettings(workspaceId: string): Promise<SmartRoutingSettings> {
+export async function getSmartRoutingSettings(
+  workspaceId: string,
+): Promise<SmartRoutingSettings> {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { settings: true },
@@ -43,13 +55,17 @@ export async function getSmartRoutingSettings(workspaceId: string): Promise<Smar
 
   if (!workspace?.settings) return DEFAULT_SETTINGS;
 
-  const settings = (workspace.settings as Record<string, unknown>)?.[SETTINGS_KEY];
+  const settings = (workspace.settings as Record<string, unknown>)
+    ?.[SETTINGS_KEY];
   if (!settings) return DEFAULT_SETTINGS;
 
   // Validate and parse, falling back to defaults for missing fields
   const result = SmartRoutingSettingsSchema.safeParse(settings);
   if (!result.success) {
-    console.warn("Invalid smart routing settings found, using defaults", result.error);
+    console.warn(
+      "Invalid smart routing settings found, using defaults",
+      result.error,
+    );
     return DEFAULT_SETTINGS;
   }
 
@@ -87,7 +103,9 @@ export async function updateSmartRoutingSettings(
   await prisma.workspace.update({
     where: { id: workspaceId },
     data: {
-      settings: fullSettings as Parameters<typeof prisma.workspace.update>[0]["data"]["settings"],
+      settings: fullSettings as Parameters<
+        typeof prisma.workspace.update
+      >[0]["data"]["settings"],
     },
   });
 

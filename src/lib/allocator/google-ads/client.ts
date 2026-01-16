@@ -7,11 +7,63 @@ import type {
   GoogleAdsInsights,
 } from "./types";
 
+/**
+ * Google Ads API query response types
+ */
+interface CustomerQueryResult {
+  customer?: {
+    currencyCode?: string;
+    manager?: boolean;
+  };
+}
+
+interface CustomerClientQueryResult {
+  customerClient: {
+    clientCustomer: string;
+    descriptiveName?: string;
+    currencyCode: string;
+    manager: boolean;
+  };
+}
+
+interface AdGroupQueryResult {
+  adGroup: {
+    id: string;
+    name: string;
+    status: string;
+    campaign: string;
+  };
+}
+
+interface MetricsQueryResult {
+  metrics?: {
+    costMicros: string;
+    impressions: string;
+    clicks: string;
+    conversions: string;
+  };
+}
+
+/**
+ * Extended Google Ads client for budget allocation features
+ */
+class ExtendedGoogleAdsClient extends GoogleAdsClient {
+  /**
+   * Execute a typed GAQL query (exposes protected method)
+   */
+  async executeQuery<T>(customerId: string, gaqlQuery: string): Promise<T[]> {
+    return this.query<T>(customerId, gaqlQuery);
+  }
+}
+
 export class GoogleAdsAllocatorClient {
-  private client: GoogleAdsClient;
+  private client: ExtendedGoogleAdsClient;
 
   constructor(accessToken: string, loginCustomerId?: string) {
-    this.client = new GoogleAdsClient({ accessToken, customerId: loginCustomerId });
+    this.client = new ExtendedGoogleAdsClient({
+      accessToken,
+      customerId: loginCustomerId,
+    });
   }
 
   /**
@@ -42,7 +94,7 @@ export class GoogleAdsAllocatorClient {
     }
 
     // Remove duplicates by ID (in case sub-accounts are also returned by listAccessibleCustomers)
-    return Array.from(new Map(accounts.map(a => [a.id, a])).values());
+    return Array.from(new Map(accounts.map((a) => [a.id, a])).values());
   }
 
   private async getCustomerDetailedInfo(
@@ -52,14 +104,15 @@ export class GoogleAdsAllocatorClient {
     const query = `SELECT customer.currency_code, customer.manager FROM customer LIMIT 1`;
     // We need to set the login-customer-id for this specific call
     this.client.setCustomerId(customerId);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const results = await (this.client as any).query(customerId, query);
+    const results = await this.client.executeQuery<CustomerQueryResult>(
+      customerId,
+      query,
+    );
 
+    const firstResult = results[0];
     return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      currencyCode: (results[0] as any)?.customer?.currencyCode || "USD",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      manager: (results[0] as any)?.customer?.manager || false,
+      currencyCode: firstResult?.customer?.currencyCode || "USD",
+      manager: firstResult?.customer?.manager || false,
     };
   }
 
@@ -77,11 +130,12 @@ export class GoogleAdsAllocatorClient {
         AND customer_client.status = 'ENABLED'
         AND customer_client.manager = false
     `;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const results = await (this.client as any).query(managerId, query);
+    const results = await this.client.executeQuery<CustomerClientQueryResult>(
+      managerId,
+      query,
+    );
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return results.map((r: any) => ({
+    return results.map((r) => ({
       id: r.customerClient.clientCustomer.replace("customers/", ""),
       name: r.customerClient.descriptiveName || "Unnamed Sub-account",
       currency: r.customerClient.currencyCode,
@@ -96,21 +150,23 @@ export class GoogleAdsAllocatorClient {
     // Using listCampaigns from the base client but mapping to our local type
     const campaigns = await this.client.listCampaigns(normalizedId);
 
-    return campaigns.map(c => ({
+    return campaigns.map((c) => ({
       id: c.id,
       name: c.name,
       status: c.status,
       objective: c.objective,
       budgetAmount: c.budgetAmount,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      budgetType: c.budgetType as any,
+      budgetType: c.budgetType as GoogleAdsCampaignData["budgetType"],
       currency: c.budgetCurrency,
       startDate: c.startDate || undefined,
       endDate: c.endDate || undefined,
     }));
   }
 
-  async getAdGroups(customerId: string, campaignId: string): Promise<GoogleAdsAdGroup[]> {
+  async getAdGroups(
+    customerId: string,
+    campaignId: string,
+  ): Promise<GoogleAdsAdGroup[]> {
     const normalizedId = customerId.replace(/-/g, "");
     this.client.setCustomerId(normalizedId);
 
@@ -125,11 +181,12 @@ export class GoogleAdsAllocatorClient {
         AND ad_group.status != 'REMOVED'
     `;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const results = await (this.client as any).query(normalizedId, query);
+    const results = await this.client.executeQuery<AdGroupQueryResult>(
+      normalizedId,
+      query,
+    );
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return results.map((r: any) => ({
+    return results.map((r) => ({
       id: r.adGroup.id,
       campaignId: campaignId,
       name: r.adGroup.name,
@@ -147,7 +204,8 @@ export class GoogleAdsAllocatorClient {
     const normalizedId = customerId.replace(/-/g, "");
     this.client.setCustomerId(normalizedId);
 
-    const startStr = startDate.toISOString().split("T")[0]?.replace(/-/g, "") || "";
+    const startStr = startDate.toISOString().split("T")[0]?.replace(/-/g, "") ||
+      "";
     const endStr = endDate.toISOString().split("T")[0]?.replace(/-/g, "") || "";
 
     const resource = level === "CAMPAIGN" ? "campaign" : "ad_group";
@@ -162,8 +220,10 @@ export class GoogleAdsAllocatorClient {
         AND segments.date BETWEEN '${startStr}' AND '${endStr}'
     `;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const results = await (this.client as any).query(normalizedId, query);
+    const results = await this.client.executeQuery<MetricsQueryResult>(
+      normalizedId,
+      query,
+    );
     const data = results[0]?.metrics ||
       { costMicros: "0", impressions: "0", clicks: "0", conversions: "0" };
 

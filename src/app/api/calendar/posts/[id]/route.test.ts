@@ -61,7 +61,9 @@ describe("Calendar Post Detail API Routes", () => {
         "http://localhost/api/calendar/posts/post-1",
       );
 
-      const response = await GET(request, { params: Promise.resolve({ id: "post-1" }) });
+      const response = await GET(request, {
+        params: Promise.resolve({ id: "post-1" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -76,7 +78,9 @@ describe("Calendar Post Detail API Routes", () => {
         "http://localhost/api/calendar/posts/post-1",
       );
 
-      const response = await GET(request, { params: Promise.resolve({ id: "post-1" }) });
+      const response = await GET(request, {
+        params: Promise.resolve({ id: "post-1" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(404);
@@ -89,7 +93,9 @@ describe("Calendar Post Detail API Routes", () => {
         id: "post-1",
         workspaceId: "ws-123",
       } as never);
-      vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined as never);
+      vi.mocked(requireWorkspaceMembership).mockResolvedValue(
+        undefined as never,
+      );
 
       const mockPost = {
         id: "post-1",
@@ -105,7 +111,9 @@ describe("Calendar Post Detail API Routes", () => {
         "http://localhost/api/calendar/posts/post-1",
       );
 
-      const response = await GET(request, { params: Promise.resolve({ id: "post-1" }) });
+      const response = await GET(request, {
+        params: Promise.resolve({ id: "post-1" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -125,7 +133,9 @@ describe("Calendar Post Detail API Routes", () => {
         },
       );
 
-      const response = await PATCH(request, { params: Promise.resolve({ id: "post-1" }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: "post-1" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -143,7 +153,9 @@ describe("Calendar Post Detail API Routes", () => {
         },
       );
 
-      const response = await PATCH(request, { params: Promise.resolve({ id: "post-1" }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: "post-1" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -162,7 +174,9 @@ describe("Calendar Post Detail API Routes", () => {
         },
       );
 
-      const response = await PATCH(request, { params: Promise.resolve({ id: "post-1" }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: "post-1" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(404);
@@ -175,7 +189,9 @@ describe("Calendar Post Detail API Routes", () => {
         id: "post-1",
         workspaceId: "ws-123",
       } as never);
-      vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined as never);
+      vi.mocked(requireWorkspaceMembership).mockResolvedValue(
+        undefined as never,
+      );
 
       const request = new NextRequest(
         "http://localhost/api/calendar/posts/post-1",
@@ -187,7 +203,9 @@ describe("Calendar Post Detail API Routes", () => {
         },
       );
 
-      const response = await PATCH(request, { params: Promise.resolve({ id: "post-1" }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: "post-1" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -200,7 +218,9 @@ describe("Calendar Post Detail API Routes", () => {
         id: "post-1",
         workspaceId: "ws-123",
       } as never);
-      vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined as never);
+      vi.mocked(requireWorkspaceMembership).mockResolvedValue(
+        undefined as never,
+      );
 
       const mockUpdatedPost = {
         id: "post-1",
@@ -210,7 +230,9 @@ describe("Calendar Post Detail API Routes", () => {
         workspaceId: "ws-123",
         accounts: [],
       };
-      vi.mocked(updateScheduledPost).mockResolvedValue(mockUpdatedPost as never);
+      vi.mocked(updateScheduledPost).mockResolvedValue(
+        mockUpdatedPost as never,
+      );
 
       const request = new NextRequest(
         "http://localhost/api/calendar/posts/post-1",
@@ -220,7 +242,9 @@ describe("Calendar Post Detail API Routes", () => {
         },
       );
 
-      const response = await PATCH(request, { params: Promise.resolve({ id: "post-1" }) });
+      const response = await PATCH(request, {
+        params: Promise.resolve({ id: "post-1" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -238,7 +262,9 @@ describe("Calendar Post Detail API Routes", () => {
         { method: "DELETE" },
       );
 
-      const response = await DELETE(request, { params: Promise.resolve({ id: "post-1" }) });
+      const response = await DELETE(request, {
+        params: Promise.resolve({ id: "post-1" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -254,7 +280,9 @@ describe("Calendar Post Detail API Routes", () => {
         { method: "DELETE" },
       );
 
-      const response = await DELETE(request, { params: Promise.resolve({ id: "post-1" }) });
+      const response = await DELETE(request, {
+        params: Promise.resolve({ id: "post-1" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(404);
@@ -267,7 +295,9 @@ describe("Calendar Post Detail API Routes", () => {
         id: "post-1",
         workspaceId: "ws-123",
       } as never);
-      vi.mocked(requireWorkspaceMembership).mockResolvedValue(undefined as never);
+      vi.mocked(requireWorkspaceMembership).mockResolvedValue(
+        undefined as never,
+      );
       vi.mocked(deleteScheduledPost).mockResolvedValue(undefined);
 
       const request = new NextRequest(
@@ -275,7 +305,9 @@ describe("Calendar Post Detail API Routes", () => {
         { method: "DELETE" },
       );
 
-      const response = await DELETE(request, { params: Promise.resolve({ id: "post-1" }) });
+      const response = await DELETE(request, {
+        params: Promise.resolve({ id: "post-1" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);

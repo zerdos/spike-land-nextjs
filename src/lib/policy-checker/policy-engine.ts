@@ -196,7 +196,10 @@ function evaluateCharacterCount(
       severity: rule.severity,
       message:
         `Content exceeds character limit. Maximum: ${maxLength} characters, Current: ${length}`,
-      matchedContent: content.slice(maxLength, Math.min(content.length, maxLength + 50)),
+      matchedContent: content.slice(
+        maxLength,
+        Math.min(content.length, maxLength + 50),
+      ),
       matchLocation: {
         startIndex: maxLength,
         endIndex: content.length,
@@ -225,7 +228,10 @@ function evaluateMediaCheck(
   const mediaCount = metadata?.mediaUrls?.length || 0;
 
   // Check minimum media count
-  if (conditions.minMediaCount !== undefined && mediaCount < conditions.minMediaCount) {
+  if (
+    conditions.minMediaCount !== undefined &&
+    mediaCount < conditions.minMediaCount
+  ) {
     return {
       ruleId: rule.id,
       ruleName: rule.name,
@@ -237,7 +243,10 @@ function evaluateMediaCheck(
   }
 
   // Check maximum media count
-  if (conditions.maxMediaCount !== undefined && mediaCount > conditions.maxMediaCount) {
+  if (
+    conditions.maxMediaCount !== undefined &&
+    mediaCount > conditions.maxMediaCount
+  ) {
     return {
       ruleId: rule.id,
       ruleName: rule.name,
@@ -250,7 +259,9 @@ function evaluateMediaCheck(
   }
 
   // Check required media types
-  if (conditions.requiredMediaTypes && conditions.requiredMediaTypes.length > 0) {
+  if (
+    conditions.requiredMediaTypes && conditions.requiredMediaTypes.length > 0
+  ) {
     const missingTypes = conditions.requiredMediaTypes.filter((type) => !mediaTypes.includes(type));
 
     if (missingTypes.length > 0) {
@@ -487,7 +498,9 @@ function evaluateCustomLogic(
 /**
  * Get applicable rules for a given context
  */
-export async function getApplicableRules(context: RuleContext): Promise<PolicyRule[]> {
+export async function getApplicableRules(
+  context: RuleContext,
+): Promise<PolicyRule[]> {
   const { workspaceId, platform, checkScope } = context;
   // Note: contentType could be used for filtering rules that apply to specific content types
 
@@ -630,7 +643,8 @@ export async function checkContent(
     });
 
     // Auto-extract metadata if not provided
-    const metadata = input.contentMetadata ?? extractContentMetadata(input.contentText);
+    const metadata = input.contentMetadata ??
+      extractContentMetadata(input.contentText);
 
     // Evaluate each rule
     const results: RuleEvaluationResult[] = [];
@@ -715,7 +729,8 @@ export async function checkContent(
       violations,
       summary,
       durationMs,
-      canPublish: overallResult === "PASSED" || overallResult === "PASSED_WITH_WARNINGS",
+      canPublish: overallResult === "PASSED" ||
+        overallResult === "PASSED_WITH_WARNINGS",
     };
   } catch (error) {
     // Mark check as failed

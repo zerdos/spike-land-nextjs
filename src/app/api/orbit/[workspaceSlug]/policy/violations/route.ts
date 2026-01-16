@@ -93,7 +93,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   if (violationsError) {
     console.error("Error fetching violations:", violationsError);
-    return NextResponse.json({ error: "Failed to fetch violations" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch violations" }, {
+      status: 500,
+    });
   }
 
   return NextResponse.json({

@@ -210,9 +210,12 @@ export function AllocatorDashboard({ workspaceSlug }: AllocatorDashboardProps) {
               onClick={async () => {
                 setIsLoading(true);
                 try {
-                  await fetch(`/api/orbit/${workspaceSlug}/allocator/google/sync`, {
-                    method: "POST",
-                  });
+                  await fetch(
+                    `/api/orbit/${workspaceSlug}/allocator/google/sync`,
+                    {
+                      method: "POST",
+                    },
+                  );
                   await fetchData();
                 } catch (_err) {
                   setError("Failed to sync Google Ads");
@@ -228,9 +231,12 @@ export function AllocatorDashboard({ workspaceSlug }: AllocatorDashboardProps) {
               onClick={async () => {
                 setIsLoading(true);
                 try {
-                  await fetch(`/api/orbit/${workspaceSlug}/allocator/facebook/sync`, {
-                    method: "POST",
-                  });
+                  await fetch(
+                    `/api/orbit/${workspaceSlug}/allocator/facebook/sync`,
+                    {
+                      method: "POST",
+                    },
+                  );
                   await fetchData();
                 } catch (_err) {
                   setError("Failed to sync Facebook Ads");

@@ -146,9 +146,9 @@ vi.mock("@assistant-ui/react", () => ({
       }
       return <button {...filterDomProps(props)}>{children}</button>;
     },
-    Suggestion: ({ children, prompt, autoSend: _autoSend, ...props }: SuggestionProps) => (
-      <button {...filterDomProps(props)}>{children || prompt}</button>
-    ),
+    Suggestion: (
+      { children, prompt, autoSend: _autoSend, ...props }: SuggestionProps,
+    ) => <button {...filterDomProps(props)}>{children || prompt}</button>,
   },
   ComposerPrimitive: {
     Root: ({ children, ...props }: ComponentProps) => (
@@ -173,7 +173,8 @@ vi.mock("@assistant-ui/react", () => ({
       <div {...filterDomProps(props)}>{children}</div>
     ),
     Parts: ({ components }: MessagePartsProps) => {
-      const currentMessage = window.__currentMessage || { content: [], hasConsecutiveTools: false };
+      const currentMessage = window.__currentMessage ||
+        { content: [], hasConsecutiveTools: false };
       return (
         <div data-testid="message-parts">
           {currentMessage.content.map((part: MockMessagePart, idx: number) => {
@@ -191,8 +192,12 @@ vi.mock("@assistant-ui/react", () => ({
                 result?: Record<string, unknown>;
               } = {};
 
-              if (part.toolName !== undefined) toolProps.toolName = part.toolName;
-              if (part.toolCallId !== undefined) toolProps.toolCallId = part.toolCallId;
+              if (part.toolName !== undefined) {
+                toolProps.toolName = part.toolName;
+              }
+              if (part.toolCallId !== undefined) {
+                toolProps.toolCallId = part.toolCallId;
+              }
               if (part.args !== undefined) toolProps.args = part.args;
               if (part.result !== undefined) toolProps.result = part.result;
 
@@ -243,9 +248,9 @@ vi.mock("@assistant-ui/react", () => ({
     },
   },
   BranchPickerPrimitive: {
-    Root: ({ children, hideWhenSingleBranch: _hideWhenSingleBranch, ...props }: ComponentProps) => (
-      <div {...filterDomProps(props)}>{children}</div>
-    ),
+    Root: (
+      { children, hideWhenSingleBranch: _hideWhenSingleBranch, ...props }: ComponentProps,
+    ) => <div {...filterDomProps(props)}>{children}</div>,
     Previous: ({ children, asChild, ...props }: ComponentProps) => {
       if (asChild) {
         return <>{children}</>;
@@ -274,8 +279,12 @@ vi.mock("../tooltip-icon-button", () => ({
   ) => (
     // Render as button with filtered props
     // The variant and className are component-specific props that should be kept
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    <button {...(filterDomProps(props) as any)} className={className} title={tooltip}>
+
+    <button
+      {...(filterDomProps(props) as any)}
+      className={className}
+      title={tooltip}
+    >
       {children}
     </button>
   ),
@@ -322,7 +331,8 @@ describe("Thread", () => {
 
   it("renders welcome suggestions", () => {
     render(<Thread />);
-    expect(screen.getByText("What is the weather in Tokyo?")).toBeInTheDocument();
+    expect(screen.getByText("What is the weather in Tokyo?"))
+      .toBeInTheDocument();
     expect(screen.getByText("What is assistant-ui?")).toBeInTheDocument();
   });
 
@@ -395,7 +405,10 @@ describe("Thread", () => {
         {
           role: "assistant",
           content: [
-            { type: "text", text: "I'll gather multiple pieces of information." },
+            {
+              type: "text",
+              text: "I'll gather multiple pieces of information.",
+            },
             {
               type: "tool-call",
               toolCallId: "tc1",

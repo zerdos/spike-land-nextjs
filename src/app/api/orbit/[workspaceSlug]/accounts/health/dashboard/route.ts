@@ -131,7 +131,11 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
   for (const account of accountsWithHealth) {
     if (!platformHealth[account.platform]) {
-      platformHealth[account.platform] = { count: 0, avgScore: 0, accounts: [] };
+      platformHealth[account.platform] = {
+        count: 0,
+        avgScore: 0,
+        accounts: [],
+      };
     }
     const platform = platformHealth[account.platform]!;
     platform.count++;
@@ -146,7 +150,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
   for (const platform of Object.keys(platformHealth)) {
     const platformData = platformHealth[platform]!;
     platformData.avgScore = Math.round(
-      platformData.accounts.reduce((sum, a) => sum + a.score, 0) / platformData.count,
+      platformData.accounts.reduce((sum, a) => sum + a.score, 0) /
+        platformData.count,
     );
   }
 
@@ -167,7 +172,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
   const expiringTokenAccounts = accountsWithHealth.filter(
     (a) =>
       a.health.tokenExpiresAt &&
-      new Date(a.health.tokenExpiresAt).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000,
+      new Date(a.health.tokenExpiresAt).getTime() - Date.now() <
+        7 * 24 * 60 * 60 * 1000,
   );
 
   // Get recent events

@@ -94,7 +94,9 @@ describe("useCalendarView", () => {
       result.current.goToPreviousMonth();
     });
 
-    const expectedMonth = initialDate.getMonth() === 0 ? 11 : initialDate.getMonth() - 1;
+    const expectedMonth = initialDate.getMonth() === 0
+      ? 11
+      : initialDate.getMonth() - 1;
     expect(result.current.currentDate.getMonth()).toBe(expectedMonth);
   });
 

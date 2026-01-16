@@ -92,7 +92,9 @@ function createSocialClient(
     case "LINKEDIN":
       return new LinkedInClient({
         accessToken,
-        organizationUrn: organizationId ? `urn:li:organization:${organizationId}` : undefined,
+        organizationUrn: organizationId
+          ? `urn:li:organization:${organizationId}`
+          : undefined,
       });
     case "INSTAGRAM":
       return new InstagramClient({ accessToken });

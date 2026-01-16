@@ -49,8 +49,10 @@ const main = {
     if (path[0] === "mcp") {
       // Extract codeSpace from agent context or headers
       // The agent should provide the codeSpace it wants to work with
+      // Support both "codeSpace" and "codespaceId" for compatibility
       const agentCodeSpace = request.headers.get("X-CodeSpace") ||
         url.searchParams.get("codeSpace") ||
+        url.searchParams.get("codespaceId") ||
         "default";
 
       // Create a temporary durable object stub to handle MCP requests
@@ -318,12 +320,15 @@ const main = {
           });
         } catch (error) {
           console.error("Error generating TURN credentials:", error);
-          return new Response(JSON.stringify({ error: "Failed to generate TURN credentials" }), {
-            status: 500,
-            headers: {
-              "Content-Type": "application/json",
+          return new Response(
+            JSON.stringify({ error: "Failed to generate TURN credentials" }),
+            {
+              status: 500,
+              headers: {
+                "Content-Type": "application/json",
+              },
             },
-          });
+          );
         }
       }
 

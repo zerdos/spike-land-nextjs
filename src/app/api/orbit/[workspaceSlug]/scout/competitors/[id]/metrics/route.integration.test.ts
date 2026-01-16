@@ -43,8 +43,12 @@ describe.skip("Competitor Metrics API", () => {
   });
 
   afterAll(async () => {
-    await prisma.scoutCompetitorPost.deleteMany({ where: { competitorId: competitor.id } });
-    await prisma.scoutCompetitor.deleteMany({ where: { workspaceId: workspace.id } });
+    await prisma.scoutCompetitorPost.deleteMany({
+      where: { competitorId: competitor.id },
+    });
+    await prisma.scoutCompetitor.deleteMany({
+      where: { workspaceId: workspace.id },
+    });
     await prisma.workspace.delete({ where: { id: workspace.id } });
   });
 
@@ -52,7 +56,9 @@ describe.skip("Competitor Metrics API", () => {
     const req = new NextRequest(
       `http://localhost/api/orbit/${workspace.slug}/scout/competitors/${competitor.id}/metrics`,
     );
-    const res = await GET(req, { params: { workspaceSlug: workspace.slug, id: competitor.id } });
+    const res = await GET(req, {
+      params: { workspaceSlug: workspace.slug, id: competitor.id },
+    });
     const data = await res.json();
 
     expect(res.status).toBe(200);

@@ -22,9 +22,13 @@ export class AuditExportService {
   /**
    * Export audit logs in the specified format
    */
-  static async export(options: AuditLogExportOptions): Promise<AuditLogExportResult> {
+  static async export(
+    options: AuditLogExportOptions,
+  ): Promise<AuditLogExportResult> {
     // Fetch all logs matching the search params
-    const logs = await WorkspaceAuditLogger.getAllForExport(options.searchParams);
+    const logs = await WorkspaceAuditLogger.getAllForExport(
+      options.searchParams,
+    );
 
     // Generate filename with timestamp
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -74,7 +78,9 @@ export class AuditExportService {
       if (field === null || field === undefined) {
         return "";
       }
-      const str = typeof field === "object" ? JSON.stringify(field) : String(field);
+      const str = typeof field === "object"
+        ? JSON.stringify(field)
+        : String(field);
       // Escape quotes and wrap in quotes if contains comma, quote, or newline
       if (str.includes(",") || str.includes('"') || str.includes("\n")) {
         return `"${str.replace(/"/g, '""')}"`;
@@ -262,7 +268,11 @@ export class AuditExportService {
           <td>${log.userId}</td>
           <td>${log.targetType || ""}: ${log.targetId || ""}</td>
           <td>${log.ipAddress || ""}</td>
-          ${includeMetadata ? `<td class="json">${JSON.stringify(log.metadata || {})}</td>` : ""}
+          ${
+            includeMetadata
+              ? `<td class="json">${JSON.stringify(log.metadata || {})}</td>`
+              : ""
+          }
         </tr>
       `,
         )

@@ -10,7 +10,8 @@ export async function POST(
 ) {
   const session = await auth();
   const cronSecret = request.headers.get("x-cron-secret");
-  const isValidCronCall = cronSecret === process.env.CRON_SECRET && process.env.CRON_SECRET;
+  const isValidCronCall = cronSecret === process.env.CRON_SECRET &&
+    process.env.CRON_SECRET;
 
   // Require either valid session or valid cron secret
   if (!session && !isValidCronCall) {
@@ -23,7 +24,11 @@ export async function POST(
       select: { id: true },
     });
 
-    if (!workspace) return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+    if (!workspace) {
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
+    }
 
     // If called by user, verify permissions
     if (session) {

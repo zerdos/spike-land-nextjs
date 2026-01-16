@@ -240,6 +240,17 @@ export function VersionGrid({
                     <div
                       className="absolute top-2 left-2 z-10"
                       onClick={(e) => toggleSelection(version.id, e)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          toggleSelection(
+                            version.id,
+                            e as unknown as React.MouseEvent,
+                          );
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
                     >
                       <Checkbox
                         checked={selectedForDelete.has(version.id)}

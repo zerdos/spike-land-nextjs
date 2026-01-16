@@ -133,22 +133,22 @@ export class CrisisResponseTemplates {
 
     if (params.workspaceId !== undefined) {
       // Include both workspace-specific and system templates (null workspaceId)
-      where.OR = [
+      where["OR"] = [
         { workspaceId: params.workspaceId },
         { workspaceId: null },
       ];
     }
 
     if (params.category) {
-      where.category = params.category;
+      where["category"] = params.category;
     }
 
     if (params.platform) {
-      where.OR = [{ platform: params.platform }, { platform: null }];
+      where["OR"] = [{ platform: params.platform }, { platform: null }];
     }
 
     if (params.isActive !== undefined) {
-      where.isActive = params.isActive;
+      where["isActive"] = params.isActive;
     }
 
     const [templates, total] = await Promise.all([
@@ -184,11 +184,11 @@ export class CrisisResponseTemplates {
     };
 
     if (category) {
-      where.category = category;
+      where["category"] = category;
     }
 
     if (platform) {
-      where.AND = [
+      where["AND"] = [
         where,
         { OR: [{ platform }, { platform: null }] },
       ];
@@ -241,7 +241,9 @@ export class CrisisResponseTemplates {
   /**
    * Get default system templates
    */
-  static getDefaultTemplates(): Array<Omit<CreateTemplateOptions, "workspaceId">> {
+  static getDefaultTemplates(): Array<
+    Omit<CreateTemplateOptions, "workspaceId">
+  > {
     return [
       {
         name: "General Apology",
