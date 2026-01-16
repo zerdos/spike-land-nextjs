@@ -27,7 +27,7 @@ import { FileText, ImagePlus, Paperclip, StopCircle, X } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { redirect, useParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
@@ -404,10 +404,24 @@ export default function CodeSpacePage() {
     };
   }, [mode, app?.id]);
 
-  // Scroll to bottom when messages change
+  // Debounced scroll to bottom for performance
+  const scrollToBottom = useMemo(
+    () => {
+      let timeout: NodeJS.Timeout | null = null;
+      return () => {
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      };
+    },
+    [],
+  );
+
+  // Scroll to bottom when messages change (debounced)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streamingResponse]);
+    scrollToBottom();
+  }, [messages, streamingResponse, scrollToBottom]);
 
   // File handling for prompt mode
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

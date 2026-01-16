@@ -320,6 +320,31 @@ export async function POST(
                 "[agent/chat] Tool claimed success but code unchanged!",
               );
             }
+
+            // Create code version snapshot if code was actually updated
+            if (actuallyChanged && verifyData?.code) {
+              const crypto = await import("crypto");
+              const hash = crypto.createHash("sha256")
+                .update(verifyData.code)
+                .digest("hex");
+
+              // Get the agent message we just created
+              const agentMessage = await prisma.appMessage.findFirst({
+                where: { appId: id, role: "AGENT" },
+                orderBy: { createdAt: "desc" },
+                select: { id: true },
+              });
+
+              await prisma.appCodeVersion.create({
+                data: {
+                  appId: id,
+                  messageId: agentMessage?.id,
+                  code: verifyData.code,
+                  hash,
+                },
+              });
+              console.log("[agent/chat] Created code version snapshot");
+            }
           }
 
           broadcastCodeUpdated(id);
