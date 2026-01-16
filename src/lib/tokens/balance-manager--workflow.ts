@@ -11,8 +11,12 @@ import { getUserFriendlyError } from "@/lib/errors/error-messages";
 import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch--no-track";
-import type { Prisma } from "@prisma/client";
-import { SubscriptionTier, type TokenTransaction, TokenTransactionType } from "@prisma/client";
+import {
+  type Prisma,
+  SubscriptionTier,
+  type TokenTransaction,
+  TokenTransactionType,
+} from "@prisma/client";
 import { TOKEN_REGENERATION_INTERVAL_MS, TOKENS_PER_REGENERATION } from "./constants";
 import { TierManager } from "./tier-manager";
 
@@ -67,8 +71,7 @@ export class TokenBalanceManager {
   static async getBalance(userId: string): Promise<TokenBalanceResult> {
     this.validateUserId(userId);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tokenBalance = await prisma.$transaction(async (tx: any) => {
+    const tokenBalance = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       let balance = await tx.userTokenBalance.findUnique({
         where: { userId },
       });
@@ -166,8 +169,7 @@ export class TokenBalanceManager {
     // Use transaction to ensure atomic update
 
     const { data: result, error } = await tryCatch(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      prisma.$transaction(async (tx: any) => {
+      prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Get or create balance
         let tokenBalance = await tx.userTokenBalance.findUnique({
           where: { userId },
@@ -311,8 +313,7 @@ export class TokenBalanceManager {
     }
 
     const { data: result, error } = await tryCatch(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      prisma.$transaction(async (tx: any) => {
+      prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Get or create balance
         let tokenBalance = await tx.userTokenBalance.findUnique({
           where: { userId },

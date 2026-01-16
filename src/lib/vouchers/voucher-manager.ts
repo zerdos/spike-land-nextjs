@@ -2,10 +2,10 @@ import prisma from "@/lib/prisma";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { tryCatch } from "@/lib/try-catch";
 import type {
-  Prisma,
   VoucherStatus as VoucherStatusType,
   VoucherType as VoucherTypeEnum,
 } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 // Use string literals to avoid runtime dependency on Prisma enums
 // These match the Prisma schema enum values
@@ -123,8 +123,7 @@ export class VoucherManager {
     const normalizedCode = code.trim().toUpperCase();
 
     // Use transaction for atomicity - includes token addition
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transactionPromise = prisma.$transaction(async (tx: any) => {
+    const transactionPromise = prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Get voucher with lock
       const voucher = await tx.voucher.findUnique({
         where: { code: normalizedCode },
