@@ -34,6 +34,14 @@ function emitStage(
   controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
 }
 
+// Custom error for fetch timeouts
+class FetchTimeoutError extends Error {
+  constructor(url: string, timeoutMs: number) {
+    super(`Fetch to ${url} timed out after ${timeoutMs}ms`);
+    this.name = "FetchTimeoutError";
+  }
+}
+
 // Fetch with timeout
 async function fetchWithTimeout(
   url: string,
@@ -49,6 +57,12 @@ async function fetchWithTimeout(
       signal: abortController.signal,
     });
     return response;
+  } catch (error) {
+    // Distinguish timeout from other errors
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new FetchTimeoutError(url, timeoutMs);
+    }
+    throw error;
   } finally {
     clearTimeout(timeout);
   }
@@ -306,6 +320,31 @@ export async function POST(
                 "[agent/chat] Tool claimed success but code unchanged!",
               );
             }
+
+            // Create code version snapshot if code was actually updated
+            if (actuallyChanged && verifyData?.code) {
+              const crypto = await import("crypto");
+              const hash = crypto.createHash("sha256")
+                .update(verifyData.code)
+                .digest("hex");
+
+              // Get the agent message we just created
+              const agentMessage = await prisma.appMessage.findFirst({
+                where: { appId: id, role: "AGENT" },
+                orderBy: { createdAt: "desc" },
+                select: { id: true },
+              });
+
+              await prisma.appCodeVersion.create({
+                data: {
+                  appId: id,
+                  messageId: agentMessage?.id,
+                  code: verifyData.code,
+                  hash,
+                },
+              });
+              console.log("[agent/chat] Created code version snapshot");
+            }
           }
 
           broadcastCodeUpdated(id);
@@ -344,6 +383,9 @@ async function generateAppDetails(
   agentResponse: string,
   userPrompt: string,
 ) {
+  const startTime = Date.now();
+  const logContext = { appId, operation: "generateAppDetails" };
+
   try {
     const namingPrompt = `
       Based on the following conversation, generate a short, creative name (max 3-4 words) and a brief description (max 20 words) for the application being built.
@@ -394,14 +436,29 @@ async function generateAppDetails(
           description: parsed.data.description,
         },
       });
-      console.log(`[agent/chat] Updated app details: ${parsed.data.name}`);
+      const durationMs = Date.now() - startTime;
+      console.log("[agent/chat] generateAppDetails success", {
+        ...logContext,
+        durationMs,
+        status: "success",
+        name: parsed.data.name,
+      });
     } else {
-      console.warn(
-        "[agent/chat] Invalid app details format:",
-        parsed.error.message,
-      );
+      const durationMs = Date.now() - startTime;
+      console.warn("[agent/chat] generateAppDetails validation failed", {
+        ...logContext,
+        durationMs,
+        status: "validation_failed",
+        error: parsed.error.message,
+      });
     }
   } catch (e) {
-    console.error("[agent/chat] Failed to generate app details:", e);
+    const durationMs = Date.now() - startTime;
+    console.error("[agent/chat] generateAppDetails error", {
+      ...logContext,
+      durationMs,
+      status: "error",
+      error: e instanceof Error ? e.message : String(e),
+    });
   }
 }
