@@ -218,7 +218,7 @@ export function AgentProgressIndicator({
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [stage, isVisible, STAGE_CONFIG]);
+  }, [stage, isVisible]);
 
   if (!isVisible || !stage) {
     return null;
