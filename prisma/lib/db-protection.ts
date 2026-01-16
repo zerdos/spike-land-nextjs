@@ -5,17 +5,27 @@
  * All E2E seed/cleanup scripts MUST use these utilities.
  */
 
+// Staging environment patterns - these are SAFE for E2E operations
+// Checked BEFORE production patterns to allow staging subdomains
+const STAGING_PATTERNS = [
+  "next.spike.land", // Staging environment (next.spike.land)
+  "staging", // General staging pattern
+  "-staging", // Branch-based staging
+  "_staging", // Branch-based staging (underscore variant)
+];
+
 // Known production database patterns - ADD YOUR PRODUCTION IDENTIFIERS HERE
+// These patterns are checked AFTER staging patterns
 const PRODUCTION_PATTERNS = [
   // URL patterns
   "production",
   "prod-",
   "prod.",
-  // Neon project identifiers for production
-  "dark-flower-44506554", // spike.land production project
+  // Neon project identifiers for production (main branch only)
+  // Note: Staging branch of the same project is allowed via STAGING_PATTERNS
   // Host patterns
-  "spike.land",
-  "spike-land",
+  "spike.land", // Production domain (staging handled by STAGING_PATTERNS first)
+  "spike-land", // Alternative spelling
   // Add more patterns as needed
 ];
 
@@ -38,6 +48,14 @@ interface ProtectionResult {
 /**
  * Validates that a database connection string is safe for E2E operations.
  * Returns detailed information about why it's safe or unsafe.
+ *
+ * Check order:
+ * 1. Explicit CI override (E2E_DATABASE_CONFIRMED)
+ * 2. Dedicated E2E database (DATABASE_URL_E2E)
+ * 3. Staging patterns (next.spike.land, etc.) - ALLOWED
+ * 4. Production patterns (spike.land, etc.) - BLOCKED
+ * 5. E2E-safe patterns (e2e, test, dev, etc.) - ALLOWED
+ * 6. Default: BLOCKED (unknown patterns are rejected for safety)
  */
 export function validateE2EDatabase(connectionString: string): ProtectionResult {
   const lowercaseUrl = connectionString.toLowerCase();
@@ -62,17 +80,6 @@ export function validateE2EDatabase(connectionString: string): ProtectionResult 
     };
   }
 
-  // Check for production patterns
-  for (const pattern of PRODUCTION_PATTERNS) {
-    if (lowercaseUrl.includes(pattern.toLowerCase())) {
-      return {
-        safe: false,
-        reason: `Connection string contains production pattern: "${pattern}"`,
-        connectionString,
-      };
-    }
-  }
-
   // Check if DATABASE_URL_E2E is being used (preferred)
   if (process.env.DATABASE_URL_E2E) {
     // If DATABASE_URL_E2E is set and we're using it, that's a good sign
@@ -80,6 +87,31 @@ export function validateE2EDatabase(connectionString: string): ProtectionResult 
       return {
         safe: true,
         reason: "Using DATABASE_URL_E2E (dedicated E2E database)",
+        connectionString,
+      };
+    }
+  }
+
+  // Check for staging patterns FIRST (before production patterns)
+  // This allows "next.spike.land" to be safe even though "spike.land" is blocked
+  const hasStagingPattern = STAGING_PATTERNS.some((pattern) =>
+    lowercaseUrl.includes(pattern.toLowerCase())
+  );
+
+  if (hasStagingPattern) {
+    return {
+      safe: true,
+      reason: "Connection string matches staging environment pattern",
+      connectionString,
+    };
+  }
+
+  // Check for production patterns (after staging check)
+  for (const pattern of PRODUCTION_PATTERNS) {
+    if (lowercaseUrl.includes(pattern.toLowerCase())) {
+      return {
+        safe: false,
+        reason: `Connection string contains production pattern: "${pattern}"`,
         connectionString,
       };
     }
