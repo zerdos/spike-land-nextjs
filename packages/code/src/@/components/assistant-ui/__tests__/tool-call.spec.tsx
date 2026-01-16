@@ -156,7 +156,7 @@ describe("ToolCall", () => {
     const button = screen.getByRole("button");
     fireEvent.click(button);
 
-    const resultPre = screen.getAllByRole("generic").find(el =>
+    const resultPre = screen.getAllByRole("generic").find((el) =>
       el.tagName === "PRE" && el.textContent?.includes("data")
     );
 
@@ -206,7 +206,13 @@ describe("ToolCallGroup", () => {
     );
 
     const groupDiv = container.firstChild;
-    expect(groupDiv).toHaveClass("rounded-lg", "border", "bg-muted/10", "p-2", "my-2");
+    expect(groupDiv).toHaveClass(
+      "rounded-lg",
+      "border",
+      "bg-muted/10",
+      "p-2",
+      "my-2",
+    );
   });
 
   it("renders multiple ToolCall components correctly", () => {

@@ -125,7 +125,15 @@ export const Editor: React.FC<EditorProps> = (
     };
 
     await processChange(newCode);
-  }, [session, cSess, lastHash, setLastHash, setEditorState, replaceIframe, throttledTypeCheck]);
+  }, [
+    session,
+    cSess,
+    lastHash,
+    setLastHash,
+    setEditorState,
+    replaceIframe,
+    throttledTypeCheck,
+  ]);
 
   // Track external change metrics
   const externalMetrics = useRef({

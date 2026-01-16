@@ -349,7 +349,9 @@ These changes create a darker, more professional look for the code block compone
 
   describe("updateSearchReplace", () => {
     it("should handle broken code blocks", async () => {
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(
+        () => {},
+      );
 
       const oldCode = `
 <<<<<<< SEARCH

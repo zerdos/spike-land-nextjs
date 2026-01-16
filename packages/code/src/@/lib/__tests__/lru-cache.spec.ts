@@ -9,7 +9,10 @@ const mockPerformanceNow = () => {
     currentTime += ms;
   };
   vi.spyOn(performance, "now").mockImplementation(() => currentTime);
-  return { advanceTime, restore: () => vi.mocked(performance.now).mockImplementation(originalNow) };
+  return {
+    advanceTime,
+    restore: () => vi.mocked(performance.now).mockImplementation(originalNow),
+  };
 };
 
 describe("LRUCache", () => {
@@ -168,7 +171,9 @@ describe("LRUCache", () => {
     });
 
     it("should support object keys", () => {
-      const cache = new LRUCache<{ id: number; }, { value: string; }>({ max: 10 });
+      const cache = new LRUCache<{ id: number; }, { value: string; }>({
+        max: 10,
+      });
       const key1 = { id: 1 };
       const key2 = { id: 2 };
       cache.set(key1, { value: "one" });

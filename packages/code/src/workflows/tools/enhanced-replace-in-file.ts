@@ -132,7 +132,9 @@ export const getEnhancedReplaceInFileTool = (codeSession: ICode) =>
 
         // Determine if we should return the full code
         const shouldReturn = returnModifiedCode ??
-          (instructions ? shouldReturnFullCode(instructions, finalCode) : false);
+          (instructions
+            ? shouldReturnFullCode(instructions, finalCode)
+            : false);
 
         const result: CodeModification = {
           hash: finalHash,
@@ -175,10 +177,14 @@ export const getEnhancedReplaceInFileTool = (codeSession: ICode) =>
               search: z
                 .string()
                 .min(1)
-                .describe("Text to search for (literal string or /regex/flags format)"),
+                .describe(
+                  "Text to search for (literal string or /regex/flags format)",
+                ),
               replace: z
                 .string()
-                .describe("Replacement text (supports regex capture groups like $1)"),
+                .describe(
+                  "Replacement text (supports regex capture groups like $1)",
+                ),
             }),
           )
           .min(1)
@@ -195,7 +201,9 @@ export const getEnhancedReplaceInFileTool = (codeSession: ICode) =>
         instructions: z
           .string()
           .default("")
-          .describe("Context about the modifications for intelligent code return decisions"),
+          .describe(
+            "Context about the modifications for intelligent code return decisions",
+          ),
       }),
     },
   );

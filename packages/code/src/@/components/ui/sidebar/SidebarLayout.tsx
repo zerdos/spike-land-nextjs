@@ -111,7 +111,9 @@ export function Sidebar({
   );
 }
 
-export function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
+export function SidebarInset(
+  { className, ...props }: React.ComponentProps<"main">,
+) {
   return (
     <main
       data-slot="sidebar-inset"
