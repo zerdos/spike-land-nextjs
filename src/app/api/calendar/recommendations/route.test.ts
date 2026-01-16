@@ -209,7 +209,9 @@ describe("GET /api/calendar/recommendations", () => {
       },
     };
 
-    vi.mocked(getBestTimeRecommendations).mockResolvedValue(mockRecommendations);
+    vi.mocked(getBestTimeRecommendations).mockResolvedValue(
+      mockRecommendations,
+    );
 
     const request = createRequest({ workspaceId: "workspace-1" });
     const response = await GET(request);

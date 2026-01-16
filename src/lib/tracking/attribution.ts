@@ -577,9 +577,13 @@ export async function getGlobalAttributionSummary(
   ]);
 
   // Map model stats to comparison array
-  const models: (AttributionType | "LINEAR")[] = ["FIRST_TOUCH", "LAST_TOUCH", "LINEAR"];
-  const comparison = models.map(model => {
-    const stat = modelStats.find(s => s.attributionType === model);
+  const models: (AttributionType | "LINEAR")[] = [
+    "FIRST_TOUCH",
+    "LAST_TOUCH",
+    "LINEAR",
+  ];
+  const comparison = models.map((model) => {
+    const stat = modelStats.find((s) => s.attributionType === model);
     return {
       model,
       value: stat?._sum?.conversionValue || 0,
@@ -592,7 +596,7 @@ export async function getGlobalAttributionSummary(
     };
   });
 
-  const platformBreakdown = platformStats.map(s => ({
+  const platformBreakdown = platformStats.map((s) => ({
     platform: s.platform || "UNKNOWN",
     conversionCount: s._count?._all || 0,
     value: s._sum?.conversionValue || 0,

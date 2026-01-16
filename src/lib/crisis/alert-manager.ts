@@ -59,7 +59,10 @@ export class CrisisAlertManager {
           results["email"] = await this.sendEmailAlerts(members, content);
           break;
         case "slack":
-          results["slack"] = await this.sendSlackAlert(event.workspaceId, content);
+          results["slack"] = await this.sendSlackAlert(
+            event.workspaceId,
+            content,
+          );
           break;
         case "in_app":
           results["in_app"] = await this.createInAppNotifications(

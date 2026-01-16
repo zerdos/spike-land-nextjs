@@ -29,7 +29,9 @@ export async function GET(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     const competitors = await prisma.scoutCompetitor.findMany({
@@ -40,7 +42,9 @@ export async function GET(
     return NextResponse.json(competitors);
   } catch (error) {
     console.error("Failed to fetch competitors:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 }
 
@@ -69,35 +73,51 @@ export async function POST(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     const { platform, handle } = await request.json();
 
     if (!platform || !handle) {
-      return NextResponse.json({ error: "Platform and handle are required" }, { status: 400 });
+      return NextResponse.json({ error: "Platform and handle are required" }, {
+        status: 400,
+      });
     }
 
     // Validate platform enum value
     const validPlatforms = Object.values(SocialPlatform);
     if (!validPlatforms.includes(platform)) {
-      return NextResponse.json({ error: "Invalid platform value" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid platform value" }, {
+        status: 400,
+      });
     }
 
     // Validate handle is not empty
     if (typeof handle !== "string" || handle.trim() === "") {
-      return NextResponse.json({ error: "Handle must be a non-empty string" }, { status: 400 });
+      return NextResponse.json({ error: "Handle must be a non-empty string" }, {
+        status: 400,
+      });
     }
 
-    const competitor = await addCompetitor(workspace.id, platform as SocialPlatform, handle.trim());
+    const competitor = await addCompetitor(
+      workspace.id,
+      platform as SocialPlatform,
+      handle.trim(),
+    );
 
     if (!competitor) {
-      return NextResponse.json({ error: "Failed to validate or add competitor" }, { status: 400 });
+      return NextResponse.json({
+        error: "Failed to validate or add competitor",
+      }, { status: 400 });
     }
 
     return NextResponse.json(competitor, { status: 201 });
   } catch (error) {
     console.error("Failed to add competitor:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 }

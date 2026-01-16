@@ -114,7 +114,8 @@ export async function getRulesForWorkspace(
   }
 
   if (options?.category) {
-    where.category = options.category as Prisma.EnumPolicyCategoryFilter["equals"];
+    where.category = options
+      .category as Prisma.EnumPolicyCategoryFilter["equals"];
   }
 
   if (options?.isActive !== undefined) {
@@ -130,7 +131,9 @@ export async function getRulesForWorkspace(
 /**
  * Get only workspace-specific rules (not global)
  */
-export async function getWorkspaceRules(workspaceId: string): Promise<PolicyRule[]> {
+export async function getWorkspaceRules(
+  workspaceId: string,
+): Promise<PolicyRule[]> {
   return prisma.policyRule.findMany({
     where: { workspaceId },
     orderBy: [{ severity: "desc" }, { category: "asc" }, { name: "asc" }],
@@ -150,7 +153,10 @@ export async function getGlobalRules(): Promise<PolicyRule[]> {
 /**
  * Toggle rule active status
  */
-export async function toggleRuleActive(ruleId: string, isActive: boolean): Promise<PolicyRule> {
+export async function toggleRuleActive(
+  ruleId: string,
+  isActive: boolean,
+): Promise<PolicyRule> {
   return prisma.policyRule.update({
     where: { id: ruleId },
     data: { isActive },
@@ -160,7 +166,9 @@ export async function toggleRuleActive(ruleId: string, isActive: boolean): Promi
 /**
  * Bulk create rules (for seeding default rules)
  */
-export async function bulkCreateRules(rules: PolicyRuleInput[]): Promise<number> {
+export async function bulkCreateRules(
+  rules: PolicyRuleInput[],
+): Promise<number> {
   const result = await prisma.policyRule.createMany({
     data: rules.map((rule) => ({
       workspaceId: null, // Global rules
@@ -210,7 +218,10 @@ export async function getRulesNeedingVerification(): Promise<PolicyRule[]> {
 /**
  * Clone a rule for a workspace
  */
-export async function cloneRule(ruleId: string, workspaceId: string): Promise<PolicyRule> {
+export async function cloneRule(
+  ruleId: string,
+  workspaceId: string,
+): Promise<PolicyRule> {
   const sourceRule = await prisma.policyRule.findUnique({
     where: { id: ruleId },
   });

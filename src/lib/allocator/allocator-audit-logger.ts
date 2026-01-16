@@ -90,8 +90,8 @@ export class AllocatorAuditLogger {
       configSnapshot: config as unknown as Prisma.InputJsonValue,
 
       aiReasoning: aiReasoning || recommendation.reason,
-      supportingData:
-        (supportingData || { evidence: recommendation.supportingData }) as Prisma.InputJsonValue,
+      supportingData: (supportingData ||
+        { evidence: recommendation.supportingData }) as Prisma.InputJsonValue,
       confidence: confidence || recommendation.confidence,
 
       correlationId,
@@ -217,7 +217,9 @@ export class AllocatorAuditLogger {
       workspaceId,
       campaignId,
       executionId,
-      decisionType: stage === "INITIATED" ? "ROLLBACK_INITIATED" : "ROLLBACK_COMPLETED",
+      decisionType: stage === "INITIATED"
+        ? "ROLLBACK_INITIATED"
+        : "ROLLBACK_COMPLETED",
       decisionOutcome: stage === "INITIATED" ? "EXECUTED" : "ROLLED_BACK",
       supportingData: { originalExecutionId },
       correlationId,

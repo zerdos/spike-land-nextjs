@@ -160,7 +160,9 @@ export function CreatePostDialog({
       scheduledAt,
       timezone,
       accountIds: selectedAccounts,
-      recurrenceRule: recurrenceEnabled ? `FREQ=${recurrenceFrequency}` : undefined,
+      recurrenceRule: recurrenceEnabled
+        ? `FREQ=${recurrenceFrequency}`
+        : undefined,
     });
   };
 
@@ -171,7 +173,9 @@ export function CreatePostDialog({
       <DialogContent className="max-w-lg" data-testid="create-post-dialog">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>{isEditing ? "Edit Scheduled Post" : "Schedule New Post"}</DialogTitle>
+            <DialogTitle>
+              {isEditing ? "Edit Scheduled Post" : "Schedule New Post"}
+            </DialogTitle>
             <DialogDescription>
               {isEditing
                 ? "Update your scheduled post details below."
@@ -218,7 +222,10 @@ export function CreatePostDialog({
                   )
                   : (
                     accounts.map((account) => {
-                      const slugifiedName = account.name.toLowerCase().replace(/\s+/g, "-");
+                      const slugifiedName = account.name.toLowerCase().replace(
+                        /\s+/g,
+                        "-",
+                      );
                       return (
                         <div
                           key={account.id}
@@ -286,7 +293,10 @@ export function CreatePostDialog({
             {/* Recurrence */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label htmlFor="recurrence-toggle" className="flex items-center">
+                <Label
+                  htmlFor="recurrence-toggle"
+                  className="flex items-center"
+                >
                   <Repeat className="mr-1 h-4 w-4" />
                   Enable Recurrence
                 </Label>
@@ -298,7 +308,10 @@ export function CreatePostDialog({
                 />
               </div>
               {recurrenceEnabled && (
-                <Select value={recurrenceFrequency} onValueChange={setRecurrenceFrequency}>
+                <Select
+                  value={recurrenceFrequency}
+                  onValueChange={setRecurrenceFrequency}
+                >
                   <SelectTrigger data-testid="recurrence-frequency">
                     <SelectValue placeholder="Select frequency" />
                   </SelectTrigger>
@@ -323,7 +336,11 @@ export function CreatePostDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting} data-testid="schedule-button">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              data-testid="schedule-button"
+            >
               {isSubmitting
                 ? "Saving..."
                 : isEditing

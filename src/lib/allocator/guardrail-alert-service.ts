@@ -92,7 +92,7 @@ export class GuardrailAlertService {
 
       // 2. Send Emails
       const recipients = workspace.members
-        .map(m => m.user?.email)
+        .map((m) => m.user?.email)
         .filter((email): email is string => !!email);
 
       if (recipients.length > 0) {

@@ -108,7 +108,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 
   // Get existing rule
-  const { data: existingRule, error: existingError } = await tryCatch(getRule(ruleId));
+  const { data: existingRule, error: existingError } = await tryCatch(
+    getRule(ruleId),
+  );
 
   if (existingError || !existingRule) {
     return NextResponse.json({ error: "Rule not found" }, { status: 404 });
@@ -135,7 +137,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
   const updateInput: Partial<PolicyRuleInput> = {};
   if (body.name !== undefined) updateInput.name = body.name;
-  if (body.description !== undefined) updateInput.description = body.description;
+  if (body.description !== undefined) {
+    updateInput.description = body.description;
+  }
   if (body.platform !== undefined) updateInput.platform = body.platform;
   if (body.category !== undefined) updateInput.category = body.category;
   if (body.ruleType !== undefined) updateInput.ruleType = body.ruleType;
@@ -146,11 +150,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   if (body.sourceUrl !== undefined) updateInput.sourceUrl = body.sourceUrl;
 
   // Update rule
-  const { data: rule, error: updateError } = await tryCatch(updateRule(ruleId, updateInput));
+  const { data: rule, error: updateError } = await tryCatch(
+    updateRule(ruleId, updateInput),
+  );
 
   if (updateError) {
     console.error("Error updating rule:", updateError);
-    return NextResponse.json({ error: "Failed to update rule" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update rule" }, {
+      status: 500,
+    });
   }
 
   return NextResponse.json(rule);
@@ -193,7 +201,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   }
 
   // Get existing rule
-  const { data: existingRule, error: existingError } = await tryCatch(getRule(ruleId));
+  const { data: existingRule, error: existingError } = await tryCatch(
+    getRule(ruleId),
+  );
 
   if (existingError || !existingRule) {
     return NextResponse.json({ error: "Rule not found" }, { status: 404 });
@@ -217,7 +227,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
 
   if (deleteError) {
     console.error("Error deleting rule:", deleteError);
-    return NextResponse.json({ error: "Failed to delete rule" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to delete rule" }, {
+      status: 500,
+    });
   }
 
   return NextResponse.json({ success: true });

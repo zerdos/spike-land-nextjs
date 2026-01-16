@@ -154,14 +154,22 @@ export function PulseAlertEmail({
       </Text>
 
       <Section style={metricBoxStyle}>
-        <Text style={{ ...emailStyles.text, fontWeight: "bold", margin: "0 0 12px 0" }}>
+        <Text
+          style={{
+            ...emailStyles.text,
+            fontWeight: "bold",
+            margin: "0 0 12px 0",
+          }}
+        >
           {getMetricName(metricType)} Details
         </Text>
 
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <tbody>
             <tr>
-              <td style={{ padding: "8px 0", color: "#6b7280" }}>Current Value:</td>
+              <td style={{ padding: "8px 0", color: "#6b7280" }}>
+                Current Value:
+              </td>
               <td
                 style={{
                   padding: "8px 0",
@@ -173,7 +181,9 @@ export function PulseAlertEmail({
               </td>
             </tr>
             <tr>
-              <td style={{ padding: "8px 0", color: "#6b7280" }}>Expected Value:</td>
+              <td style={{ padding: "8px 0", color: "#6b7280" }}>
+                Expected Value:
+              </td>
               <td style={{ padding: "8px 0", textAlign: "right" }}>
                 {formatNumber(expectedValue)}
               </td>

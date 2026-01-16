@@ -26,15 +26,22 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
   useEffect(() => {
     async function fetchCompetitors() {
       try {
-        const response = await fetch(`/api/orbit/${workspaceSlug}/scout/competitors`);
+        const response = await fetch(
+          `/api/orbit/${workspaceSlug}/scout/competitors`,
+        );
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Failed to fetch competitors (${response.status})`);
+          throw new Error(
+            errorData.error ||
+              `Failed to fetch competitors (${response.status})`,
+          );
         }
         const data = await response.json();
         setCompetitors(data);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Could not load competitors.";
+        const errorMessage = err instanceof Error
+          ? err.message
+          : "Could not load competitors.";
         setError(errorMessage);
       } finally {
         setIsLoading(false);
@@ -49,11 +56,14 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
     setError(null);
 
     try {
-      const response = await fetch(`/api/orbit/${workspaceSlug}/scout/competitors`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ platform, handle }),
-      });
+      const response = await fetch(
+        `/api/orbit/${workspaceSlug}/scout/competitors`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ platform, handle }),
+        },
+      );
 
       if (!response.ok) {
         const { error } = await response.json();
@@ -93,7 +103,7 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
       }
 
       // Remove from local state
-      setCompetitors(competitors.filter(c => c.id !== competitorId));
+      setCompetitors(competitors.filter((c) => c.id !== competitorId));
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -134,14 +144,16 @@ export function CompetitorList({ workspaceSlug }: CompetitorListProps) {
       {isLoading ? <p>Loading competitors...</p> : (
         <ul>
           {competitors.map((c) => (
-            <li key={c.id} className="border-b p-2 flex justify-between items-center">
+            <li
+              key={c.id}
+              className="border-b p-2 flex justify-between items-center"
+            >
               <div>
                 <span className="font-bold">{c.name || c.handle}</span>
                 <span className="text-gray-500 ml-2">({c.platform})</span>
               </div>
               <button
-                onClick={() =>
-                  handleRemove(c.id)}
+                onClick={() => handleRemove(c.id)}
                 className="text-red-500 hover:text-red-700"
               >
                 Remove

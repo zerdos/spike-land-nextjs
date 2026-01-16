@@ -269,7 +269,9 @@ describe("collectPulseMetrics", () => {
       function() {
         return {
           platform: "LINKEDIN" as SocialPlatform,
-          getMetrics: vi.fn().mockRejectedValue(new Error("API rate limit exceeded")),
+          getMetrics: vi.fn().mockRejectedValue(
+            new Error("API rate limit exceeded"),
+          ),
           getAuthUrl: vi.fn(),
           exchangeCodeForTokens: vi.fn(),
           getAccountInfo: vi.fn(),
@@ -447,7 +449,9 @@ describe("collectPulseMetrics", () => {
       function() {
         return {
           platform: "LINKEDIN" as SocialPlatform,
-          getMetrics: vi.fn().mockRejectedValue(new Error("LinkedIn API error")),
+          getMetrics: vi.fn().mockRejectedValue(
+            new Error("LinkedIn API error"),
+          ),
           getAuthUrl: vi.fn(),
           exchangeCodeForTokens: vi.fn(),
           getAccountInfo: vi.fn(),

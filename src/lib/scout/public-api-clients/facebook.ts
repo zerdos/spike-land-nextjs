@@ -29,7 +29,8 @@ export interface PublicFacebookPost {
 
 export class PublicFacebookClient {
   // Disable delays in test/CI environments for faster test execution
-  private readonly enableDelays = process.env.NODE_ENV !== "test" && !process.env.CI;
+  private readonly enableDelays = process.env.NODE_ENV !== "test" &&
+    !process.env.CI;
 
   /**
    * Fetches mock information for a Facebook account.
@@ -41,7 +42,7 @@ export class PublicFacebookClient {
 
     // Simulate an API call delay (disabled in test environments)
     if (this.enableDelays) {
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
     }
 
     return {
@@ -62,7 +63,7 @@ export class PublicFacebookClient {
 
     // Simulate an API call delay (disabled in test environments)
     if (this.enableDelays) {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
     const posts: PublicFacebookPost[] = Array.from({ length: 5 }, (_, i) => {

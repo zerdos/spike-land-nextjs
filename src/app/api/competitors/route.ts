@@ -8,7 +8,9 @@ export async function GET() {
     return NextResponse.json(competitors);
   } catch (error) {
     console.error("Failed to retrieve competitors:", error);
-    return NextResponse.json({ message: "Failed to retrieve competitors" }, { status: 500 });
+    return NextResponse.json({ message: "Failed to retrieve competitors" }, {
+      status: 500,
+    });
   }
 }
 
@@ -26,6 +28,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(newCompetitor, { status: 201 });
   } catch (error) {
     console.error("Failed to create competitor:", error);
-    return NextResponse.json({ message: "Failed to create competitor" }, { status: 500 });
+    return NextResponse.json({ message: "Failed to create competitor" }, {
+      status: 500,
+    });
   }
 }

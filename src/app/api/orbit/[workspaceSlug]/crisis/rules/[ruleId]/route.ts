@@ -128,7 +128,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const {
@@ -161,7 +163,12 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
   // Validate severity if provided
   if (severity) {
-    const validSeverities: CrisisSeverity[] = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
+    const validSeverities: CrisisSeverity[] = [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "CRITICAL",
+    ];
     if (!validSeverities.includes(severity)) {
       return NextResponse.json(
         { error: `severity must be one of: ${validSeverities.join(", ")}` },

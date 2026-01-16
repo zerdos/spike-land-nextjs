@@ -67,7 +67,10 @@ const CreateAbTestForm = ({ onSubmit, isLoading }: CreateAbTestFormProps) => {
             <FormItem>
               <FormLabel>Test Name</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Homepage CTA Button Color" {...field} />
+                <Input
+                  placeholder="e.g., Homepage CTA Button Color"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -80,7 +83,10 @@ const CreateAbTestForm = ({ onSubmit, isLoading }: CreateAbTestFormProps) => {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Input placeholder="A brief description of the test" {...field} />
+                <Input
+                  placeholder="A brief description of the test"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

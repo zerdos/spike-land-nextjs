@@ -76,7 +76,8 @@ describe("AttributionTab", () => {
     render(<AttributionTab />);
 
     await waitFor(() => {
-      expect(screen.getByText("Attribution Model Comparison")).toBeInTheDocument();
+      expect(screen.getByText("Attribution Model Comparison"))
+        .toBeInTheDocument();
     });
 
     // Recharts text rendering can be flaky in JSDOM.
@@ -111,7 +112,8 @@ describe("AttributionTab", () => {
     render(<AttributionTab />);
 
     await waitFor(() => {
-      expect(screen.getByText("No data available for this period.")).toBeInTheDocument();
+      expect(screen.getByText("No data available for this period."))
+        .toBeInTheDocument();
     });
   });
 

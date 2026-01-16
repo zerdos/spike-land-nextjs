@@ -121,20 +121,30 @@ export function CrisisAlertEmail({
         <Text style={alertTitleStyle}>
           {styles.emoji} {severity} SEVERITY: {title}
         </Text>
-        <Text style={{ ...emailStyles.text, margin: "0", whiteSpace: "pre-line" }}>
+        <Text
+          style={{ ...emailStyles.text, margin: "0", whiteSpace: "pre-line" }}
+        >
           {message}
         </Text>
       </Section>
 
       <Section style={detailsBoxStyle}>
-        <Text style={{ ...emailStyles.text, fontWeight: "bold", margin: "0 0 12px 0" }}>
+        <Text
+          style={{
+            ...emailStyles.text,
+            fontWeight: "bold",
+            margin: "0 0 12px 0",
+          }}
+        >
           Crisis Details
         </Text>
 
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <tbody>
             <tr>
-              <td style={{ padding: "8px 0", color: "#6b7280" }}>Trigger Type:</td>
+              <td style={{ padding: "8px 0", color: "#6b7280" }}>
+                Trigger Type:
+              </td>
               <td
                 style={{
                   padding: "8px 0",
@@ -159,14 +169,18 @@ export function CrisisAlertEmail({
               </td>
             </tr>
             <tr>
-              <td style={{ padding: "8px 0", color: "#6b7280" }}>Detected At:</td>
+              <td style={{ padding: "8px 0", color: "#6b7280" }}>
+                Detected At:
+              </td>
               <td style={{ padding: "8px 0", textAlign: "right" }}>
                 {detectedAt.toLocaleString()}
               </td>
             </tr>
             {affectedAccountCount > 0 && (
               <tr>
-                <td style={{ padding: "8px 0", color: "#6b7280" }}>Affected Accounts:</td>
+                <td style={{ padding: "8px 0", color: "#6b7280" }}>
+                  Affected Accounts:
+                </td>
                 <td style={{ padding: "8px 0", textAlign: "right" }}>
                   {affectedAccountCount}
                 </td>

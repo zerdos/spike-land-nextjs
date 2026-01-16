@@ -129,7 +129,10 @@ describe("GET /api/cron/pulse-metrics", () => {
 
   it("should allow access when CRON_SECRET is not set (development mode)", async () => {
     delete process.env.CRON_SECRET;
-    Object.defineProperty(process.env, "NODE_ENV", { value: "development", writable: true });
+    Object.defineProperty(process.env, "NODE_ENV", {
+      value: "development",
+      writable: true,
+    });
 
     vi.mocked(collectPulseMetrics).mockResolvedValue({
       totalAccounts: 0,
@@ -156,7 +159,10 @@ describe("GET /api/cron/pulse-metrics", () => {
 
   it("should return 401 when CRON_SECRET is not set in production", async () => {
     delete process.env.CRON_SECRET;
-    Object.defineProperty(process.env, "NODE_ENV", { value: "production", writable: true });
+    Object.defineProperty(process.env, "NODE_ENV", {
+      value: "production",
+      writable: true,
+    });
 
     const request = new NextRequest("http://localhost/api/cron/pulse-metrics", {
       method: "GET",

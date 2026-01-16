@@ -28,7 +28,12 @@ describe("EscalationService", () => {
     (getSmartRoutingSettings as any).mockResolvedValue({
       escalation: {
         levels: [
-          { level: 1, name: "L1", notifyChannels: ["slack"], triggerDelayMinutes: 0 },
+          {
+            level: 1,
+            name: "L1",
+            notifyChannels: ["slack"],
+            triggerDelayMinutes: 0,
+          },
           {
             level: 2,
             name: "L2",

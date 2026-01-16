@@ -16,7 +16,11 @@ export async function GET(
       select: { id: true },
     });
 
-    if (!workspace) return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+    if (!workspace) {
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
+    }
 
     await requireWorkspacePermission(session, workspace.id, "inbox:view");
 
@@ -44,12 +48,18 @@ export async function POST(
       select: { id: true },
     });
 
-    if (!workspace) return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+    if (!workspace) {
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
+    }
 
     await requireWorkspacePermission(session, workspace.id, "inbox:manage");
 
     // Regenerate suggestions
-    const item = await prisma.inboxItem.findUnique({ where: { id: params.itemId } });
+    const item = await prisma.inboxItem.findUnique({
+      where: { id: params.itemId },
+    });
     if (!item?.content) throw new Error("Item content missing");
 
     const analysis = await analyzeMessage({

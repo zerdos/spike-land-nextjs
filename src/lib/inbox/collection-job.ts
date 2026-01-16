@@ -31,7 +31,9 @@ const collectors = new Map<SocialPlatform, IPlatformCollector>([
 /**
  * Get collector for a platform
  */
-export function getCollector(platform: SocialPlatform): IPlatformCollector | undefined {
+export function getCollector(
+  platform: SocialPlatform,
+): IPlatformCollector | undefined {
   return collectors.get(platform);
 }
 
@@ -122,7 +124,10 @@ async function processCollectionResult(
       newCount++;
     } catch (error) {
       // Log error but continue processing other messages
-      console.error(`Error processing message ${message.platformItemId}:`, error);
+      console.error(
+        `Error processing message ${message.platformItemId}:`,
+        error,
+      );
     }
   }
 
@@ -227,7 +232,8 @@ export async function collectFromAccount(
       rateLimitStatus: collector.getRateLimitStatus() ?? undefined,
     };
   } catch (error) {
-    const isRateLimited = error instanceof Error && error.message.includes("Rate limit");
+    const isRateLimited = error instanceof Error &&
+      error.message.includes("Rate limit");
 
     return {
       status: isRateLimited ? "RATE_LIMITED" : "FAILED",
@@ -324,8 +330,14 @@ export function summarizeCollectionResults(
     failedCollections: results.filter((r) => r.status === "FAILED").length,
     rateLimitedCollections: results.filter((r) => r.status === "RATE_LIMITED")
       .length,
-    totalMessagesCollected: results.reduce((sum, r) => sum + r.messagesCollected, 0),
+    totalMessagesCollected: results.reduce(
+      (sum, r) => sum + r.messagesCollected,
+      0,
+    ),
     totalNewMessages: results.reduce((sum, r) => sum + r.newMessages, 0),
-    totalDuplicatesSkipped: results.reduce((sum, r) => sum + r.duplicatesSkipped, 0),
+    totalDuplicatesSkipped: results.reduce(
+      (sum, r) => sum + r.duplicatesSkipped,
+      0,
+    ),
   };
 }

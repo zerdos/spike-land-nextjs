@@ -30,7 +30,10 @@ export async function GET(
   const { codeSpace } = params;
 
   // Validate codespace format (alphanumeric, dots, hyphens, underscores, max 50 chars)
-  if (!codeSpace || codeSpace.length > 50 || !/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(codeSpace)) {
+  if (
+    !codeSpace || codeSpace.length > 50 ||
+    !/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(codeSpace)
+  ) {
     return NextResponse.json(
       { error: "Invalid codespace name" },
       { status: 400 },

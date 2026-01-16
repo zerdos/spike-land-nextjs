@@ -24,16 +24,21 @@ async function getWorkspaceUserIds(workspaceId: string): Promise<string[]> {
     where: { workspaceId },
     select: { userId: true },
   });
-  return members.map(m => m.userId);
+  return members.map((m) => m.userId);
 }
 
-async function syncCampaignsForAccount(account: MarketingAccount, workspaceId: string) {
+async function syncCampaignsForAccount(
+  account: MarketingAccount,
+  workspaceId: string,
+) {
   const accessToken = decryptToken(account.accessToken);
   const client = new GoogleAdsAllocatorClient(accessToken, account.accountId);
 
   try {
     const adAccounts = await client.getAdAccounts();
-    console.log(`Found ${adAccounts.length} Google Ads accounts for workspace ${workspaceId}`);
+    console.log(
+      `Found ${adAccounts.length} Google Ads accounts for workspace ${workspaceId}`,
+    );
 
     for (const adAccount of adAccounts) {
       try {
@@ -105,7 +110,10 @@ async function syncCampaignsForAccount(account: MarketingAccount, workspaceId: s
             });
 
             // Sync Ad Groups (mapped to AllocatorAdSet)
-            const adGroups = await client.getAdGroups(adAccount.id, campaign.id);
+            const adGroups = await client.getAdGroups(
+              adAccount.id,
+              campaign.id,
+            );
             for (const adGroup of adGroups) {
               try {
                 const adGroupInsights = await client.getMetrics(
@@ -142,14 +150,23 @@ async function syncCampaignsForAccount(account: MarketingAccount, workspaceId: s
               }
             }
           } catch (error) {
-            console.error(`Failed to sync Google Ads campaign ${campaign.id}:`, error);
+            console.error(
+              `Failed to sync Google Ads campaign ${campaign.id}:`,
+              error,
+            );
           }
         }
       } catch (error) {
-        console.error(`Failed to list campaigns for Google Ads account ${adAccount.id}:`, error);
+        console.error(
+          `Failed to list campaigns for Google Ads account ${adAccount.id}:`,
+          error,
+        );
       }
     }
   } catch (error) {
-    console.error(`Failed to get Google Ads accounts for marketing account ${account.id}:`, error);
+    console.error(
+      `Failed to get Google Ads accounts for marketing account ${account.id}:`,
+      error,
+    );
   }
 }

@@ -27,7 +27,9 @@ export async function DELETE(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     // Verify competitor belongs to the workspace before deleting
@@ -39,7 +41,9 @@ export async function DELETE(
     });
 
     if (!competitor) {
-      return NextResponse.json({ error: "Competitor not found" }, { status: 404 });
+      return NextResponse.json({ error: "Competitor not found" }, {
+        status: 404,
+      });
     }
 
     // Delete competitor (posts will be cascade deleted by Prisma schema)
@@ -50,6 +54,8 @@ export async function DELETE(
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Failed to delete competitor:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 }

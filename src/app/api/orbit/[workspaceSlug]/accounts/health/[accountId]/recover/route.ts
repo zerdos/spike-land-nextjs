@@ -130,7 +130,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     case "refresh_token": {
       // Get recovery guidance for token refresh
-      const guidance = await getRecoveryGuidance("TOKEN_EXPIRED", account.platform);
+      const guidance = await getRecoveryGuidance(
+        "TOKEN_EXPIRED",
+        account.platform,
+      );
 
       // In a real implementation, this would initiate OAuth refresh
       // For now, return guidance to the user
@@ -180,7 +183,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     case "reconnect": {
       // Get recovery guidance for reconnection
-      const guidance = await getRecoveryGuidance("TOKEN_EXPIRED", account.platform);
+      const guidance = await getRecoveryGuidance(
+        "TOKEN_EXPIRED",
+        account.platform,
+      );
 
       return NextResponse.json({
         success: true,

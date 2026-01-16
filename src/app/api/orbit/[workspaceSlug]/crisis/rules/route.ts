@@ -107,7 +107,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const {
@@ -125,7 +127,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
 
   if (!ruleType) {
-    return NextResponse.json({ error: "ruleType is required" }, { status: 400 });
+    return NextResponse.json({ error: "ruleType is required" }, {
+      status: 400,
+    });
   }
 
   const validRuleTypes: CrisisRuleType[] = [
@@ -144,14 +148,23 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
 
   if (!conditions) {
-    return NextResponse.json({ error: "conditions is required" }, { status: 400 });
+    return NextResponse.json({ error: "conditions is required" }, {
+      status: 400,
+    });
   }
 
   if (!severity) {
-    return NextResponse.json({ error: "severity is required" }, { status: 400 });
+    return NextResponse.json({ error: "severity is required" }, {
+      status: 400,
+    });
   }
 
-  const validSeverities: CrisisSeverity[] = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
+  const validSeverities: CrisisSeverity[] = [
+    "LOW",
+    "MEDIUM",
+    "HIGH",
+    "CRITICAL",
+  ];
   if (!validSeverities.includes(severity)) {
     return NextResponse.json(
       { error: `severity must be one of: ${validSeverities.join(", ")}` },

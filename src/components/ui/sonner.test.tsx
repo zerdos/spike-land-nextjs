@@ -82,7 +82,9 @@ describe("Toaster", () => {
     render(<Toaster />);
 
     const toaster = screen.getByTestId("sonner-toaster");
-    expect(toaster.dataset["actionClass"]).toContain("group-[.toast]:bg-primary");
+    expect(toaster.dataset["actionClass"]).toContain(
+      "group-[.toast]:bg-primary",
+    );
     expect(toaster.dataset["actionClass"]).toContain(
       "group-[.toast]:text-primary-foreground",
     );

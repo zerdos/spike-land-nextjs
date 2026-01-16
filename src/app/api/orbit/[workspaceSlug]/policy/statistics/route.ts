@@ -73,12 +73,19 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   if (ruleStatsResult.error) {
     console.error("Error fetching rule statistics:", ruleStatsResult.error);
-    return NextResponse.json({ error: "Failed to fetch statistics" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch statistics" }, {
+      status: 500,
+    });
   }
 
   if (violationStatsResult.error) {
-    console.error("Error fetching violation statistics:", violationStatsResult.error);
-    return NextResponse.json({ error: "Failed to fetch statistics" }, { status: 500 });
+    console.error(
+      "Error fetching violation statistics:",
+      violationStatsResult.error,
+    );
+    return NextResponse.json({ error: "Failed to fetch statistics" }, {
+      status: 500,
+    });
   }
 
   return NextResponse.json({
@@ -86,7 +93,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     violations: violationStatsResult.data,
     period: {
       days,
-      startDate: new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString(),
+      startDate: new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+        .toISOString(),
       endDate: new Date().toISOString(),
     },
   });

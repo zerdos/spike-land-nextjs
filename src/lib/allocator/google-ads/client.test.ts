@@ -86,10 +86,23 @@ describe("GoogleAdsAllocatorClient", () => {
 
   it("should get metrics", async () => {
     mockMarketingClient.executeQuery.mockResolvedValue([
-      { metrics: { costMicros: "1000000", impressions: "100", clicks: "10", conversions: "1" } },
+      {
+        metrics: {
+          costMicros: "1000000",
+          impressions: "100",
+          clicks: "10",
+          conversions: "1",
+        },
+      },
     ]);
 
-    const metrics = await client.getMetrics("sub_1", "c1", "CAMPAIGN", new Date(), new Date());
+    const metrics = await client.getMetrics(
+      "sub_1",
+      "c1",
+      "CAMPAIGN",
+      new Date(),
+      new Date(),
+    );
 
     expect(metrics.spend).toBe(100);
     expect(metrics.impressions).toBe(100);

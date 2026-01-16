@@ -99,7 +99,8 @@ export function calculateStandardDeviation(values: number[]): number {
   if (values.length <= 1) return 0;
   const mean = calculateMean(values);
   const squaredDiffs = values.map((val) => Math.pow(val - mean, 2));
-  const variance = squaredDiffs.reduce((sum, val) => sum + val, 0) / (values.length - 1);
+  const variance = squaredDiffs.reduce((sum, val) => sum + val, 0) /
+    (values.length - 1);
   return Math.sqrt(variance);
 }
 
@@ -202,7 +203,9 @@ function detectMetricAnomalies(
     return null;
   }
 
-  const severity: AnomalySeverity = absZScore >= criticalThreshold ? "critical" : "warning";
+  const severity: AnomalySeverity = absZScore >= criticalThreshold
+    ? "critical"
+    : "warning";
   const direction: AnomalyDirection = zScore > 0 ? "spike" : "drop";
   const percentChange = mean !== 0 ? ((currentValue - mean) / mean) * 100 : 0;
 

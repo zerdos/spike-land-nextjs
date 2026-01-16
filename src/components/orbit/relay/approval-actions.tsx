@@ -37,11 +37,14 @@ async function performDraftAction(
     body["reason"] = reason;
   }
 
-  const res = await fetch(`/api/orbit/${workspaceSlug}/relay/drafts/${draftId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  const res = await fetch(
+    `/api/orbit/${workspaceSlug}/relay/drafts/${draftId}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+  );
 
   if (!res.ok) {
     let errorText: string;
@@ -57,7 +60,9 @@ async function performDraftAction(
   return res.json();
 }
 
-export function ApprovalActions({ draft, onActionComplete }: ApprovalActionsProps) {
+export function ApprovalActions(
+  { draft, onActionComplete }: ApprovalActionsProps,
+) {
   const params = useParams();
   const workspaceSlug = params["workspaceSlug"] as string;
   const queryClient = useQueryClient();
@@ -66,8 +71,9 @@ export function ApprovalActions({ draft, onActionComplete }: ApprovalActionsProp
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: ({ action, reason }: { action: DraftAction; reason?: string; }) =>
-      performDraftAction(workspaceSlug, draft.id, action, reason),
+    mutationFn: (
+      { action, reason }: { action: DraftAction; reason?: string; },
+    ) => performDraftAction(workspaceSlug, draft.id, action, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["relayDrafts", workspaceSlug],
@@ -112,7 +118,10 @@ export function ApprovalActions({ draft, onActionComplete }: ApprovalActionsProp
             Approve
           </Button>
 
-          <AlertDialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+          <AlertDialog
+            open={rejectDialogOpen}
+            onOpenChange={setRejectDialogOpen}
+          >
             <AlertDialogTrigger asChild>
               <Button
                 variant="outline"
@@ -151,7 +160,9 @@ export function ApprovalActions({ draft, onActionComplete }: ApprovalActionsProp
                   disabled={!rejectionReason.trim() || isLoading}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  {isLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
+                  {isLoading
+                    ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    : null}
                   Reject Draft
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -177,7 +188,9 @@ export function ApprovalActions({ draft, onActionComplete }: ApprovalActionsProp
 
       {mutation.error && (
         <p className="text-sm text-red-500 w-full">
-          {mutation.error instanceof Error ? mutation.error.message : "Action failed"}
+          {mutation.error instanceof Error
+            ? mutation.error.message
+            : "Action failed"}
         </p>
       )}
     </div>

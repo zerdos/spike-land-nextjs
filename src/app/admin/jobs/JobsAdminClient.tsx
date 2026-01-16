@@ -609,7 +609,11 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
               </div>
             )
             : jobs.length === 0
-            ? <p className="text-neutral-500" data-testid="empty-jobs-message">No jobs found</p>
+            ? (
+              <p className="text-neutral-500" data-testid="empty-jobs-message">
+                No jobs found
+              </p>
+            )
             : (
               <div className="max-h-[600px] space-y-2 overflow-y-auto">
                 {jobs.map((job) => (

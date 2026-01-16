@@ -173,7 +173,10 @@ export class TwitterCollector extends BaseCollector {
       }
 
       const messages: RawSocialMessage[] = response.data.map((tweet) => {
-        const sender = this.getUserInfo(tweet.author_id, response.includes?.users);
+        const sender = this.getUserInfo(
+          tweet.author_id,
+          response.includes?.users,
+        );
         const referencedTweet = tweet.referenced_tweets?.find(
           (ref) => ref.type === "replied_to",
         );
@@ -242,7 +245,10 @@ export class TwitterCollector extends BaseCollector {
         const messages: RawSocialMessage[] = response.data
           .filter((event) => event.event_type === "MessageCreate")
           .map((event) => {
-            const sender = this.getUserInfo(event.sender_id, response.includes?.users);
+            const sender = this.getUserInfo(
+              event.sender_id,
+              response.includes?.users,
+            );
 
             return {
               platformItemId: event.id,

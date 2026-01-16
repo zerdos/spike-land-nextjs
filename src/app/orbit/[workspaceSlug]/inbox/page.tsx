@@ -34,7 +34,10 @@ export default function InboxPage() {
       <div className="flex h-screen">
         <div className="w-1/3 border-r">
           <div className="p-4 border-b">
-            <InboxFilters onFilterChange={handleFilterChange} teamMembers={members} />
+            <InboxFilters
+              onFilterChange={handleFilterChange}
+              teamMembers={members}
+            />
           </div>
           <InboxList filters={filters} onItemSelected={setSelectedItem} />
         </div>

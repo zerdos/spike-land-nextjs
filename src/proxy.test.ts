@@ -455,7 +455,9 @@ describe("proxy", () => {
           process.env.E2E_BYPASS_SECRET = originalEnv;
         }
         if (originalNodeEnv === undefined) {
-          delete (process.env as Record<string, string | undefined>)["NODE_ENV"];
+          delete (process.env as Record<string, string | undefined>)[
+            "NODE_ENV"
+          ];
         } else {
           (process.env as Record<string, string | undefined>)["NODE_ENV"] = originalNodeEnv;
         }

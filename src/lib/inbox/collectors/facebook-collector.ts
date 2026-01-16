@@ -235,7 +235,9 @@ export class FacebookCollector extends BaseCollector {
 
       try {
         // First get conversations
-        const conversationsResponse = await this.makeRequest<FacebookConversationsResponse>(
+        const conversationsResponse = await this.makeRequest<
+          FacebookConversationsResponse
+        >(
           `/${accountId}/conversations`,
           accessToken,
           params,
@@ -252,7 +254,9 @@ export class FacebookCollector extends BaseCollector {
         const allMessages: RawSocialMessage[] = [];
 
         for (const conversation of conversationsResponse.data.slice(0, 10)) {
-          const messagesResponse = await this.makeRequest<FacebookMessagesResponse>(
+          const messagesResponse = await this.makeRequest<
+            FacebookMessagesResponse
+          >(
             `/${conversation.id}/messages`,
             accessToken,
             {
@@ -339,7 +343,9 @@ export class FacebookCollector extends BaseCollector {
         }
 
         try {
-          const commentsResponse = await this.makeRequest<FacebookCommentsResponse>(
+          const commentsResponse = await this.makeRequest<
+            FacebookCommentsResponse
+          >(
             `/${post.id}/comments`,
             accessToken,
             commentsParams,
@@ -348,7 +354,9 @@ export class FacebookCollector extends BaseCollector {
           if (commentsResponse.data) {
             const comments = commentsResponse.data.map((comment) => ({
               platformItemId: comment.id,
-              type: (comment.parent ? "REPLY" : "COMMENT") as "REPLY" | "COMMENT",
+              type: (comment.parent ? "REPLY" : "COMMENT") as
+                | "REPLY"
+                | "COMMENT",
               content: comment.message,
               senderName: comment.from.name,
               senderAvatarUrl: comment.from.picture?.data?.url,

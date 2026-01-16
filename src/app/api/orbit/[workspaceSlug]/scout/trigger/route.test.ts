@@ -38,7 +38,9 @@ describe("/api/orbit/[workspaceSlug]/scout/trigger", () => {
 
     it("should call runTopicMonitoring and return a success message", async () => {
       vi.mocked(auth).mockResolvedValue({ user: { id: "123" } } as any);
-      vi.mocked(prisma.workspace.findFirst).mockResolvedValue({ id: "ws-123" } as any);
+      vi.mocked(prisma.workspace.findFirst).mockResolvedValue(
+        { id: "ws-123" } as any,
+      );
 
       const req = new NextRequest("http://localhost", { method: "POST" });
       const res = await POST(req, { params: { workspaceSlug: "test" } });

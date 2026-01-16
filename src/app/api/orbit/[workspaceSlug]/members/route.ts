@@ -22,7 +22,11 @@ export async function GET(
     }
 
     // Verify user has permission to view workspace members
-    await requireWorkspacePermission(session, workspace.id, "workspace:view" as WorkspaceAction);
+    await requireWorkspacePermission(
+      session,
+      workspace.id,
+      "workspace:view" as WorkspaceAction,
+    );
 
     const members = await db.workspaceMember.findMany({
       where: { workspaceId: workspace.id },

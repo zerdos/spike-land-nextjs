@@ -43,7 +43,9 @@ import {
 import type { CreateInboxItemInput } from "./types";
 
 // Helper to create mock inbox item
-const createMockInboxItem = (overrides: Partial<InboxItem> = {}): InboxItem => ({
+const createMockInboxItem = (
+  overrides: Partial<InboxItem> = {},
+): InboxItem => ({
   id: "inbox-1",
   type: "COMMENT",
   status: "UNREAD",
@@ -133,7 +135,10 @@ describe("Inbox Manager", () => {
         metadata: { source: "mobile" },
       };
 
-      const mockItem = createMockInboxItem({ type: "DIRECT_MESSAGE", platform: "INSTAGRAM" });
+      const mockItem = createMockInboxItem({
+        type: "DIRECT_MESSAGE",
+        platform: "INSTAGRAM",
+      });
       vi.mocked(prisma.inboxItem.create).mockResolvedValue(mockItem);
 
       await createInboxItem(input);
@@ -278,7 +283,11 @@ describe("Inbox Manager", () => {
     it("should mark multiple items as read", async () => {
       vi.mocked(prisma.inboxItem.updateMany).mockResolvedValue({ count: 3 });
 
-      const result = await markMultipleAsRead(["inbox-1", "inbox-2", "inbox-3"]);
+      const result = await markMultipleAsRead([
+        "inbox-1",
+        "inbox-2",
+        "inbox-3",
+      ]);
 
       expect(result).toBe(3);
       expect(prisma.inboxItem.updateMany).toHaveBeenCalledWith({

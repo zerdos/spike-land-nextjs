@@ -31,7 +31,8 @@ export function calculateBackoffDelay(
   attempt: number,
   config: BackoffConfig = DEFAULT_BACKOFF_CONFIG,
 ): number {
-  const exponentialDelay = config.initialDelayMs * Math.pow(config.multiplier, attempt);
+  const exponentialDelay = config.initialDelayMs *
+    Math.pow(config.multiplier, attempt);
   const cappedDelay = Math.min(exponentialDelay, config.maxDelayMs);
   // Add jitter (±10%)
   const jitter = cappedDelay * 0.1 * (Math.random() * 2 - 1);
@@ -130,7 +131,10 @@ export abstract class BaseCollector implements IPlatformCollector {
       }
 
       // Check if it's a retryable error
-      if (this.isRetryableError(error) && retryCount < this.backoffConfig.maxRetries) {
+      if (
+        this.isRetryableError(error) &&
+        retryCount < this.backoffConfig.maxRetries
+      ) {
         const delay = calculateBackoffDelay(retryCount, this.backoffConfig);
         await sleep(delay);
         return this.executeWithRetry(operation, retryCount + 1);

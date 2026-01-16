@@ -5,7 +5,7 @@ import { CampaignsTab } from "./CampaignsTab";
 
 // Mock the response structure expected by the component
 const mockResponse = {
-  campaigns: mockCampaignsData.map(c => ({
+  campaigns: mockCampaignsData.map((c) => ({
     ...c,
     visitors: 1000,
     signups: 50,

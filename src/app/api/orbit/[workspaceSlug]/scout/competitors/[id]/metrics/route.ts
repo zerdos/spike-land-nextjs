@@ -31,7 +31,9 @@ export async function GET(
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     // Parse and validate date parameters
@@ -45,7 +47,9 @@ export async function GET(
     if (rawStartDate) {
       startDate = new Date(rawStartDate);
       if (isNaN(startDate.getTime())) {
-        return NextResponse.json({ error: "Invalid startDate parameter" }, { status: 400 });
+        return NextResponse.json({ error: "Invalid startDate parameter" }, {
+          status: 400,
+        });
       }
     } else {
       startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -54,7 +58,9 @@ export async function GET(
     if (rawEndDate) {
       endDate = new Date(rawEndDate);
       if (isNaN(endDate.getTime())) {
-        return NextResponse.json({ error: "Invalid endDate parameter" }, { status: 400 });
+        return NextResponse.json({ error: "Invalid endDate parameter" }, {
+          status: 400,
+        });
       }
     } else {
       endDate = new Date();
@@ -69,10 +75,16 @@ export async function GET(
     });
 
     if (!competitor) {
-      return NextResponse.json({ error: "Competitor not found" }, { status: 404 });
+      return NextResponse.json({ error: "Competitor not found" }, {
+        status: 404,
+      });
     }
 
-    const engagementMetrics = await analyzeCompetitorEngagement(params.id, startDate, endDate);
+    const engagementMetrics = await analyzeCompetitorEngagement(
+      params.id,
+      startDate,
+      endDate,
+    );
     const topPosts = await getTopCompetitorPosts(params.id);
 
     return NextResponse.json({
@@ -81,6 +93,8 @@ export async function GET(
     });
   } catch (error) {
     console.error("Failed to fetch competitor metrics:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 }

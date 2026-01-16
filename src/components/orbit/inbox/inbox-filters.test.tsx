@@ -9,7 +9,9 @@ const teamMembers = [
 
 describe("InboxFilters", () => {
   it("renders all filter dropdowns", () => {
-    render(<InboxFilters onFilterChange={() => {}} teamMembers={teamMembers} />);
+    render(
+      <InboxFilters onFilterChange={() => {}} teamMembers={teamMembers} />,
+    );
     expect(screen.getByLabelText("Platform")).toBeInTheDocument();
     expect(screen.getByLabelText("Status")).toBeInTheDocument();
     expect(screen.getByLabelText("Type")).toBeInTheDocument();
@@ -18,7 +20,12 @@ describe("InboxFilters", () => {
 
   it("calls onFilterChange with the correct values when the form is submitted", async () => {
     const onFilterChange = vi.fn();
-    render(<InboxFilters onFilterChange={onFilterChange} teamMembers={teamMembers} />);
+    render(
+      <InboxFilters
+        onFilterChange={onFilterChange}
+        teamMembers={teamMembers}
+      />,
+    );
     // This is a workaround for the fact that shadcn/ui select is not easily testable
     // In a real app, you'd want to use a more robust testing strategy for forms
     const form = screen.getByTestId("inbox-filters-form");

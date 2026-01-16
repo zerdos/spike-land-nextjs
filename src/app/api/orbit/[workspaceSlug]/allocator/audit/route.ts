@@ -28,13 +28,19 @@ export async function GET(
   });
 
   if (!workspace || workspace.members.length === 0) {
-    return NextResponse.json({ error: "Workspace not found or access denied" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Workspace not found or access denied" },
+      { status: 404 },
+    );
   }
 
   // Parse query params
   const { searchParams } = new URL(req.url);
   const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50")));
+  const limit = Math.min(
+    100,
+    Math.max(1, parseInt(searchParams.get("limit") || "50")),
+  );
   const offset = (page - 1) * limit;
 
   const correlationId = searchParams.get("correlationId") || undefined;
@@ -81,6 +87,8 @@ export async function GET(
     });
   } catch (error) {
     console.error("Error searching allocator audit logs:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, {
+      status: 500,
+    });
   }
 }

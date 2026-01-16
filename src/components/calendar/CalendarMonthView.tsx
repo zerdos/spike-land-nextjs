@@ -42,7 +42,9 @@ export function CalendarMonthView({
   onReschedule,
   isLoading,
 }: CalendarMonthViewProps) {
-  const [draggingPost, setDraggingPost] = useState<CalendarPostItem | null>(null);
+  const [draggingPost, setDraggingPost] = useState<CalendarPostItem | null>(
+    null,
+  );
   const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
 
   // Calculate days to display (including padding days from prev/next month)
@@ -54,14 +56,17 @@ export function CalendarMonthView({
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   // Group posts by date
-  const postsByDate = posts.reduce<Record<string, CalendarPostItem[]>>((acc, post) => {
-    const dateKey = format(post.scheduledAt, "yyyy-MM-dd");
-    if (!acc[dateKey]) {
-      acc[dateKey] = [];
-    }
-    acc[dateKey].push(post);
-    return acc;
-  }, {});
+  const postsByDate = posts.reduce<Record<string, CalendarPostItem[]>>(
+    (acc, post) => {
+      const dateKey = format(post.scheduledAt, "yyyy-MM-dd");
+      if (!acc[dateKey]) {
+        acc[dateKey] = [];
+      }
+      acc[dateKey].push(post);
+      return acc;
+    },
+    {},
+  );
 
   const getPostsForDate = useCallback(
     (date: Date): CalendarPostItem[] => {

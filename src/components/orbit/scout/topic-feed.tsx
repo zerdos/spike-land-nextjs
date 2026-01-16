@@ -45,7 +45,7 @@ export function TopicFeed({ workspaceSlug }: TopicFeedProps) {
       <CardContent>
         {loading ? <p>Loading...</p> : (
           <div className="space-y-4">
-            {results.map(result => (
+            {results.map((result) => (
               <div key={result.id} className="border p-4 rounded-md">
                 <p className="font-bold">{result.topic.name}</p>
                 <p>{result.content}</p>
@@ -57,13 +57,16 @@ export function TopicFeed({ workspaceSlug }: TopicFeedProps) {
           </div>
         )}
         <div className="flex justify-between items-center mt-4">
-          <Button onClick={() => setPage(p => p - 1)} disabled={page <= 1}>
+          <Button onClick={() => setPage((p) => p - 1)} disabled={page <= 1}>
             Previous
           </Button>
           <span>
             Page {page} of {totalPages}
           </span>
-          <Button onClick={() => setPage(p => p + 1)} disabled={page >= totalPages}>
+          <Button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page >= totalPages}
+          >
             Next
           </Button>
         </div>

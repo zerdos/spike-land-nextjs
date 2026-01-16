@@ -41,11 +41,14 @@ async function editDraft(
   content: string,
   reason?: string,
 ) {
-  const res = await fetch(`/api/orbit/${workspaceSlug}/relay/drafts/${draftId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "edit", content, reason }),
-  });
+  const res = await fetch(
+    `/api/orbit/${workspaceSlug}/relay/drafts/${draftId}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "edit", content, reason }),
+    },
+  );
 
   if (!res.ok) {
     let errorText: string;
@@ -179,7 +182,9 @@ export function DraftEditor({ draft, onSaved }: DraftEditorProps) {
 
         {mutation.error && (
           <p className="text-sm text-red-500">
-            {mutation.error instanceof Error ? mutation.error.message : "Failed to save"}
+            {mutation.error instanceof Error
+              ? mutation.error.message
+              : "Failed to save"}
           </p>
         )}
       </form>

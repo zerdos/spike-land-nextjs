@@ -155,8 +155,13 @@ export class FacebookClient implements ISocialClient {
     );
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-      const errorObj = errorData["error"] as Record<string, unknown> | undefined;
+      const errorData = (await response.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      const errorObj = errorData["error"] as
+        | Record<string, unknown>
+        | undefined;
       throw new Error(
         `Facebook token exchange failed: ${errorObj?.["message"] || response.statusText}`,
       );
@@ -204,8 +209,13 @@ export class FacebookClient implements ISocialClient {
     );
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-      const errorObj = errorData["error"] as Record<string, unknown> | undefined;
+      const errorData = (await response.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      const errorObj = errorData["error"] as
+        | Record<string, unknown>
+        | undefined;
       throw new Error(
         `Facebook long-lived token exchange failed: ${
           errorObj?.["message"] || response.statusText
@@ -247,8 +257,13 @@ export class FacebookClient implements ISocialClient {
     );
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-      const errorObj = errorData["error"] as Record<string, unknown> | undefined;
+      const errorData = (await response.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      const errorObj = errorData["error"] as
+        | Record<string, unknown>
+        | undefined;
       throw new Error(
         `Failed to get Facebook pages: ${errorObj?.["message"] || response.statusText}`,
       );
@@ -277,8 +292,13 @@ export class FacebookClient implements ISocialClient {
     );
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-      const errorObj = errorData["error"] as Record<string, unknown> | undefined;
+      const errorData = (await response.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      const errorObj = errorData["error"] as
+        | Record<string, unknown>
+        | undefined;
       throw new Error(
         `Failed to get page info: ${errorObj?.["message"] || response.statusText}`,
       );
@@ -334,8 +354,13 @@ export class FacebookClient implements ISocialClient {
     });
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-      const errorObj = errorData["error"] as Record<string, unknown> | undefined;
+      const errorData = (await response.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      const errorObj = errorData["error"] as
+        | Record<string, unknown>
+        | undefined;
       throw new Error(
         `Failed to create post: ${errorObj?.["message"] || response.statusText}`,
       );
@@ -374,8 +399,13 @@ export class FacebookClient implements ISocialClient {
     );
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-      const errorObj = errorData["error"] as Record<string, unknown> | undefined;
+      const errorData = (await response.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      const errorObj = errorData["error"] as
+        | Record<string, unknown>
+        | undefined;
       throw new Error(
         `Failed to get posts: ${errorObj?.["message"] || response.statusText}`,
       );
@@ -414,8 +444,13 @@ export class FacebookClient implements ISocialClient {
     );
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-      const errorObj = errorData["error"] as Record<string, unknown> | undefined;
+      const errorData = (await response.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      const errorObj = errorData["error"] as
+        | Record<string, unknown>
+        | undefined;
       throw new Error(
         `Failed to delete post: ${errorObj?.["message"] || response.statusText}`,
       );
@@ -442,8 +477,13 @@ export class FacebookClient implements ISocialClient {
     });
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-      const errorObj = errorData["error"] as Record<string, unknown> | undefined;
+      const errorData = (await response.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      const errorObj = errorData["error"] as
+        | Record<string, unknown>
+        | undefined;
       throw new Error(
         `Failed to like post: ${errorObj?.["message"] || response.statusText}`,
       );
@@ -464,8 +504,13 @@ export class FacebookClient implements ISocialClient {
     );
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-      const errorObj = errorData["error"] as Record<string, unknown> | undefined;
+      const errorData = (await response.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      const errorObj = errorData["error"] as
+        | Record<string, unknown>
+        | undefined;
       throw new Error(
         `Failed to unlike post: ${errorObj?.["message"] || response.statusText}`,
       );
@@ -495,8 +540,13 @@ export class FacebookClient implements ISocialClient {
     });
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-      const errorObj = errorData["error"] as Record<string, unknown> | undefined;
+      const errorData = (await response.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      const errorObj = errorData["error"] as
+        | Record<string, unknown>
+        | undefined;
       throw new Error(
         `Failed to comment on post: ${errorObj?.["message"] || response.statusText}`,
       );
@@ -525,8 +575,13 @@ export class FacebookClient implements ISocialClient {
     );
 
     if (!pageResponse.ok) {
-      const errorData = (await pageResponse.json().catch(() => ({}))) as Record<string, unknown>;
-      const errorObj = errorData["error"] as Record<string, unknown> | undefined;
+      const errorData = (await pageResponse.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      const errorObj = errorData["error"] as
+        | Record<string, unknown>
+        | undefined;
       throw new Error(
         `Failed to get page info: ${errorObj?.["message"] || pageResponse.statusText}`,
       );

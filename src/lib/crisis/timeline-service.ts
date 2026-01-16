@@ -19,7 +19,9 @@ export class CrisisTimelineService {
   /**
    * Get timeline for a specific crisis
    */
-  static async getCrisisTimeline(crisisId: string): Promise<CrisisTimeline | null> {
+  static async getCrisisTimeline(
+    crisisId: string,
+  ): Promise<CrisisTimeline | null> {
     // Get crisis event
     const { data: crisis, error } = await tryCatch(
       prisma.crisisDetectionEvent.findUnique({
@@ -45,7 +47,9 @@ export class CrisisTimelineService {
     );
 
     // Get timeline events from workspace settings
-    const settings = crisis.workspace.settings as Record<string, unknown> | null;
+    const settings = crisis.workspace.settings as
+      | Record<string, unknown>
+      | null;
     const allEvents = (settings?.["crisisTimeline"] as Array<Record<string, unknown>>) || [];
 
     // Filter events for this crisis
@@ -92,7 +96,9 @@ export class CrisisTimelineService {
     if (crisis.resolvedAt) {
       baseEvents.push({
         id: `resolved-${crisis.id}`,
-        type: crisis.status === "FALSE_ALARM" ? "crisis_resolved" : "crisis_resolved",
+        type: crisis.status === "FALSE_ALARM"
+          ? "crisis_resolved"
+          : "crisis_resolved",
         timestamp: crisis.resolvedAt,
         actorId: crisis.resolvedById || undefined,
         crisisId: crisis.id,
@@ -258,7 +264,9 @@ export class CrisisTimelineService {
 
     return events.map((event) => ({
       ...event,
-      actorName: event.actorId ? (userMap.get(event.actorId) ?? undefined) : undefined,
+      actorName: event.actorId
+        ? (userMap.get(event.actorId) ?? undefined)
+        : undefined,
     }));
   }
 }

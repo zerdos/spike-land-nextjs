@@ -132,10 +132,16 @@ function AlertItem({ alert }: { alert: AnomalyAlert; }) {
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-3">
           <span className="text-white/50">
-            Current: <span className="text-white">{formatNumber(alert.currentValue)}</span>
+            Current:{" "}
+            <span className="text-white">
+              {formatNumber(alert.currentValue)}
+            </span>
           </span>
           <span className="text-white/50">
-            Expected: <span className="text-white">{formatNumber(alert.expectedValue)}</span>
+            Expected:{" "}
+            <span className="text-white">
+              {formatNumber(alert.expectedValue)}
+            </span>
           </span>
         </div>
         <span
@@ -214,25 +220,29 @@ export function AnomalyAlertsList({
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading ? <LoadingSkeleton /> : displayAlerts.length === 0 ? <EmptyState /> : (
-          <>
-            <ScrollArea className="h-[300px] pr-4">
-              <div className="space-y-3">
-                {displayAlerts.map((alert) => <AlertItem key={alert.id} alert={alert} />)}
-              </div>
-            </ScrollArea>
-            {hasMore && (
-              <div className="pt-3 mt-3 border-t border-white/10 text-center">
-                <button
-                  type="button"
-                  className="text-xs text-white/50 hover:text-white/70 transition-colors"
-                >
-                  View all {alerts.length} anomalies
-                </button>
-              </div>
-            )}
-          </>
-        )}
+        {isLoading
+          ? <LoadingSkeleton />
+          : displayAlerts.length === 0
+          ? <EmptyState />
+          : (
+            <>
+              <ScrollArea className="h-[300px] pr-4">
+                <div className="space-y-3">
+                  {displayAlerts.map((alert) => <AlertItem key={alert.id} alert={alert} />)}
+                </div>
+              </ScrollArea>
+              {hasMore && (
+                <div className="pt-3 mt-3 border-t border-white/10 text-center">
+                  <button
+                    type="button"
+                    className="text-xs text-white/50 hover:text-white/70 transition-colors"
+                  >
+                    View all {alerts.length} anomalies
+                  </button>
+                </div>
+              )}
+            </>
+          )}
       </CardContent>
     </Card>
   );

@@ -72,7 +72,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   };
 
   const status = searchParams.get("status") as CrisisEventStatus | null;
-  if (status && ["DETECTED", "ACKNOWLEDGED", "RESOLVED", "FALSE_ALARM"].includes(status)) {
+  if (
+    status &&
+    ["DETECTED", "ACKNOWLEDGED", "RESOLVED", "FALSE_ALARM"].includes(status)
+  ) {
     searchOptions.status = [status];
   }
 
@@ -161,7 +164,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const { data: body, error: bodyError } = await tryCatch(request.json());
 
   if (bodyError) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, {
+      status: 400,
+    });
   }
 
   const { severity, description, affectedAccountIds } = body as {

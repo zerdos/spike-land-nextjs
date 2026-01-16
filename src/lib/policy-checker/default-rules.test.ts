@@ -203,9 +203,10 @@ describe("Default Rules", () => {
       const spamRule = GLOBAL_CONTENT_RULES.find((r) => r.name === "Spam Language Detection");
       expect(spamRule).toBeDefined();
       expect(spamRule?.ruleType).toBe("KEYWORD_MATCH");
-      expect((spamRule?.conditions as { keywords: string[]; }).keywords).toContain(
-        "click here now",
-      );
+      expect((spamRule?.conditions as { keywords: string[]; }).keywords)
+        .toContain(
+          "click here now",
+        );
     });
 
     it("should include profanity filter", () => {
@@ -218,7 +219,8 @@ describe("Default Rules", () => {
       const httpsRule = GLOBAL_CONTENT_RULES.find((r) => r.name === "HTTPS Links Required");
       expect(httpsRule).toBeDefined();
       expect(httpsRule?.ruleType).toBe("LINK_VALIDATION");
-      expect((httpsRule?.conditions as { requireHttps: boolean; }).requireHttps).toBe(true);
+      expect((httpsRule?.conditions as { requireHttps: boolean; }).requireHttps)
+        .toBe(true);
     });
   });
 
@@ -234,10 +236,12 @@ describe("Default Rules", () => {
     it("should include ad disclosure rule", () => {
       const disclosureRule = AD_COMPLIANCE_RULES.find((r) => r.name === "Ad Disclosure Required");
       expect(disclosureRule).toBeDefined();
-      expect((disclosureRule?.conditions as { keywords: string[]; }).keywords).toContain("#ad");
-      expect((disclosureRule?.conditions as { keywords: string[]; }).keywords).toContain(
-        "#sponsored",
-      );
+      expect((disclosureRule?.conditions as { keywords: string[]; }).keywords)
+        .toContain("#ad");
+      expect((disclosureRule?.conditions as { keywords: string[]; }).keywords)
+        .toContain(
+          "#sponsored",
+        );
     });
 
     it("should include misleading ad language rule", () => {

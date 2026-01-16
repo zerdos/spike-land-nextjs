@@ -58,7 +58,8 @@ export async function analyzeCompetitorEngagement(
 
   // A simple engagement rate: (total interactions / total posts).
   // A more advanced formula would incorporate follower counts.
-  const engagementRate = (totalLikes + totalComments + totalShares) / totalPosts;
+  const engagementRate = (totalLikes + totalComments + totalShares) /
+    totalPosts;
 
   return {
     averageLikes,
@@ -126,7 +127,7 @@ export async function generateBenchmarkReport(
   let totalCompetitorPosts = 0;
 
   // Parallelize metric calculations for all competitors to avoid sequential queries
-  const metricsPromises = competitors.map(competitor =>
+  const metricsPromises = competitors.map((competitor) =>
     analyzeCompetitorEngagement(competitor.id, startDate, endDate)
   );
   const metricsResults = await Promise.all(metricsPromises);
@@ -139,9 +140,15 @@ export async function generateBenchmarkReport(
   }
 
   const competitorMetrics = {
-    averageLikes: totalCompetitorPosts > 0 ? totalCompetitorLikes / totalCompetitorPosts : 0,
-    averageComments: totalCompetitorPosts > 0 ? totalCompetitorComments / totalCompetitorPosts : 0,
-    averageShares: totalCompetitorPosts > 0 ? totalCompetitorShares / totalCompetitorPosts : 0,
+    averageLikes: totalCompetitorPosts > 0
+      ? totalCompetitorLikes / totalCompetitorPosts
+      : 0,
+    averageComments: totalCompetitorPosts > 0
+      ? totalCompetitorComments / totalCompetitorPosts
+      : 0,
+    averageShares: totalCompetitorPosts > 0
+      ? totalCompetitorShares / totalCompetitorPosts
+      : 0,
     totalPosts: totalCompetitorPosts,
   };
 

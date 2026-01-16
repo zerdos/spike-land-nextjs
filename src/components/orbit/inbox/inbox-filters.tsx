@@ -22,11 +22,15 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const filterSchema = z.object({
-  platform: z.enum(Object.values(SocialPlatform) as [string, ...string[]]).optional(),
-  status: z.enum(Object.values(InboxItemStatus) as [string, ...string[]]).optional(),
-  type: z.enum(Object.values(InboxItemType) as [string, ...string[]]).optional(),
+  platform: z.enum(Object.values(SocialPlatform) as [string, ...string[]])
+    .optional(),
+  status: z.enum(Object.values(InboxItemStatus) as [string, ...string[]])
+    .optional(),
+  type: z.enum(Object.values(InboxItemType) as [string, ...string[]])
+    .optional(),
   assignedToId: z.string().optional(),
-  sentiment: z.enum(Object.values(InboxSentiment) as [string, ...string[]]).optional(),
+  sentiment: z.enum(Object.values(InboxSentiment) as [string, ...string[]])
+    .optional(),
   escalated: z.enum(["true", "false"]).optional(),
 });
 
@@ -37,7 +41,9 @@ interface InboxFiltersProps {
   teamMembers: { id: string; name: string; }[];
 }
 
-export function InboxFilters({ onFilterChange, teamMembers }: InboxFiltersProps) {
+export function InboxFilters(
+  { onFilterChange, teamMembers }: InboxFiltersProps,
+) {
   const form = useForm<FilterFormValues>({
     resolver: zodResolver(filterSchema),
     defaultValues: {},
@@ -61,7 +67,10 @@ export function InboxFilters({ onFilterChange, teamMembers }: InboxFiltersProps)
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Platform</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="All Platforms" />
@@ -85,7 +94,10 @@ export function InboxFilters({ onFilterChange, teamMembers }: InboxFiltersProps)
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="All Statuses" />
@@ -109,7 +121,10 @@ export function InboxFilters({ onFilterChange, teamMembers }: InboxFiltersProps)
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="All Types" />
@@ -133,7 +148,10 @@ export function InboxFilters({ onFilterChange, teamMembers }: InboxFiltersProps)
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Assigned To</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Anyone" />
@@ -157,7 +175,10 @@ export function InboxFilters({ onFilterChange, teamMembers }: InboxFiltersProps)
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Sentiment</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Any Sentiment" />
@@ -181,7 +202,10 @@ export function InboxFilters({ onFilterChange, teamMembers }: InboxFiltersProps)
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Escalation</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="All" />

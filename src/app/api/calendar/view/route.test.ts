@@ -81,7 +81,9 @@ describe("GET /api/calendar/view", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("startDate and endDate query parameters are required");
+    expect(data.error).toBe(
+      "startDate and endDate query parameters are required",
+    );
   });
 
   it("should return 400 if date format is invalid", async () => {

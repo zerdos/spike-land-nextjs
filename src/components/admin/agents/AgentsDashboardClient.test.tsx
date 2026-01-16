@@ -262,7 +262,9 @@ describe("AgentsDashboardClient", () => {
     render(<AgentsDashboardClient initialData={mockAgentsData} />);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith("/api/admin/agents/github/issues");
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/admin/agents/github/issues",
+      );
     });
 
     await waitFor(() => {

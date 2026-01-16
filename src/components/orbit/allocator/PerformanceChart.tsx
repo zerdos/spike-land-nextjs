@@ -69,14 +69,18 @@ function CustomTooltip({
       <p className="text-white font-medium">{item.payload.name}</p>
       <p className="text-white/60 text-xs mb-2">{item.payload.platform}</p>
       <p className="text-white">
-        {item.name}: {item.name === "CPA" ? formatCurrency(item.value) : item.value.toFixed(2)}
+        {item.name}: {item.name === "CPA"
+          ? formatCurrency(item.value)
+          : item.value.toFixed(2)}
         {item.name === "ROAS" ? "x" : ""}
       </p>
     </div>
   );
 }
 
-function TrendBadge({ trend }: { trend: "improving" | "stable" | "declining"; }) {
+function TrendBadge(
+  { trend }: { trend: "improving" | "stable" | "declining"; },
+) {
   return (
     <span
       className={cn(
@@ -114,7 +118,8 @@ export function PerformanceChart({
 
   // Prepare chart data
   const roasData = campaignAnalyses.map((campaign) => ({
-    name: campaign.campaignName.slice(0, 20) + (campaign.campaignName.length > 20 ? "..." : ""),
+    name: campaign.campaignName.slice(0, 20) +
+      (campaign.campaignName.length > 20 ? "..." : ""),
     fullName: campaign.campaignName,
     platform: campaign.platform,
     value: campaign.metrics.roas,
@@ -122,7 +127,8 @@ export function PerformanceChart({
   })).sort((a, b) => b.value - a.value);
 
   const cpaData = campaignAnalyses.map((campaign) => ({
-    name: campaign.campaignName.slice(0, 20) + (campaign.campaignName.length > 20 ? "..." : ""),
+    name: campaign.campaignName.slice(0, 20) +
+      (campaign.campaignName.length > 20 ? "..." : ""),
     fullName: campaign.campaignName,
     platform: campaign.platform,
     value: campaign.metrics.cpa,
@@ -130,7 +136,8 @@ export function PerformanceChart({
   })).sort((a, b) => a.value - b.value); // Lower CPA is better
 
   const conversionData = campaignAnalyses.map((campaign) => ({
-    name: campaign.campaignName.slice(0, 20) + (campaign.campaignName.length > 20 ? "..." : ""),
+    name: campaign.campaignName.slice(0, 20) +
+      (campaign.campaignName.length > 20 ? "..." : ""),
     fullName: campaign.campaignName,
     platform: campaign.platform,
     value: campaign.metrics.conversions,

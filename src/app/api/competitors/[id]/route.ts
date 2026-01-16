@@ -13,6 +13,8 @@ export async function DELETE(
     return NextResponse.json({ message: "Competitor deleted successfully" });
   } catch (error) {
     console.error("Failed to delete competitor:", error);
-    return NextResponse.json({ message: "Failed to delete competitor" }, { status: 500 });
+    return NextResponse.json({ message: "Failed to delete competitor" }, {
+      status: 500,
+    });
   }
 }

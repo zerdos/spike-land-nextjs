@@ -60,7 +60,10 @@ export class GoogleAdsAllocatorClient {
   private client: ExtendedGoogleAdsClient;
 
   constructor(accessToken: string, loginCustomerId?: string) {
-    this.client = new ExtendedGoogleAdsClient({ accessToken, customerId: loginCustomerId });
+    this.client = new ExtendedGoogleAdsClient({
+      accessToken,
+      customerId: loginCustomerId,
+    });
   }
 
   /**
@@ -91,7 +94,7 @@ export class GoogleAdsAllocatorClient {
     }
 
     // Remove duplicates by ID (in case sub-accounts are also returned by listAccessibleCustomers)
-    return Array.from(new Map(accounts.map(a => [a.id, a])).values());
+    return Array.from(new Map(accounts.map((a) => [a.id, a])).values());
   }
 
   private async getCustomerDetailedInfo(
@@ -101,7 +104,10 @@ export class GoogleAdsAllocatorClient {
     const query = `SELECT customer.currency_code, customer.manager FROM customer LIMIT 1`;
     // We need to set the login-customer-id for this specific call
     this.client.setCustomerId(customerId);
-    const results = await this.client.executeQuery<CustomerQueryResult>(customerId, query);
+    const results = await this.client.executeQuery<CustomerQueryResult>(
+      customerId,
+      query,
+    );
 
     const firstResult = results[0];
     return {
@@ -124,7 +130,10 @@ export class GoogleAdsAllocatorClient {
         AND customer_client.status = 'ENABLED'
         AND customer_client.manager = false
     `;
-    const results = await this.client.executeQuery<CustomerClientQueryResult>(managerId, query);
+    const results = await this.client.executeQuery<CustomerClientQueryResult>(
+      managerId,
+      query,
+    );
 
     return results.map((r) => ({
       id: r.customerClient.clientCustomer.replace("customers/", ""),
@@ -141,7 +150,7 @@ export class GoogleAdsAllocatorClient {
     // Using listCampaigns from the base client but mapping to our local type
     const campaigns = await this.client.listCampaigns(normalizedId);
 
-    return campaigns.map(c => ({
+    return campaigns.map((c) => ({
       id: c.id,
       name: c.name,
       status: c.status,
@@ -154,7 +163,10 @@ export class GoogleAdsAllocatorClient {
     }));
   }
 
-  async getAdGroups(customerId: string, campaignId: string): Promise<GoogleAdsAdGroup[]> {
+  async getAdGroups(
+    customerId: string,
+    campaignId: string,
+  ): Promise<GoogleAdsAdGroup[]> {
     const normalizedId = customerId.replace(/-/g, "");
     this.client.setCustomerId(normalizedId);
 
@@ -169,7 +181,10 @@ export class GoogleAdsAllocatorClient {
         AND ad_group.status != 'REMOVED'
     `;
 
-    const results = await this.client.executeQuery<AdGroupQueryResult>(normalizedId, query);
+    const results = await this.client.executeQuery<AdGroupQueryResult>(
+      normalizedId,
+      query,
+    );
 
     return results.map((r) => ({
       id: r.adGroup.id,
@@ -189,7 +204,8 @@ export class GoogleAdsAllocatorClient {
     const normalizedId = customerId.replace(/-/g, "");
     this.client.setCustomerId(normalizedId);
 
-    const startStr = startDate.toISOString().split("T")[0]?.replace(/-/g, "") || "";
+    const startStr = startDate.toISOString().split("T")[0]?.replace(/-/g, "") ||
+      "";
     const endStr = endDate.toISOString().split("T")[0]?.replace(/-/g, "") || "";
 
     const resource = level === "CAMPAIGN" ? "campaign" : "ad_group";
@@ -204,7 +220,10 @@ export class GoogleAdsAllocatorClient {
         AND segments.date BETWEEN '${startStr}' AND '${endStr}'
     `;
 
-    const results = await this.client.executeQuery<MetricsQueryResult>(normalizedId, query);
+    const results = await this.client.executeQuery<MetricsQueryResult>(
+      normalizedId,
+      query,
+    );
     const data = results[0]?.metrics ||
       { costMicros: "0", impressions: "0", clicks: "0", conversions: "0" };
 

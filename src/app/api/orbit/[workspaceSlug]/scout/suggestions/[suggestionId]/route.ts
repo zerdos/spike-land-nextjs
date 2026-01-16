@@ -49,19 +49,25 @@ export async function GET(_request: Request, context: RouteContext) {
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     const suggestion = await getSuggestionById(suggestionId, workspace.id);
 
     if (!suggestion) {
-      return NextResponse.json({ error: "Suggestion not found" }, { status: 404 });
+      return NextResponse.json({ error: "Suggestion not found" }, {
+        status: 404,
+      });
     }
 
     return NextResponse.json(suggestion);
   } catch (error) {
     console.error("Failed to get suggestion:", error);
-    return NextResponse.json({ error: "Failed to get suggestion" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to get suggestion" }, {
+      status: 500,
+    });
   }
 }
 
@@ -92,7 +98,9 @@ export async function PATCH(request: Request, context: RouteContext) {
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     // Parse request body
@@ -116,7 +124,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 
       case "feedback":
         if (!feedback) {
-          return NextResponse.json({ error: "Feedback data required" }, { status: 400 });
+          return NextResponse.json({ error: "Feedback data required" }, {
+            status: 400,
+          });
         }
         await submitFeedback(
           {
@@ -135,13 +145,17 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     if (!result) {
-      return NextResponse.json({ error: "Suggestion not found" }, { status: 404 });
+      return NextResponse.json({ error: "Suggestion not found" }, {
+        status: 404,
+      });
     }
 
     return NextResponse.json(result);
   } catch (error) {
     console.error("Failed to update suggestion:", error);
-    return NextResponse.json({ error: "Failed to update suggestion" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update suggestion" }, {
+      status: 500,
+    });
   }
 }
 
@@ -172,7 +186,9 @@ export async function DELETE(_request: Request, context: RouteContext) {
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workspace not found" }, {
+        status: 404,
+      });
     }
 
     const deleted = await prisma.contentSuggestion.deleteMany({
@@ -183,12 +199,16 @@ export async function DELETE(_request: Request, context: RouteContext) {
     });
 
     if (deleted.count === 0) {
-      return NextResponse.json({ error: "Suggestion not found" }, { status: 404 });
+      return NextResponse.json({ error: "Suggestion not found" }, {
+        status: 404,
+      });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete suggestion:", error);
-    return NextResponse.json({ error: "Failed to delete suggestion" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to delete suggestion" }, {
+      status: 500,
+    });
   }
 }

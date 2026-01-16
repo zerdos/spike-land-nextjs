@@ -16,7 +16,12 @@ export function InboxEscalationStatus(
 ) {
   if (!status || status === "NONE") {
     return (
-      <Button variant="ghost" size="sm" onClick={onEscalate} className="text-xs h-6">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onEscalate}
+        className="text-xs h-6"
+      >
         Escalate
       </Button>
     );
@@ -26,7 +31,10 @@ export function InboxEscalationStatus(
 
   return (
     <div className="flex items-center gap-2">
-      <Badge variant={status === "RESOLVED" ? "secondary" : "destructive"} className="flex gap-1">
+      <Badge
+        variant={status === "RESOLVED" ? "secondary" : "destructive"}
+        className="flex gap-1"
+      >
         {status === "ESCALATED" && <ShieldAlert className="w-3 h-3" />}
         {status === "RESOLVED" && <CheckCircle className="w-3 h-3" />}
         {status} {level ? `(L${level})` : ""}
@@ -42,13 +50,21 @@ export function InboxEscalationStatus(
           {isBreached
             ? "SLA Breached"
             : `Due ${
-              new Date(slaDeadline).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              new Date(slaDeadline).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
             }`}
         </div>
       )}
 
       {onResolve && status !== "RESOLVED" && (
-        <Button variant="outline" size="sm" onClick={onResolve} className="h-6 text-xs">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onResolve}
+          className="h-6 text-xs"
+        >
           Resolve Escalation
         </Button>
       )}

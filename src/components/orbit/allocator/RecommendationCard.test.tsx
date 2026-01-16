@@ -100,7 +100,9 @@ describe("RecommendationCard", () => {
     );
 
     expect(
-      screen.getByText("Campaign showing consistent high performance with improving trends"),
+      screen.getByText(
+        "Campaign showing consistent high performance with improving trends",
+      ),
     ).toBeInTheDocument();
     expect(screen.getByText("ROAS: 2.5x")).toBeInTheDocument();
     expect(screen.getByText("Performance score: 85%")).toBeInTheDocument();
@@ -172,7 +174,8 @@ describe("RecommendationCard", () => {
 
     const applyButton = screen.getByRole("button");
     expect(applyButton).toBeDisabled();
-    expect(screen.getByText("This recommendation has expired")).toBeInTheDocument();
+    expect(screen.getByText("This recommendation has expired"))
+      .toBeInTheDocument();
   });
 
   it("handles reallocation recommendations with source campaign", () => {

@@ -89,7 +89,9 @@ describe("Suggestion Manager", () => {
 
   describe("saveSuggestion", () => {
     it("should save a suggestion", async () => {
-      vi.mocked(prisma.contentSuggestion.create).mockResolvedValue(mockDbRecord as any);
+      vi.mocked(prisma.contentSuggestion.create).mockResolvedValue(
+        mockDbRecord as any,
+      );
 
       const result = await saveSuggestion(mockSuggestion);
 
@@ -106,7 +108,10 @@ describe("Suggestion Manager", () => {
 
   describe("saveSuggestionsBatch", () => {
     it("should save multiple suggestions in transaction", async () => {
-      const suggestions = [mockSuggestion, { ...mockSuggestion, id: "sug_def456" }];
+      const suggestions = [mockSuggestion, {
+        ...mockSuggestion,
+        id: "sug_def456",
+      }];
 
       vi.mocked(prisma.$transaction).mockImplementation(
         (async (ops: any[]) => {
@@ -123,7 +128,9 @@ describe("Suggestion Manager", () => {
 
   describe("getSuggestionById", () => {
     it("should return suggestion by ID", async () => {
-      vi.mocked(prisma.contentSuggestion.findFirst).mockResolvedValue(mockDbRecord as any);
+      vi.mocked(prisma.contentSuggestion.findFirst).mockResolvedValue(
+        mockDbRecord as any,
+      );
 
       const result = await getSuggestionById("sug_abc123", "ws-1");
 
@@ -144,7 +151,9 @@ describe("Suggestion Manager", () => {
 
   describe("querySuggestions", () => {
     it("should query with basic options", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue(
+        [mockDbRecord] as any,
+      );
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const options: SuggestionQueryOptions = {
@@ -158,7 +167,9 @@ describe("Suggestion Manager", () => {
     });
 
     it("should filter by status", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue(
+        [mockDbRecord] as any,
+      );
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const options: SuggestionQueryOptions = {
@@ -178,7 +189,9 @@ describe("Suggestion Manager", () => {
     });
 
     it("should filter by content types", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue(
+        [mockDbRecord] as any,
+      );
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const options: SuggestionQueryOptions = {
@@ -198,7 +211,9 @@ describe("Suggestion Manager", () => {
     });
 
     it("should filter by platforms", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue(
+        [mockDbRecord] as any,
+      );
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const options: SuggestionQueryOptions = {
@@ -218,7 +233,9 @@ describe("Suggestion Manager", () => {
     });
 
     it("should filter by minimum score", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue(
+        [mockDbRecord] as any,
+      );
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const options: SuggestionQueryOptions = {
@@ -238,7 +255,9 @@ describe("Suggestion Manager", () => {
     });
 
     it("should support pagination", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue(
+        [mockDbRecord] as any,
+      );
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(50);
 
       const options: SuggestionQueryOptions = {
@@ -258,7 +277,9 @@ describe("Suggestion Manager", () => {
     });
 
     it("should support sorting", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue(
+        [mockDbRecord] as any,
+      );
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const options: SuggestionQueryOptions = {
@@ -279,7 +300,9 @@ describe("Suggestion Manager", () => {
 
   describe("getPendingSuggestions", () => {
     it("should get pending suggestions sorted by score", async () => {
-      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue([mockDbRecord] as any);
+      vi.mocked(prisma.contentSuggestion.findMany).mockResolvedValue(
+        [mockDbRecord] as any,
+      );
       vi.mocked(prisma.contentSuggestion.count).mockResolvedValue(1);
 
       const result = await getPendingSuggestions("ws-1", 5);
@@ -299,7 +322,9 @@ describe("Suggestion Manager", () => {
 
   describe("updateSuggestionStatus", () => {
     it("should update status to DISMISSED with reason", async () => {
-      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({ count: 1 });
+      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({
+        count: 1,
+      });
 
       vi.mocked(prisma.contentSuggestion.findFirst).mockResolvedValue({
         ...mockDbRecord,
@@ -308,16 +333,23 @@ describe("Suggestion Manager", () => {
         dismissalReason: "Not relevant",
       } as any);
 
-      const result = await updateSuggestionStatus("sug_abc123", "ws-1", "DISMISSED", {
-        dismissalReason: "Not relevant",
-      });
+      const result = await updateSuggestionStatus(
+        "sug_abc123",
+        "ws-1",
+        "DISMISSED",
+        {
+          dismissalReason: "Not relevant",
+        },
+      );
 
       expect(result?.status).toBe("DISMISSED");
       expect(result?.dismissalReason).toBe("Not relevant");
     });
 
     it("should update status to USED", async () => {
-      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({ count: 1 });
+      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({
+        count: 1,
+      });
 
       vi.mocked(prisma.contentSuggestion.findFirst).mockResolvedValue({
         ...mockDbRecord,
@@ -332,9 +364,15 @@ describe("Suggestion Manager", () => {
     });
 
     it("should return null if suggestion not found", async () => {
-      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({ count: 0 });
+      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({
+        count: 0,
+      });
 
-      const result = await updateSuggestionStatus("nonexistent", "ws-1", "ACCEPTED");
+      const result = await updateSuggestionStatus(
+        "nonexistent",
+        "ws-1",
+        "ACCEPTED",
+      );
 
       expect(result).toBeNull();
     });
@@ -342,7 +380,9 @@ describe("Suggestion Manager", () => {
 
   describe("acceptSuggestion", () => {
     it("should accept a suggestion", async () => {
-      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({ count: 1 });
+      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({
+        count: 1,
+      });
 
       vi.mocked(prisma.contentSuggestion.findFirst).mockResolvedValue({
         ...mockDbRecord,
@@ -357,7 +397,9 @@ describe("Suggestion Manager", () => {
 
   describe("dismissSuggestion", () => {
     it("should dismiss a suggestion with reason", async () => {
-      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({ count: 1 });
+      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({
+        count: 1,
+      });
 
       vi.mocked(prisma.contentSuggestion.findFirst).mockResolvedValue({
         ...mockDbRecord,
@@ -375,7 +417,9 @@ describe("Suggestion Manager", () => {
 
   describe("markSuggestionUsed", () => {
     it("should mark suggestion as used", async () => {
-      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({ count: 1 });
+      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({
+        count: 1,
+      });
       vi.mocked(prisma.contentSuggestion.findFirst).mockResolvedValue({
         ...mockDbRecord,
         status: "USED",
@@ -391,7 +435,9 @@ describe("Suggestion Manager", () => {
 
   describe("submitFeedback", () => {
     it("should submit positive feedback", async () => {
-      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({ count: 1 });
+      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({
+        count: 1,
+      });
 
       const feedback: SuggestionFeedback = {
         suggestionId: "sug_abc123",
@@ -408,7 +454,9 @@ describe("Suggestion Manager", () => {
     });
 
     it("should submit negative feedback with improvements", async () => {
-      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({ count: 1 });
+      vi.mocked(prisma.contentSuggestion.updateMany).mockResolvedValue({
+        count: 1,
+      });
 
       const feedback: SuggestionFeedback = {
         suggestionId: "sug_abc123",
@@ -421,14 +469,18 @@ describe("Suggestion Manager", () => {
 
       expect(prisma.contentSuggestion.updateMany).toHaveBeenCalledWith({
         where: { id: "sug_abc123", workspaceId: "ws-1" },
-        data: { feedback: "Not helpful - Too generic - More specific examples" },
+        data: {
+          feedback: "Not helpful - Too generic - More specific examples",
+        },
       });
     });
   });
 
   describe("deleteExpiredSuggestions", () => {
     it("should delete expired suggestions for workspace", async () => {
-      vi.mocked(prisma.contentSuggestion.deleteMany).mockResolvedValue({ count: 5 });
+      vi.mocked(prisma.contentSuggestion.deleteMany).mockResolvedValue({
+        count: 5,
+      });
 
       const count = await deleteExpiredSuggestions("ws-1");
 
@@ -443,7 +495,9 @@ describe("Suggestion Manager", () => {
     });
 
     it("should delete expired suggestions globally", async () => {
-      vi.mocked(prisma.contentSuggestion.deleteMany).mockResolvedValue({ count: 10 });
+      vi.mocked(prisma.contentSuggestion.deleteMany).mockResolvedValue({
+        count: 10,
+      });
 
       const count = await deleteExpiredSuggestions();
 
@@ -481,7 +535,9 @@ describe("Suggestion Manager", () => {
     });
 
     it("should handle empty workspace", async () => {
-      vi.mocked(prisma.contentSuggestion.groupBy).mockResolvedValue([] as never);
+      vi.mocked(prisma.contentSuggestion.groupBy).mockResolvedValue(
+        [] as never,
+      );
       vi.mocked(prisma.contentSuggestion.aggregate).mockResolvedValue({
         _avg: { overallScore: null },
       } as never);

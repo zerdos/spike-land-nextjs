@@ -716,7 +716,9 @@ describe("/api/jobs/[jobId]/stream - GET", () => {
       expect(statusEvents.length).toBeGreaterThanOrEqual(2);
       expect(statusEvents[0]?.["status"]).toBe("PROCESSING");
       // The last status event should be COMPLETED
-      expect(statusEvents[statusEvents.length - 1]?.["status"]).toBe("COMPLETED");
+      expect(statusEvents[statusEvents.length - 1]?.["status"]).toBe(
+        "COMPLETED",
+      );
     },
     15000,
   );

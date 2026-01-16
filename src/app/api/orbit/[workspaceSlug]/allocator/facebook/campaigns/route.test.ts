@@ -16,13 +16,18 @@ vi.mock("@/lib/prisma", () => ({
 
 describe("GET /api/orbit/[workspaceSlug]/allocator/facebook/campaigns", () => {
   it("should return campaigns for a valid workspace", async () => {
-    (prisma.workspace.findUnique as any).mockResolvedValue({ id: "ws1", slug: "test-ws" });
+    (prisma.workspace.findUnique as any).mockResolvedValue({
+      id: "ws1",
+      slug: "test-ws",
+    });
     (prisma.allocatorCampaign.findMany as any).mockResolvedValue([{
       id: "camp1",
       name: "Campaign 1",
     }]);
 
-    const req = new NextRequest("http://localhost/api/orbit/test-ws/allocator/facebook/campaigns");
+    const req = new NextRequest(
+      "http://localhost/api/orbit/test-ws/allocator/facebook/campaigns",
+    );
     const res = await GET(req, { params: { workspaceSlug: "test-ws" } });
     const json = await res.json();
 
@@ -36,7 +41,9 @@ describe("GET /api/orbit/[workspaceSlug]/allocator/facebook/campaigns", () => {
     const req = new NextRequest(
       "http://localhost/api/orbit/non-existent-ws/allocator/facebook/campaigns",
     );
-    const res = await GET(req, { params: { workspaceSlug: "non-existent-ws" } });
+    const res = await GET(req, {
+      params: { workspaceSlug: "non-existent-ws" },
+    });
     const json = await res.json();
 
     expect(res.status).toBe(404);

@@ -127,7 +127,9 @@ export async function findAppByIdentifierSimple(
 /**
  * Check if codespace has actual content (not default placeholder)
  */
-export async function checkCodespaceHasContent(codeSpace: string): Promise<boolean> {
+export async function checkCodespaceHasContent(
+  codeSpace: string,
+): Promise<boolean> {
   const DEFAULT_CONTENT = "<div>Write your code here!</div>";
 
   try {

@@ -9,7 +9,10 @@ interface RouteContext {
   };
 }
 
-async function getWorkspaceId(slug: string, userId: string): Promise<string | null> {
+async function getWorkspaceId(
+  slug: string,
+  userId: string,
+): Promise<string | null> {
   const workspace = await prisma.workspace.findFirst({
     where: { slug, members: { some: { userId } } },
     select: { id: true },
@@ -21,10 +24,17 @@ async function getWorkspaceId(slug: string, userId: string): Promise<string | nu
 export async function GET(_req: NextRequest, { params }: RouteContext) {
   try {
     const session = await auth();
-    if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
+    if (!session?.user?.id) {
+      return new Response("Unauthorized", { status: 401 });
+    }
 
-    const workspaceId = await getWorkspaceId(params.workspaceSlug, session.user.id);
-    if (!workspaceId) return new Response("Workspace not found", { status: 404 });
+    const workspaceId = await getWorkspaceId(
+      params.workspaceSlug,
+      session.user.id,
+    );
+    if (!workspaceId) {
+      return new Response("Workspace not found", { status: 404 });
+    }
 
     const topics = await listTopicsByWorkspace(workspaceId);
     return NextResponse.json(topics);
@@ -38,10 +48,17 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
 export async function POST(req: NextRequest, { params }: RouteContext) {
   try {
     const session = await auth();
-    if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
+    if (!session?.user?.id) {
+      return new Response("Unauthorized", { status: 401 });
+    }
 
-    const workspaceId = await getWorkspaceId(params.workspaceSlug, session.user.id);
-    if (!workspaceId) return new Response("Workspace not found", { status: 404 });
+    const workspaceId = await getWorkspaceId(
+      params.workspaceSlug,
+      session.user.id,
+    );
+    if (!workspaceId) {
+      return new Response("Workspace not found", { status: 404 });
+    }
 
     const body = await req.json();
     const data = createTopicSchema.parse(body);
