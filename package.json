@@ -170,7 +170,6 @@
     "tailwind-merge": "3.4.0",
     "tailwindcss": "4.1.18",
     "three": "0.182.0",
-    "workflow": "4.0.1-beta.48",
     "y-indexeddb": "9.0.12",
     "yjs": "13.6.29",
     "zod": "4.3.5"

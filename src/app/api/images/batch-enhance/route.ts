@@ -4,21 +4,14 @@ import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { batchEnhanceImagesDirect, type BatchEnhanceInput } from "@/workflows/batch-enhance.direct";
-import { batchEnhanceImages } from "@/workflows/batch-enhance.workflow";
 import type { EnhancementTier } from "@prisma/client";
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { start } from "workflow/api";
+import { after, NextResponse } from "next/server";
 
 // Force dynamic rendering - skip static page data collection
 export const dynamic = "force-dynamic";
 
 const MAX_BATCH_SIZE = 20;
-
-// Check if we're running in Vercel environment
-function isVercelEnvironment(): boolean {
-  return process.env.VERCEL === "1";
-}
 
 export async function POST(request: NextRequest) {
   const { data: session, error: authError } = await tryCatch(auth());
@@ -178,40 +171,19 @@ export async function POST(request: NextRequest) {
     tier,
   };
 
-  if (isVercelEnvironment()) {
-    // Production: Use Vercel's durable workflow infrastructure
-    const { error: startError } = await tryCatch(
-      start(batchEnhanceImages, [batchInput]),
-    );
+  // Use Next.js after() for background processing
+  // This ensures the batch enhancement continues even after the response is sent
+  console.log("Starting batch enhancement (direct mode with after())", {
+    batchId,
+    imageCount: imageIds.length,
+  });
 
-    if (startError) {
-      console.error("Error in batch enhance API:", startError);
-      return NextResponse.json(
-        {
-          error: startError instanceof Error
-            ? startError.message
-            : "Batch enhancement failed",
-        },
-        { status: 500 },
-      );
+  after(async () => {
+    const { error } = await tryCatch(batchEnhanceImagesDirect(batchInput));
+    if (error) {
+      console.error(`[Batch Enhancement] Batch ${batchId} failed:`, error);
     }
-
-    console.log("Batch enhancement workflow started (production)", {
-      batchId,
-      imageCount: imageIds.length,
-    });
-  } else {
-    // Development: Run enhancement directly (fire-and-forget)
-    // The workflow infrastructure doesn't fully execute in dev mode
-    console.log("Running batch enhancement directly (dev mode)", { batchId });
-
-    // Fire and forget - don't await, let it run in the background
-    void tryCatch(batchEnhanceImagesDirect(batchInput)).then(({ error }) => {
-      if (error) {
-        console.error("Direct batch enhancement failed:", error);
-      }
-    });
-  }
+  });
 
   return NextResponse.json({
     success: true,

@@ -1,16 +1,19 @@
 /**
- * Direct Image Enhancement (Dev Mode Fallback)
+ * Direct Image Enhancement (Primary Execution Mode)
  *
- * This module provides a non-workflow version of the image enhancement logic
- * for local development where Vercel Workflow infrastructure is not available.
+ * This module provides the primary image enhancement execution path using
+ * plain JavaScript with built-in retry logic and error handling.
  *
- * In production, use the workflow version via start() from workflow/api.
+ * **Features:**
+ * - Automatic retries with exponential backoff for transient failures
+ * - Retry logic for R2 operations (download/upload)
+ * - Retry logic for Gemini API calls (analysis and enhancement)
+ * - Full error handling with token refunds on failure
  *
- * **Dev Mode Limitations:**
- * - Runs synchronously without workflow infrastructure
- * - No automatic retries on transient failures
- * - No durable execution - if process crashes, jobs may be abandoned
- * - Uses in-process execution instead of isolated steps
+ * **Execution Model:**
+ * - Uses Next.js `after()` for background processing (fire-and-forget)
+ * - Response returns immediately with job ID
+ * - Client polls job status for completion
  */
 
 import {
@@ -23,6 +26,7 @@ import {
   getModelForTier,
   type ReferenceImageData,
 } from "@/lib/ai/gemini-client";
+import { retryWithBackoff } from "@/lib/errors/retry-logic";
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
@@ -59,6 +63,167 @@ async function getSharp() {
 }
 
 /**
+ * Retry configuration for different operation types
+ */
+const RETRY_CONFIG = {
+  // R2 operations - retry on network/timeout errors
+  r2: {
+    maxAttempts: 3,
+    initialDelayMs: 1000,
+    maxDelayMs: 5000,
+    shouldRetry: (error: Error) => {
+      const msg = error.message.toLowerCase();
+      return (
+        msg.includes("network") ||
+        msg.includes("timeout") ||
+        msg.includes("fetch failed") ||
+        msg.includes("econnrefused") ||
+        msg.includes("503") ||
+        msg.includes("502") ||
+        msg.includes("500")
+      );
+    },
+  },
+  // Gemini API - retry on transient errors, not on API key/quota issues
+  gemini: {
+    maxAttempts: 3,
+    initialDelayMs: 2000,
+    maxDelayMs: 10000,
+    shouldRetry: (error: Error) => {
+      const msg = error.message.toLowerCase();
+      // Don't retry on permanent errors
+      if (
+        msg.includes("api key") ||
+        msg.includes("quota") ||
+        msg.includes("invalid") ||
+        msg.includes("not found")
+      ) {
+        return false;
+      }
+      // Retry on transient errors
+      return (
+        msg.includes("timeout") ||
+        msg.includes("network") ||
+        msg.includes("503") ||
+        msg.includes("502") ||
+        msg.includes("overloaded") ||
+        msg.includes("rate limit")
+      );
+    },
+  },
+};
+
+/**
+ * Download from R2 with retry logic
+ */
+async function downloadFromR2WithRetry(r2Key: string): Promise<Buffer | null> {
+  const result = await retryWithBackoff(
+    () => downloadFromR2(r2Key),
+    {
+      ...RETRY_CONFIG.r2,
+      onRetry: (error, attempt, delayMs) => {
+        console.log(
+          `[Direct Enhancement] R2 download retry ${attempt} after ${delayMs}ms: ${error.message}`,
+        );
+      },
+    },
+  );
+
+  if (!result.success) {
+    console.error(
+      `[Direct Enhancement] R2 download failed after ${result.attempts} attempts:`,
+      result.error,
+    );
+    return null;
+  }
+
+  return result.data ?? null;
+}
+
+/**
+ * Upload to R2 with retry logic
+ */
+async function uploadToR2WithRetry(params: {
+  key: string;
+  buffer: Buffer;
+  contentType: string;
+  metadata?: Record<string, string>;
+}): Promise<{ success: boolean; url?: string; }> {
+  const result = await retryWithBackoff(
+    () => uploadToR2(params),
+    {
+      ...RETRY_CONFIG.r2,
+      onRetry: (error, attempt, delayMs) => {
+        console.log(
+          `[Direct Enhancement] R2 upload retry ${attempt} after ${delayMs}ms: ${error.message}`,
+        );
+      },
+    },
+  );
+
+  if (!result.success || !result.data?.success) {
+    console.error(
+      `[Direct Enhancement] R2 upload failed after ${result.attempts} attempts:`,
+      result.error,
+    );
+    return { success: false };
+  }
+
+  return result.data;
+}
+
+/**
+ * Analyze image with retry logic
+ */
+async function analyzeImageWithRetry(
+  imageBase64: string,
+  mimeType: string,
+): Promise<Awaited<ReturnType<typeof analyzeImageV2>>> {
+  const result = await retryWithBackoff(
+    () => analyzeImageV2(imageBase64, mimeType),
+    {
+      ...RETRY_CONFIG.gemini,
+      onRetry: (error, attempt, delayMs) => {
+        console.log(
+          `[Direct Enhancement] Image analysis retry ${attempt} after ${delayMs}ms: ${error.message}`,
+        );
+      },
+    },
+  );
+
+  if (!result.success) {
+    throw result.error || new Error("Image analysis failed after retries");
+  }
+
+  return result.data!;
+}
+
+/**
+ * Enhance with Gemini with retry logic
+ */
+async function enhanceWithGeminiRetry(
+  params: Parameters<typeof enhanceImageWithGemini>[0],
+): Promise<Buffer> {
+  const result = await retryWithBackoff(
+    () => enhanceImageWithGemini(params),
+    {
+      ...RETRY_CONFIG.gemini,
+      onRetry: (error, attempt, delayMs) => {
+        console.log(
+          `[Direct Enhancement] Gemini enhancement retry ${attempt} after ${delayMs}ms: ${error.message}`,
+        );
+      },
+    },
+  );
+
+  if (!result.success) {
+    throw result.error || new Error("Gemini enhancement failed after retries");
+  }
+
+  return result.data!;
+}
+
+/**
  * Safely update the job's current stage with error handling.
  * Stage updates are non-critical - failures are logged but don't block processing.
  */
@@ -75,7 +240,7 @@ async function updateJobStage(
 
   if (error) {
     console.warn(
-      `[Dev Enhancement] Failed to update stage to ${stage} for job ${jobId}:`,
+      `[Direct Enhancement] Failed to update stage to ${stage} for job ${jobId}:`,
       error instanceof Error ? error.message : error,
     );
     // Continue processing - stage update is non-critical for functionality
@@ -108,7 +273,7 @@ async function performCrop(
 
   if (cropError) {
     console.warn(
-      `[Dev Enhancement] Auto-crop failed, continuing with original:`,
+      `[Direct Enhancement] Auto-crop failed, continuing with original:`,
       cropError,
     );
     return {
@@ -129,7 +294,7 @@ async function performCrop(
   // The cropped buffer is only used in-memory for this enhancement.
 
   console.log(
-    `[Dev Enhancement] Auto-crop applied: ${cropRegion.width}x${cropRegion.height}`,
+    `[Direct Enhancement] Auto-crop applied: ${cropRegion.width}x${cropRegion.height}`,
   );
 
   return {
@@ -150,12 +315,12 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
 
   const isBlendMode = !!blendSource;
   console.log(
-    `[Dev Enhancement] Starting job ${jobId} (${tier})${isBlendMode ? " [BLEND MODE]" : ""}`,
+    `[Direct Enhancement] Starting job ${jobId} (${tier})${isBlendMode ? " [BLEND MODE]" : ""}`,
   );
 
-  // Step 1: Download original image
-  console.log(`[Dev Enhancement] Downloading from R2: ${originalR2Key}`);
-  let imageBuffer = await downloadFromR2(originalR2Key);
+  // Step 1: Download original image (with retry)
+  console.log(`[Direct Enhancement] Downloading from R2: ${originalR2Key}`);
+  let imageBuffer = await downloadFromR2WithRetry(originalR2Key);
   if (!imageBuffer) {
     throw new Error("Failed to download original image from R2");
   }
@@ -167,7 +332,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   let sourceImageData: ReferenceImageData | null = null;
   if (blendSource) {
     console.log(
-      `[Dev Enhancement] Using uploaded blend source (${blendSource.mimeType})`,
+      `[Direct Enhancement] Using uploaded blend source (${blendSource.mimeType})`,
     );
     sourceImageData = {
       imageData: blendSource.base64,
@@ -177,7 +342,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   }
 
   // Step 2: Get image metadata
-  console.log(`[Dev Enhancement] Getting image metadata`);
+  console.log(`[Direct Enhancement] Getting image metadata`);
   const sharpMetadata = await sharp(imageBuffer).metadata();
   // Store ORIGINAL dimensions for final output calculations (aspect ratio preservation)
   const originalWidth = sharpMetadata.width || DEFAULT_IMAGE_DIMENSION;
@@ -191,11 +356,11 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     ? `image/${detectedFormat === "jpeg" ? "jpeg" : detectedFormat}`
     : "image/jpeg";
 
-  // Step 3: STAGE 1 - Analyze image with vision model
-  console.log(`[Dev Enhancement] Stage 1: Analyzing image with vision model`);
+  // Step 3: STAGE 1 - Analyze image with vision model (with retry)
+  console.log(`[Direct Enhancement] Stage 1: Analyzing image with vision model`);
   await updateJobStage(jobId, PipelineStage.ANALYZING);
   const imageBase64ForAnalysis = imageBuffer.toString("base64");
-  const analysisResult = await analyzeImageV2(
+  const analysisResult = await analyzeImageWithRetry(
     imageBase64ForAnalysis,
     mimeType,
   );
@@ -211,7 +376,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     },
   });
   console.log(
-    `[Dev Enhancement] Analysis saved: ${
+    `[Direct Enhancement] Analysis saved: ${
       JSON.stringify(analysisResult.structuredAnalysis.defects)
     }`,
   );
@@ -230,7 +395,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     )
   ) {
     console.log(
-      `[Dev Enhancement] Stage 2: Auto-cropping image (reason: ${analysisResult.structuredAnalysis.cropping.cropReason})`,
+      `[Direct Enhancement] Stage 2: Auto-cropping image (reason: ${analysisResult.structuredAnalysis.cropping.cropReason})`,
     );
 
     const cropRegion = cropDimensionsToPixels(
@@ -273,7 +438,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
 
   // Step 5: STAGE 3 - Build enhancement prompt (blend or dynamic)
   console.log(
-    `[Dev Enhancement] Stage 3: Building ${
+    `[Direct Enhancement] Stage 3: Building ${
       sourceImageData ? "blend" : "dynamic"
     } enhancement prompt`,
   );
@@ -283,7 +448,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     : buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
 
   // Step 6: Prepare image for Gemini (pad to square)
-  console.log(`[Dev Enhancement] Preparing image for Gemini`);
+  console.log(`[Direct Enhancement] Preparing image for Gemini`);
   const maxDimension = Math.max(width, height);
   const paddedBuffer = await sharp(imageBuffer)
     .resize(maxDimension, maxDimension, {
@@ -294,16 +459,16 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
 
   const paddedBase64 = paddedBuffer.toString("base64");
 
-  // Step 7: STAGE 4 - Enhance with Gemini using dynamic prompt
+  // Step 7: STAGE 4 - Enhance with Gemini using dynamic prompt (with retry)
   // Get the appropriate model for this tier (FREE uses nano model, paid uses premium)
   const modelToUse = getModelForTier(tier);
   console.log(
-    `[Dev Enhancement] Stage 4: Calling Gemini API for ${TIER_TO_SIZE[tier]} enhancement${
+    `[Direct Enhancement] Stage 4: Calling Gemini API for ${TIER_TO_SIZE[tier]} enhancement${
       sourceImageData ? " [BLEND]" : ""
     } using model: ${modelToUse}`,
   );
   await updateJobStage(jobId, PipelineStage.GENERATING);
-  const enhancedBuffer = await enhanceImageWithGemini({
+  const enhancedBuffer = await enhanceWithGeminiRetry({
     imageData: paddedBase64,
     mimeType,
     tier: TIER_TO_SIZE[tier],
@@ -314,8 +479,8 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     model: modelToUse,
   });
 
-  // Step 8: Post-process and upload
-  console.log(`[Dev Enhancement] Post-processing and uploading`);
+  // Step 8: Post-process and upload (with retry)
+  console.log(`[Direct Enhancement] Post-processing and uploading`);
   const geminiMetadata = await sharp(enhancedBuffer).metadata();
   const geminiWidth = geminiMetadata.width;
   const geminiHeight = geminiMetadata.height;
@@ -325,7 +490,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   }
 
   console.log(
-    `[Dev Enhancement] Gemini output: ${geminiWidth}x${geminiHeight}, Original: ${originalWidth}x${originalHeight}`,
+    `[Direct Enhancement] Gemini output: ${geminiWidth}x${geminiHeight}, Original: ${originalWidth}x${originalHeight}`,
   );
 
   // Calculate crop region to restore original aspect ratio (use ORIGINAL dimensions)
@@ -363,8 +528,8 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   // Generate R2 key for enhanced image
   const enhancedR2Key = generateEnhancedR2Key(originalR2Key, jobId);
 
-  // Upload to R2
-  const uploadResult = await uploadToR2({
+  // Upload to R2 (with retry)
+  const uploadResult = await uploadToR2WithRetry({
     key: enhancedR2Key,
     buffer: finalBuffer,
     contentType: "image/jpeg",
@@ -379,7 +544,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   }
 
   // Step 5: Update job as completed
-  console.log(`[Dev Enhancement] Job ${jobId} completed successfully`);
+  console.log(`[Direct Enhancement] Job ${jobId} completed successfully`);
   await prisma.imageEnhancementJob.update({
     where: { id: jobId },
     data: {
@@ -420,7 +585,7 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
   if (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     // Include full error stack trace for better debugging
-    console.error(`[Dev Enhancement] Job ${jobId} failed:`, error);
+    console.error(`[Direct Enhancement] Job ${jobId} failed:`, error);
 
     // Refund tokens on failure
     const refundResult = await TokenBalanceManager.refundTokens(
@@ -432,7 +597,7 @@ export async function enhanceImageDirect(input: EnhanceImageInput): Promise<{
 
     if (!refundResult.success) {
       console.error(
-        "[Dev Enhancement] Failed to refund tokens:",
+        "[Direct Enhancement] Failed to refund tokens:",
         refundResult.error,
       );
     }

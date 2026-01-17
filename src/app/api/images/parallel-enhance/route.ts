@@ -7,23 +7,16 @@ import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { enhanceImageDirect, type EnhanceImageInput } from "@/workflows/enhance-image.direct";
-import { enhanceImage } from "@/workflows/enhance-image.workflow";
 import type { EnhancementTier } from "@prisma/client";
 import { JobStatus } from "@prisma/client";
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { start } from "workflow/api";
+import { after, NextResponse } from "next/server";
 
 // Force dynamic rendering - skip static page data collection
 export const dynamic = "force-dynamic";
 
 // Allow longer execution time for parallel 4K image enhancements (10 minutes)
 export const maxDuration = 600;
-
-// Check if we're running in Vercel environment
-function isVercelEnvironment(): boolean {
-  return process.env.VERCEL === "1";
-}
 
 interface ParallelEnhanceRequest {
   imageId: string;
@@ -351,8 +344,8 @@ export async function POST(request: NextRequest) {
     jobIds: result.jobs.map((j) => j.id),
   });
 
-  // Start all enhancement workflows in parallel (fire-and-forget)
-  const workflowPromises = result.jobs.map(async (job) => {
+  // Start all enhancement jobs using Next.js after() for background processing
+  for (const job of result.jobs) {
     const enhancementInput: EnhanceImageInput = {
       jobId: job.id,
       imageId: image.id,
@@ -362,62 +355,18 @@ export async function POST(request: NextRequest) {
       tokensCost: job.tokensCost,
     };
 
-    if (isVercelEnvironment()) {
-      // Production: Use Vercel's durable workflow infrastructure
-      const workflowRun = await start(enhanceImage, [enhancementInput]);
+    requestLogger.info("Starting enhancement (direct mode with after())", {
+      jobId: job.id,
+      tier: job.tier,
+    });
 
-      // Store the workflow run ID for cancellation support (if available)
-      if (workflowRun?.runId) {
-        const { error: updateError } = await tryCatch(
-          prisma.imageEnhancementJob.update({
-            where: { id: job.id },
-            data: { workflowRunId: workflowRun.runId },
-          }),
-        );
-
-        if (updateError) {
-          requestLogger.error(
-            "Failed to store workflowRunId - job may not be cancellable",
-            updateError,
-            { jobId: job.id, workflowRunId: workflowRun.runId },
-          );
-          // Continue - workflow is running, we just can't cancel it
-        }
+    after(async () => {
+      const { error } = await tryCatch(enhanceImageDirect(enhancementInput));
+      if (error) {
+        console.error(`[Parallel Enhancement] Job ${job.id} failed:`, error);
       }
-
-      requestLogger.info("Enhancement workflow started (production)", {
-        jobId: job.id,
-        tier: job.tier,
-        workflowRunId: workflowRun?.runId,
-      });
-    } else {
-      // Development: Run enhancement directly (fire-and-forget)
-      requestLogger.info("Running enhancement directly (dev mode)", {
-        jobId: job.id,
-        tier: job.tier,
-      });
-
-      // Fire and forget - don't await, let it run in the background
-      enhanceImageDirect(enhancementInput).catch((error) => {
-        requestLogger.error(
-          "Direct enhancement failed",
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            jobId: job.id,
-            tier: job.tier,
-          },
-        );
-      });
-    }
-  });
-
-  // Don't await the workflows - they run in the background
-  Promise.allSettled(workflowPromises).catch((error) => {
-    requestLogger.error(
-      "Error starting enhancement workflows",
-      error instanceof Error ? error : new Error(String(error)),
-    );
-  });
+    });
+  }
 
   // Build response
   const jobsResponse: JobResponse[] = result.jobs.map((job) => ({

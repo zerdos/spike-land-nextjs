@@ -5,7 +5,6 @@ import { tryCatch } from "@/lib/try-catch";
 import { JobStatus } from "@prisma/client";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { Run } from "workflow/api";
 
 async function cancelJob(
   params: Promise<{ jobId: string; }>,
@@ -34,15 +33,8 @@ async function cancelJob(
     );
   }
 
-  // Cancel the workflow run if one exists
-  if (job.workflowRunId) {
-    const workflowRun = new Run(job.workflowRunId);
-    const { error: workflowError } = await tryCatch(workflowRun.cancel());
-    if (workflowError) {
-      // Log but don't fail - the workflow may have already completed
-      console.warn("Failed to cancel workflow run:", workflowError);
-    }
-  }
+  // Note: With direct execution, jobs run in-process and cannot be cancelled mid-flight
+  // The job status update below will prevent the job from being processed if it hasn't started yet
 
   const updatedJob = await prisma.imageEnhancementJob.update({
     where: { id: jobId },
