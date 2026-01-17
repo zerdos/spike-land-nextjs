@@ -4,7 +4,6 @@ ARG NODE_IMAGE=node:24.12.0-bookworm-slim
 ARG DUMMY_DATABASE_URL=postgresql://build:build@localhost:5432/build
 ARG CACHE_NS=vercel-app
 ARG TEST_CACHE_NS=test-cache
-ARG DEP_CACHE_COMMIT=0f4ab7f
 
 # ============================================================================
 # STAGE 0: Base
@@ -35,18 +34,16 @@ COPY --link packages/js.spike.land/package.json ./packages/js.spike.land/
 COPY --link packages/code/package.json ./packages/code/
 COPY --link packages/testing.spike.land/package.json ./packages/testing.spike.land/
 COPY --link packages/spike-land-renderer/package.json ./packages/spike-land-renderer/
-COPY --link packages/mobile-app/package.json ./packages/mobile-app/
 COPY --link packages/shared/package.json ./packages/shared/
 COPY --link prisma ./prisma
 
 # ============================================================================
-# STAGE 2: Install Dependencies (with pre-warming from pinned commit)
+# STAGE 2: Install Dependencies (using committed .yarn/cache for speed)
 # ============================================================================
 FROM base AS deps
 ARG CACHE_NS
 ARG TARGETARCH
 ARG DUMMY_DATABASE_URL
-ARG DEP_CACHE_COMMIT
 
 # Install native build dependencies
 RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=locked \
@@ -56,20 +53,11 @@ RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/
     python3 make g++ \
     libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
 
-# Pre-warm yarn cache from pinned commit (stable layer)
-ADD https://github.com/zerdos/spike-land-nextjs/archive/${DEP_CACHE_COMMIT}.tar.gz /tmp/repo.tar.gz
-RUN tar -xzf /tmp/repo.tar.gz -C /app --strip-components=1 \
-    && rm -rf /tmp/repo.tar.gz
-
-RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
-    yarn install --immutable || true
-
-# Overlay current build context BEFORE final install
+# Copy dependency context
 COPY --link --from=dep-context /app /app
 
-# Final install with pre-warmed cache (now uses current package.json/yarn.lock)
-RUN --mount=type=cache,id=${CACHE_NS}-yarn-cache-${TARGETARCH},target=/app/.yarn/cache,sharing=locked \
-    yarn install --immutable
+# Install dependencies - uses committed .yarn/cache so no downloads needed
+RUN yarn install --immutable
 
 # ============================================================================
 # STAGE 3: Source Code
@@ -244,8 +232,6 @@ COPY --link --from=dep-context /app/packages/ ./packages/
 COPY --link --from=dep-context /app/prisma ./prisma
 
 # Copy built application and dependencies
-# COPY --link --from=build /app/.next ./.next
-# COPY --link --from=build /app/public ./public
 COPY --link --from=deps /app/node_modules ./node_modules
 
 # Copy source files needed for E2E

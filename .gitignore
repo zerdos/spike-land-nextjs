@@ -3,13 +3,19 @@
 # dependencies
 **/node_modules
 /node_modules
-/.pnp
-.pnp.*
-.yarn/install-state.gz
+
+# Yarn - commit cache for semi-zero-install (faster installs)
+!.yarn/cache
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+
+# Ignore PnP files (not using PnP mode due to Prisma incompatibility)
+.pnp.cjs
+.pnp.loader.mjs
+.yarn/unplugged
+.yarn/install-state.gz
 
 spike_land/
 

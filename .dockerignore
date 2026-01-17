@@ -10,8 +10,8 @@ e2e/reports
 dist
 .cache
 
-# Yarn cache (huge - will reinstall from lock file)
-.yarn/cache
+# Yarn semi-zero-install: Include cache for faster installs
+# .yarn/cache is NOT ignored - it contains pre-downloaded packages
 .yarn/unplugged
 .yarn/install-state.gz
 .pnp.*
@@ -59,7 +59,7 @@ packages/*/dist
 .git
 .next
 node_modules
-.yarn/cache
+# .yarn/cache is NOT ignored (semi-zero-install)
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
