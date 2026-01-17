@@ -3,15 +3,15 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
-    "dev:silent": "next dev --turbo > /dev/null 2> /dev/null || true",
-    "dev:e2e": "E2E_BYPASS_AUTH=true next dev",
-    "build": "yarn db:generate && DATABASE_URL='postgresql://dummy:dummy@dummy/dummy' NODE_OPTIONS='--max-old-space-size=4096' next build",
+    "dev": "NODE_OPTIONS='--require ./.pnp.cjs --import ./.pnp.loader.mjs' next dev --webpack",
+    "dev:silent": "NODE_OPTIONS='--require ./.pnp.cjs --import ./.pnp.loader.mjs' next dev --webpack > /dev/null 2> /dev/null || true",
+    "dev:e2e": "E2E_BYPASS_AUTH=true NODE_OPTIONS='--require ./.pnp.cjs --import ./.pnp.loader.mjs' next dev --webpack",
+    "build": "yarn db:generate && DATABASE_URL='postgresql://dummy:dummy@dummy/dummy' NODE_OPTIONS='--require ./.pnp.cjs --import ./.pnp.loader.mjs --max-old-space-size=4096' next build --webpack",
     "deploy:dev": "NODE_ENV=development yarn build:fe && cd packages/testing.spike.land && yarn w:deploy:dev",
     "build:fe": "cd packages/code && yarn build",
-    "start": "next start",
+    "start": "NODE_OPTIONS='--require ./.pnp.cjs --import ./.pnp.loader.mjs' next start",
     "start:standalone": "cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && node -r dotenv/config .next/standalone/server.js dotenv_config_path=.env.local",
-    "start:e2e": "E2E_BYPASS_AUTH=true next start",
+    "start:e2e": "E2E_BYPASS_AUTH=true NODE_OPTIONS='--require ./.pnp.cjs --import ./.pnp.loader.mjs' next start",
     "start:server:and:test:ci": "start-server-and-test start:e2e http://localhost:3000 test:e2e:shard",
     "start:server:and:test:pr": "start-server-and-test dev:silent http://localhost:3000 test:e2e:shard",
     "lint": "eslint",
@@ -86,6 +86,7 @@
     "reset:db:confirm": "tsx scripts/reset-staging-db.ts --confirm"
   },
   "dependencies": {
+    ".prisma": "portal:.yarn/unplugged/@prisma-client-virtual-1c90f5f9c1/node_modules/.prisma",
     "@anthropic-ai/claude-agent-sdk": "0.2.11",
     "@anthropic-ai/sdk": "0.71.2",
     "@aws-sdk/client-s3": "3.971.0",
@@ -230,7 +231,40 @@
     "@prisma/engines": {
       "unplugged": true
     },
+    "@swc/core": {
+      "unplugged": true
+    },
+    "@tailwindcss/node": {
+      "unplugged": true
+    },
+    "@tailwindcss/postcss": {
+      "unplugged": true
+    },
+    "@yarnpkg/pnpify": {
+      "unplugged": true
+    },
+    "esbuild": {
+      "unplugged": true
+    },
+    "next": {
+      "unplugged": true
+    },
+    "next-mdx-remote": {
+      "unplugged": true
+    },
     "prisma": {
+      "unplugged": true
+    },
+    "sharp": {
+      "unplugged": true
+    },
+    "styled-jsx": {
+      "unplugged": true
+    },
+    "tailwindcss": {
+      "unplugged": true
+    },
+    "workerd": {
       "unplugged": true
     }
   },

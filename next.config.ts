@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 /**
  * Security headers configuration
@@ -46,6 +47,19 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Configure Turbopack for Yarn PnP compatibility
+  turbopack: {
+    root: __dirname,
+    resolveAlias: {
+      // Point to unplugged next package for PnP compatibility
+      next: path.resolve(
+        __dirname,
+        ".yarn/unplugged/next-virtual-425b36e32e/node_modules/next",
+      ),
+    },
+  },
+  // Transpile ESM packages to avoid runtime resolution issues with PnP
+  transpilePackages: ["next-mdx-remote"],
   // Externalize sharp to load native binaries at runtime instead of bundling
   serverExternalPackages: ["sharp"],
   typescript: {
@@ -120,6 +134,15 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [];
+  },
+  // Webpack configuration for Yarn PnP compatibility
+  webpack: (config) => {
+    // Add alias for .prisma/client to resolve from unplugged Prisma directory
+    config.resolve.alias[".prisma/client"] = path.resolve(
+      __dirname,
+      ".yarn/unplugged/@prisma-client-virtual-1c90f5f9c1/node_modules/.prisma/client",
+    );
+    return config;
   },
 };
 
