@@ -265,8 +265,60 @@ export default function CodeSpacePage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+
+  // Viewport dimensions for calculating iframe scale
+  const [viewportSize, setViewportSize] = useState({ width: 1920, height: 1080 });
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   const codespaceUrl = `https://testing.spike.land/live/${codeSpace}/`;
+
+  // Track viewport and container sizes for dynamic iframe scaling
+  useEffect(() => {
+    const updateViewportSize = () => {
+      setViewportSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    const updateContainerSize = () => {
+      if (previewContainerRef.current) {
+        const { clientWidth, clientHeight } = previewContainerRef.current;
+        setContainerSize({ width: clientWidth, height: clientHeight });
+      }
+    };
+
+    // Initial measurements
+    updateViewportSize();
+    updateContainerSize();
+
+    // Listen for resize events
+    window.addEventListener("resize", updateViewportSize);
+    window.addEventListener("resize", updateContainerSize);
+
+    // Use ResizeObserver for container size changes
+    const resizeObserver = new ResizeObserver(updateContainerSize);
+    if (previewContainerRef.current) {
+      resizeObserver.observe(previewContainerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", updateViewportSize);
+      window.removeEventListener("resize", updateContainerSize);
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  // Calculate dynamic scale to fit browser-sized content into container
+  // while maintaining browser aspect ratio
+  const iframeScale = useMemo(() => {
+    if (containerSize.width === 0 || containerSize.height === 0) {
+      return 0.5; // fallback
+    }
+    // Calculate the scale needed to fit the viewport-sized iframe into the container
+    const scaleX = containerSize.width / viewportSize.width;
+    const scaleY = containerSize.height / viewportSize.height;
+    // Use the smaller scale to ensure it fits completely
+    return Math.min(scaleX, scaleY);
+  }, [containerSize.width, containerSize.height, viewportSize.width, viewportSize.height]);
 
   // Validate codespace name and check for backward compatibility
   useEffect(() => {
@@ -1311,12 +1363,12 @@ export default function CodeSpacePage() {
           </Card>
 
           {/* Preview Panel */}
-          <div className="flex flex-col gap-3 h-full">
+          <div className="flex flex-col gap-3">
             <motion.div
               layoutId={`app-card-${codeSpace}`}
-              className="flex-1 h-full min-h-[500px]"
+              className="flex-1 min-h-[500px]"
             >
-              <Card className="flex flex-col h-full overflow-hidden bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl ring-1 ring-white/5 relative group">
+              <Card className="flex flex-col overflow-hidden bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl ring-1 ring-white/5 relative group">
                 <div className="absolute -inset-[1px] bg-gradient-to-br from-white/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                 <BrowserToolbar
@@ -1324,17 +1376,23 @@ export default function CodeSpacePage() {
                   onRefresh={() => setIframeKey((prev) => prev + 1)}
                 />
 
-                <CardContent className="flex-1 overflow-hidden p-0 md:p-0 relative bg-zinc-950/50 z-10 rounded-b-3xl">
+                <CardContent
+                  ref={previewContainerRef}
+                  className="flex-1 overflow-hidden p-0 md:p-0 relative bg-zinc-950/50 z-10 rounded-b-3xl"
+                  style={{
+                    aspectRatio: `${viewportSize.width} / ${viewportSize.height}`,
+                  }}
+                >
                   {hasContent
                     ? (
                       <iframe
                         key={iframeKey}
                         src={codespaceUrl}
-                        className="border-0 w-full h-full rounded-b-3xl"
+                        className="border-0 rounded-b-3xl"
                         style={{
-                          width: "200%",
-                          height: "200%",
-                          transform: "scale(0.5)",
+                          width: `${viewportSize.width}px`,
+                          height: `${viewportSize.height}px`,
+                          transform: `scale(${iframeScale})`,
                           transformOrigin: "0 0",
                         }}
                         title={`Preview of ${codeSpace}`}
