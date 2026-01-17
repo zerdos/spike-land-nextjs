@@ -24,6 +24,9 @@ vi.mock("@/lib/prisma", () => ({
     user: {
       findUnique: vi.fn(),
     },
+    campaignLink: {
+      findUnique: vi.fn(),
+    },
   },
 }));
 
@@ -944,6 +947,88 @@ describe("attribution", () => {
       const result = await hasExistingAttribution("user-123", "PURCHASE");
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe("getExternalCampaignId", () => {
+    it("should return the external campaign ID when a campaign link exists", async () => {
+      const mockSessions = [
+        {
+          id: "session-1",
+          visitorId: "v_visitor-123",
+          userId: "user-123",
+          sessionStart: new Date("2024-01-01"),
+          sessionEnd: null,
+          deviceType: null,
+          browser: null,
+          os: null,
+          ipCountry: null,
+          ipCity: null,
+          referrer: "https://google.com",
+          landingPage: "/",
+          exitPage: "/about",
+          pageViewCount: 3,
+          utmSource: "google",
+          utmMedium: "cpc",
+          utmCampaign: "brand-campaign",
+          utmTerm: null,
+          utmContent: null,
+          gclid: "abc123",
+          fbclid: null,
+        },
+      ];
+
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue(mockSessions);
+      vi.mocked(prisma.campaignLink.findUnique).mockResolvedValue({
+        id: "link-1",
+        utmCampaign: "brand-campaign",
+        platform: "GOOGLE_ADS",
+        externalCampaignId: "external-123",
+        externalCampaignName: "Brand Campaign 2024",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      await attributeConversion("user-123", "SIGNUP");
+
+      const createCall = vi.mocked(prisma.campaignAttribution.create).mock.calls[0][0];
+      expect(createCall.data.externalCampaignId).toBe("external-123");
+    });
+
+    it("should return null when no campaign link exists", async () => {
+      const mockSessions = [
+        {
+          id: "session-1",
+          visitorId: "v_visitor-123",
+          userId: "user-123",
+          sessionStart: new Date("2024-01-01"),
+          sessionEnd: null,
+          deviceType: null,
+          browser: null,
+          os: null,
+          ipCountry: null,
+          ipCity: null,
+          referrer: "https://google.com",
+          landingPage: "/",
+          exitPage: "/about",
+          pageViewCount: 3,
+          utmSource: "google",
+          utmMedium: "cpc",
+          utmCampaign: "non-existent-campaign",
+          utmTerm: null,
+          utmContent: null,
+          gclid: "abc123",
+          fbclid: null,
+        },
+      ];
+
+      vi.mocked(prisma.visitorSession.findMany).mockResolvedValue(mockSessions);
+      vi.mocked(prisma.campaignLink.findUnique).mockResolvedValue(null);
+
+      await attributeConversion("user-123", "SIGNUP");
+
+      const createCall = vi.mocked(prisma.campaignAttribution.create).mock.calls[0][0];
+      expect(createCall.data.externalCampaignId).toBe("abc123");
     });
   });
 });
