@@ -8932,7 +8932,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-is@npm:19.2.0":
+"@types/react-is@npm:19.2.0, @types/react-is@npm:^19":
   version: 19.2.0
   resolution: "@types/react-is@npm:19.2.0"
   dependencies:
@@ -24213,6 +24213,7 @@ __metadata:
     "@types/qrcode": "npm:1.5.6"
     "@types/react": "npm:19.2.8"
     "@types/react-dom": "npm:19.2.3"
+    "@types/react-is": "npm:^19"
     "@types/three": "npm:0.182.0"
     "@upstash/redis": "npm:1.36.1"
     "@use-gesture/react": "npm:10.3.1"
@@ -24256,6 +24257,7 @@ __metadata:
     react: "npm:19.2.3"
     react-dom: "npm:19.2.3"
     react-hook-form: "npm:7.71.1"
+    react-is: "npm:^19.2.3"
     react-markdown: "npm:10.1.0"
     react-masonry-css: "npm:1.0.16"
     reactflow: "npm:11.11.4"
@@ -24273,6 +24275,7 @@ __metadata:
     tsx: "npm:4.21.0"
     typescript: "npm:5.9.3"
     vercel: "npm:50.4.5"
+    vite: "npm:^7.3.1"
     vitest: "npm:4.0.17"
     vitest-mock-extended: "npm:3.1.0"
     wait-on: "npm:9.0.3"
@@ -24417,7 +24420,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:7.3.1, vite@npm:^6.0.0 || ^7.0.0":
+"vite@npm:7.3.1, vite@npm:^6.0.0 || ^7.0.0, vite@npm:^7.3.1":
   version: 7.3.1
   resolution: "vite@npm:7.3.1"
   dependencies:
