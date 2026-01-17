@@ -31,10 +31,17 @@ describe("A/B Testing Utilities", () => {
 
   describe("chiSquaredToPValue", () => {
     it("should return the correct p-value for a given chi-squared statistic", () => {
-      expect(chiSquaredToPValue(4.0)).toBe(0.05);
-      expect(chiSquaredToPValue(7.0)).toBe(0.01);
-      expect(chiSquaredToPValue(11.0)).toBe(0.001);
-      expect(chiSquaredToPValue(0.5)).toBe(1.0);
+      // For a chi-squared value of 3.841 with 1 df, the p-value is approx 0.05
+      expect(chiSquaredToPValue(3.841)).toBeCloseTo(0.05);
+
+      // For a chi-squared value of 6.635 with 1 df, the p-value is approx 0.01
+      expect(chiSquaredToPValue(6.635)).toBeCloseTo(0.01);
+
+      // For a chi-squared value of 10.827 with 1 df, the p-value is approx 0.001
+      expect(chiSquaredToPValue(10.827)).toBeCloseTo(0.001);
+
+      // For a small chi-squared value, the p-value should be close to 1.0
+      expect(chiSquaredToPValue(0.5)).toBeCloseTo(0.4795);
     });
   });
 });
