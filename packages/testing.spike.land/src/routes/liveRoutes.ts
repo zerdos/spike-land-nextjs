@@ -1,5 +1,5 @@
 import { HTML, importMap, importMapReplace, md5 } from "@spike-npm-land/code";
-import type { Code, CodeVersion } from "../chatRoom";
+import type { Code } from "../chatRoom";
 import { AiRoutes } from "./aiRoutes";
 
 /**

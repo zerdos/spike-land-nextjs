@@ -1070,10 +1070,7 @@ export default function CodeSpacePage() {
                               // - Version N: testing.spike.land/live/{codeSpace}/version/{N}/embed
                               const versionedUrl = isLatest
                                 ? codespaceUrl
-                                : codespaceUrl.replace(
-                                  /\/embed\/?$/,
-                                  `/version/${versionNumber}/embed`,
-                                );
+                                : `https://testing.spike.land/live/${codeSpace}/version/${versionNumber}/embed`;
 
                               return (
                                 <MiniPreview
