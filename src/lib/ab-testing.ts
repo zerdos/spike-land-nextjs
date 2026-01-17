@@ -1,4 +1,5 @@
-// src/lib/ab-testing.ts
+// @ts-ignore
+import jStat from 'jstat';
 
 /**
  * Calculates the chi-squared statistic for an A/B test.
@@ -41,24 +42,12 @@ export function calculateChiSquared(
 }
 
 /**
- * A simplified function to get the p-value from a chi-squared statistic.
- * For a real-world application, a more robust library would be used.
- * This implementation is for a chi-squared distribution with 1 degree of freedom,
- * which is common for A/B tests with two variants.
+ * Calculates the p-value from a chi-squared statistic using the jStat library.
  *
  * @param chiSquared - The chi-squared statistic.
  * @param df - The degrees of freedom.
  * @returns The p-value.
  */
-export function chiSquaredToPValue(chiSquared: number, df: number = 1) {
-  // This is a simplified lookup table for a chi-squared distribution with 1 df.
-  // A proper implementation would use a gamma function or a more extensive table.
-  if (df === 1) {
-    if (chiSquared > 10.83) return 0.001;
-    if (chiSquared > 6.63) return 0.01;
-    if (chiSquared > 5.41) return 0.02;
-    if (chiSquared > 3.84) return 0.05;
-    if (chiSquared > 2.71) return 0.1;
-  }
-  return 1.0;
+export function chiSquaredToPValue(chiSquared: number, df: number = 1): number {
+  return 1 - jStat.chisquare.cdf(chiSquared, df);
 }
