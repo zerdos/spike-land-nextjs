@@ -1,15 +1,15 @@
-import { HTML, importMap, md5 } from "@spike-npm-land/code";
+import { HTML, importMap, importMapReplace, md5 } from "@spike-npm-land/code";
 import type { Code } from "../chatRoom";
 import { AiRoutes } from "./aiRoutes";
 
 /**
  * Sanitizes a codeSpace parameter to prevent XSS attacks.
- * Only allows alphanumeric characters, hyphens, and underscores.
+ * Only allows alphanumeric characters, hyphens, underscores, and periods.
  */
 function sanitizeCodeSpace(codeSpace: string | null): string {
   if (!codeSpace) return "empty";
-  // Only allow safe characters: alphanumeric, hyphens, underscores
-  return codeSpace.replace(/[^a-zA-Z0-9_-]/g, "");
+  // Only allow safe characters: alphanumeric, hyphens, underscores, periods
+  return codeSpace.replace(/[^a-zA-Z0-9_.-]/g, "");
 }
 
 export class LiveRoutes {
@@ -34,6 +34,57 @@ export class LiveRoutes {
       return this.handleMcpRoute(request, url, path);
     }
 
+    // /live/${codeSpace}/versions - List all versions
+    if (path[2] === "versions") {
+      return this.handleVersionsListRoute();
+    }
+
+    // /live/${codeSpace}/version/{N}/* - Versioned content
+    if (path[2] === "version" && path[3]) {
+      const versionNumber = parseInt(path[3]);
+      if (isNaN(versionNumber) || versionNumber < 1) {
+        return new Response(
+          JSON.stringify({ error: "Invalid version number" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      // /live/{codeSpace}/version/{N} - Version info JSON
+      if (!path[4]) {
+        return this.handleVersionInfoRoute(versionNumber);
+      }
+
+      // /live/{codeSpace}/version/{N}/embed - Full HTML page
+      if (path[4] === "embed" || path[4] === "iframe") {
+        return this.handleVersionedContentRoute(versionNumber, "embed");
+      }
+
+      // /live/{codeSpace}/version/{N}/index.mjs - Transpiled JS
+      if (path[4] === "index.mjs" || path[4] === "index.js" || path[4] === "js") {
+        return this.handleVersionedContentRoute(versionNumber, "js");
+      }
+
+      // /live/{codeSpace}/version/{N}/index.css - CSS
+      if (path[4] === "index.css") {
+        return this.handleVersionedContentRoute(versionNumber, "css");
+      }
+
+      // /live/{codeSpace}/version/{N}/index.tsx - Source code
+      if (path[4] === "index.tsx" || path[4] === "code") {
+        return this.handleVersionedContentRoute(versionNumber, "code");
+      }
+
+      // /live/{codeSpace}/version/{N}/html - HTML fragment
+      if (path[4] === "html") {
+        return this.handleVersionedContentRoute(versionNumber, "html");
+      }
+
+      return new Response("Invalid version route", { status: 404 });
+    }
+
     if (path[3] === "index.tsx" && path[4]) {
       const timestamp = parseInt(path[4]);
       const savedVersion = await this.code.getState().storage.get(
@@ -54,6 +105,151 @@ export class LiveRoutes {
     }
 
     return new Response("Not found", { status: 404 });
+  }
+
+  /**
+   * GET /live/{codeSpace}/versions
+   * Returns list of all versions with metadata
+   */
+  private async handleVersionsListRoute(): Promise<Response> {
+    const versions = await this.code.getVersionsList();
+    const versionCount = this.code.getVersionCount();
+
+    return new Response(
+      JSON.stringify({
+        codeSpace: this.code.getSession().codeSpace,
+        versionCount,
+        versions,
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "no-cache",
+        },
+      },
+    );
+  }
+
+  /**
+   * GET /live/{codeSpace}/version/{N}
+   * Returns full version data including code
+   */
+  private async handleVersionInfoRoute(
+    versionNumber: number,
+  ): Promise<Response> {
+    const version = await this.code.getVersion(versionNumber);
+
+    if (!version) {
+      return new Response(
+        JSON.stringify({ error: "Version not found" }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    return new Response(JSON.stringify(version), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "public, max-age=31536000, immutable", // Versions are immutable
+      },
+    });
+  }
+
+  /**
+   * Serve versioned code content (index.tsx, index.mjs, index.css, etc.)
+   */
+  async handleVersionedContentRoute(
+    versionNumber: number,
+    contentType: "code" | "js" | "css" | "html" | "embed",
+  ): Promise<Response> {
+    const version = await this.code.getVersion(versionNumber);
+
+    if (!version) {
+      return new Response("Version not found", { status: 404 });
+    }
+
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cache-Control": "public, max-age=31536000, immutable",
+    };
+
+    switch (contentType) {
+      case "code":
+        return new Response(version.code, {
+          status: 200,
+          headers: {
+            ...headers,
+            "Content-Type": "application/javascript; charset=UTF-8",
+            content_hash: md5(version.code),
+          },
+        });
+
+      case "js": {
+        const replaced = importMapReplace(
+          version.transpiled,
+          this.code.getOrigin(),
+        );
+        return new Response(replaced, {
+          status: 200,
+          headers: {
+            ...headers,
+            "Content-Type": "application/javascript; charset=UTF-8",
+            "x-typescript-types": this.code.getOrigin() + "/live/index.tsx",
+            content_hash: md5(replaced),
+          },
+        });
+      }
+
+      case "css":
+        return new Response(version.css, {
+          status: 200,
+          headers: {
+            ...headers,
+            "Content-Type": "text/css; charset=UTF-8",
+            content_hash: md5(version.css),
+          },
+        });
+
+      case "html":
+      case "embed": {
+        const { codeSpace } = this.code.getSession();
+        const respText = HTML.replace("// IMPORTMAP", JSON.stringify(importMap))
+          .replace(
+            `<!-- Inline LINK for initial theme -->`,
+            `<!-- Inline LINK for initial theme -->
+              <link rel="preload" href="/live/${codeSpace}/version/${versionNumber}/index.css" as="style">
+              <link rel="stylesheet" href="/live/${codeSpace}/version/${versionNumber}/index.css">
+        `,
+          )
+          .replace(
+            '<div id="embed"></div>',
+            `<div id="embed">${version.html}</div>`,
+          )
+          .replace(
+            "/start.mjs",
+            `/live/${codeSpace}/version/${versionNumber}/index.mjs`,
+          );
+
+        return new Response(respText, {
+          status: 200,
+          headers: {
+            ...headers,
+            "Content-Type": "text/html; charset=UTF-8",
+            content_hash: md5(respText),
+          },
+        });
+      }
+
+      default:
+        return new Response("Invalid content type", { status: 400 });
+    }
   }
 
   // Handles /live/${codeSpace}/mcp - This is just a legacy route that should not be used

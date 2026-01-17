@@ -46,6 +46,7 @@ export async function findAppByIdentifier(
     where: {
       codespaceId: identifier,
       userId,
+      deletedAt: null,
       status: { not: "ARCHIVED" },
     },
     include: appIncludeOptions,
@@ -58,6 +59,7 @@ export async function findAppByIdentifier(
     where: {
       slug: identifier,
       userId,
+      deletedAt: null,
       status: { not: "ARCHIVED" },
     },
     include: appIncludeOptions,
@@ -72,6 +74,7 @@ export async function findAppByIdentifier(
       where: {
         id: identifier,
         userId,
+        deletedAt: null,
         status: { not: "ARCHIVED" },
       },
       include: appIncludeOptions,
@@ -93,6 +96,7 @@ export async function findAppByIdentifierSimple(
     where: {
       codespaceId: identifier,
       userId,
+      deletedAt: null,
       status: { not: "ARCHIVED" },
     },
   });
@@ -104,6 +108,7 @@ export async function findAppByIdentifierSimple(
     where: {
       slug: identifier,
       userId,
+      deletedAt: null,
       status: { not: "ARCHIVED" },
     },
   });
@@ -116,6 +121,7 @@ export async function findAppByIdentifierSimple(
       where: {
         id: identifier,
         userId,
+        deletedAt: null,
         status: { not: "ARCHIVED" },
       },
     });

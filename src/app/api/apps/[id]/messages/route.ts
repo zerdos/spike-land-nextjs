@@ -57,7 +57,7 @@ export async function GET(
 
   const { data: messages, error: messagesError } = await tryCatch(
     prisma.appMessage.findMany({
-      where: { appId: id },
+      where: { appId: id, deletedAt: null },
       include: {
         attachments: {
           include: {
@@ -72,6 +72,13 @@ export async function GET(
                 aiDescription: true,
               },
             },
+          },
+        },
+        // Include code version for preview-in-chat feature
+        codeVersion: {
+          select: {
+            id: true,
+            createdAt: true,
           },
         },
       },
