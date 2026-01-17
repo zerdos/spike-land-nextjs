@@ -11,7 +11,7 @@
 !.yarn/releases
 !.yarn/versions
 
-# Ignore PnP files (using node-modules linker due to workflow package incompatibility)
+# Ignore PnP files (using node-modules linker due to Prisma/Next.js CLI incompatibility)
 .pnp.cjs
 .pnp.loader.mjs
 .yarn/unplugged
@@ -63,7 +63,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/src/generated/prisma
 e2e-reports/
 .wrangler/
 .env*.local

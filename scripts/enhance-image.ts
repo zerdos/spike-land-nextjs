@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import * as fs from "fs";
 import * as path from "path";
-import sharp from "sharp";
+import { detectMimeType, getImageDimensionsFromBuffer } from "../src/lib/images/image-dimensions";
 
 // Load environment variables from .env.local
 // Use quiet: true to suppress verbose logging
@@ -10,7 +10,6 @@ dotenv.config({ path: path.join(__dirname, "..", ".env.local"), quiet: true });
 
 const GEMINI_API_TIMEOUT_MS = 55000; // 55 seconds (under Vercel's 60s limit)
 const DEFAULT_MODEL = "gemini-3-pro-image-preview";
-const ENHANCED_JPEG_QUALITY = 95;
 
 interface EnhanceImageParams {
   imageData: string;
@@ -184,11 +183,11 @@ async function main() {
   console.log("");
 
   const originalBuffer = fs.readFileSync(absoluteInputPath);
-  const metadata = await sharp(originalBuffer).metadata();
+  const dimensions = getImageDimensionsFromBuffer(originalBuffer);
 
-  const originalWidth = metadata.width || 1024;
-  const originalHeight = metadata.height || 1024;
-  const mimeType = `image/${metadata.format || "jpeg"}`;
+  const originalWidth = dimensions?.width || 1024;
+  const originalHeight = dimensions?.height || 1024;
+  const mimeType = detectMimeType(originalBuffer);
 
   console.log(`Original dimensions: ${originalWidth}x${originalHeight}`);
   console.log(`MIME type: ${mimeType}`);
@@ -207,49 +206,21 @@ async function main() {
 
   console.log("Received enhanced image from Gemini");
 
-  // Resize to preserve original aspect ratio
-  const TIER_RESOLUTIONS = {
-    "1K": 1024,
-    "2K": 2048,
-    "4K": 4096,
-  } as const;
+  // Get dimensions of enhanced output
+  const enhancedDimensions = getImageDimensionsFromBuffer(geminiBuffer);
 
-  const aspectRatio = originalWidth / originalHeight;
-  const tierResolution = TIER_RESOLUTIONS[tier];
+  // Save the enhanced image directly (Gemini outputs at requested resolution)
+  fs.writeFileSync(absoluteOutputPath, geminiBuffer);
 
-  let targetWidth: number;
-  let targetHeight: number;
-
-  if (aspectRatio > 1) {
-    targetWidth = tierResolution;
-    targetHeight = Math.round(tierResolution / aspectRatio);
-  } else {
-    targetHeight = tierResolution;
-    targetWidth = Math.round(tierResolution * aspectRatio);
-  }
-
-  console.log(
-    `Resizing to preserve aspect ratio: ${targetWidth}x${targetHeight}`,
-  );
-
-  const enhancedBuffer = await sharp(geminiBuffer)
-    .resize(targetWidth, targetHeight, {
-      fit: "fill",
-      kernel: "lanczos3",
-    })
-    .jpeg({ quality: ENHANCED_JPEG_QUALITY })
-    .toBuffer();
-
-  fs.writeFileSync(absoluteOutputPath, enhancedBuffer);
-
-  const finalMetadata = await sharp(enhancedBuffer).metadata();
   console.log("");
   console.log("Enhancement complete!");
   console.log(
-    `Final dimensions: ${finalMetadata.width}x${finalMetadata.height}`,
+    `Final dimensions: ${enhancedDimensions?.width || "unknown"}x${
+      enhancedDimensions?.height || "unknown"
+    }`,
   );
   console.log(
-    `File size: ${(enhancedBuffer.length / 1024 / 1024).toFixed(2)} MB`,
+    `File size: ${(geminiBuffer.length / 1024 / 1024).toFixed(2)} MB`,
   );
   console.log(`Saved to: ${absoluteOutputPath}`);
 }

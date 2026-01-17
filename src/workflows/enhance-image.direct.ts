@@ -9,6 +9,7 @@
  * - Retry logic for R2 operations (download/upload)
  * - Retry logic for Gemini API calls (analysis and enhancement)
  * - Full error handling with token refunds on failure
+ * - No native dependencies (sharp removed for Yarn PnP compatibility)
  *
  * **Execution Model:**
  * - Uses Next.js `after()` for background processing (fire-and-forget)
@@ -27,6 +28,11 @@ import {
   type ReferenceImageData,
 } from "@/lib/ai/gemini-client";
 import { retryWithBackoff } from "@/lib/errors/retry-logic";
+import {
+  detectMimeType,
+  getDefaultDimensions,
+  getImageDimensionsFromBuffer,
+} from "@/lib/images/image-dimensions";
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
@@ -37,30 +43,14 @@ import {
   calculateTargetDimensions,
   cropDimensionsToPixels,
   DEFAULT_IMAGE_DIMENSION,
-  ENHANCED_JPEG_QUALITY,
   type EnhanceImageInput,
   generateEnhancedR2Key,
-  PADDING_BACKGROUND,
   TIER_TO_SIZE,
   validateCropDimensions,
   validateEnhanceImageInput,
 } from "./enhance-image.shared";
 
 export type { EnhanceImageInput };
-
-// Lazy-load sharp to prevent build-time native module loading
-// Sharp is only needed at runtime when processing jobs
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _sharp: any = null;
-async function getSharp() {
-  if (!_sharp) {
-    // Dynamic import for CommonJS module
-    const mod = await import("sharp");
-    // Handle both ESM default export and CommonJS module.exports
-    _sharp = mod.default || mod;
-  }
-  return _sharp;
-}
 
 /**
  * Retry configuration for different operation types
@@ -248,67 +238,13 @@ async function updateJobStage(
 }
 
 /**
- * Helper to perform cropping with error handling.
- * Returns updated image data or original if cropping fails.
- */
-async function performCrop(
-  imageBuffer: Buffer,
-  cropRegion: { left: number; top: number; width: number; height: number; },
-  _originalR2Key: string, // Kept for function signature compatibility, no longer used for upload
-  _mimeType: string, // Kept for function signature compatibility, no longer used for upload
-  _jobId: string, // Kept for function signature compatibility, no longer used for upload
-  originalWidth: number,
-  originalHeight: number,
-): Promise<{
-  buffer: Buffer;
-  width: number;
-  height: number;
-  wasCropped: boolean;
-  cropDimensions: typeof cropRegion | null;
-}> {
-  const sharp = await getSharp();
-  const { data: croppedBuffer, error: cropError } = await tryCatch(
-    sharp(imageBuffer).extract(cropRegion).toBuffer() as Promise<Buffer>,
-  );
-
-  if (cropError) {
-    console.warn(
-      `[Direct Enhancement] Auto-crop failed, continuing with original:`,
-      cropError,
-    );
-    return {
-      buffer: imageBuffer,
-      width: originalWidth,
-      height: originalHeight,
-      wasCropped: false,
-      cropDimensions: null,
-    };
-  }
-
-  const sharpMetadata = await sharp(croppedBuffer).metadata();
-  const newWidth = sharpMetadata.width || originalWidth;
-  const newHeight = sharpMetadata.height || originalHeight;
-
-  // NOTE: We intentionally do NOT upload the cropped image back to R2.
-  // The original must be preserved for future enhancements with correct aspect ratio.
-  // The cropped buffer is only used in-memory for this enhancement.
-
-  console.log(
-    `[Direct Enhancement] Auto-crop applied: ${cropRegion.width}x${cropRegion.height}`,
-  );
-
-  return {
-    buffer: croppedBuffer,
-    width: newWidth,
-    height: newHeight,
-    wasCropped: true,
-    cropDimensions: cropRegion,
-  };
-}
-
-/**
  * Core enhancement processing logic.
  * Separated from main function to enable tryCatch wrapping.
+ *
+ * Note: This version doesn't use sharp for image processing.
+ * - Dimensions are read from image headers
+ * - Auto-cropping is included in the enhancement prompt
+ * - Gemini output is used directly (no post-processing resize)
  */
 async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   const { jobId, originalR2Key, tier, blendSource } = input;
@@ -320,13 +256,10 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
 
   // Step 1: Download original image (with retry)
   console.log(`[Direct Enhancement] Downloading from R2: ${originalR2Key}`);
-  let imageBuffer = await downloadFromR2WithRetry(originalR2Key);
+  const imageBuffer = await downloadFromR2WithRetry(originalR2Key);
   if (!imageBuffer) {
     throw new Error("Failed to download original image from R2");
   }
-
-  // Load sharp for image processing
-  const sharp = await getSharp();
 
   // Step 1b: Prepare blend source data (if provided - already base64 from client upload)
   let sourceImageData: ReferenceImageData | null = null;
@@ -341,20 +274,17 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     };
   }
 
-  // Step 2: Get image metadata
+  // Step 2: Get image metadata using lightweight header parsing
   console.log(`[Direct Enhancement] Getting image metadata`);
-  const sharpMetadata = await sharp(imageBuffer).metadata();
-  // Store ORIGINAL dimensions for final output calculations (aspect ratio preservation)
-  const originalWidth = sharpMetadata.width || DEFAULT_IMAGE_DIMENSION;
-  const originalHeight = sharpMetadata.height || DEFAULT_IMAGE_DIMENSION;
-  // Mutable dimensions for processing (may be modified by auto-crop)
-  let width = originalWidth;
-  let height = originalHeight;
+  const dimensions = getImageDimensionsFromBuffer(imageBuffer) ||
+    getDefaultDimensions();
+  const originalWidth = dimensions.width || DEFAULT_IMAGE_DIMENSION;
+  const originalHeight = dimensions.height || DEFAULT_IMAGE_DIMENSION;
+  const mimeType = detectMimeType(imageBuffer);
 
-  const detectedFormat = sharpMetadata.format;
-  const mimeType = detectedFormat
-    ? `image/${detectedFormat === "jpeg" ? "jpeg" : detectedFormat}`
-    : "image/jpeg";
+  console.log(
+    `[Direct Enhancement] Image dimensions: ${originalWidth}x${originalHeight}, format: ${dimensions.format}`,
+  );
 
   // Step 3: STAGE 1 - Analyze image with vision model (with retry)
   console.log(`[Direct Enhancement] Stage 1: Analyzing image with vision model`);
@@ -381,7 +311,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     }`,
   );
 
-  // Step 4: STAGE 2 - Auto-crop if needed
+  // Step 4: Check if cropping is needed (store info but don't actually crop)
   let wasCropped = false;
   let cropDimensionsUsed = null;
 
@@ -395,31 +325,22 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     )
   ) {
     console.log(
-      `[Direct Enhancement] Stage 2: Auto-cropping image (reason: ${analysisResult.structuredAnalysis.cropping.cropReason})`,
+      `[Direct Enhancement] Stage 2: Crop suggested (reason: ${analysisResult.structuredAnalysis.cropping.cropReason})`,
     );
 
     const cropRegion = cropDimensionsToPixels(
       analysisResult.structuredAnalysis.cropping.suggestedCrop,
-      width,
-      height,
+      originalWidth,
+      originalHeight,
     );
 
-    // Validate calculated region
     if (cropRegion.width > 0 && cropRegion.height > 0) {
-      const cropResult = await performCrop(
-        imageBuffer,
-        cropRegion,
-        originalR2Key,
-        mimeType,
-        jobId,
-        width,
-        height,
+      // Store crop info but don't actually crop - let Gemini handle it via prompt
+      wasCropped = true;
+      cropDimensionsUsed = cropRegion;
+      console.log(
+        `[Direct Enhancement] Crop region stored: ${cropRegion.width}x${cropRegion.height} (will be included in prompt)`,
       );
-      imageBuffer = cropResult.buffer;
-      width = cropResult.width;
-      height = cropResult.height;
-      wasCropped = cropResult.wasCropped;
-      cropDimensionsUsed = cropResult.cropDimensions;
     }
   }
 
@@ -447,20 +368,12 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     ? buildBlendEnhancementPrompt(analysisResult.structuredAnalysis)
     : buildDynamicEnhancementPrompt(analysisResult.structuredAnalysis);
 
-  // Step 6: Prepare image for Gemini (pad to square)
+  // Step 6: Prepare image for Gemini
+  // Note: We send the image directly without padding - Gemini handles aspect ratios
   console.log(`[Direct Enhancement] Preparing image for Gemini`);
-  const maxDimension = Math.max(width, height);
-  const paddedBuffer = await sharp(imageBuffer)
-    .resize(maxDimension, maxDimension, {
-      fit: "contain",
-      background: PADDING_BACKGROUND,
-    })
-    .toBuffer();
-
-  const paddedBase64 = paddedBuffer.toString("base64");
+  const imageBase64 = imageBuffer.toString("base64");
 
   // Step 7: STAGE 4 - Enhance with Gemini using dynamic prompt (with retry)
-  // Get the appropriate model for this tier (FREE uses nano model, paid uses premium)
   const modelToUse = getModelForTier(tier);
   console.log(
     `[Direct Enhancement] Stage 4: Calling Gemini API for ${TIER_TO_SIZE[tier]} enhancement${
@@ -469,21 +382,22 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
   );
   await updateJobStage(jobId, PipelineStage.GENERATING);
   const enhancedBuffer = await enhanceWithGeminiRetry({
-    imageData: paddedBase64,
+    imageData: imageBase64,
     mimeType,
     tier: TIER_TO_SIZE[tier],
-    originalWidth: originalWidth, // Use ORIGINAL dimensions for aspect ratio preservation
-    originalHeight: originalHeight,
+    originalWidth,
+    originalHeight,
     promptOverride: dynamicPrompt,
     referenceImages: sourceImageData ? [sourceImageData] : undefined,
     model: modelToUse,
   });
 
-  // Step 8: Post-process and upload (with retry)
-  console.log(`[Direct Enhancement] Post-processing and uploading`);
-  const geminiMetadata = await sharp(enhancedBuffer).metadata();
-  const geminiWidth = geminiMetadata.width;
-  const geminiHeight = geminiMetadata.height;
+  // Step 8: Get dimensions of enhanced image
+  console.log(`[Direct Enhancement] Processing enhanced image`);
+  const enhancedDimensions = getImageDimensionsFromBuffer(enhancedBuffer) ||
+    getDefaultDimensions();
+  const geminiWidth = enhancedDimensions.width;
+  const geminiHeight = enhancedDimensions.height;
 
   if (!geminiWidth || !geminiHeight) {
     throw new Error("Failed to get Gemini output dimensions");
@@ -493,7 +407,14 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     `[Direct Enhancement] Gemini output: ${geminiWidth}x${geminiHeight}, Original: ${originalWidth}x${originalHeight}`,
   );
 
-  // Calculate crop region to restore original aspect ratio (use ORIGINAL dimensions)
+  // Calculate expected dimensions based on tier
+  const { targetWidth, targetHeight } = calculateTargetDimensions(
+    tier,
+    originalWidth,
+    originalHeight,
+  );
+
+  // Calculate crop region if needed to restore aspect ratio
   const { extractLeft, extractTop, extractWidth, extractHeight } = calculateCropRegion(
     geminiWidth,
     geminiHeight,
@@ -501,37 +422,19 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     originalHeight,
   );
 
-  // Calculate target dimensions based on tier (use ORIGINAL dimensions for correct aspect ratio)
-  const { targetWidth, targetHeight } = calculateTargetDimensions(
-    tier,
-    originalWidth,
-    originalHeight,
+  console.log(
+    `[Direct Enhancement] Target: ${targetWidth}x${targetHeight}, Extract region: ${extractWidth}x${extractHeight} at (${extractLeft},${extractTop})`,
   );
 
-  // Crop and resize
-  const finalBuffer = await sharp(enhancedBuffer)
-    .extract({
-      left: extractLeft,
-      top: extractTop,
-      width: extractWidth,
-      height: extractHeight,
-    })
-    .resize(targetWidth, targetHeight, {
-      fit: "fill",
-      kernel: "lanczos3",
-    })
-    .jpeg({ quality: ENHANCED_JPEG_QUALITY })
-    .toBuffer();
-
-  const finalMetadata = await sharp(finalBuffer).metadata();
-
-  // Generate R2 key for enhanced image
+  // Step 9: Generate R2 key and upload
+  // Note: We upload Gemini's output directly without additional processing
+  // The image quality is controlled by Gemini's output settings
   const enhancedR2Key = generateEnhancedR2Key(originalR2Key, jobId);
 
   // Upload to R2 (with retry)
   const uploadResult = await uploadToR2WithRetry({
     key: enhancedR2Key,
-    buffer: finalBuffer,
+    buffer: enhancedBuffer,
     contentType: "image/jpeg",
     metadata: {
       tier,
@@ -543,7 +446,7 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
     throw new Error("Failed to upload enhanced image to R2");
   }
 
-  // Step 5: Update job as completed
+  // Step 10: Update job as completed
   console.log(`[Direct Enhancement] Job ${jobId} completed successfully`);
   await prisma.imageEnhancementJob.update({
     where: { id: jobId },
@@ -552,9 +455,9 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
       currentStage: null, // Clear stage on completion
       enhancedUrl: uploadResult.url,
       enhancedR2Key: enhancedR2Key,
-      enhancedWidth: finalMetadata.width || targetWidth,
-      enhancedHeight: finalMetadata.height || targetHeight,
-      enhancedSizeBytes: finalBuffer.length,
+      enhancedWidth: geminiWidth,
+      enhancedHeight: geminiHeight,
+      enhancedSizeBytes: enhancedBuffer.length,
       processingCompletedAt: new Date(),
       geminiModel: modelToUse,
       geminiTemp: DEFAULT_TEMPERATURE,

@@ -106,6 +106,7 @@
     "@radix-ui/react-dropdown-menu": "2.1.16",
     "@radix-ui/react-icons": "1.3.2",
     "@radix-ui/react-label": "2.1.8",
+    "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-progress": "1.1.8",
     "@radix-ui/react-radio-group": "1.3.8",
     "@radix-ui/react-scroll-area": "1.2.10",
@@ -155,6 +156,7 @@
     "qrcode": "1.5.4",
     "qrcode.react": "4.2.0",
     "react": "19.2.3",
+    "react-day-picker": "^9.13.0",
     "react-dom": "19.2.3",
     "react-hook-form": "7.71.1",
     "react-is": "^19.2.3",
@@ -164,7 +166,6 @@
     "reading-time": "1.5.0",
     "recharts": "3.6.0",
     "resend": "6.7.0",
-    "sharp": "0.34.5",
     "sonner": "2.0.7",
     "stripe": "20.2.0",
     "tailwind-merge": "3.4.0",
@@ -176,12 +177,14 @@
   },
   "devDependencies": {
     "@cucumber/cucumber": "12.5.0",
+    "@next/eslint-plugin-next": "^16.1.3",
     "@playwright/test": "1.57.0",
     "@tailwindcss/postcss": "4.1.18",
     "@testing-library/dom": "10.4.1",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.1",
     "@testing-library/user-event": "14.6.1",
+    "@types/eslint-plugin-jsx-a11y": "^6",
     "@types/mdx": "2.0.13",
     "@types/node": "25.0.9",
     "@types/pg": "8.16.0",
@@ -197,6 +200,10 @@
     "dprint": "0.51.1",
     "eslint": "9.39.2",
     "eslint-config-next": "16.1.3",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "happy-dom": "20.3.1",
     "husky": "9.1.7",
     "jsdom": "27.4.0",
@@ -205,8 +212,10 @@
     "prisma": "7.2.0",
     "server-only": "0.0.1",
     "start-server-and-test": "2.1.3",
+    "supports-color": "^10.2.2",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
+    "typescript-eslint": "^8.53.0",
     "vercel": "50.4.5",
     "vite": "^7.3.1",
     "vitest": "4.0.17",
@@ -214,6 +223,17 @@
     "wait-on": "9.0.3"
   },
   "packageManager": "yarn@4.12.0",
+  "dependenciesMeta": {
+    "@prisma/client": {
+      "unplugged": true
+    },
+    "@prisma/engines": {
+      "unplugged": true
+    },
+    "prisma": {
+      "unplugged": true
+    }
+  },
   "resolutions": {
     "path-to-regexp@6.1.0": "6.3.0",
     "undici@5.28.4": "5.29.0",
