@@ -19,7 +19,7 @@
     "lint": "eslint ."
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20260116.0",
+    "@cloudflare/workers-types": "4.20260117.0",
     "@types/node": "25.0.9",
     "@vitest/runner": "4.0.17",
     "@vitest/snapshot": "4.0.17",
