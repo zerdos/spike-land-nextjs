@@ -1,5 +1,5 @@
 {
-  "backlog_clear_rate": 7,
+  "backlog_clear_rate": 20,
   "aggressive_queue": true,
   "cooldown_until": "2026-01-14T17:49:09.116Z"
 }
