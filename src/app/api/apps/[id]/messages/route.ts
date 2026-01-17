@@ -74,6 +74,13 @@ export async function GET(
             },
           },
         },
+        // Include code version for preview-in-chat feature
+        codeVersion: {
+          select: {
+            id: true,
+            createdAt: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
       take: limit + 1, // Fetch one extra to check if there are more
