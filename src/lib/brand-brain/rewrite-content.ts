@@ -1,4 +1,5 @@
 import { generateStructuredResponse } from "@/lib/ai/gemini-client";
+import logger from "@/lib/logger";
 import { tryCatch } from "@/lib/try-catch";
 import {
   type ContentPlatform,
@@ -228,7 +229,7 @@ export async function rewriteContent(
   );
 
   if (error) {
-    console.error("[BRAND_REWRITE] Failed to generate rewrite:", error);
+    logger.error("[BRAND_REWRITE] Failed to generate rewrite:", { error });
     throw new Error(
       `Failed to rewrite content: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
@@ -238,10 +239,9 @@ export async function rewriteContent(
   const parseResult = geminiRewriteResponseSchema.safeParse(rawResponse);
 
   if (!parseResult.success) {
-    console.error(
-      "[BRAND_REWRITE] Invalid response structure:",
-      parseResult.error.issues,
-    );
+    logger.error("[BRAND_REWRITE] Invalid response structure:", {
+      issues: parseResult.error.issues,
+    });
     throw new Error("Invalid rewrite response structure from AI");
   }
 
@@ -250,8 +250,12 @@ export async function rewriteContent(
   // Ensure content doesn't exceed limit (truncate if needed)
   let rewrittenContent = validatedResponse.rewrittenContent;
   if (rewrittenContent.length > characterLimit) {
-    console.warn(
-      `[BRAND_REWRITE] Content exceeds limit (${rewrittenContent.length}/${characterLimit}), truncating`,
+    logger.warn(
+      `[BRAND_REWRITE] Content exceeds limit, truncating`,
+      {
+        length: rewrittenContent.length,
+        limit: characterLimit,
+      },
     );
     // Try to truncate at a sentence or word boundary
     rewrittenContent = rewrittenContent.slice(0, characterLimit - 3).trimEnd();
