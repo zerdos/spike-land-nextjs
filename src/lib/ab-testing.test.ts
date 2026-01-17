@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { calculateChiSquared, chiSquaredToPValue } from "./ab-testing";
+import {
+  calculateChiSquared,
+  chiSquaredToPValue,
+  calculatePValue,
+  isStatisticallySignificant,
+} from "./ab-testing";
 
 describe("A/B Testing Utilities", () => {
   describe("calculateChiSquared", () => {
@@ -31,10 +36,39 @@ describe("A/B Testing Utilities", () => {
 
   describe("chiSquaredToPValue", () => {
     it("should return the correct p-value for a given chi-squared statistic", () => {
-      expect(chiSquaredToPValue(4.0)).toBe(0.05);
-      expect(chiSquaredToPValue(7.0)).toBe(0.01);
-      expect(chiSquaredToPValue(11.0)).toBe(0.001);
-      expect(chiSquaredToPValue(0.5)).toBe(1.0);
+      // For 1 degree of freedom
+      expect(chiSquaredToPValue(3.841, 1)).toBeCloseTo(0.05, 3);
+      expect(chiSquaredToPValue(6.635, 1)).toBeCloseTo(0.01, 3);
+      expect(chiSquaredToPValue(10.827, 1)).toBeCloseTo(0.001, 3);
+    });
+  });
+
+  describe("calculatePValue", () => {
+    it("should calculate the p-value correctly for a set of variants", () => {
+      const variants = [
+        { visitors: 100, conversions: 10 },
+        { visitors: 100, conversions: 20 },
+      ];
+      // For this data, chi-squared is ~3.92 and df is 1, so p-value is ~0.047
+      expect(calculatePValue(variants)).toBeCloseTo(0.047, 3);
+    });
+  });
+
+  describe("isStatisticallySignificant", () => {
+    it("should return true if the p-value is less than the significance level", () => {
+      const variants = [
+        { visitors: 100, conversions: 10 },
+        { visitors: 100, conversions: 20 },
+      ];
+      expect(isStatisticallySignificant(variants, 0.05)).toBe(true);
+    });
+
+    it("should return false if the p-value is greater than the significance level", () => {
+      const variants = [
+        { visitors: 100, conversions: 10 },
+        { visitors: 100, conversions: 12 },
+      ];
+      expect(isStatisticallySignificant(variants, 0.05)).toBe(false);
     });
   });
 });
