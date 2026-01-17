@@ -268,18 +268,16 @@ describe("POST /api/images/upload", () => {
     const req = createMockRequest(createMockFile());
     await POST(req);
 
-    // Verify user upsert was called with correct data
+    // Verify user upsert was called with correct data (email excluded to avoid unique constraint errors)
     expect(mockPrisma.user.upsert).toHaveBeenCalledWith({
       where: { id: "user-123" },
       update: {
         name: "Test User",
-        email: "test@example.com",
         image: "https://example.com/avatar.jpg",
       },
       create: {
         id: "user-123",
         name: "Test User",
-        email: "test@example.com",
         image: "https://example.com/avatar.jpg",
       },
     });
@@ -393,18 +391,16 @@ describe("POST /api/images/upload", () => {
     const req = createMockRequest(createMockFile());
     await POST(req);
 
-    // Verify updated profile data is synced
+    // Verify updated profile data is synced (email excluded to avoid unique constraint errors)
     expect(mockPrisma.user.upsert).toHaveBeenCalledWith({
       where: { id: "user-123" },
       update: {
         name: "New Display Name",
-        email: "newemail@example.com",
         image: "https://example.com/new-profile.jpg",
       },
       create: {
         id: "user-123",
         name: "New Display Name",
-        email: "newemail@example.com",
         image: "https://example.com/new-profile.jpg",
       },
     });

@@ -213,17 +213,16 @@ async function handleUpload(
   });
 
   // Ensure user exists in database (upsert for JWT-based auth)
+  // Note: email is excluded to avoid unique constraint errors - email is set by auth callback
   await prisma.user.upsert({
     where: { id: session.user.id },
     update: {
       name: session.user.name,
-      email: session.user.email,
       image: session.user.image,
     },
     create: {
       id: session.user.id,
       name: session.user.name,
-      email: session.user.email,
       image: session.user.image,
     },
   });
