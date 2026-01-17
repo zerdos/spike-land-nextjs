@@ -1,6 +1,11 @@
 "use client";
 
 import {
+  AgentProgressIndicator,
+  type AgentStage,
+} from "@/components/my-apps/AgentProgressIndicator";
+import { ChatMessagePreview } from "@/components/my-apps/ChatMessagePreview";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -19,11 +24,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import type { APP_BUILD_STATUSES } from "@/lib/validations/app";
 import { motion } from "framer-motion";
-import { FileText, ImagePlus, Paperclip, X } from "lucide-react";
+import { FileText, ImagePlus, Paperclip, StopCircle, X } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { redirect, useParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
@@ -40,6 +45,11 @@ interface AppMessage {
       originalUrl: string;
     };
   }>;
+  // Version associated with this message (for AGENT messages)
+  codeVersion?: {
+    id: string;
+    createdAt: string;
+  };
 }
 
 interface AppData {
@@ -242,13 +252,73 @@ export default function CodeSpacePage() {
   const [streamingResponse, setStreamingResponse] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [clearingChat, setClearingChat] = useState(false);
+  const [restoringVersionId, setRestoringVersionId] = useState<string | null>(null);
+
+  // Agent progress state
+  const [agentStage, setAgentStage] = useState<AgentStage | null>(null);
+  const [currentTool, setCurrentTool] = useState<string | undefined>();
+  const [agentStartTime, setAgentStartTime] = useState<number | undefined>();
+  const [agentError, setAgentError] = useState<string | undefined>();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+
+  // Viewport dimensions for calculating iframe scale
+  const [viewportSize, setViewportSize] = useState({ width: 1920, height: 1080 });
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   const codespaceUrl = `https://testing.spike.land/live/${codeSpace}/`;
+
+  // Track viewport and container sizes for dynamic iframe scaling
+  useEffect(() => {
+    const updateViewportSize = () => {
+      setViewportSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    const updateContainerSize = () => {
+      if (previewContainerRef.current) {
+        const { clientWidth, clientHeight } = previewContainerRef.current;
+        setContainerSize({ width: clientWidth, height: clientHeight });
+      }
+    };
+
+    // Initial measurements
+    updateViewportSize();
+    updateContainerSize();
+
+    // Listen for resize events
+    window.addEventListener("resize", updateViewportSize);
+    window.addEventListener("resize", updateContainerSize);
+
+    // Use ResizeObserver for container size changes
+    const resizeObserver = new ResizeObserver(updateContainerSize);
+    if (previewContainerRef.current) {
+      resizeObserver.observe(previewContainerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", updateViewportSize);
+      window.removeEventListener("resize", updateContainerSize);
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  // Calculate dynamic scale to fit browser-sized content into container
+  // while maintaining browser aspect ratio
+  const iframeScale = useMemo(() => {
+    if (containerSize.width === 0 || containerSize.height === 0) {
+      return 0.5; // fallback
+    }
+    // Calculate the scale needed to fit the viewport-sized iframe into the container
+    const scaleX = containerSize.width / viewportSize.width;
+    const scaleY = containerSize.height / viewportSize.height;
+    // Use the smaller scale to ensure it fits completely
+    return Math.min(scaleX, scaleY);
+  }, [containerSize.width, containerSize.height, viewportSize.width, viewportSize.height]);
 
   // Validate codespace name and check for backward compatibility
   useEffect(() => {
@@ -393,10 +463,24 @@ export default function CodeSpacePage() {
     };
   }, [mode, app?.id]);
 
-  // Scroll to bottom when messages change
+  // Debounced scroll to bottom for performance
+  const scrollToBottom = useMemo(
+    () => {
+      let timeout: NodeJS.Timeout | null = null;
+      return () => {
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      };
+    },
+    [],
+  );
+
+  // Scroll to bottom when messages change (debounced)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streamingResponse]);
+    scrollToBottom();
+  }, [messages, streamingResponse, scrollToBottom]);
 
   // File handling for prompt mode
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -481,7 +565,132 @@ export default function CodeSpacePage() {
     }
   };
 
+  // Retry logic for fetching messages with exponential backoff
+  const fetchMessagesWithRetry = useCallback(
+    async (appId: string, retries = 3): Promise<AppMessage[]> => {
+      for (let i = 0; i < retries; i++) {
+        // Only delay between retries, not before first attempt
+        if (i > 0) {
+          await new Promise((r) => setTimeout(r, 500 * Math.pow(2, i - 1)));
+        }
+        try {
+          const response = await fetch(`/api/apps/${appId}/messages`);
+          if (response.ok) {
+            const data = await response.json();
+            return (data.messages || []).reverse();
+          }
+        } catch {
+          console.error(`Retry ${i + 1}/${retries} failed for messages fetch`);
+        }
+      }
+      return [];
+    },
+    [],
+  );
+
+  // Shared helper to process a message with the agent (streaming)
+  const processMessageWithAgent = useCallback(
+    async (appId: string, content: string, imageIds: string[] = []) => {
+      setIsStreaming(true);
+      setStreamingResponse("");
+
+      // Initialize agent progress tracking
+      setAgentStage("connecting");
+      setAgentStartTime(Date.now());
+      setCurrentTool(undefined);
+      setAgentError(undefined);
+
+      // Create new AbortController for this request
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
+
+      try {
+        const response = await fetch(`/api/apps/${appId}/agent/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: content || "[Image attached]",
+            imageIds,
+          }),
+          signal,
+        });
+
+        if (!response.ok) throw new Error("Failed to send message to agent");
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (!reader) throw new Error("No reader available");
+
+        let buffer = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
+
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              try {
+                const data = JSON.parse(line.substring(6));
+                // Handle different event types
+                if (data.type === "chunk") {
+                  setStreamingResponse((prev) => prev + data.content);
+                } else if (data.type === "stage") {
+                  // Update agent stage
+                  setAgentStage(data.stage as AgentStage);
+                  if (data.tool) {
+                    setCurrentTool(data.tool);
+                  }
+                } else if (data.type === "error") {
+                  setAgentStage("error");
+                  setAgentError(data.content);
+                }
+              } catch {
+                // Skip invalid JSON
+              }
+            }
+          }
+        }
+
+        // Fetch final messages and update preview
+        await fetchMessages();
+        setIframeKey((prev) => prev + 1);
+        setHasContent(true);
+      } catch (e) {
+        // Handle abort gracefully
+        if (e instanceof Error && e.name === "AbortError") {
+          console.log("Agent request cancelled by user");
+          setAgentStage(null);
+          setAgentError(undefined);
+        } else {
+          console.error("Failed to process message with agent", e);
+          setAgentStage("error");
+          setAgentError(e instanceof Error ? e.message : "Unknown error");
+        }
+      } finally {
+        abortControllerRef.current = null;
+        setIsStreaming(false);
+        setStreamingResponse("");
+        // Reset agent progress after a short delay to show completion
+        const AGENT_COMPLETION_DISPLAY_MS = 1500;
+        setTimeout(() => {
+          setAgentStage(null);
+          setAgentStartTime(undefined);
+          setCurrentTool(undefined);
+          setAgentError(undefined);
+        }, AGENT_COMPLETION_DISPLAY_MS);
+      }
+    },
+    [fetchMessages],
+  );
+
   // Create app from prompt (prompt mode)
+
   const handleCreateApp = async () => {
     if ((!newMessage.trim() && pendingFiles.length === 0) || sendingMessage) {
       return;
@@ -522,12 +731,15 @@ export default function CodeSpacePage() {
       setPendingFiles([]);
       setMode("workspace");
 
-      // Fetch messages for the new app
-      const messagesResponse = await fetch(`/api/apps/${newApp.id}/messages`);
-      if (messagesResponse.ok) {
-        const data = await messagesResponse.json();
-        setMessages((data.messages || []).reverse());
-      }
+      // Fetch messages for the new app with retry logic
+      const fetchedMessages = await fetchMessagesWithRetry(newApp.id);
+      setMessages(fetchedMessages);
+
+      // Trigger agent to process the initial message
+      // NOTE: The user's message is already saved to DB by POST /api/apps
+      // Now we call the agent to generate a response
+      // Note: Images are currently only supported in workspace mode - prompt mode uses files only
+      await processMessageWithAgent(newApp.id, content || "[Files attached]");
     } catch (e) {
       console.error("Failed to create app", e);
       toast.error("Failed to create app. Please try again.");
@@ -547,8 +759,6 @@ export default function CodeSpacePage() {
     const content = newMessage.trim();
     setNewMessage("");
     setSendingMessage(true);
-    setIsStreaming(true);
-    setStreamingResponse("");
 
     try {
       const imageIds = await uploadImages();
@@ -565,56 +775,14 @@ export default function CodeSpacePage() {
         },
       ]);
 
-      const response = await fetch(`/api/apps/${app.id}/agent/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: content || "[Image attached]",
-          imageIds,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to send message");
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (!reader) throw new Error("No reader available");
-
-      let buffer = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        buffer += chunk;
-
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const data = JSON.parse(line.substring(6));
-              if (data.type === "chunk") {
-                setStreamingResponse((prev) => prev + data.content);
-              }
-            } catch {
-              // Skip invalid JSON
-            }
-          }
-        }
-      }
-
-      await fetchMessages();
-      setIframeKey((prev) => prev + 1);
-      setHasContent(true);
+      // Use shared helper for agent processing
+      await processMessageWithAgent(app.id, content, imageIds);
     } catch (e) {
       console.error("Failed to send message", e);
+      setAgentStage("error");
+      setAgentError(e instanceof Error ? e.message : "Unknown error");
     } finally {
       setSendingMessage(false);
-      setIsStreaming(false);
-      setStreamingResponse("");
     }
   };
 
@@ -647,6 +815,40 @@ export default function CodeSpacePage() {
       }
     }
   };
+
+  // Cancel agent processing
+  const handleCancelAgent = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      toast.info("Agent processing cancelled");
+    }
+  };
+
+  // Restore a code version
+  const handleRestoreVersion = useCallback(async (versionId: string) => {
+    if (!app?.id || restoringVersionId) return;
+
+    setRestoringVersionId(versionId);
+    try {
+      const response = await fetch(
+        `/api/apps/${app.id}/versions/${versionId}/restore`,
+        { method: "POST" },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to restore version");
+      }
+
+      toast.success("Version restored successfully");
+      setIframeKey((prev) => prev + 1);
+      await fetchMessages();
+    } catch (e) {
+      console.error("Failed to restore version", e);
+      toast.error("Failed to restore version");
+    } finally {
+      setRestoringVersionId(null);
+    }
+  }, [app?.id, restoringVersionId, fetchMessages]);
 
   // Loading state
   if (mode === "loading") {
@@ -918,6 +1120,15 @@ export default function CodeSpacePage() {
                                 ))}
                               </div>
                             )}
+                            {/* Version preview for agent messages */}
+                            {message.role === "AGENT" && message.codeVersion && (
+                              <ChatMessagePreview
+                                codespaceUrl={codespaceUrl}
+                                timestamp={new Date(message.codeVersion.createdAt)}
+                                onRestore={() => handleRestoreVersion(message.codeVersion!.id)}
+                                isRestoring={restoringVersionId === message.codeVersion.id}
+                              />
+                            )}
                             <p
                               className={`mt-1.5 text-xs ${
                                 message.role === "USER"
@@ -939,21 +1150,43 @@ export default function CodeSpacePage() {
                     </div>
                   )}
                 {isStreaming && streamingResponse && (
-                  <div className="flex justify-start mt-6">
+                  <div className="flex justify-start mt-2">
                     <div className="max-w-[85%] rounded-2xl px-5 py-3 bg-white/10 text-zinc-100 backdrop-blur-md border border-white/5">
                       <div className="leading-relaxed">
                         <MarkdownContent content={streamingResponse} />
                         <span className="inline-block w-2 h-4 ml-1 bg-teal-500 animate-pulse rounded-full align-middle" />
                       </div>
-                      <p className="mt-1.5 text-xs text-zinc-500">
-                        Thinking...
-                      </p>
                     </div>
                   </div>
                 )}
                 <div ref={messagesEndRef} className="h-4" />
               </div>
             </CardContent>
+
+            {/* Sticky Agent Progress Indicator - between scroll and input */}
+            {isStreaming && (
+              <div className="mx-4 mb-2">
+                <AgentProgressIndicator
+                  stage={agentStage}
+                  currentTool={currentTool}
+                  errorMessage={agentError}
+                  isVisible={isStreaming}
+                  startTime={agentStartTime}
+                  className="shadow-lg"
+                />
+                <div className="flex justify-center mt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancelAgent}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-full px-4 h-8 text-sm gap-2"
+                  >
+                    <StopCircle className="h-4 w-4" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Message Input */}
             <div className="border-t border-white/5 bg-white/[0.02] p-4">
@@ -1130,12 +1363,12 @@ export default function CodeSpacePage() {
           </Card>
 
           {/* Preview Panel */}
-          <div className="flex flex-col gap-3 h-full">
+          <div className="flex flex-col gap-3">
             <motion.div
               layoutId={`app-card-${codeSpace}`}
-              className="flex-1 h-full min-h-[500px]"
+              className="flex-1 min-h-[500px]"
             >
-              <Card className="flex flex-col h-full overflow-hidden bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl ring-1 ring-white/5 relative group">
+              <Card className="flex flex-col overflow-hidden bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl ring-1 ring-white/5 relative group">
                 <div className="absolute -inset-[1px] bg-gradient-to-br from-white/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                 <BrowserToolbar
@@ -1143,17 +1376,23 @@ export default function CodeSpacePage() {
                   onRefresh={() => setIframeKey((prev) => prev + 1)}
                 />
 
-                <CardContent className="flex-1 overflow-hidden p-0 md:p-0 relative bg-zinc-950/50 z-10 rounded-b-3xl">
+                <CardContent
+                  ref={previewContainerRef}
+                  className="flex-1 overflow-hidden p-0 md:p-0 relative bg-zinc-950/50 z-10 rounded-b-3xl"
+                  style={{
+                    aspectRatio: `${viewportSize.width} / ${viewportSize.height}`,
+                  }}
+                >
                   {hasContent
                     ? (
                       <iframe
                         key={iframeKey}
                         src={codespaceUrl}
-                        className="border-0 w-full h-full rounded-b-3xl"
+                        className="border-0 rounded-b-3xl"
                         style={{
-                          width: "200%",
-                          height: "200%",
-                          transform: "scale(0.5)",
+                          width: `${viewportSize.width}px`,
+                          height: `${viewportSize.height}px`,
+                          transform: `scale(${iframeScale})`,
                           transformOrigin: "0 0",
                         }}
                         title={`Preview of ${codeSpace}`}

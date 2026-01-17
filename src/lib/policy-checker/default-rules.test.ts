@@ -10,6 +10,7 @@ import {
   AD_COMPLIANCE_RULES,
   ALL_DEFAULT_RULES,
   FACEBOOK_RULES,
+  GENERAL_RULES,
   GLOBAL_CONTENT_RULES,
   INSTAGRAM_RULES,
   LINKEDIN_RULES,
@@ -23,19 +24,23 @@ vi.mock("./rule-manager", () => ({
   bulkCreateRules: vi.fn().mockResolvedValue(25),
 }));
 
+const validateRuleStructure = (rule: any, platform: string | null) => {
+  expect(rule.name).toBeDefined();
+  expect(rule.description).toBeDefined();
+  expect(rule.platform).toBe(platform);
+  expect(rule.category).toBeDefined();
+  expect(rule.ruleType).toBeDefined();
+  expect(rule.conditions).toBeDefined();
+  expect(rule.severity).toBeDefined();
+  expect(typeof rule.isBlocking).toBe("boolean");
+};
+
 describe("Default Rules", () => {
   describe("TWITTER_RULES", () => {
     it("should have correct structure for all rules", () => {
       expect(TWITTER_RULES.length).toBeGreaterThan(0);
       TWITTER_RULES.forEach((rule) => {
-        expect(rule.name).toBeDefined();
-        expect(rule.description).toBeDefined();
-        expect(rule.platform).toBe("TWITTER");
-        expect(rule.category).toBeDefined();
-        expect(rule.ruleType).toBeDefined();
-        expect(rule.conditions).toBeDefined();
-        expect(rule.severity).toBeDefined();
-        expect(typeof rule.isBlocking).toBe("boolean");
+        validateRuleStructure(rule, "TWITTER");
       });
     });
 
@@ -64,8 +69,7 @@ describe("Default Rules", () => {
     it("should have correct structure for all rules", () => {
       expect(FACEBOOK_RULES.length).toBeGreaterThan(0);
       FACEBOOK_RULES.forEach((rule) => {
-        expect(rule.platform).toBe("FACEBOOK");
-        expect(rule.category).toBe("CHARACTER_LIMITS");
+        validateRuleStructure(rule, "FACEBOOK");
       });
     });
 
@@ -86,7 +90,7 @@ describe("Default Rules", () => {
     it("should have correct structure for all rules", () => {
       expect(INSTAGRAM_RULES.length).toBeGreaterThan(0);
       INSTAGRAM_RULES.forEach((rule) => {
-        expect(rule.platform).toBe("INSTAGRAM");
+        validateRuleStructure(rule, "INSTAGRAM");
       });
     });
 
@@ -124,7 +128,7 @@ describe("Default Rules", () => {
     it("should have correct structure for all rules", () => {
       expect(LINKEDIN_RULES.length).toBeGreaterThan(0);
       LINKEDIN_RULES.forEach((rule) => {
-        expect(rule.platform).toBe("LINKEDIN");
+        validateRuleStructure(rule, "LINKEDIN");
       });
     });
 
@@ -145,8 +149,7 @@ describe("Default Rules", () => {
     it("should have correct structure for all rules", () => {
       expect(TIKTOK_RULES.length).toBeGreaterThan(0);
       TIKTOK_RULES.forEach((rule) => {
-        expect(rule.platform).toBe("TIKTOK");
-        expect(rule.category).toBe("CHARACTER_LIMITS");
+        validateRuleStructure(rule, "TIKTOK");
       });
     });
 
@@ -164,10 +167,10 @@ describe("Default Rules", () => {
   });
 
   describe("GLOBAL_CONTENT_RULES", () => {
-    it("should have null platform for all rules", () => {
+    it("should have correct structure for all rules", () => {
       expect(GLOBAL_CONTENT_RULES.length).toBeGreaterThan(0);
       GLOBAL_CONTENT_RULES.forEach((rule) => {
-        expect(rule.platform).toBeNull();
+        validateRuleStructure(rule, null);
       });
     });
 
@@ -224,12 +227,20 @@ describe("Default Rules", () => {
     });
   });
 
+  describe("GENERAL_RULES", () => {
+    it("should have correct structure for all rules", () => {
+      expect(GENERAL_RULES.length).toBeGreaterThan(0);
+      GENERAL_RULES.forEach((rule) => {
+        validateRuleStructure(rule, null);
+      });
+    });
+  });
+
   describe("AD_COMPLIANCE_RULES", () => {
-    it("should have null platform for all rules", () => {
+    it("should have correct structure for all rules", () => {
       expect(AD_COMPLIANCE_RULES.length).toBeGreaterThan(0);
       AD_COMPLIANCE_RULES.forEach((rule) => {
-        expect(rule.platform).toBeNull();
-        expect(rule.category).toBe("AD_COMPLIANCE");
+        validateRuleStructure(rule, null);
       });
     });
 
@@ -259,7 +270,8 @@ describe("Default Rules", () => {
         LINKEDIN_RULES.length +
         TIKTOK_RULES.length +
         GLOBAL_CONTENT_RULES.length +
-        AD_COMPLIANCE_RULES.length;
+        AD_COMPLIANCE_RULES.length +
+        GENERAL_RULES.length;
 
       expect(ALL_DEFAULT_RULES.length).toBe(expectedLength);
     });

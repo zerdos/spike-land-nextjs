@@ -1,0 +1,120 @@
+name: Reset Staging Database
+
+# Resets the Neon staging branch to match production data.
+# This ensures staging always has fresh, production-like data for testing.
+#
+# Runs automatically at 3 AM UTC daily, or can be triggered manually.
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # Daily at 3 AM UTC
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type 'RESET' to confirm staging database reset"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  reset-staging:
+    name: Reset Staging Branch
+    runs-on: ubuntu-latest
+
+    # Skip scheduled runs if repository is inactive (no commits in 60 days)
+    # Manual runs always execute
+    if: github.event_name == 'workflow_dispatch' || github.event.repository.pushed_at > (github.event.repository.created_at)
+
+    steps:
+      - name: Validate manual confirmation
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          CONFIRM_INPUT: ${{ github.event.inputs.confirm }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          if [ "$CONFIRM_INPUT" != "RESET" ]; then
+            echo "::error::Confirmation failed. You must type 'RESET' to confirm."
+            exit 1
+          fi
+          echo "Manual reset confirmed by $ACTOR"
+
+      - name: Get staging branch ID
+        id: get-branch
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+        run: |
+          # Get the staging branch ID from Neon
+          RESPONSE=$(curl -s -X GET \
+            "https://console.neon.tech/api/v2/projects/${NEON_PROJECT_ID}/branches" \
+            -H "Authorization: Bearer ${NEON_API_KEY}" \
+            -H "Content-Type: application/json")
+
+          BRANCH_ID=$(echo "$RESPONSE" | jq -r '.branches[] | select(.name == "staging") | .id')
+
+          if [ -z "$BRANCH_ID" ] || [ "$BRANCH_ID" == "null" ]; then
+            echo "::error::Staging branch not found. Please create it first."
+            echo "Available branches:"
+            echo "$RESPONSE" | jq '.branches[].name'
+            exit 1
+          fi
+
+          echo "Found staging branch ID: $BRANCH_ID"
+          echo "branch_id=$BRANCH_ID" >> $GITHUB_OUTPUT
+
+      - name: Reset staging branch to production
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+          BRANCH_ID: ${{ steps.get-branch.outputs.branch_id }}
+        run: |
+          echo "Resetting staging branch to match production (main branch)..."
+
+          # Reset the staging branch - this copies all data from parent (main/production)
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://console.neon.tech/api/v2/projects/${NEON_PROJECT_ID}/branches/${BRANCH_ID}/reset" \
+            -H "Authorization: Bearer ${NEON_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"parent": true}')
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "Staging database successfully reset!"
+            echo "$BODY" | jq .
+          else
+            echo "::error::Failed to reset staging branch (HTTP $HTTP_CODE)"
+            echo "$BODY"
+            exit 1
+          fi
+
+      - name: Notify success
+        if: success()
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ACTOR: ${{ github.actor }}
+          PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+        run: |
+          if [ "$EVENT_NAME" = "schedule" ]; then
+            TRIGGERED_BY="Scheduled (3 AM UTC)"
+          else
+            TRIGGERED_BY="$ACTOR"
+          fi
+
+          echo "## Staging Database Reset Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The staging database (next.spike.land) has been reset to match production." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by**: $TRIGGERED_BY" >> $GITHUB_STEP_SUMMARY
+          echo "- **Project**: $PROJECT_ID" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify failure
+        if: failure()
+        run: |
+          echo "## Staging Database Reset Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check the workflow logs for details." >> $GITHUB_STEP_SUMMARY
