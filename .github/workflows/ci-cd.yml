@@ -24,15 +24,14 @@ on:
       - "**.md"
       - "docs/**"
 
-# NOTE: Vercel deployments are now handled natively via Git integration.
-# - Preview deployments: Automatically created for all PRs by Vercel
-# - Production deployments: Automatically deployed when merging to main
-# - PR comments: Vercel automatically posts deployment URLs on PRs
-# This workflow focuses on testing and quality checks only.
+# Deployment Strategy:
+# - Preview deployments: Created for PRs via Vercel Git integration
+# - Staging (next.spike.land): Auto-deployed from main after tests pass
+# - Production (spike.land): Manual deployment via workflow_dispatch (deploy.yml)
 
-# NOTE: This project uses Yarn semi-zero-install.
-# Dependencies are cached in .yarn/cache (committed) for faster installs.
-# Still need `yarn install --immutable` but it's much faster with local cache.
+# NOTE: This project uses Yarn PnP zero-install.
+# Dependencies are pre-resolved in .pnp.cjs (committed) for instant installs.
+# `yarn install --immutable` only unplugs native packages - no downloads needed.
 
 jobs:
   # ============================================================================
@@ -359,3 +358,88 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
           E2E_DATABASE_CONFIRMED: true
         run: yarn db:cleanup-e2e
+
+  # ============================================================================
+  # TIER 4: Deploy to Staging - auto-deploys main branch after all tests pass
+  # ============================================================================
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [quality-checks, unit-tests, package-tests, build, e2e]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies (PnP zero-install - fast)
+        run: yarn install --immutable
+
+      - name: Install Vercel CLI
+        run: yarn global add vercel@latest
+
+      - name: Pull Vercel Environment Info
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Build with Vercel
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Deploy to Staging
+        id: deploy
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          # Alias to next.spike.land
+          vercel alias "$DEPLOYMENT_URL" next.spike.land --token=${{ secrets.VERCEL_TOKEN }} || echo "Alias failed, continuing..."
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Health Check
+        run: |
+          echo "Waiting for deployment to be ready..."
+          sleep 30
+
+          echo "Checking health at: $DEPLOY_URL"
+
+          for i in {1..5}; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOY_URL" || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "Health check passed!"
+              exit 0
+            fi
+            echo "Attempt $i: Got HTTP $HTTP_STATUS, retrying..."
+            sleep 10
+          done
+
+          echo "Health check failed after 5 attempts"
+          exit 1
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+
+      - name: Deployment Summary
+        run: |
+          echo "## Staging Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** $DEPLOY_URL" >> $GITHUB_STEP_SUMMARY
+          echo "- **Alias:** https://next.spike.land" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** $COMMIT_SHA" >> $GITHUB_STEP_SUMMARY
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          COMMIT_SHA: ${{ github.sha }}

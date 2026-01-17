@@ -11,7 +11,7 @@
 !.yarn/releases
 !.yarn/versions
 
-# Ignore PnP files (not using PnP mode due to Prisma incompatibility)
+# Ignore PnP files (using node-modules linker due to workflow package incompatibility)
 .pnp.cjs
 .pnp.loader.mjs
 .yarn/unplugged
