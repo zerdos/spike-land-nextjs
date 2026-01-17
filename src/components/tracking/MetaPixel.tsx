@@ -103,7 +103,7 @@ export function MetaPixel({ nonce }: MetaPixelProps) {
         }}
       />
       <noscript>
-        {/* eslint-disable-next-line @next/next/no-img-element -- Tracking pixel must use img, not Next Image */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- The `<img>` tag is required for the Meta Pixel's noscript fallback, as Next.js's `<Image>` component does not work without JavaScript. */}
         <img
           height="1"
           width="1"
