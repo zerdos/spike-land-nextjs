@@ -440,6 +440,69 @@ describe("GoogleAdsClient", () => {
       const url = mockFetch.mock.calls[0]![0];
       expect(url).toContain("/customers/123456789/");
     });
+
+    it("should use customer currency for budget", async () => {
+      const client = new GoogleAdsClient({ accessToken: "test_token" });
+
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockImplementation(async (url, options) => {
+          const body = JSON.parse(options.body || "{}");
+          const query = body.query || "";
+
+          // Check if it's the customer query (currency)
+          if (query.includes("FROM customer")) {
+            return {
+              ok: true,
+              json: () =>
+                Promise.resolve({
+                  results: [
+                    {
+                      customer: {
+                        resourceName: "customers/123/customers/123",
+                        id: "123",
+                        descriptiveName: "Test Account",
+                        currencyCode: "EUR",
+                        timeZone: "Europe/Paris",
+                      },
+                    },
+                  ],
+                }),
+            };
+          }
+
+          // Otherwise assume it's the campaign query
+          return {
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                results: [
+                  {
+                    campaign: {
+                      resourceName: "customers/123/campaigns/456",
+                      id: "456",
+                      name: "Test Campaign",
+                      status: "ENABLED",
+                      advertisingChannelType: "SEARCH",
+                      startDate: "20250101",
+                      endDate: "20251231",
+                      campaignBudget: "customers/123/campaignBudgets/789",
+                    },
+                    campaignBudget: {
+                      amountMicros: "100000000",
+                    },
+                  },
+                ],
+              }),
+          };
+        }),
+      );
+
+      const campaigns = await client.listCampaigns("123-456-789");
+
+      expect(campaigns).toHaveLength(1);
+      expect(campaigns[0]!.budgetCurrency).toBe("EUR");
+    });
   });
 
   describe("getCampaign", () => {
