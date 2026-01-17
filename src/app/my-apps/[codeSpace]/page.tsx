@@ -191,6 +191,17 @@ export default function CodeSpacePage() {
 
   const codespaceUrl = `https://testing.spike.land/live/${codeSpace}/`;
 
+  // Memoize version number calculation to avoid O(n²) complexity in render loop
+  // Maps messageId -> versionNumber for messages with code versions
+  const versionMap = useMemo(() => {
+    const agentMessagesWithCode = messages.filter(
+      (m) => m.role === "AGENT" && m.codeVersion,
+    );
+    return new Map(agentMessagesWithCode.map((m, i) => [m.id, i + 1]));
+  }, [messages]);
+
+  const totalVersions = versionMap.size;
+
   // Validate codespace name and check for backward compatibility
   useEffect(() => {
     // Check if this looks like a cuid (backward compatibility)
@@ -1054,15 +1065,8 @@ export default function CodeSpacePage() {
                             )}
                             {/* Inline preview for agent messages with code versions */}
                             {message.role === "AGENT" && message.codeVersion && (() => {
-                              // Calculate version number (count agent messages with codeVersion up to this one)
-                              const versionNumber = messages
-                                .filter((m) => m.role === "AGENT" && m.codeVersion)
-                                .findIndex((m) =>
-                                  m.id === message.id
-                                ) + 1;
-                              const totalVersions = messages.filter(
-                                (m) => m.role === "AGENT" && m.codeVersion,
-                              ).length;
+                              // Use memoized versionMap for O(1) lookup instead of O(n²) inline calculation
+                              const versionNumber = versionMap.get(message.id) ?? 1;
                               const isLatest = versionNumber === totalVersions;
 
                               // Phase 5: Use versioned URLs for historical versions

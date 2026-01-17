@@ -44,7 +44,7 @@ const STUCK_DEAD_HOURS = 2; // Mark as DEAD after 2 hours
 
 // Default fallback values (used only if config is missing)
 const DEFAULT_WIP_LIMIT = 15;
-const DEFAULT_BACKLOG_CLEAR_RATE = 5;
+const DEFAULT_BACKLOG_CLEAR_RATE = 20;
 
 // ============================================================================
 // Main Iteration Runner
