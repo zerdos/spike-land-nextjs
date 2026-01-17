@@ -15,6 +15,7 @@ interface PreviewModalProps {
 /**
  * Full-size modal viewer for app previews.
  * Features browser chrome, refresh, open in new tab, and Escape to close.
+ * Includes focus trap for accessibility.
  */
 export function PreviewModal({
   open,
@@ -24,6 +25,15 @@ export function PreviewModal({
 }: PreviewModalProps) {
   const [iframeKey, setIframeKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<Element | null>(null);
+
+  // Reset loading state when modal opens or URL changes
+  useEffect(() => {
+    if (open) {
+      setIsLoading(true);
+    }
+  }, [open, codespaceUrl]);
 
   // Handle Escape key to close
   useEffect(() => {
@@ -37,15 +47,53 @@ export function PreviewModal({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [open, onClose]);
 
-  // Prevent body scroll when modal is open
+  // Prevent body scroll when modal is open - store previous value to avoid conflicts
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  // Focus trap implementation
+  useEffect(() => {
+    if (!open || !modalRef.current) return;
+
+    // Store current active element to restore focus on close
+    previousActiveElement.current = document.activeElement;
+
+    // Focus the modal container
+    modalRef.current.focus();
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab" || !modalRef.current) return;
+
+      const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (!firstElement || !lastElement) return;
+
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement.focus();
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleTabKey);
+    return () => {
+      document.removeEventListener("keydown", handleTabKey);
+      // Restore focus to previous element on close
+      if (previousActiveElement.current instanceof HTMLElement) {
+        previousActiveElement.current.focus();
+      }
     };
   }, [open]);
 
@@ -71,6 +119,7 @@ export function PreviewModal({
     <AnimatePresence>
       {open && (
         <motion.div
+          ref={modalRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -80,6 +129,7 @@ export function PreviewModal({
           role="dialog"
           aria-modal="true"
           aria-label="App preview"
+          tabIndex={-1}
         >
           {/* Backdrop blur */}
           <motion.div
