@@ -83,6 +83,9 @@ model User {
   policyChecks             PolicyCheck[]
   policyViolationOverrides PolicyViolation[]
 
+  // Identity Graph relation
+  identity                 Identity?
+
   @@map("users")
 }
 
@@ -3477,4 +3480,42 @@ enum AutopilotExecutionStatus {
   SKIPPED
   ROLLED_BACK
   PAUSED
+}
+
+// =============================================================================
+// Identity Graph Models
+// =============================================================================
+
+// Represents a unique identity, linking various identifiers
+model Identity {
+  id          String       @id @default(cuid())
+  userId      String?      @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  user        User?        @relation(fields: [userId], references: [id])
+  identifiers Identifier[]
+
+  @@index([userId])
+  @@map("identities")
+}
+
+// Stores individual identifiers for an identity
+model Identifier {
+  id         String         @id @default(cuid())
+  identityId String
+  type       IdentifierType
+  value      String
+  createdAt  DateTime       @default(now())
+  identity   Identity       @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@unique([type, value])
+  @@index([identityId])
+  @@map("identifiers")
+}
+
+// Enum for different identifier types
+enum IdentifierType {
+  VISITOR_ID
+  USER_ID
+  EMAIL
 }
