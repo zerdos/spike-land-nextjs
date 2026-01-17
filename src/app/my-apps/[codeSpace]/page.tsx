@@ -25,7 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import type { APP_BUILD_STATUSES } from "@/lib/validations/app";
 import { motion } from "framer-motion";
-import { FileText, ImagePlus, Paperclip, StopCircle, X } from "lucide-react";
+import { FileText, ImagePlus, Paperclip, StopCircle, Trash2, X } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { redirect, useParams } from "next/navigation";
@@ -166,6 +166,7 @@ export default function CodeSpacePage() {
   const [streamingResponse, setStreamingResponse] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [clearingChat, setClearingChat] = useState(false);
+  const [movingToBin, setMovingToBin] = useState(false);
 
   // Preview modal state
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
@@ -693,6 +694,31 @@ export default function CodeSpacePage() {
     }
   };
 
+  // Move to bin
+  const handleMoveToBin = async () => {
+    if (movingToBin || !app?.id) return;
+
+    setMovingToBin(true);
+    try {
+      const appIdentifier = app.codespaceId || codeSpace;
+      const response = await fetch(`/api/apps/${appIdentifier}/bin`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to move to bin");
+      }
+
+      toast.success(`"${app.name}" moved to bin`);
+      router.push("/my-apps");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to move to bin");
+    } finally {
+      setMovingToBin(false);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -800,6 +826,40 @@ export default function CodeSpacePage() {
           </div>
           {mode === "workspace" && (
             <div className="flex gap-3">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    className="rounded-full bg-white/5 border-white/10 hover:bg-red-500/20 hover:border-red-500/30 text-zinc-400 hover:text-red-300 transition-all backdrop-blur-sm"
+                    variant="outline"
+                    disabled={movingToBin}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {movingToBin ? "Moving..." : "Move to Bin"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-zinc-900 border-white/10">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-zinc-100">
+                      Move &ldquo;{app?.name}&rdquo; to bin?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="text-zinc-400">
+                      This app will be moved to your bin. You can restore it within 30 days before
+                      it&apos;s permanently deleted.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="bg-white/5 border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white">
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleMoveToBin}
+                      className="bg-red-600 hover:bg-red-500 text-white"
+                    >
+                      Move to Bin
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <Link href={codespaceUrl} target="_blank">
                 <Button
                   className="rounded-full bg-white/5 border-white/10 hover:bg-white/10 text-white hover:text-white transition-all shadow-lg hover:shadow-xl backdrop-blur-sm"
@@ -1005,11 +1065,15 @@ export default function CodeSpacePage() {
                               ).length;
                               const isLatest = versionNumber === totalVersions;
 
-                              // TODO: Phase 5 - Once backend versioning is implemented, use versioned URLs:
-                              // - Latest: testing.spike.land/live/{codeSpace}/
-                              // - Version N: testing.spike.land/live/{codeSpace}.{N}/
-                              // For now, all versions show the latest URL until backend supports versioning
-                              const versionedUrl = codespaceUrl;
+                              // Phase 5: Use versioned URLs for historical versions
+                              // - Latest: testing.spike.land/live/{codeSpace}/embed
+                              // - Version N: testing.spike.land/live/{codeSpace}/version/{N}/embed
+                              const versionedUrl = isLatest
+                                ? codespaceUrl
+                                : codespaceUrl.replace(
+                                  /\/embed\/?$/,
+                                  `/version/${versionNumber}/embed`,
+                                );
 
                               return (
                                 <MiniPreview
