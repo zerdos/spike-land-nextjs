@@ -1,5 +1,10 @@
 // src/lib/ab-testing.ts
 
+export interface Variant {
+  visitors: number;
+  conversions: number;
+}
+
 /**
  * Calculates the chi-squared statistic for an A/B test.
  *
@@ -7,7 +12,7 @@
  * @returns The chi-squared statistic.
  */
 export function calculateChiSquared(
-  variants: { visitors: number; conversions: number; }[],
+  variants: Variant[],
 ) {
   const totalVisitors = variants.reduce((sum, v) => sum + v.visitors, 0);
   const totalConversions = variants.reduce((sum, v) => sum + v.conversions, 0);

@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMounted } from "@/hooks/useMounted";
-import type { Json } from "next-auth/core/types";
+import type { Prisma } from "@prisma/client";
 import { useCallback, useEffect, useState } from "react";
 
 type ErrorEnvironment = "FRONTEND" | "BACKEND";
@@ -40,8 +40,8 @@ interface ErrorLog {
   errorType: string | null;
   errorCode: string | null;
   // Metadata can be any JSON-like object.
-  // Using the `Json` type provides better type safety than `any`.
-  metadata: Json;
+  // Using Prisma's JsonValue type provides better type safety than `any`.
+  metadata: Prisma.JsonValue;
 }
 
 interface Pagination {

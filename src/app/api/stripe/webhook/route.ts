@@ -1,8 +1,8 @@
-import prisma, { type Prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe/client";
 import { attributeConversion } from "@/lib/tracking/attribution";
 import { tryCatch, tryCatchSync } from "@/lib/try-catch";
-import type { SubscriptionTier } from "@prisma/client";
+import type { Prisma, SubscriptionTier } from "@prisma/client";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";

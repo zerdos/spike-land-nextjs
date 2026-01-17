@@ -23,9 +23,9 @@ type SharpModule = (
   resize: (
     width: number,
     height: number,
-    options: { fit: "inside"; withoutEnlargement: boolean },
+    options: { fit: "inside"; withoutEnlargement: boolean; },
   ) => {
-    webp: (options: { quality: number }) => {
+    webp: (options: { quality: number; }) => {
       toBuffer: () => Promise<Buffer>;
     };
   };

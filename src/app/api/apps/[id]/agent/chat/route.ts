@@ -24,6 +24,57 @@ interface ContentPart {
   name?: string;
 }
 
+// Timeout for external fetches (5 seconds)
+const FETCH_TIMEOUT_MS = 5000;
+
+// Helper to emit stage events to stream
+function emitStage(
+  controller: ReadableStreamDefaultController,
+  stage: string,
+  tool?: string,
+) {
+  const data = JSON.stringify({
+    type: "stage",
+    stage,
+    ...(tool && { tool }),
+  });
+  controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
+}
+
+// Custom error for fetch timeouts
+class FetchTimeoutError extends Error {
+  constructor(url: string, timeoutMs: number) {
+    super(`Fetch to ${url} timed out after ${timeoutMs}ms`);
+    this.name = "FetchTimeoutError";
+  }
+}
+
+// Fetch with timeout
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs: number = FETCH_TIMEOUT_MS,
+): Promise<Response> {
+  const abortController = new AbortController();
+  const timeout = setTimeout(() => abortController.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: abortController.signal,
+    });
+    return response;
+  } catch (error) {
+    // Distinguish timeout from other errors
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new FetchTimeoutError(url, timeoutMs);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string; }>; },
@@ -101,11 +152,13 @@ export async function POST(
   const codespaceServer = createCodespaceServer(app.codespaceId);
 
   // Fetch current code from testing.spike.land to include in context
+  // Using timeout to prevent hangs
   let currentCode = "";
   const { data: sessionResponse, error: sessionError } = await tryCatch(
-    fetch(`https://testing.spike.land/live/${app.codespaceId}/session.json`, {
-      headers: { "Accept": "application/json" },
-    }),
+    fetchWithTimeout(
+      `https://testing.spike.land/live/${app.codespaceId}/session.json`,
+      { headers: { "Accept": "application/json" } },
+    ),
   );
 
   if (!sessionError && sessionResponse.ok) {
@@ -133,6 +186,12 @@ export async function POST(
   const stream = new ReadableStream({
     async start(controller) {
       try {
+        // Emit connecting stage immediately
+        emitStage(controller, "connecting");
+
+        // Note: "processing" stage will be emitted when first message arrives
+        // to avoid UI flicker from back-to-back stage emissions
+
         const result = query({
           prompt: content,
           options: {
@@ -149,8 +208,14 @@ export async function POST(
 
         let finalResponse = "";
         let codeUpdated = false; // Track if any code-modifying tools were used
+        let processingEmitted = false; // Track if processing stage was emitted
 
         for await (const message of result) {
+          // Emit processing stage on first message to avoid UI flicker
+          if (!processingEmitted) {
+            emitStage(controller, "processing");
+            processingEmitted = true;
+          }
           console.log("[agent/chat] Message type:", message.type);
 
           // Handle assistant text messages
@@ -183,6 +248,8 @@ export async function POST(
               ) {
                 codeUpdated = true;
               }
+              // Emit executing_tool stage with tool name
+              emitStage(controller, "executing_tool", toolName || "tool");
               const statusData = JSON.stringify({
                 type: "status",
                 content: `Executing ${toolName || "tool"}...`,
@@ -210,9 +277,10 @@ export async function POST(
           }
         }
 
-        // Save agent response to DB
+        // Save agent response to DB and capture the message ID for code version linking
+        let agentMessageId: string | undefined;
         if (finalResponse) {
-          await tryCatch(
+          const agentMessageResult = await tryCatch(
             prisma.appMessage.create({
               data: {
                 appId: id,
@@ -221,6 +289,9 @@ export async function POST(
               },
             }),
           );
+          if (agentMessageResult.data) {
+            agentMessageId = agentMessageResult.data.id;
+          }
 
           // Attempt to extract name and description if this is one of the first interactions
           // We check if the name looks like a slug (contains dashes and potentially matches the patterns)
@@ -228,11 +299,11 @@ export async function POST(
             app.codespaceId.includes("-");
 
           if (isDefaultName) {
-            // We fire this off without awaiting it to not block the stream closing immediately
-            // (Next.js might kill it if we don't await, but `waitUntil` is not standard here yet.
-            //  However, since we have maxDuration 300s, we can just await it. It's better for UX if we don't, but safer if we do.)
-            // Let's await it to ensure it runs.
-            await generateAppDetails(id, finalResponse, content);
+            // Fire and forget - don't block the stream
+            // This runs in the background to improve cold response time
+            generateAppDetails(id, finalResponse, content).catch((e) => {
+              console.error("[agent/chat] Background generateAppDetails failed:", e);
+            });
           }
         }
 
@@ -242,13 +313,14 @@ export async function POST(
             "[agent/chat] Code was updated, broadcasting to SSE clients",
           );
 
-          // Verify the update actually happened
+          // Emit validating stage
+          emitStage(controller, "validating");
+
+          // Verify the update actually happened (with timeout)
           const { data: verifyResponse } = await tryCatch(
-            fetch(
+            fetchWithTimeout(
               `https://testing.spike.land/live/${app.codespaceId}/session.json`,
-              {
-                headers: { "Accept": "application/json" },
-              },
+              { headers: { "Accept": "application/json" } },
             ),
           );
 
@@ -264,14 +336,38 @@ export async function POST(
                 "[agent/chat] Tool claimed success but code unchanged!",
               );
             }
+
+            // Create code version snapshot if code was actually updated
+            if (actuallyChanged && verifyData?.code) {
+              const crypto = await import("crypto");
+              const hash = crypto.createHash("sha256")
+                .update(verifyData.code)
+                .digest("hex");
+
+              // Use the captured agentMessageId directly (no query needed)
+              await prisma.appCodeVersion.create({
+                data: {
+                  appId: id,
+                  messageId: agentMessageId,
+                  code: verifyData.code,
+                  hash,
+                },
+              });
+              console.log("[agent/chat] Created code version snapshot");
+            }
           }
 
           broadcastCodeUpdated(id);
         }
 
+        // Emit complete stage
+        emitStage(controller, "complete");
+
         controller.close();
       } catch (error) {
         console.error("[agent/chat] Streaming error:", error);
+        // Emit error stage
+        emitStage(controller, "error");
         const errData = JSON.stringify({
           type: "error",
           content: error instanceof Error ? error.message : "Unknown error",
@@ -297,6 +393,9 @@ async function generateAppDetails(
   agentResponse: string,
   userPrompt: string,
 ) {
+  const startTime = Date.now();
+  const logContext = { appId, operation: "generateAppDetails" };
+
   try {
     const namingPrompt = `
       Based on the following conversation, generate a short, creative name (max 3-4 words) and a brief description (max 20 words) for the application being built.
@@ -352,14 +451,29 @@ async function generateAppDetails(
           description: parsed.data.description,
         },
       });
-      console.log(`[agent/chat] Updated app details: ${parsed.data.name}`);
+      const durationMs = Date.now() - startTime;
+      console.log("[agent/chat] generateAppDetails success", {
+        ...logContext,
+        durationMs,
+        status: "success",
+        name: parsed.data.name,
+      });
     } else {
-      console.warn(
-        "[agent/chat] Invalid app details format:",
-        parsed.error.message,
-      );
+      const durationMs = Date.now() - startTime;
+      console.warn("[agent/chat] generateAppDetails validation failed", {
+        ...logContext,
+        durationMs,
+        status: "validation_failed",
+        error: parsed.error.message,
+      });
     }
   } catch (e) {
-    console.error("[agent/chat] Failed to generate app details:", e);
+    const durationMs = Date.now() - startTime;
+    console.error("[agent/chat] generateAppDetails error", {
+      ...logContext,
+      durationMs,
+      status: "error",
+      error: e instanceof Error ? e.message : String(e),
+    });
   }
 }

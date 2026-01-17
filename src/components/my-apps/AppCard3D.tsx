@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { APP_BUILD_STATUSES } from "@/lib/validations/app";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface AppData {
   id: string;
@@ -57,6 +57,55 @@ export function AppCard3D({ app }: AppCard3DProps) {
     setIsHovered(false);
   };
 
+  // Viewport dimensions for dynamic iframe scaling
+  const [viewportSize, setViewportSize] = useState({ width: 1920, height: 1080 });
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const iframeContainerRef = useRef<HTMLDivElement>(null);
+
+  // Track viewport and container sizes for dynamic iframe scaling
+  useEffect(() => {
+    const updateViewportSize = () => {
+      setViewportSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    const updateContainerSize = () => {
+      if (iframeContainerRef.current) {
+        const { clientWidth, clientHeight } = iframeContainerRef.current;
+        setContainerSize({ width: clientWidth, height: clientHeight });
+      }
+    };
+
+    // Initial measurements
+    updateViewportSize();
+    updateContainerSize();
+
+    // Listen for resize events
+    window.addEventListener("resize", updateViewportSize);
+    window.addEventListener("resize", updateContainerSize);
+
+    // Use ResizeObserver for container size changes
+    const resizeObserver = new ResizeObserver(updateContainerSize);
+    if (iframeContainerRef.current) {
+      resizeObserver.observe(iframeContainerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", updateViewportSize);
+      window.removeEventListener("resize", updateContainerSize);
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  // Calculate dynamic scale to fit browser-sized content into container
+  const iframeScale = useMemo(() => {
+    if (containerSize.width === 0 || containerSize.height === 0) {
+      return 0.25; // fallback
+    }
+    const scaleX = containerSize.width / viewportSize.width;
+    const scaleY = containerSize.height / viewportSize.height;
+    return Math.min(scaleX, scaleY);
+  }, [containerSize.width, containerSize.height, viewportSize.width, viewportSize.height]);
+
   // Use codespaceId for the URL (preferred), fall back to slug, then id for backward compat
   const appIdentifier = app.codespaceId || app.slug || app.id;
 
@@ -69,8 +118,9 @@ export function AppCard3D({ app }: AppCard3DProps) {
           rotateX,
           rotateY,
           transformStyle: "preserve-3d",
+          aspectRatio: `${viewportSize.width} / ${viewportSize.height}`,
         }}
-        className="group relative h-[320px] cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/80 backdrop-blur-sm"
+        className="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/80 backdrop-blur-sm"
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={handleMouseLeave}
@@ -78,7 +128,7 @@ export function AppCard3D({ app }: AppCard3DProps) {
         transition={{ duration: 0.2 }}
       >
         {/* Live iframe preview */}
-        <div className="absolute inset-0">
+        <div ref={iframeContainerRef} className="absolute inset-0">
           {app.codespaceUrl
             ? (
               <>
@@ -89,9 +139,11 @@ export function AppCard3D({ app }: AppCard3DProps) {
                 )}
                 <iframe
                   src={app.codespaceUrl}
-                  className="pointer-events-none h-[400%] w-[400%] border-0"
+                  className="pointer-events-none border-0"
                   style={{
-                    transform: "scale(0.25)",
+                    width: `${viewportSize.width}px`,
+                    height: `${viewportSize.height}px`,
+                    transform: `scale(${iframeScale})`,
                     transformOrigin: "0 0",
                     opacity: iframeLoaded ? 1 : 0,
                   }}

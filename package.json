@@ -78,7 +78,9 @@
     "ralph:auto-publish": "./scripts/ralph/auto-publish.sh",
     "jules:process": "tsx scripts/ralph/process.ts",
     "jules:process:watch": "tsx scripts/ralph/process.ts --watch",
-    "jules:process:dry": "tsx scripts/ralph/process.ts --dry-run"
+    "jules:process:dry": "tsx scripts/ralph/process.ts --dry-run",
+    "reset:db": "tsx scripts/reset-staging-db.ts",
+    "reset:db:confirm": "tsx scripts/reset-staging-db.ts --confirm"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.2.9",

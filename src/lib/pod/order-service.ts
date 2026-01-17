@@ -79,15 +79,7 @@ export async function submitOrderToPod(
   }
 
   // Parse shipping address
-  const shippingAddress = order.shippingAddress as unknown as {
-    name: string;
-    line1: string;
-    line2?: string;
-    city: string;
-    postalCode: string;
-    countryCode: string;
-    phone?: string;
-  };
+  const shippingAddress = order.shippingAddress as unknown as ShippingAddress;
 
   const podRequest: PodOrderRequest = {
     orderId: order.id,

@@ -20,6 +20,7 @@ export default async function MyAppsPage() {
   const apps = await prisma.app.findMany({
     where: {
       userId: session.user.id,
+      deletedAt: null,
       status: {
         notIn: ["ARCHIVED"],
       },
@@ -65,11 +66,36 @@ export default async function MyAppsPage() {
               Manage and deploy your vibe-coded applications
             </p>
           </div>
-          <Link href="/my-apps/new">
-            <Button size="lg" className="w-full sm:w-auto">
-              Create New App
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/my-apps/bin"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Button variant="ghost" size="sm" className="gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+                Bin
+              </Button>
+            </Link>
+            <Link href="/my-apps/new">
+              <Button size="lg" className="w-full sm:w-auto">
+                Create New App
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {apps.length === 0
