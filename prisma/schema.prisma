@@ -176,6 +176,7 @@ model App {
   isCurated          Boolean             @default(false) // For public gallery display
   isPublic           Boolean             @default(false) // Visibility setting
   lastAgentActivity  DateTime? // For polling optimization
+  deletedAt          DateTime? // Soft-delete: null = active, set = in bin (30-day retention)
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   parentApp          App?                @relation("AppForks", fields: [forkedFrom], references: [id])
@@ -186,6 +187,7 @@ model App {
   messages           AppMessage[] // Chat messages for this app
   statusHistory      AppStatusHistory[] // Status change history
   images             AppImage[] // Uploaded images for this app
+  codeVersions       AppCodeVersion[] // Code snapshots for undo/restore
 
   @@index([userId])
   @@index([forkedFrom])
@@ -194,6 +196,7 @@ model App {
   @@index([isCurated, isPublic])
   @@index([lastAgentActivity])
   @@index([slug])
+  @@index([deletedAt]) // For bin queries and cleanup
   @@map("apps")
 }
 
@@ -242,6 +245,7 @@ model AppMessage {
   content     String // Markdown-supported message content
   isRead      Boolean         @default(false) // For agent polling
   metadata    Json? // Additional message data (e.g., tool calls, errors)
+  deletedAt   DateTime? // Soft-delete: for cascade on message edit
   createdAt   DateTime        @default(now())
   app         App             @relation(fields: [appId], references: [id], onDelete: Cascade)
   attachments AppAttachment[] // Images attached to this message
@@ -249,7 +253,9 @@ model AppMessage {
   @@index([appId, createdAt])
   @@index([appId, isRead])
   @@index([role, isRead]) // For efficient agent polling queries
+  @@index([appId, deletedAt]) // For message queries excluding soft-deleted
   @@map("app_messages")
+  codeVersion    AppCodeVersion? // Code version created by this message
 }
 
 // Status change history for audit trail
@@ -302,6 +308,24 @@ model AppAttachment {
   @@index([messageId])
   @@index([imageId])
   @@map("app_attachments")
+}
+
+// Code version snapshots for undo/restore functionality
+model AppCodeVersion {
+  id          String      @id @default(cuid())
+  appId       String
+  messageId   String?     @unique // The agent message that created this version
+  code        String      @db.Text // Full code snapshot
+  hash        String      // SHA-256 hash for quick comparison
+  description String? // Auto-generated description of changes
+  createdAt   DateTime    @default(now())
+
+  app         App         @relation(fields: [appId], references: [id], onDelete: Cascade)
+  message     AppMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([appId, createdAt])
+  @@index([hash])
+  @@map("app_code_versions")
 }
 
 model UserTokenBalance {

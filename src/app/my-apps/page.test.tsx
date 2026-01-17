@@ -49,6 +49,7 @@ function createMockApp(overrides: Partial<{
   isCurated: boolean;
   isPublic: boolean;
   lastAgentActivity: Date | null;
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   _count: { messages: number; images: number; };
@@ -67,6 +68,7 @@ function createMockApp(overrides: Partial<{
     isCurated: false,
     isPublic: false,
     lastAgentActivity: null,
+    deletedAt: null,
     createdAt: new Date("2025-01-01"),
     updatedAt: new Date("2025-01-01"),
     _count: { messages: 0, images: 0 },
@@ -133,6 +135,7 @@ describe("MyAppsPage", () => {
       expect(mockFindMany).toHaveBeenCalledWith({
         where: {
           userId: "user-123",
+          deletedAt: null,
           status: {
             notIn: ["ARCHIVED"],
           },

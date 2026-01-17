@@ -7,10 +7,9 @@
 
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import type { ShippingAddress } from "@/types/shipping";
 import type { Prisma } from "@prisma/client";
 import { prodigiProvider } from "./prodigi/client";
-import type { PodOrderRequest, PodOrderResult, PodProvider } from "./types";
+import type { PodOrderRequest, PodOrderResult, PodProvider, ShippingAddress } from "./types";
 
 /**
  * Get the appropriate POD provider for a given provider name.
