@@ -135,6 +135,7 @@ describe("MyAppsPage", () => {
       expect(mockFindMany).toHaveBeenCalledWith({
         where: {
           userId: "user-123",
+          deletedAt: null,
           status: {
             notIn: ["ARCHIVED"],
           },
