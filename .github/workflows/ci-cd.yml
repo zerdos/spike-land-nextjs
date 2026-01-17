@@ -30,9 +30,9 @@ on:
 # - PR comments: Vercel automatically posts deployment URLs on PRs
 # This workflow focuses on testing and quality checks only.
 
-# NOTE: This project uses Yarn PnP zero-install.
-# Dependencies are committed in .yarn/cache - no yarn install needed!
-# Just run `corepack enable` to activate Yarn 4.
+# NOTE: This project uses Yarn semi-zero-install.
+# Dependencies are cached in .yarn/cache (committed) for faster installs.
+# Still need `yarn install --immutable` but it's much faster with local cache.
 
 jobs:
   # ============================================================================
@@ -54,7 +54,8 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
+      - name: Install dependencies
+        run: yarn install --immutable
 
       - name: Cache TypeScript build info
         uses: actions/cache@v5
@@ -96,10 +97,8 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
-
-      - name: Generate Prisma Client
-        run: yarn prisma generate --no-hints
+      - name: Install dependencies
+        run: yarn install --immutable
 
       - name: Fetch main branch for comparison
         if: github.ref != 'refs/heads/main'
@@ -149,10 +148,8 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
-
-      - name: Generate Prisma Client
-        run: yarn prisma generate --no-hints
+      - name: Install dependencies
+        run: yarn install --immutable
 
       - name: Run package tests
         run: yarn test:packages
@@ -177,7 +174,8 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
+      - name: Install dependencies
+        run: yarn install --immutable
 
       - name: Cache Next.js build (Turbopack)
         uses: actions/cache@v5
@@ -234,10 +232,8 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
-
-      - name: Generate Prisma Client
-        run: yarn prisma generate --no-hints
+      - name: Install dependencies
+        run: yarn install --immutable
 
       - name: Apply Prisma migrations to E2E database
         env:
@@ -286,7 +282,8 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
+      - name: Install dependencies
+        run: yarn install --immutable
 
       - name: Cache Playwright browsers
         uses: actions/cache@v5
@@ -303,9 +300,6 @@ jobs:
 
       - name: Install Playwright dependencies (always needed for system libs)
         run: yarn playwright install-deps chromium
-
-      - name: Generate Prisma Client
-        run: yarn prisma generate --no-hints
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -357,10 +351,8 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
-
-      - name: Generate Prisma Client
-        run: yarn prisma generate --no-hints
+      - name: Install dependencies
+        run: yarn install --immutable
 
       - name: Cleanup E2E test database
         env:

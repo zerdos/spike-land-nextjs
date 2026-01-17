@@ -23,27 +23,11 @@ RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/
     && corepack enable
 
 # ============================================================================
-# STAGE 1: PnP Dependencies (Zero-Install - no yarn install needed!)
+# STAGE 1: Dependency Context
 # ============================================================================
-FROM base AS deps
-ARG CACHE_NS
-ARG TARGETARCH
-ARG DUMMY_DATABASE_URL
-
-# Install native build dependencies for unplugged packages
-RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,id=${CACHE_NS}-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
-    apt-get update \
-    && apt-get install -y --no-install-recommends \
-    python3 make g++ \
-    libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
-
-# Copy Yarn config and PnP files (this IS the installation!)
-COPY --link .yarnrc.yml yarn.lock package.json ./
+FROM base AS dep-context
+COPY --link package.json yarn.lock .yarnrc.yml ./
 COPY --link .yarn/ ./.yarn/
-COPY --link .pnp.cjs .pnp.loader.mjs ./
-
-# Copy workspace package.json files
 COPY --link packages/mcp-server/package.json ./packages/mcp-server/
 COPY --link packages/opfs-node-adapter/package.json ./packages/opfs-node-adapter/
 COPY --link packages/js.spike.land/package.json ./packages/js.spike.land/
@@ -53,12 +37,30 @@ COPY --link packages/spike-land-renderer/package.json ./packages/spike-land-rend
 COPY --link packages/shared/package.json ./packages/shared/
 COPY --link prisma ./prisma
 
-# Rebuild native modules for current platform (unplugged packages)
-# This is needed because the .yarn/unplugged binaries might be for a different platform
-RUN yarn rebuild
+# ============================================================================
+# STAGE 2: Install Dependencies (using committed .yarn/cache for speed)
+# ============================================================================
+FROM base AS deps
+ARG CACHE_NS
+ARG TARGETARCH
+ARG DUMMY_DATABASE_URL
+
+# Install native build dependencies
+RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=${CACHE_NS}-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
+    apt-get update \
+    && apt-get install -y --no-install-recommends \
+    python3 make g++ \
+    libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
+
+# Copy dependency context
+COPY --link --from=dep-context /app /app
+
+# Install dependencies - uses committed .yarn/cache so no downloads needed
+RUN yarn install --immutable
 
 # ============================================================================
-# STAGE 2: Source Code
+# STAGE 3: Source Code
 # ============================================================================
 FROM deps AS source
 COPY --link tsconfig*.json next.config.ts postcss.config.mjs ./
@@ -79,13 +81,13 @@ EXPOSE 3000
 CMD ["yarn", "dev"]
 
 # ============================================================================
-# STAGE 3: Lint
+# STAGE 4: Lint
 # ============================================================================
 FROM source AS lint
 RUN yarn lint
 
 # ============================================================================
-# STAGE 4: Build
+# STAGE 5: Build
 # ============================================================================
 FROM source AS build
 ARG CACHE_NS
@@ -99,7 +101,7 @@ RUN --mount=type=cache,id=${CACHE_NS}-next-cache-${TARGETARCH},target=/app/.next
     yarn build
 
 # ============================================================================
-# STAGE 5: Type Check
+# STAGE 6: Type Check
 # ============================================================================
 FROM source AS tsc
 ARG CACHE_NS
@@ -110,7 +112,7 @@ RUN --mount=type=cache,id=${CACHE_NS}-tsbuildinfo-${TARGETARCH},target=/app/.tsb
     cp /app/tsconfig.tsbuildinfo /app/.tsbuildinfo-cache/ 2>/dev/null || true
 
 # ============================================================================
-# STAGE 6: Test Context
+# STAGE 7: Test Context
 # ============================================================================
 FROM source AS test-source
 COPY --link vitest.config.ts vitest.setup.ts ./
@@ -120,7 +122,7 @@ COPY --link scripts/vitest-coverage-mapper-reporter.ts scripts/test-cache-manage
 RUN chmod +x ./scripts/run-cached-tests.sh
 
 # ============================================================================
-# STAGE 7: Unit Tests (sharded) - with coverage-based caching
+# STAGE 8: Unit Tests (sharded) - with coverage-based caching
 # ============================================================================
 FROM test-source AS unit-test-shard
 ARG SHARD_INDEX=1
@@ -198,7 +200,7 @@ COPY --link --from=unit-tests-4 /tmp/unit-4.log /tmp/
 RUN cat /tmp/unit-*.log && echo "::notice::✅ All 4 unit test shards passed"
 
 # ============================================================================
-# STAGE 8: E2E Browser Environment
+# STAGE 9: E2E Browser Environment
 # ============================================================================
 FROM base AS e2e-browser
 ARG CACHE_NS
@@ -210,32 +212,27 @@ RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/
     apt-get update \
     && apt-get install -y --no-install-recommends procps
 
-# For E2E, we need playwright from the PnP cache
-COPY --link .yarnrc.yml yarn.lock package.json ./
-COPY --link .yarn/ ./.yarn/
-COPY --link .pnp.cjs .pnp.loader.mjs ./
-
-RUN --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/tmp/pw-cache,sharing=locked \
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
+    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/tmp/pw-cache,sharing=locked \
     mkdir -p /ms-playwright \
-    && PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-cache yarn playwright install chromium --with-deps \
+    && PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-cache /app/node_modules/.bin/playwright install chromium --with-deps \
     && cp -a /tmp/pw-cache/* /ms-playwright/
 
 # ============================================================================
-# STAGE 9: E2E Test Base
+# STAGE 10: E2E Test Base
 # ============================================================================
 FROM e2e-browser AS e2e-test-base
 WORKDIR /app
 ARG DUMMY_DATABASE_URL
 
-# Copy workspace package.json files
-COPY --link packages/mcp-server/package.json ./packages/mcp-server/
-COPY --link packages/opfs-node-adapter/package.json ./packages/opfs-node-adapter/
-COPY --link packages/js.spike.land/package.json ./packages/js.spike.land/
-COPY --link packages/code/package.json ./packages/code/
-COPY --link packages/testing.spike.land/package.json ./packages/testing.spike.land/
-COPY --link packages/spike-land-renderer/package.json ./packages/spike-land-renderer/
-COPY --link packages/shared/package.json ./packages/shared/
-COPY --link prisma ./prisma
+# Copy dependency metadata
+COPY --link --from=dep-context /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
+COPY --link --from=dep-context /app/.yarn/ ./.yarn/
+COPY --link --from=dep-context /app/packages/ ./packages/
+COPY --link --from=dep-context /app/prisma ./prisma
+
+# Copy built application and dependencies
+COPY --link --from=deps /app/node_modules ./node_modules
 
 # Copy source files needed for E2E
 COPY --link --from=source /app/tsconfig*.json /app/next.config.ts /app/postcss.config.mjs ./
@@ -265,7 +262,7 @@ ENV CI=true \
 RUN mkdir -p e2e/reports
 
 # ============================================================================
-# STAGE 10: E2E Tests (sharded) - with coverage-based caching
+# STAGE 11: E2E Tests (sharded) - with coverage-based caching
 # ============================================================================
 FROM e2e-test-base AS e2e-test-shard
 ARG SHARD_INDEX=1
@@ -442,7 +439,7 @@ COPY --link --from=e2e-tests-16 /tmp/. /tmp/
 RUN cat /tmp/e2e-*.log && echo "::notice::✅ All 16 E2E test shards passed"
 
 # ============================================================================
-# STAGE 11: CI Gateway
+# STAGE 12: CI Gateway
 # ============================================================================
 FROM e2e-tests AS ci
 COPY --link --from=unit-tests /tmp/unit-1.log /tmp/unit-passed
@@ -451,7 +448,7 @@ COPY --link --from=tsc /app/package.json /tmp/tsc-passed
 RUN echo "::notice::✅ CI Pipeline Complete: Lint, Build, Unit Tests, E2E Tests"
 
 # ============================================================================
-# STAGE 12: Production Image
+# STAGE 13: Production Image
 # ============================================================================
 FROM ${NODE_IMAGE} AS production
 WORKDIR /app
@@ -469,11 +466,8 @@ COPY --link --from=build --chown=1001:1001 /app/.next/standalone ./
 COPY --link --from=build --chown=1001:1001 /app/.next/static ./.next/static
 COPY --link --from=build --chown=1001:1001 /app/public ./public
 
-# Copy Prisma client from the PnP unplugged directory
-# For PnP, Prisma is in .yarn/unplugged but we need it accessible at runtime
-COPY --link --from=deps --chown=1001:1001 /app/.yarn/unplugged/*prisma* ./.yarn/unplugged/
-COPY --link --from=deps --chown=1001:1001 /app/.pnp.cjs ./
-COPY --link --from=deps --chown=1001:1001 /app/.yarn/cache/.prisma* ./.yarn/cache/ 2>/dev/null || true
+# Copy Prisma client (required for database operations)
+COPY --link --from=deps --chown=1001:1001 /app/node_modules/.prisma ./node_modules/.prisma
 
 USER nextjs
 ENV NODE_ENV=production \
