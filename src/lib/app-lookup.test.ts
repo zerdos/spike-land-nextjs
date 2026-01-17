@@ -96,6 +96,7 @@ describe("app-lookup", () => {
         where: {
           codespaceId: testCodespaceId,
           userId: testUserId,
+          deletedAt: null,
           status: { not: "ARCHIVED" },
         },
         include: appIncludeOptions,
@@ -116,6 +117,7 @@ describe("app-lookup", () => {
         where: {
           slug: testSlug,
           userId: testUserId,
+          deletedAt: null,
           status: { not: "ARCHIVED" },
         },
         include: appIncludeOptions,
@@ -137,6 +139,7 @@ describe("app-lookup", () => {
         where: {
           id: testCuid,
           userId: testUserId,
+          deletedAt: null,
           status: { not: "ARCHIVED" },
         },
         include: appIncludeOptions,
@@ -209,6 +212,7 @@ describe("app-lookup", () => {
         where: {
           codespaceId: testCodespaceId,
           userId: testUserId,
+          deletedAt: null,
           status: { not: "ARCHIVED" },
         },
       });

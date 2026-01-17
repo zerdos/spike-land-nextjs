@@ -4,7 +4,8 @@ import {
   AgentProgressIndicator,
   type AgentStage,
 } from "@/components/my-apps/AgentProgressIndicator";
-import { ChatMessagePreview } from "@/components/my-apps/ChatMessagePreview";
+import { MiniPreview } from "@/components/my-apps/MiniPreview";
+import { PreviewModal } from "@/components/my-apps/PreviewModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import type { APP_BUILD_STATUSES } from "@/lib/validations/app";
 import { motion } from "framer-motion";
-import { FileText, ImagePlus, Paperclip, StopCircle, X } from "lucide-react";
+import { FileText, ImagePlus, Paperclip, StopCircle, Trash2, X } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
 import { redirect, useParams } from "next/navigation";
@@ -141,93 +142,6 @@ function MarkdownContent({ content }: { content: string; }) {
   return <ReactMarkdown components={markdownComponents}>{content}</ReactMarkdown>;
 }
 
-// Preview placeholder component (when no content)
-function PreviewPlaceholder() {
-  return (
-    <div className="flex h-full items-center justify-center text-center text-zinc-500">
-      <div className="space-y-4">
-        <div className="mx-auto h-16 w-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-zinc-600 mb-2 shadow-lg">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-            <circle cx="9" cy="9" r="2" />
-            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-          </svg>
-        </div>
-        <div>
-          <p className="text-zinc-400 font-medium">Preview will appear here</p>
-          <p className="text-sm opacity-50 mt-1">
-            Start chatting to generate your app
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Browser toolbar component
-function BrowserToolbar({
-  url,
-  onRefresh,
-}: {
-  url: string;
-  onRefresh: () => void;
-}) {
-  return (
-    <div className="flex items-center gap-4 border-b border-white/5 bg-white/[0.02] px-5 py-4 relative z-10 overflow-hidden">
-      <div className="flex gap-2 shrink-0">
-        <div className="h-3 w-3 rounded-full bg-[#FF5F56] border border-white/5 shadow-inner" />
-        <div className="h-3 w-3 rounded-full bg-[#FFBD2E] border border-white/5 shadow-inner" />
-        <div className="h-3 w-3 rounded-full bg-[#27C93F] border border-white/5 shadow-inner" />
-      </div>
-
-      <div className="flex-1 min-w-0 overflow-hidden">
-        <div className="bg-black/20 rounded-lg border border-white/5 py-1.5 px-3 flex items-center overflow-hidden">
-          <div
-            data-testid="address-bar"
-            className="text-[11px] text-zinc-400 truncate font-mono w-full"
-            style={{ direction: "rtl", textAlign: "left" }}
-          >
-            {url}
-          </div>
-        </div>
-      </div>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 text-zinc-500 hover:text-white hover:bg-white/10 rounded-full transition-colors shrink-0"
-        onClick={onRefresh}
-        title="Refresh Preview"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12" />
-          <path d="M3 3v9h9" />
-        </svg>
-      </Button>
-    </div>
-  );
-}
-
 // Main page component
 export default function CodeSpacePage() {
   const router = useRouter();
@@ -236,7 +150,7 @@ export default function CodeSpacePage() {
 
   // Page state
   const [mode, setMode] = useState<PageMode>("loading");
-  const [hasContent, setHasContent] = useState(false);
+  const [, setHasContent] = useState(false); // Track content availability for SSE updates
   const [app, setApp] = useState<AppData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -245,14 +159,19 @@ export default function CodeSpacePage() {
   const [newMessage, setNewMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   const [agentWorking, setAgentWorking] = useState(false);
-  const [iframeKey, setIframeKey] = useState(0);
+  const [, setIframeKey] = useState(0); // Track preview refreshes for SSE updates
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [streamingResponse, setStreamingResponse] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [clearingChat, setClearingChat] = useState(false);
-  const [restoringVersionId, setRestoringVersionId] = useState<string | null>(null);
+  const [movingToBin, setMovingToBin] = useState(false);
+
+  // Preview modal state
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewModalUrl, setPreviewModalUrl] = useState<string>("");
+  const [previewModalVersion, setPreviewModalVersion] = useState<string | undefined>();
 
   // Agent progress state
   const [agentStage, setAgentStage] = useState<AgentStage | null>(null);
@@ -260,65 +179,17 @@ export default function CodeSpacePage() {
   const [agentStartTime, setAgentStartTime] = useState<number | undefined>();
   const [agentError, setAgentError] = useState<string | undefined>();
 
+  // Scroll tracking for floating indicator
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const previewContainerRef = useRef<HTMLDivElement>(null);
-
-  // Viewport dimensions for calculating iframe scale
-  const [viewportSize, setViewportSize] = useState({ width: 1920, height: 1080 });
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   const codespaceUrl = `https://testing.spike.land/live/${codeSpace}/`;
-
-  // Track viewport and container sizes for dynamic iframe scaling
-  useEffect(() => {
-    const updateViewportSize = () => {
-      setViewportSize({ width: window.innerWidth, height: window.innerHeight });
-    };
-
-    const updateContainerSize = () => {
-      if (previewContainerRef.current) {
-        const { clientWidth, clientHeight } = previewContainerRef.current;
-        setContainerSize({ width: clientWidth, height: clientHeight });
-      }
-    };
-
-    // Initial measurements
-    updateViewportSize();
-    updateContainerSize();
-
-    // Listen for resize events
-    window.addEventListener("resize", updateViewportSize);
-    window.addEventListener("resize", updateContainerSize);
-
-    // Use ResizeObserver for container size changes
-    const resizeObserver = new ResizeObserver(updateContainerSize);
-    if (previewContainerRef.current) {
-      resizeObserver.observe(previewContainerRef.current);
-    }
-
-    return () => {
-      window.removeEventListener("resize", updateViewportSize);
-      window.removeEventListener("resize", updateContainerSize);
-      resizeObserver.disconnect();
-    };
-  }, []);
-
-  // Calculate dynamic scale to fit browser-sized content into container
-  // while maintaining browser aspect ratio
-  const iframeScale = useMemo(() => {
-    if (containerSize.width === 0 || containerSize.height === 0) {
-      return 0.5; // fallback
-    }
-    // Calculate the scale needed to fit the viewport-sized iframe into the container
-    const scaleX = containerSize.width / viewportSize.width;
-    const scaleY = containerSize.height / viewportSize.height;
-    // Use the smaller scale to ensure it fits completely
-    return Math.min(scaleX, scaleY);
-  }, [containerSize.width, containerSize.height, viewportSize.width, viewportSize.height]);
 
   // Validate codespace name and check for backward compatibility
   useEffect(() => {
@@ -481,6 +352,24 @@ export default function CodeSpacePage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, streamingResponse, scrollToBottom]);
+
+  // Track scroll position for floating indicator
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const threshold = 100; // px from bottom to consider "at bottom"
+      const scrollBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+      setIsAtBottom(scrollBottom < threshold);
+    };
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    // Initial check
+    handleScroll();
+
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [mode]); // Re-attach when mode changes
 
   // File handling for prompt mode
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -805,6 +694,31 @@ export default function CodeSpacePage() {
     }
   };
 
+  // Move to bin
+  const handleMoveToBin = async () => {
+    if (movingToBin || !app?.id) return;
+
+    setMovingToBin(true);
+    try {
+      const appIdentifier = app.codespaceId || codeSpace;
+      const response = await fetch(`/api/apps/${appIdentifier}/bin`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to move to bin");
+      }
+
+      toast.success(`"${app.name}" moved to bin`);
+      router.push("/my-apps");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to move to bin");
+    } finally {
+      setMovingToBin(false);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -824,31 +738,12 @@ export default function CodeSpacePage() {
     }
   };
 
-  // Restore a code version
-  const handleRestoreVersion = useCallback(async (versionId: string) => {
-    if (!app?.id || restoringVersionId) return;
-
-    setRestoringVersionId(versionId);
-    try {
-      const response = await fetch(
-        `/api/apps/${app.id}/versions/${versionId}/restore`,
-        { method: "POST" },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to restore version");
-      }
-
-      toast.success("Version restored successfully");
-      setIframeKey((prev) => prev + 1);
-      await fetchMessages();
-    } catch (e) {
-      console.error("Failed to restore version", e);
-      toast.error("Failed to restore version");
-    } finally {
-      setRestoringVersionId(null);
-    }
-  }, [app?.id, restoringVersionId, fetchMessages]);
+  // Open preview modal for a specific version
+  const handleOpenPreview = useCallback((url: string, versionLabel?: string) => {
+    setPreviewModalUrl(url);
+    setPreviewModalVersion(versionLabel);
+    setPreviewModalOpen(true);
+  }, []);
 
   // Loading state
   if (mode === "loading") {
@@ -931,6 +826,40 @@ export default function CodeSpacePage() {
           </div>
           {mode === "workspace" && (
             <div className="flex gap-3">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    className="rounded-full bg-white/5 border-white/10 hover:bg-red-500/20 hover:border-red-500/30 text-zinc-400 hover:text-red-300 transition-all backdrop-blur-sm"
+                    variant="outline"
+                    disabled={movingToBin}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {movingToBin ? "Moving..." : "Move to Bin"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-zinc-900 border-white/10">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-zinc-100">
+                      Move &ldquo;{app?.name}&rdquo; to bin?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="text-zinc-400">
+                      This app will be moved to your bin. You can restore it within 30 days before
+                      it&apos;s permanently deleted.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="bg-white/5 border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white">
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleMoveToBin}
+                      className="bg-red-600 hover:bg-red-500 text-white"
+                    >
+                      Move to Bin
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <Link href={codespaceUrl} target="_blank">
                 <Button
                   className="rounded-full bg-white/5 border-white/10 hover:bg-white/10 text-white hover:text-white transition-all shadow-lg hover:shadow-xl backdrop-blur-sm"
@@ -943,10 +872,10 @@ export default function CodeSpacePage() {
           )}
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid gap-8 lg:grid-cols-2 lg:h-[calc(100vh-200px)] min-h-[600px]">
+        {/* Main Content - Single Column Chat with Inline Previews */}
+        <div className="max-w-4xl mx-auto">
           {/* Chat Panel */}
-          <Card className="flex flex-col h-full bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl overflow-hidden ring-1 ring-white/5">
+          <Card className="flex flex-col min-h-[600px] max-h-[calc(100vh-200px)] bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl overflow-hidden ring-1 ring-white/5">
             <CardHeader className="border-b border-white/5 bg-white/[0.02] px-6 py-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold text-zinc-100">
@@ -995,8 +924,11 @@ export default function CodeSpacePage() {
               )}
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-hidden p-0 relative">
-              <div className="h-full overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+            <CardContent className="flex-1 min-h-0 overflow-hidden p-0 relative">
+              <div
+                ref={scrollContainerRef}
+                className="absolute inset-0 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+              >
                 {mode === "prompt"
                   ? (
                     // Prompt mode - welcome state
@@ -1120,15 +1052,39 @@ export default function CodeSpacePage() {
                                 ))}
                               </div>
                             )}
-                            {/* Version preview for agent messages */}
-                            {message.role === "AGENT" && message.codeVersion && (
-                              <ChatMessagePreview
-                                codespaceUrl={codespaceUrl}
-                                timestamp={new Date(message.codeVersion.createdAt)}
-                                onRestore={() => handleRestoreVersion(message.codeVersion!.id)}
-                                isRestoring={restoringVersionId === message.codeVersion.id}
-                              />
-                            )}
+                            {/* Inline preview for agent messages with code versions */}
+                            {message.role === "AGENT" && message.codeVersion && (() => {
+                              // Calculate version number (count agent messages with codeVersion up to this one)
+                              const versionNumber = messages
+                                .filter((m) => m.role === "AGENT" && m.codeVersion)
+                                .findIndex((m) =>
+                                  m.id === message.id
+                                ) + 1;
+                              const totalVersions = messages.filter(
+                                (m) => m.role === "AGENT" && m.codeVersion,
+                              ).length;
+                              const isLatest = versionNumber === totalVersions;
+
+                              // Phase 5: Use versioned URLs for historical versions
+                              // - Latest: testing.spike.land/live/{codeSpace}/embed
+                              // - Version N: testing.spike.land/live/{codeSpace}/version/{N}/embed
+                              const versionedUrl = isLatest
+                                ? codespaceUrl
+                                : `https://testing.spike.land/live/${codeSpace}/version/${versionNumber}/embed`;
+
+                              return (
+                                <MiniPreview
+                                  codespaceUrl={versionedUrl}
+                                  versionNumber={versionNumber}
+                                  isLatest={isLatest}
+                                  onClick={() =>
+                                    handleOpenPreview(
+                                      versionedUrl,
+                                      `Version ${versionNumber}${isLatest ? " (latest)" : ""}`,
+                                    )}
+                                />
+                              );
+                            })()}
                             <p
                               className={`mt-1.5 text-xs ${
                                 message.role === "USER"
@@ -1163,8 +1119,8 @@ export default function CodeSpacePage() {
               </div>
             </CardContent>
 
-            {/* Sticky Agent Progress Indicator - between scroll and input */}
-            {isStreaming && (
+            {/* Inline Agent Progress Indicator - shows when at bottom */}
+            {isStreaming && isAtBottom && (
               <div className="mx-4 mb-2">
                 <AgentProgressIndicator
                   stage={agentStage}
@@ -1186,6 +1142,19 @@ export default function CodeSpacePage() {
                   </Button>
                 </div>
               </div>
+            )}
+
+            {/* Floating Agent Progress Indicator - shows when scrolled up */}
+            {isStreaming && !isAtBottom && (
+              <AgentProgressIndicator
+                stage={agentStage}
+                currentTool={currentTool}
+                errorMessage={agentError}
+                isVisible={isStreaming}
+                startTime={agentStartTime}
+                floating={true}
+                onScrollToBottom={scrollToBottom}
+              />
             )}
 
             {/* Message Input */}
@@ -1361,50 +1330,15 @@ export default function CodeSpacePage() {
               </div>
             </div>
           </Card>
-
-          {/* Preview Panel */}
-          <div className="flex flex-col gap-3">
-            <motion.div
-              layoutId={`app-card-${codeSpace}`}
-              className="flex-1 min-h-[500px]"
-            >
-              <Card className="flex flex-col overflow-hidden bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl ring-1 ring-white/5 relative group">
-                <div className="absolute -inset-[1px] bg-gradient-to-br from-white/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
-                <BrowserToolbar
-                  url={codespaceUrl}
-                  onRefresh={() => setIframeKey((prev) => prev + 1)}
-                />
-
-                <CardContent
-                  ref={previewContainerRef}
-                  className="flex-1 overflow-hidden p-0 md:p-0 relative bg-zinc-950/50 z-10 rounded-b-3xl"
-                  style={{
-                    aspectRatio: `${viewportSize.width} / ${viewportSize.height}`,
-                  }}
-                >
-                  {hasContent
-                    ? (
-                      <iframe
-                        key={iframeKey}
-                        src={codespaceUrl}
-                        className="border-0 rounded-b-3xl"
-                        style={{
-                          width: `${viewportSize.width}px`,
-                          height: `${viewportSize.height}px`,
-                          transform: `scale(${iframeScale})`,
-                          transformOrigin: "0 0",
-                        }}
-                        title={`Preview of ${codeSpace}`}
-                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                      />
-                    )
-                    : <PreviewPlaceholder />}
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
         </div>
+
+        {/* Preview Modal - Opens when clicking on MiniPreview */}
+        <PreviewModal
+          open={previewModalOpen}
+          onClose={() => setPreviewModalOpen(false)}
+          codespaceUrl={previewModalUrl || codespaceUrl}
+          versionLabel={previewModalVersion}
+        />
       </div>
     </div>
   );
