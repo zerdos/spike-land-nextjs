@@ -3,6 +3,10 @@
 import { Badge } from "@/components/ui/badge";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+// Constants for iframe scaling - full browser dimensions for rendering
+const BROWSER_WIDTH = 1920;
+const BROWSER_HEIGHT = 1080;
+
 interface MiniPreviewProps {
   codespaceUrl: string;
   versionNumber?: number;
@@ -25,14 +29,10 @@ export function MiniPreview({
   const [isLoaded, setIsLoaded] = useState(false);
   const [containerSize, setContainerSize] = useState({ width: 300, height: 200 });
 
-  // Full browser dimensions (what the iframe actually renders)
-  const browserWidth = 1920;
-  const browserHeight = 1080;
-
   // Calculate scale to fit browser content into container
   const scale = Math.min(
-    containerSize.width / browserWidth,
-    containerSize.height / browserHeight,
+    containerSize.width / BROWSER_WIDTH,
+    containerSize.height / BROWSER_HEIGHT,
   );
 
   // Lazy loading via Intersection Observer
@@ -56,20 +56,23 @@ export function MiniPreview({
 
   // Track container size for responsive scaling
   useEffect(() => {
+    // Capture ref value at effect start to ensure cleanup works even if ref changes
+    const container = containerRef.current;
+    if (!container) return;
+
     const updateSize = () => {
-      if (containerRef.current) {
-        const { clientWidth, clientHeight } = containerRef.current;
-        setContainerSize({ width: clientWidth, height: clientHeight });
-      }
+      const { clientWidth, clientHeight } = container;
+      setContainerSize({ width: clientWidth, height: clientHeight });
     };
 
     updateSize();
     const resizeObserver = new ResizeObserver(updateSize);
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
+    resizeObserver.observe(container);
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      resizeObserver.unobserve(container);
+      resizeObserver.disconnect();
+    };
   }, []);
 
   const handleClick = useCallback(() => {
@@ -148,8 +151,8 @@ export function MiniPreview({
                   isLoaded ? "opacity-100" : "opacity-0"
                 }`}
                 style={{
-                  width: `${browserWidth}px`,
-                  height: `${browserHeight}px`,
+                  width: `${BROWSER_WIDTH}px`,
+                  height: `${BROWSER_HEIGHT}px`,
                   transform: `scale(${scale})`,
                   transformOrigin: "0 0",
                   position: "absolute",

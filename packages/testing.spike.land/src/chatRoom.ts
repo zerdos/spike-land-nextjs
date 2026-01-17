@@ -16,6 +16,20 @@ import type { WebsocketSession } from "./websocketHandler";
 
 export { md5 };
 
+/**
+ * Represents a version snapshot of a codespace.
+ * Immutable once created - versions are never modified.
+ */
+export interface CodeVersion {
+  number: number;
+  code: string;
+  transpiled: string;
+  html: string;
+  css: string;
+  hash: string;
+  createdAt: number; // Unix timestamp
+}
+
 export class Code implements DurableObject {
   private routeHandler: RouteHandler;
   wsHandler: WebSocketHandler;
@@ -27,6 +41,9 @@ export class Code implements DurableObject {
 
   private session: ICodeSession;
   private backupSession: ICodeSession;
+
+  // Version history tracking
+  private versionCount = 0;
   // private autoSaveInterval = 60000; // 1 minute in milliseconds
   // private lastAutoSave = 0;
   // private autoSaveHistory: AutoSaveEntry[] = [];
@@ -37,6 +54,76 @@ export class Code implements DurableObject {
   public getSession() {
     const session = this.session;
     return sanitizeSession(Object.freeze(session)) as ICodeSession;
+  }
+
+  /**
+   * Save a new version of the code.
+   * Creates an immutable snapshot that can be retrieved later.
+   */
+  private async _saveVersion(session: ICodeSession): Promise<CodeVersion> {
+    const hash = computeSessionHash(session);
+    const versionNumber = this.versionCount + 1;
+
+    const version: CodeVersion = {
+      number: versionNumber,
+      code: session.code,
+      transpiled: session.transpiled,
+      html: session.html,
+      css: session.css,
+      hash,
+      createdAt: Date.now(),
+    };
+
+    // Save version to storage
+    await this.state.storage.put(`version_${versionNumber}`, version);
+    this.versionCount = versionNumber;
+    await this.state.storage.put("version_count", versionNumber);
+
+    console.log(
+      `[Version] Saved version ${versionNumber} for codeSpace: ${session.codeSpace}`,
+    );
+
+    return version;
+  }
+
+  /**
+   * Get a specific version by number.
+   * Returns null if version doesn't exist.
+   */
+  public async getVersion(versionNumber: number): Promise<CodeVersion | null> {
+    const version = await this.state.storage.get<CodeVersion>(
+      `version_${versionNumber}`,
+    );
+    return version || null;
+  }
+
+  /**
+   * Get the current version count.
+   */
+  public getVersionCount(): number {
+    return this.versionCount;
+  }
+
+  /**
+   * Get all versions metadata (without full code content for performance).
+   */
+  public async getVersionsList(): Promise<
+    Array<{ number: number; hash: string; createdAt: number; }>
+  > {
+    const versions: Array<{ number: number; hash: string; createdAt: number; }> = [];
+
+    for (let i = 1; i <= this.versionCount; i++) {
+      const version = await this.state.storage.get<CodeVersion>(`version_${i}`);
+      if (version) {
+        versions.push({
+          number: version.number,
+          hash: version.hash,
+          createdAt: version.createdAt,
+        });
+      }
+    }
+
+    return versions;
   }
 
   constructor(
@@ -472,6 +559,17 @@ export class Code implements DurableObject {
       // } finally {
       this.initialized = true;
 
+      // Load version count from storage
+      const storedVersionCount = await this.state.storage.get<number>(
+        "version_count",
+      );
+      if (storedVersionCount) {
+        this.versionCount = storedVersionCount;
+        console.log(
+          `[Version] Loaded version count: ${this.versionCount} for codeSpace: ${codeSpace}`,
+        );
+      }
+
       if (this.session) {
         this.xLog(this.session);
       }
@@ -635,6 +733,22 @@ export class Code implements DurableObject {
     await this._saveSession();
 
     const patch = generateSessionPatch(oldSession, newSession);
+
+    // Save a new version if code or transpiled changed (meaningful code changes)
+    const codeChanged = oldSession.code !== newSession.code;
+    const transpiledChanged = oldSession.transpiled !== newSession.transpiled;
+
+    if (codeChanged || transpiledChanged) {
+      try {
+        const version = await this._saveVersion(newSession);
+        console.log(
+          `[updateAndBroadcastSession] Created version ${version.number}`,
+        );
+      } catch (e) {
+        console.error(`[updateAndBroadcastSession] Failed to save version:`, e);
+        // Don't fail the update if versioning fails
+      }
+    }
 
     console.log(
       `[updateAndBroadcastSession] Broadcasting patch to WebSocket clients`,
