@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMounted } from "@/hooks/useMounted";
+import type { Json } from "next-auth/core/types";
 import { useCallback, useEffect, useState } from "react";
 
 type ErrorEnvironment = "FRONTEND" | "BACKEND";
@@ -38,8 +39,9 @@ interface ErrorLog {
   environment: ErrorEnvironment;
   errorType: string | null;
   errorCode: string | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  metadata: any;
+  // Metadata can be any JSON-like object.
+  // Using the `Json` type provides better type safety than `any`.
+  metadata: Json;
 }
 
 interface Pagination {

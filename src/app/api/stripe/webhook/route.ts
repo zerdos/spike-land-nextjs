@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import prisma, { type Prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe/client";
 import { attributeConversion } from "@/lib/tracking/attribution";
 import { tryCatch, tryCatchSync } from "@/lib/try-catch";
@@ -113,8 +113,7 @@ async function handleCheckoutCompleted(
     // Credit tokens for one-time purchase
     const tokenAmount = parseInt(tokens, 10);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await prisma.$transaction(async (tx: any) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Get or create token balance
       let balance = await tx.userTokenBalance.findUnique({
         where: { userId },
@@ -206,8 +205,7 @@ async function handleCheckoutCompleted(
       ? new Date(firstItem.current_period_end * 1000)
       : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Default to 30 days
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await prisma.$transaction(async (tx: any) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Create or update subscription
       await tx.subscription.upsert({
         where: { userId },
@@ -328,8 +326,7 @@ async function handleCheckoutCompleted(
     const tierEnum = tier as SubscriptionTier;
     const capacity = parseInt(wellCapacity, 10);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await prisma.$transaction(async (tx: any) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Create or update subscription record with tier
       await tx.subscription.upsert({
         where: { userId },
@@ -454,8 +451,7 @@ async function handleInvoicePaid(stripe: Stripe, invoice: Stripe.Invoice) {
     return;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await prisma.$transaction(async (tx: any) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const sub = user.subscription!;
 
     // Calculate rollover tokens

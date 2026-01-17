@@ -8,22 +8,38 @@ import { NextResponse } from "next/server";
 // Force dynamic rendering - skip static page data collection (sharp requires native modules)
 export const dynamic = "force-dynamic";
 
-// Lazy-load sharp to prevent build-time native module loading
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _sharp: any = null;
+// Type for sharp metadata results
+interface SharpMetadata {
+  width?: number;
+  height?: number;
+  format?: string;
+}
+
+// Define a type for the `sharp` module to avoid `any`
+type SharpModule = (
+  buffer: Buffer,
+) => {
+  metadata: () => Promise<SharpMetadata>;
+  resize: (
+    width: number,
+    height: number,
+    options: { fit: "inside"; withoutEnlargement: boolean },
+  ) => {
+    webp: (options: { quality: number }) => {
+      toBuffer: () => Promise<Buffer>;
+    };
+  };
+};
+
+// Lazy-load sharp to prevent build-time native module loading.
+// A custom type `SharpModule` is defined to provide type safety for the dynamically imported module.
+let _sharp: SharpModule | null = null;
 async function getSharp() {
   if (!_sharp) {
     const mod = await import("sharp");
     _sharp = mod.default || mod;
   }
   return _sharp;
-}
-
-// Type for sharp metadata results
-interface SharpMetadata {
-  width?: number;
-  height?: number;
-  format?: string;
 }
 
 // Maximum file size: 5MB
