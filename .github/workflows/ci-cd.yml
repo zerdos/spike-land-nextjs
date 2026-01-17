@@ -30,6 +30,10 @@ on:
 # - PR comments: Vercel automatically posts deployment URLs on PRs
 # This workflow focuses on testing and quality checks only.
 
+# NOTE: This project uses Yarn PnP zero-install.
+# Dependencies are committed in .yarn/cache - no yarn install needed!
+# Just run `corepack enable` to activate Yarn 4.
+
 jobs:
   # ============================================================================
   # TIER 1: All these jobs run in PARALLEL immediately (no dependencies)
@@ -46,24 +50,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
-          cache: "yarn"
-          cache-dependency-path: yarn.lock
 
-      - name: Cache node_modules
-        uses: actions/cache@v5
-        id: yarn-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Enable Corepack
+        run: corepack enable
 
-      - name: Install dependencies (if cache miss)
-        if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
-
-      - name: Run silent install
-        run: yarn silent:install
+      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
 
       - name: Cache TypeScript build info
         uses: actions/cache@v5
@@ -101,21 +92,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
-          cache: "yarn"
-          cache-dependency-path: yarn.lock
 
-      - name: Cache node_modules
-        uses: actions/cache@v5
-        id: yarn-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Enable Corepack
+        run: corepack enable
 
-      - name: Install dependencies (if cache miss)
-        if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
 
       - name: Generate Prisma Client
         run: yarn prisma generate --no-hints
@@ -164,21 +145,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
-          cache: "yarn"
-          cache-dependency-path: yarn.lock
 
-      - name: Cache node_modules
-        uses: actions/cache@v5
-        id: yarn-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Enable Corepack
+        run: corepack enable
 
-      - name: Install dependencies (if cache miss)
-        if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
 
       - name: Generate Prisma Client
         run: yarn prisma generate --no-hints
@@ -202,21 +173,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
-          cache: "yarn"
-          cache-dependency-path: yarn.lock
 
-      - name: Cache node_modules
-        uses: actions/cache@v5
-        id: yarn-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Enable Corepack
+        run: corepack enable
 
-      - name: Install dependencies (if cache miss)
-        if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
 
       - name: Cache Next.js build (Turbopack)
         uses: actions/cache@v5
@@ -269,21 +230,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
-          cache: "yarn"
-          cache-dependency-path: yarn.lock
 
-      - name: Cache node_modules
-        uses: actions/cache@v5
-        id: yarn-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Enable Corepack
+        run: corepack enable
 
-      - name: Install dependencies (if cache miss)
-        if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
 
       - name: Generate Prisma Client
         run: yarn prisma generate --no-hints
@@ -331,21 +282,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
-          cache: "yarn"
-          cache-dependency-path: yarn.lock
 
-      - name: Cache node_modules
-        uses: actions/cache@v5
-        id: yarn-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Enable Corepack
+        run: corepack enable
 
-      - name: Install dependencies (if cache miss)
-        if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
 
       - name: Cache Playwright browsers
         uses: actions/cache@v5
@@ -412,21 +353,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
-          cache: "yarn"
-          cache-dependency-path: yarn.lock
 
-      - name: Cache node_modules
-        uses: actions/cache@v5
-        id: yarn-cache
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Enable Corepack
+        run: corepack enable
 
-      - name: Install dependencies (if cache miss)
-        if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn install --immutable
+      # Zero-install: No yarn install needed! Dependencies are in .yarn/cache
 
       - name: Generate Prisma Client
         run: yarn prisma generate --no-hints

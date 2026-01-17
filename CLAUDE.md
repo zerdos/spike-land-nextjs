@@ -30,7 +30,6 @@ documentation.
 | Database Setup             | [docs/DATABASE_SETUP.md](./docs/DATABASE_SETUP.md)                               |
 | My-Apps Architecture       | [docs/MY_APPS_ARCHITECTURE.md](./docs/MY_APPS_ARCHITECTURE.md)                   |
 | Development Setup          | [README.md](./README.md)                                                         |
-| Mobile App                 | [packages/mobile-app/README.md](./packages/mobile-app/README.md)                 |
 | Shared Package             | [packages/shared/README.md](./packages/shared/README.md)                         |
 | Code Editor                | [packages/code/README.md](./packages/code/README.md)                             |
 | Backend Worker             | [packages/testing.spike.land/README.md](./packages/testing.spike.land/README.md) |
@@ -289,16 +288,6 @@ yarn test:coverage    # Unit tests with 100% coverage
 yarn test:e2e:local   # E2E tests (requires dev server)
 ```
 
-**Mobile App:**
-
-```bash
-cd packages/mobile-app
-yarn start            # Start Expo dev server
-yarn ios              # Run on iOS Simulator
-yarn android          # Run on Android Emulator
-yarn web              # Run in web browser
-```
-
 **Shared Package:**
 
 ```bash
@@ -332,13 +321,6 @@ cd packages/js.spike.land && yarn dev           # Start worker locally
 - **Testing**: Vitest + Playwright + Cucumber
 - **CI/CD**: GitHub Actions + Vercel
 
-**Mobile App:**
-
-- **Framework**: Expo 52, React Native 0.76
-- **Navigation**: Expo Router (file-based)
-- **UI**: Tamagui
-- **State**: Zustand, React Query
-
 ### Directory Structure (Monorepo)
 
 ```
@@ -367,13 +349,6 @@ spike-land-nextjs/
 │   │       └── chatRoom.ts   # Durable Object (Code class)
 │   │
 │   ├── spike-land-renderer/  # Cloudflare Worker renderer
-│   │
-│   ├── mobile-app/           # Mobile app (Expo)
-│   │   ├── app/              # Expo Router pages
-│   │   ├── components/       # Mobile components
-│   │   ├── hooks/            # Custom hooks
-│   │   ├── services/         # API clients
-│   │   └── stores/           # Zustand stores
 │   │
 │   └── shared/               # Shared code
 │       └── src/
