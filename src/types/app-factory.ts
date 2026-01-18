@@ -206,6 +206,12 @@ export const PHASES_ORDERED: AppPhase[] = [
 ];
 
 /**
+ * Source identifier for this project in Jules sessions
+ * Used to identify which Jules sessions belong to this project
+ */
+export const THIS_PROJECT_SOURCE = "sources/github/zerdos/spike-land-app-factory";
+
+/**
  * Status colors based on attempt count
  */
 export function getStatusColor(attempts: number): {

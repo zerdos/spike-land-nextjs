@@ -11,7 +11,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { JulesCapacity } from "@/types/app-factory";
+import { type JulesCapacity, THIS_PROJECT_SOURCE } from "@/types/app-factory";
 import { Bot, ExternalLink } from "lucide-react";
 
 interface JulesCapacityPanelProps {
@@ -28,10 +28,10 @@ export function JulesCapacityPanel({ capacity }: JulesCapacityPanelProps) {
 
   // Sessions for this project
   const thisProjectSessions = activeSessions.filter(
-    (s) => s.source === "sources/github/zerdos/spike-land-app-factory",
+    (s) => s.source === THIS_PROJECT_SOURCE,
   );
   const otherSessions = activeSessions.filter(
-    (s) => s.source !== "sources/github/zerdos/spike-land-app-factory",
+    (s) => s.source !== THIS_PROJECT_SOURCE,
   );
 
   return (
