@@ -68,9 +68,4 @@ describe("MDXContent", () => {
 
     expect(screen.getByTestId("mdx-remote")).toBeInTheDocument();
   });
-
-  it.skip("is a client component", async () => {
-    // Skipped: TypeScript doesn't understand ?raw import syntax
-    // The component does have "use client" directive, verified manually
-  });
 });

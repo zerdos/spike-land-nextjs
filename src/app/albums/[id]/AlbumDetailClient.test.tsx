@@ -710,56 +710,6 @@ describe("AlbumDetailClient", () => {
         expect(screen.getByText("Cover")).toBeDefined();
       });
     });
-
-    // Skipped: Set as cover functionality moved to album settings
-    // The hover overlay with star icon has been removed for cleaner UX
-    it.skip("calls API to set cover when clicking star icon", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            album: createMockAlbum({
-              imageCount: 1,
-              coverImageId: null,
-              images: [createMockImage()],
-            }),
-          }),
-      });
-
-      render(<AlbumDetailClient albumId="album_1" />);
-
-      await waitFor(() => {
-        expect(screen.getByText("Test Image")).toBeDefined();
-      });
-
-      const card = document.querySelector(".group");
-      if (card) {
-        fireEvent.mouseEnter(card);
-      }
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            album: { coverImageId: "img_1" },
-          }),
-      });
-
-      const starButton = document.querySelector('button[title="Set as cover"]');
-      if (starButton) {
-        fireEvent.click(starButton);
-      }
-
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          "/api/albums/album_1",
-          expect.objectContaining({
-            method: "PATCH",
-            body: JSON.stringify({ coverImageId: "img_1" }),
-          }),
-        );
-      });
-    });
   });
 
   describe("Drag and Drop", () => {
@@ -925,55 +875,6 @@ describe("AlbumDetailClient", () => {
   });
 
   describe("Image Removal", () => {
-    // Skipped: Single image removal via hover button has been removed
-    // Users can now remove images through selection mode bulk actions
-    it.skip("removes single image when clicking remove button", async () => {
-      const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            album: createMockAlbum({
-              imageCount: 1,
-              images: [createMockImage()],
-            }),
-          }),
-      });
-
-      render(<AlbumDetailClient albumId="album_1" />);
-
-      await waitFor(() => {
-        expect(screen.getByText("Test Image")).toBeDefined();
-      });
-
-      const card = document.querySelector(".group");
-      if (card) {
-        fireEvent.mouseEnter(card);
-      }
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ success: true }),
-      });
-
-      const deleteButton = document.querySelector("button.h-8.w-8:last-child");
-      if (deleteButton) {
-        fireEvent.click(deleteButton);
-      }
-
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          "/api/albums/album_1/images",
-          expect.objectContaining({
-            method: "DELETE",
-          }),
-        );
-      });
-
-      confirmSpy.mockRestore();
-    });
-
     it("does not remove image when confirmation is cancelled", async () => {
       const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
       const initialFetchCalls = mockFetch.mock.calls.length;
