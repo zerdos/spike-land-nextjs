@@ -15,7 +15,8 @@ describe("ContentLibraryPage", () => {
     const page = await ContentLibraryPage({ params });
     render(page);
 
-    expect(screen.getByRole("heading", { name: "Content Library" })).toBeInTheDocument();
+    // Use level: 1 to find the main h1 heading specifically
+    expect(screen.getByRole("heading", { name: "Content Library", level: 1 })).toBeInTheDocument();
     expect(screen.getByText("Manage and organize your media assets")).toBeInTheDocument();
     expect(screen.getByText("Coming Soon")).toBeInTheDocument();
     expect(screen.getByText(/Store, organize, and reuse your media assets/)).toBeInTheDocument();
