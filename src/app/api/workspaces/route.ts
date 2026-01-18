@@ -2,6 +2,50 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+
+// Validation schema for workspace creation
+const createWorkspaceSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(
+    50,
+    "Name must be at most 50 characters",
+  ),
+  description: z.string().max(200, "Description must be at most 200 characters").optional(),
+  isPersonal: z.boolean().optional().default(false),
+});
+
+/**
+ * Generate a URL-safe slug from a name
+ */
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+}
+
+/**
+ * Ensure slug is unique by appending a suffix if needed
+ */
+async function ensureUniqueSlug(baseSlug: string): Promise<string> {
+  let slug = baseSlug;
+  let suffix = 0;
+
+  while (true) {
+    const existing = await prisma.workspace.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return slug;
+    }
+
+    suffix++;
+    slug = `${baseSlug}-${suffix}`;
+  }
+}
 
 // GET /api/workspaces - List user's workspaces
 export async function GET() {
@@ -50,4 +94,80 @@ export async function GET() {
       role: m.role,
     })),
   });
+}
+
+// POST /api/workspaces - Create a new workspace
+export async function POST(request: Request) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Parse and validate request body
+  const { data: body, error: parseError } = await tryCatch(request.json());
+
+  if (parseError) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const validation = createWorkspaceSchema.safeParse(body);
+
+  if (!validation.success) {
+    return NextResponse.json(
+      { error: validation.error.issues[0]?.message || "Invalid input" },
+      { status: 400 },
+    );
+  }
+
+  const { name, description, isPersonal } = validation.data;
+
+  // Generate unique slug
+  const baseSlug = generateSlug(name);
+  const { data: slug, error: slugError } = await tryCatch(ensureUniqueSlug(baseSlug));
+
+  if (slugError || !slug) {
+    console.error("Failed to generate slug:", slugError);
+    return NextResponse.json(
+      { error: "Failed to generate workspace URL" },
+      { status: 500 },
+    );
+  }
+
+  // Create workspace and add user as owner in a transaction
+  const { data: result, error: createError } = await tryCatch(
+    prisma.$transaction(async (tx) => {
+      // Create the workspace
+      const workspace = await tx.workspace.create({
+        data: {
+          name,
+          slug,
+          description: description || null,
+          isPersonal: isPersonal || false,
+        },
+      });
+
+      // Add the creator as owner
+      await tx.workspaceMember.create({
+        data: {
+          workspaceId: workspace.id,
+          userId: session.user!.id,
+          role: "OWNER",
+          joinedAt: new Date(),
+        },
+      });
+
+      return workspace;
+    }),
+  );
+
+  if (createError || !result) {
+    console.error("Failed to create workspace:", createError);
+    return NextResponse.json(
+      { error: "Failed to create workspace" },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ workspace: result }, { status: 201 });
 }

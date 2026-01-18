@@ -38,7 +38,8 @@
       "Bash(yarn lint)",
       "Bash(yarn test:run:*)",
       "Bash(yarn build:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(gh issue list:*)"
     ],
     "deny": [],
     "ask": []
