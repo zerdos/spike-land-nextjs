@@ -5,12 +5,6 @@ __metadata:
   version: 8
   cacheKey: 10c9
 
-".prisma@portal:.yarn/unplugged/@prisma-client-virtual-1c90f5f9c1/node_modules/.prisma::locator=vercel-app%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: ".prisma@portal:.yarn/unplugged/@prisma-client-virtual-1c90f5f9c1/node_modules/.prisma::locator=vercel-app%40workspace%3A."
-  languageName: node
-  linkType: soft
-
 "@acemir/cssom@npm:^0.9.28":
   version: 0.9.31
   resolution: "@acemir/cssom@npm:0.9.31"
@@ -22176,7 +22170,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "vercel-app@workspace:."
   dependencies:
-    .prisma: "portal:.yarn/unplugged/@prisma-client-virtual-1c90f5f9c1/node_modules/.prisma"
     "@anthropic-ai/claude-agent-sdk": "npm:0.2.11"
     "@anthropic-ai/sdk": "npm:0.71.2"
     "@aws-sdk/client-s3": "npm:3.971.0"
