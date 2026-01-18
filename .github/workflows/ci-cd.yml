@@ -56,8 +56,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Generate Prisma client
-        run: yarn db:generate
+      - name: Generate Prisma client and update PnP manifest
+        run: |
+          yarn db:generate
+          # Re-run install to update PnP manifest with generated .prisma module
+          yarn install
 
       - name: Cache TypeScript build info
         uses: actions/cache@v5
@@ -102,8 +105,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Generate Prisma client
-        run: yarn db:generate
+      - name: Generate Prisma client and update PnP manifest
+        run: |
+          yarn db:generate
+          yarn install
 
       - name: Fetch main branch for comparison
         if: github.ref != 'refs/heads/main'
@@ -237,8 +242,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Generate Prisma client
-        run: yarn db:generate
+      - name: Generate Prisma client and update PnP manifest
+        run: |
+          yarn db:generate
+          yarn install
 
       - name: Apply Prisma migrations to E2E database
         env:
@@ -359,8 +366,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Generate Prisma client
-        run: yarn db:generate
+      - name: Generate Prisma client and update PnP manifest
+        run: |
+          yarn db:generate
+          yarn install
 
       - name: Cleanup E2E test database
         env:
