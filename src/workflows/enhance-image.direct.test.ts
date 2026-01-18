@@ -9,7 +9,8 @@ const {
   mockAnalyzeImageV2,
   mockRefundTokens,
   mockPrismaUpdate,
-  mockSharp,
+  mockGetImageDimensionsFromBuffer,
+  mockDetectMimeType,
 } = vi.hoisted(() => ({
   mockDownloadFromR2: vi.fn(),
   mockUploadToR2: vi.fn(),
@@ -17,7 +18,8 @@ const {
   mockAnalyzeImageV2: vi.fn(),
   mockRefundTokens: vi.fn(),
   mockPrismaUpdate: vi.fn(),
-  mockSharp: vi.fn(),
+  mockGetImageDimensionsFromBuffer: vi.fn(),
+  mockDetectMimeType: vi.fn(),
 }));
 
 vi.mock("@/lib/storage/r2-client", () => ({
@@ -52,9 +54,11 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-// Mock sharp
-vi.mock("sharp", () => ({
-  default: mockSharp,
+// Mock image-dimensions
+vi.mock("@/lib/images/image-dimensions", () => ({
+  getImageDimensionsFromBuffer: mockGetImageDimensionsFromBuffer,
+  detectMimeType: mockDetectMimeType,
+  getDefaultDimensions: () => ({ width: 1024, height: 1024, format: "jpeg" }),
 }));
 
 import { enhanceImageDirect } from "./enhance-image.direct";
@@ -71,7 +75,6 @@ describe("enhance-image.direct", () => {
 
   const mockImageBuffer = Buffer.from("mock-image-data");
   const mockEnhancedBuffer = Buffer.from("mock-enhanced-data");
-  const mockFinalBuffer = Buffer.from("mock-final-data");
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -107,20 +110,13 @@ describe("enhance-image.direct", () => {
     mockRefundTokens.mockResolvedValue({ success: true });
     mockPrismaUpdate.mockResolvedValue({});
 
-    // Mock sharp chain
-    const mockSharpInstance = {
-      metadata: vi.fn().mockResolvedValue({
-        width: 1920,
-        height: 1080,
-        format: "jpeg",
-      }),
-      resize: vi.fn().mockReturnThis(),
-      extract: vi.fn().mockReturnThis(),
-      jpeg: vi.fn().mockReturnThis(),
-      toBuffer: vi.fn().mockResolvedValue(mockFinalBuffer),
-    };
-
-    mockSharp.mockReturnValue(mockSharpInstance);
+    // Mock image-dimensions - return dimensions for both original and enhanced images
+    mockGetImageDimensionsFromBuffer.mockReturnValue({
+      width: 1920,
+      height: 1080,
+      format: "jpeg",
+    });
+    mockDetectMimeType.mockReturnValue("image/jpeg");
   });
 
   describe("input validation", () => {
@@ -264,14 +260,14 @@ describe("enhance-image.direct", () => {
     });
 
     it("should log error with stack trace", async () => {
-      const error = new Error("Test error");
-      mockDownloadFromR2.mockRejectedValue(error);
+      mockDownloadFromR2.mockRejectedValue(new Error("Test error"));
 
       await enhanceImageDirect(validInput);
 
+      // Retry logic wraps the error, so we check for the job failure log
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining("Job job-123 failed"),
-        error,
+        expect.any(Error),
       );
     });
 
@@ -284,7 +280,7 @@ describe("enhance-image.direct", () => {
         where: { id: "job-123" },
         data: {
           status: JobStatus.REFUNDED,
-          errorMessage: "Download failed",
+          errorMessage: "Failed to download original image from R2",
           currentStage: null,
         },
       });
@@ -307,29 +303,21 @@ describe("enhance-image.direct", () => {
     });
 
     it("should handle non-Error exceptions", async () => {
+      // When download fails (even with non-Error), retry logic returns null,
+      // which causes processEnhancement to throw a wrapped error
       mockDownloadFromR2.mockRejectedValue("String error");
 
       const result = await enhanceImageDirect(validInput);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("String error");
+      expect(result.error).toBe("Failed to download original image from R2");
     });
   });
 
   describe("image processing", () => {
     it("should handle images without metadata", async () => {
-      const mockSharpInstance = {
-        metadata: vi.fn().mockResolvedValue({
-          width: undefined,
-          height: undefined,
-          format: undefined,
-        }),
-        resize: vi.fn().mockReturnThis(),
-        extract: vi.fn().mockReturnThis(),
-        jpeg: vi.fn().mockReturnThis(),
-        toBuffer: vi.fn().mockResolvedValue(mockFinalBuffer),
-      };
-      mockSharp.mockReturnValue(mockSharpInstance);
+      // Return null to trigger default dimensions fallback
+      mockGetImageDimensionsFromBuffer.mockReturnValue(null);
 
       await enhanceImageDirect(validInput);
 
@@ -360,24 +348,19 @@ describe("enhance-image.direct", () => {
     });
 
     it("should handle missing Gemini output dimensions", async () => {
-      // First call returns metadata with width, second call (for enhanced buffer) returns no width
-      const mockSharpInstance = {
-        metadata: vi
-          .fn()
-          .mockResolvedValueOnce({
-            width: 1920,
-            height: 1080,
-            format: "jpeg",
-          })
-          .mockResolvedValueOnce({
-            width: undefined,
-          }),
-        resize: vi.fn().mockReturnThis(),
-        extract: vi.fn().mockReturnThis(),
-        jpeg: vi.fn().mockReturnThis(),
-        toBuffer: vi.fn().mockResolvedValue(mockFinalBuffer),
-      };
-      mockSharp.mockReturnValue(mockSharpInstance);
+      // First call returns metadata with width (for original), second call (for enhanced buffer)
+      // returns object with undefined dimensions to bypass the fallback but trigger the validation error
+      mockGetImageDimensionsFromBuffer
+        .mockReturnValueOnce({
+          width: 1920,
+          height: 1080,
+          format: "jpeg",
+        })
+        .mockReturnValueOnce({
+          width: undefined,
+          height: undefined,
+          format: "jpeg",
+        });
 
       const result = await enhanceImageDirect(validInput);
 

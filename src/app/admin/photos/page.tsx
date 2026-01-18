@@ -463,10 +463,13 @@ export default function AdminPhotosPage() {
                     <p>
                       <span className="font-medium">Format:</span> {selectedPhoto.format}
                     </p>
-                    <p>
-                      <span className="font-medium">Dimensions:</span> {selectedPhoto.width} x{" "}
-                      {selectedPhoto.height}
-                    </p>
+                    {selectedPhoto.width > 0 && selectedPhoto.height > 0 && (
+                      <p>
+                        <span className="font-medium">Dimensions:</span> {selectedPhoto.width} x
+                        {" "}
+                        {selectedPhoto.height}
+                      </p>
+                    )}
                     <p>
                       <span className="font-medium">Size:</span>{" "}
                       {formatBytes(selectedPhoto.sizeBytes)}
