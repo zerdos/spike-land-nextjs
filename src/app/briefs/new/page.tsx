@@ -13,8 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useBriefStore } from "@/lib/store/brief";
-import { campaignObjectivesSchema, targetAudienceSchema } from "@/lib/validation/brief";
-import { z } from "zod";
+import type { campaignObjectivesSchema, targetAudienceSchema } from "@/lib/validation/brief";
+import type { z } from "zod";
 
 type TargetAudienceFormValues = z.infer<typeof targetAudienceSchema>;
 type CampaignObjectivesFormValues = z.infer<typeof campaignObjectivesSchema>;
