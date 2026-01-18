@@ -5,21 +5,14 @@ import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { ENHANCEMENT_COSTS } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { batchEnhanceImagesDirect, type BatchEnhanceInput } from "@/workflows/batch-enhance.direct";
-import { batchEnhanceImages } from "@/workflows/batch-enhance.workflow";
 import type { EnhancementTier } from "@prisma/client";
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { start } from "workflow/api";
+import { after, NextResponse } from "next/server";
 
 // Force dynamic rendering - skip static page data collection that requires sharp
 export const dynamic = "force-dynamic";
 
 const MAX_BATCH_SIZE = 20;
-
-// Check if we're running in Vercel environment
-function isVercelEnvironment(): boolean {
-  return process.env.VERCEL === "1";
-}
 
 type RouteParams = { params: Promise<{ id: string; }>; };
 
@@ -229,59 +222,19 @@ async function handleEnhanceRequest(
     tier,
   };
 
-  // Start workflow with tryCatch to handle startup failures
-  const startWorkflow = async (): Promise<void> => {
-    if (isVercelEnvironment()) {
-      // Production: Use Vercel's durable workflow infrastructure
-      await start(batchEnhanceImages, [batchInput]);
+  // Start enhancement using Next.js after() for background processing
+  console.log("Starting album batch enhancement (direct mode with after())", {
+    batchId,
+    albumId,
+    imageCount: imagesToEnhance.length,
+  });
 
-      console.log("Album batch enhancement workflow started (production)", {
-        batchId,
-        albumId,
-        imageCount: imagesToEnhance.length,
-      });
-    } else {
-      // Development: Run enhancement directly (fire-and-forget)
-      console.log("Running album batch enhancement directly (dev mode)", {
-        batchId,
-        albumId,
-      });
-
-      // Fire and forget - don't await, let it run in the background
-      batchEnhanceImagesDirect(batchInput).catch((error) => {
-        const errorMessage = error instanceof Error
-          ? error.message
-          : String(error);
-        console.error("Direct album batch enhancement failed:", {
-          error: errorMessage,
-          albumId,
-          tier,
-          imageCount: imagesToEnhance.length,
-        });
-      });
+  after(async () => {
+    const { error } = await tryCatch(batchEnhanceImagesDirect(batchInput));
+    if (error) {
+      console.error(`[Album Enhancement] Batch ${batchId} failed:`, error);
     }
-  };
-
-  const { error: workflowError } = await tryCatch(startWorkflow());
-
-  if (workflowError) {
-    console.error("[Album Enhance] Workflow failed to start:", workflowError);
-
-    // Refund tokens since workflow didn't start
-    await TokenBalanceManager.refundTokens(
-      session.user.id,
-      totalCost,
-      batchId,
-      "Workflow failed to start",
-    );
-
-    return NextResponse.json(
-      {
-        error: "Failed to start enhancement workflow. Tokens have been refunded.",
-      },
-      { status: 500 },
-    );
-  }
+  });
 
   return NextResponse.json({
     success: true,

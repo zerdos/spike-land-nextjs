@@ -1,16 +1,13 @@
 /**
- * Direct Batch Image Enhancement (Dev Mode Fallback)
+ * Direct Batch Image Enhancement
  *
- * This module provides a non-workflow version of the batch image enhancement logic
- * for local development where Vercel Workflow infrastructure is not available.
+ * This module provides batch image enhancement logic that runs directly
+ * using Next.js after() for background processing.
  *
- * In production, use the workflow version via start() from workflow/api.
- *
- * **Dev Mode Limitations:**
- * - Processes images sequentially to avoid rate limits (slower than production)
- * - No automatic retries on transient failures
- * - If Node.js process terminates, in-progress batch jobs may be abandoned
- * - No graceful shutdown handling - consider running small batches in dev mode
+ * **Note:**
+ * - Uses retry logic with exponential backoff for resilience
+ * - Processes images sequentially to avoid rate limits
+ * - Job status is tracked in the database for client polling
  */
 
 import prisma from "@/lib/prisma";

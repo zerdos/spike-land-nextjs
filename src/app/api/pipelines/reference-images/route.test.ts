@@ -26,18 +26,14 @@ vi.mock("@/lib/storage/r2-client", () => ({
   deleteFromR2: (key: string) => mockDeleteFromR2(key),
 }));
 
-// Mock sharp
-vi.mock("sharp", () => ({
-  default: vi.fn(() => ({
-    metadata: () =>
-      Promise.resolve({
-        width: 800,
-        height: 600,
-        format: "jpeg",
-      }),
-    resize: vi.fn().mockReturnThis(),
-    toBuffer: () => Promise.resolve(Buffer.from("processed-image")),
+// Mock image-dimensions
+vi.mock("@/lib/images/image-dimensions", () => ({
+  getImageDimensionsFromBuffer: vi.fn(() => ({
+    width: 800,
+    height: 600,
+    format: "jpeg",
   })),
+  detectMimeType: vi.fn(() => "image/jpeg"),
 }));
 
 // Mock crypto

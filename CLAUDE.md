@@ -348,8 +348,6 @@ spike-land-nextjs/
 │   │       ├── routes/       # API routes (live, auth, AI)
 │   │       └── chatRoom.ts   # Durable Object (Code class)
 │   │
-│   ├── spike-land-renderer/  # Cloudflare Worker renderer
-│   │
 │   └── shared/               # Shared code
 │       └── src/
 │           ├── types/        # TypeScript types

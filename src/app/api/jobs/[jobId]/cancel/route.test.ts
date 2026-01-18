@@ -21,14 +21,6 @@ vi.mock("@/lib/tokens/balance-manager", () => ({
   },
 }));
 
-const mockCancelFn = vi.fn();
-vi.mock("workflow/api", () => ({
-  Run: class MockRun {
-    constructor(public runId: string) {}
-    cancel = mockCancelFn;
-  },
-}));
-
 const { auth } = await import("@/auth");
 const prisma = (await import("@/lib/prisma")).default;
 const { TokenBalanceManager } = await import("@/lib/tokens/balance-manager");
@@ -294,104 +286,5 @@ describe("/api/jobs/[jobId]/cancel", () => {
     expect(response.status).toBe(500);
     const json = await response.json();
     expect(json.error).toBe("Failed to cancel job");
-  });
-
-  it("cancels workflow run when job has workflowRunId", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: mockUserId },
-    } as any);
-
-    const mockJob = {
-      id: mockJobId,
-      userId: mockUserId,
-      status: JobStatus.PROCESSING,
-      tokensCost: 10,
-      workflowRunId: "workflow-run-123",
-    };
-
-    vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue(
-      mockJob as any,
-    );
-
-    const updatedJob = { ...mockJob, status: JobStatus.CANCELLED };
-    vi.mocked(prisma.imageEnhancementJob.update).mockResolvedValue(
-      updatedJob as any,
-    );
-
-    vi.mocked(TokenBalanceManager.refundTokens).mockResolvedValue({
-      success: true,
-      balance: 100,
-      transaction: {} as any,
-    });
-
-    mockCancelFn.mockResolvedValue(undefined);
-
-    const request = new NextRequest(
-      "http://localhost:3000/api/jobs/test-job-id/cancel",
-    );
-    const response = await POST(request, {
-      params: Promise.resolve({ jobId: mockJobId }),
-    });
-
-    expect(response.status).toBe(200);
-    expect(mockCancelFn).toHaveBeenCalled();
-    const json = await response.json();
-    expect(json.success).toBe(true);
-  });
-
-  it("continues cancellation even when workflow cancel fails", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      user: { id: mockUserId },
-    } as any);
-
-    const mockJob = {
-      id: mockJobId,
-      userId: mockUserId,
-      status: JobStatus.PROCESSING,
-      tokensCost: 10,
-      workflowRunId: "workflow-run-456",
-    };
-
-    vi.mocked(prisma.imageEnhancementJob.findUnique).mockResolvedValue(
-      mockJob as any,
-    );
-
-    const updatedJob = { ...mockJob, status: JobStatus.CANCELLED };
-    vi.mocked(prisma.imageEnhancementJob.update).mockResolvedValue(
-      updatedJob as any,
-    );
-
-    vi.mocked(TokenBalanceManager.refundTokens).mockResolvedValue({
-      success: true,
-      balance: 100,
-      transaction: {} as any,
-    });
-
-    // Simulate workflow cancel failure
-    mockCancelFn.mockRejectedValue(new Error("Workflow already completed"));
-
-    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(
-      () => {},
-    );
-
-    const request = new NextRequest(
-      "http://localhost:3000/api/jobs/test-job-id/cancel",
-    );
-    const response = await POST(request, {
-      params: Promise.resolve({ jobId: mockJobId }),
-    });
-
-    // Job cancellation should still succeed even if workflow cancel fails
-    expect(response.status).toBe(200);
-    expect(mockCancelFn).toHaveBeenCalled();
-    expect(consoleWarnSpy).toHaveBeenCalledWith(
-      "Failed to cancel workflow run:",
-      expect.any(Error),
-    );
-    const json = await response.json();
-    expect(json.success).toBe(true);
-    expect(json.tokensRefunded).toBe(10);
-
-    consoleWarnSpy.mockRestore();
   });
 });

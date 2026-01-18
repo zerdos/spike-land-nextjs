@@ -385,12 +385,21 @@ export class LiveRoutes {
 
   async handleScreenShotRoute(
     _request: Request,
-    url: URL,
+    _url: URL,
   ): Promise<Response> {
-    const codeSpace = sanitizeCodeSpace(url.searchParams.get("room"));
-    const origin: string = this.code.getOrigin();
-    return fetch(
-      `https://spike-land-renderer.spikeland.workers.dev/?url=${origin}/live/${codeSpace}/embed&now=${Date.now()}`,
-    ) as unknown as Promise<Response>;
+    // Screenshot service has been removed - the spike-land-renderer worker is deprecated
+    return new Response(
+      JSON.stringify({
+        error: "Screenshot service unavailable",
+        message: "The screenshot rendering service has been deprecated",
+      }),
+      {
+        status: 503,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      },
+    );
   }
 }

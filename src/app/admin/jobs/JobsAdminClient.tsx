@@ -1093,36 +1093,42 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
 
                 {/* Original Image Info (enhancement jobs only) */}
                 {selectedJob.source === "enhancement" &&
-                  (selectedJob.originalWidth || selectedJob.originalHeight) && (
-                  <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
-                    <h3 className="mb-2 text-sm font-semibold">
-                      Original Image
-                    </h3>
-                    <div className="grid gap-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Dimensions</span>
-                        <span>
-                          {selectedJob.originalWidth}x{selectedJob
-                            .originalHeight}
-                        </span>
+                  (((selectedJob.originalWidth ?? 0) > 0 &&
+                    (selectedJob.originalHeight ?? 0) > 0) ||
+                    selectedJob.originalFormat || selectedJob.originalSizeBytes) &&
+                  (
+                    <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                      <h3 className="mb-2 text-sm font-semibold">
+                        Original Image
+                      </h3>
+                      <div className="grid gap-2 text-sm">
+                        {(selectedJob.originalWidth ?? 0) > 0 &&
+                          (selectedJob.originalHeight ?? 0) > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-neutral-500">Dimensions</span>
+                            <span>
+                              {selectedJob.originalWidth}x{selectedJob
+                                .originalHeight}
+                            </span>
+                          </div>
+                        )}
+                        {selectedJob.originalFormat && (
+                          <div className="flex justify-between">
+                            <span className="text-neutral-500">Format</span>
+                            <span>{selectedJob.originalFormat}</span>
+                          </div>
+                        )}
+                        {selectedJob.originalSizeBytes && (
+                          <div className="flex justify-between">
+                            <span className="text-neutral-500">Size</span>
+                            <span>
+                              {formatBytes(selectedJob.originalSizeBytes)}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      {selectedJob.originalFormat && (
-                        <div className="flex justify-between">
-                          <span className="text-neutral-500">Format</span>
-                          <span>{selectedJob.originalFormat}</span>
-                        </div>
-                      )}
-                      {selectedJob.originalSizeBytes && (
-                        <div className="flex justify-between">
-                          <span className="text-neutral-500">Size</span>
-                          <span>
-                            {formatBytes(selectedJob.originalSizeBytes)}
-                          </span>
-                        </div>
-                      )}
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Processing Details (enhancement jobs only) */}
                 {selectedJob.source === "enhancement" && (

@@ -7,7 +7,7 @@
  * Supports both EnhancementJob and McpGenerationJob
  */
 
-// Force dynamic rendering - skip static page data collection (imports sharp via mcp service)
+// Force dynamic rendering - skip static page data collection
 export const dynamic = "force-dynamic";
 
 import { auth } from "@/auth";

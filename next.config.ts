@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { withWorkflow } from "workflow/next";
+import path from "path";
 
 /**
  * Security headers configuration
@@ -47,6 +47,19 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Configure Turbopack for Yarn PnP compatibility
+  turbopack: {
+    root: __dirname,
+    resolveAlias: {
+      // Point to unplugged next package for PnP compatibility
+      next: path.resolve(
+        __dirname,
+        ".yarn/unplugged/next-virtual-425b36e32e/node_modules/next",
+      ),
+    },
+  },
+  // Transpile ESM packages to avoid runtime resolution issues with PnP
+  transpilePackages: ["next-mdx-remote"],
   // Externalize sharp to load native binaries at runtime instead of bundling
   serverExternalPackages: ["sharp"],
   typescript: {
@@ -122,6 +135,16 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [];
   },
+  // Webpack configuration for Yarn PnP compatibility
+  webpack: (config) => {
+    // Map @prisma/client to the generated Prisma client location
+    // This ensures both TypeScript and webpack resolve to the same generated client
+    config.resolve.alias["@prisma/client"] = path.resolve(
+      __dirname,
+      "src/generated/prisma",
+    );
+    return config;
+  },
 };
 
-export default withWorkflow(nextConfig);
+export default nextConfig;

@@ -1,32 +1,12 @@
 import { auth } from "@/auth";
 import type { ReferenceImage } from "@/lib/ai/pipeline-types";
+import { detectMimeType, getImageDimensionsFromBuffer } from "@/lib/images/image-dimensions";
 import prisma from "@/lib/prisma";
 import { deleteFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import type { Prisma } from "@prisma/client";
 import crypto from "crypto";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-
-// Force dynamic rendering - skip static page data collection (sharp requires native modules)
-export const dynamic = "force-dynamic";
-
-// Lazy-load sharp to prevent build-time native module loading
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _sharp: any = null;
-async function getSharp() {
-  if (!_sharp) {
-    const mod = await import("sharp");
-    _sharp = mod.default || mod;
-  }
-  return _sharp;
-}
-
-// Type for sharp metadata results
-interface SharpMetadata {
-  width?: number;
-  height?: number;
-  format?: string;
-}
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file
 const MAX_REFERENCE_IMAGES = 3; // Maximum reference images per pipeline
@@ -181,58 +161,33 @@ export async function POST(
   }
   const buffer = Buffer.from(arrayBuffer);
 
-  // Load sharp for image processing
-  const sharp = await getSharp();
+  // Get image metadata using lightweight header parsing (no native deps)
+  // Note: Client should pre-resize images using browser-image-processor.ts
+  const dimensions = getImageDimensionsFromBuffer(buffer);
 
-  // Get image metadata and validate
-  const { data: metadata, error: sharpError } = await tryCatch(
-    sharp(buffer).metadata() as Promise<SharpMetadata>,
-  );
-
-  if (
-    sharpError || !metadata?.width || !metadata?.height || !metadata?.format
-  ) {
+  if (!dimensions || !dimensions.width || !dimensions.height) {
     return NextResponse.json(
       { success: false, error: "Invalid image format" },
       { status: 400 },
     );
   }
 
-  // Resize if needed (max 1024px on longest side for reference images)
-  const MAX_REF_DIMENSION = 1024;
-  let processedBuffer: Buffer = buffer;
-
-  if (
-    metadata.width > MAX_REF_DIMENSION || metadata.height > MAX_REF_DIMENSION
-  ) {
-    const { data: resized, error: resizeError } = await tryCatch(
-      sharp(buffer)
-        .resize(MAX_REF_DIMENSION, MAX_REF_DIMENSION, {
-          fit: "inside",
-          withoutEnlargement: true,
-        })
-        .toBuffer() as Promise<Buffer>,
-    );
-    if (resizeError || !resized) {
-      return NextResponse.json(
-        { success: false, error: "Failed to process image" },
-        { status: 500 },
-      );
-    }
-    processedBuffer = resized;
-  }
+  // Use the buffer directly - client should pre-resize before upload
+  // Max dimension recommendation is 1024px for reference images
+  const processedBuffer: Buffer = buffer;
 
   // Generate unique ID and R2 key
   const imageId = crypto.randomUUID();
-  const extension = metadata.format === "jpeg" ? "jpg" : metadata.format;
+  const extension = dimensions.format === "jpeg" ? "jpg" : dimensions.format;
   const r2Key = `pipelines/${pipelineId}/references/${imageId}.${extension}`;
+  const contentType = detectMimeType(buffer);
 
   // Upload to R2
   const { data: uploadResult, error: uploadError } = await tryCatch(
     uploadToR2({
       key: r2Key,
       buffer: processedBuffer,
-      contentType: `image/${metadata.format}`,
+      contentType,
       metadata: {
         pipelineId,
         userId: session.user.id,

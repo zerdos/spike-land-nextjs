@@ -1,30 +1,10 @@
 import { auth } from "@/auth";
+import { getImageDimensionsFromBuffer } from "@/lib/images/image-dimensions";
 import { hasWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import { isR2Configured, uploadToR2 } from "@/lib/storage/r2-client";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-
-// Force dynamic rendering - skip static page data collection (sharp requires native modules)
-export const dynamic = "force-dynamic";
-
-// Lazy-load sharp to prevent build-time native module loading
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _sharp: any = null;
-async function getSharp() {
-  if (!_sharp) {
-    const mod = await import("sharp");
-    _sharp = mod.default || mod;
-  }
-  return _sharp;
-}
-
-// Type for sharp metadata results
-interface SharpMetadata {
-  width?: number;
-  height?: number;
-  format?: string;
-}
 
 // Maximum file size: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -136,52 +116,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Failed to read file" }, { status: 500 });
   }
 
-  let buffer = Buffer.from(arrayBuffer);
+  const buffer = Buffer.from(arrayBuffer);
   let width: number | undefined;
   let height: number | undefined;
-  let contentType = file.type;
+  const contentType = file.type;
 
-  // Process image with sharp (except SVG)
+  // Get image dimensions using lightweight header parsing (no native deps)
+  // Note: Client should pre-resize images using browser-image-processor.ts
+  // SVG files don't have dimensions in headers
   if (file.type !== "image/svg+xml") {
-    const sharp = await getSharp();
-    const { data: metadata, error: metadataError } = await tryCatch(
-      sharp(buffer).metadata() as Promise<SharpMetadata>,
-    );
-
-    if (!metadataError && metadata) {
-      width = metadata.width;
-      height = metadata.height;
-
-      // Optimize the image (resize if too large, convert to webp for efficiency)
-      const MAX_DIMENSION = 1024;
-      if (
-        (metadata.width && metadata.width > MAX_DIMENSION) ||
-        (metadata.height && metadata.height > MAX_DIMENSION)
-      ) {
-        const { data: optimizedBuffer, error: resizeError } = await tryCatch(
-          sharp(buffer)
-            .resize(MAX_DIMENSION, MAX_DIMENSION, {
-              fit: "inside",
-              withoutEnlargement: true,
-            })
-            .webp({ quality: 85 })
-            .toBuffer() as Promise<Buffer>,
-        );
-
-        if (!resizeError && optimizedBuffer) {
-          buffer = Buffer.from(optimizedBuffer);
-          contentType = "image/webp";
-
-          // Get new dimensions
-          const { data: newMetadata } = await tryCatch(
-            sharp(buffer).metadata() as Promise<SharpMetadata>,
-          );
-          if (newMetadata) {
-            width = newMetadata.width;
-            height = newMetadata.height;
-          }
-        }
-      }
+    const dimensions = getImageDimensionsFromBuffer(buffer);
+    if (dimensions) {
+      width = dimensions.width;
+      height = dimensions.height;
     }
   }
 

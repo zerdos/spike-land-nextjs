@@ -6,7 +6,7 @@
  * Supports both EnhancementJob and McpGenerationJob
  */
 
-// Force dynamic rendering - skip static page data collection (imports sharp via mcp service)
+// Force dynamic rendering - skip static page data collection
 export const dynamic = "force-dynamic";
 
 import { auth } from "@/auth";
@@ -20,7 +20,7 @@ import { enhanceImageDirect } from "@/workflows/enhance-image.direct";
 import type { EnhancementTier } from "@prisma/client";
 import { JobStatus } from "@prisma/client";
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 interface RouteParams {
   params: Promise<{ jobId: string; }>;
@@ -118,6 +118,8 @@ async function rerunEnhancementJob(
     );
   }
 
+  // Store validated R2 key for use in after() callback (TypeScript can't track null-narrowing across closures)
+  const originalR2Key = job.image.originalR2Key;
   const tokensCost = ENHANCEMENT_COSTS[job.tier] || 0;
 
   // Consume tokens for new job
@@ -168,16 +170,21 @@ async function rerunEnhancementJob(
     );
   }
 
-  // Start enhancement in background
-  enhanceImageDirect({
-    jobId: newJob.id,
-    imageId: job.image.id,
-    userId: job.userId,
-    originalR2Key: job.image.originalR2Key,
-    tier: job.tier,
-    tokensCost,
-  }).catch((error) => {
-    console.error(`Rerun enhancement job ${newJob.id} failed:`, error);
+  // Start enhancement in background using Next.js after()
+  after(async () => {
+    const { error } = await tryCatch(
+      enhanceImageDirect({
+        jobId: newJob.id,
+        imageId: job.image.id,
+        userId: job.userId,
+        originalR2Key,
+        tier: job.tier,
+        tokensCost,
+      }),
+    );
+    if (error) {
+      console.error(`[Admin Rerun] Job ${newJob.id} failed:`, error);
+    }
   });
 
   return NextResponse.json({

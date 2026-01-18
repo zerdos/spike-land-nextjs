@@ -6,7 +6,6 @@ const {
   mockPrisma,
   mockAuth,
   mockRateLimit,
-  mockWorkflowStart,
   mockEnhanceImageDirect,
   mockLogger,
   mockTokenBalanceManager,
@@ -35,7 +34,6 @@ const {
     },
     mockAuth: vi.fn(),
     mockRateLimit: vi.fn(),
-    mockWorkflowStart: vi.fn(),
     mockEnhanceImageDirect: vi.fn(),
     mockLogger: {
       child: vi.fn(() => ({
@@ -63,17 +61,23 @@ vi.mock("@/lib/rate-limiter", () => ({
   rateLimitConfigs: { imageEnhancement: {} },
 }));
 
-vi.mock("workflow/api", () => ({
-  start: mockWorkflowStart,
-}));
-
-vi.mock("@/workflows/enhance-image.workflow", () => ({
-  enhanceImage: vi.fn(),
-}));
-
 vi.mock("@/workflows/enhance-image.direct", () => ({
   enhanceImageDirect: mockEnhanceImageDirect,
 }));
+
+// Mock next/server after() function
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return {
+    ...actual,
+    after: vi.fn((callback: () => Promise<void>) => {
+      // Execute callback immediately in tests, handling any errors
+      Promise.resolve().then(callback).catch(() => {
+        // Errors in after() callbacks are logged, not thrown
+      });
+    }),
+  };
+});
 
 vi.mock("@/lib/errors/structured-logger", () => ({
   generateRequestId: vi.fn(() => "test-request-id"),
@@ -99,19 +103,12 @@ function createMockRequest(body: unknown): NextRequest {
 describe("POST /api/images/parallel-enhance", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Set Vercel environment to test workflow path by default
-    process.env.VERCEL = "1";
 
     // Set default mock return values
     mockAuth.mockResolvedValue({ user: { id: "user-123" } });
     mockRateLimit.mockResolvedValue({ isLimited: false });
     mockTokenBalanceManager.hasEnoughTokens.mockResolvedValue(true);
-    mockWorkflowStart.mockResolvedValue({ runId: "workflow-run-123" });
     mockEnhanceImageDirect.mockResolvedValue(undefined);
-  });
-
-  afterEach(() => {
-    delete process.env.VERCEL;
   });
 
   // ========================================
@@ -761,13 +758,11 @@ describe("POST /api/images/parallel-enhance", () => {
   });
 
   // ========================================
-  // 7. Workflow Execution Tests (4 tests)
+  // 7. Background Execution Tests (3 tests)
   // ========================================
 
-  describe("Workflow Execution", () => {
-    it("should call start() with workflow in Vercel environment", async () => {
-      process.env.VERCEL = "1";
-
+  describe("Background Execution", () => {
+    it("should call enhanceImageDirect for background processing", async () => {
       mockPrisma.enhancedImage.findUnique.mockResolvedValue({
         id: "img-1",
         userId: "user-123",
@@ -800,110 +795,7 @@ describe("POST /api/images/parallel-enhance", () => {
       });
       await POST(req);
 
-      // Wait a bit for async workflow promises
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(mockWorkflowStart).toHaveBeenCalledWith(
-        expect.any(Function),
-        [
-          expect.objectContaining({
-            jobId: "job-1",
-            imageId: "img-1",
-            userId: "user-123",
-            originalR2Key: "originals/img-1.jpg",
-            tier: "TIER_2K",
-            tokensCost: 5,
-          }),
-        ],
-      );
-    });
-
-    it("should store workflowRunId in Vercel environment", async () => {
-      process.env.VERCEL = "1";
-      mockWorkflowStart.mockResolvedValue({ runId: "workflow-run-456" });
-
-      mockPrisma.enhancedImage.findUnique.mockResolvedValue({
-        id: "img-1",
-        userId: "user-123",
-        originalR2Key: "originals/img-1.jpg",
-      });
-
-      mockPrisma.$transaction.mockImplementation(async (callback) => {
-        return callback(mockPrisma);
-      });
-
-      mockPrisma.userTokenBalance.findUnique.mockResolvedValue({
-        userId: "user-123",
-        balance: 100,
-      });
-
-      mockPrisma.userTokenBalance.update.mockResolvedValue({
-        userId: "user-123",
-        balance: 95,
-      });
-
-      mockPrisma.imageEnhancementJob.create.mockResolvedValue({
-        id: "job-1",
-        tier: "TIER_2K",
-        tokensCost: 5,
-      });
-
-      mockPrisma.imageEnhancementJob.update.mockResolvedValue({
-        id: "job-1",
-        workflowRunId: "workflow-run-456",
-      });
-
-      const req = createMockRequest({
-        imageId: "img-1",
-        tiers: ["TIER_2K"],
-      });
-      await POST(req);
-
-      // Wait a bit for async workflow promises
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(mockPrisma.imageEnhancementJob.update).toHaveBeenCalledWith({
-        where: { id: "job-1" },
-        data: { workflowRunId: "workflow-run-456" },
-      });
-    });
-
-    it("should call enhanceImageDirect in dev environment", async () => {
-      delete process.env.VERCEL;
-
-      mockPrisma.enhancedImage.findUnique.mockResolvedValue({
-        id: "img-1",
-        userId: "user-123",
-        originalR2Key: "originals/img-1.jpg",
-      });
-
-      mockPrisma.$transaction.mockImplementation(async (callback) => {
-        return callback(mockPrisma);
-      });
-
-      mockPrisma.userTokenBalance.findUnique.mockResolvedValue({
-        userId: "user-123",
-        balance: 100,
-      });
-
-      mockPrisma.userTokenBalance.update.mockResolvedValue({
-        userId: "user-123",
-        balance: 95,
-      });
-
-      mockPrisma.imageEnhancementJob.create.mockResolvedValue({
-        id: "job-1",
-        tier: "TIER_2K",
-        tokensCost: 5,
-      });
-
-      const req = createMockRequest({
-        imageId: "img-1",
-        tiers: ["TIER_2K"],
-      });
-      await POST(req);
-
-      // Wait a bit for async workflow promises
+      // Wait a bit for async promises (after() executes immediately in test)
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockEnhanceImageDirect).toHaveBeenCalledWith(
@@ -918,99 +810,7 @@ describe("POST /api/images/parallel-enhance", () => {
       );
     });
 
-    it("should handle workflow start errors gracefully", async () => {
-      process.env.VERCEL = "1";
-      mockWorkflowStart.mockRejectedValue(new Error("Workflow start failed"));
-
-      mockPrisma.enhancedImage.findUnique.mockResolvedValue({
-        id: "img-1",
-        userId: "user-123",
-        originalR2Key: "originals/img-1.jpg",
-      });
-
-      mockPrisma.$transaction.mockImplementation(async (callback) => {
-        return callback(mockPrisma);
-      });
-
-      mockPrisma.userTokenBalance.findUnique.mockResolvedValue({
-        userId: "user-123",
-        balance: 100,
-      });
-
-      mockPrisma.userTokenBalance.update.mockResolvedValue({
-        userId: "user-123",
-        balance: 95,
-      });
-
-      mockPrisma.imageEnhancementJob.create.mockResolvedValue({
-        id: "job-1",
-        tier: "TIER_2K",
-        tokensCost: 5,
-      });
-
-      const req = createMockRequest({
-        imageId: "img-1",
-        tiers: ["TIER_2K"],
-      });
-      const res = await POST(req);
-
-      // Wait a bit for async workflow promises
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      // Should still return 200 because workflows are fire-and-forget
-      expect(res.status).toBe(200);
-    });
-
-    it("should handle workflowRunId update failure gracefully", async () => {
-      process.env.VERCEL = "1";
-      mockWorkflowStart.mockResolvedValue({ runId: "workflow-run-789" });
-
-      mockPrisma.enhancedImage.findUnique.mockResolvedValue({
-        id: "img-1",
-        userId: "user-123",
-        originalR2Key: "originals/img-1.jpg",
-      });
-
-      mockPrisma.$transaction.mockImplementation(async (callback) => {
-        return callback(mockPrisma);
-      });
-
-      mockPrisma.userTokenBalance.findUnique.mockResolvedValue({
-        userId: "user-123",
-        balance: 100,
-      });
-
-      mockPrisma.userTokenBalance.update.mockResolvedValue({
-        userId: "user-123",
-        balance: 95,
-      });
-
-      mockPrisma.imageEnhancementJob.create.mockResolvedValue({
-        id: "job-1",
-        tier: "TIER_2K",
-        tokensCost: 5,
-      });
-
-      // Make update throw error
-      mockPrisma.imageEnhancementJob.update.mockRejectedValue(
-        new Error("Database update failed"),
-      );
-
-      const req = createMockRequest({
-        imageId: "img-1",
-        tiers: ["TIER_2K"],
-      });
-      const res = await POST(req);
-
-      // Wait a bit for async workflow promises
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      // Should still return 200 - error is logged but not thrown
-      expect(res.status).toBe(200);
-    });
-
-    it("should handle enhanceImageDirect failure in dev mode", async () => {
-      delete process.env.VERCEL;
+    it("should handle enhanceImageDirect failure gracefully", async () => {
       mockEnhanceImageDirect.mockRejectedValue(new Error("Enhancement failed"));
 
       mockPrisma.enhancedImage.findUnique.mockResolvedValue({
@@ -1045,105 +845,14 @@ describe("POST /api/images/parallel-enhance", () => {
       });
       const res = await POST(req);
 
-      // Wait a bit for async workflow promises and error handler
+      // Wait a bit for async promises and error handler
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      // Should still return 200 - error is caught and logged
-      expect(res.status).toBe(200);
-    });
-
-    it("should handle workflow without runId in Vercel environment", async () => {
-      process.env.VERCEL = "1";
-      mockWorkflowStart.mockResolvedValue({} as any); // No runId
-
-      mockPrisma.enhancedImage.findUnique.mockResolvedValue({
-        id: "img-1",
-        userId: "user-123",
-        originalR2Key: "originals/img-1.jpg",
-      });
-
-      mockPrisma.$transaction.mockImplementation(async (callback) => {
-        return callback(mockPrisma);
-      });
-
-      mockPrisma.userTokenBalance.findUnique.mockResolvedValue({
-        userId: "user-123",
-        balance: 100,
-      });
-
-      mockPrisma.userTokenBalance.update.mockResolvedValue({
-        userId: "user-123",
-        balance: 95,
-      });
-
-      mockPrisma.imageEnhancementJob.create.mockResolvedValue({
-        id: "job-1",
-        tier: "TIER_2K",
-        tokensCost: 5,
-      });
-
-      const req = createMockRequest({
-        imageId: "img-1",
-        tiers: ["TIER_2K"],
-      });
-      const res = await POST(req);
-
-      // Wait a bit for async workflow promises
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      // Should not try to update job since there's no runId
-      expect(mockPrisma.imageEnhancementJob.update).not.toHaveBeenCalled();
-      expect(res.status).toBe(200);
-    });
-
-    it("should handle non-Error workflowRunId update failure", async () => {
-      process.env.VERCEL = "1";
-      mockWorkflowStart.mockResolvedValue({ runId: "workflow-run-999" });
-
-      mockPrisma.enhancedImage.findUnique.mockResolvedValue({
-        id: "img-1",
-        userId: "user-123",
-        originalR2Key: "originals/img-1.jpg",
-      });
-
-      mockPrisma.$transaction.mockImplementation(async (callback) => {
-        return callback(mockPrisma);
-      });
-
-      mockPrisma.userTokenBalance.findUnique.mockResolvedValue({
-        userId: "user-123",
-        balance: 100,
-      });
-
-      mockPrisma.userTokenBalance.update.mockResolvedValue({
-        userId: "user-123",
-        balance: 95,
-      });
-
-      mockPrisma.imageEnhancementJob.create.mockResolvedValue({
-        id: "job-1",
-        tier: "TIER_2K",
-        tokensCost: 5,
-      });
-
-      // Make update throw non-Error
-      mockPrisma.imageEnhancementJob.update.mockRejectedValue("String error");
-
-      const req = createMockRequest({
-        imageId: "img-1",
-        tiers: ["TIER_2K"],
-      });
-      const res = await POST(req);
-
-      // Wait a bit for async workflow promises
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      // Should still return 200
+      // Should still return 200 - error is caught and logged (fire-and-forget)
       expect(res.status).toBe(200);
     });
 
     it("should handle non-Error in enhanceImageDirect failure", async () => {
-      delete process.env.VERCEL;
       mockEnhanceImageDirect.mockRejectedValue("String error");
 
       mockPrisma.enhancedImage.findUnique.mockResolvedValue({
@@ -1178,7 +887,7 @@ describe("POST /api/images/parallel-enhance", () => {
       });
       const res = await POST(req);
 
-      // Wait a bit for async workflow promises and error handler
+      // Wait a bit for async promises and error handler
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Should still return 200

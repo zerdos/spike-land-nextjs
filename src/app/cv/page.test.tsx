@@ -58,7 +58,9 @@ describe("CV Page", () => {
 
     it("should mention AI tools and productivity", () => {
       render(<CVPage />);
-      expect(screen.getByText(/Claude Code/i)).toBeInTheDocument();
+      // Claude Code appears multiple times in the page
+      const elements = screen.getAllByText(/Claude Code/i);
+      expect(elements.length).toBeGreaterThan(0);
     });
 
     it("should display the quality triangle quote", () => {
@@ -100,7 +102,7 @@ describe("CV Page", () => {
       render(<CVPage />);
       expect(screen.getAllByText("Spike Land").length).toBeGreaterThan(0);
       expect(
-        screen.getByText(/production platform proving that one developer/i),
+        screen.getByText(/AI-powered platform for creating, modifying, and deploying/i),
       ).toBeInTheDocument();
     });
 
