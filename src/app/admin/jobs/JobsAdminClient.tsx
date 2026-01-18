@@ -241,7 +241,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
   };
 
   const fetchJobs = useCallback(
-    async (
+    async ( // Note: This function is memoized and stable
       status: JobStatus | null,
       type: JobSource | "all",
       page: number,
@@ -269,18 +269,13 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
         setPagination(data.pagination);
         setStatusCounts(data.statusCounts);
         setTypeCounts(data.typeCounts);
-
-        // Clear selection if the selected job is no longer in the list
-        if (selectedJob && !data.jobs.find((j) => j.id === selectedJob.id)) {
-          setSelectedJob(null);
-        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
     },
-    [selectedJob],
+    [], // All dependencies are state setters, which are stable.
   );
 
   // Fetch specific job by ID (for initial load with jobId)
@@ -454,13 +449,20 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
     }
   }, [initialJobId, fetchJobById]);
 
-  // Note: eslint-disable is intentional here. We exclude:
-  // - fetchJobs: it's memoized with useCallback and stable
-  // - searchQuery: changes are handled separately via handleSearch() to avoid fetches on every keystroke
+  // When the list of jobs changes, check if the currently selected job still exists in the new list.
+  // If not, deselect it. This prevents a stale job detail view.
+  useEffect(() => {
+    if (selectedJob && !jobs.find((j) => j.id === selectedJob.id)) {
+      setSelectedJob(null);
+    }
+  }, [jobs, selectedJob]);
+
+  // Main data fetching effect.
+  // Refetches jobs when filters (tab, type), pagination, or search query change.
   useEffect(() => {
     const status = STATUS_TABS.find((t) => t.key === activeTab)?.status ?? null;
     fetchJobs(status, activeType, pagination.page, searchQuery);
-  }, [activeTab, activeType, pagination.page]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeTab, activeType, pagination.page, fetchJobs, searchQuery]);
 
   const handleSearch = () => {
     setPagination((p) => ({ ...p, page: 1 }));

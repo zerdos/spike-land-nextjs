@@ -238,7 +238,10 @@ export async function attributeConversion(
     conversionType,
     conversionValue: value,
     platform: await determineSessionPlatform(firstSession),
-    externalCampaignId: firstSession.gclid || firstSession.fbclid || undefined,
+    externalCampaignId: (await getExternalCampaignId(firstSession)) ||
+      firstSession.gclid ||
+      firstSession.fbclid ||
+      undefined,
     utmParams: extractUTMFromSession(firstSession),
   });
 
@@ -252,14 +255,15 @@ export async function attributeConversion(
     conversionType,
     conversionValue: value,
     platform: await determineSessionPlatform(lastSession),
-    externalCampaignId: lastSession.gclid || lastSession.fbclid || undefined,
+    externalCampaignId: (await getExternalCampaignId(lastSession)) ||
+      lastSession.gclid ||
+      lastSession.fbclid ||
+      undefined,
     utmParams: extractUTMFromSession(lastSession),
   });
 
   // Create linear attribution records for all sessions
-  const linearValue = value && sessions.length > 0
-    ? value / sessions.length
-    : undefined;
+  const linearValue = value && sessions.length > 0 ? value / sessions.length : undefined;
   for (const session of sessions) {
     await createAttribution({
       userId,
@@ -269,7 +273,10 @@ export async function attributeConversion(
       conversionType,
       conversionValue: linearValue,
       platform: await determineSessionPlatform(session),
-      externalCampaignId: session.gclid || session.fbclid || undefined,
+      externalCampaignId: (await getExternalCampaignId(session)) ||
+        session.gclid ||
+        session.fbclid ||
+        undefined,
       utmParams: extractUTMFromSession(session),
     });
   }
@@ -402,6 +409,31 @@ async function determineSessionPlatform(
   }
 
   return "DIRECT";
+}
+
+/**
+ * Get the external campaign ID from a session's UTM campaign
+ *
+ * @param session - The visitor session
+ * @returns The external campaign ID or null
+ */
+async function getExternalCampaignId(
+  session: VisitorSession,
+): Promise<string | null> {
+  if (!session.utmCampaign) {
+    return null;
+  }
+
+  const campaignLink = await prisma.campaignLink.findUnique({
+    where: {
+      utmCampaign_platform: {
+        utmCampaign: session.utmCampaign,
+        platform: await determineSessionPlatform(session),
+      },
+    },
+  });
+
+  return campaignLink?.externalCampaignId || null;
 }
 
 /**
