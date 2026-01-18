@@ -13,13 +13,14 @@ export const metadata: Metadata = {
 export default async function InboxRoutingSettingsPage({
   params,
 }: {
-  params: { workspaceSlug: string; };
+  params: Promise<{ workspaceSlug: string; }>;
 }) {
+  const { workspaceSlug } = await params;
   const session = await auth();
 
   // First, look up the workspace by slug
   const workspaceRecord = await prisma.workspace.findUnique({
-    where: { slug: params.workspaceSlug },
+    where: { slug: workspaceSlug },
     select: { id: true },
   });
 
@@ -47,7 +48,7 @@ export default async function InboxRoutingSettingsPage({
       <Separator />
       <RoutingSettingsForm
         initialSettings={settings}
-        workspaceSlug={params.workspaceSlug}
+        workspaceSlug={workspaceSlug}
       />
     </div>
   );

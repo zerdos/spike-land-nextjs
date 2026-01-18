@@ -257,7 +257,7 @@ export function StreamsClient() {
    */
   const handleConnectAccounts = useCallback(() => {
     if (workspace?.slug) {
-      router.push(`/orbit/${workspace.slug}/settings`);
+      router.push(`/orbit/${workspace.slug}/settings/accounts`);
     }
   }, [router, workspace?.slug]);
 

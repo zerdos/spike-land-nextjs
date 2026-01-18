@@ -8,13 +8,14 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
+  const { workspaceSlug } = await params;
   const session = await auth();
 
   // First, look up the workspace by slug
   const workspaceRecord = await prisma.workspace.findUnique({
-    where: { slug: params.workspaceSlug },
+    where: { slug: workspaceSlug },
     select: { id: true },
   });
 
@@ -35,13 +36,14 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
+  const { workspaceSlug } = await params;
   const session = await auth();
 
   // First, look up the workspace by slug
   const workspaceRecord = await prisma.workspace.findUnique({
-    where: { slug: params.workspaceSlug },
+    where: { slug: workspaceSlug },
     select: { id: true },
   });
 
