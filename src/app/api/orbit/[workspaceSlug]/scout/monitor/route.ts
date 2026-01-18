@@ -1,7 +1,13 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
+import { type Prisma, SocialPlatform } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
+
+const VALID_PLATFORMS = Object.values(SocialPlatform);
+
+function isValidSocialPlatform(value: string): value is SocialPlatform {
+  return VALID_PLATFORMS.includes(value as SocialPlatform);
+}
 
 interface RouteContext {
   params: {
@@ -41,8 +47,9 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
     };
 
     if (topicId) where.topicId = topicId;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (platform) where.platform = platform as any;
+    if (platform && isValidSocialPlatform(platform)) {
+      where.platform = platform;
+    }
 
     const results = await prisma.scoutResult.findMany({
       where,
