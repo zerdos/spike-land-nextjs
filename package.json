@@ -278,6 +278,10 @@
     "esbuild@0.23.1": "0.25.0",
     "tsx@4.19.2": "4.21.0"
   },
+  "resolutions-comments": {
+    "esbuild@0.14.47": "Source dependency not identified; this resolution may be obsolete. See docs/DEPENDENCY_RESOLUTIONS.md for details.",
+    "esbuild@0.23.1": "Required by @tanstack/router-generator. Overridden to ensure a consistent version across the project. See docs/DEPENDENCY_RESOLUTIONS.md."
+  },
   "workspaces": [
     "packages/*"
   ]
