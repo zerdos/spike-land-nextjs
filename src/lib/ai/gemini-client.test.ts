@@ -42,6 +42,27 @@ vi.mock("@google/genai", () => ({
   GoogleGenAI: MockGoogleGenAI,
 }));
 
+/**
+ * Helper to find a JSON log call matching the expected message.
+ * The structured logger outputs JSON strings to console.
+ */
+function findJsonLogCall(
+  mockFn: ReturnType<typeof vi.fn>,
+  expectedMessage: string,
+): Record<string, unknown> | undefined {
+  for (const call of mockFn.mock.calls) {
+    try {
+      const parsed = JSON.parse(call[0]);
+      if (parsed.message === expectedMessage) {
+        return parsed;
+      }
+    } catch {
+      // Not JSON, skip
+    }
+  }
+  return undefined;
+}
+
 describe("gemini-client", () => {
   describe("analyzeImage", () => {
     beforeEach(() => {
@@ -103,12 +124,26 @@ describe("gemini-client", () => {
 
       await analyzeImage("testImageData", "image/png");
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("image/png"),
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("13 chars"), // 'testImageData'.length
-      );
+      // Logger outputs JSON with structured fields
+      // Find the log entry that matches both message and mimeType
+      let foundEntry: Record<string, unknown> | undefined;
+      for (const call of consoleSpy.mock.calls) {
+        try {
+          const parsed = JSON.parse(call[0]);
+          if (
+            parsed.message === "Analyzing image with vision model" &&
+            parsed.mimeType === "image/png"
+          ) {
+            foundEntry = parsed;
+            break;
+          }
+        } catch {
+          // Not JSON, skip
+        }
+      }
+      expect(foundEntry).toBeDefined();
+      expect(foundEntry!["level"]).toBe("INFO");
+      expect(foundEntry!["dataLength"]).toBe(13); // 'testImageData'.length
 
       consoleSpy.mockRestore();
     });
@@ -671,12 +706,14 @@ describe("gemini-client", () => {
         ],
       });
 
-      // Verify reference images are logged
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "Including 1 reference image(s) for style guidance",
-        ),
+      // Logger outputs JSON with structured fields
+      const logEntry = findJsonLogCall(
+        consoleSpy,
+        "Including reference image(s) for style guidance",
       );
+      expect(logEntry).toBeDefined();
+      expect(logEntry!["level"]).toBe("INFO");
+      expect(logEntry!["count"]).toBe(1);
 
       // Verify the API was called with correct content structure
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
@@ -774,14 +811,15 @@ describe("gemini-client", () => {
 
       await enhanceImageWithGemini(defaultParams);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "Generating enhanced image with Gemini API using model:",
-        ),
+      // Logger outputs JSON with structured fields
+      const logEntry = findJsonLogCall(
+        consoleSpy,
+        "Generating enhanced image with Gemini API",
       );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Tier: 1K, Resolution: 1024x1024"),
-      );
+      expect(logEntry).toBeDefined();
+      expect(logEntry!["level"]).toBe("INFO");
+      expect(logEntry!["tier"]).toBe("1K");
+      expect(logEntry!["resolution"]).toBe("1024x1024");
 
       consoleSpy.mockRestore();
     });
@@ -1048,17 +1086,15 @@ describe("gemini-client", () => {
 
       await generateImageWithGemini(defaultParams);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "Generating image with Gemini API using model:",
-        ),
+      // Logger outputs JSON with structured fields
+      const logEntry = findJsonLogCall(
+        consoleSpy,
+        "Generating image with Gemini API",
       );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Tier: 1K"),
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Prompt:"),
-      );
+      expect(logEntry).toBeDefined();
+      expect(logEntry!["level"]).toBe("INFO");
+      expect(logEntry!["tier"]).toBe("1K");
+      expect(logEntry!["prompt"]).toBeDefined();
 
       consoleSpy.mockRestore();
     });
@@ -1084,14 +1120,14 @@ describe("gemini-client", () => {
       const longPrompt = "a".repeat(150);
       await generateImageWithGemini({ prompt: longPrompt, tier: "1K" });
 
-      // Find the log call that contains "Prompt:"
-      const promptLog = consoleSpy.mock.calls.find(
-        (call) => typeof call[0] === "string" && call[0].includes("Prompt:"),
+      // Logger outputs JSON with structured fields
+      const logEntry = findJsonLogCall(
+        consoleSpy,
+        "Generating image with Gemini API",
       );
-
-      expect(promptLog).toBeDefined();
+      expect(logEntry).toBeDefined();
       // Prompt should be truncated to 100 chars + "..."
-      expect(promptLog![0]).toContain("...");
+      expect(logEntry!["prompt"]).toContain("...");
 
       consoleSpy.mockRestore();
     });
@@ -1333,12 +1369,14 @@ describe("gemini-client", () => {
 
       await modifyImageWithGemini(defaultParams);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Modifying image with Gemini API using model:"),
+      // Logger outputs JSON with structured fields
+      const logEntry = findJsonLogCall(
+        consoleSpy,
+        "Modifying image with Gemini API",
       );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Tier: 1K"),
-      );
+      expect(logEntry).toBeDefined();
+      expect(logEntry!["level"]).toBe("INFO");
+      expect(logEntry!["tier"]).toBe("1K");
 
       consoleSpy.mockRestore();
     });
@@ -1417,7 +1455,8 @@ describe("gemini-client", () => {
     });
 
     it("should log skipped chunks without valid candidates", async () => {
-      const consoleSpy = vi.spyOn(console, "log");
+      // logger.warn outputs to console.warn
+      const consoleWarnSpy = vi.spyOn(console, "warn");
       const imageBase64 = Buffer.from("test").toString("base64");
 
       async function* mockStream() {
@@ -1437,11 +1476,16 @@ describe("gemini-client", () => {
 
       await generateImageWithGemini({ prompt: "test", tier: "1K" });
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/Skipping chunk \d+: no valid candidates/),
+      // Logger outputs JSON with structured fields
+      const logEntry = findJsonLogCall(
+        consoleWarnSpy,
+        "Skipping chunk, no valid candidates",
       );
+      expect(logEntry).toBeDefined();
+      expect(logEntry!["level"]).toBe("WARN");
+      expect(logEntry!["chunk"]).toEqual(expect.any(Number));
 
-      consoleSpy.mockRestore();
+      consoleWarnSpy.mockRestore();
     });
 
     it("should log successful chunk receipt", async () => {
@@ -1464,14 +1508,20 @@ describe("gemini-client", () => {
 
       await generateImageWithGemini({ prompt: "test", tier: "1K" });
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/Received chunk \d+: \d+ bytes/),
+      // Logger outputs JSON with structured fields
+      const chunkLog = findJsonLogCall(consoleSpy, "Received chunk");
+      expect(chunkLog).toBeDefined();
+      expect(chunkLog!["level"]).toBe("INFO");
+      expect(chunkLog!["chunk"]).toEqual(expect.any(Number));
+      expect(chunkLog!["bytes"]).toEqual(expect.any(Number));
+
+      const successLog = findJsonLogCall(
+        consoleSpy,
+        "Successfully received chunks",
       );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringMatching(
-          /Successfully received \d+ chunks, total \d+ bytes/,
-        ),
-      );
+      expect(successLog).toBeDefined();
+      expect(successLog!["chunks"]).toEqual(expect.any(Number));
+      expect(successLog!["totalBytes"]).toEqual(expect.any(Number));
 
       consoleSpy.mockRestore();
     });
@@ -1492,9 +1542,13 @@ describe("gemini-client", () => {
         tier: "1K",
       })).rejects.toThrow();
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("No image data received after processing"),
+      // Logger outputs JSON with structured fields
+      const logEntry = findJsonLogCall(
+        consoleErrorSpy,
+        "No image data received after processing chunks",
       );
+      expect(logEntry).toBeDefined();
+      expect(logEntry!["level"]).toBe("ERROR");
 
       consoleErrorSpy.mockRestore();
     });
@@ -1509,10 +1563,14 @@ describe("gemini-client", () => {
       await expect(generateImageWithGemini({ prompt: "test", tier: "1K" }))
         .rejects.toThrow();
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to initiate Gemini API stream:"),
-        expect.any(Error),
+      // Logger outputs JSON with structured fields (error object is serialized)
+      const logEntry = findJsonLogCall(
+        consoleErrorSpy,
+        "Failed to initiate Gemini API stream:",
       );
+      expect(logEntry).toBeDefined();
+      expect(logEntry!["level"]).toBe("ERROR");
+      expect(logEntry!["error"]).toBeDefined();
 
       consoleErrorSpy.mockRestore();
     });
@@ -1751,10 +1809,14 @@ describe("gemini-client", () => {
           "Stream processing failed: Chunk processing failed midway",
         );
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/Error processing stream at chunk \d+:/),
-        expect.any(Error),
+      // Logger outputs JSON with structured fields
+      const logEntry = findJsonLogCall(
+        consoleErrorSpy,
+        "Error processing stream",
       );
+      expect(logEntry).toBeDefined();
+      expect(logEntry!["level"]).toBe("ERROR");
+      expect(logEntry!["chunk"]).toEqual(expect.any(Number));
 
       consoleErrorSpy.mockRestore();
     });
@@ -1784,15 +1846,14 @@ describe("gemini-client", () => {
         tier: "2K",
       });
 
-      // Verify the chunk receipt log contains bytes and elapsed time info
-      const chunkLog = consoleSpy.mock.calls.find(
-        (call) => typeof call[0] === "string" && call[0].includes("Received chunk"),
-      );
-
-      expect(chunkLog).toBeDefined();
-      expect(chunkLog![0]).toMatch(
-        /Received chunk \d+: \d+ bytes \(total: \d+ chunks, \d+s elapsed\)/,
-      );
+      // Logger outputs JSON with structured fields
+      const logEntry = findJsonLogCall(consoleSpy, "Received chunk");
+      expect(logEntry).toBeDefined();
+      expect(logEntry!["level"]).toBe("INFO");
+      expect(logEntry!["chunk"]).toEqual(expect.any(Number));
+      expect(logEntry!["bytes"]).toEqual(expect.any(Number));
+      expect(logEntry!["totalChunks"]).toEqual(expect.any(Number));
+      expect(logEntry!["elapsed"]).toBeDefined();
 
       consoleSpy.mockRestore();
     });
@@ -1827,17 +1888,16 @@ describe("gemini-client", () => {
 
       await generateImageWithGemini({ prompt: "test", tier: "1K" });
 
-      // Verify success log
-      const successLog = consoleSpy.mock.calls.find(
-        (call) =>
-          typeof call[0] === "string" &&
-          call[0].includes("Successfully received"),
+      // Logger outputs JSON with structured fields
+      const logEntry = findJsonLogCall(
+        consoleSpy,
+        "Successfully received chunks",
       );
-
-      expect(successLog).toBeDefined();
-      expect(successLog![0]).toMatch(
-        /Successfully received 2 chunks, total \d+ bytes in \d+s/,
-      );
+      expect(logEntry).toBeDefined();
+      expect(logEntry!["level"]).toBe("INFO");
+      expect(logEntry!["chunks"]).toBe(2);
+      expect(logEntry!["totalBytes"]).toEqual(expect.any(Number));
+      expect(logEntry!["totalTime"]).toBeDefined();
 
       consoleSpy.mockRestore();
     });

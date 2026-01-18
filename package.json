@@ -146,6 +146,8 @@
     "framer-motion": "12.26.2",
     "gray-matter": "4.0.3",
     "jose": "6.1.3",
+    "jspdf": "^4.0.0",
+    "jstat": "1.9.6",
     "lucide-react": "0.562.0",
     "nanoid": "5.1.6",
     "next": "16.1.3",
@@ -174,7 +176,8 @@
     "three": "0.182.0",
     "y-indexeddb": "9.0.12",
     "yjs": "13.6.29",
-    "zod": "4.3.5"
+    "zod": "4.3.5",
+    "zustand": "^5.0.10"
   },
   "devDependencies": {
     "@cucumber/cucumber": "12.5.0",
@@ -274,6 +277,10 @@
     "esbuild@0.14.47": "0.25.0",
     "esbuild@0.23.1": "0.25.0",
     "tsx@4.19.2": "4.21.0"
+  },
+  "resolutions-comments": {
+    "esbuild@0.14.47": "Source dependency not identified; this resolution may be obsolete. See docs/DEPENDENCY_RESOLUTIONS.md for details.",
+    "esbuild@0.23.1": "Required by @tanstack/router-generator. Overridden to ensure a consistent version across the project. See docs/DEPENDENCY_RESOLUTIONS.md."
   },
   "workspaces": [
     "packages/*"

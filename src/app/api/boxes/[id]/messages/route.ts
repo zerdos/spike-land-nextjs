@@ -70,7 +70,7 @@ export async function POST(
     }),
   );
 
-  if (userMessageError) {
+  if (userMessageError || !userMessage) {
     console.error("Failed to save user message:", userMessageError);
     return new NextResponse("Internal Error", { status: 500 });
   }
@@ -85,14 +85,18 @@ export async function POST(
     // Fetch previous messages for context
     const { data: previousMessages } = await tryCatch(
       prisma.boxMessage.findMany({
-        where: { boxId: id },
-        orderBy: { createdAt: "asc" },
+        where: {
+          boxId: id,
+          id: { not: userMessage.id },
+        },
+        orderBy: { createdAt: "desc" },
         take: 20, // Limit context window
       }),
     );
 
     // Build chat history for the AI
-    const chatHistory = (previousMessages || []).map((msg) => ({
+    // Reverse because we fetched newest first, but LLM needs chronological order
+    const chatHistory = (previousMessages || []).reverse().map((msg) => ({
       role: msg.role === BoxMessageRole.USER
         ? ("user" as const)
         : ("model" as const),

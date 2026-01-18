@@ -161,7 +161,7 @@ export default function NYECountdownClient() {
     const now = Date.now();
     const progress = ((now - startOf2025) / (endOf2025 - startOf2025)) * 100;
     return Math.min(100, Math.max(0, progress));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `seconds` is used as a trigger to recalculate `Date.now()`
   }, [seconds]);
 
   // Calculate total seconds remaining
@@ -222,7 +222,7 @@ export default function NYECountdownClient() {
       const hasCelebrated = currentUtc >= cityMidnight;
       return { ...city, hasCelebrated };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `seconds` is used as a trigger to recalculate `Date.now()`
   }, [seconds]);
 
   const celebratedCount = worldCelebrationStatus.filter((c) => c.hasCelebrated).length;
@@ -250,7 +250,7 @@ export default function NYECountdownClient() {
       }
     }
     return null; // All cities have celebrated!
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `seconds` is used as a trigger to recalculate `Date.now()`
   }, [seconds]);
 
   // Hype meter - increases as we get closer

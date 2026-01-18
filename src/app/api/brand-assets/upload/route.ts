@@ -6,6 +6,9 @@ import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+// Force dynamic rendering
+export const dynamic = "force-dynamic";
+
 // Maximum file size: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
