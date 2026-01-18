@@ -80,6 +80,7 @@ export function AdminSidebar({ userEmail, userName }: AdminSidebarProps) {
       <div className="border-t border-border/40 p-4">
         <Link
           href="/"
+          data-testid="back-to-app-link"
           className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <span>←</span>

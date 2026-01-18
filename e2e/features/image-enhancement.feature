@@ -24,39 +24,6 @@ Feature: Image Enhancement
     And I should see "How to Upload Images" text
     And I should see "New Album" text
 
-  @skip @requires-album-page
-  Scenario: Upload an image successfully
-    # Upload happens within album pages, not the main /apps/pixel page
-    Given I am on the enhance page
-    And I mock a successful image upload
-    When I upload a valid image file
-    Then I should be redirected to the image enhancement page
-    And the URL should contain "/apps/pixel/"
-
-  @skip @requires-album-page
-  Scenario: Image upload shows validation error for large file
-    # Upload validation happens within album pages
-    Given I am on the enhance page
-    When I attempt to upload a file larger than 50MB
-    Then I should see upload error "File size must be less than 50MB"
-
-  @skip @requires-album-page
-  Scenario: Image upload shows validation error for non-image file
-    # Upload validation happens within album pages
-    Given I am on the enhance page
-    When I attempt to upload a non-image file
-    Then I should see upload error "Please select an image file"
-
-  @skip @requires-album-page
-  Scenario: Image upload shows loading state
-    # Upload state happens within album pages
-    Given I am on the enhance page
-    And I mock a slow image upload
-    When I start uploading an image
-    Then I should see "Uploading..." text
-    And I should see the loading spinner
-    And the upload button should be disabled
-
   @fast @requires-db
   Scenario: View uploaded image details
     Given I have an uploaded image

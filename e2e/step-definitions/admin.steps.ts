@@ -274,28 +274,23 @@ When(
     // Ensure sidebar is stable
     await expect(sidebar).toBeVisible({ timeout: 10000 });
 
-    // Find the link - try partial match for links with icons/prefixes like "← Back to App"
-    let link = sidebar.locator("a").filter({ hasText: linkText });
+    let link;
 
-    // Check if link exists
-    const count = await link.count();
-    if (count === 0) {
-      // Try to find it in the Sheet/drawer for mobile view
-      const sheet = this.page.locator('[role="dialog"]');
-      link = sheet.locator("a").filter({ hasText: linkText });
-    }
-
-    // For "Back to App" link at bottom of sidebar, we may need to scroll the nav area
-    // The sidebar has a fixed structure with scrollable nav section
+    // For "Back to App" link, use data-testid for reliable selection
+    // The link is positioned outside the scrollable nav area, at the bottom of the sidebar
     if (linkText.includes("Back to App")) {
-      // Scroll the sidebar nav to bottom to make sure "Back to App" section is visible
-      await sidebar.evaluate((el) => {
-        const scrollableNav = el.querySelector(".overflow-y-auto");
-        if (scrollableNav) {
-          scrollableNav.scrollTop = scrollableNav.scrollHeight;
-        }
-      });
-      await this.page.waitForTimeout(200);
+      link = this.page.locator('[data-testid="back-to-app-link"]');
+    } else {
+      // Find the link - try partial match for links with icons/prefixes
+      link = sidebar.locator("a").filter({ hasText: linkText });
+
+      // Check if link exists
+      const count = await link.count();
+      if (count === 0) {
+        // Try to find it in the Sheet/drawer for mobile view
+        const sheet = this.page.locator('[role="dialog"]');
+        link = sheet.locator("a").filter({ hasText: linkText });
+      }
     }
 
     // Scroll the link into view if needed
