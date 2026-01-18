@@ -137,10 +137,11 @@ const nextConfig: NextConfig = {
   },
   // Webpack configuration for Yarn PnP compatibility
   webpack: (config) => {
-    // Add alias for .prisma/client to resolve from unplugged Prisma directory
-    config.resolve.alias[".prisma/client"] = path.resolve(
+    // Map @prisma/client to the generated Prisma client location
+    // This ensures both TypeScript and webpack resolve to the same generated client
+    config.resolve.alias["@prisma/client"] = path.resolve(
       __dirname,
-      ".yarn/unplugged/@prisma-client-virtual-1c90f5f9c1/node_modules/.prisma/client",
+      "src/generated/prisma",
     );
     return config;
   },

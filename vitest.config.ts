@@ -242,6 +242,8 @@ export default defineConfig({
       "next/image": require.resolve("next/image"),
       "@/auth": path.resolve(__dirname, "./src/auth.ts"),
       "next/server": require.resolve("next/server"),
+      // Map @prisma/client to the generated Prisma client location
+      "@prisma/client": path.resolve(__dirname, "./src/generated/prisma"),
     },
   },
 });
