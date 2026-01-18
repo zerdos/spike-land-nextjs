@@ -116,9 +116,7 @@ export function getWinner(
 
   if (pValue < alpha) {
     return variants.reduce((best, current) => {
-      const bestConversionRate = best.visitors > 0
-        ? best.conversions / best.visitors
-        : 0;
+      const bestConversionRate = best.visitors > 0 ? best.conversions / best.visitors : 0;
       const currentConversionRate = current.visitors > 0
         ? current.conversions / current.visitors
         : 0;

@@ -42,6 +42,12 @@ describe("A/B Testing Utilities", () => {
 
       // For a chi-squared value of 6.635 with 1 df, the p-value is approx 0.01
       expect(chiSquaredToPValue(6.635, 1)).toBeCloseTo(0.01, 2);
+
+      // For a chi-squared value of 10.827 with 1 df, the p-value is approx 0.001
+      expect(chiSquaredToPValue(10.827)).toBeCloseTo(0.001);
+
+      // For a small chi-squared value, the p-value should be close to 1.0
+      expect(chiSquaredToPValue(0.5)).toBeCloseTo(0.4795);
     });
   });
 
