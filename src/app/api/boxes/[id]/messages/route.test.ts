@@ -154,7 +154,7 @@ describe("/api/boxes/[id]/messages POST", () => {
         { role: "user", content: "Old message 1" },
         { role: "model", content: "Old response 1" },
         { role: "user", content: "Test message" },
-      ]
+      ],
     });
 
     expect(data.userMessage).toEqual({
@@ -180,23 +180,23 @@ describe("/api/boxes/[id]/messages POST", () => {
     } as any);
 
     const userMessage = {
-        id: "msg-1",
-        boxId: "box-123",
-        role: BoxMessageRole.USER,
-        content: "Test message",
+      id: "msg-1",
+      boxId: "box-123",
+      role: BoxMessageRole.USER,
+      content: "Test message",
     };
 
     mockPrisma.boxMessage.create.mockResolvedValueOnce(userMessage);
     // For the second call, we mock the return value, but we are interested in the arguments passed TO it
     mockPrisma.boxMessage.create.mockResolvedValueOnce({
-        id: "msg-2",
-        role: BoxMessageRole.AGENT,
-        content: "AI agent is currently unavailable. Please try again later."
+      id: "msg-2",
+      role: BoxMessageRole.AGENT,
+      content: "AI agent is currently unavailable. Please try again later.",
     });
 
     const req = new Request("http://localhost/api/boxes/box-123/messages", {
-        method: "POST",
-        body: JSON.stringify({ content: "Test message" }),
+      method: "POST",
+      body: JSON.stringify({ content: "Test message" }),
     });
     const params = Promise.resolve({ id: "box-123" });
 
@@ -204,11 +204,11 @@ describe("/api/boxes/[id]/messages POST", () => {
 
     // Verify that create was called with the fallback message
     expect(mockPrisma.boxMessage.create).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-            data: expect.objectContaining({
-                content: "AI agent is currently unavailable. Please try again later."
-            })
-        })
+      expect.objectContaining({
+        data: expect.objectContaining({
+          content: "AI agent is currently unavailable. Please try again later.",
+        }),
+      }),
     );
 
     // Verify AI was NOT called
@@ -233,8 +233,8 @@ describe("/api/boxes/[id]/messages POST", () => {
     mockPrisma.boxMessage.create.mockResolvedValue({} as any);
 
     const req = new Request("http://localhost/api/boxes/box-123/messages", {
-        method: "POST",
-        body: JSON.stringify({ content: "Test message" }),
+      method: "POST",
+      body: JSON.stringify({ content: "Test message" }),
     });
     const params = Promise.resolve({ id: "box-123" });
 
@@ -242,11 +242,11 @@ describe("/api/boxes/[id]/messages POST", () => {
 
     // Verify that create was called with the error fallback message
     expect(mockPrisma.boxMessage.create).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-            data: expect.objectContaining({
-                content: "I encountered an error processing your request. Please try again."
-            })
-        })
+      expect.objectContaining({
+        data: expect.objectContaining({
+          content: "I encountered an error processing your request. Please try again.",
+        }),
+      }),
     );
   });
 });

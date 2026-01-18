@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { IdentifierType } from "@prisma/client";
+import type { IdentifierType } from "@prisma/client";
 
 /**
  * Creates a new identity with an initial identifier.

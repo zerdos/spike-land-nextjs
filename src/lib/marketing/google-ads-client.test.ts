@@ -446,7 +446,7 @@ describe("GoogleAdsClient", () => {
 
       vi.stubGlobal(
         "fetch",
-        vi.fn().mockImplementation(async (url, options) => {
+        vi.fn().mockImplementation(async (_url, options) => {
           const body = JSON.parse(options.body || "{}");
           const query = body.query || "";
 

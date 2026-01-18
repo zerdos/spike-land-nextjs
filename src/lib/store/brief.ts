@@ -1,5 +1,5 @@
-import { campaignObjectivesSchema, targetAudienceSchema } from "@/lib/validation/brief";
-import { z } from "zod";
+import type { campaignObjectivesSchema, targetAudienceSchema } from "@/lib/validation/brief";
+import type { z } from "zod";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
