@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateChiSquared,
+  calculatePValue,
   calculateRequiredSampleSize,
   chiSquaredToPValue,
   getWinner,
+  isStatisticallySignificant,
   type Variant,
 } from "./ab-testing";
 
@@ -44,10 +46,39 @@ describe("A/B Testing Utilities", () => {
       expect(chiSquaredToPValue(6.635, 1)).toBeCloseTo(0.01, 2);
 
       // For a chi-squared value of 10.827 with 1 df, the p-value is approx 0.001
-      expect(chiSquaredToPValue(10.827)).toBeCloseTo(0.001);
+      expect(chiSquaredToPValue(10.827)).toBeCloseTo(0.001, 3);
 
-      // For a small chi-squared value, the p-value should be close to 1.0
-      expect(chiSquaredToPValue(0.5)).toBeCloseTo(0.4795);
+      // For a small chi-squared value, the p-value should be close to 0.48
+      expect(chiSquaredToPValue(0.5)).toBeCloseTo(0.4795, 2);
+    });
+  });
+
+  describe("calculatePValue", () => {
+    it("should calculate the p-value correctly for a set of variants", () => {
+      const variants = [
+        { visitors: 100, conversions: 10 },
+        { visitors: 100, conversions: 20 },
+      ];
+      // For this data, chi-squared is ~3.92 and df is 1, so p-value is ~0.047
+      expect(calculatePValue(variants)).toBeCloseTo(0.047, 2);
+    });
+  });
+
+  describe("isStatisticallySignificant", () => {
+    it("should return true if the p-value is less than the significance level", () => {
+      const variants = [
+        { visitors: 100, conversions: 10 },
+        { visitors: 100, conversions: 20 },
+      ];
+      expect(isStatisticallySignificant(variants, 0.05)).toBe(true);
+    });
+
+    it("should return false if the p-value is greater than the significance level", () => {
+      const variants = [
+        { visitors: 100, conversions: 10 },
+        { visitors: 100, conversions: 12 },
+      ];
+      expect(isStatisticallySignificant(variants, 0.05)).toBe(false);
     });
   });
 

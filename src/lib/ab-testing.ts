@@ -54,12 +54,41 @@ export function calculateChiSquared(
  * @param df - The degrees of freedom.
  * @returns The p-value.
  */
-export function chiSquaredToPValue(chiSquared: number, df: number = 1) {
+export function chiSquaredToPValue(chiSquared: number, df: number = 1): number {
   // The p-value is the probability of observing a chi-squared value as extreme or
   // more extreme than the one calculated, assuming the null hypothesis is true.
   // We use the cumulative distribution function (CDF) and subtract from 1 to get
   // the right tail probability.
   return 1 - jStat.chisquare.cdf(chiSquared, df);
+}
+
+/**
+ * Calculates the p-value for a set of variants using chi-squared test.
+ *
+ * @param variants - An array of variants with their performance data.
+ * @returns The p-value.
+ */
+export function calculatePValue(
+  variants: { visitors: number; conversions: number; }[],
+): number {
+  const chiSquared = calculateChiSquared(variants);
+  const df = variants.length - 1;
+  return chiSquaredToPValue(chiSquared, df);
+}
+
+/**
+ * Determines if the difference between variants is statistically significant.
+ *
+ * @param variants - An array of variants with their performance data.
+ * @param alpha - The significance level (default: 0.05).
+ * @returns True if the result is statistically significant.
+ */
+export function isStatisticallySignificant(
+  variants: { visitors: number; conversions: number; }[],
+  alpha: number = 0.05,
+): boolean {
+  const pValue = calculatePValue(variants);
+  return pValue < alpha;
 }
 
 /**
@@ -110,19 +139,13 @@ export function getWinner(
     return null;
   }
 
-  const chiSquared = calculateChiSquared(variants);
-  const df = variants.length - 1;
-  const pValue = chiSquaredToPValue(chiSquared, df);
-
-  if (pValue < alpha) {
-    return variants.reduce((best, current) => {
-      const bestConversionRate = best.visitors > 0 ? best.conversions / best.visitors : 0;
-      const currentConversionRate = current.visitors > 0
-        ? current.conversions / current.visitors
-        : 0;
-      return currentConversionRate > bestConversionRate ? current : best;
-    });
+  if (!isStatisticallySignificant(variants, alpha)) {
+    return null;
   }
 
-  return null;
+  return variants.reduce((best, current) => {
+    const bestConversionRate = best.visitors > 0 ? best.conversions / best.visitors : 0;
+    const currentConversionRate = current.visitors > 0 ? current.conversions / current.visitors : 0;
+    return currentConversionRate > bestConversionRate ? current : best;
+  });
 }
