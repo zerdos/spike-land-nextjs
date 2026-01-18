@@ -1,0 +1,34 @@
+{
+  "name": "@spike-land/react-app-examples",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Collection of single-file React apps for spike.land",
+  "main": "index.ts",
+  "types": "index.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": "./index.ts",
+    "./utility/*": "./utility/*.tsx",
+    "./visualization/*": "./visualization/*.tsx",
+    "./productivity/*": "./productivity/*.tsx",
+    "./interactive/*": "./interactive/*.tsx",
+    "./health/*": "./health/*.tsx",
+    "./dogs/*": "./dogs/*.tsx",
+    "./lucky/*": "./lucky/*.tsx"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.5",
+    "typescript": "^5.6.2"
+  },
+  "keywords": [
+    "react",
+    "apps",
+    "examples",
+    "shadcn",
+    "tailwind"
+  ]
+}
