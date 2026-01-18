@@ -1,4 +1,5 @@
 import { generateStructuredResponse } from "@/lib/ai/gemini-client";
+import logger from "@/lib/logger";
 import { tryCatch } from "@/lib/try-catch";
 import {
   type ContentScoreResponse,
@@ -210,7 +211,7 @@ export async function scoreContent(
   );
 
   if (error) {
-    console.error("[BRAND_SCORE] Failed to generate score:", error);
+    logger.error("[BRAND_SCORE] Failed to generate score:", { error });
     throw new Error(
       `Failed to score content: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
@@ -220,10 +221,9 @@ export async function scoreContent(
   const parseResult = geminiScoreResponseSchema.safeParse(rawResponse);
 
   if (!parseResult.success) {
-    console.error(
-      "[BRAND_SCORE] Invalid response structure:",
-      parseResult.error.issues,
-    );
+    logger.error("[BRAND_SCORE] Invalid response structure:", {
+      issues: parseResult.error.issues,
+    });
     throw new Error("Invalid score response structure from AI");
   }
 

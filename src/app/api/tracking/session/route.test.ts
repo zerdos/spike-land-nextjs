@@ -14,6 +14,7 @@ vi.mock("@/lib/prisma", () => ({
   default: {
     visitorSession: {
       findFirst: vi.fn(),
+      findUnique: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
     },
@@ -21,6 +22,14 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
     },
   },
+}));
+
+// Mock identity-graph-service (called by route handlers)
+vi.mock("@/lib/tracking/identity-graph-service", () => ({
+  createIdentity: vi.fn(() => Promise.resolve({ id: "identity-1", identifiers: [] })),
+  findIdentityByIdentifier: vi.fn(() => Promise.resolve(null)),
+  addIdentifier: vi.fn(() => Promise.resolve({ id: "identity-1", identifiers: [] })),
+  mergeIdentities: vi.fn(() => Promise.resolve({ id: "identity-1", identifiers: [] })),
 }));
 
 // Mock rate limiter

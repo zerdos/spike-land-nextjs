@@ -89,7 +89,7 @@ describe("AgentControlPanel", () => {
       agentMessage: {
         id: "msg-4",
         role: BoxMessageRole.AGENT,
-        content: "Message received. This is a placeholder response.",
+        content: "AI Response",
         createdAt: new Date().toISOString(),
       },
     };
@@ -127,7 +127,7 @@ describe("AgentControlPanel", () => {
       agentMessage: {
         id: "msg-6",
         role: BoxMessageRole.AGENT,
-        content: "Message received. This is a placeholder response.",
+        content: "AI Response",
         createdAt: new Date().toISOString(),
       },
     };
@@ -183,7 +183,7 @@ describe("AgentControlPanel", () => {
       agentMessage: {
         id: "msg-8",
         role: BoxMessageRole.AGENT,
-        content: "Message received. This is a placeholder response.",
+        content: "AI Response",
         createdAt: new Date().toISOString(),
       },
     };
@@ -219,7 +219,7 @@ describe("AgentControlPanel", () => {
       agentMessage: {
         id: "msg-10",
         role: BoxMessageRole.AGENT,
-        content: "Message received. This is a placeholder response.",
+        content: "AI Response",
         createdAt: new Date().toISOString(),
       },
     };
@@ -239,7 +239,7 @@ describe("AgentControlPanel", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Message received. This is a placeholder response."),
+        screen.getByText("AI Response"),
       ).toBeInTheDocument();
     });
   });

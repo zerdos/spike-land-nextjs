@@ -17,6 +17,13 @@ import { z } from "zod";
 
 export const maxDuration = 300; // 5 minutes
 
+// Define a specific type for the content part to avoid 'any'
+interface ContentPart {
+  type: "text" | "tool_use";
+  text?: string;
+  name?: string;
+}
+
 // Timeout for external fetches (5 seconds)
 const FETCH_TIMEOUT_MS = 5000;
 
@@ -214,11 +221,10 @@ export async function POST(
           // Handle assistant text messages
           // SDKAssistantMessage has message.message.content (BetaMessage structure)
           if (message.type === "assistant") {
-            const betaMessage = (message as {
-              message?: {
-                content?: Array<{ type: string; text?: string; name?: string; }>;
-              };
-            }).message;
+            const assistantMessage = message as {
+              message?: { content?: ContentPart[]; };
+            };
+            const betaMessage = assistantMessage.message;
             const contentArray = betaMessage?.content || [];
 
             // Extract text parts
@@ -412,11 +418,16 @@ async function generateAppDetails(
     let jsonStr = "";
     for await (const message of result) {
       if (message.type === "assistant") {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const betaMessage = (message as any).message;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const text = betaMessage?.content?.filter((c: any) => c.type === "text" // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ).map((c: any) => c.text).join("") || "";
+        // The 'message' object from the SDK has a complex, nested structure.
+        // To avoid unsafe 'any' casts, we'll define a specific type for the expected content.
+        const assistantMessage = message as {
+          message?: { content?: ContentPart[]; };
+        };
+        const betaMessage = assistantMessage.message;
+        const text = betaMessage?.content
+          ?.filter((c) => c.type === "text")
+          .map((c) => c.text)
+          .join("") || "";
         jsonStr += text;
       }
     }

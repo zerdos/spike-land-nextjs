@@ -8,7 +8,14 @@
 
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limiter";
+import {
+  addIdentifier,
+  createIdentity,
+  findIdentityByIdentifier,
+  mergeIdentities,
+} from "@/lib/tracking/identity-graph-service";
 import { tryCatch } from "@/lib/try-catch";
+import { IdentifierType } from "@prisma/client";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -200,6 +207,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Create an identity for the new visitor
+  await createIdentity(IdentifierType.VISITOR_ID, data.visitorId);
+
   console.log(
     `[Tracking] Created new session ${newSession.id} for visitor ${data.visitorId}`,
   );
@@ -291,6 +301,30 @@ export async function PATCH(request: NextRequest) {
   }
   if (userId) {
     updateData["userId"] = userId;
+
+    const session = await prisma.visitorSession.findUnique({
+      where: { id: sessionId },
+      select: { visitorId: true },
+    });
+
+    if (session) {
+      const visitorIdentity = await findIdentityByIdentifier(
+        IdentifierType.VISITOR_ID,
+        session.visitorId,
+      );
+      const userIdentity = await findIdentityByIdentifier(
+        IdentifierType.USER_ID,
+        userId,
+      );
+
+      if (visitorIdentity && userIdentity && visitorIdentity.id !== userIdentity.id) {
+        await mergeIdentities(visitorIdentity.id, userIdentity.id);
+      } else if (visitorIdentity && !userIdentity) {
+        await addIdentifier(visitorIdentity.id, IdentifierType.USER_ID, userId);
+      } else if (!visitorIdentity && !userIdentity) {
+        await createIdentity(IdentifierType.USER_ID, userId);
+      }
+    }
   }
   if (exitPage) {
     updateData["exitPage"] = exitPage;

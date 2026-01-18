@@ -381,7 +381,6 @@ describe("POST /api/apps", () => {
       };
 
       vi.mocked(prisma.$transaction).mockImplementation(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         async (fn: any) => {
           // Mock transaction client
           const txMock = {
@@ -441,7 +440,6 @@ describe("POST /api/apps", () => {
       };
 
       vi.mocked(prisma.$transaction).mockImplementation(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         async (fn: any) => {
           const txMock = {
             app: {
@@ -528,7 +526,6 @@ describe("POST /api/apps", () => {
       };
 
       vi.mocked(prisma.$transaction).mockImplementation(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         async (fn: any) => {
           const txMock = {
             app: {
