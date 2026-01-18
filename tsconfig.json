@@ -39,6 +39,12 @@
       ],
       "@apps/*": [
         "./apps/*"
+      ],
+      "@prisma/client": [
+        "./src/generated/prisma"
+      ],
+      "@prisma/client/*": [
+        "./src/generated/prisma/*"
       ]
     },
     "types": [

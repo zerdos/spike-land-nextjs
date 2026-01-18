@@ -3,30 +3,25 @@ import prisma from "@/lib/prisma";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { tryCatch } from "@/lib/try-catch";
 import { enhanceImageDirect, type EnhanceImageInput } from "@/workflows/enhance-image.direct";
-import { enhanceImage } from "@/workflows/enhance-image.workflow";
 import { JobStatus } from "@prisma/client";
-import { start } from "workflow/api";
+import { after } from "next/server";
 
 /**
  * Execution mode for the enhancement workflow
+ *
+ * Note: "workflow" mode has been removed. Direct execution is now the only mode.
+ * The workflow package has been removed to unblock Yarn PnP migration.
  */
-export type ExecutionMode = "workflow" | "direct";
+export type ExecutionMode = "direct";
 
 /**
- * Determines the execution mode based on environment
+ * Returns the execution mode (always "direct")
  *
- * Override: Set ENHANCEMENT_EXECUTION_MODE to force a specific mode
- * Default: Uses workflow in Vercel, direct in development
+ * Direct execution uses plain JavaScript with built-in retry logic.
+ * The Vercel Workflow package has been removed.
  */
 export function getExecutionMode(): ExecutionMode {
-  const override = process.env.ENHANCEMENT_EXECUTION_MODE;
-  if (override === "workflow" || override === "direct") {
-    return override;
-  }
-
-  // Production: Use Vercel's durable workflow infrastructure
-  // Development: Run enhancement directly
-  return process.env.VERCEL === "1" ? "workflow" : "direct";
+  return "direct";
 }
 
 /**
@@ -41,7 +36,6 @@ export function isVercelEnvironment(): boolean {
  */
 interface EnhancementStartResult {
   success: true;
-  workflowRunId?: string;
 }
 
 /**
@@ -66,10 +60,13 @@ export interface EnhancementContext {
 }
 
 /**
- * Starts the enhancement process based on execution mode
+ * Starts the enhancement process using direct execution with Next.js after()
  *
- * In workflow mode: Uses Vercel's durable workflow infrastructure
- * In direct mode: Runs enhancement directly (fire-and-forget)
+ * Uses Next.js `after()` for background processing - the enhancement continues
+ * after the response is sent to the client. This provides:
+ * - Guarantee that work completes even after response
+ * - Proper integration with Next.js lifecycle
+ * - Better observability in Vercel deployments
  *
  * @param input - Enhancement input parameters
  * @param logger - Optional logger for recording events
@@ -79,74 +76,19 @@ export async function startEnhancement(
   input: EnhanceImageInput,
   logger?: { info: (msg: string, ctx?: LogContext) => void; },
 ): Promise<StartEnhancementResult> {
-  const mode = getExecutionMode();
-
-  if (mode === "workflow") {
-    return startWorkflowEnhancement(input, logger);
-  }
-
-  return startDirectEnhancement(input, logger);
-}
-
-/**
- * Starts enhancement using Vercel workflow
- */
-async function startWorkflowEnhancement(
-  input: EnhanceImageInput,
-  logger?: { info: (msg: string, ctx?: LogContext) => void; },
-): Promise<StartEnhancementResult> {
-  const { data: workflowRun, error: workflowError } = await tryCatch(
-    start(enhanceImage, [input]),
-  );
-
-  if (workflowError) {
-    return {
-      success: false,
-      error: workflowError instanceof Error
-        ? workflowError.message
-        : String(workflowError),
-    };
-  }
-
-  // Store the workflow run ID for cancellation support
-  if (workflowRun?.runId) {
-    await tryCatch(
-      prisma.imageEnhancementJob.update({
-        where: { id: input.jobId },
-        data: { workflowRunId: workflowRun.runId },
-      }),
-    );
-  }
-
-  logger?.info("Enhancement workflow started (production)", {
-    jobId: input.jobId,
-    workflowRunId: workflowRun?.runId,
-  });
-
-  return {
-    success: true,
-    workflowRunId: workflowRun?.runId,
-  };
-}
-
-/**
- * Starts enhancement using direct execution (development mode)
- */
-async function startDirectEnhancement(
-  input: EnhanceImageInput,
-  logger?: { info: (msg: string, ctx?: LogContext) => void; },
-): Promise<StartEnhancementResult> {
-  logger?.info("Running enhancement directly (dev mode)", {
+  logger?.info("Starting enhancement (direct mode with after())", {
     jobId: input.jobId,
   });
 
-  // Fire and forget - don't await, let it run in the background
-  void (async () => {
+  // Use Next.js after() for proper background processing
+  // This ensures the enhancement continues even after the response is sent
+  after(async () => {
     const { error } = await tryCatch(enhanceImageDirect(input));
     if (error) {
       // Error is logged within enhanceImageDirect
+      console.error(`[Enhancement] Job ${input.jobId} failed:`, error);
     }
-  })();
+  });
 
   return { success: true };
 }

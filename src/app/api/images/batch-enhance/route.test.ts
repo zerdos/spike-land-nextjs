@@ -29,15 +29,22 @@ vi.mock("@/lib/tokens/balance-manager", () => ({
   },
 }));
 
-// Mock the workflow start function
-vi.mock("workflow/api", () => ({
-  start: vi.fn().mockResolvedValue({ runId: "batch-workflow-run-123" }),
+// Mock the direct batch enhancement
+vi.mock("@/workflows/batch-enhance.direct", () => ({
+  batchEnhanceImagesDirect: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-// Mock the batchEnhanceImages workflow
-vi.mock("@/workflows/batch-enhance.workflow", () => ({
-  batchEnhanceImages: vi.fn(),
-}));
+// Mock next/server after() function
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return {
+    ...actual,
+    after: vi.fn((callback: () => Promise<void>) => {
+      // Execute callback immediately in tests
+      void callback();
+    }),
+  };
+});
 
 const { mockPrisma } = vi.hoisted(() => {
   return {
@@ -76,12 +83,6 @@ function createMockRequest(body: unknown): NextRequest {
 describe("POST /api/images/batch-enhance", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Set Vercel environment to test workflow path
-    process.env.VERCEL = "1";
-  });
-
-  afterEach(() => {
-    delete process.env.VERCEL;
   });
 
   it("should return 401 if not authenticated", async () => {
@@ -217,10 +218,9 @@ describe("POST /api/images/batch-enhance", () => {
     expect(data.error).toBe("Database error");
   });
 
-  it("should start batch enhancement workflow successfully", async () => {
-    const { start } = await import("workflow/api");
-    const { batchEnhanceImages } = await import(
-      "@/workflows/batch-enhance.workflow"
+  it("should start batch enhancement successfully", async () => {
+    const { batchEnhanceImagesDirect } = await import(
+      "@/workflows/batch-enhance.direct"
     );
 
     const req = createMockRequest({
@@ -236,8 +236,8 @@ describe("POST /api/images/batch-enhance", () => {
     expect(data.summary.total).toBe(2);
     expect(data.summary.totalCost).toBe(10);
 
-    // Verify workflow was started with correct params
-    expect(start).toHaveBeenCalledWith(batchEnhanceImages, [
+    // Verify direct enhancement was called with correct params
+    expect(batchEnhanceImagesDirect).toHaveBeenCalledWith(
       expect.objectContaining({
         batchId: expect.stringContaining("batch-"),
         userId: "user-123",
@@ -247,7 +247,7 @@ describe("POST /api/images/batch-enhance", () => {
           expect.objectContaining({ imageId: "img-2" }),
         ]),
       }),
-    ]);
+    );
   });
 
   it("should consume correct amount of tokens", async () => {

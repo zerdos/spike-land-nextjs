@@ -21,15 +21,22 @@ vi.mock("@/lib/rate-limiter", () => ({
   rateLimitConfigs: { imageEnhancement: {} },
 }));
 
-// Mock the workflow start function
-vi.mock("workflow/api", () => ({
-  start: vi.fn().mockResolvedValue({ runId: "workflow-run-123" }),
+// Mock direct enhancement
+vi.mock("@/workflows/enhance-image.direct", () => ({
+  enhanceImageDirect: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-// Mock the enhanceImage workflow
-vi.mock("@/workflows/enhance-image.workflow", () => ({
-  enhanceImage: vi.fn(),
-}));
+// Mock next/server after() function
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return {
+    ...actual,
+    after: vi.fn((callback: () => Promise<void>) => {
+      // Execute callback immediately in tests
+      void callback();
+    }),
+  };
+});
 
 const { mockPrisma } = vi.hoisted(() => {
   return {
@@ -53,12 +60,6 @@ vi.mock("@/lib/prisma", () => ({
 describe("POST /api/images/enhance", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Set Vercel environment to test workflow path
-    process.env.VERCEL = "1";
-  });
-
-  afterEach(() => {
-    delete process.env.VERCEL;
   });
 
   it("should return 401 if not authenticated", async () => {
@@ -72,9 +73,10 @@ describe("POST /api/images/enhance", () => {
     expect(res.status).toBe(401);
   });
 
-  it("should start enhancement workflow successfully", async () => {
-    const { start } = await import("workflow/api");
-    const { enhanceImage } = await import("@/workflows/enhance-image.workflow");
+  it("should start enhancement successfully", async () => {
+    const { enhanceImageDirect } = await import(
+      "@/workflows/enhance-image.direct"
+    );
 
     // Setup mocks
     mockPrisma.enhancedImage.findUnique.mockResolvedValue({
@@ -85,11 +87,6 @@ describe("POST /api/images/enhance", () => {
 
     mockPrisma.imageEnhancementJob.create.mockResolvedValue({
       id: "job-1",
-    });
-
-    mockPrisma.imageEnhancementJob.update.mockResolvedValue({
-      id: "job-1",
-      workflowRunId: "workflow-run-123",
     });
 
     const req = new NextRequest("http://localhost/api/images/enhance", {
@@ -107,8 +104,8 @@ describe("POST /api/images/enhance", () => {
     // Verify job creation
     expect(mockPrisma.imageEnhancementJob.create).toHaveBeenCalled();
 
-    // Verify workflow was started with correct params
-    expect(start).toHaveBeenCalledWith(enhanceImage, [
+    // Verify direct enhancement was called with correct params
+    expect(enhanceImageDirect).toHaveBeenCalledWith(
       expect.objectContaining({
         jobId: "job-1",
         imageId: "img-1",
@@ -116,13 +113,7 @@ describe("POST /api/images/enhance", () => {
         originalR2Key: "originals/img-1.jpg",
         tier: "TIER_4K",
       }),
-    ]);
-
-    // Verify workflowRunId was saved
-    expect(mockPrisma.imageEnhancementJob.update).toHaveBeenCalledWith({
-      where: { id: "job-1" },
-      data: { workflowRunId: "workflow-run-123" },
-    });
+    );
   });
 
   it("should return 400 for missing imageId", async () => {

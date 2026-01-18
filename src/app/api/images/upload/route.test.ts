@@ -55,18 +55,22 @@ vi.mock("@/lib/tokens/balance-manager", () => ({
   TokenBalanceManager: mockTokenBalanceManager,
 }));
 
-// Mock enhancement workflows
+// Mock enhancement direct execution
 vi.mock("@/workflows/enhance-image.direct", () => ({
   enhanceImageDirect: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-vi.mock("@/workflows/enhance-image.workflow", () => ({
-  enhanceImage: vi.fn(),
-}));
-
-vi.mock("workflow/api", () => ({
-  start: vi.fn().mockResolvedValue({ id: "workflow-123" }),
-}));
+// Mock next/server after() function
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return {
+    ...actual,
+    after: vi.fn((callback: () => Promise<void>) => {
+      // Execute callback immediately in tests
+      void callback();
+    }),
+  };
+});
 
 const { mockPrisma } = vi.hoisted(() => {
   return {

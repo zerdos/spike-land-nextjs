@@ -1,44 +1,12 @@
 import type { EnhancementTier } from "@prisma/client";
 import { JobStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Run } from "workflow/api";
 import {
   getExecutionMode,
   handleEnhancementFailure,
   isVercelEnvironment,
   startEnhancement,
 } from "./enhancement-executor";
-
-// Helper to create a mock Run object with all required properties
-function createMockRun<T>(runId: string): Run<T> {
-  // Cast through unknown because Run is a class with private properties
-  return {
-    runId,
-    cancel: vi.fn().mockResolvedValue(undefined),
-    get status() {
-      return Promise.resolve("running" as const);
-    },
-    get returnValue() {
-      return Promise.resolve(undefined as T);
-    },
-    get workflowName() {
-      return Promise.resolve("test-workflow");
-    },
-    get createdAt() {
-      return Promise.resolve(new Date());
-    },
-    get startedAt() {
-      return Promise.resolve(new Date());
-    },
-    get completedAt() {
-      return Promise.resolve(undefined);
-    },
-    get readable() {
-      return new ReadableStream();
-    },
-    getReadable: vi.fn().mockReturnValue(new ReadableStream()),
-  } as unknown as Run<T>;
-}
 
 // Mock dependencies
 vi.mock("@/lib/prisma", () => ({
@@ -64,14 +32,6 @@ vi.mock("@/workflows/enhance-image.direct", () => ({
     }),
 }));
 
-vi.mock("@/workflows/enhance-image.workflow", () => ({
-  enhanceImage: vi.fn(),
-}));
-
-vi.mock("workflow/api", () => ({
-  start: vi.fn(),
-}));
-
 vi.mock("@/lib/try-catch", () => ({
   tryCatch: async <T>(promise: Promise<T>) => {
     try {
@@ -83,43 +43,17 @@ vi.mock("@/lib/try-catch", () => ({
   },
 }));
 
+// Mock next/server's after function
+vi.mock("next/server", () => ({
+  after: vi.fn((callback: () => Promise<void>) => {
+    // Execute the callback immediately in tests
+    void callback();
+  }),
+}));
+
 describe("getExecutionMode", () => {
-  const originalEnv = process.env;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    process.env = { ...originalEnv };
-  });
-
-  afterEach(() => {
-    process.env = originalEnv;
-  });
-
-  it("should return 'workflow' when override is set to workflow", () => {
-    process.env.ENHANCEMENT_EXECUTION_MODE = "workflow";
-    expect(getExecutionMode()).toBe("workflow");
-  });
-
-  it("should return 'direct' when override is set to direct", () => {
-    process.env.ENHANCEMENT_EXECUTION_MODE = "direct";
-    expect(getExecutionMode()).toBe("direct");
-  });
-
-  it("should return 'workflow' in Vercel environment", () => {
-    delete process.env.ENHANCEMENT_EXECUTION_MODE;
-    process.env.VERCEL = "1";
-    expect(getExecutionMode()).toBe("workflow");
-  });
-
-  it("should return 'direct' outside Vercel environment", () => {
-    delete process.env.ENHANCEMENT_EXECUTION_MODE;
-    delete process.env.VERCEL;
-    expect(getExecutionMode()).toBe("direct");
-  });
-
-  it("should respect override even in Vercel environment", () => {
-    process.env.ENHANCEMENT_EXECUTION_MODE = "direct";
-    process.env.VERCEL = "1";
+  it("should always return 'direct'", () => {
+    // Workflow mode has been removed
     expect(getExecutionMode()).toBe("direct");
   });
 });
@@ -153,8 +87,6 @@ describe("isVercelEnvironment", () => {
 });
 
 describe("startEnhancement", () => {
-  const originalEnv = process.env;
-
   const mockInput = {
     jobId: "job-1",
     imageId: "image-1",
@@ -166,133 +98,32 @@ describe("startEnhancement", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env = { ...originalEnv };
   });
 
-  afterEach(() => {
-    process.env = originalEnv;
+  it("should start direct enhancement and return success", async () => {
+    const result = await startEnhancement(mockInput);
+
+    expect(result.success).toBe(true);
   });
 
-  describe("workflow mode", () => {
-    beforeEach(() => {
-      process.env.ENHANCEMENT_EXECUTION_MODE = "workflow";
-    });
+  it("should call logger when provided", async () => {
+    const mockLogger = { info: vi.fn() };
+    await startEnhancement(mockInput, mockLogger);
 
-    it("should start workflow and return success", async () => {
-      const { start } = await import("workflow/api");
-      vi.mocked(start).mockResolvedValue(createMockRun("workflow-run-123"));
-
-      const result = await startEnhancement(mockInput);
-
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.workflowRunId).toBe("workflow-run-123");
-      }
-    });
-
-    it("should update job with workflow run ID", async () => {
-      const { start } = await import("workflow/api");
-      const { default: prisma } = await import("@/lib/prisma");
-
-      vi.mocked(start).mockResolvedValue(createMockRun("workflow-run-123"));
-
-      await startEnhancement(mockInput);
-
-      expect(prisma.imageEnhancementJob.update).toHaveBeenCalledWith({
-        where: { id: "job-1" },
-        data: { workflowRunId: "workflow-run-123" },
-      });
-    });
-
-    it("should return error when workflow fails to start", async () => {
-      const { start } = await import("workflow/api");
-      vi.mocked(start).mockRejectedValue(new Error("Workflow startup failed"));
-
-      const result = await startEnhancement(mockInput);
-
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error).toBe("Workflow startup failed");
-      }
-    });
-
-    it("should handle non-Error workflow failures", async () => {
-      const { start } = await import("workflow/api");
-      vi.mocked(start).mockRejectedValue("String error");
-
-      const result = await startEnhancement(mockInput);
-
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error).toBe("String error");
-      }
-    });
-
-    it("should call logger when provided", async () => {
-      const { start } = await import("workflow/api");
-      vi.mocked(start).mockResolvedValue(createMockRun("workflow-run-123"));
-
-      const mockLogger = { info: vi.fn() };
-      await startEnhancement(mockInput, mockLogger);
-
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        "Enhancement workflow started (production)",
-        expect.objectContaining({
-          jobId: "job-1",
-          workflowRunId: "workflow-run-123",
-        }),
-      );
-    });
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      "Starting enhancement (direct mode with after())",
+      expect.objectContaining({ jobId: "job-1" }),
+    );
   });
 
-  describe("direct mode", () => {
-    beforeEach(() => {
-      process.env.ENHANCEMENT_EXECUTION_MODE = "direct";
-    });
+  it("should call enhanceImageDirect via after()", async () => {
+    const { enhanceImageDirect } = await import(
+      "@/workflows/enhance-image.direct"
+    );
 
-    it("should start direct enhancement and return success", async () => {
-      const result = await startEnhancement(mockInput);
+    await startEnhancement(mockInput);
 
-      expect(result.success).toBe(true);
-    });
-
-    it("should call logger when provided", async () => {
-      const mockLogger = { info: vi.fn() };
-      await startEnhancement(mockInput, mockLogger);
-
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        "Running enhancement directly (dev mode)",
-        expect.objectContaining({ jobId: "job-1" }),
-      );
-    });
-
-    it("should fire and forget - not wait for enhancement", async () => {
-      const { enhanceImageDirect } = await import(
-        "@/workflows/enhance-image.direct"
-      );
-
-      // Create a delayed promise with correct return type
-      let resolveEnhancement: (
-        value: { success: boolean; enhancedUrl?: string; error?: string; },
-      ) => void;
-      const enhancementPromise = new Promise<{
-        success: boolean;
-        enhancedUrl?: string;
-        error?: string;
-      }>((resolve) => {
-        resolveEnhancement = resolve;
-      });
-      vi.mocked(enhanceImageDirect).mockReturnValue(enhancementPromise);
-
-      const result = await startEnhancement(mockInput);
-
-      // Should return immediately without waiting
-      expect(result.success).toBe(true);
-      expect(enhanceImageDirect).toHaveBeenCalledWith(mockInput);
-
-      // Clean up
-      resolveEnhancement!({ success: true });
-    });
+    expect(enhanceImageDirect).toHaveBeenCalledWith(mockInput);
   });
 });
 

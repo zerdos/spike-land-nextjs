@@ -1,15 +1,31 @@
 import { tryCatch } from "@/lib/try-catch";
 import crypto from "crypto";
-import type sharp from "sharp";
 import { uploadToR2 } from "./r2-client";
 
-// Dynamic import to avoid Vercel build failures
-// (sharp requires native binaries that aren't available at build time)
-async function getSharp(): Promise<typeof sharp> {
-  return (await import("sharp")).default;
+/**
+ * Parameters for processing and uploading an image.
+ * Images should be pre-processed client-side (resized, converted to WebP).
+ */
+interface ProcessImageParams {
+  /** The image data as a Buffer */
+  buffer: Buffer;
+  /** Original filename for metadata */
+  originalFilename: string;
+  /** User ID for organizing storage */
+  userId: string;
+  /** Pre-calculated width (from client-side processing) */
+  width: number;
+  /** Pre-calculated height (from client-side processing) */
+  height: number;
+  /** Content type (default: image/webp) */
+  contentType?: string;
 }
 
-interface ProcessImageParams {
+/**
+ * Legacy parameters (backwards compatibility)
+ * @deprecated Use ProcessImageParams with width/height instead
+ */
+interface LegacyProcessImageParams {
   buffer: Buffer;
   originalFilename: string;
   userId: string;
@@ -27,22 +43,13 @@ interface ProcessImageResult {
   error?: string;
 }
 
-const MAX_DIMENSION = 4096; // Max 4K resolution
-const WEBP_QUALITY = 80; // WebP quality setting
+const DEFAULT_CONTENT_TYPE = "image/webp";
 
 /**
- * Process and upload an image
- * - Validates image
- * - Resizes to max 1024px if needed
- * - Converts to WebP format
- * - Uploads to R2
+ * Create an error result object
  */
-export async function processAndUploadImage(
-  params: ProcessImageParams,
-): Promise<ProcessImageResult> {
-  const { buffer, originalFilename, userId } = params;
-
-  const createErrorResult = (errorMessage: string): ProcessImageResult => ({
+function createErrorResult(errorMessage: string): ProcessImageResult {
+  return {
     success: false,
     imageId: "",
     r2Key: "",
@@ -52,86 +59,63 @@ export async function processAndUploadImage(
     sizeBytes: 0,
     format: "",
     error: errorMessage,
-  });
+  };
+}
 
-  // Get sharp instance (dynamically loaded)
-  const sharpModule = await getSharp();
+/**
+ * Process and upload an image to R2 storage.
+ *
+ * **Important:** Images should be pre-processed on the client side using
+ * `client-image-processor.ts` before upload. This function now simply
+ * stores the image without server-side resizing.
+ *
+ * For backwards compatibility, if width/height are not provided,
+ * the function assumes the image is already properly sized.
+ */
+export async function processAndUploadImage(
+  params: ProcessImageParams | LegacyProcessImageParams,
+): Promise<ProcessImageResult> {
+  const { buffer, originalFilename, userId } = params;
 
-  // Get image metadata
-  const { data: metadata, error: metadataError } = await tryCatch(
-    sharpModule(buffer).metadata(),
-  );
+  // Extract dimensions if provided, otherwise use placeholder values
+  // In production, client should always provide dimensions
+  const width = "width" in params ? params.width : 0;
+  const height = "height" in params ? params.height : 0;
+  const contentType = "contentType" in params
+    ? params.contentType
+    : DEFAULT_CONTENT_TYPE;
 
-  if (metadataError) {
-    console.error("Error processing image:", metadataError);
-    return createErrorResult(
-      metadataError instanceof Error ? metadataError.message : "Unknown error",
+  // Validate that we have dimensions for proper metadata
+  if (width === 0 || height === 0) {
+    console.warn(
+      "Image dimensions not provided. Client should pre-process images with client-image-processor.ts",
     );
   }
 
-  if (!metadata.width || !metadata.height || !metadata.format) {
-    return createErrorResult("Invalid image format");
-  }
-
-  // Calculate final dimensions (resize if needed)
-  let finalWidth = metadata.width;
-  let finalHeight = metadata.height;
-
-  if (metadata.width > MAX_DIMENSION || metadata.height > MAX_DIMENSION) {
-    // Calculate new dimensions maintaining aspect ratio
-    const aspectRatio = metadata.width / metadata.height;
-
-    if (metadata.width > metadata.height) {
-      finalWidth = MAX_DIMENSION;
-      finalHeight = Math.round(MAX_DIMENSION / aspectRatio);
-    } else {
-      finalHeight = MAX_DIMENSION;
-      finalWidth = Math.round(MAX_DIMENSION * aspectRatio);
-    }
-  }
-
-  // Process image: resize if needed and convert to WebP
-  const { data: processedBuffer, error: processError } = await tryCatch(
-    sharpModule(buffer)
-      .resize(finalWidth, finalHeight, {
-        fit: "inside",
-        withoutEnlargement: true,
-      })
-      .webp({ quality: WEBP_QUALITY })
-      .toBuffer(),
-  );
-
-  if (processError) {
-    console.error("Error processing image:", processError);
-    return createErrorResult(
-      processError instanceof Error ? processError.message : "Unknown error",
-    );
-  }
-
-  // Generate unique image ID and R2 key (always .webp)
+  // Generate unique image ID and R2 key
   const imageId = crypto.randomUUID();
-  const extension = "webp";
+  const extension = contentType === "image/webp" ? "webp" : "jpg";
   const r2Key = `users/${userId}/originals/${imageId}.${extension}`;
 
   // Upload to R2
   const { data: uploadResult, error: uploadError } = await tryCatch(
     uploadToR2({
       key: r2Key,
-      buffer: processedBuffer,
-      contentType: "image/webp",
+      buffer,
+      contentType: contentType || DEFAULT_CONTENT_TYPE,
       metadata: {
         userId,
         originalFilename,
-        originalWidth: metadata.width.toString(),
-        originalHeight: metadata.height.toString(),
-        processedWidth: finalWidth.toString(),
-        processedHeight: finalHeight.toString(),
+        originalWidth: String(width),
+        originalHeight: String(height),
+        processedWidth: String(width),
+        processedHeight: String(height),
       },
     }),
   );
 
   if (uploadError) {
-    console.error("Error processing image:", uploadError);
+    console.error("Error uploading image:", uploadError);
     return createErrorResult(
       uploadError instanceof Error ? uploadError.message : "Unknown error",
     );
@@ -146,15 +130,15 @@ export async function processAndUploadImage(
     imageId,
     r2Key,
     url: uploadResult.url,
-    width: finalWidth,
-    height: finalHeight,
-    sizeBytes: processedBuffer.length,
+    width,
+    height,
+    sizeBytes: buffer.length,
     format: extension,
   };
 }
 
 /**
- * Validate image file
+ * Validate image file size
  */
 export function validateImageFile(
   file: File | Buffer,
@@ -169,7 +153,29 @@ export function validateImageFile(
     };
   }
 
-  // Additional validation can be added here (file type, etc.)
-
   return { valid: true };
+}
+
+/**
+ * Upload a pre-processed image directly to R2.
+ * This is the preferred method when using client-side image processing.
+ */
+export async function uploadPreProcessedImage(
+  params: {
+    buffer: Buffer;
+    userId: string;
+    width: number;
+    height: number;
+    originalFilename: string;
+    contentType?: string;
+  },
+): Promise<ProcessImageResult> {
+  return processAndUploadImage({
+    buffer: params.buffer,
+    originalFilename: params.originalFilename,
+    userId: params.userId,
+    width: params.width,
+    height: params.height,
+    contentType: params.contentType || DEFAULT_CONTENT_TYPE,
+  });
 }

@@ -153,33 +153,12 @@ export class ApiRoutes {
     }
   }
 
-  private async handleScreenshotGet(url: URL): Promise<Response> {
-    const codeSpace = url.searchParams.get("room") ||
-      this.code.getSession().codeSpace;
-    const origin = this.code.getOrigin();
-
-    try {
-      const response = await fetch(
-        `https://spike-land-renderer.spikeland.workers.dev/?url=${origin}/live/${codeSpace}/embed&now=${Date.now()}`,
-      );
-
-      if (!response.ok) {
-        return this.errorResponse("Screenshot capture failed", response.status);
-      }
-
-      return new Response(response.body, {
-        headers: {
-          "Content-Type": "image/jpeg",
-          "Access-Control-Allow-Origin": "*",
-          "Cache-Control": "no-cache",
-        },
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "Screenshot failed";
-      return this.errorResponse(errorMessage, 500);
-    }
+  private async handleScreenshotGet(_url: URL): Promise<Response> {
+    // Screenshot service has been removed - the spike-land-renderer worker is deprecated
+    return this.errorResponse(
+      "Screenshot service unavailable - the rendering service has been deprecated",
+      503,
+    );
   }
 
   private async handleSessionGet(): Promise<Response> {

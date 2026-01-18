@@ -1,47 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Create shared mock functions using vi.hoisted
-const {
-  mockSharp,
-  mockUploadToR2,
-  mockMetadata,
-  mockResize,
-  mockWebp,
-  mockToBuffer,
-} = vi
-  .hoisted(() => {
-    const mockMetadata = vi.fn();
-    const mockResize = vi.fn();
-    const mockWebp = vi.fn();
-    const mockToBuffer = vi.fn();
-    const mockUploadToR2 = vi.fn();
-
-    const mockSharp = vi.fn(() => ({
-      metadata: mockMetadata,
-      resize: mockResize,
-      webp: mockWebp,
-      toBuffer: mockToBuffer,
-    }));
-
-    // Set up chainable methods: resize() -> webp() -> toBuffer()
-    mockResize.mockReturnValue({
-      webp: mockWebp,
-      toBuffer: mockToBuffer,
-    });
-
-    mockWebp.mockReturnValue({
-      toBuffer: mockToBuffer,
-    });
-
-    return {
-      mockSharp,
-      mockUploadToR2,
-      mockMetadata,
-      mockResize,
-      mockWebp,
-      mockToBuffer,
-    };
-  });
+const { mockUploadToR2 } = vi.hoisted(() => {
+  const mockUploadToR2 = vi.fn();
+  return { mockUploadToR2 };
+});
 
 // Mock crypto
 vi.mock("crypto", () => ({
@@ -50,37 +13,21 @@ vi.mock("crypto", () => ({
   },
 }));
 
-// Mock sharp
-vi.mock("sharp", () => ({
-  default: mockSharp,
-}));
-
 // Mock r2-client
 vi.mock("./r2-client", () => ({
   uploadToR2: mockUploadToR2,
 }));
 
-import { processAndUploadImage, validateImageFile } from "./upload-handler";
+import {
+  processAndUploadImage,
+  uploadPreProcessedImage,
+  validateImageFile,
+} from "./upload-handler";
 
 describe("upload-handler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset default mock implementations
-    mockMetadata.mockReset();
-    mockResize.mockReset();
-    mockWebp.mockReset();
-    mockToBuffer.mockReset();
     mockUploadToR2.mockReset();
-
-    // Set up default chainable behavior: resize() -> webp() -> toBuffer()
-    mockResize.mockReturnValue({
-      webp: mockWebp,
-      toBuffer: mockToBuffer,
-    });
-
-    mockWebp.mockReturnValue({
-      toBuffer: mockToBuffer,
-    });
   });
 
   describe("validateImageFile", () => {
@@ -158,16 +105,11 @@ describe("upload-handler", () => {
       buffer: Buffer.from("test image data"),
       originalFilename: "photo.jpg",
       userId: "user-123",
+      width: 800,
+      height: 600,
     };
 
-    it("should successfully process and upload an image within 4096px limits", async () => {
-      const processedBuffer = Buffer.from("processed webp image");
-      mockMetadata.mockResolvedValueOnce({
-        width: 800,
-        height: 600,
-        format: "jpeg",
-      });
-      mockToBuffer.mockResolvedValueOnce(processedBuffer);
+    it("should successfully upload a pre-processed image", async () => {
       mockUploadToR2.mockResolvedValueOnce({
         success: true,
         key: "users/user-123/originals/test-uuid-12345.webp",
@@ -178,153 +120,44 @@ describe("upload-handler", () => {
 
       expect(result.success).toBe(true);
       expect(result.imageId).toBe("test-uuid-12345");
-      expect(result.r2Key).toBe(
-        "users/user-123/originals/test-uuid-12345.webp",
-      );
+      expect(result.r2Key).toBe("users/user-123/originals/test-uuid-12345.webp");
       expect(result.width).toBe(800);
       expect(result.height).toBe(600);
       expect(result.format).toBe("webp");
       expect(result.error).toBeUndefined();
     });
 
-    it("should resize wide image exceeding 4096px width", async () => {
-      const resizedBuffer = Buffer.from("resized image");
-      mockMetadata.mockResolvedValueOnce({
-        width: 8192, // Exceeds MAX_DIMENSION (4096)
-        height: 4096,
-        format: "png",
-      });
-      mockToBuffer.mockResolvedValueOnce(resizedBuffer);
+    it("should pass correct metadata to R2 upload", async () => {
       mockUploadToR2.mockResolvedValueOnce({
         success: true,
-        key: "users/user-123/originals/test-uuid-12345.webp",
+        key: "users/user-456/originals/test-uuid-12345.webp",
         url: "https://example.com/image.webp",
       });
 
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.success).toBe(true);
-      expect(result.width).toBe(4096); // MAX_DIMENSION
-      expect(result.height).toBe(2048); // Maintains aspect ratio (8192/4096 = 2:1)
-      expect(mockResize).toHaveBeenCalledWith(4096, 2048, {
-        fit: "inside",
-        withoutEnlargement: true,
-      });
-    });
-
-    it("should resize tall image exceeding 4096px height", async () => {
-      const resizedBuffer = Buffer.from("resized image");
-      mockMetadata.mockResolvedValueOnce({
-        width: 2048,
-        height: 8192, // Exceeds MAX_DIMENSION (4096)
-        format: "jpeg",
-      });
-      mockToBuffer.mockResolvedValueOnce(resizedBuffer);
-      mockUploadToR2.mockResolvedValueOnce({
-        success: true,
-        key: "users/user-123/originals/test-uuid-12345.webp",
-        url: "https://example.com/image.webp",
+      await processAndUploadImage({
+        buffer: Buffer.from("test"),
+        originalFilename: "my-photo.png",
+        userId: "user-456",
+        width: 1024,
+        height: 768,
       });
 
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.success).toBe(true);
-      expect(result.width).toBe(1024); // Maintains aspect ratio (2048/8192 = 1:4, 4096/4 = 1024)
-      expect(result.height).toBe(4096); // MAX_DIMENSION
-      expect(mockResize).toHaveBeenCalledWith(1024, 4096, {
-        fit: "inside",
-        withoutEnlargement: true,
+      expect(mockUploadToR2).toHaveBeenCalledWith({
+        key: "users/user-456/originals/test-uuid-12345.webp",
+        buffer: Buffer.from("test"),
+        contentType: "image/webp",
+        metadata: {
+          userId: "user-456",
+          originalFilename: "my-photo.png",
+          originalWidth: "1024",
+          originalHeight: "768",
+          processedWidth: "1024",
+          processedHeight: "768",
+        },
       });
-    });
-
-    it("should process image within 4096px limits without changing dimensions", async () => {
-      const processedBuffer = Buffer.from("processed webp");
-      mockMetadata.mockResolvedValueOnce({
-        width: 800,
-        height: 600,
-        format: "jpeg",
-      });
-      mockToBuffer.mockResolvedValueOnce(processedBuffer);
-      mockUploadToR2.mockResolvedValueOnce({
-        success: true,
-        key: "users/user-123/originals/test-uuid-12345.webp",
-        url: "https://example.com/image.webp",
-      });
-
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.success).toBe(true);
-      expect(result.width).toBe(800);
-      expect(result.height).toBe(600);
-      // Always converts to WebP
-      expect(mockWebp).toHaveBeenCalledWith({ quality: 80 });
-    });
-
-    it("should return error for invalid image format", async () => {
-      mockMetadata.mockResolvedValueOnce({
-        width: undefined,
-        height: undefined,
-        format: undefined,
-      });
-
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe("Invalid image format");
-      expect(result.imageId).toBe("");
-      expect(result.r2Key).toBe("");
-      expect(result.url).toBe("");
-      expect(result.width).toBe(0);
-      expect(result.height).toBe(0);
-    });
-
-    it("should return error when width is missing", async () => {
-      mockMetadata.mockResolvedValueOnce({
-        width: undefined,
-        height: 1000,
-        format: "jpeg",
-      });
-
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe("Invalid image format");
-    });
-
-    it("should return error when height is missing", async () => {
-      mockMetadata.mockResolvedValueOnce({
-        width: 1000,
-        height: undefined,
-        format: "jpeg",
-      });
-
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe("Invalid image format");
-    });
-
-    it("should return error when format is missing", async () => {
-      mockMetadata.mockResolvedValueOnce({
-        width: 1000,
-        height: 1000,
-        format: undefined,
-      });
-
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe("Invalid image format");
     });
 
     it("should return error when R2 upload fails", async () => {
-      const processedBuffer = Buffer.from("processed");
-      mockMetadata.mockResolvedValueOnce({
-        width: 800,
-        height: 600,
-        format: "jpeg",
-      });
-      mockToBuffer.mockResolvedValueOnce(processedBuffer);
       mockUploadToR2.mockResolvedValueOnce({
         success: false,
         key: "",
@@ -339,31 +172,17 @@ describe("upload-handler", () => {
       expect(result.imageId).toBe("");
     });
 
-    it("should handle sharp metadata error", async () => {
-      mockMetadata.mockRejectedValueOnce(new Error("Corrupt image data"));
+    it("should handle R2 upload exception", async () => {
+      mockUploadToR2.mockRejectedValueOnce(new Error("Network error"));
 
       const result = await processAndUploadImage(defaultParams);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Corrupt image data");
-    });
-
-    it("should handle sharp processing error", async () => {
-      mockMetadata.mockResolvedValueOnce({
-        width: 2000,
-        height: 1500,
-        format: "jpeg",
-      });
-      mockToBuffer.mockRejectedValueOnce(new Error("Processing failed"));
-
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe("Processing failed");
+      expect(result.error).toBe("Network error");
     });
 
     it("should handle non-Error exceptions", async () => {
-      mockMetadata.mockRejectedValueOnce("String error");
+      mockUploadToR2.mockRejectedValueOnce("String error");
 
       const result = await processAndUploadImage(defaultParams);
 
@@ -371,80 +190,8 @@ describe("upload-handler", () => {
       expect(result.error).toBe("Unknown error");
     });
 
-    it("should pass correct metadata to R2 upload", async () => {
-      const processedBuffer = Buffer.from("processed");
-      mockMetadata.mockResolvedValueOnce({
-        width: 800,
-        height: 600,
-        format: "png",
-      });
-      mockToBuffer.mockResolvedValueOnce(processedBuffer);
-      mockUploadToR2.mockResolvedValueOnce({
-        success: true,
-        key: "users/user-456/originals/test-uuid-12345.webp",
-        url: "https://example.com/image.webp",
-      });
-
-      await processAndUploadImage({
-        buffer: Buffer.from("test"),
-        originalFilename: "my-photo.png",
-        userId: "user-456",
-      });
-
-      expect(mockUploadToR2).toHaveBeenCalledWith({
-        key: "users/user-456/originals/test-uuid-12345.webp",
-        buffer: processedBuffer,
-        contentType: "image/webp",
-        metadata: {
-          userId: "user-456",
-          originalFilename: "my-photo.png",
-          originalWidth: "800",
-          originalHeight: "600",
-          processedWidth: "800",
-          processedHeight: "600",
-        },
-      });
-    });
-
-    it("should pass resized metadata to R2 upload", async () => {
-      const resizedBuffer = Buffer.from("resized");
-      mockMetadata.mockResolvedValueOnce({
-        width: 2000,
-        height: 2000,
-        format: "jpeg",
-      });
-      mockToBuffer.mockResolvedValueOnce(resizedBuffer);
-      mockUploadToR2.mockResolvedValueOnce({
-        success: true,
-        key: "users/user-123/originals/test-uuid-12345.webp",
-        url: "https://example.com/image.webp",
-      });
-
-      await processAndUploadImage(defaultParams);
-
-      expect(mockUploadToR2).toHaveBeenCalledWith({
-        key: "users/user-123/originals/test-uuid-12345.webp",
-        buffer: resizedBuffer,
-        contentType: "image/webp",
-        metadata: {
-          userId: "user-123",
-          originalFilename: "photo.jpg",
-          originalWidth: "2000",
-          originalHeight: "2000",
-          processedWidth: "2000",
-          processedHeight: "2000",
-        },
-      });
-    });
-
-    it("should return correct sizeBytes for processed image", async () => {
-      const processedBuffer = Buffer.from("processed webp content");
-      mockMetadata.mockResolvedValueOnce({
-        width: 800,
-        height: 600,
-        format: "png",
-      });
-      mockToBuffer.mockResolvedValueOnce(processedBuffer);
+    it("should return correct sizeBytes", async () => {
+      const imageBuffer = Buffer.from("processed webp content");
       mockUploadToR2.mockResolvedValueOnce({
         success: true,
         key: "users/user-123/originals/test-uuid-12345.webp",
@@ -452,161 +199,17 @@ describe("upload-handler", () => {
       });
 
       const result = await processAndUploadImage({
-        buffer: Buffer.from("test"),
+        buffer: imageBuffer,
         originalFilename: "test.png",
         userId: "user-123",
+        width: 800,
+        height: 600,
       });
 
-      expect(result.sizeBytes).toBe(processedBuffer.length);
-    });
-
-    it("should return correct sizeBytes for resized image", async () => {
-      const resizedBuffer = Buffer.from("small");
-      mockMetadata.mockResolvedValueOnce({
-        width: 3000,
-        height: 2000,
-        format: "jpeg",
-      });
-      mockToBuffer.mockResolvedValueOnce(resizedBuffer);
-      mockUploadToR2.mockResolvedValueOnce({
-        success: true,
-        key: "users/user-123/originals/test-uuid-12345.webp",
-        url: "https://example.com/image.webp",
-      });
-
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.sizeBytes).toBe(resizedBuffer.length);
-    });
-
-    it("should handle square image exceeding 4096px", async () => {
-      const resizedBuffer = Buffer.from("resized");
-      mockMetadata.mockResolvedValueOnce({
-        width: 6000,
-        height: 6000,
-        format: "jpeg",
-      });
-      mockToBuffer.mockResolvedValueOnce(resizedBuffer);
-      mockUploadToR2.mockResolvedValueOnce({
-        success: true,
-        key: "users/user-123/originals/test-uuid-12345.webp",
-        url: "https://example.com/image.webp",
-      });
-
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.success).toBe(true);
-      expect(result.width).toBe(4096);
-      expect(result.height).toBe(4096);
-    });
-
-    it("should handle exactly 4096px image", async () => {
-      const processedBuffer = Buffer.from("processed");
-      mockMetadata.mockResolvedValueOnce({
-        width: 4096,
-        height: 4096,
-        format: "jpeg",
-      });
-      mockToBuffer.mockResolvedValueOnce(processedBuffer);
-      mockUploadToR2.mockResolvedValueOnce({
-        success: true,
-        key: "users/user-123/originals/test-uuid-12345.webp",
-        url: "https://example.com/image.webp",
-      });
-
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.success).toBe(true);
-      expect(result.width).toBe(4096);
-      expect(result.height).toBe(4096);
-      expect(result.format).toBe("webp");
-    });
-
-    it("should convert all image formats to webp", async () => {
-      const formats = ["jpeg", "png", "gif", "tiff", "avif"];
-      const processedBuffer = Buffer.from("processed webp");
-
-      for (const format of formats) {
-        vi.clearAllMocks();
-        mockResize.mockReturnValue({ webp: mockWebp, toBuffer: mockToBuffer });
-        mockWebp.mockReturnValue({ toBuffer: mockToBuffer });
-
-        mockMetadata.mockResolvedValueOnce({
-          width: 800,
-          height: 600,
-          format,
-        });
-        mockToBuffer.mockResolvedValueOnce(processedBuffer);
-        mockUploadToR2.mockResolvedValueOnce({
-          success: true,
-          key: "users/user-123/originals/test-uuid-12345.webp",
-          url: "https://example.com/image.webp",
-        });
-
-        const result = await processAndUploadImage(defaultParams);
-
-        expect(result.success).toBe(true);
-        expect(result.format).toBe("webp");
-        expect(mockUploadToR2).toHaveBeenCalledWith(
-          expect.objectContaining({
-            contentType: "image/webp",
-          }),
-        );
-      }
-    });
-
-    it("should handle panoramic image (very wide)", async () => {
-      const resizedBuffer = Buffer.from("resized panorama");
-      mockMetadata.mockResolvedValueOnce({
-        width: 12000, // Very wide panorama exceeding MAX_DIMENSION
-        height: 1500,
-        format: "jpeg",
-      });
-      mockToBuffer.mockResolvedValueOnce(resizedBuffer);
-      mockUploadToR2.mockResolvedValueOnce({
-        success: true,
-        key: "users/user-123/originals/test-uuid-12345.webp",
-        url: "https://example.com/image.webp",
-      });
-
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.success).toBe(true);
-      expect(result.width).toBe(4096); // MAX_DIMENSION
-      // Height = 4096 / (12000/1500) = 4096 / 8 = 512
-      expect(result.height).toBe(512);
-    });
-
-    it("should handle very tall image (portrait)", async () => {
-      const resizedBuffer = Buffer.from("resized portrait");
-      mockMetadata.mockResolvedValueOnce({
-        width: 1500,
-        height: 12000, // Very tall portrait exceeding MAX_DIMENSION
-        format: "png",
-      });
-      mockToBuffer.mockResolvedValueOnce(resizedBuffer);
-      mockUploadToR2.mockResolvedValueOnce({
-        success: true,
-        key: "users/user-123/originals/test-uuid-12345.webp",
-        url: "https://example.com/image.webp",
-      });
-
-      const result = await processAndUploadImage(defaultParams);
-
-      expect(result.success).toBe(true);
-      expect(result.height).toBe(4096); // MAX_DIMENSION
-      // Width = 4096 * (1500/12000) = 4096 * 0.125 = 512
-      expect(result.width).toBe(512);
+      expect(result.sizeBytes).toBe(imageBuffer.length);
     });
 
     it("should generate unique r2Key with userId and imageId", async () => {
-      const processedBuffer = Buffer.from("processed");
-      mockMetadata.mockResolvedValueOnce({
-        width: 800,
-        height: 600,
-        format: "jpeg",
-      });
-      mockToBuffer.mockResolvedValueOnce(processedBuffer);
       mockUploadToR2.mockResolvedValueOnce({
         success: true,
         key: "users/special-user/originals/test-uuid-12345.webp",
@@ -617,10 +220,100 @@ describe("upload-handler", () => {
         buffer: Buffer.from("test"),
         originalFilename: "image.jpg",
         userId: "special-user",
+        width: 1000,
+        height: 1000,
       });
 
       expect(result.r2Key).toBe(
         "users/special-user/originals/test-uuid-12345.webp",
+      );
+    });
+
+    it("should handle custom content type", async () => {
+      mockUploadToR2.mockResolvedValueOnce({
+        success: true,
+        key: "users/user-123/originals/test-uuid-12345.jpg",
+        url: "https://example.com/image.jpg",
+      });
+
+      const result = await processAndUploadImage({
+        buffer: Buffer.from("test"),
+        originalFilename: "image.jpg",
+        userId: "user-123",
+        width: 800,
+        height: 600,
+        contentType: "image/jpeg",
+      });
+
+      expect(result.format).toBe("jpg");
+      expect(mockUploadToR2).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contentType: "image/jpeg",
+        }),
+      );
+    });
+
+    it("should handle legacy params without dimensions (backwards compatibility)", async () => {
+      mockUploadToR2.mockResolvedValueOnce({
+        success: true,
+        key: "users/user-123/originals/test-uuid-12345.webp",
+        url: "https://example.com/image.webp",
+      });
+
+      // Legacy params without width/height
+      const result = await processAndUploadImage({
+        buffer: Buffer.from("test"),
+        originalFilename: "photo.jpg",
+        userId: "user-123",
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.width).toBe(0); // No dimensions provided
+      expect(result.height).toBe(0);
+    });
+  });
+
+  describe("uploadPreProcessedImage", () => {
+    it("should upload a pre-processed image", async () => {
+      mockUploadToR2.mockResolvedValueOnce({
+        success: true,
+        key: "users/user-123/originals/test-uuid-12345.webp",
+        url: "https://example.com/image.webp",
+      });
+
+      const result = await uploadPreProcessedImage({
+        buffer: Buffer.from("test"),
+        userId: "user-123",
+        width: 1024,
+        height: 768,
+        originalFilename: "photo.jpg",
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.width).toBe(1024);
+      expect(result.height).toBe(768);
+    });
+
+    it("should use custom content type", async () => {
+      mockUploadToR2.mockResolvedValueOnce({
+        success: true,
+        key: "users/user-123/originals/test-uuid-12345.jpg",
+        url: "https://example.com/image.jpg",
+      });
+
+      await uploadPreProcessedImage({
+        buffer: Buffer.from("test"),
+        userId: "user-123",
+        width: 1024,
+        height: 768,
+        originalFilename: "photo.jpg",
+        contentType: "image/jpeg",
+      });
+
+      expect(mockUploadToR2).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contentType: "image/jpeg",
+        }),
       );
     });
   });

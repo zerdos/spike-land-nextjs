@@ -3,15 +3,15 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
-    "dev:silent": "next dev --turbo > /dev/null 2> /dev/null || true",
-    "dev:e2e": "E2E_BYPASS_AUTH=true next dev",
-    "build": "yarn db:generate && DATABASE_URL='postgresql://dummy:dummy@dummy/dummy' NODE_OPTIONS='--max-old-space-size=4096' next build",
+    "dev": "NODE_OPTIONS='--require ./.pnp.cjs --import ./.pnp.loader.mjs' next dev --webpack",
+    "dev:silent": "NODE_OPTIONS='--require ./.pnp.cjs --import ./.pnp.loader.mjs' next dev --webpack > /dev/null 2> /dev/null || true",
+    "dev:e2e": "E2E_BYPASS_AUTH=true NODE_OPTIONS='--require ./.pnp.cjs --import ./.pnp.loader.mjs' next dev --webpack",
+    "build": "yarn db:generate && DATABASE_URL='postgresql://dummy:dummy@dummy/dummy' NODE_OPTIONS='--require ./.pnp.cjs --import ./.pnp.loader.mjs --max-old-space-size=4096' next build --webpack",
     "deploy:dev": "NODE_ENV=development yarn build:fe && cd packages/testing.spike.land && yarn w:deploy:dev",
     "build:fe": "cd packages/code && yarn build",
-    "start": "next start",
+    "start": "NODE_OPTIONS='--require ./.pnp.cjs --import ./.pnp.loader.mjs' next start",
     "start:standalone": "cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && node -r dotenv/config .next/standalone/server.js dotenv_config_path=.env.local",
-    "start:e2e": "E2E_BYPASS_AUTH=true next start",
+    "start:e2e": "E2E_BYPASS_AUTH=true NODE_OPTIONS='--require ./.pnp.cjs --import ./.pnp.loader.mjs' next start",
     "start:server:and:test:ci": "start-server-and-test start:e2e http://localhost:3000 test:e2e:shard",
     "start:server:and:test:pr": "start-server-and-test dev:silent http://localhost:3000 test:e2e:shard",
     "lint": "eslint",
@@ -22,7 +22,7 @@
     "test:coverage": "vitest run --coverage",
     "test:changed": "vitest --changed $(yarn find-last-passing-ci test)",
     "test:run": "vitest run",
-    "test:packages": "yarn workspace @spike-npm-land/code test && yarn workspace @spike-npm-land/code build && yarn workspace @spike-npm-land/spike-land-backend test:unit && yarn workspace @spike-npm-land/transpile test && yarn workspace @spike-npm-land/renderer test && yarn workspace @spike-npm-land/opfs-node-adapter test",
+    "test:packages": "yarn workspace @spike-npm-land/code test && yarn workspace @spike-npm-land/code build && yarn workspace @spike-npm-land/spike-land-backend test:unit && yarn workspace @spike-npm-land/transpile test && yarn workspace @spike-npm-land/opfs-node-adapter test",
     "test:all": "vitest run && yarn test:packages",
     "test:cached": "VITEST_COVERAGE=true CI=true vitest run --coverage",
     "test:cache:check": "tsx scripts/test-cache-manager.ts should-skip-all",
@@ -97,6 +97,7 @@
     "@hookform/resolvers": "5.2.2",
     "@prisma/adapter-pg": "7.2.0",
     "@prisma/client": "7.2.0",
+    "@prisma/client-runtime-utils": "7.2.0",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-alert-dialog": "1.1.15",
     "@radix-ui/react-avatar": "1.1.11",
@@ -106,6 +107,7 @@
     "@radix-ui/react-dropdown-menu": "2.1.16",
     "@radix-ui/react-icons": "1.3.2",
     "@radix-ui/react-label": "2.1.8",
+    "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-progress": "1.1.8",
     "@radix-ui/react-radio-group": "1.3.8",
     "@radix-ui/react-scroll-area": "1.2.10",
@@ -155,6 +157,7 @@
     "qrcode": "1.5.4",
     "qrcode.react": "4.2.0",
     "react": "19.2.3",
+    "react-day-picker": "^9.13.0",
     "react-dom": "19.2.3",
     "react-hook-form": "7.71.1",
     "react-is": "^19.2.3",
@@ -164,25 +167,25 @@
     "reading-time": "1.5.0",
     "recharts": "3.6.0",
     "resend": "6.7.0",
-    "sharp": "0.34.5",
     "sonner": "2.0.7",
     "stripe": "20.2.0",
     "tailwind-merge": "3.4.0",
     "tailwindcss": "4.1.18",
     "three": "0.182.0",
-    "workflow": "4.0.1-beta.48",
     "y-indexeddb": "9.0.12",
     "yjs": "13.6.29",
     "zod": "4.3.5"
   },
   "devDependencies": {
     "@cucumber/cucumber": "12.5.0",
+    "@next/eslint-plugin-next": "^16.1.3",
     "@playwright/test": "1.57.0",
     "@tailwindcss/postcss": "4.1.18",
     "@testing-library/dom": "10.4.1",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.1",
     "@testing-library/user-event": "14.6.1",
+    "@types/eslint-plugin-jsx-a11y": "^6",
     "@types/mdx": "2.0.13",
     "@types/node": "25.0.9",
     "@types/pg": "8.16.0",
@@ -198,6 +201,10 @@
     "dprint": "0.51.1",
     "eslint": "9.39.2",
     "eslint-config-next": "16.1.3",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "happy-dom": "20.3.1",
     "husky": "9.1.7",
     "jsdom": "27.4.0",
@@ -206,8 +213,10 @@
     "prisma": "7.2.0",
     "server-only": "0.0.1",
     "start-server-and-test": "2.1.3",
+    "supports-color": "^10.2.2",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
+    "typescript-eslint": "^8.53.0",
     "vercel": "50.4.5",
     "vite": "^7.3.1",
     "vitest": "4.0.17",
@@ -215,6 +224,50 @@
     "wait-on": "9.0.3"
   },
   "packageManager": "yarn@4.12.0",
+  "dependenciesMeta": {
+    "@prisma/client": {
+      "unplugged": true
+    },
+    "@prisma/engines": {
+      "unplugged": true
+    },
+    "@swc/core": {
+      "unplugged": true
+    },
+    "@tailwindcss/node": {
+      "unplugged": true
+    },
+    "@tailwindcss/postcss": {
+      "unplugged": true
+    },
+    "@yarnpkg/pnpify": {
+      "unplugged": true
+    },
+    "esbuild": {
+      "unplugged": true
+    },
+    "next": {
+      "unplugged": true
+    },
+    "next-mdx-remote": {
+      "unplugged": true
+    },
+    "prisma": {
+      "unplugged": true
+    },
+    "sharp": {
+      "unplugged": true
+    },
+    "styled-jsx": {
+      "unplugged": true
+    },
+    "tailwindcss": {
+      "unplugged": true
+    },
+    "workerd": {
+      "unplugged": true
+    }
+  },
   "resolutions": {
     "path-to-regexp@6.1.0": "6.3.0",
     "undici@5.28.4": "5.29.0",

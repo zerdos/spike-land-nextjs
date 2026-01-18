@@ -33,7 +33,6 @@ COPY --link packages/opfs-node-adapter/package.json ./packages/opfs-node-adapter
 COPY --link packages/js.spike.land/package.json ./packages/js.spike.land/
 COPY --link packages/code/package.json ./packages/code/
 COPY --link packages/testing.spike.land/package.json ./packages/testing.spike.land/
-COPY --link packages/spike-land-renderer/package.json ./packages/spike-land-renderer/
 COPY --link packages/shared/package.json ./packages/shared/
 COPY --link prisma ./prisma
 
@@ -45,13 +44,13 @@ ARG CACHE_NS
 ARG TARGETARCH
 ARG DUMMY_DATABASE_URL
 
-# Install native build dependencies
+# Note: Native dependencies (sharp, canvas) removed for Yarn PnP zero-install
+# Image processing now uses lightweight header parsing and Gemini API
 RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=${CACHE_NS}-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
     apt-get update \
     && apt-get install -y --no-install-recommends \
-    python3 make g++ \
-    libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
+    python3 make g++
 
 # Copy dependency context
 COPY --link --from=dep-context /app /app
@@ -466,8 +465,7 @@ COPY --link --from=build --chown=1001:1001 /app/.next/standalone ./
 COPY --link --from=build --chown=1001:1001 /app/.next/static ./.next/static
 COPY --link --from=build --chown=1001:1001 /app/public ./public
 
-# Copy Prisma client (required for database operations)
-COPY --link --from=deps --chown=1001:1001 /app/node_modules/.prisma ./node_modules/.prisma
+# Note: Prisma client is bundled by Next.js standalone build (default output to node_modules)
 
 USER nextjs
 ENV NODE_ENV=production \

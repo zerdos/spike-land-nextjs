@@ -6,22 +6,15 @@ import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { processAndUploadImage } from "@/lib/storage/upload-handler";
 import { tryCatch } from "@/lib/try-catch";
 import { enhanceImageDirect, type EnhanceImageInput } from "@/workflows/enhance-image.direct";
-import { enhanceImage } from "@/workflows/enhance-image.workflow";
 import { JobStatus } from "@prisma/client";
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { start } from "workflow/api";
+import { after, NextResponse } from "next/server";
 
 // Force dynamic rendering - skip static page data collection
 export const dynamic = "force-dynamic";
 
 // Allow longer execution time for image enhancements
 export const maxDuration = 300;
-
-// Check if we're running in Vercel environment
-function isVercelEnvironment(): boolean {
-  return process.env.VERCEL === "1";
-}
 
 /**
  * Get client IP address from request headers.
@@ -478,86 +471,17 @@ export async function POST(request: NextRequest) {
     blendSource: resolvedBlendSource,
   };
 
-  if (isVercelEnvironment()) {
-    // Production: Use Vercel's durable workflow infrastructure
-    const { data: workflowRun, error: workflowError } = await tryCatch(
-      start(enhanceImage, [enhancementInput]),
-    );
+  // Use Next.js after() for background processing
+  requestLogger.info("Starting anonymous enhancement (direct mode with after())", {
+    jobId: job.id,
+  });
 
-    if (workflowError) {
-      requestLogger.error(
-        "Failed to start enhancement workflow",
-        workflowError instanceof Error
-          ? workflowError
-          : new Error(String(workflowError)),
-        { jobId: job.id },
-      );
-      // Mark job as failed
-      await tryCatch(
-        prisma.imageEnhancementJob.update({
-          where: { id: job.id },
-          data: {
-            status: JobStatus.FAILED,
-            errorMessage: "Failed to start workflow",
-          },
-        }),
-      );
-      const errorMessage = getUserFriendlyError(
-        workflowError instanceof Error
-          ? workflowError
-          : new Error("Failed to start workflow"),
-        500,
-      );
-      return NextResponse.json(
-        {
-          error: errorMessage.message,
-          title: errorMessage.title,
-          suggestion: errorMessage.suggestion,
-        },
-        { status: 500, headers: { "X-Request-ID": requestId } },
-      );
+  after(async () => {
+    const { error } = await tryCatch(enhanceImageDirect(enhancementInput));
+    if (error) {
+      console.error(`[Anonymous Enhancement] Job ${job.id} failed:`, error);
     }
-
-    // Store the workflow run ID for cancellation support
-    if (workflowRun?.runId) {
-      const { error: updateError } = await tryCatch(
-        prisma.imageEnhancementJob.update({
-          where: { id: job.id },
-          data: { workflowRunId: workflowRun.runId },
-        }),
-      );
-      if (updateError) {
-        requestLogger.error(
-          "Failed to store workflowRunId",
-          updateError instanceof Error
-            ? updateError
-            : new Error(String(updateError)),
-          { jobId: job.id, workflowRunId: workflowRun.runId },
-        );
-      }
-    }
-
-    requestLogger.info("Anonymous enhancement workflow started (production)", {
-      jobId: job.id,
-      workflowRunId: workflowRun?.runId,
-    });
-  } else {
-    // Development: Run enhancement directly (fire-and-forget)
-    requestLogger.info("Running anonymous enhancement directly (dev mode)", {
-      jobId: job.id,
-    });
-
-    void (async () => {
-      const { error } = await tryCatch(enhanceImageDirect(enhancementInput));
-      if (error) {
-        requestLogger.error(
-          "Direct enhancement failed",
-          error instanceof Error ? error : new Error(String(error)),
-          { jobId: job.id },
-        );
-      }
-    })();
-  }
+  });
 
   return NextResponse.json(
     {

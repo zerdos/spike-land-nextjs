@@ -9,22 +9,15 @@ import { ENHANCEMENT_COSTS, type EnhancementTier } from "@/lib/tokens/costs";
 import { tryCatch } from "@/lib/try-catch";
 import { isSecureFilename } from "@/lib/upload/validation";
 import { enhanceImageDirect, type EnhanceImageInput } from "@/workflows/enhance-image.direct";
-import { enhanceImage } from "@/workflows/enhance-image.workflow";
 import { JobStatus } from "@prisma/client";
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { start } from "workflow/api";
+import { after, NextResponse } from "next/server";
 
 // Force dynamic rendering - skip static page data collection (sharp requires native modules)
 export const dynamic = "force-dynamic";
 
 // Allow longer execution time for image processing
 export const maxDuration = 300;
-
-// Check if we're running in Vercel environment
-function isVercelEnvironment(): boolean {
-  return process.env.VERCEL === "1";
-}
 
 async function handleUpload(
   request: NextRequest,
@@ -314,7 +307,7 @@ async function handleUpload(
     tier: defaultTier,
   });
 
-  // Start enhancement workflow
+  // Start enhancement using Next.js after() for background processing
   const enhancementInput: EnhanceImageInput = {
     jobId: job.id,
     imageId: enhancedImage.id,
@@ -324,50 +317,18 @@ async function handleUpload(
     tokensCost: tokenCost,
   };
 
-  if (isVercelEnvironment()) {
-    const workflowRun = await start(enhanceImage, [enhancementInput]);
-    if (workflowRun?.runId) {
-      const { error: updateError } = await tryCatch(
-        prisma.imageEnhancementJob.update({
-          where: { id: job.id },
-          data: { workflowRunId: workflowRun.runId },
-        }),
-      );
-      if (updateError) {
-        requestLogger.error(
-          "Failed to store workflowRunId",
-          updateError instanceof Error
-            ? updateError
-            : new Error(String(updateError)),
-          { jobId: job.id },
-        );
-      }
+  requestLogger.info("Starting enhancement (direct mode with after())", {
+    jobId: job.id,
+  });
+
+  after(async () => {
+    const { error: enhanceError } = await tryCatch(
+      enhanceImageDirect(enhancementInput),
+    );
+    if (enhanceError) {
+      console.error(`[Upload Enhancement] Job ${job.id} failed:`, enhanceError);
     }
-    requestLogger.info("Enhancement workflow started (production)", {
-      jobId: job.id,
-      workflowRunId: workflowRun?.runId,
-    });
-  } else {
-    // Development: Run enhancement directly
-    requestLogger.info("Running enhancement directly (dev mode)", {
-      jobId: job.id,
-    });
-    // Fire-and-forget: start enhancement in background and log any errors
-    void (async () => {
-      const { error: enhanceError } = await tryCatch(
-        enhanceImageDirect(enhancementInput),
-      );
-      if (enhanceError) {
-        requestLogger.error(
-          "Direct enhancement failed",
-          enhanceError instanceof Error
-            ? enhanceError
-            : new Error(String(enhanceError)),
-          { jobId: job.id },
-        );
-      }
-    })();
-  }
+  });
 
   requestLogger.info("Upload completed successfully with auto-enhancement", {
     imageId: enhancedImage.id,

@@ -1,10 +1,5 @@
 import { auth } from "@/auth";
-import {
-  convertImageFormat,
-  type ExportFormat,
-  getFileExtension,
-  isValidFormat,
-} from "@/lib/images/format-converter";
+import { detectMimeType } from "@/lib/images/image-dimensions";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, rateLimitConfigs } from "@/lib/rate-limiter";
 import { downloadFromR2 } from "@/lib/storage/r2-client";
@@ -13,19 +8,40 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 /**
+ * Valid export formats
+ */
+type ExportFormat = "png" | "jpeg" | "webp";
+
+function isValidFormat(format: string): format is ExportFormat {
+  return ["png", "jpeg", "webp"].includes(format);
+}
+
+function getFileExtension(format: ExportFormat): string {
+  return format === "jpeg" ? "jpg" : format;
+}
+
+function getMimeType(format: ExportFormat): string {
+  return `image/${format}`;
+}
+
+/**
  * POST /api/images/export
  *
- * Exports an enhanced image in the specified format.
- * Supports PNG, JPEG (with quality control), and WebP formats.
+ * Exports an enhanced image. Format conversion is handled client-side.
+ * This endpoint downloads and returns the stored enhanced image.
  *
  * Request body:
  * - imageId: string - ID of the enhanced image
- * - format: 'png' | 'jpeg' | 'webp' - Desired output format
- * - quality?: number - JPEG quality (70-100), optional
+ * - format: 'png' | 'jpeg' | 'webp' - Desired output format (for filename)
+ * - quality?: number - Quality hint (passed to client for conversion)
  *
  * Response:
  * - Success: Image blob with Content-Type header
  * - Error: JSON with error message
+ *
+ * Note: Server-side format conversion removed for PnP compatibility.
+ * Enhanced images are returned as stored. Use client-side Canvas API
+ * for format conversion if needed.
  */
 export async function POST(request: NextRequest) {
   // Authenticate user
@@ -94,7 +110,7 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-  const { imageId, format, quality } = body as {
+  const { imageId, format } = body as {
     imageId: string;
     format: string;
     quality?: number;
@@ -114,16 +130,6 @@ export async function POST(request: NextRequest) {
       { error: "Invalid format. Must be png, jpeg, or webp" },
       { status: 400 },
     );
-  }
-
-  // Validate quality if provided
-  if (quality !== undefined) {
-    if (typeof quality !== "number" || quality < 70 || quality > 100) {
-      return NextResponse.json(
-        { error: "Quality must be between 70 and 100" },
-        { status: 400 },
-      );
-    }
   }
 
   // Find the enhancement job
@@ -183,42 +189,28 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Convert to requested format
-  const { data: convertResult, error: convertError } = await tryCatch(
-    convertImageFormat(imageBuffer, {
-      format: format as ExportFormat,
-      quality,
-    }),
-  );
+  // Detect actual mime type from buffer
+  const actualMimeType = detectMimeType(imageBuffer);
 
-  if (convertError) {
-    console.error("Error in export API:", convertError);
-    return NextResponse.json(
-      {
-        error: convertError instanceof Error
-          ? convertError.message
-          : "Failed to export image",
-      },
-      { status: 500 },
-    );
-  }
-
-  const { buffer, mimeType } = convertResult;
-
-  // Generate filename
+  // Generate filename with requested format extension
   const originalFilename = job.image.name.replace(/\.[^/.]+$/, "");
-  const extension = getFileExtension(format as ExportFormat);
+  const extension = getFileExtension(format);
   const filename = `${originalFilename}_enhanced_${job.tier.toLowerCase()}.${extension}`;
 
-  // Return the converted image
-  return new NextResponse(buffer as unknown as BodyInit, {
+  // Return the image as stored
+  // Note: If format conversion is needed, client should handle via Canvas API
+  // Convert Buffer to Uint8Array for NextResponse compatibility
+  return new NextResponse(new Uint8Array(imageBuffer), {
     status: 200,
     headers: {
-      "Content-Type": mimeType,
+      "Content-Type": format === "png" ? actualMimeType : getMimeType(format),
       "Content-Disposition": `attachment; filename="${filename}"`,
-      "Content-Length": String(buffer.length),
+      "Content-Length": String(imageBuffer.length),
       "Cache-Control": "private, max-age=3600",
       "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+      // Hint for client if conversion is needed
+      "X-Original-Format": actualMimeType,
+      "X-Requested-Format": getMimeType(format),
     },
   });
 }

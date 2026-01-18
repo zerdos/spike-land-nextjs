@@ -237,13 +237,13 @@ export default defineConfig({
         "./vitest.mock-next-view-transitions.tsx",
       ),
       // Fix ESM module resolution for next-auth imports
-      "next/link": path.resolve(__dirname, "./node_modules/next/link.js"),
-      "next/image": path.resolve(__dirname, "./node_modules/next/image.js"),
+      // Using require.resolve for Yarn PnP compatibility
+      "next/link": require.resolve("next/link"),
+      "next/image": require.resolve("next/image"),
       "@/auth": path.resolve(__dirname, "./src/auth.ts"),
-      "next/server": path.resolve(
-        __dirname,
-        "./node_modules/next/server.js",
-      ),
+      "next/server": require.resolve("next/server"),
+      // Map @prisma/client to the generated Prisma client location
+      "@prisma/client": path.resolve(__dirname, "./src/generated/prisma"),
     },
   },
 });

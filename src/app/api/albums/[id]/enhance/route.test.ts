@@ -1,6 +1,6 @@
 import { UserRole } from "@prisma/client";
 import { NextRequest } from "next/server";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
 
 // Mocks
@@ -49,16 +49,6 @@ vi.mock("@/lib/rate-limiter", () => ({
   },
 }));
 
-// Mock the workflow start function
-vi.mock("workflow/api", () => ({
-  start: vi.fn().mockResolvedValue({ runId: "batch-workflow-run-123" }),
-}));
-
-// Mock the batchEnhanceImages workflow
-vi.mock("@/workflows/batch-enhance.workflow", () => ({
-  batchEnhanceImages: vi.fn(),
-}));
-
 // Mock the direct batch enhance
 vi.mock("@/workflows/batch-enhance.direct", () => ({
   batchEnhanceImagesDirect: vi.fn().mockResolvedValue({
@@ -67,6 +57,20 @@ vi.mock("@/workflows/batch-enhance.direct", () => ({
     summary: { total: 0, successful: 0, failed: 0 },
   }),
 }));
+
+// Mock next/server after() function
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return {
+    ...actual,
+    after: vi.fn((callback: () => Promise<void>) => {
+      // Execute callback immediately in tests, handling any errors
+      Promise.resolve().then(callback).catch(() => {
+        // Errors in after() callbacks are logged, not thrown
+      });
+    }),
+  };
+});
 
 const { mockPrisma } = vi.hoisted(() => {
   return {
@@ -103,8 +107,6 @@ const mockRouteParams = { params: Promise.resolve({ id: "album-123" }) };
 describe("POST /api/albums/[id]/enhance", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default: dev mode
-    delete process.env.VERCEL;
 
     // Default album setup
     mockPrisma.album.findUnique.mockResolvedValue({
@@ -146,10 +148,6 @@ describe("POST /api/albums/[id]/enhance", () => {
         },
       },
     ]);
-  });
-
-  afterEach(() => {
-    delete process.env.VERCEL;
   });
 
   it("should return 401 if not authenticated", async () => {
@@ -355,11 +353,9 @@ describe("POST /api/albums/[id]/enhance", () => {
     expect(data.error).toBe("Database error");
   });
 
-  it("should start batch enhancement workflow in production", async () => {
-    process.env.VERCEL = "1";
-    const { start } = await import("workflow/api");
-    const { batchEnhanceImages } = await import(
-      "@/workflows/batch-enhance.workflow"
+  it("should run direct enhancement with after() for background processing", async () => {
+    const { batchEnhanceImagesDirect } = await import(
+      "@/workflows/batch-enhance.direct"
     );
 
     const req = createMockRequest({ tier: "TIER_2K" });
@@ -370,32 +366,6 @@ describe("POST /api/albums/[id]/enhance", () => {
     expect(data.success).toBe(true);
     expect(data.totalCost).toBe(10); // 2 images * 5 tokens
 
-    // Verify workflow was started
-    expect(start).toHaveBeenCalledWith(batchEnhanceImages, [
-      expect.objectContaining({
-        batchId: expect.stringContaining("album-"),
-        userId: "user-123",
-        tier: "TIER_2K",
-        images: expect.arrayContaining([
-          { imageId: "img-1", originalR2Key: "images/image1.jpg" },
-          { imageId: "img-2", originalR2Key: "images/image2.jpg" },
-        ]),
-      }),
-    ]);
-  });
-
-  it("should run direct enhancement in dev mode", async () => {
-    const { batchEnhanceImagesDirect } = await import(
-      "@/workflows/batch-enhance.direct"
-    );
-
-    const req = createMockRequest({ tier: "TIER_1K" });
-    const res = await POST(req, mockRouteParams);
-    const data = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(data.success).toBe(true);
-
     // Verify direct enhancement was called
     expect(batchEnhanceImagesDirect).toHaveBeenCalledWith({
       batchId: expect.stringContaining("album-"),
@@ -404,7 +374,7 @@ describe("POST /api/albums/[id]/enhance", () => {
         { imageId: "img-1", originalR2Key: "images/image1.jpg" },
         { imageId: "img-2", originalR2Key: "images/image2.jpg" },
       ],
-      tier: "TIER_1K",
+      tier: "TIER_2K",
     });
   });
 
@@ -535,69 +505,7 @@ describe("POST /api/albums/[id]/enhance", () => {
     expect(data.error).toBe("Database connection lost");
   });
 
-  it("should refund tokens if workflow fails to start in production", async () => {
-    process.env.VERCEL = "1";
-    const { start } = await import("workflow/api");
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
-    );
-
-    // Mock workflow start to fail
-    vi.mocked(start).mockRejectedValueOnce(
-      new Error("Workflow service unavailable"),
-    );
-
-    const req = createMockRequest({ tier: "TIER_2K" });
-    const res = await POST(req, mockRouteParams);
-    const data = await res.json();
-
-    expect(res.status).toBe(500);
-    expect(data.error).toBe(
-      "Failed to start enhancement workflow. Tokens have been refunded.",
-    );
-
-    // Verify refund was called with correct parameters
-    expect(TokenBalanceManager.refundTokens).toHaveBeenCalledWith(
-      "user-123",
-      10, // 2 images * 5 tokens (TIER_2K)
-      expect.stringContaining("album-"),
-      "Workflow failed to start",
-    );
-  });
-
-  it("should refund tokens if direct enhancement throws in dev mode", async () => {
-    const { batchEnhanceImagesDirect } = await import(
-      "@/workflows/batch-enhance.direct"
-    );
-    const { TokenBalanceManager } = await import(
-      "@/lib/tokens/balance-manager"
-    );
-
-    // Mock direct enhancement to throw immediately (not in catch block)
-    vi.mocked(batchEnhanceImagesDirect).mockImplementation(() => {
-      throw new Error("Direct enhancement initialization failed");
-    });
-
-    const req = createMockRequest({ tier: "TIER_1K" });
-    const res = await POST(req, mockRouteParams);
-    const data = await res.json();
-
-    expect(res.status).toBe(500);
-    expect(data.error).toBe(
-      "Failed to start enhancement workflow. Tokens have been refunded.",
-    );
-
-    // Verify refund was called
-    expect(TokenBalanceManager.refundTokens).toHaveBeenCalledWith(
-      "user-123",
-      4, // 2 images * 2 tokens (TIER_1K)
-      expect.stringContaining("album-"),
-      "Workflow failed to start",
-    );
-  });
-
-  it("should not refund tokens if workflow starts successfully", async () => {
-    process.env.VERCEL = "1";
+  it("should not refund tokens if enhancement starts successfully", async () => {
     const { TokenBalanceManager } = await import(
       "@/lib/tokens/balance-manager"
     );

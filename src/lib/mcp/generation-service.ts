@@ -4,6 +4,7 @@ import {
   generateImageWithGemini,
   modifyImageWithGemini,
 } from "@/lib/ai/gemini-client";
+import { getImageDimensionsFromBuffer } from "@/lib/images/image-dimensions";
 import prisma from "@/lib/prisma";
 import { uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
@@ -13,27 +14,6 @@ import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, McpJobType } from "@prisma/client";
 import { classifyError as classifyErrorImpl } from "./error-classifier";
 import type { ClassifiedError } from "./errors";
-
-// Lazy-load sharp to prevent build-time native module loading
-// Sharp is only needed at runtime when processing jobs
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _sharp: any = null;
-async function getSharp() {
-  if (!_sharp) {
-    // Dynamic import for CommonJS module
-    const mod = await import("sharp");
-    // Handle both ESM default export and CommonJS module.exports
-    _sharp = mod.default || mod;
-  }
-  return _sharp;
-}
-
-// Type for sharp metadata results
-interface SharpMetadata {
-  width?: number;
-  height?: number;
-  format?: string;
-}
 
 // Security: Maximum concurrent PROCESSING jobs per user to prevent burst attacks
 const MAX_CONCURRENT_JOBS_PER_USER = 3;
@@ -274,15 +254,10 @@ async function processGenerationJob(
     return;
   }
 
-  const sharp = await getSharp();
-  const { data: metadata, error: metadataError } = await tryCatch(
-    sharp(imageBuffer).metadata() as Promise<SharpMetadata>,
-  );
-
-  if (metadataError) {
-    await handleGenerationJobFailure(jobId, metadataError);
-    return;
-  }
+  // Get image dimensions using lightweight header parsing (no native deps)
+  const dimensions = getImageDimensionsFromBuffer(imageBuffer);
+  const outputWidth = dimensions?.width || 1024;
+  const outputHeight = dimensions?.height || 1024;
 
   const r2Key = `mcp-generated/${params.userId}/${jobId}.jpg`;
   const { data: uploadResult, error: uploadError } = await tryCatch(
@@ -305,8 +280,8 @@ async function processGenerationJob(
         status: JobStatus.COMPLETED,
         outputImageUrl: uploadResult.url,
         outputImageR2Key: r2Key,
-        outputWidth: metadata.width,
-        outputHeight: metadata.height,
+        outputWidth,
+        outputHeight,
         outputSizeBytes: imageBuffer.length,
         processingCompletedAt: new Date(),
       },
@@ -390,24 +365,15 @@ async function processModificationJob(
   const inputExtension = params.mimeType.split("/")[1] || "jpg";
   const inputR2Key = `mcp-input/${params.userId}/${jobId}.${inputExtension}`;
 
-  // Get input image metadata to detect aspect ratio
-  const sharp = await getSharp();
-  const { data: inputMetadata, error: inputMetadataError } = await tryCatch(
-    sharp(inputBuffer).metadata() as Promise<SharpMetadata>,
-  );
-
-  if (inputMetadataError) {
-    await handleModificationJobFailure(jobId, inputMetadataError);
-    return;
-  }
+  // Get input image dimensions using lightweight header parsing (no native deps)
+  const inputDimensions = getImageDimensionsFromBuffer(inputBuffer);
+  const inputWidth = inputDimensions?.width || 1024;
+  const inputHeight = inputDimensions?.height || 1024;
 
   // Auto-detect aspect ratio from input image dimensions
-  const detectedAspectRatio = detectAspectRatio(
-    inputMetadata.width || 1024,
-    inputMetadata.height || 1024,
-  );
+  const detectedAspectRatio = detectAspectRatio(inputWidth, inputHeight);
   console.log(
-    `Modification job ${jobId}: detected aspect ratio ${detectedAspectRatio} from ${inputMetadata.width}x${inputMetadata.height}`,
+    `Modification job ${jobId}: detected aspect ratio ${detectedAspectRatio} from ${inputWidth}x${inputHeight}`,
   );
 
   const { data: inputUploadResult, error: inputUploadError } = await tryCatch(
@@ -455,15 +421,10 @@ async function processModificationJob(
     return;
   }
 
-  // Get image metadata (sharp already loaded above)
-  const { data: metadata, error: metadataError } = await tryCatch(
-    sharp(imageBuffer).metadata() as Promise<SharpMetadata>,
-  );
-
-  if (metadataError) {
-    await handleModificationJobFailure(jobId, metadataError);
-    return;
-  }
+  // Get output image dimensions using lightweight header parsing (no native deps)
+  const outputDimensions = getImageDimensionsFromBuffer(imageBuffer);
+  const outputWidth = outputDimensions?.width || 1024;
+  const outputHeight = outputDimensions?.height || 1024;
 
   // Upload to R2
   const r2Key = `mcp-modified/${params.userId}/${jobId}.jpg`;
@@ -488,8 +449,8 @@ async function processModificationJob(
         status: JobStatus.COMPLETED,
         outputImageUrl: uploadResult.url,
         outputImageR2Key: r2Key,
-        outputWidth: metadata.width,
-        outputHeight: metadata.height,
+        outputWidth,
+        outputHeight,
         outputSizeBytes: imageBuffer.length,
         processingCompletedAt: new Date(),
       },
