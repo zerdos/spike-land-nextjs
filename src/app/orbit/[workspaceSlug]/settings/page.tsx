@@ -3,7 +3,7 @@ import { GeneralSettingsForm } from "@/components/orbit/settings/general-setting
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import prisma from "@/lib/prisma";
-import { ChevronRight, Inbox, Shield, Users } from "lucide-react";
+import { ChevronRight, Inbox, Link2, Shield, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -41,6 +41,12 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
   }
 
   const settingsLinks = [
+    {
+      href: `settings/accounts`,
+      icon: Link2,
+      title: "Social Accounts",
+      description: "Connect and manage your social media accounts",
+    },
     {
       href: `settings/inbox/routing`,
       icon: Inbox,
