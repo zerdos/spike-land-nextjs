@@ -1,4 +1,4 @@
-@skip @wip
+@requires-db
 Feature: Album Drag and Drop Organization
   As an authenticated user
   I want to drag and drop images within and between my albums
