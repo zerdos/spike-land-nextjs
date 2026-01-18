@@ -56,6 +56,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      - name: Generate Prisma client
+        run: yarn db:generate
+
       - name: Cache TypeScript build info
         uses: actions/cache@v5
         with:
@@ -98,6 +101,9 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --immutable
+
+      - name: Generate Prisma client
+        run: yarn db:generate
 
       - name: Fetch main branch for comparison
         if: github.ref != 'refs/heads/main'
@@ -231,6 +237,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      - name: Generate Prisma client
+        run: yarn db:generate
+
       - name: Apply Prisma migrations to E2E database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
@@ -349,6 +358,9 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --immutable
+
+      - name: Generate Prisma client
+        run: yarn db:generate
 
       - name: Cleanup E2E test database
         env:
