@@ -87,6 +87,11 @@ model User {
   // Workflow relations
   workflows                Workflow[]
 
+  // Content Library
+  assetFolders        AssetFolder[]
+  assets              Asset[]
+  assetTagAssignments AssetTagAssignment[]
+
   @@map("users")
 }
 
@@ -110,23 +115,22 @@ model Account {
 }
 
 model MarketingAccount {
-  id           String            @id @default(cuid())
-  userId       String
-  platform     MarketingPlatform
-  accountId    String // Platform-specific account ID (FB Ad Account ID, Google Ads Customer ID)
-  accountName  String?
-  accessToken  String // Encrypted access token
-  refreshToken String? // Encrypted refresh token (for Google Ads)
-  expiresAt    DateTime?
-  isActive     Boolean           @default(true)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String              @id @default(cuid())
+  userId             String
+  platform           MarketingPlatform
+  accountId          String // Platform-specific account ID (FB Ad Account ID, Google Ads Customer ID)
+  accountName        String?
+  accessToken        String // Encrypted access token
+  refreshToken       String? // Encrypted refresh token (for Google Ads)
+  expiresAt          DateTime?
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  googleAdsCampaigns GoogleAdsCampaign[]
 
   @@unique([userId, platform, accountId])
   @@index([userId])
-  googleAdsCampaigns GoogleAdsCampaign[]
-
   @@index([platform])
   @@map("marketing_accounts")
 }
@@ -873,23 +877,25 @@ model InboxSuggestedResponse {
   isPreferred     Boolean   @default(false)
   metadata        Json?
   createdAt       DateTime  @default(now())
+
   @@index([inboxItemId])
   @@map("inbox_suggested_responses")
 }
 
 model EscalationEvent {
-  id            String              @id @default(cuid())
-  inboxItemId   String
-  inboxItem     InboxItem           @relation(fields: [inboxItemId], references: [id], onDelete: Cascade)
-  eventType     EscalationEventType
-  fromLevel     Int
-  toLevel       Int
-  fromUserId    String?
-  toUserId      String?
-  reason        String?
-  triggeredBy   EscalationTrigger
-  metadata      Json?
-  createdAt     DateTime            @default(now())
+  id          String              @id @default(cuid())
+  inboxItemId String
+  inboxItem   InboxItem           @relation(fields: [inboxItemId], references: [id], onDelete: Cascade)
+  eventType   EscalationEventType
+  fromLevel   Int
+  toLevel     Int
+  fromUserId  String?
+  toUserId    String?
+  reason      String?
+  triggeredBy EscalationTrigger
+  metadata    Json?
+  createdAt   DateTime            @default(now())
+
   @@index([inboxItemId])
   @@map("escalation_events")
 }
@@ -1421,9 +1427,9 @@ model VisitorSession {
   fbclid String? // Facebook Click ID
 
   // Relations
-  user      User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
-  pageViews PageView[]
-  events    AnalyticsEvent[]
+  user          User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  pageViews     PageView[]
+  events        AnalyticsEvent[]
   abTestResults AbTestResult[]
 
   @@index([visitorId])
@@ -2013,6 +2019,9 @@ model SocialPost {
   // Relations (many-to-many with accounts via join table)
   postAccounts SocialPostAccount[]
 
+  // Content Library
+  assets PostAsset[]
+
   @@index([createdById])
   @@index([createdById, createdAt])
   @@index([status])
@@ -2216,20 +2225,25 @@ model Workspace {
   policyViolations       PolicyViolation[]
 
   // Scout Competitor Tracking
-  scoutCompetitors ScoutCompetitor[]
-  scoutBenchmarks  ScoutBenchmark[]
+  scoutCompetitors   ScoutCompetitor[]
+  scoutBenchmarks    ScoutBenchmark[]
   // Scout content suggestions
-  contentSuggestions    ContentSuggestion[]
+  contentSuggestions ContentSuggestion[]
 
   // Scout Topic Monitoring
-  scoutTopics           ScoutTopic[]
-  allocatorCampaigns    AllocatorCampaign[]
+  scoutTopics        ScoutTopic[]
+  allocatorCampaigns AllocatorCampaign[]
 
   // Allocator Autopilot relations
-  autopilotConfigs       AllocatorAutopilotConfig[]
-  autopilotExecutions    AllocatorAutopilotExecution[]
-  allocatorAuditLogs     AllocatorAuditLog[]
-  guardrailAlerts        AllocatorGuardrailAlert[]
+  autopilotConfigs    AllocatorAutopilotConfig[]
+  autopilotExecutions AllocatorAutopilotExecution[]
+  allocatorAuditLogs  AllocatorAuditLog[]
+  guardrailAlerts     AllocatorGuardrailAlert[]
+
+  // Content Library
+  assetFolders AssetFolder[]
+  assetTags    AssetTag[]
+  assets       Asset[]
 
   // Workflow relations
   workflows              Workflow[]
@@ -2256,7 +2270,7 @@ model WorkspaceMember {
 
   // Inbox items assigned to this team member
   assignedInboxItems InboxItem[]
-  escalatedItems     InboxItem[]  @relation("EscalatedItems")
+  escalatedItems     InboxItem[] @relation("EscalatedItems")
 
   @@unique([workspaceId, userId])
   @@index([workspaceId])
@@ -2421,6 +2435,9 @@ model ScheduledPost {
   // Relations (many-to-many with accounts via join table)
   postAccounts ScheduledPostAccount[]
 
+  // Content Library
+  assets ScheduledPostAsset[]
+
   @@index([workspaceId])
   @@index([workspaceId, scheduledAt])
   @@index([workspaceId, status])
@@ -2512,21 +2529,21 @@ model InboxItem {
   drafts RelayDraft[]
 
   // Smart Routing Fields
-  sentiment          InboxSentiment?
-  sentimentScore     Float?              // -1 to 1
-  priorityScore      Int?                // 0-100
-  priorityFactors    Json?
-  routingAnalyzedAt  DateTime?
-  routingMetadata    Json?
+  sentiment         InboxSentiment?
+  sentimentScore    Float? // -1 to 1
+  priorityScore     Int? // 0-100
+  priorityFactors   Json?
+  routingAnalyzedAt DateTime?
+  routingMetadata   Json?
 
   // Escalation Fields
-  escalationStatus   EscalationStatus?   @default(NONE)
-  escalationLevel    Int?                @default(0)
-  escalatedAt        DateTime?
-  escalatedToId      String?
-  escalatedTo        WorkspaceMember?    @relation("EscalatedItems", fields: [escalatedToId], references: [id], onDelete: SetNull)
-  slaDeadline        DateTime?
-  slaBreach          Boolean             @default(false)
+  escalationStatus EscalationStatus? @default(NONE)
+  escalationLevel  Int?              @default(0)
+  escalatedAt      DateTime?
+  escalatedToId    String?
+  escalatedTo      WorkspaceMember?  @relation("EscalatedItems", fields: [escalatedToId], references: [id], onDelete: SetNull)
+  slaDeadline      DateTime?
+  slaBreach        Boolean           @default(false)
 
   // New Relations
   suggestedResponses InboxSuggestedResponse[]
@@ -3040,10 +3057,10 @@ model ScoutTopic {
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  name      String
+  name     String
   // Example: { "and": ["ai", "development"], "or": ["gpt-4"], "not": ["crypto"] }
-  keywords  Json
-  isActive  Boolean   @default(true)
+  keywords Json
+  isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3056,19 +3073,19 @@ model ScoutTopic {
 }
 
 model ScoutResult {
-  id         String   @id @default(cuid())
-  topicId    String
-  topic      ScoutTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  id      String     @id @default(cuid())
+  topicId String
+  topic   ScoutTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
 
   platform   SocialPlatform
-  platformId String   // Platform-specific ID for the post/comment
-  content    String   @db.Text
-  author     String   // Author's username/handle
-  authorUrl  String?  // URL to author's profile
-  postUrl    String   // URL to the post/comment
-  engagement Json     // { "likes": 123, "comments": 45, "shares": 67 }
+  platformId String // Platform-specific ID for the post/comment
+  content    String         @db.Text
+  author     String // Author's username/handle
+  authorUrl  String? // URL to author's profile
+  postUrl    String // URL to the post/comment
+  engagement Json // { "likes": 123, "comments": 45, "shares": 67 }
 
-  foundAt    DateTime @default(now())
+  foundAt DateTime @default(now())
 
   @@unique([platform, platformId, topicId])
   @@index([topicId])
@@ -3141,19 +3158,19 @@ enum PolicyCheckResult {
 
 /// AI-generated content suggestions based on trends and competitor analysis
 model ContentSuggestion {
-  id                  String                    @id
-  workspaceId         String
-  workspace           Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id          String    @id
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   // Content details
-  title               String
-  description         String                    @db.Text
-  draftContent        String                    @db.Text
-  contentType         SuggestionContentType
-  suggestedPlatforms  String[]                  // Array of platform names
+  title              String
+  description        String                @db.Text
+  draftContent       String                @db.Text
+  contentType        SuggestionContentType
+  suggestedPlatforms String[] // Array of platform names
 
   // Trend data as JSON (source, keywords, metrics)
-  trendData           Json[]
+  trendData Json[]
 
   // Scoring
   relevanceScore      Float
@@ -3162,13 +3179,13 @@ model ContentSuggestion {
   overallScore        Float
 
   // Status tracking
-  status              SuggestionStatus          @default(PENDING)
-  generatedAt         DateTime                  @default(now())
-  expiresAt           DateTime?
-  usedAt              DateTime?
-  dismissedAt         DateTime?
-  dismissalReason     String?
-  feedback            String?                   @db.Text
+  status          SuggestionStatus @default(PENDING)
+  generatedAt     DateTime         @default(now())
+  expiresAt       DateTime?
+  usedAt          DateTime?
+  dismissedAt     DateTime?
+  dismissalReason String?
+  feedback        String?          @db.Text
 
   @@index([workspaceId, status])
   @@index([workspaceId, overallScore])
@@ -3217,10 +3234,10 @@ model AllocatorCampaign {
   updatedAt          DateTime          @updatedAt
   adSets             AllocatorAdSet[]
 
-  autopilotConfig        AllocatorAutopilotConfig[]
-  autopilotExecutions    AllocatorAutopilotExecution[]
-  dailyBudgetMoves       AllocatorDailyBudgetMove[]
-  guardrailAlerts        AllocatorGuardrailAlert[]
+  autopilotConfig     AllocatorAutopilotConfig[]
+  autopilotExecutions AllocatorAutopilotExecution[]
+  dailyBudgetMoves    AllocatorDailyBudgetMove[]
+  guardrailAlerts     AllocatorGuardrailAlert[]
 
   @@unique([workspaceId, platform, platformCampaignId])
   @@index([workspaceId])
@@ -3229,16 +3246,16 @@ model AllocatorCampaign {
 }
 
 model AllocatorAdSet {
-  id              String   @id @default(cuid())
+  id              String            @id @default(cuid())
   campaignId      String
   campaign        AllocatorCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   platformAdSetId String
   name            String
   status          String
-  budget          Decimal? @db.Decimal(10, 2)
-  spend           Decimal  @default(0) @db.Decimal(10, 2)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  budget          Decimal?          @db.Decimal(10, 2)
+  spend           Decimal           @default(0) @db.Decimal(10, 2)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   @@unique([campaignId, platformAdSetId])
   @@index([campaignId])
@@ -3246,32 +3263,32 @@ model AllocatorAdSet {
 }
 
 model AllocatorAutopilotConfig {
-  id                   String           @id @default(cuid())
+  id                   String        @id @default(cuid())
   workspaceId          String
   campaignId           String?
-  isEnabled            Boolean          @default(false)
-  mode                 AutopilotMode    @default(CONSERVATIVE)
-  maxDailyBudgetChange Decimal          @default(10.0) @db.Decimal(10, 2)
-  maxSingleChange      Decimal          @default(5.0) @db.Decimal(10, 2)
-  minRoasThreshold     Decimal?         @db.Decimal(10, 2)
-  maxCpaThreshold      Decimal?         @db.Decimal(10, 2)
-  pauseOnAnomaly       Boolean          @default(true)
-  requireApprovalAbove Decimal?         @db.Decimal(10, 2)
+  isEnabled            Boolean       @default(false)
+  mode                 AutopilotMode @default(CONSERVATIVE)
+  maxDailyBudgetChange Decimal       @default(10.0) @db.Decimal(10, 2)
+  maxSingleChange      Decimal       @default(5.0) @db.Decimal(10, 2)
+  minRoasThreshold     Decimal?      @db.Decimal(10, 2)
+  maxCpaThreshold      Decimal?      @db.Decimal(10, 2)
+  pauseOnAnomaly       Boolean       @default(true)
+  requireApprovalAbove Decimal?      @db.Decimal(10, 2)
   encryptedSettings    String?
   // Guardrails
-  minBudget            Decimal?            @db.Decimal(12, 2)
-  maxBudget            Decimal?            @db.Decimal(12, 2)
-  cooldownMinutes      Int                 @default(60) // Minutes between adjustments
-  isEmergencyStopped   Boolean             @default(false)
+  minBudget            Decimal?      @db.Decimal(12, 2)
+  maxBudget            Decimal?      @db.Decimal(12, 2)
+  cooldownMinutes      Int           @default(60) // Minutes between adjustments
+  isEmergencyStopped   Boolean       @default(false)
   emergencyStoppedAt   DateTime?
   emergencyStoppedBy   String?
   emergencyStopReason  String?
 
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  workspace            Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  campaign             AllocatorCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  workspace Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  campaign  AllocatorCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, campaignId])
   @@index([workspaceId])
@@ -3292,8 +3309,8 @@ model AllocatorGuardrailAlert {
   acknowledgedBy String?
   createdAt      DateTime           @default(now())
 
-  workspace      Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  campaign       AllocatorCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  workspace Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  campaign  AllocatorCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, createdAt])
   @@index([workspaceId, acknowledged])
@@ -3331,14 +3348,14 @@ model AllocatorAutopilotExecution {
   metadata           Json?
 
   // Rollback tracking
-  rollbackOfId       String?                  @unique
+  rollbackOfId       String?   @unique
   rolledBackAt       DateTime?
   rolledBackReason   String?
   rolledBackByUserId String?
 
-  workspace          Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  campaign           AllocatorCampaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  rollbackOf         AllocatorAutopilotExecution? @relation("RollbackHistory", fields: [rollbackOfId], references: [id])
+  workspace           Workspace                    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  campaign            AllocatorCampaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  rollbackOf          AllocatorAutopilotExecution? @relation("RollbackHistory", fields: [rollbackOfId], references: [id])
   rolledBackExecution AllocatorAutopilotExecution? @relation("RollbackHistory")
   auditLogs           AllocatorAuditLog[]
 
@@ -3431,16 +3448,16 @@ model WorkflowRunLog {
 }
 
 model AllocatorDailyBudgetMove {
-  id           String   @id @default(cuid())
-  campaignId   String
-  date         DateTime @db.Date
-  totalMoved   Decimal  @default(0) @db.Decimal(10, 2)
-  netChange    Decimal  @default(0) @db.Decimal(10, 2)
-  executionCount Int    @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String   @id @default(cuid())
+  campaignId     String
+  date           DateTime @db.Date
+  totalMoved     Decimal  @default(0) @db.Decimal(10, 2)
+  netChange      Decimal  @default(0) @db.Decimal(10, 2)
+  executionCount Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  campaign     AllocatorCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaign AllocatorCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@unique([campaignId, date])
   @@index([campaignId])
@@ -3448,42 +3465,42 @@ model AllocatorDailyBudgetMove {
 }
 
 model AllocatorAuditLog {
-  id              String   @id @default(cuid())
-  workspaceId     String
-  campaignId      String?
+  id          String  @id @default(cuid())
+  workspaceId String
+  campaignId  String?
 
   // Decision type
   decisionType    AllocatorDecisionType
   decisionOutcome AllocatorDecisionOutcome
 
   // Context snapshots (immutable)
-  recommendationSnapshot  Json?   // Full BudgetRecommendation
-  performanceSnapshot     Json?   // CampaignPerformanceAnalysis
-  configSnapshot          Json?   // AllocatorAutopilotConfig at decision time
-  guardrailEvaluation     Json?   // Array of {check, passed, reason, values}
+  recommendationSnapshot Json? // Full BudgetRecommendation
+  performanceSnapshot    Json? // CampaignPerformanceAnalysis
+  configSnapshot         Json? // AllocatorAutopilotConfig at decision time
+  guardrailEvaluation    Json? // Array of {check, passed, reason, values}
 
   // State changes
-  previousState   Json?   // {budget, status, etc.}
-  newState        Json?   // {budget, status, etc.}
+  previousState Json? // {budget, status, etc.}
+  newState      Json? // {budget, status, etc.}
 
   // AI reasoning
-  aiReasoning     String? // Human-readable explanation
-  supportingData  Json?   // Evidence that led to decision
-  confidence      String? // high/medium/low
+  aiReasoning    String? // Human-readable explanation
+  supportingData Json? // Evidence that led to decision
+  confidence     String? // high/medium/low
 
   // Execution reference
-  executionId     String?
+  executionId String?
 
   // Metadata
-  triggeredBy     String  // "CRON", "API", "MANUAL"
-  userId          String? // If manual trigger
-  correlationId   String  // For tracing related decisions
+  triggeredBy   String // "CRON", "API", "MANUAL"
+  userId        String? // If manual trigger
+  correlationId String // For tracing related decisions
 
-  createdAt       DateTime @default(now())
+  createdAt DateTime @default(now())
 
   // Relations
-  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  execution       AllocatorAutopilotExecution? @relation(fields: [executionId], references: [id])
+  workspace Workspace                    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  execution AllocatorAutopilotExecution? @relation(fields: [executionId], references: [id])
 
   @@index([workspaceId, createdAt])
   @@index([campaignId, createdAt])
@@ -3545,13 +3562,13 @@ model AbTestVariant {
 }
 
 model AbTestResult {
-  id              String         @id @default(cuid())
+  id               String         @id @default(cuid())
   visitorSessionId String
   abTestVariantId  String
-  converted       Boolean        @default(false)
-  createdAt       DateTime       @default(now())
-  visitorSession  VisitorSession @relation(fields: [visitorSessionId], references: [id], onDelete: Cascade)
-  abTestVariant   AbTestVariant  @relation(fields: [abTestVariantId], references: [id], onDelete: Cascade)
+  converted        Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  visitorSession   VisitorSession @relation(fields: [visitorSessionId], references: [id], onDelete: Cascade)
+  abTestVariant    AbTestVariant  @relation(fields: [abTestVariantId], references: [id], onDelete: Cascade)
 
   @@index([visitorSessionId])
   @@index([abTestVariantId])
@@ -3565,15 +3582,145 @@ enum AbTestStatus {
 }
 
 model FeatureFlag {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  isEnabled   Boolean  @default(false)
-  percentage  Int      @default(0)
-  enabledFor  String[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  name       String   @unique
+  isEnabled  Boolean  @default(false)
+  percentage Int      @default(0)
+  enabledFor String[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("feature_flags")
+}
+
+// =============================================================================
+// Content Library Models
+// =============================================================================
+
+model AssetFolder {
+  id          String    @id @default(cuid())
+  name        String
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Self-relation for nesting folders
+  parentId String?
+  parent   AssetFolder?  @relation("NestedFolders", fields: [parentId], references: [id], onDelete: Cascade)
+  children AssetFolder[] @relation("NestedFolders")
+
+  // User who created the folder
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assets Asset[]
+
+  @@unique([workspaceId, name, parentId])
+  @@index([workspaceId])
+  @@index([parentId])
+  @@map("asset_folders")
+}
+
+model AssetTag {
+  id          String    @id @default(cuid())
+  name        String
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  assets AssetTagAssignment[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@map("asset_tags")
+}
+
+model Asset {
+  id          String       @id @default(cuid())
+  workspaceId String
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  folderId    String?
+  folder      AssetFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  // File metadata
+  filename  String
+  fileType  String // e.g., "image/jpeg", "video/mp4"
+  sizeBytes Int
+  width     Int?
+  height    Int?
+  duration  Float? // For video/audio
+
+  // Storage info
+  storageProvider String @default("R2")
+  r2Bucket        String
+  r2Key           String @unique
+
+  // AI Analysis
+  altText      String? @db.Text
+  qualityScore Float?
+  analysisJson Json?
+
+  // User who uploaded the asset
+  uploadedById String
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Many-to-many relation with AssetTag
+  tags AssetTagAssignment[]
+
+  // Usage in posts
+  socialPosts    PostAsset[]
+  scheduledPosts ScheduledPostAsset[]
+
+  @@index([workspaceId])
+  @@index([folderId])
+  @@index([uploadedById])
+  @@index([fileType])
+  @@map("assets")
+}
+
+model AssetTagAssignment {
+  assetId String
+  asset   Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  tagId   String
+  tag     AssetTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  assignedAt   DateTime @default(now())
+  assignedById String
+  assignedBy   User     @relation(fields: [assignedById], references: [id], onDelete: Cascade)
+
+  @@id([assetId, tagId])
+  @@index([assetId])
+  @@index([tagId])
+  @@map("asset_tag_assignments")
+}
+
+model PostAsset {
+  postId  String
+  post    SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  assetId String
+  asset   Asset      @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@id([postId, assetId])
+  @@index([postId])
+  @@index([assetId])
+  @@map("post_assets")
+}
+
+model ScheduledPostAsset {
+  postId  String
+  post    ScheduledPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  assetId String
+  asset   Asset         @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@id([postId, assetId])
+  @@index([postId])
+  @@index([assetId])
+  @@map("scheduled_post_assets")
 }
 
 enum AutopilotMode {
