@@ -211,10 +211,14 @@ RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/
     apt-get update \
     && apt-get install -y --no-install-recommends procps
 
-RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readonly \
-    --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/tmp/pw-cache,sharing=locked \
+# Copy Yarn PnP files needed to run playwright
+COPY --link --from=dep-context /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
+COPY --link --from=dep-context /app/.yarn/ ./.yarn/
+COPY --link --from=deps /app/.pnp.cjs /app/.pnp.loader.mjs ./
+
+RUN --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/tmp/pw-cache,sharing=locked \
     mkdir -p /ms-playwright \
-    && PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-cache /app/node_modules/.bin/playwright install chromium --with-deps \
+    && PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-cache yarn playwright install chromium --with-deps \
     && cp -a /tmp/pw-cache/* /ms-playwright/
 
 # ============================================================================
@@ -230,8 +234,8 @@ COPY --link --from=dep-context /app/.yarn/ ./.yarn/
 COPY --link --from=dep-context /app/packages/ ./packages/
 COPY --link --from=dep-context /app/prisma ./prisma
 
-# Copy built application and dependencies
-COPY --link --from=deps /app/node_modules ./node_modules
+# Copy PnP resolution files (Yarn PnP doesn't use node_modules)
+COPY --link --from=deps /app/.pnp.cjs /app/.pnp.loader.mjs ./
 
 # Copy source files needed for E2E
 COPY --link --from=source /app/tsconfig*.json /app/next.config.ts /app/postcss.config.mjs ./
