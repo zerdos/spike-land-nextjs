@@ -32,14 +32,13 @@ interface SocialAccount {
   accountName: string;
 }
 
-async function fetchAccounts(workspaceId: string): Promise<SocialAccount[]> {
-  const response = await fetch(
-    `/api/social/accounts?workspaceId=${workspaceId}`,
-  );
+async function fetchAccounts(workspaceSlug: string): Promise<SocialAccount[]> {
+  const response = await fetch(`/api/orbit/${workspaceSlug}/accounts`);
   if (!response.ok) {
     throw new Error("Failed to fetch accounts");
   }
-  return response.json();
+  const data = await response.json();
+  return data.accounts || [];
 }
 
 async function createScheduledPost(
@@ -112,10 +111,11 @@ export function CalendarClient() {
   });
 
   // Fetch connected accounts
+  const workspaceSlug = workspace?.slug ?? "";
   const { data: accounts = [] } = useQuery({
-    queryKey: ["social-accounts", workspaceId],
-    queryFn: () => fetchAccounts(workspaceId),
-    enabled: !!workspaceId,
+    queryKey: ["social-accounts", workspaceSlug],
+    queryFn: () => fetchAccounts(workspaceSlug),
+    enabled: !!workspaceSlug,
   });
 
   // Create post mutation
