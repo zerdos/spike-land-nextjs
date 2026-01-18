@@ -112,6 +112,8 @@ describe("PostHandler - Tool Schema Validation", () => {
       });
     });
 
+    // Skip: AI SDK tool format conversion complexity - the MCP to AI SDK tool conversion
+    // requires precise mocking of streamText internals which is brittle and hard to maintain
     it.skip("should convert tools to correct format for AI SDK", async () => {
       let capturedTools: Record<string, unknown> | undefined;
 

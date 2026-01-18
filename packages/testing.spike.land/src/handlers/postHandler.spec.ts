@@ -491,6 +491,8 @@ describe("PostHandler", () => {
       consoleErrorSpy.mockRestore();
     });
 
+    // Skip: AI SDK streaming and tool execution - onStepFinish callback requires
+    // complex async mocking of the streaming internals which is difficult to test reliably
     it.skip("should handle tool execution in onStepFinish", async () => {
       let onStepFinishCallback: Parameters<
         typeof streamText
@@ -543,6 +545,8 @@ describe("PostHandler", () => {
       expect(mockStorageService.saveRequestBody).toHaveBeenCalledTimes(2);
     });
 
+    // Skip: Error handling during tool result persistence requires mocking the entire
+    // AI SDK streaming pipeline and the async tool result saving mechanism
     it.skip("should handle errors during tool result saving", async () => {
       const consoleErrorSpy = vi.spyOn(console, "error");
       let onStepFinishCallback: Parameters<

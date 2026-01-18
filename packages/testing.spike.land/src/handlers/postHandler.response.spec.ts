@@ -128,6 +128,7 @@ describe("PostHandler - Response", () => {
   });
 
   describe("createStreamResponse", () => {
+    // Skip: Complex AI SDK streaming mocking - requires integration tests with actual AI SDK
     it.skip("should create stream with correct parameters", async () => {
       const messages = [{ role: "user" as const, content: "Hello" }];
       const tools: McpTool[] = mockMcpServer.tools;
