@@ -3,6 +3,18 @@
 import { ORBIT_STORAGE_KEY } from "@/components/orbit/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,6 +29,10 @@ export default function OrbitPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({ name: "", description: "" });
 
   useEffect(() => {
     // Fetch workspaces first, then decide where to redirect
@@ -60,6 +76,40 @@ export default function OrbitPage() {
         setIsLoading(false);
       });
   }, [router]);
+
+  const handleCreateWorkspace = async () => {
+    if (!formData.name.trim()) {
+      setCreateError("Workspace name is required");
+      return;
+    }
+
+    setIsCreating(true);
+    setCreateError(null);
+
+    try {
+      const res = await fetch("/api/workspaces", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          description: formData.description.trim() || undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create workspace");
+      }
+
+      // Save to localStorage and redirect to new workspace
+      localStorage.setItem(ORBIT_STORAGE_KEY, data.workspace.slug);
+      router.push(`/orbit/${data.workspace.slug}/dashboard`);
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : "Failed to create workspace");
+      setIsCreating(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -119,9 +169,55 @@ export default function OrbitPage() {
               <Button asChild variant="outline">
                 <Link href="/">Back to Home</Link>
               </Button>
-              <Button disabled>
-                Create Workspace (Coming Soon)
-              </Button>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>Create Workspace</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Workspace</DialogTitle>
+                    <DialogDescription>
+                      A workspace is where you manage your social media accounts and content.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Workspace Name</Label>
+                      <Input
+                        id="name"
+                        placeholder="My Brand"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        disabled={isCreating}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Description (optional)</Label>
+                      <Textarea
+                        id="description"
+                        placeholder="What is this workspace for?"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        disabled={isCreating}
+                        rows={3}
+                      />
+                    </div>
+                    {createError && <p className="text-sm text-red-500">{createError}</p>}
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsDialogOpen(false)}
+                      disabled={isCreating}
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={handleCreateWorkspace} disabled={isCreating}>
+                      {isCreating ? "Creating..." : "Create Workspace"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
         </Card>

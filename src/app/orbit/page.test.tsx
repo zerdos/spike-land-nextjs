@@ -129,7 +129,7 @@ describe("OrbitPage", () => {
       expect(
         screen.getByText("Get started by creating your first workspace"),
       ).toBeInTheDocument();
-      expect(screen.getByText("Create Workspace (Coming Soon)")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Create Workspace" })).toBeInTheDocument();
     });
 
     expect(mockReplace).not.toHaveBeenCalled();
