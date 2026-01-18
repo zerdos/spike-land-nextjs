@@ -20,22 +20,21 @@ import type {
   MasterListItem,
   MoveAppRequest,
 } from "@/types/app-factory";
-import { PHASES_ORDERED } from "@/types/app-factory";
+import { PHASES_ORDERED, THIS_PROJECT_SOURCE } from "@/types/app-factory";
 import * as fs from "fs";
 import { type NextRequest, NextResponse } from "next/server";
 import * as path from "path";
 
 // Path to the app factory state directory
-const APP_FACTORY_PATH = process.env["APP_FACTORY_PATH"] ||
-  "/Users/z/Developer/spike-land-app-factory";
-const STATE_FILE = path.join(APP_FACTORY_PATH, ".state/apps.json");
-const HISTORY_DIR = path.join(APP_FACTORY_PATH, ".state/history");
+// APP_FACTORY_PATH must be set in environment - no default fallback for security
+const APP_FACTORY_PATH = process.env["APP_FACTORY_PATH"] || "";
+const STATE_FILE = APP_FACTORY_PATH ? path.join(APP_FACTORY_PATH, ".state/apps.json") : "";
+const HISTORY_DIR = APP_FACTORY_PATH ? path.join(APP_FACTORY_PATH, ".state/history") : "";
 
 // Jules API configuration
 const JULES_API_KEY = process.env["JULES_API_KEY"] || "";
 const JULES_API_BASE = "https://jules.googleapis.com/v1alpha";
 const JULES_TOTAL_SLOTS = 15; // Pro plan concurrent session limit
-const THIS_PROJECT_SOURCE = "sources/github/zerdos/spike-land-app-factory";
 
 // Active session states (not completed/failed/cancelled)
 const ACTIVE_STATES = ["PENDING", "PLANNING", "IN_PROGRESS", "WAITING_FOR_USER"];
@@ -44,9 +43,36 @@ const ACTIVE_STATES = ["PENDING", "PLANNING", "IN_PROGRESS", "WAITING_FOR_USER"]
 const COMPLETED_STATES = ["COMPLETED"];
 const FAILED_STATES = ["FAILED", "CANCELLED"];
 
-// In-memory lock to prevent concurrent processing of the same app
-// This prevents race conditions where multiple polling requests try to advance the same app
+/**
+ * In-memory lock to prevent concurrent processing of the same app
+ * This prevents race conditions where multiple polling requests try to advance the same app
+ *
+ * NOTE: This only works within a single process. In serverless environments (Vercel),
+ * this won't prevent concurrent processing across different instances. For production
+ * use with high concurrency, consider Redis-based locking or database transactions.
+ */
 const processingApps = new Set<string>();
+
+/** Prototype pollution keys that must be blocked when used as object keys */
+const PROTOTYPE_POLLUTION_KEYS = ["__proto__", "constructor", "prototype"];
+
+/**
+ * Validate app name to prevent prototype pollution and path traversal attacks
+ *
+ * Security considerations:
+ * - Blocks prototype pollution keys (__proto__, constructor, prototype)
+ * - Only allows safe characters (lowercase letters, numbers, hyphens)
+ * - Prevents path traversal by disallowing slashes, dots, etc.
+ */
+function isValidAppName(name: unknown): name is string {
+  if (typeof name !== "string") return false;
+  if (name.length === 0 || name.length > 100) return false;
+  // Only allow lowercase letters, numbers, and hyphens
+  if (!/^[a-z0-9-]+$/.test(name)) return false;
+  // Block prototype pollution keys
+  if (PROTOTYPE_POLLUTION_KEYS.includes(name)) return false;
+  return true;
+}
 
 /**
  * Phase-specific prompts for Jules sessions
@@ -665,6 +691,10 @@ interface StateFile {
  * Load state from file system
  */
 function loadState(): StateFile | null {
+  if (!STATE_FILE) {
+    console.error("STATE_FILE not configured (APP_FACTORY_PATH not set)");
+    return null;
+  }
   if (!fs.existsSync(STATE_FILE)) {
     return null;
   }
@@ -676,18 +706,32 @@ function loadState(): StateFile | null {
  * Save state to file system
  */
 function saveState(state: StateFile): void {
+  if (!STATE_FILE) {
+    console.error("STATE_FILE not configured (APP_FACTORY_PATH not set)");
+    return;
+  }
   state.lastUpdated = new Date().toISOString();
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
 }
 
 /**
  * Log a history entry
+ * Validates appName to prevent path traversal attacks
  */
 function logHistory(
   appName: string,
   event: HistoryEntry["event"],
   details: Partial<HistoryEntry>,
 ): void {
+  // Validate appName to prevent path traversal
+  if (!isValidAppName(appName)) {
+    console.error(`Invalid app name for logging: ${appName}`);
+    return;
+  }
+  if (!HISTORY_DIR) {
+    console.error("HISTORY_DIR not configured (APP_FACTORY_PATH not set)");
+    return;
+  }
   fs.mkdirSync(HISTORY_DIR, { recursive: true });
   const logFile = path.join(HISTORY_DIR, `${appName}.log`);
   const entry: HistoryEntry = {
@@ -1049,6 +1093,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate appName to prevent prototype pollution and path traversal
+    if (!isValidAppName(appName)) {
+      return NextResponse.json(
+        { error: "Invalid app name format" },
+        { status: 400 },
+      );
+    }
+
     if (!PHASES_ORDERED.includes(toPhase)) {
       return NextResponse.json({ error: "Invalid phase" }, { status: 400 });
     }
@@ -1112,6 +1164,14 @@ export async function POST(request: NextRequest) {
 
     if (!name || !category) {
       return NextResponse.json({ error: "Missing name or category" }, { status: 400 });
+    }
+
+    // Validate name to prevent prototype pollution and path traversal
+    if (!isValidAppName(name)) {
+      return NextResponse.json(
+        { error: "Invalid app name format. Use lowercase letters, numbers, and hyphens only." },
+        { status: 400 },
+      );
     }
 
     let state = loadState();
