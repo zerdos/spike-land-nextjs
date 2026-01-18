@@ -396,7 +396,7 @@ async function getMockE2ESession() {
   // Validate role against UserRole enum to prevent type assertion bypass
   const roleValue = cookieStore?.get("e2e-user-role")?.value;
   const validRoles = Object.values(UserRole);
-  const role = validRoles.includes(roleValue as UserRole)
+  let role = validRoles.includes(roleValue as UserRole)
     ? (roleValue as UserRole)
     : UserRole.USER;
   const email = cookieStore?.get("e2e-user-email")?.value || "test@example.com";
@@ -406,6 +406,7 @@ async function getMockE2ESession() {
   let id = "test-user-id";
   if (email === "admin@example.com") {
     id = "admin-user-id";
+    role = UserRole.ADMIN;
   } else if (
     email === "newuser@example.com" || email === "no-orders@example.com"
   ) {
