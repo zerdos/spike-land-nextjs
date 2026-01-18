@@ -1,5 +1,8 @@
 # Authentication bypass fixed in src/auth.ts - See GitHub issue #435
 # localStorage timing issues fixed in PR for issue #437
+# @skip - Wizard UI was replaced with chat-based interface. See GitHub issue #775.
+# These tests need to be rewritten for the new /my-apps/[codeSpace] chat flow.
+@skip
 Feature: App Creation Wizard - Draft Auto-Save & Persistence
   As an authenticated user
   I want my app creation progress to be automatically saved
