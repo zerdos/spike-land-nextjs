@@ -6,6 +6,13 @@
  */
 
 import { auth } from "@/auth";
+import {
+  isValidAppName,
+  loadRecentHistory,
+  loadState,
+  logHistory,
+  saveState,
+} from "@/lib/app-factory/storage";
 import { requireAdminByUserId } from "@/lib/auth/admin-middleware";
 import { tryCatch } from "@/lib/try-catch";
 import type {
@@ -21,15 +28,7 @@ import type {
   MoveAppRequest,
 } from "@/types/app-factory";
 import { PHASES_ORDERED, THIS_PROJECT_SOURCE } from "@/types/app-factory";
-import * as fs from "fs";
 import { type NextRequest, NextResponse } from "next/server";
-import * as path from "path";
-
-// Path to the app factory state directory
-// APP_FACTORY_PATH must be set in environment - no default fallback for security
-const APP_FACTORY_PATH = process.env["APP_FACTORY_PATH"] || "";
-const STATE_FILE = APP_FACTORY_PATH ? path.join(APP_FACTORY_PATH, ".state/apps.json") : "";
-const HISTORY_DIR = APP_FACTORY_PATH ? path.join(APP_FACTORY_PATH, ".state/history") : "";
 
 // Jules API configuration
 const JULES_API_KEY = process.env["JULES_API_KEY"] || "";
@@ -52,27 +51,6 @@ const FAILED_STATES = ["FAILED", "CANCELLED"];
  * use with high concurrency, consider Redis-based locking or database transactions.
  */
 const processingApps = new Set<string>();
-
-/** Prototype pollution keys that must be blocked when used as object keys */
-const PROTOTYPE_POLLUTION_KEYS = ["__proto__", "constructor", "prototype"];
-
-/**
- * Validate app name to prevent prototype pollution and path traversal attacks
- *
- * Security considerations:
- * - Blocks prototype pollution keys (__proto__, constructor, prototype)
- * - Only allows safe characters (lowercase letters, numbers, hyphens)
- * - Prevents path traversal by disallowing slashes, dots, etc.
- */
-function isValidAppName(name: unknown): name is string {
-  if (typeof name !== "string") return false;
-  if (name.length === 0 || name.length > 100) return false;
-  // Only allow lowercase letters, numbers, and hyphens
-  if (!/^[a-z0-9-]+$/.test(name)) return false;
-  // Block prototype pollution keys
-  if (PROTOTYPE_POLLUTION_KEYS.includes(name)) return false;
-  return true;
-}
 
 /**
  * Phase-specific prompts for Jules sessions
@@ -682,99 +660,6 @@ const MASTER_LIST: MasterListItem[] = [
   },
 ];
 
-interface StateFile {
-  apps: Record<string, AppState>;
-  lastUpdated: string;
-}
-
-/**
- * Load state from file system
- */
-function loadState(): StateFile | null {
-  if (!STATE_FILE) {
-    console.error("STATE_FILE not configured (APP_FACTORY_PATH not set)");
-    return null;
-  }
-  if (!fs.existsSync(STATE_FILE)) {
-    return null;
-  }
-  const content = fs.readFileSync(STATE_FILE, "utf-8");
-  return JSON.parse(content);
-}
-
-/**
- * Save state to file system
- */
-function saveState(state: StateFile): void {
-  if (!STATE_FILE) {
-    console.error("STATE_FILE not configured (APP_FACTORY_PATH not set)");
-    return;
-  }
-  state.lastUpdated = new Date().toISOString();
-  fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
-}
-
-/**
- * Log a history entry
- * Validates appName to prevent path traversal attacks
- */
-function logHistory(
-  appName: string,
-  event: HistoryEntry["event"],
-  details: Partial<HistoryEntry>,
-): void {
-  // Validate appName to prevent path traversal
-  if (!isValidAppName(appName)) {
-    console.error(`Invalid app name for logging: ${appName}`);
-    return;
-  }
-  if (!HISTORY_DIR) {
-    console.error("HISTORY_DIR not configured (APP_FACTORY_PATH not set)");
-    return;
-  }
-  fs.mkdirSync(HISTORY_DIR, { recursive: true });
-  const logFile = path.join(HISTORY_DIR, `${appName}.log`);
-  const entry: HistoryEntry = {
-    timestamp: new Date().toISOString(),
-    appName,
-    event,
-    ...details,
-  };
-  fs.appendFileSync(logFile, JSON.stringify(entry) + "\n");
-}
-
-/**
- * Load recent history entries across all apps
- */
-function loadRecentHistory(limit: number = 50): HistoryEntry[] {
-  if (!fs.existsSync(HISTORY_DIR)) {
-    return [];
-  }
-
-  const entries: HistoryEntry[] = [];
-  const files = fs.readdirSync(HISTORY_DIR);
-
-  for (const file of files) {
-    if (!file.endsWith(".log")) continue;
-    const filePath = path.join(HISTORY_DIR, file);
-    const content = fs.readFileSync(filePath, "utf-8");
-    const lines = content.trim().split("\n").filter(Boolean);
-
-    for (const line of lines) {
-      try {
-        entries.push(JSON.parse(line));
-      } catch {
-        // Skip malformed entries
-      }
-    }
-  }
-
-  // Sort by timestamp descending and limit
-  return entries
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-    .slice(0, limit);
-}
-
 /**
  * Calculate statistics from apps and history
  */
@@ -888,7 +773,7 @@ function calculateStatistics(
  * Uses in-memory locks to prevent race conditions with concurrent requests
  */
 async function checkAndAdvanceJulesSessions(): Promise<void> {
-  const state = loadState();
+  const state = await loadState();
   if (!state) return;
 
   let modified = false;
@@ -918,7 +803,7 @@ async function checkAndAdvanceJulesSessions(): Promise<void> {
 
       try {
         // Re-read state to get fresh data (another request may have already processed)
-        const freshState = loadState();
+        const freshState = await loadState();
         const freshApp = freshState?.apps[app.name];
 
         // Check if already advanced by another request
@@ -929,7 +814,7 @@ async function checkAndAdvanceJulesSessions(): Promise<void> {
 
         const nextPhase = getNextPhase(app.phase);
 
-        logHistory(app.name, "jules_completed", {
+        await logHistory(app.name, "jules_completed", {
           from: app.phase,
           to: nextPhase || app.phase,
           reason: `Jules completed ${app.phase}`,
@@ -937,7 +822,7 @@ async function checkAndAdvanceJulesSessions(): Promise<void> {
         });
 
         if (nextPhase) {
-          logHistory(app.name, "phase_complete", {
+          await logHistory(app.name, "phase_complete", {
             from: app.phase,
             to: nextPhase,
             reason: `Auto-advanced after Jules completed ${app.phase}`,
@@ -954,7 +839,7 @@ async function checkAndAdvanceJulesSessions(): Promise<void> {
               app.julesSessionUrl = result.sessionUrl;
               app.julesSessionState = "PENDING";
 
-              logHistory(app.name, "jules_started", {
+              await logHistory(app.name, "jules_started", {
                 to: nextPhase,
                 reason: `Auto-started Jules session for ${nextPhase}`,
                 julesSessionId: result.sessionId,
@@ -982,13 +867,13 @@ async function checkAndAdvanceJulesSessions(): Promise<void> {
 
     // If session failed, increment attempts and log
     if (status.isFailed) {
-      logHistory(app.name, "jules_failed", {
+      await logHistory(app.name, "jules_failed", {
         to: app.phase,
         reason: `Jules session failed/cancelled`,
         julesSessionId: app.julesSessionId,
       });
 
-      logHistory(app.name, "phase_failed", {
+      await logHistory(app.name, "phase_failed", {
         to: app.phase,
         reason: `Jules session failed`,
       });
@@ -1004,7 +889,7 @@ async function checkAndAdvanceJulesSessions(): Promise<void> {
   }
 
   if (modified) {
-    saveState(state);
+    await saveState(state);
   }
 }
 
@@ -1029,11 +914,11 @@ export async function GET() {
   await checkAndAdvanceJulesSessions();
 
   // Load state
-  const state = loadState();
+  const state = await loadState();
   const apps = state ? Object.values(state.apps) : [];
 
   // Load history
-  const history = loadRecentHistory(100);
+  const history = await loadRecentHistory(100);
 
   // Calculate statistics
   const statistics = calculateStatistics(apps, history);
@@ -1105,7 +990,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid phase" }, { status: 400 });
     }
 
-    const state = loadState();
+    const state = await loadState();
     if (!state || !state.apps[appName]) {
       return NextResponse.json({ error: "App not found" }, { status: 404 });
     }
@@ -1124,7 +1009,7 @@ export async function POST(request: NextRequest) {
     app.julesSessionUrl = undefined;
     app.julesSessionState = undefined;
 
-    logHistory(appName, "manual_move", {
+    await logHistory(appName, "manual_move", {
       from: fromPhase,
       to: toPhase,
       reason: reason || "Manual intervention",
@@ -1139,7 +1024,7 @@ export async function POST(request: NextRequest) {
         app.julesSessionUrl = julesResult.sessionUrl;
         app.julesSessionState = "PENDING";
 
-        logHistory(appName, "jules_started", {
+        await logHistory(appName, "jules_started", {
           to: toPhase,
           reason: `Started Jules session for ${toPhase}`,
           julesSessionId: julesResult.sessionId,
@@ -1147,7 +1032,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    saveState(state);
+    await saveState(state);
 
     return NextResponse.json({
       success: true,
@@ -1174,7 +1059,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let state = loadState();
+    let state = await loadState();
     if (!state) {
       state = { apps: {}, lastUpdated: new Date().toISOString() };
     }
@@ -1204,15 +1089,15 @@ export async function POST(request: NextRequest) {
     }
 
     state.apps[name] = newApp;
-    saveState(state);
+    await saveState(state);
 
-    logHistory(name, "initialized", {
+    await logHistory(name, "initialized", {
       to: "plan",
       reason: description || `Added from dashboard`,
     });
 
     if (julesResult?.success) {
-      logHistory(name, "jules_started", {
+      await logHistory(name, "jules_started", {
         to: "plan",
         reason: `Started Jules session for planning`,
         julesSessionId: julesResult.sessionId,
