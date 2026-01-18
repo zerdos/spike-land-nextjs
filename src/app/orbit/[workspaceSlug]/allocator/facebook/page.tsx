@@ -3,12 +3,12 @@ import FacebookCampaigns from "@/components/orbit/allocator/facebook-campaigns";
 export default async function FacebookCampaignsPage({
   params,
 }: {
-  params: { workspaceSlug: string; };
+  params: Promise<{ workspaceSlug: string; }>;
 }) {
-  const resolvedParams = await params;
+  const { workspaceSlug } = await params;
   return (
     <div style={{ padding: "2rem" }}>
-      <FacebookCampaigns workspaceSlug={resolvedParams.workspaceSlug} />
+      <FacebookCampaigns workspaceSlug={workspaceSlug} />
     </div>
   );
 }
