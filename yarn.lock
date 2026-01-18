@@ -6872,8 +6872,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@spike-npm-land/shared@workspace:packages/shared"
   dependencies:
+    "@vitest/coverage-v8": "npm:4.0.17"
     tsup: "npm:8.5.1"
     typescript: "npm:5.9.3"
+    vitest: "npm:4.0.17"
     zod: "npm:4.3.5"
   languageName: unknown
   linkType: soft
