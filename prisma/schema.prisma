@@ -83,6 +83,7 @@ model User {
   // Policy Checker relations
   policyChecks             PolicyCheck[]
   policyViolationOverrides PolicyViolation[]
+  campaignBriefs           CampaignBrief[]
 
   // Workflow relations
   workflows                Workflow[]
@@ -93,6 +94,21 @@ model User {
   assetTagAssignments AssetTagAssignment[]
 
   @@map("users")
+}
+
+model CampaignBrief {
+  id                 String   @id @default(cuid())
+  userId             String
+  name               String
+  targetAudience     Json
+  campaignObjectives Json
+  status             String   @default("DRAFT")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("campaign_briefs")
 }
 
 model Account {
