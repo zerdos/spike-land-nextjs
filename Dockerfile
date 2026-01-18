@@ -33,7 +33,6 @@ COPY --link packages/opfs-node-adapter/package.json ./packages/opfs-node-adapter
 COPY --link packages/js.spike.land/package.json ./packages/js.spike.land/
 COPY --link packages/code/package.json ./packages/code/
 COPY --link packages/testing.spike.land/package.json ./packages/testing.spike.land/
-COPY --link packages/spike-land-renderer/package.json ./packages/spike-land-renderer/
 COPY --link packages/shared/package.json ./packages/shared/
 COPY --link prisma ./prisma
 
