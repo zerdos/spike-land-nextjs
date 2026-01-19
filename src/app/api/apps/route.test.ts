@@ -17,6 +17,7 @@ vi.mock("@/lib/prisma", () => ({
     app: {
       create: vi.fn(),
       findMany: vi.fn(),
+      findFirst: vi.fn(),
     },
     $transaction: vi.fn(),
   },
@@ -34,6 +35,8 @@ describe("POST /api/apps", () => {
     vi.clearAllMocks();
     // Default: user exists in database
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user-1" } as never);
+    // Default: no existing app with same codespaceId/slug
+    vi.mocked(prisma.app.findFirst).mockResolvedValue(null);
   });
 
   it("should return 401 if user is not authenticated", async () => {
@@ -476,6 +479,96 @@ describe("POST /api/apps", () => {
 
       expect(response.status).toBe(201);
       expect(data.codespaceId).toBe("custom-codespace-id");
+    });
+
+    it("should return 409 when codespaceId already exists (different user)", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "user-1", email: "test@example.com" },
+        expires: "2025-12-31",
+      } as Session);
+
+      // Another user already has this codespace
+      vi.mocked(prisma.app.findFirst).mockResolvedValue({
+        id: "existing-app",
+        userId: "other-user",
+        deletedAt: null,
+      } as never);
+
+      const request = new NextRequest("http://localhost/api/apps", {
+        method: "POST",
+        body: JSON.stringify({
+          prompt: "Build me a todo app",
+          codespaceId: "taken-codespace-id",
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(409);
+      expect(data.error).toBe(
+        "This codespace name is already taken. Please choose a different name.",
+      );
+    });
+
+    it("should return 409 when codespaceId already exists (same user)", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "user-1", email: "test@example.com" },
+        expires: "2025-12-31",
+      } as Session);
+
+      // Same user already has this codespace
+      vi.mocked(prisma.app.findFirst).mockResolvedValue({
+        id: "existing-app",
+        userId: "user-1",
+        deletedAt: null,
+      } as never);
+
+      const request = new NextRequest("http://localhost/api/apps", {
+        method: "POST",
+        body: JSON.stringify({
+          prompt: "Build me a todo app",
+          codespaceId: "my-existing-codespace",
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(409);
+      expect(data.error).toBe(
+        "You already have an app with this name. Please use a different name.",
+      );
+    });
+
+    it("should return 409 when codespaceId exists in bin (same user)", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        user: { id: "user-1", email: "test@example.com" },
+        expires: "2025-12-31",
+      } as Session);
+
+      // Same user has this codespace in bin
+      vi.mocked(prisma.app.findFirst).mockResolvedValue({
+        id: "deleted-app",
+        userId: "user-1",
+        deletedAt: new Date(),
+      } as never);
+
+      const request = new NextRequest("http://localhost/api/apps", {
+        method: "POST",
+        body: JSON.stringify({
+          prompt: "Build me a todo app",
+          codespaceId: "binned-codespace",
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(409);
+      expect(data.error).toBe(
+        "An app with this name exists in your bin. Please restore or permanently delete it first.",
+      );
     });
 
     it("should handle prompt-based creation failure", async () => {
