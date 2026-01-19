@@ -24,7 +24,7 @@ describe("AgentProgressIndicator", () => {
   it("renders nothing when not visible", () => {
     const { container } = render(
       <AgentProgressIndicator
-        stage="connecting"
+        stage="initialize"
         isVisible={false}
       />,
     );
@@ -41,10 +41,10 @@ describe("AgentProgressIndicator", () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it("renders progress indicator when visible with connecting stage", () => {
+  it("renders progress indicator when visible with initialize stage", () => {
     render(
       <AgentProgressIndicator
-        stage="connecting"
+        stage="initialize"
         isVisible={true}
       />,
     );
@@ -161,7 +161,7 @@ describe("AgentProgressIndicator", () => {
   it("applies custom className", () => {
     const { container } = render(
       <AgentProgressIndicator
-        stage="connecting"
+        stage="initialize"
         isVisible={true}
         className="custom-class"
       />,
@@ -180,17 +180,27 @@ describe("AgentProgressIndicator", () => {
       />,
     );
 
-    // Check that all stage labels are present
-    expect(screen.getByText("Connect")).toBeInTheDocument();
-    expect(screen.getByText("Context")).toBeInTheDocument();
+    // Check that all 4 stage labels are present
+    expect(screen.getByText("Initialize")).toBeInTheDocument();
     expect(screen.getByText("Process")).toBeInTheDocument();
     expect(screen.getByText("Execute")).toBeInTheDocument();
     expect(screen.getByText("Validate")).toBeInTheDocument();
   });
 
+  it("shows progress percentage", () => {
+    render(
+      <AgentProgressIndicator
+        stage="processing"
+        isVisible={true}
+      />,
+    );
+
+    // Progress percentage should be displayed
+    expect(screen.getByText(/\d+% complete/)).toBeInTheDocument();
+  });
+
   const stages: AgentStage[] = [
-    "connecting",
-    "fetching_context",
+    "initialize",
     "processing",
     "executing_tool",
     "validating",

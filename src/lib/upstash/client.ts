@@ -29,6 +29,7 @@ const KEYS = {
   APPS_WITH_PENDING: "apps:with_pending",
   APP_STATUS: (appId: string) => `app:${appId}:status`,
   AGENT_WORKING: (appId: string) => `app:${appId}:agent_working`,
+  APP_CODE_HASH: (appId: string) => `app:${appId}:code_hash`,
 } as const;
 
 /**
@@ -141,4 +142,23 @@ export async function getQueueStats(): Promise<{
     appsWithPending: appIds.length,
     totalPendingMessages,
   };
+}
+
+/**
+ * Get the stored code hash for an app (for token optimization)
+ * Returns null if no hash is stored or Redis is not configured
+ */
+export async function getCodeHash(appId: string): Promise<string | null> {
+  return redis.get<string>(KEYS.APP_CODE_HASH(appId));
+}
+
+/**
+ * Set the code hash for an app (for token optimization)
+ * TTL of 1 hour to auto-expire old hashes
+ */
+export async function setCodeHash(
+  appId: string,
+  hash: string,
+): Promise<void> {
+  await redis.set(KEYS.APP_CODE_HASH(appId), hash, { ex: 3600 }); // 1 hour TTL
 }
