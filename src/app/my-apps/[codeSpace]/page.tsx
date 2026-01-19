@@ -620,7 +620,8 @@ export default function CodeSpacePage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create app");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to create app");
       }
 
       const newApp = await response.json();
@@ -642,7 +643,7 @@ export default function CodeSpacePage() {
       await processMessageWithAgent(newApp.id, content || "[Files attached]");
     } catch (e) {
       console.error("Failed to create app", e);
-      toast.error("Failed to create app. Please try again.");
+      toast.error(e instanceof Error ? e.message : "Failed to create app. Please try again.");
     } finally {
       setSendingMessage(false);
     }
