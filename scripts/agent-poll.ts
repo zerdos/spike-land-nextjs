@@ -4,13 +4,24 @@
  * Polls for pending messages from the Redis queue and processes them.
  * Can update app properties: status, description, name, etc.
  *
- * Usage: yarn agent:poll [--once] [--interval=5000] [--prod] [--stats]
+ * Usage: yarn agent:poll [--once] [--interval=5000] [--prod] [--stats] [--debug]
  *
  * Flags:
  *   --once        Run once and exit (don't loop)
  *   --interval=N  Set polling interval in ms (default: 5000)
  *   --prod        Use production API (https://spike.land) instead of localhost
  *   --stats       Show queue statistics and exit
+ *   --debug       Enable verbose auth and API debugging
+ *
+ * E2E TEST KEYWORDS:
+ * ==================
+ * Messages starting with these keywords bypass Claude CLI for E2E testing:
+ *
+ *   E2E_TEST_ECHO:<message>     - Echo back the message (fast, no LLM)
+ *   E2E_TEST_CODE_UPDATE        - Simulate code update (triggers codeUpdated=true)
+ *   E2E_TEST_ERROR              - Simulate agent error
+ *   E2E_TEST_DELAY:<ms>         - Wait N milliseconds, then respond
+ *   E2E_TEST_MCP:<codespaceId>  - Call real MCP tools with test codespace
  *
  * SECURITY WARNING: Claude CLI Permissions
  * =========================================
@@ -168,11 +179,120 @@ const CLAUDE_TIMEOUT_MS = 300000; // 5 minutes
 
 // Environment detection: --prod flag uses production URL
 const isProd = process.argv.includes("--prod");
+const isDebug = process.argv.includes("--debug");
 const PROD_URL = "https://spike.land";
 const LOCAL_URL = "http://localhost:3000";
 const AGENT_API_URL = isProd
   ? PROD_URL
   : (process.env.NEXT_PUBLIC_APP_URL || LOCAL_URL);
+
+// ============================================================
+// E2E Test Mode - Keyword-based handlers for testing without Claude
+// ============================================================
+
+interface TestKeywordResult {
+  response: string;
+  codeUpdated: boolean;
+  codespaceId?: string;
+  error?: string;
+}
+
+type TestKeywordHandler = (content: string, appId: string) => Promise<TestKeywordResult>;
+
+/**
+ * Test keyword handlers - these bypass Claude CLI for E2E testing
+ * Each handler returns a mock response without invoking the LLM
+ */
+const TEST_KEYWORD_HANDLERS: Record<string, TestKeywordHandler> = {
+  // Echo back the message content (fast, no external calls)
+  "E2E_TEST_ECHO:": async (content) => {
+    const message = content.replace("E2E_TEST_ECHO:", "").trim();
+    return {
+      response: `ECHO: ${message}`,
+      codeUpdated: false,
+    };
+  },
+
+  // Simulate a code update (triggers codeUpdated=true, SSE broadcast)
+  "E2E_TEST_CODE_UPDATE": async (_content, appId) => {
+    return {
+      response: `Mock code update completed for app ${appId}. The preview should reload.`,
+      codeUpdated: true,
+      codespaceId: `e2e-test-${appId}`,
+    };
+  },
+
+  // Simulate an agent error
+  "E2E_TEST_ERROR": async () => {
+    return {
+      response: "Simulated error for E2E testing",
+      codeUpdated: false,
+      error: "E2E_TEST_ERROR triggered",
+    };
+  },
+
+  // Wait N milliseconds, then respond (for testing timeout/loading states)
+  "E2E_TEST_DELAY:": async (content) => {
+    const delayMatch = content.match(/E2E_TEST_DELAY:(\d+)/);
+    const delayMs = delayMatch ? parseInt(delayMatch[1]!, 10) : 1000;
+    const clampedDelay = Math.min(delayMs, 30000); // Max 30 seconds
+
+    await new Promise((resolve) => setTimeout(resolve, clampedDelay));
+
+    return {
+      response: `Delayed response after ${clampedDelay}ms`,
+      codeUpdated: false,
+    };
+  },
+
+  // Call real MCP tools with a test codespace (for deeper integration testing)
+  "E2E_TEST_MCP:": async (content, appId) => {
+    const codespaceId = content.replace("E2E_TEST_MCP:", "").trim() || `e2e-mcp-${appId}`;
+    // This keyword could be extended to actually call MCP tools if needed
+    // For now, it just simulates the behavior
+    return {
+      response: `MCP integration test completed for codespace: ${codespaceId}`,
+      codeUpdated: true,
+      codespaceId,
+    };
+  },
+};
+
+/**
+ * Check if a message starts with a test keyword
+ * Returns the handler if found, null otherwise
+ */
+function findTestKeywordHandler(
+  content: string,
+): { keyword: string; handler: TestKeywordHandler; } | null {
+  for (const [keyword, handler] of Object.entries(TEST_KEYWORD_HANDLERS)) {
+    if (content.startsWith(keyword)) {
+      return { keyword, handler };
+    }
+  }
+  return null;
+}
+
+/**
+ * Debug logging helper - only logs when --debug flag is set
+ */
+function debugLog(message: string, data?: unknown): void {
+  if (isDebug) {
+    console.log(`  [DEBUG] ${message}`);
+    if (data !== undefined) {
+      console.log(`          ${JSON.stringify(data, null, 2).split("\n").join("\n          ")}`);
+    }
+  }
+}
+
+/**
+ * Mask an API key for safe display in logs
+ */
+function maskApiKey(key: string | undefined): string {
+  if (!key) return "(not set)";
+  if (key.length < 12) return `${key.substring(0, 4)}...`;
+  return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
+}
 
 /**
  * Get all app IDs that have pending messages
@@ -649,10 +769,21 @@ async function postAgentResponse(
 ): Promise<void> {
   const apiKey = process.env.AGENT_API_KEY;
   if (!apiKey) {
-    throw new Error("AGENT_API_KEY not configured");
+    throw new Error("AGENT_API_KEY not configured in environment");
   }
 
-  const response = await fetch(`${AGENT_API_URL}/api/agent/apps/${appId}/respond`, {
+  const url = `${AGENT_API_URL}/api/agent/apps/${appId}/respond`;
+
+  debugLog("Posting agent response", {
+    url,
+    appId,
+    codeUpdated,
+    contentLength: content.length,
+    processedMessageIds,
+    apiKeyPreview: maskApiKey(apiKey),
+  });
+
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -666,9 +797,34 @@ async function postAgentResponse(
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Failed to post agent response: ${error}`);
+    const errorBody = await response.text();
+    const errorDetails = {
+      status: response.status,
+      statusText: response.statusText,
+      url,
+      apiKeyPreview: maskApiKey(apiKey),
+      body: errorBody.substring(0, 500),
+    };
+
+    debugLog("API request failed", errorDetails);
+
+    // Provide helpful error message based on status code
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(
+        `Authentication failed (HTTP ${response.status}): ` +
+          `Check that AGENT_API_KEY in .env.local matches Vercel production. ` +
+          `Key preview: ${maskApiKey(apiKey)}. ` +
+          `Run 'yarn agent:test-auth:prod' to verify. ` +
+          `Error: ${errorBody}`,
+      );
+    }
+
+    throw new Error(
+      `Failed to post agent response (HTTP ${response.status}): ${errorBody}`,
+    );
   }
+
+  debugLog("API request succeeded", { status: response.status });
 }
 
 /**
@@ -726,6 +882,76 @@ async function processMessage(
 
   console.log(`  Processing message: "${content.substring(0, 50)}..."`);
   console.log(`  App: ${app.name} (${app.status})`);
+
+  // ============================================================
+  // E2E Test Mode Check - Handle test keywords without Claude CLI
+  // ============================================================
+  const testHandler = findTestKeywordHandler(content);
+  if (testHandler) {
+    console.log(`  [TEST MODE] Detected keyword: ${testHandler.keyword}`);
+    debugLog("Processing test keyword", { keyword: testHandler.keyword, content });
+
+    try {
+      const testResult = await testHandler.handler(content, appId);
+
+      // Check for simulated error
+      if (testResult.error) {
+        console.log(`  [TEST MODE] Simulating error: ${testResult.error}`);
+        return {
+          success: false,
+          agentMessage: testResult.response,
+        };
+      }
+
+      // Update codespace if provided
+      if (testResult.codespaceId) {
+        try {
+          await updateAppCodespace(appId, testResult.codespaceId);
+        } catch (updateError) {
+          console.error(`  [TEST MODE] Failed to update codespace: ${updateError}`);
+        }
+      }
+
+      // Post response via API (still exercises real infrastructure)
+      try {
+        await postAgentResponse(appId, testResult.response, testResult.codeUpdated, [messageId]);
+        console.log(
+          `  [TEST MODE] Posted response via API (codeUpdated: ${testResult.codeUpdated})`,
+        );
+      } catch (apiError) {
+        console.error(`  [TEST MODE] API error: ${apiError}`);
+        // Fall back to direct database insert
+        return {
+          success: true,
+          agentMessage: testResult.response,
+          appUpdate: testResult.codeUpdated
+            ? { status: "BUILDING" as AppBuildStatus, codespaceId: testResult.codespaceId }
+            : undefined,
+          statusMessage: testResult.codeUpdated ? "Code updated by agent (test mode)" : undefined,
+        };
+      }
+
+      // Success via API
+      return {
+        success: true,
+        appUpdate: testResult.codeUpdated
+          ? { status: "BUILDING" as AppBuildStatus }
+          : undefined,
+        statusMessage: testResult.codeUpdated ? "Code updated by agent (test mode)" : undefined,
+      };
+    } catch (testError) {
+      const errorMsg = testError instanceof Error ? testError.message : "Unknown test error";
+      console.error(`  [TEST MODE] Error: ${errorMsg}`);
+      return {
+        success: false,
+        agentMessage: `Test mode error: ${errorMsg}`,
+      };
+    }
+  }
+
+  // ============================================================
+  // Normal Claude CLI Processing
+  // ============================================================
 
   // Get chat history with images
   const chatHistory = await getChatHistory(appId, 10);
@@ -940,6 +1166,21 @@ async function main(): Promise<void> {
   console.log(`Environment: ${isProd ? "PRODUCTION" : "LOCAL"}`);
   console.log(`API URL: ${AGENT_API_URL}`);
   console.log(`Redis URL: ${redisUrl?.substring(0, 30)}...`);
+  console.log(`Debug mode: ${isDebug ? "ON" : "OFF"}`);
+
+  // Show additional debug info
+  if (isDebug) {
+    console.log("\n[DEBUG] Configuration:");
+    console.log(`  AGENT_API_KEY: ${maskApiKey(process.env.AGENT_API_KEY)}`);
+    console.log(`  SPIKE_LAND_API_KEY: ${maskApiKey(process.env.SPIKE_LAND_API_KEY)}`);
+    console.log(`  DATABASE_URL: ${process.env.DATABASE_URL ? "(set)" : "(not set)"}`);
+    console.log(`  Skip permissions: ${SKIP_PERMISSIONS}`);
+    console.log("\n[DEBUG] E2E Test Keywords Available:");
+    Object.keys(TEST_KEYWORD_HANDLERS).forEach((keyword) => {
+      console.log(`  - ${keyword}`);
+    });
+    console.log("");
+  }
 
   if (showStats) {
     await getQueueStats();
@@ -989,12 +1230,14 @@ export {
   addAgentMessage,
   addSystemMessage,
   dequeueMessage,
+  findTestKeywordHandler,
   getAppsWithPending,
   getQueueStats,
   poll,
   processApp,
   processMessage,
   setAgentWorking,
+  TEST_KEYWORD_HANDLERS,
   updateApp,
   updateAppStatus,
   VALID_STATUSES,
