@@ -1,0 +1,121 @@
+/**
+ * App Factory Types Tests
+ *
+ * Tests for the utility functions and constants exported from app-factory types.
+ */
+
+import { describe, expect, it } from "vitest";
+import { getStatusColor, PHASE_CONFIG, PHASES_ORDERED, THIS_PROJECT_SOURCE } from "./app-factory";
+
+describe("getStatusColor", () => {
+  describe("default styling (attempts = 0)", () => {
+    it("returns default border for 0 attempts", () => {
+      const result = getStatusColor(0);
+      expect(result.border).toBe("border-border");
+      expect(result.bg).toBe("");
+    });
+  });
+
+  describe("amber styling (attempts = 1-2)", () => {
+    it("returns amber border for 1 attempt", () => {
+      const result = getStatusColor(1);
+      expect(result.border).toBe("border-amber-500");
+      expect(result.bg).toBe("bg-amber-50 dark:bg-amber-900/30");
+    });
+
+    it("returns amber border for 2 attempts", () => {
+      const result = getStatusColor(2);
+      expect(result.border).toBe("border-amber-500");
+      expect(result.bg).toBe("bg-amber-50 dark:bg-amber-900/30");
+    });
+  });
+
+  describe("red styling (attempts >= 3)", () => {
+    it("returns red border for 3 attempts", () => {
+      const result = getStatusColor(3);
+      expect(result.border).toBe("border-red-500");
+      expect(result.bg).toBe("bg-red-50 dark:bg-red-900/30");
+    });
+
+    it("returns red border for high attempt counts", () => {
+      const result = getStatusColor(10);
+      expect(result.border).toBe("border-red-500");
+      expect(result.bg).toBe("bg-red-50 dark:bg-red-900/30");
+    });
+
+    it("returns red border for very high attempt counts", () => {
+      const result = getStatusColor(100);
+      expect(result.border).toBe("border-red-500");
+      expect(result.bg).toBe("bg-red-50 dark:bg-red-900/30");
+    });
+  });
+});
+
+describe("PHASE_CONFIG", () => {
+  it("has configuration for all 6 phases", () => {
+    const phases = Object.keys(PHASE_CONFIG);
+    expect(phases).toHaveLength(6);
+    expect(phases).toContain("plan");
+    expect(phases).toContain("develop");
+    expect(phases).toContain("test");
+    expect(phases).toContain("debug");
+    expect(phases).toContain("polish");
+    expect(phases).toContain("complete");
+  });
+
+  it("each phase has required properties", () => {
+    for (const [_phase, config] of Object.entries(PHASE_CONFIG)) {
+      expect(config).toHaveProperty("label");
+      expect(config).toHaveProperty("color");
+      expect(config).toHaveProperty("bgColor");
+      expect(config).toHaveProperty("emoji");
+      expect(typeof config.label).toBe("string");
+      expect(typeof config.color).toBe("string");
+      expect(typeof config.bgColor).toBe("string");
+      expect(typeof config.emoji).toBe("string");
+      expect(config.label.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("has correct labels for each phase", () => {
+    expect(PHASE_CONFIG.plan.label).toBe("Plan");
+    expect(PHASE_CONFIG.develop.label).toBe("Develop");
+    expect(PHASE_CONFIG.test.label).toBe("Test");
+    expect(PHASE_CONFIG.debug.label).toBe("Debug");
+    expect(PHASE_CONFIG.polish.label).toBe("Polish");
+    expect(PHASE_CONFIG.complete.label).toBe("Complete");
+  });
+});
+
+describe("PHASES_ORDERED", () => {
+  it("contains all 6 phases", () => {
+    expect(PHASES_ORDERED).toHaveLength(6);
+  });
+
+  it("is in the correct pipeline order", () => {
+    expect(PHASES_ORDERED).toEqual([
+      "plan",
+      "develop",
+      "test",
+      "debug",
+      "polish",
+      "complete",
+    ]);
+  });
+
+  it("starts with plan and ends with complete", () => {
+    expect(PHASES_ORDERED[0]).toBe("plan");
+    expect(PHASES_ORDERED[PHASES_ORDERED.length - 1]).toBe("complete");
+  });
+});
+
+describe("THIS_PROJECT_SOURCE", () => {
+  it("matches the expected source identifier", () => {
+    expect(THIS_PROJECT_SOURCE).toBe("sources/github/zerdos/spike-land-app-factory");
+  });
+
+  it("is a non-empty string", () => {
+    expect(typeof THIS_PROJECT_SOURCE).toBe("string");
+    expect(THIS_PROJECT_SOURCE.length).toBeGreaterThan(0);
+  });
+});

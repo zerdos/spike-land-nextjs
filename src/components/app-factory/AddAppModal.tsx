@@ -63,6 +63,7 @@ export function AddAppModal({ initialItem, onClose, onAdd }: AddAppModalProps) {
       await onAdd(name.trim(), category, description.trim() || undefined);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add app");
+    } finally {
       setIsSubmitting(false);
     }
   };
