@@ -245,6 +245,43 @@ async function createAppFromPrompt(
   // If codespaceId is provided, use it. Otherwise generate a new slug.
   const slug = data.codespaceId ? data.codespaceId : generateSlug();
 
+  // Check if codespaceId/slug already exists globally (unique constraint)
+  // This includes soft-deleted apps to prevent name conflicts during 30-day retention
+  const { data: existingApp } = await tryCatch(
+    prisma.app.findFirst({
+      where: {
+        OR: [
+          { codespaceId: slug },
+          { slug: slug },
+        ],
+      },
+      select: { id: true, userId: true, deletedAt: true },
+    }),
+  );
+
+  if (existingApp) {
+    // Different error messages based on context
+    if (existingApp.userId === userId) {
+      if (existingApp.deletedAt) {
+        return NextResponse.json(
+          {
+            error:
+              "An app with this name exists in your bin. Please restore or permanently delete it first.",
+          },
+          { status: 409 },
+        );
+      }
+      return NextResponse.json(
+        { error: "You already have an app with this name. Please use a different name." },
+        { status: 409 },
+      );
+    }
+    return NextResponse.json(
+      { error: "This codespace name is already taken. Please choose a different name." },
+      { status: 409 },
+    );
+  }
+
   // Create a name from the slug (stripping potential random suffix if it's long enough)
   const name = slug
     .split("-")
