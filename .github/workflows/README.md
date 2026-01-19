@@ -106,8 +106,8 @@ git checkout -b feature/my-feature
 # ... code changes ...
 
 # 3. Verify locally
-npm run test:coverage  # Must pass with 100% coverage
-npm run build          # Must build successfully
+yarn test:coverage  # Must pass with 100% coverage
+yarn build          # Must build successfully
 
 # 4. Push and create PR
 git push origin feature/my-feature

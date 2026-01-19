@@ -4,8 +4,10 @@ name = "spike-land"
 main = "src/cf-workers.ts"
 compatibility_flags = ["nodejs_compat"]
 
-# Add your account ID here
-account_id = "1f98921051196545ebe79a450d3c71ed"
+# SECURITY: Account ID should be set via environment variable, not hardcoded
+# Wrangler automatically reads CLOUDFLARE_ACCOUNT_ID from environment
+# See docs/SECRETS_SETUP.md for configuration instructions
+# account_id = "your-account-id-here"
 compatibility_date = "2025-07-12"
 
 

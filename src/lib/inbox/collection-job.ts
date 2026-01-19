@@ -6,6 +6,7 @@
 
 import type { SocialPlatform } from "@prisma/client";
 
+import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
 
 import type {
@@ -60,8 +61,8 @@ export async function getWorkspaceAccounts(
     },
   });
 
-  // Note: In production, you would decrypt tokens here
-  // For now, we use the encrypted value as a placeholder
+  // Decrypt tokens for use with platform APIs
+  // Uses safeDecryptToken which handles both encrypted and legacy unencrypted tokens
   return accounts
     .filter((acc) => acc.accessTokenEncrypted.length > 0)
     .map((acc) => ({
@@ -69,8 +70,10 @@ export async function getWorkspaceAccounts(
       workspaceId: acc.workspaceId,
       platform: acc.platform,
       platformAccountId: acc.accountId,
-      accessToken: acc.accessTokenEncrypted, // TODO: Decrypt token
-      refreshToken: acc.refreshTokenEncrypted ?? undefined,
+      accessToken: safeDecryptToken(acc.accessTokenEncrypted),
+      refreshToken: acc.refreshTokenEncrypted
+        ? safeDecryptToken(acc.refreshTokenEncrypted)
+        : undefined,
       tokenExpiresAt: acc.tokenExpiresAt ?? undefined,
     }));
 }

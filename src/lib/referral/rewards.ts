@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
 import { tryCatch } from "@/lib/try-catch";
+import type { PrismaTransactionClient } from "@/types/prisma-helpers";
 import { TokenTransactionType } from "@prisma/client";
 
 const REFERRAL_REWARD_TOKENS = 50;
@@ -59,8 +60,7 @@ export async function completeReferralAndGrantRewards(
   // Grant tokens to both users in transaction
 
   const { data: result, error: transactionError } = await tryCatch(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    prisma.$transaction(async (tx: any) => {
+    prisma.$transaction(async (tx: PrismaTransactionClient) => {
       // Grant tokens to referrer
       const referrerResult = await TokenBalanceManager.addTokens({
         userId: referral.referrerId,

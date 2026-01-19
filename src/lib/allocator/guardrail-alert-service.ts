@@ -32,7 +32,7 @@ export class GuardrailAlertService {
       },
     });
 
-    // TODO: Send notifications (e.g., Slack, Email)
+    // Send notifications (email and Slack)
     await this.sendAlertNotification(alert);
 
     return alert;
@@ -116,8 +116,13 @@ export class GuardrailAlertService {
       }
 
       // 3. Send Slack Notification (if configured)
-      // TODO: ideally fetch webhook from workspace settings
-      // For now, check environment or generic webhook
+      // TODO(workspace-slack-webhook): Fetch Slack webhook from workspace notification settings
+      // Implementation steps:
+      // 1. Use getWorkspacePreferences() from src/lib/notifications/channel-manager.ts
+      // 2. Access preferences.slackWebhookUrl (already stored in workspace.settings.notifications)
+      // 3. Check if preferences.channels.slack is enabled before sending
+      // See WorkspaceNotificationPreferences in src/lib/notifications/types.ts
+      // For now, falls back to global SLACK_WEBHOOK_URL environment variable
       const slackWebhook = process.env.SLACK_WEBHOOK_URL;
       if (slackWebhook) {
         await postToSlack(slackWebhook, {
