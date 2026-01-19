@@ -10,10 +10,15 @@ import {
 } from "@/lib/claude-agent/tools/codespace-tools";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
+import { enqueueMessage, setAgentWorking } from "@/lib/upstash/client";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+// Feature flag: Use Redis queue for agent processing (handled by local poller)
+// Set AGENT_USE_QUEUE=true on Vercel to avoid SDK initialization errors
+const USE_QUEUE_MODE = process.env["AGENT_USE_QUEUE"] === "true";
 
 export const maxDuration = 300; // 5 minutes
 
@@ -138,7 +143,7 @@ export async function POST(
   }
 
   // Create user message in DB
-  await tryCatch(
+  const { data: userMessage, error: messageError } = await tryCatch(
     prisma.appMessage.create({
       data: {
         appId: id,
@@ -148,6 +153,70 @@ export async function POST(
     }),
   );
 
+  if (messageError || !userMessage) {
+    console.error("[agent/chat] Failed to create user message:", messageError);
+    return NextResponse.json(
+      { error: "Failed to create message" },
+      { status: 500 },
+    );
+  }
+
+  // Queue mode: Queue message for local poller instead of using SDK
+  // This is used when the Claude Agent SDK can't run on the server (e.g., Vercel)
+  if (USE_QUEUE_MODE) {
+    console.log(
+      "[agent/chat] Queue mode enabled, enqueueing message:",
+      userMessage.id,
+    );
+
+    // Queue the message for the local poller
+    await enqueueMessage(id, userMessage.id);
+
+    // Mark agent as working (the poller will clear this when done)
+    await setAgentWorking(id, true);
+
+    // Return a streaming response that just indicates the message was queued
+    // The frontend will receive updates via SSE when the poller processes it
+    const queuedStream = new ReadableStream({
+      start(controller) {
+        // Emit connecting stage
+        const connectData = JSON.stringify({
+          type: "stage",
+          stage: "connecting",
+        });
+        controller.enqueue(new TextEncoder().encode(`data: ${connectData}\n\n`));
+
+        // Emit status message
+        const statusData = JSON.stringify({
+          type: "status",
+          content: "Message queued for processing. Agent will respond shortly...",
+        });
+        controller.enqueue(new TextEncoder().encode(`data: ${statusData}\n\n`));
+
+        // Emit processing stage
+        const processData = JSON.stringify({
+          type: "stage",
+          stage: "processing",
+        });
+        controller.enqueue(
+          new TextEncoder().encode(`data: ${processData}\n\n`),
+        );
+
+        // Close stream - the actual response will come via SSE
+        controller.close();
+      },
+    });
+
+    return new Response(queuedStream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
+  }
+
+  // Direct SDK mode: Use Claude Agent SDK to process immediately
   // Create MCP server with codespace tools
   const codespaceServer = createCodespaceServer(app.codespaceId);
 
