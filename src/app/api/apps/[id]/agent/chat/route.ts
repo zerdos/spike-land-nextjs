@@ -10,7 +10,7 @@ import {
 } from "@/lib/claude-agent/tools/codespace-tools";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { enqueueMessage, setAgentWorking } from "@/lib/upstash/client";
+import { enqueueMessage, getCodeHash, setAgentWorking, setCodeHash } from "@/lib/upstash/client";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -179,10 +179,10 @@ export async function POST(
     // The frontend will receive updates via SSE when the poller processes it
     const queuedStream = new ReadableStream({
       start(controller) {
-        // Emit connecting stage
+        // Emit initialize stage
         const connectData = JSON.stringify({
           type: "stage",
-          stage: "connecting",
+          stage: "initialize",
         });
         controller.enqueue(new TextEncoder().encode(`data: ${connectData}\n\n`));
 
@@ -237,6 +237,25 @@ export async function POST(
     }
   }
 
+  // Token optimization: Check if code has changed since last message
+  // If unchanged, skip including the full code in the system prompt
+  let codeUnchanged = false;
+  if (currentCode) {
+    const crypto = await import("crypto");
+    const currentHash = crypto.createHash("sha256")
+      .update(currentCode)
+      .digest("hex");
+    const previousHash = await getCodeHash(id);
+
+    if (previousHash && previousHash === currentHash) {
+      codeUnchanged = true;
+      console.log("[agent/chat] Code unchanged since last message, optimizing token usage");
+    } else {
+      // Update the hash for next time
+      await setCodeHash(id, currentHash);
+    }
+  }
+
   console.log(
     "[agent/chat] Starting agent query for app:",
     id,
@@ -244,19 +263,23 @@ export async function POST(
     app.codespaceId,
     "code length:",
     currentCode.length,
+    "code unchanged:",
+    codeUnchanged,
   );
 
-  // Build system prompt with current code
-  const systemPrompt = currentCode
+  // Build system prompt - skip full code if unchanged (agent can use read_code if needed)
+  const systemPrompt = currentCode && !codeUnchanged
     ? getSystemPromptWithCode(currentCode)
-    : CODESPACE_SYSTEM_PROMPT;
+    : CODESPACE_SYSTEM_PROMPT + (codeUnchanged
+      ? "\n\nNote: Code is unchanged since your last response. Use read_code if you need to see it."
+      : "");
 
   // Stream using Claude Agent SDK
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        // Emit connecting stage immediately
-        emitStage(controller, "connecting");
+        // Emit initialize stage immediately
+        emitStage(controller, "initialize");
 
         // Note: "processing" stage will be emitted when first message arrives
         // to avoid UI flicker from back-to-back stage emissions

@@ -1,12 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle, Brain, CheckCircle, Database, Loader2, Wifi, Wrench } from "lucide-react";
+import { AlertCircle, Brain, CheckCircle, Loader2, Wifi, Wrench } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export type AgentStage =
-  | "connecting"
-  | "fetching_context"
+  | "initialize"
   | "processing"
   | "executing_tool"
   | "validating"
@@ -34,41 +33,35 @@ interface StageConfig {
 }
 
 const STAGE_CONFIG: Record<AgentStage, StageConfig> = {
-  connecting: {
-    label: "Connect",
-    description: "Connecting to AI...",
+  initialize: {
+    label: "Initialize",
+    description: "Initializing agent...",
     icon: <Wifi className="h-4 w-4" />,
     order: 0,
-  },
-  fetching_context: {
-    label: "Context",
-    description: "Fetching current code...",
-    icon: <Database className="h-4 w-4" />,
-    order: 1,
   },
   processing: {
     label: "Process",
     description: "Processing your request...",
     icon: <Brain className="h-4 w-4" />,
-    order: 2,
+    order: 1,
   },
   executing_tool: {
     label: "Execute",
     description: "Executing tool...",
     icon: <Wrench className="h-4 w-4" />,
-    order: 3,
+    order: 2,
   },
   validating: {
     label: "Validate",
     description: "Verifying changes...",
     icon: <CheckCircle className="h-4 w-4" />,
-    order: 4,
+    order: 3,
   },
   complete: {
     label: "Complete",
     description: "Done!",
     icon: <CheckCircle className="h-4 w-4" />,
-    order: 5,
+    order: 4,
   },
   error: {
     label: "Error",
@@ -79,18 +72,15 @@ const STAGE_CONFIG: Record<AgentStage, StageConfig> = {
 };
 
 const SIMULATED_LOGS: Record<AgentStage, string[]> = {
-  connecting: [
+  initialize: [
     "Resolving neuron endpoint...",
     "Handshaking with agent swarm...",
     "Verifying cryptographic signatures...",
     "Establishing secure websocket tunnel...",
-  ],
-  fetching_context: [
     "Scanning workspace file system...",
     "Parsing AST for context analysis...",
     "Resolving dependency graph...",
     "Loading simulation parameters...",
-    "Vectorizing current codebase...",
   ],
   processing: [
     "Inferring user intent...",
@@ -118,8 +108,7 @@ const SIMULATED_LOGS: Record<AgentStage, string[]> = {
 };
 
 const ORDERED_STAGES: AgentStage[] = [
-  "connecting",
-  "fetching_context",
+  "initialize",
   "processing",
   "executing_tool",
   "validating",
@@ -149,7 +138,7 @@ export function AgentProgressIndicator({
   const [displayProgress, setDisplayProgress] = useState(0);
   const [logMessage, setLogMessage] = useState("");
 
-  const currentStageConfig = stage ? STAGE_CONFIG[stage] : STAGE_CONFIG.connecting;
+  const currentStageConfig = stage ? STAGE_CONFIG[stage] : STAGE_CONFIG.initialize;
   const currentOrder = currentStageConfig.order;
 
   // Target progress based on stage
@@ -260,7 +249,7 @@ export function AgentProgressIndicator({
         ${className}
       `}
     >
-      {/* Header with elapsed time */}
+      {/* Header with progress percentage and elapsed time */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Loader2 className="h-4 w-4 text-teal-400 animate-spin" />
@@ -268,9 +257,14 @@ export function AgentProgressIndicator({
             Agent Working
           </span>
         </div>
-        <span className="text-xs text-zinc-500 font-mono tabular-nums">
-          {formatElapsedTime(elapsedTime)}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-teal-400 font-mono tabular-nums">
+            {Math.round(displayProgress)}% complete
+          </span>
+          <span className="text-xs text-zinc-500 font-mono tabular-nums">
+            {formatElapsedTime(elapsedTime)}
+          </span>
+        </div>
       </div>
 
       {/* Progress bar */}
@@ -289,8 +283,8 @@ export function AgentProgressIndicator({
         />
       </div>
 
-      {/* Stage indicators - Continuous Flow */}
-      <div className="flex items-center w-full px-2 mb-4">
+      {/* Stage indicators with centered labels */}
+      <div className="flex items-start w-full mb-3">
         {ORDERED_STAGES.map((s, index) => {
           const config = STAGE_CONFIG[s];
           const isCompleted = currentOrder > config.order;
@@ -298,81 +292,68 @@ export function AgentProgressIndicator({
           const isError = stage === "error";
 
           return (
-            <div
-              key={s}
-              className={`flex items-center ${index < ORDERED_STAGES.length - 1 ? "flex-1" : ""}`}
-            >
-              {/* Stage circle */}
-              <div
-                className={`
-                    flex items-center justify-center h-8 w-8 rounded-full border transition-all duration-300 z-10
+            <div key={s} className="flex flex-col items-center flex-1">
+              {/* Row: left-connector + circle + right-connector */}
+              <div className="flex items-center w-full">
+                {/* Left connector */}
+                {index > 0 && (
+                  <div className="flex-1 h-0.5 relative overflow-hidden bg-zinc-800 rounded-full">
+                    <motion.div
+                      initial={{ x: "-100%" }}
+                      animate={isCompleted || isCurrent ? { x: 0 } : { x: "-100%" }}
+                      transition={{ duration: 0.5 }}
+                      className="absolute inset-0 bg-teal-500/50"
+                    />
+                  </div>
+                )}
+
+                {/* Stage circle */}
+                <div
+                  className={`
+                    flex items-center justify-center h-8 w-8 rounded-full border transition-all duration-300 z-10 shrink-0
                     ${
-                  isError
-                    ? "border-zinc-700 text-zinc-600 bg-zinc-900"
-                    : isCompleted
-                    ? "border-teal-500 bg-teal-500/20 text-teal-400"
-                    : isCurrent
-                    ? "border-teal-500 bg-teal-500/10 text-teal-400 ring-4 ring-teal-500/20"
-                    : "border-zinc-700 text-zinc-600 bg-zinc-900"
-                }
+                    isError
+                      ? "border-zinc-700 text-zinc-600 bg-zinc-900"
+                      : isCompleted
+                      ? "border-teal-500 bg-teal-500/20 text-teal-400"
+                      : isCurrent
+                      ? "border-teal-500 bg-teal-500/10 text-teal-400 ring-4 ring-teal-500/20"
+                      : "border-zinc-700 text-zinc-600 bg-zinc-900"
+                  }
                   `}
-              >
-                {isCompleted
-                  ? <CheckCircle className="h-4 w-4" />
-                  : isCurrent
-                  ? <Loader2 className="h-4 w-4 animate-spin" />
-                  : <span className="text-xs font-medium">{index + 1}</span>}
+                >
+                  {isCompleted
+                    ? <CheckCircle className="h-4 w-4" />
+                    : isCurrent
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <span className="text-xs font-medium">{index + 1}</span>}
+                </div>
+
+                {/* Right connector */}
+                {index < ORDERED_STAGES.length - 1 && (
+                  <div className="flex-1 h-0.5 relative overflow-hidden bg-zinc-800 rounded-full">
+                    <motion.div
+                      initial={{ x: "-100%" }}
+                      animate={isCompleted ? { x: 0 } : { x: "-100%" }}
+                      transition={{ duration: 0.5 }}
+                      className="absolute inset-0 bg-teal-500/50"
+                    />
+                  </div>
+                )}
               </div>
 
-              {/* Connector line - Fills space between circles */}
-              {index < ORDERED_STAGES.length - 1 && (
-                <div className="flex-1 h-0.5 mx-2 relative overflow-hidden bg-zinc-800 rounded-full">
-                  <motion.div
-                    initial={{ x: "-100%" }}
-                    animate={isCompleted ? { x: 0 } : { x: "-100%" }}
-                    transition={{ duration: 0.5 }}
-                    className="absolute inset-0 bg-teal-500/50"
-                  />
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Stage labels */}
-      {/* Stage labels - Centered under circles */}
-      <div className="flex justify-between text-[10px] text-zinc-500 mb-3 px-2">
-        {ORDERED_STAGES.map((s, index) => {
-          const config = STAGE_CONFIG[s];
-          const isCompleted = currentOrder > config.order;
-          const isCurrent = stage === s;
-
-          return (
-            <div
-              key={s}
-              className={`
-                   ${
-                index === 0
-                  ? "text-left"
-                  : index === ORDERED_STAGES.length - 1
-                  ? "text-right"
-                  : "text-center"
-              }
-                   w-20 -ml-6 first:ml-0 last:-mr-6 last:ml-0
-                   transition-colors duration-300
-                `}
-            >
+              {/* Centered label */}
               <span
                 className={`
-                    ${
+                  mt-2 text-[10px] text-center transition-colors duration-300
+                  ${
                   isCurrent
                     ? "text-teal-400 font-medium"
                     : isCompleted
                     ? "text-zinc-400"
                     : "text-zinc-600"
                 }
-                  `}
+                `}
               >
                 {config.label}
               </span>

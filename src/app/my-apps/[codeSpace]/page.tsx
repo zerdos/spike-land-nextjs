@@ -93,6 +93,14 @@ interface PendingFile {
 
 type PageMode = "loading" | "prompt" | "workspace";
 
+// Session cache TTL (5 minutes)
+const SESSION_CACHE_TTL_MS = 5 * 60 * 1000;
+
+// Helper to get session cache key
+function getSessionCacheKey(codeSpace: string): string {
+  return `app-session-${codeSpace}`;
+}
+
 // Helper functions
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -189,6 +197,9 @@ export default function CodeSpacePage() {
   const eventSourceRef = useRef<EventSource | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Ref to track current messages for stale closure prevention in polling
+  const messagesRef = useRef<AppMessage[]>(messages);
+
   const codespaceUrl = `https://testing.spike.land/live/${codeSpace}/`;
 
   // Memoize version number calculation to avoid O(n²) complexity in render loop
@@ -201,6 +212,11 @@ export default function CodeSpacePage() {
   }, [messages]);
 
   const totalVersions = versionMap.size;
+
+  // Keep messagesRef in sync with messages state to prevent stale closures
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // Validate codespace name and check for backward compatibility
   useEffect(() => {
@@ -224,10 +240,40 @@ export default function CodeSpacePage() {
     }
   }, [codeSpace]);
 
-  // Initial load - check if app exists
+  // Initial load - check if app exists (with local cache for faster loads)
   useEffect(() => {
+    const sessionCacheKey = getSessionCacheKey(codeSpace);
+
     async function checkCodeSpace() {
       try {
+        // Phase 3: Local-first session caching
+        // Check sessionStorage for cached app data to avoid redundant API calls
+        if (typeof window !== "undefined") {
+          const cached = sessionStorage.getItem(sessionCacheKey);
+          if (cached) {
+            try {
+              const cachedData = JSON.parse(cached);
+              // Validate cache freshness (5 minutes)
+              if (Date.now() - cachedData.timestamp < SESSION_CACHE_TTL_MS) {
+                console.log("[codeSpace] Using cached session data");
+                if (cachedData.app) {
+                  setApp(cachedData.app);
+                  setAgentWorking(cachedData.app.agentWorking || false);
+                  setHasContent(cachedData.hasContent || false);
+                  setMode("workspace");
+                  return; // Skip API call, use cached data
+                } else if (cachedData.isPromptMode) {
+                  setMode("prompt");
+                  return;
+                }
+              }
+            } catch {
+              // Invalid cache, continue with API call
+              sessionStorage.removeItem(sessionCacheKey);
+            }
+          }
+        }
+
         const response = await fetch(
           `/api/apps/by-codespace/${encodeURIComponent(codeSpace)}`,
         );
@@ -258,9 +304,32 @@ export default function CodeSpacePage() {
           setApp(data.app);
           setAgentWorking(data.app.agentWorking || false);
           setMode("workspace");
+
+          // Cache the result in sessionStorage for faster subsequent loads
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem(
+              sessionCacheKey,
+              JSON.stringify({
+                app: data.app,
+                hasContent: data.hasContent,
+                timestamp: Date.now(),
+              }),
+            );
+          }
         } else {
           // No app yet - show prompt form
           setMode("prompt");
+
+          // Cache the prompt mode state
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem(
+              sessionCacheKey,
+              JSON.stringify({
+                isPromptMode: true,
+                timestamp: Date.now(),
+              }),
+            );
+          }
         }
       } catch {
         setError("Failed to load codespace");
@@ -318,15 +387,21 @@ export default function CodeSpacePage() {
             setApp((
               prev,
             ) => (prev ? { ...prev, status: data.data.status } : null));
+            // Invalidate cache on status change to ensure fresh data on page revisit
+            sessionStorage.removeItem(getSessionCacheKey(codeSpace));
             break;
 
           case "agent_working":
             setAgentWorking(data.data.isWorking);
+            // Invalidate cache when agent status changes
+            sessionStorage.removeItem(getSessionCacheKey(codeSpace));
             break;
 
           case "code_updated":
             setIframeKey((prev) => prev + 1);
             setHasContent(true);
+            // Invalidate cache on code updates
+            sessionStorage.removeItem(getSessionCacheKey(codeSpace));
             break;
         }
       } catch {
@@ -343,7 +418,7 @@ export default function CodeSpacePage() {
       eventSource.close();
       eventSourceRef.current = null;
     };
-  }, [mode, app?.id]);
+  }, [mode, app?.id, codeSpace]);
 
   // Debounced scroll to bottom for performance
   const scrollToBottom = useMemo(
@@ -495,7 +570,7 @@ export default function CodeSpacePage() {
       setStreamingResponse("");
 
       // Initialize agent progress tracking
-      setAgentStage("connecting");
+      setAgentStage("initialize");
       setAgentStartTime(Date.now());
       setCurrentTool(undefined);
       setAgentError(undefined);
@@ -523,6 +598,9 @@ export default function CodeSpacePage() {
         if (!reader) throw new Error("No reader available");
 
         let buffer = "";
+        let receivedChunks = false; // Track if we received actual content (direct mode)
+        let isQueueMode = false; // Track if response indicates queue mode
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -539,6 +617,7 @@ export default function CodeSpacePage() {
                 const data = JSON.parse(line.substring(6));
                 // Handle different event types
                 if (data.type === "chunk") {
+                  receivedChunks = true;
                   setStreamingResponse((prev) => prev + data.content);
                 } else if (data.type === "stage") {
                   // Update agent stage
@@ -546,6 +625,9 @@ export default function CodeSpacePage() {
                   if (data.tool) {
                     setCurrentTool(data.tool);
                   }
+                } else if (data.type === "status" && data.content?.includes("queued")) {
+                  // Queue mode detected
+                  isQueueMode = true;
                 } else if (data.type === "error") {
                   setAgentStage("error");
                   setAgentError(data.content);
@@ -557,10 +639,58 @@ export default function CodeSpacePage() {
           }
         }
 
-        // Fetch final messages and update preview
-        await fetchMessages();
-        setIframeKey((prev) => prev + 1);
-        setHasContent(true);
+        // In queue mode, poll for agent response
+        if (isQueueMode && !receivedChunks) {
+          // Keep processing stage active while waiting
+          setAgentStage("processing");
+
+          // Poll for agent response (max 2 minutes with increasing intervals)
+          const maxPollTime = 120000; // 2 minutes
+          const startTime = Date.now();
+          let pollInterval = 2000; // Start at 2 seconds
+
+          const pollForResponse = async (): Promise<void> => {
+            while (Date.now() - startTime < maxPollTime) {
+              await new Promise((r) => setTimeout(r, pollInterval));
+
+              // Check if we have new messages
+              const messagesRes = await fetch(`/api/apps/${appId}/messages`);
+              if (messagesRes.ok) {
+                const data = await messagesRes.json();
+                const msgs = (data.messages || []).reverse();
+
+                // Check if there's a new agent message (use ref to avoid stale closure)
+                const hasAgentResponse = msgs.some(
+                  (m: { role: string; id: string; }) =>
+                    m.role === "AGENT" &&
+                    !messagesRef.current.some((existing) => existing.id === m.id),
+                );
+
+                if (hasAgentResponse) {
+                  setMessages(msgs);
+                  setAgentStage("complete");
+                  setIframeKey((prev) => prev + 1);
+                  setHasContent(true);
+                  return;
+                }
+              }
+
+              // Increase poll interval (max 5 seconds)
+              pollInterval = Math.min(pollInterval * 1.5, 5000);
+            }
+
+            // Timeout - notify user and still fetch messages in case we missed something
+            toast.warning("Agent is taking longer than expected. Refreshing...");
+            await fetchMessages();
+          };
+
+          await pollForResponse();
+        } else {
+          // Direct mode - fetch final messages and update preview
+          await fetchMessages();
+          setIframeKey((prev) => prev + 1);
+          setHasContent(true);
+        }
       } catch (e) {
         // Handle abort gracefully
         if (e instanceof Error && e.name === "AbortError") {
@@ -586,7 +716,7 @@ export default function CodeSpacePage() {
         }, AGENT_COMPLETION_DISPLAY_MS);
       }
     },
-    [fetchMessages],
+    [fetchMessages], // messages removed - using messagesRef to prevent stale closures
   );
 
   // Create app from prompt (prompt mode)

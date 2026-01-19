@@ -12,11 +12,12 @@ describe("codespace-tools", () => {
         "mcp__codespace__edit_code",
         "mcp__codespace__search_and_replace",
         "mcp__codespace__find_lines",
+        "mcp__codespace__validate_code",
       ]);
     });
 
-    it("has 5 tool names", () => {
-      expect(CODESPACE_TOOL_NAMES).toHaveLength(5);
+    it("has 6 tool names", () => {
+      expect(CODESPACE_TOOL_NAMES).toHaveLength(6);
     });
 
     it("all tool names follow mcp__codespace__ prefix pattern", () => {

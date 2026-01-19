@@ -61,7 +61,7 @@ import { join } from "path";
 
 // Initialize Prisma with proper adapter
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = process.env["DATABASE_URL"];
 
   if (!connectionString) {
     throw new Error(
@@ -80,8 +80,8 @@ function createPrismaClient() {
 const prisma = createPrismaClient();
 
 // Initialize Redis (support both UPSTASH_REDIS_REST_* and KV_REST_API_* naming)
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+const redisUrl = process.env["UPSTASH_REDIS_REST_URL"] || process.env["KV_REST_API_URL"];
+const redisToken = process.env["UPSTASH_REDIS_REST_TOKEN"] || process.env["KV_REST_API_TOKEN"];
 
 if (!redisUrl || !redisToken) {
   console.error(
@@ -120,7 +120,7 @@ const VALID_STATUSES: AppBuildStatus[] = [
  * Set AGENT_REQUIRE_PERMISSIONS=true to enable interactive permission prompts
  * (breaks autonomous operation but useful for debugging)
  */
-const SKIP_PERMISSIONS = process.env.AGENT_REQUIRE_PERMISSIONS !== "true";
+const SKIP_PERMISSIONS = process.env["AGENT_REQUIRE_PERMISSIONS"] !== "true";
 
 interface AppUpdate {
   name?: string;
@@ -184,7 +184,7 @@ const PROD_URL = "https://spike.land";
 const LOCAL_URL = "http://localhost:3000";
 const AGENT_API_URL = isProd
   ? PROD_URL
-  : (process.env.NEXT_PUBLIC_APP_URL || LOCAL_URL);
+  : (process.env["NEXT_PUBLIC_APP_URL"] || LOCAL_URL);
 
 // ============================================================
 // E2E Test Mode - Keyword-based handlers for testing without Claude
@@ -518,51 +518,81 @@ function formatPromptWithHistory(
 
 /**
  * Build the system prompt for the agent
+ *
+ * Tool names follow the pattern: mcp__<server-name>__<tool-name>
+ * The @spike-npm-land/mcp-server provides these codespace tools:
+ * - codespace_update: Create/update React code
+ * - codespace_run: Transpile and run code
+ * - codespace_screenshot: Get a screenshot
+ * - codespace_link: Get link to app
  */
 function buildSystemPrompt(app: {
   name: string;
   codespaceId: string | null;
   codespaceUrl: string | null;
 }): string {
-  return `You are an AI agent helping to build and improve a React application called "${app.name}".
+  const codespaceInfo = app.codespaceId
+    ? `Current codespace ID: ${app.codespaceId}
+Live URL: ${app.codespaceUrl || `https://spike.land/live/${app.codespaceId}`}`
+    : `No codespace yet. You MUST create one using codespace_update with a descriptive codespace_id.`;
 
-Your capabilities:
-1. Use the spike-land MCP tools to create and update codespaces (mcp__spike-land__codespace_update, etc.)
-2. Use the MCP_DOCKER tools for browser automation and testing if needed
+  return `You are an AI agent building a React application called "${app.name}".
 
-Current codespace: ${app.codespaceId || "None yet - you need to create one using codespace_update"}
-Live URL: ${app.codespaceUrl || "Will be available after codespace creation"}
+${codespaceInfo}
 
-Guidelines:
-- When the user requests changes, use mcp__spike-land__codespace_update to modify the React code
-- If creating a new app, use a descriptive codespace_id based on the app name (lowercase, hyphens)
-- After updating code, confirm the change was successful
-- When the user provides images, download and analyze them to understand their requirements
-- Always provide helpful feedback about what you did
-- For animated apps, use CSS animations, transitions, or framer-motion`;
+## CRITICAL: You MUST use MCP tools to update code
+
+Available spike-land MCP tools:
+- mcp__spike-land__codespace_update: Create or update React code
+  Parameters: { codespace_id: string, code: string, run?: boolean }
+
+- mcp__spike-land__codespace_run: Transpile and run the code
+  Parameters: { codespace_id: string }
+
+- mcp__spike-land__codespace_screenshot: Get a screenshot of the app
+  Parameters: { codespace_id: string }
+
+- mcp__spike-land__codespace_link: Get a shareable link to the app
+  Parameters: { codespace_id: string }
+
+## Guidelines
+1. ALWAYS use codespace_update to modify code - do NOT just describe changes
+2. For new apps, use a codespace_id like "my-app-name" (lowercase, hyphens)
+3. Write complete, working React/TypeScript code with Tailwind CSS
+4. After updating, confirm what you changed
+5. If the user asks for colors/styling, ACTUALLY update the code with those changes`;
 }
 
 /**
  * Create temporary MCP config file
+ *
+ * Uses stdio transport with @spike-npm-land/mcp-server npm package
+ * which provides codespace tools: codespace_update, codespace_run,
+ * codespace_screenshot, codespace_link
+ *
+ * Claude CLI only supports stdio and sse transports, not http
  */
 async function createTempMcpConfig(): Promise<string> {
   const tmpDir = join(tmpdir(), `claude-mcp-${Date.now()}`);
   await mkdir(tmpDir, { recursive: true });
   const configPath = join(tmpDir, "mcp-config.json");
 
-  const mcpDockerUrl = process.env.MCP_DOCKER_URL || "http://localhost:8808/sse";
+  const mcpDockerUrl = process.env["MCP_DOCKER_URL"] || "http://localhost:8808/sse";
 
   const config = {
     mcpServers: {
       "spike-land": {
+        // Use stdio transport with npm package for codespace operations
+        // This spawns npx as a subprocess and communicates via stdin/stdout
+        type: "stdio",
         command: "npx",
-        args: ["@spike-npm-land/mcp-server"],
+        args: ["-y", "@spike-npm-land/mcp-server"],
         env: {
-          SPIKE_LAND_API_KEY: process.env.SPIKE_LAND_API_KEY || "",
+          SPIKE_LAND_API_KEY: process.env["SPIKE_LAND_API_KEY"] || "",
         },
       },
       "MCP_DOCKER": {
-        type: "http",
+        type: "sse",
         url: mcpDockerUrl,
       },
     },
@@ -768,7 +798,7 @@ async function postAgentResponse(
   codeUpdated: boolean,
   processedMessageIds: string[],
 ): Promise<void> {
-  const apiKey = process.env.AGENT_API_KEY;
+  const apiKey = process.env["AGENT_API_KEY"];
   if (!apiKey) {
     throw new Error("AGENT_API_KEY not configured in environment");
   }
@@ -832,7 +862,7 @@ async function postAgentResponse(
  * Update app's codespace info via agent API
  */
 async function updateAppCodespace(appId: string, codespaceId: string): Promise<void> {
-  const apiKey = process.env.AGENT_API_KEY;
+  const apiKey = process.env["AGENT_API_KEY"];
   if (!apiKey) {
     throw new Error("AGENT_API_KEY not configured");
   }
@@ -1172,9 +1202,9 @@ async function main(): Promise<void> {
   // Show additional debug info
   if (isDebug) {
     console.log("\n[DEBUG] Configuration:");
-    console.log(`  AGENT_API_KEY: ${maskApiKey(process.env.AGENT_API_KEY)}`);
-    console.log(`  SPIKE_LAND_API_KEY: ${maskApiKey(process.env.SPIKE_LAND_API_KEY)}`);
-    console.log(`  DATABASE_URL: ${process.env.DATABASE_URL ? "(set)" : "(not set)"}`);
+    console.log(`  AGENT_API_KEY: ${maskApiKey(process.env["AGENT_API_KEY"])}`);
+    console.log(`  SPIKE_LAND_API_KEY: ${maskApiKey(process.env["SPIKE_LAND_API_KEY"])}`);
+    console.log(`  DATABASE_URL: ${process.env["DATABASE_URL"] ? "(set)" : "(not set)"}`);
     console.log(`  Skip permissions: ${SKIP_PERMISSIONS}`);
     console.log("\n[DEBUG] E2E Test Keywords Available:");
     Object.keys(TEST_KEYWORD_HANDLERS).forEach((keyword) => {
