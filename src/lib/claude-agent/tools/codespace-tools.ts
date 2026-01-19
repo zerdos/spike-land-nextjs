@@ -5,6 +5,29 @@ import { z } from "zod";
 const TESTING_SPIKE_LAND = "https://testing.spike.land";
 
 /**
+ * Regex pattern for valid codespace IDs
+ * Must start with lowercase letter/number, contain only lowercase letters, numbers, and hyphens
+ */
+const CODESPACE_ID_REGEX = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
+
+/**
+ * Validates a codespace ID to prevent SSRF attacks
+ * @param id - The codespace ID to validate
+ * @returns true if valid, false otherwise
+ */
+function isValidCodespaceId(id: string): boolean {
+  return (
+    typeof id === "string" &&
+    id.length > 0 &&
+    id.length <= 100 &&
+    !id.includes("..") &&
+    !id.includes("/") &&
+    !id.includes("\\") &&
+    CODESPACE_ID_REGEX.test(id)
+  );
+}
+
+/**
  * Structured validation error from the backend
  */
 interface ValidationError {
@@ -338,6 +361,14 @@ async function findLines(
  * Create an MCP server with codespace tools for the given codespaceId
  */
 export function createCodespaceServer(codespaceId: string) {
+  // Validate codespaceId to prevent SSRF attacks
+  if (!isValidCodespaceId(codespaceId)) {
+    logger.error(
+      `[codespace-tools] Invalid codespaceId rejected: ${codespaceId}`,
+    );
+    throw new Error(`Invalid codespace ID format: ${codespaceId}`);
+  }
+
   logger.info(
     `[codespace-tools] Creating MCP server for codespace: ${codespaceId}`,
   );

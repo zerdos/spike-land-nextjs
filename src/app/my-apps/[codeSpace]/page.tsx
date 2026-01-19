@@ -197,6 +197,9 @@ export default function CodeSpacePage() {
   const eventSourceRef = useRef<EventSource | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Ref to track current messages for stale closure prevention in polling
+  const messagesRef = useRef<AppMessage[]>(messages);
+
   const codespaceUrl = `https://testing.spike.land/live/${codeSpace}/`;
 
   // Memoize version number calculation to avoid O(n²) complexity in render loop
@@ -209,6 +212,11 @@ export default function CodeSpacePage() {
   }, [messages]);
 
   const totalVersions = versionMap.size;
+
+  // Keep messagesRef in sync with messages state to prevent stale closures
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // Validate codespace name and check for backward compatibility
   useEffect(() => {
@@ -379,15 +387,21 @@ export default function CodeSpacePage() {
             setApp((
               prev,
             ) => (prev ? { ...prev, status: data.data.status } : null));
+            // Invalidate cache on status change to ensure fresh data on page revisit
+            sessionStorage.removeItem(getSessionCacheKey(codeSpace));
             break;
 
           case "agent_working":
             setAgentWorking(data.data.isWorking);
+            // Invalidate cache when agent status changes
+            sessionStorage.removeItem(getSessionCacheKey(codeSpace));
             break;
 
           case "code_updated":
             setIframeKey((prev) => prev + 1);
             setHasContent(true);
+            // Invalidate cache on code updates
+            sessionStorage.removeItem(getSessionCacheKey(codeSpace));
             break;
         }
       } catch {
@@ -404,7 +418,7 @@ export default function CodeSpacePage() {
       eventSource.close();
       eventSourceRef.current = null;
     };
-  }, [mode, app?.id]);
+  }, [mode, app?.id, codeSpace]);
 
   // Debounced scroll to bottom for performance
   const scrollToBottom = useMemo(
@@ -645,10 +659,11 @@ export default function CodeSpacePage() {
                 const data = await messagesRes.json();
                 const msgs = (data.messages || []).reverse();
 
-                // Check if there's a new agent message
+                // Check if there's a new agent message (use ref to avoid stale closure)
                 const hasAgentResponse = msgs.some(
                   (m: { role: string; id: string; }) =>
-                    m.role === "AGENT" && !messages.some((existing) => existing.id === m.id),
+                    m.role === "AGENT" &&
+                    !messagesRef.current.some((existing) => existing.id === m.id),
                 );
 
                 if (hasAgentResponse) {
@@ -664,7 +679,8 @@ export default function CodeSpacePage() {
               pollInterval = Math.min(pollInterval * 1.5, 5000);
             }
 
-            // Timeout - still fetch messages in case we missed something
+            // Timeout - notify user and still fetch messages in case we missed something
+            toast.warning("Agent is taking longer than expected. Refreshing...");
             await fetchMessages();
           };
 
@@ -700,7 +716,7 @@ export default function CodeSpacePage() {
         }, AGENT_COMPLETION_DISPLAY_MS);
       }
     },
-    [fetchMessages, messages],
+    [fetchMessages], // messages removed - using messagesRef to prevent stale closures
   );
 
   // Create app from prompt (prompt mode)
