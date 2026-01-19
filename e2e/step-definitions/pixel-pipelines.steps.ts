@@ -369,23 +369,21 @@ When(
 );
 
 When("I submit the pipeline form", async function(this: CustomWorld) {
-  const submitButton = this.page.locator('[role="dialog"]').getByRole(
-    "button",
-    {
+  const submitButton = this.page
+    .locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])')
+    .getByRole("button", {
       name: /create|save|submit/i,
-    },
-  );
+    });
   await submitButton.click();
   await this.page.waitForTimeout(500);
 });
 
 When("I try to submit the pipeline form", async function(this: CustomWorld) {
-  const submitButton = this.page.locator('[role="dialog"]').getByRole(
-    "button",
-    {
+  const submitButton = this.page
+    .locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])')
+    .getByRole("button", {
       name: /create|save|submit/i,
-    },
-  );
+    });
   await submitButton.click();
   await this.page.waitForTimeout(300);
 });
@@ -473,12 +471,11 @@ When(
     await this.page.getByLabel(/name/i).fill(name);
     await this.page.getByLabel(/description/i).fill("A test pipeline");
 
-    const submitButton = this.page.locator('[role="dialog"]').getByRole(
-      "button",
-      {
+    const submitButton = this.page
+      .locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])')
+      .getByRole("button", {
         name: /create|save/i,
-      },
-    );
+      });
     await submitButton.click();
     await this.page.waitForTimeout(500);
   },
@@ -532,7 +529,9 @@ Then(
 Then(
   "I should see the pipeline form dialog",
   async function(this: CustomWorld) {
-    const dialog = this.page.locator('[role="dialog"]');
+    const dialog = this.page.locator(
+      '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
+    );
     await expect(dialog).toBeVisible();
   },
 );
@@ -540,7 +539,9 @@ Then(
 Then(
   "I should see {string} title",
   async function(this: CustomWorld, title: string) {
-    const dialogTitle = this.page.locator('[role="dialog"]').getByText(title);
+    const dialogTitle = this.page
+      .locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])')
+      .getByText(title);
     await expect(dialogTitle).toBeVisible();
   },
 );
@@ -556,9 +557,9 @@ Then(
 Then(
   "I should see {string} selector",
   async function(this: CustomWorld, selectorName: string) {
-    const selector = this.page.locator('[role="dialog"]').getByText(
-      new RegExp(selectorName, "i"),
-    );
+    const selector = this.page
+      .locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])')
+      .getByText(new RegExp(selectorName, "i"));
     await expect(selector.first()).toBeVisible();
   },
 );
@@ -734,7 +735,9 @@ Then(
   "the pipeline should be created with all configurations",
   async function(this: CustomWorld) {
     // Verify the dialog closed and a pipeline was created
-    const dialog = this.page.locator('[role="dialog"]');
+    const dialog = this.page.locator(
+      '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
+    );
     await expect(dialog).not.toBeVisible();
   },
 );

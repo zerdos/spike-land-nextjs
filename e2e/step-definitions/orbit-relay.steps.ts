@@ -1157,7 +1157,7 @@ Then(
 
 // Error handling steps
 Given(
-  "I am not logged in",
+  "the Orbit API returns 401 Unauthorized",
   async function(this: CustomWorld) {
     await this.page.route("**/api/orbit/**", async (route) => {
       await route.fulfill({

@@ -381,8 +381,8 @@ Then(
     const selected = this.page.locator('[aria-selected="true"]');
     await expect(selected).toBeVisible();
 
-    // Check for the ring-green-500 class (neon glow effect)
-    await expect(selected).toHaveClass(/ring-green-500/);
+    // Check for the ring-primary class (selection indicator)
+    await expect(selected).toHaveClass(/ring-primary/);
   },
 );
 
@@ -1344,6 +1344,6 @@ Then(
 
     const selected = this.page.locator('[aria-selected="true"]');
     await expect(selected).toBeVisible();
-    await expect(selected).toHaveClass(/ring-green-500/);
+    await expect(selected).toHaveClass(/ring-primary/);
   },
 );

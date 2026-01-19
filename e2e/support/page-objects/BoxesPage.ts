@@ -39,7 +39,7 @@ export class BoxesPage {
   }
 
   async getEmptyStateMessage() {
-    return this.page.getByText(/Create your first box|No boxes yet/i);
+    return this.page.locator('[data-testid="boxes-empty-state"]');
   }
 
   async getSearchInput() {
