@@ -99,6 +99,12 @@ export function AdminDashboardClient(
 
   const quickLinks = [
     {
+      title: "My-Apps Statistics",
+      description: "Monitor app creation, messages, and user activity",
+      href: "/admin/my-apps",
+      icon: "apps",
+    },
+    {
       title: "User Analytics",
       description: "View user growth, retention, and engagement metrics",
       href: "/admin/analytics",
@@ -400,6 +406,25 @@ export function QuickLinkIcon({ icon }: { icon: string; }) {
   const iconClass = "h-10 w-10 text-neutral-400";
 
   switch (icon) {
+    case "apps":
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={iconClass}
+          aria-hidden="true"
+        >
+          <rect width="7" height="7" x="3" y="3" rx="1" />
+          <rect width="7" height="7" x="14" y="3" rx="1" />
+          <rect width="7" height="7" x="14" y="14" rx="1" />
+          <rect width="7" height="7" x="3" y="14" rx="1" />
+        </svg>
+      );
     case "chart-line":
       return (
         <svg
