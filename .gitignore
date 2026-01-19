@@ -20,7 +20,7 @@
 spike_land/
 
 # testing
-/coverage
+**/coverage/
 /e2e/reports
 test-results/
 playwright-report/

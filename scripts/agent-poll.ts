@@ -4,7 +4,13 @@
  * Polls for pending messages from the Redis queue and processes them.
  * Can update app properties: status, description, name, etc.
  *
- * Usage: yarn agent:poll [--once] [--interval=5000]
+ * Usage: yarn agent:poll [--once] [--interval=5000] [--prod] [--stats]
+ *
+ * Flags:
+ *   --once        Run once and exit (don't loop)
+ *   --interval=N  Set polling interval in ms (default: 5000)
+ *   --prod        Use production API (https://spike.land) instead of localhost
+ *   --stats       Show queue statistics and exit
  *
  * SECURITY WARNING: Claude CLI Permissions
  * =========================================
@@ -159,7 +165,14 @@ interface SpawnResult {
 
 // Constants for Claude Code spawning
 const CLAUDE_TIMEOUT_MS = 300000; // 5 minutes
-const AGENT_API_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+// Environment detection: --prod flag uses production URL
+const isProd = process.argv.includes("--prod");
+const PROD_URL = "https://spike.land";
+const LOCAL_URL = "http://localhost:3000";
+const AGENT_API_URL = isProd
+  ? PROD_URL
+  : (process.env.NEXT_PUBLIC_APP_URL || LOCAL_URL);
 
 /**
  * Get all app IDs that have pending messages
@@ -924,6 +937,8 @@ async function main(): Promise<void> {
 
   console.log("Agent Poll Script");
   console.log("=================");
+  console.log(`Environment: ${isProd ? "PRODUCTION" : "LOCAL"}`);
+  console.log(`API URL: ${AGENT_API_URL}`);
   console.log(`Redis URL: ${redisUrl?.substring(0, 30)}...`);
 
   if (showStats) {
