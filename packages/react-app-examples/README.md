@@ -107,8 +107,8 @@ Random and experimental apps discovered through serendipity.
 
 ## Contributing
 
-Apps are generated via the Jules App Factory pipeline. See:
-`/Users/z/Developer/spike-land-app-factory/JULES.md`
+Apps are generated via the Jules App Factory pipeline. See the
+[spike-land-app-factory](https://github.com/zerdos/spike-land-app-factory) repository.
 
 ## License
 
