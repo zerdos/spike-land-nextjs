@@ -20,7 +20,7 @@ pipeline.
 
 - ⚡ **Next.js 15** - App Router with React Server Components
 - 🔷 **TypeScript** - Strict mode enabled
-- 🔐 **NextAuth.js v5** - Authentication with GitHub and Google OAuth
+- 🔐 **NextAuth.js v5** - Authentication with GitHub, Google, Facebook, and Apple OAuth
 - 🎨 **Tailwind CSS 4** - Modern styling with CSS variables
 - 🧩 **shadcn/ui** - Beautiful, accessible UI components
 - ✅ **100% Test Coverage** - Vitest + React Testing Library
@@ -122,7 +122,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 ### Authentication Setup
 
 This application uses [NextAuth.js v5](https://authjs.dev/) for authentication
-with support for GitHub and Google OAuth providers.
+with support for GitHub, Google, Facebook, and Apple OAuth providers.
 
 **For complete secrets documentation**, see
 [docs/SECRETS_SETUP.md](./docs/SECRETS_SETUP.md).
@@ -164,6 +164,17 @@ Or visit
 8. Copy the **Client ID** and **Client Secret**
 9. Add them to your `.env.local` file
 
+**Apple OAuth (Sign in with Apple):**
+
+Apple Sign-In requires a JWT-based client secret that must be regenerated every 6
+months. See [docs/SECRETS_SETUP.md](./docs/SECRETS_SETUP.md#apple-oauth-optional)
+for detailed setup instructions.
+
+```bash
+# Generate Apple client secret JWT
+yarn generate:apple-secret
+```
+
 #### 3. Environment Variables
 
 Create a `.env.local` file in the root directory:
@@ -185,6 +196,10 @@ GITHUB_SECRET=your-github-client-secret
 # Optional: Remove if not using this provider
 GOOGLE_ID=your-google-client-id
 GOOGLE_SECRET=your-google-client-secret
+
+# Optional: Apple Sign-In (requires JWT secret, see docs/SECRETS_SETUP.md)
+AUTH_APPLE_ID=your-apple-services-id
+AUTH_APPLE_SECRET=your-generated-jwt-secret
 ```
 
 **Note:** `.env.local` is gitignored and will not be committed to the
@@ -201,6 +216,8 @@ platform (e.g., Vercel):
   production domain
 - `GOOGLE_ID` and `GOOGLE_SECRET` - Update Google OAuth redirect URI to your
   production domain
+- `AUTH_APPLE_ID` and `AUTH_APPLE_SECRET` - Update Apple Services ID return URLs
+  to your production domain (regenerate JWT secret every 6 months)
 
 ## 📋 Available Scripts
 

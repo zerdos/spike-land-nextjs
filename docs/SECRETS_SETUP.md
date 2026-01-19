@@ -59,6 +59,7 @@ yarn dev
 | STRIPE_*                 |  Yes  |     No     |   Yes   |    Optional    |
 | RESEND_API_KEY           |  Yes  |     No     |   Yes   |    Optional    |
 | AUTH_FACEBOOK_ID/SECRET  |  Yes  |     No     |   Yes   |    Optional    |
+| AUTH_APPLE_ID/SECRET     |  Yes  |     No     |   Yes   |    Optional    |
 | TOKEN_ENCRYPTION_KEY     |  Yes  |     No     |   Yes   |    Optional    |
 | FACEBOOK_MARKETING_APP_* |  Yes  |     No     |   Yes   |    Optional    |
 | GOOGLE_ADS_*             |  Yes  |     No     |   Yes   |    Optional    |
@@ -184,6 +185,71 @@ AUTH_FACEBOOK_SECRET=your-facebook-app-secret
 
 **NOTE:** Uses `AUTH_` prefix to distinguish from `FACEBOOK_MARKETING_APP_*`
 (Marketing API).
+
+#### Apple OAuth (Optional)
+
+Apple Sign-In requires a **JWT-based client secret** instead of a static secret.
+The secret must be regenerated every 6 months (maximum validity).
+
+**Setup Steps:**
+
+1. Go to: https://developer.apple.com/account/
+2. Navigate to **Certificates, Identifiers & Profiles**
+
+**Step A - Create an App ID:**
+
+3. Go to Identifiers > App IDs > Click "+"
+4. Select "App IDs" → "App" type
+5. Enter Description and Bundle ID (e.g., `com.spike.land`)
+6. Enable **Sign in with Apple** capability
+7. Register the App ID
+
+**Step B - Create a Services ID (this becomes AUTH_APPLE_ID):**
+
+8. Go to Identifiers > Services IDs > Click "+"
+9. Enter Description (e.g., "Spike Land Web") and Identifier (e.g.,
+   `com.spike.land.web`)
+10. Enable **Sign in with Apple** and click Configure
+11. Select your Primary App ID from Step A
+12. Add domains: `spike.land` (and `localhost` for dev)
+13. Add Return URLs:
+    - Development: `http://localhost:3000/api/auth/callback/apple`
+    - Production: `https://spike.land/api/auth/callback/apple`
+14. Copy the Identifier - this is your `AUTH_APPLE_ID`
+
+**Step C - Create a Key:**
+
+15. Go to Keys > Click "+"
+16. Enter Key Name (e.g., "Spike Land Auth Key")
+17. Enable **Sign in with Apple** and configure with your App ID
+18. Register and **download the .p8 file** (one-time download!)
+19. Note the **Key ID** shown on the page
+
+**Step D - Generate the Client Secret JWT:**
+
+```bash
+# Use the provided script
+yarn generate:apple-secret
+```
+
+The script will prompt for:
+
+- **Team ID**: Found in top-right of Apple Developer portal (10 characters)
+- **Services ID**: Your `AUTH_APPLE_ID` from Step B
+- **Key ID**: From Step C (10 characters)
+- **Private Key**: Path to your `.p8` file from Step C
+
+```bash
+AUTH_APPLE_ID=com.spike.land.web
+AUTH_APPLE_SECRET=your-generated-jwt-secret
+```
+
+**IMPORTANT:**
+
+- The client secret JWT **expires after 6 months**
+- Set a calendar reminder to run `yarn generate:apple-secret` before expiration
+- Store the .p8 private key securely (needed for regeneration)
+- Apple may return private relay emails (`unique@privaterelay.appleid.com`)
 
 ### Social Media Posting APIs
 
@@ -452,9 +518,13 @@ For production, update OAuth providers with production URLs:
 - GitHub: `https://spike.land/api/auth/callback/github`
 - Google: `https://spike.land/api/auth/callback/google`
 - Facebook: `https://spike.land/api/auth/callback/facebook`
+- Apple: `https://spike.land/api/auth/callback/apple`
 
 **Recommendation**: Use separate OAuth apps for development vs production for
 better security isolation.
+
+**Apple-Specific Note**: Remember to regenerate the Apple client secret JWT
+every 6 months using `yarn generate:apple-secret`.
 
 ---
 

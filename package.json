@@ -60,6 +60,7 @@
     "test:e2e:db": "CI=true cucumber-js --profile db",
     "db:studio": "yarn prisma studio",
     "env:check": "tsx scripts/env-check.ts",
+    "generate:apple-secret": "tsx scripts/generate-apple-secret.ts",
     "agent:poll": "tsx scripts/agent-poll.ts",
     "agent:poll:prod": "tsx scripts/agent-poll.ts --prod",
     "agent:poll:once": "tsx scripts/agent-poll.ts --once",

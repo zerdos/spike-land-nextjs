@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { AppCatalog } from "@/components/my-apps";
+import { AppCatalog, UserStatsCard } from "@/components/my-apps";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,6 +56,9 @@ export default async function MyAppsPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 pt-24 pb-8 md:pb-12">
+        {/* User Stats Card */}
+        <UserStatsCard />
+
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
