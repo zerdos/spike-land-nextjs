@@ -234,6 +234,7 @@ const TEST_KEYWORD_HANDLERS: Record<string, TestKeywordHandler> = {
   // Wait N milliseconds, then respond (for testing timeout/loading states)
   "E2E_TEST_DELAY:": async (content) => {
     const delayMatch = content.match(/E2E_TEST_DELAY:(\d+)/);
+    // Safe non-null assertion: regex capture group (\d+) guarantees index 1 exists when match succeeds
     const delayMs = delayMatch ? parseInt(delayMatch[1]!, 10) : 1000;
     const clampedDelay = Math.min(delayMs, 30000); // Max 30 seconds
 
@@ -1233,6 +1234,7 @@ export {
   findTestKeywordHandler,
   getAppsWithPending,
   getQueueStats,
+  maskApiKey,
   poll,
   processApp,
   processMessage,

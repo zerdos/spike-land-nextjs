@@ -43,7 +43,14 @@ const LOCAL_URL = "http://localhost:3000";
 let targetUrl = isProd ? PROD_URL : LOCAL_URL;
 
 if (customUrlArg) {
-  targetUrl = customUrlArg.split("=")[1]!;
+  const eqIndex = customUrlArg.indexOf("=");
+  const urlValue = eqIndex !== -1 ? customUrlArg.slice(eqIndex + 1) : "";
+
+  if (!urlValue) {
+    console.error("[ERROR] --url flag requires a value (e.g., --url=https://example.com)");
+    process.exit(1);
+  }
+  targetUrl = urlValue;
 }
 
 /**

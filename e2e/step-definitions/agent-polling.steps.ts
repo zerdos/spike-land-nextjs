@@ -91,8 +91,11 @@ When(
     // Record when we started waiting for agent
     this.agentWorkingStartTime = Date.now();
 
-    // Wait briefly for message to be queued
-    await this.page.waitForTimeout(300);
+    // Wait for message to appear in chat (confirms it was queued)
+    const userMessageLocator = this.page.locator(
+      '[data-testid="user-message"], .user-message, [data-role="user"]',
+    ).filter({ hasText: message });
+    await expect(userMessageLocator.first()).toBeVisible({ timeout: 5000 });
   },
 );
 
@@ -112,8 +115,11 @@ When(
 When(
   "I wait for the error to be processed",
   async function(this: CustomWorld) {
-    // Wait for error to appear in chat or notification
-    await this.page.waitForTimeout(2000);
+    // Wait for error message to appear in chat or notification
+    const errorMessage = this.page.locator(
+      '[data-testid="system-message"], .system-message, [data-role="system"], [role="alert"]',
+    ).filter({ hasText: /error|failed/i });
+    await expect(errorMessage.first()).toBeVisible({ timeout: 10000 });
   },
 );
 
