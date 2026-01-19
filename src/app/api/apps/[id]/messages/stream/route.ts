@@ -51,6 +51,9 @@ export function broadcastToApp(
   event: Omit<SSEEvent, "timestamp">,
 ) {
   const connections = activeConnections.get(appId);
+  console.log(
+    `[SSE] Broadcasting ${event.type} to app ${appId}: ${connections?.size || 0} connections`,
+  );
   if (!connections || connections.size === 0) return;
 
   const fullEvent: SSEEvent = {
@@ -139,6 +142,11 @@ export async function GET(
         activeConnections.set(id, new Set());
       }
       activeConnections.get(id)!.add(controller);
+      console.log(
+        `[SSE] Client connected to app ${id}. Total connections: ${
+          activeConnections.get(id)!.size
+        }`,
+      );
 
       // Send connected event
       const connectedEvent: SSEEvent = {

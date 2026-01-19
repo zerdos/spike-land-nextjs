@@ -7,6 +7,12 @@ interface CodeUpdateRequest {
   run?: boolean;
 }
 
+interface ValidationResult {
+  valid: boolean;
+  errors: Array<{ line?: number; column?: number; message: string; }>;
+  warnings: Array<{ line?: number; column?: number; message: string; }>;
+}
+
 export class ApiRoutes {
   constructor(private code: Code) {}
 
@@ -43,6 +49,12 @@ export class ApiRoutes {
       case "session":
         if (request.method === "GET") {
           return this.handleSessionGet();
+        }
+        return new Response("Method not allowed", { status: 405 });
+
+      case "validate":
+        if (request.method === "POST") {
+          return this.handleValidatePost(request);
         }
         return new Response("Method not allowed", { status: 405 });
 
@@ -175,6 +187,110 @@ export class ApiRoutes {
         codeSpace: session.codeSpace,
       },
     });
+  }
+
+  /**
+   * Validate code without updating the session.
+   * Returns validation errors and warnings for better agent feedback.
+   */
+  private async handleValidatePost(request: Request): Promise<Response> {
+    let body: { code: string; };
+    try {
+      body = await request.json() as { code: string; };
+    } catch {
+      return this.errorResponse("Invalid JSON body", 400);
+    }
+
+    if (!body.code || typeof body.code !== "string") {
+      return this.errorResponse("Missing or invalid 'code' field", 400);
+    }
+
+    try {
+      // Attempt to transpile the code to validate it
+      await this.transpileCode(body.code);
+
+      // If transpilation succeeds, the code is valid
+      const result: ValidationResult = {
+        valid: true,
+        errors: [],
+        warnings: [],
+      };
+
+      return this.jsonResponse({
+        success: true,
+        ...result,
+      });
+    } catch (error) {
+      // Parse the error to extract line numbers and detailed messages
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Transpilation failed";
+
+      const parsedErrors = this.parseTranspileErrors(errorMessage);
+
+      const result: ValidationResult = {
+        valid: false,
+        errors: parsedErrors,
+        warnings: [],
+      };
+
+      return this.jsonResponse({
+        success: false,
+        ...result,
+      });
+    }
+  }
+
+  /**
+   * Parse transpilation error messages to extract line numbers and structured errors.
+   */
+  private parseTranspileErrors(
+    errorMessage: string,
+  ): Array<{ line?: number; column?: number; message: string; }> {
+    const errors: Array<{ line?: number; column?: number; message: string; }> = [];
+
+    // Common error patterns from esbuild/typescript
+    // Pattern: "ERROR: <message>" or "<filename>:<line>:<col>: error: <message>"
+    const lines = errorMessage.split("\n");
+
+    for (const line of lines) {
+      // Match patterns like: "X error(s)"
+      if (/^\d+ error\(s\)/.test(line.trim())) continue;
+
+      // Match pattern: "file.tsx:10:5: error: <message>"
+      const lineColMatch = line.match(/:(\d+):(\d+):\s*(error|warning)?:?\s*(.+)/i);
+      if (lineColMatch) {
+        errors.push({
+          line: parseInt(lineColMatch[1], 10),
+          column: parseInt(lineColMatch[2], 10),
+          message: lineColMatch[4].trim(),
+        });
+        continue;
+      }
+
+      // Match pattern: "line 10: <message>"
+      const lineMatch = line.match(/line\s+(\d+):\s*(.+)/i);
+      if (lineMatch) {
+        errors.push({
+          line: parseInt(lineMatch[1], 10),
+          message: lineMatch[2].trim(),
+        });
+        continue;
+      }
+
+      // Generic error message
+      const trimmed = line.trim();
+      if (trimmed && !errors.some((e) => e.message === trimmed)) {
+        errors.push({ message: trimmed });
+      }
+    }
+
+    // If no specific errors were parsed, return the whole message
+    if (errors.length === 0 && errorMessage.trim()) {
+      errors.push({ message: errorMessage.trim() });
+    }
+
+    return errors;
   }
 
   private async transpileCode(code: string): Promise<string> {

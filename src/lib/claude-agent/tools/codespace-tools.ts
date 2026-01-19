@@ -5,6 +5,42 @@ import { z } from "zod";
 const TESTING_SPIKE_LAND = "https://testing.spike.land";
 
 /**
+ * Structured validation error from the backend
+ */
+interface ValidationError {
+  line?: number;
+  column?: number;
+  message: string;
+}
+
+/**
+ * Response from the code update/validate endpoint
+ */
+interface CodeUpdateResponse {
+  success: boolean;
+  error?: string;
+  errors?: ValidationError[];
+  updated?: string[];
+  message?: string;
+}
+
+/**
+ * Format validation errors into a human-readable string for the agent
+ */
+function formatValidationErrors(errors: ValidationError[]): string {
+  if (errors.length === 0) return "Unknown validation error";
+
+  return errors
+    .map((e) => {
+      const location = e.line
+        ? `Line ${e.line}${e.column ? `:${e.column}` : ""}: `
+        : "";
+      return `${location}${e.message}`;
+    })
+    .join("\n");
+}
+
+/**
  * Read the current code from the codespace via REST API
  */
 async function readCode(codespaceId: string): Promise<string> {
@@ -45,6 +81,7 @@ async function readCode(codespaceId: string): Promise<string> {
 
 /**
  * Update the entire code via REST API
+ * Returns "success" on success, or a formatted error message on failure
  */
 async function updateCode(
   codespaceId: string,
@@ -67,19 +104,34 @@ async function updateCode(
       `[codespace-tools] updateCode response status: ${response.status}`,
     );
 
-    if (!response.ok) {
+    // Parse response body
+    let data: CodeUpdateResponse;
+    try {
+      data = await response.json() as CodeUpdateResponse;
+    } catch {
       const text = await response.text();
-      const error = `Error updating code: ${response.status} ${response.statusText} - ${text}`;
-      logger.error(`[codespace-tools] ${error}`);
-      return error;
+      logger.error(`[codespace-tools] Failed to parse response: ${text}`);
+      return `Error updating code: ${response.status} ${response.statusText} - ${text}`;
     }
 
-    const data = await response.json();
     logger.info(`[codespace-tools] updateCode response data:`, { data });
 
     if (data.success) {
       logger.info(`[codespace-tools] updateCode SUCCESS for: ${codespaceId}`);
       return "success";
+    }
+
+    // Handle structured validation errors
+    if (data.errors && data.errors.length > 0) {
+      const formattedErrors = formatValidationErrors(data.errors);
+      logger.error(`[codespace-tools] Validation errors:\n${formattedErrors}`);
+      return `TypeScript/JSX errors found:\n${formattedErrors}\n\nPlease fix these errors and try again.`;
+    }
+
+    // Handle generic error
+    if (data.error) {
+      logger.error(`[codespace-tools] Error: ${data.error}`);
+      return `Error: ${data.error}`;
     }
 
     const error = `Update failed: ${JSON.stringify(data)}`;
@@ -181,6 +233,67 @@ async function searchAndReplace(
     `[codespace-tools] searchAndReplace: Found matches, updating code`,
   );
   return updateCode(codespaceId, newCode);
+}
+
+/**
+ * Validate code without updating the session
+ * Returns validation errors if any, or "valid" if the code is valid
+ */
+async function validateCode(
+  codespaceId: string,
+  code: string,
+): Promise<string> {
+  logger.info(`[codespace-tools] validateCode called for: ${codespaceId}`);
+  logger.info(`[codespace-tools] validateCode code length: ${code.length}`);
+
+  try {
+    const url = `${TESTING_SPIKE_LAND}/live/${codespaceId}/api/validate`;
+    logger.info(`[codespace-tools] validateCode POST to: ${url}`);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
+
+    logger.info(
+      `[codespace-tools] validateCode response status: ${response.status}`,
+    );
+
+    // Parse response body
+    let data: { valid: boolean; errors?: ValidationError[]; warnings?: ValidationError[]; };
+    try {
+      data = await response.json() as {
+        valid: boolean;
+        errors?: ValidationError[];
+        warnings?: ValidationError[];
+      };
+    } catch {
+      const text = await response.text();
+      logger.error(`[codespace-tools] Failed to parse response: ${text}`);
+      return `Error validating code: ${text}`;
+    }
+
+    if (data.valid) {
+      logger.info(`[codespace-tools] validateCode: code is valid`);
+      return "valid";
+    }
+
+    // Return formatted validation errors
+    if (data.errors && data.errors.length > 0) {
+      const formattedErrors = formatValidationErrors(data.errors);
+      logger.info(`[codespace-tools] validateCode: found errors:\n${formattedErrors}`);
+      return `TypeScript/JSX errors:\n${formattedErrors}`;
+    }
+
+    return "Validation failed for unknown reason";
+  } catch (error) {
+    const msg = `Network error validating code: ${
+      error instanceof Error ? error.message : String(error)
+    }`;
+    logger.error(`[codespace-tools] ${msg}`);
+    return msg;
+  }
 }
 
 /**
@@ -308,6 +421,15 @@ export function createCodespaceServer(codespaceId: string) {
           return { content: [{ type: "text", text: result }] };
         },
       ),
+      tool(
+        "validate_code",
+        "Validate code without updating the codespace. Use this to check for TypeScript/JSX errors before making changes. Returns 'valid' if code is valid, or detailed error messages with line numbers.",
+        { code: z.string().describe("The code to validate") },
+        async (args) => {
+          const result = await validateCode(codespaceId, args.code);
+          return { content: [{ type: "text", text: result }] };
+        },
+      ),
     ],
   });
 }
@@ -321,4 +443,5 @@ export const CODESPACE_TOOL_NAMES = [
   "mcp__codespace__edit_code",
   "mcp__codespace__search_and_replace",
   "mcp__codespace__find_lines",
+  "mcp__codespace__validate_code",
 ];
