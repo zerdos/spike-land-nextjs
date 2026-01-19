@@ -5,7 +5,15 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { getStatusColor, PHASE_CONFIG, PHASES_ORDERED, THIS_PROJECT_SOURCE } from "./app-factory";
+import {
+  ALL_PHASES,
+  getAppLiveUrl,
+  getStatusColor,
+  LIVE_URL_BASE,
+  PHASE_CONFIG,
+  PHASES_ORDERED,
+  THIS_PROJECT_SOURCE,
+} from "./app-factory";
 
 describe("getStatusColor", () => {
   describe("default styling (attempts = 0)", () => {
@@ -52,15 +60,16 @@ describe("getStatusColor", () => {
 });
 
 describe("PHASE_CONFIG", () => {
-  it("has configuration for all 6 phases", () => {
+  it("has configuration for all 7 phases", () => {
     const phases = Object.keys(PHASE_CONFIG);
-    expect(phases).toHaveLength(6);
+    expect(phases).toHaveLength(7);
     expect(phases).toContain("plan");
     expect(phases).toContain("develop");
     expect(phases).toContain("test");
     expect(phases).toContain("debug");
     expect(phases).toContain("polish");
     expect(phases).toContain("complete");
+    expect(phases).toContain("done");
   });
 
   it("each phase has required properties", () => {
@@ -84,6 +93,7 @@ describe("PHASE_CONFIG", () => {
     expect(PHASE_CONFIG.debug.label).toBe("Debug");
     expect(PHASE_CONFIG.polish.label).toBe("Polish");
     expect(PHASE_CONFIG.complete.label).toBe("Complete");
+    expect(PHASE_CONFIG.done.label).toBe("Done");
   });
 });
 
@@ -117,5 +127,50 @@ describe("THIS_PROJECT_SOURCE", () => {
   it("is a non-empty string", () => {
     expect(typeof THIS_PROJECT_SOURCE).toBe("string");
     expect(THIS_PROJECT_SOURCE.length).toBeGreaterThan(0);
+  });
+});
+
+describe("ALL_PHASES", () => {
+  it("contains all 7 phases", () => {
+    expect(ALL_PHASES).toHaveLength(7);
+  });
+
+  it("is in the correct pipeline order including done", () => {
+    expect(ALL_PHASES).toEqual([
+      "plan",
+      "develop",
+      "test",
+      "debug",
+      "polish",
+      "complete",
+      "done",
+    ]);
+  });
+
+  it("includes PHASES_ORDERED plus done", () => {
+    expect(ALL_PHASES).toContain("done");
+    for (const phase of PHASES_ORDERED) {
+      expect(ALL_PHASES).toContain(phase);
+    }
+  });
+});
+
+describe("LIVE_URL_BASE", () => {
+  it("is the correct base URL", () => {
+    expect(LIVE_URL_BASE).toBe("https://testing.spike.land/live");
+  });
+});
+
+describe("getAppLiveUrl", () => {
+  it("constructs correct URL for app name", () => {
+    expect(getAppLiveUrl("my-app")).toBe("https://testing.spike.land/live/my-app/index.ts");
+  });
+
+  it("handles app names with numbers", () => {
+    expect(getAppLiveUrl("app-123")).toBe("https://testing.spike.land/live/app-123/index.ts");
+  });
+
+  it("handles simple app names", () => {
+    expect(getAppLiveUrl("calculator")).toBe("https://testing.spike.land/live/calculator/index.ts");
   });
 });

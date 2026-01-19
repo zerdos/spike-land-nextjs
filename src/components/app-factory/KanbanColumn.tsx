@@ -17,9 +17,10 @@ import { AppCard } from "./AppCard";
 interface KanbanColumnProps {
   phase: AppPhase;
   apps: AppState[];
+  onResumeApp?: (appName: string) => void;
 }
 
-export function KanbanColumn({ phase, apps }: KanbanColumnProps) {
+export function KanbanColumn({ phase, apps, onResumeApp }: KanbanColumnProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: phase,
     data: { phase },
@@ -59,7 +60,7 @@ export function KanbanColumn({ phase, apps }: KanbanColumnProps) {
               </div>
             )
             : (
-              apps.map((app) => <AppCard key={app.name} app={app} />)
+              apps.map((app) => <AppCard key={app.name} app={app} onResume={onResumeApp} />)
             )}
         </div>
       </ScrollArea>

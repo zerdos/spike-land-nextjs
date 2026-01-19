@@ -27,7 +27,7 @@ import type {
   MasterListItem,
   MoveAppRequest,
 } from "@/types/app-factory";
-import { PHASES_ORDERED, THIS_PROJECT_SOURCE } from "@/types/app-factory";
+import { ALL_PHASES, PHASES_ORDERED, THIS_PROJECT_SOURCE } from "@/types/app-factory";
 import { type NextRequest, NextResponse } from "next/server";
 
 // Jules API configuration
@@ -133,6 +133,7 @@ Make it production-ready and delightful to use.
 `.trim(),
 
   complete: () => `This app is already complete. No action needed.`,
+  done: () => `This app is done. No action needed.`,
 };
 
 interface JulesApiSession {
@@ -679,6 +680,7 @@ function calculateStatistics(
     debug: 0,
     polish: 0,
     complete: 0,
+    done: 0,
   };
   for (const app of apps) {
     phaseCount[app.phase]++;
@@ -692,6 +694,7 @@ function calculateStatistics(
     debug: [],
     polish: [],
     complete: [],
+    done: [],
   };
 
   // Group history by app
@@ -728,6 +731,7 @@ function calculateStatistics(
     debug: 0,
     polish: 0,
     complete: 0,
+    done: 0,
   };
 
   for (const phase of PHASES_ORDERED) {
@@ -965,8 +969,80 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  // Check if this is a move or add request
-  if ("toPhase" in body) {
+  // Check request type: resume, move, or add
+  if ("action" in body && body.action === "resume") {
+    // Resume Jules session for a paused app
+    const { appName } = body as { action: string; appName: string; };
+
+    if (!appName) {
+      return NextResponse.json({ error: "Missing appName" }, { status: 400 });
+    }
+
+    if (!isValidAppName(appName)) {
+      return NextResponse.json(
+        { error: "Invalid app name format" },
+        { status: 400 },
+      );
+    }
+
+    const state = await loadState();
+    if (!state || !state.apps[appName]) {
+      return NextResponse.json({ error: "App not found" }, { status: 404 });
+    }
+
+    const app = state.apps[appName];
+    if (!app) {
+      return NextResponse.json({ error: "App not found" }, { status: 404 });
+    }
+
+    // Check if app already has an active session
+    if (app.julesSessionId && app.julesSessionState) {
+      const isActive = ACTIVE_STATES.includes(app.julesSessionState);
+      if (isActive) {
+        return NextResponse.json(
+          { error: "App already has an active Jules session" },
+          { status: 409 },
+        );
+      }
+    }
+
+    // Don't resume for complete or done phases
+    if (app.phase === "complete" || app.phase === "done") {
+      return NextResponse.json(
+        { error: "Cannot resume Jules for completed apps" },
+        { status: 400 },
+      );
+    }
+
+    // Create new Jules session for current phase
+    const julesResult = await createJulesSession(app, app.phase);
+    if (julesResult.success && julesResult.sessionId) {
+      app.julesSessionId = julesResult.sessionId;
+      app.julesSessionUrl = julesResult.sessionUrl;
+      app.julesSessionState = "PENDING";
+      app.updatedAt = new Date().toISOString();
+
+      await logHistory(appName, "jules_started", {
+        to: app.phase,
+        reason: `Resumed Jules session for ${app.phase}`,
+        julesSessionId: julesResult.sessionId,
+      });
+
+      await saveState(state);
+
+      return NextResponse.json({
+        success: true,
+        app,
+        message: `Resumed Jules for ${appName} in ${app.phase} phase`,
+        julesSession: julesResult,
+      });
+    } else {
+      return NextResponse.json(
+        { error: julesResult.error || "Failed to create Jules session" },
+        { status: 500 },
+      );
+    }
+  } else if ("toPhase" in body) {
     // Move app request
     const { appName, toPhase, reason } = body as MoveAppRequest & { startJules?: boolean; };
     const startJules = body.startJules !== false; // Default to true
@@ -986,7 +1062,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!PHASES_ORDERED.includes(toPhase)) {
+    if (!ALL_PHASES.includes(toPhase)) {
       return NextResponse.json({ error: "Invalid phase" }, { status: 400 });
     }
 
@@ -1015,9 +1091,9 @@ export async function POST(request: NextRequest) {
       reason: reason || "Manual intervention",
     });
 
-    // Start Jules session for the new phase if not complete
+    // Start Jules session for the new phase if not complete or done
     let julesResult: CreateSessionResult | null = null;
-    if (startJules && toPhase !== "complete") {
+    if (startJules && toPhase !== "complete" && toPhase !== "done") {
       julesResult = await createJulesSession(app, toPhase);
       if (julesResult.success && julesResult.sessionId) {
         app.julesSessionId = julesResult.sessionId;

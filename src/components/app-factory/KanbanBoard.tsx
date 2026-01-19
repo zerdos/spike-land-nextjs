@@ -26,9 +26,10 @@ import { KanbanColumn } from "./KanbanColumn";
 interface KanbanBoardProps {
   apps: AppState[];
   onMoveApp: (appName: string, toPhase: AppPhase) => Promise<void>;
+  onResumeApp?: (appName: string) => void;
 }
 
-export function KanbanBoard({ apps, onMoveApp }: KanbanBoardProps) {
+export function KanbanBoard({ apps, onMoveApp, onResumeApp }: KanbanBoardProps) {
   const [activeApp, setActiveApp] = useState<AppState | null>(null);
 
   const sensors = useSensors(
@@ -40,7 +41,7 @@ export function KanbanBoard({ apps, onMoveApp }: KanbanBoardProps) {
     useSensor(KeyboardSensor),
   );
 
-  // Group apps by phase
+  // Group apps by phase (filter out "done" apps - they go to DonePanel)
   const appsByPhase = useMemo(() => {
     const grouped: Record<AppPhase, AppState[]> = {
       plan: [],
@@ -49,6 +50,7 @@ export function KanbanBoard({ apps, onMoveApp }: KanbanBoardProps) {
       debug: [],
       polish: [],
       complete: [],
+      done: [], // Not displayed in Kanban, but needed for type safety
     };
 
     for (const app of apps) {
@@ -103,7 +105,7 @@ export function KanbanBoard({ apps, onMoveApp }: KanbanBoardProps) {
       <div className="grid grid-cols-6 gap-3">
         {PHASES_ORDERED.map((phase) => (
           <div key={phase} className="h-[400px]">
-            <KanbanColumn phase={phase} apps={appsByPhase[phase]} />
+            <KanbanColumn phase={phase} apps={appsByPhase[phase]} onResumeApp={onResumeApp} />
           </div>
         ))}
       </div>
