@@ -830,6 +830,7 @@ export default function CodeSpacePage() {
               <Badge
                 variant="secondary"
                 className="bg-teal-500/20 text-teal-200 border-teal-500/30 animate-pulse"
+                data-testid="agent-working"
               >
                 Agent Working
               </Badge>
@@ -1028,6 +1029,11 @@ export default function CodeSpacePage() {
                               ? "justify-end"
                               : "justify-start"
                           }`}
+                          data-testid={message.role === "USER"
+                            ? "user-message"
+                            : message.role === "AGENT"
+                            ? "agent-message"
+                            : "system-message"}
                         >
                           <div
                             className={`max-w-[85%] rounded-2xl px-5 py-3 shadow-sm ${
@@ -1276,6 +1282,7 @@ export default function CodeSpacePage() {
                   disabled={sendingMessage ||
                     (mode === "workspace" && app?.status === "ARCHIVED")}
                   autoFocus={mode === "prompt"}
+                  data-testid="chat-input"
                 />
                 <Button
                   onClick={mode === "prompt"

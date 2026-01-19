@@ -159,7 +159,7 @@ Feature: Relay Draft Generation
   # ============================================
 
   Scenario: Handle unauthorized access
-    Given I am not logged in
+    Given the Orbit API returns 401 Unauthorized
     When I request draft generation
     Then I should receive a 401 error
     And the error message should be "Unauthorized"

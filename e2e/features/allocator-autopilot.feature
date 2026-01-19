@@ -33,7 +33,7 @@ Feature: Allocator Autopilot
     Given I have enabled autopilot with max daily change of 10%
     And I have a campaign with budget 100
     When a recommendation suggests increasing budget to 120
-    Then the autopilot should skip execution with reason "Daily budget move limit reached"
+    Then the autopilot should skip execution with reason "exceeds single move limit"
     And I should see a "SKIPPED" record in the execution history
 
 

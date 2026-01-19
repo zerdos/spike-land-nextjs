@@ -48,7 +48,7 @@ export default async function BoxesPage() {
 
         {boxes.length === 0
           ? (
-            <Card className="border-dashed">
+            <Card className="border-dashed" data-testid="boxes-empty-state">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl">No boxes yet</CardTitle>
                 <CardDescription className="mt-2">

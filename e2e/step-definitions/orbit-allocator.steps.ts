@@ -1941,12 +1941,7 @@ Then(
   },
 );
 
-Then("I should see loading skeletons", async function(this: CustomWorld) {
-  const skeleton = this.page.locator(
-    '[class*="skeleton"], [class*="loading"], [class*="shimmer"]',
-  );
-  await expect(skeleton.first()).toBeVisible({ timeout: 5000 });
-});
+// NOTE: "I should see loading skeletons" step is defined in referral.steps.ts
 
 Then(
   "after timeout I should see an error message",

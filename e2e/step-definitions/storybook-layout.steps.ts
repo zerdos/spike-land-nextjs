@@ -88,7 +88,9 @@ Then(
   "I should see the mobile navigation drawer",
   async function(this: CustomWorld) {
     // Sheet content is rendered with role="dialog"
-    const drawer = this.page.getByRole("dialog");
+    const drawer = this.page.locator(
+      '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
+    );
     await expect(drawer).toBeVisible({ timeout: 10000 });
   },
 );
@@ -97,7 +99,9 @@ Then(
   "the mobile navigation drawer should close",
   async function(this: CustomWorld) {
     // Use Playwright's built-in waiting for element to be hidden/detached
-    const drawer = this.page.getByRole("dialog");
+    const drawer = this.page.locator(
+      '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
+    );
     await expect(drawer).toBeHidden({ timeout: 5000 });
   },
 );
@@ -105,7 +109,9 @@ Then(
 Then(
   "I should see {string} in the navigation drawer",
   async function(this: CustomWorld, linkText: string) {
-    const drawer = this.page.getByRole("dialog");
+    const drawer = this.page.locator(
+      '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
+    );
     const link = drawer.getByRole("link", { name: new RegExp(linkText, "i") });
     await expect(link.first()).toBeVisible({ timeout: 10000 });
   },
@@ -114,7 +120,9 @@ Then(
 When(
   "I click {string} in the navigation drawer",
   async function(this: CustomWorld, linkText: string) {
-    const drawer = this.page.getByRole("dialog");
+    const drawer = this.page.locator(
+      '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
+    );
     const link = drawer.getByRole("link", { name: new RegExp(linkText, "i") });
     await expect(link.first()).toBeVisible();
     await link.first().click();

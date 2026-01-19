@@ -145,7 +145,9 @@ When(
 When(
   "I enter {string} in the path input",
   async function(this: CustomWorld, path: string) {
-    const pathInput = this.page.locator('[role="dialog"] input');
+    const pathInput = this.page.locator(
+      '[role="dialog"]:not([aria-labelledby="cookie-consent-title"]) input',
+    );
     await pathInput.fill(path);
   },
 );
@@ -153,9 +155,11 @@ When(
 When(
   "I click {string} button without entering path",
   async function(this: CustomWorld, _buttonText: string) {
-    const addButton = this.page.locator('[role="dialog"]').getByRole("button", {
-      name: /add path/i,
-    });
+    const addButton = this.page
+      .locator('[role="dialog"]:not([aria-labelledby="cookie-consent-title"])')
+      .getByRole("button", {
+        name: /add path/i,
+      });
     await addButton.click();
   },
 );
@@ -491,13 +495,17 @@ Then("the hidden count should decrease", async function(this: CustomWorld) {
 Then(
   "I should see the add custom path dialog",
   async function(this: CustomWorld) {
-    const dialog = this.page.locator('[role="dialog"]');
+    const dialog = this.page.locator(
+      '[role="dialog"]:not([aria-labelledby="cookie-consent-title"])',
+    );
     await expect(dialog).toBeVisible();
   },
 );
 
 Then("I should see a path input field", async function(this: CustomWorld) {
-  const input = this.page.locator('[role="dialog"] input');
+  const input = this.page.locator(
+    '[role="dialog"]:not([aria-labelledby="cookie-consent-title"]) input',
+  );
   await expect(input).toBeVisible();
 });
 
