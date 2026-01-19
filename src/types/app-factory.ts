@@ -7,7 +7,10 @@
 
 /**
  * Pipeline phases for app development
- * Apps progress: plan → develop → test → debug → polish → complete
+ * Apps progress: plan → develop → test → debug → polish → complete → done
+ *
+ * "complete" = Jules work is finished, awaiting human review
+ * "done" = Reviewed and approved by human, shown in Done panel
  */
 export type AppPhase =
   | "plan"
@@ -15,7 +18,8 @@ export type AppPhase =
   | "test"
   | "debug"
   | "polish"
-  | "complete";
+  | "complete"
+  | "done";
 
 /**
  * All possible phases including backlog
@@ -191,10 +195,17 @@ export const PHASE_CONFIG: Record<
     bgColor: "bg-green-50 dark:bg-green-900/20",
     emoji: "✅",
   },
+  done: {
+    label: "Done",
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
+    emoji: "🎉",
+  },
 };
 
 /**
- * Ordered list of phases for iteration
+ * Ordered list of phases for iteration (Kanban columns)
+ * Note: "done" is excluded as it's shown in a separate panel
  */
 export const PHASES_ORDERED: AppPhase[] = [
   "plan",
@@ -206,10 +217,35 @@ export const PHASES_ORDERED: AppPhase[] = [
 ];
 
 /**
+ * All phases including "done"
+ */
+export const ALL_PHASES: AppPhase[] = [
+  "plan",
+  "develop",
+  "test",
+  "debug",
+  "polish",
+  "complete",
+  "done",
+];
+
+/**
  * Source identifier for this project in Jules sessions
  * Used to identify which Jules sessions belong to this project
  */
 export const THIS_PROJECT_SOURCE = "sources/github/zerdos/spike-land-app-factory";
+
+/**
+ * Live URL base for deployed apps
+ */
+export const LIVE_URL_BASE = "https://testing.spike.land/live";
+
+/**
+ * Get the live URL for a deployed app
+ */
+export function getAppLiveUrl(appName: string): string {
+  return `${LIVE_URL_BASE}/${appName}/index.ts`;
+}
 
 /**
  * Status colors based on attempt count

@@ -10,6 +10,7 @@
 import { ActivityFeed } from "@/components/app-factory/ActivityFeed";
 import { AddAppModal } from "@/components/app-factory/AddAppModal";
 import { BacklogPanel } from "@/components/app-factory/BacklogPanel";
+import { DonePanel } from "@/components/app-factory/DonePanel";
 import { JulesCapacityPanel } from "@/components/app-factory/JulesCapacityPanel";
 import { KanbanBoard } from "@/components/app-factory/KanbanBoard";
 import { StatisticsPanel } from "@/components/app-factory/StatisticsPanel";
@@ -138,6 +139,30 @@ export function AppFactoryDashboardClient() {
     setShowAddModal(true);
   }, []);
 
+  // Handle resuming a paused app (restart Jules session)
+  const handleResumeApp = useCallback(
+    async (appName: string) => {
+      try {
+        const response = await fetch("/api/admin/app-factory", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "resume", appName }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to resume app");
+        }
+
+        // Refresh data
+        await fetchData();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to resume app");
+      }
+    },
+    [fetchData],
+  );
+
   if (!data) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -211,7 +236,7 @@ export function AppFactoryDashboardClient() {
       {/* Jules Capacity Panel */}
       <JulesCapacityPanel capacity={data.julesCapacity} />
 
-      {/* Main Layout: Backlog | Board + Stats + Activity */}
+      {/* Main Layout: Backlog | Board + Stats + Activity | Done */}
       <div className="flex gap-6">
         {/* Left: Backlog Panel */}
         <div className="w-72 shrink-0">
@@ -221,16 +246,25 @@ export function AppFactoryDashboardClient() {
           />
         </div>
 
-        {/* Right: Kanban + Stats + Activity */}
+        {/* Center: Kanban + Stats + Activity */}
         <div className="flex-1 space-y-6 overflow-hidden">
-          {/* Kanban Board */}
-          <KanbanBoard apps={data.apps} onMoveApp={handleMoveApp} />
+          {/* Kanban Board - exclude "done" apps */}
+          <KanbanBoard
+            apps={data.apps.filter((app) => app.phase !== "done")}
+            onMoveApp={handleMoveApp}
+            onResumeApp={handleResumeApp}
+          />
 
           {/* Statistics */}
           <StatisticsPanel statistics={data.statistics} />
 
           {/* Activity Feed */}
           <ActivityFeed activity={data.recentActivity} />
+        </div>
+
+        {/* Right: Done Panel */}
+        <div className="w-72 shrink-0">
+          <DonePanel apps={data.apps.filter((app) => app.phase === "done")} />
         </div>
       </div>
 

@@ -19,6 +19,7 @@ describe("StatisticsPanel", () => {
       debug: 24,
       polish: 15,
       complete: 256,
+      done: 178,
     },
     avgTimePerPhase: {
       plan: 60000, // 1 minute
@@ -27,6 +28,7 @@ describe("StatisticsPanel", () => {
       debug: 7200000, // 2 hours
       polish: 900000, // 15 minutes
       complete: 0, // N/A
+      done: 0, // N/A
     },
     completedToday: 87,
     completedThisHour: 29,
@@ -143,6 +145,7 @@ describe("StatisticsPanel", () => {
           debug: 0,
           polish: 0,
           complete: 0,
+          done: 0,
         },
         avgTimePerPhase: {
           plan: 0,
@@ -151,6 +154,7 @@ describe("StatisticsPanel", () => {
           debug: 0,
           polish: 0,
           complete: 0,
+          done: 0,
         },
         completedToday: 0,
         completedThisHour: 0,

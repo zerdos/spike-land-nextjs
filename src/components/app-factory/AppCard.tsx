@@ -9,13 +9,14 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { AppState } from "@/types/app-factory";
-import { getStatusColor, PHASE_CONFIG } from "@/types/app-factory";
+import { getAppLiveUrl, getStatusColor, PHASE_CONFIG } from "@/types/app-factory";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { Bot, ExternalLink } from "lucide-react";
+import { Bot, ExternalLink, Globe, Play } from "lucide-react";
 
 interface AppCardProps {
   app: AppState;
+  onResume?: (appName: string) => void;
 }
 
 /**
@@ -35,7 +36,7 @@ function formatTimeSince(timestamp: string): string {
   return "just now";
 }
 
-export function AppCard({ app }: AppCardProps) {
+export function AppCard({ app, onResume }: AppCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: app.name,
     data: { app },
@@ -51,6 +52,12 @@ export function AppCard({ app }: AppCardProps) {
   const phaseConfig = PHASE_CONFIG[app.phase];
   const isJulesActive = app.julesSessionId && app.julesSessionState &&
     ["PENDING", "PLANNING", "IN_PROGRESS", "WAITING_FOR_USER"].includes(app.julesSessionState);
+
+  // Check if app is paused (no active Jules session and not in complete/done phase)
+  const isPaused = !isJulesActive && app.phase !== "complete" && app.phase !== "done";
+
+  // Get live URL for the app
+  const liveUrl = getAppLiveUrl(app.name);
 
   return (
     <Card
@@ -117,6 +124,40 @@ export function AppCard({ app }: AppCardProps) {
         <p className="mt-2 truncate text-xs text-red-600 dark:text-red-400">
           {app.lastError}
         </p>
+      )}
+
+      {/* Live URL link - show for apps that have been developed */}
+      {app.phase !== "plan" && (
+        <div className="mt-2 flex items-center gap-2">
+          <a
+            href={liveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 rounded bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <Globe className="h-3 w-3" />
+            <span>Live Preview</span>
+          </a>
+        </div>
+      )}
+
+      {/* Resume button for paused apps */}
+      {isPaused && onResume && (
+        <div className="mt-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onResume(app.name);
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="flex items-center gap-1 rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50"
+          >
+            <Play className="h-3 w-3" />
+            <span>Resume Jules</span>
+          </button>
+        </div>
       )}
 
       <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">

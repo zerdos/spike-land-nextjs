@@ -132,10 +132,11 @@ describe("AppCard", () => {
         </TestWrapper>,
       );
 
-      const link = screen.getByRole("link");
-      expect(link).toHaveAttribute("href", "https://jules.example.com/session-123");
-      expect(link).toHaveAttribute("target", "_blank");
-      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+      const links = screen.getAllByRole("link");
+      const julesLink = links.find((l) => l.getAttribute("href")?.includes("jules.example.com"));
+      expect(julesLink).toHaveAttribute("href", "https://jules.example.com/session-123");
+      expect(julesLink).toHaveAttribute("target", "_blank");
+      expect(julesLink).toHaveAttribute("rel", "noopener noreferrer");
     });
 
     it("does not show session info when julesSessionId is not present", () => {
