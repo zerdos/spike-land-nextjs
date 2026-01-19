@@ -300,7 +300,7 @@ describe("StreamsClient", () => {
 
       fireEvent.click(screen.getByTestId("connect-accounts-button"));
 
-      expect(mockPush).toHaveBeenCalledWith("/orbit/test-workspace/settings");
+      expect(mockPush).toHaveBeenCalledWith("/orbit/test-workspace/settings/accounts");
     });
   });
 
