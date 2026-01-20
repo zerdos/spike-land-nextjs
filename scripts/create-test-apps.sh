@@ -6,7 +6,13 @@
 set -e
 
 API_URL="${1:-http://localhost:3000}"
-E2E_AUTH="kfewLnKg5R93PKj9L+SUqBjnUk29nwLi4Wx9tXiQ8gY="
+E2E_AUTH="${E2E_BYPASS_SECRET:-}"
+
+if [ -z "$E2E_AUTH" ]; then
+  echo "Error: E2E_BYPASS_SECRET environment variable not set"
+  echo "Please set it before running this script"
+  exit 1
+fi
 
 echo "======================================"
 echo "Creating 5 Test Apps"

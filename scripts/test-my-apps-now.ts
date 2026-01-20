@@ -6,6 +6,7 @@
  */
 
 import { type Browser, chromium, type Page } from "@playwright/test";
+import { writeFileSync } from "fs";
 
 interface TestApp {
   name: string;
@@ -294,8 +295,7 @@ async function main() {
     const prodResults = await runTests("https://spike.land", "production");
 
     // Save results
-    const fs = require("fs");
-    fs.writeFileSync(
+    writeFileSync(
       "my-apps-prod-test-results.json",
       JSON.stringify(prodResults, null, 2),
     );
@@ -303,8 +303,7 @@ async function main() {
     const localResults = await runTests("http://localhost:3000", "local");
 
     // Save results
-    const fs = require("fs");
-    fs.writeFileSync(
+    writeFileSync(
       "my-apps-local-test-results.json",
       JSON.stringify(localResults, null, 2),
     );

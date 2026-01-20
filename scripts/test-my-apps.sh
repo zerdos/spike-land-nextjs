@@ -13,7 +13,13 @@ NC='\033[0m' # No Color
 
 # Configuration
 API_URL="${1:-http://localhost:3000}"
-E2E_AUTH_BYPASS="kfewLnKg5R93PKj9L+SUqBjnUk29nwLi4Wx9tXiQ8gY="
+E2E_AUTH_BYPASS="${E2E_BYPASS_SECRET:-}"
+
+if [ -z "$E2E_AUTH_BYPASS" ]; then
+  echo -e "${RED}Error: E2E_BYPASS_SECRET environment variable not set${NC}"
+  echo "Please set it before running this script"
+  exit 1
+fi
 
 echo -e "${BLUE}Testing /my-apps functionality${NC}"
 echo -e "${BLUE}API URL: $API_URL${NC}"

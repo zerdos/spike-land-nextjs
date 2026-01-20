@@ -53,8 +53,12 @@ async function testMyAppsWithMockAuth(baseUrl: string, environment: "local" | "p
     });
 
     // Set up E2E auth bypass header
-    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET ||
-      "kfewLnKg5R93PKj9L+SUqBjnUk29nwLi4Wx9tXiQ8gY=";
+    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
+    if (!e2eBypassSecret) {
+      console.error("❌ E2E_BYPASS_SECRET environment variable not set");
+      console.error("Please set it before running this script");
+      process.exit(1);
+    }
 
     context = await browser.newContext({
       viewport: { width: 1920, height: 1080 },

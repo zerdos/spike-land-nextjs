@@ -15,6 +15,18 @@ interface TestApp {
   codespaceId: string;
 }
 
+interface AppMessage {
+  id: string;
+  role: "USER" | "AGENT";
+  content: string;
+  createdAt: string;
+}
+
+interface TestResult {
+  success: boolean;
+  error?: string;
+}
+
 const TEST_APPS: TestApp[] = [
   {
     name: "Click Counter",
@@ -133,11 +145,11 @@ async function testApp(app: TestApp, index: number) {
       );
 
       if (messagesResponse.ok) {
-        const messages = await messagesResponse.json();
-        const agentMessages = messages.filter((m: any) => m.role === "AGENT");
+        const messages: AppMessage[] = await messagesResponse.json();
+        const agentMessages = messages.filter((m: AppMessage) => m.role === "AGENT");
 
         if (agentMessages.length > 0) {
-          const lastMessage = agentMessages[agentMessages.length - 1];
+          const lastMessage = agentMessages[agentMessages.length - 1]!;
           agentResponded = true;
           console.log(`   ✅ Agent responded after ${attempts * 5}s!`);
           console.log(`   Message preview: ${lastMessage.content.substring(0, 100)}...`);
@@ -182,7 +194,7 @@ async function testApp(app: TestApp, index: number) {
 }
 
 async function runTests() {
-  const results: any[] = [];
+  const results: Array<TestResult & { app: string; }> = [];
 
   for (let i = 0; i < TEST_APPS.length; i++) {
     const result = await testApp(TEST_APPS[i]!, i);
