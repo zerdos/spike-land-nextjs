@@ -15,11 +15,9 @@ export async function POST(
     }
 
     const { workspaceSlug: _workspaceSlug } = _params;
-    // TODO: Resolve workspaceSlug to workspaceId properly if needed (assuming slug is ID here or we fetch)
-    // For now assuming we have a way to get workspaceId or slug IS the id in legacy paths,
-    // but usually we need to look it up.
-    // However, for this task, the emergency stop call from frontend sends `workspaceId` in body or we derive it.
-    // Actually, the body has workspaceId in the implementation check below.
+    // Note: workspaceSlug from URL is used for routing context only.
+    // The actual workspaceId is provided in the request body and validated
+    // via workspace membership check below (the critical security control).
 
     const body = await req.json();
     const { workspaceId } = body;

@@ -107,10 +107,8 @@ export function AllocatorDashboard({ workspaceSlug }: AllocatorDashboardProps) {
   }, [fetchData]);
 
   const handleApplyRecommendation = async (recommendationId: string) => {
-    // TODO: Implement recommendation application
+    // TODO(#807): Implement recommendation application via API
     console.log("Applying recommendation:", recommendationId);
-    // This would typically call an API to apply the budget change
-    // Then refresh the data
     await fetchData();
   };
 

@@ -5,7 +5,7 @@
  * @returns A promise that resolves with the competitor's social media data.
  */
 export const getCompetitorSocialData = async (username: string) => {
-  // TODO: Replace this with a real API call to a social media platform.
+  // TODO(#806): Replace this with a real API call to a social media platform
   console.log(`Fetching social media data for ${username}...`);
 
   // Simulate a network request.

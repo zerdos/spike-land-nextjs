@@ -152,8 +152,7 @@ export async function generateBenchmarkReport(
     totalPosts: totalCompetitorPosts,
   };
 
-  // TODO: Replace mocked metrics with real SocialMetrics data from workspace.
-  // This should query the SocialMetrics table for the workspace within the date range.
+  // TODO(#806): Replace mocked metrics with real SocialMetrics data from workspace
   const ownMetrics = {
     averageLikes: 0,
     averageComments: 0,
