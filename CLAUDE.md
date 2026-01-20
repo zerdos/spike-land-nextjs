@@ -244,7 +244,7 @@ gh pr checks <PR-NUMBER>
 This repository uses **git worktrees** for parallel development:
 
 ```
-/Volumes/Dev/github.com/zerdos/spike-land-nextjs/
+<repository-root>/
 ├── .bare/           # Bare repository (DO NOT work here directly)
 └── main/            # Main branch worktree (primary working directory)
 ```
@@ -252,8 +252,7 @@ This repository uses **git worktrees** for parallel development:
 ### Working with Worktrees
 
 ```bash
-# Create new worktree for feature branch
-cd /Volumes/Dev/github.com/zerdos/spike-land-nextjs/main
+# Create new worktree for feature branch (from main worktree)
 git worktree add ../feature-name -b feature-name
 
 # Work in the new worktree

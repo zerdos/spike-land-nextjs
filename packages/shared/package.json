@@ -12,21 +12,29 @@
       "require": "./dist/index.js"
     },
     "./types": {
-      "types": "./src/types/index.ts"
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.mjs",
+      "require": "./dist/types/index.js"
     },
     "./validations": {
-      "types": "./src/validations/index.ts"
+      "types": "./dist/validations/index.d.ts",
+      "import": "./dist/validations/index.mjs",
+      "require": "./dist/validations/index.js"
     },
     "./constants": {
-      "types": "./src/constants/index.ts"
+      "types": "./dist/constants/index.d.ts",
+      "import": "./dist/constants/index.mjs",
+      "require": "./dist/constants/index.js"
     },
     "./utils": {
-      "types": "./src/utils/index.ts"
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.mjs",
+      "require": "./dist/utils/index.js"
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
