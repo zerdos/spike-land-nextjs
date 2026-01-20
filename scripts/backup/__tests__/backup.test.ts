@@ -4,7 +4,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { BackupConfig } from "../backup";
-import { filterValidBackups, getConfigFromEnv } from "../backup";
+import { filterValidBackups, getConfigFromEnv, parseArgs, sleep, withRetry } from "../backup";
 
 describe("getConfigFromEnv", () => {
   const originalEnv = process.env;
@@ -85,14 +85,14 @@ describe("getConfigFromEnv", () => {
     expect(() => getConfigFromEnv()).toThrow("Missing required environment variables");
   });
 
-  it("throws error when all environment variables are missing", () => {
+  it("throws error listing all missing variables", () => {
     delete process.env.CLOUDFLARE_R2_BUCKET_NAME;
     delete process.env.CLOUDFLARE_R2_ENDPOINT;
     delete process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
     delete process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
     delete process.env.DATABASE_URL;
 
-    expect(() => getConfigFromEnv()).toThrow("Missing required environment variables");
+    expect(() => getConfigFromEnv()).toThrow(/CLOUDFLARE_R2_BUCKET_NAME/);
   });
 });
 
@@ -179,6 +179,146 @@ describe("filterValidBackups", () => {
       "backup-2024-01-01.sql.gz",
       "backup-2024-01-05.sql.gz",
     ]);
+  });
+});
+
+describe("sleep", () => {
+  it("resolves after specified time", async () => {
+    vi.useFakeTimers();
+    const promise = sleep(1000);
+    vi.advanceTimersByTime(1000);
+    await expect(promise).resolves.toBeUndefined();
+    vi.useRealTimers();
+  });
+});
+
+describe("withRetry", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns result on first successful attempt", async () => {
+    const operation = vi.fn().mockResolvedValue("success");
+
+    const resultPromise = withRetry(operation, {
+      maxRetries: 3,
+      initialDelayMs: 100,
+      operationName: "Test",
+    });
+
+    const result = await resultPromise;
+    expect(result).toBe("success");
+    expect(operation).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries on failure and succeeds eventually", async () => {
+    const operation = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("First failure"))
+      .mockRejectedValueOnce(new Error("Second failure"))
+      .mockResolvedValue("success");
+
+    const resultPromise = withRetry(operation, {
+      maxRetries: 3,
+      initialDelayMs: 100,
+      operationName: "Test",
+    });
+
+    // First attempt fails, wait for retry delay
+    await vi.advanceTimersByTimeAsync(100);
+    // Second attempt fails, wait for retry delay (exponential: 200ms)
+    await vi.advanceTimersByTimeAsync(200);
+
+    const result = await resultPromise;
+    expect(result).toBe("success");
+    expect(operation).toHaveBeenCalledTimes(3);
+  });
+
+  it("throws after all retries exhausted", async () => {
+    const operation = vi.fn().mockRejectedValue(new Error("Always fails"));
+
+    // Start the operation and immediately attach error handler to prevent unhandled rejection
+    const resultPromise = withRetry(operation, {
+      maxRetries: 3,
+      initialDelayMs: 100,
+      operationName: "Test Operation",
+    });
+
+    // Attach a catch handler immediately to prevent unhandled rejection warning
+    let caughtError: Error | undefined;
+    const handledPromise = resultPromise.catch((err: Error) => {
+      caughtError = err;
+    });
+
+    // Advance through all retry delays
+    await vi.advanceTimersByTimeAsync(100); // First retry delay
+    await vi.advanceTimersByTimeAsync(200); // Second retry delay
+
+    // Wait for the promise to complete
+    await handledPromise;
+
+    // Verify the error was thrown with correct message
+    expect(caughtError).toBeInstanceOf(Error);
+    expect(caughtError!.message).toBe("Test Operation failed after 3 attempts: Always fails");
+    expect(operation).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe("parseArgs", () => {
+  it("returns empty options for no arguments", () => {
+    const result = parseArgs([]);
+    expect(result).toEqual({});
+  });
+
+  it("parses --dry-run flag", () => {
+    const result = parseArgs(["--dry-run"]);
+    expect(result.dryRun).toBe(true);
+  });
+
+  it("parses --max-retries option", () => {
+    const result = parseArgs(["--max-retries=5"]);
+    expect(result.maxRetries).toBe(5);
+  });
+
+  it("parses --retry-delay option", () => {
+    const result = parseArgs(["--retry-delay=2000"]);
+    expect(result.initialRetryDelayMs).toBe(2000);
+  });
+
+  it("parses multiple options", () => {
+    const result = parseArgs(["--dry-run", "--max-retries=5", "--retry-delay=2000"]);
+    expect(result.dryRun).toBe(true);
+    expect(result.maxRetries).toBe(5);
+    expect(result.initialRetryDelayMs).toBe(2000);
+  });
+
+  it("ignores invalid --max-retries values", () => {
+    const result = parseArgs(["--max-retries=invalid"]);
+    expect(result.maxRetries).toBeUndefined();
+  });
+
+  it("ignores non-positive --max-retries values", () => {
+    const result = parseArgs(["--max-retries=0"]);
+    expect(result.maxRetries).toBeUndefined();
+  });
+
+  it("ignores invalid --retry-delay values", () => {
+    const result = parseArgs(["--retry-delay=invalid"]);
+    expect(result.initialRetryDelayMs).toBeUndefined();
+  });
+
+  it("ignores non-positive --retry-delay values", () => {
+    const result = parseArgs(["--retry-delay=-100"]);
+    expect(result.initialRetryDelayMs).toBeUndefined();
+  });
+
+  it("ignores unknown arguments", () => {
+    const result = parseArgs(["--unknown", "value"]);
+    expect(result).toEqual({});
   });
 });
 

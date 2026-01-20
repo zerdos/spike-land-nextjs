@@ -28,8 +28,12 @@ export default async function PixelPage() {
   let session;
   try {
     session = await auth();
-  } catch {
-    // Auth may fail with invalid JWT in E2E tests
+  } catch (error) {
+    // Auth may fail with invalid JWT in E2E tests - continue as unauthenticated
+    console.debug(
+      "[PixelPage] Auth failed, continuing as unauthenticated:",
+      error instanceof Error ? error.message : String(error),
+    );
     session = null;
   }
 

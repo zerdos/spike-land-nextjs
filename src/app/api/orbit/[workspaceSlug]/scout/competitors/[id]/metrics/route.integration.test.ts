@@ -4,6 +4,9 @@ import { NextRequest } from "next/server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { GET } from "./route";
 
+// SKIP REASON: Integration test requires real database connection.
+// Test environment uses mock database URL and cannot connect.
+// TRACKING: Re-enable when database test fixtures are implemented (#798)
 describe.skip("Competitor Metrics API", () => {
   let workspace: any;
   let competitor: any;

@@ -211,7 +211,12 @@ export function StreamsClient() {
       try {
         await navigator.clipboard.writeText(url);
         showMessage("success", "Link copied to clipboard");
-      } catch {
+      } catch (error) {
+        // Clipboard API may be unavailable or permission denied
+        console.warn(
+          "[StreamsClient] Failed to copy to clipboard:",
+          error instanceof Error ? error.message : String(error),
+        );
         showMessage("error", "Failed to copy link");
       }
     },

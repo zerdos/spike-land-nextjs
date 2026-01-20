@@ -20,9 +20,13 @@ export function MixShareQRCode({ shareUrl, className }: MixShareQRCodeProps) {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
+    } catch (clipboardError) {
       // Fallback for older browsers without Clipboard API support
       // execCommand is deprecated but provides necessary browser compatibility
+      console.debug(
+        "[MixShareQRCode] Clipboard API failed, using fallback:",
+        clipboardError instanceof Error ? clipboardError.message : String(clipboardError),
+      );
       try {
         const textArea = document.createElement("textarea");
         textArea.value = shareUrl;
@@ -34,8 +38,11 @@ export function MixShareQRCode({ shareUrl, className }: MixShareQRCodeProps) {
         document.body.removeChild(textArea);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-      } catch {
-        console.error("Copy failed: clipboard not available");
+      } catch (fallbackError) {
+        console.error(
+          "[MixShareQRCode] Copy failed, clipboard not available:",
+          fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
+        );
       }
     }
   }, [shareUrl]);

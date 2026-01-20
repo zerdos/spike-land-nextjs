@@ -58,6 +58,7 @@ async function assignItem(
     try {
       responseText = await res.text();
     } catch {
+      // Intentionally silent: Response body unavailable - continue with undefined for error message.
       responseText = undefined;
     }
     const statusInfo = `${res.status} ${res.statusText || ""}`.trim();

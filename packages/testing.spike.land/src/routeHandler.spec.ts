@@ -98,7 +98,9 @@ describe("RouteHandler", () => {
     });
 
     describe("handleWebsocketRoute", () => {
-      // Skip: This test requires Cloudflare Workers runtime (status 101 not valid in Node.js)
+      // SKIP REASON: Requires Cloudflare Workers runtime environment.
+      // WebSocket upgrade (status 101) is not supported in Node.js test environment.
+      // TRACKING: Re-enable when Cloudflare Workers test harness is available (#798)
       it.skip("should handle websocket upgrade", async () => {
         const request = new Request("https://example.com/websocket", {
           headers: new Headers({ "Upgrade": "websocket" }),

@@ -45,8 +45,12 @@ export async function BeforeAfterGallery() {
     } else {
       galleryItems = FALLBACK_GALLERY_ITEMS;
     }
-  } catch {
-    // Fallback if database unavailable
+  } catch (error) {
+    // Database unavailable - use fallback gallery items
+    console.debug(
+      "[BeforeAfterGallery] Failed to fetch from database, using fallback:",
+      error instanceof Error ? error.message : String(error),
+    );
     galleryItems = FALLBACK_GALLERY_ITEMS;
   }
 

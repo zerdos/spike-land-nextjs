@@ -29,7 +29,7 @@ async function fetchInboxItems(
     try {
       responseBody = await res.text();
     } catch {
-      // Ignore errors while reading the response body; we still want to throw the original error.
+      // Intentionally silent: Response body unavailable - continue with original error message.
     }
     const baseMessage = `Failed to fetch inbox items: ${res.status} ${res.statusText}`;
     const detailedMessage = responseBody

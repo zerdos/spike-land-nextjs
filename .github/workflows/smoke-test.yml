@@ -103,7 +103,8 @@ jobs:
           if [ -n "${{ inputs.stage }}" ]; then
             STAGE_ARG="--stage=${{ inputs.stage }}"
           fi
-          npx tsx e2e/smoke-test-workflow.ts $STAGE_ARG
+          # Use yarn tsx instead of npx tsx to ensure proper Yarn PnP resolution
+          yarn tsx e2e/smoke-test-workflow.ts $STAGE_ARG
         env:
           BASE_URL: ${{ steps.set-url.outputs.BASE_URL }}
           E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
@@ -138,13 +139,33 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const path = 'e2e/reports/smoke-test-report.json';
+            const reportPath = 'e2e/reports/smoke-test-report.json';
             let reportContent = 'Report not available';
+            let failureCount = 0;
+            let isTransientFailure = false;
+            let skippedOnlyFailure = false;
 
             try {
-              if (fs.existsSync(path)) {
-                const report = JSON.parse(fs.readFileSync(path, 'utf-8'));
+              if (fs.existsSync(reportPath)) {
+                const report = JSON.parse(fs.readFileSync(reportPath, 'utf-8'));
                 const failures = report.failures || [];
+                failureCount = failures.length;
+
+                // Check if this is a transient failure (e.g., timeout, network issues)
+                const transientPatterns = [
+                  /timeout/i, /ETIMEDOUT/i, /ECONNREFUSED/i, /ECONNRESET/i,
+                  /net::ERR_/i, /Navigation failed/i, /Page crashed/i, /Target closed/i,
+                ];
+                isTransientFailure = failures.length > 0 && failures.every(f =>
+                  transientPatterns.some(pattern => pattern.test(f.error || ''))
+                );
+
+                // Check if all failures are in optional/skipped features
+                const optionalJobs = ['3.2', '3.4', '3.5', '4.1', '4.2', '4.3'];
+                skippedOnlyFailure = failures.length > 0 && failures.every(f =>
+                  optionalJobs.includes(f.job)
+                );
+
                 reportContent = failures.length > 0
                   ? failures.map(f => `- **[${f.job}] ${f.name}**: ${f.error}`).join('\n')
                   : 'No specific failures recorded';
@@ -153,30 +174,71 @@ jobs:
               reportContent = `Error reading report: ${e.message}`;
             }
 
-            const title = `🚨 Smoke Test Failure - ${new Date().toISOString().split('T')[0]}`;
-            const body = `## Smoke Test Failed
+            // Determine priority based on failure type
+            let priority = 'p0';
+            let priorityNote = '';
 
-            **Environment:** ${{ inputs.environment || 'staging' }}
-            **Run:** [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
-            **Triggered by:** ${context.actor}
+            if (reportContent === 'Report not available') {
+              priorityNote = '\n\n> **Note**: Report was not generated - infrastructure issue.';
+            } else if (skippedOnlyFailure) {
+              priority = 'p2';
+              priorityNote = '\n\n> **Note**: Only optional features failed. Downgraded to P2.';
+            } else if (isTransientFailure) {
+              priority = 'p1';
+              priorityNote = '\n\n> **Note**: Transient failures detected. May resolve on retry.';
+            }
 
-            ### Failures
+            // Check for existing open smoke test issues today to avoid duplicates
+            const today = new Date().toISOString().split('T')[0];
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'agent-created',
+              per_page: 10,
+            });
 
-            ${reportContent}
+            const duplicateIssue = existingIssues.data.find(issue =>
+              issue.title.includes('Smoke Test Failure') && issue.title.includes(today)
+            );
 
-            ### Next Steps
+            if (duplicateIssue) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: duplicateIssue.number,
+                body: `## Additional Run Failed\n\n**Run:** [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})\n\n### Failures\n\n${reportContent}${priorityNote}`,
+              });
+              console.log(`Added comment to existing issue #${duplicateIssue.number}`);
+              return;
+            }
 
-            1. Review the [workflow run logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
-            2. Download screenshots from artifacts
-            3. Fix issues and re-run smoke test
-            `;
+            const title = `Smoke Test Failure - ${today}`;
+            const body = [
+              '## Smoke Test Failed',
+              '',
+              `- **Environment:** $\{{ inputs.environment || 'staging' }}`,
+              `- **Run:** [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              `- **Triggered by:** ${context.actor}`,
+              `- **Failure Count:** ${failureCount}`,
+              '',
+              '### Failures',
+              '',
+              reportContent + priorityNote,
+              '',
+              '### Next Steps',
+              '',
+              `1. Review the [workflow run logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              '2. Download screenshots from artifacts',
+              '3. Fix issues and re-run smoke test',
+            ].join('\n');
 
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title,
               body,
-              labels: ['bug', 'p0', 'agent-created']
+              labels: ['bug', priority, 'agent-created']
             });
 
       - name: Summary
