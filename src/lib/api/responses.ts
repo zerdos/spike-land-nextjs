@@ -37,14 +37,6 @@ export interface ErrorResponse {
 }
 
 /**
- * Standard success response structure
- */
-export interface SuccessResponse<T = unknown> {
-  success: true;
-  data?: T;
-}
-
-/**
  * Validation error details type
  */
 export type ValidationErrors = Record<string, string[]>;

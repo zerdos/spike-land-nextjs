@@ -2,6 +2,7 @@ import { getUserFriendlyError } from "@/lib/errors/error-messages";
 import { logger } from "@/lib/errors/structured-logger";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
+import type { PrismaTransactionClient } from "@/types/prisma-helpers";
 import type { Prisma } from "@prisma/client";
 import { SubscriptionTier, type TokenTransaction, TokenTransactionType } from "@prisma/client";
 import { TOKEN_REGENERATION_INTERVAL_MS, TOKENS_PER_REGENERATION } from "./constants";
@@ -29,6 +30,12 @@ interface AddTokensParams {
   source?: string;
   sourceId?: string;
   metadata?: Record<string, unknown>;
+  /**
+   * Optional transaction client for participating in an outer transaction.
+   * When provided, operations use this client instead of creating a new transaction.
+   * This ensures atomicity when addTokens is called within another transaction.
+   */
+  tx?: PrismaTransactionClient;
 }
 
 interface TokenTransactionResult {
@@ -264,11 +271,15 @@ export class TokenBalanceManager {
 
   /**
    * Add tokens to user's balance (purchase, regeneration, bonus)
+   *
+   * @param params.tx - Optional transaction client. When provided, operations
+   *   participate in the outer transaction for atomicity. When omitted, creates
+   *   its own transaction.
    */
   static async addTokens(
     params: AddTokensParams,
   ): Promise<TokenTransactionResult> {
-    const { userId, amount, type, source, sourceId, metadata } = params;
+    const { userId, amount, type, source, sourceId, metadata, tx: externalTx } = params;
     const addLogger = logger.child({
       userId,
       amount,
@@ -301,93 +312,100 @@ export class TokenBalanceManager {
       };
     }
 
-    const { data: result, error } = await tryCatch(
-      prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        // Get or create balance
-        let tokenBalance = await tx.userTokenBalance.findUnique({
-          where: { userId },
-        });
+    // Core logic extracted to allow transaction propagation
+    const executeAddTokens = async (
+      tx: Prisma.TransactionClient | PrismaTransactionClient,
+    ) => {
+      // Get or create balance
+      let tokenBalance = await tx.userTokenBalance.findUnique({
+        where: { userId },
+      });
 
-        if (!tokenBalance) {
-          // Ensure User record exists before creating UserTokenBalance
-          await tx.user.upsert({
-            where: { id: userId },
-            update: {},
-            create: {
-              id: userId,
-            },
-          });
-
-          // Get initial capacity for FREE tier (default)
-          const initialCapacity = TierManager.getTierCapacity(
-            SubscriptionTier.FREE,
-          );
-
-          tokenBalance = await tx.userTokenBalance.create({
-            data: {
-              userId,
-              balance: initialCapacity,
-              tier: SubscriptionTier.FREE,
-              lastRegeneration: new Date(),
-            },
-          });
-
-          addLogger.info("Created initial token balance for new user");
-        }
-
-        // Get tier-specific max balance
-        const currentTier = tokenBalance.tier as SubscriptionTier;
-        const maxBalance = TierManager.getTierCapacity(currentTier);
-
-        // Cap balance at tier maximum for regeneration
-        let newBalance = tokenBalance.balance + amount;
-        let wasCapped = false;
-        if (type === TokenTransactionType.EARN_REGENERATION) {
-          const beforeCap = newBalance;
-          newBalance = Math.min(newBalance, maxBalance);
-          if (beforeCap > newBalance) {
-            wasCapped = true;
-            addLogger.debug("Balance capped at tier maximum", {
-              requested: beforeCap,
-              capped: newBalance,
-              tier: currentTier,
-              maxBalance,
-            });
-          }
-        }
-
-        // Update balance
-        const updatedBalance = await tx.userTokenBalance.update({
-          where: { userId },
-          data: {
-            balance: newBalance,
-            ...(type === TokenTransactionType.EARN_REGENERATION && {
-              lastRegeneration: new Date(),
-            }),
+      if (!tokenBalance) {
+        // Ensure User record exists before creating UserTokenBalance
+        await tx.user.upsert({
+          where: { id: userId },
+          update: {},
+          create: {
+            id: userId,
           },
         });
 
-        // Create transaction record
-        const transaction = await tx.tokenTransaction.create({
+        // Get initial capacity for FREE tier (default)
+        const initialCapacity = TierManager.getTierCapacity(
+          SubscriptionTier.FREE,
+        );
+
+        tokenBalance = await tx.userTokenBalance.create({
           data: {
             userId,
-            amount,
-            type,
-            source: source ?? null,
-            sourceId: sourceId ?? null,
-            balanceAfter: updatedBalance.balance,
-            ...(metadata && { metadata: metadata as Prisma.InputJsonValue }),
+            balance: initialCapacity,
+            tier: SubscriptionTier.FREE,
+            lastRegeneration: new Date(),
           },
         });
 
-        addLogger.info("Tokens added successfully", {
-          newBalance: updatedBalance.balance,
-          wasCapped,
-        });
+        addLogger.info("Created initial token balance for new user");
+      }
 
-        return { transaction, balance: updatedBalance.balance };
-      }),
-    );
+      // Get tier-specific max balance
+      const currentTier = tokenBalance.tier as SubscriptionTier;
+      const maxBalance = TierManager.getTierCapacity(currentTier);
+
+      // Cap balance at tier maximum for regeneration
+      let newBalance = tokenBalance.balance + amount;
+      let wasCapped = false;
+      if (type === TokenTransactionType.EARN_REGENERATION) {
+        const beforeCap = newBalance;
+        newBalance = Math.min(newBalance, maxBalance);
+        if (beforeCap > newBalance) {
+          wasCapped = true;
+          addLogger.debug("Balance capped at tier maximum", {
+            requested: beforeCap,
+            capped: newBalance,
+            tier: currentTier,
+            maxBalance,
+          });
+        }
+      }
+
+      // Update balance
+      const updatedBalance = await tx.userTokenBalance.update({
+        where: { userId },
+        data: {
+          balance: newBalance,
+          ...(type === TokenTransactionType.EARN_REGENERATION && {
+            lastRegeneration: new Date(),
+          }),
+        },
+      });
+
+      // Create transaction record
+      const transaction = await tx.tokenTransaction.create({
+        data: {
+          userId,
+          amount,
+          type,
+          source: source ?? null,
+          sourceId: sourceId ?? null,
+          balanceAfter: updatedBalance.balance,
+          ...(metadata && { metadata: metadata as Prisma.InputJsonValue }),
+        },
+      });
+
+      addLogger.info("Tokens added successfully", {
+        newBalance: updatedBalance.balance,
+        wasCapped,
+      });
+
+      return { transaction, balance: updatedBalance.balance };
+    };
+
+    // If external transaction provided, use it directly (no nested transaction)
+    // Otherwise, create our own transaction
+    const { data: result, error } = externalTx
+      ? await tryCatch(executeAddTokens(externalTx))
+      : await tryCatch(prisma.$transaction(executeAddTokens));
 
     if (error) {
       const errorMessage = error instanceof Error
