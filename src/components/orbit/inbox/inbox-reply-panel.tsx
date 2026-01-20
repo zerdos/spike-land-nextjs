@@ -44,6 +44,7 @@ async function postReply(
     try {
       errorText = await res.text();
     } catch {
+      // Intentionally silent: Response body unavailable - use placeholder for error message.
       errorText = "<unable to read response body>";
     }
     throw new Error(

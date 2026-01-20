@@ -369,7 +369,8 @@ export function SessionTracker() {
         keepalive: true,
       });
     } catch {
-      // Ignore errors during unload
+      // Intentionally silent: Page unload session end tracking is best-effort.
+      // Cannot reliably log during unload and errors are expected for cancelled requests.
     }
   }, []);
 

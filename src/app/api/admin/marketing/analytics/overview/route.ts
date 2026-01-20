@@ -429,6 +429,7 @@ async function getTrafficSources(
           source = "Referral";
         }
       } catch {
+        // Intentionally silent: Malformed referrer URL - default to "Referral" source.
         source = "Referral";
       }
     }

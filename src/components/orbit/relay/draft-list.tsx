@@ -36,6 +36,7 @@ async function fetchDrafts(
       const errorData = await res.json();
       errorText = errorData.error || res.statusText;
     } catch {
+      // Intentionally silent: Response body may not be valid JSON - use status text as fallback.
       errorText = res.statusText;
     }
     throw new Error(`Failed to fetch drafts: ${errorText}`);

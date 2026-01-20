@@ -42,7 +42,7 @@ export function CompetitorBenchmark(
 
         if (competitors.length === 0) {
           setReport({
-            // TODO: Replace with real SocialMetrics data from workspace
+            // TODO(#806): Replace with real SocialMetrics data from workspace
             ownMetrics: {
               averageLikes: 0,
               averageComments: 0,
@@ -91,8 +91,7 @@ export function CompetitorBenchmark(
         }
 
         setReport({
-          // TODO: Replace with real SocialMetrics data from workspace
-          // This should fetch from the SocialMetrics table for the workspace
+          // TODO(#806): Replace with real SocialMetrics data from workspace
           ownMetrics: {
             averageLikes: 0,
             averageComments: 0,

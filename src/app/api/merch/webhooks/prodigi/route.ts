@@ -108,8 +108,12 @@ export async function POST(request: NextRequest) {
   let event: ProdigiWebhookEvent;
   try {
     event = JSON.parse(rawBody);
-  } catch {
-    console.error("Failed to parse Prodigi webhook payload");
+  } catch (error) {
+    // Malformed webhook payload
+    console.error(
+      "[ProdigiWebhook] Failed to parse webhook payload:",
+      error instanceof Error ? error.message : String(error),
+    );
     return NextResponse.json(
       { error: "Invalid payload" },
       { status: 400 },

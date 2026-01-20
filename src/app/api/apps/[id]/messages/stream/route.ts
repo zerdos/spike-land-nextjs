@@ -30,11 +30,7 @@ interface SSEEvent {
  *
  * 2. NO PERSISTENCE: Connections are lost on server restart.
  *
- * TODO: For production multi-instance support, implement Redis Pub/Sub:
- * - Use Upstash Redis (already configured for rate limiting)
- * - Publish events to Redis channel on broadcast
- * - Each instance subscribes to channel and forwards to local connections
- * - See: https://upstash.com/docs/redis/features/pubsub
+ * TODO(#805): For production multi-instance support, implement Redis Pub/Sub
  *
  * For now, this works correctly for single-instance deployments.
  */
@@ -69,7 +65,8 @@ export function broadcastToApp(
     try {
       controller.enqueue(encoded);
     } catch {
-      // Connection closed, will be cleaned up
+      // Intentionally silent: Connection closed - controller will be cleaned up by stream cancel handler.
+      // Logging here would be too noisy for normal SSE disconnections.
     }
   }
 }
@@ -171,7 +168,7 @@ export async function GET(
               encoder.encode(`data: ${JSON.stringify(workingEvent)}\n\n`),
             );
           } catch {
-            // Controller closed
+            // Intentionally silent: Client disconnected between agent status check and enqueue.
           }
         }
       });
@@ -188,7 +185,7 @@ export async function GET(
             encoder.encode(`data: ${JSON.stringify(heartbeat)}\n\n`),
           );
         } catch {
-          // Controller closed, clear interval
+          // Intentionally silent: Client disconnected - clean up heartbeat interval.
           clearInterval(heartbeatInterval);
         }
       }, 30000);

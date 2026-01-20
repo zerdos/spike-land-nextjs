@@ -138,7 +138,12 @@ export function SitemapPreviewClient({
       try {
         const urlObj = new URL(pathToAdd);
         pathToAdd = urlObj.pathname;
-      } catch {
+      } catch (error) {
+        // Malformed URL provided by user
+        console.debug(
+          "[SitemapPreview] Invalid URL format:",
+          error instanceof Error ? error.message : String(error),
+        );
         setPathError("Invalid URL format");
         return;
       }
@@ -181,7 +186,12 @@ export function SitemapPreviewClient({
       ]);
       setNewPath("");
       setDialogOpen(false);
-    } catch {
+    } catch (error) {
+      // Network error or server failure
+      console.error(
+        "[SitemapPreview] Failed to add path:",
+        error instanceof Error ? error.message : String(error),
+      );
       setPathError("Failed to add path. Please try again.");
     } finally {
       setIsSubmitting(false);

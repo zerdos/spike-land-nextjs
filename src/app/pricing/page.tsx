@@ -84,7 +84,8 @@ export default function PricingPage() {
           }
         }
       } catch {
-        // Silently fail - not critical
+        // Intentionally silent: Token regen time fetch is non-critical for page functionality.
+        // User can still view pricing without this data.
       }
     };
 

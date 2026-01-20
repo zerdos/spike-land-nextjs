@@ -357,13 +357,8 @@ export async function sendHealthAlerts(
 
     // Store in-app notification
     if (config.notifyChannels.includes("in_app")) {
-      // TODO(in-app-notifications): Integrate with in-app notification system
-      // Requirements:
-      // 1. Create Notification model in Prisma schema (id, workspaceId, userId?, type, title, message, read, createdAt)
-      // 2. Use storeInAppNotification() from src/lib/notifications/channel-manager.ts as a template
-      // 3. Add a notifications table API at /api/orbit/[workspaceSlug]/notifications
-      // 4. Create a NotificationBell UI component that polls or uses SSE for real-time updates
-      // See existing notification types in src/lib/notifications/types.ts for reference
+      // TODO(#802): Integrate with in-app notification system
+      // See issue for detailed requirements and implementation steps
     }
   }
 

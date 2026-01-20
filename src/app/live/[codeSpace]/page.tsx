@@ -56,7 +56,12 @@ export default function CodespacePage() {
         const responseData = await res.json();
         setData(responseData);
         setCode(responseData.code || "");
-      } catch {
+      } catch (error) {
+        // Network error or server unavailable
+        console.error(
+          "[LivePage] Failed to connect to server:",
+          error instanceof Error ? error.message : String(error),
+        );
         setError("Failed to connect to server");
       } finally {
         setLoading(false);

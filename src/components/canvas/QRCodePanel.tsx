@@ -35,8 +35,12 @@ export function QRCodePanel({
       await navigator.clipboard.writeText(canvasUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
+    } catch (error) {
       // Fallback for browsers without clipboard API
+      console.debug(
+        "[QRCodePanel] Clipboard API unavailable, using fallback:",
+        error instanceof Error ? error.message : String(error),
+      );
       const textArea = document.createElement("textarea");
       textArea.value = canvasUrl;
       document.body.appendChild(textArea);

@@ -24,7 +24,7 @@ export default function InboxPage() {
   };
 
   const handleAssign = () => {
-    // TODO: Implement inbox list refetch after assignment
+    // TODO(#808): Implement inbox list refetch after assignment
   };
 
   return (

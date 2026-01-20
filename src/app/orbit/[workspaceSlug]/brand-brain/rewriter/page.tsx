@@ -35,7 +35,12 @@ export default function RewriterPage() {
         }
         const data = await response.json();
         setWorkspaceId(data.id);
-      } catch {
+      } catch (error) {
+        // Network error or workspace not found
+        console.error(
+          "[RewriterPage] Failed to load workspace:",
+          error instanceof Error ? error.message : String(error),
+        );
         setError("Failed to load workspace");
       } finally {
         setIsLoading(false);
