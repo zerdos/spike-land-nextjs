@@ -101,8 +101,12 @@ export function DroppableAlbum({
         if (isDragData(data)) {
           onDrop?.(data.imageIds);
         }
-      } catch {
-        // Invalid JSON data, ignore the drop
+      } catch (error) {
+        // Invalid JSON in drag data - user may have dragged non-image content
+        console.debug(
+          "[DroppableAlbum] Invalid drag data, ignoring drop:",
+          error instanceof Error ? error.message : String(error),
+        );
       }
     },
     [onDrop],

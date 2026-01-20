@@ -25,6 +25,20 @@ vi.mock("@/lib/tokens/balance-manager", () => ({
   },
 }));
 
+/**
+ * Mock referral data structure for testing
+ * Note: Using `as any` for test mocks is acceptable since Prisma types
+ * are complex and tests don't need full type coverage
+ */
+interface MockReferral {
+  id: string;
+  referrerId: string;
+  refereeId: string;
+  status: string;
+  referrer?: { id: string; email: string; };
+  referee?: { id: string; email: string; };
+}
+
 describe("Referral Rewards", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -36,7 +50,7 @@ describe("Referral Rewards", () => {
 
   describe("completeReferralAndGrantRewards", () => {
     it("should grant tokens to both referrer and referee", async () => {
-      const mockReferral = {
+      const mockReferral: MockReferral = {
         id: "ref-123",
         referrerId: "referrer-123",
         refereeId: "referee-456",
@@ -45,6 +59,8 @@ describe("Referral Rewards", () => {
         referee: { id: "referee-456", email: "referee@example.com" },
       };
 
+      // Note: Using `as any` for Prisma mock returns is acceptable in tests
+      // since the generated types are complex and tests verify behavior, not types
       vi.mocked(prisma.referral.findUnique).mockResolvedValue(
         mockReferral as any,
       );

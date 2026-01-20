@@ -77,7 +77,12 @@ export function AccountsTab({ className }: AccountsTabProps) {
           message: "Failed to disconnect account",
         });
       }
-    } catch {
+    } catch (error) {
+      // Network error or unexpected failure
+      console.error(
+        "[AccountsTab] Failed to disconnect account:",
+        error instanceof Error ? error.message : String(error),
+      );
       setNotification({
         type: "error",
         message: "Failed to disconnect account",

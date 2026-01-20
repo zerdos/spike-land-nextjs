@@ -338,7 +338,12 @@ async function getJulesSessionStatus(sessionId: string): Promise<
       isCompleted: COMPLETED_STATES.includes(session.state),
       isFailed: FAILED_STATES.includes(session.state),
     };
-  } catch {
+  } catch (error) {
+    // Failed to get app factory session - may not exist
+    console.debug(
+      "[AppFactory] Failed to get app factory session:",
+      error instanceof Error ? error.message : String(error),
+    );
     return null;
   }
 }

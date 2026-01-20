@@ -267,8 +267,12 @@ export default function CodeSpacePage() {
                   return;
                 }
               }
-            } catch {
-              // Invalid cache, continue with API call
+            } catch (error) {
+              // Invalid or expired cache - continue with fresh API call
+              console.debug(
+                "[MyApps] Invalid session cache, fetching fresh:",
+                error instanceof Error ? error.message : String(error),
+              );
               sessionStorage.removeItem(sessionCacheKey);
             }
           }
@@ -331,7 +335,12 @@ export default function CodeSpacePage() {
             );
           }
         }
-      } catch {
+      } catch (error) {
+        // Network error or unexpected failure
+        console.error(
+          "[MyApps] Failed to load codespace:",
+          error instanceof Error ? error.message : String(error),
+        );
         setError("Failed to load codespace");
         setMode("prompt");
       }
@@ -349,8 +358,11 @@ export default function CodeSpacePage() {
       if (!response.ok) throw new Error("Failed to fetch messages");
       const data = await response.json();
       setMessages((data.messages || []).reverse());
-    } catch {
-      console.error("Failed to load messages");
+    } catch (error) {
+      console.error(
+        "[MyApps] Failed to load messages:",
+        error instanceof Error ? error.message : String(error),
+      );
     }
   }, [app?.id]);
 
@@ -404,8 +416,11 @@ export default function CodeSpacePage() {
             sessionStorage.removeItem(getSessionCacheKey(codeSpace));
             break;
         }
-      } catch {
-        console.error("Failed to parse SSE event");
+      } catch (error) {
+        console.error(
+          "[MyApps] Failed to parse SSE event:",
+          error instanceof Error ? error.message : String(error),
+        );
       }
     };
 
@@ -554,8 +569,11 @@ export default function CodeSpacePage() {
             const data = await response.json();
             return (data.messages || []).reverse();
           }
-        } catch {
-          console.error(`Retry ${i + 1}/${retries} failed for messages fetch`);
+        } catch (error) {
+          console.error(
+            `[MyApps] Retry ${i + 1}/${retries} failed for messages fetch:`,
+            error instanceof Error ? error.message : String(error),
+          );
         }
       }
       return [];
@@ -633,7 +651,7 @@ export default function CodeSpacePage() {
                   setAgentError(data.content);
                 }
               } catch {
-                // Skip invalid JSON
+                // Intentionally silent: Partial or invalid JSON chunks during streaming are expected.
               }
             }
           }
@@ -829,8 +847,11 @@ export default function CodeSpacePage() {
 
       if (!response.ok) throw new Error("Failed to clear chat");
       setMessages([]);
-    } catch {
-      console.error("Failed to clear chat");
+    } catch (error) {
+      console.error(
+        "[MyApps] Failed to clear chat:",
+        error instanceof Error ? error.message : String(error),
+      );
     } finally {
       setClearingChat(false);
     }
