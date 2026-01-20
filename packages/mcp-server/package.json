@@ -1,7 +1,7 @@
 {
   "name": "@spike-npm-land/mcp-server",
-  "version": "0.1.0",
-  "description": "MCP server for Spike Land image generation and modification",
+  "version": "0.2.0",
+  "description": "MCP server for Spike Land image generation, modification, and codespace management",
   "keywords": [
     "mcp",
     "model-context-protocol",

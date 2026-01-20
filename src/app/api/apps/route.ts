@@ -371,7 +371,18 @@ async function createAppFromPrompt(
   }
 
   // Enqueue message for agent processing
-  await tryCatch(enqueueMessage(result.app.id, result.messageId));
+  const { error: enqueueError } = await tryCatch(
+    enqueueMessage(result.app.id, result.messageId),
+  );
+
+  if (enqueueError) {
+    console.error(
+      `[App Creation] Failed to enqueue message for app ${result.app.id}:`,
+      enqueueError,
+    );
+    // Don't fail the request - the app was created successfully.
+    // The user can still manually trigger the agent later.
+  }
 
   return NextResponse.json(result.app, { status: 201 });
 }
