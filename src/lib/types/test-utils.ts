@@ -154,8 +154,7 @@ export type TransactionCallback<T> = (tx: MockTransactionClient) => Promise<T>;
 // =============================================================================
 
 // Import vitest types for use in declaration
-import type { Mock } from "vitest";
-import { vi } from "vitest";
+import type { Mock, vi } from "vitest";
 
 /**
  * Type-safe mock return value setter

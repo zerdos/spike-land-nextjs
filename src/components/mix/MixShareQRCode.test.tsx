@@ -248,7 +248,8 @@ describe("MixShareQRCode", () => {
 
       await waitFor(() => {
         expect(consoleErrorSpy).toHaveBeenCalledWith(
-          "Copy failed: clipboard not available",
+          "[MixShareQRCode] Copy failed, clipboard not available:",
+          "execCommand failed",
         );
       });
 

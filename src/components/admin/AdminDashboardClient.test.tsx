@@ -350,7 +350,7 @@ describe("AdminDashboardClient", () => {
     render(<AdminDashboardClient initialMetrics={mockInitialMetrics} />);
 
     const links = screen.getAllByRole("link");
-    expect(links).toHaveLength(6);
+    expect(links).toHaveLength(7);
   });
 
   it("should have correct href for each quick link", () => {
