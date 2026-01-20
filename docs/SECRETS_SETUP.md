@@ -327,6 +327,57 @@ CLOUDFLARE_R2_SECRET_ACCESS_KEY=your-r2-secret-access-key
 CLOUDFLARE_R2_BUCKET_NAME=spike-land-images
 ```
 
+#### Cloudflare Workers (Wrangler Configuration)
+
+Wrangler CLI automatically reads credentials from environment variables. **Do
+NOT hardcode credentials in `wrangler.toml` files.**
+
+**Required environment variables:**
+
+```bash
+# Account ID - Wrangler reads this automatically
+export CLOUDFLARE_ACCOUNT_ID="your-account-id"
+
+# API Token for deployments
+export CLOUDFLARE_API_TOKEN="your-api-token"
+```
+
+**Finding your Account ID:**
+
+1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com/)
+2. Select any domain or the Workers section
+3. The Account ID is shown in the right sidebar
+4. Or run: `wrangler whoami` (after authenticating)
+
+**Creating an API Token:**
+
+1. Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)
+2. Click "Create Token"
+3. Use the "Edit Cloudflare Workers" template or create custom with:
+   - Account > Workers Scripts: Edit
+   - Account > Workers KV Storage: Edit
+   - Account > Workers R2 Storage: Edit
+   - Zone > Workers Routes: Edit
+
+**Local development options:**
+
+```bash
+# Option 1: Add to shell profile (~/.bashrc, ~/.zshrc)
+export CLOUDFLARE_ACCOUNT_ID="your-account-id"
+export CLOUDFLARE_API_TOKEN="your-api-token"
+
+# Option 2: Use wrangler login for interactive auth
+wrangler login
+
+# Option 3: Pass inline when running wrangler
+CLOUDFLARE_ACCOUNT_ID="your-id" yarn wrangler deploy
+```
+
+**SECURITY WARNING:** The `account_id` field in `wrangler.toml` files has been
+intentionally commented out. Never hardcode Cloudflare credentials in version
+control. See `packages/testing.spike.land/wrangler.toml` and
+`packages/js.spike.land/wrangler.toml` for the correct configuration pattern.
+
 #### Cloudflare Images API (Optional)
 
 For image transformation and CDN delivery.

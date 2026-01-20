@@ -420,7 +420,17 @@ export class AutopilotService {
     }
 
     // Execute Change (Simulated for now, would call platform API)
-    // TODO: Integrate with Facebook/Google Ads API via Allocator Service
+    // TODO(ads-budget-api): Integrate with Facebook/Google Ads API to actually update campaign budgets
+    // Implementation steps:
+    // 1. Add updateCampaignBudget() method to GoogleAdsAllocatorClient (src/lib/allocator/google-ads/client.ts)
+    //    - Use the existing client.mutate() pattern or GAQL UPDATE statement
+    //    - See Google Ads API: https://developers.google.com/google-ads/api/reference/rpc/v17/CampaignBudget
+    // 2. Add updateCampaignBudget() method to FacebookMarketingApiClient (src/lib/allocator/facebook-ads/client.ts)
+    //    - Use POST request to /{campaign-id} with daily_budget field
+    //    - See Graph API: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group/
+    // 3. Determine platform from campaign.externalPlatform and call appropriate client
+    // 4. Add error handling for rate limits and permission errors
+    // 5. Update execution status based on API response (SUCCESS/FAILED)
     const budgetChange = recommendation.suggestedBudget -
       recommendation.currentBudget;
 
