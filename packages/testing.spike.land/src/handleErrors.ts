@@ -47,5 +47,3 @@ export function handleErrors(
     }
   });
 }
-
-export { getWebSocketPair };
