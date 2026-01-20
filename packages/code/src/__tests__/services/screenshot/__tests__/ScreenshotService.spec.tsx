@@ -71,7 +71,7 @@ describe("ScreenshotService", () => {
   it("should handle canvas blob creation failure", async () => {
     // Mock html2canvas to simulate blob creation failure
     const html2canvas = (await import("@/external/html2canvas"))
-      .default as Mock;
+      .default as unknown as Mock;
     html2canvas.mockResolvedValueOnce({
       toBlob: (callback: (blob: Blob | null) => void) => {
         callback(null);
