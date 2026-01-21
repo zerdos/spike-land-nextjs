@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
-import { broadcastSyncInProgress } from "../messages/stream/route";
+import { broadcastCodeUpdated, broadcastSyncInProgress } from "../messages/stream/route";
 
 export async function POST(
   request: NextRequest,
@@ -32,10 +32,16 @@ export async function POST(
   const { id } = params;
 
   const body = await request.json();
-  const { isSyncing } = body;
+  const { isSyncing, codeUpdated } = body;
 
   // Broadcast to connected clients
-  broadcastSyncInProgress(id, isSyncing);
+  if (isSyncing !== undefined) {
+    broadcastSyncInProgress(id, isSyncing);
+  }
+
+  if (codeUpdated) {
+    broadcastCodeUpdated(id);
+  }
 
   return new Response(JSON.stringify({ success: true }), {
     status: 200,

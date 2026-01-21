@@ -1287,6 +1287,20 @@ export default function CodeSpacePage() {
                         <MarkdownContent content={streamingResponse} />
                         <span className="inline-block w-2 h-4 ml-1 bg-teal-500 animate-pulse rounded-full align-middle" />
                       </div>
+
+                      {/* Live Preview during generation */}
+                      {isSyncing && (
+                        <div className="mt-4">
+                          <MiniPreview
+                            codespaceUrl={codespaceUrl}
+                            isLatest={true}
+                            onClick={() =>
+                              handleOpenPreview(codespaceUrl, "Live Preview (Working...)")}
+                            isSyncing={true}
+                            syncFlashKey={syncFlashKey}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

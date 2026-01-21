@@ -422,7 +422,11 @@ export default function App() {
   }
 }
 
-async function notifySyncStatus(appId: string, isSyncing: boolean): Promise<void> {
+async function notifySyncStatus(
+  appId: string,
+  isSyncing: boolean,
+  codeUpdated = false,
+): Promise<void> {
   try {
     const response = await fetch(
       `http://localhost:3000/api/apps/${appId}/sync-status`,
@@ -432,7 +436,7 @@ async function notifySyncStatus(appId: string, isSyncing: boolean): Promise<void
           "Content-Type": "application/json",
           "x-internal-api-key": process.env["INTERNAL_API_KEY"] || "",
         },
-        body: JSON.stringify({ isSyncing }),
+        body: JSON.stringify({ isSyncing, codeUpdated }),
       },
     );
     if (!response.ok) {
@@ -490,6 +494,11 @@ async function syncCodeToServer(codeSpace: string, code: string, appId?: string)
       console.log(
         `  Synced code to server (${code.length} bytes) - ${result.message || "success"}`,
       );
+
+      // Notify UI that sync is complete AND code is updated
+      if (appId) {
+        notifySyncStatus(appId, false, true);
+      }
       return;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error("Unknown error");
@@ -514,9 +523,14 @@ async function syncCodeToServer(codeSpace: string, code: string, appId?: string)
  *
  * @param codeSpace - The codespace ID to watch
  * @param appId - The app ID (for UI notifications)
+ * @param onSync - Optional callback when sync occurs
  * @returns The FSWatcher instance (call .close() to stop)
  */
-function startFileWatcher(codeSpace: string, appId: string): FSWatcher {
+function startFileWatcher(
+  codeSpace: string,
+  appId: string,
+  onSync?: () => void,
+): FSWatcher {
   const localPath = getLocalFilePath(codeSpace);
   console.log(`  Starting file watcher for: ${localPath}`);
 
@@ -542,6 +556,7 @@ function startFileWatcher(codeSpace: string, appId: string): FSWatcher {
         const code = await readFile(localPath, "utf-8");
         console.log(`  File changed, syncing ${code.length} bytes...`);
         await syncCodeToServer(codeSpace, code, appId);
+        if (onSync) onSync();
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : "Unknown error";
         console.error(`  File sync error: ${errorMsg}`);
@@ -1328,6 +1343,7 @@ async function processMessage(
   // ============================================================
   let localFilePath: string | undefined;
   let fileWatcher: FSWatcher | undefined;
+  let localFileSyncOccurred = false;
 
   if (app.codespaceId) {
     try {
@@ -1336,7 +1352,9 @@ async function processMessage(
       console.log(`  Local file ready: ${localFilePath}`);
 
       // Start watching for changes
-      fileWatcher = startFileWatcher(app.codespaceId, appId);
+      fileWatcher = startFileWatcher(app.codespaceId, appId, () => {
+        localFileSyncOccurred = true;
+      });
     } catch (syncError) {
       const errorMsg = syncError instanceof Error ? syncError.message : "Unknown error";
       console.warn(`  Local file sync setup failed: ${errorMsg}`);
@@ -1380,20 +1398,30 @@ async function processMessage(
       }
     }
 
+    // Determine if code was updated (either by tool or file sync)
+    const finalCodeUpdated = result.codeUpdated || localFileSyncOccurred;
+
     // Post response via API (triggers SSE broadcast including code_updated)
     try {
-      await postAgentResponse(appId, result.response, result.codeUpdated, [messageId]);
-      console.log(`  Posted response via API (codeUpdated: ${result.codeUpdated})`);
+      await postAgentResponse(appId, result.response, finalCodeUpdated, [
+        messageId,
+      ]);
+      console.log(
+        `  Posted response via API (codeUpdated: ${finalCodeUpdated})`,
+      );
     } catch (apiError) {
       console.error(`  API error: ${apiError}`);
       // Fall back to direct database insert
       return {
         success: true,
         agentMessage: result.response,
-        appUpdate: result.codeUpdated
-          ? { status: "BUILDING" as AppBuildStatus, codespaceId: result.codespaceId }
+        appUpdate: finalCodeUpdated
+          ? {
+            status: "BUILDING" as AppBuildStatus,
+            codespaceId: result.codespaceId || app.codespaceId || undefined,
+          }
           : undefined,
-        statusMessage: result.codeUpdated ? "Code updated by agent" : undefined,
+        statusMessage: finalCodeUpdated ? "Code updated by agent" : undefined,
       };
     }
 
@@ -1401,10 +1429,10 @@ async function processMessage(
     return {
       success: true,
       // agentMessage is handled by API, so don't return it here
-      appUpdate: result.codeUpdated
+      appUpdate: finalCodeUpdated
         ? { status: "BUILDING" as AppBuildStatus }
         : undefined,
-      statusMessage: result.codeUpdated ? "Code updated by agent" : undefined,
+      statusMessage: finalCodeUpdated ? "Code updated by agent" : undefined,
     };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
