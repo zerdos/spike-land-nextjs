@@ -188,6 +188,14 @@ interface SpawnResult {
   error?: string;
 }
 
+/**
+ * Type-safe response from testing.spike.land session.json endpoint
+ */
+interface SessionResponse {
+  code?: string;
+  cSess?: { code?: string };
+}
+
 // Constants for Claude Code spawning
 const CLAUDE_TIMEOUT_MS = 300000; // 5 minutes
 
@@ -302,17 +310,29 @@ function ensureLiveDir(): void {
 }
 
 /**
+ * Sanitize a codeSpace identifier to prevent path traversal attacks
+ * Replaces any characters that aren't alphanumeric, dash, underscore, or dot
+ */
+function sanitizeCodeSpace(codeSpace: string): string {
+  return codeSpace.replace(/[^a-z0-9._-]/gi, "-");
+}
+
+/**
  * Get the local file path for a codespace
+ * Path is sanitized to prevent traversal attacks
  */
 function getLocalFilePath(codeSpace: string): string {
-  return join(LIVE_DIR, `${codeSpace}.tsx`);
+  const sanitized = sanitizeCodeSpace(codeSpace);
+  return join(LIVE_DIR, `${sanitized}.tsx`);
 }
 
 /**
  * Get the metadata file path for a codespace
+ * Path is sanitized to prevent traversal attacks
  */
 function getMetadataFilePath(codeSpace: string): string {
-  return join(LIVE_DIR, `${codeSpace}.meta.json`);
+  const sanitized = sanitizeCodeSpace(codeSpace);
+  return join(LIVE_DIR, `${sanitized}.meta.json`);
 }
 
 /**
@@ -369,7 +389,7 @@ export default function App() {
       throw new Error(`Failed to fetch session: HTTP ${response.status}`);
     }
 
-    const session = await response.json();
+    const session = (await response.json()) as SessionResponse;
     const code = session.code || session.cSess?.code || "";
 
     // Write code to local file
@@ -513,9 +533,16 @@ function startFileWatcher(codeSpace: string): FSWatcher {
  * Stop the file watcher and clean up resources
  *
  * @param watcher - The FSWatcher to stop
+ * @param debounceTimer - Optional debounce timer to clear
  */
-async function stopFileWatcher(watcher: FSWatcher): Promise<void> {
+async function stopFileWatcher(
+  watcher: FSWatcher,
+  debounceTimer?: ReturnType<typeof setTimeout> | null,
+): Promise<void> {
   console.log("  Stopping file watcher...");
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+  }
   await watcher.close();
 }
 
