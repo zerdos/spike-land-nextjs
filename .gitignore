@@ -73,3 +73,7 @@ src/generated/
 
 
 .Jules
+
+# Live codespace files (local sync for agents)
+live/*
+!live/.gitkeep
