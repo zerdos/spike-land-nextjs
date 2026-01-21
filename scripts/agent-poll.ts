@@ -81,21 +81,29 @@ function createPrismaClient() {
 
 const prisma = createPrismaClient();
 
-// Initialize Redis (support both UPSTASH_REDIS_REST_* and KV_REST_API_* naming)
-const redisUrl = process.env["UPSTASH_REDIS_REST_URL"] || process.env["KV_REST_API_URL"];
-const redisToken = process.env["UPSTASH_REDIS_REST_TOKEN"] || process.env["KV_REST_API_TOKEN"];
+// Lazy Redis initialization - only created when needed (not at import time)
+// This allows the module to be imported for testing without Redis credentials
+let redis: Redis | null = null;
 
-if (!redisUrl || !redisToken) {
-  console.error(
-    "Redis credentials not configured. Set UPSTASH_REDIS_REST_URL/TOKEN or KV_REST_API_URL/TOKEN",
-  );
-  process.exit(1);
+/**
+ * Get the Redis client, creating it lazily on first use.
+ * Throws an error if Redis credentials are not configured.
+ */
+function getRedis(): Redis {
+  if (!redis) {
+    const redisUrl = process.env["UPSTASH_REDIS_REST_URL"] || process.env["KV_REST_API_URL"];
+    const redisToken = process.env["UPSTASH_REDIS_REST_TOKEN"] || process.env["KV_REST_API_TOKEN"];
+
+    if (!redisUrl || !redisToken) {
+      throw new Error(
+        "Redis credentials not configured. Set UPSTASH_REDIS_REST_URL/TOKEN or KV_REST_API_URL/TOKEN",
+      );
+    }
+
+    redis = new Redis({ url: redisUrl, token: redisToken });
+  }
+  return redis;
 }
-
-const redis = new Redis({
-  url: redisUrl,
-  token: redisToken,
-});
 
 // Redis key helpers
 const KEYS = {
@@ -422,6 +430,33 @@ export default function App() {
   }
 }
 
+async function notifySyncStatus(
+  appId: string,
+  isSyncing: boolean,
+  codeUpdated = false,
+): Promise<void> {
+  try {
+    const uiBaseUrl = process.env["UI_BASE_URL"] || "http://localhost:3000";
+    const response = await fetch(
+      `${uiBaseUrl}/api/apps/${appId}/sync-status`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-api-key": process.env["INTERNAL_API_KEY"] || "",
+        },
+        body: JSON.stringify({ isSyncing, codeUpdated }),
+      },
+    );
+    if (!response.ok) {
+      console.warn(`[Sync] Failed to notify UI: ${response.status}`);
+    }
+  } catch (_error) {
+    // Best effort - UI notification is not critical
+    console.debug("[Sync] UI notification failed (dev server may be down)");
+  }
+}
+
 /**
  * Sync code from local file to testing.spike.land
  * Includes retry logic with exponential backoff
@@ -431,8 +466,13 @@ export default function App() {
  *
  * @param codeSpace - The codespace ID
  * @param code - The code to sync
+ * @param appId - The app ID (optional, but needed for UI notifications)
  */
-async function syncCodeToServer(codeSpace: string, code: string): Promise<void> {
+async function syncCodeToServer(codeSpace: string, code: string, appId?: string): Promise<void> {
+  // Notify UI that sync is starting
+  if (appId) {
+    void notifySyncStatus(appId, true);
+  }
   // The API endpoint structure is: /live/{codeSpace}/api/code
   // Method: PUT (not POST!)
   // Body: { code: string, run?: boolean }
@@ -463,6 +503,11 @@ async function syncCodeToServer(codeSpace: string, code: string): Promise<void> 
       console.log(
         `  Synced code to server (${code.length} bytes) - ${result.message || "success"}`,
       );
+
+      // Notify UI that sync is complete AND code is updated
+      if (appId) {
+        void notifySyncStatus(appId, false, true);
+      }
       return;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error("Unknown error");
@@ -486,9 +531,15 @@ async function syncCodeToServer(codeSpace: string, code: string): Promise<void> 
  * Changes are debounced and synced to testing.spike.land
  *
  * @param codeSpace - The codespace ID to watch
+ * @param appId - The app ID (for UI notifications)
+ * @param onSync - Optional callback when sync occurs
  * @returns The FSWatcher instance (call .close() to stop)
  */
-function startFileWatcher(codeSpace: string): FSWatcher {
+function startFileWatcher(
+  codeSpace: string,
+  appId: string,
+  onSync?: () => void,
+): FSWatcher {
   const localPath = getLocalFilePath(codeSpace);
   console.log(`  Starting file watcher for: ${localPath}`);
 
@@ -513,7 +564,8 @@ function startFileWatcher(codeSpace: string): FSWatcher {
       try {
         const code = await readFile(localPath, "utf-8");
         console.log(`  File changed, syncing ${code.length} bytes...`);
-        await syncCodeToServer(codeSpace, code);
+        await syncCodeToServer(codeSpace, code, appId);
+        if (onSync) onSync();
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : "Unknown error";
         console.error(`  File sync error: ${errorMsg}`);
@@ -571,19 +623,20 @@ function maskApiKey(key: string | undefined): string {
  * Get all app IDs that have pending messages
  */
 async function getAppsWithPending(): Promise<string[]> {
-  return redis.smembers(KEYS.APPS_WITH_PENDING);
+  return getRedis().smembers(KEYS.APPS_WITH_PENDING);
 }
 
 /**
  * Dequeue oldest message from an app's queue
  */
 async function dequeueMessage(appId: string): Promise<string | null> {
-  const messageId = await redis.rpop<string>(KEYS.APP_PENDING_MESSAGES(appId));
+  const redisClient = getRedis();
+  const messageId = await redisClient.rpop<string>(KEYS.APP_PENDING_MESSAGES(appId));
 
   // Check if queue is now empty
-  const remaining = await redis.llen(KEYS.APP_PENDING_MESSAGES(appId));
+  const remaining = await redisClient.llen(KEYS.APP_PENDING_MESSAGES(appId));
   if (remaining === 0) {
-    await redis.srem(KEYS.APPS_WITH_PENDING, appId);
+    await redisClient.srem(KEYS.APPS_WITH_PENDING, appId);
   }
 
   return messageId;
@@ -593,10 +646,11 @@ async function dequeueMessage(appId: string): Promise<string | null> {
  * Mark agent as working on an app
  */
 async function setAgentWorking(appId: string, isWorking: boolean): Promise<void> {
+  const redisClient = getRedis();
   if (isWorking) {
-    await redis.set(KEYS.AGENT_WORKING(appId), "1", { ex: 300 }); // 5 min TTL
+    await redisClient.set(KEYS.AGENT_WORKING(appId), "1", { ex: 300 }); // 5 min TTL
   } else {
-    await redis.del(KEYS.AGENT_WORKING(appId));
+    await redisClient.del(KEYS.AGENT_WORKING(appId));
   }
 
   // Also update in database
@@ -1300,6 +1354,7 @@ async function processMessage(
   // ============================================================
   let localFilePath: string | undefined;
   let fileWatcher: FSWatcher | undefined;
+  let localFileSyncOccurred = false;
 
   if (app.codespaceId) {
     try {
@@ -1308,7 +1363,9 @@ async function processMessage(
       console.log(`  Local file ready: ${localFilePath}`);
 
       // Start watching for changes
-      fileWatcher = startFileWatcher(app.codespaceId);
+      fileWatcher = startFileWatcher(app.codespaceId, appId, () => {
+        localFileSyncOccurred = true;
+      });
     } catch (syncError) {
       const errorMsg = syncError instanceof Error ? syncError.message : "Unknown error";
       console.warn(`  Local file sync setup failed: ${errorMsg}`);
@@ -1352,20 +1409,30 @@ async function processMessage(
       }
     }
 
+    // Determine if code was updated (either by tool or file sync)
+    const finalCodeUpdated = result.codeUpdated || localFileSyncOccurred;
+
     // Post response via API (triggers SSE broadcast including code_updated)
     try {
-      await postAgentResponse(appId, result.response, result.codeUpdated, [messageId]);
-      console.log(`  Posted response via API (codeUpdated: ${result.codeUpdated})`);
+      await postAgentResponse(appId, result.response, finalCodeUpdated, [
+        messageId,
+      ]);
+      console.log(
+        `  Posted response via API (codeUpdated: ${finalCodeUpdated})`,
+      );
     } catch (apiError) {
       console.error(`  API error: ${apiError}`);
       // Fall back to direct database insert
       return {
         success: true,
         agentMessage: result.response,
-        appUpdate: result.codeUpdated
-          ? { status: "BUILDING" as AppBuildStatus, codespaceId: result.codespaceId }
+        appUpdate: finalCodeUpdated
+          ? {
+            status: "BUILDING" as AppBuildStatus,
+            codespaceId: result.codespaceId || app.codespaceId || undefined,
+          }
           : undefined,
-        statusMessage: result.codeUpdated ? "Code updated by agent" : undefined,
+        statusMessage: finalCodeUpdated ? "Code updated by agent" : undefined,
       };
     }
 
@@ -1373,10 +1440,10 @@ async function processMessage(
     return {
       success: true,
       // agentMessage is handled by API, so don't return it here
-      appUpdate: result.codeUpdated
+      appUpdate: finalCodeUpdated
         ? { status: "BUILDING" as AppBuildStatus }
         : undefined,
-      statusMessage: result.codeUpdated ? "Code updated by agent" : undefined,
+      statusMessage: finalCodeUpdated ? "Code updated by agent" : undefined,
     };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
@@ -1400,7 +1467,7 @@ async function processMessage(
       try {
         const finalCode = await readFile(localFilePath, "utf-8");
         console.log(`  Final sync: ${finalCode.length} bytes`);
-        await syncCodeToServer(app.codespaceId, finalCode);
+        await syncCodeToServer(app.codespaceId, finalCode, appId);
       } catch (syncError) {
         const errorMsg = syncError instanceof Error ? syncError.message : "Unknown error";
         console.warn(`  Final sync failed: ${errorMsg}`);
@@ -1509,12 +1576,13 @@ async function poll(): Promise<number> {
 async function getQueueStats(): Promise<void> {
   const appIds = await getAppsWithPending();
   let totalPending = 0;
+  const redisClient = getRedis();
 
   console.log("\nQueue Statistics:");
   console.log("=================");
 
   for (const appId of appIds) {
-    const count = await redis.llen(KEYS.APP_PENDING_MESSAGES(appId));
+    const count = await redisClient.llen(KEYS.APP_PENDING_MESSAGES(appId));
     const app = await prisma.app.findUnique({
       where: { id: appId },
       select: { name: true, status: true },
@@ -1540,7 +1608,8 @@ async function main(): Promise<void> {
   console.log("=================");
   console.log(`Environment: ${isProd ? "PRODUCTION" : "LOCAL"}`);
   console.log(`API URL: ${AGENT_API_URL}`);
-  console.log(`Redis URL: ${redisUrl?.substring(0, 30)}...`);
+  const redisUrl = process.env["UPSTASH_REDIS_REST_URL"] || process.env["KV_REST_API_URL"];
+  console.log(`Redis URL: ${redisUrl?.substring(0, 30) || "(not configured)"}...`);
   console.log(`Debug mode: ${isDebug ? "ON" : "OFF"}`);
 
   // Show additional debug info
