@@ -193,7 +193,7 @@ interface SpawnResult {
  */
 interface SessionResponse {
   code?: string;
-  cSess?: { code?: string };
+  cSess?: { code?: string; };
 }
 
 // Constants for Claude Code spawning
