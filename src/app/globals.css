@@ -2178,3 +2178,25 @@
     animation: shake-subtle 0.5s ease-in-out infinite;
   }
 }
+
+/* Sync Visual Effects */
+@keyframes borderFlow {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes glitchShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}

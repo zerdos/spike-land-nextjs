@@ -11,6 +11,7 @@ export type SSEEventType =
   | "status"
   | "agent_working"
   | "code_updated"
+  | "sync_in_progress"
   | "heartbeat";
 
 interface SSEEvent {
@@ -274,5 +275,14 @@ export function broadcastCodeUpdated(appId: string) {
   broadcastToApp(appId, {
     type: "code_updated",
     data: { reloadRequired: true },
+  });
+}
+/**
+ * Helper to broadcast sync in progress status to app clients
+ */
+export function broadcastSyncInProgress(appId: string, isSyncing: boolean) {
+  broadcastToApp(appId, {
+    type: "sync_in_progress",
+    data: { isSyncing },
   });
 }

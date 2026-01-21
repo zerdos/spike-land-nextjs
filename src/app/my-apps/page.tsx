@@ -5,53 +5,68 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/components/ui/link";
 import prisma from "@/lib/prisma";
+import { AppBuildStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 // Ensure this page is always dynamically rendered to show latest apps
 export const dynamic = "force-dynamic";
 
-export default async function MyAppsPage() {
+export default async function MyAppsPage(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined; }>;
+}) {
+  const searchParams = await props.searchParams;
+  const page = Number(searchParams["page"]) || 1;
+  const pageSize = 8;
   const session = await auth();
 
   if (!session) {
     redirect("/auth/signin");
   }
 
-  const apps = await prisma.app.findMany({
-    where: {
-      userId: session.user.id,
-      deletedAt: null,
-      status: {
-        notIn: ["ARCHIVED"],
-      },
-      messages: {
-        some: {}, // Only show apps that have at least one message (i.e., not drafts)
-      },
+  const where = {
+    userId: session.user.id,
+    deletedAt: null,
+    status: {
+      notIn: [AppBuildStatus.ARCHIVED],
     },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      description: true,
-      status: true,
-      codespaceId: true,
-      codespaceUrl: true,
-      isCurated: true,
-      isPublic: true,
-      lastAgentActivity: true,
-      createdAt: true,
-      updatedAt: true,
-      _count: {
-        select: {
-          messages: true,
-          images: true,
+    messages: {
+      some: {}, // Only show apps that have at least one message (i.e., not drafts)
+    },
+  };
+
+  const [totalApps, apps] = await Promise.all([
+    prisma.app.count({ where }),
+    prisma.app.findMany({
+      where,
+      take: pageSize,
+      skip: (page - 1) * pageSize,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        status: true,
+        codespaceId: true,
+        codespaceUrl: true,
+        isCurated: true,
+        isPublic: true,
+        lastAgentActivity: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            messages: true,
+            images: true,
+          },
         },
       },
-    },
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
+      orderBy: {
+        updatedAt: "desc",
+      },
+    }),
+  ]);
+
+  const totalPages = Math.ceil(totalApps / pageSize);
 
   return (
     <div className="min-h-screen bg-background">
@@ -101,7 +116,7 @@ export default async function MyAppsPage() {
           </div>
         </div>
 
-        {apps.length === 0
+        {apps.length === 0 && page === 1
           ? (
             <>
               {/* Search and Filter Bar - Disabled when no apps */}
@@ -179,13 +194,14 @@ export default async function MyAppsPage() {
                     variant="outline"
                     className="cursor-not-allowed opacity-50"
                   >
-                    All ({apps.length})
+                    All ({totalApps})
                   </Badge>
                   <Badge
                     variant="outline"
                     className="cursor-not-allowed opacity-50"
                   >
                     Live ({apps.filter((app) => app.status === "LIVE").length})
+                    {/* Note: Logic for count is simplified here for current page only. For total live, we'd need another query or accept it's approx. */}
                   </Badge>
                   <Badge
                     variant="outline"
@@ -208,6 +224,41 @@ export default async function MyAppsPage() {
 
               {/* 3D Card Grid with Live Previews */}
               <AppCatalog apps={apps} />
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="mt-8 flex items-center justify-center gap-2">
+                  <Link
+                    href={`/my-apps?page=${page - 1}`}
+                    className={page <= 1 ? "pointer-events-none" : ""}
+                    aria-disabled={page <= 1}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page <= 1}
+                    >
+                      Previous
+                    </Button>
+                  </Link>
+                  <div className="text-sm text-muted-foreground">
+                    Page {page} of {totalPages}
+                  </div>
+                  <Link
+                    href={`/my-apps?page=${page + 1}`}
+                    className={page >= totalPages ? "pointer-events-none" : ""}
+                    aria-disabled={page >= totalPages}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page >= totalPages}
+                    >
+                      Next
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </>
           )}
       </div>
