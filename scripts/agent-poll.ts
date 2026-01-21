@@ -81,21 +81,29 @@ function createPrismaClient() {
 
 const prisma = createPrismaClient();
 
-// Initialize Redis (support both UPSTASH_REDIS_REST_* and KV_REST_API_* naming)
-const redisUrl = process.env["UPSTASH_REDIS_REST_URL"] || process.env["KV_REST_API_URL"];
-const redisToken = process.env["UPSTASH_REDIS_REST_TOKEN"] || process.env["KV_REST_API_TOKEN"];
+// Lazy Redis initialization - only created when needed (not at import time)
+// This allows the module to be imported for testing without Redis credentials
+let redis: Redis | null = null;
 
-if (!redisUrl || !redisToken) {
-  console.error(
-    "Redis credentials not configured. Set UPSTASH_REDIS_REST_URL/TOKEN or KV_REST_API_URL/TOKEN",
-  );
-  process.exit(1);
+/**
+ * Get the Redis client, creating it lazily on first use.
+ * Throws an error if Redis credentials are not configured.
+ */
+function getRedis(): Redis {
+  if (!redis) {
+    const redisUrl = process.env["UPSTASH_REDIS_REST_URL"] || process.env["KV_REST_API_URL"];
+    const redisToken = process.env["UPSTASH_REDIS_REST_TOKEN"] || process.env["KV_REST_API_TOKEN"];
+
+    if (!redisUrl || !redisToken) {
+      throw new Error(
+        "Redis credentials not configured. Set UPSTASH_REDIS_REST_URL/TOKEN or KV_REST_API_URL/TOKEN",
+      );
+    }
+
+    redis = new Redis({ url: redisUrl, token: redisToken });
+  }
+  return redis;
 }
-
-const redis = new Redis({
-  url: redisUrl,
-  token: redisToken,
-});
 
 // Redis key helpers
 const KEYS = {
@@ -615,19 +623,20 @@ function maskApiKey(key: string | undefined): string {
  * Get all app IDs that have pending messages
  */
 async function getAppsWithPending(): Promise<string[]> {
-  return redis.smembers(KEYS.APPS_WITH_PENDING);
+  return getRedis().smembers(KEYS.APPS_WITH_PENDING);
 }
 
 /**
  * Dequeue oldest message from an app's queue
  */
 async function dequeueMessage(appId: string): Promise<string | null> {
-  const messageId = await redis.rpop<string>(KEYS.APP_PENDING_MESSAGES(appId));
+  const redisClient = getRedis();
+  const messageId = await redisClient.rpop<string>(KEYS.APP_PENDING_MESSAGES(appId));
 
   // Check if queue is now empty
-  const remaining = await redis.llen(KEYS.APP_PENDING_MESSAGES(appId));
+  const remaining = await redisClient.llen(KEYS.APP_PENDING_MESSAGES(appId));
   if (remaining === 0) {
-    await redis.srem(KEYS.APPS_WITH_PENDING, appId);
+    await redisClient.srem(KEYS.APPS_WITH_PENDING, appId);
   }
 
   return messageId;
@@ -637,10 +646,11 @@ async function dequeueMessage(appId: string): Promise<string | null> {
  * Mark agent as working on an app
  */
 async function setAgentWorking(appId: string, isWorking: boolean): Promise<void> {
+  const redisClient = getRedis();
   if (isWorking) {
-    await redis.set(KEYS.AGENT_WORKING(appId), "1", { ex: 300 }); // 5 min TTL
+    await redisClient.set(KEYS.AGENT_WORKING(appId), "1", { ex: 300 }); // 5 min TTL
   } else {
-    await redis.del(KEYS.AGENT_WORKING(appId));
+    await redisClient.del(KEYS.AGENT_WORKING(appId));
   }
 
   // Also update in database
@@ -1566,12 +1576,13 @@ async function poll(): Promise<number> {
 async function getQueueStats(): Promise<void> {
   const appIds = await getAppsWithPending();
   let totalPending = 0;
+  const redisClient = getRedis();
 
   console.log("\nQueue Statistics:");
   console.log("=================");
 
   for (const appId of appIds) {
-    const count = await redis.llen(KEYS.APP_PENDING_MESSAGES(appId));
+    const count = await redisClient.llen(KEYS.APP_PENDING_MESSAGES(appId));
     const app = await prisma.app.findUnique({
       where: { id: appId },
       select: { name: true, status: true },
@@ -1597,7 +1608,8 @@ async function main(): Promise<void> {
   console.log("=================");
   console.log(`Environment: ${isProd ? "PRODUCTION" : "LOCAL"}`);
   console.log(`API URL: ${AGENT_API_URL}`);
-  console.log(`Redis URL: ${redisUrl?.substring(0, 30)}...`);
+  const redisUrl = process.env["UPSTASH_REDIS_REST_URL"] || process.env["KV_REST_API_URL"];
+  console.log(`Redis URL: ${redisUrl?.substring(0, 30) || "(not configured)"}...`);
   console.log(`Debug mode: ${isDebug ? "ON" : "OFF"}`);
 
   // Show additional debug info
