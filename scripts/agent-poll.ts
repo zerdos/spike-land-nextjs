@@ -422,6 +422,28 @@ export default function App() {
   }
 }
 
+async function notifySyncStatus(appId: string, isSyncing: boolean): Promise<void> {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/api/apps/${appId}/sync-status`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-api-key": process.env["INTERNAL_API_KEY"] || "",
+        },
+        body: JSON.stringify({ isSyncing }),
+      },
+    );
+    if (!response.ok) {
+      console.warn(`[Sync] Failed to notify UI: ${response.status}`);
+    }
+  } catch (_error) {
+    // Best effort - UI notification is not critical
+    console.debug("[Sync] UI notification failed (dev server may be down)");
+  }
+}
+
 /**
  * Sync code from local file to testing.spike.land
  * Includes retry logic with exponential backoff
@@ -431,8 +453,13 @@ export default function App() {
  *
  * @param codeSpace - The codespace ID
  * @param code - The code to sync
+ * @param appId - The app ID (optional, but needed for UI notifications)
  */
-async function syncCodeToServer(codeSpace: string, code: string): Promise<void> {
+async function syncCodeToServer(codeSpace: string, code: string, appId?: string): Promise<void> {
+  // Notify UI that sync is starting
+  if (appId) {
+    notifySyncStatus(appId, true);
+  }
   // The API endpoint structure is: /live/{codeSpace}/api/code
   // Method: PUT (not POST!)
   // Body: { code: string, run?: boolean }
@@ -486,9 +513,10 @@ async function syncCodeToServer(codeSpace: string, code: string): Promise<void> 
  * Changes are debounced and synced to testing.spike.land
  *
  * @param codeSpace - The codespace ID to watch
+ * @param appId - The app ID (for UI notifications)
  * @returns The FSWatcher instance (call .close() to stop)
  */
-function startFileWatcher(codeSpace: string): FSWatcher {
+function startFileWatcher(codeSpace: string, appId: string): FSWatcher {
   const localPath = getLocalFilePath(codeSpace);
   console.log(`  Starting file watcher for: ${localPath}`);
 
@@ -513,7 +541,7 @@ function startFileWatcher(codeSpace: string): FSWatcher {
       try {
         const code = await readFile(localPath, "utf-8");
         console.log(`  File changed, syncing ${code.length} bytes...`);
-        await syncCodeToServer(codeSpace, code);
+        await syncCodeToServer(codeSpace, code, appId);
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : "Unknown error";
         console.error(`  File sync error: ${errorMsg}`);
@@ -1308,7 +1336,7 @@ async function processMessage(
       console.log(`  Local file ready: ${localFilePath}`);
 
       // Start watching for changes
-      fileWatcher = startFileWatcher(app.codespaceId);
+      fileWatcher = startFileWatcher(app.codespaceId, appId);
     } catch (syncError) {
       const errorMsg = syncError instanceof Error ? syncError.message : "Unknown error";
       console.warn(`  Local file sync setup failed: ${errorMsg}`);
@@ -1400,7 +1428,7 @@ async function processMessage(
       try {
         const finalCode = await readFile(localFilePath, "utf-8");
         console.log(`  Final sync: ${finalCode.length} bytes`);
-        await syncCodeToServer(app.codespaceId, finalCode);
+        await syncCodeToServer(app.codespaceId, finalCode, appId);
       } catch (syncError) {
         const errorMsg = syncError instanceof Error ? syncError.message : "Unknown error";
         console.warn(`  Final sync failed: ${errorMsg}`);

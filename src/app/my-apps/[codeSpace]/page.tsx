@@ -172,6 +172,8 @@ export default function CodeSpacePage() {
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [streamingResponse, setStreamingResponse] = useState("");
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncFlashKey, setSyncFlashKey] = useState(0); // Triggers animation reset
   const [isStreaming, setIsStreaming] = useState(false);
   const [clearingChat, setClearingChat] = useState(false);
   const [movingToBin, setMovingToBin] = useState(false);
@@ -412,8 +414,17 @@ export default function CodeSpacePage() {
           case "code_updated":
             setIframeKey((prev) => prev + 1);
             setHasContent(true);
+            // Clear sync state after brief delay to show completion
+            setTimeout(() => setIsSyncing(false), 500);
             // Invalidate cache on code updates
             sessionStorage.removeItem(getSessionCacheKey(codeSpace));
+            break;
+
+          case "sync_in_progress":
+            setIsSyncing(data.data.isSyncing);
+            if (data.data.isSyncing) {
+              setSyncFlashKey((prev) => prev + 1); // Reset animation
+            }
             break;
         }
       } catch (error) {
@@ -1244,6 +1255,8 @@ export default function CodeSpacePage() {
                                       versionedUrl,
                                       `Version ${versionNumber}${isLatest ? " (latest)" : ""}`,
                                     )}
+                                  isSyncing={isLatest && isSyncing}
+                                  syncFlashKey={syncFlashKey}
                                 />
                               );
                             })()}

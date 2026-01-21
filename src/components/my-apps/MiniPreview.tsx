@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { SyncingOverlay } from "./SyncingOverlay";
 
 // Constants for iframe scaling - full browser dimensions for rendering
 const BROWSER_WIDTH = 1920;
@@ -12,6 +13,8 @@ interface MiniPreviewProps {
   versionNumber?: number;
   isLatest: boolean;
   onClick: () => void;
+  isSyncing?: boolean;
+  syncFlashKey?: number;
 }
 
 /**
@@ -23,6 +26,8 @@ export function MiniPreview({
   versionNumber,
   isLatest,
   onClick,
+  isSyncing,
+  syncFlashKey,
 }: MiniPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -172,6 +177,11 @@ export function MiniPreview({
             </div>
           )}
       </div>
+
+      {/* Sync visual effects */}
+      {isLatest && isSyncing && (
+        <SyncingOverlay isSyncing={isSyncing} flashKey={syncFlashKey ?? 0} />
+      )}
 
       {/* Hover overlay */}
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-200 flex items-center justify-center z-30 pointer-events-none">
