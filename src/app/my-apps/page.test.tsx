@@ -17,6 +17,7 @@ vi.mock("@/lib/prisma", () => ({
   default: {
     app: {
       findMany: vi.fn(),
+      count: vi.fn(),
     },
   },
 }));
@@ -24,6 +25,7 @@ vi.mock("@/lib/prisma", () => ({
 const mockAuth = vi.mocked(auth);
 const mockRedirect = vi.mocked(redirect);
 const mockFindMany = vi.mocked(prisma.app.findMany);
+const mockCount = vi.mocked(prisma.app.count);
 
 // Helper to create mock app data matching new schema
 function createMockApp(overrides: Partial<{
@@ -89,7 +91,7 @@ describe("MyAppsPage", () => {
       });
 
       try {
-        await MyAppsPage();
+        await MyAppsPage({ searchParams: Promise.resolve({}) });
       } catch (error) {
         expect((error as Error).message).toBe("REDIRECT:/auth/signin");
       }
@@ -109,8 +111,9 @@ describe("MyAppsPage", () => {
       });
 
       mockFindMany.mockResolvedValue([]);
+      mockCount.mockResolvedValue(0);
 
-      const result = await MyAppsPage();
+      const result = await MyAppsPage({ searchParams: Promise.resolve({}) });
 
       expect(mockAuth).toHaveBeenCalled();
       expect(mockRedirect).not.toHaveBeenCalled();
@@ -129,8 +132,9 @@ describe("MyAppsPage", () => {
       });
 
       mockFindMany.mockResolvedValue([]);
+      mockCount.mockResolvedValue(0);
 
-      await MyAppsPage();
+      await MyAppsPage({ searchParams: Promise.resolve({}) });
 
       expect(mockFindMany).toHaveBeenCalledWith({
         where: {
@@ -143,6 +147,8 @@ describe("MyAppsPage", () => {
             some: {}, // Only show apps that have at least one message
           },
         },
+        take: 8,
+        skip: 0,
         select: {
           id: true,
           name: true,
@@ -167,6 +173,18 @@ describe("MyAppsPage", () => {
           updatedAt: "desc",
         },
       });
+      expect(mockCount).toHaveBeenCalledWith({
+        where: {
+          userId: "user-123",
+          deletedAt: null,
+          status: {
+            notIn: ["ARCHIVED"],
+          },
+          messages: {
+            some: {}, // Only show apps that have at least one message
+          },
+        },
+      });
     });
   });
 
@@ -182,17 +200,18 @@ describe("MyAppsPage", () => {
         expires: "2025-12-31",
       });
       mockFindMany.mockResolvedValue([]);
+      mockCount.mockResolvedValue(0);
     });
 
     it("should render page title", async () => {
-      const component = await MyAppsPage();
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
       render(component);
 
       expect(screen.getByText("My Apps")).toBeInTheDocument();
     });
 
     it("should render page description", async () => {
-      const component = await MyAppsPage();
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
       render(component);
 
       expect(
@@ -201,7 +220,7 @@ describe("MyAppsPage", () => {
     });
 
     it("should render empty state when no apps", async () => {
-      const component = await MyAppsPage();
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
       render(component);
 
       expect(screen.getByText("No apps yet")).toBeInTheDocument();
@@ -213,7 +232,7 @@ describe("MyAppsPage", () => {
     });
 
     it("should render Create New App button", async () => {
-      const component = await MyAppsPage();
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
       render(component);
 
       const buttons = screen.getAllByText("Create New App");
@@ -258,7 +277,7 @@ describe("MyAppsPage", () => {
 
       mockFindMany.mockResolvedValue(mockApps);
 
-      const component = await MyAppsPage();
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
       render(component);
 
       // App cards show descriptions (app names no longer displayed in card design)
@@ -283,8 +302,9 @@ describe("MyAppsPage", () => {
       ];
 
       mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(mockApps.length);
 
-      const component = await MyAppsPage();
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
       render(component);
 
       // App cards show descriptions (status badges removed from card design)
@@ -303,7 +323,7 @@ describe("MyAppsPage", () => {
 
       mockFindMany.mockResolvedValue(mockApps);
 
-      const component = await MyAppsPage();
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
       render(component);
 
       // New 3D cards show "5 messages" format
@@ -321,7 +341,7 @@ describe("MyAppsPage", () => {
 
       mockFindMany.mockResolvedValue(mockApps);
 
-      const component = await MyAppsPage();
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
       render(component);
 
       // New 3D cards show "7 images" format
@@ -348,8 +368,9 @@ describe("MyAppsPage", () => {
       ];
 
       mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(mockApps.length);
 
-      const component = await MyAppsPage();
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
       render(component);
 
       expect(screen.getByText(/All \(3\)/)).toBeInTheDocument();
@@ -370,7 +391,7 @@ describe("MyAppsPage", () => {
 
       mockFindMany.mockResolvedValue(mockApps);
 
-      const component = await MyAppsPage();
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
       render(component);
 
       // New 3D cards show live iframe preview
@@ -390,8 +411,9 @@ describe("MyAppsPage", () => {
       ];
 
       mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(mockApps.length);
 
-      const component = await MyAppsPage();
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
       render(component);
 
       // No iframe when codespaceUrl is null - shows placeholder
@@ -410,7 +432,7 @@ describe("MyAppsPage", () => {
 
       mockFindMany.mockResolvedValue(mockApps);
 
-      const component = await MyAppsPage();
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
       render(component);
 
       // App card is rendered with description visible (status badge was removed from design)
