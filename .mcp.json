@@ -7,6 +7,17 @@
         "-y",
         "@playwright/mcp@latest"
       ]
+    },
+    "spike-land": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@spike-npm-land/mcp-server"
+      ],
+      "env": {
+        "SPIKE_LAND_API_KEY": "${SPIKE_LAND_API_KEY}"
+      }
     }
   }
 }
