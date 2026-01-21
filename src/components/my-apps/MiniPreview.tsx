@@ -8,6 +8,11 @@ import { SyncingOverlay } from "./SyncingOverlay";
 const BROWSER_WIDTH = 1920;
 const BROWSER_HEIGHT = 1080;
 
+// E2E mode detection - skip lazy loading for E2E tests to ensure iframe is visible
+const isE2EMode = typeof window !== "undefined" &&
+  (window.location.search.includes("e2e=true") ||
+    process.env["NEXT_PUBLIC_E2E_MODE"] === "true");
+
 interface MiniPreviewProps {
   codespaceUrl: string;
   versionNumber?: number;
@@ -30,7 +35,8 @@ export function MiniPreview({
   syncFlashKey,
 }: MiniPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  // In E2E mode, skip lazy loading and render immediately
+  const [isVisible, setIsVisible] = useState(isE2EMode);
   const [isLoaded, setIsLoaded] = useState(false);
   const [containerSize, setContainerSize] = useState({ width: 300, height: 200 });
 
@@ -40,8 +46,11 @@ export function MiniPreview({
     containerSize.height / BROWSER_HEIGHT,
   );
 
-  // Lazy loading via Intersection Observer
+  // Lazy loading via Intersection Observer (skip in E2E mode)
   useEffect(() => {
+    // Skip if already visible (e.g., E2E mode)
+    if (isVisible) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
@@ -57,7 +66,7 @@ export function MiniPreview({
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [isVisible]);
 
   // Track container size for responsive scaling
   useEffect(() => {
@@ -152,6 +161,7 @@ export function MiniPreview({
               {/* Scaled iframe */}
               <iframe
                 src={codespaceUrl}
+                data-testid="mini-preview-iframe"
                 className={`border-0 pointer-events-none transition-opacity duration-300 ${
                   isLoaded ? "opacity-100" : "opacity-0"
                 }`}
@@ -166,7 +176,7 @@ export function MiniPreview({
                 }}
                 title="App Preview"
                 sandbox="allow-scripts allow-same-origin"
-                loading="lazy"
+                loading={isE2EMode ? "eager" : "lazy"}
                 onLoad={() => setIsLoaded(true)}
               />
             </>

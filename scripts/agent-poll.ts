@@ -79,7 +79,20 @@ function createPrismaClient() {
   });
 }
 
-const prisma = createPrismaClient();
+// Lazy Prisma initialization - only created when needed (not at import time)
+// This allows the module to be imported for testing without DATABASE_URL
+let prisma: PrismaClient | null = null;
+
+/**
+ * Get the Prisma client, creating it lazily on first use.
+ * Throws an error if DATABASE_URL is not configured.
+ */
+function getPrisma(): PrismaClient {
+  if (!prisma) {
+    prisma = createPrismaClient();
+  }
+  return prisma;
+}
 
 // Lazy Redis initialization - only created when needed (not at import time)
 // This allows the module to be imported for testing without Redis credentials
@@ -654,7 +667,7 @@ async function setAgentWorking(appId: string, isWorking: boolean): Promise<void>
   }
 
   // Also update in database
-  await prisma.app.update({
+  await getPrisma().app.update({
     where: { id: appId },
     data: {
       lastAgentActivity: isWorking ? new Date() : undefined,
@@ -666,7 +679,7 @@ async function setAgentWorking(appId: string, isWorking: boolean): Promise<void>
  * Add an agent message to the app's chat
  */
 async function addAgentMessage(appId: string, content: string): Promise<void> {
-  await prisma.appMessage.create({
+  await getPrisma().appMessage.create({
     data: {
       appId,
       role: "AGENT",
@@ -679,7 +692,7 @@ async function addAgentMessage(appId: string, content: string): Promise<void> {
  * Add a system message to the app's chat
  */
 async function addSystemMessage(appId: string, content: string): Promise<void> {
-  await prisma.appMessage.create({
+  await getPrisma().appMessage.create({
     data: {
       appId,
       role: "SYSTEM",
@@ -708,7 +721,7 @@ async function updateApp(appId: string, update: AppUpdate): Promise<void> {
   }
 
   if (Object.keys(data).length > 0) {
-    await prisma.app.update({
+    await getPrisma().app.update({
       where: { id: appId },
       data,
     });
@@ -723,12 +736,12 @@ async function updateAppStatus(
   status: AppBuildStatus,
   message?: string,
 ): Promise<void> {
-  await prisma.$transaction([
-    prisma.app.update({
+  await getPrisma().$transaction([
+    getPrisma().app.update({
       where: { id: appId },
       data: { status },
     }),
-    prisma.appStatusHistory.create({
+    getPrisma().appStatusHistory.create({
       data: {
         appId,
         status,
@@ -742,7 +755,7 @@ async function updateAppStatus(
  * Get the user message content by ID
  */
 async function getMessageContent(messageId: string): Promise<string | null> {
-  const message = await prisma.appMessage.findUnique({
+  const message = await getPrisma().appMessage.findUnique({
     where: { id: messageId },
     select: { content: true, role: true },
   });
@@ -754,7 +767,7 @@ async function getMessageContent(messageId: string): Promise<string | null> {
  * Get app details for context
  */
 async function getAppContext(appId: string) {
-  return prisma.app.findUnique({
+  return getPrisma().app.findUnique({
     where: { id: appId },
     include: {
       requirements: true,
@@ -774,7 +787,7 @@ async function getAppContext(appId: string) {
  * Get the last N messages with their attachments for context
  */
 async function getChatHistory(appId: string, limit = 10): Promise<ChatMessage[]> {
-  const messages = await prisma.appMessage.findMany({
+  const messages = await getPrisma().appMessage.findMany({
     where: { appId },
     include: {
       attachments: {
@@ -1259,7 +1272,7 @@ async function processMessage(
   }
 
   // Mark message as read
-  await prisma.appMessage.update({
+  await getPrisma().appMessage.update({
     where: { id: messageId },
     data: { isRead: true },
   });
@@ -1583,7 +1596,7 @@ async function getQueueStats(): Promise<void> {
 
   for (const appId of appIds) {
     const count = await redisClient.llen(KEYS.APP_PENDING_MESSAGES(appId));
-    const app = await prisma.app.findUnique({
+    const app = await getPrisma().app.findUnique({
       where: { id: appId },
       select: { name: true, status: true },
     });
@@ -1628,7 +1641,7 @@ async function main(): Promise<void> {
 
   if (showStats) {
     await getQueueStats();
-    await prisma.$disconnect();
+    await getPrisma().$disconnect();
     return;
   }
 
@@ -1636,7 +1649,7 @@ async function main(): Promise<void> {
     console.log("Running once...\n");
     const processed = await poll();
     console.log(`\nDone. Processed ${processed} apps.`);
-    await prisma.$disconnect();
+    await getPrisma().$disconnect();
     return;
   }
 
@@ -1655,13 +1668,13 @@ async function main(): Promise<void> {
   // Handle graceful shutdown
   process.on("SIGINT", async () => {
     console.log("\nShutting down...");
-    await prisma.$disconnect();
+    await getPrisma().$disconnect();
     process.exit(0);
   });
 
   process.on("SIGTERM", async () => {
     console.log("\nShutting down...");
-    await prisma.$disconnect();
+    await getPrisma().$disconnect();
     process.exit(0);
   });
 
