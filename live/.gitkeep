@@ -1,0 +1,3 @@
+# This file ensures the live/ directory exists in git.
+# The live/ directory is used for local code sync between agents and testing.spike.land.
+# Actual codespace files (*.tsx, *.meta.json) are gitignored.

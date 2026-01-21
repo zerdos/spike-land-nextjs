@@ -55,7 +55,9 @@ dotenv.config({ path: ".env", quiet: true });
 import { type AppBuildStatus, PrismaClient } from "@prisma/client";
 import { Redis } from "@upstash/redis";
 import { type ChildProcess, spawn } from "child_process";
-import { mkdir, rm, writeFile } from "fs/promises";
+import chokidar, { type FSWatcher } from "chokidar";
+import { existsSync, mkdirSync } from "fs";
+import { mkdir, readFile, rm, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
 
@@ -101,6 +103,18 @@ const KEYS = {
   APPS_WITH_PENDING: "apps:with_pending",
   AGENT_WORKING: (appId: string) => `app:${appId}:agent_working`,
 } as const;
+
+// Live directory for local file sync
+// Use process.cwd() since this script is always run from the project root
+const LIVE_DIR = join(process.cwd(), "live");
+const TESTING_SPIKE_LAND_URL = "https://testing.spike.land";
+
+// Debounce delay for file watcher (ms)
+const FILE_SYNC_DEBOUNCE_MS = 100;
+
+// Retry configuration for syncing to server
+const MAX_SYNC_RETRIES = 3;
+const INITIAL_RETRY_DELAY_MS = 100;
 
 // Valid status transitions
 const VALID_STATUSES: AppBuildStatus[] = [
@@ -272,6 +286,237 @@ function findTestKeywordHandler(
     }
   }
   return null;
+}
+
+// ============================================================
+// Live Directory File Sync Functions
+// ============================================================
+
+/**
+ * Ensure the live directory exists
+ */
+function ensureLiveDir(): void {
+  if (!existsSync(LIVE_DIR)) {
+    mkdirSync(LIVE_DIR, { recursive: true });
+  }
+}
+
+/**
+ * Get the local file path for a codespace
+ */
+function getLocalFilePath(codeSpace: string): string {
+  return join(LIVE_DIR, `${codeSpace}.tsx`);
+}
+
+/**
+ * Get the metadata file path for a codespace
+ */
+function getMetadataFilePath(codeSpace: string): string {
+  return join(LIVE_DIR, `${codeSpace}.meta.json`);
+}
+
+/**
+ * Download code from testing.spike.land to local live/ directory
+ *
+ * @param codeSpace - The codespace ID
+ * @returns The local file path where code was saved
+ */
+async function downloadCodeToLive(codeSpace: string): Promise<string> {
+  ensureLiveDir();
+
+  const sessionUrl = `${TESTING_SPIKE_LAND_URL}/live/${codeSpace}/session.json`;
+  console.log(`  Downloading code from: ${sessionUrl}`);
+
+  try {
+    const response = await fetch(sessionUrl);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        // Codespace doesn't exist yet - create an empty placeholder
+        console.log(`  Codespace ${codeSpace} not found - creating placeholder`);
+        const placeholderCode = `// New codespace: ${codeSpace}
+// This file will be synced to testing.spike.land automatically
+
+export default function App() {
+  return (
+    <div className="p-4">
+      <h1>Hello from ${codeSpace}</h1>
+    </div>
+  );
+}
+`;
+        const localPath = getLocalFilePath(codeSpace);
+        await writeFile(localPath, placeholderCode, "utf-8");
+
+        // Write metadata
+        const metadataPath = getMetadataFilePath(codeSpace);
+        await writeFile(
+          metadataPath,
+          JSON.stringify(
+            {
+              codeSpace,
+              downloadedAt: new Date().toISOString(),
+              source: "placeholder",
+            },
+            null,
+            2,
+          ),
+          "utf-8",
+        );
+
+        return localPath;
+      }
+      throw new Error(`Failed to fetch session: HTTP ${response.status}`);
+    }
+
+    const session = await response.json();
+    const code = session.code || session.cSess?.code || "";
+
+    // Write code to local file
+    const localPath = getLocalFilePath(codeSpace);
+    await writeFile(localPath, code, "utf-8");
+    console.log(`  Saved code to: ${localPath} (${code.length} bytes)`);
+
+    // Write metadata
+    const metadataPath = getMetadataFilePath(codeSpace);
+    await writeFile(
+      metadataPath,
+      JSON.stringify(
+        {
+          codeSpace,
+          downloadedAt: new Date().toISOString(),
+          source: sessionUrl,
+          originalLength: code.length,
+        },
+        null,
+        2,
+      ),
+      "utf-8",
+    );
+
+    return localPath;
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    console.error(`  Failed to download code: ${errorMsg}`);
+    throw error;
+  }
+}
+
+/**
+ * Sync code from local file to testing.spike.land
+ * Includes retry logic with exponential backoff
+ *
+ * Uses PUT /api/code endpoint which updates the code and optionally transpiles it.
+ * See packages/testing.spike.land/src/routes/apiRoutes.ts for API details.
+ *
+ * @param codeSpace - The codespace ID
+ * @param code - The code to sync
+ */
+async function syncCodeToServer(codeSpace: string, code: string): Promise<void> {
+  // The API endpoint structure is: /live/{codeSpace}/api/code
+  // Method: PUT (not POST!)
+  // Body: { code: string, run?: boolean }
+  const apiUrl = `${TESTING_SPIKE_LAND_URL}/live/${codeSpace}/api/code`;
+
+  let lastError: Error | null = null;
+  let delay = INITIAL_RETRY_DELAY_MS;
+
+  for (let attempt = 1; attempt <= MAX_SYNC_RETRIES; attempt++) {
+    try {
+      const response = await fetch(apiUrl, {
+        method: "PUT", // Important: API uses PUT, not POST
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code,
+          run: true, // Also transpile the code for instant preview updates
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log(
+        `  Synced code to server (${code.length} bytes) - ${result.message || "success"}`,
+      );
+      return;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Unknown error");
+      console.warn(
+        `  Sync attempt ${attempt}/${MAX_SYNC_RETRIES} failed: ${lastError.message}`,
+      );
+
+      if (attempt < MAX_SYNC_RETRIES) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        delay *= 2; // Exponential backoff
+      }
+    }
+  }
+
+  console.error(`  Failed to sync code after ${MAX_SYNC_RETRIES} attempts`);
+  throw lastError;
+}
+
+/**
+ * Start watching a local codespace file for changes
+ * Changes are debounced and synced to testing.spike.land
+ *
+ * @param codeSpace - The codespace ID to watch
+ * @returns The FSWatcher instance (call .close() to stop)
+ */
+function startFileWatcher(codeSpace: string): FSWatcher {
+  const localPath = getLocalFilePath(codeSpace);
+  console.log(`  Starting file watcher for: ${localPath}`);
+
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const watcher = chokidar.watch(localPath, {
+    persistent: true,
+    ignoreInitial: true, // Don't fire on initial add
+    awaitWriteFinish: {
+      stabilityThreshold: 50,
+      pollInterval: 10,
+    },
+  });
+
+  watcher.on("change", async () => {
+    // Debounce rapid changes
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+
+    debounceTimer = setTimeout(async () => {
+      try {
+        const code = await readFile(localPath, "utf-8");
+        console.log(`  File changed, syncing ${code.length} bytes...`);
+        await syncCodeToServer(codeSpace, code);
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "Unknown error";
+        console.error(`  File sync error: ${errorMsg}`);
+      }
+    }, FILE_SYNC_DEBOUNCE_MS);
+  });
+
+  watcher.on("error", (error: unknown) => {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error(`  Watcher error: ${errorMsg}`);
+  });
+
+  return watcher;
+}
+
+/**
+ * Stop the file watcher and clean up resources
+ *
+ * @param watcher - The FSWatcher to stop
+ */
+async function stopFileWatcher(watcher: FSWatcher): Promise<void> {
+  console.log("  Stopping file watcher...");
+  await watcher.close();
 }
 
 /**
@@ -530,17 +775,40 @@ function buildSystemPrompt(app: {
   name: string;
   codespaceId: string | null;
   codespaceUrl: string | null;
+  localFilePath?: string; // Local file for faster editing (when available)
 }): string {
   const codespaceInfo = app.codespaceId
     ? `Current codespace ID: ${app.codespaceId}
 Live URL: ${app.codespaceUrl || `https://spike.land/live/${app.codespaceId}`}`
     : `No codespace yet. You MUST create one using codespace_update with a descriptive codespace_id.`;
 
+  // Build local file mode instructions if available
+  const localFileInstructions = app.localFilePath
+    ? `
+
+## LOCAL FILE MODE (Recommended - Faster!)
+
+The code is synced to a local file for faster editing:
+- **File path**: ${app.localFilePath}
+- **Auto-sync**: Changes are automatically synced to the server
+- **Use Read/Edit/Write tools directly** - no MCP tools needed!
+
+### To modify the code (PREFERRED METHOD):
+1. Read the file: \`Read ${app.localFilePath}\`
+2. Edit the file: \`Edit ${app.localFilePath}\` with your changes
+3. Changes sync automatically to the live preview!
+
+This is FASTER than MCP tools because file operations are instant and the watcher syncs changes in real-time.
+
+You can still use MCP tools as a fallback if needed, but local file editing is recommended.`
+    : "";
+
   return `You are an AI agent building a React application called "${app.name}".
 
 ${codespaceInfo}
+${localFileInstructions}
 
-## CRITICAL: You MUST use MCP tools to update code
+## MCP Tools (Alternative Method)
 
 Available spike-land MCP tools:
 - mcp__spike-land__codespace_update: Create or update React code
@@ -556,7 +824,11 @@ Available spike-land MCP tools:
   Parameters: { codespace_id: string }
 
 ## Guidelines
-1. ALWAYS use codespace_update to modify code - do NOT just describe changes
+1. ${
+    app.localFilePath
+      ? "PREFER editing the local file at " + app.localFilePath + " for faster updates"
+      : "ALWAYS use codespace_update to modify code - do NOT just describe changes"
+  }
 2. For new apps, use a codespace_id like "my-app-name" (lowercase, hyphens)
 3. Write complete, working React/TypeScript code with Tailwind CSS
 4. After updating, confirm what you changed
@@ -996,11 +1268,35 @@ async function processMessage(
     codespaceUrl: app.codespaceUrl,
   });
 
-  // Build system prompt
+  // ============================================================
+  // Local File Sync Setup (if codespace exists)
+  // ============================================================
+  let localFilePath: string | undefined;
+  let fileWatcher: FSWatcher | undefined;
+
+  if (app.codespaceId) {
+    try {
+      // Download current code to local file
+      localFilePath = await downloadCodeToLive(app.codespaceId);
+      console.log(`  Local file ready: ${localFilePath}`);
+
+      // Start watching for changes
+      fileWatcher = startFileWatcher(app.codespaceId);
+    } catch (syncError) {
+      const errorMsg = syncError instanceof Error ? syncError.message : "Unknown error";
+      console.warn(`  Local file sync setup failed: ${errorMsg}`);
+      console.log(`  Continuing with MCP-only mode...`);
+      // Continue without local file - MCP tools will still work
+      localFilePath = undefined;
+    }
+  }
+
+  // Build system prompt (with local file path if available)
   const systemPrompt = buildSystemPrompt({
     name: app.name,
     codespaceId: app.codespaceId,
     codespaceUrl: app.codespaceUrl,
+    localFilePath, // Pass local file path for faster editing
   });
 
   // Create temporary MCP config
@@ -1063,7 +1359,28 @@ async function processMessage(
       agentMessage: `Agent error: ${errorMsg}`,
     };
   } finally {
-    // Clean up temp files
+    // ============================================================
+    // Cleanup: Stop watcher, final sync, remove temp files
+    // ============================================================
+
+    // Stop file watcher if running
+    if (fileWatcher) {
+      await stopFileWatcher(fileWatcher);
+    }
+
+    // Final sync to ensure server has latest code
+    if (localFilePath && app.codespaceId) {
+      try {
+        const finalCode = await readFile(localFilePath, "utf-8");
+        console.log(`  Final sync: ${finalCode.length} bytes`);
+        await syncCodeToServer(app.codespaceId, finalCode);
+      } catch (syncError) {
+        const errorMsg = syncError instanceof Error ? syncError.message : "Unknown error";
+        console.warn(`  Final sync failed: ${errorMsg}`);
+      }
+    }
+
+    // Clean up temp MCP config files
     if (mcpConfigPath) {
       await cleanupMcpConfig(mcpConfigPath);
     }
