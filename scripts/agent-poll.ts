@@ -428,8 +428,9 @@ async function notifySyncStatus(
   codeUpdated = false,
 ): Promise<void> {
   try {
+    const uiBaseUrl = process.env["UI_BASE_URL"] || "http://localhost:3000";
     const response = await fetch(
-      `http://localhost:3000/api/apps/${appId}/sync-status`,
+      `${uiBaseUrl}/api/apps/${appId}/sync-status`,
       {
         method: "POST",
         headers: {
@@ -462,7 +463,7 @@ async function notifySyncStatus(
 async function syncCodeToServer(codeSpace: string, code: string, appId?: string): Promise<void> {
   // Notify UI that sync is starting
   if (appId) {
-    notifySyncStatus(appId, true);
+    void notifySyncStatus(appId, true);
   }
   // The API endpoint structure is: /live/{codeSpace}/api/code
   // Method: PUT (not POST!)
@@ -497,7 +498,7 @@ async function syncCodeToServer(codeSpace: string, code: string, appId?: string)
 
       // Notify UI that sync is complete AND code is updated
       if (appId) {
-        notifySyncStatus(appId, false, true);
+        void notifySyncStatus(appId, false, true);
       }
       return;
     } catch (error) {

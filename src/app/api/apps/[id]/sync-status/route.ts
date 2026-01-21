@@ -1,7 +1,13 @@
 import { auth } from "@/auth";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
+import { z } from "zod";
 import { broadcastCodeUpdated, broadcastSyncInProgress } from "../messages/stream/route";
+
+const syncStatusSchema = z.object({
+  isSyncing: z.boolean().optional(),
+  codeUpdated: z.boolean().optional(),
+});
 
 export async function POST(
   request: NextRequest,
@@ -31,8 +37,28 @@ export async function POST(
 
   const { id } = params;
 
-  const body = await request.json();
-  const { isSyncing, codeUpdated } = body;
+  // Parse JSON body with error handling
+  const { data: rawBody, error: parseError } = await tryCatch(request.json());
+  if (parseError || !rawBody) {
+    return new Response(JSON.stringify({ error: "Invalid request body" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Validate body with Zod schema
+  const parseResult = syncStatusSchema.safeParse(rawBody);
+  if (!parseResult.success) {
+    return new Response(
+      JSON.stringify({ error: "Invalid sync status data", details: parseResult.error.flatten() }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
+
+  const { isSyncing, codeUpdated } = parseResult.data;
 
   // Broadcast to connected clients
   if (isSyncing !== undefined) {

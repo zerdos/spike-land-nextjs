@@ -18,22 +18,28 @@ export function SyncingOverlay({ isSyncing, flashKey }: SyncingOverlayProps) {
       return;
     }
 
+    // Track timeout to clear on unmount/re-render
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     const triggerGlitch = () => {
       setGlitchActive(true);
-      setTimeout(() => setGlitchActive(false), 150);
+      timeoutId = setTimeout(() => setGlitchActive(false), 150);
     };
 
     // Initial glitch
     triggerGlitch();
 
-    // Random glitches every 500-1500ms
+    // Random glitches every 800ms
     const interval = setInterval(() => {
       if (Math.random() > 0.3) {
         triggerGlitch();
       }
     }, 800);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [isSyncing, flashKey]);
 
   return (
