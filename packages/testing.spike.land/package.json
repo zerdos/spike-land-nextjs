@@ -44,12 +44,12 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "rimraf": "6.1.2",
-    "rollup": "4.55.2",
+    "rollup": "4.55.3",
     "typescript": "5.9.3",
     "vitest": "4.0.17"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "3.0.15",
+    "@ai-sdk/anthropic": "3.0.17",
     "@anthropic-ai/sdk": "0.71.2",
     "@spike-npm-land/code": "0.9.56",
     "@types/node": "25.0.9",
@@ -63,7 +63,7 @@
     "jiti": "2.6.1",
     "mime-db": "1.54.0",
     "mime-types": "3.0.2",
-    "miniflare": "4.20260114.0",
+    "miniflare": "4.20260116.0",
     "openai": "6.16.0",
     "p-map": "7.0.4",
     "p-queue": "9.1.0",
