@@ -8,7 +8,7 @@ import { GET, POST } from "./route";
 
 // Mocking prisma
 vi.mock("@/lib/prisma", () => ({
-  prisma: {
+  default: {
     workspace: {
       findUnique: vi.fn(),
     },

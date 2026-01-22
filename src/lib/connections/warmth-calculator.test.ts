@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/prisma", () => ({
-  prisma: {
+  default: {
     connection: {
       findUnique: vi.fn(),
     },

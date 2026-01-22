@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/prisma", () => ({
-  prisma: {
+  default: {
     inboxItem: {
       groupBy: vi.fn(),
     },
@@ -15,9 +15,11 @@ vi.mock("@/lib/prisma", () => ({
     connection: {
       create: vi.fn(),
     },
-    $transaction: vi.fn((callback) => callback(prisma)),
+    $transaction: vi.fn((callback: (tx: unknown) => Promise<void>) => callback(mockPrisma)),
   },
 }));
+
+const mockPrisma = (await import("@/lib/prisma")).default;
 
 describe("syncInboxConnections", () => {
   beforeEach(() => {

@@ -30,14 +30,29 @@ export function ConnectionDetail({ connection, workspaceSlug }: ConnectionDetail
   );
   const [notes, setNotes] = useState(connection.notes || "");
 
-  const handleStatusChange = (newStatus: MeetupPipelineStatus) => {
+  const handleStatusChange = async (newStatus: MeetupPipelineStatus) => {
     setPipelineStatus(newStatus);
-    // TODO: Call API to update status
+    try {
+      await fetch(`/api/orbit/${workspaceSlug}/connections/${connection.id}/meetup`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+    } catch (error) {
+      console.error("Failed to update status:", error);
+    }
   };
 
-  const handleSaveNotes = () => {
-    // TODO: Call API to save notes
-    console.log("Saving notes:", notes);
+  const handleSaveNotes = async () => {
+    try {
+      await fetch(`/api/orbit/${workspaceSlug}/connections/${connection.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes }),
+      });
+    } catch (error) {
+      console.error("Failed to save notes:", error);
+    }
   };
 
   return (

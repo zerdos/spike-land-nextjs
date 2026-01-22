@@ -88,6 +88,8 @@ describe("OrbitSidebar", () => {
       "Dashboard",
       "Streams",
       "Inbox",
+      "Connections",
+      "Reminders",
       "Calendar",
       "Content Library",
       "Brand Brain",
@@ -201,13 +203,15 @@ describe("OrbitSidebar", () => {
     expect(links[0]).toHaveTextContent("Dashboard");
     expect(links[1]).toHaveTextContent("Streams");
     expect(links[2]).toHaveTextContent("Inbox");
-    expect(links[3]).toHaveTextContent("Calendar");
-    expect(links[4]).toHaveTextContent("Allocator");
-    expect(links[5]).toHaveTextContent("Content Library");
-    expect(links[6]).toHaveTextContent("Brand Brain");
-    expect(links[7]).toHaveTextContent("AI Agents");
-    expect(links[8]).toHaveTextContent("Workflows");
-    expect(links[9]).toHaveTextContent("Settings");
+    expect(links[3]).toHaveTextContent("Connections");
+    expect(links[4]).toHaveTextContent("Reminders");
+    expect(links[5]).toHaveTextContent("Calendar");
+    expect(links[6]).toHaveTextContent("Allocator");
+    expect(links[7]).toHaveTextContent("Content Library");
+    expect(links[8]).toHaveTextContent("Brand Brain");
+    expect(links[9]).toHaveTextContent("AI Agents");
+    expect(links[10]).toHaveTextContent("Workflows");
+    expect(links[11]).toHaveTextContent("Settings");
   });
 
   it("renders with different workspace slugs", async () => {
