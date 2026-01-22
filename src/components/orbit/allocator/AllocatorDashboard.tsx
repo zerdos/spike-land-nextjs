@@ -10,6 +10,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -107,9 +108,51 @@ export function AllocatorDashboard({ workspaceSlug }: AllocatorDashboardProps) {
   }, [fetchData]);
 
   const handleApplyRecommendation = async (recommendationId: string) => {
-    // TODO(#807): Implement recommendation application via API
-    console.log("Applying recommendation:", recommendationId);
-    await fetchData();
+    // Find the recommendation to apply
+    const recommendation = data?.recommendations.find((r) => r.id === recommendationId);
+    if (!recommendation) {
+      toast.error("Recommendation not found");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/orbit/${workspaceSlug}/allocator/recommendations/apply`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            recommendationId: recommendation.id,
+            campaignId: recommendation.targetCampaign.id,
+            currentBudget: recommendation.targetCampaign.currentBudget,
+            suggestedNewBudget: recommendation.suggestedNewBudget,
+            type: recommendation.type,
+            reason: recommendation.reason,
+            confidence: recommendation.confidence,
+          }),
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to apply recommendation");
+      }
+
+      if (result.result?.status === "SKIPPED") {
+        toast.warning(result.message || "Recommendation was skipped");
+      } else {
+        toast.success(result.message || "Recommendation applied successfully");
+      }
+
+      // Refresh data to show updated state
+      await fetchData();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      toast.error(`Failed to apply recommendation: ${errorMessage}`);
+    }
   };
 
   if (isLoading) {

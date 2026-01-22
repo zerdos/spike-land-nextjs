@@ -7,5 +7,6 @@
  */
 
 export * from "./channel-manager";
+export * from "./notification-service";
 export * from "./slack-channel";
 export * from "./types";

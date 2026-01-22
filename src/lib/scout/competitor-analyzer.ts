@@ -6,6 +6,7 @@
  */
 
 import prisma from "@/lib/prisma";
+import { getWorkspaceMetrics } from "@/lib/scout/workspace-metrics";
 
 export interface EngagementMetrics {
   averageLikes: number;
@@ -152,12 +153,18 @@ export async function generateBenchmarkReport(
     totalPosts: totalCompetitorPosts,
   };
 
-  // TODO(#806): Replace mocked metrics with real SocialMetrics data from workspace
+  // Fetch real workspace metrics from SocialMetrics table
+  const workspaceMetrics = await getWorkspaceMetrics(
+    workspaceId,
+    startDate,
+    endDate,
+  );
+
   const ownMetrics = {
-    averageLikes: 0,
-    averageComments: 0,
-    averageShares: 0,
-    totalPosts: 0,
+    averageLikes: workspaceMetrics.averageLikes,
+    averageComments: workspaceMetrics.averageComments,
+    averageShares: workspaceMetrics.averageShares,
+    totalPosts: workspaceMetrics.totalPosts,
   };
 
   const period = `${startDate.toISOString().slice(0, 10)}_${endDate.toISOString().slice(0, 10)}`;

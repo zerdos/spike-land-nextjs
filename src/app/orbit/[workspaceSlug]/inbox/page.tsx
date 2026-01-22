@@ -8,6 +8,7 @@ import { InboxList } from "@/components/orbit/inbox/inbox-list";
 import { InboxReplyPanel } from "@/components/orbit/inbox/inbox-reply-panel";
 import { useWorkspaceMembers } from "@/hooks/useWorkspaceMembers";
 import type { InboxItem } from "@prisma/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
@@ -16,6 +17,7 @@ export default function InboxPage() {
   const workspaceSlug = params?.["workspaceSlug"] as string;
   const [filters, setFilters] = useState<FilterFormValues>({});
   const [selectedItem, setSelectedItem] = useState<InboxItem | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: members = [] } = useWorkspaceMembers(workspaceSlug);
 
@@ -24,7 +26,9 @@ export default function InboxPage() {
   };
 
   const handleAssign = () => {
-    // TODO(#808): Implement inbox list refetch after assignment
+    queryClient.invalidateQueries({
+      queryKey: ["inboxItems", workspaceSlug],
+    });
   };
 
   return (

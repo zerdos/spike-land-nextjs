@@ -11,6 +11,29 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AllocatorDashboard } from "./AllocatorDashboard";
 
+// Mock sonner toast
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+  },
+}));
+
+// Mock useAutopilotConfig hook
+vi.mock("@/hooks/useAutopilotConfig", () => ({
+  useAutopilotConfig: () => ({
+    config: null,
+    isLoading: false,
+    error: null,
+    updateConfig: vi.fn(),
+    toggleAutopilot: vi.fn(),
+    refreshConfig: vi.fn(),
+  }),
+}));
+
+import { toast } from "sonner";
+
 // Mock Recharts
 vi.mock("recharts", () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode; }) => (
@@ -273,5 +296,268 @@ describe("AllocatorDashboard", () => {
     expect(screen.getByText("High Confidence")).toBeInTheDocument();
     expect(screen.getByText("High performer with improving metrics"))
       .toBeInTheDocument();
+  });
+
+  describe("Apply Recommendation", () => {
+    it("calls apply API when recommendation is applied", async () => {
+      const user = userEvent.setup();
+
+      // First call returns dashboard data, subsequent calls are for apply and refresh
+      vi.mocked(global.fetch)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockApiResponse),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              success: true,
+              result: { status: "COMPLETED", budgetChange: 10000, newBudget: 60000 },
+              message: "Recommendation applied successfully",
+            }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockApiResponse),
+        } as Response);
+
+      render(<AllocatorDashboard workspaceSlug="test-workspace" />);
+
+      // Wait for dashboard to load
+      await waitFor(() => {
+        expect(screen.getByText("Scale Winner")).toBeInTheDocument();
+      });
+
+      // Find and click the Apply button
+      const applyButton = screen.getByRole("button", {
+        name: "Apply Recommendation",
+      });
+      await user.click(applyButton);
+
+      // Verify API was called with correct parameters
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          "/api/orbit/test-workspace/allocator/recommendations/apply",
+          expect.objectContaining({
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      });
+
+      // Verify success toast was shown
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith(
+          "Recommendation applied successfully",
+        );
+      });
+    });
+
+    it("shows error toast when apply fails", async () => {
+      const user = userEvent.setup();
+
+      vi.mocked(global.fetch)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockApiResponse),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: false,
+          json: () =>
+            Promise.resolve({
+              error: "Campaign not found in this workspace",
+            }),
+        } as Response);
+
+      render(<AllocatorDashboard workspaceSlug="test-workspace" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Scale Winner")).toBeInTheDocument();
+      });
+
+      const applyButton = screen.getByRole("button", {
+        name: "Apply Recommendation",
+      });
+      await user.click(applyButton);
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith(
+          expect.stringContaining("Failed to apply recommendation"),
+        );
+      });
+    });
+
+    it("shows warning toast when recommendation is skipped", async () => {
+      const user = userEvent.setup();
+
+      vi.mocked(global.fetch)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockApiResponse),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              success: true,
+              result: { status: "SKIPPED", budgetChange: 0, newBudget: 50000 },
+              message: "Recommendation skipped: Daily budget limit reached",
+            }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockApiResponse),
+        } as Response);
+
+      render(<AllocatorDashboard workspaceSlug="test-workspace" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Scale Winner")).toBeInTheDocument();
+      });
+
+      const applyButton = screen.getByRole("button", {
+        name: "Apply Recommendation",
+      });
+      await user.click(applyButton);
+
+      await waitFor(() => {
+        expect(toast.warning).toHaveBeenCalledWith(
+          expect.stringContaining("skipped"),
+        );
+      });
+    });
+
+    it("sends correct recommendation data to API", async () => {
+      const user = userEvent.setup();
+      let capturedBody: string | undefined;
+
+      vi.mocked(global.fetch)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockApiResponse),
+        } as Response)
+        .mockImplementationOnce(async (_url, options) => {
+          capturedBody = options?.body as string;
+          return {
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                success: true,
+                result: { status: "COMPLETED" },
+                message: "Applied",
+              }),
+          } as Response;
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockApiResponse),
+        } as Response);
+
+      render(<AllocatorDashboard workspaceSlug="test-workspace" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Scale Winner")).toBeInTheDocument();
+      });
+
+      const applyButton = screen.getByRole("button", {
+        name: "Apply Recommendation",
+      });
+      await user.click(applyButton);
+
+      await waitFor(() => {
+        expect(capturedBody).toBeDefined();
+      });
+
+      const parsedBody = JSON.parse(capturedBody!);
+      expect(parsedBody).toEqual(
+        expect.objectContaining({
+          recommendationId: "rec-1",
+          campaignId: "campaign-1",
+          currentBudget: 50000,
+          suggestedNewBudget: 60000,
+          type: "SCALE_WINNER",
+          reason: "High performer with improving metrics",
+          confidence: "high",
+        }),
+      );
+    });
+
+    it("handles case when recommendation data structure is correct", async () => {
+      // This test verifies that recommendations are properly rendered
+      // Testing the "recommendation not found" edge case would require manipulating
+      // internal component state which is an anti-pattern in React Testing Library
+
+      const responseWithMatchingRec = {
+        ...mockApiResponse,
+        recommendations: [
+          {
+            ...mockApiResponse.recommendations[0],
+            id: "rec-1", // Matching ID
+          },
+        ],
+      };
+
+      vi.mocked(global.fetch).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(responseWithMatchingRec),
+      } as Response);
+
+      render(<AllocatorDashboard workspaceSlug="test-workspace" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Scale Winner")).toBeInTheDocument();
+      });
+
+      // Verify the recommendation is properly displayed with apply button
+      expect(
+        screen.getByRole("button", { name: "Apply Recommendation" }),
+      ).toBeInTheDocument();
+    });
+
+    it("refreshes data after successful application", async () => {
+      const user = userEvent.setup();
+
+      vi.mocked(global.fetch)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockApiResponse),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              success: true,
+              result: { status: "COMPLETED" },
+              message: "Applied",
+            }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              ...mockApiResponse,
+              recommendations: [], // No more recommendations after apply
+            }),
+        } as Response);
+
+      render(<AllocatorDashboard workspaceSlug="test-workspace" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Scale Winner")).toBeInTheDocument();
+      });
+
+      const applyButton = screen.getByRole("button", {
+        name: "Apply Recommendation",
+      });
+      await user.click(applyButton);
+
+      // After refresh, should show no recommendations message
+      await waitFor(() => {
+        expect(
+          screen.getByText(/No recommendations at this time/i),
+        ).toBeInTheDocument();
+      });
+    });
   });
 });
