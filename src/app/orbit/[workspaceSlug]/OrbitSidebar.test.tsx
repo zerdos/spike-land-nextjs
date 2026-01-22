@@ -20,6 +20,19 @@ vi.mock("@/components/orbit/WorkspaceSwitcher", () => ({
   WorkspaceSwitcher: () => <div data-testid="workspace-switcher">Workspace Switcher</div>,
 }));
 
+// Mock NotificationBell
+vi.mock("@/components/orbit/notifications/notification-bell", () => ({
+  NotificationBell: ({ workspaceSlug }: { workspaceSlug: string; }) => (
+    <button
+      data-testid="notification-bell"
+      data-workspace={workspaceSlug}
+      aria-label="Notifications"
+    >
+      Notifications
+    </button>
+  ),
+}));
+
 describe("OrbitSidebar", () => {
   it("renders workspace switcher", async () => {
     const { usePathname } = await import("next/navigation");
@@ -36,6 +49,25 @@ describe("OrbitSidebar", () => {
     );
 
     expect(screen.getByTestId("workspace-switcher")).toBeInTheDocument();
+  });
+
+  it("renders notification bell with workspace slug", async () => {
+    const { usePathname } = await import("next/navigation");
+    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue(
+      "/orbit/test-workspace/dashboard",
+    );
+
+    render(
+      <OrbitSidebar
+        userEmail="test@example.com"
+        userName="Test User"
+        workspaceSlug="test-workspace"
+      />,
+    );
+
+    const notificationBell = screen.getByTestId("notification-bell");
+    expect(notificationBell).toBeInTheDocument();
+    expect(notificationBell).toHaveAttribute("data-workspace", "test-workspace");
   });
 
   it("renders navigation items with workspace slug", async () => {

@@ -15,6 +15,7 @@ import { sendSlackNotification } from "./slack-channel";
 import type {
   ChannelResult,
   Notification,
+  NotificationPriority,
   NotificationResult,
   PulseAnomalyNotification,
   WorkspaceNotificationPreferences,
@@ -168,18 +169,79 @@ async function sendEmailNotification(
 }
 
 /**
+ * Map notification priority to database priority format
+ */
+function mapPriorityToDb(
+  priority: NotificationPriority,
+): "LOW" | "MEDIUM" | "HIGH" | "URGENT" {
+  const mapping: Record<
+    NotificationPriority,
+    "LOW" | "MEDIUM" | "HIGH" | "URGENT"
+  > = {
+    low: "LOW",
+    medium: "MEDIUM",
+    high: "HIGH",
+    urgent: "URGENT",
+  };
+  return mapping[priority];
+}
+
+/**
  * Store notification in database for in-app display
+ *
+ * Creates a persistent notification record that can be retrieved
+ * via the notifications API and displayed in the NotificationBell component.
+ *
+ * @param notification - The pulse anomaly notification to store
+ * @returns Channel result with success/failure status
  */
 async function storeInAppNotification(
   notification: PulseAnomalyNotification,
 ): Promise<ChannelResult> {
-  // In-app notifications would be stored in a notifications table
-  // For now, we'll just log and return success
-  console.log("[Notifications] In-app notification stored:", notification.id);
+  const { data: result, error } = await tryCatch(
+    prisma.notification.create({
+      data: {
+        workspaceId: notification.workspaceId,
+        type: "PULSE_ANOMALY",
+        title: notification.title,
+        message: notification.message,
+        priority: mapPriorityToDb(notification.priority),
+        entityType: "SocialAccount",
+        entityId: notification.anomaly.accountId,
+        metadata: {
+          platform: notification.anomaly.platform,
+          metricType: notification.anomaly.metricType,
+          currentValue: notification.anomaly.currentValue,
+          expectedValue: notification.anomaly.expectedValue,
+          percentChange: notification.anomaly.percentChange,
+          severity: notification.anomaly.severity,
+          direction: notification.anomaly.direction,
+          zScore: notification.anomaly.zScore,
+          accountName: notification.anomaly.accountName,
+          dashboardUrl: notification.dashboardUrl,
+        },
+      },
+    }),
+  );
+
+  if (error) {
+    console.error("[Notifications] Failed to store in-app notification:", error);
+    return {
+      channel: "in_app",
+      status: "failed",
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+
+  console.log(
+    "[Notifications] In-app notification stored:",
+    result?.id ?? notification.id,
+  );
 
   return {
     channel: "in_app",
     status: "sent",
+    messageId: result?.id,
   };
 }
 

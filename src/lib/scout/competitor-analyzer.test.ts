@@ -19,8 +19,14 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// Mock workspace-metrics
+vi.mock("@/lib/scout/workspace-metrics", () => ({
+  getWorkspaceMetrics: vi.fn(),
+}));
+
 // Import after mocks
 import prisma from "@/lib/prisma";
+import { getWorkspaceMetrics } from "@/lib/scout/workspace-metrics";
 
 import {
   analyzeCompetitorEngagement,
@@ -251,7 +257,7 @@ describe("Competitor Analyzer", () => {
   });
 
   describe("generateBenchmarkReport", () => {
-    it("should generate benchmark report with competitor metrics", async () => {
+    it("should generate benchmark report with competitor and own metrics", async () => {
       const workspaceId = "ws-1";
       const startDate = new Date("2024-01-01");
       const endDate = new Date("2024-01-31");
@@ -305,15 +311,23 @@ describe("Competitor Analyzer", () => {
         },
       ];
 
+      const mockWorkspaceMetrics = {
+        averageLikes: 75,
+        averageComments: 15,
+        averageShares: 5,
+        totalPosts: 25,
+        engagementRate: 0.05,
+      };
+
       const mockBenchmark = {
         id: "benchmark-1",
         workspaceId,
         period: "2024-01-01_2024-01-31",
         ownMetrics: {
-          averageLikes: 0,
-          averageComments: 0,
-          averageShares: 0,
-          totalPosts: 0,
+          averageLikes: 75,
+          averageComments: 15,
+          averageShares: 5,
+          totalPosts: 25,
         },
         competitorMetrics: {
           averageLikes: 150,
@@ -332,6 +346,8 @@ describe("Competitor Analyzer", () => {
       vi.mocked(prisma.scoutCompetitorPost.findMany)
         .mockResolvedValueOnce(mockPosts1 as any)
         .mockResolvedValueOnce(mockPosts2 as any);
+
+      vi.mocked(getWorkspaceMetrics).mockResolvedValue(mockWorkspaceMetrics);
 
       vi.mocked(prisma.scoutBenchmark.create).mockResolvedValue(
         mockBenchmark as any,
@@ -352,15 +368,21 @@ describe("Competitor Analyzer", () => {
 
       expect(prisma.scoutCompetitorPost.findMany).toHaveBeenCalledTimes(2);
 
+      expect(getWorkspaceMetrics).toHaveBeenCalledWith(
+        workspaceId,
+        startDate,
+        endDate,
+      );
+
       expect(prisma.scoutBenchmark.create).toHaveBeenCalledWith({
         data: {
           workspaceId,
           period: "2024-01-01_2024-01-31",
           ownMetrics: {
-            averageLikes: 0,
-            averageComments: 0,
-            averageShares: 0,
-            totalPosts: 0,
+            averageLikes: 75,
+            averageComments: 15,
+            averageShares: 5,
+            totalPosts: 25,
           },
           competitorMetrics: {
             averageLikes: 150,
@@ -409,6 +431,14 @@ describe("Competitor Analyzer", () => {
         },
       ];
 
+      const mockWorkspaceMetrics = {
+        averageLikes: 0,
+        averageComments: 0,
+        averageShares: 0,
+        totalPosts: 0,
+        engagementRate: 0,
+      };
+
       const mockBenchmark = {
         id: "benchmark-2",
         workspaceId,
@@ -434,6 +464,8 @@ describe("Competitor Analyzer", () => {
       );
 
       vi.mocked(prisma.scoutCompetitorPost.findMany).mockResolvedValue([]);
+
+      vi.mocked(getWorkspaceMetrics).mockResolvedValue(mockWorkspaceMetrics);
 
       vi.mocked(prisma.scoutBenchmark.create).mockResolvedValue(
         mockBenchmark as any,

@@ -19,6 +19,7 @@ import {
   logRateLimitEvent,
   logTokenExpiryEvent,
   sendHealthAlertEmail,
+  sendHealthAlerts,
 } from "./health-alert-manager";
 
 // Mock dependencies
@@ -36,6 +37,9 @@ vi.mock("@/lib/prisma", () => ({
     },
     workspace: {
       findUnique: vi.fn(),
+    },
+    notification: {
+      create: vi.fn(),
     },
   },
 }));
@@ -492,6 +496,197 @@ describe("Health Alert Manager", () => {
           take: 50,
         }),
       );
+    });
+  });
+
+  describe("sendHealthAlerts", () => {
+    const mockAccountWithHealth = {
+      id: "account-1",
+      workspaceId: "workspace-1",
+      platform: "TWITTER",
+      accountName: "testaccount",
+      health: {
+        healthScore: 25,
+        isRateLimited: false,
+        tokenRefreshRequired: false,
+        consecutiveErrors: 1,
+      },
+    };
+
+    const mockAdmin = {
+      user: {
+        email: "admin@example.com",
+        name: "Admin User",
+      },
+    };
+
+    beforeEach(() => {
+      vi.mocked(prisma.workspace.findUnique).mockResolvedValue({
+        slug: "test-workspace",
+      } as never);
+    });
+
+    it("creates in-app notification when in_app channel is enabled", async () => {
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
+        mockAccountWithHealth,
+      ] as never);
+      vi.mocked(prisma.workspaceMember.findMany).mockResolvedValue([
+        mockAdmin,
+      ] as never);
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+      } as never);
+
+      await sendHealthAlerts("workspace-1", {
+        workspaceId: "workspace-1",
+        alertOnScoreBelow: 50,
+        alertOnRateLimit: true,
+        alertOnTokenExpiry: true,
+        minSeverity: "WARNING",
+        notifyChannels: ["in_app"],
+      });
+
+      expect(prisma.notification.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          workspaceId: "workspace-1",
+          type: "HEALTH_ALERT",
+          title: "Account Health Alert: testaccount",
+          entityType: "SocialAccount",
+          entityId: "account-1",
+          priority: "HIGH", // UNHEALTHY maps to ERROR which maps to HIGH
+          metadata: expect.objectContaining({
+            platform: "TWITTER",
+            healthScore: 25,
+            status: "UNHEALTHY",
+          }),
+        }),
+      });
+    });
+
+    it("does not create in-app notification when in_app channel is not enabled", async () => {
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
+        mockAccountWithHealth,
+      ] as never);
+      vi.mocked(prisma.workspaceMember.findMany).mockResolvedValue([
+        mockAdmin,
+      ] as never);
+      vi.mocked(sendEmail).mockResolvedValue({ success: true });
+
+      await sendHealthAlerts("workspace-1", {
+        workspaceId: "workspace-1",
+        alertOnScoreBelow: 50,
+        alertOnRateLimit: true,
+        alertOnTokenExpiry: true,
+        minSeverity: "WARNING",
+        notifyChannels: ["email"],
+      });
+
+      expect(prisma.notification.create).not.toHaveBeenCalled();
+    });
+
+    it("sends both email and in-app notification when both channels are enabled", async () => {
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
+        mockAccountWithHealth,
+      ] as never);
+      vi.mocked(prisma.workspaceMember.findMany).mockResolvedValue([
+        mockAdmin,
+      ] as never);
+      vi.mocked(sendEmail).mockResolvedValue({ success: true });
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+      } as never);
+
+      const alertsSent = await sendHealthAlerts("workspace-1", {
+        workspaceId: "workspace-1",
+        alertOnScoreBelow: 50,
+        alertOnRateLimit: true,
+        alertOnTokenExpiry: true,
+        minSeverity: "WARNING",
+        notifyChannels: ["email", "in_app"],
+      });
+
+      expect(sendEmail).toHaveBeenCalled();
+      expect(prisma.notification.create).toHaveBeenCalled();
+      expect(alertsSent).toBe(1); // 1 email sent to admin
+    });
+
+    it("handles in-app notification creation failure gracefully", async () => {
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
+        mockAccountWithHealth,
+      ] as never);
+      vi.mocked(prisma.workspaceMember.findMany).mockResolvedValue([
+        mockAdmin,
+      ] as never);
+      vi.mocked(prisma.notification.create).mockRejectedValue(
+        new Error("Database error"),
+      );
+
+      // Should not throw, just log error
+      const alertsSent = await sendHealthAlerts("workspace-1", {
+        workspaceId: "workspace-1",
+        alertOnScoreBelow: 50,
+        alertOnRateLimit: true,
+        alertOnTokenExpiry: true,
+        minSeverity: "WARNING",
+        notifyChannels: ["in_app"],
+      });
+
+      // alertsSent is 0 because no email was sent (only in_app)
+      expect(alertsSent).toBe(0);
+    });
+
+    it("maps severity correctly to notification priority", async () => {
+      // Test with CRITICAL status (healthScore < 20)
+      const criticalAccount = {
+        ...mockAccountWithHealth,
+        health: {
+          ...mockAccountWithHealth.health,
+          healthScore: 10, // CRITICAL status
+        },
+      };
+
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([
+        criticalAccount,
+      ] as never);
+      vi.mocked(prisma.workspaceMember.findMany).mockResolvedValue([
+        mockAdmin,
+      ] as never);
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+      } as never);
+
+      await sendHealthAlerts("workspace-1", {
+        workspaceId: "workspace-1",
+        alertOnScoreBelow: 50,
+        alertOnRateLimit: true,
+        alertOnTokenExpiry: true,
+        minSeverity: "INFO",
+        notifyChannels: ["in_app"],
+      });
+
+      expect(prisma.notification.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          priority: "URGENT", // CRITICAL maps to URGENT
+          metadata: expect.objectContaining({
+            status: "CRITICAL",
+            severity: "CRITICAL",
+          }),
+        }),
+      });
+    });
+
+    it("returns 0 when no accounts need attention", async () => {
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([]);
+
+      const alertsSent = await sendHealthAlerts("workspace-1", {
+        workspaceId: "workspace-1",
+        alertOnScoreBelow: 50,
+        minSeverity: "WARNING",
+        notifyChannels: ["in_app"],
+      });
+
+      expect(alertsSent).toBe(0);
+      expect(prisma.notification.create).not.toHaveBeenCalled();
     });
   });
 });

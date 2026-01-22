@@ -1,6 +1,7 @@
 "use client";
 
 import { UserAvatar } from "@/components/auth/user-avatar";
+import { NotificationBell } from "@/components/orbit/notifications/notification-bell";
 import { WorkspaceSwitcher } from "@/components/orbit/WorkspaceSwitcher";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -53,7 +54,10 @@ export function OrbitSidebar({
   const NavContent = () => (
     <div className="flex h-full flex-col bg-background">
       <div className="border-b px-3 py-3">
-        <WorkspaceSwitcher />
+        <div className="flex items-center justify-between gap-2">
+          <WorkspaceSwitcher />
+          <NotificationBell workspaceSlug={workspaceSlug} />
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto py-4">

@@ -7,11 +7,16 @@ interface EngagementMetrics {
   averageComments: number;
   averageShares: number;
   totalPosts: number;
+  engagementRate?: number;
 }
 
 interface BenchmarkReport {
   ownMetrics: EngagementMetrics;
   competitorMetrics: EngagementMetrics;
+  period?: {
+    startDate: string;
+    endDate: string;
+  };
 }
 
 interface CompetitorBenchmarkProps {
@@ -27,84 +32,18 @@ export function CompetitorBenchmark(
 
   useEffect(() => {
     async function fetchBenchmark() {
-      // In a real app, this would fetch a pre-calculated benchmark.
-      // For now, we simulate by fetching and aggregating all competitor data.
       try {
+        // Fetch benchmark data from the dedicated API endpoint
         const response = await fetch(
-          `/api/orbit/${workspaceSlug}/scout/competitors`,
+          `/api/orbit/${workspaceSlug}/scout/benchmark`,
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch competitors");
+          throw new Error("Failed to fetch benchmark data");
         }
 
-        const competitors = await response.json();
-
-        if (competitors.length === 0) {
-          setReport({
-            // TODO(#806): Replace with real SocialMetrics data from workspace
-            ownMetrics: {
-              averageLikes: 0,
-              averageComments: 0,
-              averageShares: 0,
-              totalPosts: 0,
-            },
-            competitorMetrics: {
-              averageLikes: 0,
-              averageComments: 0,
-              averageShares: 0,
-              totalPosts: 0,
-            },
-          });
-          return;
-        }
-
-        let totalLikes = 0, totalComments = 0, totalShares = 0, totalPosts = 0;
-
-        // Fetch metrics for all competitors concurrently to avoid sequential N+1 latency
-        const metricsResults = await Promise.allSettled(
-          competitors.map(async (c: { id: string; }) => {
-            const metricsRes = await fetch(
-              `/api/orbit/${workspaceSlug}/scout/competitors/${c.id}/metrics`,
-            );
-            if (!metricsRes.ok) {
-              throw new Error(`Failed to fetch metrics for competitor ${c.id}`);
-            }
-            const { engagementMetrics } = await metricsRes.json();
-            return engagementMetrics as EngagementMetrics;
-          }),
-        );
-
-        // Aggregate metrics, skipping failed requests
-        for (const result of metricsResults) {
-          if (result.status !== "fulfilled" || !result.value) {
-            continue;
-          }
-          const engagementMetrics = result.value;
-          totalLikes += engagementMetrics.averageLikes *
-            engagementMetrics.totalPosts;
-          totalComments += engagementMetrics.averageComments *
-            engagementMetrics.totalPosts;
-          totalShares += engagementMetrics.averageShares *
-            engagementMetrics.totalPosts;
-          totalPosts += engagementMetrics.totalPosts;
-        }
-
-        setReport({
-          // TODO(#806): Replace with real SocialMetrics data from workspace
-          ownMetrics: {
-            averageLikes: 0,
-            averageComments: 0,
-            averageShares: 0,
-            totalPosts: 0,
-          },
-          competitorMetrics: {
-            averageLikes: totalPosts > 0 ? totalLikes / totalPosts : 0,
-            averageComments: totalPosts > 0 ? totalComments / totalPosts : 0,
-            averageShares: totalPosts > 0 ? totalShares / totalPosts : 0,
-            totalPosts: totalPosts,
-          },
-        });
+        const data = await response.json();
+        setReport(data);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -128,10 +67,12 @@ export function CompetitorBenchmark(
       <h2 className="text-lg font-semibold mb-4">
         Performance Benchmark (Last 30 Days)
       </h2>
-      <div className="mb-2 text-sm text-amber-600 bg-amber-50 p-2 rounded">
-        Note: &quot;Your Performance&quot; metrics are currently placeholder values. Integration
-        with SocialMetrics data is pending.
-      </div>
+      {report.ownMetrics.totalPosts === 0 && (
+        <div className="mb-2 text-sm text-amber-600 bg-amber-50 p-2 rounded">
+          Note: No social metrics data available yet. Connect social accounts and sync data to see
+          your performance metrics.
+        </div>
+      )}
       <table className="w-full text-left">
         <thead>
           <tr className="border-b">

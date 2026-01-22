@@ -279,7 +279,7 @@ describe("usePermission", () => {
 
       const { result } = renderHook(() => useAllPermissions());
 
-      expect(result.current.actions).toHaveLength(32);
+      expect(result.current.actions).toHaveLength(34);
       expect(result.current.role).toBe("OWNER");
       expect(result.current.isLoading).toBe(false);
       expect(result.current.actions).toContain("workspace:delete");
@@ -294,7 +294,7 @@ describe("usePermission", () => {
 
       const { result } = renderHook(() => useAllPermissions());
 
-      expect(result.current.actions).toHaveLength(30);
+      expect(result.current.actions).toHaveLength(32);
       expect(result.current.role).toBe("ADMIN");
       expect(result.current.actions).not.toContain("workspace:delete");
       expect(result.current.actions).not.toContain("workspace:transfer");
