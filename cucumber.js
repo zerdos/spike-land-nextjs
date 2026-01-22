@@ -121,4 +121,43 @@ module.exports = {
     timeout: 30000, // Longer timeout for DB operations and AI processing
     parallel: 1, // Parallel DB tests
   },
+  // Production profile - tests for /my-apps on production spike.land
+  // Run with: yarn test:e2e:my-apps:prod
+  // Requires GITHUB_TEST_USERNAME/PASSWORD or GOOGLE_TEST_EMAIL/PASSWORD
+  production: {
+    paths: ["e2e/features/my-apps-production.feature"],
+    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    requireModule: ["tsx/cjs"],
+    format: [
+      "progress-bar",
+      "html:e2e/reports/cucumber-report-production.html",
+      "json:e2e/reports/cucumber-report-production.json",
+    ],
+    formatOptions: { snippetInterface: "async-await" },
+    publishQuiet: true,
+    failFast: false, // Run all production tests to get full report
+    retry: 1, // Retry once for transient network issues
+    tags: "@production and not @skip and not @manual",
+    timeout: 120000, // 2 minute timeout for agent responses
+    parallel: 1, // Sequential execution for production tests
+  },
+  // My-apps profile - run my-apps tests against any environment
+  // Run with: yarn test:e2e:my-apps or yarn test:e2e:my-apps:local
+  "my-apps": {
+    paths: ["e2e/features/my-apps-production.feature"],
+    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    requireModule: ["tsx/cjs"],
+    format: [
+      "progress-bar",
+      "html:e2e/reports/cucumber-report-my-apps.html",
+      "json:e2e/reports/cucumber-report-my-apps.json",
+    ],
+    formatOptions: { snippetInterface: "async-await" },
+    publishQuiet: true,
+    failFast: false,
+    retry: 1,
+    tags: "@my-apps and not @skip and not @manual",
+    timeout: 120000,
+    parallel: 1,
+  },
 };
