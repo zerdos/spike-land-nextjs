@@ -135,17 +135,8 @@ Then(
 );
 
 // ==================== App Creation Steps ====================
-
-When(
-  "I click the {string} button",
-  async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", {
-      name: new RegExp(buttonText, "i"),
-    });
-    await expect(button).toBeVisible({ timeout: 10000 });
-    await button.click();
-  },
-);
+// Note: "I click the {string} button" step is defined in common.steps.ts:484
+// It handles both button and link elements (for shadcn Button asChild pattern)
 
 Then(
   "I should be redirected to a new codespace URL",
