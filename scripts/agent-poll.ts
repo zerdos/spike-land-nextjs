@@ -63,11 +63,17 @@ import { join } from "path";
 
 // Initialize Prisma with proper adapter
 function createPrismaClient() {
-  const connectionString = process.env["DATABASE_URL"];
+  // Use production database when --prod flag is passed
+  const isProdMode = process.argv.includes("--prod");
+  const connectionString = isProdMode
+    ? (process.env["DATABASE_URL_PROD"] || process.env["DATABASE_URL"])
+    : process.env["DATABASE_URL"];
 
   if (!connectionString) {
     throw new Error(
-      "DATABASE_URL environment variable is required for database access. " +
+      `${
+        isProdMode ? "DATABASE_URL_PROD or " : ""
+      }DATABASE_URL environment variable is required for database access. ` +
         "Please ensure it is set in your environment.",
     );
   }
@@ -1630,7 +1636,13 @@ async function main(): Promise<void> {
     console.log("\n[DEBUG] Configuration:");
     console.log(`  AGENT_API_KEY: ${maskApiKey(process.env["AGENT_API_KEY"])}`);
     console.log(`  SPIKE_LAND_API_KEY: ${maskApiKey(process.env["SPIKE_LAND_API_KEY"])}`);
-    console.log(`  DATABASE_URL: ${process.env["DATABASE_URL"] ? "(set)" : "(not set)"}`);
+    const dbUrl = isProd
+      ? (process.env["DATABASE_URL_PROD"] || process.env["DATABASE_URL"])
+      : process.env["DATABASE_URL"];
+    const dbSource = isProd && process.env["DATABASE_URL_PROD"]
+      ? "DATABASE_URL_PROD"
+      : "DATABASE_URL";
+    console.log(`  ${dbSource}: ${dbUrl ? `(set - ${isProd ? "PROD" : "LOCAL"})` : "(not set)"}`);
     console.log(`  Skip permissions: ${SKIP_PERMISSIONS}`);
     console.log("\n[DEBUG] E2E Test Keywords Available:");
     Object.keys(TEST_KEYWORD_HANDLERS).forEach((keyword) => {

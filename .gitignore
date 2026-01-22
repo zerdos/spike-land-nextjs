@@ -22,6 +22,7 @@ spike_land/
 # testing
 **/coverage/
 /e2e/reports
+/e2e/.auth-state.json
 test-results/
 playwright-report/
 playwright/.cache/
