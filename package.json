@@ -246,9 +246,6 @@
     "@prisma/engines": {
       "unplugged": true
     },
-    "zeptomatch": {
-      "unplugged": true
-    },
     "@swc/core": {
       "unplugged": true
     },
@@ -283,6 +280,9 @@
       "unplugged": true
     },
     "workerd": {
+      "unplugged": true
+    },
+    "zeptomatch": {
       "unplugged": true
     }
   },
