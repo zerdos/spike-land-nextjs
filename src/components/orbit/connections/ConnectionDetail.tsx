@@ -5,11 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  type Connection,
-  type ConnectionPlatformPresence,
-  MeetupPipelineStatus,
-} from "@prisma/client";
+import type { Connection, ConnectionPlatformPresence, MeetupPipelineStatus } from "@prisma/client";
 import { ArrowLeft, Clock, MessageSquare, Save } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";

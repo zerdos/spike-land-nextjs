@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import type { MeetupPipelineStatus, Prisma } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -35,7 +35,7 @@ export async function GET(
     if (warmth === "warm") where.warmthScore = { gte: 50, lt: 80 };
     if (warmth === "cold") where.warmthScore = { lt: 50 };
 
-    if (status && status !== "all") where.meetupStatus = status as any; // Type assertion safe here based on enum
+    if (status && status !== "all") where.meetupStatus = status as MeetupPipelineStatus;
 
     const connections = await prisma.connection.findMany({
       where,

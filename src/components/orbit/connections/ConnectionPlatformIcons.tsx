@@ -1,4 +1,4 @@
-import { SocialPlatform } from "@prisma/client";
+import type { SocialPlatform } from "@prisma/client";
 import { Facebook, Instagram, Linkedin, MessageCircle, Twitter, Youtube } from "lucide-react";
 
 interface ConnectionPlatformIconsProps {

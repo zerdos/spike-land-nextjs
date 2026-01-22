@@ -1,5 +1,5 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
