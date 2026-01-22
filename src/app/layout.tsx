@@ -7,6 +7,7 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { ConsoleCapture } from "@/components/errors/ConsoleCapture";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { ConditionalHeader } from "@/components/platform-landing";
+import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { MetaPixel } from "@/components/tracking/MetaPixel";
 import { SessionTracker } from "@/components/tracking/SessionTracker";
@@ -86,14 +87,16 @@ export default async function RootLayout({
             disableTransitionOnChange
             nonce={nonce ?? undefined}
           >
-            <SessionProvider>
-              <ConditionalHeader />
-              {children}
-              <FeedbackButton />
-              <Suspense fallback={null}>
-                <SessionTracker />
-              </Suspense>
-            </SessionProvider>
+            <QueryProvider>
+              <SessionProvider>
+                <ConditionalHeader />
+                {children}
+                <FeedbackButton />
+                <Suspense fallback={null}>
+                  <SessionTracker />
+                </Suspense>
+              </SessionProvider>
+            </QueryProvider>
             <Toaster toastOptions={{ className: "z-[100]" }} />
             <CookieConsent />
           </ThemeProvider>

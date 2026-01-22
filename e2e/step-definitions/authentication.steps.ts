@@ -116,9 +116,12 @@ When("I am not logged in", async function(this: CustomWorld) {
     await this.context.close();
   }
 
-  // Create new unauthenticated context
+  // Create new unauthenticated context with E2E bypass headers
+  // This ensures server-side auth bypass works even without cookies
+  const extraHTTPHeaders = this.getExtraHTTPHeaders();
   this.context = await this.browser.newContext({
     baseURL: this.baseUrl,
+    extraHTTPHeaders,
   });
   this.page = await this.context.newPage();
 
