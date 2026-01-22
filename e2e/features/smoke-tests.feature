@@ -166,36 +166,7 @@ Feature: Smoke Tests
     Then the page should load successfully
     And I should see "Your photos deserve better" text
 
-  @fast
-  Scenario: Unauthenticated user redirected from Pixel app
-    Given I am not logged in
-    When I visit "/apps/pixel"
-    Then I should be redirected to sign-in page
-
-  @fast
-  Scenario: Unauthenticated user redirected from settings page
-    Given I am not logged in
-    When I visit "/settings"
-    Then I should be redirected to sign-in page
-
-  @fast
-  Scenario: Unauthenticated user redirected from my-apps page
-    Given I am not logged in
-    When I visit "/my-apps"
-    Then I should be redirected to sign-in page
-
-  @fast
-  Scenario: Unauthenticated user redirected from admin page
-    Given I am not logged in
-    When I visit "/admin"
-    Then I should be redirected to sign-in page
-
-  @fast
-  Scenario: Non-admin user cannot access admin pages
-    Given I am logged in as "Test User" with email "test@example.com"
-    And the user is not an admin
-    When I visit "/admin"
-    Then I should be redirected or see access denied
+  # NOTE: Protected route redirect tests moved to protected-routes.feature
 
   @fast
   Scenario: 404 page loads for invalid route
