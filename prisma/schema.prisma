@@ -2210,6 +2210,47 @@ enum VocabularyType {
   REPLACEMENT
 }
 
+// =============================================================================
+// Connection Management Enums (Orbit CRM)
+// Resolves #826
+// =============================================================================
+
+enum ConnectionNextStep {
+  REPLY
+  REACH_OUT
+  SUGGEST_COFFEE
+  SCHEDULE_MEET
+  FOLLOW_UP
+  NONE
+}
+
+enum MeetupPipelineStatus {
+  NONE
+  INTERESTED
+  CHATTING
+  SUGGESTED
+  SCHEDULED
+  MET
+  FOLLOW_UP
+}
+
+enum ReminderType {
+  FOLLOW_UP
+  REPLY
+  REACH_OUT
+  MEETUP
+  BIRTHDAY
+  CUSTOM
+}
+
+enum ReminderStatus {
+  PENDING
+  DUE
+  SNOOZED
+  COMPLETED
+  CANCELLED
+}
+
 model Workspace {
   id          String    @id @default(cuid())
   name        String
@@ -2270,6 +2311,10 @@ model Workspace {
   // Notification system
   notifications          Notification[]
 
+  // Connection Management (Orbit CRM) - Resolves #826
+  connections            Connection[]
+  connectionTags         ConnectionTag[]
+
   @@index([slug])
   @@index([isPersonal])
   @@map("workspaces")
@@ -2299,6 +2344,113 @@ model WorkspaceMember {
   @@index([userId])
   @@index([role])
   @@map("workspace_members")
+}
+
+// =============================================================================
+// Connection Management Models (Orbit CRM)
+// Resolves #826
+// =============================================================================
+
+model Connection {
+  id               String                      @id @default(cuid())
+  workspaceId      String
+  workspace        Workspace                   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  identityId       String?                     @unique
+  identity         Identity?                   @relation(fields: [identityId], references: [id], onDelete: SetNull)
+
+  displayName      String
+  avatarUrl        String?
+  notes            String?                     @db.Text
+
+  // Warmth scoring (recalculated from InboxItem interactions)
+  warmthScore      Int                         @default(0)  // 0-100
+  warmthFactors    Json?                       // { recency, frequency, sentiment, depth }
+  lastInteraction  DateTime?
+  interactionCount Int                         @default(0)
+
+  // Next step tracking
+  nextStep         ConnectionNextStep?
+  nextStepDueDate  DateTime?
+  nextStepNotes    String?
+
+  // Meetup pipeline
+  meetupStatus     MeetupPipelineStatus        @default(NONE)
+  meetupStatusUpdatedAt DateTime?
+
+  createdAt        DateTime                    @default(now())
+  updatedAt        DateTime                    @updatedAt
+
+  platformPresence ConnectionPlatformPresence[]
+  reminders        ConnectionReminder[]
+  meetupHistory    MeetupStatusHistory[]
+  tags             ConnectionTag[]             @relation("ConnectionTags")
+
+  @@index([workspaceId])
+  @@index([workspaceId, warmthScore])
+  @@index([workspaceId, meetupStatus])
+  @@map("connections")
+}
+
+model ConnectionPlatformPresence {
+  id           String         @id @default(cuid())
+  connectionId String
+  connection   Connection     @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  platform     SocialPlatform
+  handle       String
+  profileUrl   String?
+  lastSeenAt   DateTime?
+
+  @@unique([connectionId, platform])
+  @@map("connection_platform_presence")
+}
+
+model ConnectionTag {
+  id          String       @id @default(cuid())
+  workspaceId String
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name        String
+  color       String       @default("#6B7280")
+  connections Connection[] @relation("ConnectionTags")
+
+  @@unique([workspaceId, name])
+  @@map("connection_tags")
+}
+
+model ConnectionReminder {
+  id           String         @id @default(cuid())
+  connectionId String
+  connection   Connection     @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  workspaceId  String
+
+  type         ReminderType
+  title        String
+  description  String?        @db.Text
+  dueDate      DateTime
+  status       ReminderStatus @default(PENDING)
+  snoozedUntil DateTime?
+  snoozeCount  Int            @default(0)
+  completedAt  DateTime?
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([workspaceId, dueDate])
+  @@index([workspaceId, status])
+  @@map("connection_reminders")
+}
+
+model MeetupStatusHistory {
+  id           String               @id @default(cuid())
+  connectionId String
+  connection   Connection           @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  fromStatus   MeetupPipelineStatus
+  toStatus     MeetupPipelineStatus
+  notes        String?
+  updatedById  String?
+  createdAt    DateTime             @default(now())
+
+  @@index([connectionId])
+  @@map("meetup_status_history")
 }
 
 // =============================================================================
@@ -3822,6 +3974,9 @@ model Identity {
   updatedAt   DateTime     @updatedAt
   user        User?        @relation(fields: [userId], references: [id])
   identifiers Identifier[]
+  
+  // Connection Management - Resolves #826
+  connection  Connection?
 
   @@index([userId])
   @@map("identities")
