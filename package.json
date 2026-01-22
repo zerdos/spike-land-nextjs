@@ -281,6 +281,9 @@
     },
     "workerd": {
       "unplugged": true
+    },
+    "zeptomatch": {
+      "unplugged": true
     }
   },
   "resolutions": {

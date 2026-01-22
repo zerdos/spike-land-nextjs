@@ -33,5 +33,6 @@
   },
   "files.associations": {
     "live/*.tsx": "typescriptreact"
-  }
+  },
+  "vitest.disableWorkspaceWarning": true
 }

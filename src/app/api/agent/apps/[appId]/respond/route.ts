@@ -1,3 +1,5 @@
+import { createHash } from "crypto";
+
 import { broadcastCodeUpdated, broadcastMessage } from "@/app/api/apps/[id]/messages/stream/route";
 import { verifyAgentAuth } from "@/lib/auth/agent";
 import prisma from "@/lib/prisma";
@@ -56,7 +58,7 @@ export async function POST(
         id: appId,
         status: { notIn: ["ARCHIVED"] },
       },
-      select: { id: true },
+      select: { id: true, codespaceId: true },
     }),
   );
 
@@ -102,6 +104,41 @@ export async function POST(
         where: { id: appId },
         data: { lastAgentActivity: new Date() },
       });
+
+      // If code was updated and app has a codespace, create a code version
+      if (codeUpdated && app.codespaceId) {
+        try {
+          const sessionUrl = `https://testing.spike.land/live/${app.codespaceId}/session.json`;
+          const response = await fetch(sessionUrl, {
+            headers: { Accept: "application/json" },
+            signal: AbortSignal.timeout(5000),
+          });
+
+          if (response.ok) {
+            const sessionData = await response.json();
+            const code = sessionData?.code || sessionData?.cSess?.code;
+
+            if (code) {
+              const hash = createHash("sha256").update(code).digest("hex");
+              await tx.appCodeVersion.create({
+                data: {
+                  appId,
+                  messageId: message.id,
+                  code,
+                  hash,
+                },
+              });
+              console.log("[respond] Created code version for message:", message.id);
+            }
+          }
+        } catch (codeVersionError) {
+          // Log but don't fail - code version is nice-to-have for UI previews
+          console.warn(
+            "[respond] Failed to create code version:",
+            codeVersionError instanceof Error ? codeVersionError.message : codeVersionError,
+          );
+        }
+      }
 
       return message;
     }),
