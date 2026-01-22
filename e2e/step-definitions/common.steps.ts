@@ -1028,3 +1028,20 @@ When(
 // NOTE: "I should see {string} section" is already defined above in this file (line 315)
 
 // NOTE: "I click the {string} link" is defined in authentication.steps.ts
+
+// ======= HOME PAGE STEPS (consolidated from deleted home-page.steps.ts) =======
+
+// "I am on the home page" - Background step for scenarios starting on home page
+Given("I am on the home page", async function(this: CustomWorld) {
+  await this.page.goto(this.baseUrl, { waitUntil: "commit" });
+  await waitForPageReady(this.page, { strategy: "both", waitForSuspense: true });
+});
+
+// "I should see a link to {string}" - Check for link by href
+Then(
+  "I should see a link to {string}",
+  async function(this: CustomWorld, href: string) {
+    const link = this.page.locator(`a[href="${href}"], a[href^="${href}"]`);
+    await expect(link.first()).toBeVisible({ timeout: 10000 });
+  },
+);

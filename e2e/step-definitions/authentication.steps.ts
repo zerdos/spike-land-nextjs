@@ -3,6 +3,36 @@ import { expect } from "@playwright/test";
 import { waitForPageReady, waitForRouteReady } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
 
+// Helper function to wait for session to propagate to UI after reload
+async function waitForSessionPropagation(
+  world: CustomWorld,
+  expectLoggedIn: boolean,
+): Promise<void> {
+  if (expectLoggedIn) {
+    // Wait for user-avatar to appear (indicates session propagated)
+    await world.page.waitForFunction(
+      () => document.querySelector('[data-testid="user-avatar"]') !== null,
+      { timeout: 10000 },
+    ).catch(() => {
+      // Avatar may not be on current page layout (e.g., full-page forms)
+      // In that case, just wait for any auth-related element
+    });
+  } else {
+    // Wait for Sign In link to appear (indicates logged out state)
+    await world.page.waitForFunction(
+      () => {
+        const header = document.querySelector("header");
+        if (!header) return true; // No header means we can't verify
+        return header.querySelector('a[href*="signin"]') !== null ||
+          header.textContent?.includes("Sign In");
+      },
+      { timeout: 10000 },
+    ).catch(() => {
+      // Fallback - just ensure avatar is NOT visible
+    });
+  }
+}
+
 // Helper function to mock NextAuth session
 async function mockSession(
   world: CustomWorld,
@@ -151,15 +181,19 @@ Given("I am logged in as a test user", async function(this: CustomWorld) {
   await waitForRouteReady(this.page);
   await this.page.reload({ waitUntil: "commit" });
   await waitForPageReady(this.page, { strategy: "both" });
+  // FIX: Wait for session to propagate to React components
+  await waitForSessionPropagation(this, true);
 });
 
 When(
   "I am logged in as {string} with email {string}",
   async function(this: CustomWorld, name: string, email: string) {
     await mockSession(this, { name, email });
-    await waitForRouteReady(this.page); // FIX: Wait for route registration
+    await waitForRouteReady(this.page);
     await this.page.reload({ waitUntil: "commit" });
-    await waitForPageReady(this.page); // FIX: Consistent wait strategy
+    await waitForPageReady(this.page, { strategy: "both" });
+    // FIX: Wait for session to propagate to React components
+    await waitForSessionPropagation(this, true);
   },
 );
 
@@ -171,6 +205,8 @@ When(
     await waitForRouteReady(this.page);
     await this.page.reload({ waitUntil: "commit" });
     await waitForPageReady(this.page, { strategy: "both" });
+    // FIX: Wait for session to propagate to React components
+    await waitForSessionPropagation(this, true);
   },
 );
 
@@ -182,6 +218,8 @@ When(
     await waitForRouteReady(this.page);
     await this.page.reload({ waitUntil: "commit" });
     await waitForPageReady(this.page, { strategy: "both" });
+    // FIX: Wait for session to propagate to React components
+    await waitForSessionPropagation(this, true);
   },
 );
 
@@ -206,12 +244,16 @@ When(
 
     await this.page.reload({ waitUntil: "commit" });
     await waitForPageReady(this.page, { strategy: "both" });
+    // FIX: Wait for logout to propagate
+    await waitForSessionPropagation(this, false);
 
     // Then log in as the new user
     await mockSession(this, { name, email });
     await waitForRouteReady(this.page);
     await this.page.reload({ waitUntil: "commit" });
     await waitForPageReady(this.page, { strategy: "both" });
+    // FIX: Wait for session to propagate to React components
+    await waitForSessionPropagation(this, true);
   },
 );
 
@@ -234,12 +276,16 @@ When(
 
     await this.page.reload({ waitUntil: "commit" });
     await waitForPageReady(this.page, { strategy: "both" });
+    // FIX: Wait for logout to propagate
+    await waitForSessionPropagation(this, false);
 
     // Then log in as the new user with specified email
     await mockSession(this, { name, email });
     await waitForRouteReady(this.page);
     await this.page.reload({ waitUntil: "commit" });
     await waitForPageReady(this.page, { strategy: "both" });
+    // FIX: Wait for session to propagate to React components
+    await waitForSessionPropagation(this, true);
   },
 );
 

@@ -65,52 +65,8 @@ Feature: User Authentication
     Then I should see the user avatar
     And the avatar should display the custom image
 
-  # Navigation from Avatar Dropdown
-
-  Scenario: Navigate to My Apps from avatar dropdown
-    When I am logged in as "John Doe" with email "john@example.com"
-    And I click on the user avatar
-    And I click the "My Apps" option in the dropdown
-    Then I should be on the "/my-apps" page
-    And I should see "My Apps" heading
-
-  Scenario: Navigate to Profile from avatar dropdown
-    When I am logged in as "Jane Smith" with email "jane@example.com"
-    And I click on the user avatar
-    And I click the "Profile" option in the dropdown
-    Then I should be on the "/profile" page
-    And I should see "Profile" heading
-
-  Scenario: Navigate to Settings from avatar dropdown
-    When I am logged in as "Alice Johnson" with email "alice@example.com"
-    And I click on the user avatar
-    And I click the "Settings" option in the dropdown
-    Then I should be on the "/settings" page
-    And I should see "Settings" heading
-
-  # Protected Route Redirection
-
-  Scenario: Unauthenticated user redirected from My Apps
-    When I am not logged in
-    And I visit "/my-apps"
-    Then I should be on the "/auth/signin" page
-
-  Scenario: Unauthenticated user redirected from Settings
-    When I am not logged in
-    And I visit "/settings"
-    Then I should be on the "/auth/signin" page
-
-  Scenario: Unauthenticated user redirected from Profile with callbackUrl
-    When I am not logged in
-    And I visit "/profile"
-    Then I should be on the "/auth/signin" page
-    And the URL should contain "callbackUrl=/profile"
-
-  Scenario: User redirected to callbackUrl after login
-    When I am not logged in
-    And I visit "/settings"
-    And I am logged in as "Bob Builder" with email "bob@example.com"
-    Then I should be on the "/settings" page
+  # NOTE: Avatar dropdown navigation tests moved to navigation.feature
+  # NOTE: Protected route redirection tests moved to protected-routes.feature
 
   # Sign-In Page
 
