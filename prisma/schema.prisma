@@ -2267,6 +2267,9 @@ model Workspace {
   // Workflow relations
   workflows              Workflow[]
 
+  // Notification system
+  notifications          Notification[]
+
   @@index([slug])
   @@index([isPersonal])
   @@map("workspaces")
@@ -2940,6 +2943,36 @@ enum IssueSeverity {
   WARNING // Minor issue, monitor
   ERROR // Problem requiring attention
   CRITICAL // Urgent issue requiring immediate action
+}
+
+// =============================================================================
+// Notification System Models
+// Resolves #802: Notification model for workspace alerts
+// =============================================================================
+
+/// Stores notifications for workspace users
+/// Supports various notification types: health alerts, pulse anomalies, inbox mentions, system messages
+model Notification {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String? // Optional: target specific user, null = workspace-wide
+  type        String // HEALTH_ALERT, PULSE_ANOMALY, INBOX_MENTION, SYSTEM
+  title       String
+  message     String    @db.Text
+  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  read        Boolean   @default(false)
+  readAt      DateTime?
+  entityType  String? // Related entity type (e.g., "SocialAccount", "InboxItem")
+  entityId    String? // Related entity ID for deep linking
+  metadata    Json? // Additional notification data
+  createdAt   DateTime  @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, read, createdAt])
+  @@index([workspaceId, userId])
+  @@index([type])
+  @@map("notifications")
 }
 
 // Policy Checker System Models

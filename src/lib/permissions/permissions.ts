@@ -51,7 +51,10 @@ export type WorkspaceAction =
   // Social Accounts
   | "social:view"
   | "social:connect"
-  | "social:disconnect";
+  | "social:disconnect"
+  // Notifications
+  | "notifications:view"
+  | "notifications:manage";
 
 /**
  * Role hierarchy - higher index = more permissions
@@ -116,6 +119,10 @@ const PERMISSION_MATRIX: Record<WorkspaceAction, WorkspaceRole> = {
   "social:view": "MEMBER",
   "social:connect": "ADMIN",
   "social:disconnect": "ADMIN",
+
+  // Notifications
+  "notifications:view": "MEMBER",
+  "notifications:manage": "ADMIN",
 };
 
 /**

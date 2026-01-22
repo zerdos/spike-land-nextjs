@@ -256,6 +256,69 @@ export async function sendHealthAlertEmail(
 }
 
 /**
+ * Map IssueSeverity to notification priority
+ */
+function severityToPriority(
+  severity: IssueSeverity,
+): "LOW" | "MEDIUM" | "HIGH" | "URGENT" {
+  const mapping: Record<IssueSeverity, "LOW" | "MEDIUM" | "HIGH" | "URGENT"> = {
+    INFO: "LOW",
+    WARNING: "MEDIUM",
+    ERROR: "HIGH",
+    CRITICAL: "URGENT",
+  };
+  return mapping[severity];
+}
+
+/**
+ * Create an in-app notification for a health alert
+ *
+ * Stores a persistent notification in the database that will be displayed
+ * in the NotificationBell component. Does not throw errors to avoid
+ * disrupting the main alert flow.
+ *
+ * @param params - Health alert notification parameters
+ */
+async function createHealthAlertNotification(params: {
+  workspaceId: string;
+  accountId: string;
+  accountName: string;
+  platform: string;
+  healthScore: number;
+  status: AccountHealthStatus;
+  issue: string;
+  severity: IssueSeverity;
+  dashboardUrl: string;
+}): Promise<void> {
+  try {
+    await prisma.notification.create({
+      data: {
+        workspaceId: params.workspaceId,
+        type: "HEALTH_ALERT",
+        title: `Account Health Alert: ${params.accountName}`,
+        message: params.issue,
+        priority: severityToPriority(params.severity),
+        entityType: "SocialAccount",
+        entityId: params.accountId,
+        metadata: {
+          platform: params.platform,
+          healthScore: params.healthScore,
+          status: params.status,
+          severity: params.severity,
+          dashboardUrl: params.dashboardUrl,
+        },
+      },
+    });
+    console.log(
+      `[HealthAlerts] In-app notification created for ${params.accountName}`,
+    );
+  } catch (error) {
+    // Log but don't throw - we don't want notification failures to break alert flow
+    console.error("[HealthAlerts] Failed to create in-app notification:", error);
+  }
+}
+
+/**
  * Send alerts for accounts needing attention
  */
 export async function sendHealthAlerts(
@@ -357,8 +420,17 @@ export async function sendHealthAlerts(
 
     // Store in-app notification
     if (config.notifyChannels.includes("in_app")) {
-      // TODO(#802): Integrate with in-app notification system
-      // See issue for detailed requirements and implementation steps
+      await createHealthAlertNotification({
+        workspaceId,
+        accountId: account.id,
+        accountName: account.accountName,
+        platform: account.platform,
+        healthScore: account.health.healthScore,
+        status,
+        issue,
+        severity,
+        dashboardUrl: `https://spike.land/orbit/${workspace?.slug}/accounts/health/${account.id}`,
+      });
     }
   }
 
