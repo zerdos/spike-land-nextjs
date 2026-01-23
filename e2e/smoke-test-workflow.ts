@@ -87,7 +87,12 @@ interface SmokeTestReport {
 // ============================================================================
 
 /**
- * Mock an authenticated session by intercepting the session API
+ * Mock an authenticated session by:
+ * 1. Setting E2E bypass cookies for server-side auth checks (auth() function)
+ * 2. Intercepting the session API for client-side auth checks (useSession() hook)
+ *
+ * This dual approach ensures authentication works for both server components
+ * (which call auth() directly) and client components (which call useSession()).
  */
 async function mockAuthSession(
   page: Page,
@@ -95,6 +100,37 @@ async function mockAuthSession(
 ): Promise<void> {
   const { role = "USER", email = "test@example.com", name = "Test User" } = options;
 
+  // Determine actual values based on role
+  const actualEmail = role === "ADMIN" ? "admin@spike.land" : email;
+  const actualName = role === "ADMIN" ? "Admin User" : name;
+
+  // Set E2E bypass cookies for server-side auth checks
+  // The auth.ts file reads these cookies when x-e2e-auth-bypass header is present
+  const context = page.context();
+  const baseUrlHost = new URL(config.baseUrl).hostname;
+
+  await context.addCookies([
+    {
+      name: "e2e-user-role",
+      value: role,
+      domain: baseUrlHost,
+      path: "/",
+    },
+    {
+      name: "e2e-user-email",
+      value: actualEmail,
+      domain: baseUrlHost,
+      path: "/",
+    },
+    {
+      name: "e2e-user-name",
+      value: actualName,
+      domain: baseUrlHost,
+      path: "/",
+    },
+  ]);
+
+  // Also intercept the session API for client-side components using useSession()
   await page.route("**/api/auth/session", async (route) => {
     await route.fulfill({
       status: 200,
@@ -102,8 +138,8 @@ async function mockAuthSession(
       body: JSON.stringify({
         user: {
           id: `test-${role.toLowerCase()}-123`,
-          name: role === "ADMIN" ? "Admin User" : name,
-          email: role === "ADMIN" ? "admin@spike.land" : email,
+          name: actualName,
+          email: actualEmail,
           role,
         },
         expires: new Date(Date.now() + 86400000).toISOString(),
