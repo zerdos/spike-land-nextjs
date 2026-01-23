@@ -261,6 +261,7 @@ export function RequirementsManager({
                           value={editingText}
                           onChange={(e) => setEditingText(e.target.value)}
                           onKeyDown={(e) => handleKeyPress(e, "edit")}
+                          // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional UX: focus input when editing requirement
                           autoFocus
                           aria-label="Edit requirement text"
                         />

@@ -276,6 +276,16 @@ export function TimelineTrack({
         e.stopPropagation();
         onSelect();
       }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.stopPropagation();
+          onSelect();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Select track ${track.name}`}
+      aria-pressed={isSelected}
     >
       {/* Selection Border Glow */}
       {isSelected && (
@@ -291,6 +301,10 @@ export function TimelineTrack({
           onMouseDown={(e) => handleMouseDown(e, "trim-start")}
           onMouseEnter={() => setIsHoveringHandle("start")}
           onMouseLeave={() => setIsHoveringHandle(null)}
+          role="slider"
+          tabIndex={0}
+          aria-label="Trim start handle"
+          aria-valuenow={effectiveTrimStart}
         >
           <div
             className={`absolute inset-y-1.5 left-1 w-1 rounded-full transition-all ${
@@ -318,6 +332,10 @@ export function TimelineTrack({
           onMouseDown={(e) => handleMouseDown(e, "trim-end")}
           onMouseEnter={() => setIsHoveringHandle("end")}
           onMouseLeave={() => setIsHoveringHandle(null)}
+          role="slider"
+          tabIndex={0}
+          aria-label="Trim end handle"
+          aria-valuenow={effectiveTrimEnd}
         >
           <div
             className={`absolute inset-y-1.5 right-1 w-1 rounded-full transition-all ${
@@ -359,6 +377,9 @@ export function TimelineTrack({
           right: 0,
         }}
         onMouseDown={(e) => handleMouseDown(e, "move")}
+        role="button"
+        tabIndex={0}
+        aria-label={`Move track ${track.name}`}
       >
         <div className="h-full p-2.5 flex flex-col gap-1.5">
           <div className="flex items-center justify-between">

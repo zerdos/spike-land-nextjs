@@ -69,13 +69,20 @@ export function AddAppModal({ initialItem, onClose, onAdd }: AddAppModalProps) {
   };
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- Dialog role is interactive, handles Escape key and backdrop click
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       role="dialog"
       aria-modal="true"
       aria-labelledby="add-app-title"
+      tabIndex={-1}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
           onClose();
         }
       }}

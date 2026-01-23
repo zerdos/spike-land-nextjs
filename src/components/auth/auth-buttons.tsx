@@ -324,6 +324,7 @@ export function AuthButtons({ className }: AuthButtonsProps) {
           disabled={isLoading}
           className="h-12"
           autoComplete="current-password"
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional UX: focus password after email is verified
           autoFocus
         />
       </div>
@@ -389,6 +390,7 @@ export function AuthButtons({ className }: AuthButtonsProps) {
           className="h-12"
           autoComplete="new-password"
           minLength={8}
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional UX: focus password in signup flow
           autoFocus
         />
       </div>

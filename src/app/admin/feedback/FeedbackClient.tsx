@@ -384,9 +384,12 @@ export function FeedbackClient({ initialFeedback }: FeedbackClientProps) {
                         {truncateMessage(item.message)}
                       </td>
                       <td className="px-4 py-3">
+                        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events -- Stopping propagation to parent row click handler */}
                         <div
                           className="flex gap-1"
                           onClick={(e) => e.stopPropagation()}
+                          role="group"
+                          aria-label="Actions"
                         >
                           <Button
                             size="sm"

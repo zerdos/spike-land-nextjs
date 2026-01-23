@@ -218,6 +218,14 @@ export function AlbumsGrid({
             onClick={onAlbumClick
               ? (e) => handleClick(album.id, e)
               : undefined}
+            onKeyDown={onAlbumClick
+              ? (e) =>
+                (e.key === "Enter" || e.key === " ") &&
+                handleClick(album.id, e as unknown as React.MouseEvent)
+              : undefined}
+            role={onAlbumClick ? "button" : undefined}
+            tabIndex={onAlbumClick ? 0 : undefined}
+            aria-label={onAlbumClick ? `Open album ${album.name}` : undefined}
           >
             {cardContent}
           </div>

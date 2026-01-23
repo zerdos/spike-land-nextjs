@@ -389,6 +389,11 @@ export function ReferenceImageUpload({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => !disabled && fileInputRef.current?.click()}
+          onKeyDown={(e) =>
+            (e.key === "Enter" || e.key === " ") && !disabled && fileInputRef.current?.click()}
+          role="button"
+          tabIndex={disabled ? -1 : 0}
+          aria-label="Upload reference image"
           className={`
             border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer
             ${

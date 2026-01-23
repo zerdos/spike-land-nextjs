@@ -169,6 +169,7 @@ export function Waveform({
             onMouseDown={handleStartMouseDown}
             aria-label="Trim start handle"
             role="slider"
+            tabIndex={0}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={Math.round(trimStart * 100)}
@@ -185,6 +186,7 @@ export function Waveform({
             onMouseDown={handleEndMouseDown}
             aria-label="Trim end handle"
             role="slider"
+            tabIndex={0}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={Math.round(trimEnd * 100)}

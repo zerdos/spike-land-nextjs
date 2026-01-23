@@ -199,6 +199,9 @@ function DiffHunkItem({ hunk, onToggle }: DiffHunkItemProps) {
       <span
         className="cursor-pointer hover:opacity-80"
         onClick={() => onToggle(hunk.id)}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle(hunk.id)}
+        role="button"
+        tabIndex={0}
         title={hunk.selected ? "Click to deselect" : "Click to select"}
       >
         <Checkbox

@@ -369,6 +369,10 @@ export default function EmailLogsPage() {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
           onClick={() => setSelectedEmail(null)}
+          onKeyDown={(e) => e.key === "Escape" && setSelectedEmail(null)}
+          role="button"
+          tabIndex={0}
+          aria-label="Close modal"
         >
           <Card
             role="dialog"
@@ -388,29 +392,29 @@ export default function EmailLogsPage() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   To
-                </label>
+                </span>
                 <p>{selectedEmail.to}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   Subject
-                </label>
+                </span>
                 <p>{selectedEmail.subject}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   Template
-                </label>
+                </span>
                 <div>
                   <Badge variant="outline">{selectedEmail.template}</Badge>
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   Status
-                </label>
+                </span>
                 <div>
                   <Badge className={STATUS_COLORS[selectedEmail.status] || ""}>
                     {selectedEmail.status}
@@ -418,17 +422,17 @@ export default function EmailLogsPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   Resend ID
-                </label>
+                </span>
                 <p className="font-mono text-sm">
                   {selectedEmail.resendId || "-"}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   User
-                </label>
+                </span>
                 <p>
                   {selectedEmail.user.name || selectedEmail.user.email ||
                     selectedEmail.user.id}
@@ -436,31 +440,31 @@ export default function EmailLogsPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                  <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                     Sent At
-                  </label>
+                  </span>
                   <p className="text-sm">{formatDate(selectedEmail.sentAt)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                  <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                     Opened At
-                  </label>
+                  </span>
                   <p className="text-sm">
                     {formatDate(selectedEmail.openedAt)}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                  <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                     Clicked At
-                  </label>
+                  </span>
                   <p className="text-sm">
                     {formatDate(selectedEmail.clickedAt)}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                  <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                     Bounced At
-                  </label>
+                  </span>
                   <p className="text-sm">
                     {formatDate(selectedEmail.bouncedAt)}
                   </p>

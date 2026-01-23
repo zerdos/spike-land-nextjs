@@ -511,33 +511,33 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
               {/* Error Info */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">
+                  <span className="text-sm font-medium text-neutral-500">
                     Timestamp
-                  </label>
+                  </span>
                   <p className="text-sm">
                     {new Date(selectedError.timestamp).toLocaleString("en-GB")}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">
+                  <span className="text-sm font-medium text-neutral-500">
                     Error Type
-                  </label>
+                  </span>
                   <p className="text-sm">
                     {selectedError.errorType || "Error"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">
+                  <span className="text-sm font-medium text-neutral-500">
                     Source File
-                  </label>
+                  </span>
                   <p className="text-sm font-mono break-all">
                     {selectedError.sourceFile || "Unknown"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">
+                  <span className="text-sm font-medium text-neutral-500">
                     Location
-                  </label>
+                  </span>
                   <p className="text-sm font-mono">
                     Line {selectedError.sourceLine || "?"}:
                     {selectedError.sourceColumn || "?"}
@@ -547,25 +547,25 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                 </div>
                 {selectedError.route && (
                   <div>
-                    <label className="text-sm font-medium text-neutral-500">
+                    <span className="text-sm font-medium text-neutral-500">
                       Route
-                    </label>
+                    </span>
                     <p className="text-sm font-mono">{selectedError.route}</p>
                   </div>
                 )}
                 {selectedError.userId && (
                   <div>
-                    <label className="text-sm font-medium text-neutral-500">
+                    <span className="text-sm font-medium text-neutral-500">
                       User ID
-                    </label>
+                    </span>
                     <p className="text-sm font-mono">{selectedError.userId}</p>
                   </div>
                 )}
                 {selectedError.errorCode && (
                   <div>
-                    <label className="text-sm font-medium text-neutral-500">
+                    <span className="text-sm font-medium text-neutral-500">
                       Error Code
-                    </label>
+                    </span>
                     <p className="text-sm font-mono">
                       {selectedError.errorCode}
                     </p>
@@ -575,9 +575,9 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
 
               {/* Message */}
               <div>
-                <label className="text-sm font-medium text-neutral-500">
+                <span className="text-sm font-medium text-neutral-500">
                   Message
-                </label>
+                </span>
                 <div className="mt-1 rounded-md bg-red-50 dark:bg-red-900/20 p-3">
                   <p className="text-sm text-red-800 dark:text-red-300 break-all">
                     {selectedError.message}
@@ -589,9 +589,9 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
               {selectedError.stack && (
                 <div>
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-neutral-500">
+                    <span className="text-sm font-medium text-neutral-500">
                       Stack Trace
-                    </label>
+                    </span>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -612,9 +612,9 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
               {/* Metadata */}
               {selectedError.metadata && (
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">
+                  <span className="text-sm font-medium text-neutral-500">
                     Metadata
-                  </label>
+                  </span>
                   <pre className="mt-1 rounded-md bg-neutral-100 dark:bg-neutral-900 p-3 text-xs overflow-x-auto">
                     {JSON.stringify(selectedError.metadata, null, 2)}
                   </pre>

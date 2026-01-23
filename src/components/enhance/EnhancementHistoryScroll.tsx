@@ -123,6 +123,12 @@ export function EnhancementHistoryScroll({
                 ${selectedVersionId === version.id ? "ring-2 ring-cyan-500" : ""}
               `}
               onClick={() => onVersionSelect?.(version.id)}
+              onKeyDown={(e) =>
+                (e.key === "Enter" || e.key === " ") && onVersionSelect?.(version.id)}
+              role="button"
+              tabIndex={0}
+              aria-label={`Select version from ${version.createdAt}`}
+              aria-pressed={selectedVersionId === version.id}
             >
               {/* Thumbnail */}
               <div className="relative aspect-video bg-muted">

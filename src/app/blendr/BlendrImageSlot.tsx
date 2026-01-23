@@ -219,6 +219,10 @@ export function BlendrImageSlot({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onClick={handleContainerClick}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleContainerClick()}
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      aria-label={image ? "Change image" : "Upload image"}
     >
       <input
         ref={fileInputRef}

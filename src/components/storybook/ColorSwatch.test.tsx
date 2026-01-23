@@ -3,13 +3,13 @@ import { describe, expect, it } from "vitest";
 import { ColorSwatch } from "./ColorSwatch";
 
 describe("ColorSwatch Component", () => {
-  it("renders with name, hex, description, and role", () => {
+  it("renders with name, hex, description, and colorRole", () => {
     render(
       <ColorSwatch
         name="Primary"
         hex="#000000"
         desc="Primary color"
-        role="Brand"
+        colorRole="Brand"
       />,
     );
 
@@ -19,7 +19,7 @@ describe("ColorSwatch Component", () => {
     expect(screen.getByText("Brand")).toBeInTheDocument();
   });
 
-  it("renders without role", () => {
+  it("renders without colorRole", () => {
     render(
       <ColorSwatch
         name="Primary"

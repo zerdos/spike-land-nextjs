@@ -174,9 +174,9 @@ export function GuardrailList({
               {expandedIndex === index && (
                 <div className="space-y-3 border-t px-3 pb-3 pt-3">
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                    <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
                       Name
-                    </label>
+                    </span>
                     <Input
                       value={guardrail.name}
                       onChange={(e) => handleUpdate(index, "name", e.target.value)}
@@ -186,9 +186,9 @@ export function GuardrailList({
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                    <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
                       Description (optional)
-                    </label>
+                    </span>
                     <Textarea
                       value={guardrail.description || ""}
                       onChange={(e) => handleUpdate(index, "description", e.target.value)}
@@ -199,9 +199,9 @@ export function GuardrailList({
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                    <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
                       Severity
-                    </label>
+                    </span>
                     <Select
                       value={guardrail.severity ?? "MEDIUM"}
                       onValueChange={(value) => handleUpdate(index, "severity", value)}
@@ -230,9 +230,9 @@ export function GuardrailList({
       <div className="rounded-lg border border-dashed bg-muted/50 p-3">
         <div className="space-y-3">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+            <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
               Add new {typeLabel.toLowerCase()}
-            </label>
+            </span>
             <Input
               value={newGuardrail.name || ""}
               onChange={(e) => setNewGuardrail({ ...newGuardrail, name: e.target.value })}
@@ -242,9 +242,9 @@ export function GuardrailList({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+            <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
               Description (optional)
-            </label>
+            </span>
             <Textarea
               value={newGuardrail.description || ""}
               onChange={(e) =>
@@ -260,9 +260,9 @@ export function GuardrailList({
 
           <div className="flex items-center gap-2">
             <div className="flex-1">
-              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
                 Severity
-              </label>
+              </span>
               <Select
                 value={newGuardrail.severity || "MEDIUM"}
                 onValueChange={(value) =>

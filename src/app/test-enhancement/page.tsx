@@ -232,9 +232,9 @@ export default function TestEnhancementPage() {
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">2. Enhance Image</h2>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">
+            <span className="block text-sm font-medium mb-2">
               Select Quality Tier:
-            </label>
+            </span>
             <div className="space-y-2">
               {(["TIER_1K", "TIER_2K", "TIER_4K"] as const).map((tier) => (
                 <label

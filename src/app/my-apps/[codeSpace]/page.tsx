@@ -1460,6 +1460,7 @@ export default function CodeSpacePage() {
                   className="min-h-[60px] max-h-[200px] resize-none bg-black/20 border-white/10 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 rounded-2xl pl-4 pr-14 py-3 text-zinc-200 placeholder:text-zinc-600 backdrop-blur-sm transition-all"
                   disabled={sendingMessage ||
                     (mode === "workspace" && app?.status === "ARCHIVED")}
+                  // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional UX: focus input in prompt mode for immediate typing
                   autoFocus={mode === "prompt"}
                   data-testid="chat-input"
                 />

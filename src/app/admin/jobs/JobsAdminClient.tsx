@@ -624,6 +624,10 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                     data-testid="job-list-item"
                     data-job-status={job.status}
                     onClick={() => selectJob(job)}
+                    onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && selectJob(job)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Select job ${job.id}`}
                     className={`cursor-pointer rounded-md border p-3 transition-colors hover:bg-neutral-800 ${
                       selectedJob?.id === job.id
                         ? "border-blue-500 bg-blue-900/20"
@@ -1392,7 +1396,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
           <div className="space-y-4 py-4">
             {/* Tier Selection */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Tier</label>
+              <span className="text-sm font-medium">Tier</span>
               <Select
                 value={modifyTier}
                 onValueChange={(value: string) => setModifyTier(value as EnhancementTier)}
@@ -1410,8 +1414,9 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
 
             {/* Prompt Editing */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Prompt</label>
+              <label htmlFor="modify-prompt" className="text-sm font-medium">Prompt</label>
               <Textarea
+                id="modify-prompt"
                 value={modifiedPrompt}
                 onChange={(e) => setModifiedPrompt(e.target.value)}
                 placeholder="Enter your prompt..."

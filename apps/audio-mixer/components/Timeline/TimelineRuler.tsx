@@ -65,6 +65,14 @@ export function TimelineRuler({ zoom, duration, onSeek }: TimelineRulerProps) {
       className="relative h-10 bg-black/40 border-b border-white/5 cursor-pointer select-none overflow-hidden"
       style={{ width: `${width}px` }}
       onClick={handleClick}
+      onKeyDown={(e) =>
+        e.key === "Enter" && handleClick(e as unknown as React.MouseEvent<HTMLDivElement>)}
+      role="slider"
+      tabIndex={0}
+      aria-label="Timeline ruler - click to seek"
+      aria-valuenow={0}
+      aria-valuemin={0}
+      aria-valuemax={duration}
     >
       {marks.map(({ time, isMajor }) => (
         <div
