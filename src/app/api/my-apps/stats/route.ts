@@ -107,7 +107,7 @@ export async function GET() {
     prisma.$queryRaw<Array<{ date: Date; count: bigint; }>>`
       SELECT DATE(m.created_at) as date, COUNT(*) as count
       FROM "app_messages" m
-      JOIN "App" a ON m.app_id = a.id
+      JOIN "apps" a ON m.app_id = a.id
       WHERE a.user_id = ${userId}
         AND m.created_at >= ${weekAgo}
         AND m.deleted_at IS NULL

@@ -173,7 +173,7 @@ export async function GET() {
   // Daily creation trend (last 7 days)
   const dailyTrend = await prisma.$queryRaw<Array<{ date: Date; count: bigint; }>>`
     SELECT DATE(created_at) as date, COUNT(*) as count
-    FROM "App"
+    FROM "apps"
     WHERE created_at >= ${weekAgo}
     GROUP BY DATE(created_at)
     ORDER BY date DESC

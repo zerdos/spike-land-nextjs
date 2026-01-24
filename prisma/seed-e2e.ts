@@ -1,6 +1,7 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import {
   AlbumPrivacy,
+  AppBuildStatus,
   EnhancementTier,
   ExternalAgentStatus,
   FeedbackStatus,
@@ -136,6 +137,66 @@ async function main() {
       joinedAt: new Date(),
     },
   });
+
+  // 1d. Create test apps for my-apps tests
+  const testApps = await Promise.all([
+    // Active app in LIVE status
+    prisma.app.upsert({
+      where: { id: "e2e-app-live-1" },
+      update: {
+        status: AppBuildStatus.LIVE,
+        name: "cosmic.prism.build.j7n0",
+      },
+      create: {
+        id: "e2e-app-live-1",
+        name: "cosmic.prism.build.j7n0",
+        slug: "cosmic-prism-build-j7n0",
+        description: "E2E Test App - Live and active",
+        userId: TEST_USER_ID,
+        status: AppBuildStatus.LIVE,
+        isPublic: false,
+        codespaceId: "e2e-codespace-1",
+        codespaceUrl: "https://testing.spike.land/live/e2e-codespace-1/",
+      },
+    }),
+
+    // App in BUILDING status
+    prisma.app.upsert({
+      where: { id: "e2e-app-building-1" },
+      update: {
+        status: AppBuildStatus.BUILDING,
+        name: "stellar.wave.craft.x9k2",
+      },
+      create: {
+        id: "e2e-app-building-1",
+        name: "stellar.wave.craft.x9k2",
+        slug: "stellar-wave-craft-x9k2",
+        description: "E2E Test App - Currently building",
+        userId: TEST_USER_ID,
+        status: AppBuildStatus.BUILDING,
+        isPublic: false,
+      },
+    }),
+
+    // App in PROMPTING status (draft)
+    prisma.app.upsert({
+      where: { id: "e2e-app-draft-1" },
+      update: {
+        status: AppBuildStatus.PROMPTING,
+        name: "lunar.spark.design.m3p1",
+      },
+      create: {
+        id: "e2e-app-draft-1",
+        name: "lunar.spark.design.m3p1",
+        slug: "lunar-spark-design-m3p1",
+        description: "E2E Test App - Draft state",
+        userId: TEST_USER_ID,
+        status: AppBuildStatus.PROMPTING,
+        isPublic: false,
+      },
+    }),
+  ]);
+  console.log(`Created ${testApps.length} test apps for my-apps tests`);
 
   // 2. Ensure test user has token balance
   await prisma.userTokenBalance.upsert({

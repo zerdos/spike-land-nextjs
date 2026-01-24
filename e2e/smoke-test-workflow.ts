@@ -146,6 +146,11 @@ async function mockAuthSession(
       }),
     });
   });
+
+  // CRITICAL FIX: Wait for route interceptors to be fully registered
+  // This prevents race conditions where the page navigates before routes are ready
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  await page.evaluate(() => Promise.resolve());
 }
 
 /**
