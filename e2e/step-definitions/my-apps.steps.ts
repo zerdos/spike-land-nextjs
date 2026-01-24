@@ -12,6 +12,52 @@ function getMyAppsPage(world: CustomWorld): MyAppsPage {
   return world.myAppsPage;
 }
 
+// Helper to set up API mocking for my-apps routes
+async function setupMyAppsApiMocking(world: CustomWorld) {
+  // Mock the stats endpoint to prevent database errors
+  await world.page.route("**/api/my-apps/stats", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        overview: {
+          totalApps: 0,
+          activeApps: 0,
+          archivedApps: 0,
+          totalMessages: 0,
+          myMessages: 0,
+          agentReplies: 0,
+          responseRate: 0,
+        },
+        statusBreakdown: {},
+        recentApps: [],
+        activityTrend: [],
+        generatedAt: new Date().toISOString(),
+      }),
+    });
+  });
+
+  // Mock the apps list endpoint
+  await world.page.route("**/api/my-apps?*", async (route) => {
+    const apps = world.createdApps || [];
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        apps: apps.map((app, i) => ({
+          id: `app-${i + 1}`,
+          name: app.name,
+          status: app.status === "Active" ? "LIVE" : "PROMPTING",
+          description: `Description for ${app.name}`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })),
+        pagination: { total: apps.length, page: 1, limit: 20 },
+      }),
+    });
+  });
+}
+
 // Extend CustomWorld with myAppsPage property
 declare module "../support/world" {
   interface CustomWorld {
@@ -21,6 +67,9 @@ declare module "../support/world" {
 }
 
 When("I navigate to the My Apps page", async function(this: CustomWorld) {
+  // Set up API mocking before navigating
+  await setupMyAppsApiMocking(this);
+
   const myAppsPage = getMyAppsPage(this);
   await myAppsPage.navigate();
 });
@@ -166,11 +215,16 @@ When(
       });
     }
 
+    // Store for API mocking
+    this.createdApps = apps;
+
     await this.page.evaluate((appsData) => {
       localStorage.setItem("user-apps", JSON.stringify(appsData));
     }, apps);
 
-    this.createdApps = apps;
+    // Re-setup API mocking with the new apps data before reload
+    await setupMyAppsApiMocking(this);
+
     await this.page.reload();
     await this.page.waitForLoadState("networkidle");
   },
@@ -203,9 +257,15 @@ When(
       description: `Description for ${name}`,
     };
 
+    // Store for API mocking
+    this.createdApps = [app];
+
     await this.page.evaluate((appData) => {
       localStorage.setItem("user-apps", JSON.stringify([appData]));
     }, app);
+
+    // Re-setup API mocking with the new apps data before reload
+    await setupMyAppsApiMocking(this);
 
     await this.page.reload();
     await this.page.waitForLoadState("networkidle");
@@ -241,9 +301,15 @@ When(
       description: `Description for ${name}`,
     };
 
+    // Store for API mocking
+    this.createdApps = [app];
+
     await this.page.evaluate((appData) => {
       localStorage.setItem("user-apps", JSON.stringify([appData]));
     }, app);
+
+    // Re-setup API mocking with the new apps data before reload
+    await setupMyAppsApiMocking(this);
 
     await this.page.reload();
     await this.page.waitForLoadState("networkidle");
