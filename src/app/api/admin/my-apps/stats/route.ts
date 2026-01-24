@@ -172,19 +172,19 @@ export async function GET() {
 
   // Daily creation trend (last 7 days)
   const dailyTrend = await prisma.$queryRaw<Array<{ date: Date; count: bigint; }>>`
-    SELECT DATE(created_at) as date, COUNT(*) as count
+    SELECT DATE("createdAt") as date, COUNT(*) as count
     FROM "apps"
-    WHERE created_at >= ${weekAgo}
-    GROUP BY DATE(created_at)
+    WHERE "createdAt" >= ${weekAgo}
+    GROUP BY DATE("createdAt")
     ORDER BY date DESC
   `;
 
   // Hourly activity (last 24 hours)
   const hourlyActivity = await prisma.$queryRaw<Array<{ hour: number; count: bigint; }>>`
-    SELECT EXTRACT(HOUR FROM created_at) as hour, COUNT(*) as count
+    SELECT EXTRACT(HOUR FROM "createdAt") as hour, COUNT(*) as count
     FROM "app_messages"
-    WHERE created_at >= ${new Date(now.getTime() - 24 * 60 * 60 * 1000)}
-    GROUP BY EXTRACT(HOUR FROM created_at)
+    WHERE "createdAt" >= ${new Date(now.getTime() - 24 * 60 * 60 * 1000)}
+    GROUP BY EXTRACT(HOUR FROM "createdAt")
     ORDER BY hour
   `;
 
