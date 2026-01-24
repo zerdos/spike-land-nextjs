@@ -233,13 +233,16 @@ Given(
 Given(
   "I have {int} images selected for deletion",
   async function(this: CustomWorld, count: number) {
-    // Select images using checkboxes with retry
-    for (let i = 0; i < count; i++) {
-      const checkbox = await waitForElementWithRetry(
-        this.page,
-        `input[type="checkbox"]:nth-of-type(${i + 1})`,
-        { timeout: TIMEOUTS.DEFAULT, state: "visible" },
-      );
+    // Wait for gallery to be ready
+    await this.page.waitForLoadState("networkidle");
+
+    // Select images using role-based checkbox selector (shadcn/ui Checkbox)
+    const checkboxes = this.page.getByRole("checkbox");
+    await expect(checkboxes.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+    const selectCount = Math.min(count, await checkboxes.count());
+    for (let i = 0; i < selectCount; i++) {
+      const checkbox = checkboxes.nth(i);
       await checkbox.check({ timeout: TIMEOUTS.DEFAULT });
       // Wait for checkbox state to update
       await this.page.waitForTimeout(100);
@@ -366,13 +369,16 @@ When(
 When(
   "I select {int} images using checkboxes",
   async function(this: CustomWorld, count: number) {
-    // Select images using checkboxes with retry
-    for (let i = 0; i < count; i++) {
-      const checkbox = await waitForElementWithRetry(
-        this.page,
-        `input[type="checkbox"]:nth-of-type(${i + 1})`,
-        { timeout: TIMEOUTS.DEFAULT, state: "visible" },
-      );
+    // Wait for gallery to be ready
+    await this.page.waitForLoadState("networkidle");
+
+    // Select images using role-based checkbox selector (shadcn/ui Checkbox)
+    const checkboxes = this.page.getByRole("checkbox");
+    await expect(checkboxes.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+    const selectCount = Math.min(count, await checkboxes.count());
+    for (let i = 0; i < selectCount; i++) {
+      const checkbox = checkboxes.nth(i);
       await checkbox.check({ timeout: TIMEOUTS.DEFAULT });
       // Wait for checkbox state to update
       await this.page.waitForTimeout(100);

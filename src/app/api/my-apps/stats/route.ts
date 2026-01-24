@@ -105,13 +105,13 @@ export async function GET() {
 
     // Messages per day (last 7 days)
     prisma.$queryRaw<Array<{ date: Date; count: bigint; }>>`
-      SELECT DATE(m.created_at) as date, COUNT(*) as count
+      SELECT DATE(m."createdAt") as date, COUNT(*) as count
       FROM "app_messages" m
-      JOIN "apps" a ON m.app_id = a.id
-      WHERE a.user_id = ${userId}
-        AND m.created_at >= ${weekAgo}
-        AND m.deleted_at IS NULL
-      GROUP BY DATE(m.created_at)
+      JOIN "apps" a ON m."appId" = a.id
+      WHERE a."userId" = ${userId}
+        AND m."createdAt" >= ${weekAgo}
+        AND m."deletedAt" IS NULL
+      GROUP BY DATE(m."createdAt")
       ORDER BY date DESC
     `,
   ]);

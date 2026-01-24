@@ -113,17 +113,21 @@ When(
       { timeout: TIMEOUTS.LONG },
     );
 
-    // Find a card with "Hidden" badge and click its visibility toggle
-    await waitForElementWithRetry(
-      this.page,
-      '[class*="Card"]',
-      { timeout: TIMEOUTS.DEFAULT, state: "visible" },
-    );
+    // Wait for cards to load
+    await this.page.waitForLoadState("networkidle");
 
-    const hiddenCard = this.page.locator('[class*="Card"]').filter({
-      hasText: "Hidden",
+    // Find a card with "Hidden" badge and click its visibility toggle
+    // Use data-testid if available, fallback to card class
+    const cards = this.page.locator('[data-testid="route-card"], [class*="Card"]');
+    await expect(cards.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+
+    // Find a hidden card by looking for the Hidden badge text
+    const hiddenCard = cards.filter({
+      has: this.page.getByText("Hidden", { exact: true }),
     }).first();
+    await expect(hiddenCard).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     const visibilityButton = hiddenCard.locator('[title*="Show this path"]');
+    await expect(visibilityButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
     await visibilityButton.click();
 
     await apiPromise;
@@ -406,45 +410,37 @@ Then("the hidden count should increase", async function(this: CustomWorld) {
 Then("hidden routes should not be visible", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");
 
-  // Wait for cards to load
-  await waitForElementWithRetry(
-    this.page,
-    '[class*="Card"]',
-    { timeout: TIMEOUTS.LONG, state: "visible" },
-  );
+  // Wait for cards to load using robust selector
+  const cards = this.page.locator('[data-testid="route-card"], [class*="Card"]');
+  await expect(cards.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
 
   // Hidden routes should NOT be visible in the grid by default
   // Cards with "Hidden" badge are filtered out when showHidden is false
-  const hiddenBadges = this.page.locator('[class*="Card"]').locator(
-    '[class*="Badge"]:has-text("Hidden")',
-  );
+  const hiddenCards = cards.filter({
+    has: this.page.getByText("Hidden", { exact: true }),
+  });
 
   // There should be no cards with "Hidden" badge visible
   // (because hidden cards are filtered out of the grid by default)
-  const hiddenBadgeCount = await hiddenBadges.count();
-  expect(hiddenBadgeCount).toBe(0);
+  const hiddenCardCount = await hiddenCards.count();
+  expect(hiddenCardCount).toBe(0);
 
   // Also verify the stats badge shows there ARE hidden routes (just not visible)
-  const statsText = this.page.locator('[class*="Badge"]').filter({
-    hasText: /\d+ visible \/ \d+ hidden/,
-  });
+  const statsText = this.page.getByText(/\d+ visible \/ \d+ hidden/);
   await expect(statsText).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
 });
 
 Then("hidden routes should become visible", async function(this: CustomWorld) {
   await this.page.waitForLoadState("networkidle");
 
-  // Wait for cards to load
-  await waitForElementWithRetry(
-    this.page,
-    '[class*="Card"]',
-    { timeout: TIMEOUTS.LONG, state: "visible" },
-  );
+  // Wait for cards to load using robust selector
+  const cards = this.page.locator('[data-testid="route-card"], [class*="Card"]');
+  await expect(cards.first()).toBeVisible({ timeout: TIMEOUTS.LONG });
 
   // After clicking "Show Hidden Paths", hidden routes should now be visible
-  // Look for cards with the "Hidden" badge and opacity-50 class
-  const hiddenCards = this.page.locator('[class*="Card"]').filter({
-    has: this.page.locator('[class*="Badge"]:has-text("Hidden")'),
+  // Look for cards with the "Hidden" badge text
+  const hiddenCards = cards.filter({
+    has: this.page.getByText("Hidden", { exact: true }),
   });
 
   // There should be at least one hidden card visible now
@@ -456,7 +452,7 @@ Then("hidden routes should become visible", async function(this: CustomWorld) {
 
   // Verify hidden cards have reduced opacity (opacity-50 class)
   const cardWithOpacity = this.page.locator(
-    '[class*="Card"][class*="opacity-50"]',
+    '[data-testid="route-card"][class*="opacity-50"], [class*="Card"][class*="opacity-50"]',
   );
   const opacityCount = await cardWithOpacity.count();
   expect(opacityCount).toBeGreaterThan(0);
