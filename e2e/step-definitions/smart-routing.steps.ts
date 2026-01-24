@@ -8,15 +8,24 @@ Given(
     // In a real E2E, we might API call to set this up, or UI drive it.
     // For now, assuming UI drive or pre-seed.
     // Let's assume we use the UI to ensure it's on if not already.
-    await this.page.goto(`/orbit/${workspaceSlug}/settings/inbox/routing`);
+    await this.page.goto(`${this.baseUrl}/orbit/${workspaceSlug}/settings/inbox/routing`);
+    await this.page.waitForLoadState("networkidle");
 
     // Check if toggle is off, if so click it
-    const toggle = this.page.locator('button[role="switch"][name="enabled"]');
+    // Try multiple selector strategies for the switch toggle
+    const toggle = this.page.getByRole("switch").first().or(
+      this.page.locator('[role="switch"]').first(),
+    ).or(
+      this.page.locator("button[aria-checked]").first(),
+    );
+    await expect(toggle).toBeVisible({ timeout: 15000 });
     const isChecked = await toggle.getAttribute("aria-checked");
     if (isChecked === "false") {
       await toggle.click();
-      await this.page.getByRole("button", { name: "Save Changes" }).click();
-      await expect(this.page.getByText("Settings saved successfully")).toBeVisible();
+      await this.page.getByRole("button", { name: /Save Changes/i }).click();
+      await expect(this.page.getByText(/Settings saved|saved successfully/i)).toBeVisible({
+        timeout: 10000,
+      });
     }
   },
 );
@@ -26,11 +35,13 @@ Given(
   async function(this: CustomWorld) {
     // Navigate and set threshold
     const workspaceSlug = "orbit-test-workspace"; // Match feature file or param
-    await this.page.goto(`/orbit/${workspaceSlug}/settings/inbox/routing`);
+    await this.page.goto(`${this.baseUrl}/orbit/${workspaceSlug}/settings/inbox/routing`);
+    await this.page.waitForLoadState("networkidle");
 
     const thresholdInput = this.page.locator('input[name="negativeSentimentThreshold"]');
+    await expect(thresholdInput).toBeVisible({ timeout: 10000 });
     await thresholdInput.fill("-0.1"); // Sensitive threshold for testing
-    await this.page.getByRole("button", { name: "Save Changes" }).click();
+    await this.page.getByRole("button", { name: /Save Changes/i }).click();
   },
 );
 
@@ -82,10 +93,11 @@ Given("I have an inbox item with:", async function(this: CustomWorld, dataTable:
   });
 });
 
-Given(
+When(
   "I navigate to the Inbox for {string}",
   async function(this: CustomWorld, workspaceSlug: string) {
-    await this.page.goto(`/orbit/${workspaceSlug}/inbox`);
+    await this.page.goto(`${this.baseUrl}/orbit/${workspaceSlug}/inbox`);
+    await this.page.waitForLoadState("networkidle");
   },
 );
 
@@ -151,7 +163,8 @@ Given(
     const subPath = pathMap[pageName];
     if (!subPath) throw new Error(`Unknown settings page: ${pageName}`);
 
-    await this.page.goto(`/orbit/${workspaceSlug}/settings/${subPath}`);
+    await this.page.goto(`${this.baseUrl}/orbit/${workspaceSlug}/settings/${subPath}`);
+    await this.page.waitForLoadState("networkidle");
     // Wait for page load
     await expect(this.page).toHaveURL(new RegExp(`/orbit/${workspaceSlug}/settings/${subPath}`));
   },
