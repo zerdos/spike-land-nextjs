@@ -47,6 +47,13 @@ export async function GET(
   request: Request,
   { params }: { params: { workspaceSlug: string; }; },
 ) {
+  // Validate workspaceSlug parameter
+  if (!params.workspaceSlug) {
+    return NextResponse.json({ error: "Workspace slug is required" }, {
+      status: 400,
+    });
+  }
+
   const session = await auth();
   const { searchParams } = new URL(request.url);
   const query = Object.fromEntries(searchParams.entries());
@@ -116,6 +123,13 @@ export async function POST(
   request: Request,
   { params }: { params: { workspaceSlug: string; }; },
 ) {
+  // Validate workspaceSlug parameter
+  if (!params.workspaceSlug) {
+    return NextResponse.json({ error: "Workspace slug is required" }, {
+      status: 400,
+    });
+  }
+
   const session = await auth();
   const body = await request.json();
 
