@@ -272,6 +272,11 @@ export default function UserManagementPage() {
                       key={user.id}
                       className="cursor-pointer p-4 transition-colors hover:bg-muted"
                       onClick={() => fetchUserDetails(user.id)}
+                      onKeyDown={(e) =>
+                        (e.key === "Enter" || e.key === " ") && fetchUserDetails(user.id)}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`View user ${user.name || user.email}`}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">

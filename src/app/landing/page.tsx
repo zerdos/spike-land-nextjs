@@ -107,6 +107,7 @@ export default function LandingIndexPage() {
                     tabIndex={-1}
                     aria-hidden="true"
                     loading="lazy"
+                    title={`Preview of ${page.name}`}
                   />
                 </div>
 

@@ -222,7 +222,7 @@ describe("Switch Component", () => {
     it("should have accessible name when aria-labelledby is provided", () => {
       render(
         <div>
-          <label id="switch-label">Enable feature</label>
+          <span id="switch-label">Enable feature</span>
           <Switch aria-labelledby="switch-label" />
         </div>,
       );

@@ -159,8 +159,9 @@ export default function VouchersPage() {
         <Card className="p-6">
           <form onSubmit={handleCreateVoucher} className="space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium">Code</label>
+              <label htmlFor="voucher-code" className="mb-1 block text-sm font-medium">Code</label>
               <Input
+                id="voucher-code"
                 type="text"
                 value={formData.code}
                 onChange={(e) => setFormData({ ...formData, code: e.target.value })}
@@ -170,8 +171,9 @@ export default function VouchersPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium">Type</label>
+              <label htmlFor="voucher-type" className="mb-1 block text-sm font-medium">Type</label>
               <select
+                id="voucher-type"
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2"
@@ -184,8 +186,11 @@ export default function VouchersPage() {
 
             <div className="grid gap-4 md:grid-cols-3">
               <div>
-                <label className="mb-1 block text-sm font-medium">Value</label>
+                <label htmlFor="voucher-value" className="mb-1 block text-sm font-medium">
+                  Value
+                </label>
                 <Input
+                  id="voucher-value"
                   type="number"
                   value={formData.value}
                   onChange={(e) => setFormData({ ...formData, value: e.target.value })}
@@ -195,10 +200,11 @@ export default function VouchersPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium">
+                <label htmlFor="voucher-max-uses" className="mb-1 block text-sm font-medium">
                   Max Uses (optional)
                 </label>
                 <Input
+                  id="voucher-max-uses"
                   type="number"
                   value={formData.maxUses}
                   onChange={(e) => setFormData({ ...formData, maxUses: e.target.value })}
@@ -207,10 +213,11 @@ export default function VouchersPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium">
+                <label htmlFor="voucher-expires" className="mb-1 block text-sm font-medium">
                   Expires At (optional)
                 </label>
                 <Input
+                  id="voucher-expires"
                   type="datetime-local"
                   value={formData.expiresAt}
                   onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}

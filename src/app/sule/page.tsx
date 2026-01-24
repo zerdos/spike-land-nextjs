@@ -501,20 +501,23 @@ export default function ArnoldSulePortfolio() {
           </p>
           <div className="flex gap-4">
             <a
-              href="#"
+              href="https://github.com"
               className="text-muted-foreground hover:text-aurora-teal transition-colors"
+              aria-label="GitHub"
             >
               <Github className="h-5 w-5" />
             </a>
             <a
-              href="#"
+              href="https://linkedin.com"
               className="text-muted-foreground hover:text-aurora-teal transition-colors"
+              aria-label="LinkedIn"
             >
               <Linkedin className="h-5 w-5" />
             </a>
             <a
-              href="#"
+              href="mailto:contact@example.com"
               className="text-muted-foreground hover:text-aurora-teal transition-colors"
+              aria-label="Email"
             >
               <Mail className="h-5 w-5" />
             </a>

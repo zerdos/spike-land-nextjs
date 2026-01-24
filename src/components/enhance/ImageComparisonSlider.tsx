@@ -174,6 +174,12 @@ export function ImageComparisonSlider({
         }}
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
+        role="slider"
+        tabIndex={0}
+        aria-label="Image comparison slider"
+        aria-valuenow={Math.round(sliderPosition * 100)}
+        aria-valuemin={0}
+        aria-valuemax={100}
       >
         {/* Enhanced image (background) */}
         {!enhancedError

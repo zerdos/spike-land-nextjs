@@ -197,6 +197,7 @@ export function LogoUpload({
       {logoUrl && (
         <div className="flex items-center gap-2">
           <label className="cursor-pointer">
+            <span className="sr-only">Upload new logo</span>
             <input
               type="file"
               accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"

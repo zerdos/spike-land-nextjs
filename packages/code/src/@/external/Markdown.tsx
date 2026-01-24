@@ -87,6 +87,7 @@ const MarkdownWithReadAloud: React.FC<MarkdownWithReadAloudProps> = (
               audioContext.resume();
             }}
           >
+            <track kind="captions" src="" label="Captions" default />
             Your browser does not support the audio element.
           </audio>
         </div>

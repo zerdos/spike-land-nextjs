@@ -85,6 +85,7 @@ export const SmartGrid = forwardRef<HTMLDivElement, SmartGridProps>(
       <div
         ref={ref}
         role="grid"
+        tabIndex={0}
         aria-label="Photo gallery"
         onKeyDown={handleKeyDown}
         data-testid="smart-grid"

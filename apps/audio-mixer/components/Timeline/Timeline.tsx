@@ -208,13 +208,18 @@ export function Timeline({
         </div>
       </div>
 
-      {/* Tracks viewport */}
+      {/* Tracks viewport - uses role="application" for complex widget with custom keyboard handling */}
+      {/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex -- Application role widget with custom interaction model */}
       <div
         ref={viewportRef}
         className="relative overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-white/20 transition-all"
         style={{ height: `${Math.min(tracksHeight, 400)}px` }}
         onMouseDown={handleViewportMouseDown}
+        role="application"
+        aria-label="Timeline tracks editor"
+        tabIndex={0}
       >
+        {/* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
         {/* Content container */}
         <div
           className="relative bg-[radial-gradient(circle_at_2px_2px,rgba(255,255,255,0.03)_1px,transparent_0)] bg-[size:40px_40px]"

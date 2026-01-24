@@ -4,12 +4,13 @@ interface ColorSwatchProps {
   name: string;
   hex: string;
   desc: string;
-  role?: string;
+  /** The design/business role of this color (e.g., "Brand", "Accent") - not an ARIA role */
+  colorRole?: string;
   contrastPass?: boolean;
 }
 
 export function ColorSwatch(
-  { name, hex, desc, role, contrastPass }: ColorSwatchProps,
+  { name, hex, desc, colorRole, contrastPass }: ColorSwatchProps,
 ) {
   return (
     <div className="flex items-center gap-4 p-4 rounded-xl bg-card/50 border border-border hover:bg-muted/50 transition-colors">
@@ -20,7 +21,7 @@ export function ColorSwatch(
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-semibold text-base">{name}</span>
-          {role && <Badge variant="secondary" className="text-xs">{role}</Badge>}
+          {colorRole && <Badge variant="secondary" className="text-xs">{colorRole}</Badge>}
         </div>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           <span className="text-sm text-muted-foreground font-mono">{hex}</span>

@@ -310,6 +310,12 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
             {/* Free Option */}
             <div
               onClick={() => !activeJobId && setSelectedTier("FREE")}
+              onKeyDown={(e) =>
+                (e.key === "Enter" || e.key === " ") && !activeJobId && setSelectedTier("FREE")}
+              role="button"
+              tabIndex={activeJobId ? -1 : 0}
+              aria-label="Select FREE: Nano Banana tier"
+              aria-pressed={effectiveTier === "FREE"}
               className={cn(
                 "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
                 effectiveTier === "FREE"
@@ -337,6 +343,12 @@ export function BlendrClient({ isAnonymous = false }: BlendrClientProps) {
             {/* Pro Option */}
             <div
               onClick={() => !activeJobId && setSelectedTier("TIER_1K")}
+              onKeyDown={(e) =>
+                (e.key === "Enter" || e.key === " ") && !activeJobId && setSelectedTier("TIER_1K")}
+              role="button"
+              tabIndex={activeJobId ? -1 : 0}
+              aria-label="Select Pro tier"
+              aria-pressed={effectiveTier === "TIER_1K"}
               className={cn(
                 "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
                 effectiveTier === "TIER_1K"
