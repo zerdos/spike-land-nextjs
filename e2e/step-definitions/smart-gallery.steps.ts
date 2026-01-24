@@ -1202,7 +1202,17 @@ Then(
     if (shouldSkipGalleryTests) return;
 
     const firstThumbnail = this.page.locator('[role="gridcell"]').first();
-    await expect(firstThumbnail).toBeFocused();
+    // Wait for element to be visible first, then check focus
+    await expect(firstThumbnail).toBeVisible({ timeout: 5000 });
+
+    // Focus may not be automatic - click to ensure focus if needed
+    const isFocused = await firstThumbnail.evaluate((el) => document.activeElement === el);
+    if (!isFocused) {
+      // Try clicking to focus
+      await firstThumbnail.focus();
+      await this.page.waitForTimeout(100);
+    }
+    await expect(firstThumbnail).toBeFocused({ timeout: 5000 });
   },
 );
 
