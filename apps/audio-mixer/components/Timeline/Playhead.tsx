@@ -63,7 +63,12 @@ export function Playhead({ time, zoom, height, onSeek }: PlayheadProps) {
       <div
         className="absolute -top-3 -left-2.5 w-5 h-5 bg-primary/90 rounded-full cursor-ew-resize pointer-events-auto hover:bg-primary transition-all shadow-glow-cyan-sm active:scale-110 flex items-center justify-center border border-white/20"
         onMouseDown={handleMouseDown}
-        title="Drag to seek"
+        role="slider"
+        tabIndex={0}
+        aria-label="Playhead - drag to seek"
+        aria-valuenow={0}
+        aria-valuemin={0}
+        aria-valuemax={100}
       >
         <div className="w-1.5 h-1.5 bg-white rounded-full" />
       </div>

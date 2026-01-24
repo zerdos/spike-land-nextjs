@@ -336,7 +336,7 @@ export default async function Image(
         >
           <img
             src={singleImageUrl}
-            alt="Enhanced Image"
+            alt="Enhanced preview"
             style={{
               position: "absolute",
               top: 0,

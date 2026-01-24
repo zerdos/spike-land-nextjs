@@ -14,6 +14,9 @@ vi.mock("./Waveform", () => ({
     <div
       data-testid="waveform"
       onClick={() => onClick?.(0.5)}
+      onKeyDown={(e: React.KeyboardEvent) => e.key === "Enter" && onClick?.(0.5)}
+      role="button"
+      tabIndex={0}
     />
   ),
 }));

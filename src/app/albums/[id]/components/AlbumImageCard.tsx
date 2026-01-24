@@ -157,6 +157,12 @@ export const AlbumImageCard = memo(function AlbumImageCard({
           <div
             className="absolute inset-0 bg-black/20 flex items-start justify-start p-3 cursor-pointer"
             onClick={handleCheckboxClick}
+            onKeyDown={(e) =>
+              (e.key === "Enter" || e.key === " ") &&
+              handleCheckboxClick(e as unknown as React.MouseEvent)}
+            role="button"
+            tabIndex={0}
+            aria-label={`Toggle selection for ${image.name || "image"}`}
           >
             <Checkbox
               checked={isSelected}

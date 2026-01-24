@@ -329,6 +329,11 @@ export default function AdminPhotosPage() {
                     key={photo.id}
                     className="group cursor-pointer overflow-hidden rounded-lg border border-border transition-shadow hover:shadow-lg"
                     onClick={() => setSelectedPhoto(photo)}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") && setSelectedPhoto(photo)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`View photo ${photo.name}`}
                   >
                     <div className="relative aspect-square bg-muted">
                       <Image

@@ -17,7 +17,9 @@ function VideoPlayer(
       playsInline
       muted={muted}
       className="w-32 h-24 bg-black rounded-lg border border-white/20 object-cover"
-    />
+    >
+      <track kind="captions" src="" label="Captions" default />
+    </video>
   );
 }
 

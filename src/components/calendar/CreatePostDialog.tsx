@@ -236,6 +236,11 @@ export function CreatePostDialog({
                               : "hover:bg-muted",
                           )}
                           onClick={() => handleAccountToggle(account.id)}
+                          onKeyDown={(e) =>
+                            (e.key === "Enter" || e.key === " ") && handleAccountToggle(account.id)}
+                          role="button"
+                          tabIndex={0}
+                          aria-pressed={selectedAccounts.includes(account.id)}
                           data-testid={`account-select-${account.platform.toLowerCase()}-${slugifiedName}`}
                         >
                           <Checkbox

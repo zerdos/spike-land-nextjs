@@ -20,6 +20,8 @@ const eslintConfig = tseslint.config(
       "fix-r2-versioning-cache/**",
       "coverage/**",
       ".yarn/**",
+      ".pnp.cjs",
+      ".pnp.loader.mjs",
       "packages/mobile-app/coverage/**",
       "src/app/.well-known/**",
     ],

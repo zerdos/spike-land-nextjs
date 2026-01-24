@@ -115,6 +115,10 @@ export function KeyboardShortcutsPanel(
       <div
         className="fixed inset-0 bg-black/50 z-40"
         onClick={onClose}
+        onKeyDown={(e) => e.key === "Escape" && onClose()}
+        role="button"
+        tabIndex={0}
+        aria-label="Close keyboard shortcuts panel"
       />
 
       {/* Panel */}

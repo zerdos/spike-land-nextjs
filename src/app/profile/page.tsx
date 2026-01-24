@@ -52,18 +52,18 @@ export default async function ProfilePage() {
 
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <span className="text-sm font-medium text-muted-foreground">
                   User ID
-                </label>
+                </span>
                 <p className="mt-1 text-sm font-mono bg-muted p-2 rounded">
                   {session.user.id || "Not available"}
                 </p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <span className="text-sm font-medium text-muted-foreground">
                   Account Type
-                </label>
+                </span>
                 <p className="mt-1">OAuth Provider Account</p>
               </div>
             </div>

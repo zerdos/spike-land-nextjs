@@ -143,7 +143,8 @@ describe("ReferenceImageUpload", () => {
     await waitFor(() => {
       expect(screen.getByPlaceholderText("Description (optional)"))
         .toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /upload/i }))
+      // Use exact match for the Upload button (not the dropzone with aria-label="Upload reference image")
+      expect(screen.getByRole("button", { name: "Upload" }))
         .toBeInTheDocument();
     });
   });
@@ -217,11 +218,12 @@ describe("ReferenceImageUpload", () => {
     await userEvent.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /upload/i }))
+      // Use exact match for the Upload button (not the dropzone)
+      expect(screen.getByRole("button", { name: "Upload" }))
         .toBeInTheDocument();
     });
 
-    const uploadButton = screen.getByRole("button", { name: /upload/i });
+    const uploadButton = screen.getByRole("button", { name: "Upload" });
     await userEvent.click(uploadButton);
 
     await waitFor(() => {
@@ -258,11 +260,12 @@ describe("ReferenceImageUpload", () => {
     await userEvent.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /upload/i }))
+      // Use exact match for the Upload button (not the dropzone)
+      expect(screen.getByRole("button", { name: "Upload" }))
         .toBeInTheDocument();
     });
 
-    const uploadButton = screen.getByRole("button", { name: /upload/i });
+    const uploadButton = screen.getByRole("button", { name: "Upload" });
     await userEvent.click(uploadButton);
 
     await waitFor(() => {

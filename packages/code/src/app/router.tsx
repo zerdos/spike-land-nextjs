@@ -116,6 +116,7 @@ const App: React.FC = () => {
       <iframe
         src={`/live/${codeSpace}/`}
         style={{ width: "100hw", height: "100vh" }}
+        title="Code preview"
       />
     );
   }

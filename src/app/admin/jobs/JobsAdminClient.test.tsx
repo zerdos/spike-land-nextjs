@@ -124,16 +124,21 @@ describe("JobsAdminClient", () => {
         .toBeInTheDocument();
     });
 
-    expect(screen.getByRole("button", { name: /queue/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /running/i }))
-      .toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /completed/i }))
-      .toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /failed/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /cancelled/i }))
-      .toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /refunded/i }))
-      .toBeInTheDocument();
+    // Use getAllByRole and filter to the status filter buttons (not job list items)
+    const buttons = screen.getAllByRole("button");
+    const filterButtons = buttons.filter((btn) => btn.classList.contains("tracking-wide"));
+    expect(filterButtons.some((btn) => btn.textContent?.includes("Queue")))
+      .toBe(true);
+    expect(filterButtons.some((btn) => btn.textContent?.includes("Running")))
+      .toBe(true);
+    expect(filterButtons.some((btn) => btn.textContent?.includes("Completed")))
+      .toBe(true);
+    expect(filterButtons.some((btn) => btn.textContent?.includes("Failed")))
+      .toBe(true);
+    expect(filterButtons.some((btn) => btn.textContent?.includes("Cancelled")))
+      .toBe(true);
+    expect(filterButtons.some((btn) => btn.textContent?.includes("Refunded")))
+      .toBe(true);
   });
 
   it("should render search and refresh controls", async () => {
@@ -288,8 +293,13 @@ describe("JobsAdminClient", () => {
       expect(screen.getByText("Jobs (2)")).toBeInTheDocument();
     });
 
-    // Click on Failed tab
-    fireEvent.click(screen.getByRole("button", { name: /failed/i }));
+    // Click on Failed tab - find the filter button specifically (not job list items)
+    const failedButton = screen.getAllByRole("button").find(
+      (btn) =>
+        btn.classList.contains("tracking-wide") &&
+        btn.textContent?.includes("Failed"),
+    );
+    fireEvent.click(failedButton!);
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(

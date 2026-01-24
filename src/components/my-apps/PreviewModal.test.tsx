@@ -16,10 +16,12 @@ vi.mock("framer-motion", async () => {
         className,
         role,
         tabIndex,
+        onKeyDown,
         ...props
       }: React.HTMLAttributes<HTMLDivElement> & { tabIndex?: number; }) => (
         <div
           onClick={onClick}
+          onKeyDown={onKeyDown}
           className={className}
           role={role}
           tabIndex={tabIndex}

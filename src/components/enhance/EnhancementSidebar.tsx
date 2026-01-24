@@ -278,6 +278,11 @@ export function EnhancementSidebar({
             {/* 1. Original Image Item */}
             <div
               onClick={() => onSelectVersion(null)}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelectVersion(null)}
+              role="button"
+              tabIndex={0}
+              aria-label="Select original image"
+              aria-pressed={isOriginalSelected}
               className={cn(
                 "group flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all",
                 isOriginalSelected
@@ -341,6 +346,14 @@ export function EnhancementSidebar({
                 <div
                   key={tier}
                   onClick={() => !isProcessingJob && !isFailed && onSelectVersion(job.id)}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") && !isProcessingJob && !isFailed &&
+                    onSelectVersion(job.id)}
+                  role="button"
+                  tabIndex={isProcessingJob || isFailed ? -1 : 0}
+                  aria-label={`Select ${info.name} version`}
+                  aria-pressed={isSelected}
+                  aria-disabled={isProcessingJob || isFailed}
                   className={cn(
                     "group flex items-center justify-between p-3 rounded-lg border transition-all",
                     isSelected

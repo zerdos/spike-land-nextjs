@@ -77,6 +77,10 @@ export default function SurfacesPage() {
               <div
                 className="glass-0 h-48 rounded-2xl border border-white/5 flex flex-col items-center justify-center p-6 text-center transition-all duration-300 hover:scale-[1.02] cursor-pointer"
                 onClick={() => handleCopy("glass-0")}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleCopy("glass-0")}
+                role="button"
+                tabIndex={0}
+                aria-label="Copy glass-0 class"
               >
                 <span className="text-4xl font-bold opacity-20 mb-2">0</span>
                 <Badge variant="outline" className="mb-2 bg-black/20">
@@ -109,6 +113,10 @@ export default function SurfacesPage() {
               <div
                 className="glass-1 h-48 rounded-2xl flex flex-col items-center justify-center p-6 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer border border-white/10"
                 onClick={() => handleCopy("glass-1")}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleCopy("glass-1")}
+                role="button"
+                tabIndex={0}
+                aria-label="Copy glass-1 class"
               >
                 <span className="text-4xl font-bold text-primary/40 mb-2">
                   1
@@ -143,6 +151,10 @@ export default function SurfacesPage() {
               <div
                 className="glass-2 h-48 rounded-2xl flex flex-col items-center justify-center p-6 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-xl cursor-pointer border border-white/20"
                 onClick={() => handleCopy("glass-2")}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleCopy("glass-2")}
+                role="button"
+                tabIndex={0}
+                aria-label="Copy glass-2 class"
               >
                 <span className="text-4xl font-bold text-accent/40 mb-2">
                   2
@@ -303,9 +315,9 @@ export default function SurfacesPage() {
               <CardContent className="pt-6 space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <label className="text-sm font-medium text-white">
+                    <span className="text-sm font-medium text-white">
                       Push Notifications
-                    </label>
+                    </span>
                     <p className="text-xs text-muted-foreground">
                       Receive daily summaries
                     </p>
@@ -314,9 +326,9 @@ export default function SurfacesPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <label className="text-sm font-medium text-white">
+                    <span className="text-sm font-medium text-white">
                       Sound Effects
-                    </label>
+                    </span>
                     <p className="text-xs text-muted-foreground">
                       Play sounds on action
                     </p>
