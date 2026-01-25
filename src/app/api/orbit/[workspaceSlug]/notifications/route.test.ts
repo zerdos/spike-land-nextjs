@@ -86,7 +86,7 @@ describe("GET /api/orbit/[workspaceSlug]/notifications", () => {
     const req = new NextRequest(
       `https://localhost/api/orbit/${mockWorkspace.slug}/notifications`,
     );
-    const res = await GET(req, { params: { workspaceSlug: mockWorkspace.slug } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: mockWorkspace.slug }) });
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -119,7 +119,7 @@ describe("GET /api/orbit/[workspaceSlug]/notifications", () => {
     const req = new NextRequest(
       `https://localhost/api/orbit/${mockWorkspace.slug}/notifications?limit=10&offset=20`,
     );
-    const res = await GET(req, { params: { workspaceSlug: mockWorkspace.slug } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: mockWorkspace.slug }) });
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -144,7 +144,7 @@ describe("GET /api/orbit/[workspaceSlug]/notifications", () => {
     const req = new NextRequest(
       `https://localhost/api/orbit/${mockWorkspace.slug}/notifications?unreadOnly=true`,
     );
-    const res = await GET(req, { params: { workspaceSlug: mockWorkspace.slug } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: mockWorkspace.slug }) });
 
     expect(res.status).toBe(200);
     expect(NotificationService.list).toHaveBeenCalledWith(mockWorkspace.id, {
@@ -163,7 +163,7 @@ describe("GET /api/orbit/[workspaceSlug]/notifications", () => {
     const req = new NextRequest(
       `https://localhost/api/orbit/${mockWorkspace.slug}/notifications`,
     );
-    const res = await GET(req, { params: { workspaceSlug: mockWorkspace.slug } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: mockWorkspace.slug }) });
 
     expect(res.status).toBe(401);
   });
@@ -175,7 +175,7 @@ describe("GET /api/orbit/[workspaceSlug]/notifications", () => {
     const req = new NextRequest(
       `https://localhost/api/orbit/non-existent/notifications`,
     );
-    const res = await GET(req, { params: { workspaceSlug: "non-existent" } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "non-existent" }) });
     const data = await res.json();
 
     expect(res.status).toBe(404);
@@ -233,7 +233,7 @@ describe("POST /api/orbit/[workspaceSlug]/notifications", () => {
         }),
       },
     );
-    const res = await POST(req, { params: { workspaceSlug: mockWorkspace.slug } });
+    const res = await POST(req, { params: Promise.resolve({ workspaceSlug: mockWorkspace.slug }) });
     const data = await res.json();
 
     expect(res.status).toBe(201);
@@ -266,7 +266,7 @@ describe("POST /api/orbit/[workspaceSlug]/notifications", () => {
         }),
       },
     );
-    const res = await POST(req, { params: { workspaceSlug: mockWorkspace.slug } });
+    const res = await POST(req, { params: Promise.resolve({ workspaceSlug: mockWorkspace.slug }) });
 
     expect(res.status).toBe(201);
     expect(NotificationService.create).toHaveBeenCalledWith({
@@ -296,7 +296,7 @@ describe("POST /api/orbit/[workspaceSlug]/notifications", () => {
         }),
       },
     );
-    const res = await POST(req, { params: { workspaceSlug: mockWorkspace.slug } });
+    const res = await POST(req, { params: Promise.resolve({ workspaceSlug: mockWorkspace.slug }) });
 
     expect(res.status).toBe(400);
   });
@@ -318,7 +318,7 @@ describe("POST /api/orbit/[workspaceSlug]/notifications", () => {
         }),
       },
     );
-    const res = await POST(req, { params: { workspaceSlug: mockWorkspace.slug } });
+    const res = await POST(req, { params: Promise.resolve({ workspaceSlug: mockWorkspace.slug }) });
 
     expect(res.status).toBe(401);
   });
@@ -338,7 +338,7 @@ describe("POST /api/orbit/[workspaceSlug]/notifications", () => {
         }),
       },
     );
-    const res = await POST(req, { params: { workspaceSlug: "non-existent" } });
+    const res = await POST(req, { params: Promise.resolve({ workspaceSlug: "non-existent" }) });
     const data = await res.json();
 
     expect(res.status).toBe(404);

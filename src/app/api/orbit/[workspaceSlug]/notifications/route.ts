@@ -45,10 +45,13 @@ const createBodySchema = z.object({
  */
 export async function GET(
   request: Request,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
+  // Await params in Next.js 15
+  const { workspaceSlug } = await params;
+
   // Validate workspaceSlug parameter
-  if (!params.workspaceSlug) {
+  if (!workspaceSlug) {
     return NextResponse.json({ error: "Workspace slug is required" }, {
       status: 400,
     });
@@ -70,7 +73,7 @@ export async function GET(
 
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
       select: { id: true },
     });
 
@@ -121,10 +124,13 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
+  // Await params in Next.js 15
+  const { workspaceSlug } = await params;
+
   // Validate workspaceSlug parameter
-  if (!params.workspaceSlug) {
+  if (!workspaceSlug) {
     return NextResponse.json({ error: "Workspace slug is required" }, {
       status: 400,
     });
@@ -143,7 +149,7 @@ export async function POST(
 
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
       select: { id: true },
     });
 
