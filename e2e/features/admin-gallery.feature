@@ -8,12 +8,7 @@ Feature: Admin Featured Gallery Management
     Given I am logged in as "Admin User" with email "admin@example.com"
     And the user is an admin
 
-  @fast @requires-db
-  Scenario: Gallery management page loads successfully
-    When I visit "/admin/gallery"
-    Then I should be on the "/admin/gallery" page
-    And I should see "Featured Gallery" heading
-    And I should see "Manage before/after image pairs displayed on the landing page" text
+  # Page load test is in smoke-tests.feature
 
   @fast @requires-db
   Scenario: Gallery page displays Add New Item button

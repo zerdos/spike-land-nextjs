@@ -50,6 +50,25 @@ module.exports = {
     tags: "@flaky and not @skip",
     timeout: 15000,
   },
+  // Smoke profile - critical path tests for fast CI feedback
+  // Run with: yarn cucumber --profile smoke
+  smoke: {
+    paths: ["e2e/features/**/*.feature"],
+    require: ["e2e/support/**/*.ts", "e2e/step-definitions/**/*.steps.ts"],
+    requireModule: ["tsx/cjs"],
+    format: [
+      "progress",
+      "html:e2e/reports/cucumber-report-smoke.html",
+      "json:e2e/reports/cucumber-report-smoke.json",
+    ],
+    formatOptions: { snippetInterface: "async-await" },
+    publishQuiet: true,
+    failFast: true, // Stop on first failure for fast feedback
+    retry: 1, // Single retry for smoke tests
+    tags: "@smoke and not @skip",
+    timeout: 30000, // 30 second timeout for smoke tests
+    parallel: 4, // Parallel execution for speed
+  },
   // CI profile - all tests except flaky and database-dependent tests
   // NOTE: paths is used as fallback when no files passed via CLI (e.g., Docker build)
   // GitHub Actions sharding passes specific files which override this

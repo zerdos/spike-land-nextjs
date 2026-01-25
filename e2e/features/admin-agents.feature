@@ -7,13 +7,9 @@ Feature: Admin Agents Dashboard
   Background:
     Given I am logged in as "Admin User" with email "admin@example.com"
 
-  # Access Control Scenarios
-  Scenario: Admin user can access agents dashboard
-    Given the user is an admin
-    When I visit "/admin/agents"
-    Then I should be on the "/admin/agents" page
-    And I should see "Agents Dashboard" heading
+  # Page load test is in smoke-tests.feature
 
+  # Access Control Scenarios
   Scenario: Non-admin user cannot access agents dashboard
     Given the user is not an admin
     When I visit "/admin/agents"

@@ -7,12 +7,7 @@ Feature: Admin Photos Page
     Given I am logged in as "Admin User" with email "admin@example.com"
     And the user is an admin
 
-  @requires-db
-  Scenario: View admin photos gallery page
-    When I visit "/admin/photos"
-    Then I should be on the "/admin/photos" page
-    And I should see "Photo Gallery" heading
-    And I should see "View all uploaded photos with pagination and filtering" text
+  # Page load test is in smoke-tests.feature
 
   @requires-db
   Scenario: Photos grid displays correctly

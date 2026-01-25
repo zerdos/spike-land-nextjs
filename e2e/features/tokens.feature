@@ -6,7 +6,7 @@ Feature: Token Management
   Background:
     Given I am logged in as "Token User" with email "token.user@example.com"
 
-  @balance 
+  @balance @smoke
   Scenario: View token balance on enhance page
     Given I am on the enhance page
     Then I should see the token balance display
@@ -66,7 +66,7 @@ Feature: Token Management
     And I click the apply voucher button
     Then I should see the loading spinner on apply button
 
-  @purchase-flow 
+  @purchase-flow @smoke
   Scenario: Open purchase modal shows token packages
     Given I am on the enhance page
     When I open the purchase modal
