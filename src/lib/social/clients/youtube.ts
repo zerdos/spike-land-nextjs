@@ -431,7 +431,11 @@ export class YouTubeClient implements ISocialClient {
     const data = (await response.json()) as YouTubeChannelResponse;
 
     if (!data.items || data.items.length === 0) {
-      throw new Error("No YouTube channel found for this account");
+      throw new Error(
+        "No YouTube channel found for this account. If you selected a Google Brand Account, " +
+          "please ensure that account has a YouTube channel created. You can create one at " +
+          "https://www.youtube.com/channel_switcher then click 'Create a channel'.",
+      );
     }
 
     const channel = data.items[0]!;
