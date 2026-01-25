@@ -8,12 +8,7 @@ Feature: Admin Sitemap Preview
     Given I am logged in as "Admin User" with email "admin@example.com"
     And the user is an admin
 
-  @fast @requires-db
-  Scenario: Sitemap preview page loads successfully
-    When I visit "/admin/sitemap"
-    Then I should be on the "/admin/sitemap" page
-    And I should see "Application Monitor" heading
-    And I should see "Visual site monitor" text
+  # Page load test is in smoke-tests.feature
 
   @fast @requires-db
   Scenario: Sitemap page displays health status bar

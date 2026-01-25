@@ -1,9 +1,10 @@
+@smoke
 Feature: Smoke Tests
   As a tester
   I want to verify all main pages load correctly
   So that I can ensure the application is deployable
 
-  @fast
+  @fast @smoke
   Scenario: Home page loads
     When I visit "/"
     Then the page should load successfully

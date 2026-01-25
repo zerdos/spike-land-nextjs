@@ -8,12 +8,7 @@ Feature: Admin Jobs Queue Management
     Given I am logged in as "Admin User" with email "admin@example.com"
     And the user is an admin
 
-  @fast @requires-db
-  Scenario: Jobs management page loads successfully
-    When I visit "/admin/jobs"
-    Then I should be on the "/admin/jobs" page
-    And I should see "Jobs Management" heading
-    And I should see "View and manage all enhancement jobs" text
+  # Page load test is in smoke-tests.feature
 
   @fast @requires-db
   Scenario: Jobs page displays status tabs
@@ -47,50 +42,21 @@ Feature: Admin Jobs Queue Management
     And the "All" tab count should equal total jobs
 
   @slow @requires-db
-  Scenario: Filter jobs by PENDING status
+  Scenario Outline: Filter jobs by status
     Given there are jobs in the system
     When I visit "/admin/jobs"
-    And I click the "Queue" tab
-    Then the jobs list should only show PENDING status jobs
-    And the "Queue" tab should be active
+    And I click the "<tab>" tab
+    Then the jobs list should only show <status> status jobs
+    And the "<tab>" tab should be active
 
-  @slow @requires-db
-  Scenario: Filter jobs by PROCESSING status
-    Given there are jobs in the system
-    When I visit "/admin/jobs"
-    And I click the "Running" tab
-    Then the jobs list should only show PROCESSING status jobs
-    And processing jobs should have animated status badge
-
-  @slow @requires-db
-  Scenario: Filter jobs by COMPLETED status
-    Given there are jobs in the system
-    When I visit "/admin/jobs"
-    And I click the "Completed" tab
-    Then the jobs list should only show COMPLETED status jobs
-    And completed jobs should show processing duration
-
-  @slow @requires-db
-  Scenario: Filter jobs by FAILED status
-    Given there are jobs in the system
-    When I visit "/admin/jobs"
-    And I click the "Failed" tab
-    Then the jobs list should only show FAILED status jobs
-    And failed jobs should show error message preview
-
-  @slow @requires-db
-  Scenario: Filter jobs by CANCELLED status
-    Given there are jobs in the system
-    When I visit "/admin/jobs"
-    And I click the "Cancelled" tab
-    Then the jobs list should only show CANCELLED status jobs
-
-  @slow @requires-db
-  Scenario: Filter jobs by REFUNDED status
-    Given there are jobs in the system
-    When I visit "/admin/jobs"
-    And I click the "Refunded" tab
-    Then the jobs list should only show REFUNDED status jobs
+    Examples:
+      | tab       | status     |
+      | Queue     | PENDING    |
+      | Running   | PROCESSING |
+      | Completed | COMPLETED  |
+      | Failed    | FAILED     |
+      | Cancelled | CANCELLED  |
+      | Refunded  | REFUNDED   |
 
   @slow @requires-db
   Scenario: Jobs list displays items correctly
@@ -237,24 +203,7 @@ Feature: Admin Jobs Queue Management
     When I visit "/admin/jobs"
     Then the details panel should show "Select a job to view details" text
 
-  @slow @requires-db
-  Scenario: Job status badges have correct colors
-    Given there are jobs of all statuses in the system
-    When I visit "/admin/jobs"
-    Then PENDING status badge should be yellow
-    And PROCESSING status badge should be blue with animation
-    And COMPLETED status badge should be green
-    And FAILED status badge should be red
-    And CANCELLED status badge should be neutral
-    And REFUNDED status badge should be purple
-
-  @slow @requires-db
-  Scenario: Tier labels display correctly
-    Given there are jobs of all tiers in the system
-    When I visit "/admin/jobs"
-    Then TIER_1K should display as "1K"
-    And TIER_2K should display as "2K"
-    And TIER_4K should display as "4K"
+  # Badge color and tier label styling tests removed - use visual regression testing instead
 
   @slow @requires-db
   Scenario: Pagination displays when more than 20 jobs

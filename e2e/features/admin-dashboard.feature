@@ -7,12 +7,7 @@ Feature: Admin Dashboard
   Background:
     Given I am logged in as "Admin User" with email "admin@example.com"
 
-  Scenario: Admin user can access admin dashboard
-    Given the user is an admin
-    When I visit "/admin"
-    Then I should be on the "/admin" page
-    And I should see "Admin Dashboard" heading
-    And I should see "Platform overview and quick actions" text
+  # Page load test is in smoke-tests.feature
 
   Scenario: Non-admin user redirected from admin dashboard
     Given the user is not an admin
@@ -109,35 +104,7 @@ Feature: Admin Dashboard
     When I click the "Back to App" link in the sidebar
     Then I should be on the "/" page
 
-  Scenario: User Analytics page loads
-    Given the user is an admin
-    When I visit "/admin/analytics"
-    Then I should be on the "/admin/analytics" page
-    And I should see analytics content
-
-  Scenario: Token Economics page loads
-    Given the user is an admin
-    When I visit "/admin/tokens"
-    Then I should be on the "/admin/tokens" page
-    And I should see token economics content
-
-  Scenario: System Health page loads
-    Given the user is an admin
-    When I visit "/admin/system"
-    Then I should be on the "/admin/system" page
-    And I should see system health content
-
-  Scenario: Voucher Management page loads
-    Given the user is an admin
-    When I visit "/admin/vouchers"
-    Then I should be on the "/admin/vouchers" page
-    And I should see voucher management content
-
-  Scenario: User Management page loads
-    Given the user is an admin
-    When I visit "/admin/users"
-    Then I should be on the "/admin/users" page
-    And I should see user management content
+  # Individual page load tests are in smoke-tests.feature
 
   Scenario: Admin dashboard shows current user info
     Given the user is an admin

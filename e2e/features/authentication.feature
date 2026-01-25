@@ -7,6 +7,7 @@ Feature: User Authentication
   Background:
     Given I am on the home page
 
+  @smoke
   Scenario: Unauthenticated user sees login options
     When I am not logged in
     Then I should see "Sign In" link in the header
@@ -26,6 +27,7 @@ Feature: User Authentication
     And I click the "Continue with Google" button
     Then the Google authentication flow should be initiated
 
+  @smoke
   Scenario: Authenticated user sees avatar
     When I am logged in as "John Doe" with email "john@example.com"
     Then I should see the user avatar
@@ -70,6 +72,7 @@ Feature: User Authentication
 
   # Sign-In Page
 
+  @smoke
   Scenario: Visit sign-in page directly
     When I visit "/auth/signin"
     Then I should be on the "/auth/signin" page

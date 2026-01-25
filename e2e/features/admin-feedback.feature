@@ -8,12 +8,7 @@ Feature: Admin Feedback Management
     Given I am logged in as "Admin User" with email "admin@example.com"
     And the user is an admin
 
-  @fast @requires-db
-  Scenario: Feedback management page loads successfully
-    When I visit "/admin/feedback"
-    Then I should be on the "/admin/feedback" page
-    And I should see "Feedback Management" heading
-    And I should see "Review and manage user feedback, bug reports, and ideas" text
+  # Page load test is in smoke-tests.feature
 
   @fast @requires-db
   Scenario: Feedback page displays filter controls
@@ -48,53 +43,31 @@ Feature: Admin Feedback Management
     And each feedback item should display a status badge
 
   @slow @requires-db
-  Scenario: Filter feedback by status - NEW
+  Scenario Outline: Filter feedback by status
     Given there is feedback in the system
     When I visit "/admin/feedback"
-    And I select "New" from the status filter
-    Then the feedback list should only show NEW status items
+    And I select "<filter>" from the status filter
+    Then the feedback list should only show <status> status items
+
+    Examples:
+      | filter    | status   |
+      | New       | NEW      |
+      | Reviewed  | REVIEWED |
+      | Resolved  | RESOLVED |
+      | Dismissed | DISMISSED |
 
   @slow @requires-db
-  Scenario: Filter feedback by status - REVIEWED
+  Scenario Outline: Filter feedback by type
     Given there is feedback in the system
     When I visit "/admin/feedback"
-    And I select "Reviewed" from the status filter
-    Then the feedback list should only show REVIEWED status items
+    And I select "<filter>" from the type filter
+    Then the feedback list should only show <type> type items
 
-  @slow @requires-db
-  Scenario: Filter feedback by status - RESOLVED
-    Given there is feedback in the system
-    When I visit "/admin/feedback"
-    And I select "Resolved" from the status filter
-    Then the feedback list should only show RESOLVED status items
-
-  @slow @requires-db
-  Scenario: Filter feedback by status - DISMISSED
-    Given there is feedback in the system
-    When I visit "/admin/feedback"
-    And I select "Dismissed" from the status filter
-    Then the feedback list should only show DISMISSED status items
-
-  @slow @requires-db
-  Scenario: Filter feedback by type - BUG
-    Given there is feedback in the system
-    When I visit "/admin/feedback"
-    And I select "Bug" from the type filter
-    Then the feedback list should only show BUG type items
-
-  @slow @requires-db
-  Scenario: Filter feedback by type - IDEA
-    Given there is feedback in the system
-    When I visit "/admin/feedback"
-    And I select "Idea" from the type filter
-    Then the feedback list should only show IDEA type items
-
-  @slow @requires-db
-  Scenario: Filter feedback by type - OTHER
-    Given there is feedback in the system
-    When I visit "/admin/feedback"
-    And I select "Other" from the type filter
-    Then the feedback list should only show OTHER type items
+    Examples:
+      | filter | type  |
+      | Bug    | BUG   |
+      | Idea   | IDEA  |
+      | Other  | OTHER |
 
   @slow @requires-db
   Scenario: Combined status and type filtering
@@ -201,22 +174,7 @@ Feature: Admin Feedback Management
     Then the feedback list should refresh
     And I should see "Refreshing..." text during refresh
 
-  @slow @requires-db
-  Scenario: Type badges display correct colors
-    Given there is feedback of all types in the system
-    When I visit "/admin/feedback"
-    Then BUG type badge should be red
-    And IDEA type badge should be blue
-    And OTHER type badge should be gray
-
-  @slow @requires-db
-  Scenario: Status badges display correct colors
-    Given there is feedback of all statuses in the system
-    When I visit "/admin/feedback"
-    Then NEW status badge should be yellow
-    And REVIEWED status badge should be blue
-    And RESOLVED status badge should be green
-    And DISMISSED status badge should be gray
+  # Badge color styling tests removed - use visual regression testing instead
 
   @fast @requires-db
   Scenario: Non-admin user cannot access feedback management
