@@ -68,7 +68,7 @@ module.exports = {
     retry: 2, // Retry twice in CI to handle transient issues
     tags: "not @skip and not @flaky and not @wip", // Include @requires-db tests in sharded runs
     timeout: 60000, // 60 second timeout for CI
-    parallel: 2,
+    parallel: 1, // Single process for Docker builds to reduce memory pressure
   },
   local: {
     paths: ["e2e/features/**/*.feature"],

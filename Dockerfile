@@ -261,7 +261,8 @@ ENV CI=true \
     BASE_URL=http://localhost:3000 \
     NEXTAUTH_URL=http://localhost:3000 \
     SKIP_ENV_VALIDATION=true \
-    NODE_OPTIONS="--max-old-space-size=2048"
+    NODE_OPTIONS="--max-old-space-size=1536" \
+    CUCUMBER_PARALLEL=1
 
 RUN mkdir -p e2e/reports
 
