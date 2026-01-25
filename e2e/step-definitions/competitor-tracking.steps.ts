@@ -18,14 +18,7 @@ When(
   },
 );
 
-When(
-  'I click the "{string}" button',
-  async function(this: CustomWorld, buttonText: string) {
-    const button = this.page.getByRole("button", { name: new RegExp(buttonText, "i") });
-    await expect(button.first()).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    await button.first().click();
-  },
-);
+// NOTE: "I click the {string} button" is defined in common.steps.ts
 
 Then(
   'I should see "{string}" in the table',

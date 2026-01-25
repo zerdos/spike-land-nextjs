@@ -46,7 +46,7 @@
   },
   "enabledMcpjsonServers": [
     "playwright",
-    "spike.land",
-    "vitest"
-  ]
+    "spike-land"
+  ],
+  "enableAllProjectMcpServers": true
 }
