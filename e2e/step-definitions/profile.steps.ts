@@ -170,3 +170,31 @@ Then(
     await expect(userEmail).toHaveText(email);
   },
 );
+
+// Navigation assertions for profile page
+Then(
+  "the page URL should be {string}",
+  async function(this: CustomWorld, expectedPath: string) {
+    await waitForUrlPath(this.page, expectedPath, { timeout: 10000 });
+  },
+);
+
+Then(
+  "I should be redirected to the home page",
+  async function(this: CustomWorld) {
+    await waitForUrlPath(this.page, "/", { timeout: 10000, exact: true });
+  },
+);
+
+Then("I should see the login options", async function(this: CustomWorld) {
+  // Look for sign-in link or buttons
+  const signInLink = this.page.getByRole("link", { name: /sign in/i });
+  const signInButton = this.page.getByRole("button", { name: /sign in|log in/i });
+  const authButtons = signInLink.or(signInButton);
+  await expect(authButtons.first()).toBeVisible({ timeout: 10000 });
+});
+
+When("I reload the page", async function(this: CustomWorld) {
+  await this.page.reload();
+  await this.page.waitForLoadState("networkidle");
+});
