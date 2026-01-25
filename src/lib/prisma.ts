@@ -5,25 +5,30 @@ const prismaClientSingleton = () => {
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
-    // If we're in a build environment (like Vercel), the DB might not be available.
-    // Instead of throwing, we'll return a mock client. This allows the build to
-    // succeed. If any code *actually* tries to query the DB during build, it will
-    // fail, which is the desired behavior.
-    if (process.env.NEXT_PHASE === "phase-production-build") {
-      console.warn(
-        "DATABASE_URL not available during build. Using mocked Prisma Client.",
-      );
+    // If we're in a build environment (like Vercel) or E2E test context,
+    // the DB might not be available. Instead of throwing, we'll return a mock client.
+    // This allows the build/tests to succeed. If any code *actually* tries to query
+    // the DB, it will fail, which is the desired behavior.
+    const isBuild = process.env.NEXT_PHASE === "phase-production-build";
+    const isE2ETestContext = process.env.CI === "true" || process.env.BASE_URL;
+
+    if (isBuild || isE2ETestContext) {
+      if (isBuild) {
+        console.warn(
+          "DATABASE_URL not available during build. Using mocked Prisma Client.",
+        );
+      }
       return new Proxy(
         {},
         {
           get: (_, prop) => {
             // This proxy will throw an error if any prisma method is called.
             throw new Error(
-              `Attempted to access Prisma a build time (property: ${
+              `Attempted to access Prisma without DATABASE_URL (property: ${
                 String(
                   prop,
                 )
-              }), but DATABASE_URL was not provided.`,
+              }). Please ensure DATABASE_URL is set.`,
             );
           },
         },

@@ -135,6 +135,44 @@ async function mockSession(
 // Background step - already defined in home-page.steps.ts
 // Given('I am on the home page', ...)
 
+// Allow both Given and When for flexibility in feature files
+Given("I am not logged in", async function(this: CustomWorld) {
+  const currentUrl = this.page.url();
+
+  // Improved cleanup with state checking
+  if (!this.page.isClosed()) {
+    await this.page.close();
+  }
+  if (this.context) {
+    await this.context.close();
+  }
+
+  // Create new unauthenticated context with E2E bypass headers
+  // This ensures server-side auth bypass works even without cookies
+  const extraHTTPHeaders = this.getExtraHTTPHeaders();
+  this.context = await this.browser.newContext({
+    baseURL: this.baseUrl,
+    extraHTTPHeaders,
+  });
+  this.page = await this.context.newPage();
+
+  // Mock no session
+  await mockSession(this, null);
+
+  // Wait for route to be ready
+  await waitForRouteReady(this.page);
+
+  // Re-navigate if needed
+  if (currentUrl && currentUrl !== "about:blank") {
+    await this.page.goto(currentUrl, { waitUntil: "commit" });
+    await waitForPageReady(this.page, { strategy: "both", waitForSuspense: true });
+  } else {
+    // If no URL, navigate to home page
+    await this.page.goto(this.baseUrl, { waitUntil: "commit" });
+    await waitForPageReady(this.page, { strategy: "both", waitForSuspense: true });
+  }
+});
+
 When("I am not logged in", async function(this: CustomWorld) {
   const currentUrl = this.page.url();
 
@@ -184,6 +222,19 @@ Given("I am logged in as a test user", async function(this: CustomWorld) {
   // FIX: Wait for session to propagate to React components
   await waitForSessionPropagation(this, true);
 });
+
+// Allow both Given and When for flexibility in feature files
+Given(
+  "I am logged in as {string} with email {string}",
+  async function(this: CustomWorld, name: string, email: string) {
+    await mockSession(this, { name, email });
+    await waitForRouteReady(this.page);
+    await this.page.reload({ waitUntil: "commit" });
+    await waitForPageReady(this.page, { strategy: "both" });
+    // FIX: Wait for session to propagate to React components
+    await waitForSessionPropagation(this, true);
+  },
+);
 
 When(
   "I am logged in as {string} with email {string}",

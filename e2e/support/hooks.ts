@@ -55,16 +55,16 @@ Before({ tags: "not @video-wall" }, async function(this: VideoWallWorld) {
 
 // Clean localStorage before each scenario to prevent test pollution
 // This ensures each test starts with a clean slate
-// Note: This hook runs AFTER page initialization (hook order matters in Cucumber)
+// Note: Cookie consent is pre-set via context.addInitScript() in world.ts,
+// which runs BEFORE any page JavaScript on every navigation
 Before(async function(this: CustomWorld) {
   if (this.page) {
     try {
-      // Set cookie consent to accepted to prevent banner from appearing
+      // Clear storage to ensure clean state - the addInitScript will re-set cookie consent
+      // on the next navigation, so we don't need to set it here
       await this.page.evaluate(() => {
         localStorage.clear();
         sessionStorage.clear();
-        // Pre-set cookie consent as accepted to dismiss banner
-        localStorage.setItem("cookie-consent", "accepted");
       });
     } catch {
       // Ignore SecurityError on about:blank - storage is already clean

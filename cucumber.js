@@ -1,7 +1,7 @@
 module.exports = {
   default: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/support/**/*.ts", "e2e/step-definitions/**/*.steps.ts"],
     requireModule: ["tsx/cjs"],
     format: ["progress-bar", "html:e2e/reports/cucumber-report.html"],
     formatOptions: { snippetInterface: "async-await" },
@@ -14,7 +14,7 @@ module.exports = {
   // Fast tests - unit tests and quick integration tests
   fast: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/support/**/*.ts", "e2e/step-definitions/**/*.steps.ts"],
     requireModule: ["tsx/cjs"],
     format: ["progress-bar", "html:e2e/reports/cucumber-report-fast.html"],
     formatOptions: { snippetInterface: "async-await" },
@@ -27,7 +27,7 @@ module.exports = {
   // Slow tests - comprehensive integration tests
   slow: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/support/**/*.ts", "e2e/step-definitions/**/*.steps.ts"],
     requireModule: ["tsx/cjs"],
     format: ["progress-bar", "html:e2e/reports/cucumber-report-slow.html"],
     formatOptions: { snippetInterface: "async-await" },
@@ -40,7 +40,7 @@ module.exports = {
   // Flaky tests - tests known to be flaky, run with retries
   flaky: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/support/**/*.ts", "e2e/step-definitions/**/*.steps.ts"],
     requireModule: ["tsx/cjs"],
     format: ["progress-bar", "html:e2e/reports/cucumber-report-flaky.html"],
     formatOptions: { snippetInterface: "async-await" },
@@ -55,7 +55,7 @@ module.exports = {
   // GitHub Actions sharding passes specific files which override this
   ci: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/support/**/*.ts", "e2e/step-definitions/**/*.steps.ts"],
     requireModule: ["tsx/cjs"],
     format: [
       "progress",
@@ -72,7 +72,7 @@ module.exports = {
   },
   local: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/support/**/*.ts", "e2e/step-definitions/**/*.steps.ts"],
     requireModule: ["tsx/cjs"],
     format: [
       "progress",
@@ -90,7 +90,7 @@ module.exports = {
   // Coverage profile - collect V8 coverage during E2E tests
   coverage: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/support/**/*.ts", "e2e/step-definitions/**/*.steps.ts"],
     requireModule: ["tsx/cjs"],
     format: ["progress-bar", "html:e2e/reports/cucumber-report-coverage.html"],
     formatOptions: { snippetInterface: "async-await" },
@@ -106,7 +106,7 @@ module.exports = {
   // Requires DATABASE_URL_E2E environment variable
   db: {
     paths: ["e2e/features/**/*.feature"],
-    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/support/**/*.ts", "e2e/step-definitions/**/*.steps.ts"],
     requireModule: ["tsx/cjs"],
     format: [
       "progress-bar",
@@ -126,7 +126,7 @@ module.exports = {
   // Requires GITHUB_TEST_USERNAME/PASSWORD or GOOGLE_TEST_EMAIL/PASSWORD
   production: {
     paths: ["e2e/features/my-apps-production.feature"],
-    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/support/**/*.ts", "e2e/step-definitions/**/*.steps.ts"],
     requireModule: ["tsx/cjs"],
     format: [
       "progress-bar",
@@ -145,7 +145,7 @@ module.exports = {
   // Run with: yarn test:e2e:my-apps or yarn test:e2e:my-apps:local
   "my-apps": {
     paths: ["e2e/features/my-apps-production.feature"],
-    require: ["e2e/step-definitions/**/*.steps.ts", "e2e/support/**/*.ts"],
+    require: ["e2e/support/**/*.ts", "e2e/step-definitions/**/*.steps.ts"],
     requireModule: ["tsx/cjs"],
     format: [
       "progress-bar",

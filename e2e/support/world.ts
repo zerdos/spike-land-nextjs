@@ -93,6 +93,13 @@ export class CustomWorld extends World {
       viewport: { width: 1280, height: 900 }, // Taller viewport for sidebar visibility
       extraHTTPHeaders: this.getExtraHTTPHeaders(),
     });
+
+    // Add init script to pre-set cookie consent BEFORE any page JavaScript runs
+    // This is critical for production builds where CookieConsent component shows a blocking dialog
+    await this.context.addInitScript(() => {
+      localStorage.setItem("cookie-consent", "accepted");
+    });
+
     this.page = await this.context.newPage();
 
     // Set custom timeouts for actions and navigation
@@ -124,6 +131,12 @@ export class CustomWorld extends World {
       hasTouch: true,
       extraHTTPHeaders: this.getExtraHTTPHeaders(),
     });
+
+    // Add init script to pre-set cookie consent BEFORE any page JavaScript runs
+    await this.context.addInitScript(() => {
+      localStorage.setItem("cookie-consent", "accepted");
+    });
+
     this.page = await this.context.newPage();
 
     // Set custom timeouts for actions and navigation
