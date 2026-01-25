@@ -1,13 +1,18 @@
 import prisma from "@/lib/prisma";
 import { type NextRequest, NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; }>;
+}
+
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug } = await params;
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
     });
 
     if (!workspace) {
@@ -27,11 +32,12 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug } = await params;
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
     });
 
     if (!workspace) {

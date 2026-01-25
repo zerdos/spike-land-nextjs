@@ -31,7 +31,7 @@ describe("Connections API", () => {
     ]);
 
     const req = new NextRequest("http://localhost/api/orbit/test-ws/connections");
-    const res = await GET(req, { params: { workspaceSlug: "test-ws" } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "test-ws" }) });
 
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -48,7 +48,7 @@ describe("Connections API", () => {
       body: JSON.stringify({ displayName: "New Conn" }),
     });
 
-    const res = await POST(req, { params: { workspaceSlug: "test-ws" } });
+    const res = await POST(req, { params: Promise.resolve({ workspaceSlug: "test-ws" }) });
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.displayName).toBe("New Conn");

@@ -12,6 +12,10 @@ import { requireWorkspacePermission } from "@/lib/permissions/workspace-middlewa
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; }>;
+}
+
 /**
  * GET /api/orbit/[workspaceSlug]/notifications/count
  *
@@ -19,10 +23,12 @@ import { NextResponse } from "next/server";
  */
 export async function GET(
   _request: Request,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug } = await params;
+
   // Validate workspaceSlug parameter
-  if (!params.workspaceSlug) {
+  if (!workspaceSlug) {
     return NextResponse.json({ error: "Workspace slug is required" }, {
       status: 400,
     });
@@ -32,7 +38,7 @@ export async function GET(
 
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
       select: { id: true },
     });
 

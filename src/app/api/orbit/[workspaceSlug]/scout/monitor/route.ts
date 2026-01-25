@@ -9,14 +9,13 @@ function isValidSocialPlatform(value: string): value is SocialPlatform {
   return VALID_PLATFORMS.includes(value as SocialPlatform);
 }
 
-interface RouteContext {
-  params: {
-    workspaceSlug: string;
-  };
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; }>;
 }
 
 // List all monitoring results for a workspace
-export async function GET(req: NextRequest, { params }: RouteContext) {
+export async function GET(req: NextRequest, { params }: RouteParams) {
+  const { workspaceSlug } = await params;
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -25,7 +24,7 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
 
     const workspace = await prisma.workspace.findFirst({
       where: {
-        slug: params.workspaceSlug,
+        slug: workspaceSlug,
         members: { some: { userId: session.user.id } },
       },
       select: { id: true },

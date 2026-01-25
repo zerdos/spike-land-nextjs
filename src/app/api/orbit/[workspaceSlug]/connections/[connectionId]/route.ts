@@ -10,16 +10,21 @@ const ConnectionUpdateSchema = z.object({
   avatarUrl: z.string().url().optional().nullable(),
 });
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; connectionId: string; }>;
+}
+
 // TODO: Add auth checks - tracked as follow-up issue
 // TODO: Validate workspace access - tracked as follow-up issue
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { workspaceSlug: string; connectionId: string; }; },
+  { params }: RouteParams,
 ) {
+  const { connectionId } = await params;
   try {
     const connection = await prisma.connection.findUnique({
-      where: { id: params.connectionId },
+      where: { id: connectionId },
       include: {
         platformPresence: true,
         reminders: {
@@ -43,8 +48,9 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { workspaceSlug: string; connectionId: string; }; },
+  { params }: RouteParams,
 ) {
+  const { connectionId } = await params;
   try {
     const body = await request.json();
 
@@ -58,7 +64,7 @@ export async function PATCH(
     }
 
     const connection = await prisma.connection.update({
-      where: { id: params.connectionId },
+      where: { id: connectionId },
       data: parseResult.data,
     });
     return NextResponse.json(connection);
@@ -69,11 +75,12 @@ export async function PATCH(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { workspaceSlug: string; connectionId: string; }; },
+  { params }: RouteParams,
 ) {
+  const { connectionId } = await params;
   try {
     await prisma.connection.delete({
-      where: { id: params.connectionId },
+      where: { id: connectionId },
     });
     return NextResponse.json({ success: true });
   } catch (_error) {
