@@ -37,8 +37,7 @@
  * Brand Philosophy: Dark Futuristic - "The AI Spark"
  * Primary Color: spike.land Cyan #00E5FF
  *
- * Light Mode: Clean white with subtle surfaces
- * Dark Mode: Deep Space with Surface Blue cards (Default/Primary)
+ * Theme: Dark Mode Only - Deep Space with Surface Blue cards
  */
 
 @layer base {
@@ -66,74 +65,7 @@
     --shadow-opacity-light: 0.05;
     --shadow-opacity-dark: 0.4;
 
-    /* Light Mode - Reserved/Clean */
-    --background: 0 0% 100%;
-    --foreground: 240 5% 10%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 240 5% 10%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 5% 10%;
-
-    --primary: 160 84% 39%;
-    /* Emerald */
-    --primary-foreground: 0 0% 100%;
-    --primary-text: 160 100% 25%;
-
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-
-    --accent: 173 80% 40%;
-    /* Teal */
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 160 84% 39%;
-    --radius: 9999px;
-    /* Pill shape default */
-
-    /* Aurora Palette - Defined for usage */
-    --aurora-green: 160 84% 39%;
-    --aurora-teal: 173 80% 40%;
-    --aurora-lime: 84 81% 44%;
-    --aurora-yellow: 48 89% 47%;
-
-    /* Semantic Colors - ADDED */
-    --success: 145 75% 42%;
-    --warning: 38 92% 52%;
-
-    /* Brand-specific variables */
-    --pixel-cyan: 187 100% 45%;
-    --pixel-fuchsia: 320 90% 55%;
-    /* More vibrant fuchsia */
-    --grid-inactive: 220 20% 88%;
-
-    /* Chart Colors - Light mode */
-    --chart-1: 187 100% 45%;
-    --chart-2: 145 75% 42%;
-    --chart-3: 38 92% 52%;
-    --chart-4: 240 38% 30%;
-    --chart-5: 350 85% 55%;
-
-    /* Animation Duration Tokens */
-    --animation-fast: 150ms;
-    /* Quick transitions (tooltips, hovers) */
-    --animation-normal: 200ms;
-    /* Standard transitions (buttons, cards) */
-    --animation-slow: 300ms;
-    /* Longer transitions (modals, accordions) */
-  }
-
-  .dark {
-    /* Dark Mode - Aurora / Project Sonic */
+    /* Dark Mode - Aurora / Project Sonic (Default & Only Theme) */
     --background: 0 0% 9.5%;
     /* rgb(24, 24, 24) matches approx hsl(0, 0%, 9.4%) */
     --foreground: 0 0% 98%;
@@ -166,6 +98,14 @@
     --border: 240 4% 16%;
     --input: 240 4% 16%;
     --ring: 160 84% 39%;
+    --radius: 9999px;
+    /* Pill shape default */
+
+    /* Aurora Palette - Defined for usage */
+    --aurora-green: 160 84% 39%;
+    --aurora-teal: 173 80% 40%;
+    --aurora-lime: 84 81% 44%;
+    --aurora-yellow: 48 89% 47%;
 
     /* Semantic Colors */
     --success: 150 90% 35%;
@@ -179,12 +119,20 @@
     --grid-inactive: 220 15% 25%;
     /* Lighter than background for visibility */
 
-    /* Chart Colors - Dark mode */
+    /* Chart Colors */
     --chart-1: 160 84% 39%;
     --chart-2: 173 80% 40%;
     --chart-3: 84 81% 44%;
     --chart-4: 48 89% 47%;
     --chart-5: 220 14% 96%;
+
+    /* Animation Duration Tokens */
+    --animation-fast: 150ms;
+    /* Quick transitions (tooltips, hovers) */
+    --animation-normal: 200ms;
+    /* Standard transitions (buttons, cards) */
+    --animation-slow: 300ms;
+    /* Longer transitions (modals, accordions) */
   }
 
   /* Global Styles */
@@ -217,16 +165,12 @@
     /* Improved vertical rhythm */
   }
 
+  /* Body background - Clean stylish dark background (No grid) */
   body::before {
     content: "";
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: hsl(0 0% 100%);
-  }
-
-  /* Dark mode body - Clean stylish background (No grid) */
-  .dark body::before {
     background:
       radial-gradient(
         circle at 50% 0%,
@@ -243,7 +187,7 @@
     ),
       hsl(var(--background));
     background-size: 200px 200px, 100% 100%, 100% 100%;
-    /* Keep subtle noise + top spotlight for premium feel, but NO grid lines */
+    /* Subtle noise + top spotlight for premium feel, but NO grid lines */
   }
 
   /* Heading typography - use Montserrat */
@@ -472,9 +416,7 @@
   }
 
   /* Old util fallbacks mapped to new system */
-  /* Old util fallbacks mapped to new system */
-  .glass-card,
-  .dark .glass-card {
+  .glass-card {
     background: rgba(255, 255, 255, var(--glass-opacity-dark));
     backdrop-filter: blur(var(--glass-blur-md));
     -webkit-backdrop-filter: blur(var(--glass-blur-md));
@@ -616,10 +558,6 @@
 
   /* Grid background pattern - REMOVED per user request for clean look */
   .bg-grid-pattern {
-    background-image: none;
-  }
-
-  .dark .bg-grid-pattern {
     background-image: none;
   }
 

@@ -588,14 +588,6 @@ Combine CSS variables with dark mode for more flexibility:
     --color-background: rgb(255, 255, 255);
     --color-foreground: rgb(15, 23, 42);
   }
-
-  .dark {
-    --color-primary: rgb(37, 99, 235); /* blue-600 */
-    --color-primary-foreground: rgb(15, 23, 42);
-    --color-secondary: rgb(124, 58, 202); /* violet-600 */
-    --color-background: rgb(15, 23, 42);
-    --color-foreground: rgb(255, 255, 255);
-  }
 }
 ```
 
