@@ -1,4 +1,4 @@
-import { Given, Then, When } from "@cucumber/cucumber";
+import { defineStep, Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { waitForPageReady, waitForRouteReady } from "../support/helpers/wait-helper";
 import type { CustomWorld } from "../support/world";
@@ -195,11 +195,8 @@ async function handleLoggedInAs(
 }
 
 // Allow both Given and When for flexibility in feature files
-Given("I am not logged in", async function(this: CustomWorld) {
-  await handleNotLoggedIn(this);
-});
-
-When("I am not logged in", async function(this: CustomWorld) {
+// Use defineStep to avoid ambiguity (same text for both keywords)
+defineStep("I am not logged in", async function(this: CustomWorld) {
   await handleNotLoggedIn(this);
 });
 
