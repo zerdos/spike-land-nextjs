@@ -2,16 +2,10 @@
  * YouTube OAuth 2.0 Callback Route
  *
  * Handles OAuth callback from Google, exchanges code for tokens,
- * and returns channel information.
+ * stores the account in the database, and redirects to the accounts page.
  * GET /api/social/youtube/callback
  *
- * IMPORTANT: YouTube is NOT in the Prisma SocialPlatform enum.
- * Database storage requires a schema migration to add YOUTUBE.
- * For now, this route returns success with channel info but does NOT
- * persist to the database. To enable persistence:
- * 1. Add YOUTUBE to the SocialPlatform enum in prisma/schema.prisma
- * 2. Run prisma migrate
- * 3. Uncomment the database storage code below
+ * Uses Google OAuth 2.0 with offline access to get refresh tokens.
  */
 
 import { auth } from "@/auth";
@@ -21,8 +15,7 @@ import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-// Uncomment when YOUTUBE is added to SocialPlatform enum:
-// import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { data: session, error: authError } = await tryCatch(auth());
@@ -207,77 +200,64 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     tokenExpiresAt: tokens.expiresAt?.toISOString(),
   });
 
-  // ============================================================================
-  // DATABASE STORAGE - DISABLED UNTIL YOUTUBE IS ADDED TO SocialPlatform ENUM
-  // ============================================================================
-  // Note: YOUTUBE has been added to the SocialPlatform enum in the
-  // 20260104_add_youtube_platform migration. You can now enable this code.
-  //
-  // To enable database storage, uncomment the code below:
-  //
-  // const { error: dbError } = await tryCatch(
-  //   prisma.socialAccount.upsert({
-  //     where: {
-  //       workspaceId_platform_accountId: {
-  //         workspaceId: stateData.workspaceId,
-  //         platform: "YOUTUBE",
-  //         accountId: channelInfo.platformId,
-  //       },
-  //     },
-  //     update: {
-  //       accountName: channelInfo.displayName,
-  //       accessTokenEncrypted: encryptedAccessToken,
-  //       refreshTokenEncrypted: encryptedRefreshToken,
-  //       tokenExpiresAt: tokens.expiresAt,
-  //       status: "ACTIVE",
-  //       connectedAt: new Date(),
-  //       metadata: {
-  //         username: channelInfo.username,
-  //         displayName: channelInfo.displayName,
-  //         avatarUrl: channelInfo.avatarUrl,
-  //         profileUrl: channelInfo.profileUrl,
-  //         subscriberCount: channelInfo.followersCount,
-  //       },
-  //       updatedAt: new Date(),
-  //     },
-  //     create: {
-  //       userId: session.user.id, // Keep for audit trail
-  //       workspaceId: stateData.workspaceId,
-  //       platform: "YOUTUBE",
-  //       accountId: channelInfo.platformId,
-  //       accountName: channelInfo.displayName,
-  //       accessTokenEncrypted: encryptedAccessToken,
-  //       refreshTokenEncrypted: encryptedRefreshToken,
-  //       tokenExpiresAt: tokens.expiresAt,
-  //       status: "ACTIVE",
-  //       metadata: {
-  //         username: channelInfo.username,
-  //         displayName: channelInfo.displayName,
-  //         avatarUrl: channelInfo.avatarUrl,
-  //         profileUrl: channelInfo.profileUrl,
-  //         subscriberCount: channelInfo.followersCount,
-  //       },
-  //     },
-  //   }),
-  // );
-  //
-  // if (dbError) {
-  //   console.error("Database save failed:", dbError);
-  //   return clearOAuthCookies(
-  //     NextResponse.redirect(
-  //       new URL(
-  //         "/admin/social-media/accounts?error=Failed to save account information.",
-  //         request.url,
-  //       ),
-  //     ),
-  //   );
-  // }
-  // ============================================================================
+  // Store the connected account in the database
+  const { error: dbError } = await tryCatch(
+    prisma.socialAccount.upsert({
+      where: {
+        workspaceId_platform_accountId: {
+          workspaceId: stateData.workspaceId,
+          platform: "YOUTUBE",
+          accountId: channelInfo.platformId,
+        },
+      },
+      update: {
+        accountName: channelInfo.displayName,
+        accessTokenEncrypted: encryptedAccessToken,
+        refreshTokenEncrypted: encryptedRefreshToken,
+        tokenExpiresAt: tokens.expiresAt,
+        status: "ACTIVE",
+        connectedAt: new Date(),
+        metadata: {
+          username: channelInfo.username,
+          displayName: channelInfo.displayName,
+          avatarUrl: channelInfo.avatarUrl,
+          profileUrl: channelInfo.profileUrl,
+          subscriberCount: channelInfo.followersCount,
+        },
+        updatedAt: new Date(),
+      },
+      create: {
+        userId: session.user.id, // Keep for audit trail
+        workspaceId: stateData.workspaceId,
+        platform: "YOUTUBE",
+        accountId: channelInfo.platformId,
+        accountName: channelInfo.displayName,
+        accessTokenEncrypted: encryptedAccessToken,
+        refreshTokenEncrypted: encryptedRefreshToken,
+        tokenExpiresAt: tokens.expiresAt,
+        status: "ACTIVE",
+        metadata: {
+          username: channelInfo.username,
+          displayName: channelInfo.displayName,
+          avatarUrl: channelInfo.avatarUrl,
+          profileUrl: channelInfo.profileUrl,
+          subscriberCount: channelInfo.followersCount,
+        },
+      },
+    }),
+  );
 
-  // Suppress unused variable warnings - these are prepared for future use
-  // when YOUTUBE is added to the SocialPlatform enum
-  void encryptedAccessToken;
-  void encryptedRefreshToken;
+  if (dbError) {
+    console.error("Database save failed:", dbError);
+    return clearOAuthCookies(
+      NextResponse.redirect(
+        new URL(
+          "/admin/social-media/accounts?error=Failed to save account information.",
+          request.url,
+        ),
+      ),
+    );
+  }
 
   // Clear OAuth cookies and redirect to success page
   return clearOAuthCookies(
@@ -285,11 +265,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       new URL(
         `/admin/social-media/accounts?connected=youtube&channelName=${
           encodeURIComponent(channelInfo.displayName)
-        }&channelId=${encodeURIComponent(channelInfo.platformId)}&note=${
-          encodeURIComponent(
-            "YouTube connected! Note: Database storage requires schema migration.",
-          )
-        }`,
+        }&channelId=${encodeURIComponent(channelInfo.platformId)}`,
         request.url,
       ),
     ),

@@ -42,8 +42,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: permError.message }, { status });
   }
 
-  const client = new FacebookClient();
-
   // Generate cryptographic nonce for CSRF protection
   const nonce = crypto.randomBytes(16).toString("hex");
 
@@ -69,7 +67,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       }/api/social/facebook/callback`;
     })();
 
-  const authUrl = client.getAuthUrl(redirectUri, state);
+  // Create Facebook client and get auth URL
+  let authUrl: string;
+  try {
+    const client = new FacebookClient();
+    authUrl = client.getAuthUrl(redirectUri, state);
+  } catch (error) {
+    console.error("Facebook OAuth setup failed:", error);
+    return NextResponse.json(
+      {
+        error: error instanceof Error
+          ? error.message
+          : "Failed to initialize Facebook OAuth. Please check server configuration.",
+      },
+      { status: 500 },
+    );
+  }
 
   // Store nonce in a secure cookie for verification in callback
   // Cookie expires in 10 minutes (same as state timestamp validation)

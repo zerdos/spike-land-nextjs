@@ -240,11 +240,12 @@ export class YouTubeClient implements ISocialClient {
    */
   getAuthUrl(redirectUri: string, state: string): string {
     const clientId = process.env.YOUTUBE_CLIENT_ID ||
-      process.env.GOOGLE_CLIENT_ID;
+      process.env.GOOGLE_CLIENT_ID ||
+      process.env.GOOGLE_ID;
 
     if (!clientId) {
       throw new Error(
-        "YOUTUBE_CLIENT_ID or GOOGLE_CLIENT_ID environment variable is not configured",
+        "YOUTUBE_CLIENT_ID, GOOGLE_CLIENT_ID, or GOOGLE_ID environment variable is not configured",
       );
     }
 
@@ -277,13 +278,15 @@ export class YouTubeClient implements ISocialClient {
     redirectUri: string,
   ): Promise<OAuthTokenResponse> {
     const clientId = process.env.YOUTUBE_CLIENT_ID ||
-      process.env.GOOGLE_CLIENT_ID;
+      process.env.GOOGLE_CLIENT_ID ||
+      process.env.GOOGLE_ID;
     const clientSecret = process.env.YOUTUBE_CLIENT_SECRET ||
-      process.env.GOOGLE_CLIENT_SECRET;
+      process.env.GOOGLE_CLIENT_SECRET ||
+      process.env.GOOGLE_SECRET;
 
     if (!clientId || !clientSecret) {
       throw new Error(
-        "YOUTUBE_CLIENT_ID/GOOGLE_CLIENT_ID and YOUTUBE_CLIENT_SECRET/GOOGLE_CLIENT_SECRET are required",
+        "YouTube OAuth credentials not configured. Set YOUTUBE_CLIENT_ID/YOUTUBE_CLIENT_SECRET or GOOGLE_ID/GOOGLE_SECRET",
       );
     }
 
@@ -340,13 +343,15 @@ export class YouTubeClient implements ISocialClient {
    */
   async refreshAccessToken(refreshToken: string): Promise<OAuthTokenResponse> {
     const clientId = process.env.YOUTUBE_CLIENT_ID ||
-      process.env.GOOGLE_CLIENT_ID;
+      process.env.GOOGLE_CLIENT_ID ||
+      process.env.GOOGLE_ID;
     const clientSecret = process.env.YOUTUBE_CLIENT_SECRET ||
-      process.env.GOOGLE_CLIENT_SECRET;
+      process.env.GOOGLE_CLIENT_SECRET ||
+      process.env.GOOGLE_SECRET;
 
     if (!clientId || !clientSecret) {
       throw new Error(
-        "YOUTUBE_CLIENT_ID/GOOGLE_CLIENT_ID and YOUTUBE_CLIENT_SECRET/GOOGLE_CLIENT_SECRET are required",
+        "YouTube OAuth credentials not configured. Set YOUTUBE_CLIENT_ID/YOUTUBE_CLIENT_SECRET or GOOGLE_ID/GOOGLE_SECRET",
       );
     }
 

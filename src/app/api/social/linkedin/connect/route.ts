@@ -65,8 +65,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   })();
 
   // Create LinkedIn client and get auth URL
-  const client = new LinkedInClient();
-  const authUrl = client.getAuthUrl(redirectUri, state);
+  let authUrl: string;
+  try {
+    const client = new LinkedInClient();
+    authUrl = client.getAuthUrl(redirectUri, state);
+  } catch (error) {
+    console.error("LinkedIn OAuth setup failed:", error);
+    return NextResponse.json(
+      {
+        error: error instanceof Error
+          ? error.message
+          : "Failed to initialize LinkedIn OAuth. Please check server configuration.",
+      },
+      { status: 500 },
+    );
+  }
 
   // Store nonce in secure cookie for verification in callback
   // Cookie expires in 10 minutes (same as state timestamp validation)
