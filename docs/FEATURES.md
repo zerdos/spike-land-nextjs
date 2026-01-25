@@ -71,6 +71,71 @@ natural language requirements and AI agents.
 - Apps generate revenue through flexible monetization models
 - External domains host successful apps independently
 
+### Strategic Insight: MCP-First Architecture
+
+#### The Discovery Problem
+
+Building a standalone mobile app comes with a fundamental challenge: **without
+marketing and community, nobody will find your app**. Even exceptional products
+fail because app store visibility is driven by marketing spend, not quality.
+
+For Pixel (the image enhancement app), pursuing the traditional mobile app route
+would have meant:
+
+- Competing against established players with marketing budgets
+- Following patterns competitors have already validated
+- Building marketing infrastructure alongside the product
+
+#### The MCP Solution
+
+Instead of fighting for app store visibility, spike.land takes a different
+approach: **make AI agents the distribution channel**.
+
+MCP (Model Context Protocol) servers allow Claude Code, Claude Desktop, and
+other AI tools to use spike.land capabilities directly. This means:
+
+1. **No gatekeepers** - MCP servers are installed via npm, not app store
+   approval
+2. **AI as distribution** - Every Claude user can access spike.land features
+3. **Composable tools** - Each capability is an MCP tool AI can combine
+4. **User stays in flow** - Whether using Claude or My-Apps, same capabilities
+
+#### My-Apps: UI Around MCP
+
+The My-Apps dashboard isn't just an app manager - it's a **visual interface
+around MCP servers**. When users chat with AI in My-Apps:
+
+- The AI calls `codespace_update` to write code
+- The AI calls `generate_image` to create visuals
+- The AI calls `apply_brand_style` to match brand voice (planned)
+
+Users see a friendly chat interface. Under the hood, it's MCP tool calls.
+
+#### The Brand Brain Pipeline
+
+Brand Brain ensures consistency across all AI-generated content:
+
+| Input                      | Output                       |
+| -------------------------- | ---------------------------- |
+| Any text (even with typos) | Brand-styled content         |
+| Raw product description    | Marketing copy in your voice |
+| Draft social post          | Platform-optimized post      |
+
+**Current:** Web feature at `/brand-brain`
+**Planned:** MCP tool `apply_brand_style` for AI agent access
+
+#### MCP Capability Matrix
+
+| Capability           | MCP Tool            | Status      |
+| -------------------- | ------------------- | ----------- |
+| Image generation     | `generate_image`    | ✅ Complete |
+| Image modification   | `modify_image`      | ✅ Complete |
+| Live React apps      | `codespace_update`  | ✅ Complete |
+| Token balance        | `get_balance`       | ✅ Complete |
+| Brand voice styling  | `apply_brand_style` | 📋 Planned  |
+| Social media posting | `post_to_platform`  | 📋 Planned  |
+| Post scheduling      | `schedule_post`     | 📋 Planned  |
+
 ### Current Status
 
 **Production Platform** - The platform is live and running multiple

@@ -186,6 +186,51 @@ Tasks:
 
 ---
 
+## Phase 3.5: MCP Ecosystem Expansion
+
+> **Status**: Planned | **Priority**: High for AI-first distribution strategy
+
+### Strategic Context
+
+MCP servers are spike.land's primary distribution channel. Rather than competing
+for app store visibility, spike.land capabilities are delivered directly to AI
+agents (Claude Code, Claude Desktop). This phase expands the MCP tool ecosystem.
+
+### Brand Brain MCP Integration
+
+| Task                 | Priority | Status      | Description                       |
+| -------------------- | -------- | ----------- | --------------------------------- |
+| Brand Brain REST API | Critical | ✅ Complete | POST /api/brand-brain/apply       |
+| Brand Brain MCP Tool | Critical | 📋 Planned  | `apply_brand_style` in mcp-server |
+| Brand Voice Schema   | High     | 📋 Planned  | Zod schema for brand definitions  |
+| Multi-brand Support  | Medium   | 📋 Planned  | Multiple brand profiles per user  |
+
+### Social Platform MCP Tools
+
+| Task               | Priority | Status     | Description                 |
+| ------------------ | -------- | ---------- | --------------------------- |
+| Post to platforms  | High     | 📋 Planned | `post_to_platform` MCP tool |
+| Schedule posts     | Medium   | 📋 Planned | `schedule_post` MCP tool    |
+| Analyze engagement | Low      | 📋 Planned | `get_engagement` MCP tool   |
+
+### MCP Developer Experience
+
+| Task                        | Priority | Status     | Description                         |
+| --------------------------- | -------- | ---------- | ----------------------------------- |
+| MCP tool execution feedback | High     | 📋 Planned | Show tool calls in My-Apps UI       |
+| Tool usage analytics        | Medium   | 📋 Planned | Track which MCP tools are used most |
+| MCP server documentation    | High     | 📋 Planned | Comprehensive tool documentation    |
+
+### Phase 3.5 Exit Criteria
+
+- [ ] Brand Brain available as MCP tool (`apply_brand_style`)
+- [ ] MCP server README documents all upcoming tools
+- [ ] My-Apps shows MCP tool execution feedback
+- [ ] Brand voice schema validated with real user brands
+- [ ] At least one social platform tool implemented
+
+---
+
 ## Phase 4: Deployment & Hosting
 
 ### Core Tasks
