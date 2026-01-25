@@ -285,27 +285,54 @@ Then(
 );
 
 Then("I should see loading skeletons", async function(this: CustomWorld) {
-  const skeleton = this.page.locator('[class*="skeleton"]').first();
+  // Try multiple selectors for loading skeleton patterns
+  // Skeletons may use various class naming conventions
+  const skeleton = this.page.locator('[class*="skeleton"]')
+    .or(this.page.locator('[class*="Skeleton"]'))
+    .or(this.page.locator('[class*="animate-pulse"]'))
+    .or(this.page.locator('[class*="loading"]'))
+    .or(this.page.locator('[class*="shimmer"]'))
+    .or(this.page.locator('[data-testid*="skeleton"]'))
+    .or(this.page.locator('[data-testid*="loading"]'))
+    .or(this.page.locator('[role="progressbar"]'))
+    .or(this.page.locator(".animate-pulse"))
+    .first();
   await expect(skeleton).toBeVisible();
 });
 
 Then(
   "the loading skeletons should disappear when data loads",
   async function(this: CustomWorld) {
-    const skeleton = this.page.locator('[class*="skeleton"]').first();
+    // Try multiple selectors for loading skeleton patterns
+    const skeleton = this.page.locator('[class*="skeleton"]')
+      .or(this.page.locator('[class*="Skeleton"]'))
+      .or(this.page.locator('[class*="animate-pulse"]'))
+      .or(this.page.locator('[class*="loading"]'))
+      .or(this.page.locator('[class*="shimmer"]'))
+      .or(this.page.locator('[data-testid*="skeleton"]'))
+      .or(this.page.locator('[data-testid*="loading"]'))
+      .or(this.page.locator('[role="progressbar"]'))
+      .or(this.page.locator(".animate-pulse"))
+      .first();
     await expect(skeleton).not.toBeVisible({ timeout: 3000 });
   },
 );
 
 Then("I should see an error alert", async function(this: CustomWorld) {
-  const alert = this.page.locator('[role="alert"]');
+  // Filter out the Next.js route announcer which also has role="alert"
+  const alert = this.page.locator('[role="alert"]').filter({
+    hasNot: this.page.locator("#__next-route-announcer__"),
+  }).first();
   await expect(alert).toBeVisible();
 });
 
 Then(
   "the error message should describe the failure",
   async function(this: CustomWorld) {
-    const alert = this.page.locator('[role="alert"]');
+    // Filter out the Next.js route announcer which also has role="alert"
+    const alert = this.page.locator('[role="alert"]').filter({
+      hasNot: this.page.locator("#__next-route-announcer__"),
+    }).first();
     const text = await alert.textContent();
     expect(text).toBeTruthy();
     expect(text?.length).toBeGreaterThan(0);

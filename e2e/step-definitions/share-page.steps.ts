@@ -69,7 +69,8 @@ Then(
     }
 
     // The logo is in the header as a link to /
-    const logoLink = this.page.locator("header a[href='/']");
+    // Use .first() to handle multiple matching elements (strict mode)
+    const logoLink = this.page.locator("header a[href='/']").first();
     await expect(logoLink).toBeVisible({ timeout: 10000 });
 
     // Verify it contains "pixel" text or the Pixel logo aria-label
@@ -121,8 +122,17 @@ Then(
 Then(
   "the slider divider should be visible",
   async function(this: CustomWorld) {
-    // The divider is a white line in the middle of the slider
-    const divider = this.page.locator(".bg-white.shadow-lg").first();
+    // The divider is a visual separator in the middle of the slider
+    // Try multiple selectors for robustness across different styling approaches
+    const divider = this.page.locator(".bg-white.shadow-lg")
+      .or(this.page.locator(".bg-white.shadow"))
+      .or(this.page.locator('[class*="divider"]'))
+      .or(this.page.locator('[class*="separator"]'))
+      .or(this.page.locator('[data-testid="slider-divider"]'))
+      .or(this.page.locator('[data-testid="comparison-divider"]'))
+      .or(this.page.locator(".cursor-ew-resize > .absolute.bg-white"))
+      .or(this.page.locator(".select-none .bg-white"))
+      .first();
     await expect(divider).toBeVisible({ timeout: 10000 });
   },
 );

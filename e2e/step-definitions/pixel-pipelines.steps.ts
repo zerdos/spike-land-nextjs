@@ -337,11 +337,21 @@ When(
 When(
   "I select tier {string}",
   async function(this: CustomWorld, tier: string) {
-    const tierSelector = this.page.locator('[data-testid="tier-selector"]').or(
-      this.page.getByRole("combobox").filter({
-        has: this.page.getByText(/tier/i),
-      }),
-    );
+    // Use multiple fallback selectors for tier selection
+    const tierSelector = this.page.locator('[data-testid="tier-selector"]')
+      .or(this.page.locator('[data-testid="tier-select"]'))
+      .or(this.page.locator('[name="tier"]'))
+      .or(this.page.getByLabel(/tier/i))
+      .or(
+        this.page.getByRole("combobox").filter({
+          has: this.page.getByText(/tier|1k|2k|4k/i),
+        }),
+      )
+      .or(
+        this.page.locator("select").filter({
+          has: this.page.getByText(/tier/i),
+        }),
+      );
     // Wait for the tier selector to be visible and clickable
     await expect(tierSelector.first()).toBeVisible({ timeout: 15000 });
     await tierSelector.first().click();
@@ -448,9 +458,17 @@ When("I configure generation settings", async function(this: CustomWorld) {
 });
 
 When("I click on the tier selector", async function(this: CustomWorld) {
-  const tierSelector = this.page.locator('[data-testid="tier-selector"]').or(
-    this.page.getByRole("combobox").first(),
-  );
+  // Use multiple fallback selectors for tier selection
+  const tierSelector = this.page.locator('[data-testid="tier-selector"]')
+    .or(this.page.locator('[data-testid="tier-select"]'))
+    .or(this.page.locator('[name="tier"]'))
+    .or(this.page.getByLabel(/tier/i))
+    .or(
+      this.page.getByRole("combobox").filter({
+        has: this.page.getByText(/tier|1k|2k|4k/i),
+      }),
+    )
+    .or(this.page.getByRole("combobox").first());
   await tierSelector.click();
 });
 

@@ -119,15 +119,41 @@ Then("I should see {string} or {string} option", async function(
   option2: string,
 ) {
   // Check for exact matches AND common variations like "Log out"
-  const element1 = this.page.getByText(new RegExp(option1, "i"));
-  const element2 = this.page.getByText(new RegExp(option2, "i"));
-  const element3 = this.page.getByText(/Log\s*out/i); // Matches "Log out", "Logout", "log out"
+  // Try multiple selector strategies: text, menuitem role, button role, and data-testid
+  const textElement1 = this.page.getByText(new RegExp(option1, "i"));
+  const textElement2 = this.page.getByText(new RegExp(option2, "i"));
+  const textElement3 = this.page.getByText(/Log\s*out/i); // Matches "Log out", "Logout", "log out"
 
-  const isVisible1 = await element1.isVisible().catch(() => false);
-  const isVisible2 = await element2.isVisible().catch(() => false);
-  const isVisible3 = await element3.isVisible().catch(() => false);
+  // Also check for menuitem role (for dropdown menus)
+  const menuitem1 = this.page.getByRole("menuitem", { name: new RegExp(option1, "i") });
+  const menuitem2 = this.page.getByRole("menuitem", { name: new RegExp(option2, "i") });
+  const menuitem3 = this.page.getByRole("menuitem", { name: /Log\s*out/i });
 
-  expect(isVisible1 || isVisible2 || isVisible3).toBe(true);
+  // Also check for button role
+  const button1 = this.page.getByRole("button", { name: new RegExp(option1, "i") });
+  const button2 = this.page.getByRole("button", { name: new RegExp(option2, "i") });
+  const button3 = this.page.getByRole("button", { name: /Log\s*out/i });
+
+  // Also check for data-testid (e.g., sign-out-button)
+  const testIdButton = this.page.locator('[data-testid="sign-out-button"]');
+
+  const isVisible1 = await textElement1.isVisible().catch(() => false);
+  const isVisible2 = await textElement2.isVisible().catch(() => false);
+  const isVisible3 = await textElement3.isVisible().catch(() => false);
+  const isMenuitem1 = await menuitem1.isVisible().catch(() => false);
+  const isMenuitem2 = await menuitem2.isVisible().catch(() => false);
+  const isMenuitem3 = await menuitem3.isVisible().catch(() => false);
+  const isButton1 = await button1.isVisible().catch(() => false);
+  const isButton2 = await button2.isVisible().catch(() => false);
+  const isButton3 = await button3.isVisible().catch(() => false);
+  const isTestIdButton = await testIdButton.isVisible().catch(() => false);
+
+  expect(
+    isVisible1 || isVisible2 || isVisible3 ||
+      isMenuitem1 || isMenuitem2 || isMenuitem3 ||
+      isButton1 || isButton2 || isButton3 ||
+      isTestIdButton,
+  ).toBe(true);
 });
 
 Then(
