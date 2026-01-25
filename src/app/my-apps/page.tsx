@@ -81,7 +81,7 @@ export default async function MyAppsPage(props: {
               My Apps
             </h1>
             <p className="mt-2 text-muted-foreground">
-              Manage and deploy your vibe-coded applications
+              Build custom tools, landing pages, and interactive content
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -157,7 +157,7 @@ export default async function MyAppsPage(props: {
                 <CardHeader className="text-center">
                   <CardTitle className="text-2xl">No apps yet</CardTitle>
                   <CardDescription className="mt-2">
-                    Get started by creating your first vibe-coded application
+                    Get started by creating your first custom tool or landing page
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-4 pb-8">

@@ -215,7 +215,7 @@ describe("MyAppsPage", () => {
       render(component);
 
       expect(
-        screen.getByText("Manage and deploy your vibe-coded applications"),
+        screen.getByText("Build custom tools, landing pages, and interactive content"),
       ).toBeInTheDocument();
     });
 
@@ -226,7 +226,7 @@ describe("MyAppsPage", () => {
       expect(screen.getByText("No apps yet")).toBeInTheDocument();
       expect(
         screen.getByText(
-          "Get started by creating your first vibe-coded application",
+          "Get started by creating your first custom tool or landing page",
         ),
       ).toBeInTheDocument();
     });

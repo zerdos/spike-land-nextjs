@@ -13,11 +13,11 @@ export function HeroGradientWave() {
         <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
           <div className="space-y-8">
             <h1 className="text-5xl md:text-7xl font-[var(--landing-heading-weight)] tracking-tight leading-[1.1]">
-              The infrastructure for <GradientText>vibe coding</GradientText>
+              The infrastructure for <GradientText>AI marketing</GradientText>
             </h1>
             <p className="text-xl text-[var(--landing-muted-fg)] leading-relaxed max-w-xl">
-              Millions of developers use spike.land to build, run, and scale their vibe coding
-              experiments without touching a single config file.
+              Thousands of creators use spike.land to manage, automate, and scale their social media
+              presence with AI-powered agents.
             </p>
             <div className="flex flex-wrap gap-4">
               <ThemeButton size="lg" glow>Start now</ThemeButton>
