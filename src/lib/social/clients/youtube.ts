@@ -4,10 +4,6 @@
  * Implements ISocialClient interface for YouTube channel management
  * Uses Google OAuth 2.0 for authentication
  * API Reference: https://developers.google.com/youtube/v3
- *
- * NOTE: YouTube is NOT in the Prisma SocialPlatform enum.
- * Database storage requires a schema migration to add YOUTUBE to the enum.
- * Until then, channel info can be returned but not persisted to SocialAccount.
  */
 
 import type {

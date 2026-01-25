@@ -266,7 +266,6 @@ export interface LinkedInPost {
 
 /**
  * YouTube-specific types
- * Note: YouTube is not in the Prisma SocialPlatform enum
  */
 export interface YouTubeChannel {
   id: string;
