@@ -8,12 +8,7 @@ Feature: Admin Email Logs Management
     Given I am logged in as "Admin User" with email "admin@example.com"
     And the user is an admin
 
-  @fast @requires-db
-  Scenario: Email logs page loads successfully
-    When I visit "/admin/emails"
-    Then I should be on the "/admin/emails" page
-    And I should see "Email Logs" heading
-    And I should see "View and search all sent emails" text
+  # Page load test is in smoke-tests.feature
 
   @fast @requires-db
   Scenario: Email logs page displays total count
@@ -75,53 +70,21 @@ Feature: Admin Email Logs Management
     Then the email list should only show emails with "Welcome" in subject
 
   @slow @requires-db
-  Scenario: Filter emails by status - PENDING
+  Scenario Outline: Filter emails by status
     Given there are emails in the system
     When I visit "/admin/emails"
-    And I select "Pending" from the email status filter
-    Then the email list should only show PENDING status emails
+    And I select "<filter>" from the email status filter
+    Then the email list should only show <status> status emails
 
-  @slow @requires-db
-  Scenario: Filter emails by status - SENT
-    Given there are emails in the system
-    When I visit "/admin/emails"
-    And I select "Sent" from the email status filter
-    Then the email list should only show SENT status emails
-
-  @slow @requires-db
-  Scenario: Filter emails by status - DELIVERED
-    Given there are emails in the system
-    When I visit "/admin/emails"
-    And I select "Delivered" from the email status filter
-    Then the email list should only show DELIVERED status emails
-
-  @slow @requires-db
-  Scenario: Filter emails by status - OPENED
-    Given there are emails in the system
-    When I visit "/admin/emails"
-    And I select "Opened" from the email status filter
-    Then the email list should only show OPENED status emails
-
-  @slow @requires-db
-  Scenario: Filter emails by status - CLICKED
-    Given there are emails in the system
-    When I visit "/admin/emails"
-    And I select "Clicked" from the email status filter
-    Then the email list should only show CLICKED status emails
-
-  @slow @requires-db
-  Scenario: Filter emails by status - BOUNCED
-    Given there are emails in the system
-    When I visit "/admin/emails"
-    And I select "Bounced" from the email status filter
-    Then the email list should only show BOUNCED status emails
-
-  @slow @requires-db
-  Scenario: Filter emails by status - FAILED
-    Given there are emails in the system
-    When I visit "/admin/emails"
-    And I select "Failed" from the email status filter
-    Then the email list should only show FAILED status emails
+    Examples:
+      | filter    | status    |
+      | Pending   | PENDING   |
+      | Sent      | SENT      |
+      | Delivered | DELIVERED |
+      | Opened    | OPENED    |
+      | Clicked   | CLICKED   |
+      | Bounced   | BOUNCED   |
+      | Failed    | FAILED    |
 
   @slow @requires-db
   Scenario: Filter emails by template
@@ -187,17 +150,7 @@ Feature: Admin Email Logs Management
     When I click the modal overlay
     Then the email details modal should close
 
-  @slow @requires-db
-  Scenario: Status badges display correct colors
-    Given there are emails of all statuses in the system
-    When I visit "/admin/emails"
-    Then PENDING status badge should be yellow
-    And SENT status badge should be blue
-    And DELIVERED status badge should be green
-    And OPENED status badge should be cyan
-    And CLICKED status badge should be purple
-    And BOUNCED status badge should be red
-    And FAILED status badge should be red
+  # Badge color styling tests removed - use visual regression testing instead
 
   # Note: These pagination tests cannot work in E2E because admin-emails is a Server Component
   # that fetches data directly from the database, not via API route that can be mocked.

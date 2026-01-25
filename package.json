@@ -41,6 +41,7 @@
     "test:e2e:fast": "cucumber-js --profile fast",
     "test:e2e:slow": "cucumber-js --profile slow",
     "test:e2e:flaky": "cucumber-js --profile flaky",
+    "test:e2e:smoke": "BASE_URL=http://localhost:3000 CI=true cucumber-js --profile smoke",
     "test:e2e:coverage": "E2E_COVERAGE=true BASE_URL=http://localhost:3000 CI=true cucumber-js --profile coverage",
     "postinstall": "yarn pnpify prisma generate --no-hints",
     "prisma": "pnpify prisma",

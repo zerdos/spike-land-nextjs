@@ -7,11 +7,7 @@ Feature: Admin Marketing Analytics
   Background:
     Given I am logged in as "Admin User" with email "admin@example.com"
 
-  Scenario: Admin can access marketing page
-    Given the user is an admin
-    When I visit "/admin/marketing"
-    Then I should be on the "/admin/marketing" page
-    And I should see "Marketing" text
+  # Page load test is in smoke-tests.feature
 
   Scenario: Non-admin user redirected from marketing page
     Given the user is not an admin
