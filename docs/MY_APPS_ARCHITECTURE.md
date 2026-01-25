@@ -40,6 +40,58 @@ The feature spans three interconnected systems:
 
 ---
 
+## Conceptual Model: MCP Interface
+
+### Key Insight: Same Tools, Different Interfaces
+
+My-Apps and Claude Desktop are **two interfaces to the same MCP layer**. This
+architectural choice means:
+
+- Features built for My-Apps are automatically available to Claude users
+- AI agents in Claude Code have the same capabilities as the My-Apps chat
+- Users can switch between interfaces without losing functionality
+
+```
++------------------+     +------------------+
+|    My-Apps UI    |     | Claude Desktop   |
+|  (Web Interface) |     |  (Native App)    |
++--------+---------+     +--------+---------+
+         |                        |
+         |  Chat with AI          |  Natural language
+         |                        |
+         v                        v
++--------------------------------------------------+
+|            MCP Server Layer                       |
+|                                                   |
+|  +-------------+  +-------------+  +------------+|
+|  | codespace_  |  | generate_   |  | apply_     ||
+|  | update      |  | image       |  | brand_style||
+|  +-------------+  +-------------+  +------------+|
+|                                                   |
++--------------------------------------------------+
+         |
+         v
++--------------------------------------------------+
+|            Backend Services                       |
+|  - testing.spike.land (codespaces)               |
+|  - spike.land/api (image gen, brand brain)       |
++--------------------------------------------------+
+```
+
+### What My-Apps Adds
+
+While Claude Desktop gives raw access to MCP tools, My-Apps provides:
+
+| Feature             | My-Apps | Claude Desktop |
+| ------------------- | ------- | -------------- |
+| Live app preview    | ✅      | ❌             |
+| App version history | ✅      | ❌             |
+| App organization    | ✅      | ❌             |
+| Shareable app links | ✅      | ❌             |
+| Raw MCP tool access | ✅      | ✅             |
+
+---
+
 ## Architecture
 
 ```
