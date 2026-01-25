@@ -34,6 +34,7 @@ COPY --link packages/js.spike.land/package.json ./packages/js.spike.land/
 COPY --link packages/code/package.json ./packages/code/
 COPY --link packages/testing.spike.land/package.json ./packages/testing.spike.land/
 COPY --link packages/shared/package.json ./packages/shared/
+COPY --link packages/react-app-examples/package.json ./packages/react-app-examples/
 COPY --link prisma ./prisma
 
 # ============================================================================
@@ -228,14 +229,13 @@ FROM e2e-browser AS e2e-test-base
 WORKDIR /app
 ARG DUMMY_DATABASE_URL
 
-# Copy dependency metadata
-COPY --link --from=dep-context /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
-COPY --link --from=dep-context /app/.yarn/ ./.yarn/
-COPY --link --from=dep-context /app/packages/ ./packages/
-COPY --link --from=dep-context /app/prisma ./prisma
-
-# Copy PnP resolution files (Yarn PnP doesn't use node_modules)
+# Copy dependency metadata and PnP resolution files
+# IMPORTANT: Copy .yarn/ from deps (after yarn install) to include unplugged packages like Next.js
+COPY --link --from=deps /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
+COPY --link --from=deps /app/.yarn/ ./.yarn/
 COPY --link --from=deps /app/.pnp.cjs /app/.pnp.loader.mjs ./
+COPY --link --from=source /app/packages/ ./packages/
+COPY --link --from=source /app/prisma ./prisma
 
 # Copy source files needed for E2E
 COPY --link --from=source /app/tsconfig*.json /app/next.config.ts /app/postcss.config.mjs ./
