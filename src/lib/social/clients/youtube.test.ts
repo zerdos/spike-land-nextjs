@@ -160,10 +160,16 @@ describe("YouTubeClient", () => {
     });
 
     it("should throw error when no channel is found", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ items: [] }),
-      });
+      // Mock both mine=true and managedByMe=true returning empty
+      (global.fetch as ReturnType<typeof vi.fn>)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ items: [] }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ items: [] }),
+        });
 
       const client = new YouTubeClient({
         accessToken: "test_token",
