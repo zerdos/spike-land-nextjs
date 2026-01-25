@@ -48,6 +48,21 @@ const mockRewriteResponse = {
   cached: false,
 };
 
+/**
+ * Extract domain from URL for cookie setting.
+ * Returns the hostname without port for proper cookie domain matching.
+ */
+function extractCookieDomain(baseUrl: string): string {
+  try {
+    const url = new URL(baseUrl);
+    // Return hostname (e.g., "localhost" or "spike-land-nextjs-xxx.vercel.app")
+    return url.hostname;
+  } catch {
+    // Fallback if URL parsing fails
+    return "localhost";
+  }
+}
+
 // Helper to set up workspace mocks
 async function setupWorkspaceMocks(world: CustomWorld) {
   // Mock workspace by-slug endpoint
@@ -86,12 +101,16 @@ async function mockSession(world: CustomWorld) {
     });
   });
 
+  // Extract the correct domain from baseUrl for cookie setting
+  // This is critical for CI where tests run against Vercel preview URLs
+  const cookieDomain = extractCookieDomain(world.baseUrl);
+
   // Set mock session cookies
   await world.page.context().addCookies([
     {
       name: "authjs.session-token",
       value: "mock-session-token",
-      domain: "localhost",
+      domain: cookieDomain,
       path: "/",
       httpOnly: true,
       sameSite: "Lax",

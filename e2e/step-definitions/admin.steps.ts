@@ -7,6 +7,21 @@ import {
 } from "../support/helpers/retry-helper";
 import type { CustomWorld } from "../support/world";
 
+/**
+ * Extract domain from URL for cookie setting.
+ * Returns the hostname without port for proper cookie domain matching.
+ */
+function extractCookieDomain(baseUrl: string): string {
+  try {
+    const url = new URL(baseUrl);
+    // Return hostname (e.g., "localhost" or "spike-land-nextjs-xxx.vercel.app")
+    return url.hostname;
+  } catch {
+    // Fallback if URL parsing fails
+    return "localhost";
+  }
+}
+
 // Helper to mock admin status
 async function mockAdminStatus(world: CustomWorld, isAdmin: boolean) {
   // If user is admin, we rely on real DB permissions (seeded) and real API responses.
@@ -17,13 +32,17 @@ async function mockAdminStatus(world: CustomWorld, isAdmin: boolean) {
     await world.page.context().clearCookies({ name: "authjs.session-token" });
     await world.page.context().clearCookies({ name: "e2e-user-role" });
 
+    // Extract the correct domain from baseUrl for cookie setting
+    // This is critical for CI where tests run against Vercel preview URLs
+    const cookieDomain = extractCookieDomain(world.baseUrl);
+
     // Set e2e-user-role cookie to USER
     // This is needed because the admin layout checks the role from the cookie directly
     await world.page.context().addCookies([
       {
         name: "e2e-user-role",
         value: "USER",
-        domain: "localhost",
+        domain: cookieDomain,
         path: "/",
         httpOnly: true,
         sameSite: "Lax" as const,

@@ -33,6 +33,21 @@ async function waitForSessionPropagation(
   }
 }
 
+/**
+ * Extract domain from URL for cookie setting.
+ * Returns the hostname without port for proper cookie domain matching.
+ */
+function extractCookieDomain(baseUrl: string): string {
+  try {
+    const url = new URL(baseUrl);
+    // Return hostname (e.g., "localhost" or "spike-land-nextjs-xxx.vercel.app")
+    return url.hostname;
+  } catch {
+    // Fallback if URL parsing fails
+    return "localhost";
+  }
+}
+
 // Helper function to mock NextAuth session
 async function mockSession(
   world: CustomWorld,
@@ -74,12 +89,16 @@ async function mockSession(
 
   // Set NextAuth session cookie to bypass middleware authentication
   if (user) {
+    // Extract the correct domain from baseUrl for cookie setting
+    // This is critical for CI where tests run against Vercel preview URLs
+    const cookieDomain = extractCookieDomain(world.baseUrl);
+
     // Set a mock session token cookie that the middleware will recognize
     const cookies = [
       {
         name: "authjs.session-token",
         value: "mock-session-token",
-        domain: "localhost",
+        domain: cookieDomain,
         path: "/",
         httpOnly: true,
         sameSite: "Lax" as const,
@@ -88,7 +107,7 @@ async function mockSession(
       {
         name: "e2e-user-role",
         value: role,
-        domain: "localhost",
+        domain: cookieDomain,
         path: "/",
         httpOnly: true,
         sameSite: "Lax" as const,
@@ -97,7 +116,7 @@ async function mockSession(
       {
         name: "e2e-user-email",
         value: user.email,
-        domain: "localhost",
+        domain: cookieDomain,
         path: "/",
         httpOnly: true,
         sameSite: "Lax" as const,
@@ -106,7 +125,7 @@ async function mockSession(
       {
         name: "e2e-user-name",
         value: user.name,
-        domain: "localhost",
+        domain: cookieDomain,
         path: "/",
         httpOnly: true,
         sameSite: "Lax" as const,
