@@ -35,7 +35,7 @@ export function HeroBoldDeveloper() {
           </div>
 
           <div className="pt-12 text-sm text-[var(--landing-muted-fg)] uppercase tracking-widest">
-            Trusted by the best frontend teams
+            Built for modern frontend teams
           </div>
         </div>
       </SectionWrapper>

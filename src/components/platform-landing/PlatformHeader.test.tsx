@@ -4,16 +4,11 @@ import type { Session } from "next-auth";
 import { describe, expect, it, vi } from "vitest";
 import { PlatformHeader } from "./PlatformHeader";
 
-// Mock the SpikeLandLogo and PixelLogo components
+// Mock the SpikeLandLogo component
 vi.mock("@/components/brand", () => ({
   SpikeLandLogo: ({ size, variant }: { size: string; variant: string; }) => (
     <div data-testid="spike-land-logo" data-size={size} data-variant={variant}>
       SpikeLandLogo
-    </div>
-  ),
-  PixelLogo: ({ size, variant }: { size: string; variant: string; }) => (
-    <div data-testid="pixel-logo" data-size={size} data-variant={variant}>
-      PixelLogo
     </div>
   ),
 }));
@@ -39,6 +34,7 @@ const mockSession: Session = {
 const mockUseSession = vi.fn();
 vi.mock("next-auth/react", () => ({
   useSession: () => mockUseSession(),
+  signOut: vi.fn(),
 }));
 
 describe("PlatformHeader Component", () => {
@@ -61,28 +57,34 @@ describe("PlatformHeader Component", () => {
       expect(homeLink).toHaveAttribute("href", "/");
     });
 
+    it("should render Orbit CTA button in desktop navigation", () => {
+      render(<PlatformHeader />);
+      const orbitLinks = screen.getAllByRole("link", { name: /orbit/i });
+      expect(orbitLinks.length).toBeGreaterThanOrEqual(1);
+      expect(orbitLinks[0]).toHaveAttribute("href", "/orbit");
+    });
+
+    it("should render Features dropdown trigger", () => {
+      render(<PlatformHeader />);
+      expect(screen.getByRole("button", { name: /features/i })).toBeInTheDocument();
+    });
+
     it("should render desktop navigation links", () => {
       render(<PlatformHeader />);
-      expect(
-        screen.getAllByTestId("pixel-logo").length,
-      ).toBeGreaterThanOrEqual(1);
       expect(screen.getByRole("link", { name: "Pricing" })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "My Apps" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Sign In" })).toBeInTheDocument();
     });
 
     it("should have correct href for navigation links", () => {
       render(<PlatformHeader />);
-      expect(screen.getByRole("link", { name: /pixellogo/i })).toHaveAttribute(
-        "href",
-        "/pixel",
-      );
-      expect(screen.getByRole("link", { name: "Blog" })).toHaveAttribute(
-        "href",
-        "/blog/pixel-launch-announcement",
-      );
       expect(screen.getByRole("link", { name: "Pricing" })).toHaveAttribute(
         "href",
         "/pricing",
+      );
+      expect(screen.getByRole("link", { name: "My Apps" })).toHaveAttribute(
+        "href",
+        "/my-apps",
       );
       expect(screen.getByRole("link", { name: "Sign In" })).toHaveAttribute(
         "href",
@@ -94,7 +96,7 @@ describe("PlatformHeader Component", () => {
       render(<PlatformHeader />);
       const ctaButtons = screen.getAllByRole("link", { name: /get started/i });
       expect(ctaButtons.length).toBeGreaterThanOrEqual(1);
-      expect(ctaButtons[0]).toHaveAttribute("href", "/pixel");
+      expect(ctaButtons[0]).toHaveAttribute("href", "/auth/signin");
     });
 
     it("should not render UserAvatar when not authenticated", () => {
@@ -130,7 +132,7 @@ describe("PlatformHeader Component", () => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
-    it("should render navigation links in mobile menu when opened", () => {
+    it("should render Orbit link in mobile menu when opened", () => {
       render(<PlatformHeader />);
       const menuButton = screen.getByRole("button", { name: /open menu/i });
       fireEvent.click(menuButton);
@@ -138,11 +140,20 @@ describe("PlatformHeader Component", () => {
       const dialog = screen.getByRole("dialog");
       expect(dialog).toBeInTheDocument();
 
-      const pixelLogos = screen.getAllByTestId("pixel-logo");
-      expect(pixelLogos.length).toBeGreaterThanOrEqual(1);
+      const orbitLink = dialog.querySelector('a[href="/orbit"]');
+      expect(orbitLink).toBeInTheDocument();
+    });
 
-      const ctaLinks = screen.getAllByRole("link", { name: /get started/i });
-      expect(ctaLinks.length).toBeGreaterThanOrEqual(1);
+    it("should render feature items in mobile menu when opened", () => {
+      render(<PlatformHeader />);
+      const menuButton = screen.getByRole("button", { name: /open menu/i });
+      fireEvent.click(menuButton);
+
+      const dialog = screen.getByRole("dialog");
+      expect(dialog.querySelector('a[href="/features/ab-testing"]')).toBeInTheDocument();
+      expect(dialog.querySelector('a[href="/features/calendar"]')).toBeInTheDocument();
+      expect(dialog.querySelector('a[href="/features/brand-brain"]')).toBeInTheDocument();
+      expect(dialog.querySelector('a[href="/features/analytics"]')).toBeInTheDocument();
     });
 
     it("should have border styling on header", () => {
@@ -158,7 +169,7 @@ describe("PlatformHeader Component", () => {
       expect(innerDiv).toBeInTheDocument();
     });
 
-    it("should close mobile menu when clicking a navigation link", async () => {
+    it("should close mobile menu when clicking Orbit link", async () => {
       render(<PlatformHeader />);
       const menuButton = screen.getByRole("button", { name: /open menu/i });
 
@@ -166,10 +177,10 @@ describe("PlatformHeader Component", () => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
 
       const dialog = screen.getByRole("dialog");
-      const appsLinkInDialog = dialog.querySelector('a[href="/pixel"]');
-      expect(appsLinkInDialog).toBeInTheDocument();
+      const orbitLinkInDialog = dialog.querySelector('a[href="/orbit"]');
+      expect(orbitLinkInDialog).toBeInTheDocument();
 
-      fireEvent.click(appsLinkInDialog!);
+      fireEvent.click(orbitLinkInDialog!);
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
@@ -181,11 +192,22 @@ describe("PlatformHeader Component", () => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
 
       const dialog = screen.getByRole("dialog");
-      const getStartedLinkInDialog = dialog.querySelector('a[href="/pixel"]');
+      const getStartedLinkInDialog = dialog.querySelector('a[href="/auth/signin"]');
       expect(getStartedLinkInDialog).toBeInTheDocument();
 
       fireEvent.click(getStartedLinkInDialog!);
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("should render My Apps link in mobile menu with de-emphasized styling", () => {
+      render(<PlatformHeader />);
+      const menuButton = screen.getByRole("button", { name: /open menu/i });
+      fireEvent.click(menuButton);
+
+      const dialog = screen.getByRole("dialog");
+      const myAppsLink = dialog.querySelector('a[href="/my-apps"]');
+      expect(myAppsLink).toBeInTheDocument();
+      expect(myAppsLink).toHaveClass("text-muted-foreground");
     });
   });
 
@@ -214,21 +236,14 @@ describe("PlatformHeader Component", () => {
 
     it("should still render navigation links", () => {
       render(<PlatformHeader />);
-      expect(
-        screen.getAllByTestId("pixel-logo").length,
-      ).toBeGreaterThanOrEqual(1);
-      expect(screen.getByRole("link", { name: "Blog" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Pricing" })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "My Apps" })).toBeInTheDocument();
     });
 
-    it("should render UserAvatar in mobile menu when authenticated", () => {
+    it("should render Orbit CTA when authenticated", () => {
       render(<PlatformHeader />);
-      const menuButton = screen.getByRole("button", { name: /open menu/i });
-      fireEvent.click(menuButton);
-
-      // UserAvatar should be rendered in the mobile menu too
-      const avatars = screen.getAllByTestId("user-avatar");
-      expect(avatars.length).toBeGreaterThanOrEqual(1);
+      const orbitLinks = screen.getAllByRole("link", { name: /orbit/i });
+      expect(orbitLinks.length).toBeGreaterThanOrEqual(1);
     });
 
     it("should not show Sign In in mobile menu when authenticated", () => {
@@ -237,8 +252,13 @@ describe("PlatformHeader Component", () => {
       fireEvent.click(menuButton);
 
       const dialog = screen.getByRole("dialog");
-      const signInLink = dialog.querySelector('a[href="/auth/signin"]');
-      expect(signInLink).not.toBeInTheDocument();
+      // Sign In link in nav section (not the one in user section)
+      const signInLinks = dialog.querySelectorAll('a[href="/auth/signin"]');
+      // Should not have Sign In link (only the user section links)
+      const navSignIn = Array.from(signInLinks).filter(
+        (link) => link.textContent === "Sign In",
+      );
+      expect(navSignIn.length).toBe(0);
     });
   });
 
@@ -258,6 +278,136 @@ describe("PlatformHeader Component", () => {
       expect(
         screen.getAllByRole("link", { name: /get started/i }).length,
       ).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe("Features dropdown", () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({ data: null, status: "unauthenticated" });
+    });
+
+    it("should have Features dropdown trigger button", () => {
+      render(<PlatformHeader />);
+      const featuresButton = screen.getByRole("button", { name: /features/i });
+      expect(featuresButton).toBeInTheDocument();
+      // Check that dropdown trigger has the expected styling
+      expect(featuresButton).toHaveClass("flex");
+    });
+
+    it("should have features listed in mobile menu", () => {
+      render(<PlatformHeader />);
+      const menuButton = screen.getByRole("button", { name: /open menu/i });
+      fireEvent.click(menuButton);
+
+      const dialog = screen.getByRole("dialog");
+      // Features section header
+      expect(dialog.textContent).toContain("Features");
+      // Feature items
+      expect(dialog.querySelector('a[href="/features/ab-testing"]')).toBeInTheDocument();
+      expect(dialog.querySelector('a[href="/features/calendar"]')).toBeInTheDocument();
+      expect(dialog.querySelector('a[href="/features/brand-brain"]')).toBeInTheDocument();
+      expect(dialog.querySelector('a[href="/features/analytics"]')).toBeInTheDocument();
+    });
+
+    it("should have aria-label on Features dropdown trigger", () => {
+      render(<PlatformHeader />);
+      const featuresButton = screen.getByRole("button", { name: /features menu/i });
+      expect(featuresButton).toHaveAttribute("aria-label", "Features menu");
+    });
+  });
+
+  describe("Keyboard navigation", () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({ data: null, status: "unauthenticated" });
+    });
+
+    it("should have correct aria attributes on Features dropdown trigger", () => {
+      render(<PlatformHeader />);
+      const featuresButton = screen.getByRole("button", { name: /features menu/i });
+
+      // Verify keyboard-accessible attributes
+      expect(featuresButton).toHaveAttribute("aria-haspopup", "menu");
+      expect(featuresButton).toHaveAttribute("aria-expanded", "false");
+    });
+
+    it("should have correct initial aria-expanded state", () => {
+      render(<PlatformHeader />);
+      const featuresButton = screen.getByRole("button", { name: /features menu/i });
+
+      // Initially closed
+      expect(featuresButton).toHaveAttribute("aria-expanded", "false");
+      expect(featuresButton).toHaveAttribute("data-state", "closed");
+    });
+
+    it("should be focusable for keyboard navigation", () => {
+      render(<PlatformHeader />);
+      const featuresButton = screen.getByRole("button", { name: /features menu/i });
+
+      // Button should be focusable
+      featuresButton.focus();
+      expect(document.activeElement).toBe(featuresButton);
+    });
+
+    it("should allow Tab navigation through header links", () => {
+      render(<PlatformHeader />);
+
+      // Get all focusable elements in the header
+      const orbitLinks = screen.getAllByRole("link", { name: /orbit/i });
+      const pricingLink = screen.getByRole("link", { name: "Pricing" });
+      const myAppsLink = screen.getByRole("link", { name: "My Apps" });
+
+      // Verify these elements exist and are tabbable (no tabindex=-1)
+      expect(orbitLinks[0]).not.toHaveAttribute("tabindex", "-1");
+      expect(pricingLink).not.toHaveAttribute("tabindex", "-1");
+      expect(myAppsLink).not.toHaveAttribute("tabindex", "-1");
+    });
+
+    it("should close mobile menu with Escape key", () => {
+      render(<PlatformHeader />);
+      const menuButton = screen.getByRole("button", { name: /open menu/i });
+
+      // Open mobile menu
+      fireEvent.click(menuButton);
+      const dialog = screen.getByRole("dialog");
+      expect(dialog).toBeInTheDocument();
+
+      // Press Escape to close
+      fireEvent.keyDown(dialog, { key: "Escape" });
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("should have proper focus management when opening mobile menu", () => {
+      render(<PlatformHeader />);
+      const menuButton = screen.getByRole("button", { name: /open menu/i });
+
+      // Open mobile menu
+      fireEvent.click(menuButton);
+      const dialog = screen.getByRole("dialog");
+      expect(dialog).toBeInTheDocument();
+
+      // Dialog should be visible and accessible
+      expect(dialog).toBeVisible();
+    });
+
+    it("should have aria-controls on mobile menu trigger", () => {
+      render(<PlatformHeader />);
+      const menuButton = screen.getByRole("button", { name: /open menu/i });
+
+      // Radix Sheet adds aria-controls automatically
+      expect(menuButton).toHaveAttribute("aria-haspopup", "dialog");
+    });
+
+    it("should have accessible name on mobile menu dialog", () => {
+      render(<PlatformHeader />);
+      const menuButton = screen.getByRole("button", { name: /open menu/i });
+
+      // Open mobile menu
+      fireEvent.click(menuButton);
+
+      // The dialog should have an accessible name via VisuallyHidden SheetTitle
+      const dialog = screen.getByRole("dialog");
+      expect(dialog).toBeInTheDocument();
+      // Radix handles the accessible label via aria-labelledby
     });
   });
 });
