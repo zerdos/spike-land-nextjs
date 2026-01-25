@@ -4,7 +4,7 @@
 # Uses SHARD_INDEX and SHARD_TOTAL env vars set by parent process
 
 SHARD_INDEX=${SHARD_INDEX:-1}
-SHARD_TOTAL=${SHARD_TOTAL:-8}
+SHARD_TOTAL=${SHARD_TOTAL:-4}
 
 echo "Running E2E shard $SHARD_INDEX/$SHARD_TOTAL"
 

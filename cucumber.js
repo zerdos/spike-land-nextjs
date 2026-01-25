@@ -83,11 +83,11 @@ module.exports = {
     ],
     formatOptions: { snippetInterface: "async-await" },
     publishQuiet: true,
-    failFast: false, // In CI, run all tests to get full report
-    retry: 2, // Retry twice in CI to handle transient issues
+    failFast: true, // Stop on first failure for faster CI feedback
+    retry: 1, // Retry once in CI to handle transient issues (faster feedback)
     tags: "not @skip and not @flaky and not @wip", // Include @requires-db tests in sharded runs
-    timeout: 60000, // 60 second timeout for CI
-    parallel: 1, // Single process for Docker builds to reduce memory pressure
+    timeout: 30000, // 30 second timeout for CI (faster failure detection)
+    parallel: 2, // Allow 2 parallel workers per shard for faster execution
   },
   local: {
     paths: ["e2e/features/**/*.feature"],
