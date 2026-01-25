@@ -12,7 +12,7 @@ export function HeroPrecisionDark() {
         <div className="space-y-6 max-w-4xl mx-auto relative z-10">
           <div className="inline-flex items-center px-3 py-1 rounded-full border border-[var(--landing-border)] bg-[var(--landing-secondary)]/50 backdrop-blur-sm text-xs font-medium text-[var(--landing-muted-fg)] mb-4">
             <span className="w-2 h-2 rounded-full bg-[var(--landing-primary)] mr-2" />
-            Vibe Coding 2.0 is now available
+            AI Social Media Command Center is now available
           </div>
 
           <h1 className="text-5xl md:text-7xl font-[var(--landing-heading-weight)] tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60">

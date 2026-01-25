@@ -38,32 +38,32 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://spike.land"),
-  title: "Spike Land - Vibe Coded Apps with Claude Code",
+  title: "Spike Land - AI-Powered Social Media Command Center",
   description:
-    "Experience the platform that brought you Smart Video Wall. Create vibe-coded applications powered by Claude Code, combining AI innovation with creative development for next-generation web experiences.",
+    "Manage all your social accounts with AI agents. Create content, schedule posts, run A/B tests, and grow your audience - all from one command center.",
   keywords: [
     "Spike Land",
-    "Smart Video Wall",
-    "vibe coding",
-    "Claude Code",
-    "AI development",
-    "innovative apps",
-    "web platform",
-    "creative coding",
+    "social media management",
+    "AI agents",
+    "content scheduling",
+    "A/B testing",
+    "social media automation",
+    "marketing platform",
+    "AI marketing",
   ],
   authors: [{ name: "Spike Land Team" }],
   openGraph: {
-    title: "Spike Land - Vibe Coded Apps with Claude Code",
+    title: "Spike Land - AI-Powered Social Media Command Center",
     description:
-      "Experience the platform that brought you Smart Video Wall. Create vibe-coded applications powered by Claude Code.",
+      "Manage all your social accounts with AI agents. Create content, schedule posts, run A/B tests, and grow your audience.",
     type: "website",
     siteName: "Spike Land",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Spike Land - Vibe Coded Apps with Claude Code",
+    title: "Spike Land - AI-Powered Social Media Command Center",
     description:
-      "Experience the platform that brought you Smart Video Wall. Create vibe-coded applications powered by Claude Code.",
+      "Manage all your social accounts with AI agents. Create content, schedule posts, run A/B tests, and grow your audience.",
   },
 };
 

@@ -10,7 +10,7 @@ export function HeroElegantProduct() {
         </h1>
 
         <p className="text-2xl md:text-3xl text-[var(--landing-foreground)] max-w-2xl mx-auto font-medium leading-relaxed mb-10">
-          The most advanced vibe coding platform is also the easiest to use.
+          The most advanced social media command center is also the easiest to use.
         </p>
 
         <div className="flex justify-center gap-6 text-xl">
