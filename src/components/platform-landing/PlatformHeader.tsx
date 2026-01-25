@@ -96,15 +96,18 @@ export function PlatformHeader() {
 
             {/* Features Dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+              <DropdownMenuTrigger
+                aria-label="Features menu"
+                className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
                 Features
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="center" className="w-64">
                 {featureItems.map((item) => (
                   <DropdownMenuItem key={item.href} asChild>
                     <Link href={item.href} className="flex items-start gap-3 py-2">
-                      <item.icon className="h-5 w-5 mt-0.5 text-primary" />
+                      <item.icon className="h-5 w-5 mt-0.5 text-primary" aria-hidden="true" />
                       <div className="flex flex-col">
                         <span className="font-medium">{item.label}</span>
                         <span className="text-xs text-muted-foreground">

@@ -297,8 +297,11 @@ export function ABTestingDemo() {
                     </p>
                   </div>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500 text-white font-medium hover:bg-green-600 transition-colors whitespace-nowrap">
-                  Apply Winner <ArrowRight className="w-4 h-4" />
+                <button
+                  aria-label="Apply winning variant B to all posts"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500 text-white font-medium hover:bg-green-600 transition-colors whitespace-nowrap"
+                >
+                  Apply Winner <ArrowRight className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
             </motion.div>

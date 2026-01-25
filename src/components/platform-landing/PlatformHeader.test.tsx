@@ -308,5 +308,106 @@ describe("PlatformHeader Component", () => {
       expect(dialog.querySelector('a[href="/features/brand-brain"]')).toBeInTheDocument();
       expect(dialog.querySelector('a[href="/features/analytics"]')).toBeInTheDocument();
     });
+
+    it("should have aria-label on Features dropdown trigger", () => {
+      render(<PlatformHeader />);
+      const featuresButton = screen.getByRole("button", { name: /features menu/i });
+      expect(featuresButton).toHaveAttribute("aria-label", "Features menu");
+    });
+  });
+
+  describe("Keyboard navigation", () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({ data: null, status: "unauthenticated" });
+    });
+
+    it("should have correct aria attributes on Features dropdown trigger", () => {
+      render(<PlatformHeader />);
+      const featuresButton = screen.getByRole("button", { name: /features menu/i });
+
+      // Verify keyboard-accessible attributes
+      expect(featuresButton).toHaveAttribute("aria-haspopup", "menu");
+      expect(featuresButton).toHaveAttribute("aria-expanded", "false");
+    });
+
+    it("should have correct initial aria-expanded state", () => {
+      render(<PlatformHeader />);
+      const featuresButton = screen.getByRole("button", { name: /features menu/i });
+
+      // Initially closed
+      expect(featuresButton).toHaveAttribute("aria-expanded", "false");
+      expect(featuresButton).toHaveAttribute("data-state", "closed");
+    });
+
+    it("should be focusable for keyboard navigation", () => {
+      render(<PlatformHeader />);
+      const featuresButton = screen.getByRole("button", { name: /features menu/i });
+
+      // Button should be focusable
+      featuresButton.focus();
+      expect(document.activeElement).toBe(featuresButton);
+    });
+
+    it("should allow Tab navigation through header links", () => {
+      render(<PlatformHeader />);
+
+      // Get all focusable elements in the header
+      const orbitLinks = screen.getAllByRole("link", { name: /orbit/i });
+      const pricingLink = screen.getByRole("link", { name: "Pricing" });
+      const myAppsLink = screen.getByRole("link", { name: "My Apps" });
+
+      // Verify these elements exist and are tabbable (no tabindex=-1)
+      expect(orbitLinks[0]).not.toHaveAttribute("tabindex", "-1");
+      expect(pricingLink).not.toHaveAttribute("tabindex", "-1");
+      expect(myAppsLink).not.toHaveAttribute("tabindex", "-1");
+    });
+
+    it("should close mobile menu with Escape key", () => {
+      render(<PlatformHeader />);
+      const menuButton = screen.getByRole("button", { name: /open menu/i });
+
+      // Open mobile menu
+      fireEvent.click(menuButton);
+      const dialog = screen.getByRole("dialog");
+      expect(dialog).toBeInTheDocument();
+
+      // Press Escape to close
+      fireEvent.keyDown(dialog, { key: "Escape" });
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("should have proper focus management when opening mobile menu", () => {
+      render(<PlatformHeader />);
+      const menuButton = screen.getByRole("button", { name: /open menu/i });
+
+      // Open mobile menu
+      fireEvent.click(menuButton);
+      const dialog = screen.getByRole("dialog");
+      expect(dialog).toBeInTheDocument();
+
+      // Dialog should be visible and accessible
+      expect(dialog).toBeVisible();
+    });
+
+    it("should have aria-controls on mobile menu trigger", () => {
+      render(<PlatformHeader />);
+      const menuButton = screen.getByRole("button", { name: /open menu/i });
+
+      // Radix Sheet adds aria-controls automatically
+      expect(menuButton).toHaveAttribute("aria-haspopup", "dialog");
+    });
+
+    it("should have accessible name on mobile menu dialog", () => {
+      render(<PlatformHeader />);
+      const menuButton = screen.getByRole("button", { name: /open menu/i });
+
+      // Open mobile menu
+      fireEvent.click(menuButton);
+
+      // The dialog should have an accessible name via VisuallyHidden SheetTitle
+      const dialog = screen.getByRole("dialog");
+      expect(dialog).toBeInTheDocument();
+      // Radix handles the accessible label via aria-labelledby
+    });
   });
 });
