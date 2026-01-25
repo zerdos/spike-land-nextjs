@@ -12,8 +12,8 @@ export function CTASplitScreen() {
               Start building for free.
             </h2>
             <p className="text-xl text-[var(--landing-muted-fg)] mb-8">
-              Join thousands of developers building the future of the web. No credit card required
-              for hobby projects.
+              Build the future of the web with powerful tools. No credit card required for hobby
+              projects.
             </p>
             <div className="flex gap-4">
               <ThemeButton size="lg">Get Started</ThemeButton>

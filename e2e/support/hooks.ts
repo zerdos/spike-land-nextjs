@@ -40,9 +40,6 @@ BeforeAll(async function() {
         "Use DATABASE_URL_E2E for test databases only.",
     );
   }
-
-  console.log("\n[Database] Test database configured");
-  console.log("[Database] Connection verified for @requires-db scenarios\n");
 });
 
 // Only run generic setup for non-video-wall scenarios
