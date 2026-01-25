@@ -4,20 +4,19 @@ import { ThemeCard } from "../shared/ThemeCard";
 export function TestimonialCards() {
   const testimonials = [
     {
-      quote: "spike.land completely changed how I prototype. It's like having a superpower.",
-      author: "Alex C.",
-      role: "Frontend Engineer",
+      quote: "Rapid prototyping with AI assistance - exactly what modern development needs.",
+      author: "Design Vision",
+      role: "What developers say",
     },
     {
-      quote:
-        "The MCP server integration is seamless. I can use my own agents directly in the flow.",
-      author: "Sarah J.",
-      role: "AI Researcher",
+      quote: "MCP server integration opens up endless possibilities for custom AI workflows.",
+      author: "Technical Goal",
+      role: "What we're building",
     },
     {
-      quote: "Finally, a way to do vibe coding that actually feels professional and robust.",
-      author: "Mike T.",
-      role: "Product Designer",
+      quote: "Professional vibe coding that balances creativity with robust architecture.",
+      author: "Our Mission",
+      role: "What we believe",
     },
   ];
 
@@ -25,7 +24,7 @@ export function TestimonialCards() {
     <SectionWrapper className="bg-[var(--landing-secondary)]/20">
       <div className="text-center mb-16">
         <h2 className="text-3xl md:text-5xl font-[var(--landing-heading-weight)] mb-4">
-          Trusted by developers
+          What we're building
         </h2>
       </div>
 

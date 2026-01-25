@@ -1,20 +1,66 @@
 "use client";
 
 import { UserAvatar } from "@/components/auth/user-avatar";
-import { PixelLogo, SpikeLandLogo } from "@/components/brand";
+import { SpikeLandLogo } from "@/components/brand";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Link } from "@/components/ui/link";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { Coins, LayoutGrid, LogOut, Menu, Settings, User } from "lucide-react";
+import {
+  BarChart3,
+  Brain,
+  Calendar,
+  ChevronDown,
+  Coins,
+  LayoutGrid,
+  LogOut,
+  Menu,
+  Rocket,
+  Settings,
+  SplitSquareVertical,
+  User,
+} from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
+// Feature dropdown items for the Features menu
+const featureItems = [
+  {
+    href: "/features/ab-testing",
+    label: "A/B Testing",
+    description: "Optimize content with data",
+    icon: SplitSquareVertical,
+  },
+  {
+    href: "/features/calendar",
+    label: "AI Calendar",
+    description: "Smart scheduling & automation",
+    icon: Calendar,
+  },
+  {
+    href: "/features/brand-brain",
+    label: "Brand Brain",
+    description: "Your AI brand guardian",
+    icon: Brain,
+  },
+  {
+    href: "/features/analytics",
+    label: "Analytics",
+    description: "Deep performance insights",
+    icon: BarChart3,
+  },
+];
+
+// Main navigation links
 const navLinks = [
-  { href: "/pixel", label: "Pixel", isPixel: true },
-  { href: "/blog/pixel-launch-announcement", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
 ];
 
@@ -39,18 +85,57 @@ export function PlatformHeader() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-6">
+            {/* Orbit - Primary CTA */}
+            <Button asChild variant="default" size="sm" className="font-semibold">
+              <Link href="/orbit" className="flex items-center gap-1.5">
+                <Rocket className="h-4 w-4" />
+                Orbit
+              </Link>
+            </Button>
+
+            {/* Features Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                Features
+                <ChevronDown className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-64">
+                {featureItems.map((item) => (
+                  <DropdownMenuItem key={item.href} asChild>
+                    <Link href={item.href} className="flex items-start gap-3 py-2">
+                      <item.icon className="h-5 w-5 mt-0.5 text-primary" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">{item.label}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {item.description}
+                        </span>
+                      </div>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Standard nav links */}
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                {"isPixel" in link && link.isPixel
-                  ? <PixelLogo size="sm" variant="horizontal" />
-                  : link.label}
+                {link.label}
               </Link>
             ))}
+
+            {/* My Apps - De-emphasized */}
+            <Link
+              href="/my-apps"
+              className="text-sm font-medium text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+            >
+              My Apps
+            </Link>
+
             {!isAuthenticated && (
               <Link
                 href="/auth/signin"
@@ -60,8 +145,8 @@ export function PlatformHeader() {
               </Link>
             )}
             {isAuthenticated ? <UserAvatar /> : (
-              <Button asChild>
-                <Link href="/pixel">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/auth/signin">
                   Get Started
                 </Link>
               </Button>
@@ -87,23 +172,74 @@ export function PlatformHeader() {
                   <div className="flex justify-center w-full pt-2 pb-6">
                     <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20" />
                   </div>
-                  <nav className="flex flex-col gap-6 px-4 pb-8">
+                  <nav className="flex flex-col gap-4 px-4 pb-8">
+                    {/* Orbit - Primary CTA */}
+                    <Button
+                      asChild
+                      variant="default"
+                      className="w-full font-semibold h-12"
+                    >
+                      <Link
+                        href="/orbit"
+                        className="flex items-center justify-center gap-2"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Rocket className="h-5 w-5" />
+                        Orbit - AI Marketing Team
+                      </Link>
+                    </Button>
+
+                    {/* Features Section */}
+                    <div className="space-y-2">
+                      <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                        Features
+                      </span>
+                      {featureItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className="flex items-center gap-3 py-2 text-foreground hover:text-primary transition-colors"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <item.icon className="h-5 w-5 text-primary" />
+                          <div className="flex flex-col">
+                            <span className="font-medium">{item.label}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {item.description}
+                            </span>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+
+                    <Separator />
+
+                    {/* Standard nav links */}
                     {navLinks.map((link) => (
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary flex items-center"
+                        className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary flex items-center py-2"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        {"isPixel" in link && link.isPixel
-                          ? <PixelLogo size="sm" variant="horizontal" />
-                          : link.label}
+                        {link.label}
                       </Link>
                     ))}
+
+                    {/* My Apps - De-emphasized */}
+                    <Link
+                      href="/my-apps"
+                      className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <LayoutGrid className="h-5 w-5" />
+                      <span>My Apps</span>
+                    </Link>
+
                     {!isAuthenticated && (
                       <Link
                         href="/auth/signin"
-                        className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary"
+                        className="text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         Sign In
@@ -139,36 +275,13 @@ export function PlatformHeader() {
                           </div>
 
                           <Link
-                            href="/apps/pixel"
+                            href="/tokens"
                             className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
                             onClick={() =>
                               setMobileMenuOpen(false)}
                           >
-                            <PixelLogo
-                              size="sm"
-                              variant="icon"
-                              showText={false}
-                              className="mr-3 h-5 w-5"
-                            />
-                            <span>Pixel - AI Photo Enhance</span>
-                          </Link>
-
-                          <Link
-                            href="/tokens"
-                            className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
                             <Coins className="mr-3 h-5 w-5" />
                             <span>Token Management</span>
-                          </Link>
-
-                          <Link
-                            href="/my-apps"
-                            className="flex items-center text-lg font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:text-primary py-2"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            <LayoutGrid className="mr-3 h-5 w-5" />
-                            <span>My Apps</span>
                           </Link>
 
                           <Link
@@ -199,9 +312,9 @@ export function PlatformHeader() {
                         </div>
                       )
                       : (
-                        <Button asChild className="mt-4">
+                        <Button asChild variant="outline" className="mt-4">
                           <Link
-                            href="/pixel"
+                            href="/auth/signin"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Get Started

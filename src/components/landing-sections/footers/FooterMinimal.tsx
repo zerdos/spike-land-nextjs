@@ -47,10 +47,18 @@ export function FooterMinimal() {
             <ul className="space-y-2 text-[var(--landing-muted-fg)]">
               <li>
                 <Link
-                  href="/pixel"
+                  href="/orbit"
                   className="hover:text-[var(--landing-primary)]"
                 >
-                  Pixel
+                  Orbit
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/features"
+                  className="hover:text-[var(--landing-primary)]"
+                >
+                  Features
                 </Link>
               </li>
               <li>
@@ -63,18 +71,10 @@ export function FooterMinimal() {
               </li>
               <li>
                 <Link
-                  href="/blog"
+                  href="/my-apps"
                   className="hover:text-[var(--landing-primary)]"
                 >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/social"
-                  className="hover:text-[var(--landing-primary)]"
-                >
-                  Social
+                  My Apps
                 </Link>
               </li>
             </ul>
