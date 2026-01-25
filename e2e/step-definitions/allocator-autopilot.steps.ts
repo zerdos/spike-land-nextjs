@@ -319,7 +319,7 @@ Given(
   },
 );
 
-Given("I am logged in as {string}", async function(this: CustomWorld, _email: string) {
+Given("I am logged in with email {string}", async function(this: CustomWorld, _email: string) {
   // Usually handled by global setup or bypass in E2E
   // We can rely on existing auth bypass or implement mock
 });

@@ -48,7 +48,7 @@ export class CustomWorld extends World {
   /**
    * Get extra HTTP headers for E2E test authentication bypass
    */
-  protected getExtraHTTPHeaders(): Record<string, string> | undefined {
+  public getExtraHTTPHeaders(): Record<string, string> | undefined {
     const extraHTTPHeaders: Record<string, string> = {};
 
     // Add E2E bypass header if secret is configured
