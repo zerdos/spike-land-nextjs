@@ -103,14 +103,38 @@ When(
   "I call the Allocator recommendations API for workspace {string}",
   async function(this: CustomWorld, workspaceSlug: string) {
     const baseUrl = this.baseUrl || "http://localhost:3000";
-    const response = await this.page.request.get(
-      `${baseUrl}/api/orbit/${workspaceSlug}/allocator`,
-    );
-    this.apiResponse = response;
-    try {
-      this.apiResponseBody = await response.json();
-    } catch {
-      this.apiResponseBody = {};
+
+    // When testing unauthenticated requests, we need to bypass the E2E auth header
+    // that is normally set in the page context
+    if (this.isAuthenticated === false) {
+      // Use fetch directly without the E2E bypass header
+      const fetchResponse = await fetch(
+        `${baseUrl}/api/orbit/${workspaceSlug}/allocator`,
+      );
+      // Create a mock response object that mimics Playwright's APIResponse
+      this.apiResponse = {
+        status: () => fetchResponse.status,
+        statusText: () => fetchResponse.statusText,
+        ok: () => fetchResponse.ok,
+        headers: () => Object.fromEntries(fetchResponse.headers.entries()),
+        json: async () => fetchResponse.json(),
+        text: async () => fetchResponse.text(),
+      } as unknown as import("@playwright/test").APIResponse;
+      try {
+        this.apiResponseBody = await fetchResponse.json();
+      } catch {
+        this.apiResponseBody = {};
+      }
+    } else {
+      const response = await this.page.request.get(
+        `${baseUrl}/api/orbit/${workspaceSlug}/allocator`,
+      );
+      this.apiResponse = response;
+      try {
+        this.apiResponseBody = await response.json();
+      } catch {
+        this.apiResponseBody = {};
+      }
     }
   },
 );

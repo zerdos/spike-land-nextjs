@@ -186,15 +186,5 @@ Then(
   },
 );
 
-Then("I should see the login options", async function(this: CustomWorld) {
-  // Look for sign-in link or buttons
-  const signInLink = this.page.getByRole("link", { name: /sign in/i });
-  const signInButton = this.page.getByRole("button", { name: /sign in|log in/i });
-  const authButtons = signInLink.or(signInButton);
-  await expect(authButtons.first()).toBeVisible({ timeout: 10000 });
-});
-
-When("I reload the page", async function(this: CustomWorld) {
-  await this.page.reload();
-  await this.page.waitForLoadState("networkidle");
-});
+// NOTE: "I should see the login options" step is defined in my-apps.steps.ts
+// NOTE: "I reload the page" step is defined in app-creation.steps.ts
