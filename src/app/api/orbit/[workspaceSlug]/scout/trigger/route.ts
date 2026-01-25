@@ -3,14 +3,13 @@ import prisma from "@/lib/prisma";
 import { runTopicMonitoring } from "@/lib/scout/topic-monitor";
 import { type NextRequest, NextResponse } from "next/server";
 
-interface RouteContext {
-  params: {
-    workspaceSlug: string;
-  };
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; }>;
 }
 
 // Trigger the topic monitoring process for a workspace
-export async function POST(_req: NextRequest, { params }: RouteContext) {
+export async function POST(_req: NextRequest, { params }: RouteParams) {
+  const { workspaceSlug } = await params;
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -19,7 +18,7 @@ export async function POST(_req: NextRequest, { params }: RouteContext) {
 
     const workspace = await prisma.workspace.findFirst({
       where: {
-        slug: params.workspaceSlug,
+        slug: workspaceSlug,
         members: { some: { userId: session.user.id } },
       },
       select: { id: true },

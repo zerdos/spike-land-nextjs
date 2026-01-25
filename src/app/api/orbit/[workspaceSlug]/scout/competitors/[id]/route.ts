@@ -2,11 +2,16 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; id: string; }>;
+}
+
 // DELETE - Removes a competitor from a workspace
 export async function DELETE(
   _request: Request,
-  { params }: { params: { workspaceSlug: string; id: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug, id } = await params;
   try {
     // Verify authentication
     const session = await auth();
@@ -17,7 +22,7 @@ export async function DELETE(
     // Find workspace by slug and verify user is a member
     const workspace = await prisma.workspace.findFirst({
       where: {
-        slug: params.workspaceSlug,
+        slug: workspaceSlug,
         members: {
           some: {
             userId: session.user.id,
@@ -35,7 +40,7 @@ export async function DELETE(
     // Verify competitor belongs to the workspace before deleting
     const competitor = await prisma.scoutCompetitor.findFirst({
       where: {
-        id: params.id,
+        id,
         workspaceId: workspace.id,
       },
     });
@@ -48,7 +53,7 @@ export async function DELETE(
 
     // Delete competitor (posts will be cascade deleted by Prisma schema)
     await prisma.scoutCompetitor.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true }, { status: 200 });

@@ -6,11 +6,16 @@ import {
 } from "@/lib/scout/competitor-analyzer";
 import { NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; id: string; }>;
+}
+
 // GET - Fetches engagement metrics for a single competitor
 export async function GET(
   request: Request,
-  { params }: { params: { workspaceSlug: string; id: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug, id } = await params;
   try {
     // Verify authentication
     const session = await auth();
@@ -21,7 +26,7 @@ export async function GET(
     // Find workspace by slug and verify user is a member
     const workspace = await prisma.workspace.findFirst({
       where: {
-        slug: params.workspaceSlug,
+        slug: workspaceSlug,
         members: {
           some: {
             userId: session.user.id,
@@ -69,7 +74,7 @@ export async function GET(
     // Verify competitor belongs to the workspace
     const competitor = await prisma.scoutCompetitor.findFirst({
       where: {
-        id: params.id,
+        id,
         workspaceId: workspace.id,
       },
     });
@@ -81,11 +86,11 @@ export async function GET(
     }
 
     const engagementMetrics = await analyzeCompetitorEngagement(
-      params.id,
+      id,
       startDate,
       endDate,
     );
-    const topPosts = await getTopCompetitorPosts(params.id);
+    const topPosts = await getTopCompetitorPosts(id);
 
     return NextResponse.json({
       engagementMetrics,

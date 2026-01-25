@@ -2,16 +2,21 @@ import prisma from "@/lib/prisma";
 import type { MeetupPipelineStatus } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; connectionId: string; }>;
+}
+
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { workspaceSlug: string; connectionId: string; }; },
+  { params }: RouteParams,
 ) {
+  const { connectionId } = await params;
   try {
     const body = await request.json();
     const { status, notes } = body;
 
     const connection = await prisma.connection.findUnique({
-      where: { id: params.connectionId },
+      where: { id: connectionId },
     });
 
     if (!connection) {
@@ -20,7 +25,7 @@ export async function PATCH(
 
     // Update connection status
     const updatedConnection = await prisma.connection.update({
-      where: { id: params.connectionId },
+      where: { id: connectionId },
       data: {
         meetupStatus: status as MeetupPipelineStatus,
         meetupStatusUpdatedAt: new Date(),
@@ -30,7 +35,7 @@ export async function PATCH(
     // Create history record
     await prisma.meetupStatusHistory.create({
       data: {
-        connectionId: params.connectionId,
+        connectionId,
         fromStatus: connection.meetupStatus,
         toStatus: status as MeetupPipelineStatus,
         notes,
