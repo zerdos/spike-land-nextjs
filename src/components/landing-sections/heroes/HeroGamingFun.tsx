@@ -17,8 +17,8 @@ export function HeroGamingFun() {
         </h1>
 
         <p className="text-xl md:text-2xl text-[var(--landing-foreground)] max-w-3xl mx-auto mb-10 leading-relaxed font-light">
-          ...where you can vibe code with your friends, build amazing communities, and deploy
-          without leaving your chat window.
+          ...where AI agents manage your social media, create content on autopilot, and grow your
+          audience while you focus on what matters.
         </p>
 
         <div className="flex flex-col md:flex-row justify-center gap-6 mb-20">
