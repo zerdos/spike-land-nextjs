@@ -99,7 +99,9 @@ describe("BrandBrainDemo", () => {
 
   it("should have Train on Content button", () => {
     render(<BrandBrainDemo />);
-    expect(screen.getByRole("button", { name: /train on content/i })).toBeInTheDocument();
+    // Button has aria-label "Train AI on your brand content" for accessibility
+    expect(screen.getByRole("button", { name: /train ai on your brand content/i }))
+      .toBeInTheDocument();
   });
 
   it("should show branded result after transformation", async () => {
