@@ -402,18 +402,22 @@ export class YouTubeClient implements ISocialClient {
   /**
    * Get the authenticated user's YouTube channel information
    *
+   * First tries mine=true for directly owned channels, then falls back to
+   * managedByMe=true for Brand Account channels the user can manage.
+   *
    * @returns Channel info normalized to SocialAccountInfo
    */
   async getAccountInfo(): Promise<SocialAccountInfo> {
     const token = this.getAccessTokenOrThrow();
 
-    const params = new URLSearchParams({
+    // First try: Get channel owned by the authenticated account
+    const mineParams = new URLSearchParams({
       part: "snippet,statistics",
       mine: "true",
     });
 
-    const response = await fetch(
-      `${YOUTUBE_API_BASE}/channels?${params.toString()}`,
+    const mineResponse = await fetch(
+      `${YOUTUBE_API_BASE}/channels?${mineParams.toString()}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -421,24 +425,55 @@ export class YouTubeClient implements ISocialClient {
       },
     );
 
-    if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as YouTubeApiError;
+    if (mineResponse.ok) {
+      const mineData = (await mineResponse.json()) as YouTubeChannelResponse;
+      if (mineData.items && mineData.items.length > 0) {
+        return this.channelToAccountInfo(mineData.items[0]!);
+      }
+    }
+
+    // Second try: Get channels the user can manage (Brand Accounts)
+    const managedParams = new URLSearchParams({
+      part: "snippet,statistics",
+      managedByMe: "true",
+    });
+
+    const managedResponse = await fetch(
+      `${YOUTUBE_API_BASE}/channels?${managedParams.toString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!managedResponse.ok) {
+      const errorData = (await managedResponse.json().catch(() => ({}))) as YouTubeApiError;
       throw new Error(
-        `Failed to get YouTube channel info: ${errorData.error?.message || response.statusText}`,
+        `Failed to get YouTube channel info: ${
+          errorData.error?.message || managedResponse.statusText
+        }`,
       );
     }
 
-    const data = (await response.json()) as YouTubeChannelResponse;
+    const managedData = (await managedResponse.json()) as YouTubeChannelResponse;
 
-    if (!data.items || data.items.length === 0) {
+    if (!managedData.items || managedData.items.length === 0) {
       throw new Error(
-        "No YouTube channel found for this account. If you selected a Google Brand Account, " +
-          "please ensure that account has a YouTube channel created. You can create one at " +
+        "No YouTube channel found for this account. Please ensure you have a YouTube channel " +
+          "associated with the Google account you selected. You can create one at " +
           "https://www.youtube.com/channel_switcher then click 'Create a channel'.",
       );
     }
 
-    const channel = data.items[0]!;
+    // Return the first managed channel (user can manage multiple)
+    return this.channelToAccountInfo(managedData.items[0]!);
+  }
+
+  /**
+   * Convert a YouTube channel response to SocialAccountInfo
+   */
+  private channelToAccountInfo(channel: YouTubeChannel): SocialAccountInfo {
     this.channelId = channel.id;
 
     const snippet = channel.snippet;
