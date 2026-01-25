@@ -1045,3 +1045,144 @@ Then(
     await expect(link.first()).toBeVisible({ timeout: 10000 });
   },
 );
+
+// ======= A/B TESTING & FORM STEPS =======
+
+// "I should see {string} dialog" - Generic dialog visibility check
+Then(
+  "I should see {string} dialog",
+  async function(this: CustomWorld, dialogTitle: string) {
+    const dialog = this.page.locator('[role="dialog"], [role="alertdialog"]');
+    await expect(dialog).toBeVisible({ timeout: 10000 });
+    // Check if dialog contains the expected title
+    const titleElement = dialog.getByText(new RegExp(dialogTitle, "i"));
+    await expect(titleElement.first()).toBeVisible({ timeout: 5000 });
+  },
+);
+
+// "I fill in {string} with {string}" - Generic form field fill
+When(
+  "I fill in {string} with {string}",
+  async function(this: CustomWorld, fieldLabel: string, value: string) {
+    // Try multiple strategies to find the field
+    // 1. By label text
+    const byLabel = this.page.getByLabel(new RegExp(fieldLabel, "i"));
+    // 2. By placeholder
+    const byPlaceholder = this.page.locator(
+      `input[placeholder*="${fieldLabel}" i], textarea[placeholder*="${fieldLabel}" i]`,
+    );
+    // 3. By name attribute
+    const byName = this.page.locator(
+      `input[name*="${fieldLabel.toLowerCase().replace(/\s+/g, "")}" i], textarea[name*="${
+        fieldLabel.toLowerCase().replace(/\s+/g, "")
+      }" i]`,
+    );
+    // 4. By data-testid
+    const testId = fieldLabel.toLowerCase().replace(/\s+/g, "-");
+    const byTestId = this.page.locator(
+      `[data-testid="${testId}"], [data-testid="${testId}-input"]`,
+    );
+
+    // Try each strategy
+    for (const locator of [byLabel, byPlaceholder, byName, byTestId]) {
+      const isVisible = await locator.first().isVisible().catch(() => false);
+      if (isVisible) {
+        await locator.first().fill(value);
+        return;
+      }
+    }
+
+    // Fallback: look for any input near label text
+    const labelElement = this.page.getByText(new RegExp(`^${fieldLabel}$`, "i"));
+    const nearbyInput = labelElement.locator("xpath=following::input[1] | following::textarea[1]");
+    await expect(nearbyInput.first()).toBeVisible({ timeout: 10000 });
+    await nearbyInput.first().fill(value);
+  },
+);
+
+// "I fill in the first {string} with {string}" - First instance of a field
+When(
+  "I fill in the first {string} with {string}",
+  async function(this: CustomWorld, fieldLabel: string, value: string) {
+    const byLabel = this.page.getByLabel(new RegExp(fieldLabel, "i")).first();
+    const byPlaceholder = this.page.locator(
+      `input[placeholder*="${fieldLabel}" i], textarea[placeholder*="${fieldLabel}" i]`,
+    ).first();
+
+    // Try label first
+    if (await byLabel.isVisible().catch(() => false)) {
+      await byLabel.fill(value);
+      return;
+    }
+
+    // Try placeholder
+    if (await byPlaceholder.isVisible().catch(() => false)) {
+      await byPlaceholder.fill(value);
+      return;
+    }
+
+    // Fallback: find all fields with matching label and use first
+    const allFields = this.page.locator(`input, textarea`).filter({
+      has: this.page.locator(
+        `xpath=preceding::label[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '${fieldLabel.toLowerCase()}')]`,
+      ),
+    });
+    await expect(allFields.first()).toBeVisible({ timeout: 10000 });
+    await allFields.first().fill(value);
+  },
+);
+
+// "I fill in the second {string} with {string}" - Second instance of a field
+When(
+  "I fill in the second {string} with {string}",
+  async function(this: CustomWorld, fieldLabel: string, value: string) {
+    const byLabel = this.page.getByLabel(new RegExp(fieldLabel, "i")).nth(1);
+    const byPlaceholder = this.page.locator(
+      `input[placeholder*="${fieldLabel}" i], textarea[placeholder*="${fieldLabel}" i]`,
+    ).nth(1);
+
+    // Try label first
+    if (await byLabel.isVisible().catch(() => false)) {
+      await byLabel.fill(value);
+      return;
+    }
+
+    // Try placeholder
+    if (await byPlaceholder.isVisible().catch(() => false)) {
+      await byPlaceholder.fill(value);
+      return;
+    }
+
+    // Fallback: find all matching fields and use second
+    const allFields = this.page.getByLabel(new RegExp(fieldLabel, "i"));
+    const count = await allFields.count();
+    if (count >= 2) {
+      await allFields.nth(1).fill(value);
+      return;
+    }
+
+    throw new Error(`Could not find second field matching "${fieldLabel}"`);
+  },
+);
+
+// "I should see {string} in the table" - Text in table check
+Then(
+  "I should see {string} in the table",
+  async function(this: CustomWorld, text: string) {
+    const table = this.page.locator("table, [role='table'], [role='grid']");
+    await expect(table.first()).toBeVisible({ timeout: 10000 });
+    await expect(table.first()).toContainText(text, { timeout: 10000 });
+  },
+);
+
+// "I click on the {string} row" - Click on a table row
+When(
+  "I click on the {string} row",
+  async function(this: CustomWorld, rowText: string) {
+    const row = this.page.locator("tr, [role='row']").filter({ hasText: rowText });
+    await expect(row.first()).toBeVisible({ timeout: 10000 });
+    await row.first().click();
+    // Wait for navigation or action to complete
+    await waitForPageReady(this.page, { strategy: "domcontentloaded" });
+  },
+);
