@@ -1869,13 +1869,8 @@ Then(
   },
 );
 
-Then(
-  "I should see {string}",
-  async function(this: CustomWorld, text: string) {
-    const element = this.page.locator(`text="${text}"`);
-    await expect(element.first()).toBeVisible({ timeout: 10000 });
-  },
-);
+// Note: "I should see {string}" step is defined in common.steps.ts (canonical location)
+// Do not add a duplicate definition here
 
 Then(
   "I should see a message that campaigns are performing well",

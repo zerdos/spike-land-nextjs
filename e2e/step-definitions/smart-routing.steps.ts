@@ -87,9 +87,13 @@ Given("I have an inbox item with:", async function(this: CustomWorld, dataTable:
       escalationStatus: content.includes("terrible") ? "ESCALATED" : "NONE",
     };
 
-    // Add to top
-    json.items = [fakeItem, ...json.items];
-    await route.fulfill({ json });
+    // Add to top - handle various API response formats
+    // API may return { items: [...] }, [...] directly, or empty object
+    const existingItems = Array.isArray(json) ? json : (json.items || []);
+    const updatedResponse = Array.isArray(json)
+      ? [fakeItem, ...existingItems]
+      : { ...json, items: [fakeItem, ...existingItems] };
+    await route.fulfill({ json: updatedResponse });
   });
 });
 

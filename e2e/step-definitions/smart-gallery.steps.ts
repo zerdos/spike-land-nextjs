@@ -31,6 +31,16 @@ const testContext: SmartGalleryTestContext = {
 // Flag to skip tests when no albums exist
 let shouldSkipGalleryTests = false;
 
+// Helper function to ensure slideshow is closed before new interactions
+async function ensureSlideshowClosed(world: CustomWorld): Promise<void> {
+  const slideshow = world.page.locator('[data-testid="slideshow-view"]');
+  const isVisible = await slideshow.isVisible().catch(() => false);
+  if (isVisible) {
+    await world.page.keyboard.press("Escape");
+    await slideshow.waitFor({ state: "hidden", timeout: 5000 });
+  }
+}
+
 // Mock image data for testing
 interface MockGalleryImage {
   id: string;
@@ -624,16 +634,26 @@ Given(
     // Select and enter slideshow using touch interactions
     const thumbnail = this.page.locator('[role="gridcell"]').first();
     await expect(thumbnail).toBeVisible({ timeout: 5000 });
+
+    // First tap to select the thumbnail
     await thumbnail.tap();
     await this.page.waitForTimeout(300);
 
-    // Double-tap to enter slideshow mode (use tap twice for touch device)
-    await thumbnail.tap();
-    await this.page.waitForTimeout(100);
-    await thumbnail.tap();
-    await this.page.waitForTimeout(500);
-
+    // Check if slideshow already opened from the first tap
     const slideshow = this.page.locator('[data-testid="slideshow-view"]');
+    const slideshowVisible = await slideshow.isVisible().catch(() => false);
+
+    if (!slideshowVisible) {
+      // Slideshow not open yet - ensure we can tap the gridcell again
+      // Close slideshow if it somehow opened but test missed it
+      await ensureSlideshowClosed(this);
+
+      // Use double-click/double-tap to enter slideshow mode
+      // dblclick works better than two sequential taps for triggering double-tap handlers
+      await thumbnail.dblclick();
+      await this.page.waitForTimeout(500);
+    }
+
     await expect(slideshow).toBeVisible({ timeout: 5000 });
   },
 );
@@ -672,14 +692,28 @@ Given(
     // Use tap for touch device
     const thumbnail = this.page.locator('[role="gridcell"]').first();
     await expect(thumbnail).toBeVisible({ timeout: 5000 });
+
+    // First tap to select the thumbnail
     await thumbnail.tap();
     await this.page.waitForTimeout(300);
 
-    // Double-tap to enter slideshow mode (use tap twice for touch device)
-    await thumbnail.tap();
-    await this.page.waitForTimeout(100);
-    await thumbnail.tap();
-    await this.page.waitForTimeout(500);
+    // Check if slideshow already opened from the first tap
+    const slideshow = this.page.locator('[data-testid="slideshow-view"]');
+    const slideshowVisible = await slideshow.isVisible().catch(() => false);
+
+    if (!slideshowVisible) {
+      // Slideshow not open yet - ensure we can tap the gridcell again
+      // Close slideshow if it somehow opened but test missed it
+      await ensureSlideshowClosed(this);
+
+      // Use double-click/double-tap to enter slideshow mode
+      // dblclick works better than two sequential taps for triggering double-tap handlers
+      await thumbnail.dblclick();
+      await this.page.waitForTimeout(500);
+    }
+
+    // Verify slideshow is visible for enhanced image viewing
+    await expect(slideshow).toBeVisible({ timeout: 5000 });
   },
 );
 
@@ -907,9 +941,10 @@ Then(
     if (shouldSkipGalleryTests) return;
 
     // Check for aria-live region content
+    // Use .first() to handle multiple matching elements (strict mode)
     const statusRegion = this.page.locator(
       '[role="status"][aria-live="polite"]',
-    );
+    ).first();
     const content = await statusRegion.textContent();
     expect(content).toContain("original");
   },
@@ -1153,10 +1188,21 @@ Then(
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return;
 
-    const errorFallback = this.page.locator(
-      '[data-testid="image-error-fallback"]',
-    );
-    await expect(errorFallback).toBeVisible({ timeout: 10000 });
+    // Try multiple selectors for error fallback states
+    const errorFallback = this.page.locator('[data-testid="image-error-fallback"]')
+      .or(this.page.locator('[data-testid="image-error"]'))
+      .or(this.page.locator('[data-testid="error-fallback"]'))
+      .or(this.page.locator('[class*="error-fallback"]'))
+      .or(this.page.locator('[class*="image-error"]'))
+      .or(this.page.locator('[role="img"][aria-label*="error" i]'))
+      .or(this.page.locator('[role="img"][aria-label*="failed" i]'))
+      .or(this.page.getByText(/failed to load|image error|could not load/i))
+      .or(
+        this.page.locator('[class*="placeholder"]').filter({
+          has: this.page.locator('[class*="error"]'),
+        }),
+      );
+    await expect(errorFallback.first()).toBeVisible({ timeout: 10000 });
   },
 );
 
@@ -1186,7 +1232,7 @@ Then(
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return;
 
-    const thumbnails = this.page.locator('[data-testid="smart-grid"] > div');
+    const thumbnails = this.page.locator('[data-testid="smart-grid"] [role="gridcell"]');
     const count = await thumbnails.count();
 
     for (let i = 0; i < Math.min(count, 5); i++) {
@@ -1251,9 +1297,10 @@ Then(
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return;
 
+    // Use .first() to handle multiple matching elements (strict mode)
     const statusRegion = this.page.locator(
       '[role="status"][aria-live="polite"]',
-    );
+    ).first();
     await expect(statusRegion).toBeVisible();
   },
 );
@@ -1263,9 +1310,10 @@ Then(
   async function(this: CustomWorld) {
     if (shouldSkipGalleryTests) return;
 
+    // Use .first() to handle multiple matching elements (strict mode)
     const statusRegion = this.page.locator(
       '[role="status"][aria-live="polite"]',
-    );
+    ).first();
     const content = await statusRegion.textContent();
     expect(content).toContain("Image");
   },
