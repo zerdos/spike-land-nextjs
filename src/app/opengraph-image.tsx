@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Spike Land - Vibe Coded Apps with Claude Code";
+export const alt = "Spike Land - AI-Powered Social Media Command Center";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -74,7 +74,7 @@ export default async function Image() {
             lineHeight: "1.4",
           }}
         >
-          Vibe Coded Apps with Claude Code
+          AI-Powered Social Media Command Center
         </div>
       </div>
     ),

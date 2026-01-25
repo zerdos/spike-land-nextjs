@@ -20,8 +20,8 @@ export function HeroColorfulPlayful() {
         </h1>
 
         <p className="text-xl text-[var(--landing-foreground)] max-w-2xl mx-auto mb-10">
-          The first vibe coding platform built for teams. Brainstorm, code, and deploy in one shared
-          space.
+          The first social media command center built for teams. Plan, create, and publish in one
+          shared space.
         </p>
 
         <div className="flex justify-center gap-4">

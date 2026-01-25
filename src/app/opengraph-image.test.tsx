@@ -15,7 +15,7 @@ vi.mock("next/og", () => ({
 describe("Root OpenGraph Image", () => {
   it("should export correct metadata", () => {
     expect(runtime).toBe("edge");
-    expect(alt).toBe("Spike Land - Vibe Coded Apps with Claude Code");
+    expect(alt).toBe("Spike Land - AI-Powered Social Media Command Center");
     expect(size).toEqual({ width: 1200, height: 630 });
     expect(contentType).toBe("image/png");
   });
