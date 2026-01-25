@@ -177,10 +177,12 @@ export function SocialAccountsClient({
         return; // Platform not implemented
       }
 
-      // Redirect to OAuth flow
-      window.location.href = `${config.connectPath}?workspaceId=${workspaceId}`;
+      // Redirect to OAuth flow with both workspaceId and workspaceSlug
+      window.location.href = `${config.connectPath}?workspaceId=${workspaceId}&workspaceSlug=${
+        encodeURIComponent(workspaceSlug)
+      }`;
     },
-    [workspaceId],
+    [workspaceId, workspaceSlug],
   );
 
   const handleDisconnect = useCallback(async () => {

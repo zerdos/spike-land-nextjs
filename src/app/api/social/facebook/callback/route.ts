@@ -15,6 +15,21 @@ import prisma from "@/lib/prisma";
 import { FacebookClient } from "@/lib/social/clients/facebook";
 import { tryCatch } from "@/lib/try-catch";
 
+/**
+ * Helper to build redirect URL - uses orbit settings if workspaceSlug is available
+ */
+function buildRedirectUrl(
+  baseUrl: string,
+  workspaceSlug: string | undefined,
+  queryParams: Record<string, string>,
+): URL {
+  const params = new URLSearchParams(queryParams);
+  const path = workspaceSlug
+    ? `/orbit/${workspaceSlug}/settings/accounts`
+    : "/admin/social-media/accounts";
+  return new URL(`${path}?${params.toString()}`, baseUrl);
+}
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { data: session, error: authError } = await tryCatch(auth());
 
@@ -30,7 +45,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
 
-  // Handle OAuth errors
+  // Handle OAuth errors (before we have state data)
   if (error) {
     console.error("Facebook OAuth error:", error, errorDescription);
     return NextResponse.redirect(
@@ -54,6 +69,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   let stateData: {
     userId: string;
     workspaceId: string;
+    workspaceSlug?: string;
     timestamp: number;
     nonce?: string;
   };
@@ -68,42 +84,29 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // Helper for redirects now that we have workspaceSlug
+  const redirect = (queryParams: Record<string, string>) =>
+    buildRedirectUrl(request.url, stateData.workspaceSlug, queryParams);
+
   // Verify user ID matches
   if (stateData.userId !== session.user.id) {
-    return NextResponse.redirect(
-      new URL("/admin/social-media/accounts?error=User mismatch", request.url),
-    );
+    return NextResponse.redirect(redirect({ error: "User mismatch" }));
   }
 
   // Verify workspaceId is present
   if (!stateData.workspaceId) {
-    return NextResponse.redirect(
-      new URL(
-        "/admin/social-media/accounts?error=Missing workspace context",
-        request.url,
-      ),
-    );
+    return NextResponse.redirect(redirect({ error: "Missing workspace context" }));
   }
 
   // Check timestamp (expire after 10 minutes)
   if (Date.now() - stateData.timestamp > 10 * 60 * 1000) {
-    return NextResponse.redirect(
-      new URL(
-        "/admin/social-media/accounts?error=OAuth session expired",
-        request.url,
-      ),
-    );
+    return NextResponse.redirect(redirect({ error: "OAuth session expired" }));
   }
 
   // Verify nonce from cookie to prevent replay attacks
   const storedNonce = request.cookies.get("facebook_social_oauth_nonce")?.value;
   if (stateData.nonce && stateData.nonce !== storedNonce) {
-    return NextResponse.redirect(
-      new URL(
-        "/admin/social-media/accounts?error=Invalid security token",
-        request.url,
-      ),
-    );
+    return NextResponse.redirect(redirect({ error: "Invalid security token" }));
   }
 
   // Exchange code for tokens
@@ -128,10 +131,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (tokenError || !shortLivedTokens) {
     console.error("Token exchange failed:", tokenError);
     const response = NextResponse.redirect(
-      new URL(
-        "/admin/social-media/accounts?error=Failed to connect Facebook account. Please try again.",
-        request.url,
-      ),
+      redirect({ error: "Failed to connect Facebook account. Please try again." }),
     );
     response.cookies.delete("facebook_social_oauth_nonce");
     return response;
@@ -145,10 +145,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (longLivedError || !longLivedTokens) {
     console.error("Long-lived token exchange failed:", longLivedError);
     const response = NextResponse.redirect(
-      new URL(
-        "/admin/social-media/accounts?error=Failed to get long-lived token. Please try again.",
-        request.url,
-      ),
+      redirect({ error: "Failed to get long-lived token. Please try again." }),
     );
     response.cookies.delete("facebook_social_oauth_nonce");
     return response;
@@ -162,10 +159,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (pagesError || !pages) {
     console.error("Failed to get pages:", pagesError);
     const response = NextResponse.redirect(
-      new URL(
-        "/admin/social-media/accounts?error=Failed to retrieve Facebook Pages.",
-        request.url,
-      ),
+      redirect({ error: "Failed to retrieve Facebook Pages." }),
     );
     response.cookies.delete("facebook_social_oauth_nonce");
     return response;
@@ -179,15 +173,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     const response = NextResponse.redirect(
-      new URL(
-        "/admin/social-media/accounts?error=" + encodeURIComponent(
-          "No Facebook Pages found. Please ensure you: " +
-            "1) Have access to at least one Facebook Page, " +
-            "2) Granted page permissions during login, and " +
-            "3) The page has proper admin access.",
-        ),
-        request.url,
-      ),
+      redirect({
+        error: "No Facebook Pages found. Please ensure you: " +
+          "1) Have access to at least one Facebook Page, " +
+          "2) Granted page permissions during login, and " +
+          "3) The page has proper admin access.",
+      }),
     );
     response.cookies.delete("facebook_social_oauth_nonce");
     return response;
@@ -294,10 +285,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (dbError) {
     console.error("Database save failed:", dbError);
     const response = NextResponse.redirect(
-      new URL(
-        "/admin/social-media/accounts?error=Failed to save account information.",
-        request.url,
-      ),
+      redirect({ error: "Failed to save account information." }),
     );
     response.cookies.delete("facebook_social_oauth_nonce");
     return response;
@@ -316,12 +304,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   // Clear the nonce cookie and redirect with success
   const response = NextResponse.redirect(
-    new URL(
-      `/admin/social-media/accounts?connected=facebook&message=${
-        encodeURIComponent(successMessage)
-      }`,
-      request.url,
-    ),
+    redirect({ connected: "facebook", message: successMessage }),
   );
   response.cookies.delete("facebook_social_oauth_nonce");
   return response;

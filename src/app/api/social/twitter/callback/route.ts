@@ -15,6 +15,21 @@ import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+/**
+ * Helper to build redirect URL - uses orbit settings if workspaceSlug is available
+ */
+function buildRedirectUrl(
+  baseUrl: string,
+  workspaceSlug: string | undefined,
+  queryParams: Record<string, string>,
+): URL {
+  const params = new URLSearchParams(queryParams);
+  const path = workspaceSlug
+    ? `/orbit/${workspaceSlug}/settings/accounts`
+    : "/admin/social-media/accounts";
+  return new URL(`${path}?${params.toString()}`, baseUrl);
+}
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { data: session, error: authError } = await tryCatch(auth());
 
@@ -37,7 +52,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return response;
   };
 
-  // Handle OAuth errors from Twitter
+  // Handle OAuth errors from Twitter (before we have state data)
   if (error) {
     console.error("Twitter OAuth error:", error, errorDescription);
     return clearOAuthCookies(
@@ -65,6 +80,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   let stateData: {
     userId: string;
     workspaceId: string;
+    workspaceSlug?: string;
     timestamp: number;
     nonce?: string;
   };
@@ -83,39 +99,28 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // Helper for redirects now that we have workspaceSlug
+  const redirect = (queryParams: Record<string, string>) =>
+    buildRedirectUrl(request.url, stateData.workspaceSlug, queryParams);
+
   // Verify user ID matches
   if (stateData.userId !== session.user.id) {
     return clearOAuthCookies(
-      NextResponse.redirect(
-        new URL(
-          "/admin/social-media/accounts?error=User mismatch",
-          request.url,
-        ),
-      ),
+      NextResponse.redirect(redirect({ error: "User mismatch" })),
     );
   }
 
   // Verify workspaceId is present
   if (!stateData.workspaceId) {
     return clearOAuthCookies(
-      NextResponse.redirect(
-        new URL(
-          "/admin/social-media/accounts?error=Missing workspace context",
-          request.url,
-        ),
-      ),
+      NextResponse.redirect(redirect({ error: "Missing workspace context" })),
     );
   }
 
   // Check timestamp (expire after 10 minutes)
   if (Date.now() - stateData.timestamp > 10 * 60 * 1000) {
     return clearOAuthCookies(
-      NextResponse.redirect(
-        new URL(
-          "/admin/social-media/accounts?error=OAuth session expired",
-          request.url,
-        ),
-      ),
+      NextResponse.redirect(redirect({ error: "OAuth session expired" })),
     );
   }
 
@@ -123,12 +128,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const storedNonce = request.cookies.get("twitter_oauth_nonce")?.value;
   if (stateData.nonce && stateData.nonce !== storedNonce) {
     return clearOAuthCookies(
-      NextResponse.redirect(
-        new URL(
-          "/admin/social-media/accounts?error=Invalid security token",
-          request.url,
-        ),
-      ),
+      NextResponse.redirect(redirect({ error: "Invalid security token" })),
     );
   }
 
@@ -137,12 +137,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     ?.value;
   if (!codeVerifier) {
     return clearOAuthCookies(
-      NextResponse.redirect(
-        new URL(
-          "/admin/social-media/accounts?error=Missing PKCE code verifier",
-          request.url,
-        ),
-      ),
+      NextResponse.redirect(redirect({ error: "Missing PKCE code verifier" })),
     );
   }
 
@@ -162,10 +157,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.error("Twitter token exchange failed:", tokenError);
     return clearOAuthCookies(
       NextResponse.redirect(
-        new URL(
-          "/admin/social-media/accounts?error=Failed to connect Twitter account. Please try again.",
-          request.url,
-        ),
+        redirect({ error: "Failed to connect Twitter account. Please try again." }),
       ),
     );
   }
@@ -179,10 +171,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.error("Failed to get Twitter user info:", userError);
     return clearOAuthCookies(
       NextResponse.redirect(
-        new URL(
-          "/admin/social-media/accounts?error=Failed to retrieve Twitter account information.",
-          request.url,
-        ),
+        redirect({ error: "Failed to retrieve Twitter account information." }),
       ),
     );
   }
@@ -243,24 +232,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (dbError) {
     console.error("Database save failed:", dbError);
     return clearOAuthCookies(
-      NextResponse.redirect(
-        new URL(
-          "/admin/social-media/accounts?error=Failed to save account information.",
-          request.url,
-        ),
-      ),
+      NextResponse.redirect(redirect({ error: "Failed to save account information." })),
     );
   }
 
   // Clear OAuth cookies and redirect to success page
   return clearOAuthCookies(
     NextResponse.redirect(
-      new URL(
-        `/admin/social-media/accounts?connected=twitter&username=${
-          encodeURIComponent(userInfo.username)
-        }`,
-        request.url,
-      ),
+      redirect({ connected: "twitter", username: userInfo.username }),
     ),
   );
 }

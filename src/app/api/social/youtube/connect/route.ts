@@ -24,13 +24,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Get workspaceId from query params
+  // Get workspaceId and workspaceSlug from query params
   const searchParams = request.nextUrl.searchParams;
   const workspaceId = searchParams.get("workspaceId");
+  const workspaceSlug = searchParams.get("workspaceSlug");
 
   if (!workspaceId) {
     return NextResponse.json(
       { error: "workspaceId query parameter is required" },
+      { status: 400 },
+    );
+  }
+
+  if (!workspaceSlug) {
+    return NextResponse.json(
+      { error: "workspaceSlug query parameter is required" },
       { status: 400 },
     );
   }
@@ -48,11 +56,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // Generate cryptographic nonce for CSRF protection
   const nonce = crypto.randomBytes(16).toString("hex");
 
-  // Generate state with user ID, workspace ID, timestamp, and nonce for CSRF protection
+  // Generate state with user ID, workspace ID/slug, timestamp, and nonce for CSRF protection
   const state = Buffer.from(
     JSON.stringify({
       userId: session.user.id,
       workspaceId,
+      workspaceSlug,
       timestamp: Date.now(),
       nonce,
     }),
