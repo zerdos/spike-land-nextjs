@@ -260,7 +260,8 @@ ENV CI=true \
     NODE_ENV=development \
     BASE_URL=http://localhost:3000 \
     NEXTAUTH_URL=http://localhost:3000 \
-    SKIP_ENV_VALIDATION=true
+    SKIP_ENV_VALIDATION=true \
+    NODE_OPTIONS="--max-old-space-size=2048"
 
 RUN mkdir -p e2e/reports
 
@@ -269,177 +270,106 @@ RUN mkdir -p e2e/reports
 # ============================================================================
 FROM e2e-test-base AS e2e-test-shard
 ARG SHARD_INDEX=1
-ARG SHARD_TOTAL=16
+ARG SHARD_TOTAL=8
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=${SHARD_INDEX} \
     SHARD_TOTAL=${SHARD_TOTAL} \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
+RUN yarn start:server:and:test:pr > /tmp/e2e-${SHARD_INDEX}.log 2>&1 \
+    || (cat /tmp/e2e-${SHARD_INDEX}.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-1
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=1 \
-    SHARD_TOTAL=16 \
+    SHARD_TOTAL=8 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
+RUN yarn start:server:and:test:pr > /tmp/e2e-1.log 2>&1 \
+    || (cat /tmp/e2e-1.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-2
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=2 \
-    SHARD_TOTAL=16 \
+    SHARD_TOTAL=8 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
+RUN yarn start:server:and:test:pr > /tmp/e2e-2.log 2>&1 \
+    || (cat /tmp/e2e-2.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-3
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=3 \
-    SHARD_TOTAL=16 \
+    SHARD_TOTAL=8 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
+RUN yarn start:server:and:test:pr > /tmp/e2e-3.log 2>&1 \
+    || (cat /tmp/e2e-3.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-4
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=4 \
-    SHARD_TOTAL=16 \
+    SHARD_TOTAL=8 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
+RUN yarn start:server:and:test:pr > /tmp/e2e-4.log 2>&1 \
+    || (cat /tmp/e2e-4.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-5
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=5 \
-    SHARD_TOTAL=16 \
+    SHARD_TOTAL=8 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
+RUN yarn start:server:and:test:pr > /tmp/e2e-5.log 2>&1 \
+    || (cat /tmp/e2e-5.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-6
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=6 \
-    SHARD_TOTAL=16 \
+    SHARD_TOTAL=8 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
+RUN yarn start:server:and:test:pr > /tmp/e2e-6.log 2>&1 \
+    || (cat /tmp/e2e-6.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-7
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=7 \
-    SHARD_TOTAL=16 \
+    SHARD_TOTAL=8 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
+RUN yarn start:server:and:test:pr > /tmp/e2e-7.log 2>&1 \
+    || (cat /tmp/e2e-7.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests-8
 ARG TEST_CACHE_NS
 ARG TARGETARCH
 ENV SHARD_INDEX=8 \
-    SHARD_TOTAL=16 \
+    SHARD_TOTAL=8 \
     E2E_CACHE_DIR=/app/.e2e-cache \
     E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
-
-FROM e2e-test-base AS e2e-tests-9
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=9 \
-    SHARD_TOTAL=16 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
-
-FROM e2e-test-base AS e2e-tests-10
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=10 \
-    SHARD_TOTAL=16 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
-
-FROM e2e-test-base AS e2e-tests-11
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=11 \
-    SHARD_TOTAL=16 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
-
-FROM e2e-test-base AS e2e-tests-12
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=12 \
-    SHARD_TOTAL=16 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
-
-FROM e2e-test-base AS e2e-tests-13
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=13 \
-    SHARD_TOTAL=16 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
-
-FROM e2e-test-base AS e2e-tests-14
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=14 \
-    SHARD_TOTAL=16 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
-
-FROM e2e-test-base AS e2e-tests-15
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=15 \
-    SHARD_TOTAL=16 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
-
-FROM e2e-test-base AS e2e-tests-16
-ARG TEST_CACHE_NS
-ARG TARGETARCH
-ENV SHARD_INDEX=16 \
-    SHARD_TOTAL=16 \
-    E2E_CACHE_DIR=/app/.e2e-cache \
-    E2E_COVERAGE=true
-RUN yarn start:server:and:test:pr
+RUN yarn start:server:and:test:pr > /tmp/e2e-8.log 2>&1 \
+    || (cat /tmp/e2e-8.log && exit 1)
 
 FROM e2e-test-base AS e2e-tests
-COPY --link --from=e2e-tests-1 /tmp/. /tmp/
-COPY --link --from=e2e-tests-2 /tmp/. /tmp/
-COPY --link --from=e2e-tests-3 /tmp/. /tmp/
-COPY --link --from=e2e-tests-4 /tmp/. /tmp/
-COPY --link --from=e2e-tests-5 /tmp/. /tmp/
-COPY --link --from=e2e-tests-6 /tmp/. /tmp/
-COPY --link --from=e2e-tests-7 /tmp/. /tmp/
-COPY --link --from=e2e-tests-8 /tmp/. /tmp/
-COPY --link --from=e2e-tests-9 /tmp/. /tmp/
-COPY --link --from=e2e-tests-10 /tmp/. /tmp/
-COPY --link --from=e2e-tests-11 /tmp/. /tmp/
-COPY --link --from=e2e-tests-12 /tmp/. /tmp/
-COPY --link --from=e2e-tests-13 /tmp/. /tmp/
-COPY --link --from=e2e-tests-14 /tmp/. /tmp/
-COPY --link --from=e2e-tests-15 /tmp/. /tmp/
-COPY --link --from=e2e-tests-16 /tmp/. /tmp/
-RUN cat /tmp/e2e-*.log && echo "::notice::✅ All 16 E2E test shards passed"
+COPY --link --from=e2e-tests-1 /tmp/e2e-1.log /tmp/
+COPY --link --from=e2e-tests-2 /tmp/e2e-2.log /tmp/
+COPY --link --from=e2e-tests-3 /tmp/e2e-3.log /tmp/
+COPY --link --from=e2e-tests-4 /tmp/e2e-4.log /tmp/
+COPY --link --from=e2e-tests-5 /tmp/e2e-5.log /tmp/
+COPY --link --from=e2e-tests-6 /tmp/e2e-6.log /tmp/
+COPY --link --from=e2e-tests-7 /tmp/e2e-7.log /tmp/
+COPY --link --from=e2e-tests-8 /tmp/e2e-8.log /tmp/
+RUN cat /tmp/e2e-*.log && echo "::notice::✅ All 8 E2E test shards passed"
 
 # ============================================================================
 # STAGE 12: CI Gateway

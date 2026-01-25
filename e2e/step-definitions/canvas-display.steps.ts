@@ -36,6 +36,21 @@ const E2E_TEST_ALBUMS = {
 // Skip flag for tests when no albums exist in test environment
 let shouldSkipCanvasTests = false;
 
+/**
+ * Extract domain from URL for cookie setting.
+ * Returns the hostname without port for proper cookie domain matching.
+ */
+function extractCookieDomain(baseUrl: string): string {
+  try {
+    const url = new URL(baseUrl);
+    // Return hostname (e.g., "localhost" or "spike-land-nextjs-xxx.vercel.app")
+    return url.hostname;
+  } catch {
+    // Fallback if URL parsing fails
+    return "localhost";
+  }
+}
+
 // Helper function to wait for and get first thumbnail
 async function waitForCanvasThumbnail(page: Page, timeout = TIMEOUTS.DEFAULT) {
   // First wait for at least one thumbnail to exist
@@ -69,11 +84,15 @@ async function mockCanvasSession(world: CustomWorld) {
     });
   });
 
+  // Extract the correct domain from baseUrl for cookie setting
+  // This is critical for CI where tests run against Vercel preview URLs
+  const cookieDomain = extractCookieDomain(world.baseUrl);
+
   // Set mock session cookie for middleware authentication bypass
   await world.page.context().addCookies([{
     name: "authjs.session-token",
     value: "mock-session-token",
-    domain: "localhost",
+    domain: cookieDomain,
     path: "/",
     httpOnly: true,
     sameSite: "Lax",
