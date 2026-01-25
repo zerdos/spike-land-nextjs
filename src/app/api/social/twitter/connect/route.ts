@@ -66,8 +66,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   );
 
   // Create Twitter client and get auth URL
-  const client = new TwitterClient();
-  const authUrl = client.getAuthUrl(redirectUri, state, codeChallenge);
+  let authUrl: string;
+  try {
+    const client = new TwitterClient();
+    authUrl = client.getAuthUrl(redirectUri, state, codeChallenge);
+  } catch (error) {
+    console.error("Twitter OAuth setup failed:", error);
+    return NextResponse.json(
+      {
+        error: error instanceof Error
+          ? error.message
+          : "Failed to initialize Twitter OAuth. Please check server configuration.",
+      },
+      { status: 500 },
+    );
+  }
 
   // Store code_verifier and nonce in secure cookies for verification in callback
   // Cookies expire in 10 minutes (same as state timestamp validation)

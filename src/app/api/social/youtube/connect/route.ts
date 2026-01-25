@@ -71,8 +71,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // Create YouTube client and get auth URL
   // The client will use access_type=offline and prompt=consent
   // to ensure we get a refresh token
-  const client = new YouTubeClient();
-  const authUrl = client.getAuthUrl(redirectUri, state);
+  let authUrl: string;
+  try {
+    const client = new YouTubeClient();
+    authUrl = client.getAuthUrl(redirectUri, state);
+  } catch (error) {
+    console.error("YouTube OAuth setup failed:", error);
+    return NextResponse.json(
+      {
+        error: error instanceof Error
+          ? error.message
+          : "Failed to initialize YouTube OAuth. Please check server configuration.",
+      },
+      { status: 500 },
+    );
+  }
 
   // Store nonce in secure cookie for verification in callback
   // Cookie expires in 10 minutes (same as state timestamp validation)
