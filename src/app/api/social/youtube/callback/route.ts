@@ -172,11 +172,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   if (channelError || !channelInfo) {
     console.error("Failed to get YouTube channel info:", channelError);
+    // Pass through the detailed error message from the client if available
+    const errorMessage = channelError instanceof Error
+      ? channelError.message
+      : "Failed to retrieve YouTube channel information. Make sure you have a YouTube channel.";
     return clearOAuthCookies(
       NextResponse.redirect(
         redirect({
-          error:
-            "Failed to retrieve YouTube channel information. Make sure you have a YouTube channel.",
+          error: errorMessage,
         }),
       ),
     );

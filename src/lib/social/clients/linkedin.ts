@@ -170,7 +170,7 @@ export class LinkedInClient implements ISocialClient {
    * LinkedIn uses standard OAuth 2.0 (no PKCE required)
    */
   getAuthUrl(redirectUri: string, state: string): string {
-    const clientId = process.env.LINKEDIN_CLIENT_ID;
+    const clientId = process.env.LINKEDIN_CLIENT_ID?.trim();
 
     if (!clientId) {
       throw new Error("LINKEDIN_CLIENT_ID environment variable is not set");
@@ -194,8 +194,8 @@ export class LinkedInClient implements ISocialClient {
     code: string,
     redirectUri: string,
   ): Promise<OAuthTokenResponse> {
-    const clientId = process.env.LINKEDIN_CLIENT_ID;
-    const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
+    const clientId = process.env.LINKEDIN_CLIENT_ID?.trim();
+    const clientSecret = process.env.LINKEDIN_CLIENT_SECRET?.trim();
 
     if (!clientId || !clientSecret) {
       throw new Error(
@@ -248,8 +248,8 @@ export class LinkedInClient implements ISocialClient {
    * Refresh an expired access token
    */
   async refreshAccessToken(refreshToken: string): Promise<OAuthTokenResponse> {
-    const clientId = process.env.LINKEDIN_CLIENT_ID;
-    const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
+    const clientId = process.env.LINKEDIN_CLIENT_ID?.trim();
+    const clientSecret = process.env.LINKEDIN_CLIENT_SECRET?.trim();
 
     if (!clientId || !clientSecret) {
       throw new Error(
