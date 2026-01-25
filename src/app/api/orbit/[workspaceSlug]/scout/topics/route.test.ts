@@ -42,7 +42,7 @@ describe("/api/orbit/[workspaceSlug]/scout/topics", () => {
     it("should return 401 if user is not authenticated", async () => {
       vi.mocked(auth).mockResolvedValue(null);
       const req = new NextRequest("http://localhost");
-      const res = await GET(req, { params: { workspaceSlug: "test" } });
+      const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "test" }) });
       expect(res.status).toBe(401);
     });
 
@@ -50,7 +50,7 @@ describe("/api/orbit/[workspaceSlug]/scout/topics", () => {
       vi.mocked(auth).mockResolvedValue({ user: { id: "123" } } as any);
       vi.mocked(prisma.workspace.findFirst).mockResolvedValue(null);
       const req = new NextRequest("http://localhost");
-      const res = await GET(req, { params: { workspaceSlug: "test" } });
+      const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "test" }) });
       expect(res.status).toBe(404);
     });
 
@@ -63,7 +63,7 @@ describe("/api/orbit/[workspaceSlug]/scout/topics", () => {
         [{ id: "topic-1", name: "Test" }] as any,
       );
       const req = new NextRequest("http://localhost");
-      const res = await GET(req, { params: { workspaceSlug: "test" } });
+      const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "test" }) });
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data).toEqual([{ id: "topic-1", name: "Test" }]);
@@ -74,7 +74,7 @@ describe("/api/orbit/[workspaceSlug]/scout/topics", () => {
     it("should return 401 if user is not authenticated", async () => {
       vi.mocked(auth).mockResolvedValue(null);
       const req = new NextRequest("http://localhost", { method: "POST" });
-      const res = await POST(req, { params: { workspaceSlug: "test" } });
+      const res = await POST(req, { params: Promise.resolve({ workspaceSlug: "test" }) });
       expect(res.status).toBe(401);
     });
 
@@ -85,7 +85,7 @@ describe("/api/orbit/[workspaceSlug]/scout/topics", () => {
         method: "POST",
         body: JSON.stringify({ name: "New Topic" }),
       });
-      const res = await POST(req, { params: { workspaceSlug: "test" } });
+      const res = await POST(req, { params: Promise.resolve({ workspaceSlug: "test" }) });
       expect(res.status).toBe(404);
     });
 
@@ -105,7 +105,7 @@ describe("/api/orbit/[workspaceSlug]/scout/topics", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      const res = await POST(req, { params: { workspaceSlug: "test" } });
+      const res = await POST(req, { params: Promise.resolve({ workspaceSlug: "test" }) });
 
       expect(res.status).toBe(201);
       const data = await res.json();

@@ -2,13 +2,18 @@ import { syncInboxConnections } from "@/lib/connections/inbox-sync";
 import prisma from "@/lib/prisma";
 import { type NextRequest, NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; }>;
+}
+
 export async function POST(
   _request: NextRequest,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug } = await params;
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
     });
 
     if (!workspace) {

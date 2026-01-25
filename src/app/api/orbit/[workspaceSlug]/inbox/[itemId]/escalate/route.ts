@@ -6,15 +6,20 @@ import { EscalationRequestSchema } from "@/lib/validations/smart-routing";
 import { EscalationTrigger } from "@prisma/client";
 import { NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; itemId: string; }>;
+}
+
 export async function POST(
   request: Request,
-  { params }: { params: { workspaceSlug: string; itemId: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug, itemId } = await params;
   const session = await auth();
 
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
       select: { id: true },
     });
 
@@ -31,7 +36,7 @@ export async function POST(
 
     const service = new EscalationService(workspace.id);
     const updatedItem = await service.escalateItem(
-      params.itemId,
+      itemId,
       EscalationTrigger.MANUAL,
       body.reason,
       body.targetLevel,

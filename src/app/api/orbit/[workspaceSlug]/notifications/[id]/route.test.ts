@@ -84,7 +84,7 @@ describe("PATCH /api/orbit/[workspaceSlug]/notifications/[id]", () => {
       { method: "PATCH" },
     );
     const res = await PATCH(req, {
-      params: { workspaceSlug: mockWorkspace.slug, id: mockNotification.id },
+      params: Promise.resolve({ workspaceSlug: mockWorkspace.slug, id: mockNotification.id }),
     });
     const data = await res.json();
 
@@ -104,7 +104,7 @@ describe("PATCH /api/orbit/[workspaceSlug]/notifications/[id]", () => {
       { method: "PATCH" },
     );
     const res = await PATCH(req, {
-      params: { workspaceSlug: mockWorkspace.slug, id: "notif-1" },
+      params: Promise.resolve({ workspaceSlug: mockWorkspace.slug, id: "notif-1" }),
     });
 
     expect(res.status).toBe(401);
@@ -119,7 +119,7 @@ describe("PATCH /api/orbit/[workspaceSlug]/notifications/[id]", () => {
       { method: "PATCH" },
     );
     const res = await PATCH(req, {
-      params: { workspaceSlug: "non-existent", id: "notif-1" },
+      params: Promise.resolve({ workspaceSlug: "non-existent", id: "notif-1" }),
     });
     const data = await res.json();
 
@@ -136,7 +136,7 @@ describe("PATCH /api/orbit/[workspaceSlug]/notifications/[id]", () => {
       { method: "PATCH" },
     );
     const res = await PATCH(req, {
-      params: { workspaceSlug: mockWorkspace.slug, id: "non-existent" },
+      params: Promise.resolve({ workspaceSlug: mockWorkspace.slug, id: "non-existent" }),
     });
     const data = await res.json();
 
@@ -159,7 +159,7 @@ describe("PATCH /api/orbit/[workspaceSlug]/notifications/[id]", () => {
       { method: "PATCH" },
     );
     const res = await PATCH(req, {
-      params: { workspaceSlug: mockWorkspace.slug, id: mockNotification.id },
+      params: Promise.resolve({ workspaceSlug: mockWorkspace.slug, id: mockNotification.id }),
     });
     const data = await res.json();
 
@@ -213,7 +213,7 @@ describe("DELETE /api/orbit/[workspaceSlug]/notifications/[id]", () => {
       { method: "DELETE" },
     );
     const res = await DELETE(req, {
-      params: { workspaceSlug: mockWorkspace.slug, id: mockNotification.id },
+      params: Promise.resolve({ workspaceSlug: mockWorkspace.slug, id: mockNotification.id }),
     });
 
     expect(res.status).toBe(204);
@@ -231,7 +231,7 @@ describe("DELETE /api/orbit/[workspaceSlug]/notifications/[id]", () => {
       { method: "DELETE" },
     );
     const res = await DELETE(req, {
-      params: { workspaceSlug: mockWorkspace.slug, id: "notif-1" },
+      params: Promise.resolve({ workspaceSlug: mockWorkspace.slug, id: "notif-1" }),
     });
 
     expect(res.status).toBe(401);
@@ -246,7 +246,7 @@ describe("DELETE /api/orbit/[workspaceSlug]/notifications/[id]", () => {
       { method: "DELETE" },
     );
     const res = await DELETE(req, {
-      params: { workspaceSlug: "non-existent", id: "notif-1" },
+      params: Promise.resolve({ workspaceSlug: "non-existent", id: "notif-1" }),
     });
     const data = await res.json();
 
@@ -263,7 +263,7 @@ describe("DELETE /api/orbit/[workspaceSlug]/notifications/[id]", () => {
       { method: "DELETE" },
     );
     const res = await DELETE(req, {
-      params: { workspaceSlug: mockWorkspace.slug, id: "non-existent" },
+      params: Promise.resolve({ workspaceSlug: mockWorkspace.slug, id: "non-existent" }),
     });
     const data = await res.json();
 
@@ -286,7 +286,7 @@ describe("DELETE /api/orbit/[workspaceSlug]/notifications/[id]", () => {
       { method: "DELETE" },
     );
     const res = await DELETE(req, {
-      params: { workspaceSlug: mockWorkspace.slug, id: mockNotification.id },
+      params: Promise.resolve({ workspaceSlug: mockWorkspace.slug, id: mockNotification.id }),
     });
     const data = await res.json();
 

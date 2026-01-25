@@ -4,15 +4,20 @@ import prisma from "@/lib/prisma";
 import { analyzeMessage } from "@/lib/smart-routing/analyze-message";
 import { NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; itemId: string; }>;
+}
+
 export async function GET(
   _request: Request,
-  { params }: { params: { workspaceSlug: string; itemId: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug, itemId } = await params;
   const session = await auth();
 
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
       select: { id: true },
     });
 
@@ -25,7 +30,7 @@ export async function GET(
     await requireWorkspacePermission(session, workspace.id, "inbox:view");
 
     const suggestions = await prisma.inboxSuggestedResponse.findMany({
-      where: { inboxItemId: params.itemId },
+      where: { inboxItemId: itemId },
       orderBy: { createdAt: "desc" },
     });
 
@@ -38,13 +43,14 @@ export async function GET(
 
 export async function POST(
   _request: Request,
-  { params }: { params: { workspaceSlug: string; itemId: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug, itemId } = await params;
   const session = await auth();
 
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
       select: { id: true },
     });
 
@@ -58,7 +64,7 @@ export async function POST(
 
     // Regenerate suggestions
     const item = await prisma.inboxItem.findUnique({
-      where: { id: params.itemId },
+      where: { id: itemId },
     });
     if (!item?.content) throw new Error("Item content missing");
 
@@ -71,7 +77,7 @@ export async function POST(
     if (analysis.suggestedResponses?.length) {
       await prisma.inboxSuggestedResponse.createMany({
         data: analysis.suggestedResponses.map((content) => ({
-          inboxItemId: params.itemId,
+          inboxItemId: itemId,
           content,
           confidenceScore: 0.8,
           tone: "professional",
@@ -81,7 +87,7 @@ export async function POST(
     }
 
     const suggestions = await prisma.inboxSuggestedResponse.findMany({
-      where: { inboxItemId: params.itemId },
+      where: { inboxItemId: itemId },
       orderBy: { createdAt: "desc" },
     });
 

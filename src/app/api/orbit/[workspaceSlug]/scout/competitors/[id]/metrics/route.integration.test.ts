@@ -60,7 +60,7 @@ describe.skip("Competitor Metrics API", () => {
       `http://localhost/api/orbit/${workspace.slug}/scout/competitors/${competitor.id}/metrics`,
     );
     const res = await GET(req, {
-      params: { workspaceSlug: workspace.slug, id: competitor.id },
+      params: Promise.resolve({ workspaceSlug: workspace.slug, id: competitor.id }),
     });
     const data = await res.json();
 

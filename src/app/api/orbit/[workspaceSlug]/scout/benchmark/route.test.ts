@@ -48,7 +48,7 @@ describe("Benchmark API", () => {
     const req = new NextRequest(
       "http://localhost/api/orbit/test-workspace/scout/benchmark",
     );
-    const res = await GET(req, { params: { workspaceSlug: "test-workspace" } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "test-workspace" }) });
     const data = await res.json();
 
     expect(res.status).toBe(401);
@@ -64,7 +64,7 @@ describe("Benchmark API", () => {
     const req = new NextRequest(
       "http://localhost/api/orbit/nonexistent/scout/benchmark",
     );
-    const res = await GET(req, { params: { workspaceSlug: "nonexistent" } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "nonexistent" }) });
     const data = await res.json();
 
     expect(res.status).toBe(404);
@@ -83,7 +83,7 @@ describe("Benchmark API", () => {
     const req = new NextRequest(
       "http://localhost/api/orbit/test-workspace/scout/benchmark?startDate=invalid",
     );
-    const res = await GET(req, { params: { workspaceSlug: "test-workspace" } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "test-workspace" }) });
     const data = await res.json();
 
     expect(res.status).toBe(400);
@@ -102,7 +102,7 @@ describe("Benchmark API", () => {
     const req = new NextRequest(
       "http://localhost/api/orbit/test-workspace/scout/benchmark?endDate=invalid",
     );
-    const res = await GET(req, { params: { workspaceSlug: "test-workspace" } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "test-workspace" }) });
     const data = await res.json();
 
     expect(res.status).toBe(400);
@@ -141,7 +141,7 @@ describe("Benchmark API", () => {
     const req = new NextRequest(
       "http://localhost/api/orbit/test-workspace/scout/benchmark",
     );
-    const res = await GET(req, { params: { workspaceSlug: "test-workspace" } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "test-workspace" }) });
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -184,7 +184,7 @@ describe("Benchmark API", () => {
     const req = new NextRequest(
       "http://localhost/api/orbit/test-workspace/scout/benchmark?startDate=2024-01-01&endDate=2024-01-31",
     );
-    const res = await GET(req, { params: { workspaceSlug: "test-workspace" } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "test-workspace" }) });
     await res.json(); // Parse response to ensure it's valid JSON
 
     expect(res.status).toBe(200);
@@ -223,7 +223,7 @@ describe("Benchmark API", () => {
     const req = new NextRequest(
       "http://localhost/api/orbit/test-workspace/scout/benchmark",
     );
-    const res = await GET(req, { params: { workspaceSlug: "test-workspace" } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "test-workspace" }) });
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -246,7 +246,7 @@ describe("Benchmark API", () => {
     const req = new NextRequest(
       "http://localhost/api/orbit/test-workspace/scout/benchmark",
     );
-    const res = await GET(req, { params: { workspaceSlug: "test-workspace" } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "test-workspace" }) });
     const data = await res.json();
 
     expect(res.status).toBe(500);

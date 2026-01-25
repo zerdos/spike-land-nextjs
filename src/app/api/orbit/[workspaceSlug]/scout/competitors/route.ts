@@ -4,11 +4,16 @@ import { addCompetitor } from "@/lib/scout/competitor-tracker";
 import { SocialPlatform } from "@prisma/client";
 import { NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; }>;
+}
+
 // GET - Fetches all competitors for a workspace
 export async function GET(
   _request: Request,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug } = await params;
   try {
     // Verify authentication
     const session = await auth();
@@ -19,7 +24,7 @@ export async function GET(
     // Find workspace by slug and verify user is a member
     const workspace = await prisma.workspace.findFirst({
       where: {
-        slug: params.workspaceSlug,
+        slug: workspaceSlug,
         members: {
           some: {
             userId: session.user.id,
@@ -51,8 +56,9 @@ export async function GET(
 // POST - Adds a new competitor to a workspace
 export async function POST(
   request: Request,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug } = await params;
   try {
     // Verify authentication
     const session = await auth();
@@ -63,7 +69,7 @@ export async function POST(
     // Find workspace by slug and verify user is a member
     const workspace = await prisma.workspace.findFirst({
       where: {
-        slug: params.workspaceSlug,
+        slug: workspaceSlug,
         members: {
           some: {
             userId: session.user.id,

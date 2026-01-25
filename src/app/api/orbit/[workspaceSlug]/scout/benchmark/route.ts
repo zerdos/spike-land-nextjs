@@ -4,6 +4,10 @@ import { generateBenchmarkReport } from "@/lib/scout/competitor-analyzer";
 import { getWorkspaceMetrics } from "@/lib/scout/workspace-metrics";
 import { NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; }>;
+}
+
 export interface BenchmarkResponse {
   ownMetrics: {
     averageLikes: number;
@@ -33,8 +37,9 @@ export interface BenchmarkResponse {
  */
 export async function GET(
   request: Request,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug } = await params;
   try {
     // Verify authentication
     const session = await auth();
@@ -45,7 +50,7 @@ export async function GET(
     // Find workspace by slug and verify user is a member
     const workspace = await prisma.workspace.findFirst({
       where: {
-        slug: params.workspaceSlug,
+        slug: workspaceSlug,
         members: {
           some: {
             userId: session.user.id,

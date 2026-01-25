@@ -13,6 +13,10 @@ import { requireWorkspacePermission } from "@/lib/permissions/workspace-middlewa
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; id: string; }>;
+}
+
 /**
  * PATCH /api/orbit/[workspaceSlug]/notifications/[id]
  *
@@ -20,13 +24,14 @@ import { NextResponse } from "next/server";
  */
 export async function PATCH(
   _request: Request,
-  { params }: { params: { workspaceSlug: string; id: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug, id } = await params;
   const session = await auth();
 
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
       select: { id: true },
     });
 
@@ -39,7 +44,7 @@ export async function PATCH(
     await requireWorkspacePermission(session, workspace.id, "notifications:manage");
 
     // Verify notification exists and belongs to workspace
-    const existing = await NotificationService.getById(params.id);
+    const existing = await NotificationService.getById(id);
     if (!existing) {
       return NextResponse.json({ error: "Notification not found" }, {
         status: 404,
@@ -53,7 +58,7 @@ export async function PATCH(
       );
     }
 
-    const notification = await NotificationService.markAsRead(params.id);
+    const notification = await NotificationService.markAsRead(id);
     return NextResponse.json(notification);
   } catch (error: unknown) {
     console.error(error);
@@ -87,13 +92,14 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: Request,
-  { params }: { params: { workspaceSlug: string; id: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug, id } = await params;
   const session = await auth();
 
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
       select: { id: true },
     });
 
@@ -106,7 +112,7 @@ export async function DELETE(
     await requireWorkspacePermission(session, workspace.id, "notifications:manage");
 
     // Verify notification exists and belongs to workspace
-    const existing = await NotificationService.getById(params.id);
+    const existing = await NotificationService.getById(id);
     if (!existing) {
       return NextResponse.json({ error: "Notification not found" }, {
         status: 404,
@@ -120,7 +126,7 @@ export async function DELETE(
       );
     }
 
-    await NotificationService.delete(params.id);
+    await NotificationService.delete(id);
     return new NextResponse(null, { status: 204 });
   } catch (error: unknown) {
     console.error(error);

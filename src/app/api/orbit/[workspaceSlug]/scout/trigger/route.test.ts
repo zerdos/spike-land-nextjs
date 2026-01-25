@@ -24,7 +24,7 @@ describe("/api/orbit/[workspaceSlug]/scout/trigger", () => {
     it("should return 401 if user is not authenticated", async () => {
       vi.mocked(auth).mockResolvedValue(null);
       const req = new NextRequest("http://localhost", { method: "POST" });
-      const res = await POST(req, { params: { workspaceSlug: "test" } });
+      const res = await POST(req, { params: Promise.resolve({ workspaceSlug: "test" }) });
       expect(res.status).toBe(401);
     });
 
@@ -32,7 +32,7 @@ describe("/api/orbit/[workspaceSlug]/scout/trigger", () => {
       vi.mocked(auth).mockResolvedValue({ user: { id: "123" } } as any);
       vi.mocked(prisma.workspace.findFirst).mockResolvedValue(null);
       const req = new NextRequest("http://localhost", { method: "POST" });
-      const res = await POST(req, { params: { workspaceSlug: "test" } });
+      const res = await POST(req, { params: Promise.resolve({ workspaceSlug: "test" }) });
       expect(res.status).toBe(404);
     });
 
@@ -43,7 +43,7 @@ describe("/api/orbit/[workspaceSlug]/scout/trigger", () => {
       );
 
       const req = new NextRequest("http://localhost", { method: "POST" });
-      const res = await POST(req, { params: { workspaceSlug: "test" } });
+      const res = await POST(req, { params: Promise.resolve({ workspaceSlug: "test" }) });
 
       expect(res.status).toBe(200);
       const data = await res.json();
