@@ -4,15 +4,20 @@ import prisma from "@/lib/prisma";
 import { RoutingEngine } from "@/lib/smart-routing/routing-engine";
 import { NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; itemId: string; }>;
+}
+
 export async function POST(
   _request: Request,
-  { params }: { params: { workspaceSlug: string; itemId: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug, itemId } = await params;
   const session = await auth();
 
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
       select: { id: true },
     });
 
@@ -25,11 +30,11 @@ export async function POST(
     await requireWorkspacePermission(session, workspace.id, "inbox:manage");
 
     // Trigger analysis
-    await RoutingEngine.processItem(params.itemId, workspace.id);
+    await RoutingEngine.processItem(itemId, workspace.id);
 
     // Fetch updated item to return
     const updatedItem = await prisma.inboxItem.findUnique({
-      where: { id: params.itemId },
+      where: { id: itemId },
       include: {
         suggestedResponses: true,
       },

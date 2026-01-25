@@ -4,14 +4,19 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; itemId: string; }>;
+}
+
 const schema = z.object({
   content: z.string().trim().min(1, "Reply content cannot be empty"),
 });
 
 export async function POST(
   request: Request,
-  { params }: { params: { workspaceSlug: string; itemId: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug, itemId } = await params;
   const session = await auth();
   const body = await request.json();
 
@@ -26,7 +31,7 @@ export async function POST(
 
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
       select: { id: true },
     });
 
@@ -40,7 +45,7 @@ export async function POST(
 
     // Verify that the itemId belongs to the specified workspace
     const existingItem = await prisma.inboxItem.findUnique({
-      where: { id: params.itemId },
+      where: { id: itemId },
       select: { workspaceId: true },
     });
 

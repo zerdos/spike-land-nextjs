@@ -1,13 +1,18 @@
 import prisma from "@/lib/prisma";
 import { type NextRequest, NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; reminderId: string; }>;
+}
+
 export async function POST(
   _request: NextRequest,
-  { params }: { params: { workspaceSlug: string; reminderId: string; }; },
+  { params }: RouteParams,
 ) {
+  const { reminderId } = await params;
   try {
     const updatedReminder = await prisma.connectionReminder.update({
-      where: { id: params.reminderId },
+      where: { id: reminderId },
       data: {
         status: "COMPLETED",
         completedAt: new Date(),

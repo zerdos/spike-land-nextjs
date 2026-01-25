@@ -4,10 +4,15 @@ import prisma from "@/lib/prisma";
 import { EscalationService } from "@/lib/smart-routing/escalation-service";
 import { NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; }>;
+}
+
 export async function POST(
   request: Request,
-  { params }: { params: { workspaceSlug: string; }; },
+  { params }: RouteParams,
 ) {
+  const { workspaceSlug } = await params;
   const session = await auth();
   const cronSecret = request.headers.get("x-cron-secret");
   const isValidCronCall = cronSecret === process.env.CRON_SECRET &&
@@ -20,7 +25,7 @@ export async function POST(
 
   try {
     const workspace = await prisma.workspace.findUnique({
-      where: { slug: params.workspaceSlug },
+      where: { slug: workspaceSlug },
       select: { id: true },
     });
 

@@ -1,14 +1,19 @@
 import prisma from "@/lib/prisma";
 import { type NextRequest, NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; reminderId: string; }>;
+}
+
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { workspaceSlug: string; reminderId: string; }; },
+  { params }: RouteParams,
 ) {
+  const { reminderId } = await params;
   try {
     const body = await request.json();
     const updatedReminder = await prisma.connectionReminder.update({
-      where: { id: params.reminderId },
+      where: { id: reminderId },
       data: body,
     });
     return NextResponse.json(updatedReminder);
@@ -19,11 +24,12 @@ export async function PATCH(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { workspaceSlug: string; reminderId: string; }; },
+  { params }: RouteParams,
 ) {
+  const { reminderId } = await params;
   try {
     await prisma.connectionReminder.delete({
-      where: { id: params.reminderId },
+      where: { id: reminderId },
     });
     return NextResponse.json({ success: true });
   } catch (_error) {

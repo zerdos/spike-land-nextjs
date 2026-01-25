@@ -88,7 +88,7 @@ describe("GET /api/orbit/[workspaceSlug]/inbox", () => {
       `https://localhost/api/orbit/${mockWorkspace.slug}/inbox`,
     );
     const res = await GET(req, {
-      params: { workspaceSlug: mockWorkspace.slug },
+      params: Promise.resolve({ workspaceSlug: mockWorkspace.slug }),
     });
     const data = await res.json();
 
@@ -119,7 +119,7 @@ describe("GET /api/orbit/[workspaceSlug]/inbox", () => {
       `https://localhost/api/orbit/${mockWorkspace.slug}/inbox?platform=TWITTER`,
     );
     const res = await GET(req, {
-      params: { workspaceSlug: mockWorkspace.slug },
+      params: Promise.resolve({ workspaceSlug: mockWorkspace.slug }),
     });
     const data = await res.json();
 
@@ -144,7 +144,7 @@ describe("GET /api/orbit/[workspaceSlug]/inbox", () => {
       `https://localhost/api/orbit/${mockWorkspace.slug}/inbox`,
     );
     const res = await GET(req, {
-      params: { workspaceSlug: mockWorkspace.slug },
+      params: Promise.resolve({ workspaceSlug: mockWorkspace.slug }),
     });
 
     expect(res.status).toBe(401);
@@ -157,7 +157,7 @@ describe("GET /api/orbit/[workspaceSlug]/inbox", () => {
     const req = new NextRequest(
       `https://localhost/api/orbit/non-existent/inbox`,
     );
-    const res = await GET(req, { params: { workspaceSlug: "non-existent" } });
+    const res = await GET(req, { params: Promise.resolve({ workspaceSlug: "non-existent" }) });
     const data = await res.json();
 
     expect(res.status).toBe(404);

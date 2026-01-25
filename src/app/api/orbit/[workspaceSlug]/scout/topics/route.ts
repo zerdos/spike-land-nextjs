@@ -3,10 +3,8 @@ import prisma from "@/lib/prisma";
 import { createTopic, createTopicSchema, listTopicsByWorkspace } from "@/lib/scout/topic-config";
 import { type NextRequest, NextResponse } from "next/server";
 
-interface RouteContext {
-  params: {
-    workspaceSlug: string;
-  };
+interface RouteParams {
+  params: Promise<{ workspaceSlug: string; }>;
 }
 
 async function getWorkspaceId(
@@ -21,7 +19,8 @@ async function getWorkspaceId(
 }
 
 // List all topics for a workspace
-export async function GET(_req: NextRequest, { params }: RouteContext) {
+export async function GET(_req: NextRequest, { params }: RouteParams) {
+  const { workspaceSlug } = await params;
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -29,7 +28,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
     }
 
     const workspaceId = await getWorkspaceId(
-      params.workspaceSlug,
+      workspaceSlug,
       session.user.id,
     );
     if (!workspaceId) {
@@ -45,7 +44,8 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
 }
 
 // Create a new topic
-export async function POST(req: NextRequest, { params }: RouteContext) {
+export async function POST(req: NextRequest, { params }: RouteParams) {
+  const { workspaceSlug } = await params;
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     }
 
     const workspaceId = await getWorkspaceId(
-      params.workspaceSlug,
+      workspaceSlug,
       session.user.id,
     );
     if (!workspaceId) {
