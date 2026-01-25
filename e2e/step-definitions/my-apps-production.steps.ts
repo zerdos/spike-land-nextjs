@@ -141,8 +141,29 @@ Then(
 Then(
   "I should be redirected to a new codespace URL",
   async function(this: CustomWorld) {
-    // Wait for navigation to new codespace
-    await this.page.waitForURL(/\/my-apps\/[^/]+$/, { timeout: 30000 });
+    // Wait for navigation to new codespace - explicitly exclude /my-apps/new
+    // The /my-apps/new page auto-redirects to a generated codespace ID like /my-apps/swift.forge.launch.ab12
+    // The pattern uses a lookahead to exclude "new" and requires at least one dot (generated IDs have format: adj.noun.verb.suffix)
+
+    // Retry logic to handle transient connection issues during redirect
+    let lastError: Error | undefined;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await this.page.waitForURL(/\/my-apps\/(?!new$)[^/]+\.[^/]+$/, { timeout: 30000 });
+        lastError = undefined;
+        break;
+      } catch (error) {
+        lastError = error as Error;
+        if (attempt < 2) {
+          console.log(`[Production Test] Retry ${attempt + 1}: waiting for redirect...`);
+          await this.page.waitForTimeout(1000);
+        }
+      }
+    }
+
+    if (lastError) {
+      throw lastError;
+    }
 
     // Extract and store the codespace ID
     const codespaceId = extractCodespaceId(this.page.url());

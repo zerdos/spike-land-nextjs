@@ -10,7 +10,7 @@ const prismaClientSingleton = () => {
     // This allows the build/tests to succeed. If any code *actually* tries to query
     // the DB, it will fail, which is the desired behavior.
     const isBuild = process.env.NEXT_PHASE === "phase-production-build";
-    const isE2ETestContext = process.env.CI === "true" || process.env.BASE_URL;
+    const isE2ETestContext = process.env.CI === "true" && process.env.BASE_URL && !connectionString;
 
     if (isBuild || isE2ETestContext) {
       if (isBuild) {

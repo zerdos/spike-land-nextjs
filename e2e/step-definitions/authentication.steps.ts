@@ -135,79 +135,72 @@ async function mockSession(
 // Background step - already defined in home-page.steps.ts
 // Given('I am on the home page', ...)
 
-// Allow both Given and When for flexibility in feature files
-Given("I am not logged in", async function(this: CustomWorld) {
-  const currentUrl = this.page.url();
+// Helper function to get E2E bypass headers (matches CustomWorld.getExtraHTTPHeaders logic)
+function getExtraHTTPHeaders(): Record<string, string> | undefined {
+  const extraHTTPHeaders: Record<string, string> = {};
+  const e2eBypassSecret = process.env.E2E_BYPASS_SECRET?.trim().replace(/[\r\n]/g, "");
+  if (e2eBypassSecret) {
+    extraHTTPHeaders["x-e2e-auth-bypass"] = e2eBypassSecret;
+  }
+  return Object.keys(extraHTTPHeaders).length > 0 ? extraHTTPHeaders : undefined;
+}
+
+// Helper function for handling "not logged in" state
+async function handleNotLoggedIn(world: CustomWorld): Promise<void> {
+  const currentUrl = world.page.url();
 
   // Improved cleanup with state checking
-  if (!this.page.isClosed()) {
-    await this.page.close();
+  if (!world.page.isClosed()) {
+    await world.page.close();
   }
-  if (this.context) {
-    await this.context.close();
+  if (world.context) {
+    await world.context.close();
   }
 
   // Create new unauthenticated context with E2E bypass headers
-  // This ensures server-side auth bypass works even without cookies
-  const extraHTTPHeaders = this.getExtraHTTPHeaders();
-  this.context = await this.browser.newContext({
-    baseURL: this.baseUrl,
+  const extraHTTPHeaders = getExtraHTTPHeaders();
+  world.context = await world.browser.newContext({
+    baseURL: world.baseUrl,
     extraHTTPHeaders,
   });
-  this.page = await this.context.newPage();
+  world.page = await world.context.newPage();
 
   // Mock no session
-  await mockSession(this, null);
+  await mockSession(world, null);
 
   // Wait for route to be ready
-  await waitForRouteReady(this.page);
+  await waitForRouteReady(world.page);
 
   // Re-navigate if needed
   if (currentUrl && currentUrl !== "about:blank") {
-    await this.page.goto(currentUrl, { waitUntil: "commit" });
-    await waitForPageReady(this.page, { strategy: "both", waitForSuspense: true });
+    await world.page.goto(currentUrl, { waitUntil: "commit" });
+    await waitForPageReady(world.page, { strategy: "both", waitForSuspense: true });
   } else {
-    // If no URL, navigate to home page
-    await this.page.goto(this.baseUrl, { waitUntil: "commit" });
-    await waitForPageReady(this.page, { strategy: "both", waitForSuspense: true });
+    await world.page.goto(world.baseUrl, { waitUntil: "commit" });
+    await waitForPageReady(world.page, { strategy: "both", waitForSuspense: true });
   }
+}
+
+// Helper function for handling "logged in as" state
+async function handleLoggedInAs(
+  world: CustomWorld,
+  name: string,
+  email: string,
+): Promise<void> {
+  await mockSession(world, { name, email });
+  await waitForRouteReady(world.page);
+  await world.page.reload({ waitUntil: "commit" });
+  await waitForPageReady(world.page, { strategy: "both" });
+  await waitForSessionPropagation(world, true);
+}
+
+// Allow both Given and When for flexibility in feature files
+Given("I am not logged in", async function(this: CustomWorld) {
+  await handleNotLoggedIn(this);
 });
 
 When("I am not logged in", async function(this: CustomWorld) {
-  const currentUrl = this.page.url();
-
-  // Improved cleanup with state checking
-  if (!this.page.isClosed()) {
-    await this.page.close();
-  }
-  if (this.context) {
-    await this.context.close();
-  }
-
-  // Create new unauthenticated context with E2E bypass headers
-  // This ensures server-side auth bypass works even without cookies
-  const extraHTTPHeaders = this.getExtraHTTPHeaders();
-  this.context = await this.browser.newContext({
-    baseURL: this.baseUrl,
-    extraHTTPHeaders,
-  });
-  this.page = await this.context.newPage();
-
-  // Mock no session
-  await mockSession(this, null);
-
-  // Wait for route to be ready
-  await waitForRouteReady(this.page);
-
-  // Re-navigate if needed
-  if (currentUrl && currentUrl !== "about:blank") {
-    await this.page.goto(currentUrl, { waitUntil: "commit" });
-    await waitForPageReady(this.page, { strategy: "both", waitForSuspense: true });
-  } else {
-    // If no URL, navigate to home page
-    await this.page.goto(this.baseUrl, { waitUntil: "commit" });
-    await waitForPageReady(this.page, { strategy: "both", waitForSuspense: true });
-  }
+  await handleNotLoggedIn(this);
 });
 
 // Generic test user login
@@ -223,28 +216,20 @@ Given("I am logged in as a test user", async function(this: CustomWorld) {
   await waitForSessionPropagation(this, true);
 });
 
-// Allow both Given and When for flexibility in feature files
+// Use defineStep to allow both Given and When to use the same pattern
+// Note: Given, When, Then all share the same pattern registry in Cucumber,
+// so we use a single Given and add a separate When for "when I log in" phrasing
 Given(
   "I am logged in as {string} with email {string}",
   async function(this: CustomWorld, name: string, email: string) {
-    await mockSession(this, { name, email });
-    await waitForRouteReady(this.page);
-    await this.page.reload({ waitUntil: "commit" });
-    await waitForPageReady(this.page, { strategy: "both" });
-    // FIX: Wait for session to propagate to React components
-    await waitForSessionPropagation(this, true);
+    await handleLoggedInAs(this, name, email);
   },
 );
 
 When(
-  "I am logged in as {string} with email {string}",
+  "I log in as {string} with email {string}",
   async function(this: CustomWorld, name: string, email: string) {
-    await mockSession(this, { name, email });
-    await waitForRouteReady(this.page);
-    await this.page.reload({ waitUntil: "commit" });
-    await waitForPageReady(this.page, { strategy: "both" });
-    // FIX: Wait for session to propagate to React components
-    await waitForSessionPropagation(this, true);
+    await handleLoggedInAs(this, name, email);
   },
 );
 

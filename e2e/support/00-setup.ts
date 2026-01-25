@@ -15,10 +15,10 @@ const envPath = path.resolve(process.cwd(), ".env");
 
 if (fs.existsSync(envLocalPath)) {
   dotenv.config({ path: envLocalPath });
-  console.log("[E2E Setup] Loaded environment from .env.local");
+  console.debug("[E2E Setup] Loaded environment from .env.local");
 } else if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath });
-  console.log("[E2E Setup] Loaded environment from .env");
+  console.debug("[E2E Setup] Loaded environment from .env");
 } else {
   console.warn("[E2E Setup] No .env file found - environment may be incomplete");
 }

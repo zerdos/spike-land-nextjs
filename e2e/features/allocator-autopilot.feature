@@ -2,7 +2,7 @@
 Feature: Allocator Autopilot
 
   Background:
-    Given I am logged in as "test@spike.land"
+    Given I am logged in with email "test@spike.land"
     And I have a workspace "test-workspace"
     And I have connected ad accounts for the workspace
 
