@@ -1,13 +1,24 @@
-import { AutopilotService } from "@/lib/allocator/autopilot-service";
 import type {
   AutopilotConfig,
   AutopilotExecutionResult,
   AutopilotRecommendation,
 } from "@/lib/allocator/autopilot-types";
-import prisma from "@/lib/prisma";
-import { AllocatorPlatform } from "@prisma/client";
 
 import { Given, Then, When } from "@cucumber/cucumber";
+
+// Lazy-load Prisma and AutopilotService to avoid DATABASE_URL errors during test discovery
+// These imports are only used in @requires-db scenarios
+let prisma: typeof import("@/lib/prisma").default;
+let AutopilotService: typeof import("@/lib/allocator/autopilot-service").AutopilotService;
+let AllocatorPlatform: typeof import("@prisma/client").AllocatorPlatform;
+
+async function ensurePrismaLoaded() {
+  if (!prisma) {
+    prisma = (await import("@/lib/prisma")).default;
+    AutopilotService = (await import("@/lib/allocator/autopilot-service")).AutopilotService;
+    AllocatorPlatform = (await import("@prisma/client")).AllocatorPlatform;
+  }
+}
 
 import { expect } from "@playwright/test";
 import type { CustomWorld } from "../support/world";
@@ -90,6 +101,7 @@ const WORKSPACE_ID = "test-workspace-id";
 const CAMPAIGN_ID = "test-campaign-1";
 
 async function ensureWorkspaceAndCampaign() {
+  await ensurePrismaLoaded();
   await prisma.workspace.upsert({
     where: { id: WORKSPACE_ID },
     update: {},
@@ -119,6 +131,7 @@ async function ensureWorkspaceAndCampaign() {
 }
 
 async function setAutopilotConfig(data: Partial<AutopilotConfig>) {
+  await ensurePrismaLoaded();
   await ensureWorkspaceAndCampaign();
   // Delete existing to avoid complex upsert unique handling with nulls if needed, or just upsert
   // Schema: @@unique([workspaceId, campaignId])
@@ -177,6 +190,7 @@ Given("I have enabled autopilot", async function(this: CustomWorld) {
 });
 
 Given("I have a campaign with budget {int}", async function(this: CustomWorld, budget: number) {
+  await ensurePrismaLoaded();
   await ensureWorkspaceAndCampaign();
   await prisma.allocatorCampaign.update({
     where: { id: CAMPAIGN_ID },
@@ -187,6 +201,7 @@ Given("I have a campaign with budget {int}", async function(this: CustomWorld, b
 Given(
   "I have a campaign that was updated {int} minutes ago",
   async function(this: CustomWorld, minutes: number) {
+    await ensurePrismaLoaded();
     await ensureWorkspaceAndCampaign();
     // Simulate past execution
     await prisma.allocatorAutopilotExecution.create({
@@ -206,12 +221,14 @@ Given(
 );
 
 Given("I activate emergency stop", async function(this: CustomWorld) {
+  await ensurePrismaLoaded();
   await AutopilotService.setAutopilotConfig(WORKSPACE_ID, { isEmergencyStopped: true });
 });
 
 When(
   "a recommendation suggests increasing budget to {int}",
   async function(this: CustomWorld, newBudget: number) {
+    await ensurePrismaLoaded();
     this.lastRecommendation = {
       id: `rec-${Date.now()}`,
       type: "BUDGET_INCREASE",
@@ -230,6 +247,7 @@ When(
 When(
   "a recommendation suggests decreasing budget to {int}",
   async function(this: CustomWorld, newBudget: number) {
+    await ensurePrismaLoaded();
     this.lastRecommendation = {
       id: `rec-${Date.now()}`,
       type: "BUDGET_DECREASE",
@@ -245,6 +263,7 @@ When(
 );
 
 When("a recommendation suggests increasing budget", async function(this: CustomWorld) {
+  await ensurePrismaLoaded();
   // Generic
   this.lastRecommendation = {
     id: `rec-${Date.now()}`,
@@ -262,6 +281,7 @@ When("a recommendation suggests increasing budget", async function(this: CustomW
 Then(
   "the autopilot should skip execution with reason {string}",
   async function(this: CustomWorld, reasonFragment: string) {
+    await ensurePrismaLoaded();
     if (!this.executionResult) throw new Error("No execution result found");
     expect(this.executionResult.status).toBe("SKIPPED");
 
@@ -281,6 +301,7 @@ Then(
 Then(
   "I should see a {string} record in the execution history",
   async function(this: CustomWorld, status: string) {
+    await ensurePrismaLoaded();
     const execution = await prisma.allocatorAutopilotExecution.findFirst({
       where: { recommendationId: this.lastRecommendation?.id },
       orderBy: { executedAt: "desc" },
@@ -298,7 +319,7 @@ Given(
   },
 );
 
-Given("I am logged in as {string}", async function(this: CustomWorld, _email: string) {
+Given("I am logged in with email {string}", async function(this: CustomWorld, _email: string) {
   // Usually handled by global setup or bypass in E2E
   // We can rely on existing auth bypass or implement mock
 });

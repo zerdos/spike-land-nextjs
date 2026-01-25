@@ -170,3 +170,21 @@ Then(
     await expect(userEmail).toHaveText(email);
   },
 );
+
+// Navigation assertions for profile page
+Then(
+  "the page URL should be {string}",
+  async function(this: CustomWorld, expectedPath: string) {
+    await waitForUrlPath(this.page, expectedPath, { timeout: 10000 });
+  },
+);
+
+Then(
+  "I should be redirected to the home page",
+  async function(this: CustomWorld) {
+    await waitForUrlPath(this.page, "/", { timeout: 10000, exact: true });
+  },
+);
+
+// NOTE: "I should see the login options" step is defined in my-apps.steps.ts
+// NOTE: "I reload the page" step is defined in app-creation.steps.ts

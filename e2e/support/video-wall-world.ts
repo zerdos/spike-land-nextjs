@@ -66,6 +66,12 @@ export class VideoWallWorld extends CustomWorld {
       permissions: ["camera", "microphone"],
       extraHTTPHeaders: this.getExtraHTTPHeaders(),
     });
+
+    // Add init script to pre-set cookie consent BEFORE any page JavaScript runs
+    await this.displayContext.addInitScript(() => {
+      localStorage.setItem("cookie-consent", "accepted");
+    });
+
     this.displayPage = await this.displayContext.newPage();
 
     // Start coverage collection if enabled
@@ -89,6 +95,12 @@ export class VideoWallWorld extends CustomWorld {
       // Note: 'display-capture' is not a valid Playwright permission
       // Screen sharing will be mocked via mockMediaDevices instead
     });
+
+    // Add init script to pre-set cookie consent BEFORE any page JavaScript runs
+    await context.addInitScript(() => {
+      localStorage.setItem("cookie-consent", "accepted");
+    });
+
     const page = await context.newPage();
 
     // Start coverage collection if enabled
