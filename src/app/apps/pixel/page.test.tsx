@@ -14,7 +14,7 @@ const MockFAQ = () => <section data-testid="faq-section">FAQ Section</section>;
 const MockCTASection = () => (
   <section data-testid="cta-section" className="bg-gradient-primary">
     <h2>Ready to Transform Your Images?</h2>
-    <p>Join thousands of creators using AI to enhance their photos.</p>
+    <p>Enhance your photos with AI-powered tools.</p>
     {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
     <a href="/apps/pixel">Start Enhancing Free</a>
     <a href="/pricing">View Pricing</a>
