@@ -304,66 +304,139 @@ describe("CodeProcessor", () => {
 
     it("should use transpiled code directly without reformatting", async () => {
       vi.mocked(transpileCode).mockClear();
+      vi.mocked(md5).mockReturnValueOnce("test-request-id");
 
-      await processor.reRenderFromTranspiled(
+      // Mock the message handler to simulate successful render
+      let messageHandler: ((event: MessageEvent) => void) | undefined;
+      vi.spyOn(window, "addEventListener").mockImplementation(
+        (type, handler) => {
+          if (type === "message" && typeof handler === "function") {
+            messageHandler = handler as (event: MessageEvent) => void;
+          }
+        },
+      );
+
+      const renderPromise = processor.reRenderFromTranspiled(
         "pre-transpiled code",
         mockAbortController.signal,
         mockGetSession,
       );
+
+      // Wait for listener setup then simulate successful render
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      if (messageHandler) {
+        messageHandler({
+          data: {
+            type: "rendered",
+            requestId: "test-request-id",
+            iteration: 5,
+            data: { html: "<div>test</div>", css: ".test{}" },
+          },
+        } as MessageEvent);
+      }
+
+      await renderPromise;
 
       expect(transpileCode).not.toHaveBeenCalled();
     });
   });
 
   describe("iframe execution", () => {
+    // Helper to setup message handler mock and simulate successful render
+    const setupMessageHandlerMock = () => {
+      let messageHandler: ((event: MessageEvent) => void) | undefined;
+      vi.spyOn(window, "addEventListener").mockImplementation(
+        (type, handler) => {
+          if (type === "message" && typeof handler === "function") {
+            messageHandler = handler as (event: MessageEvent) => void;
+          }
+        },
+      );
+      return {
+        simulateRender: async (requestId: string) => {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+          if (messageHandler) {
+            messageHandler({
+              data: {
+                type: "rendered",
+                requestId,
+                iteration: 5,
+                data: { html: "<div>test</div>", css: ".test{}" },
+              },
+            } as MessageEvent);
+          }
+        },
+      };
+    };
+
     it("should create blob URL for transpiled code", async () => {
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
+      vi.mocked(md5).mockReturnValueOnce("test-request-id");
+      const { simulateRender } = setupMessageHandlerMock();
 
-      await processor.process(
+      const processPromise = processor.process(
         "new code",
         false,
         mockAbortController.signal,
         mockGetSession,
       );
+
+      await simulateRender("test-request-id");
+      await processPromise;
 
       expect(URL.createObjectURL).toHaveBeenCalled();
     });
 
     it("should use importMapReplace for code transformation", async () => {
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
+      vi.mocked(md5).mockReturnValueOnce("test-request-id");
+      const { simulateRender } = setupMessageHandlerMock();
 
-      await processor.process(
+      const processPromise = processor.process(
         "new code",
         false,
         mockAbortController.signal,
         mockGetSession,
       );
+
+      await simulateRender("test-request-id");
+      await processPromise;
 
       expect(importMapReplace).toHaveBeenCalled();
     });
 
     it("should check dark mode for iframe styling", async () => {
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
+      vi.mocked(md5).mockReturnValueOnce("test-request-id");
+      const { simulateRender } = setupMessageHandlerMock();
 
-      await processor.process(
+      const processPromise = processor.process(
         "new code",
         false,
         mockAbortController.signal,
         mockGetSession,
       );
+
+      await simulateRender("test-request-id");
+      await processPromise;
 
       expect(getInitialDarkMode).toHaveBeenCalled();
     });
 
     it("should use md5 for request ID matching", async () => {
       vi.mocked(transpileCode).mockResolvedValueOnce("new transpiled");
+      vi.mocked(md5).mockReturnValueOnce("test-request-id");
+      const { simulateRender } = setupMessageHandlerMock();
 
-      await processor.process(
+      const processPromise = processor.process(
         "new code",
         false,
         mockAbortController.signal,
         mockGetSession,
       );
+
+      await simulateRender("test-request-id");
+      await processPromise;
 
       expect(md5).toHaveBeenCalledWith("new transpiled");
     });
