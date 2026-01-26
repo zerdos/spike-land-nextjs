@@ -52,6 +52,7 @@ module.exports = {
   },
   // Smoke profile - critical path tests for fast CI feedback
   // Run with: yarn cucumber --profile smoke
+  // NOTE: Excludes @requires-db tests since smoke tests should run without database
   smoke: {
     paths: ["e2e/features/**/*.feature"],
     require: ["e2e/support/**/*.ts", "e2e/step-definitions/**/*.steps.ts"],
@@ -65,7 +66,7 @@ module.exports = {
     publishQuiet: true,
     failFast: true, // Stop on first failure for fast feedback
     retry: 1, // Single retry for smoke tests
-    tags: "@smoke and not @skip",
+    tags: "@smoke and not @skip and not @requires-db",
     timeout: 30000, // 30 second timeout for smoke tests
     parallel: 4, // Parallel execution for speed
   },
