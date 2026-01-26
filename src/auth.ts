@@ -444,6 +444,22 @@ function constantTimeCompare(a: string, b: string): boolean {
 }
 
 export const auth = async () => {
+  // Check for E2E bypass via env var FIRST (local dev with yarn dev:e2e)
+  // This is checked first because it's faster (no headers() call needed if bypassing)
+  if (process.env.E2E_BYPASS_AUTH === "true") {
+    const { data: cookieStore } = await tryCatch(cookies());
+    // Check for mock session token cookie
+    if (cookieStore) {
+      const sessionToken = cookieStore.get("authjs.session-token")?.value;
+      if (sessionToken === "mock-session-token") {
+        return getMockE2ESession();
+      }
+    }
+    // In E2E mode without mock session, return null (unauthenticated)
+    // This prevents hanging on database connections during E2E tests
+    return null;
+  }
+
   // Check for E2E bypass via header (works on Vercel previews)
   // This is the primary bypass mechanism for CI/CD
   // SECURITY: Only enabled in non-production environments
@@ -456,18 +472,6 @@ export const auth = async () => {
 
     if (bypassHeader && constantTimeCompare(bypassHeader, e2eBypassSecret)) {
       return getMockE2ESession();
-    }
-  }
-
-  // Fallback: Check for E2E bypass via env var (local dev with yarn dev:e2e)
-  if (process.env.E2E_BYPASS_AUTH === "true") {
-    const { data: cookieStore } = await tryCatch(cookies());
-    // Check for mock session token cookie
-    if (cookieStore) {
-      const sessionToken = cookieStore.get("authjs.session-token")?.value;
-      if (sessionToken === "mock-session-token") {
-        return getMockE2ESession();
-      }
     }
   }
 

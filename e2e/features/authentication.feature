@@ -11,7 +11,7 @@ Feature: User Authentication
   Scenario: Unauthenticated user sees login options
     When I am not logged in
     Then I should see "Sign In" link in the header
-    And I should see the "Get Started" button
+    And I should see the "Restore Your Photos" link
     And I should not see the user avatar
 
   # TODO: Fix OAuth flow testing in CI - See issue #23
@@ -32,7 +32,6 @@ Feature: User Authentication
     When I am logged in as "John Doe" with email "john@example.com"
     Then I should see the user avatar
     And I should not see "Sign In" link in the header
-    And I should not see the "Get Started" button
 
   Scenario: Authenticated user can open avatar dropdown
     When I am logged in as "Jane Smith" with email "jane@example.com"
@@ -50,7 +49,6 @@ Feature: User Authentication
     And I click the "Log out" option in the dropdown
     Then I should be logged out
     And I should see "Sign In" link in the header
-    And I should see the "Get Started" button
     And I should not see the user avatar
 
   Scenario: Loading state is displayed during authentication
@@ -76,12 +74,12 @@ Feature: User Authentication
   Scenario: Visit sign-in page directly
     When I visit "/auth/signin"
     Then I should be on the "/auth/signin" page
-    And I should see "Welcome to Spike Land" heading
-    And I should see "Sign in to access your apps" text
+    And I should see "Restore photos in minutes" heading
+    And I should see "Batch enhance" text
     And I should see the "Continue with GitHub" button
     And I should see the "Continue with Google" button
-    And I should see "Back to home" link
-    And I should see "By signing in, you agree to our Terms of Service and Privacy Policy" text
+    And I should see "Terms" link
+    And I should see "Privacy" link
 
   Scenario: Sign-in page displays error message for OAuthCallback error
     When I visit "/auth/signin?error=OAuthCallback"

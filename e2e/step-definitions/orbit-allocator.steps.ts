@@ -1971,3 +1971,42 @@ Then(
     await expect(errorMessage.first()).toBeVisible({ timeout: 35000 });
   },
 );
+
+// =============================================================================
+// Missing Dashboard Steps
+// =============================================================================
+
+Then(
+  "I should see the page title {string}",
+  async function(this: CustomWorld, title: string) {
+    const pageTitle = this.page.locator(`h1:has-text("${title}"), h2:has-text("${title}")`);
+    await expect(pageTitle.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+Then(
+  "I should see the description about AI-powered budget recommendations",
+  async function(this: CustomWorld) {
+    const description = this.page.locator(
+      "text=/AI-powered|budget|recommendations|optimize/i",
+    );
+    await expect(description.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+Given("I am on the Orbit dashboard", async function(this: CustomWorld) {
+  const workspaceSlug = this.workspaceSlug || "test-workspace";
+  await this.page.goto(`/orbit/${workspaceSlug}/dashboard`);
+  await waitForPageReady(this.page);
+});
+
+When(
+  "I click on {string} in the sidebar",
+  async function(this: CustomWorld, menuItem: string) {
+    const sidebarItem = this.page.locator(
+      `[data-testid="sidebar-${menuItem.toLowerCase()}"], a:has-text("${menuItem}"), button:has-text("${menuItem}")`,
+    );
+    await sidebarItem.first().click();
+    await waitForPageReady(this.page);
+  },
+);
