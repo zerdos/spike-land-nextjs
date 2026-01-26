@@ -48,6 +48,14 @@ export async function createSocialClient(
       const { LinkedInClient } = await import("./clients/linkedin");
       return new LinkedInClient(options);
     }
+    case "YOUTUBE": {
+      const { YouTubeClient } = await import("./clients/youtube");
+      return new YouTubeClient(options);
+    }
+    case "DISCORD":
+      throw new Error(
+        "Discord uses bot authentication, not OAuth. Configure DISCORD_BOT_TOKEN and DISCORD_SERVER_ID in environment variables.",
+      );
     case "TIKTOK":
       throw new Error(`Platform ${platform} is not yet implemented`);
     default:
@@ -84,6 +92,15 @@ export async function getSocialAuthUrl(
       const client = new LinkedInClient();
       return client.getAuthUrl(redirectUri, state);
     }
+    case "YOUTUBE": {
+      const { YouTubeClient } = await import("./clients/youtube");
+      const client = new YouTubeClient();
+      return client.getAuthUrl(redirectUri, state);
+    }
+    case "DISCORD":
+      throw new Error(
+        "Discord uses bot authentication, not OAuth. Configure DISCORD_BOT_TOKEN and DISCORD_SERVER_ID in environment variables.",
+      );
     case "TIKTOK":
       throw new Error(`Platform ${platform} is not yet implemented`);
     default:

@@ -122,6 +122,59 @@ Check the status of an image generation or modification job.
 
 Get your current token balance.
 
+## Upcoming Tools
+
+These tools are planned for future releases:
+
+### apply_brand_style (Planned)
+
+Apply brand voice and style guidelines to any text content.
+
+**Parameters:**
+
+- `text` (required): The text to transform
+- `brand_id` (optional): Specific brand profile to use (default: user's primary
+  brand)
+- `content_type` (optional): Type of content - `social_post`, `email`,
+  `marketing_copy`, `product_description`
+
+**Example:**
+
+```
+Apply my brand voice to: "We made a new feature it is very good"
+→ "Introducing our latest innovation - designed to delight."
+```
+
+### post_to_platform (Planned)
+
+Post content directly to social media platforms.
+
+**Parameters:**
+
+- `platform` (required): Target platform - `twitter`, `linkedin`, `instagram`
+- `content` (required): Post content
+- `media_urls` (optional): Array of image/video URLs to attach
+
+### schedule_post (Planned)
+
+Schedule a social media post for later.
+
+**Parameters:**
+
+- `platform` (required): Target platform
+- `content` (required): Post content
+- `scheduled_time` (required): ISO 8601 timestamp for posting
+- `media_urls` (optional): Array of image/video URLs
+
+### get_engagement (Planned)
+
+Get engagement metrics for recent posts.
+
+**Parameters:**
+
+- `platform` (optional): Filter by platform
+- `days` (optional): Number of days to look back (default: 7)
+
 ## Token Costs
 
 | Tier    | Resolution | Tokens |

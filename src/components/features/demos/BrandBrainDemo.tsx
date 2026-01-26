@@ -65,6 +65,11 @@ function ToneSlider({
         max={100}
         value={tone.value}
         onChange={(e) => onChange(Number(e.target.value))}
+        aria-label={`Adjust ${tone.name} tone`}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={tone.value}
+        aria-valuetext={`${tone.value}%`}
         className="w-full h-2 appearance-none bg-transparent cursor-pointer absolute top-0 opacity-0"
         style={{ marginTop: "-8px" }}
       />
@@ -178,6 +183,10 @@ export function BrandBrainDemo() {
           <button
             onClick={handleTrain}
             disabled={isTraining}
+            aria-label={isTraining
+              ? `Training brand voice: ${trainingProgress}% complete`
+              : "Train AI on your brand content"}
+            aria-busy={isTraining}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
               isTraining
@@ -188,13 +197,13 @@ export function BrandBrainDemo() {
             {isTraining
               ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <RefreshCw className="w-4 h-4 animate-spin" aria-hidden="true" />
                   Training... {trainingProgress}%
                 </>
               )
               : (
                 <>
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4" aria-hidden="true" />
                   Train on Content
                 </>
               )}
@@ -256,6 +265,10 @@ export function BrandBrainDemo() {
               <button
                 onClick={handleTransform}
                 disabled={isTransforming}
+                aria-label={isTransforming
+                  ? "Transforming text to brand voice"
+                  : "Apply brand voice to text"}
+                aria-busy={isTransforming}
                 className={cn(
                   "flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all",
                   isTransforming
@@ -266,13 +279,13 @@ export function BrandBrainDemo() {
                 {isTransforming
                   ? (
                     <>
-                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      <RefreshCw className="w-5 h-5 animate-spin" aria-hidden="true" />
                       Transforming...
                     </>
                   )
                   : (
                     <>
-                      <Wand2 className="w-5 h-5" />
+                      <Wand2 className="w-5 h-5" aria-hidden="true" />
                       Apply Brand Voice
                     </>
                   )}
@@ -315,6 +328,7 @@ export function BrandBrainDemo() {
               >
                 <button
                   onClick={handleNextExample}
+                  aria-label="Try another text transformation example"
                   className="text-sm text-[var(--landing-muted-fg)] hover:text-[var(--landing-fg)] transition-colors"
                 >
                   Try another example

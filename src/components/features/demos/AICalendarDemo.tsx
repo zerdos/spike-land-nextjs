@@ -108,6 +108,10 @@ function HeatmapCell({
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
+      aria-label={`Schedule at ${slot.label}, ${slot.score}% engagement${
+        isBest ? " (recommended)" : ""
+      }${isSelected ? " (selected)" : ""}`}
+      aria-pressed={isSelected}
       className={cn(
         "relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg transition-all duration-200",
         getScoreColor(slot.score),
@@ -117,7 +121,9 @@ function HeatmapCell({
       style={{ opacity: 0.3 + (slot.score / 100) * 0.7 }}
       title={`${slot.label}: ${slot.score}% engagement`}
     >
-      {isBest && <Sparkles className="absolute -top-1 -right-1 w-3 h-3 text-yellow-400" />}
+      {isBest && (
+        <Sparkles className="absolute -top-1 -right-1 w-3 h-3 text-yellow-400" aria-hidden="true" />
+      )}
     </motion.button>
   );
 }
@@ -176,22 +182,39 @@ export function AICalendarDemo() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-sm">
-            <button className="p-2 rounded-lg hover:bg-[var(--landing-muted)]/30 transition-colors">
-              <ChevronLeft className="w-4 h-4" />
+          <div
+            className="flex items-center gap-2 text-sm"
+            role="navigation"
+            aria-label="Week navigation"
+          >
+            <button
+              aria-label="Go to previous week"
+              className="p-2 rounded-lg hover:bg-[var(--landing-muted)]/30 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
             </button>
             <span className="font-medium">This Week</span>
-            <button className="p-2 rounded-lg hover:bg-[var(--landing-muted)]/30 transition-colors">
-              <ChevronRight className="w-4 h-4" />
+            <button
+              aria-label="Go to next week"
+              className="p-2 rounded-lg hover:bg-[var(--landing-muted)]/30 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>
 
         {/* Week Day Selector */}
-        <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-6">
+        <div
+          className="grid grid-cols-7 gap-1 sm:gap-2 mb-6"
+          role="tablist"
+          aria-label="Select day of the week"
+        >
           {weekData.map((day, index) => (
             <button
               key={day.day}
+              role="tab"
+              aria-selected={selectedDay === index}
+              aria-label={`${day.dayName}, day ${day.day}`}
               onClick={() => setSelectedDay(index)}
               className={cn(
                 "p-2 sm:p-3 rounded-xl text-center transition-all duration-200",
@@ -286,6 +309,10 @@ export function AICalendarDemo() {
                   <button
                     onClick={handleSchedule}
                     disabled={isScheduling}
+                    aria-label={isScheduling
+                      ? "Scheduling in progress"
+                      : "Schedule post at recommended time"}
+                    aria-busy={isScheduling}
                     className={cn(
                       "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap",
                       isScheduling
@@ -296,13 +323,13 @@ export function AICalendarDemo() {
                     {isScheduling
                       ? (
                         <>
-                          <Clock className="w-4 h-4 animate-spin" />
+                          <Clock className="w-4 h-4 animate-spin" aria-hidden="true" />
                           Scheduling...
                         </>
                       )
                       : (
                         <>
-                          <Zap className="w-4 h-4" />
+                          <Zap className="w-4 h-4" aria-hidden="true" />
                           Schedule
                         </>
                       )}
