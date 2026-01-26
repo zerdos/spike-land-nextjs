@@ -1186,3 +1186,50 @@ When(
     await waitForPageReady(this.page, { strategy: "domcontentloaded" });
   },
 );
+
+// "I should see {string} status" - Check for status text/badge
+Then(
+  "I should see {string} status",
+  async function(this: CustomWorld, statusText: string) {
+    const status = this.page.locator(
+      `[data-testid*="status"]:has-text("${statusText}"), ` +
+        `[class*="badge"]:has-text("${statusText}"), ` +
+        `[class*="status"]:has-text("${statusText}"), ` +
+        `text="${statusText}"`,
+    );
+    await expect(status.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+// "I should see the {string} link" - Check for a link with text
+Then(
+  "I should see the {string} link",
+  async function(this: CustomWorld, linkText: string) {
+    const link = this.page.getByRole("link", { name: new RegExp(linkText, "i") });
+    await expect(link.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+// "I should not see the {string} link" - Check for absence of a link with text
+Then(
+  "I should not see the {string} link",
+  async function(this: CustomWorld, linkText: string) {
+    const link = this.page.getByRole("link", { name: new RegExp(linkText, "i") });
+    await expect(link).toHaveCount(0, { timeout: 5000 }).catch(async () => {
+      // If link exists, ensure it's not visible
+      await expect(link.first()).not.toBeVisible({ timeout: 5000 });
+    });
+  },
+);
+
+// "the page should load successfully" - Verify page loaded without errors
+Then("the page should load successfully", async function(this: CustomWorld) {
+  // Wait for DOM to be ready and check for no obvious errors
+  await waitForPageReady(this.page, { strategy: "domcontentloaded" });
+  // Check that page doesn't show an error state
+  const errorIndicators = this.page.locator(
+    "text=/error|500|404|something went wrong/i",
+  );
+  const hasError = await errorIndicators.first().isVisible().catch(() => false);
+  expect(hasError).toBe(false);
+});
