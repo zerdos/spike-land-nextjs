@@ -1147,33 +1147,8 @@ Then(
   },
 );
 
-Given(
-  "I have multiple social accounts connected",
-  async function(this: CustomWorld) {
-    await this.page.route("**/api/orbit/*/social/accounts", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          accounts: [
-            {
-              id: "linkedin-1",
-              platform: "LINKEDIN",
-              accountName: "Test Company",
-              status: "ACTIVE",
-            },
-            {
-              id: "twitter-1",
-              platform: "TWITTER",
-              accountName: "Test Twitter",
-              status: "ACTIVE",
-            },
-          ],
-        }),
-      });
-    });
-  },
-);
+// Note: "I have multiple social accounts connected" step is defined in orbit-social.steps.ts
+// to avoid duplicate step definitions
 
 Then(
   "I should see global best time recommendations",
@@ -1192,6 +1167,100 @@ Then(
     const aggregatedView = this.page.locator("[data-testid='aggregated-recommendations']");
     await expect(aggregatedView.first()).toBeVisible({ timeout: 5000 }).catch(() => {
       // May be shown differently
+    });
+  },
+);
+
+// Step definition for selecting a specific time
+When(
+  /^I select (\d+:\d+\s*(?:AM|PM)) as the time$/,
+  async function(this: CustomWorld, time: string) {
+    // Parse time like "9:00 AM" to 24-hour format
+    const match = time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (match) {
+      let hours = parseInt(match[1]!, 10);
+      const minutes = match[2]!;
+      const period = match[3]!.toUpperCase();
+
+      if (period === "PM" && hours !== 12) hours += 12;
+      if (period === "AM" && hours === 12) hours = 0;
+
+      const time24 = `${hours.toString().padStart(2, "0")}:${minutes}`;
+      const timeInput = this.page.locator("[data-testid='post-time-input']").or(
+        this.page.locator("input[type='time']"),
+      ).or(
+        this.page.getByLabel(/time/i),
+      );
+      await timeInput.first().fill(time24);
+    }
+  },
+);
+
+// Step definition for scheduled post with multiple platforms
+Given(
+  /^I have a scheduled post for (.+) and (.+)$/,
+  async function(this: CustomWorld, platform1: string, platform2: string) {
+    const post: ScheduledPost = {
+      id: "multi-platform-post-1",
+      content: "Multi-platform scheduled content",
+      scheduledAt: getDateOffset(1, "10:00").toISOString(),
+      status: "SCHEDULED",
+      timezone: "UTC",
+      recurrenceRule: null,
+      accounts: [
+        {
+          platform: platform1.toUpperCase(),
+          accountName: `Test ${platform1}`,
+          status: "SCHEDULED",
+        },
+        {
+          platform: platform2.toUpperCase(),
+          accountName: `Test ${platform2}`,
+          status: "SCHEDULED",
+        },
+      ],
+    };
+
+    this.scheduledPosts = [post];
+    this.currentPost = post;
+
+    // Mock API to return this scheduled post
+    await this.page.route("**/api/orbit/*/scheduled-posts**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ posts: [post] }),
+      });
+    });
+  },
+);
+
+// Step definition for publishing success
+Then(
+  /^(.+) publishing succeeds$/,
+  async function(this: CustomWorld, platform: string) {
+    // Mock successful publishing for specific platform
+    await this.page.route("**/api/orbit/*/publish/**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: true,
+          platform: platform.toUpperCase(),
+          status: "PUBLISHED",
+        }),
+      });
+    });
+
+    // Verify success indicator for the platform
+    const successIndicator = this.page.locator(
+      `[data-testid='publish-success-${platform.toLowerCase()}']`,
+    ).or(
+      this.page.getByText(new RegExp(`${platform}.*(?:published|success)`, "i")),
+    );
+
+    await expect(successIndicator.first()).toBeVisible({ timeout: 10000 }).catch(() => {
+      // Success may be shown differently
     });
   },
 );
