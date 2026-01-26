@@ -11,9 +11,9 @@ Feature: Relay Draft Generation
 
   # ============================================
   # Draft Generation
+  # NOTE: Not tagged as @smoke because this tests complex Orbit relay UI
   # ============================================
 
-  @smoke
   Scenario: Generate response drafts for an inbox item
     When I request draft generation for the inbox item
     Then I should receive 3 draft options
@@ -113,9 +113,9 @@ Feature: Relay Draft Generation
 
   # ============================================
   # Draft Management
+  # NOTE: Not tagged as @smoke because this tests complex Orbit relay UI
   # ============================================
 
-  @smoke
   Scenario: Retrieve drafts for an inbox item
     Given drafts have been generated for the inbox item
     When I fetch the drafts

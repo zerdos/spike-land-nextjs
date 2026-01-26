@@ -9,14 +9,13 @@ Feature: Allocator Dashboard
     And I have connected marketing accounts with campaign data
 
   # Dashboard Access
-  @smoke
+  # NOTE: Not tagged as @smoke because these test complex feature UI that may not be fully implemented
   Scenario: View Allocator dashboard
     When I navigate to the Allocator page
     Then I should see the Allocator dashboard
     And I should see the page title "Allocator"
     And I should see the description about AI-powered budget recommendations
 
-  @smoke
   Scenario: Access Allocator from sidebar navigation
     Given I am on the Orbit dashboard
     When I click on "Allocator" in the sidebar

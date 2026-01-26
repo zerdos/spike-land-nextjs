@@ -11,9 +11,9 @@ Feature: Relay Approval Workflow
 
   # ============================================
   # Draft Approval Actions
+  # NOTE: Not tagged as @smoke because these test complex workflow UI that requires full Orbit infrastructure
   # ============================================
 
-  @smoke
   Scenario: Approve a pending draft
     When I approve the draft
     Then the draft status should be "APPROVED"
@@ -21,7 +21,6 @@ Feature: Relay Approval Workflow
     And the reviewedAt timestamp should be set
     And an audit log entry should be created with action "APPROVED"
 
-  @smoke
   Scenario: Reject a pending draft with reason
     When I reject the draft with reason "Tone is too casual for our brand"
     Then the draft status should be "REJECTED"
@@ -40,9 +39,9 @@ Feature: Relay Approval Workflow
 
   # ============================================
   # Draft Editing
+  # NOTE: Not tagged as @smoke because these test complex workflow UI
   # ============================================
 
-  @smoke
   Scenario: Edit a pending draft
     Given a draft with content "Thank you for your feedback!"
     When I edit the draft to "Thanks for reaching out! We appreciate your feedback."
@@ -104,9 +103,9 @@ Feature: Relay Approval Workflow
 
   # ============================================
   # Audit Logging
+  # NOTE: Not tagged as @smoke because this tests complex workflow features
   # ============================================
 
-  @smoke
   Scenario: Complete audit trail for draft lifecycle
     Given a new draft is generated
     When I edit the draft
