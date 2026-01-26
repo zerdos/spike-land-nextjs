@@ -1,124 +1,54 @@
-import { AssistantUIDrawer } from "@/components/app/assistant-ui-drawer";
-import { useDarkMode } from "@/hooks/use-dark-mode";
-import { useDictation } from "@/hooks/use-dictation";
-import { useLocalStorage } from "@/hooks/use-local-storage";
-import { toast } from "@/hooks/use-toast";
 import type { ICode } from "@/lib/interfaces";
-import type { ImageData } from "@/lib/interfaces";
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 
-import { useScreenshot } from "./hooks/useScreenshot";
-
+/**
+ * ChatInterface component - placeholder after assistant-ui packages removal
+ */
 const ChatInterface: React.FC<{
   isOpen: boolean;
-  codeSession: ICode; // Renamed from cSess
+  codeSession: ICode;
   codeSpace: string;
   onClose: () => void;
-}> = React.memo(({ onClose, isOpen, codeSession }): React.ReactElement => { // Renamed from cSess
-  // const [session, setSession] = useState<ICodeSession | null>(null);
-  const { isDarkMode, toggleDarkMode: _toggleDarkMode } = useDarkMode();
-
-  const localCodeSpace = codeSession.getCodeSpace(); // Renamed from cSess, used local var to avoid conflict with prop
-  const [isStreaming, setIsStreaming] = useLocalStorage<boolean>(
-    `streaming-${localCodeSpace}`,
-    false,
-  );
-
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (isStreaming) {
-      timeoutRef.current = setTimeout(() => {
-        setIsStreaming(false);
-      }, 5000);
-    }
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [isStreaming, setIsStreaming]);
-
-  const [_input, _setInput] = useDictation("");
-
-  const [_editingMessageId, _setEditingMessageId] = useState<string | null>(
-    null,
-  );
-  const [_editInput, _setEditInput] = useState("");
-
-  // State to hold initial prompt data
-  const [initialPrompt, setInitialPrompt] = useState<
-    {
-      prompt: string;
-      images: ImageData[];
-    } | null
-  >(null);
-
-  // Removed unused reset functionality since AssistantUI manages its own state
-
-  useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => {
-        document.getElementById("after-last-message")?.scrollIntoView({
-          behavior: "instant",
-          block: "end",
-        });
-      });
-    }
-  }, [isOpen]);
-
-  // Removed unused handlers since AssistantUI manages its own state
-
-  const {
-    isScreenshotLoading: _isScreenshotLoading,
-    screenshotImage: _screenshotImage,
-    handleScreenshotClick: _handleScreenshotClick,
-    handleCancelScreenshot: _handleCancelScreenshot,
-  } = useScreenshot(localCodeSpace); // Used localCodeSpace
-
-  useEffect(() => {
-    if (localCodeSpace.includes("-")) { // Used localCodeSpace
-      const maybeKey = localCodeSpace.split("-")[1]; // Used localCodeSpace
-      if (maybeKey) {
-        const storedData = sessionStorage.getItem(maybeKey);
-        if (storedData) {
-          try {
-            const { prompt, images } = JSON.parse(storedData) as {
-              prompt: string;
-              images: ImageData[];
-            };
-            sessionStorage.removeItem(maybeKey);
-
-            // Store the initial prompt data to pass to AssistantUIDrawer
-            setInitialPrompt({ prompt, images });
-          } catch (error) {
-            console.error("Failed to parse stored prompt data:", error);
-            sessionStorage.removeItem(maybeKey);
-
-            // Notify user about the corrupted data
-            toast({
-              title: "Failed to load saved prompt",
-              description: "The saved prompt data was corrupted and could not be loaded.",
-              variant: "destructive",
-            });
-          }
-        }
-      }
-    }
-  }, [localCodeSpace]); // Only depend on localCodeSpace
-
-  // Removed unused memoized callbacks since AssistantUI manages its own state
-
+}> = React.memo(({ isOpen, onClose }): React.ReactElement => {
   if (!isOpen) return <></>;
 
+  // Placeholder - assistant-ui packages were removed
+  // Display a simple message indicating the feature is temporarily unavailable
   return (
-    <AssistantUIDrawer
-      isOpen={isOpen}
-      onClose={onClose}
-      isDarkMode={isDarkMode}
-      cSess={codeSession}
-      initialPrompt={initialPrompt}
-    />
+    <div
+      data-testid="chat-interface-placeholder"
+      className="fixed inset-y-0 right-0 z-50 w-full sm:w-[400px] md:w-[512px] bg-white dark:bg-gray-800 shadow-lg flex flex-col"
+    >
+      <div className="flex items-center justify-between p-4 border-b">
+        <h2 className="text-lg font-semibold">Assistant</h2>
+        <button
+          onClick={onClose}
+          className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+          aria-label="Close"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 4L4 12M4 4L12 12"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+      <div className="flex-1 flex items-center justify-center p-4">
+        <p className="text-gray-500 dark:text-gray-400 text-center">
+          Chat assistant is being updated. Please check back later.
+        </p>
+      </div>
+    </div>
   );
 });
 
