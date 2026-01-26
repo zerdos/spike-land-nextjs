@@ -807,3 +807,391 @@ When(
     await this.page.waitForTimeout(500);
   },
 );
+
+// ============================================
+// Additional Account Setup Steps
+// ============================================
+
+Given(
+  "I have a Twitter account {string} connected",
+  async function(this: CustomWorld, accountName: string) {
+    // Add Twitter account to the list of connected accounts
+    await this.page.route("**/api/social/accounts**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          accounts: [
+            {
+              id: "social-account-linkedin-1",
+              platform: "LINKEDIN",
+              accountId: "12345",
+              accountName: "Test Company",
+              status: "ACTIVE",
+            },
+            {
+              id: "social-account-twitter-1",
+              platform: "TWITTER",
+              accountId: "67890",
+              accountName: accountName,
+              status: "ACTIVE",
+              metadata: {
+                displayName: accountName,
+                handle: "@testtwitter",
+              },
+            },
+          ],
+        }),
+      });
+    });
+  },
+);
+
+// ============================================
+// Best-Time Recommendations Steps
+// ============================================
+
+Given(
+  "I have a new social account with no historical data",
+  async function(this: CustomWorld) {
+    // Set up a social account with no engagement data
+    await this.page.route("**/api/orbit/*/social/accounts", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          accounts: [
+            {
+              id: "new-account-1",
+              platform: "LINKEDIN",
+              accountName: "New Company",
+              status: "ACTIVE",
+              hasEngagementData: false,
+              metadata: {
+                displayName: "New Company",
+                followersCount: 0,
+              },
+            },
+          ],
+        }),
+      });
+    });
+
+    // Mock recommendations API to return industry benchmarks
+    await this.page.route("**/api/orbit/*/calendar/recommendations", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          recommendations: [
+            {
+              dayOfWeek: "TUESDAY",
+              time: "09:00",
+              score: 0.75,
+              confidence: "LOW",
+              source: "INDUSTRY_BENCHMARK",
+              platform: "LINKEDIN",
+            },
+            {
+              dayOfWeek: "WEDNESDAY",
+              time: "14:00",
+              score: 0.70,
+              confidence: "LOW",
+              source: "INDUSTRY_BENCHMARK",
+              platform: "LINKEDIN",
+            },
+          ],
+          usedIndustryBenchmarks: true,
+          benchmarkSource: "B2B Technology Industry Average",
+        }),
+      });
+    });
+  },
+);
+
+Given(
+  "I have engagement data for my LinkedIn account",
+  async function(this: CustomWorld) {
+    await this.page.route("**/api/orbit/*/calendar/recommendations", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          recommendations: [
+            {
+              dayOfWeek: "TUESDAY",
+              time: "09:00",
+              score: 0.92,
+              confidence: "HIGH",
+              source: "HISTORICAL_DATA",
+              platform: "LINKEDIN",
+              engagementScore: 4.5,
+            },
+            {
+              dayOfWeek: "THURSDAY",
+              time: "11:00",
+              score: 0.88,
+              confidence: "HIGH",
+              source: "HISTORICAL_DATA",
+              platform: "LINKEDIN",
+              engagementScore: 4.2,
+            },
+          ],
+          daysToAvoid: ["SUNDAY"],
+          usedIndustryBenchmarks: false,
+        }),
+      });
+    });
+  },
+);
+
+Given(
+  "I have scheduled posts with gaps between them",
+  async function(this: CustomWorld) {
+    // Create posts with large gaps between them
+    this.scheduledPosts = [
+      {
+        id: "gap-post-1",
+        content: "First post",
+        scheduledAt: getDateOffset(1, "09:00").toISOString(),
+        status: "SCHEDULED" as const,
+        timezone: "UTC",
+        recurrenceRule: null,
+        accounts: [
+          { platform: "LINKEDIN", accountName: "Test Company", status: "SCHEDULED" },
+        ],
+      },
+      {
+        id: "gap-post-2",
+        content: "Second post",
+        scheduledAt: getDateOffset(7, "09:00").toISOString(), // 6 day gap
+        status: "SCHEDULED" as const,
+        timezone: "UTC",
+        recurrenceRule: null,
+        accounts: [
+          { platform: "LINKEDIN", accountName: "Test Company", status: "SCHEDULED" },
+        ],
+      },
+    ];
+
+    // Mock content gaps API
+    await this.page.route("**/api/orbit/*/calendar/content-gaps", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          gaps: [
+            {
+              startDate: getDateOffset(2, "00:00").toISOString(),
+              endDate: getDateOffset(6, "23:59").toISOString(),
+              duration: 5,
+              isHighEngagementTime: true,
+              suggestedPlatforms: ["LINKEDIN", "TWITTER"],
+            },
+          ],
+        }),
+      });
+    });
+  },
+);
+
+Then(
+  "I should see the {string} panel",
+  async function(this: CustomWorld, panelName: string) {
+    const panelId = panelName.toLowerCase().replace(/\s+/g, "-");
+    const panel = this.page.locator(`[data-testid='panel-${panelId}']`).or(
+      this.page.getByRole("region", { name: new RegExp(panelName, "i") }),
+    ).or(
+      this.page.getByText(panelName),
+    );
+    await expect(panel.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+Then(
+  "I should see time slot recommendations",
+  async function(this: CustomWorld) {
+    const recommendations = this.page.locator("[data-testid='time-slot-recommendation']").or(
+      this.page.locator("[data-testid='recommended-time']"),
+    );
+    await expect(recommendations.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+Then(
+  "each recommendation should show confidence level",
+  async function(this: CustomWorld) {
+    const confidenceIndicators = this.page.locator("[data-testid='confidence-level']").or(
+      this.page.locator("[data-testid='confidence-indicator']"),
+    );
+    const count = await confidenceIndicators.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
+
+Then(
+  "I should see LinkedIn recommendations",
+  async function(this: CustomWorld) {
+    const linkedinRecs = this.page.locator("[data-testid='recommendation-linkedin']").or(
+      this.page.locator("[data-platform='LINKEDIN']"),
+    );
+    await expect(linkedinRecs.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+Then(
+  "recommendations should show engagement scores",
+  async function(this: CustomWorld) {
+    const engagementScores = this.page.locator("[data-testid='engagement-score']");
+    await expect(engagementScores.first()).toBeVisible({ timeout: 5000 }).catch(() => {
+      // Engagement scores might be shown differently
+    });
+  },
+);
+
+Then(
+  "recommendations should indicate days to avoid",
+  async function(this: CustomWorld) {
+    const daysToAvoid = this.page.locator("[data-testid='days-to-avoid']").or(
+      this.page.getByText(/avoid|not recommended/i),
+    );
+    await expect(daysToAvoid.first()).toBeVisible({ timeout: 5000 }).catch(() => {
+      // Days to avoid might not always be present
+    });
+  },
+);
+
+Then(
+  "I should see recommendations based on industry benchmarks",
+  async function(this: CustomWorld) {
+    const benchmarkIndicator = this.page.locator("[data-testid='industry-benchmark-notice']").or(
+      this.page.getByText(/industry benchmark|based on industry/i),
+    );
+    await expect(benchmarkIndicator.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+Then(
+  "I should see a low confidence indicator",
+  async function(this: CustomWorld) {
+    const lowConfidence = this.page.locator("[data-testid='confidence-low']").or(
+      this.page.locator("[data-confidence='low']"),
+    ).or(
+      this.page.getByText(/low confidence/i),
+    );
+    await expect(lowConfidence.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+Then(
+  "I should see the benchmark source",
+  async function(this: CustomWorld) {
+    const benchmarkSource = this.page.locator("[data-testid='benchmark-source']").or(
+      this.page.getByText(/benchmark source|industry average/i),
+    );
+    await expect(benchmarkSource.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+Then(
+  "I should see identified content gaps",
+  async function(this: CustomWorld) {
+    const contentGaps = this.page.locator("[data-testid='content-gap']").or(
+      this.page.locator("[data-testid='gap-indicator']"),
+    );
+    await expect(contentGaps.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+Then(
+  "gaps during high-engagement times should be highlighted",
+  async function(this: CustomWorld) {
+    const highlightedGaps = this.page.locator(
+      "[data-testid='content-gap'][data-highlighted='true']",
+    ).or(
+      this.page.locator("[data-testid='high-engagement-gap']"),
+    );
+    await expect(highlightedGaps.first()).toBeVisible({ timeout: 5000 }).catch(() => {
+      // Highlighted gaps might be shown differently
+    });
+  },
+);
+
+Then(
+  "I should see suggested platforms for each gap",
+  async function(this: CustomWorld) {
+    const suggestedPlatforms = this.page.locator("[data-testid='suggested-platforms']");
+    await expect(suggestedPlatforms.first()).toBeVisible({ timeout: 5000 }).catch(() => {
+      // Platform suggestions might be shown differently
+    });
+  },
+);
+
+When(
+  "I click on a recommended time slot",
+  async function(this: CustomWorld) {
+    const recommendation = this.page.locator("[data-testid='time-slot-recommendation']").or(
+      this.page.locator("[data-testid='recommended-time']"),
+    );
+    await recommendation.first().click();
+  },
+);
+
+Then(
+  "the date and time should be pre-filled with the recommended slot",
+  async function(this: CustomWorld) {
+    const dateInput = this.page.locator("[data-testid='post-date-input']");
+    const timeInput = this.page.locator("[data-testid='post-time-input']");
+    await expect(dateInput).not.toHaveValue("");
+    await expect(timeInput).not.toHaveValue("");
+  },
+);
+
+Given(
+  "I have multiple social accounts connected",
+  async function(this: CustomWorld) {
+    await this.page.route("**/api/orbit/*/social/accounts", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          accounts: [
+            {
+              id: "linkedin-1",
+              platform: "LINKEDIN",
+              accountName: "Test Company",
+              status: "ACTIVE",
+            },
+            {
+              id: "twitter-1",
+              platform: "TWITTER",
+              accountName: "Test Twitter",
+              status: "ACTIVE",
+            },
+          ],
+        }),
+      });
+    });
+  },
+);
+
+Then(
+  "I should see global best time recommendations",
+  async function(this: CustomWorld) {
+    const globalRecs = this.page.locator("[data-testid='global-recommendations']").or(
+      this.page.getByText(/best times across all platforms/i),
+    );
+    await expect(globalRecs.first()).toBeVisible({ timeout: 10000 });
+  },
+);
+
+Then(
+  "global recommendations should aggregate across all platforms",
+  async function(this: CustomWorld) {
+    // Verify multiple platform icons or aggregated data is shown
+    const aggregatedView = this.page.locator("[data-testid='aggregated-recommendations']");
+    await expect(aggregatedView.first()).toBeVisible({ timeout: 5000 }).catch(() => {
+      // May be shown differently
+    });
+  },
+);

@@ -891,3 +891,14 @@ When(
     await this.page.waitForLoadState("networkidle");
   },
 );
+
+// "I should see {string} button again" - used when account is disconnected
+Then(
+  "I should see {string} button again",
+  async function(this: CustomWorld, buttonText: string) {
+    const button = this.page.getByRole("button", {
+      name: new RegExp(buttonText, "i"),
+    });
+    await expect(button.first()).toBeVisible({ timeout: 10000 });
+  },
+);

@@ -887,6 +887,18 @@ Then(
   },
 );
 
+// Alias for "I should see all generated drafts" - used in orbit-relay-drafts.feature
+Then(
+  "I should see all drafts",
+  async function(this: CustomWorld) {
+    const drafts = this.page.locator("[data-testid='draft-card']").or(
+      this.page.locator("[data-testid='draft-option']"),
+    );
+    const count = await drafts.count();
+    expect(count).toBeGreaterThan(0);
+  },
+);
+
 Then(
   "the preferred draft should be listed first",
   async function(this: CustomWorld) {
