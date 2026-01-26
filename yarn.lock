@@ -6707,7 +6707,7 @@ __metadata:
     fetch-retry: "npm:6.0.0"
     framer-motion: "npm:12.29.0"
     globals: "npm:17.1.0"
-    happy-dom: "npm:20.3.7"
+    happy-dom: "npm:20.3.9"
     html2canvas-pro: "npm:1.6.6"
     immutable: "npm:5.1.4"
     input-otp: "npm:1.4.2"
@@ -9136,15 +9136,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/pretty-format@npm:4.0.17":
-  version: 4.0.17
-  resolution: "@vitest/pretty-format@npm:4.0.17"
-  dependencies:
-    tinyrainbow: "npm:^3.0.3"
-  checksum: 10c9/e50925f44168b8108a5094e44fd739b7183457c101eb020e88b5556a2f857808d0c9d045113aec83815a20d4aaaf9b7a522a1c651ce111de18daa686891b37a0
-  languageName: node
-  linkType: hard
-
 "@vitest/pretty-format@npm:4.0.18":
   version: 4.0.18
   resolution: "@vitest/pretty-format@npm:4.0.18"
@@ -9182,11 +9173,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/ui@npm:4.0.17":
-  version: 4.0.17
-  resolution: "@vitest/ui@npm:4.0.17"
+"@vitest/ui@npm:4.0.18":
+  version: 4.0.18
+  resolution: "@vitest/ui@npm:4.0.18"
   dependencies:
-    "@vitest/utils": "npm:4.0.17"
+    "@vitest/utils": "npm:4.0.18"
     fflate: "npm:^0.8.2"
     flatted: "npm:^3.3.3"
     pathe: "npm:^2.0.3"
@@ -9194,18 +9185,8 @@ __metadata:
     tinyglobby: "npm:^0.2.15"
     tinyrainbow: "npm:^3.0.3"
   peerDependencies:
-    vitest: 4.0.17
-  checksum: 10c9/2bf8c0fc1df8fd469dbd03b5049270e855e41ca80101223b26dcf071034a934da37beca975957eed54b90d10ec168af8999d143885296b85fe5843db59ed5dcf
-  languageName: node
-  linkType: hard
-
-"@vitest/utils@npm:4.0.17":
-  version: 4.0.17
-  resolution: "@vitest/utils@npm:4.0.17"
-  dependencies:
-    "@vitest/pretty-format": "npm:4.0.17"
-    tinyrainbow: "npm:^3.0.3"
-  checksum: 10c9/5c89c563452f80cbc4f978837ee883cb226477476416c06853e0cac49fb5eb930b48ecc44147a620840f39cabdd9470433dd510ba05980f2c9efc12d036d7c6a
+    vitest: 4.0.18
+  checksum: 10c9/c2a63aa3e4697761fa1f07d21c27fb467af94f79bf7b6c8bb9f94dc58ee338f05c7eac4b6288f8f0e28e4c7861db90ac3b55048d0a551e175b630b341e28d0b1
   languageName: node
   linkType: hard
 
@@ -13749,9 +13730,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"happy-dom@npm:20.3.7":
-  version: 20.3.7
-  resolution: "happy-dom@npm:20.3.7"
+"happy-dom@npm:20.3.9":
+  version: 20.3.9
+  resolution: "happy-dom@npm:20.3.9"
   dependencies:
     "@types/node": "npm:>=20.0.0"
     "@types/whatwg-mimetype": "npm:^3.0.2"
@@ -13759,7 +13740,7 @@ __metadata:
     entities: "npm:^4.5.0"
     whatwg-mimetype: "npm:^3.0.0"
     ws: "npm:^8.18.3"
-  checksum: 10c9/ff66a067aa2b0125cc828d65a926c4f3870dc1210274ad871e25ad1ef4f47e9be55c16f6556f5ef80892a94b219eb6a79d9e688f5070b9036f5961ec12590d97
+  checksum: 10c9/3f8782858fa26aa2301e38381c2aa2b6dd74e7b76e7546a3b3379ff6e4103c5b742fc78686d89d3779e1624c102702e2e525a94ec44d94ee50a9898a352f75ee
   languageName: node
   linkType: hard
 
@@ -22083,7 +22064,7 @@ __metadata:
     "@vercel/speed-insights": "npm:1.3.1"
     "@vitejs/plugin-react": "npm:5.1.2"
     "@vitest/coverage-v8": "npm:4.0.18"
-    "@vitest/ui": "npm:4.0.17"
+    "@vitest/ui": "npm:4.0.18"
     "@yarnpkg/pnpify": "npm:4.1.6"
     autoprefixer: "npm:10.4.23"
     bcryptjs: "npm:3.0.3"
@@ -22104,7 +22085,7 @@ __metadata:
     fast-xml-parser: "npm:5.3.3"
     framer-motion: "npm:12.29.0"
     gray-matter: "npm:4.0.3"
-    happy-dom: "npm:20.3.7"
+    happy-dom: "npm:20.3.9"
     husky: "npm:9.1.7"
     jose: "npm:6.1.3"
     jsdom: "npm:27.4.0"
