@@ -468,6 +468,28 @@ When(
   },
 );
 
+// Simple edit draft (for audit trail scenarios)
+When("I edit the draft", async function(this: CustomWorld) {
+  const editedContent = "Edited content for audit trail test";
+  await this.page.route("**/api/orbit/*/relay/drafts/*/edit", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...this.currentDraft,
+        content: editedContent,
+      }),
+    });
+  });
+
+  const editor = this.page.locator("[data-testid='draft-content-editor']");
+  if (await editor.isVisible()) {
+    await editor.fill(editedContent);
+    await this.page.click("[data-testid='save-edit-button']");
+    await this.page.waitForLoadState("networkidle");
+  }
+});
+
 When("I try to edit the draft", async function(this: CustomWorld) {
   await this.page.route("**/api/orbit/*/relay/drafts/*/edit", async (route) => {
     await route.fulfill({
