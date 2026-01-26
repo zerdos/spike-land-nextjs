@@ -38,14 +38,14 @@ COPY --link packages/react-app-examples/package.json ./packages/react-app-exampl
 COPY --link prisma ./prisma
 
 # ============================================================================
-# STAGE 2: Install Dependencies (using committed .yarn/cache for speed)
+# STAGE 2: Install Dependencies
 # ============================================================================
 FROM base AS deps
 ARG CACHE_NS
 ARG TARGETARCH
 ARG DUMMY_DATABASE_URL
 
-# Note: Native dependencies (sharp, canvas) removed for Yarn PnP zero-install
+# Note: Native dependencies (sharp, canvas) removed
 # Image processing now uses lightweight header parsing and Gemini API
 RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=${CACHE_NS}-apt-lists-${TARGETARCH},target=/var/lib/apt/lists,sharing=locked \
@@ -56,7 +56,7 @@ RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/
 # Copy dependency context
 COPY --link --from=dep-context /app /app
 
-# Install dependencies - uses committed .yarn/cache so no downloads needed
+# Install dependencies
 RUN yarn install --immutable
 
 # ============================================================================
@@ -212,10 +212,10 @@ RUN --mount=type=cache,id=${CACHE_NS}-apt-cache-${TARGETARCH},target=/var/cache/
     apt-get update \
     && apt-get install -y --no-install-recommends procps
 
-# Copy Yarn PnP files needed to run playwright
+# Copy Yarn files needed for Playwright
 COPY --link --from=dep-context /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
 COPY --link --from=dep-context /app/.yarn/ ./.yarn/
-COPY --link --from=deps /app/.pnp.cjs /app/.pnp.loader.mjs ./
+COPY --link --from=deps /app/node_modules ./node_modules
 
 RUN --mount=type=cache,id=${CACHE_NS}-playwright-${TARGETARCH},target=/tmp/pw-cache,sharing=locked \
     mkdir -p /ms-playwright \
@@ -229,11 +229,11 @@ FROM e2e-browser AS e2e-test-base
 WORKDIR /app
 ARG DUMMY_DATABASE_URL
 
-# Copy dependency metadata and PnP resolution files
-# IMPORTANT: Copy .yarn/ from deps (after yarn install) to include unplugged packages like Next.js
+# Copy dependency metadata and node_modules
+# IMPORTANT: Copy node_modules from deps (after yarn install) to include all installed packages
 COPY --link --from=deps /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
 COPY --link --from=deps /app/.yarn/ ./.yarn/
-COPY --link --from=deps /app/.pnp.cjs /app/.pnp.loader.mjs ./
+COPY --link --from=deps /app/node_modules ./node_modules
 COPY --link --from=source /app/packages/ ./packages/
 COPY --link --from=source /app/prisma ./prisma
 
