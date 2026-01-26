@@ -9,6 +9,7 @@ import {
   createCodespaceServer,
 } from "@/lib/claude-agent/tools/codespace-tools";
 import prisma from "@/lib/prisma";
+import { spawnAgentSandbox } from "@/lib/sandbox/agent-sandbox";
 import { tryCatch } from "@/lib/try-catch";
 import { enqueueMessage, getCodeHash, setAgentWorking, setCodeHash } from "@/lib/upstash/client";
 import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -16,8 +17,15 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-// Feature flag: Use Redis queue for agent processing (handled by local poller)
-// Set AGENT_USE_QUEUE=true on Vercel to avoid SDK initialization errors
+// Feature flags for agent processing modes
+// Priority: SANDBOX > QUEUE > Direct SDK
+
+// AGENT_USE_SANDBOX: Use Vercel Sandbox for isolated agent execution (recommended for production)
+// This spawns ephemeral VMs that can run for up to 5 hours with full Claude Agent SDK support
+const USE_SANDBOX_MODE = process.env["AGENT_USE_SANDBOX"] === "true";
+
+// AGENT_USE_QUEUE: Use Redis queue for agent processing (handled by local poller)
+// Fallback when sandbox is not available or for cost optimization
 const USE_QUEUE_MODE = process.env["AGENT_USE_QUEUE"] === "true";
 
 export const maxDuration = 300; // 5 minutes
@@ -159,6 +167,106 @@ export async function POST(
       { error: "Failed to create message" },
       { status: 500 },
     );
+  }
+
+  // Sandbox mode: Spawn Vercel Sandbox to run the agent in isolation
+  // This is the recommended production mode for long-running agent tasks
+  if (USE_SANDBOX_MODE) {
+    console.log(
+      "[agent/chat] Sandbox mode enabled, spawning sandbox for message:",
+      userMessage.id,
+    );
+
+    // Create a SandboxJob to track execution
+    const { data: sandboxJob, error: jobError } = await tryCatch(
+      prisma.sandboxJob.create({
+        data: {
+          appId: id,
+          messageId: userMessage.id,
+          status: "PENDING",
+        },
+      }),
+    );
+
+    if (jobError || !sandboxJob) {
+      console.error("[agent/chat] Failed to create sandbox job:", jobError);
+      return NextResponse.json(
+        { error: "Failed to create sandbox job" },
+        { status: 500 },
+      );
+    }
+
+    // Mark agent as working (the sandbox callback will clear this when done)
+    await setAgentWorking(id, true);
+
+    // Spawn the sandbox (fire-and-forget - it will callback when done)
+    // We don't await the full execution, just the spawn
+    const spawnResult = await spawnAgentSandbox(
+      id,
+      userMessage.id,
+      sandboxJob.id,
+      app.codespaceId,
+      content,
+    );
+
+    if (!spawnResult.success) {
+      console.error("[agent/chat] Failed to spawn sandbox:", spawnResult.error);
+      // Clean up the job and agent working status
+      await setAgentWorking(id, false);
+      await prisma.sandboxJob.update({
+        where: { id: sandboxJob.id },
+        data: { status: "FAILED", error: spawnResult.error },
+      });
+      return NextResponse.json(
+        { error: `Failed to spawn sandbox: ${spawnResult.error}` },
+        { status: 500 },
+      );
+    }
+
+    console.log(
+      "[agent/chat] Sandbox spawned successfully:",
+      spawnResult.sandboxId,
+    );
+
+    // Return a streaming response that indicates the message was queued
+    // The frontend will receive updates via SSE when the sandbox completes
+    const sandboxStream = new ReadableStream({
+      start(controller) {
+        // Emit initialize stage
+        const initData = JSON.stringify({
+          type: "stage",
+          stage: "initialize",
+        });
+        controller.enqueue(new TextEncoder().encode(`data: ${initData}\n\n`));
+
+        // Emit status message
+        const statusData = JSON.stringify({
+          type: "status",
+          content: "Processing your request in a secure sandbox...",
+        });
+        controller.enqueue(new TextEncoder().encode(`data: ${statusData}\n\n`));
+
+        // Emit processing stage
+        const processData = JSON.stringify({
+          type: "stage",
+          stage: "processing",
+        });
+        controller.enqueue(
+          new TextEncoder().encode(`data: ${processData}\n\n`),
+        );
+
+        // Close stream - the actual response will come via SSE
+        controller.close();
+      },
+    });
+
+    return new Response(sandboxStream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
   }
 
   // Queue mode: Queue message for local poller instead of using SDK
