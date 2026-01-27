@@ -79,3 +79,10 @@ src/generated/
 # Live codespace files (local sync for agents)
 live/*
 !live/.gitkeep
+
+# Video output files (large files)
+packages/video/out/
+*.mp4
+*.webm
+*.mov
+*.avi
