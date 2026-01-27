@@ -9,9 +9,9 @@ import { Link } from "@/components/ui/link";
 import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { useSmartGallery } from "@/hooks/useSmartGallery";
 import { useTouchGestures } from "@/hooks/useTouchGestures";
-import type { CanvasSettings, GalleryImage } from "@/lib/canvas/types";
+import type { CanvasRotation, CanvasSettings, GalleryImage } from "@/lib/canvas/types";
 import { Play } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface CanvasClientProps {
   images: GalleryImage[];
@@ -52,6 +52,22 @@ export function CanvasClient({
 }: CanvasClientProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [currentRotation, setCurrentRotation] = useState<CanvasRotation>(
+    settings.rotation,
+  );
+
+  // Handle rotation changes from slideshow view
+  const handleRotate = useCallback((direction: "cw" | "ccw") => {
+    setCurrentRotation((prev) => {
+      const rotations: CanvasRotation[] = [0, 90, 180, 270];
+      const currentIdx = rotations.indexOf(prev);
+      if (direction === "cw") {
+        return rotations[(currentIdx + 1) % 4] as CanvasRotation;
+      } else {
+        return rotations[(currentIdx + 3) % 4] as CanvasRotation;
+      }
+    });
+  }, []);
 
   // Shuffle images if order is random (only on mount)
   const displayImages = useMemo(() => {
@@ -195,7 +211,7 @@ export function CanvasClient({
         onImageSelect={selectImage}
         onEnterSlideshow={enterSlideshow}
         isBlurred={viewMode === "slideshow"}
-        rotation={settings.rotation}
+        rotation={currentRotation}
       />
 
       {/* Slideshow View */}
@@ -211,7 +227,8 @@ export function CanvasClient({
             originRect: getTransitionOrigin(),
             direction: "expand",
           }}
-          rotation={settings.rotation}
+          rotation={currentRotation}
+          onRotate={handleRotate}
         />
       )}
 
