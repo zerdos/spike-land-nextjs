@@ -24,7 +24,7 @@
     "rimraf": "6.1.2",
     "typescript": "5.9.3",
     "vitest": "4.0.18",
-    "wrangler": "4.60.0"
+    "wrangler": "4.61.0"
   },
   "dependencies": {
     "@spike-npm-land/code": "0.9.56",
