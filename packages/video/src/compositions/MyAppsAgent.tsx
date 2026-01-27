@@ -391,37 +391,47 @@ function OrbitDashboardPreview({ frame }: OrbitDashboardPreviewProps) {
           gap: 8,
         }}
       >
-        {(showEnhanced ? ["IG", "FB", "X", "LI", "TT"] : ["IG", "FB", "X"]).map((platform) => (
-          <div
-            key={platform}
-            style={{
-              padding: 8,
-              backgroundColor: `${COLORS.darkBg}80`,
-              borderRadius: 6,
-              textAlign: "center",
-            }}
-          >
+        {(showEnhanced ? ["IG", "FB", "X", "LI", "TT"] : ["IG", "FB", "X"]).map((platform) => {
+          // Deterministic values for each platform (avoids flickering in Remotion)
+          const followerCounts: Record<string, number> = {
+            IG: 24,
+            FB: 18,
+            X: 12,
+            LI: 15,
+            TT: 45,
+          };
+          return (
             <div
+              key={platform}
               style={{
-                fontSize: 10,
-                color: COLORS.textMuted,
-                fontFamily: "Inter, sans-serif",
+                padding: 8,
+                backgroundColor: `${COLORS.darkBg}80`,
+                borderRadius: 6,
+                textAlign: "center",
               }}
             >
-              {platform}
+              <div
+                style={{
+                  fontSize: 10,
+                  color: COLORS.textMuted,
+                  fontFamily: "Inter, sans-serif",
+                }}
+              >
+                {platform}
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: COLORS.textPrimary,
+                  fontFamily: "Inter, sans-serif",
+                }}
+              >
+                {followerCounts[platform]}K
+              </div>
             </div>
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: COLORS.textPrimary,
-                fontFamily: "Inter, sans-serif",
-              }}
-            >
-              {Math.floor(Math.random() * 50 + 10)}K
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Chart area */}

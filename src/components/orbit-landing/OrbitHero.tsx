@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Zap } from "lucide-react";
-import { useSession } from "next-auth/react";
 
 /**
  * OrbitHero - Hero section for the Orbit landing page
@@ -101,8 +100,7 @@ function GradientMesh() {
 }
 
 export function OrbitHero() {
-  const { data: session } = useSession();
-  const orbitHref = session ? "/orbit" : "/orbit";
+  const orbitHref = "/orbit";
 
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-zinc-950">
