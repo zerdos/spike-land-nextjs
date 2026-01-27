@@ -6,9 +6,9 @@ import {
   calculateHeroTransform,
   clearHeroTransformStyles,
 } from "@/lib/canvas/animations";
-import type { GalleryImage, GalleryTransition } from "@/lib/canvas/types";
+import type { CanvasRotation, GalleryImage, GalleryTransition } from "@/lib/canvas/types";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, RotateCw } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -19,7 +19,8 @@ export interface SlideshowViewProps {
   onNavigate: (direction: "prev" | "next") => void;
   onExit: () => void;
   transitionState: GalleryTransition;
-  rotation?: 0 | 90 | 180 | 270;
+  rotation?: CanvasRotation;
+  onRotate?: (direction: "cw" | "ccw") => void;
 }
 
 /**
@@ -35,6 +36,7 @@ export function SlideshowView({
   onExit,
   transitionState,
   rotation = 0,
+  onRotate,
 }: SlideshowViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showControls, setShowControls] = useState(false);
@@ -215,34 +217,73 @@ export function SlideshowView({
         </button>
       </div>
 
-      {/* Exit button */}
-      <button
-        type="button"
-        onClick={onExit}
+      {/* Top controls: rotation and exit */}
+      <div
         className={cn(
-          "absolute top-4 right-4 p-2 rounded-full bg-black/40 backdrop-blur-sm",
-          "text-white/80 hover:text-white hover:bg-black/60",
-          "transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
+          "absolute top-4 right-4 flex items-center gap-2 transition-opacity duration-300",
           showControls ? "opacity-100" : "opacity-0",
         )}
-        aria-label="Exit slideshow"
-        data-testid="slideshow-exit-button"
       >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
+        {/* Rotation buttons */}
+        {onRotate && (
+          <>
+            <button
+              type="button"
+              onClick={() => onRotate("ccw")}
+              className={cn(
+                "p-2 rounded-full bg-black/40 backdrop-blur-sm",
+                "text-white/80 hover:text-white hover:bg-black/60",
+                "transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
+              )}
+              aria-label="Rotate counter-clockwise"
+              data-testid="rotate-ccw-button"
+            >
+              <RotateCcw className="w-5 h-5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => onRotate("cw")}
+              className={cn(
+                "p-2 rounded-full bg-black/40 backdrop-blur-sm",
+                "text-white/80 hover:text-white hover:bg-black/60",
+                "transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
+              )}
+              aria-label="Rotate clockwise"
+              data-testid="rotate-cw-button"
+            >
+              <RotateCw className="w-5 h-5" aria-hidden="true" />
+            </button>
+          </>
+        )}
+
+        {/* Exit button */}
+        <button
+          type="button"
+          onClick={onExit}
+          className={cn(
+            "p-2 rounded-full bg-black/40 backdrop-blur-sm",
+            "text-white/80 hover:text-white hover:bg-black/60",
+            "transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
+          )}
+          aria-label="Exit slideshow"
+          data-testid="slideshow-exit-button"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-      </button>
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
 
       {/* Touch area for swipe (occupies full screen for gesture detection) */}
       <div

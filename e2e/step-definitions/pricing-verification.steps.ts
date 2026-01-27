@@ -33,6 +33,28 @@ When(
   },
 );
 
+When(
+  "I click the buy button for a token pack with mocked delay",
+  async function(this: CustomWorld) {
+    // Mock the Stripe checkout API with a delay to make the loading state visible
+    await this.page.route("**/api/stripe/checkout", async (route) => {
+      // Add artificial delay to make loading state observable
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ url: "https://checkout.stripe.com/test-session" }),
+      });
+    });
+
+    const buyButton = this.page.getByRole("button", { name: /buy now/i })
+      .first();
+    await expect(buyButton).toBeVisible();
+    // Click without waiting for navigation (so we can observe the loading state)
+    await buyButton.click();
+  },
+);
+
 When("I click the buy button for the {string} pack", async function(
   this: CustomWorld,
   packName: string,
@@ -250,22 +272,23 @@ Then(
 Then(
   "the button should show {string} text",
   async function(this: CustomWorld, text: string) {
-    const button = this.page.getByRole("button", {
-      name: new RegExp(text, "i"),
-    });
-    await expect(button).toBeVisible();
+    // Look for a button containing the expected loading text
+    // This handles loading states where the button text changes
+    const button = this.page.locator("button").filter({ hasText: new RegExp(text, "i") });
+    await expect(button.first()).toBeVisible({ timeout: 5000 });
   },
 );
 
 Then(
   "the button should be disabled during processing",
   async function(this: CustomWorld) {
-    const processingButton = this.page.getByRole("button", {
-      name: /processing/i,
+    // Look for a button showing the loading state (Redirecting to checkout...)
+    const loadingButton = this.page.locator("button").filter({
+      hasText: /redirecting to checkout/i,
     });
-    if (await processingButton.isVisible()) {
-      await expect(processingButton).toBeDisabled();
-    }
+    // The button should be visible and disabled during the loading state
+    await expect(loadingButton.first()).toBeVisible({ timeout: 5000 });
+    await expect(loadingButton.first()).toBeDisabled({ timeout: 5000 });
   },
 );
 

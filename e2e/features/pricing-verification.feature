@@ -78,13 +78,11 @@ Feature: Pricing Page Verification
     Then each pack should show price per token
     And power pack should have the best price per token
 
-  # Note: Loading state test skipped - requires Stripe configuration in CI
-  # and tests transient UI state that's unreliable
-  @skip
+  @requires-db
   Scenario: Loading state during purchase
     Given I am logged in as "Test User" with email "test@example.com"
-    When I click the buy button for a token pack
-    Then the button should show "Processing..." text
+    When I click the buy button for a token pack with mocked delay
+    Then the button should show "Redirecting to checkout..." text
     And the button should be disabled during processing
 
   Scenario: Token packs section shows one-time purchase messaging
