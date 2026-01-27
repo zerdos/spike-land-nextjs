@@ -324,8 +324,8 @@ Given("I am logged in with email {string}", async function(this: CustomWorld, _e
   // We can rely on existing auth bypass or implement mock
 });
 
-Given("I have a workspace {string}", async function(this: CustomWorld, _slug: string) {
-  // Ensure workspace exists
+Given("I have a workspace {string}", async function(this: CustomWorld, workspaceName: string) {
+  this.workspaceSlug = workspaceName.toLowerCase().replace(/\s+/g, "-");
 });
 
 Given("I have connected ad accounts for the workspace", async function(this: CustomWorld) {

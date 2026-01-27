@@ -1,4 +1,3 @@
-@skip
 Feature: Competitor Tracking
 
   Scenario: Add and delete a competitor
