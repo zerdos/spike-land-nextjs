@@ -1,0 +1,17 @@
+{
+  "name": "spike-land-sandbox-agent",
+  "version": "1.0.0",
+  "description": "Standalone agent executor for Vercel Sandbox",
+  "private": true,
+  "main": "agent-executor.js",
+  "scripts": {
+    "start": "node agent-executor.js",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.2.19"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

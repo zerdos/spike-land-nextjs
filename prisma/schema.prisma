@@ -215,6 +215,7 @@ model App {
   statusHistory      AppStatusHistory[] // Status change history
   images             AppImage[] // Uploaded images for this app
   codeVersions       AppCodeVersion[] // Code snapshots for undo/restore
+  sandboxJobs        SandboxJob[] // Vercel Sandbox execution jobs
 
   @@index([userId])
   @@index([forkedFrom])
@@ -1252,6 +1253,37 @@ model AgentTask {
 
   @@index([boxId, status])
   @@map("agent_tasks")
+}
+
+// Vercel Sandbox job tracking for agent message processing
+// Used when AGENT_USE_SANDBOX=true to track sandbox execution state
+model SandboxJob {
+  id          String           @id @default(cuid())
+  appId       String
+  messageId   String           @unique // The user message that triggered this sandbox
+  sandboxId   String? // Vercel sandbox ID (set after spawn)
+  requestId   String? // Request ID for debugging and correlation
+  status      SandboxJobStatus @default(PENDING)
+  result      Json? // Agent response data on completion
+  error       String? // Error message on failure/timeout
+  startedAt   DateTime         @default(now())
+  completedAt DateTime?
+
+  app App @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@index([appId, startedAt])
+  @@index([status])
+  @@index([sandboxId])
+  @@map("sandbox_jobs")
+}
+
+enum SandboxJobStatus {
+  PENDING // Job created, sandbox not yet spawned
+  SPAWNING // Sandbox is being created
+  RUNNING // Sandbox is executing the agent
+  COMPLETED // Agent finished successfully
+  FAILED // Agent or sandbox error
+  TIMEOUT // Sandbox exceeded time limit
 }
 
 model EmailLog {

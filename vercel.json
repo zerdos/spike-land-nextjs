@@ -48,6 +48,10 @@
     {
       "path": "/api/cron/cleanup-bin",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-sandboxes",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
