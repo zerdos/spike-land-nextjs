@@ -1,5 +1,18 @@
 #!/usr/bin/env node
 /**
+ * REFERENCE IMPLEMENTATION - Agent Executor
+ *
+ * NOTE: This is a REFERENCE file for documentation purposes.
+ * The production code is embedded in src/lib/sandbox/agent-sandbox.ts
+ * as the AGENT_EXECUTOR_SCRIPT constant.
+ *
+ * This standalone version is kept for:
+ * - Understanding the architecture
+ * - Testing outside the sandbox context
+ * - Development and debugging
+ *
+ * ===================================================================
+ *
  * Agent Executor - Runs inside Vercel Sandbox
  *
  * This script:
@@ -34,15 +47,17 @@ IMPORTANT RULES:
 1. ALWAYS read the current code first using read_code before making changes
 2. Use update_code to replace the entire code when making significant changes
 3. Use search_and_replace for small, targeted changes
-4. Keep your responses concise and focused on the code changes
-5. The code runs in a React environment - export a default component
+4. Use find_lines to locate specific code before making edits
+5. Use validate_code to check code for errors before updating
+6. Keep your responses concise and focused on the code changes
+7. The code runs in a React environment - export a default component
 
 Available tools:
 - read_code: Read the current code from the editor
 - update_code: Replace the entire code content
 - search_and_replace: Find and replace text in the code
-- find_lines: Find line numbers matching a pattern
-- validate_code: Check code for errors without updating`;
+- find_lines: Search for lines containing a pattern (returns line numbers)
+- validate_code: Check code for TypeScript/JSX errors without saving`;
 
 /**
  * POST result to callback URL

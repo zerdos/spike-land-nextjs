@@ -19,8 +19,11 @@ import { NextResponse } from "next/server";
 // Cron jobs should complete quickly
 export const maxDuration = 30;
 
-// Timeout threshold in minutes
-const TIMEOUT_MINUTES = 10;
+// Timeout threshold in minutes (configurable via environment variable)
+const TIMEOUT_MINUTES = parseInt(
+  process.env["SANDBOX_TIMEOUT_MINUTES"] || "10",
+  10,
+);
 
 /**
  * GET /api/cron/cleanup-sandboxes

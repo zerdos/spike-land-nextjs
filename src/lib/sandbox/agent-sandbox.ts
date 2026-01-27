@@ -110,8 +110,8 @@ async function fetchCurrentCode() {
 function createCodespaceTools(codespaceId) {
   const TESTING_SPIKE_LAND = "https://testing.spike.land";
 
-  return {
-    read_code: async () => {
+  const tools = {
+    async read_code() {
       return new Promise((resolve, reject) => {
         https.get(
           \`\${TESTING_SPIKE_LAND}/live/\${codespaceId}/session.json\`,
@@ -132,7 +132,7 @@ function createCodespaceTools(codespaceId) {
       });
     },
 
-    update_code: async (code) => {
+    async update_code(code) {
       return new Promise((resolve, reject) => {
         const postData = JSON.stringify({ code, run: true });
         const req = https.request(
@@ -152,7 +152,17 @@ function createCodespaceTools(codespaceId) {
             res.on("end", () => {
               try {
                 const json = JSON.parse(data);
-                resolve(json.success ? "success" : json.error || "Update failed");
+                if (json.success) {
+                  resolve("success");
+                } else if (json.errors && json.errors.length > 0) {
+                  const formatted = json.errors.map((e) => {
+                    const loc = e.line ? \`Line \${e.line}\${e.column ? ":" + e.column : ""}: \` : "";
+                    return loc + e.message;
+                  }).join("\\n");
+                  resolve("TypeScript/JSX errors:\\n" + formatted);
+                } else {
+                  resolve(json.error || "Update failed");
+                }
               } catch {
                 resolve("Error parsing response");
               }
@@ -165,8 +175,8 @@ function createCodespaceTools(codespaceId) {
       });
     },
 
-    search_and_replace: async (search, replace) => {
-      const code = await this.read_code();
+    async search_and_replace(search, replace) {
+      const code = await tools.read_code();
       if (code.startsWith("Error") || code.startsWith("Network")) {
         return code;
       }
@@ -174,9 +184,72 @@ function createCodespaceTools(codespaceId) {
       if (newCode === code) {
         return "No matches found for the search pattern";
       }
-      return this.update_code(newCode);
+      return tools.update_code(newCode);
+    },
+
+    async find_lines(search) {
+      const code = await tools.read_code();
+      if (code.startsWith("Error") || code.startsWith("Network")) {
+        return code;
+      }
+      const lines = code.split("\\n");
+      const matches = [];
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i] && lines[i].includes(search)) {
+          matches.push({ line: i + 1, content: lines[i] });
+        }
+      }
+      if (matches.length === 0) {
+        return "No matches found";
+      }
+      return matches.map((m) => "Line " + m.line + ": " + m.content).join("\\n");
+    },
+
+    async validate_code(code) {
+      return new Promise((resolve, reject) => {
+        const postData = JSON.stringify({ code });
+        const req = https.request(
+          {
+            hostname: "testing.spike.land",
+            port: 443,
+            path: \`/live/\${codespaceId}/api/validate\`,
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Content-Length": Buffer.byteLength(postData),
+            },
+          },
+          (res) => {
+            let data = "";
+            res.on("data", (chunk) => (data += chunk));
+            res.on("end", () => {
+              try {
+                const json = JSON.parse(data);
+                if (json.valid) {
+                  resolve("valid");
+                } else if (json.errors && json.errors.length > 0) {
+                  const formatted = json.errors.map((e) => {
+                    const loc = e.line ? \`Line \${e.line}\${e.column ? ":" + e.column : ""}: \` : "";
+                    return loc + e.message;
+                  }).join("\\n");
+                  resolve("TypeScript/JSX errors:\\n" + formatted);
+                } else {
+                  resolve("Validation failed");
+                }
+              } catch {
+                resolve("Error parsing response");
+              }
+            });
+          }
+        );
+        req.on("error", (e) => resolve("Network error: " + e.message));
+        req.write(postData);
+        req.end();
+      });
     },
   };
+
+  return tools;
 }
 
 // POST result to callback
@@ -225,13 +298,17 @@ IMPORTANT RULES:
 1. ALWAYS read the current code first using read_code before making changes
 2. Use update_code to replace the entire code when making significant changes
 3. Use search_and_replace for small, targeted changes
-4. Keep your responses concise and focused on the code changes
-5. The code runs in a React environment - export a default component
+4. Use find_lines to locate specific code before making edits
+5. Use validate_code to check code for errors before updating
+6. Keep your responses concise and focused on the code changes
+7. The code runs in a React environment - export a default component
 
 Available tools:
 - read_code: Read the current code from the editor
 - update_code: Replace the entire code content
-- search_and_replace: Find and replace text in the code\`;
+- search_and_replace: Find and replace text in the code
+- find_lines: Search for lines containing a pattern (returns line numbers)
+- validate_code: Check code for TypeScript/JSX errors without saving\`;
 
 async function main() {
   try {

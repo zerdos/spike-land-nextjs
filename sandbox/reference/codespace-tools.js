@@ -1,4 +1,17 @@
 /**
+ * REFERENCE IMPLEMENTATION - Codespace Tools
+ *
+ * NOTE: This is a REFERENCE file for documentation purposes.
+ * The production code is embedded in src/lib/sandbox/agent-sandbox.ts
+ * as part of the AGENT_EXECUTOR_SCRIPT constant.
+ *
+ * This standalone version is kept for:
+ * - Understanding the architecture
+ * - Testing outside the sandbox context
+ * - Development and debugging
+ *
+ * ===================================================================
+ *
  * Codespace Tools - HTTP API client for testing.spike.land
  *
  * This module provides tools for reading and modifying code in a codespace.

@@ -1262,6 +1262,7 @@ model SandboxJob {
   appId       String
   messageId   String           @unique // The user message that triggered this sandbox
   sandboxId   String? // Vercel sandbox ID (set after spawn)
+  requestId   String? // Request ID for debugging and correlation
   status      SandboxJobStatus @default(PENDING)
   result      Json? // Agent response data on completion
   error       String? // Error message on failure/timeout
