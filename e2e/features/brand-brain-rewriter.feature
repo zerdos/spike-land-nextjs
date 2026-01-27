@@ -1,6 +1,13 @@
-# Skip entire feature in CI: requires database seeding for proper testing
-# The rewriter page fetches workspace data via API which needs real database records
-# Run with: yarn cucumber --profile db
+# Feature requires database for certain scenarios
+# Some scenarios are skipped because they test server-rendered pages that fetch data
+# via getServerSideProps/server components, which query the database directly.
+# Playwright route interception cannot mock server-side data fetching.
+#
+# To run skipped scenarios:
+#   1. Set up test database with workspace fixtures
+#   2. Run: yarn cucumber --profile db
+#
+# Non-skipped scenarios test the rewriter UI directly and can be mocked via API routes.
 @requires-db
 Feature: Brand Brain Content Rewriter
   As a workspace member
@@ -11,16 +18,22 @@ Feature: Brand Brain Content Rewriter
     Given I am logged in as a workspace member
     And I have a brand profile configured
 
-  # Skip: Server-rendered page requires database records, can't be mocked via API routes
-  @brand-brain @skip
+  # @skip Reason: Brand Brain dashboard is a server-rendered Next.js page that queries
+  # the database directly via server components. Playwright route interception only
+  # works for client-side API calls, not server-side data fetching.
+  # To run: Set up test database with workspace fixtures, use 'yarn cucumber --profile db'
+  @brand-brain @skip @requires-db
   Scenario: View Brand Brain dashboard with Content Rewriter card
     When I navigate to the Brand Brain page
     Then I should see "Brand Brain" heading
     And I should see "Content Tools" section
     And I should see "Content Rewriter" text
 
-  # Skip: Server-rendered page requires database records, can't be mocked via API routes
-  @brand-brain @skip
+  # @skip Reason: This scenario navigates through the Brand Brain dashboard page first,
+  # which is server-rendered and queries the database directly. The page needs real
+  # workspace data to render the Content Rewriter card that we click to navigate.
+  # To run: Set up test database with workspace fixtures, use 'yarn cucumber --profile db'
+  @brand-brain @skip @requires-db
   Scenario: Navigate to Content Rewriter page
     When I navigate to the Brand Brain page
     And I click on the Open Rewriter card
@@ -97,8 +110,11 @@ Feature: Brand Brain Content Rewriter
     And I should see "Be specific" text
     And I should see "Choose the right platform" text
 
-  # Skip: Server-rendered Brand Brain page requires database records, can't be mocked via API routes
-  @brand-brain @skip
+  # @skip Reason: Navigating back lands on the Brand Brain dashboard page, which is
+  # server-rendered and requires database records to display workspace content tools.
+  # The assertion "should be on the Brand Brain page" would fail without real data.
+  # To run: Set up test database with workspace fixtures, use 'yarn cucumber --profile db'
+  @brand-brain @skip @requires-db
   Scenario: Navigate back to Brand Brain from rewriter
     When I navigate to the rewriter page
     And I click the "Back to Brand Brain" link
