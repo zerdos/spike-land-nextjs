@@ -234,6 +234,63 @@ describe("SlideshowView", () => {
     });
   });
 
+  describe("Rotation buttons", () => {
+    const mockOnRotate = vi.fn();
+
+    beforeEach(() => {
+      mockOnRotate.mockClear();
+    });
+
+    it("does not render rotation buttons when onRotate is not provided", () => {
+      render(<SlideshowView {...defaultProps} />);
+
+      expect(screen.queryByTestId("rotate-cw-button")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("rotate-ccw-button")).not.toBeInTheDocument();
+    });
+
+    it("renders rotation buttons when onRotate is provided", () => {
+      render(<SlideshowView {...defaultProps} onRotate={mockOnRotate} />);
+
+      expect(screen.getByTestId("rotate-cw-button")).toBeInTheDocument();
+      expect(screen.getByTestId("rotate-ccw-button")).toBeInTheDocument();
+    });
+
+    it("calls onRotate with cw when clockwise button is clicked", () => {
+      render(<SlideshowView {...defaultProps} onRotate={mockOnRotate} />);
+
+      const cwButton = screen.getByTestId("rotate-cw-button");
+      fireEvent.click(cwButton);
+
+      expect(mockOnRotate).toHaveBeenCalledWith("cw");
+    });
+
+    it("calls onRotate with ccw when counter-clockwise button is clicked", () => {
+      render(<SlideshowView {...defaultProps} onRotate={mockOnRotate} />);
+
+      const ccwButton = screen.getByTestId("rotate-ccw-button");
+      fireEvent.click(ccwButton);
+
+      expect(mockOnRotate).toHaveBeenCalledWith("ccw");
+    });
+
+    it("clockwise button has correct aria-label", () => {
+      render(<SlideshowView {...defaultProps} onRotate={mockOnRotate} />);
+
+      const cwButton = screen.getByTestId("rotate-cw-button");
+      expect(cwButton).toHaveAttribute("aria-label", "Rotate clockwise");
+    });
+
+    it("counter-clockwise button has correct aria-label", () => {
+      render(<SlideshowView {...defaultProps} onRotate={mockOnRotate} />);
+
+      const ccwButton = screen.getByTestId("rotate-ccw-button");
+      expect(ccwButton).toHaveAttribute(
+        "aria-label",
+        "Rotate counter-clockwise",
+      );
+    });
+  });
+
   describe("Navigation", () => {
     it("calls onNavigate with 'prev' when previous button is clicked", async () => {
       render(<SlideshowView {...defaultProps} />);
