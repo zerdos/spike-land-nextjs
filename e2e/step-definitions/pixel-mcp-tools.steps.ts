@@ -132,8 +132,15 @@ Given("I mock a successful MCP modify job", async function(this: CustomWorld) {
 Given(
   "I mock a job status response for job {string}",
   async function(this: CustomWorld, jobId: string) {
+    // Store the job ID for later use in assertions
+    (this as CustomWorld & { mockJobId: string; }).mockJobId = jobId;
+
+    // Use unroute first to clear any existing handlers for this pattern
+    await this.page.unroute("**/api/mcp/jobs/**").catch(() => {});
+
     // Mock any job status request to return the specified job ID
-    await this.page.route("**/api/mcp/jobs/*", async (route) => {
+    // Use ** at the end to match the full path including query strings
+    await this.page.route("**/api/mcp/jobs/**", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -148,7 +155,11 @@ Given(
   async function(this: CustomWorld) {
     (this as CustomWorld & { mockJobId: string; }).mockJobId = mockCompletedGenerateJob.id;
 
-    await this.page.route("**/api/mcp/jobs/*", async (route) => {
+    // Use unroute first to clear any existing handlers for this pattern
+    await this.page.unroute("**/api/mcp/jobs/**").catch(() => {});
+
+    // Mock the jobs endpoint with ** to match any path after jobs/
+    await this.page.route("**/api/mcp/jobs/**", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -163,7 +174,11 @@ Given(
   async function(this: CustomWorld) {
     (this as CustomWorld & { failedJobId: string; }).failedJobId = mockFailedJob.id;
 
-    await this.page.route("**/api/mcp/jobs/*", async (route) => {
+    // Use unroute first to clear any existing handlers for this pattern
+    await this.page.unroute("**/api/mcp/jobs/**").catch(() => {});
+
+    // Mock the jobs endpoint with ** to match any path after jobs/
+    await this.page.route("**/api/mcp/jobs/**", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -457,8 +472,15 @@ Then(
 );
 
 Then("I should see the job details", async function(this: CustomWorld) {
-  const jobId = this.page.getByText(/job id/i);
-  await expect(jobId.first()).toBeVisible();
+  // Wait for the API response to complete and the UI to update
+  // The Job Details card appears when jobResult state is set
+  const jobDetailsCard = this.page.locator('[class*="card"]').filter({
+    has: this.page.getByText(/job details/i),
+  });
+
+  // Wait for the card to contain actual job data (not just the empty state)
+  const jobIdLabel = jobDetailsCard.getByText(/job id:/i);
+  await expect(jobIdLabel).toBeVisible({ timeout: 15000 });
 });
 
 Then(
@@ -472,17 +494,35 @@ Then(
 );
 
 Then("I should see the job type badge", async function(this: CustomWorld) {
-  const typeBadge = this.page.locator('[class*="badge"]').filter({
-    has: this.page.getByText(/generate|modify/i),
+  // Wait for the job details card to be visible first
+  const jobDetailsCard = this.page.locator('[class*="card"]').filter({
+    has: this.page.getByText(/job details/i),
   });
-  await expect(typeBadge).toBeVisible();
+  await expect(jobDetailsCard).toBeVisible({ timeout: 10000 });
+
+  // Then look for the type badge (outline variant shows GENERATE or MODIFY)
+  const typeBadge = this.page.locator(
+    ".inline-flex.items-center.rounded-md, [class*='border']",
+  ).filter({
+    hasText: /generate|modify/i,
+  });
+  await expect(typeBadge.first()).toBeVisible({ timeout: 5000 });
 });
 
 Then("I should see the job status badge", async function(this: CustomWorld) {
-  const statusBadge = this.page.locator('[class*="badge"]').filter({
-    has: this.page.getByText(/completed|processing|failed/i),
+  // Wait for the job details card to be visible first
+  const jobDetailsCard = this.page.locator('[class*="card"]').filter({
+    has: this.page.getByText(/job details/i),
   });
-  await expect(statusBadge).toBeVisible();
+  await expect(jobDetailsCard).toBeVisible({ timeout: 10000 });
+
+  // Then look for the status badge (colored: green for completed, red for failed)
+  const statusBadge = this.page.locator(
+    ".inline-flex.items-center.rounded-md, [class*='bg-green'], [class*='bg-destructive'], [class*='bg-blue']",
+  ).filter({
+    hasText: /completed|processing|failed/i,
+  });
+  await expect(statusBadge.first()).toBeVisible({ timeout: 5000 });
 });
 
 Then("I should see the output image", async function(this: CustomWorld) {

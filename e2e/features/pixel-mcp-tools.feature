@@ -121,10 +121,8 @@ Feature: Pixel MCP Tools Interface
     Then I should see the modified image in the result area
     And I should see "Completed" status badge
 
-  @skip
+  @requires-db
   Scenario: Check job status by ID
-    # Skipped: Mock API interception not working reliably in E2E tests
-    # TODO: Fix mock setup for API routes
     Given I am logged in as "Test User" with email "test@example.com"
     And I mock a job status response for job "test-job-123"
     When I visit "/apps/pixel/mcp-tools"
@@ -135,10 +133,8 @@ Feature: Pixel MCP Tools Interface
     And I should see the job type badge
     And I should see the job status badge
 
-  @skip
+  @requires-db
   Scenario: Job status shows completed job with image
-    # Skipped: Mock API interception not working reliably in E2E tests
-    # TODO: Fix mock setup for API routes
     Given I am logged in as "Test User" with email "test@example.com"
     And I mock a completed job status with output image
     When I visit "/apps/pixel/mcp-tools"
@@ -149,10 +145,8 @@ Feature: Pixel MCP Tools Interface
     And I should see the job details
     And I should see the tokens used
 
-  @skip
+  @requires-db
   Scenario: Job status shows failed job with error
-    # Skipped: Mock API interception not working reliably in E2E tests
-    # TODO: Fix mock setup for API routes
     Given I am logged in as "Test User" with email "test@example.com"
     And I mock a failed job status with error message
     When I visit "/apps/pixel/mcp-tools"
