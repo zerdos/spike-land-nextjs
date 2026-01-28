@@ -600,6 +600,17 @@ export class TwitterClient implements ISocialClient {
   /**
    * Get recent comments (replies) for a tweet
    * Uses the Search API to find replies to a specific tweet
+   *
+   * @param tweetId - The ID of the tweet to fetch replies for
+   * @param limit - Maximum number of comments to return (default: 3)
+   * @returns Array of comment previews
+   *
+   * @note Requests minimum 10 results from the API regardless of limit parameter.
+   * This is because:
+   * 1. Search API may include the original tweet in results (filtered out)
+   * 2. Results may include filtered/blocked content that reduces actual count
+   * 3. Self-replies from the tweet author are excluded
+   * This ensures reliable results but may consume more API quota on free tier.
    */
   async getComments(tweetId: string, limit = 3): Promise<CommentPreview[]> {
     const token = this.getAccessTokenOrThrow();

@@ -137,6 +137,9 @@ export interface ISocialClient {
   getPosts(limit?: number): Promise<SocialPost[]>;
   deletePost?(postId: string): Promise<void>;
 
+  // Comments (optional - platform-specific)
+  getComments?(postId: string, limit: number): Promise<CommentPreview[]>;
+
   // Metrics
   getMetrics(): Promise<SocialMetricsData>;
 }

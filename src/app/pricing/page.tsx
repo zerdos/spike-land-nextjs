@@ -241,7 +241,168 @@ export default function PricingPage() {
         </Card>
       </div>
 
-      {/* Subscription Plans */}
+      {/* Orbit Workspace Tiers */}
+      <div
+        className="max-w-6xl mx-auto mb-16"
+        data-testid="workspace-tiers-section"
+      >
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Zap className="h-6 w-6 text-blue-500" />
+            <h2 className="text-2xl font-bold">Orbit Workspace Plans</h2>
+          </div>
+          <p className="text-muted-foreground">
+            Power your social media management with Orbit workspace subscriptions
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* FREE Tier */}
+          <Card className="relative">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Free
+              </CardTitle>
+              <CardDescription>
+                <span className="text-3xl font-bold text-foreground">$0</span>
+                <span className="text-muted-foreground">/month</span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>3 social accounts</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>30 scheduled posts/month</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>1 A/B test</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>100 AI credits/month</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>1 team member</span>
+                </li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full" disabled>
+                Current Plan
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* PRO Tier */}
+          <Card className="relative border-2 border-primary shadow-lg">
+            <div className="absolute top-4 -right-8 rotate-45 bg-primary text-primary-foreground text-xs py-1 px-8 font-medium">
+              Popular
+            </div>
+            <CardHeader>
+              <Badge className="w-fit mb-2">Most Popular</Badge>
+              <CardTitle className="flex items-center gap-2">
+                Pro
+              </CardTitle>
+              <CardDescription>
+                <span className="text-3xl font-bold text-foreground">$29</span>
+                <span className="text-muted-foreground">/month</span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>10 social accounts</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>
+                    <strong>Unlimited</strong> scheduled posts
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>10 A/B tests</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>1,000 AI credits/month</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>3 team members</span>
+                </li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Button className="w-full" disabled>
+                Coming Soon
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* BUSINESS Tier */}
+          <Card className="relative border-2 border-green-500">
+            <Badge className="absolute -top-3 left-4 bg-green-500">Best Value</Badge>
+            <CardHeader className="pt-6">
+              <CardTitle className="flex items-center gap-2">
+                Business
+              </CardTitle>
+              <CardDescription>
+                <span className="text-3xl font-bold text-foreground">$99</span>
+                <span className="text-muted-foreground">/month</span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>
+                    <strong>Unlimited</strong> social accounts
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>
+                    <strong>Unlimited</strong> scheduled posts
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>
+                    <strong>Unlimited</strong> A/B tests
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>5,000 AI credits/month</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span>10 team members</span>
+                </li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Button
+                variant="outline"
+                className="w-full border-green-500 text-green-600 hover:bg-green-50"
+                disabled
+              >
+                Coming Soon
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+
+      {/* Pixel Subscription Plans */}
       <div
         className="max-w-6xl mx-auto mb-16"
         data-testid="subscription-tiers-section"
@@ -249,7 +410,7 @@ export default function PricingPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Crown className="h-6 w-6 text-amber-500" />
-            <h2 className="text-2xl font-bold">Subscription Plans</h2>
+            <h2 className="text-2xl font-bold">Pixel Image Enhancement Plans</h2>
           </div>
           <p className="text-muted-foreground">
             Upgrade your token well for faster regeneration and higher capacity
@@ -494,8 +655,23 @@ export default function PricingPage() {
             <CardContent className="pt-6">
               <h3 className="font-semibold mb-2">What are tokens used for?</h3>
               <p className="text-muted-foreground">
-                Tokens are used to enhance your images with AI. Higher resolution enhancements cost
-                more tokens. Choose the quality level that best suits your needs.
+                Tokens are used to enhance your images with AI in Pixel. Higher resolution
+                enhancements cost more tokens. Choose the quality level that best suits your needs.
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="font-semibold mb-2">
+                What is the difference between Orbit and Pixel plans?
+              </h3>
+              <p className="text-muted-foreground">
+                <strong>Orbit plans</strong>{" "}
+                are for social media management - scheduling posts, connecting accounts, and team
+                collaboration.
+                <strong>Pixel plans</strong>{" "}
+                are for AI image enhancement - higher tiers give you more tokens and faster
+                regeneration.
               </p>
             </CardContent>
           </Card>

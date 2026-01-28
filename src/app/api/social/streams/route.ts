@@ -389,28 +389,28 @@ async function fetchCommentsForPosts(
         const client = await createSocialClient(account.platform, clientOptions);
 
         // Check if client has getComments method
-        if (!("getComments" in client) || typeof client.getComments !== "function") {
+        if (!client.getComments) {
           return;
         }
 
         // Fetch comments for each post
         const commentPromises = accountPosts.map(async (post) => {
           try {
-            const comments = await (client as {
-              getComments: (id: string, limit: number) => Promise<CommentPreview[]>;
-            }).getComments(
+            const comments = await client.getComments!(
               post.platformPostId,
               commentsPerPost,
             );
             commentsMap.set(post.id, comments);
-          } catch {
-            // Silently ignore individual post comment failures
+          } catch (err) {
+            // Log for debugging but don't fail the request
+            console.debug(`[fetchComments] Post ${post.id} comment fetch failed:`, err);
           }
         });
 
         await Promise.allSettled(commentPromises);
-      } catch {
-        // Silently ignore account-level failures
+      } catch (err) {
+        // Log for debugging but don't fail the request
+        console.debug(`[fetchComments] Account ${accountId} comment fetch failed:`, err);
       }
     };
 

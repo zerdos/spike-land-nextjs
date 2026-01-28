@@ -52,6 +52,10 @@
     {
       "path": "/api/cron/cleanup-sandboxes",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/reset-workspace-credits",
+      "schedule": "0 0 * * *"
     }
   ]
 }
