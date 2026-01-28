@@ -18,7 +18,7 @@
  */
 
 import { PrismaPg } from "@prisma/adapter-pg";
-import { ObjectiveType, PrismaClient } from "@prisma/client";
+import { type ObjectiveType, PrismaClient } from "@prisma/client";
 import { CampaignObjectivesSchema, TargetAudienceSchema } from "@spike-npm-land/shared/validations";
 import { config } from "dotenv";
 
