@@ -49,6 +49,8 @@ export interface StreamPostCardProps {
   onReply?: (postId: string) => void;
   /** Callback when the share button is clicked */
   onShare?: (postId: string) => void;
+  /** Callback when "View all comments" is clicked */
+  onViewAllComments?: (postId: string) => void;
   /** Whether a like action is currently loading for this post */
   isLiking?: boolean;
   /** Whether a reply action is currently loading for this post */
@@ -114,6 +116,11 @@ function getInitials(name: string): string {
 const MAX_CONTENT_LENGTH = 280;
 
 /**
+ * Maximum comment content length before truncation
+ */
+const MAX_COMMENT_LENGTH = 100;
+
+/**
  * StreamPostCard displays a single social media post in the unified stream feed.
  * It shows account info, platform badge, post content, metrics, and action buttons.
  */
@@ -122,6 +129,7 @@ export function StreamPostCard({
   onLike,
   onReply,
   onShare,
+  onViewAllComments,
   isLiking = false,
   isReplying = false,
   disabled = false,
@@ -252,6 +260,60 @@ export function StreamPostCard({
               <Share2 className="h-4 w-4" />
               {formatMetricCount(post.metrics.shares)}
             </span>
+          </div>
+        )}
+
+        {/* Comment Previews */}
+        {post.commentPreviews && post.commentPreviews.length > 0 && (
+          <div data-testid="comment-previews" className="mt-4 space-y-3">
+            <h4 className="text-sm font-medium text-muted-foreground">
+              Recent Comments
+            </h4>
+            <div className="space-y-2">
+              {post.commentPreviews.map((comment) => {
+                const isCommentTruncated = comment.content.length > MAX_COMMENT_LENGTH;
+                const displayCommentContent = isCommentTruncated
+                  ? `${comment.content.slice(0, MAX_COMMENT_LENGTH)}...`
+                  : comment.content;
+
+                return (
+                  <div
+                    key={comment.id}
+                    className="flex items-start gap-2 rounded-md bg-muted/50 p-2"
+                    data-testid="comment-preview-item"
+                  >
+                    <Avatar className="h-6 w-6">
+                      {comment.senderAvatarUrl && (
+                        <AvatarImage
+                          src={comment.senderAvatarUrl}
+                          alt={`${comment.senderName}'s avatar`}
+                        />
+                      )}
+                      <AvatarFallback className="text-xs">
+                        {getInitials(comment.senderName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-medium text-sm">
+                        {comment.senderName}
+                      </span>
+                      <p className="text-sm text-muted-foreground break-words">
+                        {displayCommentContent}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {post.metrics && post.metrics.comments > post.commentPreviews.length && (
+              <button
+                onClick={() => onViewAllComments?.(post.id)}
+                className="text-sm text-primary hover:underline"
+                data-testid="view-all-comments"
+              >
+                View all {formatMetricCount(post.metrics.comments)} comments
+              </button>
+            )}
           </div>
         )}
       </CardContent>

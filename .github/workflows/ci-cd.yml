@@ -246,6 +246,22 @@ jobs:
           yarn db:generate
           yarn install
 
+      - name: Wake up E2E database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
+        run: |
+          # Neon auto-suspends inactive branches after ~5 minutes
+          # A simple query wakes them up (may take a few seconds)
+          echo "Waking up E2E database..."
+          for i in 1 2 3; do
+            if npx prisma db execute --stdin <<< "SELECT 1" 2>/dev/null; then
+              echo "Database is ready"
+              break
+            fi
+            echo "Attempt $i: Database waking up, waiting 5s..."
+            sleep 5
+          done
+
       - name: Apply Prisma migrations to E2E database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}

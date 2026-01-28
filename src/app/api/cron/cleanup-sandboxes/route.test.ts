@@ -138,7 +138,6 @@ describe("GET /api/cron/cleanup-sandboxes", () => {
     });
 
     it("should cleanup stale jobs and stop their sandboxes", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const staleJobs: any[] = [
         {
           id: "job1",
@@ -198,7 +197,6 @@ describe("GET /api/cron/cleanup-sandboxes", () => {
     });
 
     it("should broadcast status updates to connected clients", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const staleJobs: any[] = [
         {
           id: "job1",
@@ -234,7 +232,6 @@ describe("GET /api/cron/cleanup-sandboxes", () => {
     });
 
     it("should continue processing other jobs if one fails", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const staleJobs: any[] = [
         {
           id: "job1",
@@ -257,7 +254,6 @@ describe("GET /api/cron/cleanup-sandboxes", () => {
       // First job update fails
       vi.mocked(prisma.sandboxJob.update)
         .mockRejectedValueOnce(new Error("Database error"))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .mockResolvedValueOnce({ id: "job2" } as any);
 
       const request = createRequest({
@@ -273,7 +269,6 @@ describe("GET /api/cron/cleanup-sandboxes", () => {
     });
 
     it("should handle jobs without sandboxId", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const staleJobs: any[] = [
         {
           id: "job1",
@@ -320,7 +315,6 @@ describe("GET /api/cron/cleanup-sandboxes", () => {
       const findManyCall = vi.mocked(prisma.sandboxJob.findMany).mock.calls[0];
       expect(findManyCall).toBeDefined();
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const whereClause = (findManyCall as any)?.[0]?.where;
       expect(whereClause).toBeDefined();
 

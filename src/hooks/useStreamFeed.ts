@@ -20,6 +20,8 @@ export interface UseStreamFeedOptions {
   enabled?: boolean;
   /** Polling interval in milliseconds (default: 30000ms). Set to 0 to disable polling. */
   pollingInterval?: number;
+  /** Whether to include comment previews for each post (default: false) */
+  includeComments?: boolean;
 }
 
 /**
@@ -63,6 +65,7 @@ async function fetchStreams(
   workspaceId: string,
   filters?: StreamFilter,
   cursor?: string,
+  includeComments?: boolean,
 ): Promise<StreamsResponse> {
   const params = new URLSearchParams();
   params.set("workspaceId", workspaceId);
@@ -87,6 +90,9 @@ async function fetchStreams(
   }
   if (cursor) {
     params.set("cursor", cursor);
+  }
+  if (includeComments) {
+    params.set("includeComments", "true");
   }
 
   const response = await fetch(`/api/social/streams?${params.toString()}`);
@@ -141,6 +147,7 @@ export function useStreamFeed({
   filters,
   enabled = true,
   pollingInterval = DEFAULT_POLLING_INTERVAL,
+  includeComments = false,
 }: UseStreamFeedOptions): UseStreamFeedResult {
   const normalizedFilters = useMemo(() => normalizeFilters(filters), [filters]);
 
@@ -171,8 +178,8 @@ export function useStreamFeed({
   const shouldPoll = enabled && pollingInterval > 0 && isDocumentVisible;
 
   const query = useInfiniteQuery({
-    queryKey: ["streams", workspaceId, normalizedFilters] as const,
-    queryFn: ({ pageParam }) => fetchStreams(workspaceId, filters, pageParam),
+    queryKey: ["streams", workspaceId, normalizedFilters, includeComments] as const,
+    queryFn: ({ pageParam }) => fetchStreams(workspaceId, filters, pageParam, includeComments),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (
       lastPage,

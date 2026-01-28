@@ -26,9 +26,11 @@ import {
 } from "@/lib/social/stream-aggregator";
 import { getValidAccessToken } from "@/lib/social/token-refresh";
 import {
+  type CommentPreview,
   type SocialPlatform,
   type SocialPost,
   type StreamFilter,
+  type StreamPost,
   type StreamSortBy,
   type StreamSortOrder,
   type StreamsQueryParams,
@@ -160,6 +162,10 @@ function parseQueryParams(
     };
   }
 
+  // Parse includeComments (boolean)
+  const includeCommentsParam = searchParams.get("includeComments");
+  const includeComments = includeCommentsParam === "true";
+
   return {
     params: {
       workspaceId,
@@ -171,6 +177,7 @@ function parseQueryParams(
       endDate,
       cursor: searchParams.get("cursor") || undefined,
       searchQuery: searchParams.get("searchQuery") || undefined,
+      includeComments,
     },
   };
 }
@@ -337,6 +344,85 @@ export async function fetchAllAccountPosts(
 }
 
 /**
+ * Fetch comments for a list of stream posts
+ * Uses Promise.allSettled for graceful partial failure handling
+ */
+async function fetchCommentsForPosts(
+  posts: StreamPost[],
+  connectedAccounts: SocialAccount[],
+  commentsPerPost = 3,
+): Promise<Map<string, CommentPreview[]>> {
+  const commentsMap = new Map<string, CommentPreview[]>();
+
+  // Group posts by account for efficient client creation
+  const postsByAccountId = new Map<string, StreamPost[]>();
+  for (const post of posts) {
+    const existing = postsByAccountId.get(post.accountId) || [];
+    existing.push(post);
+    postsByAccountId.set(post.accountId, existing);
+  }
+
+  // Fetch comments for each account's posts
+  const fetchPromises: Promise<void>[] = [];
+
+  for (const [accountId, accountPosts] of postsByAccountId) {
+    const account = connectedAccounts.find((a) => a.id === accountId);
+    if (!account) continue;
+
+    const fetchAccountComments = async () => {
+      try {
+        // Get valid access token
+        const { accessToken } = await getValidAccessToken(account);
+
+        // Create client
+        const clientOptions: Record<string, string> = {
+          accessToken,
+          accountId: account.accountId,
+        };
+
+        if (account.platform === "FACEBOOK") {
+          clientOptions["pageId"] = account.accountId;
+        } else if (account.platform === "INSTAGRAM") {
+          clientOptions["igUserId"] = account.accountId;
+        }
+
+        const client = await createSocialClient(account.platform, clientOptions);
+
+        // Check if client has getComments method
+        if (!("getComments" in client) || typeof client.getComments !== "function") {
+          return;
+        }
+
+        // Fetch comments for each post
+        const commentPromises = accountPosts.map(async (post) => {
+          try {
+            const comments = await (client as {
+              getComments: (id: string, limit: number) => Promise<CommentPreview[]>;
+            }).getComments(
+              post.platformPostId,
+              commentsPerPost,
+            );
+            commentsMap.set(post.id, comments);
+          } catch {
+            // Silently ignore individual post comment failures
+          }
+        });
+
+        await Promise.allSettled(commentPromises);
+      } catch {
+        // Silently ignore account-level failures
+      }
+    };
+
+    fetchPromises.push(fetchAccountComments());
+  }
+
+  await Promise.allSettled(fetchPromises);
+
+  return commentsMap;
+}
+
+/**
  * GET /api/social/streams
  *
  * Fetch and aggregate social posts from all connected accounts
@@ -421,9 +507,25 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       aggregateOptions,
     );
 
+    // Fetch comments if requested
+    let postsWithComments = aggregatedResult.posts;
+    if (params.includeComments && aggregatedResult.posts.length > 0) {
+      const commentsMap = await fetchCommentsForPosts(
+        aggregatedResult.posts,
+        connectedAccounts,
+        3, // 3 comments per post
+      );
+
+      // Attach comments to posts
+      postsWithComments = aggregatedResult.posts.map((post) => ({
+        ...post,
+        commentPreviews: commentsMap.get(post.id),
+      }));
+    }
+
     // Build response
     const response: StreamsResponse = {
-      posts: aggregatedResult.posts,
+      posts: postsWithComments,
       accounts,
       hasMore: aggregatedResult.hasMore,
       nextCursor: aggregatedResult.nextCursor,
