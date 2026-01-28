@@ -24,17 +24,17 @@
 
 ### Company Formation - Complete ✅
 
-| Task                                 | Status       | Notes                           |
-| ------------------------------------ | ------------ | ------------------------------- |
-| Check company name availability      | ✅ Complete  | "Spike Land Ltd" available      |
-| Register at Companies House          | ✅ Submitted | Reference: 112-184507           |
-| Register for Corporation Tax         | ✅ Submitted | Reference: BRCT00003618256      |
-| Receive Certificate of Incorporation | ✅ Complete  | 12 December 2025                |
-| Receive UTR number                   | ⏳ Pending   | Expected within 15 working days |
-| Open business bank account           | ✅ Complete  | Monzo Business                  |
-| Update Stripe to company details     | 📋 Next      | After bank account              |
-| Update Terms of Service              | 📋 Queued    | After certificate received      |
-| Update Privacy Policy                | 📋 Queued    | After certificate received      |
+| Task                                 | Status       | Notes                      |
+| ------------------------------------ | ------------ | -------------------------- |
+| Check company name availability      | ✅ Complete  | "Spike Land Ltd" available |
+| Register at Companies House          | ✅ Submitted | Reference: 112-184507      |
+| Register for Corporation Tax         | ✅ Submitted | Reference: BRCT00003618256 |
+| Receive Certificate of Incorporation | ✅ Complete  | 12 December 2025           |
+| Receive UTR number                   | ✅ Complete  | January 2026               |
+| Open business bank account           | ✅ Complete  | Monzo Business             |
+| Update Stripe to company details     | 📋 Next      | After bank account         |
+| Update Terms of Service              | 📋 Queued    | After certificate received |
+| Update Privacy Policy                | 📋 Queued    | After certificate received |
 
 ### Why Phase 0?
 
