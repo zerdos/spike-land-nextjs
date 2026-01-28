@@ -467,7 +467,7 @@ describe("content-gaps", () => {
         calendarGaps: [],
         globalBestSlots: [],
         analysisRange: { start: new Date(), end: new Date() },
-      } as MockReturnValue);
+      });
 
       vi.mocked(prisma.scheduledPost.findMany).mockResolvedValue([]);
 
@@ -495,7 +495,7 @@ describe("content-gaps", () => {
         calendarGaps: [],
         globalBestSlots: [],
         analysisRange: { start: new Date(), end: new Date() },
-      } as MockReturnValue);
+      });
 
       vi.mocked(prisma.scheduledPost.findMany).mockResolvedValue([]);
 
