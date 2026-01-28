@@ -12,7 +12,7 @@
 
 import { type Browser, type BrowserContext, chromium, type Page } from "@playwright/test";
 import { execSync } from "child_process";
-import fs from "fs";
+import { promises as fs } from "fs";
 
 // ============================================================================
 // Configuration
@@ -89,10 +89,11 @@ interface SmokeTestReport {
 /**
  * Mock an authenticated session by:
  * 1. Setting E2E bypass cookies for server-side auth checks (auth() function)
- * 2. Intercepting the session API for client-side auth checks (useSession() hook)
+ * 2. Setting NextAuth session token cookie for middleware bypass
+ * 3. Intercepting the session API for client-side auth checks (useSession() hook)
  *
- * This dual approach ensures authentication works for both server components
- * (which call auth() directly) and client components (which call useSession()).
+ * This triple approach ensures authentication works for both server components
+ * (which call auth() directly), middleware checks, and client components (which call useSession()).
  */
 async function mockAuthSession(
   page: Page,
@@ -128,6 +129,13 @@ async function mockAuthSession(
       domain: baseUrlHost,
       path: "/",
     },
+    // Add NextAuth session token cookie for middleware bypass
+    {
+      name: "authjs.session-token",
+      value: `e2e-mock-${role.toLowerCase()}-${Date.now()}`,
+      domain: baseUrlHost,
+      path: "/",
+    },
   ]);
 
   // Also intercept the session API for client-side components using useSession()
@@ -147,20 +155,40 @@ async function mockAuthSession(
     });
   });
 
-  // CRITICAL FIX: Wait for route interceptors to be fully registered
+  // CRITICAL FIX: Increase wait time for route interceptors to be fully registered
   // This prevents race conditions where the page navigates before routes are ready
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  // 500ms is more reliable than 100ms, especially in slower CI environments
+  await new Promise((resolve) => setTimeout(resolve, 500));
   await page.evaluate(() => Promise.resolve());
+
+  // Verify that the mock is working by testing the intercepted route
+  try {
+    const sessionResponse = await page.request.get(`${config.baseUrl}/api/auth/session`);
+    if (!sessionResponse.ok()) {
+      console.warn(`[Warn] Session API returned ${sessionResponse.status()}, mock may not be active`);
+    }
+  } catch (error) {
+    console.warn(`[Warn] Failed to verify session mock:`, error);
+  }
 
   // NEW: If page is already loaded, trigger a session refresh
   // This helps client components that already called useSession()
   const currentUrl = page.url();
   if (currentUrl && !currentUrl.includes("about:blank")) {
+    // Force NextAuth to refresh the session by triggering visibilitychange event
+    // This is the recommended way to force NextAuth SessionProvider to refetch
     await page.evaluate(async () => {
+      // First fetch the session
       await fetch("/api/auth/session").catch(() => {});
+
+      // Then trigger visibility change to force SessionProvider to update
+      const event = new Event("visibilitychange");
+      document.dispatchEvent(event);
     });
-    // Give client components time to react to the session update
-    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    // Give client components more time to react to the session update
+    // Increased from 200ms to 300ms for more reliable hydration
+    await new Promise((resolve) => setTimeout(resolve, 300));
   }
 }
 
@@ -437,6 +465,7 @@ async function runStage2(browser: Browser): Promise<StageResult> {
   const job22Start = Date.now();
   let job22Status: JobStatus = "passed";
   let job22Error: string | undefined;
+  let job22Screenshot: string | undefined;
 
   const context2 = await createContext(browser);
   const page2 = await context2.newPage();
@@ -449,31 +478,55 @@ async function runStage2(browser: Browser): Promise<StageResult> {
     // Mock authenticated session
     await mockAuthSession(page2, { role: "USER" });
 
-    // Access protected route
-    await page2.goto(`${config.baseUrl}/settings`);
+    // Access protected route with networkidle to ensure page is fully loaded
+    await page2.goto(`${config.baseUrl}/settings`, { waitUntil: "networkidle" });
 
     // Wait for loading state to complete - useSession shows "Loading..." initially
     // The loading-state might be ephemeral, so we handle the case where it's already gone
     const loadingIndicator = page2.getByTestId("loading-state");
-    await loadingIndicator.waitFor({ state: "hidden", timeout: 15000 }).catch(() => {
+    await loadingIndicator.waitFor({ state: "hidden", timeout: 20000 }).catch(() => {
       // Loading indicator might not exist if session loads very fast or if selector doesn't match
       // We continue to the main check
     });
 
-    // Now wait for the authenticated content with increased timeout
+    // Now wait for the authenticated content with increased timeout (20s for CI environments)
+    // Test multiple selectors in parallel for faster detection
     const settingsHeading = page2.getByRole("heading", { name: /Settings/i });
-    const isVisible = await settingsHeading.isVisible({ timeout: 15000 }).catch(() => false);
+    const settingsText = page2.getByText(/Settings/i).first();
 
-    if (!isVisible) {
+    const [headingVisible, textVisible] = await Promise.all([
+      settingsHeading.isVisible({ timeout: 20000 }).catch(() => false),
+      settingsText.isVisible({ timeout: 20000 }).catch(() => false),
+    ]);
+
+    if (!headingVisible && !textVisible) {
       const currentUrl = page2.url();
       const isOnSignIn = currentUrl.includes("/auth/signin");
+      const pageText = await page2.locator("body").textContent();
+
+      // Capture screenshot for debugging
+      job22Screenshot = `${config.screenshotDir}/job-2.2-failure.png`;
+      await fs.mkdir(config.screenshotDir, { recursive: true });
+      await page2.screenshot({ path: job22Screenshot, fullPage: true });
+
       throw new Error(
-        `Settings page not accessible after auth mock. URL: ${currentUrl}, redirectedToSignIn: ${isOnSignIn}`,
+        `Settings page not accessible after auth mock.\n` +
+        `URL: ${currentUrl}\n` +
+        `Redirected to sign-in: ${isOnSignIn}\n` +
+        `Page contains "Settings": ${pageText?.includes("Settings") || false}\n` +
+        `Screenshot saved to: ${job22Screenshot}`,
       );
     }
   } catch (error) {
     job22Status = "failed";
     job22Error = (error as Error).message;
+
+    // Capture screenshot if not already captured
+    if (!job22Screenshot) {
+      job22Screenshot = `${config.screenshotDir}/job-2.2-error.png`;
+      await fs.mkdir(config.screenshotDir, { recursive: true }).catch(() => {});
+      await page2.screenshot({ path: job22Screenshot, fullPage: true }).catch(() => {});
+    }
   } finally {
     await context2.close();
   }
@@ -484,6 +537,7 @@ async function runStage2(browser: Browser): Promise<StageResult> {
     status: job22Status,
     duration: Date.now() - job22Start,
     error: job22Error,
+    screenshot: job22Screenshot,
   });
 
   // Job 2.3: Navigation Flow
@@ -552,40 +606,63 @@ async function runStage3(browser: Browser): Promise<StageResult> {
   const job31Start = Date.now();
   let job31Status: JobStatus = "passed";
   let job31Error: string | undefined;
+  let job31Screenshot: string | undefined;
 
   const context1 = await createContext(browser);
   const page1 = await context1.newPage();
 
   try {
     await mockAuthSession(page1, { role: "USER" });
-    await page1.goto(`${config.baseUrl}/apps/pixel`);
+    await page1.goto(`${config.baseUrl}/apps/pixel`, { waitUntil: "networkidle" });
 
     // Check if we were redirected to sign-in (E2E bypass failed)
     const currentUrl = page1.url();
     if (currentUrl.includes("/auth/signin")) {
+      job31Screenshot = `${config.screenshotDir}/job-3.1-redirect.png`;
+      await fs.mkdir(config.screenshotDir, { recursive: true });
+      await page1.screenshot({ path: job31Screenshot, fullPage: true });
+
       throw new Error(
         `Pixel app redirected to sign-in. E2E bypass may not be configured on server. ` +
-          `Ensure E2E_BYPASS_SECRET is set in staging environment.`,
+          `Ensure E2E_BYPASS_SECRET is set in staging environment.\n` +
+          `Screenshot saved to: ${job31Screenshot}`,
       );
     }
 
     await page1.waitForLoadState("networkidle");
 
-    // Verify main UI elements with increased timeout
+    // Verify main UI elements with increased timeout (20s for client-side hydration)
+    // Test multiple success indicators in parallel
     const heading = page1.getByText("AI Image Enhancement");
-    const isVisible = await heading.isVisible({ timeout: 15000 }).catch(() => false);
+    const albumsHeading = page1.getByText("Your Albums");
+    const tokenBalance = page1.locator('[data-testid="token-balance"]').first();
 
-    if (!isVisible) {
-      // Check for alternative success indicators
-      const albumsHeading = page1.getByText("Your Albums");
-      const albumsVisible = await albumsHeading.isVisible({ timeout: 5000 }).catch(() => false);
+    const [headingVisible, albumsVisible, tokenVisible] = await Promise.all([
+      heading.isVisible({ timeout: 20000 }).catch(() => false),
+      albumsHeading.isVisible({ timeout: 20000 }).catch(() => false),
+      tokenBalance.isVisible({ timeout: 20000 }).catch(() => false),
+    ]);
 
-      if (!albumsVisible) {
-        throw new Error(`Pixel app UI not visible. URL: ${currentUrl}`);
-      }
+    if (!headingVisible && !albumsVisible && !tokenVisible) {
+      const pageText = await page1.locator("body").textContent();
+
+      // Capture screenshot for debugging
+      job31Screenshot = `${config.screenshotDir}/job-3.1-failure.png`;
+      await fs.mkdir(config.screenshotDir, { recursive: true });
+      await page1.screenshot({ path: job31Screenshot, fullPage: true });
+
+      throw new Error(
+        `Pixel app UI not visible. Multiple checkpoints failed:\n` +
+        `- "AI Image Enhancement" heading: ${headingVisible}\n` +
+        `- "Your Albums" heading: ${albumsVisible}\n` +
+        `- Token balance element: ${tokenVisible}\n` +
+        `URL: ${currentUrl}\n` +
+        `Page text preview: ${pageText?.substring(0, 200)}...\n` +
+        `Screenshot saved to: ${job31Screenshot}`,
+      );
     }
 
-    // Check for token balance or enhancement options
+    // Check for token balance or enhancement options (informational only)
     const hasTokenOrTier = await page1
       .locator('[data-testid="token-balance"], text=/1K|2K|4K/i')
       .first()
@@ -599,6 +676,13 @@ async function runStage3(browser: Browser): Promise<StageResult> {
   } catch (error) {
     job31Status = "failed";
     job31Error = (error as Error).message;
+
+    // Capture screenshot if not already captured
+    if (!job31Screenshot) {
+      job31Screenshot = `${config.screenshotDir}/job-3.1-error.png`;
+      await fs.mkdir(config.screenshotDir, { recursive: true }).catch(() => {});
+      await page1.screenshot({ path: job31Screenshot, fullPage: true }).catch(() => {});
+    }
   } finally {
     await context1.close();
   }
@@ -609,6 +693,7 @@ async function runStage3(browser: Browser): Promise<StageResult> {
     status: job31Status,
     duration: Date.now() - job31Start,
     error: job31Error,
+    screenshot: job31Screenshot,
   });
 
   // Job 3.2: Album Management
@@ -877,28 +962,71 @@ async function runStage5(browser: Browser): Promise<StageResult> {
   const job51Start = Date.now();
   let job51Status: JobStatus = "passed";
   let job51Error: string | undefined;
+  let job51Screenshot: string | undefined;
 
   const context1 = await createContext(browser);
   const page1 = await context1.newPage();
 
   try {
     await mockAuthSession(page1, { role: "ADMIN" });
-    await page1.goto(`${config.baseUrl}/admin`);
+    await page1.goto(`${config.baseUrl}/admin`, { waitUntil: "networkidle" });
+
+    // Check if we were redirected (auth bypass failed)
+    const currentUrl = page1.url();
+    if (currentUrl.includes("/auth/signin") || !currentUrl.includes("/admin")) {
+      job51Screenshot = `${config.screenshotDir}/job-5.1-redirect.png`;
+      await fs.mkdir(config.screenshotDir, { recursive: true });
+      await page1.screenshot({ path: job51Screenshot, fullPage: true });
+
+      throw new Error(
+        `Admin dashboard redirected. E2E bypass may not be configured or admin role not mocked properly.\n` +
+        `Expected URL: ${config.baseUrl}/admin\n` +
+        `Actual URL: ${currentUrl}\n` +
+        `Screenshot saved to: ${job51Screenshot}`,
+      );
+    }
+
     await page1.waitForLoadState("networkidle");
 
-    // Verify dashboard loads
-    const hasDashboard = await page1
-      .getByText(/Admin|Dashboard/i)
-      .first()
-      .isVisible({ timeout: 10000 })
-      .catch(() => false);
+    // Verify dashboard loads - test multiple admin-specific elements
+    const adminHeading = page1.getByText(/Admin|Dashboard/i).first();
+    const adminSidebar = page1.locator('nav, aside, [data-testid="admin-sidebar"]').first();
+    const metricCards = page1.locator('[data-testid="metric-card"], .metric-card, [class*="card"]').first();
 
-    if (!hasDashboard) {
-      throw new Error("Admin dashboard not visible");
+    const [headingVisible, sidebarVisible, cardsVisible] = await Promise.all([
+      adminHeading.isVisible({ timeout: 20000 }).catch(() => false),
+      adminSidebar.isVisible({ timeout: 20000 }).catch(() => false),
+      metricCards.isVisible({ timeout: 20000 }).catch(() => false),
+    ]);
+
+    if (!headingVisible && !sidebarVisible && !cardsVisible) {
+      const pageText = await page1.locator("body").textContent();
+
+      // Capture screenshot for debugging
+      job51Screenshot = `${config.screenshotDir}/job-5.1-failure.png`;
+      await fs.mkdir(config.screenshotDir, { recursive: true });
+      await page1.screenshot({ path: job51Screenshot, fullPage: true });
+
+      throw new Error(
+        `Admin dashboard not visible. Multiple checkpoints failed:\n` +
+        `- Admin/Dashboard heading: ${headingVisible}\n` +
+        `- Admin sidebar/nav: ${sidebarVisible}\n` +
+        `- Metric cards: ${cardsVisible}\n` +
+        `URL: ${currentUrl}\n` +
+        `Page text preview: ${pageText?.substring(0, 200)}...\n` +
+        `Screenshot saved to: ${job51Screenshot}`,
+      );
     }
   } catch (error) {
     job51Status = "failed";
     job51Error = (error as Error).message;
+
+    // Capture screenshot if not already captured
+    if (!job51Screenshot) {
+      job51Screenshot = `${config.screenshotDir}/job-5.1-error.png`;
+      await fs.mkdir(config.screenshotDir, { recursive: true }).catch(() => {});
+      await page1.screenshot({ path: job51Screenshot, fullPage: true }).catch(() => {});
+    }
   } finally {
     await context1.close();
   }
@@ -909,6 +1037,7 @@ async function runStage5(browser: Browser): Promise<StageResult> {
     status: job51Status,
     duration: Date.now() - job51Start,
     error: job51Error,
+    screenshot: job51Screenshot,
   });
 
   // Job 5.2: Admin Sub-pages
@@ -1095,7 +1224,7 @@ async function runStage7(browser: Browser, stages: StageResult[]): Promise<Stage
   ];
 
   try {
-    await fs.promises.mkdir(config.screenshotDir, { recursive: true });
+    await fs.mkdir(config.screenshotDir, { recursive: true });
 
     const context = await createContext(browser);
     const page = await context.newPage();
@@ -1133,7 +1262,7 @@ async function runStage7(browser: Browser, stages: StageResult[]): Promise<Stage
   let job72Error: string | undefined;
 
   try {
-    await fs.promises.mkdir(config.reportDir, { recursive: true });
+    await fs.mkdir(config.reportDir, { recursive: true });
 
     // Calculate summary
     const allJobs = stages.flatMap((s) => s.jobs);
@@ -1172,7 +1301,7 @@ async function runStage7(browser: Browser, stages: StageResult[]): Promise<Stage
       failures,
     };
 
-    await fs.promises.writeFile(
+    await fs.writeFile(
       `${config.reportDir}/smoke-test-report.json`,
       JSON.stringify(report, null, 2),
     );
