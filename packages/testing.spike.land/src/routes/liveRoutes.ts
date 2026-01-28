@@ -19,6 +19,85 @@ export class LiveRoutes {
     this.aiRoutes = new AiRoutes(code);
   }
 
+  /**
+   * Handle /version/{N}/* routes (short path format inside Durable Object)
+   * When fetchHandler delegates to DO, path is ["version", "N", ...] not ["live", "cs", "version", ...]
+   */
+  async handleVersionRoute(
+    _request: Request,
+    _url: URL,
+    path: string[],
+  ): Promise<Response> {
+    // path = ["version", "N", "embed"?]
+    const versionStr = path[1];
+    if (!versionStr) {
+      return new Response(
+        JSON.stringify({ error: "Version number required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const versionNumber = parseInt(versionStr);
+    if (isNaN(versionNumber) || versionNumber < 1) {
+      return new Response(
+        JSON.stringify({ error: "Invalid version number" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const subRoute = path[2];
+
+    // /version/{N} - Version info JSON
+    if (!subRoute) {
+      return this.handleVersionInfoRoute(versionNumber);
+    }
+
+    // /version/{N}/embed or /version/{N}/iframe - Full HTML page
+    if (subRoute === "embed" || subRoute === "iframe") {
+      return this.handleVersionedContentRoute(versionNumber, "embed");
+    }
+
+    // /version/{N}/index.mjs or /version/{N}/index.js - Transpiled JS
+    if (subRoute === "index.mjs" || subRoute === "index.js" || subRoute === "js") {
+      return this.handleVersionedContentRoute(versionNumber, "js");
+    }
+
+    // /version/{N}/index.css - CSS
+    if (subRoute === "index.css") {
+      return this.handleVersionedContentRoute(versionNumber, "css");
+    }
+
+    // /version/{N}/index.tsx or /version/{N}/code - Source code
+    if (subRoute === "index.tsx" || subRoute === "code") {
+      return this.handleVersionedContentRoute(versionNumber, "code");
+    }
+
+    // /version/{N}/html - HTML fragment
+    if (subRoute === "html") {
+      return this.handleVersionedContentRoute(versionNumber, "html");
+    }
+
+    return new Response("Invalid version route", { status: 404 });
+  }
+
+  /**
+   * Handle /versions route (short path format inside Durable Object)
+   * Delegates to the existing handleVersionsListRoute
+   */
+  async handleVersionsRoute(
+    _request: Request,
+    _url: URL,
+    _path: string[],
+  ): Promise<Response> {
+    return this.handleVersionsListRoute();
+  }
+
   async handleLiveRoute(
     request: Request,
     url: URL,

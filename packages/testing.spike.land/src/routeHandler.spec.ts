@@ -198,5 +198,116 @@ describe("RouteHandler", () => {
         );
       });
     });
+
+    describe("handleVersionRoute", () => {
+      it("should return 400 for missing version number", async () => {
+        const request = new Request("https://example.com/version");
+        const url = new URL("https://example.com/version");
+
+        const response = await routeHandler.handleRoute(request, url, [
+          "version",
+        ]);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: "Version number required" });
+      });
+
+      it("should return 400 for invalid version number", async () => {
+        const request = new Request("https://example.com/version/invalid");
+        const url = new URL("https://example.com/version/invalid");
+
+        const response = await routeHandler.handleRoute(request, url, [
+          "version",
+          "invalid",
+        ]);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: "Invalid version number" });
+      });
+
+      it("should return 400 for version number less than 1", async () => {
+        const request = new Request("https://example.com/version/0");
+        const url = new URL("https://example.com/version/0");
+
+        const response = await routeHandler.handleRoute(request, url, [
+          "version",
+          "0",
+        ]);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: "Invalid version number" });
+      });
+
+      it("should return 404 for version not found", async () => {
+        // Add getVersion mock that returns null
+        (mockCode.getVersion as ReturnType<typeof vi.fn>) = vi.fn().mockResolvedValue(null);
+
+        const request = new Request("https://example.com/version/1");
+        const url = new URL("https://example.com/version/1");
+
+        const routeHandlerWithVersionMock = new RouteHandler(mockCode as Code);
+        const response = await routeHandlerWithVersionMock.handleRoute(request, url, [
+          "version",
+          "1",
+        ]);
+
+        expect(response.status).toBe(404);
+        const body = await response.json();
+        expect(body).toEqual({ error: "Version not found" });
+      });
+
+      it("should return 404 for invalid version sub-route", async () => {
+        // Add getVersion mock
+        (mockCode.getVersion as ReturnType<typeof vi.fn>) = vi.fn().mockResolvedValue({
+          versionNumber: 1,
+          code: "test code",
+          transpiled: "test transpiled",
+          css: "test css",
+          html: "test html",
+          timestamp: Date.now(),
+        });
+
+        const request = new Request("https://example.com/version/1/invalid");
+        const url = new URL("https://example.com/version/1/invalid");
+
+        const routeHandlerWithVersionMock = new RouteHandler(mockCode as Code);
+        const response = await routeHandlerWithVersionMock.handleRoute(request, url, [
+          "version",
+          "1",
+          "invalid",
+        ]);
+
+        expect(response.status).toBe(404);
+      });
+    });
+
+    describe("handleVersionsRoute", () => {
+      it("should return versions list", async () => {
+        // Add getVersionsList and getVersionCount mocks
+        (mockCode.getVersionsList as ReturnType<typeof vi.fn>) = vi.fn().mockResolvedValue([
+          { versionNumber: 1, timestamp: Date.now(), codeLength: 100 },
+        ]);
+        (mockCode.getVersionCount as ReturnType<typeof vi.fn>) = vi.fn().mockReturnValue(1);
+
+        const request = new Request("https://example.com/versions");
+        const url = new URL("https://example.com/versions");
+
+        const routeHandlerWithVersionsMock = new RouteHandler(mockCode as Code);
+        const response = await routeHandlerWithVersionsMock.handleRoute(request, url, [
+          "versions",
+        ]);
+
+        expect(response.status).toBe(200);
+        expect(response.headers.get("Content-Type")).toBe("application/json");
+        const body = await response.json();
+        expect(body).toHaveProperty("codeSpace", "test-space");
+        expect(body).toHaveProperty("versionCount", 1);
+        expect(body).toHaveProperty("versions");
+        expect(body.versions).toHaveLength(1);
+      });
+    });
   });
 });
