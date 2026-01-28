@@ -54,17 +54,22 @@ async function fetchApprovalQueue(
   return res.json();
 }
 
-async function fetchRelayMetrics(
-  workspaceSlug: string,
-): Promise<RelayMetrics> {
-  const res = await fetch(`/api/orbit/${workspaceSlug}/relay/metrics`);
+/**
+ * Computes relay metrics from drafts data.
+ * This derives status counts locally instead of relying on a separate API call,
+ * as the /relay/metrics endpoint returns different analytics data (rates, etc.)
+ */
+function computeMetricsFromDrafts(drafts: ApprovalQueueDraft[]): RelayMetrics {
+  const pending = drafts.filter((d) => d.status === "PENDING").length;
+  const approved = drafts.filter((d) => d.status === "APPROVED").length;
+  const rejected = drafts.filter((d) => d.status === "REJECTED").length;
+  const sent = drafts.filter((d) => d.status === "SENT").length;
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(error.error || "Failed to fetch metrics");
-  }
+  // Calculate average approval time (time from creation to approval)
+  // For now, return 0 as this would require additional timestamp tracking
+  const averageApprovalTime = 0;
 
-  return res.json();
+  return { pending, approved, rejected, sent, averageApprovalTime };
 }
 
 function MetricsCards({ metrics }: { metrics: RelayMetrics | undefined; }) {
@@ -127,15 +132,12 @@ export function RelayPageClient({ workspaceSlug }: RelayPageClientProps) {
     enabled: !!workspaceSlug,
   });
 
-  const { data: metrics } = useQuery({
-    queryKey: ["relayMetrics", workspaceSlug],
-    queryFn: () => fetchRelayMetrics(workspaceSlug),
-    enabled: !!workspaceSlug,
-  });
+  // Compute metrics from drafts data instead of separate API call
+  // The /relay/metrics endpoint returns analytics data (rates) not status counts
+  const metrics = drafts ? computeMetricsFromDrafts(drafts) : undefined;
 
   const handleDraftActioned = () => {
     queryClient.invalidateQueries({ queryKey: ["approvalQueue", workspaceSlug] });
-    queryClient.invalidateQueries({ queryKey: ["relayMetrics", workspaceSlug] });
   };
 
   return (

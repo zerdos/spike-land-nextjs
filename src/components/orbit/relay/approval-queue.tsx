@@ -220,22 +220,6 @@ export function ApprovalQueue({
   const approvedDrafts = drafts.filter((d) => d.status === "APPROVED");
   const rejectedDrafts = drafts.filter((d) => d.status === "REJECTED");
 
-  const getFilteredDrafts = () => {
-    switch (activeTab) {
-      case "pending":
-        return pendingDrafts;
-      case "approved":
-        return approvedDrafts;
-      case "rejected":
-        return rejectedDrafts;
-      default:
-        return drafts;
-    }
-  };
-
-  // Note: getFilteredDrafts is used for future features
-  void getFilteredDrafts;
-
   return (
     <div className="space-y-4" data-testid="approval-queue">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
