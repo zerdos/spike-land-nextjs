@@ -16,7 +16,6 @@
  */
 
 import { auth } from "@/auth";
-import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import { requireWorkspaceMembership } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
 import { createSocialClient } from "@/lib/social";
@@ -25,6 +24,7 @@ import {
   type AggregateOptions,
   aggregateStreamPosts,
 } from "@/lib/social/stream-aggregator";
+import { getValidAccessToken } from "@/lib/social/token-refresh";
 import {
   type SocialPlatform,
   type SocialPost,
@@ -48,6 +48,7 @@ const VALID_PLATFORMS: SocialPlatform[] = [
   "INSTAGRAM",
   "LINKEDIN",
   "TIKTOK",
+  "YOUTUBE",
 ];
 
 /**
@@ -231,8 +232,13 @@ export async function fetchAccountPosts(
   account: SocialAccount,
   limit: number,
 ): Promise<{ posts: SocialPost[]; context: AccountContext; }> {
-  // Decrypt the access token
-  const accessToken = safeDecryptToken(account.accessTokenEncrypted);
+  // Get valid access token (refreshes if expired)
+  const { accessToken, wasRefreshed } = await getValidAccessToken(account);
+
+  // Log if token was refreshed for monitoring
+  if (wasRefreshed) {
+    console.info(`Token refreshed for ${account.platform} account ${account.id} during post fetch`);
+  }
 
   // Create the appropriate social client based on platform
   const clientOptions: Record<string, string> = {
