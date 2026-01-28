@@ -92,7 +92,7 @@ model User {
   campaignBriefs           CampaignBrief[]
 
   // Workflow relations
-  workflows                Workflow[]
+  workflows Workflow[]
 
   // Content Library
   assetFolders        AssetFolder[]
@@ -100,7 +100,7 @@ model User {
   assetTagAssignments AssetTagAssignment[]
 
   // Identity Graph relation
-  identity                 Identity?
+  identity Identity?
 
   @@map("users")
 }
@@ -117,10 +117,10 @@ model CampaignBrief {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  user                  User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   // Phase 4: New typed relations (expand phase)
-  targetAudienceTyped   CampaignTargetAudience?
-  objectivesTyped       CampaignObjective[]
+  targetAudienceTyped CampaignTargetAudience?
+  objectivesTyped     CampaignObjective[]
 
   @@index([userId])
   @@map("campaign_briefs")
@@ -132,16 +132,16 @@ model CampaignBrief {
 
 // Typed target audience - replaces CampaignBrief.targetAudience JSON
 model CampaignTargetAudience {
-  id         String        @id @default(cuid())
-  briefId    String        @unique
-  ageMin     Int?
-  ageMax     Int?
-  genders    String[] // ["male", "female", "other", "all"]
-  locations  String[] // ISO country codes or city names
-  interests  String[]
-  behaviors  String[]
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  id        String   @id @default(cuid())
+  briefId   String   @unique
+  ageMin    Int?
+  ageMax    Int?
+  genders   String[] // ["male", "female", "other", "all"]
+  locations String[] // ISO country codes or city names
+  interests String[]
+  behaviors String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   brief CampaignBrief @relation(fields: [briefId], references: [id], onDelete: Cascade)
 
@@ -337,13 +337,13 @@ model AppMessage {
   createdAt   DateTime        @default(now())
   app         App             @relation(fields: [appId], references: [id], onDelete: Cascade)
   attachments AppAttachment[] // Images attached to this message
+  codeVersion AppCodeVersion? // Code version created by this message
 
   @@index([appId, createdAt])
   @@index([appId, isRead])
   @@index([role, isRead]) // For efficient agent polling queries
   @@index([appId, deletedAt]) // For message queries excluding soft-deleted
   @@map("app_messages")
-  codeVersion    AppCodeVersion? // Code version created by this message
 }
 
 // Status change history for audit trail
@@ -400,16 +400,16 @@ model AppAttachment {
 
 // Code version snapshots for undo/restore functionality
 model AppCodeVersion {
-  id          String      @id @default(cuid())
+  id          String   @id @default(cuid())
   appId       String
-  messageId   String?     @unique // The agent message that created this version
-  code        String      @db.Text // Full code snapshot
-  hash        String      // SHA-256 hash for quick comparison
+  messageId   String?  @unique // The agent message that created this version
+  code        String   @db.Text // Full code snapshot
+  hash        String // SHA-256 hash for quick comparison
   description String? // Auto-generated description of changes
-  createdAt   DateTime    @default(now())
+  createdAt   DateTime @default(now())
 
-  app         App         @relation(fields: [appId], references: [id], onDelete: Cascade)
-  message     AppMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  app     App         @relation(fields: [appId], references: [id], onDelete: Cascade)
+  message AppMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
 
   @@index([appId, createdAt])
   @@index([hash])
@@ -2398,14 +2398,14 @@ model Workspace {
   assets       Asset[]
 
   // Workflow relations
-  workflows              Workflow[]
+  workflows Workflow[]
 
   // Notification system
-  notifications          Notification[]
+  notifications Notification[]
 
   // Connection Management (Orbit CRM) - Resolves #826
-  connections            Connection[]
-  connectionTags         ConnectionTag[]
+  connections    Connection[]
+  connectionTags ConnectionTag[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -2444,38 +2444,38 @@ model WorkspaceMember {
 // =============================================================================
 
 model Connection {
-  id               String                      @id @default(cuid())
-  workspaceId      String
-  workspace        Workspace                   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  identityId       String?                     @unique
-  identity         Identity?                   @relation(fields: [identityId], references: [id], onDelete: SetNull)
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  identityId  String?   @unique
+  identity    Identity? @relation(fields: [identityId], references: [id], onDelete: SetNull)
 
-  displayName      String
-  avatarUrl        String?
-  notes            String?                     @db.Text
+  displayName String
+  avatarUrl   String?
+  notes       String? @db.Text
 
   // Warmth scoring (recalculated from InboxItem interactions)
-  warmthScore      Int                         @default(0)  // 0-100
-  warmthFactors    Json?                       // { recency, frequency, sentiment, depth }
+  warmthScore      Int       @default(0) // 0-100
+  warmthFactors    Json? // { recency, frequency, sentiment, depth }
   lastInteraction  DateTime?
-  interactionCount Int                         @default(0)
+  interactionCount Int       @default(0)
 
   // Next step tracking
-  nextStep         ConnectionNextStep?
-  nextStepDueDate  DateTime?
-  nextStepNotes    String?
+  nextStep        ConnectionNextStep?
+  nextStepDueDate DateTime?
+  nextStepNotes   String?
 
   // Meetup pipeline
-  meetupStatus     MeetupPipelineStatus        @default(NONE)
+  meetupStatus          MeetupPipelineStatus @default(NONE)
   meetupStatusUpdatedAt DateTime?
 
-  createdAt        DateTime                    @default(now())
-  updatedAt        DateTime                    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   platformPresence ConnectionPlatformPresence[]
   reminders        ConnectionReminder[]
   meetupHistory    MeetupStatusHistory[]
-  tags             ConnectionTag[]             @relation("ConnectionTags")
+  tags             ConnectionTag[]              @relation("ConnectionTags")
 
   @@index([workspaceId])
   @@index([workspaceId, warmthScore])
@@ -2509,9 +2509,9 @@ model ConnectionTag {
 }
 
 model ConnectionReminder {
-  id           String         @id @default(cuid())
+  id           String     @id @default(cuid())
   connectionId String
-  connection   Connection     @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  connection   Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
   workspaceId  String
 
   type         ReminderType
@@ -2523,8 +2523,8 @@ model ConnectionReminder {
   snoozeCount  Int            @default(0)
   completedAt  DateTime?
 
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([workspaceId, dueDate])
   @@index([workspaceId, status])
@@ -3666,16 +3666,16 @@ model AllocatorAutopilotExecution {
 // =============================================================================
 
 model Workflow {
-  id          String    @id @default(cuid())
+  id          String            @id @default(cuid())
   name        String
   description String?
-  status      WorkflowStatus @default(DRAFT)
+  status      WorkflowStatus    @default(DRAFT)
   workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdById String
-  createdBy   User      @relation(fields: [createdById], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdBy   User              @relation(fields: [createdById], references: [id])
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
   versions    WorkflowVersion[]
   runs        WorkflowRun[]
 
@@ -3686,15 +3686,15 @@ model Workflow {
 }
 
 model WorkflowVersion {
-  id           String    @id @default(cuid())
-  workflowId   String
-  workflow     Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  version      Int
-  description  String?
-  isPublished  Boolean   @default(false)
-  publishedAt  DateTime?
-  createdAt    DateTime  @default(now())
-  steps        WorkflowStep[]
+  id          String         @id @default(cuid())
+  workflowId  String
+  workflow    Workflow       @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  version     Int
+  description String?
+  isPublished Boolean        @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime       @default(now())
+  steps       WorkflowStep[]
 
   @@unique([workflowId, version])
   @@index([workflowId])
@@ -3702,17 +3702,27 @@ model WorkflowVersion {
 }
 
 model WorkflowStep {
-  id                String         @id @default(cuid())
+  id                String           @id @default(cuid())
   workflowVersionId String
-  workflowVersion   WorkflowVersion @relation(fields: [workflowVersionId], references: [id], onDelete: Cascade)
+  workflowVersion   WorkflowVersion  @relation(fields: [workflowVersionId], references: [id], onDelete: Cascade)
   name              String
   type              WorkflowStepType
   sequence          Int
   config            Json // Step-specific configuration
   dependencies      Json? // IDs of steps that must complete before this one
-  createdAt         DateTime       @default(now())
+  createdAt         DateTime         @default(now())
+
+  // Branching support
+  parentStepId    String?
+  branchType      BranchType? // IF_TRUE, IF_FALSE, SWITCH_CASE, DEFAULT
+  branchCondition String? // Condition expression for this branch
+
+  // Self-relation for branching
+  parentStep WorkflowStep?  @relation("StepBranches", fields: [parentStepId], references: [id], onDelete: Cascade)
+  childSteps WorkflowStep[] @relation("StepBranches")
 
   @@index([workflowVersionId])
+  @@index([parentStepId])
   @@map("workflow_steps")
 }
 
@@ -3731,15 +3741,17 @@ model WorkflowRun {
 }
 
 model WorkflowRunLog {
-  id           String    @id @default(cuid())
+  id            String         @id @default(cuid())
   workflowRunId String
-  workflowRun   WorkflowRun @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
-  stepId       String?
-  message      String
-  metadata     Json?
-  timestamp    DateTime  @default(now())
+  workflowRun   WorkflowRun    @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  stepId        String?
+  stepStatus    StepRunStatus?
+  message       String
+  metadata      Json?
+  timestamp     DateTime       @default(now())
 
   @@index([workflowRunId])
+  @@index([stepId])
   @@map("workflow_run_logs")
 }
 
@@ -4054,6 +4066,21 @@ enum WorkflowRunStatus {
   CANCELLED
 }
 
+enum BranchType {
+  IF_TRUE
+  IF_FALSE
+  SWITCH_CASE
+  DEFAULT
+}
+
+enum StepRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+
 // =============================================================================
 // Identity Graph Models
 // =============================================================================
@@ -4066,9 +4093,9 @@ model Identity {
   updatedAt   DateTime     @updatedAt
   user        User?        @relation(fields: [userId], references: [id])
   identifiers Identifier[]
-  
+
   // Connection Management - Resolves #826
-  connection  Connection?
+  connection Connection?
 
   @@index([userId])
   @@map("identities")

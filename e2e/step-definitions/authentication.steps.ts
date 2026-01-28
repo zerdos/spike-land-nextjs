@@ -18,7 +18,7 @@ async function waitForSessionPropagation(
         const profileTab = document.querySelector('[data-testid="profile-tab"]');
         // Also check for admin-specific elements
         const adminSidebar = document.querySelector("aside");
-        const adminHeading = document.querySelector('h1');
+        const adminHeading = document.querySelector("h1");
         const isAdminPage = adminHeading?.textContent?.includes("Admin");
         return userAvatar !== null ||
           settingsPage !== null ||
