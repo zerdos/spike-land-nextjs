@@ -158,7 +158,7 @@ This project is a Yarn 4 monorepo with multiple packages:
 
 ```
 spike-land-nextjs/
-├── src/                          # Next.js 15 Web App (main package)
+├── src/                          # Next.js 16 Web App (main package)
 │   ├── app/                      # App Router pages
 │   │   ├── apps/                 # Application pages
 │   │   │   ├── pixel/            # Pixel app
@@ -200,7 +200,7 @@ spike-land-nextjs/
 │   └── opfs-node-adapter/        # OPFS Node Adapter (experimental)
 │
 ├── prisma/
-│   └── schema.prisma             # Database schema (54 models)
+│   └── schema.prisma             # Database schema (131 models)
 │
 └── e2e/
     ├── features/                 # Cucumber feature files

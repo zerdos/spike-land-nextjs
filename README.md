@@ -1,6 +1,6 @@
-# Next.js 15 Application with Full Testing & CI/CD
+# Next.js 16 Application with Full Testing & CI/CD
 
-A production-ready Next.js 15 application with TypeScript, Tailwind CSS 4,
+A production-ready Next.js 16 application with TypeScript, Tailwind CSS 4,
 shadcn/ui components, comprehensive testing (100% coverage), and automated CI/CD
 pipeline.
 
@@ -18,7 +18,7 @@ pipeline.
 
 ## ✨ Features
 
-- ⚡ **Next.js 15** - App Router with React Server Components
+- ⚡ **Next.js 16** - App Router with React Server Components
 - 🔷 **TypeScript** - Strict mode enabled
 - 🔐 **NextAuth.js v5** - Authentication with GitHub, Google, Facebook, and Apple OAuth
 - 🎨 **Tailwind CSS 4** - Modern styling with CSS variables
@@ -35,7 +35,7 @@ This project is a monorepo containing multiple packages:
 
 | Package                                             | Description                             | Documentation                                             |
 | --------------------------------------------------- | --------------------------------------- | --------------------------------------------------------- |
-| **Web App** (`src/`)                                | Next.js 15 web application              | This README                                               |
+| **Web App** (`src/`)                                | Next.js 16 web application              | This README                                               |
 | **Code Editor** (`packages/code/`)                  | React code editor (Vite + Monaco)       | [Code README](./packages/code/README.md)                  |
 | **Backend Worker** (`packages/testing.spike.land/`) | Cloudflare Worker backend with MCP      | [Backend README](./packages/testing.spike.land/README.md) |
 | **Transpiler** (`packages/js.spike.land/`)          | Cloudflare Worker transpilation service | [Transpiler README](./packages/js.spike.land/README.md)   |
@@ -419,7 +419,7 @@ git push origin feature/my-feature
 
 ### Core
 
-- **Framework**: [Next.js 15](https://nextjs.org/) with App Router
+- **Framework**: [Next.js 16](https://nextjs.org/) with App Router
 - **Language**: [TypeScript](https://www.typescriptlang.org/) (strict mode)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
 - **UI Components**: [shadcn/ui](https://ui.shadcn.com/) (New York variant)
@@ -482,4 +482,4 @@ This project is bootstrapped with
 
 ---
 
-**Built with ❤️ using Next.js 15, TypeScript, and modern web technologies.**
+**Built with ❤️ using Next.js 16, TypeScript, and modern web technologies.**
