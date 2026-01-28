@@ -66,3 +66,14 @@ export {
   getIndustryBenchmarks,
   isRecommendedTimeSlot,
 } from "./best-time-service";
+
+// Content gap detection (Resolves #869)
+export type {
+  ContentGap,
+  ContentGapDetectionOptions,
+  ContentGapsResponse,
+  GapSeverity,
+  TimeSlot,
+} from "./content-gaps";
+
+export { detectContentGaps, getTimeSlotForHour, summarizeGaps } from "./content-gaps";
