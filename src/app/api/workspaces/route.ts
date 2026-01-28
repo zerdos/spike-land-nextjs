@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
+import { getUserFavorites, getUserRecentWorkspaces } from "@/lib/workspace/aggregate-queries";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -47,7 +48,7 @@ async function ensureUniqueSlug(baseSlug: string): Promise<string> {
   }
 }
 
-// GET /api/workspaces - List user's workspaces
+// GET /api/workspaces - List user's workspaces with favorites and recents
 export async function GET() {
   const session = await auth();
 
@@ -55,44 +56,64 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: memberships, error } = await tryCatch(
-    prisma.workspaceMember.findMany({
-      where: {
-        userId: session.user.id,
-        joinedAt: { not: null }, // Only include accepted memberships
-      },
-      include: {
-        workspace: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            description: true,
-            avatarUrl: true,
-            isPersonal: true,
+  // Fetch workspaces, favorites, and recent access in parallel
+  const [membershipsResult, favoritesResult, recentsResult] = await Promise.all([
+    tryCatch(
+      prisma.workspaceMember.findMany({
+        where: {
+          userId: session.user.id,
+          joinedAt: { not: null }, // Only include accepted memberships
+        },
+        include: {
+          workspace: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              description: true,
+              avatarUrl: true,
+              isPersonal: true,
+            },
           },
         },
-      },
-      orderBy: [
-        { workspace: { isPersonal: "desc" } }, // Personal workspace first
-        { workspace: { name: "asc" } },
-      ],
-    }),
-  );
+        orderBy: [
+          { workspace: { isPersonal: "desc" } }, // Personal workspace first
+          { workspace: { name: "asc" } },
+        ],
+      }),
+    ),
+    tryCatch(getUserFavorites(session.user.id)),
+    tryCatch(getUserRecentWorkspaces(session.user.id, 10)),
+  ]);
 
-  if (error) {
-    console.error("Failed to fetch workspaces:", error);
+  if (membershipsResult.error) {
+    console.error("Failed to fetch workspaces:", membershipsResult.error);
     return NextResponse.json(
       { error: "Failed to fetch workspaces" },
       { status: 500 },
     );
   }
 
+  // Log but don't fail if favorites/recents fail - they're optional enhancements
+  if (favoritesResult.error) {
+    console.error("Failed to fetch favorites:", favoritesResult.error);
+  }
+  if (recentsResult.error) {
+    console.error("Failed to fetch recent workspaces:", recentsResult.error);
+  }
+
+  const favoriteIds = favoritesResult.data || [];
+  const recentIds = recentsResult.data || [];
+  const favoriteSet = new Set(favoriteIds);
+
   return NextResponse.json({
-    workspaces: memberships.map((m) => ({
+    workspaces: membershipsResult.data.map((m) => ({
       ...m.workspace,
       role: m.role,
+      isFavorite: favoriteSet.has(m.workspace.id),
     })),
+    favorites: favoriteIds,
+    recentIds: recentIds,
   });
 }
 
