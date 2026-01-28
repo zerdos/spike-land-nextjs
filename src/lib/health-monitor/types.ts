@@ -4,8 +4,10 @@
  * Type definitions for the health monitoring system.
  *
  * Resolves #586: Implement Account Health Monitor
+ * Resolves #797: Type Safety Improvements
  */
 
+import type { HealthEventDetails } from "@spike-npm-land/shared/types";
 import type {
   AccountHealthEventType,
   AccountHealthStatus,
@@ -130,7 +132,7 @@ export interface CreateHealthEventOptions {
   previousScore?: number;
   newScore: number;
   message: string;
-  details?: Record<string, unknown>;
+  details?: HealthEventDetails;
 }
 
 /**

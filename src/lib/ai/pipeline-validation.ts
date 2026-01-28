@@ -1,8 +1,17 @@
+import type {
+  AnalysisConfig,
+  AutoCropConfig,
+  GenerationConfig,
+  PromptConfig,
+  ValidatedPipelineConfigs,
+} from "@spike-npm-land/shared/types";
 import { z } from "zod";
 
 /**
  * Zod schemas for pipeline configuration validation.
  * These schemas validate incoming JSON data before storing in the database.
+ *
+ * Resolves #797: Type Safety Improvements
  */
 
 /**
@@ -100,7 +109,7 @@ interface ValidationResult<T> {
  */
 function validateAnalysisConfig(
   data: unknown,
-): ValidationResult<z.infer<typeof AnalysisConfigSchema>> {
+): ValidationResult<AnalysisConfig> {
   const result = AnalysisConfigSchema.safeParse(data);
   if (result.success) {
     return { success: true, data: result.data };
@@ -118,7 +127,7 @@ function validateAnalysisConfig(
  */
 function validateAutoCropConfig(
   data: unknown,
-): ValidationResult<z.infer<typeof AutoCropConfigSchema>> {
+): ValidationResult<AutoCropConfig> {
   const result = AutoCropConfigSchema.safeParse(data);
   if (result.success) {
     return { success: true, data: result.data };
@@ -136,7 +145,7 @@ function validateAutoCropConfig(
  */
 function validatePromptConfig(
   data: unknown,
-): ValidationResult<z.infer<typeof PromptConfigSchema>> {
+): ValidationResult<PromptConfig> {
   const result = PromptConfigSchema.safeParse(data);
   if (result.success) {
     return { success: true, data: result.data };
@@ -154,7 +163,7 @@ function validatePromptConfig(
  */
 function validateGenerationConfig(
   data: unknown,
-): ValidationResult<z.infer<typeof GenerationConfigSchema>> {
+): ValidationResult<GenerationConfig> {
   const result = GenerationConfigSchema.safeParse(data);
   if (result.success) {
     return { success: true, data: result.data };
@@ -179,20 +188,10 @@ export function validatePipelineConfigs(data: {
 }): {
   valid: boolean;
   errors: Record<string, string[]>;
-  validatedData?: {
-    analysisConfig?: z.infer<typeof AnalysisConfigSchema>;
-    autoCropConfig?: z.infer<typeof AutoCropConfigSchema>;
-    promptConfig?: z.infer<typeof PromptConfigSchema>;
-    generationConfig?: z.infer<typeof GenerationConfigSchema>;
-  };
+  validatedData?: ValidatedPipelineConfigs;
 } {
   const errors: Record<string, string[]> = {};
-  const validatedData: {
-    analysisConfig?: z.infer<typeof AnalysisConfigSchema>;
-    autoCropConfig?: z.infer<typeof AutoCropConfigSchema>;
-    promptConfig?: z.infer<typeof PromptConfigSchema>;
-    generationConfig?: z.infer<typeof GenerationConfigSchema>;
-  } = {};
+  const validatedData: ValidatedPipelineConfigs = {};
 
   if (data.analysisConfig !== undefined) {
     const result = validateAnalysisConfig(data.analysisConfig);
