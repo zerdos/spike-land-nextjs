@@ -1,20 +1,20 @@
 {
   "version": 1,
-  "lastUpdated": "2026-01-28T23:48:18.909Z",
-  "iteration": 13,
+  "lastUpdated": "2026-01-28T23:50:34.964Z",
+  "iteration": 14,
   "pools": {
     "planning": [
       {
         "id": "planning-1",
         "role": "planning",
-        "pid": 24171,
+        "pid": 52262,
         "status": "running",
-        "ticketId": "#524",
+        "ticketId": "#554",
         "worktree": null,
         "outputFile": "/tmp/ralph-output/planning-1.json",
         "pidFile": "/tmp/ralph-pids/planning-1.pid",
-        "startedAt": "2026-01-28T23:40:34.725Z",
-        "lastHeartbeat": "2026-01-28T23:40:34.725Z",
+        "startedAt": "2026-01-28T23:50:25.908Z",
+        "lastHeartbeat": "2026-01-28T23:50:25.908Z",
         "retries": 0
       },
       {
@@ -46,14 +46,14 @@
       {
         "id": "planning-4",
         "role": "planning",
-        "pid": 36950,
+        "pid": 52265,
         "status": "running",
-        "ticketId": "#535",
+        "ticketId": "#559",
         "worktree": null,
         "outputFile": "/tmp/ralph-output/planning-4.json",
         "pidFile": "/tmp/ralph-pids/planning-4.pid",
-        "startedAt": "2026-01-28T23:45:42.725Z",
-        "lastHeartbeat": "2026-01-28T23:45:42.725Z",
+        "startedAt": "2026-01-28T23:50:25.909Z",
+        "lastHeartbeat": "2026-01-28T23:50:25.909Z",
         "retries": 0
       },
       {
@@ -72,14 +72,14 @@
       {
         "id": "planning-6",
         "role": "planning",
-        "pid": 36953,
+        "pid": 52268,
         "status": "running",
-        "ticketId": "#537",
+        "ticketId": "#565",
         "worktree": null,
         "outputFile": "/tmp/ralph-output/planning-6.json",
         "pidFile": "/tmp/ralph-pids/planning-6.pid",
-        "startedAt": "2026-01-28T23:45:42.727Z",
-        "lastHeartbeat": "2026-01-28T23:45:42.727Z",
+        "startedAt": "2026-01-28T23:50:25.910Z",
+        "lastHeartbeat": "2026-01-28T23:50:25.910Z",
         "retries": 0
       },
       {
@@ -152,14 +152,14 @@
       {
         "id": "developer-4",
         "role": "developer",
-        "pid": null,
-        "status": "idle",
-        "ticketId": null,
-        "worktree": null,
+        "pid": 52244,
+        "status": "running",
+        "ticketId": "#798",
+        "worktree": "/Users/z/Developer/ralph-worktrees/798",
         "outputFile": "/tmp/ralph-output/developer-4.json",
         "pidFile": "/tmp/ralph-pids/developer-4.pid",
-        "startedAt": "2026-01-28T23:36:13.639Z",
-        "lastHeartbeat": "2026-01-28T23:36:13.639Z",
+        "startedAt": "2026-01-28T23:50:25.345Z",
+        "lastHeartbeat": "2026-01-28T23:50:25.345Z",
         "retries": 0
       }
     ],
@@ -306,8 +306,8 @@
       "planPath": "/tmp/ralph-plans/798.md",
       "createdAt": "2026-01-28T23:29:23.542Z",
       "createdBy": "planning-2",
-      "status": "pending",
-      "assignedTo": null
+      "status": "assigned",
+      "assignedTo": "developer-4"
     },
     {
       "ticketId": "#804",
@@ -478,6 +478,36 @@
       "createdBy": "planning-8",
       "status": "pending",
       "assignedTo": null
+    },
+    {
+      "ticketId": "#524",
+      "issueNumber": 524,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/524.md",
+      "createdAt": "2026-01-28T23:50:20.530Z",
+      "createdBy": "planning-1",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#535",
+      "issueNumber": 535,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/535.md",
+      "createdAt": "2026-01-28T23:50:20.531Z",
+      "createdBy": "planning-4",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#537",
+      "issueNumber": 537,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/537.md",
+      "createdAt": "2026-01-28T23:50:20.531Z",
+      "createdBy": "planning-6",
+      "status": "pending",
+      "assignedTo": null
     }
   ],
   "pendingCode": [
@@ -553,7 +583,7 @@
     {
       "ticketId": "#790",
       "reason": "All test files specified in acceptance criteria already exist with comprehensive coverage. Files competitor-tracker.test.ts (17K), competitor-analyzer.test.ts (12K), topic-monitor.test.ts (1.3K), and all inbox collector tests were created Jan 16-22. Ticket should be closed as duplicate/completed work. See /tmp/ralph-plans/790.md for detailed analysis.",
-      "blockedAt": "2026-01-28T23:48:06.844Z",
+      "blockedAt": "2026-01-28T23:50:20.531Z",
       "retries": 1,
       "lastAttemptBy": "planning-7"
     }
