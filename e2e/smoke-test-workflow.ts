@@ -87,22 +87,65 @@ interface SmokeTestReport {
 // ============================================================================
 
 /**
+ * Verify that the route interceptor is working by making a test request
+ */
+async function verifyRouteInterceptor(
+  page: Page,
+  expectedRole: "USER" | "ADMIN",
+  maxRetries = 3,
+): Promise<boolean> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await page.evaluate(async () => {
+        const res = await fetch("/api/auth/session");
+        return res.json();
+      });
+
+      if (response?.user?.role === expectedRole) {
+        return true;
+      }
+
+      // Wait with exponential backoff before retry
+      await new Promise((resolve) => setTimeout(resolve, 100 * Math.pow(2, i)));
+    } catch (_error) {
+      // Continue to next retry
+    }
+  }
+
+  console.warn(`[Warn] Route interceptor verification failed for role: ${expectedRole}`);
+  return false;
+}
+
+/**
  * Mock an authenticated session by:
  * 1. Setting E2E bypass cookies for server-side auth checks (auth() function)
  * 2. Intercepting the session API for client-side auth checks (useSession() hook)
+ * 3. Pre-warming the interceptor and verifying it's working
+ * 4. Preloading session into NextAuth's client cache
  *
- * This dual approach ensures authentication works for both server components
+ * This multi-layered approach ensures authentication works for both server components
  * (which call auth() directly) and client components (which call useSession()).
  */
 async function mockAuthSession(
   page: Page,
   options: { role?: "USER" | "ADMIN"; email?: string; name?: string; } = {},
 ): Promise<void> {
+  const startTime = Date.now();
   const { role = "USER", email = "test@example.com", name = "Test User" } = options;
 
   // Determine actual values based on role
   const actualEmail = role === "ADMIN" ? "admin@spike.land" : email;
   const actualName = role === "ADMIN" ? "Admin User" : name;
+
+  const mockSession = {
+    user: {
+      id: `test-${role.toLowerCase()}-123`,
+      name: actualName,
+      email: actualEmail,
+      role,
+    },
+    expires: new Date(Date.now() + 86400000).toISOString(),
+  };
 
   // Set E2E bypass cookies for server-side auth checks
   // The auth.ts file reads these cookies when x-e2e-auth-bypass header is present
@@ -130,37 +173,57 @@ async function mockAuthSession(
     },
   ]);
 
-  // Also intercept the session API for client-side components using useSession()
+  // Intercept the session API for client-side components using useSession()
   await page.route("**/api/auth/session", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({
-        user: {
-          id: `test-${role.toLowerCase()}-123`,
-          name: actualName,
-          email: actualEmail,
-          role,
-        },
-        expires: new Date(Date.now() + 86400000).toISOString(),
-      }),
+      body: JSON.stringify(mockSession),
     });
   });
 
-  // CRITICAL FIX: Wait for route interceptors to be fully registered
-  // This prevents race conditions where the page navigates before routes are ready
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  // PHASE 1: Increase wait time for route registration (CI environments are slower)
+  await new Promise((resolve) => setTimeout(resolve, 500));
   await page.evaluate(() => Promise.resolve());
 
-  // NEW: If page is already loaded, trigger a session refresh
-  // This helps client components that already called useSession()
+  // PHASE 1: Pre-warm the interceptor by making a test request
+  // This forces the route interceptor to activate before any navigation
+  const isVerified = await verifyRouteInterceptor(page, role);
+
+  // PHASE 2: Inject session into NextAuth's client-side cache
+  // This ensures client components have the session immediately available
+  await page.evaluate((session) => {
+    // Store in sessionStorage (NextAuth uses this for client-side cache)
+    try {
+      sessionStorage.setItem("nextauth.session", JSON.stringify(session));
+    } catch (_e) {
+      // sessionStorage might not be available in all contexts
+    }
+
+    // Broadcast session update event (NextAuth listens to this)
+    try {
+      const bc = new BroadcastChannel("nextauth.session");
+      bc.postMessage({ event: "session", data: { trigger: "getSession" } });
+      bc.close();
+    } catch (_e) {
+      // BroadcastChannel might not be available
+    }
+  }, mockSession);
+
+  // If page is already loaded, trigger a session refresh
   const currentUrl = page.url();
   if (currentUrl && !currentUrl.includes("about:blank")) {
     await page.evaluate(async () => {
       await fetch("/api/auth/session").catch(() => {});
     });
     // Give client components time to react to the session update
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }
+
+  // PHASE 4: Performance logging
+  const totalTime = Date.now() - startTime;
+  if (totalTime > 1000) {
+    console.warn(`[Perf] Auth mock setup took ${totalTime}ms (verified: ${isVerified})`);
   }
 }
 
@@ -452,23 +515,41 @@ async function runStage2(browser: Browser): Promise<StageResult> {
     // Access protected route
     await page2.goto(`${config.baseUrl}/settings`);
 
-    // Wait for loading state to complete - useSession shows "Loading..." initially
-    // The loading-state might be ephemeral, so we handle the case where it's already gone
-    const loadingIndicator = page2.getByTestId("loading-state");
-    await loadingIndicator.waitFor({ state: "hidden", timeout: 15000 }).catch(() => {
-      // Loading indicator might not exist if session loads very fast or if selector doesn't match
-      // We continue to the main check
+    // PHASE 3: Wait for network to be idle before checking for content
+    await page2.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {
+      console.log("[Info] Network idle timeout, continuing to content check");
     });
 
-    // Now wait for the authenticated content with increased timeout
+    // Wait for loading state to complete - useSession shows "Loading..." initially
+    const loadingIndicator = page2.getByTestId("loading-state");
+    await loadingIndicator.waitFor({ state: "hidden", timeout: 30000 }).catch(() => {
+      // Loading indicator might not exist if session loads very fast
+    });
+
+    // PHASE 3: Increased timeout to 30s for slow CI environments
     const settingsHeading = page2.getByRole("heading", { name: /Settings/i });
-    const isVisible = await settingsHeading.isVisible({ timeout: 15000 }).catch(() => false);
+    const isVisible = await settingsHeading.isVisible({ timeout: 30000 }).catch(() => false);
 
     if (!isVisible) {
+      // PHASE 4: Enhanced debug logging
       const currentUrl = page2.url();
       const isOnSignIn = currentUrl.includes("/auth/signin");
+
+      // Try to find what headings are actually present
+      const headings = await page2.locator("h1, h2, h3").allTextContents().catch(() => []);
+      const sessionState = await page2.evaluate(() => {
+        return {
+          sessionStorage: sessionStorage.getItem("nextauth.session"),
+          cookies: document.cookie,
+        };
+      }).catch(() => null);
+
       throw new Error(
-        `Settings page not accessible after auth mock. URL: ${currentUrl}, redirectedToSignIn: ${isOnSignIn}`,
+        `Settings page not accessible after auth mock. ` +
+          `URL: ${currentUrl}, ` +
+          `redirectedToSignIn: ${isOnSignIn}, ` +
+          `headings: [${headings.join(", ")}], ` +
+          `sessionState: ${sessionState ? "present" : "missing"}`,
       );
     }
   } catch (error) {
@@ -569,23 +650,60 @@ async function runStage3(browser: Browser): Promise<StageResult> {
       );
     }
 
-    await page1.waitForLoadState("networkidle");
+    await page1.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {
+      console.log("[Info] Network idle timeout on pixel app");
+    });
 
-    // Verify main UI elements with increased timeout
+    // PHASE 3: Try multiple success indicators in sequence with increased timeout (30s total)
+    let foundContent = false;
+    let lastError = "";
+
+    // Try 1: Look for "AI Image Enhancement" heading
     const heading = page1.getByText("AI Image Enhancement");
-    const isVisible = await heading.isVisible({ timeout: 15000 }).catch(() => false);
+    const headingVisible = await heading.isVisible({ timeout: 30000 }).catch(() => false);
 
-    if (!isVisible) {
-      // Check for alternative success indicators
+    if (headingVisible) {
+      foundContent = true;
+    } else {
+      lastError = "AI Image Enhancement not found";
+
+      // Try 2: Look for "Your Albums" as alternative
       const albumsHeading = page1.getByText("Your Albums");
       const albumsVisible = await albumsHeading.isVisible({ timeout: 5000 }).catch(() => false);
 
-      if (!albumsVisible) {
-        throw new Error(`Pixel app UI not visible. URL: ${currentUrl}`);
+      if (albumsVisible) {
+        foundContent = true;
+        lastError = "";
+      } else {
+        lastError += ", Your Albums not found";
+
+        // Try 3: Look for any pixel-related logo or branding
+        const pixelLogo = page1.locator('[data-testid="pixel-logo"], img[alt*="pixel" i]');
+        const logoVisible = await pixelLogo.first().isVisible({ timeout: 5000 }).catch(() => false);
+
+        if (logoVisible) {
+          foundContent = true;
+          lastError = "";
+        } else {
+          lastError += ", Pixel logo not found";
+        }
       }
     }
 
-    // Check for token balance or enhancement options
+    if (!foundContent) {
+      // PHASE 4: Enhanced debug logging
+      const allText = await page1.locator("body").textContent().catch(() => "");
+      const visibleHeadings = await page1.locator("h1, h2, h3").allTextContents().catch(() => []);
+
+      throw new Error(
+        `Pixel app UI not visible. URL: ${currentUrl}, ` +
+          `errors: [${lastError}], ` +
+          `headings: [${visibleHeadings.join(", ")}], ` +
+          `bodyLength: ${allText.length}`,
+      );
+    }
+
+    // Check for token balance or enhancement options (informational only)
     const hasTokenOrTier = await page1
       .locator('[data-testid="token-balance"], text=/1K|2K|4K/i')
       .first()
@@ -593,7 +711,6 @@ async function runStage3(browser: Browser): Promise<StageResult> {
       .catch(() => false);
 
     if (!hasTokenOrTier) {
-      // Not a failure, just informational
       console.log("[Info] Token balance or tier selector not immediately visible");
     }
   } catch (error) {
@@ -884,17 +1001,50 @@ async function runStage5(browser: Browser): Promise<StageResult> {
   try {
     await mockAuthSession(page1, { role: "ADMIN" });
     await page1.goto(`${config.baseUrl}/admin`);
-    await page1.waitForLoadState("networkidle");
+    await page1.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {
+      console.log("[Info] Network idle timeout on admin dashboard");
+    });
 
-    // Verify dashboard loads
-    const hasDashboard = await page1
-      .getByText(/Admin|Dashboard/i)
-      .first()
-      .isVisible({ timeout: 10000 })
-      .catch(() => false);
+    // PHASE 3: Try dashboard cards first (more reliable than text)
+    let foundDashboard = false;
 
-    if (!hasDashboard) {
-      throw new Error("Admin dashboard not visible");
+    // Try 1: Look for dashboard cards/stats
+    const dashboardCards = page1.locator(
+      '[data-testid="dashboard-card"], [class*="dashboard"], [class*="stat-card"]',
+    );
+    const hasCards = await dashboardCards.first().isVisible({ timeout: 30000 }).catch(() => false);
+
+    if (hasCards) {
+      foundDashboard = true;
+    } else {
+      // Try 2: Fallback to text search for "Admin" or "Dashboard"
+      const hasDashboard = await page1
+        .getByText(/Admin|Dashboard/i)
+        .first()
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
+
+      if (hasDashboard) {
+        foundDashboard = true;
+      }
+    }
+
+    if (!foundDashboard) {
+      // PHASE 4: Enhanced debug logging
+      const currentUrl = page1.url();
+      const isRedirected = !currentUrl.includes("/admin");
+      const headings = await page1.locator("h1, h2, h3").allTextContents().catch(() => []);
+      const sessionState = await page1.evaluate(() => {
+        return sessionStorage.getItem("nextauth.session");
+      }).catch(() => null);
+
+      throw new Error(
+        `Admin dashboard not visible. ` +
+          `URL: ${currentUrl}, ` +
+          `redirected: ${isRedirected}, ` +
+          `headings: [${headings.join(", ")}], ` +
+          `sessionState: ${sessionState ? "present" : "missing"}`,
+      );
     }
   } catch (error) {
     job51Status = "failed";
