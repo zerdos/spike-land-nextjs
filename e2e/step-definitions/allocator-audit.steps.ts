@@ -42,7 +42,7 @@ Given(
   "I have a campaign {string} with budget {int}",
   async function(this: CustomWorld, campaignName: string, budget: number) {
     if (!this.mockCampaigns) this.mockCampaigns = new Map();
-    const campaignId = "campaign-" + Date.now() + "-" + Math.random().toString(36).substring(7);
+    const campaignId = `campaign-${Date.now()}-${Math.random().toString(36).substring(7)}`;
     this.mockCampaigns.set(campaignName, { name: campaignName, budget, id: campaignId });
     await this.page.route("**/api/orbit/**/allocator/campaigns**", async (route) => {
       const campaigns = Array.from(this.mockCampaigns?.values() || []).map((c) => ({
@@ -96,7 +96,7 @@ When("I trigger the allocator autopilot cron job", async function(this: CustomWo
     const campaign = campaigns.get(campaignName);
     if (campaign) {
       this.mockAuditLogs.push({
-        id: "audit-" + Date.now() + "-" + Math.random().toString(36).substring(7),
+        id: `audit-${Date.now()}-${Math.random().toString(36).substring(7)}`,
         type: "RECOMMENDATION_GENERATED",
         trigger: "CRON",
         outcome: "EXECUTED",
@@ -138,7 +138,7 @@ When("I trigger the allocator autopilot cron job", async function(this: CustomWo
 // Navigation Steps
 When("I navigate to the Allocator Audit page", async function(this: CustomWorld) {
   const workspaceSlug = this.workspaceSlug || "test-workspace";
-  await this.page.goto("/orbit/" + workspaceSlug + "/allocator/audit");
+  await this.page.goto(`/orbit/${workspaceSlug}/allocator/audit`);
 });
 
 // Assertion Steps
@@ -214,7 +214,7 @@ Given("I see the audit log table", async function(this: CustomWorld) {
     });
   }
   const workspaceSlug = this.workspaceSlug || "audit-workspace";
-  await this.page.goto("/orbit/" + workspaceSlug + "/allocator/audit");
+  await this.page.goto(`/orbit/${workspaceSlug}/allocator/audit`);
   await expect(this.page.locator("table")).toBeVisible({ timeout: 10000 });
 });
 
