@@ -3696,6 +3696,11 @@ model Workflow {
   versions    WorkflowVersion[]
   runs        WorkflowRun[]
 
+  // Trigger relations
+  schedules          WorkflowSchedule[]
+  webhooks           WorkflowWebhook[]
+  eventSubscriptions WorkflowEventSubscription[]
+
   @@index([workspaceId])
   @@index([createdById])
   @@index([status])
@@ -3770,6 +3775,58 @@ model WorkflowRunLog {
   @@index([workflowRunId])
   @@index([stepId])
   @@map("workflow_run_logs")
+}
+
+// ============================================================================
+// Workflow Triggers
+// ============================================================================
+
+model WorkflowSchedule {
+  id             String    @id @default(cuid())
+  workflowId     String
+  workflow       Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  cronExpression String // Cron expression for scheduling
+  timezone       String    @default("UTC")
+  isActive       Boolean   @default(true)
+  nextRunAt      DateTime?
+  lastRunAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([workflowId])
+  @@index([nextRunAt, isActive])
+  @@map("workflow_schedules")
+}
+
+model WorkflowWebhook {
+  id              String    @id @default(cuid())
+  workflowId      String
+  workflow        Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  webhookToken    String    @unique // Unique token for the webhook URL
+  secretHash      String? // Optional HMAC secret hash for signature verification
+  isActive        Boolean   @default(true)
+  lastTriggeredAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([workflowId])
+  @@index([webhookToken])
+  @@map("workflow_webhooks")
+}
+
+model WorkflowEventSubscription {
+  id           String            @id @default(cuid())
+  workflowId   String
+  workflow     Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  eventType    WorkflowEventType
+  filterConfig Json? // Optional filter configuration for the event
+  isActive     Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@unique([workflowId, eventType])
+  @@index([eventType, isActive])
+  @@map("workflow_event_subscriptions")
 }
 
 model AllocatorDailyBudgetMove {
@@ -4096,6 +4153,15 @@ enum StepRunStatus {
   COMPLETED
   FAILED
   SKIPPED
+}
+
+enum WorkflowEventType {
+  MENTION_RECEIVED
+  ENGAGEMENT_THRESHOLD
+  FOLLOWER_MILESTONE
+  CRISIS_DETECTED
+  POST_PUBLISHED
+  INBOX_ITEM_RECEIVED
 }
 
 // =============================================================================

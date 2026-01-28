@@ -1589,6 +1589,36 @@ erDiagram
   Json metadata "nullable"
   DateTime timestamp
 }
+"workflow_schedules" {
+  String id PK
+  String workflowId FK
+  String cronExpression
+  String timezone
+  Boolean isActive
+  DateTime nextRunAt "nullable"
+  DateTime lastRunAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"workflow_webhooks" {
+  String id PK
+  String workflowId FK
+  String webhookToken UK
+  String secretHash "nullable"
+  Boolean isActive
+  DateTime lastTriggeredAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"workflow_event_subscriptions" {
+  String id PK
+  String workflowId FK
+  WorkflowEventType eventType
+  Json filterConfig "nullable"
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+}
 "allocator_daily_budget_moves" {
   String id PK
   String campaignId FK
@@ -1877,6 +1907,9 @@ erDiagram
 "workflow_steps" }o--o| "workflow_steps" : parentStep
 "workflow_runs" }o--|| "workflows" : workflow
 "workflow_run_logs" }o--|| "workflow_runs" : workflowRun
+"workflow_schedules" }o--|| "workflows" : workflow
+"workflow_webhooks" }o--|| "workflows" : workflow
+"workflow_event_subscriptions" }o--|| "workflows" : workflow
 "allocator_daily_budget_moves" }o--|| "allocator_campaigns" : campaign
 "allocator_audit_logs" }o--|| "workspaces" : workspace
 "allocator_audit_logs" }o--o| "allocator_autopilot_executions" : execution
@@ -3887,6 +3920,45 @@ Properties as follows:
 - `message`:
 - `metadata`:
 - `timestamp`:
+
+### `workflow_schedules`
+
+Properties as follows:
+
+- `id`:
+- `workflowId`:
+- `cronExpression`:
+- `timezone`:
+- `isActive`:
+- `nextRunAt`:
+- `lastRunAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `workflow_webhooks`
+
+Properties as follows:
+
+- `id`:
+- `workflowId`:
+- `webhookToken`:
+- `secretHash`:
+- `isActive`:
+- `lastTriggeredAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `workflow_event_subscriptions`
+
+Properties as follows:
+
+- `id`:
+- `workflowId`:
+- `eventType`:
+- `filterConfig`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
 
 ### `allocator_daily_budget_moves`
 
