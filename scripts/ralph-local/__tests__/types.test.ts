@@ -25,7 +25,14 @@ describe("Ralph Local Types", () => {
 
   describe("AgentStatus", () => {
     it("should accept valid statuses", () => {
-      const statuses: AgentStatus[] = ["idle", "starting", "running", "completed", "failed", "stale"];
+      const statuses: AgentStatus[] = [
+        "idle",
+        "starting",
+        "running",
+        "completed",
+        "failed",
+        "stale",
+      ];
       expect(statuses).toHaveLength(6);
     });
   });

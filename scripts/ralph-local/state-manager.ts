@@ -264,7 +264,10 @@ export function getAgent(state: OrchestratorState, agentId: string): LocalAgent 
 /**
  * Get idle agents of a specific role
  */
-export function getIdleAgents(state: OrchestratorState, role: "planning" | "developer" | "tester"): LocalAgent[] {
+export function getIdleAgents(
+  state: OrchestratorState,
+  role: "planning" | "developer" | "tester",
+): LocalAgent[] {
   return state.pools[role].filter((a) => a.status === "idle");
 }
 
@@ -296,7 +299,10 @@ export function addPendingCode(state: OrchestratorState, code: CodeWork): void {
 /**
  * Remove pending code work
  */
-export function removePendingCode(state: OrchestratorState, ticketId: string): CodeWork | undefined {
+export function removePendingCode(
+  state: OrchestratorState,
+  ticketId: string,
+): CodeWork | undefined {
   const index = state.pendingCode.findIndex((c) => c.ticketId === ticketId);
   if (index !== -1) {
     return state.pendingCode.splice(index, 1)[0];

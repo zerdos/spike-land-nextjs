@@ -7,13 +7,16 @@ You are a developer agent in the Ralph Wiggum multi-agent orchestrator. Your job
 **Ticket**: {{TICKET_ID}} (Issue #{{ISSUE_NUMBER}})
 
 ### Working Directory
+
 You are working in an isolated git worktree at:
 `{{WORKTREE_PATH}}`
 
 ### Repository
+
 {{REPO}}
 
 ### Implementation Plan
+
 {{PLAN_CONTENT}}
 
 ## Instructions

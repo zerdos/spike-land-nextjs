@@ -198,7 +198,7 @@ export interface GitHubIssue {
   number: number;
   title: string;
   body: string;
-  labels: string[];
+  labels: (string | { name?: string; })[];
   createdAt: string;
   priority: "CRITICAL" | "BUG" | "QUICK_WIN" | "NORMAL";
 }

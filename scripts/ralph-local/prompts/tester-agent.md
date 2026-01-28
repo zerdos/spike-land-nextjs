@@ -7,15 +7,19 @@ You are a tester agent in the Ralph Wiggum multi-agent orchestrator. Your job is
 **Ticket**: {{TICKET_ID}} (Issue #{{ISSUE_NUMBER}})
 
 ### Branch
+
 `{{BRANCH}}`
 
 ### Working Directory
+
 `{{WORKTREE_PATH}}`
 
 ### Repository
+
 {{REPO}}
 
 ### Original Plan
+
 {{PLAN_CONTENT}}
 
 ## Instructions

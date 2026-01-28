@@ -18,12 +18,12 @@ repo: zerdos/spike-land-nextjs
 
 This file configures the Ralph Local multi-agent orchestrator.
 
-| Pool      | Size | Role                                     |
-| --------- | ---- | ---------------------------------------- |
+| Pool      | Size | Role                                        |
+| --------- | ---- | ------------------------------------------- |
 | Planning  | 8    | Analyze issues, create implementation plans |
-| Developer | 4    | Implement code based on plans           |
-| Tester    | 4    | Review code, find bugs, create PRs      |
-| **Total** | 16   | Parallel local Claude Code agents       |
+| Developer | 4    | Implement code based on plans               |
+| Tester    | 4    | Review code, find bugs, create PRs          |
+| **Total** | 16   | Parallel local Claude Code agents           |
 
 ## Workflow
 
@@ -32,18 +32,21 @@ GH Issues → Planning Agents → Plans → Developer Agents → Code → Tester
 ```
 
 ### Planning Agents (8)
+
 - Pick open GitHub issues
 - Analyze requirements
 - Create implementation plan
 - Output: `<PLAN_READY ticket="#123" path="/tmp/ralph-plans/123.md" />`
 
 ### Developer Agents (4)
+
 - Receive plans from planning queue
 - Work in isolated git worktrees
 - Implement the plan
 - Output: `<CODE_READY ticket="#123" branch="ralph/123" />`
 
 ### Tester Agents (4)
+
 - Review implemented code
 - Run tests, check types
 - Create PR if passing
@@ -51,12 +54,12 @@ GH Issues → Planning Agents → Plans → Developer Agents → Code → Tester
 
 ## Settings
 
-| Setting | Value | Description |
-| ------- | ----- | ----------- |
-| `sync_interval_min` | 2 | How often to run orchestration loop (minutes) |
-| `stale_threshold_min` | 30 | Mark agents as stale after this time without heartbeat |
-| `max_retries` | 2 | Retry failed tickets before marking as failed |
-| `auto_merge` | true | Automatically merge approved PRs with passing CI |
+| Setting               | Value | Description                                            |
+| --------------------- | ----- | ------------------------------------------------------ |
+| `sync_interval_min`   | 2     | How often to run orchestration loop (minutes)          |
+| `stale_threshold_min` | 30    | Mark agents as stale after this time without heartbeat |
+| `max_retries`         | 2     | Retry failed tickets before marking as failed          |
+| `auto_merge`          | true  | Automatically merge approved PRs with passing CI       |
 
 ## Commands
 
@@ -76,13 +79,13 @@ yarn ralph:local:status
 
 ## File Locations
 
-| Path | Contents |
-| ---- | -------- |
-| `.claude/ralph-local-state.json` | Orchestrator state |
-| `/tmp/ralph-output/` | Agent output files |
-| `/tmp/ralph-pids/` | Agent PID files |
-| `/tmp/ralph-plans/` | Generated plans |
-| `../ralph-worktrees/` | Git worktrees per ticket |
+| Path                             | Contents                 |
+| -------------------------------- | ------------------------ |
+| `.claude/ralph-local-state.json` | Orchestrator state       |
+| `/tmp/ralph-output/`             | Agent output files       |
+| `/tmp/ralph-pids/`               | Agent PID files          |
+| `/tmp/ralph-plans/`              | Generated plans          |
+| `../ralph-worktrees/`            | Git worktrees per ticket |
 
 ## Markers
 

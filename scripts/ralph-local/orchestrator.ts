@@ -380,7 +380,14 @@ async function step2_collectAgentOutputs(
             console.log(`   💻 Code ready: ${normalizedCodeTicketId}`);
             const codeIssueNum = parseInt(normalizedCodeTicketId.replace("#", ""), 10);
             if (agent.worktree) {
-              enqueueCode(state, normalizedCodeTicketId, codeIssueNum, agent.worktree, "", agent.id);
+              enqueueCode(
+                state,
+                normalizedCodeTicketId,
+                codeIssueNum,
+                agent.worktree,
+                "",
+                agent.id,
+              );
               code++;
             }
             break;

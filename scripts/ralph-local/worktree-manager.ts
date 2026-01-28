@@ -177,7 +177,9 @@ export function cleanupWorktree(ticketId: string, config: RalphLocalConfig): voi
 /**
  * Sync a worktree with main branch
  */
-export function syncWorktreeWithMain(worktreePath: string): { success: boolean; conflict: boolean; message: string } {
+export function syncWorktreeWithMain(
+  worktreePath: string,
+): { success: boolean; conflict: boolean; message: string; } {
   console.log(`   🔄 Syncing worktree with main...`);
 
   try {
@@ -356,7 +358,11 @@ export function cleanupStaleWorktrees(config: RalphLocalConfig, maxAgeMs: number
         const ticketNum = worktreePath.split("/").pop() || "";
         // Validate it's just digits
         if (/^\d+$/.test(ticketNum)) {
-          console.log(`   🗑️ Cleaning stale worktree: #${ticketNum} (age: ${Math.round(ageMs / 1000 / 60)}min)`);
+          console.log(
+            `   🗑️ Cleaning stale worktree: #${ticketNum} (age: ${
+              Math.round(ageMs / 1000 / 60)
+            }min)`,
+          );
           cleanupWorktree(`#${ticketNum}`, config);
           cleanedCount++;
         }

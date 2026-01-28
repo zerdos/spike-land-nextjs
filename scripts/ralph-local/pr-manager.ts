@@ -30,8 +30,10 @@ function validateBranch(branch: string): boolean {
  * Escape string for shell (basic sanitization)
  */
 function escapeForShell(str: string): string {
-  // Replace dangerous characters
-  return str.replace(/["`$\\]/g, "\\$&");
+  // Replace dangerous characters including bash history expansion (!) and newlines
+  return str
+    .replace(/["`$\\!]/g, "\\$&")
+    .replace(/\n/g, "\\n");
 }
 
 /**
@@ -64,7 +66,7 @@ export function getPRStatus(prNumber: number, config: RalphLocalConfig): PRRevie
     if (prData.reviews && prData.reviews.length > 0) {
       // Check for claude-code-review bot approval
       const botReview = prData.reviews.find(
-        (r: { author?: { login?: string }; state?: string }) =>
+        (r: { author?: { login?: string; }; state?: string; }) =>
           r.author?.login === "github-actions[bot]" ||
           r.author?.login === "claude-code-review[bot]",
       );
@@ -75,8 +77,8 @@ export function getPRStatus(prNumber: number, config: RalphLocalConfig): PRRevie
         } else if (botReview.state === "CHANGES_REQUESTED") {
           reviewStatus = "CHANGES_REQUESTED";
           reviewComments = prData.reviews
-            .filter((r: { state?: string }) => r.state === "CHANGES_REQUESTED")
-            .map((r: { body?: string }) => r.body || "");
+            .filter((r: { state?: string; }) => r.state === "CHANGES_REQUESTED")
+            .map((r: { body?: string; }) => r.body || "");
         }
       }
     }
@@ -86,11 +88,11 @@ export function getPRStatus(prNumber: number, config: RalphLocalConfig): PRRevie
     if (prData.statusCheckRollup) {
       const checks = prData.statusCheckRollup;
       const allPassed = checks.every(
-        (c: { state?: string; conclusion?: string }) =>
+        (c: { state?: string; conclusion?: string; }) =>
           c.state === "SUCCESS" || c.conclusion === "SUCCESS",
       );
       const anyFailed = checks.some(
-        (c: { state?: string; conclusion?: string }) =>
+        (c: { state?: string; conclusion?: string; }) =>
           c.state === "FAILURE" || c.conclusion === "FAILURE",
       );
 
@@ -132,8 +134,8 @@ export function listRalphPRs(config: RalphLocalConfig): number[] {
 
     // Filter to only Ralph branches
     return prs
-      .filter((pr: { headRefName?: string }) => pr.headRefName?.startsWith("ralph/"))
-      .map((pr: { number: number }) => pr.number);
+      .filter((pr: { headRefName?: string; }) => pr.headRefName?.startsWith("ralph/"))
+      .map((pr: { number: number; }) => pr.number);
   } catch (error) {
     console.error("Failed to list PRs:", error);
     return [];
@@ -176,7 +178,7 @@ export function createPR(
   title: string,
   body: string,
   config: RalphLocalConfig,
-): { prUrl: string; prNumber: number } | null {
+): { prUrl: string; prNumber: number; } | null {
   // Validate branch format
   if (!validateBranch(branch)) {
     console.error(`Invalid branch format: ${branch}`);
@@ -229,7 +231,7 @@ export function getPRComments(prNumber: number, config: RalphLocalConfig): strin
     );
 
     const data = JSON.parse(output);
-    return data.comments?.map((c: { body?: string }) => c.body || "") || [];
+    return data.comments?.map((c: { body?: string; }) => c.body || "") || [];
   } catch (error) {
     console.error(`Failed to get PR comments for #${prNumber}:`, error);
     return [];
@@ -344,7 +346,7 @@ export function hasCodeReviewRun(prNumber: number, config: RalphLocalConfig): bo
 
     // Look for claude-code-review check
     return checks.some(
-      (c: { name?: string; context?: string }) =>
+      (c: { name?: string; context?: string; }) =>
         c.name?.includes("claude-code-review") ||
         c.context?.includes("claude-code-review"),
     );
@@ -376,7 +378,7 @@ export function getWorkflowRunUrl(prNumber: number, config: RalphLocalConfig): s
 
     // Find the workflow run
     const workflowCheck = checks.find(
-      (c: { name?: string; targetUrl?: string }) =>
+      (c: { name?: string; targetUrl?: string; }) =>
         c.name?.includes("test") || c.name?.includes("build") || c.name?.includes("Run"),
     );
 

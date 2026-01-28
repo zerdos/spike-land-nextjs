@@ -7,9 +7,11 @@ You are a planning agent in the Ralph Wiggum multi-agent orchestrator. Your job 
 **Issue #{{ISSUE_NUMBER}}**: {{ISSUE_TITLE}}
 
 ### Issue Description
+
 {{ISSUE_BODY}}
 
 ### Repository
+
 {{REPO}}
 
 ## Instructions

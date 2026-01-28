@@ -7,7 +7,7 @@
  */
 
 import { execSync } from "child_process";
-import type { CodeWork, GitHubIssue, OrchestratorState, Plan, RalphLocalConfig } from "./types";
+import { spawnDeveloperAgent, spawnPlanningAgent, spawnTesterAgent } from "./agent-spawner";
 import {
   addPendingCode,
   addPendingPlan,
@@ -16,7 +16,7 @@ import {
   isTicketInProgress,
   updateAgent,
 } from "./state-manager";
-import { spawnDeveloperAgent, spawnPlanningAgent, spawnTesterAgent } from "./agent-spawner";
+import type { CodeWork, GitHubIssue, OrchestratorState, Plan, RalphLocalConfig } from "./types";
 import { createWorktree, getBranchName } from "./worktree-manager";
 
 /**
@@ -57,7 +57,7 @@ export function getAvailableIssues(
       // Skip bot-created issues or PRs
       if (
         issue.title.includes("[bot]") ||
-        issue.labels.some((l: string | { name?: string }) =>
+        issue.labels.some((l: string | { name?: string; }) =>
           (typeof l === "string" ? l : l.name)?.includes("bot")
         )
       ) {
@@ -84,7 +84,7 @@ function prioritizeIssues(issues: GitHubIssue[]): GitHubIssue[] {
   return issues
     .map((issue) => {
       // Assign priority based on labels
-      const labelNames = issue.labels.map((l: string | { name?: string }) =>
+      const labelNames = issue.labels.map((l: string | { name?: string; }) =>
         typeof l === "string" ? l : l.name || ""
       );
 
@@ -134,7 +134,9 @@ export function routeIssuesToPlanners(
     return 0;
   }
 
-  console.log(`   Routing ${Math.min(availableIssues.length, idlePlanners.length)} issues to planners`);
+  console.log(
+    `   Routing ${Math.min(availableIssues.length, idlePlanners.length)} issues to planners`,
+  );
 
   let routedCount = 0;
 
@@ -195,7 +197,9 @@ export function routePlansToDevelopers(
     return 0;
   }
 
-  console.log(`   Routing ${Math.min(pendingPlans.length, idleDevelopers.length)} plans to developers`);
+  console.log(
+    `   Routing ${Math.min(pendingPlans.length, idleDevelopers.length)} plans to developers`,
+  );
 
   let routedCount = 0;
 
