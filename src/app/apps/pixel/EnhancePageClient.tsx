@@ -33,7 +33,7 @@ function EnhancePageContent(_props: EnhancePageClientProps) {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <PixelLogo size="lg" />
-            <h1 className="text-muted-foreground text-lg">
+            <h1 data-testid="pixel-page-heading" className="text-muted-foreground text-lg">
               AI Image Enhancement
             </h1>
           </div>

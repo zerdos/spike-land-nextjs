@@ -116,7 +116,13 @@ const CreateAbTestForm = ({ onSubmit, isLoading }: CreateAbTestFormProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input type="number" placeholder="%" {...field} />
+                        <Input
+                          type="number"
+                          placeholder="%"
+                          data-testid={`variant-${index}-split-percentage`}
+                          aria-label={`Split percentage for variant ${index + 1}`}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
