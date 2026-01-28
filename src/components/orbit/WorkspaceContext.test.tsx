@@ -53,6 +53,8 @@ function TestConsumer({
       <span data-testid="workspace-count">{ctx.workspaces.length}</span>
       <span data-testid="is-loading">{String(ctx.isLoading)}</span>
       <span data-testid="has-error">{String(ctx.error !== null)}</span>
+      <span data-testid="favorite-count">{ctx.favoriteIds.length}</span>
+      <span data-testid="recent-count">{ctx.recentIds.length}</span>
       <button
         data-testid="switch-workspace"
         onClick={() => ctx.switchWorkspace("other-workspace")}
@@ -61,6 +63,12 @@ function TestConsumer({
       </button>
       <button data-testid="refetch" onClick={() => ctx.refetch()}>
         Refetch
+      </button>
+      <button
+        data-testid="toggle-favorite"
+        onClick={() => ctx.toggleFavorite("1")}
+      >
+        Toggle Favorite
       </button>
     </div>
   );
@@ -85,6 +93,29 @@ function createWrapper() {
   };
 }
 
+// Helper to create mock API response with new format
+function createMockResponse(
+  workspaces: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    isPersonal: boolean;
+    role: string;
+    isFavorite?: boolean;
+  }>,
+  favorites: string[] = [],
+  recentIds: string[] = [],
+) {
+  return {
+    workspaces: workspaces.map((ws) => ({
+      ...ws,
+      isFavorite: ws.isFavorite ?? favorites.includes(ws.id),
+    })),
+    favorites,
+    recentIds,
+  };
+}
+
 describe("WorkspaceContext", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -96,13 +127,12 @@ describe("WorkspaceContext", () => {
     it("renders children correctly", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({ workspaces: [] }),
+        json: async () => createMockResponse([]),
       });
 
-      render(
-        <div data-testid="child">Child Content</div>,
-        { wrapper: createWrapper() },
-      );
+      render(<div data-testid="child">Child Content</div>, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(screen.getByTestId("child")).toBeInTheDocument();
@@ -112,7 +142,7 @@ describe("WorkspaceContext", () => {
     it("fetches workspaces on mount", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({ workspaces: [] }),
+        json: async () => createMockResponse([]),
       });
 
       render(<TestConsumer />, { wrapper: createWrapper() });
@@ -125,8 +155,8 @@ describe("WorkspaceContext", () => {
     it("provides workspaces data", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          workspaces: [
+        json: async () =>
+          createMockResponse([
             {
               id: "1",
               name: "Workspace 1",
@@ -141,8 +171,7 @@ describe("WorkspaceContext", () => {
               isPersonal: false,
               role: "MEMBER",
             },
-          ],
-        }),
+          ]),
       });
 
       render(<TestConsumer />, { wrapper: createWrapper() });
@@ -152,11 +181,45 @@ describe("WorkspaceContext", () => {
       });
     });
 
+    it("provides favorites and recents data", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () =>
+          createMockResponse(
+            [
+              {
+                id: "1",
+                name: "Workspace 1",
+                slug: "ws-1",
+                isPersonal: true,
+                role: "OWNER",
+              },
+              {
+                id: "2",
+                name: "Workspace 2",
+                slug: "ws-2",
+                isPersonal: false,
+                role: "MEMBER",
+              },
+            ],
+            ["1"], // favorites
+            ["2", "1"], // recent
+          ),
+      });
+
+      render(<TestConsumer />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("favorite-count")).toHaveTextContent("1");
+        expect(screen.getByTestId("recent-count")).toHaveTextContent("2");
+      });
+    });
+
     it("auto-selects first workspace when none selected", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          workspaces: [
+        json: async () =>
+          createMockResponse([
             {
               id: "1",
               name: "First Workspace",
@@ -164,8 +227,7 @@ describe("WorkspaceContext", () => {
               isPersonal: true,
               role: "OWNER",
             },
-          ],
-        }),
+          ]),
       });
 
       render(<TestConsumer />, { wrapper: createWrapper() });
@@ -187,8 +249,8 @@ describe("WorkspaceContext", () => {
 
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          workspaces: [
+        json: async () =>
+          createMockResponse([
             {
               id: "1",
               name: "URL Workspace",
@@ -196,8 +258,7 @@ describe("WorkspaceContext", () => {
               isPersonal: false,
               role: "MEMBER",
             },
-          ],
-        }),
+          ]),
       });
 
       render(<TestConsumer />, { wrapper: createWrapper() });
@@ -219,8 +280,8 @@ describe("WorkspaceContext", () => {
 
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          workspaces: [
+        json: async () =>
+          createMockResponse([
             {
               id: "1",
               name: "Stored Workspace",
@@ -228,8 +289,7 @@ describe("WorkspaceContext", () => {
               isPersonal: false,
               role: "OWNER",
             },
-          ],
-        }),
+          ]),
       });
 
       render(<TestConsumer />, { wrapper: createWrapper() });
@@ -268,7 +328,7 @@ describe("WorkspaceContext", () => {
               () =>
                 resolve({
                   ok: true,
-                  json: async () => ({ workspaces: [] }),
+                  json: async () => createMockResponse([]),
                 }),
               100,
             )
@@ -289,8 +349,8 @@ describe("WorkspaceContext", () => {
     it("updates current workspace and navigates", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          workspaces: [
+        json: async () =>
+          createMockResponse([
             {
               id: "1",
               name: "Workspace 1",
@@ -305,8 +365,7 @@ describe("WorkspaceContext", () => {
               isPersonal: false,
               role: "MEMBER",
             },
-          ],
-        }),
+          ]),
       });
 
       render(<TestConsumer />, { wrapper: createWrapper() });
@@ -328,12 +387,52 @@ describe("WorkspaceContext", () => {
     });
   });
 
+  describe("toggleFavorite", () => {
+    it("calls API to toggle favorite", async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () =>
+            createMockResponse([
+              {
+                id: "1",
+                name: "Workspace 1",
+                slug: "ws-1",
+                isPersonal: true,
+                role: "OWNER",
+              },
+            ]),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ isFavorite: true }),
+        });
+
+      render(<TestConsumer />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("workspace-count")).toHaveTextContent("1");
+      });
+
+      const toggleButton = screen.getByTestId("toggle-favorite");
+      await act(async () => {
+        toggleButton.click();
+      });
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith("/api/workspaces/1/favorite", {
+          method: "POST",
+        });
+      });
+    });
+  });
+
   describe("refetch", () => {
     it("refetches workspaces when called", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({
-          workspaces: [
+        json: async () =>
+          createMockResponse([
             {
               id: "1",
               name: "Workspace 1",
@@ -341,8 +440,7 @@ describe("WorkspaceContext", () => {
               isPersonal: true,
               role: "OWNER",
             },
-          ],
-        }),
+          ]),
       });
 
       render(<TestConsumer />, { wrapper: createWrapper() });
@@ -384,7 +482,7 @@ describe("WorkspaceContext", () => {
 
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({ workspaces: [] }),
+        json: async () => createMockResponse([]),
       });
 
       render(<TestConsumer />, { wrapper: createWrapper() });
@@ -404,7 +502,7 @@ describe("WorkspaceContext", () => {
 
       mockFetch.mockResolvedValue({
         ok: true,
-        json: async () => ({ workspaces: [] }),
+        json: async () => createMockResponse([]),
       });
 
       const { unmount } = render(<TestConsumer />, {

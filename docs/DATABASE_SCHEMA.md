@@ -1029,6 +1029,18 @@ erDiagram
   DateTime billingCycleStart "nullable"
   String stripeSubscriptionId UK "nullable"
 }
+"workspace_favorites" {
+  String id PK
+  String userId FK
+  String workspaceId FK
+  DateTime createdAt
+}
+"workspace_recent_access" {
+  String id PK
+  String userId FK
+  String workspaceId FK
+  DateTime accessedAt
+}
 "workspace_members" {
   String id PK
   String workspaceId FK
@@ -1840,6 +1852,10 @@ erDiagram
 "social_post_accounts" }o--|| "social_accounts" : account
 "social_metrics" }o--|| "social_accounts" : account
 "social_metric_anomalies" }o--|| "social_accounts" : account
+"workspace_favorites" }o--|| "users" : user
+"workspace_favorites" }o--|| "workspaces" : workspace
+"workspace_recent_access" }o--|| "users" : user
+"workspace_recent_access" }o--|| "workspaces" : workspace
 "workspace_members" }o--|| "workspaces" : workspace
 "workspace_members" }o--|| "users" : user
 "workspace_members" }o--o| "users" : invitedBy
@@ -3212,6 +3228,24 @@ Properties as follows:
 - `maxTeamMembers`:
 - `billingCycleStart`:
 - `stripeSubscriptionId`:
+
+### `workspace_favorites`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `workspaceId`:
+- `createdAt`:
+
+### `workspace_recent_access`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `workspaceId`:
+- `accessedAt`:
 
 ### `workspace_members`
 
