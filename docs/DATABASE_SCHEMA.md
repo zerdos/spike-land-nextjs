@@ -1560,6 +1560,9 @@ erDiagram
   Json config
   Json dependencies "nullable"
   DateTime createdAt
+  String parentStepId FK "nullable"
+  BranchType branchType "nullable"
+  String branchCondition "nullable"
 }
 "workflow_runs" {
   String id PK
@@ -1572,6 +1575,7 @@ erDiagram
   String id PK
   String workflowRunId FK
   String stepId "nullable"
+  StepRunStatus stepStatus "nullable"
   String message
   Json metadata "nullable"
   DateTime timestamp
@@ -1861,6 +1865,7 @@ erDiagram
 "workflows" }o--|| "users" : createdBy
 "workflow_versions" }o--|| "workflows" : workflow
 "workflow_steps" }o--|| "workflow_versions" : workflowVersion
+"workflow_steps" }o--o| "workflow_steps" : parentStep
 "workflow_runs" }o--|| "workflows" : workflow
 "workflow_run_logs" }o--|| "workflow_runs" : workflowRun
 "allocator_daily_budget_moves" }o--|| "allocator_campaigns" : campaign
@@ -3839,6 +3844,9 @@ Properties as follows:
 - `config`:
 - `dependencies`:
 - `createdAt`:
+- `parentStepId`:
+- `branchType`:
+- `branchCondition`:
 
 ### `workflow_runs`
 
@@ -3857,6 +3865,7 @@ Properties as follows:
 - `id`:
 - `workflowRunId`:
 - `stepId`:
+- `stepStatus`:
 - `message`:
 - `metadata`:
 - `timestamp`:

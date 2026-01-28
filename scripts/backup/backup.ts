@@ -173,7 +173,9 @@ export async function checkDatabaseConnectivity(): Promise<{ success: boolean; e
       } else {
         resolve({
           success: false,
-          error: `Database connectivity check failed: ${stderr || stdout || "pg_isready returned non-zero"}`,
+          error: `Database connectivity check failed: ${
+            stderr || stdout || "pg_isready returned non-zero"
+          }`,
         });
       }
     });
@@ -181,7 +183,9 @@ export async function checkDatabaseConnectivity(): Promise<{ success: boolean; e
     proc.on("error", (err) => {
       // pg_isready not found - fall back to assuming connection is okay
       // The actual pg_dump will fail with a clearer error if DB is unreachable
-      console.log(`pg_isready not available: ${err.message}. Skipping database connectivity check.`);
+      console.log(
+        `pg_isready not available: ${err.message}. Skipping database connectivity check.`,
+      );
       resolve({ success: true });
     });
   });
