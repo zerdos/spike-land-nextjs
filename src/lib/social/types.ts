@@ -181,6 +181,19 @@ export interface TwitterTweet {
     impression_count?: number;
   };
   author_id?: string;
+  attachments?: {
+    media_keys?: string[];
+  };
+}
+
+/**
+ * Twitter Media object from API includes
+ */
+export interface TwitterMedia {
+  media_key: string;
+  type: "photo" | "video" | "animated_gif";
+  url?: string;
+  preview_image_url?: string;
 }
 
 /**
@@ -204,6 +217,18 @@ export interface FacebookPost {
   shares?: { count: number; };
   reactions?: { summary: { total_count: number; }; };
   comments?: { summary: { total_count: number; }; };
+  full_picture?: string;
+  attachments?: {
+    data?: Array<{
+      media?: { image?: { src: string; }; };
+      media_type?: string;
+      subattachments?: {
+        data?: Array<{
+          media?: { image?: { src: string; }; };
+        }>;
+      };
+    }>;
+  };
 }
 
 export interface FacebookPageInsights {
@@ -356,6 +381,27 @@ export interface DiscordMetrics {
 export type ExtendedSocialPlatform = SocialPlatform | "YOUTUBE" | "DISCORD";
 
 // =============================================================================
+// Comment Preview Types
+// =============================================================================
+
+/**
+ * A comment preview for display in the stream feed
+ * Normalized across all platforms
+ */
+export interface CommentPreview {
+  /** Platform-specific comment ID */
+  id: string;
+  /** Comment text content */
+  content: string;
+  /** Display name of the commenter */
+  senderName: string;
+  /** Avatar URL of the commenter (if available) */
+  senderAvatarUrl?: string;
+  /** When the comment was created */
+  createdAt: Date;
+}
+
+// =============================================================================
 // Stream Types (Unified Feed)
 // =============================================================================
 
@@ -378,6 +424,8 @@ export interface StreamPost extends SocialPost {
   canShare: boolean;
   /** Whether the current user has liked this post (if trackable) */
   isLiked?: boolean;
+  /** Preview of recent comments (2-3 most recent) */
+  commentPreviews?: CommentPreview[];
 }
 
 /**
@@ -451,6 +499,8 @@ export interface StreamsQueryParams {
   endDate?: string;
   cursor?: string;
   searchQuery?: string;
+  /** Whether to include comment previews for each post */
+  includeComments?: boolean;
 }
 
 /**

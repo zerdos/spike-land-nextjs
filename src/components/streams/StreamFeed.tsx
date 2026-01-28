@@ -25,6 +25,8 @@ export interface StreamFeedProps {
   onReply?: (postId: string) => void;
   /** Callback when the share button is clicked on a post */
   onShare?: (postId: string) => void;
+  /** Callback when "View all comments" is clicked on a post */
+  onViewAllComments?: (postId: string) => void;
   /** Callback when connect accounts is clicked from empty state */
   onConnectAccounts?: () => void;
   /** Post ID that is currently being liked */
@@ -81,6 +83,7 @@ export function StreamFeed({
   onLike,
   onReply,
   onShare,
+  onViewAllComments,
   onConnectAccounts,
   likingPostId,
   replyingPostId,
@@ -121,6 +124,7 @@ export function StreamFeed({
           onLike={onLike}
           onReply={onReply}
           onShare={onShare}
+          onViewAllComments={onViewAllComments}
           isLiking={likingPostId === post.id ||
             likingPostId === post.platformPostId}
           isReplying={replyingPostId === post.id ||

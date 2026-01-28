@@ -6,6 +6,7 @@
  */
 
 import type {
+  CommentPreview,
   FacebookPage,
   FacebookPost,
   ISocialClient,
@@ -389,7 +390,7 @@ export class FacebookClient implements ISocialClient {
     const params = new URLSearchParams({
       access_token: this.pageAccessToken,
       fields:
-        "id,message,created_time,permalink_url,shares,reactions.summary(true),comments.summary(true)",
+        "id,message,created_time,permalink_url,shares,reactions.summary(true),comments.summary(true),full_picture,attachments{media,media_type,subattachments{media}}",
       limit: limit.toString(),
     });
 
@@ -413,21 +414,53 @@ export class FacebookClient implements ISocialClient {
 
     const data: FacebookFeedResponse = await response.json();
 
-    return (data.data || []).map((post) => ({
-      id: post.id,
-      platformPostId: post.id,
-      platform: "FACEBOOK" as const,
-      content: post.message || "",
-      publishedAt: new Date(post.created_time),
-      url: post.permalink_url ||
-        `https://www.facebook.com/${post.id.replace("_", "/posts/")}`,
-      metrics: {
-        likes: post.reactions?.summary?.total_count || 0,
-        comments: post.comments?.summary?.total_count || 0,
-        shares: post.shares?.count || 0,
-      },
-      rawData: post as unknown as Record<string, unknown>,
-    }));
+    return (data.data || []).map((post) => {
+      // Extract media URLs from attachments
+      const mediaUrls: string[] = [];
+
+      // First, try to get images from attachments (handles albums)
+      if (post.attachments?.data) {
+        for (const attachment of post.attachments.data) {
+          // Get main attachment image
+          const mainImageUrl = attachment.media?.image?.src;
+          if (mainImageUrl) {
+            mediaUrls.push(mainImageUrl);
+          }
+
+          // Get subattachment images (for photo albums)
+          if (attachment.subattachments?.data) {
+            for (const sub of attachment.subattachments.data) {
+              const subImageUrl = sub.media?.image?.src;
+              if (subImageUrl && !mediaUrls.includes(subImageUrl)) {
+                mediaUrls.push(subImageUrl);
+              }
+            }
+          }
+        }
+      }
+
+      // Fallback to full_picture if no attachments found
+      if (mediaUrls.length === 0 && post.full_picture) {
+        mediaUrls.push(post.full_picture);
+      }
+
+      return {
+        id: post.id,
+        platformPostId: post.id,
+        platform: "FACEBOOK" as const,
+        content: post.message || "",
+        mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
+        publishedAt: new Date(post.created_time),
+        url: post.permalink_url ||
+          `https://www.facebook.com/${post.id.replace("_", "/posts/")}`,
+        metrics: {
+          likes: post.reactions?.summary?.total_count || 0,
+          comments: post.comments?.summary?.total_count || 0,
+          shares: post.shares?.count || 0,
+        },
+        rawData: post as unknown as Record<string, unknown>,
+      };
+    });
   }
 
   /**
@@ -553,6 +586,55 @@ export class FacebookClient implements ISocialClient {
     }
 
     return response.json() as Promise<{ id: string; }>;
+  }
+
+  /**
+   * Get recent comments for a Facebook post
+   */
+  async getComments(postId: string, limit = 3): Promise<CommentPreview[]> {
+    if (!this.pageAccessToken) {
+      throw new Error("Page access token is required");
+    }
+
+    const params = new URLSearchParams({
+      access_token: this.pageAccessToken,
+      fields: "id,message,created_time,from{name,picture}",
+      limit: limit.toString(),
+    });
+
+    const response = await fetch(
+      `${GRAPH_API_BASE}/${postId}/comments?${params.toString()}`,
+      { method: "GET" },
+    );
+
+    if (!response.ok) {
+      // Return empty array on failure rather than throwing
+      return [];
+    }
+
+    interface FacebookComment {
+      id: string;
+      message: string;
+      created_time: string;
+      from?: {
+        name?: string;
+        picture?: {
+          data?: {
+            url?: string;
+          };
+        };
+      };
+    }
+
+    const data: { data?: FacebookComment[]; } = await response.json();
+
+    return (data.data || []).map((comment) => ({
+      id: comment.id,
+      content: comment.message || "",
+      senderName: comment.from?.name || "Unknown",
+      senderAvatarUrl: comment.from?.picture?.data?.url,
+      createdAt: new Date(comment.created_time),
+    }));
   }
 
   /**
