@@ -38,10 +38,18 @@ vi.mock("@/lib/permissions/workspace-middleware", () => ({
   }),
 }));
 
+// Mock token refresh utility
+vi.mock("@/lib/social/token-refresh", () => ({
+  getValidAccessToken: vi.fn().mockImplementation(async (account: SocialAccount) => ({
+    accessToken: `decrypted_${account.accessTokenEncrypted}`,
+    wasRefreshed: false,
+  })),
+}));
+
 const { auth } = await import("@/auth");
 const prisma = (await import("@/lib/prisma")).default;
 const { createSocialClient } = await import("@/lib/social");
-const { safeDecryptToken } = await import("@/lib/crypto/token-encryption");
+const { getValidAccessToken } = await import("@/lib/social/token-refresh");
 
 // Import the route after mocks are set up
 const { GET, fetchConnectedAccounts, fetchAccountPosts, fetchAllAccountPosts } = await import(
@@ -691,7 +699,6 @@ describe("GET /api/social/streams", () => {
       const request = createMockRequest({ workspaceId: "workspace-123" });
       await GET(request as any);
 
-      expect(safeDecryptToken).toHaveBeenCalledWith("encrypted_test_token");
       expect(createSocialClient).toHaveBeenCalledWith(
         "TWITTER",
         expect.objectContaining({
@@ -816,6 +823,39 @@ describe("GET /api/social/streams", () => {
       expect(response.status).toBe(200);
     });
 
+    it("should handle YOUTUBE platform validation", async () => {
+      const mockAccount = createMockAccount({
+        platform: "YOUTUBE",
+        accountName: "Test YouTube Channel",
+      });
+      const mockPosts = [
+        {
+          id: "yt-1",
+          platformPostId: "youtube_video_1",
+          platform: "YOUTUBE",
+          content: "Test Video Title",
+          publishedAt: new Date(),
+          url: "https://www.youtube.com/watch?v=abc123",
+        },
+      ];
+
+      vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
+      vi.mocked(createSocialClient).mockResolvedValue(
+        createMockSocialClient(mockPosts) as any,
+      );
+
+      const request = createMockRequest({
+        workspaceId: "workspace-123",
+        platforms: "YOUTUBE",
+      });
+      const response = await GET(request as any);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.posts.length).toBe(1);
+      expect(data.accounts[0].platform).toBe("YOUTUBE");
+    });
+
     it("should handle startDate only filter", async () => {
       const mockAccount = createMockAccount();
       vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
@@ -901,7 +941,7 @@ describe("Exported Functions", () => {
   });
 
   describe("fetchAccountPosts", () => {
-    it("should decrypt token and create client with correct options", async () => {
+    it("should use token refresh and create client with correct options", async () => {
       const mockAccount = createMockAccount();
       vi.mocked(createSocialClient).mockResolvedValue(
         createMockSocialClient([]) as any,
@@ -909,7 +949,7 @@ describe("Exported Functions", () => {
 
       await fetchAccountPosts(mockAccount, 10);
 
-      expect(safeDecryptToken).toHaveBeenCalledWith("encrypted_token_123");
+      expect(getValidAccessToken).toHaveBeenCalledWith(mockAccount);
       expect(createSocialClient).toHaveBeenCalledWith("TWITTER", {
         accessToken: "decrypted_encrypted_token_123",
         accountId: "twitter_123",
