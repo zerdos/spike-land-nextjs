@@ -103,7 +103,13 @@ function DraftQueueCard({
 }) {
   const router = useRouter();
   const params = useParams();
-  const workspaceSlug = params["workspaceSlug"] as string;
+  const workspaceSlug = params["workspaceSlug"];
+
+  // Runtime check for workspaceSlug - component should only be used in workspace routes
+  if (!workspaceSlug || typeof workspaceSlug !== "string") {
+    console.error("DraftQueueCard: workspaceSlug is required in route params");
+    return null;
+  }
 
   const handleViewInInbox = () => {
     router.push(`/orbit/${workspaceSlug}/inbox?itemId=${draft.inboxItem.id}`);

@@ -14,6 +14,13 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+
+/**
+ * Maximum number of drafts to return in queue view.
+ * Balances performance (preventing large payloads) with usability.
+ * Consider implementing pagination for workspaces with high volume.
+ */
+const MAX_QUEUE_DRAFTS = 100;
 import prisma from "@/lib/prisma";
 import { generateDrafts, type InboxItemData, saveDraftsToDatabase } from "@/lib/relay";
 import { tryCatch } from "@/lib/try-catch";
@@ -234,7 +241,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           },
         },
         orderBy: [{ createdAt: "desc" }],
-        take: 100,
+        take: MAX_QUEUE_DRAFTS,
       }),
     );
 
