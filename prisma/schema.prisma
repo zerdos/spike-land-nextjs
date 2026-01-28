@@ -1090,6 +1090,12 @@ enum SubscriptionTier {
   PREMIUM
 }
 
+enum WorkspaceSubscriptionTier {
+  FREE
+  PRO
+  BUSINESS
+}
+
 enum AlbumPrivacy {
   PRIVATE
   UNLISTED
@@ -2354,6 +2360,17 @@ model Workspace {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
+
+  // Subscription fields (Orbit workspace tiers)
+  subscriptionTier     WorkspaceSubscriptionTier @default(FREE)
+  maxSocialAccounts    Int                       @default(3)
+  maxScheduledPosts    Int                       @default(30)
+  maxAbTests           Int                       @default(1)
+  monthlyAiCredits     Int                       @default(100)
+  usedAiCredits        Int                       @default(0)
+  maxTeamMembers       Int                       @default(1)
+  billingCycleStart    DateTime?
+  stripeSubscriptionId String?                   @unique
 
   members                WorkspaceMember[]
   brandProfile           BrandProfile?

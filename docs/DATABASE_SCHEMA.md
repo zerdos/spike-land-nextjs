@@ -1019,6 +1019,15 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
   DateTime deletedAt "nullable"
+  WorkspaceSubscriptionTier subscriptionTier
+  Int maxSocialAccounts
+  Int maxScheduledPosts
+  Int maxAbTests
+  Int monthlyAiCredits
+  Int usedAiCredits
+  Int maxTeamMembers
+  DateTime billingCycleStart "nullable"
+  String stripeSubscriptionId UK "nullable"
 }
 "workspace_members" {
   String id PK
@@ -3161,6 +3170,15 @@ Properties as follows:
 - `createdAt`:
 - `updatedAt`:
 - `deletedAt`:
+- `subscriptionTier`:
+- `maxSocialAccounts`:
+- `maxScheduledPosts`:
+- `maxAbTests`:
+- `monthlyAiCredits`:
+- `usedAiCredits`:
+- `maxTeamMembers`:
+- `billingCycleStart`:
+- `stripeSubscriptionId`:
 
 ### `workspace_members`
 
