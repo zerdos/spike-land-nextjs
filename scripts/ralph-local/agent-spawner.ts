@@ -6,7 +6,7 @@
  * which is the recommended safe pattern. All inputs are validated before use.
  */
 
-import { spawn, type ChildProcess } from "child_process";
+import { type ChildProcess, spawn } from "child_process";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
 import type { AgentMarker, AgentRole, CodeWork, LocalAgent, Plan, RalphLocalConfig } from "./types";
@@ -119,7 +119,8 @@ export function spawnAgent(
       [
         "--print",
         "--dangerously-skip-permissions",
-        "--output-format", "json",
+        "--output-format",
+        "json",
       ],
       {
         cwd: workingDir,
@@ -254,7 +255,13 @@ export function stopAgent(agent: LocalAgent): boolean {
     process.kill(agent.pid, "SIGTERM");
     console.log(`   Sent SIGTERM to agent ${agent.id} (PID ${agent.pid})`);
     return true;
-  } catch (error) {
+  } catch (error: unknown) {
+    // ESRCH means process doesn't exist - this is fine for stale cleanup
+    const nodeError = error as NodeJS.ErrnoException;
+    if (nodeError.code === "ESRCH") {
+      console.log(`   Agent ${agent.id} process already terminated`);
+      return true; // Process is gone, which is what we wanted
+    }
     console.log(`   Failed to stop agent ${agent.id}:`, error);
     return false;
   }
