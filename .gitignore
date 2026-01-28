@@ -86,3 +86,7 @@ packages/video/out/
 *.webm
 *.mov
 *.avi
+
+# Ralph Local Orchestrator temp files
+/tmp/ralph-*
+ralph-worktrees/

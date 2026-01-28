@@ -1,0 +1,591 @@
+{
+  "version": 1,
+  "lastUpdated": "2026-01-28T23:50:34.964Z",
+  "iteration": 14,
+  "pools": {
+    "planning": [
+      {
+        "id": "planning-1",
+        "role": "planning",
+        "pid": 52262,
+        "status": "running",
+        "ticketId": "#554",
+        "worktree": null,
+        "outputFile": "/tmp/ralph-output/planning-1.json",
+        "pidFile": "/tmp/ralph-pids/planning-1.pid",
+        "startedAt": "2026-01-28T23:50:25.908Z",
+        "lastHeartbeat": "2026-01-28T23:50:25.908Z",
+        "retries": 0
+      },
+      {
+        "id": "planning-2",
+        "role": "planning",
+        "pid": 44145,
+        "status": "running",
+        "ticketId": "#543",
+        "worktree": null,
+        "outputFile": "/tmp/ralph-output/planning-2.json",
+        "pidFile": "/tmp/ralph-pids/planning-2.pid",
+        "startedAt": "2026-01-28T23:48:10.552Z",
+        "lastHeartbeat": "2026-01-28T23:48:10.552Z",
+        "retries": 0
+      },
+      {
+        "id": "planning-3",
+        "role": "planning",
+        "pid": 44148,
+        "status": "running",
+        "ticketId": "#545",
+        "worktree": null,
+        "outputFile": "/tmp/ralph-output/planning-3.json",
+        "pidFile": "/tmp/ralph-pids/planning-3.pid",
+        "startedAt": "2026-01-28T23:48:10.553Z",
+        "lastHeartbeat": "2026-01-28T23:48:10.553Z",
+        "retries": 0
+      },
+      {
+        "id": "planning-4",
+        "role": "planning",
+        "pid": 52265,
+        "status": "running",
+        "ticketId": "#559",
+        "worktree": null,
+        "outputFile": "/tmp/ralph-output/planning-4.json",
+        "pidFile": "/tmp/ralph-pids/planning-4.pid",
+        "startedAt": "2026-01-28T23:50:25.909Z",
+        "lastHeartbeat": "2026-01-28T23:50:25.909Z",
+        "retries": 0
+      },
+      {
+        "id": "planning-5",
+        "role": "planning",
+        "pid": 84215,
+        "status": "running",
+        "ticketId": "#800",
+        "worktree": null,
+        "outputFile": "/tmp/ralph-output/planning-5.json",
+        "pidFile": "/tmp/ralph-pids/planning-5.pid",
+        "startedAt": "2026-01-28T23:25:11.762Z",
+        "lastHeartbeat": "2026-01-28T23:25:11.762Z",
+        "retries": 0
+      },
+      {
+        "id": "planning-6",
+        "role": "planning",
+        "pid": 52268,
+        "status": "running",
+        "ticketId": "#565",
+        "worktree": null,
+        "outputFile": "/tmp/ralph-output/planning-6.json",
+        "pidFile": "/tmp/ralph-pids/planning-6.pid",
+        "startedAt": "2026-01-28T23:50:25.910Z",
+        "lastHeartbeat": "2026-01-28T23:50:25.910Z",
+        "retries": 0
+      },
+      {
+        "id": "planning-7",
+        "role": "planning",
+        "pid": 71382,
+        "status": "running",
+        "ticketId": "#790",
+        "worktree": null,
+        "outputFile": "/tmp/ralph-output/planning-7.json",
+        "pidFile": "/tmp/ralph-pids/planning-7.pid",
+        "startedAt": "2026-01-28T23:19:20.446Z",
+        "lastHeartbeat": "2026-01-28T23:19:20.446Z",
+        "retries": 0
+      },
+      {
+        "id": "planning-8",
+        "role": "planning",
+        "pid": 44151,
+        "status": "running",
+        "ticketId": "#551",
+        "worktree": null,
+        "outputFile": "/tmp/ralph-output/planning-8.json",
+        "pidFile": "/tmp/ralph-pids/planning-8.pid",
+        "startedAt": "2026-01-28T23:48:10.564Z",
+        "lastHeartbeat": "2026-01-28T23:48:10.564Z",
+        "retries": 0
+      }
+    ],
+    "developer": [
+      {
+        "id": "developer-1",
+        "role": "developer",
+        "pid": 82169,
+        "status": "running",
+        "ticketId": "#822",
+        "worktree": "/Users/z/Developer/ralph-worktrees/822",
+        "outputFile": "/tmp/ralph-output/developer-1.json",
+        "pidFile": "/tmp/ralph-pids/developer-1.pid",
+        "startedAt": "2026-01-28T23:23:49.207Z",
+        "lastHeartbeat": "2026-01-28T23:23:49.207Z",
+        "retries": 0
+      },
+      {
+        "id": "developer-2",
+        "role": "developer",
+        "pid": 36893,
+        "status": "running",
+        "ticketId": "#797",
+        "worktree": "/Users/z/Developer/ralph-worktrees/797",
+        "outputFile": "/tmp/ralph-output/developer-2.json",
+        "pidFile": "/tmp/ralph-pids/developer-2.pid",
+        "startedAt": "2026-01-28T23:45:41.966Z",
+        "lastHeartbeat": "2026-01-28T23:45:41.966Z",
+        "retries": 0
+      },
+      {
+        "id": "developer-3",
+        "role": "developer",
+        "pid": 6902,
+        "status": "running",
+        "ticketId": "#833",
+        "worktree": "/Users/z/Developer/ralph-worktrees/833",
+        "outputFile": "/tmp/ralph-output/developer-3.json",
+        "pidFile": "/tmp/ralph-pids/developer-3.pid",
+        "startedAt": "2026-01-28T23:35:41.679Z",
+        "lastHeartbeat": "2026-01-28T23:35:41.679Z",
+        "retries": 0
+      },
+      {
+        "id": "developer-4",
+        "role": "developer",
+        "pid": 52244,
+        "status": "running",
+        "ticketId": "#798",
+        "worktree": "/Users/z/Developer/ralph-worktrees/798",
+        "outputFile": "/tmp/ralph-output/developer-4.json",
+        "pidFile": "/tmp/ralph-pids/developer-4.pid",
+        "startedAt": "2026-01-28T23:50:25.345Z",
+        "lastHeartbeat": "2026-01-28T23:50:25.345Z",
+        "retries": 0
+      }
+    ],
+    "tester": [
+      {
+        "id": "tester-1",
+        "role": "tester",
+        "pid": 7895,
+        "status": "running",
+        "ticketId": "#828",
+        "worktree": "/Users/z/Developer/ralph-worktrees/828",
+        "outputFile": "/tmp/ralph-output/tester-1.json",
+        "pidFile": "/tmp/ralph-pids/tester-1.pid",
+        "startedAt": "2026-01-28T23:36:13.639Z",
+        "lastHeartbeat": "2026-01-28T23:36:13.639Z",
+        "retries": 0
+      },
+      {
+        "id": "tester-2",
+        "role": "tester",
+        "pid": 7898,
+        "status": "running",
+        "ticketId": "#851",
+        "worktree": "/Users/z/Developer/ralph-worktrees/851",
+        "outputFile": "/tmp/ralph-output/tester-2.json",
+        "pidFile": "/tmp/ralph-pids/tester-2.pid",
+        "startedAt": "2026-01-28T23:36:13.640Z",
+        "lastHeartbeat": "2026-01-28T23:36:13.640Z",
+        "retries": 0
+      },
+      {
+        "id": "tester-3",
+        "role": "tester",
+        "pid": 7901,
+        "status": "running",
+        "ticketId": "#796",
+        "worktree": "/Users/z/Developer/ralph-worktrees/796",
+        "outputFile": "/tmp/ralph-output/tester-3.json",
+        "pidFile": "/tmp/ralph-pids/tester-3.pid",
+        "startedAt": "2026-01-28T23:36:13.641Z",
+        "lastHeartbeat": "2026-01-28T23:36:13.641Z",
+        "retries": 0
+      },
+      {
+        "id": "tester-4",
+        "role": "tester",
+        "pid": 36896,
+        "status": "running",
+        "ticketId": "#829",
+        "worktree": "/Users/z/Developer/ralph-worktrees/829",
+        "outputFile": "/tmp/ralph-output/tester-4.json",
+        "pidFile": "/tmp/ralph-pids/tester-4.pid",
+        "startedAt": "2026-01-28T23:45:41.967Z",
+        "lastHeartbeat": "2026-01-28T23:45:41.967Z",
+        "retries": 0
+      }
+    ]
+  },
+  "pendingPlans": [
+    {
+      "ticketId": "#822",
+      "issueNumber": 822,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/822.md",
+      "createdAt": "2026-01-28T23:23:19.317Z",
+      "createdBy": "planning-1",
+      "status": "assigned",
+      "assignedTo": "developer-1"
+    },
+    {
+      "ticketId": "#828",
+      "issueNumber": 828,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/828.md",
+      "createdAt": "2026-01-28T23:23:19.317Z",
+      "createdBy": "planning-2",
+      "status": "assigned",
+      "assignedTo": "developer-2"
+    },
+    {
+      "ticketId": "#851",
+      "issueNumber": 851,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/851.md",
+      "createdAt": "2026-01-28T23:23:19.317Z",
+      "createdBy": "planning-5",
+      "status": "assigned",
+      "assignedTo": "developer-3"
+    },
+    {
+      "ticketId": "#796",
+      "issueNumber": 796,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/796.md",
+      "createdAt": "2026-01-28T23:23:19.317Z",
+      "createdBy": "planning-8",
+      "status": "assigned",
+      "assignedTo": "developer-4"
+    },
+    {
+      "ticketId": "#829",
+      "issueNumber": 829,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/829.md",
+      "createdAt": "2026-01-28T23:27:16.686Z",
+      "createdBy": "planning-3",
+      "status": "assigned",
+      "assignedTo": "developer-2"
+    },
+    {
+      "ticketId": "#833",
+      "issueNumber": 833,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/833.md",
+      "createdAt": "2026-01-28T23:27:16.686Z",
+      "createdBy": "planning-4",
+      "status": "assigned",
+      "assignedTo": "developer-3"
+    },
+    {
+      "ticketId": "#522",
+      "issueNumber": 522,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/522.md",
+      "createdAt": "2026-01-28T23:27:16.686Z",
+      "createdBy": "planning-6",
+      "status": "assigned",
+      "assignedTo": "developer-4"
+    },
+    {
+      "ticketId": "#797",
+      "issueNumber": 797,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/797.md",
+      "createdAt": "2026-01-28T23:29:23.541Z",
+      "createdBy": "planning-1",
+      "status": "assigned",
+      "assignedTo": "developer-2"
+    },
+    {
+      "ticketId": "#798",
+      "issueNumber": 798,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/798.md",
+      "createdAt": "2026-01-28T23:29:23.542Z",
+      "createdBy": "planning-2",
+      "status": "assigned",
+      "assignedTo": "developer-4"
+    },
+    {
+      "ticketId": "#804",
+      "issueNumber": 804,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/804.md",
+      "createdAt": "2026-01-28T23:29:23.542Z",
+      "createdBy": "planning-8",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#801",
+      "issueNumber": 801,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/801.md",
+      "createdAt": "2026-01-28T23:34:42.849Z",
+      "createdBy": "planning-1",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#805",
+      "issueNumber": 805,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/805.md",
+      "createdAt": "2026-01-28T23:34:42.851Z",
+      "createdBy": "planning-2",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#811",
+      "issueNumber": 811,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/811.md",
+      "createdAt": "2026-01-28T23:34:42.851Z",
+      "createdBy": "planning-3",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#839",
+      "issueNumber": 839,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/839.md",
+      "createdAt": "2026-01-28T23:34:42.851Z",
+      "createdBy": "planning-4",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#840",
+      "issueNumber": 840,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/840.md",
+      "createdAt": "2026-01-28T23:34:42.851Z",
+      "createdBy": "planning-6",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#841",
+      "issueNumber": 841,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/841.md",
+      "createdAt": "2026-01-28T23:34:42.851Z",
+      "createdBy": "planning-8",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#842",
+      "issueNumber": 842,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/842.md",
+      "createdAt": "2026-01-28T23:40:34.198Z",
+      "createdBy": "planning-1",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#843",
+      "issueNumber": 843,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/843.md",
+      "createdAt": "2026-01-28T23:40:34.198Z",
+      "createdBy": "planning-2",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#844",
+      "issueNumber": 844,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/844.md",
+      "createdAt": "2026-01-28T23:40:34.198Z",
+      "createdBy": "planning-3",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#845",
+      "issueNumber": 845,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/845.md",
+      "createdAt": "2026-01-28T23:40:34.198Z",
+      "createdBy": "planning-4",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#523",
+      "issueNumber": 523,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/523.md",
+      "createdAt": "2026-01-28T23:40:34.199Z",
+      "createdBy": "planning-8",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#533",
+      "issueNumber": 533,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/533.md",
+      "createdAt": "2026-01-28T23:44:58.525Z",
+      "createdBy": "planning-4",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#846",
+      "issueNumber": 846,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/846.md",
+      "createdAt": "2026-01-28T23:44:58.526Z",
+      "createdBy": "planning-6",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#525",
+      "issueNumber": 525,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/525.md",
+      "createdAt": "2026-01-28T23:48:06.828Z",
+      "createdBy": "planning-2",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#527",
+      "issueNumber": 527,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/527.md",
+      "createdAt": "2026-01-28T23:48:06.844Z",
+      "createdBy": "planning-3",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#534",
+      "issueNumber": 534,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/534.md",
+      "createdAt": "2026-01-28T23:48:06.844Z",
+      "createdBy": "planning-8",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#524",
+      "issueNumber": 524,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/524.md",
+      "createdAt": "2026-01-28T23:50:20.530Z",
+      "createdBy": "planning-1",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#535",
+      "issueNumber": 535,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/535.md",
+      "createdAt": "2026-01-28T23:50:20.531Z",
+      "createdBy": "planning-4",
+      "status": "pending",
+      "assignedTo": null
+    },
+    {
+      "ticketId": "#537",
+      "issueNumber": 537,
+      "title": "",
+      "planPath": "/tmp/ralph-plans/537.md",
+      "createdAt": "2026-01-28T23:50:20.531Z",
+      "createdBy": "planning-6",
+      "status": "pending",
+      "assignedTo": null
+    }
+  ],
+  "pendingCode": [
+    {
+      "ticketId": "#828",
+      "issueNumber": 828,
+      "branch": "ralph/828",
+      "worktree": "/Users/z/Developer/ralph-worktrees/828",
+      "planPath": "",
+      "createdAt": "2026-01-28T23:34:42.852Z",
+      "createdBy": "developer-2",
+      "status": "assigned",
+      "assignedTo": "tester-1",
+      "prUrl": null,
+      "prNumber": null
+    },
+    {
+      "ticketId": "#851",
+      "issueNumber": 851,
+      "branch": "ralph/851",
+      "worktree": "/Users/z/Developer/ralph-worktrees/851",
+      "planPath": "",
+      "createdAt": "2026-01-28T23:34:42.852Z",
+      "createdBy": "developer-3",
+      "status": "assigned",
+      "assignedTo": "tester-2",
+      "prUrl": null,
+      "prNumber": null
+    },
+    {
+      "ticketId": "#796",
+      "issueNumber": 796,
+      "branch": "ralph/796",
+      "worktree": "/Users/z/Developer/ralph-worktrees/796",
+      "planPath": "",
+      "createdAt": "2026-01-28T23:34:42.852Z",
+      "createdBy": "developer-4",
+      "status": "assigned",
+      "assignedTo": "tester-3",
+      "prUrl": null,
+      "prNumber": null
+    },
+    {
+      "ticketId": "#829",
+      "issueNumber": 829,
+      "branch": "ralph/829",
+      "worktree": "/Users/z/Developer/ralph-worktrees/829",
+      "planPath": "",
+      "createdAt": "2026-01-28T23:44:58.526Z",
+      "createdBy": "developer-2",
+      "status": "assigned",
+      "assignedTo": "tester-4",
+      "prUrl": null,
+      "prNumber": null
+    },
+    {
+      "ticketId": "#522",
+      "issueNumber": 522,
+      "branch": "ralph/522",
+      "worktree": "/Users/z/Developer/ralph-worktrees/522",
+      "planPath": "",
+      "createdAt": "2026-01-28T23:48:06.844Z",
+      "createdBy": "developer-4",
+      "status": "pending",
+      "assignedTo": null,
+      "prUrl": null,
+      "prNumber": null
+    }
+  ],
+  "completedTickets": [],
+  "failedTickets": [],
+  "blockedTickets": [
+    {
+      "ticketId": "#790",
+      "reason": "All test files specified in acceptance criteria already exist with comprehensive coverage. Files competitor-tracker.test.ts (17K), competitor-analyzer.test.ts (12K), topic-monitor.test.ts (1.3K), and all inbox collector tests were created Jan 16-22. Ticket should be closed as duplicate/completed work. See /tmp/ralph-plans/790.md for detailed analysis.",
+      "blockedAt": "2026-01-28T23:50:20.531Z",
+      "retries": 1,
+      "lastAttemptBy": "planning-7"
+    }
+  ]
+}
