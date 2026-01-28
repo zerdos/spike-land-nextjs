@@ -148,11 +148,28 @@ async function mockAuthSession(
   });
 
   // CRITICAL FIX: Wait for route interceptors to be fully registered
-  // This prevents race conditions where the page navigates before routes are ready
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  // Increased from 100ms to 300ms to prevent race conditions
+  await new Promise((resolve) => setTimeout(resolve, 300));
   await page.evaluate(() => Promise.resolve());
 
-  // NEW: If page is already loaded, trigger a session refresh
+  // NEW: Verify route interceptor is working
+  const testResponse = await page.evaluate(async () => {
+    try {
+      const response = await fetch("/api/auth/session");
+      const data = await response.json();
+      return data?.user ? "ok" : "no-user";
+    } catch {
+      return "error";
+    }
+  });
+
+  if (testResponse !== "ok") {
+    console.warn(`[mockAuthSession] Session API check: ${testResponse}`);
+    // Retry once if initial check failed
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+
+  // If page is already loaded, trigger a session refresh
   // This helps client components that already called useSession()
   const currentUrl = page.url();
   if (currentUrl && !currentUrl.includes("about:blank")) {
@@ -449,31 +466,65 @@ async function runStage2(browser: Browser): Promise<StageResult> {
     // Mock authenticated session
     await mockAuthSession(page2, { role: "USER" });
 
-    // Access protected route
-    await page2.goto(`${config.baseUrl}/settings`);
-
-    // Wait for loading state to complete - useSession shows "Loading..." initially
-    // The loading-state might be ephemeral, so we handle the case where it's already gone
-    const loadingIndicator = page2.getByTestId("loading-state");
-    await loadingIndicator.waitFor({ state: "hidden", timeout: 15000 }).catch(() => {
-      // Loading indicator might not exist if session loads very fast or if selector doesn't match
-      // We continue to the main check
+    // Wait for session to be established
+    await page2.evaluate(async () => {
+      // Poll session API until it returns valid user
+      for (let i = 0; i < 10; i++) {
+        try {
+          const response = await fetch("/api/auth/session");
+          const data = await response.json();
+          if (data?.user) return true;
+        } catch {}
+        await new Promise(r => setTimeout(r, 100));
+      }
+      throw new Error("Session not established after 1 second");
     });
 
-    // Now wait for the authenticated content with increased timeout
-    const settingsHeading = page2.getByRole("heading", { name: /Settings/i });
-    const isVisible = await settingsHeading.isVisible({ timeout: 15000 }).catch(() => false);
+    // Access protected route (now safe)
+    await page2.goto(`${config.baseUrl}/settings`);
 
-    if (!isVisible) {
+    // Wait for either the content to appear OR verify we're not stuck in loading
+    const pageState = await page2.waitForFunction(
+      () => {
+        // Success: Settings heading is visible
+        const heading = document.querySelector('h1, h2');
+        if (heading?.textContent?.match(/settings/i)) return 'success';
+
+        // Failure: Still on sign-in page
+        if (window.location.pathname.includes('/auth/signin')) return 'signin';
+
+        // Still loading: Check for loading indicators
+        const loading = document.querySelector('[data-testid="loading-state"]');
+        return loading ? 'loading' : 'unknown';
+      },
+      { timeout: 15000 }
+    );
+
+    const state = await pageState.jsonValue();
+    if (state === 'signin') {
       const currentUrl = page2.url();
-      const isOnSignIn = currentUrl.includes("/auth/signin");
       throw new Error(
-        `Settings page not accessible after auth mock. URL: ${currentUrl}, redirectedToSignIn: ${isOnSignIn}`,
+        `Settings page redirected to sign-in after auth mock. URL: ${currentUrl}`,
+      );
+    } else if (state !== 'success') {
+      const currentUrl = page2.url();
+      throw new Error(
+        `Settings page in unexpected state: ${state}. URL: ${currentUrl}`,
       );
     }
   } catch (error) {
     job22Status = "failed";
     job22Error = (error as Error).message;
+
+    // Capture diagnostic screenshot on failure
+    const screenshotPath = `${config.screenshotDir}/failure-job-2.2-${Date.now()}.png`;
+    await page2.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {});
+    console.error(`[Job 2.2] Captured failure screenshot: ${screenshotPath}`);
+    console.error(`[Job 2.2] Current URL: ${page2.url()}`);
+
+    // Log page HTML for debugging
+    const html = await page2.content().catch(() => "Could not capture HTML");
+    console.error(`[Job 2.2] Page HTML length: ${html.length} chars`);
   } finally {
     await context2.close();
   }
@@ -558,6 +609,21 @@ async function runStage3(browser: Browser): Promise<StageResult> {
 
   try {
     await mockAuthSession(page1, { role: "USER" });
+
+    // Wait for session to be established
+    await page1.evaluate(async () => {
+      // Poll session API until it returns valid user
+      for (let i = 0; i < 10; i++) {
+        try {
+          const response = await fetch("/api/auth/session");
+          const data = await response.json();
+          if (data?.user) return true;
+        } catch {}
+        await new Promise(r => setTimeout(r, 100));
+      }
+      throw new Error("Session not established after 1 second");
+    });
+
     await page1.goto(`${config.baseUrl}/apps/pixel`);
 
     // Check if we were redirected to sign-in (E2E bypass failed)
@@ -599,6 +665,16 @@ async function runStage3(browser: Browser): Promise<StageResult> {
   } catch (error) {
     job31Status = "failed";
     job31Error = (error as Error).message;
+
+    // Capture diagnostic screenshot on failure
+    const screenshotPath = `${config.screenshotDir}/failure-job-3.1-${Date.now()}.png`;
+    await page1.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {});
+    console.error(`[Job 3.1] Captured failure screenshot: ${screenshotPath}`);
+    console.error(`[Job 3.1] Current URL: ${page1.url()}`);
+
+    // Log page HTML for debugging
+    const html = await page1.content().catch(() => "Could not capture HTML");
+    console.error(`[Job 3.1] Page HTML length: ${html.length} chars`);
   } finally {
     await context1.close();
   }
@@ -883,6 +959,21 @@ async function runStage5(browser: Browser): Promise<StageResult> {
 
   try {
     await mockAuthSession(page1, { role: "ADMIN" });
+
+    // Wait for session to be established
+    await page1.evaluate(async () => {
+      // Poll session API until it returns valid user
+      for (let i = 0; i < 10; i++) {
+        try {
+          const response = await fetch("/api/auth/session");
+          const data = await response.json();
+          if (data?.user) return true;
+        } catch {}
+        await new Promise(r => setTimeout(r, 100));
+      }
+      throw new Error("Session not established after 1 second");
+    });
+
     await page1.goto(`${config.baseUrl}/admin`);
     await page1.waitForLoadState("networkidle");
 
@@ -899,6 +990,16 @@ async function runStage5(browser: Browser): Promise<StageResult> {
   } catch (error) {
     job51Status = "failed";
     job51Error = (error as Error).message;
+
+    // Capture diagnostic screenshot on failure
+    const screenshotPath = `${config.screenshotDir}/failure-job-5.1-${Date.now()}.png`;
+    await page1.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {});
+    console.error(`[Job 5.1] Captured failure screenshot: ${screenshotPath}`);
+    console.error(`[Job 5.1] Current URL: ${page1.url()}`);
+
+    // Log page HTML for debugging
+    const html = await page1.content().catch(() => "Could not capture HTML");
+    console.error(`[Job 5.1] Page HTML length: ${html.length} chars`);
   } finally {
     await context1.close();
   }
