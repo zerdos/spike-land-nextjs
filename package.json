@@ -17,6 +17,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "typecheck:prod": "tsc --project tsconfig.build.json --noEmit",
+    "check:skips": "node scripts/check-undocumented-skips.js",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",

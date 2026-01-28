@@ -213,6 +213,9 @@ describe("WebSocketManager", () => {
       expect(mockSessionSynchronizer.subscribe).toHaveBeenCalled();
     });
 
+    // SKIP REASON: Complex route handling requires full DOM environment setup
+    // and proper SessionSynchronizer mock orchestration. Better tested via E2E.
+    // TRACKING: Re-enable when proper test harness is available (#798)
     it.skip("should handle dehydrated page route", async () => {
       location.pathname = "/live/test-space/dehydrated";
       const mockEmbed = document.createElement("div");
@@ -243,6 +246,9 @@ describe("WebSocketManager", () => {
       expect(styles?.textContent).toContain(".test{}");
     });
 
+    // SKIP REASON: Complex route handling requires full DOM environment setup
+    // and proper SessionSynchronizer mock orchestration. Better tested via E2E.
+    // TRACKING: Re-enable when proper test harness is available (#798)
     it.skip("should handle default route", async () => {
       // Initialize and wait for setup
       await webSocketManager.init();

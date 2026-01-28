@@ -93,6 +93,9 @@ describe("Router Configuration", () => {
     unmount(); // Make sure to unmount the component
   });
 
+  // SKIP REASON: TanStack Router parameter passing and search state
+  // requires complex async router state mocking. Better tested via E2E.
+  // TRACKING: Re-enable when TanStack provides router testing utilities (#798)
   it.skip("should handle live page route with parameters", async () => {
     await router.navigate({
       to: "/live/$codeSpace",
@@ -110,6 +113,9 @@ describe("Router Configuration", () => {
     unmount(); // Make sure to unmount the component
   });
 
+  // SKIP REASON: TanStack Router parameter passing and search state
+  // requires complex async router state mocking. Better tested via E2E.
+  // TRACKING: Re-enable when TanStack provides router testing utilities (#798)
   it.skip("should handle multiple route navigations", async () => {
     await router.navigate({
       to: "/live/$codeSpace",

@@ -220,11 +220,17 @@ describe("PublicInstagramClient", () => {
   // SKIP REASON: NODE_ENV/CI modification is not reliable in Vitest environment
   // Tests verify internal enableDelays flag which is automatically false in test
   describe("enableDelays flag", () => {
+    // SKIP REASON: Tests modify NODE_ENV which causes issues in test environment.
+    // enableDelays behavior is tested indirectly through timing tests.
+    // TRACKING: Consider removing or rewriting without NODE_ENV modification (#798)
     it.skip("should be false in test environment", () => {
       const testClient = new PublicInstagramClient();
       expect((testClient as any).enableDelays).toBe(false);
     });
 
+    // SKIP REASON: Tests modify CI environment variable which causes issues.
+    // enableDelays behavior is tested indirectly through timing tests.
+    // TRACKING: Consider removing or rewriting without environment modification (#798)
     it.skip("should be false in CI environment", () => {
       const ciClient = new PublicInstagramClient();
       expect((ciClient as any).enableDelays).toBe(false);

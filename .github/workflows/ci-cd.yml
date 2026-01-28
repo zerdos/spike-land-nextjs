@@ -75,6 +75,9 @@ jobs:
       - name: Tsc check
         run: yarn tsc --noEmit
 
+      - name: Check for undocumented skipped tests
+        run: yarn check:skips
+
       - name: Run security audit
         run: yarn npm audit --all --severity moderate
 
