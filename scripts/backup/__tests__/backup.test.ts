@@ -42,7 +42,7 @@ describe("getConfigFromEnv", () => {
     process.env.DATABASE_URL = "postgresql://test:5432/testdb";
     delete process.env.CLOUDFLARE_R2_BUCKET_NAME;
 
-    expect(() => getConfigFromEnv()).toThrow("Missing required environment variables");
+    expect(() => getConfigFromEnv()).toThrow("Missing environment variables");
   });
 
   it("throws error when CLOUDFLARE_R2_ENDPOINT is missing", () => {
@@ -52,7 +52,7 @@ describe("getConfigFromEnv", () => {
     process.env.DATABASE_URL = "postgresql://test:5432/testdb";
     delete process.env.CLOUDFLARE_R2_ENDPOINT;
 
-    expect(() => getConfigFromEnv()).toThrow("Missing required environment variables");
+    expect(() => getConfigFromEnv()).toThrow("Missing environment variables");
   });
 
   it("throws error when CLOUDFLARE_R2_ACCESS_KEY_ID is missing", () => {
@@ -62,7 +62,7 @@ describe("getConfigFromEnv", () => {
     process.env.DATABASE_URL = "postgresql://test:5432/testdb";
     delete process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
 
-    expect(() => getConfigFromEnv()).toThrow("Missing required environment variables");
+    expect(() => getConfigFromEnv()).toThrow("Missing environment variables");
   });
 
   it("throws error when CLOUDFLARE_R2_SECRET_ACCESS_KEY is missing", () => {
@@ -72,7 +72,7 @@ describe("getConfigFromEnv", () => {
     process.env.DATABASE_URL = "postgresql://test:5432/testdb";
     delete process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
 
-    expect(() => getConfigFromEnv()).toThrow("Missing required environment variables");
+    expect(() => getConfigFromEnv()).toThrow("Missing environment variables");
   });
 
   it("throws error when DATABASE_URL is missing", () => {
@@ -82,7 +82,7 @@ describe("getConfigFromEnv", () => {
     process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY = "test-secret";
     delete process.env.DATABASE_URL;
 
-    expect(() => getConfigFromEnv()).toThrow("Missing required environment variables");
+    expect(() => getConfigFromEnv()).toThrow("Missing environment variables");
   });
 
   it("throws error listing all missing variables", () => {
@@ -93,6 +93,47 @@ describe("getConfigFromEnv", () => {
     delete process.env.DATABASE_URL;
 
     expect(() => getConfigFromEnv()).toThrow(/CLOUDFLARE_R2_BUCKET_NAME/);
+  });
+
+  it("throws error when CLOUDFLARE_R2_BUCKET_NAME is empty string", () => {
+    process.env.CLOUDFLARE_R2_BUCKET_NAME = "";
+    process.env.CLOUDFLARE_R2_ENDPOINT = "https://test.r2.cloudflarestorage.com";
+    process.env.CLOUDFLARE_R2_ACCESS_KEY_ID = "test-key-id";
+    process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY = "test-secret";
+    process.env.DATABASE_URL = "postgresql://test:5432/testdb";
+
+    expect(() => getConfigFromEnv()).toThrow(/Empty environment variables.*CLOUDFLARE_R2_BUCKET_NAME/);
+  });
+
+  it("throws error when multiple environment variables are empty", () => {
+    process.env.CLOUDFLARE_R2_BUCKET_NAME = "";
+    process.env.CLOUDFLARE_R2_ENDPOINT = "   "; // whitespace only
+    process.env.CLOUDFLARE_R2_ACCESS_KEY_ID = "test-key-id";
+    process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY = "test-secret";
+    process.env.DATABASE_URL = "postgresql://test:5432/testdb";
+
+    expect(() => getConfigFromEnv()).toThrow(/Empty environment variables.*check GitHub secrets configuration/);
+  });
+
+  it("throws error with both missing and empty variables", () => {
+    process.env.CLOUDFLARE_R2_BUCKET_NAME = "";
+    process.env.CLOUDFLARE_R2_ENDPOINT = "https://test.r2.cloudflarestorage.com";
+    process.env.CLOUDFLARE_R2_ACCESS_KEY_ID = "test-key-id";
+    delete process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+    process.env.DATABASE_URL = "postgresql://test:5432/testdb";
+
+    const error = (() => {
+      try {
+        getConfigFromEnv();
+        return null;
+      } catch (e) {
+        return e as Error;
+      }
+    })();
+
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/Missing environment variables.*CLOUDFLARE_R2_SECRET_ACCESS_KEY/);
+    expect(error!.message).toMatch(/Empty environment variables.*CLOUDFLARE_R2_BUCKET_NAME/);
   });
 });
 

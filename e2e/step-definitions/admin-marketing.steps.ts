@@ -18,10 +18,10 @@ Then(
     // Wait for page to be fully ready before checking for funnel
     await waitForPageReady(this.page, { strategy: "both" });
 
-    // Use retry pattern for funnel visualization
+    // Use retry pattern for funnel visualization - look for the card with data-testid
     const funnel = await waitForElementWithRetry(
       this.page,
-      '[data-testid="conversion-funnel"], [class*="funnel"]',
+      '[data-testid="conversion-funnel-card"], [data-testid="funnel-content"], [class*="funnel"]',
       { timeout: TIMEOUTS.LONG },
     );
 

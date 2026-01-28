@@ -130,11 +130,11 @@ export function FunnelTab({ className }: FunnelTabProps) {
       </div>
 
       {/* Funnel Visualization */}
-      <Card>
+      <Card data-testid="conversion-funnel-card">
         <CardHeader>
           <CardTitle>Conversion Funnel</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent data-testid="funnel-content">
           {loading
             ? (
               <div className="space-y-6">
@@ -150,7 +150,7 @@ export function FunnelTab({ className }: FunnelTabProps) {
                   const isLast = index === (data?.stages.length || 0) - 1;
 
                   return (
-                    <div key={stage.name}>
+                    <div key={stage.name} data-testid={`funnel-stage-${index}`}>
                       {/* Funnel Stage */}
                       <div className="relative">
                         <div
