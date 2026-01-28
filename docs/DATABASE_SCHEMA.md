@@ -1,3232 +1,3984 @@
 # Database Schema Documentation
 
-This document provides a detailed overview of the Spike Land database schema,
-including models, relationships, and design decisions.
-
-## Schema Version
-
-- **Version**: 2.0.0
-- **Last Updated**: 2025-12-30
-- **Prisma Version**: 7.2.0
-- **PostgreSQL Version**: 14+
-- **Database Provider**: Neon (PostgreSQL-compatible serverless database)
-
-## Table of Contents
-
-1. [Schema Overview](#schema-overview)
-2. [Authentication & User Management](#authentication--user-management)
-3. [Token System](#token-system)
-4. [Image Enhancement](#image-enhancement)
-5. [Application Platform](#application-platform)
-6. [Album & Gallery Management](#album--gallery-management)
-7. [Subscription & Payment](#subscription--payment)
-8. [Browser Agent Service](#browser-agent-service)
-9. [Campaign Analytics](#campaign-analytics)
-10. [Audio Mixer](#audio-mixer)
-11. [Merchandise & Print-on-Demand](#merchandise--print-on-demand)
-12. [External Agent Integration](#external-agent-integration)
-13. [Enumerations](#enumerations)
-14. [Indexes & Performance](#indexes--performance)
-15. [Security Considerations](#security-considerations)
-
-## Schema Overview
-
-The Spike Land database consists of 55+ tables organized into logical domains:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Spike Land Database Schema                    │
-│                         (Simplified View)                        │
-└─────────────────────────────────────────────────────────────────┘
-
-┌──────────────────────────────────────────────────────────────────┐
-│                      AUTHENTICATION & USERS                      │
-├──────────────┬────────────────┬──────────────┬─────────────────┤
-│    User      │   Account      │   Session    │ VerificationToken│
-└──────┬───────┴────────────────┴──────────────┴──────────────────┘
-       │
-       ├─────────────────────────────────────────────────────────┐
-       │                                                         │
-┌──────▼──────────────────────────────────────────────────┐     │
-│                   TOKEN SYSTEM                           │     │
-├──────────────┬────────────────┬──────────────────────────┤     │
-│UserTokenBalance│TokenTransaction│TokensPackage          │     │
-└──────────────┴────────────────┴──────────────────────────┘     │
-                                                                  │
-┌──────────────────────────────────────────────────────────┐     │
-│                IMAGE ENHANCEMENT                         │     │
-├──────────────┬────────────────┬──────────────────────────┤     │
-│EnhancedImage │ImageEnhancement│EnhancementPipeline      │     │
-│              │Job             │                          │     │
-└──────────────┴────────────────┴──────────────────────────┘     │
-                                                                  │
-┌──────────────────────────────────────────────────────────┐     │
-│                  APP PLATFORM                            │     │
-├──────────────┬────────────────┬──────────────────────────┤     │
-│    App       │  Requirement   │ MonetizationModel       │     │
-└──────────────┴────────────────┴──────────────────────────┘     │
-                                                                  │
-┌──────────────────────────────────────────────────────────┐     │
-│            SUBSCRIPTIONS & PAYMENTS                      │     │
-├──────────────┬────────────────┬──────────────────────────┤     │
-│Subscription  │StripePayment   │SubscriptionPlan         │     │
-└──────────────┴────────────────┴──────────────────────────┘     │
-                                                                  │
-┌──────────────────────────────────────────────────────────┐     │
-│              ALBUMS & GALLERIES                          │◄────┘
-├──────────────┬────────────────┬──────────────────────────┤
-│   Album      │  AlbumImage    │FeaturedGalleryItem      │
-└──────────────┴────────────────┴──────────────────────────┘
-
-Additional Domains:
-- Campaign Analytics (6 tables)
-- Browser Agent Service (6 tables)
-- Merchandise System (11 tables)
-- Audio Mixer (2 tables)
-- External Agent Integration (2 tables)
-- System & Audit (8 tables)
-```
-
----
-
-## Authentication & User Management
-
-### User
-
-Core user account model integrated with NextAuth.js for authentication.
-
-**Table Name**: `users`
-
-| Column           | Type          | Constraints   | Description                        |
-| ---------------- | ------------- | ------------- | ---------------------------------- |
-| id               | String (CUID) | PRIMARY KEY   | Unique user identifier             |
-| name             | String?       | NULL          | User's display name                |
-| email            | String?       | UNIQUE, NULL  | User's email address               |
-| emailVerified    | DateTime?     | NULL          | Email verification timestamp       |
-| image            | String?       | NULL          | User's avatar/profile image URL    |
-| createdAt        | DateTime      | DEFAULT now() | Account creation timestamp         |
-| updatedAt        | DateTime      | AUTO UPDATE   | Last update timestamp              |
-| stripeCustomerId | String?       | UNIQUE, NULL  | Stripe customer ID                 |
-| role             | UserRole      | DEFAULT USER  | User role (USER/ADMIN/SUPER_ADMIN) |
-| referralCode     | String?       | UNIQUE, NULL  | Unique referral code               |
-| referredById     | String?       | FK → User.id  | User who referred this user        |
-| referralCount    | Int           | DEFAULT 0     | Count of successful referrals      |
-| passwordHash     | String?       | NULL          | Hashed password for email auth     |
-
-**Relationships**:
-
-- `accounts`: Account[] - OAuth provider accounts
-- `albums`: Album[] - User's photo albums
-- `apps`: App[] - User-created applications
-- `auditLogs`: AuditLog[] - Audit trail of admin actions
-- `enhancedImages`: EnhancedImage[] - User's uploaded images
-- `enhancementJobs`: ImageEnhancementJob[] - Image enhancement jobs
-- `refereeReferrals`: Referral[] - Referrals where user is referee
-- `referrerReferrals`: Referral[] - Referrals where user is referrer
-- `sessions`: Session[] - Active user sessions
-- `stripePayments`: StripePayment[] - Payment history
-- `subscription`: Subscription? - Active subscription (1:1)
-- `tokenTransactions`: TokenTransaction[] - Token transaction history
-- `tokenBalance`: UserTokenBalance? - Current token balance (1:1)
-- `referredBy`: User? - Self-reference to referrer
-- `referrals`: User[] - Users referred by this user
-- `voucherRedemptions`: VoucherRedemption[] - Redeemed vouchers
-- `feedback`: Feedback[] - Submitted feedback
-- `createdGalleryItems`: FeaturedGalleryItem[] - Gallery items created by user
-- `emailLogs`: EmailLog[] - Email communication history
-- `trackedUrls`: TrackedUrl[] - Created tracked URLs
-- `apiKeys`: ApiKey[] - API keys for MCP generation
-- `mcpGenerationJobs`: McpGenerationJob[] - MCP generation jobs
-- `boxes`: Box[] - Browser agent boxes
-- `pipelines`: EnhancementPipeline[] - Custom enhancement pipelines
-- `audioMixerProjects`: AudioMixerProject[] - Audio mixer projects
-- `marketingAccounts`: MarketingAccount[] - Connected marketing accounts
-- `visitorSessions`: VisitorSession[] - Analytics visitor sessions
-- `campaignAttributions`: CampaignAttribution[] - Campaign conversion
-  attributions
-- `merchCart`: MerchCart? - Shopping cart (1:1)
-- `merchOrders`: MerchOrder[] - Merchandise orders
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `email`
-- UNIQUE index on `stripeCustomerId`
-- UNIQUE index on `referralCode`
-
-**Design Notes**:
-
-- Email is nullable to support OAuth-only accounts without email permission
-- Uses CUID (Collision-resistant Unique Identifier) for globally unique, ordered
-  IDs
-- `emailVerified` tracks when user confirmed their email address
-- Password hash stored for credential-based authentication alongside OAuth
-- Role-based access control (RBAC) via `role` enum
-- Self-referencing relationship for referral tracking
-
----
-
-### Account
-
-OAuth provider account information. Part of NextAuth.js adapter schema.
-
-**Table Name**: `accounts`
-
-| Column            | Type    | Constraints  | Description                  |
-| ----------------- | ------- | ------------ | ---------------------------- |
-| id                | String  | PRIMARY KEY  | Unique account identifier    |
-| userId            | String  | FK → User.id | Associated user ID           |
-| type              | String  | NOT NULL     | Account type (oauth, etc.)   |
-| provider          | String  | NOT NULL     | OAuth provider name          |
-| providerAccountId | String  | NOT NULL     | Provider's user ID           |
-| refresh_token     | String? | NULL         | OAuth refresh token          |
-| access_token      | String? | NULL         | OAuth access token           |
-| expires_at        | Int?    | NULL         | Token expiration (Unix time) |
-| token_type        | String? | NULL         | Token type (Bearer, etc.)    |
-| scope             | String? | NULL         | OAuth scopes granted         |
-| id_token          | String? | NULL         | OpenID Connect ID token      |
-| session_state     | String? | NULL         | OAuth session state          |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE composite index on `[provider, providerAccountId]`
-
-**Design Notes**:
-
-- Supports multiple OAuth providers per user (Google, GitHub, Facebook, etc.)
-- Tokens stored as TEXT for long strings
-- CASCADE delete ensures cleanup when user is deleted
-- Composite unique constraint prevents duplicate provider accounts
-
----
-
-### MarketingAccount
-
-Connected marketing platform accounts for campaign management.
-
-**Table Name**: `marketing_accounts`
-
-| Column       | Type              | Constraints   | Description                               |
-| ------------ | ----------------- | ------------- | ----------------------------------------- |
-| id           | String            | PRIMARY KEY   | Unique account identifier                 |
-| userId       | String            | FK → User.id  | Associated user ID                        |
-| platform     | MarketingPlatform | NOT NULL      | Marketing platform (FACEBOOK/GOOGLE_ADS)  |
-| accountId    | String            | NOT NULL      | Platform-specific account ID              |
-| accountName  | String?           | NULL          | Human-readable account name               |
-| accessToken  | String            | NOT NULL      | Encrypted OAuth access token              |
-| refreshToken | String?           | NULL          | Encrypted refresh token (Google Ads only) |
-| expiresAt    | DateTime?         | NULL          | Token expiration timestamp                |
-| isActive     | Boolean           | DEFAULT true  | Account active status                     |
-| createdAt    | DateTime          | DEFAULT now() | Account connection timestamp              |
-| updatedAt    | DateTime          | AUTO UPDATE   | Last update timestamp                     |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE composite index on `[userId, platform, accountId]`
-- Index on `userId`
-- Index on `platform`
-
-**Design Notes**:
-
-- Stores encrypted tokens for Facebook Ads and Google Ads platforms
-- One user can connect multiple accounts per platform
-- Token encryption handled at application layer
-- Used for campaign ROI tracking and analytics
-
----
-
-### Session
-
-Active user session tracking. Part of NextAuth.js adapter schema.
-
-**Table Name**: `sessions`
-
-| Column       | Type     | Constraints     | Description               |
-| ------------ | -------- | --------------- | ------------------------- |
-| id           | String   | PRIMARY KEY     | Unique session identifier |
-| sessionToken | String   | UNIQUE NOT NULL | Session token (secret)    |
-| userId       | String   | FK → User.id    | Associated user ID        |
-| expires      | DateTime | NOT NULL        | Session expiration time   |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `sessionToken`
-
-**Design Notes**:
-
-- Session tokens should be treated as secrets (not logged)
-- Expired sessions should be cleaned up periodically via cron job
-- CASCADE delete ensures sessions are removed when user is deleted
-- Used for stateless session management
-
----
-
-### VerificationToken
-
-Email verification and passwordless sign-in tokens. Part of NextAuth.js adapter
-schema.
-
-**Table Name**: `verification_tokens`
-
-| Column     | Type     | Constraints | Description                 |
-| ---------- | -------- | ----------- | --------------------------- |
-| identifier | String   | NOT NULL    | Email or identifier         |
-| token      | String   | UNIQUE      | Verification token (secret) |
-| expires    | DateTime | NOT NULL    | Token expiration timestamp  |
-
-**Indexes**:
-
-- UNIQUE composite index on `[identifier, token]`
-- UNIQUE index on `token`
-
-**Design Notes**:
-
-- No primary key or relations (standalone token table)
-- Tokens should be cleaned up after use or expiration
-- Used for email verification and magic link authentication
-- Single-use tokens (deleted after verification)
-
----
-
-## Token System
-
-### UserTokenBalance
-
-Current token balance and regeneration tracking for each user.
-
-**Table Name**: `user_token_balances`
-
-| Column           | Type             | Constraints   | Description                      |
-| ---------------- | ---------------- | ------------- | -------------------------------- |
-| id               | String           | PRIMARY KEY   | Unique balance record identifier |
-| userId           | String           | UNIQUE FK     | Associated user ID (1:1)         |
-| balance          | Int              | DEFAULT 0     | Current token balance            |
-| lastRegeneration | DateTime         | DEFAULT now() | Last token regeneration time     |
-| tier             | SubscriptionTier | DEFAULT FREE  | User's subscription tier         |
-| createdAt        | DateTime         | DEFAULT now() | Record creation timestamp        |
-| updatedAt        | DateTime         | AUTO UPDATE   | Last update timestamp            |
-
-**Relationships**:
-
-- `user`: User (1:1, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `userId`
-- Index on `tier`
-
-**Design Notes**:
-
-- One-to-one relationship with User (each user has one balance)
-- Balance regenerates based on subscription tier
-- Tracks last regeneration for monthly rollover calculation
-- Used to enforce token consumption limits
-
----
-
-### TokenTransaction
-
-Immutable transaction log for all token movements.
-
-**Table Name**: `token_transactions`
-
-| Column       | Type                 | Constraints   | Description                         |
-| ------------ | -------------------- | ------------- | ----------------------------------- |
-| id           | String               | PRIMARY KEY   | Unique transaction identifier       |
-| userId       | String               | FK → User.id  | Associated user ID                  |
-| amount       | Int                  | NOT NULL      | Token amount (positive or negative) |
-| type         | TokenTransactionType | NOT NULL      | Transaction type enum               |
-| source       | String?              | NULL          | Transaction source description      |
-| sourceId     | String?              | NULL          | Source entity ID (job, payment)     |
-| balanceAfter | Int                  | NOT NULL      | Balance after transaction           |
-| metadata     | Json?                | NULL          | Additional transaction data         |
-| createdAt    | DateTime             | DEFAULT now() | Transaction timestamp               |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[userId, createdAt]` (for user transaction history)
-- Index on `sourceId` (for reverse lookups)
-
-**Design Notes**:
-
-- Immutable audit trail (no updates or deletes)
-- Positive amounts = token credits, negative = debits
-- `balanceAfter` enables point-in-time balance reconstruction
-- `sourceId` links to related entities (e.g., enhancement job ID)
-- Supports double-entry accounting verification
-
----
-
-### TokensPackage
-
-Purchasable token packages for one-time token top-ups.
-
-**Table Name**: `tokens_packages`
-
-| Column        | Type          | Constraints     | Description                   |
-| ------------- | ------------- | --------------- | ----------------------------- |
-| id            | String        | PRIMARY KEY     | Unique package identifier     |
-| name          | String        | NOT NULL        | Package display name          |
-| tokens        | Int           | NOT NULL        | Number of tokens in package   |
-| priceUSD      | Decimal(10,2) | NOT NULL        | Price in USD                  |
-| stripePriceId | String        | UNIQUE NOT NULL | Stripe Price ID               |
-| active        | Boolean       | DEFAULT true    | Package availability status   |
-| sortOrder     | Int           | DEFAULT 0       | Display order on pricing page |
-| createdAt     | DateTime      | DEFAULT now()   | Package creation timestamp    |
-| updatedAt     | DateTime      | AUTO UPDATE     | Last update timestamp         |
-
-**Relationships**:
-
-- `stripePayments`: StripePayment[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `stripePriceId`
-- Composite index on `[active, sortOrder]`
-
-**Design Notes**:
-
-- Used for one-time token purchases (not subscriptions)
-- Prices stored as Decimal(10,2) for precise currency handling
-- Inactive packages hidden from UI but preserved for historical data
-- Sort order allows flexible pricing page layout
-
----
-
-### StripePayment
-
-Payment transaction records for token package purchases.
-
-**Table Name**: `stripe_payments`
-
-| Column                | Type                | Constraints     | Description                  |
-| --------------------- | ------------------- | --------------- | ---------------------------- |
-| id                    | String              | PRIMARY KEY     | Unique payment identifier    |
-| userId                | String              | FK → User.id    | Associated user ID           |
-| packageId             | String              | FK → Package.id | Purchased package ID         |
-| tokensGranted         | Int                 | NOT NULL        | Tokens granted from purchase |
-| amountUSD             | Decimal(10,2)       | NOT NULL        | Payment amount in USD        |
-| stripePaymentIntentId | String              | UNIQUE NOT NULL | Stripe Payment Intent ID     |
-| status                | StripePaymentStatus | NOT NULL        | Payment status enum          |
-| metadata              | Json?               | NULL            | Additional payment metadata  |
-| createdAt             | DateTime            | DEFAULT now()   | Payment creation timestamp   |
-| updatedAt             | DateTime            | AUTO UPDATE     | Last status update timestamp |
-
-**Relationships**:
-
-- `package`: TokensPackage (FK)
-- `user`: User (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `stripePaymentIntentId`
-- Composite index on `[userId, createdAt]`
-
-**Design Notes**:
-
-- Tracks both successful and failed payments
-- Links to Stripe Payment Intent for webhook processing
-- Tokens granted only when status = SUCCEEDED
-- Refunds create compensating token transactions
-- Metadata stores Stripe webhook data
-
----
-
-## Image Enhancement
-
-### EnhancedImage
-
-Original uploaded images and their metadata.
-
-**Table Name**: `enhanced_images`
-
-| Column            | Type     | Constraints   | Description                     |
-| ----------------- | -------- | ------------- | ------------------------------- |
-| id                | String   | PRIMARY KEY   | Unique image identifier         |
-| userId            | String   | FK → User.id  | Image owner ID                  |
-| name              | String   | NOT NULL      | Image display name              |
-| description       | String?  | NULL          | Optional image description      |
-| originalUrl       | String   | NOT NULL      | R2 CDN public URL               |
-| originalR2Key     | String   | NOT NULL      | R2 storage key                  |
-| originalWidth     | Int      | NOT NULL      | Original width in pixels        |
-| originalHeight    | Int      | NOT NULL      | Original height in pixels       |
-| originalSizeBytes | Int      | NOT NULL      | Original file size              |
-| originalFormat    | String   | NOT NULL      | Image format (JPEG, PNG, WebP)  |
-| isPublic          | Boolean  | DEFAULT false | Public visibility flag          |
-| viewCount         | Int      | DEFAULT 0     | View counter for analytics      |
-| createdAt         | DateTime | DEFAULT now() | Upload timestamp                |
-| updatedAt         | DateTime | AUTO UPDATE   | Last update timestamp           |
-| shareToken        | String?  | UNIQUE NULL   | Unique token for public sharing |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-- `albumImages`: AlbumImage[]
-- `enhancementJobs`: ImageEnhancementJob[]
-- `blendTargetJobs`: ImageEnhancementJob[] (as blend source)
-- `featuredGalleryItems`: FeaturedGalleryItem[]
-- `merchCartItems`: MerchCartItem[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[userId, createdAt]` (user gallery)
-- Composite index on `[isPublic, createdAt]` (public gallery)
-- Index on `shareToken`
-
-**Design Notes**:
-
-- Stores original image metadata (enhancements stored in jobs)
-- R2 (Cloudflare R2) used for object storage
-- Share tokens enable password-free public sharing
-- View count incremented on public image access
-- Images soft-deleted when user is deleted (CASCADE)
-
----
-
-### ImageEnhancementJob
-
-AI image enhancement job tracking and results.
-
-**Table Name**: `image_enhancement_jobs`
-
-| Column                | Type            | Constraints      | Description                |
-| --------------------- | --------------- | ---------------- | -------------------------- |
-| id                    | String          | PRIMARY KEY      | Unique job identifier      |
-| imageId               | String          | FK → Image.id    | Source image ID            |
-| userId                | String          | FK → User.id     | Job owner ID               |
-| tier                  | EnhancementTier | NOT NULL         | Enhancement quality tier   |
-| tokensCost            | Int             | NOT NULL         | Tokens consumed            |
-| status                | JobStatus       | NOT NULL         | Job status enum            |
-| currentStage          | PipelineStage?  | NULL             | Current pipeline stage     |
-| enhancedUrl           | String?         | NULL             | Enhanced image R2 URL      |
-| enhancedR2Key         | String?         | NULL             | Enhanced image R2 key      |
-| enhancedWidth         | Int?            | NULL             | Enhanced width in pixels   |
-| enhancedHeight        | Int?            | NULL             | Enhanced height in pixels  |
-| enhancedSizeBytes     | Int?            | NULL             | Enhanced file size         |
-| errorMessage          | String?         | NULL             | Error details if failed    |
-| retryCount            | Int             | DEFAULT 0        | Number of retry attempts   |
-| maxRetries            | Int             | DEFAULT 3        | Maximum retry attempts     |
-| geminiPrompt          | String?         | NULL             | Generated Gemini prompt    |
-| geminiModel           | String?         | NULL             | Gemini model used          |
-| geminiTemp            | Float?          | NULL             | Generation temperature     |
-| processingStartedAt   | DateTime?       | NULL             | Processing start time      |
-| processingCompletedAt | DateTime?       | NULL             | Processing completion time |
-| createdAt             | DateTime        | DEFAULT now()    | Job creation timestamp     |
-| updatedAt             | DateTime        | AUTO UPDATE      | Last update timestamp      |
-| workflowRunId         | String?         | NULL             | External workflow run ID   |
-| analysisResult        | Json?           | NULL             | AI image analysis results  |
-| analysisSource        | String?         | NULL             | Analysis model name        |
-| wasCropped            | Boolean         | DEFAULT false    | Auto-crop applied flag     |
-| cropDimensions        | Json?           | NULL             | Crop coordinates {x,y,w,h} |
-| pipelineId            | String?         | FK → Pipeline.id | Enhancement pipeline used  |
-| sourceImageId         | String?         | FK → Image.id    | Blend source image ID      |
-| isBlend               | Boolean         | DEFAULT false    | Blend enhancement flag     |
-| isAnonymous           | Boolean         | DEFAULT false    | Anonymous user job flag    |
-
-**Relationships**:
-
-- `image`: EnhancedImage (FK, CASCADE on delete)
-- `user`: User (FK, CASCADE on delete)
-- `pipeline`: EnhancementPipeline? (FK, optional)
-- `sourceImage`: EnhancedImage? (FK for blend mode, SET NULL on delete)
-- `featuredGalleryItems`: FeaturedGalleryItem[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[userId, status, createdAt]`
-- Index on `imageId`
-- Composite index on `[status, updatedAt]` (job queue)
-- Index on `workflowRunId`
-- Index on `pipelineId`
-- Composite index on `[status, currentStage]` (SSE streaming)
-
-**Design Notes**:
-
-- Supports multi-stage pipeline processing (analyze, crop, prompt, generate)
-- Retry logic with exponential backoff
-- Stores both original and enhanced image metadata
-- Token cost deducted when job is created
-- Blend mode allows image-to-image enhancement
-- Pipeline reference creates audit trail
-- Anonymous jobs support non-authenticated usage
-
----
-
-### EnhancementPipeline
-
-Reusable AI enhancement pipeline configurations.
-
-**Table Name**: `enhancement_pipelines`
-
-| Column           | Type               | Constraints     | Description                       |
-| ---------------- | ------------------ | --------------- | --------------------------------- |
-| id               | String             | PRIMARY KEY     | Unique pipeline identifier        |
-| name             | String             | NOT NULL        | Pipeline display name             |
-| description      | String?            | NULL            | Pipeline description              |
-| userId           | String?            | FK → User.id    | Owner ID (NULL = system pipeline) |
-| visibility       | PipelineVisibility | DEFAULT PRIVATE | Visibility setting                |
-| shareToken       | String?            | UNIQUE NULL     | Link-based sharing token          |
-| tier             | EnhancementTier    | DEFAULT TIER_1K | Default enhancement tier          |
-| analysisConfig   | Json?              | NULL            | Analysis stage settings           |
-| autoCropConfig   | Json?              | NULL            | Auto-crop behavior config         |
-| promptConfig     | Json?              | NULL            | Dynamic prompt generation config  |
-| generationConfig | Json?              | NULL            | Gemini generation settings        |
-| usageCount       | Int                | DEFAULT 0       | Times pipeline has been used      |
-| createdAt        | DateTime           | DEFAULT now()   | Pipeline creation timestamp       |
-| updatedAt        | DateTime           | AUTO UPDATE     | Last update timestamp             |
-
-**Relationships**:
-
-- `user`: User? (FK, CASCADE on delete)
-- `albums`: Album[] (albums using this pipeline)
-- `jobs`: ImageEnhancementJob[] (jobs using this pipeline)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `shareToken`
-- Index on `userId`
-- Index on `visibility`
-
-**Design Notes**:
-
-- System pipelines have NULL userId (created by admins)
-- JSON configs allow flexible pipeline customization
-- Visibility controls: PRIVATE (owner only), PUBLIC (all users), LINK (share
-  token)
-- Share tokens enable pipeline template sharing
-- Usage count tracks pipeline popularity
-- Pipelines can be forked/cloned by users
-
----
-
-## Application Platform
-
-### App
-
-User-created applications with requirements and monetization.
-
-**Table Name**: `apps`
-
-| Column      | Type      | Constraints   | Description             |
-| ----------- | --------- | ------------- | ----------------------- |
-| id          | String    | PRIMARY KEY   | Unique app identifier   |
-| name        | String    | NOT NULL      | App display name        |
-| description | String?   | NULL          | App description         |
-| userId      | String    | FK → User.id  | App owner ID            |
-| forkedFrom  | String?   | FK → App.id   | Parent app ID if forked |
-| status      | AppStatus | DEFAULT DRAFT | App lifecycle status    |
-| domain      | String?   | UNIQUE NULL   | Custom domain name      |
-| createdAt   | DateTime  | DEFAULT now() | App creation timestamp  |
-| updatedAt   | DateTime  | AUTO UPDATE   | Last update timestamp   |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-- `parentApp`: App? (FK, SET NULL on delete)
-- `forks`: App[] (apps forked from this one)
-- `monetizationModels`: MonetizationModel[]
-- `requirements`: Requirement[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `domain`
-- Index on `userId`
-- Index on `forkedFrom`
-- Index on `status`
-
-**Design Notes**:
-
-- Self-referencing relationship enables app forking/inheritance
-- Domain uniqueness enforces one app per custom domain
-- Cascade delete removes all app data when user is deleted
-- Set null on parent delete preserves fork history
-- Draft apps hidden from public directory
-
----
-
-### Requirement
-
-Feature requirements and specifications for applications.
-
-**Table Name**: `requirements`
-
-| Column      | Type                | Constraints     | Description                    |
-| ----------- | ------------------- | --------------- | ------------------------------ |
-| id          | String              | PRIMARY KEY     | Unique requirement identifier  |
-| appId       | String              | FK → App.id     | Associated app ID              |
-| description | String              | NOT NULL        | Requirement description        |
-| priority    | RequirementPriority | DEFAULT MEDIUM  | Priority level                 |
-| status      | RequirementStatus   | DEFAULT PENDING | Implementation status          |
-| version     | Int                 | DEFAULT 1       | Requirement version number     |
-| createdAt   | DateTime            | DEFAULT now()   | Requirement creation timestamp |
-| updatedAt   | DateTime            | AUTO UPDATE     | Last update timestamp          |
-
-**Relationships**:
-
-- `app`: App (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Index on `appId`
-- Index on `status`
-- Index on `priority`
-
-**Design Notes**:
-
-- Version tracking allows requirement evolution
-- Multiple indexes support filtering by status and priority
-- Cascade delete removes requirements with app
-- Text type allows long, detailed descriptions
-- Priority guides development roadmap
-
----
-
-### MonetizationModel
-
-Pricing and monetization strategies for applications.
-
-**Table Name**: `monetization_models`
-
-| Column               | Type                  | Constraints   | Description                        |
-| -------------------- | --------------------- | ------------- | ---------------------------------- |
-| id                   | String                | PRIMARY KEY   | Unique model identifier            |
-| appId                | String                | FK → App.id   | Associated app ID                  |
-| type                 | MonetizationType      | DEFAULT FREE  | Monetization type                  |
-| price                | Decimal(10,2)?        | NULL          | Price amount                       |
-| subscriptionInterval | SubscriptionInterval? | NULL          | Billing interval (if subscription) |
-| features             | String[]              | NOT NULL      | Included features list             |
-| createdAt            | DateTime              | DEFAULT now() | Model creation timestamp           |
-| updatedAt            | DateTime              | AUTO UPDATE   | Last update timestamp              |
-
-**Relationships**:
-
-- `app`: App (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Index on `appId`
-- Index on `type`
-
-**Design Notes**:
-
-- Apps can have multiple monetization models (pricing tiers)
-- Price stored as Decimal(10,2) for precise currency handling
-- Features array stores included feature descriptions
-- subscriptionInterval only required for SUBSCRIPTION type
-- Cascade delete removes models with app
-- Supports freemium, subscription, and usage-based pricing
-
----
-
-## Album & Gallery Management
-
-### Album
-
-Photo album organization for user images.
-
-**Table Name**: `albums`
-
-| Column       | Type            | Constraints      | Description                        |
-| ------------ | --------------- | ---------------- | ---------------------------------- |
-| id           | String          | PRIMARY KEY      | Unique album identifier            |
-| userId       | String          | FK → User.id     | Album owner ID                     |
-| name         | String          | NOT NULL         | Album display name                 |
-| description  | String?         | NULL             | Album description                  |
-| coverImageId | String?         | NULL             | Cover image ID (not FK)            |
-| privacy      | AlbumPrivacy    | DEFAULT PRIVATE  | Album visibility setting           |
-| defaultTier  | EnhancementTier | DEFAULT TIER_1K  | Default enhancement tier for album |
-| shareToken   | String?         | UNIQUE NULL      | Link-based sharing token           |
-| sortOrder    | Int             | DEFAULT 0        | User's album display order         |
-| createdAt    | DateTime        | DEFAULT now()    | Album creation timestamp           |
-| updatedAt    | DateTime        | AUTO UPDATE      | Last update timestamp              |
-| pipelineId   | String?         | FK → Pipeline.id | Default enhancement pipeline       |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-- `pipeline`: EnhancementPipeline? (FK, optional)
-- `albumImages`: AlbumImage[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE composite index on `[userId, name, privacy]` (prevents duplicate
-  default albums)
-- Composite index on `[userId, createdAt]`
-- Index on `privacy`
-- Index on `shareToken`
-- Index on `pipelineId`
-
-**Design Notes**:
-
-- Privacy levels: PRIVATE (owner only), UNLISTED (link only), PUBLIC (gallery)
-- Default tier applied to all images uploaded to album
-- Share token enables password-free album sharing
-- Pipeline setting allows bulk processing with custom settings
-- Each user has system-created default albums per privacy level
-
----
-
-### AlbumImage
-
-Many-to-many relationship between albums and images.
-
-**Table Name**: `album_images`
-
-| Column    | Type     | Constraints   | Description                    |
-| --------- | -------- | ------------- | ------------------------------ |
-| id        | String   | PRIMARY KEY   | Unique relationship identifier |
-| albumId   | String   | FK → Album.id | Album ID                       |
-| imageId   | String   | FK → Image.id | Image ID                       |
-| sortOrder | Int      | DEFAULT 0     | Image order within album       |
-| addedAt   | DateTime | DEFAULT now() | Image added to album timestamp |
-
-**Relationships**:
-
-- `album`: Album (FK, CASCADE on delete)
-- `image`: EnhancedImage (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE composite index on `[albumId, imageId]` (prevents duplicates)
-- Composite index on `[albumId, sortOrder]` (album gallery display)
-- Index on `imageId` (reverse lookup)
-- Composite index on `[albumId, addedAt]` (chronological view)
-
-**Design Notes**:
-
-- Join table enabling images in multiple albums
-- Sort order allows manual image reordering within album
-- addedAt tracks when image was added (different from image upload time)
-- Cascade delete from both sides ensures referential integrity
-
----
-
-### FeaturedGalleryItem
-
-Curated showcase images for public gallery.
-
-**Table Name**: `featured_gallery_items`
-
-| Column        | Type            | Constraints      | Description                    |
-| ------------- | --------------- | ---------------- | ------------------------------ |
-| id            | String          | PRIMARY KEY      | Unique gallery item identifier |
-| title         | String          | NOT NULL         | Display title                  |
-| description   | String?         | NULL             | Item description               |
-| category      | GalleryCategory | DEFAULT PORTRAIT | Gallery category               |
-| originalUrl   | String          | NOT NULL         | Original image URL             |
-| enhancedUrl   | String          | NOT NULL         | Enhanced image URL             |
-| width         | Int             | DEFAULT 16       | Aspect ratio width             |
-| height        | Int             | DEFAULT 9        | Aspect ratio height            |
-| sourceImageId | String?         | FK → Image.id    | Source image reference         |
-| sourceJobId   | String?         | FK → Job.id      | Enhancement job reference      |
-| sortOrder     | Int             | DEFAULT 0        | Display order in gallery       |
-| isActive      | Boolean         | DEFAULT true     | Visibility flag                |
-| createdAt     | DateTime        | DEFAULT now()    | Item creation timestamp        |
-| updatedAt     | DateTime        | AUTO UPDATE      | Last update timestamp          |
-| createdBy     | String          | FK → User.id     | Creator user ID (admin)        |
-
-**Relationships**:
-
-- `sourceImage`: EnhancedImage? (FK, SET NULL on delete)
-- `sourceJob`: ImageEnhancementJob? (FK, SET NULL on delete)
-- `creator`: User (FK, required)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[isActive, sortOrder]`
-- Composite index on `[isActive, category, sortOrder]`
-
-**Design Notes**:
-
-- Admin-curated showcase for marketing and inspiration
-- Categories: PORTRAIT, LANDSCAPE, PRODUCT, ARCHITECTURE
-- Links to source for attribution and reproducibility
-- Width/height for aspect ratio (not actual dimensions)
-- Inactive items hidden but preserved for analytics
-
----
-
-## Subscription & Payment
-
-### Subscription
-
-User subscription management with Stripe integration.
-
-**Table Name**: `subscriptions`
-
-| Column               | Type               | Constraints     | Description                         |
-| -------------------- | ------------------ | --------------- | ----------------------------------- |
-| id                   | String             | PRIMARY KEY     | Unique subscription identifier      |
-| userId               | String             | UNIQUE FK       | Associated user ID (1:1)            |
-| stripeSubscriptionId | String             | UNIQUE NOT NULL | Stripe Subscription ID              |
-| stripePriceId        | String             | NOT NULL        | Stripe Price ID                     |
-| status               | SubscriptionStatus | NOT NULL        | Subscription status                 |
-| tier                 | SubscriptionTier   | DEFAULT BASIC   | Subscription tier level             |
-| currentPeriodStart   | DateTime           | NOT NULL        | Current billing period start        |
-| currentPeriodEnd     | DateTime           | NOT NULL        | Current billing period end          |
-| cancelAtPeriodEnd    | Boolean            | DEFAULT false   | Scheduled cancellation flag         |
-| downgradeTo          | SubscriptionTier?  | NULL            | Scheduled downgrade tier            |
-| tokensPerMonth       | Int                | NOT NULL        | Monthly token allocation            |
-| rolloverTokens       | Int                | DEFAULT 0       | Rollover tokens from previous month |
-| maxRollover          | Int                | DEFAULT 0       | Maximum rollover allowed            |
-| createdAt            | DateTime           | DEFAULT now()   | Subscription creation timestamp     |
-| updatedAt            | DateTime           | AUTO UPDATE     | Last update timestamp               |
-
-**Relationships**:
-
-- `user`: User (1:1, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `userId`
-- UNIQUE index on `stripeSubscriptionId`
-- Index on `status`
-- Index on `tier`
-
-**Design Notes**:
-
-- One-to-one relationship with User
-- Stripe webhook updates keep status synchronized
-- Rollover tokens prevent monthly token loss
-- Scheduled downgrades execute at period end
-- cancelAtPeriodEnd allows graceful subscription ending
-- Tier determines monthly token allocation and features
-
----
-
-### SubscriptionPlan
-
-Available subscription plan configurations.
-
-**Table Name**: `subscription_plans`
-
-| Column         | Type          | Constraints     | Description                   |
-| -------------- | ------------- | --------------- | ----------------------------- |
-| id             | String        | PRIMARY KEY     | Unique plan identifier        |
-| name           | String        | NOT NULL        | Plan display name             |
-| tokensPerMonth | Int           | NOT NULL        | Monthly token allocation      |
-| priceGBP       | Decimal(10,2) | NOT NULL        | Monthly price in GBP          |
-| stripePriceId  | String        | UNIQUE NOT NULL | Stripe Price ID               |
-| maxRollover    | Int           | DEFAULT 0       | Maximum rollover tokens       |
-| priority       | Boolean       | DEFAULT false   | Priority processing flag      |
-| apiAccess      | Boolean       | DEFAULT false   | API access enabled flag       |
-| active         | Boolean       | DEFAULT true    | Plan availability status      |
-| sortOrder      | Int           | DEFAULT 0       | Display order on pricing page |
-| createdAt      | DateTime      | DEFAULT now()   | Plan creation timestamp       |
-| updatedAt      | DateTime      | AUTO UPDATE     | Last update timestamp         |
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `stripePriceId`
-- Composite index on `[active, sortOrder]`
-
-**Design Notes**:
-
-- Template for creating user subscriptions
-- Price in GBP (UK-based business)
-- Priority flag enables fast-track job processing
-- API access unlocks MCP generation features
-- Inactive plans hidden but preserved for legacy subscribers
-- Sort order controls pricing page presentation
-
----
-
-## Browser Agent Service
-
-### BoxTier
-
-Resource tiers for browser agent virtual machines.
-
-**Table Name**: `box_tiers`
-
-| Column        | Type     | Constraints   | Description                  |
-| ------------- | -------- | ------------- | ---------------------------- |
-| id            | String   | PRIMARY KEY   | Unique tier identifier       |
-| name          | String   | NOT NULL      | Tier name (e.g., "Standard") |
-| description   | String?  | NULL          | Tier description             |
-| cpu           | Int      | NOT NULL      | vCPU count                   |
-| ram           | Int      | NOT NULL      | RAM in MB                    |
-| storage       | Int      | NOT NULL      | Storage in GB                |
-| pricePerHour  | Int      | NOT NULL      | Token cost per hour          |
-| pricePerMonth | Int      | NOT NULL      | Token cost per month         |
-| isActive      | Boolean  | DEFAULT true  | Tier availability            |
-| sortOrder     | Int      | DEFAULT 0     | Display order                |
-| createdAt     | DateTime | DEFAULT now() | Tier creation timestamp      |
-| updatedAt     | DateTime | AUTO UPDATE   | Last update timestamp        |
-
-**Relationships**:
-
-- `boxes`: Box[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-
-**Design Notes**:
-
-- Resource tiers for browser automation VMs
-- Token-based pricing (hourly or monthly)
-- Inactive tiers hidden but preserved for existing boxes
-- Storage for persistent browser state
-
----
-
-### Box
-
-Browser agent virtual machine instances.
-
-**Table Name**: `boxes`
-
-| Column          | Type      | Constraints     | Description                  |
-| --------------- | --------- | --------------- | ---------------------------- |
-| id              | String    | PRIMARY KEY     | Unique box identifier        |
-| name            | String    | NOT NULL        | Box display name             |
-| description     | String?   | NULL            | Box description              |
-| userId          | String    | FK → User.id    | Box owner ID                 |
-| tierId          | String?   | FK → BoxTier.id | Resource tier ID             |
-| status          | BoxStatus | DEFAULT STOPPED | Box lifecycle status         |
-| connectionUrl   | String?   | NULL            | VNC/NoVNC access URL         |
-| storageVolumeId | String?   | NULL            | Persistent storage volume ID |
-| createdAt       | DateTime  | DEFAULT now()   | Box creation timestamp       |
-| updatedAt       | DateTime  | AUTO UPDATE     | Last update timestamp        |
-| deletedAt       | DateTime? | NULL            | Soft deletion timestamp      |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-- `tier`: BoxTier? (FK, optional)
-- `actions`: BoxAction[]
-- `tasks`: AgentTask[]
-- `messages`: BoxMessage[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[userId, createdAt]`
-- Index on `status`
-
-**Design Notes**:
-
-- Browser automation virtual machines
-- Soft delete via deletedAt timestamp
-- Connection URL for remote desktop access
-- Storage volume for persistent browser state
-- Status lifecycle: CREATING → RUNNING → STOPPED → TERMINATED
-
----
-
-### BoxAction
-
-Action history for box lifecycle management.
-
-**Table Name**: `box_actions`
-
-| Column    | Type          | Constraints     | Description               |
-| --------- | ------------- | --------------- | ------------------------- |
-| id        | String        | PRIMARY KEY     | Unique action identifier  |
-| boxId     | String        | FK → Box.id     | Associated box ID         |
-| action    | BoxActionType | NOT NULL        | Action type               |
-| status    | JobStatus     | DEFAULT PENDING | Action execution status   |
-| metadata  | Json?         | NULL            | Action parameters         |
-| error     | String?       | NULL            | Error message if failed   |
-| createdAt | DateTime      | DEFAULT now()   | Action creation timestamp |
-| updatedAt | DateTime      | AUTO UPDATE     | Last update timestamp     |
-
-**Relationships**:
-
-- `box`: Box (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[boxId, createdAt]`
-
-**Design Notes**:
-
-- Audit trail for box lifecycle actions
-- Actions: CREATE, START, STOP, RESTART, DELETE, CLONE
-- Async execution tracked via status
-- Error messages for troubleshooting
-
----
-
-### AgentTask
-
-Browser automation task queue.
-
-**Table Name**: `agent_tasks`
-
-| Column    | Type      | Constraints     | Description                       |
-| --------- | --------- | --------------- | --------------------------------- |
-| id        | String    | PRIMARY KEY     | Unique task identifier            |
-| boxId     | String    | FK → Box.id     | Associated box ID                 |
-| type      | String    | NOT NULL        | Task type (NAVIGATE, CLICK, TYPE) |
-| payload   | Json?     | NULL            | Task parameters                   |
-| status    | JobStatus | DEFAULT PENDING | Task execution status             |
-| result    | Json?     | NULL            | Task execution result             |
-| error     | String?   | NULL            | Error message if failed           |
-| createdAt | DateTime  | DEFAULT now()   | Task creation timestamp           |
-| updatedAt | DateTime  | AUTO UPDATE     | Last update timestamp             |
-
-**Relationships**:
-
-- `box`: Box (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[boxId, status]` (task queue)
-
-**Design Notes**:
-
-- Task queue for browser automation
-- Payload stores action-specific parameters (e.g., URL, selector)
-- Result stores extracted data or screenshots
-- Status enables async task processing
-
----
-
-### BoxMessage
-
-Chat conversation between user and browser agent.
-
-**Table Name**: `box_messages`
-
-| Column    | Type           | Constraints   | Description               |
-| --------- | -------------- | ------------- | ------------------------- |
-| id        | String         | PRIMARY KEY   | Unique message identifier |
-| boxId     | String         | FK → Box.id   | Associated box ID         |
-| role      | BoxMessageRole | NOT NULL      | Message sender role       |
-| content   | String         | NOT NULL      | Message content           |
-| createdAt | DateTime       | DEFAULT now() | Message timestamp         |
-
-**Relationships**:
-
-- `box`: Box (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[boxId, createdAt]` (chat history)
-
-**Design Notes**:
-
-- Chat interface for browser agent interaction
-- Roles: USER (user input), AGENT (AI response), SYSTEM (status messages)
-- Used to build LLM conversation context
-- Messages ordered chronologically per box
-
----
-
-## Campaign Analytics
-
-### VisitorSession
-
-Anonymous visitor tracking with UTM parameters.
-
-**Table Name**: `visitor_sessions`
-
-| Column        | Type      | Constraints   | Description                         |
-| ------------- | --------- | ------------- | ----------------------------------- |
-| id            | String    | PRIMARY KEY   | Unique session identifier           |
-| visitorId     | String    | NOT NULL      | Anonymous fingerprint/cookie ID     |
-| userId        | String?   | FK → User.id  | Linked user ID after signup         |
-| sessionStart  | DateTime  | DEFAULT now() | Session start timestamp             |
-| sessionEnd    | DateTime? | NULL          | Session end timestamp               |
-| deviceType    | String?   | NULL          | Device type (mobile/tablet/desktop) |
-| browser       | String?   | NULL          | Browser name                        |
-| os            | String?   | NULL          | Operating system                    |
-| ipCountry     | String?   | NULL          | ISO 2-letter country code           |
-| ipCity        | String?   | NULL          | City name                           |
-| referrer      | String?   | NULL          | Full referrer URL                   |
-| landingPage   | String    | NOT NULL      | First page of session               |
-| exitPage      | String?   | NULL          | Last page of session                |
-| pageViewCount | Int       | DEFAULT 0     | Number of page views                |
-| utmSource     | String?   | NULL          | UTM source parameter                |
-| utmMedium     | String?   | NULL          | UTM medium parameter                |
-| utmCampaign   | String?   | NULL          | UTM campaign parameter              |
-| utmTerm       | String?   | NULL          | UTM term parameter                  |
-| utmContent    | String?   | NULL          | UTM content parameter               |
-| gclid         | String?   | NULL          | Google Click ID                     |
-| fbclid        | String?   | NULL          | Facebook Click ID                   |
-
-**Relationships**:
-
-- `user`: User? (FK, SET NULL on delete)
-- `pageViews`: PageView[]
-- `events`: AnalyticsEvent[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Index on `visitorId`
-- Index on `userId`
-- Index on `utmCampaign`
-- Index on `utmSource`
-- Index on `sessionStart`
-- Index on `gclid`
-- Index on `fbclid`
-
-**Design Notes**:
-
-- Tracks anonymous visitors before and after signup
-- UTM parameters for campaign attribution
-- Click IDs enable direct platform ROI tracking
-- IP geolocation for geographic analytics
-- Sessions linked to users upon signup/login
-
----
-
-### PageView
-
-Individual page view tracking within sessions.
-
-**Table Name**: `page_views`
-
-| Column      | Type     | Constraints     | Description                 |
-| ----------- | -------- | --------------- | --------------------------- |
-| id          | String   | PRIMARY KEY     | Unique page view identifier |
-| sessionId   | String   | FK → Session.id | Associated session ID       |
-| path        | String   | NOT NULL        | Page path (URL path)        |
-| title       | String?  | NULL            | Page title                  |
-| timestamp   | DateTime | DEFAULT now()   | Page view timestamp         |
-| timeOnPage  | Int?     | NULL            | Seconds spent on page       |
-| scrollDepth | Int?     | NULL            | Percentage scrolled (0-100) |
-
-**Relationships**:
-
-- `session`: VisitorSession (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[sessionId, timestamp]`
-- Index on `path`
-
-**Design Notes**:
-
-- Detailed page-level analytics
-- Time on page calculated from next page view
-- Scroll depth for engagement metrics
-- Used to identify popular content
-
----
-
-### AnalyticsEvent
-
-Custom event tracking for user behavior.
-
-**Table Name**: `analytics_events`
-
-| Column    | Type     | Constraints     | Description                            |
-| --------- | -------- | --------------- | -------------------------------------- |
-| id        | String   | PRIMARY KEY     | Unique event identifier                |
-| sessionId | String   | FK → Session.id | Associated session ID                  |
-| name      | String   | NOT NULL        | Event name (e.g., "signup_started")    |
-| category  | String?  | NULL            | Event category (conversion/engagement) |
-| value     | Float?   | NULL            | Numeric value (tokens/revenue)         |
-| metadata  | Json?    | NULL            | Additional event data                  |
-| timestamp | DateTime | DEFAULT now()   | Event timestamp                        |
-
-**Relationships**:
-
-- `session`: VisitorSession (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[sessionId, timestamp]`
-- Index on `name`
-- Index on `category`
-
-**Design Notes**:
-
-- Custom event tracking for conversion funnel
-- Value field for revenue/token tracking
-- Metadata stores event-specific data
-- Category enables event grouping
-
----
-
-### CampaignAttribution
-
-Links users to marketing campaigns for ROI tracking.
-
-**Table Name**: `campaign_attributions`
-
-| Column             | Type            | Constraints   | Description                        |
-| ------------------ | --------------- | ------------- | ---------------------------------- |
-| id                 | String          | PRIMARY KEY   | Unique attribution identifier      |
-| userId             | String          | FK → User.id  | Converted user ID                  |
-| sessionId          | String          | NOT NULL      | Session ID (not FK)                |
-| attributionType    | AttributionType | NOT NULL      | Attribution model                  |
-| platform           | String?         | NULL          | Platform (FACEBOOK/GOOGLE_ADS/etc) |
-| externalCampaignId | String?         | NULL          | External campaign ID               |
-| utmCampaign        | String?         | NULL          | UTM campaign parameter             |
-| utmSource          | String?         | NULL          | UTM source parameter               |
-| utmMedium          | String?         | NULL          | UTM medium parameter               |
-| conversionType     | ConversionType  | NOT NULL      | Conversion type enum               |
-| conversionValue    | Float?          | NULL          | Token/revenue value                |
-| convertedAt        | DateTime        | DEFAULT now() | Conversion timestamp               |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Index on `userId`
-- Index on `utmCampaign`
-- Index on `externalCampaignId`
-- Index on `convertedAt`
-- Index on `conversionType`
-- Index on `attributionType`
-
-**Design Notes**:
-
-- Attribution models: FIRST_TOUCH, LAST_TOUCH
-- Conversion types: SIGNUP, ENHANCEMENT, PURCHASE
-- External campaign ID links to Facebook/Google Ads
-- Used to calculate campaign ROI
-- Session ID stored but not FK (sessions may be purged)
-
----
-
-### CampaignMetricsCache
-
-Cached campaign metrics for dashboard performance.
-
-**Table Name**: `campaign_metrics_cache`
-
-| Column     | Type     | Constraints     | Description                    |
-| ---------- | -------- | --------------- | ------------------------------ |
-| id         | String   | PRIMARY KEY     | Unique cache identifier        |
-| cacheKey   | String   | UNIQUE NOT NULL | Cache key (date range + model) |
-| metrics    | Json     | NOT NULL        | Cached metrics data            |
-| computedAt | DateTime | DEFAULT now()   | Computation timestamp          |
-| expiresAt  | DateTime | NOT NULL        | Cache expiration timestamp     |
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `cacheKey`
-- Index on `expiresAt`
-
-**Design Notes**:
-
-- Caches expensive campaign metric calculations
-- Cache key format: "overview:2024-01-01:2024-01-31:first_touch"
-- Expires after 1 hour (configurable)
-- Improves dashboard load time
-
----
-
-### CampaignLink
-
-Maps UTM campaigns to external platform campaign IDs.
-
-**Table Name**: `campaign_links`
-
-| Column               | Type     | Constraints   | Description                    |
-| -------------------- | -------- | ------------- | ------------------------------ |
-| id                   | String   | PRIMARY KEY   | Unique link identifier         |
-| utmCampaign          | String   | NOT NULL      | UTM campaign parameter         |
-| platform             | String   | NOT NULL      | Platform (FACEBOOK/GOOGLE_ADS) |
-| externalCampaignId   | String   | NOT NULL      | External campaign ID           |
-| externalCampaignName | String?  | NULL          | Campaign name from platform    |
-| createdAt            | DateTime | DEFAULT now() | Link creation timestamp        |
-| updatedAt            | DateTime | AUTO UPDATE   | Last update timestamp          |
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE composite index on `[utmCampaign, platform]`
-- Index on `platform`
-- Index on `externalCampaignId`
-
-**Design Notes**:
-
-- Links internal UTM parameters to external platforms
-- Enables ROI calculation from platform APIs
-- Updated automatically when campaign detected
-- Supports multi-platform campaigns
-
----
-
-## Audio Mixer
-
-### AudioMixerProject
-
-Audio mixing project container.
-
-**Table Name**: `audio_mixer_projects`
-
-| Column      | Type     | Constraints   | Description                |
-| ----------- | -------- | ------------- | -------------------------- |
-| id          | String   | PRIMARY KEY   | Unique project identifier  |
-| userId      | String   | FK → User.id  | Project owner ID           |
-| name        | String   | NOT NULL      | Project display name       |
-| description | String?  | NULL          | Project description        |
-| createdAt   | DateTime | DEFAULT now() | Project creation timestamp |
-| updatedAt   | DateTime | AUTO UPDATE   | Last update timestamp      |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-- `tracks`: AudioTrack[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[userId, createdAt]`
-
-**Design Notes**:
-
-- Container for audio mixing projects
-- Each project contains multiple audio tracks
-- Supports browser-based audio mixing
-
----
-
-### AudioTrack
-
-Individual audio tracks within mixing projects.
-
-**Table Name**: `audio_tracks`
-
-| Column        | Type             | Constraints     | Description                 |
-| ------------- | ---------------- | --------------- | --------------------------- |
-| id            | String           | PRIMARY KEY     | Unique track identifier     |
-| projectId     | String           | FK → Project.id | Associated project ID       |
-| name          | String           | NOT NULL        | Track display name          |
-| fileUrl       | String?          | NULL            | R2 public URL               |
-| fileR2Key     | String?          | NULL            | R2 storage key              |
-| fileFormat    | String           | NOT NULL        | Audio format (wav/mp3/webm) |
-| duration      | Float            | NOT NULL        | Duration in seconds         |
-| fileSizeBytes | Int              | NOT NULL        | File size in bytes          |
-| volume        | Float            | DEFAULT 1.0     | Track volume (0.0-1.0)      |
-| muted         | Boolean          | DEFAULT false   | Mute status                 |
-| solo          | Boolean          | DEFAULT false   | Solo status                 |
-| sortOrder     | Int              | DEFAULT 0       | Track display order         |
-| storageType   | AudioStorageType | DEFAULT R2      | Storage location (R2/OPFS)  |
-| createdAt     | DateTime         | DEFAULT now()   | Track creation timestamp    |
-| updatedAt     | DateTime         | AUTO UPDATE     | Last update timestamp       |
-
-**Relationships**:
-
-- `project`: AudioMixerProject (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[projectId, sortOrder]`
-
-**Design Notes**:
-
-- Storage types: R2 (server), OPFS (browser local)
-- Volume range 0.0 (silent) to 1.0 (full)
-- Solo isolates track for editing
-- Sort order allows track reordering
-
----
-
-## Merchandise & Print-on-Demand
-
-### MerchCategory
-
-Product category organization.
-
-**Table Name**: `merch_categories`
-
-| Column      | Type     | Constraints     | Description                 |
-| ----------- | -------- | --------------- | --------------------------- |
-| id          | String   | PRIMARY KEY     | Unique category identifier  |
-| name        | String   | UNIQUE NOT NULL | Category display name       |
-| slug        | String   | UNIQUE NOT NULL | URL-friendly slug           |
-| description | String?  | NULL            | Category description        |
-| icon        | String?  | NULL            | Icon identifier             |
-| sortOrder   | Int      | DEFAULT 0       | Display order               |
-| isActive    | Boolean  | DEFAULT true    | Category visibility         |
-| createdAt   | DateTime | DEFAULT now()   | Category creation timestamp |
-| updatedAt   | DateTime | AUTO UPDATE     | Last update timestamp       |
-
-**Relationships**:
-
-- `products`: MerchProduct[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `name`
-- UNIQUE index on `slug`
-- Composite index on `[isActive, sortOrder]`
-
-**Design Notes**:
-
-- Categories: Prints, Canvas, Framed, etc.
-- Slug used in URLs (/shop/canvas)
-- Inactive categories hidden but products preserved
-
----
-
-### MerchProduct
-
-Print-on-demand product catalog.
-
-**Table Name**: `merch_products`
-
-| Column          | Type          | Constraints      | Description                |
-| --------------- | ------------- | ---------------- | -------------------------- |
-| id              | String        | PRIMARY KEY      | Unique product identifier  |
-| name            | String        | NOT NULL         | Product display name       |
-| description     | String?       | NULL             | Product description        |
-| categoryId      | String        | FK → Category.id | Product category ID        |
-| provider        | PodProvider   | NOT NULL         | POD provider enum          |
-| providerSku     | String        | NOT NULL         | External SKU from provider |
-| basePrice       | Decimal(10,2) | NOT NULL         | Cost from provider         |
-| retailPrice     | Decimal(10,2) | NOT NULL         | Selling price to customer  |
-| currency        | String        | DEFAULT "GBP"    | Currency code              |
-| isActive        | Boolean       | DEFAULT true     | Product availability       |
-| minDpi          | Int           | DEFAULT 150      | Minimum image DPI          |
-| minWidth        | Int           | DEFAULT 1800     | Minimum image width (px)   |
-| minHeight       | Int           | DEFAULT 1800     | Minimum image height (px)  |
-| printAreaWidth  | Int?          | NULL             | Print area width (px)      |
-| printAreaHeight | Int?          | NULL             | Print area height (px)     |
-| mockupTemplate  | String?       | NULL             | Mockup overlay image URL   |
-| sortOrder       | Int           | DEFAULT 0        | Display order in category  |
-| createdAt       | DateTime      | DEFAULT now()    | Product creation timestamp |
-| updatedAt       | DateTime      | AUTO UPDATE      | Last update timestamp      |
-
-**Relationships**:
-
-- `category`: MerchCategory (FK)
-- `variants`: MerchVariant[]
-- `cartItems`: MerchCartItem[]
-- `orderItems`: MerchOrderItem[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[categoryId, isActive]`
-- Composite index on `[provider, providerSku]`
-- Composite index on `[isActive, sortOrder]`
-
-**Design Notes**:
-
-- Multi-provider support (Prodigi, Printful)
-- Image requirements ensure print quality
-- Mockup template for product visualization
-- Margin = retailPrice - basePrice
-
----
-
-### MerchVariant
-
-Product size/color/material variants.
-
-**Table Name**: `merch_variants`
-
-| Column      | Type          | Constraints     | Description                       |
-| ----------- | ------------- | --------------- | --------------------------------- |
-| id          | String        | PRIMARY KEY     | Unique variant identifier         |
-| productId   | String        | FK → Product.id | Associated product ID             |
-| name        | String        | NOT NULL        | Variant name ("30x40cm", "Black") |
-| providerSku | String        | NOT NULL        | Provider-specific variant SKU     |
-| priceDelta  | Decimal(10,2) | DEFAULT 0       | Price adjustment from base        |
-| isActive    | Boolean       | DEFAULT true    | Variant availability              |
-| attributes  | Json?         | NULL            | Variant attributes JSON           |
-| createdAt   | DateTime      | DEFAULT now()   | Variant creation timestamp        |
-| updatedAt   | DateTime      | AUTO UPDATE     | Last update timestamp             |
-
-**Relationships**:
-
-- `product`: MerchProduct (FK, CASCADE on delete)
-- `cartItems`: MerchCartItem[]
-- `orderItems`: MerchOrderItem[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[productId, isActive]`
-
-**Design Notes**:
-
-- Flexible variant system via attributes JSON
-- Price delta adds/subtracts from product base price
-- Separate provider SKUs for each variant
-- Examples: sizes (30x40cm), colors (Black/White), materials (Canvas/Photo
-  Paper)
-
----
-
-### MerchCart
-
-User shopping cart (one per user).
-
-**Table Name**: `merch_carts`
-
-| Column    | Type     | Constraints   | Description              |
-| --------- | -------- | ------------- | ------------------------ |
-| id        | String   | PRIMARY KEY   | Unique cart identifier   |
-| userId    | String   | UNIQUE FK     | Associated user ID (1:1) |
-| createdAt | DateTime | DEFAULT now() | Cart creation timestamp  |
-| updatedAt | DateTime | AUTO UPDATE   | Last update timestamp    |
-
-**Relationships**:
-
-- `user`: User (1:1, CASCADE on delete)
-- `items`: MerchCartItem[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `userId`
-
-**Design Notes**:
-
-- One cart per user (1:1 relationship)
-- Cart persists across sessions
-- Cascade delete removes cart items when cart deleted
-
----
-
-### MerchCartItem
-
-Items in shopping cart.
-
-**Table Name**: `merch_cart_items`
-
-| Column             | Type     | Constraints     | Description                 |
-| ------------------ | -------- | --------------- | --------------------------- |
-| id                 | String   | PRIMARY KEY     | Unique cart item identifier |
-| cartId             | String   | FK → Cart.id    | Associated cart ID          |
-| productId          | String   | FK → Product.id | Product ID                  |
-| variantId          | String?  | FK → Variant.id | Variant ID (optional)       |
-| imageId            | String?  | FK → Image.id   | User's existing image ID    |
-| uploadedImageR2Key | String?  | NULL            | Direct upload R2 key        |
-| uploadedImageUrl   | String?  | NULL            | Direct upload public URL    |
-| quantity           | Int      | DEFAULT 1       | Item quantity               |
-| customText         | String?  | NULL            | Personalization text        |
-| createdAt          | DateTime | DEFAULT now()   | Item added timestamp        |
-| updatedAt          | DateTime | AUTO UPDATE     | Last update timestamp       |
-
-**Relationships**:
-
-- `cart`: MerchCart (FK, CASCADE on delete)
-- `product`: MerchProduct (FK)
-- `variant`: MerchVariant? (FK, optional)
-- `image`: EnhancedImage? (FK, optional)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE composite index on
-  `[cartId, productId, variantId, imageId, uploadedImageR2Key]`
-- Index on `cartId`
-- Index on `productId`
-
-**Design Notes**:
-
-- Image source: either existing user image OR direct upload
-- Unique constraint prevents duplicate cart items
-- Custom text for personalized products
-- Quantity > 1 for bulk orders
-
----
-
-### MerchOrder
-
-Customer orders for merchandise.
-
-**Table Name**: `merch_orders`
-
-| Column                | Type             | Constraints     | Description                     |
-| --------------------- | ---------------- | --------------- | ------------------------------- |
-| id                    | String           | PRIMARY KEY     | Unique order identifier         |
-| userId                | String           | FK → User.id    | Customer user ID                |
-| orderNumber           | String           | UNIQUE NOT NULL | Human-readable order number     |
-| status                | MerchOrderStatus | DEFAULT PENDING | Order lifecycle status          |
-| subtotal              | Decimal(10,2)    | NOT NULL        | Items total before shipping/tax |
-| shippingCost          | Decimal(10,2)    | NOT NULL        | Shipping cost                   |
-| taxAmount             | Decimal(10,2)    | DEFAULT 0       | Tax amount                      |
-| totalAmount           | Decimal(10,2)    | NOT NULL        | Grand total                     |
-| currency              | String           | DEFAULT "GBP"   | Currency code                   |
-| stripePaymentIntentId | String?          | UNIQUE NULL     | Stripe Payment Intent ID        |
-| stripePaymentStatus   | String?          | NULL            | Stripe payment status           |
-| shippingAddress       | Json             | NOT NULL        | Shipping address JSON           |
-| billingAddress        | Json?            | NULL            | Billing address JSON            |
-| customerEmail         | String           | NOT NULL        | Customer email                  |
-| customerPhone         | String?          | NULL            | Customer phone number           |
-| notes                 | String?          | NULL            | Order notes                     |
-| createdAt             | DateTime         | DEFAULT now()   | Order creation timestamp        |
-| updatedAt             | DateTime         | AUTO UPDATE     | Last update timestamp           |
-| paidAt                | DateTime?        | NULL            | Payment completion timestamp    |
-
-**Relationships**:
-
-- `user`: User (FK)
-- `items`: MerchOrderItem[]
-- `shipments`: MerchShipment[]
-- `events`: MerchOrderEvent[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `orderNumber`
-- UNIQUE index on `stripePaymentIntentId`
-- Composite index on `[userId, createdAt]`
-- Index on `status`
-
-**Design Notes**:
-
-- Order lifecycle: PENDING → PAID → SUBMITTED → IN_PRODUCTION → SHIPPED →
-  DELIVERED
-- Addresses stored as JSON for flexibility
-- Stripe payment intent for payment processing
-- paidAt tracks actual payment timestamp
-
----
-
-### MerchOrderItem
-
-Line items in orders (immutable snapshot).
-
-**Table Name**: `merch_order_items`
-
-| Column      | Type          | Constraints      | Description                   |
-| ----------- | ------------- | ---------------- | ----------------------------- |
-| id          | String        | PRIMARY KEY      | Unique order item identifier  |
-| orderId     | String        | FK → Order.id    | Associated order ID           |
-| productId   | String        | FK → Product.id  | Product ID (reference only)   |
-| variantId   | String?       | FK → Variant.id  | Variant ID (reference only)   |
-| productName | String        | NOT NULL         | Product name snapshot         |
-| variantName | String?       | NULL             | Variant name snapshot         |
-| imageUrl    | String        | NOT NULL         | Image URL snapshot            |
-| imageR2Key  | String        | NOT NULL         | Image R2 key for POD          |
-| quantity    | Int           | NOT NULL         | Item quantity                 |
-| unitPrice   | Decimal(10,2) | NOT NULL         | Unit price snapshot           |
-| totalPrice  | Decimal(10,2) | NOT NULL         | Total price (unit × quantity) |
-| customText  | String?       | NULL             | Personalization text          |
-| podOrderId  | String?       | NULL             | Provider order ID             |
-| podStatus   | String?       | NULL             | Provider-specific status      |
-| createdAt   | DateTime      | DEFAULT now()    | Item creation timestamp       |
-| updatedAt   | DateTime      | AUTO UPDATE      | Last update timestamp         |
-| shipmentId  | String?       | FK → Shipment.id | Associated shipment ID        |
-
-**Relationships**:
-
-- `order`: MerchOrder (FK, CASCADE on delete)
-- `product`: MerchProduct (FK, reference only)
-- `variant`: MerchVariant? (FK, reference only)
-- `shipment`: MerchShipment? (FK, optional)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Index on `orderId`
-- Index on `podOrderId`
-
-**Design Notes**:
-
-- Immutable snapshot of product/variant/price at order time
-- Product/variant FKs for reference only (prices/names snapshotted)
-- Image R2 key for POD provider submission
-- POD order ID tracks external fulfillment
-
----
-
-### MerchShipment
-
-Shipment tracking for order fulfillment.
-
-**Table Name**: `merch_shipments`
-
-| Column         | Type           | Constraints     | Description                  |
-| -------------- | -------------- | --------------- | ---------------------------- |
-| id             | String         | PRIMARY KEY     | Unique shipment identifier   |
-| orderId        | String         | FK → Order.id   | Associated order ID          |
-| provider       | PodProvider    | NOT NULL        | POD provider enum            |
-| providerShipId | String?        | NULL            | Provider's shipment ID       |
-| carrier        | String?        | NULL            | Carrier name (FedEx/UPS/etc) |
-| trackingNumber | String?        | NULL            | Tracking number              |
-| trackingUrl    | String?        | NULL            | Tracking URL                 |
-| status         | ShipmentStatus | DEFAULT PENDING | Shipment status enum         |
-| shippedAt      | DateTime?      | NULL            | Shipment timestamp           |
-| deliveredAt    | DateTime?      | NULL            | Delivery timestamp           |
-| createdAt      | DateTime       | DEFAULT now()   | Shipment creation timestamp  |
-| updatedAt      | DateTime       | AUTO UPDATE     | Last update timestamp        |
-
-**Relationships**:
-
-- `order`: MerchOrder (FK, CASCADE on delete)
-- `items`: MerchOrderItem[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Index on `orderId`
-- Index on `trackingNumber`
-
-**Design Notes**:
-
-- One order can have multiple shipments (split fulfillment)
-- Tracking info from POD provider webhooks
-- Status lifecycle: PENDING → PROCESSING → SHIPPED → IN_TRANSIT → DELIVERED
-- Delivery updates via carrier webhooks
-
----
-
-### MerchOrderEvent
-
-Audit trail for order lifecycle events.
-
-**Table Name**: `merch_order_events`
-
-| Column    | Type     | Constraints   | Description             |
-| --------- | -------- | ------------- | ----------------------- |
-| id        | String   | PRIMARY KEY   | Unique event identifier |
-| orderId   | String   | FK → Order.id | Associated order ID     |
-| type      | String   | NOT NULL      | Event type              |
-| data      | Json?    | NULL          | Event-specific data     |
-| createdAt | DateTime | DEFAULT now() | Event timestamp         |
-
-**Relationships**:
-
-- `order`: MerchOrder (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[orderId, createdAt]`
-
-**Design Notes**:
-
-- Immutable audit trail for order events
-- Event types: ORDER_CREATED, PAYMENT_AUTHORIZED, PAYMENT_CAPTURED,
-  SUBMITTED_TO_POD, etc.
-- Data field stores event-specific details
-- Used for order history timeline
-
----
-
-### MerchWebhookEvent
-
-Webhook event deduplication and processing.
-
-**Table Name**: `merch_webhook_events`
-
-| Column      | Type      | Constraints     | Description                        |
-| ----------- | --------- | --------------- | ---------------------------------- |
-| id          | String    | PRIMARY KEY     | Unique webhook event identifier    |
-| provider    | String    | NOT NULL        | Provider (STRIPE/PRODIGI/PRINTFUL) |
-| eventId     | String    | UNIQUE NOT NULL | External event ID (deduplication)  |
-| eventType   | String    | NOT NULL        | Event type                         |
-| processed   | Boolean   | DEFAULT false   | Processing status                  |
-| payload     | Json      | NOT NULL        | Full webhook payload               |
-| processedAt | DateTime? | NULL            | Processing completion timestamp    |
-| createdAt   | DateTime  | DEFAULT now()   | Webhook receipt timestamp          |
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `eventId`
-- Composite index on `[provider, eventType]`
-- Composite index on `[processed, createdAt]`
-
-**Design Notes**:
-
-- Prevents duplicate webhook processing
-- Stores raw payload for debugging
-- Async processing via background jobs
-- Retention policy: purge after 90 days
-
----
-
-## External Agent Integration
-
-### ExternalAgentSession
-
-Jules/Codex agent coding session tracking.
-
-**Table Name**: `external_agent_sessions`
-
-| Column         | Type                | Constraints     | Description                 |
-| -------------- | ------------------- | --------------- | --------------------------- |
-| id             | String              | PRIMARY KEY     | Unique session identifier   |
-| externalId     | String              | UNIQUE NOT NULL | External session ID         |
-| provider       | AgentProvider       | DEFAULT JULES   | Agent provider enum         |
-| name           | String              | NOT NULL        | Task name/title             |
-| description    | String?             | NULL            | Task description            |
-| status         | ExternalAgentStatus | NOT NULL        | Session status enum         |
-| sourceRepo     | String?             | NULL            | Source repository           |
-| startingBranch | String?             | NULL            | Starting git branch         |
-| outputBranch   | String?             | NULL            | Output git branch           |
-| pullRequestUrl | String?             | NULL            | Created PR URL              |
-| planSummary    | String?             | NULL            | Agent's implementation plan |
-| planApprovedAt | DateTime?           | NULL            | Plan approval timestamp     |
-| lastActivityAt | DateTime?           | NULL            | Last activity timestamp     |
-| errorMessage   | String?             | NULL            | Error details if failed     |
-| metadata       | Json?               | NULL            | Provider-specific data      |
-| createdAt      | DateTime            | DEFAULT now()   | Session creation timestamp  |
-| updatedAt      | DateTime            | AUTO UPDATE     | Last update timestamp       |
-
-**Relationships**:
-
-- `activities`: AgentSessionActivity[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `externalId`
-- Composite index on `[provider, status]`
-- Composite index on `[status, lastActivityAt]`
-
-**Design Notes**:
-
-- Integrates external AI coding agents (Jules, Codex)
-- Tracks async coding tasks in external systems
-- Status lifecycle: QUEUED → PLANNING → AWAITING_PLAN_APPROVAL → IN_PROGRESS →
-  COMPLETED/FAILED
-- Pull request URL for code review
-- Metadata stores provider-specific data
-
----
-
-### AgentSessionActivity
-
-Activity stream for agent sessions.
-
-**Table Name**: `agent_session_activities`
-
-| Column     | Type     | Constraints     | Description                |
-| ---------- | -------- | --------------- | -------------------------- |
-| id         | String   | PRIMARY KEY     | Unique activity identifier |
-| sessionId  | String   | FK → Session.id | Associated session ID      |
-| externalId | String?  | NULL            | External activity ID       |
-| type       | String   | NOT NULL        | Activity type              |
-| content    | String?  | NULL            | Activity description       |
-| metadata   | Json?    | NULL            | Activity-specific data     |
-| createdAt  | DateTime | DEFAULT now()   | Activity timestamp         |
-
-**Relationships**:
-
-- `session`: ExternalAgentSession (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[sessionId, createdAt]`
-
-**Design Notes**:
-
-- Activity types: user_message, plan_generated, code_committed, etc.
-- Content stores human-readable activity description
-- Ordered chronologically for activity timeline
-- Used to display agent progress to user
-
----
-
-## System & Audit
-
-### AuditLog
-
-Audit trail for admin actions.
-
-**Table Name**: `audit_logs`
-
-| Column    | Type        | Constraints   | Description           |
-| --------- | ----------- | ------------- | --------------------- |
-| id        | String      | PRIMARY KEY   | Unique log identifier |
-| userId    | String      | FK → User.id  | Admin user ID         |
-| action    | AuditAction | NOT NULL      | Action type enum      |
-| targetId  | String?     | NULL          | Target entity ID      |
-| metadata  | Json?       | NULL          | Action details        |
-| ipAddress | String?     | NULL          | Admin IP address      |
-| createdAt | DateTime    | DEFAULT now() | Action timestamp      |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Index on `userId`
-- Index on `action`
-- Index on `targetId`
-- Index on `createdAt`
-
-**Design Notes**:
-
-- Immutable audit trail for compliance
-- Action types: ROLE_CHANGE, TOKEN_ADJUSTMENT, VOUCHER_CREATE, etc.
-- Target ID references affected entity
-- IP address for security audit
-- Retention: indefinite
-
----
-
-### ErrorLog
-
-Error logging for application monitoring.
-
-**Table Name**: `error_logs`
-
-| Column       | Type             | Constraints   | Description                |
-| ------------ | ---------------- | ------------- | -------------------------- |
-| id           | String           | PRIMARY KEY   | Unique error identifier    |
-| timestamp    | DateTime         | DEFAULT now() | Error occurrence timestamp |
-| message      | String           | NOT NULL      | Error message              |
-| stack        | String?          | NULL          | Stack trace                |
-| sourceFile   | String?          | NULL          | Source file path           |
-| sourceLine   | Int?             | NULL          | Source line number         |
-| sourceColumn | Int?             | NULL          | Source column number       |
-| callerName   | String?          | NULL          | Function/method name       |
-| userId       | String?          | NULL          | User ID (if applicable)    |
-| route        | String?          | NULL          | API route or page path     |
-| environment  | ErrorEnvironment | NOT NULL      | Environment enum           |
-| errorType    | String?          | NULL          | Error type/class name      |
-| errorCode    | String?          | NULL          | Custom error code          |
-| metadata     | Json?            | NULL          | Additional error context   |
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Index on `timestamp`
-- Index on `sourceFile`
-- Index on `errorType`
-- Index on `environment`
-
-**Design Notes**:
-
-- Captures frontend (browser) and backend (server) errors
-- Source maps for stack trace resolution
-- Metadata stores request context, user agent, etc.
-- Retention: 30 days
-- Used for error monitoring and debugging
-
----
-
-### Feedback
-
-User-submitted feedback and bug reports.
-
-**Table Name**: `feedback`
-
-| Column    | Type           | Constraints   | Description                      |
-| --------- | -------------- | ------------- | -------------------------------- |
-| id        | String         | PRIMARY KEY   | Unique feedback identifier       |
-| userId    | String?        | FK → User.id  | User ID (optional for anonymous) |
-| email     | String?        | NULL          | Contact email                    |
-| type      | FeedbackType   | NOT NULL      | Feedback type enum               |
-| message   | String         | NOT NULL      | Feedback message                 |
-| page      | String         | NOT NULL      | Page where feedback submitted    |
-| userAgent | String?        | NULL          | Browser user agent               |
-| status    | FeedbackStatus | DEFAULT NEW   | Processing status                |
-| adminNote | String?        | NULL          | Admin response notes             |
-| createdAt | DateTime       | DEFAULT now() | Feedback submission timestamp    |
-| updatedAt | DateTime       | AUTO UPDATE   | Last update timestamp            |
-
-**Relationships**:
-
-- `user`: User? (FK, SET NULL on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Index on `userId`
-- Index on `status`
-- Index on `type`
-- Index on `createdAt`
-
-**Design Notes**:
-
-- Supports anonymous feedback (NULL userId)
-- Types: BUG, IDEA, OTHER
-- Status workflow: NEW → REVIEWED → RESOLVED/DISMISSED
-- Admin notes for internal tracking
-- Email optional for follow-up
-
----
-
-### Voucher
-
-Promotional voucher codes.
-
-**Table Name**: `vouchers`
-
-| Column      | Type          | Constraints     | Description                     |
-| ----------- | ------------- | --------------- | ------------------------------- |
-| id          | String        | PRIMARY KEY     | Unique voucher identifier       |
-| code        | String        | UNIQUE NOT NULL | Voucher code (case-insensitive) |
-| type        | VoucherType   | NOT NULL        | Voucher type enum               |
-| value       | Int           | NOT NULL        | Voucher value (tokens or %)     |
-| maxUses     | Int?          | NULL            | Maximum redemptions (NULL = ∞)  |
-| currentUses | Int           | DEFAULT 0       | Current redemption count        |
-| expiresAt   | DateTime?     | NULL            | Expiration timestamp            |
-| status      | VoucherStatus | DEFAULT ACTIVE  | Voucher status enum             |
-| metadata    | Json?         | NULL            | Additional voucher data         |
-| createdAt   | DateTime      | DEFAULT now()   | Voucher creation timestamp      |
-| updatedAt   | DateTime      | AUTO UPDATE     | Last update timestamp           |
-
-**Relationships**:
-
-- `redemptions`: VoucherRedemption[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `code`
-- Composite index on `[status, expiresAt]`
-
-**Design Notes**:
-
-- Types: FIXED_TOKENS, PERCENTAGE_BONUS, SUBSCRIPTION_TRIAL
-- Status: ACTIVE, INACTIVE, EXPIRED, DEPLETED
-- Code stored uppercase for case-insensitive lookup
-- Unlimited use vouchers have NULL maxUses
-- Metadata for campaign tracking
-
----
-
-### VoucherRedemption
-
-Voucher redemption history.
-
-**Table Name**: `voucher_redemptions`
-
-| Column        | Type     | Constraints     | Description                  |
-| ------------- | -------- | --------------- | ---------------------------- |
-| id            | String   | PRIMARY KEY     | Unique redemption identifier |
-| voucherId     | String   | FK → Voucher.id | Voucher ID                   |
-| userId        | String   | FK → User.id    | User who redeemed            |
-| tokensGranted | Int      | NOT NULL        | Tokens granted to user       |
-| redeemedAt    | DateTime | DEFAULT now()   | Redemption timestamp         |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-- `voucher`: Voucher (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE composite index on `[voucherId, userId]` (one redemption per user)
-- Composite index on `[userId, redeemedAt]`
-
-**Design Notes**:
-
-- One redemption per user per voucher
-- Tokens granted calculated at redemption time
-- Immutable audit trail
-- Links to token transactions
-
----
-
-### Referral
-
-Referral program tracking.
-
-**Table Name**: `referrals`
-
-| Column        | Type           | Constraints     | Description                      |
-| ------------- | -------------- | --------------- | -------------------------------- |
-| id            | String         | PRIMARY KEY     | Unique referral identifier       |
-| referrerId    | String         | FK → User.id    | Referrer user ID                 |
-| refereeId     | String         | FK → User.id    | Referee user ID                  |
-| status        | ReferralStatus | DEFAULT PENDING | Referral status enum             |
-| tokensGranted | Int            | DEFAULT 0       | Tokens granted to referrer       |
-| ipAddress     | String?        | NULL            | Referee IP address (fraud check) |
-| createdAt     | DateTime       | DEFAULT now()   | Referral creation timestamp      |
-| completedAt   | DateTime?      | NULL            | Completion timestamp             |
-
-**Relationships**:
-
-- `referrer`: User (FK, CASCADE on delete)
-- `referee`: User (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE composite index on `[referrerId, refereeId]` (prevents duplicate
-  referrals)
-- Composite index on `[referrerId, status]`
-- Index on `refereeId`
-- Composite index on `[status, createdAt]`
-
-**Design Notes**:
-
-- Status: PENDING → COMPLETED (when referee completes action) or INVALID (fraud
-  detected)
-- Tokens granted when status = COMPLETED
-- IP address used for fraud detection
-- One referral per referee
-
----
-
-### EmailLog
-
-Email communication history and tracking.
-
-**Table Name**: `email_logs`
-
-| Column    | Type        | Constraints   | Description                |
-| --------- | ----------- | ------------- | -------------------------- |
-| id        | String      | PRIMARY KEY   | Unique email identifier    |
-| userId    | String      | FK → User.id  | Recipient user ID          |
-| to        | String      | NOT NULL      | Recipient email address    |
-| subject   | String      | NOT NULL      | Email subject line         |
-| template  | String      | NOT NULL      | Email template name        |
-| status    | EmailStatus | DEFAULT SENT  | Email delivery status      |
-| resendId  | String?     | UNIQUE NULL   | Resend email ID            |
-| sentAt    | DateTime    | DEFAULT now() | Send timestamp             |
-| openedAt  | DateTime?   | NULL          | Open timestamp (tracking)  |
-| clickedAt | DateTime?   | NULL          | Click timestamp (tracking) |
-| bouncedAt | DateTime?   | NULL          | Bounce timestamp           |
-| metadata  | Json?       | NULL          | Additional email data      |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `resendId`
-- Index on `userId`
-- Index on `status`
-- Index on `sentAt`
-- Index on `template`
-
-**Design Notes**:
-
-- Email provider: Resend
-- Status: PENDING → SENT → DELIVERED → OPENED → CLICKED
-- Bounce tracking for email deliverability
-- Template-based email system
-- Metadata stores dynamic email data
-
----
-
-### TrackedUrl
-
-Custom URL tracking for analytics.
-
-**Table Name**: `tracked_urls`
-
-| Column      | Type     | Constraints     | Description               |
-| ----------- | -------- | --------------- | ------------------------- |
-| id          | String   | PRIMARY KEY     | Unique URL identifier     |
-| path        | String   | UNIQUE NOT NULL | URL path (without domain) |
-| label       | String?  | NULL            | Human-readable label      |
-| isActive    | Boolean  | DEFAULT true    | Tracking enabled status   |
-| createdAt   | DateTime | DEFAULT now()   | URL creation timestamp    |
-| updatedAt   | DateTime | AUTO UPDATE     | Last update timestamp     |
-| createdById | String   | FK → User.id    | Creator user ID           |
-
-**Relationships**:
-
-- `createdBy`: User (FK, CASCADE on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `path`
-- Index on `isActive`
-
-**Design Notes**:
-
-- Tracks custom landing pages and campaigns
-- Path stored without domain (e.g., "/promo/summer2024")
-- Used in campaign attribution
-- Label for dashboard display
-
----
-
-### ApiKey
-
-API keys for MCP generation access.
-
-**Table Name**: `api_keys`
-
-| Column     | Type      | Constraints     | Description                   |
-| ---------- | --------- | --------------- | ----------------------------- |
-| id         | String    | PRIMARY KEY     | Unique key identifier         |
-| userId     | String    | FK → User.id    | Key owner user ID             |
-| name       | String    | NOT NULL        | Key display name              |
-| keyHash    | String    | UNIQUE NOT NULL | Hashed API key                |
-| keyPrefix  | String    | NOT NULL        | Key prefix for identification |
-| lastUsedAt | DateTime? | NULL            | Last usage timestamp          |
-| isActive   | Boolean   | DEFAULT true    | Key active status             |
-| createdAt  | DateTime  | DEFAULT now()   | Key creation timestamp        |
-| updatedAt  | DateTime  | AUTO UPDATE     | Last update timestamp         |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-- `mcpGenerationJobs`: McpGenerationJob[]
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- UNIQUE index on `keyHash`
-- Composite index on `[userId, isActive]`
-
-**Design Notes**:
-
-- Only hash stored (never plain text)
-- Prefix shown to user for identification (e.g., "sk_live_abc...")
-- Last used for activity monitoring
-- Inactive keys rejected at authentication
-
----
-
-### McpGenerationJob
-
-MCP API image generation jobs.
-
-**Table Name**: `mcp_generation_jobs`
-
-| Column                | Type            | Constraints    | Description                     |
-| --------------------- | --------------- | -------------- | ------------------------------- |
-| id                    | String          | PRIMARY KEY    | Unique job identifier           |
-| userId                | String          | FK → User.id   | Job owner user ID               |
-| apiKeyId              | String?         | FK → ApiKey.id | API key used (optional)         |
-| type                  | McpJobType      | NOT NULL       | Job type enum                   |
-| tier                  | EnhancementTier | NOT NULL       | Enhancement quality tier        |
-| tokensCost            | Int             | NOT NULL       | Tokens consumed                 |
-| status                | JobStatus       | NOT NULL       | Job status enum                 |
-| prompt                | String          | NOT NULL       | Generation prompt               |
-| inputImageUrl         | String?         | NULL           | Input image URL (modify type)   |
-| inputImageR2Key       | String?         | NULL           | Input image R2 key              |
-| outputImageUrl        | String?         | NULL           | Output image URL                |
-| outputImageR2Key      | String?         | NULL           | Output image R2 key             |
-| outputWidth           | Int?            | NULL           | Output width in pixels          |
-| outputHeight          | Int?            | NULL           | Output height in pixels         |
-| outputSizeBytes       | Int?            | NULL           | Output file size                |
-| errorMessage          | String?         | NULL           | Error details if failed         |
-| geminiModel           | String?         | NULL           | Gemini model used               |
-| processingStartedAt   | DateTime?       | NULL           | Processing start timestamp      |
-| processingCompletedAt | DateTime?       | NULL           | Processing completion timestamp |
-| createdAt             | DateTime        | DEFAULT now()  | Job creation timestamp          |
-| updatedAt             | DateTime        | AUTO UPDATE    | Last update timestamp           |
-
-**Relationships**:
-
-- `user`: User (FK, CASCADE on delete)
-- `apiKey`: ApiKey? (FK, SET NULL on delete)
-
-**Indexes**:
-
-- PRIMARY KEY on `id`
-- Composite index on `[userId, status, createdAt]`
-- Index on `apiKeyId`
-- Composite index on `[status, updatedAt]`
-
-**Design Notes**:
-
-- Job types: GENERATE (text-to-image), MODIFY (image-to-image)
-- API key optional (can be created via UI)
-- Token cost deducted when job created
-- Supports Gemini 3 Flash and Pro image models
-
----
-
-## Enumerations
-
-### UserRole
-
-- `USER` - Standard user account
-- `ADMIN` - Administrator with elevated privileges
-- `SUPER_ADMIN` - Super administrator with full access
-
-### MarketingPlatform
-
-- `FACEBOOK` - Facebook Ads platform
-- `GOOGLE_ADS` - Google Ads platform
-
-### AppStatus
-
-- `DRAFT` - App under development
-- `ACTIVE` - Published and accessible
-- `ARCHIVED` - No longer active but preserved
-- `DELETED` - Soft deleted
-
-### RequirementPriority
-
-- `LOW` - Nice to have
-- `MEDIUM` - Should have
-- `HIGH` - Must have
-- `CRITICAL` - Blocking issue
-
-### RequirementStatus
-
-- `PENDING` - Not started
-- `IN_PROGRESS` - Currently being worked on
-- `COMPLETED` - Finished and deployed
-- `REJECTED` - Will not implement
-
-### MonetizationType
-
-- `FREE` - No cost
-- `ONE_TIME` - Single payment
-- `SUBSCRIPTION` - Recurring payment
-- `FREEMIUM` - Free with paid upgrades
-- `USAGE_BASED` - Pay per use
-
-### SubscriptionInterval
-
-- `MONTHLY` - Billed monthly
-- `QUARTERLY` - Billed every 3 months
-- `YEARLY` - Billed annually
-
-### VoucherType
-
-- `FIXED_TOKENS` - Grant fixed number of tokens
-- `PERCENTAGE_BONUS` - Percentage bonus on purchase
-- `SUBSCRIPTION_TRIAL` - Free subscription trial
-
-### VoucherStatus
-
-- `ACTIVE` - Available for redemption
-- `INACTIVE` - Disabled by admin
-- `EXPIRED` - Past expiration date
-- `DEPLETED` - Maximum uses reached
-
-### TokenTransactionType
-
-- `EARN_REGENERATION` - Monthly token regeneration
-- `EARN_PURCHASE` - Token package purchase
-- `EARN_BONUS` - Referral or promotional bonus
-- `EARN_ADMIN_ADJUSTMENT` - Manual admin adjustment
-- `SPEND_ENHANCEMENT` - Image enhancement cost
-- `SPEND_MCP_GENERATION` - MCP API generation cost
-- `SPEND_BOX_CREATION` - Browser box creation cost
-- `REFUND` - Token refund
-
-### McpJobType
-
-- `GENERATE` - Text-to-image generation
-- `MODIFY` - Image-to-image modification
-
-### StripePaymentStatus
-
-- `PENDING` - Payment intent created
-- `SUCCEEDED` - Payment completed
-- `FAILED` - Payment failed
-- `REFUNDED` - Payment refunded
-
-### EnhancementTier
-
-- `FREE` - Free tier (limited quality)
-- `TIER_1K` - 1024px output (2 tokens)
-- `TIER_2K` - 2048px output (5 tokens)
-- `TIER_4K` - 4096px output (10 tokens)
-
-### JobStatus
-
-- `PENDING` - Job queued
-- `PROCESSING` - Job in progress
-- `COMPLETED` - Job finished successfully
-- `FAILED` - Job failed
-- `REFUNDED` - Job failed and refunded
-- `CANCELLED` - Job cancelled by user
-
-### PipelineStage
-
-- `ANALYZING` - Image analysis with vision model
-- `CROPPING` - Auto-crop based on analysis
-- `PROMPTING` - Build dynamic enhancement prompt
-- `GENERATING` - Gemini API image generation
-
-### SubscriptionStatus
-
-- `ACTIVE` - Subscription active
-- `CANCELED` - Subscription cancelled
-- `PAST_DUE` - Payment failed
-- `UNPAID` - Payment not received
-- `TRIALING` - In trial period
-
-### SubscriptionTier
-
-- `FREE` - Free tier
-- `BASIC` - Basic subscription
-- `STANDARD` - Standard subscription
-- `PREMIUM` - Premium subscription
-
-### AlbumPrivacy
-
-- `PRIVATE` - Visible only to owner
-- `UNLISTED` - Accessible via share link
-- `PUBLIC` - Visible in public gallery
-
-### ReferralStatus
-
-- `PENDING` - Awaiting completion
-- `COMPLETED` - Referral completed
-- `INVALID` - Fraud detected
-
-### AuditAction
-
-- `ROLE_CHANGE` - User role modified
-- `TOKEN_ADJUSTMENT` - Manual token adjustment
-- `VOUCHER_CREATE` - Voucher created
-- `VOUCHER_UPDATE` - Voucher updated
-- `VOUCHER_DELETE` - Voucher deleted
-- `USER_DELETE` - User deleted
-- `ADMIN_LOGIN` - Admin logged in
-
-### FeedbackType
-
-- `BUG` - Bug report
-- `IDEA` - Feature idea
-- `OTHER` - Other feedback
-
-### FeedbackStatus
-
-- `NEW` - Not yet reviewed
-- `REVIEWED` - Reviewed by admin
-- `RESOLVED` - Issue resolved
-- `DISMISSED` - Dismissed
-
-### ErrorEnvironment
-
-- `FRONTEND` - Browser/client-side error
-- `BACKEND` - Server-side error
-
-### GalleryCategory
-
-- `PORTRAIT` - Portrait photography
-- `LANDSCAPE` - Landscape photography
-- `PRODUCT` - Product photography
-- `ARCHITECTURE` - Architecture photography
-
-### EmailStatus
-
-- `PENDING` - Email queued
-- `SENT` - Email sent
-- `DELIVERED` - Email delivered
-- `OPENED` - Email opened
-- `CLICKED` - Link clicked
-- `BOUNCED` - Email bounced
-- `FAILED` - Delivery failed
-
-### BoxStatus
-
-- `CREATING` - Box being created
-- `STARTING` - Box starting up
-- `RUNNING` - Box running
-- `PAUSED` - Box paused
-- `STOPPING` - Box shutting down
-- `STOPPED` - Box stopped
-- `TERMINATED` - Box terminated
-- `ERROR` - Box in error state
-
-### BoxActionType
-
-- `CREATE` - Create new box
-- `START` - Start stopped box
-- `STOP` - Stop running box
-- `RESTART` - Restart box
-- `DELETE` - Delete box
-- `CLONE` - Clone box
-
-### BoxMessageRole
-
-- `USER` - User message
-- `AGENT` - AI agent message
-- `SYSTEM` - System message
-
-### PipelineVisibility
-
-- `PRIVATE` - Only owner can use
-- `PUBLIC` - Anyone can use/fork
-- `LINK` - Accessible via share token
-
-### AudioStorageType
-
-- `R2` - Cloudflare R2 storage
-- `OPFS` - Browser Origin Private File System
-
-### AttributionType
-
-- `FIRST_TOUCH` - First campaign touchpoint
-- `LAST_TOUCH` - Last campaign touchpoint
-
-### ConversionType
-
-- `SIGNUP` - User signup
-- `ENHANCEMENT` - Image enhancement
-- `PURCHASE` - Token purchase
-
-### PodProvider
-
-- `PRODIGI` - Prodigi print-on-demand
-- `PRINTFUL` - Printful print-on-demand
-
-### MerchOrderStatus
-
-- `PENDING` - Order created, awaiting payment
-- `PAYMENT_PENDING` - Payment authorized
-- `PAID` - Payment captured
-- `SUBMITTED` - Sent to POD provider
-- `IN_PRODUCTION` - Being manufactured
-- `SHIPPED` - In transit
-- `DELIVERED` - Delivered
-- `CANCELLED` - Cancelled
-- `REFUNDED` - Fully refunded
-
-### ShipmentStatus
-
-- `PENDING` - Shipment pending
-- `PROCESSING` - Being processed
-- `SHIPPED` - Shipped
-- `IN_TRANSIT` - In transit
-- `OUT_FOR_DELIVERY` - Out for delivery
-- `DELIVERED` - Delivered
-- `FAILED` - Delivery failed
-
-### AgentProvider
-
-- `JULES` - Jules coding agent
-- `CODEX` - Codex coding agent
-- `OTHER` - Other agent provider
-
-### ExternalAgentStatus
-
-- `QUEUED` - Task queued
-- `PLANNING` - Agent planning
-- `AWAITING_PLAN_APPROVAL` - Waiting for plan approval
-- `AWAITING_USER_FEEDBACK` - Waiting for user feedback
-- `IN_PROGRESS` - Task in progress
-- `PAUSED` - Task paused
-- `FAILED` - Task failed
-- `COMPLETED` - Task completed
-
----
-
-## Indexes & Performance
-
-### Index Strategy
-
-The database employs a comprehensive indexing strategy optimized for common
-query patterns:
-
-#### Primary Keys
-
-- All tables use CUID (Collision-resistant Unique Identifier) for primary keys
-- CUIDs are URL-safe, sortable, and globally unique
-- Enables efficient distributed ID generation without central coordination
-
-#### Foreign Key Indexes
-
-- All foreign keys automatically indexed for join performance
-- Composite indexes on frequently joined columns
-- Example: `[userId, createdAt]` for user timeline queries
-
-#### Status Field Indexes
-
-- Status fields indexed for filtering active/pending items
-- Composite indexes like `[status, updatedAt]` for job queues
-- Example: Image enhancement jobs filtered by status and ordered by update time
-
-#### Unique Constraints
-
-- Email addresses (nullable unique)
-- Session tokens
-- Share tokens
-- Stripe IDs
-- OAuth provider combinations
-- Voucher codes
-
-#### Composite Indexes
-
-Optimized for common query patterns:
-
-- `[userId, status, createdAt]` - User's jobs by status timeline
-- `[isPublic, createdAt]` - Public gallery chronological view
-- `[albumId, sortOrder]` - Album image ordering
-- `[status, currentStage]` - Pipeline stage filtering for SSE streaming
-
-### Query Optimization Guidelines
-
-1. **Use `select` to limit returned fields**
-   ```typescript
-   const user = await prisma.user.findUnique({
-     where: { id },
-     select: { id: true, name: true, email: true },
-   });
-   ```
-
-2. **Use `include` judiciously to avoid N+1 queries**
-   ```typescript
-   const albums = await prisma.album.findMany({
-     include: {
-       albumImages: {
-         include: { image: true },
-         orderBy: { sortOrder: "asc" },
-       },
-     },
-   });
-   ```
-
-3. **Implement pagination for large result sets**
-   ```typescript
-   const images = await prisma.enhancedImage.findMany({
-     take: 20,
-     skip: (page - 1) * 20,
-     orderBy: { createdAt: "desc" },
-   });
-   ```
-
-4. **Use database-level limits**
-   - Connection pool size: 10-20 connections (Neon serverless)
-   - Query timeout: 30 seconds
-   - Statement timeout: 60 seconds
-
-### Connection Pooling
-
-- **Provider**: Neon serverless PostgreSQL with connection pooling
-- **Pool Configuration**:
-  - Min connections: 0 (serverless auto-scaling)
-  - Max connections: 10 per instance
-  - Idle timeout: 10 seconds
-  - Connection lifetime: 1 hour
-
-- **Best Practices**:
-  - Use Prisma's built-in connection pooling
-  - Close connections properly in serverless functions
-  - Reuse Prisma Client instances across requests
-  - Monitor connection usage via Neon dashboard
-
----
-
-## Security Considerations
-
-### Sensitive Data Protection
-
-1. **Access Tokens**
-   - OAuth access/refresh tokens stored as TEXT
-   - Should be encrypted at application layer using AES-256-GCM
-   - Encryption keys managed via environment variables
-   - Token rotation enforced by OAuth providers
-
-2. **Session Tokens**
-   - Treated as secrets (never logged)
-   - HTTPS-only transmission
-   - Secure, HttpOnly cookies
-   - Automatic expiration via NextAuth.js
-
-3. **API Keys**
-   - Only hashed values stored (SHA-256)
-   - Prefix stored for user identification
-   - Never returned in API responses
-   - Revocable via user dashboard
-
-4. **Password Hashes**
-   - bcrypt with cost factor 12
-   - Salted automatically by bcrypt
-   - Only for credential-based authentication
-   - Never exposed in API responses
-
-### Database Security Recommendations
-
-1. **Encryption at Rest**
-   - Enable PostgreSQL native encryption
-   - Neon provides automatic encryption at rest
-   - Backup encryption enabled by default
-
-2. **Encryption in Transit**
-   - SSL/TLS required for all connections
-   - Minimum TLS 1.2
-   - Certificate validation enforced
-
-3. **Access Control**
-   - Principle of least privilege for database roles
-   - Separate read-only role for analytics
-   - Connection credentials rotated quarterly
-   - IP allowlisting for production database
-
-4. **Audit Logging**
-   - All admin actions logged to `audit_logs`
-   - Token adjustments tracked
-   - User deletions recorded
-   - IP addresses logged for security events
-
-5. **SQL Injection Prevention**
-   - Parameterized queries via Prisma (automatic)
-   - No raw SQL in application code
-   - Input validation at API layer
-   - Type safety via TypeScript
-
----
-
-## Scalability
-
-### Vertical Scaling
-
-Current schema supports:
-
-- **100K+ users** on single instance
-- **10M+ images** with partitioning
-- **1M+ jobs/day** with optimized indexes
-
-Scaling recommendations:
-
-- Add read replicas for read-heavy workloads
-- Implement table partitioning for very large tables (>10M rows)
-- Use materialized views for complex analytics queries
-
-### Horizontal Scaling
-
-Schema designed for sharding by `userId`:
-
-- User-centric data model enables clean partitioning
-- Each shard contains complete user data
-- Cross-shard queries minimized via denormalization
-
-### Caching Strategy
-
-1. **Application-Level Caching**
-   - Redis for session data (NextAuth.js)
-   - User token balances cached (5-minute TTL)
-   - Public gallery cached (1-hour TTL)
-   - Campaign metrics cached (1-hour TTL)
-
-2. **Database Query Caching**
-   - Neon serverless includes automatic query caching
-   - Frequently accessed data cached at edge
-   - Cache invalidation via Prisma middleware
-
-3. **CDN Caching**
-   - R2 object storage with Cloudflare CDN
-   - Image URLs cached at edge locations
-   - Aggressive caching for immutable assets
-
----
-
-## Migration Strategy
-
-### Backward Compatibility
-
-Always follow these steps for schema changes:
-
-1. **Add new column (nullable)**
-   ```sql
-   ALTER TABLE users ADD COLUMN new_field TEXT;
-   ```
-
-2. **Deploy code that writes to both old and new columns**
-   ```typescript
-   await prisma.user.update({
-     data: { oldField: value, newField: value },
-   });
-   ```
-
-3. **Backfill old data**
-   ```sql
-   UPDATE users SET new_field = old_field WHERE new_field IS NULL;
-   ```
-
-4. **Deploy code that reads from new column**
-   ```typescript
-   const value = user.newField;
-   ```
-
-5. **Make column required (if needed)**
-   ```sql
-   ALTER TABLE users ALTER COLUMN new_field SET NOT NULL;
-   ```
-
-6. **Remove old column (optional)**
-   ```sql
-   ALTER TABLE users DROP COLUMN old_field;
-   ```
-
-### Zero-Downtime Deployments
-
-Multi-phase migration example:
-
-**Phase 1: Add New Field**
-
-```prisma
-model User {
-  // ... existing fields
-  newField String? // Nullable initially
+> Generated by [`prisma-markdown`](https://github.com/samchon/prisma-markdown)
+
+- [default](#default)
+
+## default
+
+```mermaid
+erDiagram
+"users" {
+  String id PK
+  String name "nullable"
+  String email UK "nullable"
+  DateTime emailVerified "nullable"
+  String image "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+  String stripeCustomerId UK "nullable"
+  UserRole role
+  String referralCode UK "nullable"
+  String referredById FK "nullable"
+  Int referralCount
+  String passwordHash "nullable"
 }
-```
-
-**Phase 2: Dual Write**
-
-- Application writes to both fields
-- No breaking changes to existing queries
-
-**Phase 3: Backfill**
-
-```typescript
-await prisma.$executeRaw`
-  UPDATE users
-  SET new_field = old_field
-  WHERE new_field IS NULL
-`;
-```
-
-**Phase 4: Cut Over**
-
-- Switch reads to new field
-- Monitor for errors
-
-**Phase 5: Cleanup**
-
-- Remove old field
-- Remove dual-write code
-
-### Migration Tools
-
-- **Prisma Migrate**: Schema migration management
-- **Migration Files**: SQL migration files in `prisma/migrations/`
-- **Shadow Database**: Temporary database for migration validation
-- **Migration History**: `_prisma_migrations` table tracks applied migrations
-
----
-
-## Version History
-
-### v2.0.0 (2025-12-30)
-
-- **COMPREHENSIVE UPDATE**: Complete documentation overhaul
-- Added detailed descriptions for all 55+ tables
-- Documented all relationships and indexes
-- Added 30+ enumerations with descriptions
-- Expanded security considerations
-- Added scalability guidelines
-- Enhanced migration strategy
-- Updated to Prisma 7.2.0
-- Added merchandise/print-on-demand system (11 tables)
-- Added external agent integration (2 tables)
-- Added campaign analytics system (6 tables)
-- Added audio mixer system (2 tables)
-- Enhanced enhancement pipeline with multi-stage processing
-
-### v1.0.0 (2025-01-23)
-
-- Initial schema documentation
-- Core models: User, App, Requirement, MonetizationModel
-- Basic authentication via NextAuth.js
-- Token system foundation
-- Image enhancement basics
-
----
-
-## Appendix
-
-### Sample Queries
-
-**Get user with all enhancement jobs:**
-
-```typescript
-const user = await prisma.user.findUnique({
-  where: { id: userId },
-  include: {
-    enhancementJobs: {
-      where: { status: "COMPLETED" },
-      include: { image: true },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    },
-  },
-});
-```
-
-**Get public albums with images:**
-
-```typescript
-const albums = await prisma.album.findMany({
-  where: { privacy: "PUBLIC" },
-  include: {
-    albumImages: {
-      include: { image: true },
-      orderBy: { sortOrder: "asc" },
-    },
-  },
-  orderBy: { createdAt: "desc" },
-});
-```
-
-**Get campaign attribution for date range:**
-
-```typescript
-const attributions = await prisma.campaignAttribution.findMany({
-  where: {
-    convertedAt: {
-      gte: startDate,
-      lte: endDate,
-    },
-    attributionType: "FIRST_TOUCH",
-  },
-  include: { user: true },
-});
-```
-
-**Get merchandise order with items and shipments:**
-
-```typescript
-const order = await prisma.merchOrder.findUnique({
-  where: { id: orderId },
-  include: {
-    items: {
-      include: {
-        product: true,
-        variant: true,
-      },
-    },
-    shipments: true,
-    events: { orderBy: { createdAt: "desc" } },
-  },
-});
-```
-
-### Database Statistics Queries
-
-**Table sizes:**
-
-```sql
-SELECT
-  schemaname,
-  tablename,
-  pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size,
-  pg_size_pretty(pg_relation_size(schemaname||'.'||tablename)) AS table_size,
-  pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename) - pg_relation_size(schemaname||'.'||tablename)) AS index_size
-FROM pg_tables
-WHERE schemaname = 'public'
-ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
-```
-
-**Row counts:**
-
-```sql
-SELECT
-  schemaname,
-  tablename,
-  n_live_tup as row_count,
-  n_tup_ins as inserts,
-  n_tup_upd as updates,
-  n_tup_del as deletes
-FROM pg_stat_user_tables
-WHERE schemaname = 'public'
-ORDER BY n_live_tup DESC;
-```
-
-**Index usage:**
-
-```sql
-SELECT
-  schemaname,
-  tablename,
-  indexname,
-  idx_scan as scans,
-  idx_tup_read as tuples_read,
-  idx_tup_fetch as tuples_fetched
-FROM pg_stat_user_indexes
-WHERE schemaname = 'public'
-ORDER BY idx_scan DESC;
-```
-
-**Unused indexes:**
-
-```sql
-SELECT
-  schemaname,
-  tablename,
-  indexname,
-  pg_size_pretty(pg_relation_size(indexrelid)) as index_size
-FROM pg_stat_user_indexes
-WHERE schemaname = 'public'
-  AND idx_scan = 0
-  AND indexrelname NOT LIKE '%_pkey'
-ORDER BY pg_relation_size(indexrelid) DESC;
-```
-
----
-
-## Brand Brain (AI Content Guardian)
-
-Brand Brain is the AI-powered content governance system that ensures all
-generated content aligns with brand identity, guidelines, and vocabulary.
-
-### Models
-
-#### BrandProfile
-
-Core brand identity configuration linked 1:1 to a Workspace.
-
-| Column            | Type      | Description                                                           |
-| ----------------- | --------- | --------------------------------------------------------------------- |
-| `id`              | TEXT (PK) | CUID primary key                                                      |
-| `workspaceId`     | TEXT (UK) | Unique foreign key to workspaces                                      |
-| `name`            | TEXT      | Brand display name                                                    |
-| `mission`         | TEXT      | Brand mission statement                                               |
-| `values`          | JSONB     | Array of brand values e.g. `["innovation", "trust"]`                  |
-| `toneDescriptors` | JSONB     | Voice slider values e.g. `{"formalCasual": 50, "seriousPlayful": 30}` |
-| `logoUrl`         | TEXT      | URL to brand logo (R2 storage)                                        |
-| `logoR2Key`       | TEXT      | R2 storage key for logo deletion                                      |
-| `colorPalette`    | JSONB     | Array of brand colors e.g. `[{"name": "Primary", "hex": "#FF5733"}]`  |
-| `version`         | INTEGER   | Schema version for tracking changes (default: 1)                      |
-| `isActive`        | BOOLEAN   | Enable/disable the profile (default: true)                            |
-| `createdById`     | TEXT (FK) | User who created the profile                                          |
-| `updatedById`     | TEXT (FK) | User who last updated the profile                                     |
-| `createdAt`       | TIMESTAMP | Creation timestamp                                                    |
-| `updatedAt`       | TIMESTAMP | Last update timestamp                                                 |
-
-**Relationships:**
-
-- Workspace (1:1, CASCADE delete)
-- User as creator (RESTRICT delete)
-- User as updater (SET NULL on delete)
-- BrandGuardrail (1:N)
-- BrandVocabulary (1:N)
-
-#### BrandGuardrail
-
-Content rules and restrictions for brand compliance.
-
-| Column           | Type              | Description                                      |
-| ---------------- | ----------------- | ------------------------------------------------ |
-| `id`             | TEXT (PK)         | CUID primary key                                 |
-| `brandProfileId` | TEXT (FK)         | Foreign key to brand_profiles                    |
-| `type`           | GuardrailType     | Rule type (see enums below)                      |
-| `name`           | TEXT              | Human-readable rule name                         |
-| `description`    | TEXT              | Detailed rule description                        |
-| `severity`       | GuardrailSeverity | Rule severity level (default: MEDIUM)            |
-| `ruleConfig`     | JSONB             | Flexible rule configuration (keywords, patterns) |
-| `isActive`       | BOOLEAN           | Enable/disable the rule (default: true)          |
-| `createdAt`      | TIMESTAMP         | Creation timestamp                               |
-| `updatedAt`      | TIMESTAMP         | Last update timestamp                            |
-
-**Relationships:**
-
-- BrandProfile (N:1, CASCADE delete)
-
-#### BrandVocabulary
-
-Preferred and banned words/phrases for consistent brand voice.
-
-| Column           | Type           | Description                              |
-| ---------------- | -------------- | ---------------------------------------- |
-| `id`             | TEXT (PK)      | CUID primary key                         |
-| `brandProfileId` | TEXT (FK)      | Foreign key to brand_profiles            |
-| `type`           | VocabularyType | Entry type (see enums below)             |
-| `term`           | TEXT           | The word or phrase                       |
-| `replacement`    | TEXT           | Replacement term (for REPLACEMENT type)  |
-| `context`        | TEXT           | When this rule applies                   |
-| `isActive`       | BOOLEAN        | Enable/disable the entry (default: true) |
-| `createdAt`      | TIMESTAMP      | Creation timestamp                       |
-| `updatedAt`      | TIMESTAMP      | Last update timestamp                    |
-
-**Relationships:**
-
-- BrandProfile (N:1, CASCADE delete)
-
-**Indexes:**
-
-- GIN index on `term` using pg_trgm for full-text search
-
-### Enums
-
-```typescript
-enum GuardrailType {
-  PROHIBITED_TOPIC    // Topics that must never be discussed
-  REQUIRED_DISCLOSURE // Disclosures that must be included
-  CONTENT_WARNING     // Content that requires warnings
+"campaign_briefs" {
+  String id PK
+  String userId FK
+  String name
+  Json targetAudience
+  Json campaignObjectives
+  String status
+  DateTime createdAt
+  DateTime updatedAt
 }
-
-enum GuardrailSeverity {
-  LOW      // Informational, soft warning
-  MEDIUM   // Should be addressed, but not blocking
-  HIGH     // Must be addressed, blocking in strict mode
-  CRITICAL // Always blocking, immediate escalation
+"accounts" {
+  String id PK
+  String userId FK
+  String type
+  String provider
+  String providerAccountId
+  String refresh_token "nullable"
+  String access_token "nullable"
+  Int expires_at "nullable"
+  String token_type "nullable"
+  String scope "nullable"
+  String id_token "nullable"
+  String session_state "nullable"
 }
-
-enum VocabularyType {
-  PREFERRED   // Use these terms
-  BANNED      // Avoid these terms
-  REPLACEMENT // Use X instead of Y
+"marketing_accounts" {
+  String id PK
+  String userId FK
+  MarketingPlatform platform
+  String accountId
+  String accountName "nullable"
+  String accessToken
+  String refreshToken "nullable"
+  DateTime expiresAt "nullable"
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
 }
+"google_ads_campaigns" {
+  String id PK
+  String marketingAccountId FK
+  String campaignId UK
+  String name
+  String status
+  Int spend
+  DateTime createdAt
+  DateTime updatedAt
+}
+"sessions" {
+  String id PK
+  String sessionToken UK
+  String userId FK
+  DateTime expires
+}
+"verification_tokens" {
+  String identifier
+  String token UK
+  DateTime expires
+}
+"apps" {
+  String id PK
+  String name
+  String slug UK "nullable"
+  String description "nullable"
+  String userId FK
+  String forkedFrom FK "nullable"
+  AppBuildStatus status
+  String domain UK "nullable"
+  String codespaceId UK "nullable"
+  String codespaceUrl "nullable"
+  Boolean isCurated
+  Boolean isPublic
+  DateTime lastAgentActivity "nullable"
+  DateTime deletedAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"requirements" {
+  String id PK
+  String appId FK
+  String description
+  RequirementPriority priority
+  RequirementStatus status
+  Int version
+  DateTime createdAt
+  DateTime updatedAt
+}
+"monetization_models" {
+  String id PK
+  String appId FK
+  MonetizationType type
+  Decimal(10) price "nullable"
+  SubscriptionInterval subscriptionInterval "nullable"
+  String features
+  DateTime createdAt
+  DateTime updatedAt
+}
+"app_messages" {
+  String id PK
+  String appId FK
+  AppMessageRole role
+  String content
+  Boolean isRead
+  Json metadata "nullable"
+  DateTime deletedAt "nullable"
+  DateTime createdAt
+}
+"app_status_history" {
+  String id PK
+  String appId FK
+  AppBuildStatus status
+  String message "nullable"
+  Json metadata "nullable"
+  DateTime createdAt
+}
+"app_images" {
+  String id PK
+  String appId FK
+  String originalUrl
+  String r2Key
+  Int width
+  Int height
+  Int sizeBytes
+  String format
+  String tags
+  String aiDescription "nullable"
+  Json analysisJson "nullable"
+  DateTime createdAt
+}
+"app_attachments" {
+  String id PK
+  String messageId FK
+  String imageId FK
+  DateTime createdAt
+}
+"app_code_versions" {
+  String id PK
+  String appId FK
+  String messageId FK,UK "nullable"
+  String code
+  String hash
+  String description "nullable"
+  DateTime createdAt
+}
+"user_token_balances" {
+  String id PK
+  String userId FK,UK
+  Int balance
+  DateTime lastRegeneration
+  SubscriptionTier tier
+  DateTime createdAt
+  DateTime updatedAt
+}
+"token_transactions" {
+  String id PK
+  String userId FK
+  Int amount
+  TokenTransactionType type
+  String source "nullable"
+  String sourceId "nullable"
+  Int balanceAfter
+  Json metadata "nullable"
+  DateTime createdAt
+}
+"tokens_packages" {
+  String id PK
+  String name
+  Int tokens
+  Decimal(10) priceUSD
+  String stripePriceId UK
+  Boolean active
+  Int sortOrder
+  DateTime createdAt
+  DateTime updatedAt
+}
+"stripe_payments" {
+  String id PK
+  String userId FK
+  String packageId FK
+  Int tokensGranted
+  Decimal(10) amountUSD
+  String stripePaymentIntentId UK
+  StripePaymentStatus status
+  Json metadata "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"enhanced_images" {
+  String id PK
+  String userId FK
+  String name
+  String description "nullable"
+  String originalUrl
+  String originalR2Key
+  Int originalWidth
+  Int originalHeight
+  Int originalSizeBytes
+  String originalFormat
+  Boolean isPublic
+  Int viewCount
+  DateTime createdAt
+  DateTime updatedAt
+  String shareToken UK "nullable"
+}
+"image_enhancement_jobs" {
+  String id PK
+  String imageId FK
+  String userId FK
+  EnhancementTier tier
+  Int tokensCost
+  JobStatus status
+  PipelineStage currentStage "nullable"
+  String enhancedUrl "nullable"
+  String enhancedR2Key "nullable"
+  Int enhancedWidth "nullable"
+  Int enhancedHeight "nullable"
+  Int enhancedSizeBytes "nullable"
+  String errorMessage "nullable"
+  Int retryCount
+  Int maxRetries
+  String geminiPrompt "nullable"
+  String geminiModel "nullable"
+  Float geminiTemp "nullable"
+  DateTime processingStartedAt "nullable"
+  DateTime processingCompletedAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+  String workflowRunId "nullable"
+  Json analysisResult "nullable"
+  String analysisSource "nullable"
+  String altText "nullable"
+  Float qualityScore "nullable"
+  Boolean wasCropped
+  Json cropDimensions "nullable"
+  String pipelineId FK "nullable"
+  String sourceImageId FK "nullable"
+  Boolean isBlend
+  Boolean isAnonymous
+}
+"subscriptions" {
+  String id PK
+  String userId FK,UK
+  String stripeSubscriptionId UK
+  String stripePriceId
+  SubscriptionStatus status
+  SubscriptionTier tier
+  DateTime currentPeriodStart
+  DateTime currentPeriodEnd
+  Boolean cancelAtPeriodEnd
+  SubscriptionTier downgradeTo "nullable"
+  Int tokensPerMonth
+  Int rolloverTokens
+  Int maxRollover
+  DateTime createdAt
+  DateTime updatedAt
+}
+"subscription_plans" {
+  String id PK
+  String name
+  Int tokensPerMonth
+  Decimal(10) priceGBP
+  String stripePriceId UK
+  Int maxRollover
+  Boolean priority
+  Boolean apiAccess
+  Boolean active
+  Int sortOrder
+  DateTime createdAt
+  DateTime updatedAt
+}
+"albums" {
+  String id PK
+  String userId FK
+  String name
+  String description "nullable"
+  String coverImageId "nullable"
+  AlbumPrivacy privacy
+  EnhancementTier defaultTier
+  String shareToken UK "nullable"
+  Int sortOrder
+  DateTime createdAt
+  DateTime updatedAt
+  String pipelineId FK "nullable"
+}
+"album_images" {
+  String id PK
+  String albumId FK
+  String imageId FK
+  Int sortOrder
+  DateTime addedAt
+}
+"vouchers" {
+  String id PK
+  String code UK
+  VoucherType type
+  Int value
+  Int maxUses "nullable"
+  Int currentUses
+  DateTime expiresAt "nullable"
+  VoucherStatus status
+  Json metadata "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"voucher_redemptions" {
+  String id PK
+  String voucherId FK
+  String userId FK
+  Int tokensGranted
+  DateTime redeemedAt
+}
+"referrals" {
+  String id PK
+  String referrerId FK
+  String refereeId FK
+  ReferralStatus status
+  Int tokensGranted
+  String ipAddress "nullable"
+  DateTime createdAt
+  DateTime completedAt "nullable"
+}
+"audit_logs" {
+  String id PK
+  String userId FK
+  AuditAction action
+  String targetId "nullable"
+  String targetType "nullable"
+  String resourceId "nullable"
+  String resourceType "nullable"
+  Json metadata "nullable"
+  String ipAddress "nullable"
+  String userAgent "nullable"
+  String sessionId "nullable"
+  DateTime createdAt
+}
+"workspace_audit_logs" {
+  String id PK
+  String workspaceId FK
+  String userId FK
+  AuditAction action
+  String targetId "nullable"
+  String targetType "nullable"
+  String resourceId "nullable"
+  String resourceType "nullable"
+  Json oldValue "nullable"
+  Json newValue "nullable"
+  Json metadata "nullable"
+  String ipAddress "nullable"
+  String userAgent "nullable"
+  DateTime createdAt
+}
+"ai_decision_logs" {
+  String id PK
+  String workspaceId FK "nullable"
+  String userId FK "nullable"
+  String requestType
+  String inputPrompt "nullable"
+  Json inputContext "nullable"
+  String outputResult "nullable"
+  Json outputMetadata "nullable"
+  String modelId "nullable"
+  String modelVersion "nullable"
+  Int tokensUsed "nullable"
+  Int latencyMs "nullable"
+  String status
+  String errorMessage "nullable"
+  DateTime createdAt
+}
+"audit_retention_policies" {
+  String id PK
+  String workspaceId FK "nullable"
+  String name
+  String description "nullable"
+  Int retentionDays
+  Int archiveAfterDays "nullable"
+  Int deleteAfterDays "nullable"
+  String actionTypes
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+}
+"archived_audit_logs" {
+  String id PK
+  String originalId
+  String workspaceId "nullable"
+  String userId
+  String action
+  String targetId "nullable"
+  String targetType "nullable"
+  String resourceId "nullable"
+  String resourceType "nullable"
+  Json metadata "nullable"
+  String ipAddress "nullable"
+  String userAgent "nullable"
+  DateTime originalCreatedAt
+  DateTime archivedAt
+  String retentionPolicyId "nullable"
+  String archiveReason "nullable"
+}
+"error_logs" {
+  String id PK
+  DateTime timestamp
+  String message
+  String stack "nullable"
+  String sourceFile "nullable"
+  Int sourceLine "nullable"
+  Int sourceColumn "nullable"
+  String callerName "nullable"
+  String userId "nullable"
+  String route "nullable"
+  ErrorEnvironment environment
+  String errorType "nullable"
+  String errorCode "nullable"
+  Json metadata "nullable"
+}
+"feedback" {
+  String id PK
+  String userId FK "nullable"
+  String email "nullable"
+  FeedbackType type
+  String message
+  String page
+  String userAgent "nullable"
+  FeedbackStatus status
+  String adminNote "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"inbox_suggested_responses" {
+  String id PK
+  String inboxItemId FK
+  String content
+  String tone
+  Float confidenceScore
+  String category
+  Boolean isPreferred
+  Json metadata "nullable"
+  DateTime createdAt
+}
+"escalation_events" {
+  String id PK
+  String inboxItemId FK
+  EscalationEventType eventType
+  Int fromLevel
+  Int toLevel
+  String fromUserId "nullable"
+  String toUserId "nullable"
+  String reason "nullable"
+  EscalationTrigger triggeredBy
+  Json metadata "nullable"
+  DateTime createdAt
+}
+"featured_gallery_items" {
+  String id PK
+  String title
+  String description "nullable"
+  GalleryCategory category
+  String originalUrl
+  String enhancedUrl
+  Int width
+  Int height
+  String sourceImageId FK "nullable"
+  String sourceJobId FK "nullable"
+  Int sortOrder
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+  String createdBy FK
+}
+"box_tiers" {
+  String id PK
+  String name
+  String description "nullable"
+  Int cpu
+  Int ram
+  Int storage
+  Int pricePerHour
+  Int pricePerMonth
+  Boolean isActive
+  Int sortOrder
+  DateTime createdAt
+  DateTime updatedAt
+}
+"boxes" {
+  String id PK
+  String name
+  String description "nullable"
+  String userId FK
+  String tierId FK "nullable"
+  BoxStatus status
+  String connectionUrl "nullable"
+  String storageVolumeId "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+  DateTime deletedAt "nullable"
+}
+"box_actions" {
+  String id PK
+  String boxId FK
+  BoxActionType action
+  JobStatus status
+  Json metadata "nullable"
+  String error "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"agent_tasks" {
+  String id PK
+  String boxId FK
+  String type
+  Json payload "nullable"
+  JobStatus status
+  Json result "nullable"
+  String error "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"sandbox_jobs" {
+  String id PK
+  String appId FK
+  String messageId UK
+  String sandboxId "nullable"
+  String requestId "nullable"
+  SandboxJobStatus status
+  Json result "nullable"
+  String error "nullable"
+  DateTime startedAt
+  DateTime completedAt "nullable"
+}
+"email_logs" {
+  String id PK
+  String userId FK
+  String to
+  String subject
+  String template
+  EmailStatus status
+  String resendId UK "nullable"
+  DateTime sentAt
+  DateTime openedAt "nullable"
+  DateTime clickedAt "nullable"
+  DateTime bouncedAt "nullable"
+  Json metadata "nullable"
+}
+"tracked_urls" {
+  String id PK
+  String path UK
+  String label "nullable"
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+  String createdById FK
+}
+"api_keys" {
+  String id PK
+  String userId FK
+  String name
+  String keyHash UK
+  String keyPrefix
+  DateTime lastUsedAt "nullable"
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+}
+"mcp_generation_jobs" {
+  String id PK
+  String userId FK
+  String apiKeyId FK "nullable"
+  McpJobType type
+  EnhancementTier tier
+  Int tokensCost
+  JobStatus status
+  String prompt
+  String inputImageUrl "nullable"
+  String inputImageR2Key "nullable"
+  String outputImageUrl "nullable"
+  String outputImageR2Key "nullable"
+  Int outputWidth "nullable"
+  Int outputHeight "nullable"
+  Int outputSizeBytes "nullable"
+  String errorMessage "nullable"
+  String geminiModel "nullable"
+  DateTime processingStartedAt "nullable"
+  DateTime processingCompletedAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"box_messages" {
+  String id PK
+  String boxId FK
+  BoxMessageRole role
+  String content
+  DateTime createdAt
+}
+"enhancement_pipelines" {
+  String id PK
+  String name
+  String description "nullable"
+  String userId FK "nullable"
+  PipelineVisibility visibility
+  String shareToken UK "nullable"
+  EnhancementTier tier
+  Json analysisConfig "nullable"
+  Json autoCropConfig "nullable"
+  Json promptConfig "nullable"
+  Json generationConfig "nullable"
+  Int usageCount
+  DateTime createdAt
+  DateTime updatedAt
+}
+"visitor_sessions" {
+  String id PK
+  String visitorId
+  String userId FK "nullable"
+  DateTime sessionStart
+  DateTime sessionEnd "nullable"
+  String deviceType "nullable"
+  String browser "nullable"
+  String os "nullable"
+  String ipCountry "nullable"
+  String ipCity "nullable"
+  String referrer "nullable"
+  String landingPage
+  String exitPage "nullable"
+  Int pageViewCount
+  String utmSource "nullable"
+  String utmMedium "nullable"
+  String utmCampaign "nullable"
+  String utmTerm "nullable"
+  String utmContent "nullable"
+  String gclid "nullable"
+  String fbclid "nullable"
+}
+"page_views" {
+  String id PK
+  String sessionId FK
+  String path
+  String title "nullable"
+  DateTime timestamp
+  Int timeOnPage "nullable"
+  Int scrollDepth "nullable"
+}
+"analytics_events" {
+  String id PK
+  String sessionId FK
+  String name
+  String category "nullable"
+  Float value "nullable"
+  Json metadata "nullable"
+  DateTime timestamp
+}
+"campaign_attributions" {
+  String id PK
+  String userId FK
+  String sessionId
+  String conversionId
+  AttributionType attributionType
+  String platform "nullable"
+  String externalCampaignId "nullable"
+  String utmCampaign "nullable"
+  String utmSource "nullable"
+  String utmMedium "nullable"
+  ConversionType conversionType
+  Float conversionValue "nullable"
+  DateTime convertedAt
+}
+"campaign_metrics_cache" {
+  String id PK
+  String cacheKey UK
+  Json metrics
+  DateTime computedAt
+  DateTime expiresAt
+}
+"campaign_links" {
+  String id PK
+  String utmCampaign
+  String platform
+  String externalCampaignId
+  String externalCampaignName "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"audio_mixer_projects" {
+  String id PK
+  String userId FK
+  String name
+  String description "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"audio_tracks" {
+  String id PK
+  String projectId FK
+  String name
+  String fileUrl "nullable"
+  String fileR2Key "nullable"
+  String fileFormat
+  Float duration
+  Int fileSizeBytes
+  Float volume
+  Boolean muted
+  Boolean solo
+  Int sortOrder
+  AudioStorageType storageType
+  DateTime createdAt
+  DateTime updatedAt
+}
+"merch_categories" {
+  String id PK
+  String name UK
+  String slug UK
+  String description "nullable"
+  String icon "nullable"
+  Int sortOrder
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+}
+"merch_products" {
+  String id PK
+  String name
+  String description "nullable"
+  String categoryId FK
+  PodProvider provider
+  String providerSku
+  Decimal(10) basePrice
+  Decimal(10) retailPrice
+  String currency
+  Boolean isActive
+  Int minDpi
+  Int minWidth
+  Int minHeight
+  Int printAreaWidth "nullable"
+  Int printAreaHeight "nullable"
+  String mockupTemplate "nullable"
+  Int sortOrder
+  DateTime createdAt
+  DateTime updatedAt
+}
+"merch_variants" {
+  String id PK
+  String productId FK
+  String name
+  String providerSku
+  Decimal(10) priceDelta
+  Boolean isActive
+  Json attributes "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"merch_carts" {
+  String id PK
+  String userId FK,UK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"merch_cart_items" {
+  String id PK
+  String cartId FK
+  String productId FK
+  String variantId FK "nullable"
+  String imageId FK "nullable"
+  String uploadedImageR2Key "nullable"
+  String uploadedImageUrl "nullable"
+  Int quantity
+  String customText "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"merch_orders" {
+  String id PK
+  String userId FK
+  String orderNumber UK
+  MerchOrderStatus status
+  Decimal(10) subtotal
+  Decimal(10) shippingCost
+  Decimal(10) taxAmount
+  Decimal(10) totalAmount
+  String currency
+  String stripePaymentIntentId UK "nullable"
+  String stripePaymentStatus "nullable"
+  Json shippingAddress
+  Json billingAddress "nullable"
+  String customerEmail
+  String customerPhone "nullable"
+  String notes "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+  DateTime paidAt "nullable"
+}
+"merch_order_items" {
+  String id PK
+  String orderId FK
+  String productId FK
+  String variantId FK "nullable"
+  String productName
+  String variantName "nullable"
+  String imageUrl
+  String imageR2Key
+  Int quantity
+  Decimal(10) unitPrice
+  Decimal(10) totalPrice
+  String customText "nullable"
+  String podOrderId "nullable"
+  String podStatus "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+  String shipmentId FK "nullable"
+}
+"merch_shipments" {
+  String id PK
+  String orderId FK
+  PodProvider provider
+  String providerShipId "nullable"
+  String carrier "nullable"
+  String trackingNumber "nullable"
+  String trackingUrl "nullable"
+  ShipmentStatus status
+  DateTime shippedAt "nullable"
+  DateTime deliveredAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"merch_order_events" {
+  String id PK
+  String orderId FK
+  String type
+  Json data "nullable"
+  DateTime createdAt
+}
+"merch_webhook_events" {
+  String id PK
+  String provider
+  String eventId UK
+  String eventType
+  Boolean processed
+  Json payload
+  DateTime processedAt "nullable"
+  DateTime createdAt
+}
+"external_agent_sessions" {
+  String id PK
+  String externalId UK
+  AgentProvider provider
+  String name
+  String description "nullable"
+  ExternalAgentStatus status
+  String sourceRepo "nullable"
+  String startingBranch "nullable"
+  String outputBranch "nullable"
+  String pullRequestUrl "nullable"
+  String planSummary "nullable"
+  DateTime planApprovedAt "nullable"
+  DateTime lastActivityAt "nullable"
+  String errorMessage "nullable"
+  Json metadata "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"agent_session_activities" {
+  String id PK
+  String sessionId FK
+  String externalId "nullable"
+  String type
+  String content "nullable"
+  Json metadata "nullable"
+  DateTime createdAt
+}
+"scout_competitors" {
+  String id PK
+  String workspaceId FK
+  SocialPlatform platform
+  String handle
+  String name "nullable"
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+}
+"scout_competitor_posts" {
+  String id PK
+  String competitorId FK
+  String platformPostId
+  String content
+  DateTime postedAt
+  Int likes
+  Int comments
+  Int shares
+  Json metadata "nullable"
+  DateTime createdAt
+}
+"scout_benchmarks" {
+  String id PK
+  String workspaceId FK
+  String period
+  Json ownMetrics
+  Json competitorMetrics
+  DateTime generatedAt
+}
+"social_accounts" {
+  String id PK
+  SocialPlatform platform
+  String accountId
+  String accountName
+  String accessTokenEncrypted
+  String refreshTokenEncrypted "nullable"
+  DateTime tokenExpiresAt "nullable"
+  DateTime connectedAt
+  SocialAccountStatus status
+  Json metadata "nullable"
+  String userId FK
+  String workspaceId FK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"social_posts" {
+  String id PK
+  String content
+  DateTime scheduledAt "nullable"
+  DateTime publishedAt "nullable"
+  SocialPostStatus status
+  Json metadata "nullable"
+  String createdById FK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"social_post_accounts" {
+  String id PK
+  String postId FK
+  String accountId FK
+  String platformPostId "nullable"
+  DateTime publishedAt "nullable"
+  SocialPostStatus status
+  String errorMessage "nullable"
+}
+"social_metrics" {
+  String id PK
+  String accountId FK
+  DateTime date
+  Int followers
+  Int following
+  Int postsCount
+  Decimal(5) engagementRate "nullable"
+  Int impressions
+  Int reach
+  Int likes
+  Int comments
+  Int shares
+  Json rawData "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"social_metric_anomalies" {
+  String id PK
+  String accountId FK
+  String metricType
+  DateTime detectedAt
+  Float currentValue
+  Float expectedValue
+  Float zScore
+  String severity
+  String direction
+  Float percentChange
+  DateTime createdAt
+}
+"workspaces" {
+  String id PK
+  String name
+  String slug UK
+  String description "nullable"
+  String avatarUrl "nullable"
+  Json settings "nullable"
+  Boolean isPersonal
+  DateTime createdAt
+  DateTime updatedAt
+  DateTime deletedAt "nullable"
+}
+"workspace_members" {
+  String id PK
+  String workspaceId FK
+  String userId FK
+  WorkspaceRole role
+  DateTime invitedAt
+  DateTime joinedAt "nullable"
+  String invitedById FK "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"connections" {
+  String id PK
+  String workspaceId FK
+  String identityId FK,UK "nullable"
+  String displayName
+  String avatarUrl "nullable"
+  String notes "nullable"
+  Int warmthScore
+  Json warmthFactors "nullable"
+  DateTime lastInteraction "nullable"
+  Int interactionCount
+  ConnectionNextStep nextStep "nullable"
+  DateTime nextStepDueDate "nullable"
+  String nextStepNotes "nullable"
+  MeetupPipelineStatus meetupStatus
+  DateTime meetupStatusUpdatedAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"connection_platform_presence" {
+  String id PK
+  String connectionId FK
+  SocialPlatform platform
+  String handle
+  String profileUrl "nullable"
+  DateTime lastSeenAt "nullable"
+}
+"connection_tags" {
+  String id PK
+  String workspaceId FK
+  String name
+  String color
+}
+"connection_reminders" {
+  String id PK
+  String connectionId FK
+  String workspaceId
+  ReminderType type
+  String title
+  String description "nullable"
+  DateTime dueDate
+  ReminderStatus status
+  DateTime snoozedUntil "nullable"
+  Int snoozeCount
+  DateTime completedAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"meetup_status_history" {
+  String id PK
+  String connectionId FK
+  MeetupPipelineStatus fromStatus
+  MeetupPipelineStatus toStatus
+  String notes "nullable"
+  String updatedById "nullable"
+  DateTime createdAt
+}
+"brand_profiles" {
+  String id PK
+  String workspaceId FK,UK
+  String name
+  String mission "nullable"
+  Json values "nullable"
+  Json toneDescriptors "nullable"
+  String logoUrl "nullable"
+  String logoR2Key "nullable"
+  Json colorPalette "nullable"
+  Int version
+  Boolean isActive
+  String createdById FK
+  String updatedById FK "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"brand_guardrails" {
+  String id PK
+  String brandProfileId FK
+  GuardrailType type
+  String name
+  String description "nullable"
+  GuardrailSeverity severity
+  Json ruleConfig "nullable"
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+}
+"brand_vocabulary" {
+  String id PK
+  String brandProfileId FK
+  VocabularyType type
+  String term
+  String replacement "nullable"
+  String context "nullable"
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+}
+"content_rewrites" {
+  String id PK
+  String workspaceId FK
+  String brandProfileId FK
+  String originalContent
+  String rewrittenContent "nullable"
+  ContentPlatform platform
+  RewriteStatus status
+  Int characterLimit "nullable"
+  Json changes "nullable"
+  Json toneAnalysis "nullable"
+  String errorMessage "nullable"
+  DateTime processedAt "nullable"
+  String createdById FK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"scheduled_posts" {
+  String id PK
+  String content
+  DateTime scheduledAt
+  String timezone
+  String recurrenceRule "nullable"
+  DateTime recurrenceEndAt "nullable"
+  ScheduledPostStatus status
+  Json metadata "nullable"
+  DateTime publishedAt "nullable"
+  String errorMessage "nullable"
+  Int retryCount
+  Int maxRetries
+  DateTime lastAttemptAt "nullable"
+  DateTime nextOccurrenceAt "nullable"
+  String workspaceId FK
+  String createdById FK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"scheduled_post_accounts" {
+  String id PK
+  String postId FK
+  String accountId FK
+  String platformPostId "nullable"
+  DateTime publishedAt "nullable"
+  ScheduledPostStatus status
+  String errorMessage "nullable"
+}
+"inbox_items" {
+  String id PK
+  InboxItemType type
+  InboxItemStatus status
+  SocialPlatform platform
+  String platformItemId
+  String content
+  String senderName
+  String senderHandle "nullable"
+  String senderAvatarUrl "nullable"
+  String originalPostId "nullable"
+  String originalPostContent "nullable"
+  Json metadata "nullable"
+  DateTime receivedAt
+  DateTime readAt "nullable"
+  DateTime repliedAt "nullable"
+  DateTime resolvedAt "nullable"
+  String workspaceId FK
+  String accountId FK
+  String assignedToId FK "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+  InboxSentiment sentiment "nullable"
+  Float sentimentScore "nullable"
+  Int priorityScore "nullable"
+  Json priorityFactors "nullable"
+  DateTime routingAnalyzedAt "nullable"
+  Json routingMetadata "nullable"
+  EscalationStatus escalationStatus "nullable"
+  Int escalationLevel "nullable"
+  DateTime escalatedAt "nullable"
+  String escalatedToId FK "nullable"
+  DateTime slaDeadline "nullable"
+  Boolean slaBreach
+}
+"relay_drafts" {
+  String id PK
+  String content
+  Float confidenceScore
+  RelayDraftStatus status
+  Boolean isPreferred
+  String reason "nullable"
+  Json metadata "nullable"
+  DateTime sentAt "nullable"
+  String errorMessage "nullable"
+  String inboxItemId FK
+  String reviewedById FK "nullable"
+  DateTime reviewedAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"draft_edit_history" {
+  String id PK
+  String draftId FK
+  String originalContent
+  String editedContent
+  DraftEditType editType
+  String changesSummary "nullable"
+  Int editDistance "nullable"
+  String editedById FK
+  DateTime createdAt
+}
+"draft_audit_logs" {
+  String id PK
+  String draftId FK
+  DraftAuditAction action
+  Json details "nullable"
+  String ipAddress "nullable"
+  String userAgent "nullable"
+  String performedById FK
+  DateTime createdAt
+}
+"crisis_detection_events" {
+  String id PK
+  String workspaceId FK
+  CrisisSeverity severity
+  CrisisEventStatus status
+  String triggerType
+  Json triggerData
+  String affectedAccountIds
+  DateTime acknowledgedAt "nullable"
+  String acknowledgedById FK "nullable"
+  DateTime resolvedAt "nullable"
+  String resolvedById FK "nullable"
+  String responseNotes "nullable"
+  DateTime detectedAt
+  DateTime createdAt
+  DateTime updatedAt
+}
+"crisis_response_templates" {
+  String id PK
+  String workspaceId FK "nullable"
+  String name
+  String category
+  SocialPlatform platform "nullable"
+  String content
+  String variables
+  Boolean isActive
+  Int usageCount
+  DateTime createdAt
+  DateTime updatedAt
+}
+"crisis_alert_rules" {
+  String id PK
+  String workspaceId FK
+  String name
+  String description "nullable"
+  CrisisRuleType ruleType
+  Json conditions
+  CrisisSeverity severity
+  String notifyChannels
+  Int escalateAfterMinutes "nullable"
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+}
+"social_account_health" {
+  String id PK
+  String accountId FK,UK
+  Int healthScore
+  AccountHealthStatus status
+  DateTime lastSuccessfulSync "nullable"
+  DateTime lastSyncAttempt "nullable"
+  String lastError "nullable"
+  DateTime lastErrorAt "nullable"
+  Int consecutiveErrors
+  Int totalErrorsLast24h
+  Int rateLimitRemaining "nullable"
+  Int rateLimitTotal "nullable"
+  DateTime rateLimitResetAt "nullable"
+  Boolean isRateLimited
+  DateTime tokenExpiresAt "nullable"
+  Boolean tokenRefreshRequired
+  DateTime createdAt
+  DateTime updatedAt
+}
+"recovery_guidance" {
+  String id PK
+  SocialPlatform platform "nullable"
+  AccountIssueType issueType
+  IssueSeverity severity
+  String title
+  String description
+  Json steps
+  String estimatedTime "nullable"
+  Boolean requiresAction
+  Boolean autoRecoverable
+  DateTime createdAt
+  DateTime updatedAt
+}
+"account_health_events" {
+  String id PK
+  String accountId FK
+  String workspaceId FK
+  AccountHealthEventType eventType
+  IssueSeverity severity
+  AccountHealthStatus previousStatus "nullable"
+  AccountHealthStatus newStatus
+  Int previousScore "nullable"
+  Int newScore
+  String message
+  Json details "nullable"
+  DateTime resolvedAt "nullable"
+  String resolvedById FK "nullable"
+  String resolutionNotes "nullable"
+  DateTime createdAt
+}
+"notifications" {
+  String id PK
+  String workspaceId FK
+  String userId "nullable"
+  String type
+  String title
+  String message
+  String priority
+  Boolean read
+  DateTime readAt "nullable"
+  String entityType "nullable"
+  String entityId "nullable"
+  Json metadata "nullable"
+  DateTime createdAt
+}
+"policy_rules" {
+  String id PK
+  String workspaceId FK "nullable"
+  String name
+  String description
+  SocialPlatform platform "nullable"
+  PolicyCategory category
+  PolicyRuleType ruleType
+  Json conditions
+  PolicySeverity severity
+  Boolean isBlocking
+  Boolean isActive
+  String sourceUrl "nullable"
+  DateTime lastVerifiedAt "nullable"
+  Int version
+  DateTime createdAt
+  DateTime updatedAt
+}
+"policy_checks" {
+  String id PK
+  String workspaceId FK
+  PolicyContentType contentType
+  String contentId "nullable"
+  String contentText
+  Json contentMetadata "nullable"
+  SocialPlatform platform "nullable"
+  PolicyCheckScope checkScope
+  PolicyCheckStatus status
+  Int passedRules
+  Int failedRules
+  Int warningRules
+  PolicyCheckResult overallResult "nullable"
+  String summary "nullable"
+  DateTime startedAt
+  DateTime completedAt "nullable"
+  Int durationMs "nullable"
+  String checkedById FK "nullable"
+  DateTime createdAt
+}
+"policy_violations" {
+  String id PK
+  String checkId FK
+  String ruleId FK
+  String workspaceId FK
+  PolicySeverity severity
+  String message
+  String matchedContent "nullable"
+  Json matchLocation "nullable"
+  Float confidence "nullable"
+  String suggestedFix "nullable"
+  Boolean isOverridden
+  String overriddenById FK "nullable"
+  String overrideReason "nullable"
+  DateTime overriddenAt "nullable"
+  DateTime createdAt
+}
+"scout_topics" {
+  String id PK
+  String workspaceId FK
+  String name
+  Json keywords
+  Boolean isActive
+  DateTime createdAt
+  DateTime updatedAt
+}
+"scout_results" {
+  String id PK
+  String topicId FK
+  SocialPlatform platform
+  String platformId
+  String content
+  String author
+  String authorUrl "nullable"
+  String postUrl
+  Json engagement
+  DateTime foundAt
+}
+"content_suggestions" {
+  String id PK
+  String workspaceId FK
+  String title
+  String description
+  String draftContent
+  SuggestionContentType contentType
+  String suggestedPlatforms
+  Json trendData
+  Float relevanceScore
+  Float timelinessScore
+  Float brandAlignmentScore
+  Float overallScore
+  SuggestionStatus status
+  DateTime generatedAt
+  DateTime expiresAt "nullable"
+  DateTime usedAt "nullable"
+  DateTime dismissedAt "nullable"
+  String dismissalReason "nullable"
+  String feedback "nullable"
+}
+"allocator_campaigns" {
+  String id PK
+  String workspaceId FK
+  AllocatorPlatform platform
+  String platformCampaignId
+  String name
+  String status
+  Decimal(10) budget "nullable"
+  Decimal(10) spend
+  Json metrics "nullable"
+  DateTime lastSyncAt
+  DateTime createdAt
+  DateTime updatedAt
+}
+"allocator_ad_sets" {
+  String id PK
+  String campaignId FK
+  String platformAdSetId
+  String name
+  String status
+  Decimal(10) budget "nullable"
+  Decimal(10) spend
+  DateTime createdAt
+  DateTime updatedAt
+}
+"allocator_autopilot_configs" {
+  String id PK
+  String workspaceId FK
+  String campaignId FK "nullable"
+  Boolean isEnabled
+  AutopilotMode mode
+  Decimal(10) maxDailyBudgetChange
+  Decimal(10) maxSingleChange
+  Decimal(10) minRoasThreshold "nullable"
+  Decimal(10) maxCpaThreshold "nullable"
+  Boolean pauseOnAnomaly
+  Decimal(10) requireApprovalAbove "nullable"
+  String encryptedSettings "nullable"
+  Decimal(12) minBudget "nullable"
+  Decimal(12) maxBudget "nullable"
+  Int cooldownMinutes
+  Boolean isEmergencyStopped
+  DateTime emergencyStoppedAt "nullable"
+  String emergencyStoppedBy "nullable"
+  String emergencyStopReason "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"allocator_guardrail_alerts" {
+  String id PK
+  String workspaceId FK
+  String campaignId FK "nullable"
+  AllocatorAlertType alertType
+  AlertSeverity severity
+  String message
+  Json metadata "nullable"
+  Boolean acknowledged
+  DateTime acknowledgedAt "nullable"
+  String acknowledgedBy "nullable"
+  DateTime createdAt
+}
+"allocator_autopilot_executions" {
+  String id PK
+  String workspaceId FK
+  String campaignId FK
+  String recommendationId "nullable"
+  String recommendationType
+  AutopilotExecutionStatus status
+  Decimal(10) previousBudget
+  Decimal(10) newBudget
+  Decimal(10) budgetChange
+  DateTime executedAt
+  Json metadata "nullable"
+  String rollbackOfId FK,UK "nullable"
+  DateTime rolledBackAt "nullable"
+  String rolledBackReason "nullable"
+  String rolledBackByUserId "nullable"
+}
+"workflows" {
+  String id PK
+  String name
+  String description "nullable"
+  WorkflowStatus status
+  String workspaceId FK
+  String createdById FK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"workflow_versions" {
+  String id PK
+  String workflowId FK
+  Int version
+  String description "nullable"
+  Boolean isPublished
+  DateTime publishedAt "nullable"
+  DateTime createdAt
+}
+"workflow_steps" {
+  String id PK
+  String workflowVersionId FK
+  String name
+  WorkflowStepType type
+  Int sequence
+  Json config
+  Json dependencies "nullable"
+  DateTime createdAt
+}
+"workflow_runs" {
+  String id PK
+  String workflowId FK
+  WorkflowRunStatus status
+  DateTime startedAt
+  DateTime endedAt "nullable"
+}
+"workflow_run_logs" {
+  String id PK
+  String workflowRunId FK
+  String stepId "nullable"
+  String message
+  Json metadata "nullable"
+  DateTime timestamp
+}
+"allocator_daily_budget_moves" {
+  String id PK
+  String campaignId FK
+  DateTime date
+  Decimal(10) totalMoved
+  Decimal(10) netChange
+  Int executionCount
+  DateTime createdAt
+  DateTime updatedAt
+}
+"allocator_audit_logs" {
+  String id PK
+  String workspaceId FK
+  String campaignId "nullable"
+  AllocatorDecisionType decisionType
+  AllocatorDecisionOutcome decisionOutcome
+  Json recommendationSnapshot "nullable"
+  Json performanceSnapshot "nullable"
+  Json configSnapshot "nullable"
+  Json guardrailEvaluation "nullable"
+  Json previousState "nullable"
+  Json newState "nullable"
+  String aiReasoning "nullable"
+  Json supportingData "nullable"
+  String confidence "nullable"
+  String executionId FK "nullable"
+  String triggeredBy
+  String userId "nullable"
+  String correlationId
+  DateTime createdAt
+}
+"AbTest" {
+  String id PK
+  String name
+  String description "nullable"
+  AbTestStatus status
+  String winnerVariantId "nullable"
+  Float significanceLevel
+  DateTime createdAt
+  DateTime updatedAt
+}
+"AbTestVariant" {
+  String id PK
+  String abTestId FK
+  String name
+  Float splitPercentage
+}
+"AbTestResult" {
+  String id PK
+  String visitorSessionId FK
+  String abTestVariantId FK
+  Boolean converted
+  DateTime createdAt
+}
+"feature_flags" {
+  String id PK
+  String name UK
+  Boolean isEnabled
+  Int percentage
+  String enabledFor
+  DateTime createdAt
+  DateTime updatedAt
+}
+"asset_folders" {
+  String id PK
+  String name
+  String workspaceId FK
+  String parentId FK "nullable"
+  String createdById FK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"asset_tags" {
+  String id PK
+  String name
+  String workspaceId FK
+  DateTime createdAt
+}
+"assets" {
+  String id PK
+  String workspaceId FK
+  String folderId FK "nullable"
+  String filename
+  String fileType
+  Int sizeBytes
+  Int width "nullable"
+  Int height "nullable"
+  Float duration "nullable"
+  String storageProvider
+  String r2Bucket
+  String r2Key UK
+  String altText "nullable"
+  Float qualityScore "nullable"
+  Json analysisJson "nullable"
+  String uploadedById FK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"asset_tag_assignments" {
+  String assetId FK
+  String tagId FK
+  DateTime assignedAt
+  String assignedById FK
+}
+"post_assets" {
+  String postId FK
+  String assetId FK
+}
+"scheduled_post_assets" {
+  String postId FK
+  String assetId FK
+}
+"identities" {
+  String id PK
+  String userId FK,UK "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"identifiers" {
+  String id PK
+  String identityId FK
+  IdentifierType type
+  String value
+  DateTime createdAt
+}
+"_ConnectionToConnectionTag" {
+  String A FK
+  String B FK
+}
+"users" }o--o| "users" : referredBy
+"campaign_briefs" }o--|| "users" : user
+"accounts" }o--|| "users" : user
+"marketing_accounts" }o--|| "users" : user
+"google_ads_campaigns" }o--|| "marketing_accounts" : marketingAccount
+"sessions" }o--|| "users" : user
+"apps" }o--o| "apps" : parentApp
+"apps" }o--|| "users" : user
+"requirements" }o--|| "apps" : app
+"monetization_models" }o--|| "apps" : app
+"app_messages" }o--|| "apps" : app
+"app_status_history" }o--|| "apps" : app
+"app_images" }o--|| "apps" : app
+"app_attachments" }o--|| "app_messages" : message
+"app_attachments" }o--|| "app_images" : image
+"app_code_versions" }o--|| "apps" : app
+"app_code_versions" |o--o| "app_messages" : message
+"user_token_balances" |o--|| "users" : user
+"token_transactions" }o--|| "users" : user
+"stripe_payments" }o--|| "tokens_packages" : package
+"stripe_payments" }o--|| "users" : user
+"enhanced_images" }o--|| "users" : user
+"image_enhancement_jobs" }o--o| "enhancement_pipelines" : pipeline
+"image_enhancement_jobs" }o--o| "enhanced_images" : sourceImage
+"image_enhancement_jobs" }o--|| "enhanced_images" : image
+"image_enhancement_jobs" }o--|| "users" : user
+"subscriptions" |o--|| "users" : user
+"albums" }o--o| "enhancement_pipelines" : pipeline
+"albums" }o--|| "users" : user
+"album_images" }o--|| "albums" : album
+"album_images" }o--|| "enhanced_images" : image
+"voucher_redemptions" }o--|| "users" : user
+"voucher_redemptions" }o--|| "vouchers" : voucher
+"referrals" }o--|| "users" : referee
+"referrals" }o--|| "users" : referrer
+"audit_logs" }o--|| "users" : user
+"workspace_audit_logs" }o--|| "workspaces" : workspace
+"workspace_audit_logs" }o--|| "users" : user
+"ai_decision_logs" }o--o| "workspaces" : workspace
+"ai_decision_logs" }o--o| "users" : user
+"audit_retention_policies" }o--o| "workspaces" : workspace
+"feedback" }o--o| "users" : user
+"inbox_suggested_responses" }o--|| "inbox_items" : inboxItem
+"escalation_events" }o--|| "inbox_items" : inboxItem
+"featured_gallery_items" }o--o| "enhanced_images" : sourceImage
+"featured_gallery_items" }o--o| "image_enhancement_jobs" : sourceJob
+"featured_gallery_items" }o--|| "users" : creator
+"boxes" }o--|| "users" : user
+"boxes" }o--o| "box_tiers" : tier
+"box_actions" }o--|| "boxes" : box
+"agent_tasks" }o--|| "boxes" : box
+"sandbox_jobs" }o--|| "apps" : app
+"email_logs" }o--|| "users" : user
+"tracked_urls" }o--|| "users" : createdBy
+"api_keys" }o--|| "users" : user
+"mcp_generation_jobs" }o--|| "users" : user
+"mcp_generation_jobs" }o--o| "api_keys" : apiKey
+"box_messages" }o--|| "boxes" : box
+"enhancement_pipelines" }o--o| "users" : user
+"visitor_sessions" }o--o| "users" : user
+"page_views" }o--|| "visitor_sessions" : session
+"analytics_events" }o--|| "visitor_sessions" : session
+"campaign_attributions" }o--|| "users" : user
+"audio_mixer_projects" }o--|| "users" : user
+"audio_tracks" }o--|| "audio_mixer_projects" : project
+"merch_products" }o--|| "merch_categories" : category
+"merch_variants" }o--|| "merch_products" : product
+"merch_carts" |o--|| "users" : user
+"merch_cart_items" }o--|| "merch_carts" : cart
+"merch_cart_items" }o--|| "merch_products" : product
+"merch_cart_items" }o--o| "merch_variants" : variant
+"merch_cart_items" }o--o| "enhanced_images" : image
+"merch_orders" }o--|| "users" : user
+"merch_order_items" }o--|| "merch_orders" : order
+"merch_order_items" }o--|| "merch_products" : product
+"merch_order_items" }o--o| "merch_variants" : variant
+"merch_order_items" }o--o| "merch_shipments" : shipment
+"merch_shipments" }o--|| "merch_orders" : order
+"merch_order_events" }o--|| "merch_orders" : order
+"agent_session_activities" }o--|| "external_agent_sessions" : session
+"scout_competitors" }o--|| "workspaces" : workspace
+"scout_competitor_posts" }o--|| "scout_competitors" : competitor
+"scout_benchmarks" }o--|| "workspaces" : workspace
+"social_accounts" }o--|| "users" : user
+"social_accounts" }o--|| "workspaces" : workspace
+"social_posts" }o--|| "users" : createdBy
+"social_post_accounts" }o--|| "social_posts" : post
+"social_post_accounts" }o--|| "social_accounts" : account
+"social_metrics" }o--|| "social_accounts" : account
+"social_metric_anomalies" }o--|| "social_accounts" : account
+"workspace_members" }o--|| "workspaces" : workspace
+"workspace_members" }o--|| "users" : user
+"workspace_members" }o--o| "users" : invitedBy
+"connections" }o--|| "workspaces" : workspace
+"connections" |o--o| "identities" : identity
+"connection_platform_presence" }o--|| "connections" : connection
+"connection_tags" }o--|| "workspaces" : workspace
+"connection_reminders" }o--|| "connections" : connection
+"meetup_status_history" }o--|| "connections" : connection
+"brand_profiles" |o--|| "workspaces" : workspace
+"brand_profiles" }o--|| "users" : createdBy
+"brand_profiles" }o--o| "users" : updatedBy
+"brand_guardrails" }o--|| "brand_profiles" : brandProfile
+"brand_vocabulary" }o--|| "brand_profiles" : brandProfile
+"content_rewrites" }o--|| "workspaces" : workspace
+"content_rewrites" }o--|| "brand_profiles" : brandProfile
+"content_rewrites" }o--|| "users" : createdBy
+"scheduled_posts" }o--|| "workspaces" : workspace
+"scheduled_posts" }o--|| "users" : createdBy
+"scheduled_post_accounts" }o--|| "scheduled_posts" : post
+"scheduled_post_accounts" }o--|| "social_accounts" : account
+"inbox_items" }o--|| "workspaces" : workspace
+"inbox_items" }o--|| "social_accounts" : account
+"inbox_items" }o--o| "workspace_members" : assignedTo
+"inbox_items" }o--o| "workspace_members" : escalatedTo
+"relay_drafts" }o--|| "inbox_items" : inboxItem
+"relay_drafts" }o--o| "users" : reviewedBy
+"draft_edit_history" }o--|| "users" : editedBy
+"draft_edit_history" }o--|| "relay_drafts" : draft
+"draft_audit_logs" }o--|| "users" : performedBy
+"draft_audit_logs" }o--|| "relay_drafts" : draft
+"crisis_detection_events" }o--|| "workspaces" : workspace
+"crisis_detection_events" }o--o| "users" : acknowledgedBy
+"crisis_detection_events" }o--o| "users" : resolvedBy
+"crisis_response_templates" }o--o| "workspaces" : workspace
+"crisis_alert_rules" }o--|| "workspaces" : workspace
+"social_account_health" |o--|| "social_accounts" : account
+"account_health_events" }o--|| "social_accounts" : account
+"account_health_events" }o--|| "workspaces" : workspace
+"account_health_events" }o--o| "users" : resolvedBy
+"notifications" }o--|| "workspaces" : workspace
+"policy_rules" }o--o| "workspaces" : workspace
+"policy_checks" }o--|| "workspaces" : workspace
+"policy_checks" }o--o| "users" : checkedBy
+"policy_violations" }o--|| "policy_checks" : check
+"policy_violations" }o--|| "policy_rules" : rule
+"policy_violations" }o--|| "workspaces" : workspace
+"policy_violations" }o--o| "users" : overriddenBy
+"scout_topics" }o--|| "workspaces" : workspace
+"scout_results" }o--|| "scout_topics" : topic
+"content_suggestions" }o--|| "workspaces" : workspace
+"allocator_campaigns" }o--|| "workspaces" : workspace
+"allocator_ad_sets" }o--|| "allocator_campaigns" : campaign
+"allocator_autopilot_configs" }o--|| "workspaces" : workspace
+"allocator_autopilot_configs" }o--o| "allocator_campaigns" : campaign
+"allocator_guardrail_alerts" }o--|| "workspaces" : workspace
+"allocator_guardrail_alerts" }o--o| "allocator_campaigns" : campaign
+"allocator_autopilot_executions" }o--|| "workspaces" : workspace
+"allocator_autopilot_executions" }o--|| "allocator_campaigns" : campaign
+"allocator_autopilot_executions" |o--o| "allocator_autopilot_executions" : rollbackOf
+"workflows" }o--|| "workspaces" : workspace
+"workflows" }o--|| "users" : createdBy
+"workflow_versions" }o--|| "workflows" : workflow
+"workflow_steps" }o--|| "workflow_versions" : workflowVersion
+"workflow_runs" }o--|| "workflows" : workflow
+"workflow_run_logs" }o--|| "workflow_runs" : workflowRun
+"allocator_daily_budget_moves" }o--|| "allocator_campaigns" : campaign
+"allocator_audit_logs" }o--|| "workspaces" : workspace
+"allocator_audit_logs" }o--o| "allocator_autopilot_executions" : execution
+"AbTestVariant" }o--|| "AbTest" : abTest
+"AbTestResult" }o--|| "visitor_sessions" : visitorSession
+"AbTestResult" }o--|| "AbTestVariant" : abTestVariant
+"asset_folders" }o--|| "workspaces" : workspace
+"asset_folders" }o--o| "asset_folders" : parent
+"asset_folders" }o--|| "users" : createdBy
+"asset_tags" }o--|| "workspaces" : workspace
+"assets" }o--|| "workspaces" : workspace
+"assets" }o--o| "asset_folders" : folder
+"assets" }o--|| "users" : uploadedBy
+"asset_tag_assignments" }o--|| "assets" : asset
+"asset_tag_assignments" }o--|| "asset_tags" : tag
+"asset_tag_assignments" }o--|| "users" : assignedBy
+"post_assets" }o--|| "social_posts" : post
+"post_assets" }o--|| "assets" : asset
+"scheduled_post_assets" }o--|| "scheduled_posts" : post
+"scheduled_post_assets" }o--|| "assets" : asset
+"identities" |o--o| "users" : user
+"identifiers" }o--|| "identities" : identity
+"_ConnectionToConnectionTag" }o--|| "connections" : Connection
+"_ConnectionToConnectionTag" }o--|| "connection_tags" : ConnectionTag
 ```
 
-### Example Queries
+### `users`
 
-**Get workspace brand profile with all rules:**
+Properties as follows:
 
-```typescript
-const brandProfile = await prisma.brandProfile.findUnique({
-  where: { workspaceId },
-  include: {
-    guardrails: { where: { isActive: true } },
-    vocabulary: { where: { isActive: true } },
-  },
-});
-```
+- `id`:
+- `name`:
+- `email`:
+- `emailVerified`:
+- `image`:
+- `createdAt`:
+- `updatedAt`:
+- `stripeCustomerId`:
+- `role`:
+- `referralCode`:
+- `referredById`:
+- `referralCount`:
+- `passwordHash`:
 
-**Search vocabulary terms with fuzzy matching:**
+### `campaign_briefs`
 
-```sql
-SELECT * FROM brand_vocabulary
-WHERE term % 'innovation'  -- Uses GIN trigram index
-  AND "isActive" = true
-ORDER BY similarity(term, 'innovation') DESC
-LIMIT 10;
-```
+Properties as follows:
 
----
+- `id`:
+- `userId`:
+- `name`:
+- `targetAudience`:
+- `campaignObjectives`:
+- `status`:
+- `createdAt`:
+- `updatedAt`:
 
-## Related Documentation
+### `accounts`
 
-- [TOKEN_SYSTEM.md](/Users/z/Developer/spike-land-nextjs/docs/TOKEN_SYSTEM.md) -
-  Detailed token economics
-- [API_REFERENCE.md](/Users/z/Developer/spike-land-nextjs/docs/API_REFERENCE.md) -
-  API endpoints using this schema
-- [DATABASE_SETUP.md](/Users/z/Developer/spike-land-nextjs/docs/DATABASE_SETUP.md) -
-  Database setup instructions
-- [FEATURES.md](/Users/z/Developer/spike-land-nextjs/docs/FEATURES.md) -
-  Platform features overview
+Properties as follows:
 
----
+- `id`:
+- `userId`:
+- `type`:
+- `provider`:
+- `providerAccountId`:
+- `refresh_token`:
+- `access_token`:
+- `expires_at`:
+- `token_type`:
+- `scope`:
+- `id_token`:
+- `session_state`:
 
-**Document Maintained By**: Technical Documentation Team **Last Reviewed**:
-2025-12-30 **Next Review**: 2026-01-30
+### `marketing_accounts`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `platform`:
+- `accountId`:
+- `accountName`:
+- `accessToken`:
+- `refreshToken`:
+- `expiresAt`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
+
+### `google_ads_campaigns`
+
+Properties as follows:
+
+- `id`:
+- `marketingAccountId`:
+- `campaignId`:
+- `name`:
+- `status`:
+- `spend`:
+- `createdAt`:
+- `updatedAt`:
+
+### `sessions`
+
+Properties as follows:
+
+- `id`:
+- `sessionToken`:
+- `userId`:
+- `expires`:
+
+### `verification_tokens`
+
+Properties as follows:
+
+- `identifier`:
+- `token`:
+- `expires`:
+
+### `apps`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `slug`:
+- `description`:
+- `userId`:
+- `forkedFrom`:
+- `status`:
+- `domain`:
+- `codespaceId`:
+- `codespaceUrl`:
+- `isCurated`:
+- `isPublic`:
+- `lastAgentActivity`:
+- `deletedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `requirements`
+
+Properties as follows:
+
+- `id`:
+- `appId`:
+- `description`:
+- `priority`:
+- `status`:
+- `version`:
+- `createdAt`:
+- `updatedAt`:
+
+### `monetization_models`
+
+Properties as follows:
+
+- `id`:
+- `appId`:
+- `type`:
+- `price`:
+- `subscriptionInterval`:
+- `features`:
+- `createdAt`:
+- `updatedAt`:
+
+### `app_messages`
+
+Properties as follows:
+
+- `id`:
+- `appId`:
+- `role`:
+- `content`:
+- `isRead`:
+- `metadata`:
+- `deletedAt`:
+- `createdAt`:
+
+### `app_status_history`
+
+Properties as follows:
+
+- `id`:
+- `appId`:
+- `status`:
+- `message`:
+- `metadata`:
+- `createdAt`:
+
+### `app_images`
+
+Properties as follows:
+
+- `id`:
+- `appId`:
+- `originalUrl`:
+- `r2Key`:
+- `width`:
+- `height`:
+- `sizeBytes`:
+- `format`:
+- `tags`:
+- `aiDescription`:
+- `analysisJson`:
+- `createdAt`:
+
+### `app_attachments`
+
+Properties as follows:
+
+- `id`:
+- `messageId`:
+- `imageId`:
+- `createdAt`:
+
+### `app_code_versions`
+
+Properties as follows:
+
+- `id`:
+- `appId`:
+- `messageId`:
+- `code`:
+- `hash`:
+- `description`:
+- `createdAt`:
+
+### `user_token_balances`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `balance`:
+- `lastRegeneration`:
+- `tier`:
+- `createdAt`:
+- `updatedAt`:
+
+### `token_transactions`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `amount`:
+- `type`:
+- `source`:
+- `sourceId`:
+- `balanceAfter`:
+- `metadata`:
+- `createdAt`:
+
+### `tokens_packages`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `tokens`:
+- `priceUSD`:
+- `stripePriceId`:
+- `active`:
+- `sortOrder`:
+- `createdAt`:
+- `updatedAt`:
+
+### `stripe_payments`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `packageId`:
+- `tokensGranted`:
+- `amountUSD`:
+- `stripePaymentIntentId`:
+- `status`:
+- `metadata`:
+- `createdAt`:
+- `updatedAt`:
+
+### `enhanced_images`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `name`:
+- `description`:
+- `originalUrl`:
+- `originalR2Key`:
+- `originalWidth`:
+- `originalHeight`:
+- `originalSizeBytes`:
+- `originalFormat`:
+- `isPublic`:
+- `viewCount`:
+- `createdAt`:
+- `updatedAt`:
+- `shareToken`:
+
+### `image_enhancement_jobs`
+
+Properties as follows:
+
+- `id`:
+- `imageId`:
+- `userId`:
+- `tier`:
+- `tokensCost`:
+- `status`:
+- `currentStage`:
+- `enhancedUrl`:
+- `enhancedR2Key`:
+- `enhancedWidth`:
+- `enhancedHeight`:
+- `enhancedSizeBytes`:
+- `errorMessage`:
+- `retryCount`:
+- `maxRetries`:
+- `geminiPrompt`:
+- `geminiModel`:
+- `geminiTemp`:
+- `processingStartedAt`:
+- `processingCompletedAt`:
+- `createdAt`:
+- `updatedAt`:
+- `workflowRunId`:
+- `analysisResult`:
+- `analysisSource`:
+- `altText`:
+- `qualityScore`:
+- `wasCropped`:
+- `cropDimensions`:
+- `pipelineId`:
+- `sourceImageId`:
+- `isBlend`:
+- `isAnonymous`:
+
+### `subscriptions`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `stripeSubscriptionId`:
+- `stripePriceId`:
+- `status`:
+- `tier`:
+- `currentPeriodStart`:
+- `currentPeriodEnd`:
+- `cancelAtPeriodEnd`:
+- `downgradeTo`:
+- `tokensPerMonth`:
+- `rolloverTokens`:
+- `maxRollover`:
+- `createdAt`:
+- `updatedAt`:
+
+### `subscription_plans`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `tokensPerMonth`:
+- `priceGBP`:
+- `stripePriceId`:
+- `maxRollover`:
+- `priority`:
+- `apiAccess`:
+- `active`:
+- `sortOrder`:
+- `createdAt`:
+- `updatedAt`:
+
+### `albums`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `name`:
+- `description`:
+- `coverImageId`:
+- `privacy`:
+- `defaultTier`:
+- `shareToken`:
+- `sortOrder`:
+- `createdAt`:
+- `updatedAt`:
+- `pipelineId`:
+
+### `album_images`
+
+Properties as follows:
+
+- `id`:
+- `albumId`:
+- `imageId`:
+- `sortOrder`:
+- `addedAt`:
+
+### `vouchers`
+
+Properties as follows:
+
+- `id`:
+- `code`:
+- `type`:
+- `value`:
+- `maxUses`:
+- `currentUses`:
+- `expiresAt`:
+- `status`:
+- `metadata`:
+- `createdAt`:
+- `updatedAt`:
+
+### `voucher_redemptions`
+
+Properties as follows:
+
+- `id`:
+- `voucherId`:
+- `userId`:
+- `tokensGranted`:
+- `redeemedAt`:
+
+### `referrals`
+
+Properties as follows:
+
+- `id`:
+- `referrerId`:
+- `refereeId`:
+- `status`:
+- `tokensGranted`:
+- `ipAddress`:
+- `createdAt`:
+- `completedAt`:
+
+### `audit_logs`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `action`:
+- `targetId`:
+- `targetType`:
+- `resourceId`:
+- `resourceType`:
+- `metadata`:
+- `ipAddress`:
+- `userAgent`:
+- `sessionId`:
+- `createdAt`:
+
+### `workspace_audit_logs`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `userId`:
+- `action`:
+- `targetId`:
+- `targetType`:
+- `resourceId`:
+- `resourceType`:
+- `oldValue`:
+- `newValue`:
+- `metadata`:
+- `ipAddress`:
+- `userAgent`:
+- `createdAt`:
+
+### `ai_decision_logs`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `userId`:
+- `requestType`:
+- `inputPrompt`:
+- `inputContext`:
+- `outputResult`:
+- `outputMetadata`:
+- `modelId`:
+- `modelVersion`:
+- `tokensUsed`:
+- `latencyMs`:
+- `status`:
+- `errorMessage`:
+- `createdAt`:
+
+### `audit_retention_policies`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `name`:
+- `description`:
+- `retentionDays`:
+- `archiveAfterDays`:
+- `deleteAfterDays`:
+- `actionTypes`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
+
+### `archived_audit_logs`
+
+Properties as follows:
+
+- `id`:
+- `originalId`:
+- `workspaceId`:
+- `userId`:
+- `action`:
+- `targetId`:
+- `targetType`:
+- `resourceId`:
+- `resourceType`:
+- `metadata`:
+- `ipAddress`:
+- `userAgent`:
+- `originalCreatedAt`:
+- `archivedAt`:
+- `retentionPolicyId`:
+- `archiveReason`:
+
+### `error_logs`
+
+Properties as follows:
+
+- `id`:
+- `timestamp`:
+- `message`:
+- `stack`:
+- `sourceFile`:
+- `sourceLine`:
+- `sourceColumn`:
+- `callerName`:
+- `userId`:
+- `route`:
+- `environment`:
+- `errorType`:
+- `errorCode`:
+- `metadata`:
+
+### `feedback`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `email`:
+- `type`:
+- `message`:
+- `page`:
+- `userAgent`:
+- `status`:
+- `adminNote`:
+- `createdAt`:
+- `updatedAt`:
+
+### `inbox_suggested_responses`
+
+Properties as follows:
+
+- `id`:
+- `inboxItemId`:
+- `content`:
+- `tone`:
+- `confidenceScore`:
+- `category`:
+- `isPreferred`:
+- `metadata`:
+- `createdAt`:
+
+### `escalation_events`
+
+Properties as follows:
+
+- `id`:
+- `inboxItemId`:
+- `eventType`:
+- `fromLevel`:
+- `toLevel`:
+- `fromUserId`:
+- `toUserId`:
+- `reason`:
+- `triggeredBy`:
+- `metadata`:
+- `createdAt`:
+
+### `featured_gallery_items`
+
+Properties as follows:
+
+- `id`:
+- `title`:
+- `description`:
+- `category`:
+- `originalUrl`:
+- `enhancedUrl`:
+- `width`:
+- `height`:
+- `sourceImageId`:
+- `sourceJobId`:
+- `sortOrder`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
+- `createdBy`:
+
+### `box_tiers`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `description`:
+- `cpu`:
+- `ram`:
+- `storage`:
+- `pricePerHour`:
+- `pricePerMonth`:
+- `isActive`:
+- `sortOrder`:
+- `createdAt`:
+- `updatedAt`:
+
+### `boxes`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `description`:
+- `userId`:
+- `tierId`:
+- `status`:
+- `connectionUrl`:
+- `storageVolumeId`:
+- `createdAt`:
+- `updatedAt`:
+- `deletedAt`:
+
+### `box_actions`
+
+Properties as follows:
+
+- `id`:
+- `boxId`:
+- `action`:
+- `status`:
+- `metadata`:
+- `error`:
+- `createdAt`:
+- `updatedAt`:
+
+### `agent_tasks`
+
+Properties as follows:
+
+- `id`:
+- `boxId`:
+- `type`:
+- `payload`:
+- `status`:
+- `result`:
+- `error`:
+- `createdAt`:
+- `updatedAt`:
+
+### `sandbox_jobs`
+
+Properties as follows:
+
+- `id`:
+- `appId`:
+- `messageId`:
+- `sandboxId`:
+- `requestId`:
+- `status`:
+- `result`:
+- `error`:
+- `startedAt`:
+- `completedAt`:
+
+### `email_logs`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `to`:
+- `subject`:
+- `template`:
+- `status`:
+- `resendId`:
+- `sentAt`:
+- `openedAt`:
+- `clickedAt`:
+- `bouncedAt`:
+- `metadata`:
+
+### `tracked_urls`
+
+Properties as follows:
+
+- `id`:
+- `path`:
+- `label`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
+- `createdById`:
+
+### `api_keys`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `name`:
+- `keyHash`:
+- `keyPrefix`:
+- `lastUsedAt`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
+
+### `mcp_generation_jobs`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `apiKeyId`:
+- `type`:
+- `tier`:
+- `tokensCost`:
+- `status`:
+- `prompt`:
+- `inputImageUrl`:
+- `inputImageR2Key`:
+- `outputImageUrl`:
+- `outputImageR2Key`:
+- `outputWidth`:
+- `outputHeight`:
+- `outputSizeBytes`:
+- `errorMessage`:
+- `geminiModel`:
+- `processingStartedAt`:
+- `processingCompletedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `box_messages`
+
+Properties as follows:
+
+- `id`:
+- `boxId`:
+- `role`:
+- `content`:
+- `createdAt`:
+
+### `enhancement_pipelines`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `description`:
+- `userId`:
+- `visibility`:
+- `shareToken`:
+- `tier`:
+- `analysisConfig`:
+- `autoCropConfig`:
+- `promptConfig`:
+- `generationConfig`:
+- `usageCount`:
+- `createdAt`:
+- `updatedAt`:
+
+### `visitor_sessions`
+
+Properties as follows:
+
+- `id`:
+- `visitorId`:
+- `userId`:
+- `sessionStart`:
+- `sessionEnd`:
+- `deviceType`:
+- `browser`:
+- `os`:
+- `ipCountry`:
+- `ipCity`:
+- `referrer`:
+- `landingPage`:
+- `exitPage`:
+- `pageViewCount`:
+- `utmSource`:
+- `utmMedium`:
+- `utmCampaign`:
+- `utmTerm`:
+- `utmContent`:
+- `gclid`:
+- `fbclid`:
+
+### `page_views`
+
+Properties as follows:
+
+- `id`:
+- `sessionId`:
+- `path`:
+- `title`:
+- `timestamp`:
+- `timeOnPage`:
+- `scrollDepth`:
+
+### `analytics_events`
+
+Properties as follows:
+
+- `id`:
+- `sessionId`:
+- `name`:
+- `category`:
+- `value`:
+- `metadata`:
+- `timestamp`:
+
+### `campaign_attributions`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `sessionId`:
+- `conversionId`:
+- `attributionType`:
+- `platform`:
+- `externalCampaignId`:
+- `utmCampaign`:
+- `utmSource`:
+- `utmMedium`:
+- `conversionType`:
+- `conversionValue`:
+- `convertedAt`:
+
+### `campaign_metrics_cache`
+
+Properties as follows:
+
+- `id`:
+- `cacheKey`:
+- `metrics`:
+- `computedAt`:
+- `expiresAt`:
+
+### `campaign_links`
+
+Properties as follows:
+
+- `id`:
+- `utmCampaign`:
+- `platform`:
+- `externalCampaignId`:
+- `externalCampaignName`:
+- `createdAt`:
+- `updatedAt`:
+
+### `audio_mixer_projects`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `name`:
+- `description`:
+- `createdAt`:
+- `updatedAt`:
+
+### `audio_tracks`
+
+Properties as follows:
+
+- `id`:
+- `projectId`:
+- `name`:
+- `fileUrl`:
+- `fileR2Key`:
+- `fileFormat`:
+- `duration`:
+- `fileSizeBytes`:
+- `volume`:
+- `muted`:
+- `solo`:
+- `sortOrder`:
+- `storageType`:
+- `createdAt`:
+- `updatedAt`:
+
+### `merch_categories`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `slug`:
+- `description`:
+- `icon`:
+- `sortOrder`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
+
+### `merch_products`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `description`:
+- `categoryId`:
+- `provider`:
+- `providerSku`:
+- `basePrice`:
+- `retailPrice`:
+- `currency`:
+- `isActive`:
+- `minDpi`:
+- `minWidth`:
+- `minHeight`:
+- `printAreaWidth`:
+- `printAreaHeight`:
+- `mockupTemplate`:
+- `sortOrder`:
+- `createdAt`:
+- `updatedAt`:
+
+### `merch_variants`
+
+Properties as follows:
+
+- `id`:
+- `productId`:
+- `name`:
+- `providerSku`:
+- `priceDelta`:
+- `isActive`:
+- `attributes`:
+- `createdAt`:
+- `updatedAt`:
+
+### `merch_carts`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `createdAt`:
+- `updatedAt`:
+
+### `merch_cart_items`
+
+Properties as follows:
+
+- `id`:
+- `cartId`:
+- `productId`:
+- `variantId`:
+- `imageId`:
+- `uploadedImageR2Key`:
+- `uploadedImageUrl`:
+- `quantity`:
+- `customText`:
+- `createdAt`:
+- `updatedAt`:
+
+### `merch_orders`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `orderNumber`:
+- `status`:
+- `subtotal`:
+- `shippingCost`:
+- `taxAmount`:
+- `totalAmount`:
+- `currency`:
+- `stripePaymentIntentId`:
+- `stripePaymentStatus`:
+- `shippingAddress`:
+- `billingAddress`:
+- `customerEmail`:
+- `customerPhone`:
+- `notes`:
+- `createdAt`:
+- `updatedAt`:
+- `paidAt`:
+
+### `merch_order_items`
+
+Properties as follows:
+
+- `id`:
+- `orderId`:
+- `productId`:
+- `variantId`:
+- `productName`:
+- `variantName`:
+- `imageUrl`:
+- `imageR2Key`:
+- `quantity`:
+- `unitPrice`:
+- `totalPrice`:
+- `customText`:
+- `podOrderId`:
+- `podStatus`:
+- `createdAt`:
+- `updatedAt`:
+- `shipmentId`:
+
+### `merch_shipments`
+
+Properties as follows:
+
+- `id`:
+- `orderId`:
+- `provider`:
+- `providerShipId`:
+- `carrier`:
+- `trackingNumber`:
+- `trackingUrl`:
+- `status`:
+- `shippedAt`:
+- `deliveredAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `merch_order_events`
+
+Properties as follows:
+
+- `id`:
+- `orderId`:
+- `type`:
+- `data`:
+- `createdAt`:
+
+### `merch_webhook_events`
+
+Properties as follows:
+
+- `id`:
+- `provider`:
+- `eventId`:
+- `eventType`:
+- `processed`:
+- `payload`:
+- `processedAt`:
+- `createdAt`:
+
+### `external_agent_sessions`
+
+Properties as follows:
+
+- `id`:
+- `externalId`:
+- `provider`:
+- `name`:
+- `description`:
+- `status`:
+- `sourceRepo`:
+- `startingBranch`:
+- `outputBranch`:
+- `pullRequestUrl`:
+- `planSummary`:
+- `planApprovedAt`:
+- `lastActivityAt`:
+- `errorMessage`:
+- `metadata`:
+- `createdAt`:
+- `updatedAt`:
+
+### `agent_session_activities`
+
+Properties as follows:
+
+- `id`:
+- `sessionId`:
+- `externalId`:
+- `type`:
+- `content`:
+- `metadata`:
+- `createdAt`:
+
+### `scout_competitors`
+
+Scout Competitor - Tracks competitor social media accounts for benchmarking.
+Stores basic information about competitors that a workspace is monitoring.
+Related to ScoutCompetitorPost for historical post data and ScoutBenchmark for performance comparisons.
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `platform`:
+- `handle`:
+- `name`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
+
+### `scout_competitor_posts`
+
+Scout Competitor Post - Historical posts from tracked competitor accounts.
+Stores social media posts with engagement metrics for competitor analysis.
+Posts are synced periodically and used for engagement benchmarking.
+
+Properties as follows:
+
+- `id`:
+- `competitorId`:
+- `platformPostId`:
+- `content`:
+- `postedAt`:
+- `likes`:
+- `comments`:
+- `shares`:
+- `metadata`:
+- `createdAt`:
+
+### `scout_benchmarks`
+
+Scout Benchmark - Performance comparison reports between workspace and competitors.
+Stores aggregated metrics comparing a workspace's social performance against tracked competitors.
+Generated periodically (e.g., weekly/monthly) for trend analysis.
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `period`:
+- `ownMetrics`:
+- `competitorMetrics`:
+- `generatedAt`:
+
+### `social_accounts`
+
+Properties as follows:
+
+- `id`:
+- `platform`:
+- `accountId`:
+- `accountName`:
+- `accessTokenEncrypted`:
+- `refreshTokenEncrypted`:
+- `tokenExpiresAt`:
+- `connectedAt`:
+- `status`:
+- `metadata`:
+- `userId`:
+- `workspaceId`:
+- `createdAt`:
+- `updatedAt`:
+
+### `social_posts`
+
+Properties as follows:
+
+- `id`:
+- `content`:
+- `scheduledAt`:
+- `publishedAt`:
+- `status`:
+- `metadata`:
+- `createdById`:
+- `createdAt`:
+- `updatedAt`:
+
+### `social_post_accounts`
+
+Properties as follows:
+
+- `id`:
+- `postId`:
+- `accountId`:
+- `platformPostId`:
+- `publishedAt`:
+- `status`:
+- `errorMessage`:
+
+### `social_metrics`
+
+Properties as follows:
+
+- `id`:
+- `accountId`:
+- `date`:
+- `followers`:
+- `following`:
+- `postsCount`:
+- `engagementRate`:
+- `impressions`:
+- `reach`:
+- `likes`:
+- `comments`:
+- `shares`:
+- `rawData`:
+- `createdAt`:
+- `updatedAt`:
+
+### `social_metric_anomalies`
+
+Detected anomalies in social media metrics
+Used by Pulse AI Agent for alerting
+Resolves #647
+
+Properties as follows:
+
+- `id`:
+- `accountId`:
+- `metricType`:
+- `detectedAt`:
+- `currentValue`:
+- `expectedValue`:
+- `zScore`:
+- `severity`:
+- `direction`:
+- `percentChange`:
+- `createdAt`:
+
+### `workspaces`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `slug`:
+- `description`:
+- `avatarUrl`:
+- `settings`:
+- `isPersonal`:
+- `createdAt`:
+- `updatedAt`:
+- `deletedAt`:
+
+### `workspace_members`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `userId`:
+- `role`:
+- `invitedAt`:
+- `joinedAt`:
+- `invitedById`:
+- `createdAt`:
+- `updatedAt`:
+
+### `connections`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `identityId`:
+- `displayName`:
+- `avatarUrl`:
+- `notes`:
+- `warmthScore`:
+- `warmthFactors`:
+- `lastInteraction`:
+- `interactionCount`:
+- `nextStep`:
+- `nextStepDueDate`:
+- `nextStepNotes`:
+- `meetupStatus`:
+- `meetupStatusUpdatedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `connection_platform_presence`
+
+Properties as follows:
+
+- `id`:
+- `connectionId`:
+- `platform`:
+- `handle`:
+- `profileUrl`:
+- `lastSeenAt`:
+
+### `connection_tags`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `name`:
+- `color`:
+
+### `connection_reminders`
+
+Properties as follows:
+
+- `id`:
+- `connectionId`:
+- `workspaceId`:
+- `type`:
+- `title`:
+- `description`:
+- `dueDate`:
+- `status`:
+- `snoozedUntil`:
+- `snoozeCount`:
+- `completedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `meetup_status_history`
+
+Properties as follows:
+
+- `id`:
+- `connectionId`:
+- `fromStatus`:
+- `toStatus`:
+- `notes`:
+- `updatedById`:
+- `createdAt`:
+
+### `brand_profiles`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `name`:
+- `mission`:
+- `values`:
+- `toneDescriptors`:
+- `logoUrl`:
+- `logoR2Key`:
+- `colorPalette`:
+- `version`:
+- `isActive`:
+- `createdById`:
+- `updatedById`:
+- `createdAt`:
+- `updatedAt`:
+
+### `brand_guardrails`
+
+Properties as follows:
+
+- `id`:
+- `brandProfileId`:
+- `type`:
+- `name`:
+- `description`:
+- `severity`:
+- `ruleConfig`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
+
+### `brand_vocabulary`
+
+Properties as follows:
+
+- `id`:
+- `brandProfileId`:
+- `type`:
+- `term`:
+- `replacement`:
+- `context`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
+
+### `content_rewrites`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `brandProfileId`:
+- `originalContent`:
+- `rewrittenContent`:
+- `platform`:
+- `status`:
+- `characterLimit`:
+- `changes`:
+- `toneAnalysis`:
+- `errorMessage`:
+- `processedAt`:
+- `createdById`:
+- `createdAt`:
+- `updatedAt`:
+
+### `scheduled_posts`
+
+Scheduled posts for the Calendar feature
+Supports multi-platform cross-posting and recurrence
+
+Properties as follows:
+
+- `id`:
+- `content`:
+- `scheduledAt`:
+- `timezone`:
+- `recurrenceRule`:
+- `recurrenceEndAt`:
+- `status`:
+- `metadata`:
+- `publishedAt`:
+- `errorMessage`:
+- `retryCount`:
+- `maxRetries`:
+- `lastAttemptAt`:
+- `nextOccurrenceAt`:
+- `workspaceId`:
+- `createdById`:
+- `createdAt`:
+- `updatedAt`:
+
+### `scheduled_post_accounts`
+
+Join table for cross-posting scheduled posts to multiple social accounts
+
+Properties as follows:
+
+- `id`:
+- `postId`:
+- `accountId`:
+- `platformPostId`:
+- `publishedAt`:
+- `status`:
+- `errorMessage`:
+
+### `inbox_items`
+
+Represents incoming social interactions that need attention
+
+Properties as follows:
+
+- `id`:
+- `type`:
+- `status`:
+- `platform`:
+- `platformItemId`:
+- `content`:
+- `senderName`:
+- `senderHandle`:
+- `senderAvatarUrl`:
+- `originalPostId`:
+- `originalPostContent`:
+- `metadata`:
+- `receivedAt`:
+- `readAt`:
+- `repliedAt`:
+- `resolvedAt`:
+- `workspaceId`:
+- `accountId`:
+- `assignedToId`:
+- `createdAt`:
+- `updatedAt`:
+- `sentiment`:
+- `sentimentScore`:
+- `priorityScore`:
+- `priorityFactors`:
+- `routingAnalyzedAt`:
+- `routingMetadata`:
+- `escalationStatus`:
+- `escalationLevel`:
+- `escalatedAt`:
+- `escalatedToId`:
+- `slaDeadline`:
+- `slaBreach`:
+
+### `relay_drafts`
+
+AI-generated response drafts for inbox items
+
+Properties as follows:
+
+- `id`:
+- `content`:
+- `confidenceScore`:
+- `status`:
+- `isPreferred`:
+- `reason`:
+- `metadata`:
+- `sentAt`:
+- `errorMessage`:
+- `inboxItemId`:
+- `reviewedById`:
+- `reviewedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `draft_edit_history`
+
+Properties as follows:
+
+- `id`:
+- `draftId`:
+- `originalContent`:
+- `editedContent`:
+- `editType`:
+- `changesSummary`:
+- `editDistance`:
+- `editedById`:
+- `createdAt`:
+
+### `draft_audit_logs`
+
+Properties as follows:
+
+- `id`:
+- `draftId`:
+- `action`:
+- `details`:
+- `ipAddress`:
+- `userAgent`:
+- `performedById`:
+- `createdAt`:
+
+### `crisis_detection_events`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `severity`:
+- `status`:
+- `triggerType`:
+- `triggerData`:
+- `affectedAccountIds`:
+- `acknowledgedAt`:
+- `acknowledgedById`:
+- `resolvedAt`:
+- `resolvedById`:
+- `responseNotes`:
+- `detectedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `crisis_response_templates`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `name`:
+- `category`:
+- `platform`:
+- `content`:
+- `variables`:
+- `isActive`:
+- `usageCount`:
+- `createdAt`:
+- `updatedAt`:
+
+### `crisis_alert_rules`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `name`:
+- `description`:
+- `ruleType`:
+- `conditions`:
+- `severity`:
+- `notifyChannels`:
+- `escalateAfterMinutes`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
+
+### `social_account_health`
+
+Tracks the health status of each connected social account
+Provides real-time monitoring of sync status, rate limits, and token health
+
+Properties as follows:
+
+- `id`:
+- `accountId`:
+- `healthScore`:
+- `status`:
+- `lastSuccessfulSync`:
+- `lastSyncAttempt`:
+- `lastError`:
+- `lastErrorAt`:
+- `consecutiveErrors`:
+- `totalErrorsLast24h`:
+- `rateLimitRemaining`:
+- `rateLimitTotal`:
+- `rateLimitResetAt`:
+- `isRateLimited`:
+- `tokenExpiresAt`:
+- `tokenRefreshRequired`:
+- `createdAt`:
+- `updatedAt`:
+
+### `recovery_guidance`
+
+Recovery guidance templates for common account issues
+Provides step-by-step instructions for resolving problems
+
+Properties as follows:
+
+- `id`:
+- `platform`:
+- `issueType`:
+- `severity`:
+- `title`:
+- `description`:
+- `steps`:
+- `estimatedTime`:
+- `requiresAction`:
+- `autoRecoverable`:
+- `createdAt`:
+- `updatedAt`:
+
+### `account_health_events`
+
+Account health events log for tracking status changes and issues
+
+Properties as follows:
+
+- `id`:
+- `accountId`:
+- `workspaceId`:
+- `eventType`:
+- `severity`:
+- `previousStatus`:
+- `newStatus`:
+- `previousScore`:
+- `newScore`:
+- `message`:
+- `details`:
+- `resolvedAt`:
+- `resolvedById`:
+- `resolutionNotes`:
+- `createdAt`:
+
+### `notifications`
+
+Stores notifications for workspace users
+Supports various notification types: health alerts, pulse anomalies, inbox mentions, system messages
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `userId`:
+- `type`:
+- `title`:
+- `message`:
+- `priority`:
+- `read`:
+- `readAt`:
+- `entityType`:
+- `entityId`:
+- `metadata`:
+- `createdAt`:
+
+### `policy_rules`
+
+Policy rules for content validation across platforms
+Stores platform-specific and global policy configurations
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `name`:
+- `description`:
+- `platform`:
+- `category`:
+- `ruleType`:
+- `conditions`:
+- `severity`:
+- `isBlocking`:
+- `isActive`:
+- `sourceUrl`:
+- `lastVerifiedAt`:
+- `version`:
+- `createdAt`:
+- `updatedAt`:
+
+### `policy_checks`
+
+Records of policy check executions
+Tracks what content was checked and the overall result
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `contentType`:
+- `contentId`:
+- `contentText`:
+- `contentMetadata`:
+- `platform`:
+- `checkScope`:
+- `status`:
+- `passedRules`:
+- `failedRules`:
+- `warningRules`:
+- `overallResult`:
+- `summary`:
+- `startedAt`:
+- `completedAt`:
+- `durationMs`:
+- `checkedById`:
+- `createdAt`:
+
+### `policy_violations`
+
+Individual policy violations detected during checks
+Links violations to specific rules and provides remediation guidance
+
+Properties as follows:
+
+- `id`:
+- `checkId`:
+- `ruleId`:
+- `workspaceId`:
+- `severity`:
+- `message`:
+- `matchedContent`:
+- `matchLocation`:
+- `confidence`:
+- `suggestedFix`:
+- `isOverridden`:
+- `overriddenById`:
+- `overrideReason`:
+- `overriddenAt`:
+- `createdAt`:
+
+### `scout_topics`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `name`:
+- `keywords`:
+- `isActive`:
+- `createdAt`:
+- `updatedAt`:
+
+### `scout_results`
+
+Properties as follows:
+
+- `id`:
+- `topicId`:
+- `platform`:
+- `platformId`:
+- `content`:
+- `author`:
+- `authorUrl`:
+- `postUrl`:
+- `engagement`:
+- `foundAt`:
+
+### `content_suggestions`
+
+AI-generated content suggestions based on trends and competitor analysis
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `title`:
+- `description`:
+- `draftContent`:
+- `contentType`:
+- `suggestedPlatforms`:
+- `trendData`:
+- `relevanceScore`:
+- `timelinessScore`:
+- `brandAlignmentScore`:
+- `overallScore`:
+- `status`:
+- `generatedAt`:
+- `expiresAt`:
+- `usedAt`:
+- `dismissedAt`:
+- `dismissalReason`:
+- `feedback`:
+
+### `allocator_campaigns`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `platform`:
+- `platformCampaignId`:
+- `name`:
+- `status`:
+- `budget`:
+- `spend`:
+- `metrics`:
+- `lastSyncAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `allocator_ad_sets`
+
+Properties as follows:
+
+- `id`:
+- `campaignId`:
+- `platformAdSetId`:
+- `name`:
+- `status`:
+- `budget`:
+- `spend`:
+- `createdAt`:
+- `updatedAt`:
+
+### `allocator_autopilot_configs`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `campaignId`:
+- `isEnabled`:
+- `mode`:
+- `maxDailyBudgetChange`:
+- `maxSingleChange`:
+- `minRoasThreshold`:
+- `maxCpaThreshold`:
+- `pauseOnAnomaly`:
+- `requireApprovalAbove`:
+- `encryptedSettings`:
+- `minBudget`:
+- `maxBudget`:
+- `cooldownMinutes`:
+- `isEmergencyStopped`:
+- `emergencyStoppedAt`:
+- `emergencyStoppedBy`:
+- `emergencyStopReason`:
+- `createdAt`:
+- `updatedAt`:
+
+### `allocator_guardrail_alerts`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `campaignId`:
+- `alertType`:
+- `severity`:
+- `message`:
+- `metadata`:
+- `acknowledged`:
+- `acknowledgedAt`:
+- `acknowledgedBy`:
+- `createdAt`:
+
+### `allocator_autopilot_executions`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `campaignId`:
+- `recommendationId`:
+- `recommendationType`:
+- `status`:
+- `previousBudget`:
+- `newBudget`:
+- `budgetChange`:
+- `executedAt`:
+- `metadata`:
+- `rollbackOfId`:
+- `rolledBackAt`:
+- `rolledBackReason`:
+- `rolledBackByUserId`:
+
+### `workflows`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `description`:
+- `status`:
+- `workspaceId`:
+- `createdById`:
+- `createdAt`:
+- `updatedAt`:
+
+### `workflow_versions`
+
+Properties as follows:
+
+- `id`:
+- `workflowId`:
+- `version`:
+- `description`:
+- `isPublished`:
+- `publishedAt`:
+- `createdAt`:
+
+### `workflow_steps`
+
+Properties as follows:
+
+- `id`:
+- `workflowVersionId`:
+- `name`:
+- `type`:
+- `sequence`:
+- `config`:
+- `dependencies`:
+- `createdAt`:
+
+### `workflow_runs`
+
+Properties as follows:
+
+- `id`:
+- `workflowId`:
+- `status`:
+- `startedAt`:
+- `endedAt`:
+
+### `workflow_run_logs`
+
+Properties as follows:
+
+- `id`:
+- `workflowRunId`:
+- `stepId`:
+- `message`:
+- `metadata`:
+- `timestamp`:
+
+### `allocator_daily_budget_moves`
+
+Properties as follows:
+
+- `id`:
+- `campaignId`:
+- `date`:
+- `totalMoved`:
+- `netChange`:
+- `executionCount`:
+- `createdAt`:
+- `updatedAt`:
+
+### `allocator_audit_logs`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `campaignId`:
+- `decisionType`:
+- `decisionOutcome`:
+- `recommendationSnapshot`:
+- `performanceSnapshot`:
+- `configSnapshot`:
+- `guardrailEvaluation`:
+- `previousState`:
+- `newState`:
+- `aiReasoning`:
+- `supportingData`:
+- `confidence`:
+- `executionId`:
+- `triggeredBy`:
+- `userId`:
+- `correlationId`:
+- `createdAt`:
+
+### `AbTest`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `description`:
+- `status`:
+- `winnerVariantId`:
+- `significanceLevel`:
+- `createdAt`:
+- `updatedAt`:
+
+### `AbTestVariant`
+
+Properties as follows:
+
+- `id`:
+- `abTestId`:
+- `name`:
+- `splitPercentage`:
+
+### `AbTestResult`
+
+Properties as follows:
+
+- `id`:
+- `visitorSessionId`:
+- `abTestVariantId`:
+- `converted`:
+- `createdAt`:
+
+### `feature_flags`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `isEnabled`:
+- `percentage`:
+- `enabledFor`:
+- `createdAt`:
+- `updatedAt`:
+
+### `asset_folders`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `workspaceId`:
+- `parentId`:
+- `createdById`:
+- `createdAt`:
+- `updatedAt`:
+
+### `asset_tags`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `workspaceId`:
+- `createdAt`:
+
+### `assets`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `folderId`:
+- `filename`:
+- `fileType`:
+- `sizeBytes`:
+- `width`:
+- `height`:
+- `duration`:
+- `storageProvider`:
+- `r2Bucket`:
+- `r2Key`:
+- `altText`:
+- `qualityScore`:
+- `analysisJson`:
+- `uploadedById`:
+- `createdAt`:
+- `updatedAt`:
+
+### `asset_tag_assignments`
+
+Properties as follows:
+
+- `assetId`:
+- `tagId`:
+- `assignedAt`:
+- `assignedById`:
+
+### `post_assets`
+
+Properties as follows:
+
+- `postId`:
+- `assetId`:
+
+### `scheduled_post_assets`
+
+Properties as follows:
+
+- `postId`:
+- `assetId`:
+
+### `identities`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `createdAt`:
+- `updatedAt`:
+
+### `identifiers`
+
+Properties as follows:
+
+- `id`:
+- `identityId`:
+- `type`:
+- `value`:
+- `createdAt`:
+
+### `_ConnectionToConnectionTag`
+
+Pair relationship table between [connections](#connections) and [connection_tags](#connection_tags)
+
+Properties as follows:
+
+- `A`:
+- `B`:

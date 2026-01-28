@@ -4,6 +4,12 @@ generator client {
   output        = "../src/generated/prisma"
 }
 
+generator markdown {
+  provider = "prisma-markdown"
+  output   = "../docs/DATABASE_SCHEMA.md"
+  title    = "Database Schema Documentation"
+}
+
 datasource db {
   provider = "postgresql"
 }
