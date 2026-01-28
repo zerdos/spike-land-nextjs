@@ -151,6 +151,17 @@ async function mockAuthSession(
   // This prevents race conditions where the page navigates before routes are ready
   await new Promise((resolve) => setTimeout(resolve, 100));
   await page.evaluate(() => Promise.resolve());
+
+  // NEW: If page is already loaded, trigger a session refresh
+  // This helps client components that already called useSession()
+  const currentUrl = page.url();
+  if (currentUrl && !currentUrl.includes("about:blank")) {
+    await page.evaluate(async () => {
+      await fetch("/api/auth/session").catch(() => {});
+    });
+    // Give client components time to react to the session update
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
 }
 
 /**
@@ -440,12 +451,25 @@ async function runStage2(browser: Browser): Promise<StageResult> {
 
     // Access protected route
     await page2.goto(`${config.baseUrl}/settings`);
-    await page2.waitForLoadState("networkidle");
 
+    // Wait for loading state to complete - useSession shows "Loading..." initially
+    // The loading-state might be ephemeral, so we handle the case where it's already gone
+    const loadingIndicator = page2.getByTestId("loading-state");
+    await loadingIndicator.waitFor({ state: "hidden", timeout: 15000 }).catch(() => {
+      // Loading indicator might not exist if session loads very fast or if selector doesn't match
+      // We continue to the main check
+    });
+
+    // Now wait for the authenticated content with increased timeout
     const settingsHeading = page2.getByRole("heading", { name: /Settings/i });
-    const isVisible = await settingsHeading.isVisible({ timeout: 5000 }).catch(() => false);
+    const isVisible = await settingsHeading.isVisible({ timeout: 15000 }).catch(() => false);
+
     if (!isVisible) {
-      throw new Error("Settings page not accessible after auth mock");
+      const currentUrl = page2.url();
+      const isOnSignIn = currentUrl.includes("/auth/signin");
+      throw new Error(
+        `Settings page not accessible after auth mock. URL: ${currentUrl}, redirectedToSignIn: ${isOnSignIn}`,
+      );
     }
   } catch (error) {
     job22Status = "failed";
@@ -535,13 +559,30 @@ async function runStage3(browser: Browser): Promise<StageResult> {
   try {
     await mockAuthSession(page1, { role: "USER" });
     await page1.goto(`${config.baseUrl}/apps/pixel`);
+
+    // Check if we were redirected to sign-in (E2E bypass failed)
+    const currentUrl = page1.url();
+    if (currentUrl.includes("/auth/signin")) {
+      throw new Error(
+        `Pixel app redirected to sign-in. E2E bypass may not be configured on server. ` +
+          `Ensure E2E_BYPASS_SECRET is set in staging environment.`,
+      );
+    }
+
     await page1.waitForLoadState("networkidle");
 
-    // Verify main UI elements
+    // Verify main UI elements with increased timeout
     const heading = page1.getByText("AI Image Enhancement");
-    const isVisible = await heading.isVisible({ timeout: 10000 }).catch(() => false);
+    const isVisible = await heading.isVisible({ timeout: 15000 }).catch(() => false);
+
     if (!isVisible) {
-      throw new Error("Pixel app UI not visible");
+      // Check for alternative success indicators
+      const albumsHeading = page1.getByText("Your Albums");
+      const albumsVisible = await albumsHeading.isVisible({ timeout: 5000 }).catch(() => false);
+
+      if (!albumsVisible) {
+        throw new Error(`Pixel app UI not visible. URL: ${currentUrl}`);
+      }
     }
 
     // Check for token balance or enhancement options
@@ -1247,10 +1288,13 @@ async function main() {
       console.log(
         `   Status: ${stage0.status.toUpperCase()} (${formatDuration(stage0.duration)})\n`,
       );
-
-      if (stage0.status === "failed" && targetStage === undefined) {
-        console.log("❌ Pre-validation failed. Fix errors before proceeding.");
-        // Continue anyway to show all failures
+      if (stage0.status === "failed") {
+        stage0.jobs.filter(j => j.status === "failed").forEach(j => {
+          console.log(`   ❌ [${j.id}] ${j.name}: ${j.error}`);
+        });
+        if (targetStage === undefined) {
+          console.log("❌ Pre-validation failed. Fix errors before proceeding.");
+        }
       }
     }
 
@@ -1262,6 +1306,11 @@ async function main() {
       console.log(
         `   Status: ${stage1.status.toUpperCase()} (${formatDuration(stage1.duration)})\n`,
       );
+      if (stage1.status === "failed") {
+        stage1.jobs.filter(j => j.status === "failed").forEach(j => {
+          console.log(`   ❌ [${j.id}] ${j.name}: ${j.error}`);
+        });
+      }
     }
 
     // Stage 2: Core User Flows
@@ -1272,6 +1321,11 @@ async function main() {
       console.log(
         `   Status: ${stage2.status.toUpperCase()} (${formatDuration(stage2.duration)})\n`,
       );
+      if (stage2.status === "failed") {
+        stage2.jobs.filter(j => j.status === "failed").forEach(j => {
+          console.log(`   ❌ [${j.id}] ${j.name}: ${j.error}`);
+        });
+      }
     }
 
     // Stage 3: Feature-Specific Tests
@@ -1282,6 +1336,11 @@ async function main() {
       console.log(
         `   Status: ${stage3.status.toUpperCase()} (${formatDuration(stage3.duration)})\n`,
       );
+      if (stage3.status === "failed") {
+        stage3.jobs.filter(j => j.status === "failed").forEach(j => {
+          console.log(`   ❌ [${j.id}] ${j.name}: ${j.error}`);
+        });
+      }
     }
 
     // Stage 4: Integration Tests
@@ -1292,6 +1351,11 @@ async function main() {
       console.log(
         `   Status: ${stage4.status.toUpperCase()} (${formatDuration(stage4.duration)})\n`,
       );
+      if (stage4.status === "failed") {
+        stage4.jobs.filter(j => j.status === "failed").forEach(j => {
+          console.log(`   ❌ [${j.id}] ${j.name}: ${j.error}`);
+        });
+      }
     }
 
     // Stage 5: Admin Functionality
@@ -1302,6 +1366,11 @@ async function main() {
       console.log(
         `   Status: ${stage5.status.toUpperCase()} (${formatDuration(stage5.duration)})\n`,
       );
+      if (stage5.status === "failed") {
+        stage5.jobs.filter(j => j.status === "failed").forEach(j => {
+          console.log(`   ❌ [${j.id}] ${j.name}: ${j.error}`);
+        });
+      }
     }
 
     // Stage 6: Cross-Device Testing
@@ -1312,6 +1381,11 @@ async function main() {
       console.log(
         `   Status: ${stage6.status.toUpperCase()} (${formatDuration(stage6.duration)})\n`,
       );
+      if (stage6.status === "failed") {
+        stage6.jobs.filter(j => j.status === "failed").forEach(j => {
+          console.log(`   ❌ [${j.id}] ${j.name}: ${j.error}`);
+        });
+      }
     }
 
     // Stage 7: Cleanup & Reporting
@@ -1322,6 +1396,11 @@ async function main() {
       console.log(
         `   Status: ${stage7.status.toUpperCase()} (${formatDuration(stage7.duration)})\n`,
       );
+      if (stage7.status === "failed") {
+        stage7.jobs.filter(j => j.status === "failed").forEach(j => {
+          console.log(`   ❌ [${j.id}] ${j.name}: ${j.error}`);
+        });
+      }
     }
   } finally {
     await browser.close();

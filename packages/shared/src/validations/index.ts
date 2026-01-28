@@ -149,3 +149,9 @@ export const SignUpRequestSchema = z.object({
 
 export type CheckEmailRequest = z.infer<typeof CheckEmailRequestSchema>;
 export type SignUpRequest = z.infer<typeof SignUpRequestSchema>;
+
+// ============================================================================
+// JSON Column Schemas (Phase 3 - Schema Improvement Plan)
+// ============================================================================
+
+export * from "./json-schemas";
