@@ -52,5 +52,68 @@ describe("codespace-tools", () => {
 
       expect(typeof server.name).toBe("string");
     });
+
+    it("accepts dot-separated codespace IDs (word.word.word.suffix format)", () => {
+      const server = createCodespaceServer("vibrant.wave.snap.kqii");
+
+      expect(server).toBeDefined();
+      expect(server.name).toBe("codespace");
+    });
+
+    it("accepts hyphen-separated codespace IDs", () => {
+      const server = createCodespaceServer("my-cool-codespace-123");
+
+      expect(server).toBeDefined();
+      expect(server.name).toBe("codespace");
+    });
+
+    it("accepts mixed dot and hyphen separators", () => {
+      const server = createCodespaceServer("my-app.v2.beta");
+
+      expect(server).toBeDefined();
+      expect(server.name).toBe("codespace");
+    });
+
+    it("rejects codespace IDs with path traversal (..)", () => {
+      expect(() => createCodespaceServer("test..invalid")).toThrow(
+        "Invalid codespace ID format",
+      );
+    });
+
+    it("rejects codespace IDs with forward slashes", () => {
+      expect(() => createCodespaceServer("test/path")).toThrow(
+        "Invalid codespace ID format",
+      );
+    });
+
+    it("rejects codespace IDs with backslashes", () => {
+      expect(() => createCodespaceServer("test\\path")).toThrow(
+        "Invalid codespace ID format",
+      );
+    });
+
+    it("rejects codespace IDs starting with dot", () => {
+      expect(() => createCodespaceServer(".hidden")).toThrow(
+        "Invalid codespace ID format",
+      );
+    });
+
+    it("rejects codespace IDs ending with dot", () => {
+      expect(() => createCodespaceServer("trailing.")).toThrow(
+        "Invalid codespace ID format",
+      );
+    });
+
+    it("rejects empty codespace IDs", () => {
+      expect(() => createCodespaceServer("")).toThrow(
+        "Invalid codespace ID format",
+      );
+    });
+
+    it("rejects codespace IDs with uppercase letters", () => {
+      expect(() => createCodespaceServer("TestCodespace")).toThrow(
+        "Invalid codespace ID format",
+      );
+    });
   });
 });

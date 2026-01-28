@@ -6,9 +6,10 @@ const TESTING_SPIKE_LAND = "https://testing.spike.land";
 
 /**
  * Regex pattern for valid codespace IDs
- * Must start with lowercase letter/number, contain only lowercase letters, numbers, and hyphens
+ * Must start with lowercase letter/number, contain only lowercase letters, numbers, hyphens, and dots
+ * Note: Dots are allowed for word-separated IDs like "vibrant.wave.snap.kqii"
  */
-const CODESPACE_ID_REGEX = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
+const CODESPACE_ID_REGEX = /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/;
 
 /**
  * Validates a codespace ID to prevent SSRF attacks
