@@ -5,6 +5,7 @@ import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 // Mock the useWorkspace hook
 const mockSwitchWorkspace = vi.fn();
+const mockToggleFavorite = vi.fn();
 const mockUseWorkspace = vi.fn();
 
 vi.mock("./WorkspaceContext", () => ({
@@ -25,6 +26,9 @@ describe("WorkspaceSwitcher", () => {
         error: null,
         switchWorkspace: mockSwitchWorkspace,
         refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
       });
 
       render(<WorkspaceSwitcher />);
@@ -45,6 +49,9 @@ describe("WorkspaceSwitcher", () => {
         error: null,
         switchWorkspace: mockSwitchWorkspace,
         refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
       });
 
       render(<WorkspaceSwitcher />);
@@ -66,6 +73,8 @@ describe("WorkspaceSwitcher", () => {
         avatarUrl: "https://example.com/avatar1.jpg",
         isPersonal: true,
         role: "OWNER" as const,
+        isFavorite: false,
+        lastAccessedAt: null,
       },
       {
         id: "ws-2",
@@ -75,6 +84,8 @@ describe("WorkspaceSwitcher", () => {
         avatarUrl: null,
         isPersonal: false,
         role: "MEMBER" as const,
+        isFavorite: false,
+        lastAccessedAt: null,
       },
     ];
 
@@ -86,6 +97,9 @@ describe("WorkspaceSwitcher", () => {
         error: null,
         switchWorkspace: mockSwitchWorkspace,
         refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
       });
 
       render(<WorkspaceSwitcher />);
@@ -101,6 +115,9 @@ describe("WorkspaceSwitcher", () => {
         error: null,
         switchWorkspace: mockSwitchWorkspace,
         refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
       });
 
       render(<WorkspaceSwitcher />);
@@ -117,6 +134,9 @@ describe("WorkspaceSwitcher", () => {
         error: null,
         switchWorkspace: mockSwitchWorkspace,
         refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
       });
 
       render(<WorkspaceSwitcher />);
@@ -135,6 +155,9 @@ describe("WorkspaceSwitcher", () => {
         error: null,
         switchWorkspace: mockSwitchWorkspace,
         refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
       });
 
       render(<WorkspaceSwitcher />);
@@ -142,7 +165,7 @@ describe("WorkspaceSwitcher", () => {
       const trigger = screen.getByTestId("workspace-switcher-trigger");
       await user.click(trigger);
 
-      expect(screen.getByText("Workspaces")).toBeInTheDocument();
+      expect(screen.getByText("All Workspaces")).toBeInTheDocument();
       expect(screen.getByTestId("workspace-option-personal-workspace"))
         .toBeInTheDocument();
       expect(screen.getByTestId("workspace-option-team-workspace"))
@@ -159,6 +182,9 @@ describe("WorkspaceSwitcher", () => {
         error: null,
         switchWorkspace: mockSwitchWorkspace,
         refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
       });
 
       render(<WorkspaceSwitcher />);
@@ -179,6 +205,9 @@ describe("WorkspaceSwitcher", () => {
         error: null,
         switchWorkspace: mockSwitchWorkspace,
         refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
       });
 
       render(<WorkspaceSwitcher />);
@@ -199,6 +228,9 @@ describe("WorkspaceSwitcher", () => {
         error: null,
         switchWorkspace: mockSwitchWorkspace,
         refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
       });
 
       render(<WorkspaceSwitcher />);
@@ -222,6 +254,9 @@ describe("WorkspaceSwitcher", () => {
         error: null,
         switchWorkspace: mockSwitchWorkspace,
         refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
       });
 
       render(<WorkspaceSwitcher />);
@@ -247,6 +282,8 @@ describe("WorkspaceSwitcher", () => {
         avatarUrl: null,
         isPersonal: true,
         role: "OWNER" as const,
+        isFavorite: false,
+        lastAccessedAt: null,
       };
 
       mockUseWorkspace.mockReturnValue({
@@ -256,6 +293,9 @@ describe("WorkspaceSwitcher", () => {
         error: null,
         switchWorkspace: mockSwitchWorkspace,
         refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
       });
 
       render(<WorkspaceSwitcher />);
@@ -265,6 +305,142 @@ describe("WorkspaceSwitcher", () => {
 
       expect(screen.getByTestId("workspace-option-only-workspace"))
         .toBeInTheDocument();
+    });
+  });
+
+  describe("favorites and recents sections", () => {
+    const mockWorkspacesWithMeta = [
+      {
+        id: "ws-1",
+        name: "Personal Workspace",
+        slug: "personal-workspace",
+        description: "My personal workspace",
+        avatarUrl: null,
+        isPersonal: true,
+        role: "OWNER" as const,
+        isFavorite: true,
+        lastAccessedAt: null,
+      },
+      {
+        id: "ws-2",
+        name: "Team Workspace",
+        slug: "team-workspace",
+        description: "Our team workspace",
+        avatarUrl: null,
+        isPersonal: false,
+        role: "MEMBER" as const,
+        isFavorite: false,
+        lastAccessedAt: null,
+      },
+      {
+        id: "ws-3",
+        name: "Client Workspace",
+        slug: "client-workspace",
+        description: "Client project",
+        avatarUrl: null,
+        isPersonal: false,
+        role: "MEMBER" as const,
+        isFavorite: false,
+        lastAccessedAt: null,
+      },
+    ];
+
+    it("shows Favorites section when there are favorited workspaces", async () => {
+      const user = userEvent.setup();
+
+      mockUseWorkspace.mockReturnValue({
+        workspace: mockWorkspacesWithMeta[1], // Team is current
+        workspaces: mockWorkspacesWithMeta,
+        isLoading: false,
+        error: null,
+        switchWorkspace: mockSwitchWorkspace,
+        refetch: vi.fn(),
+        favoriteIds: ["ws-1"], // Personal is favorited
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
+      });
+
+      render(<WorkspaceSwitcher />);
+
+      const trigger = screen.getByTestId("workspace-switcher-trigger");
+      await user.click(trigger);
+
+      expect(screen.getByText("Favorites")).toBeInTheDocument();
+    });
+
+    it("shows Recent section when there are recently accessed workspaces", async () => {
+      const user = userEvent.setup();
+
+      mockUseWorkspace.mockReturnValue({
+        workspace: mockWorkspacesWithMeta[0], // Personal is current
+        workspaces: mockWorkspacesWithMeta,
+        isLoading: false,
+        error: null,
+        switchWorkspace: mockSwitchWorkspace,
+        refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: ["ws-2", "ws-3"], // Team and Client are recent
+        toggleFavorite: mockToggleFavorite,
+      });
+
+      render(<WorkspaceSwitcher />);
+
+      const trigger = screen.getByTestId("workspace-switcher-trigger");
+      await user.click(trigger);
+
+      expect(screen.getByText("Recent")).toBeInTheDocument();
+    });
+
+    it("calls toggleFavorite when clicking star button", async () => {
+      const user = userEvent.setup();
+
+      mockUseWorkspace.mockReturnValue({
+        workspace: mockWorkspacesWithMeta[0],
+        workspaces: mockWorkspacesWithMeta,
+        isLoading: false,
+        error: null,
+        switchWorkspace: mockSwitchWorkspace,
+        refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
+      });
+
+      render(<WorkspaceSwitcher />);
+
+      const trigger = screen.getByTestId("workspace-switcher-trigger");
+      await user.click(trigger);
+
+      // Find and click a star button
+      const starButtons = screen.getAllByRole("button", { name: /favorites/i });
+      await user.click(starButtons[0]!);
+
+      expect(mockToggleFavorite).toHaveBeenCalled();
+    });
+
+    it("shows filled star for favorited workspace", async () => {
+      const user = userEvent.setup();
+
+      mockUseWorkspace.mockReturnValue({
+        workspace: mockWorkspacesWithMeta[0], // Personal is current and favorited
+        workspaces: mockWorkspacesWithMeta,
+        isLoading: false,
+        error: null,
+        switchWorkspace: mockSwitchWorkspace,
+        refetch: vi.fn(),
+        favoriteIds: ["ws-1"],
+        recentIds: [],
+        toggleFavorite: mockToggleFavorite,
+      });
+
+      render(<WorkspaceSwitcher />);
+
+      const trigger = screen.getByTestId("workspace-switcher-trigger");
+      await user.click(trigger);
+
+      // Check for "Remove from favorites" aria-label (indicates filled star)
+      const removeButton = screen.getByRole("button", { name: /remove from favorites/i });
+      expect(removeButton).toBeInTheDocument();
     });
   });
 });

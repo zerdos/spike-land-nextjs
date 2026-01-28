@@ -102,6 +102,10 @@ model User {
   // Identity Graph relation
   identity Identity?
 
+  // Multi-workspace management
+  workspaceFavorites   WorkspaceFavorite[]
+  workspaceRecentAccess WorkspaceRecentAccess[]
+
   @@map("users")
 }
 
@@ -2424,9 +2428,45 @@ model Workspace {
   connections    Connection[]
   connectionTags ConnectionTag[]
 
+  // Multi-workspace management
+  favorites     WorkspaceFavorite[]
+  recentAccess  WorkspaceRecentAccess[]
+
   @@index([slug])
   @@index([isPersonal])
   @@map("workspaces")
+}
+
+// ============================================================================
+// Multi-Workspace Management
+// ============================================================================
+
+model WorkspaceFavorite {
+  id          String   @id @default(cuid())
+  userId      String
+  workspaceId String
+  createdAt   DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([userId])
+  @@map("workspace_favorites")
+}
+
+model WorkspaceRecentAccess {
+  id          String   @id @default(cuid())
+  userId      String
+  workspaceId String
+  accessedAt  DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([userId, accessedAt(sort: Desc)])
+  @@map("workspace_recent_access")
 }
 
 model WorkspaceMember {

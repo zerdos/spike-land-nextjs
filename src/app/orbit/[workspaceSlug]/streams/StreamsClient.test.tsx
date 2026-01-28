@@ -21,6 +21,8 @@ const mockWorkspace = {
   avatarUrl: null,
   isPersonal: false,
   role: "OWNER" as const,
+  isFavorite: false,
+  lastAccessedAt: null,
 };
 
 vi.mock("@/components/orbit/WorkspaceContext", () => ({
@@ -31,6 +33,10 @@ vi.mock("@/components/orbit/WorkspaceContext", () => ({
     error: null,
     switchWorkspace: vi.fn(),
     refetch: vi.fn(),
+    favoriteIds: [],
+    recentIds: [],
+    toggleFavorite: vi.fn(),
+    recordAccess: vi.fn(),
   })),
 }));
 
@@ -187,6 +193,10 @@ describe("StreamsClient", () => {
       error: null,
       switchWorkspace: vi.fn(),
       refetch: vi.fn(),
+      favoriteIds: [],
+      recentIds: [],
+      toggleFavorite: vi.fn(),
+      recordAccess: vi.fn(),
     });
   });
 
@@ -621,6 +631,10 @@ describe("StreamsClient", () => {
         error: null,
         switchWorkspace: vi.fn(),
         refetch: vi.fn(),
+        favoriteIds: [],
+        recentIds: [],
+        toggleFavorite: vi.fn(),
+        recordAccess: vi.fn(),
       });
 
       const Wrapper = createWrapper();
