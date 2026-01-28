@@ -98,6 +98,10 @@
     "jules:process": "tsx scripts/ralph/process.ts",
     "jules:process:watch": "tsx scripts/ralph/process.ts --watch",
     "jules:process:dry": "tsx scripts/ralph/process.ts --dry-run",
+    "ralph:local": "tsx scripts/ralph-local/orchestrator.ts",
+    "ralph:local:watch": "tsx scripts/ralph-local/orchestrator.ts --watch",
+    "ralph:local:dry-run": "tsx scripts/ralph-local/orchestrator.ts --dry-run",
+    "ralph:local:status": "tsx scripts/ralph-local/orchestrator.ts --status",
     "reset:db": "tsx scripts/reset-staging-db.ts",
     "reset:db:confirm": "tsx scripts/reset-staging-db.ts --confirm"
   },
