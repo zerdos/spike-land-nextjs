@@ -29,7 +29,14 @@ function toPlatformEnum(key: string): SocialPlatform {
     instagram: SocialPlatform.INSTAGRAM,
     facebook: SocialPlatform.FACEBOOK,
   };
-  return mapping[key.toLowerCase()] || SocialPlatform.TWITTER;
+  const platform = mapping[key.toLowerCase()];
+  if (!platform) {
+    console.warn(
+      `Unknown platform "${key}" in competitor request, defaulting to TWITTER`,
+    );
+    return SocialPlatform.TWITTER;
+  }
+  return platform;
 }
 
 // GET - Fetches all competitors for a workspace with metrics

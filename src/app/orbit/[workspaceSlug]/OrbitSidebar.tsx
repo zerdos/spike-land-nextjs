@@ -15,6 +15,7 @@ const getNavItems = (workspaceSlug: string) => [
   { href: `/orbit/${workspaceSlug}/dashboard`, label: "Dashboard", icon: "📊" },
   { href: `/orbit/${workspaceSlug}/streams`, label: "Streams", icon: "📡" },
   { href: `/orbit/${workspaceSlug}/inbox`, label: "Inbox", icon: "📥" },
+  { href: `/orbit/${workspaceSlug}/relay`, label: "Relay", icon: "📤" },
   {
     href: `/orbit/${workspaceSlug}/connections`,
     label: "Connections",

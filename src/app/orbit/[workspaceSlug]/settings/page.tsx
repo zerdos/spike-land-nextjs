@@ -3,7 +3,7 @@ import { GeneralSettingsForm } from "@/components/orbit/settings/general-setting
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import prisma from "@/lib/prisma";
-import { ChevronRight, Inbox, Link2, Shield, Users } from "lucide-react";
+import { CheckSquare, ChevronRight, Inbox, Link2, Shield, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -52,6 +52,12 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
       icon: Inbox,
       title: "Inbox Smart Routing",
       description: "Configure AI-powered analysis and priority scoring",
+    },
+    {
+      href: `settings/approvals`,
+      icon: CheckSquare,
+      title: "Approval Workflow",
+      description: "Configure response approval settings and approver roles",
     },
     {
       href: `settings/members`,
