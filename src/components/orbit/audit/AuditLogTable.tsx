@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-interface AuditLog {
+export interface AuditLog {
   id: string;
   action: string;
   userId: string;

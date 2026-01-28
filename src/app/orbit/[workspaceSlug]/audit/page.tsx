@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AuditLogTable } from "@/components/orbit/audit/AuditLogTable";
+import { AuditLogTable, type AuditLog } from "@/components/orbit/audit/AuditLogTable";
 import { AuditLogFilters } from "@/components/orbit/audit/AuditLogFilters";
 import { AuditLogExport } from "@/components/orbit/audit/AuditLogExport";
 import { RetentionPolicyManager } from "@/components/orbit/audit/RetentionPolicyManager";
@@ -19,7 +19,7 @@ interface AuditPageProps {
 
 export default function AuditPage({ params }: AuditPageProps) {
   const [workspaceSlug, setWorkspaceSlug] = useState<string>("");
-  const [logs, setLogs] = useState<Array<Record<string, unknown>>>([]);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
     search: "",
