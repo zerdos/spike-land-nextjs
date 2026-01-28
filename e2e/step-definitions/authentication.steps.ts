@@ -18,11 +18,12 @@ async function waitForSessionPropagation(
         const profileTab = document.querySelector('[data-testid="profile-tab"]');
         // Also check for admin-specific elements
         const adminSidebar = document.querySelector("aside");
-        const adminHeading = document.querySelector('h1:has-text("Admin")');
+        const adminHeading = document.querySelector("h1");
+        const isAdminPage = adminHeading?.textContent?.includes("Admin");
         return userAvatar !== null ||
           settingsPage !== null ||
           profileTab !== null ||
-          (adminSidebar !== null && adminHeading !== null);
+          (adminSidebar !== null && isAdminPage);
       },
       { timeout: 10000 },
     ).catch(() => {
