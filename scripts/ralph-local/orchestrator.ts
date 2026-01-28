@@ -11,14 +11,8 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import { join, resolve } from "path";
 import matter from "gray-matter";
-import type {
-  LocalIterationResult,
-  OrchestratorState,
-  RalphLocalConfig,
-} from "./types";
-import { addBlockedTicket, loadState, markTicketCompleted, markTicketFailed, saveState, updateAgent } from "./state-manager";
+import { join, resolve } from "path";
 import {
   getAgentOutput,
   isAgentCompleted,
@@ -27,12 +21,15 @@ import {
   parseAgentMarkers,
   stopAgent,
 } from "./agent-spawner";
-import { cleanupStaleWorktrees, cleanupWorktree, syncWorktreeWithMain } from "./worktree-manager";
+import { getPRStatus, listRalphPRs, mergePR } from "./pr-manager";
 import {
-  getPRStatus,
-  listRalphPRs,
-  mergePR,
-} from "./pr-manager";
+  addBlockedTicket,
+  loadState,
+  markTicketCompleted,
+  markTicketFailed,
+  saveState,
+  updateAgent,
+} from "./state-manager";
 import {
   enqueueCode,
   enqueuePlan,
@@ -41,6 +38,19 @@ import {
   routeIssuesToPlanners,
   routePlansToDevelopers,
 } from "./ticket-router";
+import type { LocalIterationResult, OrchestratorState, RalphLocalConfig } from "./types";
+import { cleanupStaleWorktrees, cleanupWorktree, syncWorktreeWithMain } from "./worktree-manager";
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+/**
+ * Normalize a ticket ID to always have the # prefix
+ */
+function normalizeTicketId(ticketId: string): string {
+  return ticketId.startsWith("#") ? ticketId : `#${ticketId}`;
+}
 
 // ============================================================================
 // Configuration
@@ -134,7 +144,9 @@ async function runOrchestrationLoop(
   result.iteration = state.iteration;
 
   console.log(`\n🔄 Iteration ${state.iteration}`);
-  console.log(`   Pools: ${config.poolSizes.planning}P / ${config.poolSizes.developer}D / ${config.poolSizes.tester}T`);
+  console.log(
+    `   Pools: ${config.poolSizes.planning}P / ${config.poolSizes.developer}D / ${config.poolSizes.tester}T`,
+  );
 
   if (dryRun) {
     console.log("   🔒 DRY RUN MODE - no changes will be made");
@@ -333,7 +345,7 @@ async function step1_checkPRStatus(
 async function step2_collectAgentOutputs(
   state: OrchestratorState,
   _config: RalphLocalConfig,
-): Promise<{ plans: number; code: number; prs: number }> {
+): Promise<{ plans: number; code: number; prs: number; }> {
   let plans = 0;
   let code = 0;
   let prs = 0;
@@ -356,25 +368,28 @@ async function step2_collectAgentOutputs(
       for (const marker of markers) {
         switch (marker.type) {
           case "PLAN_READY":
-            console.log(`   📄 Plan ready: ${marker.ticketId}`);
-            const issueNum = parseInt(marker.ticketId.replace("#", ""), 10);
-            enqueuePlan(state, marker.ticketId, issueNum, "", marker.path, agent.id);
+            const normalizedPlanTicketId = normalizeTicketId(marker.ticketId);
+            console.log(`   📄 Plan ready: ${normalizedPlanTicketId}`);
+            const issueNum = parseInt(normalizedPlanTicketId.replace("#", ""), 10);
+            enqueuePlan(state, normalizedPlanTicketId, issueNum, "", marker.path, agent.id);
             plans++;
             break;
 
           case "CODE_READY":
-            console.log(`   💻 Code ready: ${marker.ticketId}`);
-            const codeIssueNum = parseInt(marker.ticketId.replace("#", ""), 10);
+            const normalizedCodeTicketId = normalizeTicketId(marker.ticketId);
+            console.log(`   💻 Code ready: ${normalizedCodeTicketId}`);
+            const codeIssueNum = parseInt(normalizedCodeTicketId.replace("#", ""), 10);
             if (agent.worktree) {
-              enqueueCode(state, marker.ticketId, codeIssueNum, agent.worktree, "", agent.id);
+              enqueueCode(state, normalizedCodeTicketId, codeIssueNum, agent.worktree, "", agent.id);
               code++;
             }
             break;
 
           case "PR_CREATED":
-            console.log(`   🔗 PR created: ${marker.ticketId} -> ${marker.prUrl}`);
+            const normalizedPrTicketId = normalizeTicketId(marker.ticketId);
+            console.log(`   🔗 PR created: ${normalizedPrTicketId} -> ${marker.prUrl}`);
             // Update pending code with PR info
-            const codeWork = state.pendingCode.find((c) => c.ticketId === marker.ticketId);
+            const codeWork = state.pendingCode.find((c) => c.ticketId === normalizedPrTicketId);
             if (codeWork) {
               codeWork.prUrl = marker.prUrl;
               codeWork.prNumber = marker.prNumber;
@@ -384,9 +399,10 @@ async function step2_collectAgentOutputs(
             break;
 
           case "BLOCKED":
-            console.log(`   🚫 Blocked: ${marker.ticketId} - ${marker.reason}`);
+            const normalizedBlockedTicketId = normalizeTicketId(marker.ticketId);
+            console.log(`   🚫 Blocked: ${normalizedBlockedTicketId} - ${marker.reason}`);
             addBlockedTicket(state, {
-              ticketId: marker.ticketId,
+              ticketId: normalizedBlockedTicketId,
               reason: marker.reason,
               blockedAt: new Date().toISOString(),
               retries: 0,
@@ -395,8 +411,9 @@ async function step2_collectAgentOutputs(
             break;
 
           case "ERROR":
-            console.log(`   ❌ Error: ${marker.ticketId} - ${marker.error}`);
-            markTicketFailed(state, marker.ticketId);
+            const normalizedErrorTicketId = normalizeTicketId(marker.ticketId);
+            console.log(`   ❌ Error: ${normalizedErrorTicketId} - ${marker.error}`);
+            markTicketFailed(state, normalizedErrorTicketId);
             break;
         }
       }
@@ -435,7 +452,11 @@ async function step6_handleBlockedAgents(
   console.log(`   ${blockedTickets.length} blocked tickets`);
 
   for (const blocked of blockedTickets) {
-    console.log(`   🔄 ${blocked.ticketId}: ${blocked.reason} (retry ${blocked.retries + 1}/${config.maxRetries})`);
+    console.log(
+      `   🔄 ${blocked.ticketId}: ${blocked.reason} (retry ${
+        blocked.retries + 1
+      }/${config.maxRetries})`,
+    );
 
     if (!dryRun) {
       blocked.retries++;
@@ -507,7 +528,11 @@ function generateSummary(result: LocalIterationResult, state: OrchestratorState)
    ${summary}
 
    Queues: ${stats.pendingPlans} plans | ${stats.pendingCode} code
-   Agents: ${stats.runningPlanners}/${stats.idlePlanners + stats.runningPlanners}P | ${stats.runningDevelopers}/${stats.idleDevelopers + stats.runningDevelopers}D | ${stats.runningTesters}/${stats.idleTesters + stats.runningTesters}T
+   Agents: ${stats.runningPlanners}/${
+    stats.idlePlanners + stats.runningPlanners
+  }P | ${stats.runningDevelopers}/${
+    stats.idleDevelopers + stats.runningDevelopers
+  }D | ${stats.runningTesters}/${stats.idleTesters + stats.runningTesters}T
    Completed: ${state.completedTickets.length} | Failed: ${state.failedTickets.length} | Blocked: ${state.blockedTickets.length}
 `;
 }
@@ -527,9 +552,15 @@ function showStatus(config: RalphLocalConfig): void {
   console.log(`Last Updated: ${state.lastUpdated}`);
 
   console.log("\n📋 Agent Pools:");
-  console.log(`   Planning:  ${stats.runningPlanners} running / ${stats.idlePlanners} idle (${config.poolSizes.planning} total)`);
-  console.log(`   Developer: ${stats.runningDevelopers} running / ${stats.idleDevelopers} idle (${config.poolSizes.developer} total)`);
-  console.log(`   Tester:    ${stats.runningTesters} running / ${stats.idleTesters} idle (${config.poolSizes.tester} total)`);
+  console.log(
+    `   Planning:  ${stats.runningPlanners} running / ${stats.idlePlanners} idle (${config.poolSizes.planning} total)`,
+  );
+  console.log(
+    `   Developer: ${stats.runningDevelopers} running / ${stats.idleDevelopers} idle (${config.poolSizes.developer} total)`,
+  );
+  console.log(
+    `   Tester:    ${stats.runningTesters} running / ${stats.idleTesters} idle (${config.poolSizes.tester} total)`,
+  );
 
   console.log("\n📬 Queues:");
   console.log(`   Pending Plans: ${stats.pendingPlans}`);
