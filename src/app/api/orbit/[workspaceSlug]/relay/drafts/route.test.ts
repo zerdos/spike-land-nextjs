@@ -360,8 +360,89 @@ describe("Relay Drafts API", () => {
 
       expect(response.status).toBe(200);
       const data = await response.json();
-      expect(data.drafts).toHaveLength(1);
-      expect(data.drafts[0].content).toBe("Thank you!");
+      // API returns array directly, not wrapped in object
+      expect(data).toHaveLength(1);
+      expect(data[0].content).toBe("Thank you!");
+    });
+
+    it("returns drafts queue with inbox item details", async () => {
+      mockAuth.mockResolvedValue(mockSession);
+      vi.mocked(prisma.workspace.findFirst).mockResolvedValue(
+        mockWorkspace as never,
+      );
+      vi.mocked(prisma.relayDraft.findMany).mockResolvedValue([
+        {
+          id: "draft-1",
+          content: "Thank you!",
+          confidenceScore: 0.9,
+          isPreferred: true,
+          status: "PENDING",
+          inboxItem: {
+            id: "inbox-123",
+            platform: "TWITTER",
+            senderName: "John Doe",
+            senderHandle: "johndoe",
+            content: "Great product!",
+          },
+        },
+      ] as never);
+
+      const request = new NextRequest(
+        "http://localhost/api/orbit/test-workspace/relay/drafts?queue=true",
+      );
+
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: "test-workspace" }),
+      });
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data).toHaveLength(1);
+      expect(data[0].inboxItem).toBeDefined();
+      expect(data[0].inboxItem.senderName).toBe("John Doe");
+    });
+
+    it("filters queue by status", async () => {
+      mockAuth.mockResolvedValue(mockSession);
+      vi.mocked(prisma.workspace.findFirst).mockResolvedValue(
+        mockWorkspace as never,
+      );
+      vi.mocked(prisma.relayDraft.findMany).mockResolvedValue([
+        {
+          id: "draft-1",
+          content: "Approved draft",
+          status: "APPROVED",
+          inboxItem: {
+            id: "inbox-123",
+            platform: "TWITTER",
+            senderName: "Jane Doe",
+            senderHandle: "janedoe",
+            content: "Nice work!",
+          },
+        },
+      ] as never);
+
+      const request = new NextRequest(
+        "http://localhost/api/orbit/test-workspace/relay/drafts?queue=true&status=APPROVED",
+      );
+
+      const response = await GET(request, {
+        params: Promise.resolve({ workspaceSlug: "test-workspace" }),
+      });
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data).toHaveLength(1);
+      expect(data[0].status).toBe("APPROVED");
+
+      // Verify the where clause included status filter
+      expect(prisma.relayDraft.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: "APPROVED",
+          }),
+        }),
+      );
     });
   });
 });

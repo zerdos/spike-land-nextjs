@@ -161,10 +161,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 }
 
 /**
- * GET /api/orbit/[workspaceSlug]/relay/drafts - Get drafts for an inbox item
+ * GET /api/orbit/[workspaceSlug]/relay/drafts - Get drafts for inbox item or queue
  *
  * Query Parameters:
- * - inboxItemId: Required. ID of the inbox item
+ * - inboxItemId: ID of the inbox item (required if queue is not set)
+ * - queue: If "true", returns all drafts for the workspace (approval queue view)
+ * - status: Filter by status (PENDING, APPROVED, REJECTED, SENT, FAILED)
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const { workspaceSlug } = await params;
@@ -202,7 +204,52 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   // Parse query parameters
   const searchParams = request.nextUrl.searchParams;
   const inboxItemId = searchParams.get("inboxItemId");
+  const isQueueView = searchParams.get("queue") === "true";
+  const statusFilter = searchParams.get("status");
 
+  // Queue view: return all drafts for the workspace with inbox item details
+  if (isQueueView) {
+    const whereClause: Record<string, unknown> = {
+      inboxItem: {
+        workspaceId: workspace.id,
+      },
+    };
+
+    if (statusFilter) {
+      whereClause["status"] = statusFilter;
+    }
+
+    const { data: drafts, error: draftsError } = await tryCatch(
+      prisma.relayDraft.findMany({
+        where: whereClause,
+        include: {
+          inboxItem: {
+            select: {
+              id: true,
+              platform: true,
+              senderName: true,
+              senderHandle: true,
+              content: true,
+            },
+          },
+        },
+        orderBy: [{ createdAt: "desc" }],
+        take: 100,
+      }),
+    );
+
+    if (draftsError) {
+      console.error("Failed to fetch drafts queue:", draftsError);
+      return NextResponse.json(
+        { error: "Failed to fetch drafts" },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json(drafts);
+  }
+
+  // Regular view: get drafts for a specific inbox item
   if (!inboxItemId) {
     return NextResponse.json(
       { error: "inboxItemId is required" },
@@ -244,5 +291,5 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     );
   }
 
-  return NextResponse.json({ drafts });
+  return NextResponse.json(drafts);
 }
