@@ -86,6 +86,11 @@ export class RouteHandler {
       wrapped: this.liveRoutes.handleWrapHTMLRoute.bind(this.liveRoutes),
       screenshot: this.liveRoutes.handleScreenShotRoute.bind(this.liveRoutes),
 
+      // Version routes (for short path format inside Durable Object)
+      // When fetchHandler delegates to DO, path is ["version", ...] not ["live", "cs", "version", ...]
+      version: this.liveRoutes.handleVersionRoute.bind(this.liveRoutes),
+      versions: this.liveRoutes.handleVersionsRoute.bind(this.liveRoutes),
+
       // AI routes
       messages: this.aiRoutes.handleMessagesRoute.bind(this.aiRoutes),
 
