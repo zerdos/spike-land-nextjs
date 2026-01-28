@@ -1,6 +1,5 @@
 import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { GET } from "./route";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -14,12 +13,22 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+vi.mock("@/lib/workspace/aggregate-queries", () => ({
+  getUserFavorites: vi.fn(),
+  getUserRecentWorkspaces: vi.fn(),
+}));
+
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { getUserFavorites, getUserRecentWorkspaces } from "@/lib/workspace/aggregate-queries";
+import { GET } from "./route";
 
 describe("Workspaces API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Set defaults for the new functions
+    (getUserFavorites as Mock).mockResolvedValue([]);
+    (getUserRecentWorkspaces as Mock).mockResolvedValue([]);
   });
 
   describe("GET /api/workspaces", () => {
@@ -56,9 +65,11 @@ describe("Workspaces API", () => {
 
       expect(response.status).toBe(200);
       expect(data.workspaces).toEqual([]);
+      expect(data.favorites).toEqual([]);
+      expect(data.recentIds).toEqual([]);
     });
 
-    it("returns workspaces with role for authenticated user", async () => {
+    it("returns workspaces with role and isFavorite for authenticated user", async () => {
       (auth as Mock).mockResolvedValue({
         user: { id: "user_123" },
       });
@@ -86,12 +97,16 @@ describe("Workspaces API", () => {
           },
         },
       ]);
+      (getUserFavorites as Mock).mockResolvedValue(["ws_1"]);
+      (getUserRecentWorkspaces as Mock).mockResolvedValue(["ws_2", "ws_1"]);
 
       const response = await GET();
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data.workspaces).toHaveLength(2);
+      expect(data.favorites).toEqual(["ws_1"]);
+      expect(data.recentIds).toEqual(["ws_2", "ws_1"]);
 
       expect(data.workspaces[0]).toEqual({
         id: "ws_1",
@@ -101,6 +116,7 @@ describe("Workspaces API", () => {
         avatarUrl: "https://example.com/avatar.jpg",
         isPersonal: true,
         role: "OWNER",
+        isFavorite: true,
       });
 
       expect(data.workspaces[1]).toEqual({
@@ -111,6 +127,7 @@ describe("Workspaces API", () => {
         avatarUrl: null,
         isPersonal: false,
         role: "MEMBER",
+        isFavorite: false,
       });
     });
 
@@ -146,6 +163,18 @@ describe("Workspaces API", () => {
       });
     });
 
+    it("fetches favorites and recents in parallel", async () => {
+      (auth as Mock).mockResolvedValue({
+        user: { id: "user_123" },
+      });
+      (prisma.workspaceMember.findMany as Mock).mockResolvedValue([]);
+
+      await GET();
+
+      expect(getUserFavorites).toHaveBeenCalledWith("user_123");
+      expect(getUserRecentWorkspaces).toHaveBeenCalledWith("user_123", 10);
+    });
+
     it("returns 500 when database query fails", async () => {
       (auth as Mock).mockResolvedValue({
         user: { id: "user_123" },
@@ -167,6 +196,42 @@ describe("Workspaces API", () => {
         "Failed to fetch workspaces:",
         expect.any(Error),
       );
+
+      consoleError.mockRestore();
+    });
+
+    it("continues without favorites/recents when they fail", async () => {
+      (auth as Mock).mockResolvedValue({
+        user: { id: "user_123" },
+      });
+      (prisma.workspaceMember.findMany as Mock).mockResolvedValue([
+        {
+          role: "OWNER",
+          workspace: {
+            id: "ws_1",
+            name: "Test",
+            slug: "test",
+            description: null,
+            avatarUrl: null,
+            isPersonal: true,
+          },
+        },
+      ]);
+      (getUserFavorites as Mock).mockRejectedValue(new Error("Failed"));
+      (getUserRecentWorkspaces as Mock).mockRejectedValue(new Error("Failed"));
+
+      const consoleError = vi.spyOn(console, "error").mockImplementation(
+        () => {},
+      );
+
+      const response = await GET();
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.workspaces).toHaveLength(1);
+      expect(data.favorites).toEqual([]);
+      expect(data.recentIds).toEqual([]);
+      expect(consoleError).toHaveBeenCalledTimes(2);
 
       consoleError.mockRestore();
     });
