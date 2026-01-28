@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { useSession } from "next-auth/react";
 import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -126,7 +126,9 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    expect(screen.getByText("Most Popular")).toBeDefined();
+    // Use within() to scope to token packages grid (Pixel section)
+    const tokenPackagesGrid = screen.getByTestId("token-packages-grid");
+    expect(within(tokenPackagesGrid).getByText("Most Popular")).toBeDefined();
   });
 
   it('shows "Best Value" badge for power package', () => {
@@ -137,7 +139,9 @@ describe("PricingPage", () => {
 
     render(<PricingPage />);
 
-    expect(screen.getByText("Best Value")).toBeDefined();
+    // Use within() to scope to token packages grid (Pixel section)
+    const tokenPackagesGrid = screen.getByTestId("token-packages-grid");
+    expect(within(tokenPackagesGrid).getByText("Best Value")).toBeDefined();
   });
 
   it("shows Save percentage badges on non-starter packages", () => {
