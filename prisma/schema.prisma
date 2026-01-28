@@ -109,15 +109,69 @@ model CampaignBrief {
   id                 String   @id @default(cuid())
   userId             String
   name               String
+  // Phase 4: JSON columns kept for expand-contract migration pattern
+  // These will be removed after data is migrated to typed models
   targetAudience     Json
   campaignObjectives Json
   status             String   @default("DRAFT")
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user                  User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Phase 4: New typed relations (expand phase)
+  targetAudienceTyped   CampaignTargetAudience?
+  objectivesTyped       CampaignObjective[]
 
   @@index([userId])
   @@map("campaign_briefs")
+}
+
+// =============================================================================
+// Campaign Brief Typed Models (Phase 4 - JSON Extraction)
+// =============================================================================
+
+// Typed target audience - replaces CampaignBrief.targetAudience JSON
+model CampaignTargetAudience {
+  id         String        @id @default(cuid())
+  briefId    String        @unique
+  ageMin     Int?
+  ageMax     Int?
+  genders    String[] // ["male", "female", "other", "all"]
+  locations  String[] // ISO country codes or city names
+  interests  String[]
+  behaviors  String[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  brief CampaignBrief @relation(fields: [briefId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_target_audiences")
+}
+
+// Typed campaign objective - replaces CampaignBrief.campaignObjectives JSON array
+model CampaignObjective {
+  id          String        @id @default(cuid())
+  briefId     String
+  type        ObjectiveType
+  metric      String // e.g., "impressions", "clicks", "conversions"
+  targetValue Float?
+  deadline    DateTime?
+  priority    Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  brief CampaignBrief @relation(fields: [briefId], references: [id], onDelete: Cascade)
+
+  @@index([briefId])
+  @@map("campaign_objectives")
+}
+
+enum ObjectiveType {
+  AWARENESS
+  ENGAGEMENT
+  CONVERSION
+  RETENTION
+  ADVOCACY
 }
 
 model Account {
