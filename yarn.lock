@@ -15193,10 +15193,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphmatch@npm:^1.1.0":
+"graphmatch@npm:1.1.0":
   version: 1.1.0
   resolution: "graphmatch@npm:1.1.0"
   checksum: 10c9/0475a039799aa483ba833bbdfa47d968a0bb2bffcd53192bbc2153ff512603ff70da7936cb8371c16ac86543c0d74ff9aab77fb3bc1aef0da00457863ec1ace3
+  languageName: node
+  linkType: hard
+
+"graphmatch@patch:graphmatch@npm%3A1.1.0#~/.yarn/patches/graphmatch-npm-1.1.0-d85b5ee191.patch":
+  version: 1.1.0
+  resolution: "graphmatch@patch:graphmatch@npm%3A1.1.0#~/.yarn/patches/graphmatch-npm-1.1.0-d85b5ee191.patch::version=1.1.0&hash=3d79d0"
+  checksum: 10c9/9ca3054c0b707fee2d0c64478025ff17bc8069fc1c7c283b37766f48afff633ad28ed56bdefca9a81ef59c57e28d7c751f2a50782dc31de3c06878d903fa3d11
   languageName: node
   linkType: hard
 
