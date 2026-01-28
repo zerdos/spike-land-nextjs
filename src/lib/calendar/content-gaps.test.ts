@@ -35,7 +35,6 @@ vi.mock("./best-time-service", () => ({
 import prisma from "@/lib/prisma";
 import { getBestTimeRecommendations } from "./best-time-service";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MockedPrismaResult = any;
 
 // Helper to create mock social account (as partial type for testing)

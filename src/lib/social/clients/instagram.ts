@@ -11,6 +11,7 @@ import type { SocialPlatform } from "@prisma/client";
 import { tryCatch } from "@/lib/try-catch";
 
 import type {
+  CommentPreview,
   InstagramMedia,
   ISocialClient,
   OAuthTokenResponse,
@@ -291,6 +292,43 @@ export class InstagramClient implements ISocialClient {
     }
 
     return response.json() as Promise<{ id: string; }>;
+  }
+
+  /**
+   * Get recent comments for an Instagram media post
+   */
+  async getComments(mediaId: string, limit = 3): Promise<CommentPreview[]> {
+    this.validateConfig();
+
+    const url = new URL(`${GRAPH_API_BASE}/${mediaId}/comments`);
+    url.searchParams.set("fields", "id,text,username,timestamp");
+    url.searchParams.set("limit", limit.toString());
+    url.searchParams.set("access_token", this.accessToken);
+
+    const response = await fetch(url.toString());
+
+    if (!response.ok) {
+      // Return empty array on failure rather than throwing
+      return [];
+    }
+
+    interface InstagramComment {
+      id: string;
+      text: string;
+      username: string;
+      timestamp: string;
+    }
+
+    const data: { data?: InstagramComment[]; } = await response.json();
+
+    return (data.data || []).map((comment) => ({
+      id: comment.id,
+      content: comment.text || "",
+      senderName: comment.username || "Unknown",
+      // Instagram Graph API doesn't provide commenter avatars directly
+      senderAvatarUrl: undefined,
+      createdAt: new Date(comment.timestamp),
+    }));
   }
 
   /**

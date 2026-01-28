@@ -6,6 +6,7 @@
  */
 
 import type {
+  CommentPreview,
   ISocialClient,
   OAuthTokenResponse,
   PostOptions,
@@ -14,6 +15,7 @@ import type {
   SocialClientOptions,
   SocialMetricsData,
   SocialPost,
+  TwitterMedia,
   TwitterTweet,
   TwitterUser,
 } from "../types";
@@ -52,6 +54,10 @@ interface TwitterUserResponse {
 
 interface TwitterTweetsResponse {
   data?: TwitterTweet[];
+  includes?: {
+    media?: TwitterMedia[];
+    users?: TwitterUser[];
+  };
   meta?: {
     result_count: number;
     next_token?: string;
@@ -417,7 +423,9 @@ export class TwitterClient implements ISocialClient {
 
     const params = new URLSearchParams({
       max_results: Math.min(Math.max(limit, 5), 100).toString(), // Twitter allows 5-100
-      "tweet.fields": "id,text,created_at,public_metrics,author_id",
+      "tweet.fields": "id,text,created_at,public_metrics,author_id,attachments",
+      expansions: "attachments.media_keys",
+      "media.fields": "url,preview_image_url,type",
     });
 
     const response = await fetch(
@@ -438,33 +446,59 @@ export class TwitterClient implements ISocialClient {
       );
     }
 
-    const { data: tweets } = (await response.json()) as TwitterTweetsResponse;
+    const { data: tweets, includes } = (await response.json()) as TwitterTweetsResponse;
 
     if (!tweets || tweets.length === 0) {
       return [];
     }
 
+    // Build media map from includes for quick lookup
+    const mediaMap = new Map<string, TwitterMedia>();
+    if (includes?.media) {
+      for (const media of includes.media) {
+        mediaMap.set(media.media_key, media);
+      }
+    }
+
     // Get username for URLs with caching
     const username = await this.getUsername();
 
-    return tweets.map((tweet) => ({
-      id: tweet.id,
-      platformPostId: tweet.id,
-      platform: "TWITTER" as const,
-      content: tweet.text,
-      publishedAt: tweet.created_at ? new Date(tweet.created_at) : new Date(),
-      url: `https://twitter.com/${username}/status/${tweet.id}`,
-      metrics: tweet.public_metrics
-        ? {
-          likes: tweet.public_metrics.like_count,
-          comments: tweet.public_metrics.reply_count,
-          shares: tweet.public_metrics.retweet_count +
-            tweet.public_metrics.quote_count,
-          impressions: tweet.public_metrics.impression_count,
+    return tweets.map((tweet) => {
+      // Extract media URLs from attachments
+      const mediaUrls: string[] = [];
+      if (tweet.attachments?.media_keys) {
+        for (const mediaKey of tweet.attachments.media_keys) {
+          const media = mediaMap.get(mediaKey);
+          if (media) {
+            // Use url for photos, preview_image_url for videos
+            const mediaUrl = media.url || media.preview_image_url;
+            if (mediaUrl) {
+              mediaUrls.push(mediaUrl);
+            }
+          }
         }
-        : undefined,
-      rawData: tweet as unknown as Record<string, unknown>,
-    }));
+      }
+
+      return {
+        id: tweet.id,
+        platformPostId: tweet.id,
+        platform: "TWITTER" as const,
+        content: tweet.text,
+        mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
+        publishedAt: tweet.created_at ? new Date(tweet.created_at) : new Date(),
+        url: `https://twitter.com/${username}/status/${tweet.id}`,
+        metrics: tweet.public_metrics
+          ? {
+            likes: tweet.public_metrics.like_count,
+            comments: tweet.public_metrics.reply_count,
+            shares: tweet.public_metrics.retweet_count +
+              tweet.public_metrics.quote_count,
+            impressions: tweet.public_metrics.impression_count,
+          }
+          : undefined,
+        rawData: tweet as unknown as Record<string, unknown>,
+      };
+    });
   }
 
   /**
@@ -561,6 +595,69 @@ export class TwitterClient implements ISocialClient {
    */
   async replyToPost(postId: string, content: string): Promise<PostResult> {
     return this.createPost(content, { replyToId: postId });
+  }
+
+  /**
+   * Get recent comments (replies) for a tweet
+   * Uses the Search API to find replies to a specific tweet
+   */
+  async getComments(tweetId: string, limit = 3): Promise<CommentPreview[]> {
+    const token = this.getAccessTokenOrThrow();
+
+    // Get username to exclude self-replies
+    const username = await this.getUsername();
+
+    // Search for replies to this tweet (conversation_id)
+    // Exclude replies from the tweet author themselves
+    const query = `conversation_id:${tweetId} -from:${username}`;
+
+    const params = new URLSearchParams({
+      query,
+      max_results: Math.min(Math.max(limit, 10), 100).toString(), // Request more to account for filtering
+      "tweet.fields": "id,text,created_at,author_id",
+      expansions: "author_id",
+      "user.fields": "id,name,username,profile_image_url",
+    });
+
+    const response = await fetch(
+      `${TWITTER_API_BASE}/2/tweets/search/recent?${params.toString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      // Search API may return 400 for various reasons (e.g., rate limits on free tier)
+      // Return empty array rather than failing
+      return [];
+    }
+
+    const result = await response.json() as TwitterTweetsResponse;
+    const tweets = result.data ?? [];
+    const users = result.includes?.users ?? [];
+
+    // Build user map for quick lookup
+    const userMap = new Map<string, TwitterUser>();
+    for (const user of users) {
+      userMap.set(user.id, user);
+    }
+
+    // Map tweets to CommentPreview, excluding the original tweet itself
+    return tweets
+      .filter((tweet) => tweet.id !== tweetId)
+      .slice(0, limit)
+      .map((tweet) => {
+        const author = tweet.author_id ? userMap.get(tweet.author_id) : undefined;
+        return {
+          id: tweet.id,
+          content: tweet.text,
+          senderName: author?.name || author?.username || "Unknown",
+          senderAvatarUrl: author?.profile_image_url,
+          createdAt: tweet.created_at ? new Date(tweet.created_at) : new Date(),
+        };
+      });
   }
 
   /**

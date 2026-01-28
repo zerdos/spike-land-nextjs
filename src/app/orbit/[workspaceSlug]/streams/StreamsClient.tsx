@@ -70,6 +70,7 @@ export function StreamsClient() {
     workspaceId,
     filters,
     enabled: !!workspaceId,
+    includeComments: true,
   });
 
   // Stream actions hook for engagement
@@ -267,6 +268,21 @@ export function StreamsClient() {
   }, [router, workspace?.slug]);
 
   /**
+   * Handle view all comments - opens the original post URL
+   */
+  const handleViewAllComments = useCallback(
+    (postId: string) => {
+      const post = posts.find(
+        (p) => p.id === postId || p.platformPostId === postId,
+      );
+      if (post?.url) {
+        window.open(post.url, "_blank", "noopener,noreferrer");
+      }
+    },
+    [posts],
+  );
+
+  /**
    * Extract connected platforms from accounts for the filter component
    */
   const connectedPlatforms: SocialPlatform[] = accounts.map(
@@ -380,6 +396,7 @@ export function StreamsClient() {
           onLike={handleLike}
           onReply={handleReply}
           onShare={handleShare}
+          onViewAllComments={handleViewAllComments}
           onConnectAccounts={handleConnectAccounts}
           likingPostId={likingPostId}
           replyingPostId={replyingPostId}
