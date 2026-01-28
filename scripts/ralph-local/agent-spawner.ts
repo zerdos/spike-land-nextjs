@@ -7,7 +7,15 @@
  */
 
 import { type ChildProcess, spawn } from "child_process";
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "fs";
+import {
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "fs";
 import { dirname, join } from "path";
 import type { AgentMarker, AgentRole, CodeWork, LocalAgent, Plan, RalphLocalConfig } from "./types";
 
@@ -95,6 +103,7 @@ function buildTesterPrompt(
 /**
  * Spawn a Claude CLI agent in the background
  * Uses spawn() with argument array for safety
+ * Uses file descriptors for output to ensure capture even after parent moves on
  */
 export function spawnAgent(
   agent: LocalAgent,
@@ -112,8 +121,17 @@ export function spawnAgent(
   const promptFile = join(config.outputDir, `${agent.id}-prompt.md`);
   writeFileSync(promptFile, prompt);
 
+  // Create an empty output file to prevent stale detection on first iteration
+  writeFileSync(agent.outputFile, "");
+
+  // Open file descriptors for stdout/stderr (more reliable than event handlers for detached processes)
+  const outFd = openSync(agent.outputFile, "a");
+  const errFile = agent.outputFile.replace(".json", "-stderr.log");
+  const errFd = openSync(errFile, "a");
+
   try {
     // Spawn claude CLI as background process using argument array (not shell string)
+    // Use file descriptors directly for output capture (works with detached processes)
     const child = spawn(
       "claude",
       [
@@ -124,7 +142,7 @@ export function spawnAgent(
       ],
       {
         cwd: workingDir,
-        stdio: ["pipe", "pipe", "pipe"],
+        stdio: ["pipe", outFd, errFd],
         detached: true,
         env: {
           ...process.env,
@@ -137,24 +155,9 @@ export function spawnAgent(
     child.stdin?.write(prompt);
     child.stdin?.end();
 
-    // Capture output to file
-    let output = "";
-    child.stdout?.on("data", (data) => {
-      output += data.toString();
-      writeFileSync(agent.outputFile, output);
-    });
-
-    child.stderr?.on("data", (data) => {
-      output += `[stderr] ${data.toString()}`;
-      writeFileSync(agent.outputFile, output);
-    });
-
-    child.on("close", (code) => {
-      console.log(`   Agent ${agent.id} exited with code ${code}`);
-      // Append exit marker
-      output += `\n[EXIT_CODE:${code}]`;
-      writeFileSync(agent.outputFile, output);
-    });
+    // Close file descriptors in parent (child has its own copies)
+    closeSync(outFd);
+    closeSync(errFd);
 
     // Write PID to file
     if (child.pid) {
@@ -167,6 +170,13 @@ export function spawnAgent(
 
     return child;
   } catch (error) {
+    // Clean up file descriptors on error
+    try {
+      closeSync(outFd);
+      closeSync(errFd);
+    } catch {
+      // Ignore cleanup errors
+    }
     console.error(`   ❌ Failed to spawn agent ${agent.id}:`, error);
     return null;
   }
@@ -283,15 +293,38 @@ export function getAgentOutput(agent: LocalAgent): string | null {
 }
 
 /**
+ * Extract text content from agent output
+ * Handles both raw text and JSON output format from Claude CLI
+ */
+function extractTextFromOutput(output: string): string {
+  // Try to parse as JSON first (Claude CLI --output-format json)
+  try {
+    const json = JSON.parse(output);
+    // Extract result field which contains the text output
+    if (json.result && typeof json.result === "string") {
+      return json.result;
+    }
+    // Fallback to full JSON as string if no result field
+    return output;
+  } catch {
+    // Not JSON, return as-is (raw text output)
+    return output;
+  }
+}
+
+/**
  * Parse agent output for markers
  */
 export function parseAgentMarkers(output: string): AgentMarker[] {
   const markers: AgentMarker[] = [];
 
+  // Extract text content (handles JSON output format)
+  const text = extractTextFromOutput(output);
+
   // Parse PLAN_READY markers
   const planReadyRegex = /<PLAN_READY\s+ticket="([^"]+)"\s+path="([^"]+)"\s*\/>/g;
   let match;
-  while ((match = planReadyRegex.exec(output)) !== null) {
+  while ((match = planReadyRegex.exec(text)) !== null) {
     markers.push({
       type: "PLAN_READY",
       ticketId: match[1],
@@ -301,7 +334,7 @@ export function parseAgentMarkers(output: string): AgentMarker[] {
 
   // Parse CODE_READY markers
   const codeReadyRegex = /<CODE_READY\s+ticket="([^"]+)"\s+branch="([^"]+)"\s*\/>/g;
-  while ((match = codeReadyRegex.exec(output)) !== null) {
+  while ((match = codeReadyRegex.exec(text)) !== null) {
     markers.push({
       type: "CODE_READY",
       ticketId: match[1],
@@ -311,7 +344,7 @@ export function parseAgentMarkers(output: string): AgentMarker[] {
 
   // Parse PR_CREATED markers
   const prCreatedRegex = /<PR_CREATED\s+ticket="([^"]+)"\s+pr_url="([^"]+)"\s*\/>/g;
-  while ((match = prCreatedRegex.exec(output)) !== null) {
+  while ((match = prCreatedRegex.exec(text)) !== null) {
     const prUrl = match[2];
     const prNumberMatch = prUrl.match(/\/pull\/(\d+)/);
     markers.push({
@@ -322,9 +355,9 @@ export function parseAgentMarkers(output: string): AgentMarker[] {
     });
   }
 
-  // Parse BLOCKED markers
-  const blockedRegex = /<BLOCKED\s+ticket="([^"]+)"\s+reason="([^"]+)"\s*\/>/g;
-  while ((match = blockedRegex.exec(output)) !== null) {
+  // Parse BLOCKED markers (reason may contain quotes, so match until closing " />)
+  const blockedRegex = /<BLOCKED\s+ticket="([^"]+)"\s+reason="([\s\S]*?)"\s*\/>/g;
+  while ((match = blockedRegex.exec(text)) !== null) {
     markers.push({
       type: "BLOCKED",
       ticketId: match[1],
@@ -332,9 +365,9 @@ export function parseAgentMarkers(output: string): AgentMarker[] {
     });
   }
 
-  // Parse ERROR markers
-  const errorRegex = /<ERROR\s+ticket="([^"]+)"\s+error="([^"]+)"\s*\/>/g;
-  while ((match = errorRegex.exec(output)) !== null) {
+  // Parse ERROR markers (error may contain quotes, so match until closing " />)
+  const errorRegex = /<ERROR\s+ticket="([^"]+)"\s+error="([\s\S]*?)"\s*\/>/g;
+  while ((match = errorRegex.exec(text)) !== null) {
     markers.push({
       type: "ERROR",
       ticketId: match[1],
@@ -349,8 +382,21 @@ export function parseAgentMarkers(output: string): AgentMarker[] {
  * Check if agent output indicates completion
  */
 export function isAgentCompleted(output: string): boolean {
-  return output.includes("[EXIT_CODE:") || output.includes("<PLAN_READY") ||
-    output.includes("<CODE_READY") || output.includes("<PR_CREATED");
+  // Check for JSON format completion (Claude CLI --output-format json)
+  try {
+    const json = JSON.parse(output);
+    // Claude CLI JSON output has type: "result" when complete
+    if (json.type === "result") {
+      return true;
+    }
+  } catch {
+    // Not JSON, check for text markers
+  }
+
+  // Check for text markers
+  const text = extractTextFromOutput(output);
+  return text.includes("[EXIT_CODE:") || text.includes("<PLAN_READY") ||
+    text.includes("<CODE_READY") || text.includes("<PR_CREATED");
 }
 
 /**
