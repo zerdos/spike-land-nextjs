@@ -24,17 +24,29 @@ function extractCookieDomain(baseUrl: string): string {
 
 // Helper to mock admin status
 async function mockAdminStatus(world: CustomWorld, isAdmin: boolean) {
-  // If user is admin, we rely on real DB permissions (seeded) and real API responses.
-  // We only intercept if we want to simulate a non-admin user getting blocked.
-  if (!isAdmin) {
+  // Extract the correct domain from baseUrl for cookie setting
+  // This is critical for CI where tests run against Vercel preview URLs
+  const cookieDomain = extractCookieDomain(world.baseUrl);
+
+  if (isAdmin) {
+    // Explicitly set e2e-user-role cookie to ADMIN for admin tests
+    // This ensures the middleware recognizes the user as an admin
+    await world.page.context().addCookies([
+      {
+        name: "e2e-user-role",
+        value: "ADMIN",
+        domain: cookieDomain,
+        path: "/",
+        httpOnly: true,
+        sameSite: "Lax" as const,
+        expires: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+      },
+    ]);
+  } else {
     // FIRST: Clear any existing auth session and role cookies to ensure clean state
     // This forces the server to use the newly set e2e-user-role cookie
     await world.page.context().clearCookies({ name: "authjs.session-token" });
     await world.page.context().clearCookies({ name: "e2e-user-role" });
-
-    // Extract the correct domain from baseUrl for cookie setting
-    // This is critical for CI where tests run against Vercel preview URLs
-    const cookieDomain = extractCookieDomain(world.baseUrl);
 
     // Set e2e-user-role cookie to USER
     // This is needed because the admin layout checks the role from the cookie directly

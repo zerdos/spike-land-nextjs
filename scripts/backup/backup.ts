@@ -40,18 +40,32 @@ const REQUIRED_ENV_VARS = [
 
 /**
  * Validates required environment variables and returns configuration
- * @throws Error if any required environment variable is missing
+ * @throws Error if any required environment variable is missing or empty
  */
 export function getConfigFromEnv(): BackupConfig {
   const missing: string[] = [];
+  const empty: string[] = [];
+
   for (const varName of REQUIRED_ENV_VARS) {
-    if (!process.env[varName]) {
+    const value = process.env[varName];
+    if (value === undefined) {
       missing.push(varName);
+    } else if (value.trim() === "") {
+      empty.push(varName);
     }
   }
 
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
+  if (missing.length > 0 || empty.length > 0) {
+    const errors: string[] = [];
+    if (missing.length > 0) {
+      errors.push(`Missing environment variables: ${missing.join(", ")}`);
+    }
+    if (empty.length > 0) {
+      errors.push(
+        `Empty environment variables (check GitHub secrets configuration): ${empty.join(", ")}`,
+      );
+    }
+    throw new Error(errors.join("\n"));
   }
 
   return {
@@ -118,24 +132,112 @@ export async function checkR2Connectivity(
 }
 
 /**
- * Run pre-flight checks before starting backup
+ * Check database connectivity using pg_isready
+ */
+export async function checkDatabaseConnectivity(): Promise<{ success: boolean; error?: string; }> {
+  return new Promise((resolve) => {
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
+      resolve({ success: false, error: "DATABASE_URL not set" });
+      return;
+    }
+
+    // Parse DATABASE_URL to extract host and port for pg_isready
+    let host = "localhost";
+    let port = "5432";
+    try {
+      const url = new URL(databaseUrl);
+      host = url.hostname;
+      port = url.port || "5432";
+    } catch {
+      resolve({ success: false, error: "Invalid DATABASE_URL format" });
+      return;
+    }
+
+    const proc = spawn("pg_isready", ["-h", host, "-p", port], {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+
+    let stdout = "";
+    let stderr = "";
+    proc.stdout?.on("data", (data) => {
+      stdout += data.toString();
+    });
+    proc.stderr?.on("data", (data) => {
+      stderr += data.toString();
+    });
+
+    proc.on("close", (code) => {
+      if (code === 0) {
+        resolve({ success: true });
+      } else {
+        resolve({
+          success: false,
+          error: `Database connectivity check failed: ${
+            stderr || stdout || "pg_isready returned non-zero"
+          }`,
+        });
+      }
+    });
+
+    proc.on("error", (err) => {
+      // pg_isready not found - fall back to assuming connection is okay
+      // The actual pg_dump will fail with a clearer error if DB is unreachable
+      console.log(
+        `pg_isready not available: ${err.message}. Skipping database connectivity check.`,
+      );
+      resolve({ success: true });
+    });
+  });
+}
+
+/**
+ * Run pre-flight checks before starting backup with retry logic for network-related checks
  */
 export async function runPreflightChecks(
   s3Client: S3Client,
   config: BackupConfig,
+  options: { maxRetries?: number; initialDelayMs?: number; } = {},
 ): Promise<{ success: boolean; errors: string[]; }> {
+  const { maxRetries = 3, initialDelayMs = 1000 } = options;
   const errors: string[] = [];
 
-  // Check pg_dump availability
+  // Check pg_dump availability (no retry needed - local binary check)
   const pgDumpCheck = await checkPgDumpAvailable();
   if (!pgDumpCheck.success) {
     errors.push(`pg_dump check failed: ${pgDumpCheck.error}`);
   }
 
-  // Check R2 connectivity
-  const r2Check = await checkR2Connectivity(s3Client, config.bucketName);
-  if (!r2Check.success) {
-    errors.push(`R2 connectivity failed: ${r2Check.error}`);
+  // Check database connectivity with retry
+  try {
+    await withRetry(
+      async () => {
+        const dbCheck = await checkDatabaseConnectivity();
+        if (!dbCheck.success) {
+          throw new Error(dbCheck.error);
+        }
+      },
+      { maxRetries, initialDelayMs, operationName: "Database connectivity check" },
+    );
+  } catch (err) {
+    const error = err as Error;
+    errors.push(`Database connectivity failed: ${error.message}`);
+  }
+
+  // Check R2 connectivity with retry
+  try {
+    await withRetry(
+      async () => {
+        const r2Check = await checkR2Connectivity(s3Client, config.bucketName);
+        if (!r2Check.success) {
+          throw new Error(r2Check.error);
+        }
+      },
+      { maxRetries, initialDelayMs, operationName: "R2 connectivity check" },
+    );
+  } catch (err) {
+    const error = err as Error;
+    errors.push(`R2 connectivity failed: ${error.message}`);
   }
 
   return { success: errors.length === 0, errors };

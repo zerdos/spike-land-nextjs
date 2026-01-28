@@ -10,11 +10,23 @@ async function waitForSessionPropagation(
 ): Promise<void> {
   if (expectLoggedIn) {
     // Wait for user-avatar to appear (indicates session propagated)
+    // Also check for Settings page elements or profile tab as fallback
     await world.page.waitForFunction(
-      () => document.querySelector('[data-testid="user-avatar"]') !== null,
+      () => {
+        const userAvatar = document.querySelector('[data-testid="user-avatar"]');
+        const settingsPage = document.querySelector('[data-testid="settings-page"]');
+        const profileTab = document.querySelector('[data-testid="profile-tab"]');
+        // Also check for admin-specific elements
+        const adminSidebar = document.querySelector("aside");
+        const adminHeading = document.querySelector('h1:has-text("Admin")');
+        return userAvatar !== null ||
+          settingsPage !== null ||
+          profileTab !== null ||
+          (adminSidebar !== null && adminHeading !== null);
+      },
       { timeout: 10000 },
     ).catch(() => {
-      // Avatar may not be on current page layout (e.g., full-page forms)
+      // Avatar/settings elements may not be on current page layout
       // In that case, just wait for any auth-related element
     });
   } else {
