@@ -33,6 +33,29 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
 }
+"campaign_target_audiences" {
+  String id PK
+  String briefId FK,UK
+  Int ageMin "nullable"
+  Int ageMax "nullable"
+  String genders
+  String locations
+  String interests
+  String behaviors
+  DateTime createdAt
+  DateTime updatedAt
+}
+"campaign_objectives" {
+  String id PK
+  String briefId FK
+  ObjectiveType type
+  String metric
+  Float targetValue "nullable"
+  DateTime deadline "nullable"
+  Int priority
+  DateTime createdAt
+  DateTime updatedAt
+}
 "accounts" {
   String id PK
   String userId FK
@@ -1684,6 +1707,8 @@ erDiagram
 }
 "users" }o--o| "users" : referredBy
 "campaign_briefs" }o--|| "users" : user
+"campaign_target_audiences" |o--|| "campaign_briefs" : brief
+"campaign_objectives" }o--|| "campaign_briefs" : brief
 "accounts" }o--|| "users" : user
 "marketing_accounts" }o--|| "users" : user
 "google_ads_campaigns" }o--|| "marketing_accounts" : marketingAccount
@@ -1892,6 +1917,35 @@ Properties as follows:
 - `targetAudience`:
 - `campaignObjectives`:
 - `status`:
+- `createdAt`:
+- `updatedAt`:
+
+### `campaign_target_audiences`
+
+Properties as follows:
+
+- `id`:
+- `briefId`:
+- `ageMin`:
+- `ageMax`:
+- `genders`:
+- `locations`:
+- `interests`:
+- `behaviors`:
+- `createdAt`:
+- `updatedAt`:
+
+### `campaign_objectives`
+
+Properties as follows:
+
+- `id`:
+- `briefId`:
+- `type`:
+- `metric`:
+- `targetValue`:
+- `deadline`:
+- `priority`:
 - `createdAt`:
 - `updatedAt`:
 

@@ -491,3 +491,239 @@ describe("validations", () => {
     });
   });
 });
+
+// =============================================================================
+// Dual-Read Helper Tests (Phase 4 - JSON Extraction)
+// =============================================================================
+
+import {
+  getCampaignObjectivesWithFallback,
+  getTargetAudienceWithFallback,
+  parseJson,
+  safeParseJson,
+  TargetAudienceSchema,
+  type TypedCampaignObjective,
+  type TypedTargetAudience,
+} from "./json-schemas";
+
+describe("dual-read helpers", () => {
+  describe("safeParseJson", () => {
+    it("should return parsed value for valid input", () => {
+      const validAudience = {
+        ageRange: { min: 18, max: 35 },
+        genders: ["male", "female"],
+        locations: ["US", "UK"],
+      };
+      const result = safeParseJson(TargetAudienceSchema, validAudience);
+      expect(result).toEqual(validAudience);
+    });
+
+    it("should return undefined for invalid input", () => {
+      const invalidAudience = {
+        ageRange: { min: "not a number" },
+      };
+      const result = safeParseJson(TargetAudienceSchema, invalidAudience);
+      expect(result).toBeUndefined();
+    });
+
+    it("should return undefined for null input", () => {
+      const result = safeParseJson(TargetAudienceSchema, null);
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe("parseJson", () => {
+    it("should return parsed value for valid input", () => {
+      const validAudience = {
+        ageRange: { min: 18, max: 35 },
+        genders: ["male"],
+      };
+      const result = parseJson(TargetAudienceSchema, validAudience);
+      expect(result).toEqual(validAudience);
+    });
+
+    it("should throw for invalid input", () => {
+      const invalidAudience = { ageRange: "invalid" };
+      expect(() => parseJson(TargetAudienceSchema, invalidAudience)).toThrow();
+    });
+  });
+
+  describe("getTargetAudienceWithFallback", () => {
+    const mockTypedAudience: TypedTargetAudience = {
+      id: "aud_123",
+      briefId: "brief_123",
+      ageMin: 18,
+      ageMax: 35,
+      genders: ["male", "female"],
+      locations: ["US", "UK"],
+      interests: ["technology", "sports"],
+      behaviors: ["online_shopper"],
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-02"),
+    };
+
+    it("should prefer typed model when available", () => {
+      const jsonAudience = {
+        ageRange: { min: 25, max: 40 },
+        genders: ["other"],
+      };
+
+      const result = getTargetAudienceWithFallback(
+        mockTypedAudience,
+        jsonAudience,
+      );
+
+      // Should use typed model values, not JSON
+      expect(result?.ageRange).toEqual({ min: 18, max: 35 });
+      expect(result?.genders).toEqual(["male", "female"]);
+      expect(result?.locations).toEqual(["US", "UK"]);
+      expect(result?.interests).toEqual(["technology", "sports"]);
+      expect(result?.behaviors).toEqual(["online_shopper"]);
+    });
+
+    it("should handle typed audience with null age range", () => {
+      const typedWithNullAge: TypedTargetAudience = {
+        ...mockTypedAudience,
+        ageMin: null,
+        ageMax: null,
+      };
+
+      const result = getTargetAudienceWithFallback(typedWithNullAge, null);
+
+      expect(result?.ageRange).toBeUndefined();
+      expect(result?.genders).toEqual(["male", "female"]);
+    });
+
+    it("should handle typed audience with partial age range", () => {
+      const typedWithPartialAge: TypedTargetAudience = {
+        ...mockTypedAudience,
+        ageMin: 18,
+        ageMax: null,
+      };
+
+      const result = getTargetAudienceWithFallback(typedWithPartialAge, null);
+
+      // Only set ageRange if both min and max are present
+      expect(result?.ageRange).toBeUndefined();
+    });
+
+    it("should fall back to JSON when typed model is null", () => {
+      const jsonAudience = {
+        ageRange: { min: 25, max: 40 },
+        genders: ["other"],
+        locations: ["CA"],
+      };
+
+      const result = getTargetAudienceWithFallback(null, jsonAudience);
+
+      expect(result?.ageRange).toEqual({ min: 25, max: 40 });
+      expect(result?.genders).toEqual(["other"]);
+      expect(result?.locations).toEqual(["CA"]);
+    });
+
+    it("should fall back to JSON when typed model is undefined", () => {
+      const jsonAudience = {
+        ageRange: { min: 30, max: 50 },
+      };
+
+      const result = getTargetAudienceWithFallback(undefined, jsonAudience);
+
+      expect(result?.ageRange).toEqual({ min: 30, max: 50 });
+    });
+
+    it("should return undefined when both typed and JSON are invalid", () => {
+      const invalidJson = { ageRange: "invalid" };
+
+      const result = getTargetAudienceWithFallback(null, invalidJson);
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe("getCampaignObjectivesWithFallback", () => {
+    const mockTypedObjectives: TypedCampaignObjective[] = [
+      {
+        id: "obj_1",
+        briefId: "brief_123",
+        type: "AWARENESS",
+        metric: "impressions",
+        targetValue: 1000000,
+        deadline: new Date("2024-06-30"),
+        priority: 1,
+        createdAt: new Date("2024-01-01"),
+        updatedAt: new Date("2024-01-02"),
+      },
+      {
+        id: "obj_2",
+        briefId: "brief_123",
+        type: "CONVERSION",
+        metric: "purchases",
+        targetValue: 5000,
+        deadline: null,
+        priority: 2,
+        createdAt: new Date("2024-01-01"),
+        updatedAt: new Date("2024-01-02"),
+      },
+    ];
+
+    it("should prefer typed models when available", () => {
+      const jsonObjectives = [
+        { type: "ENGAGEMENT", metric: "clicks" },
+      ];
+
+      const result = getCampaignObjectivesWithFallback(
+        mockTypedObjectives,
+        jsonObjectives,
+      );
+
+      // Should use typed model values, not JSON
+      expect(result).toHaveLength(2);
+      expect(result[0].type).toBe("AWARENESS");
+      expect(result[0].metric).toBe("impressions");
+      expect(result[0].targetValue).toBe(1000000);
+      expect(result[0].deadline).toBe("2024-06-30T00:00:00.000Z");
+      expect(result[0].priority).toBe(1);
+
+      expect(result[1].type).toBe("CONVERSION");
+      expect(result[1].targetValue).toBe(5000);
+      expect(result[1].deadline).toBeUndefined();
+    });
+
+    it("should fall back to JSON when typed array is empty", () => {
+      const jsonObjectives = [
+        { type: "ENGAGEMENT", metric: "likes", targetValue: 10000 },
+      ];
+
+      const result = getCampaignObjectivesWithFallback([], jsonObjectives);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].type).toBe("ENGAGEMENT");
+      expect(result[0].metric).toBe("likes");
+    });
+
+    it("should fall back to JSON when typed array is null", () => {
+      const jsonObjectives = [
+        { type: "RETENTION", metric: "subscribers" },
+      ];
+
+      const result = getCampaignObjectivesWithFallback(null, jsonObjectives);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].type).toBe("RETENTION");
+    });
+
+    it("should return empty array when both typed and JSON are invalid", () => {
+      const invalidJson = "not an array";
+
+      const result = getCampaignObjectivesWithFallback(null, invalidJson);
+
+      expect(result).toEqual([]);
+    });
+
+    it("should return empty array when both are null/empty", () => {
+      const result = getCampaignObjectivesWithFallback([], null);
+
+      expect(result).toEqual([]);
+    });
+  });
+});
