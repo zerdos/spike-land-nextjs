@@ -1,4 +1,4 @@
-@allocator @audit @skip
+@allocator @audit
 Feature: Allocator Audit Trail
   As an admin
   I want to see the audit trail of allocator decisions
