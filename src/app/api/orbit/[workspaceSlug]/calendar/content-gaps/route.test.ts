@@ -26,7 +26,7 @@ vi.mock("@/lib/calendar/content-gaps", () => ({
 }));
 
 import { auth } from "@/auth";
-import { detectContentGaps, type ContentGapsResponse } from "@/lib/calendar/content-gaps";
+import { type ContentGapsResponse, detectContentGaps } from "@/lib/calendar/content-gaps";
 import prisma from "@/lib/prisma";
 import { GET } from "./route";
 

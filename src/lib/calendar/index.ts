@@ -76,8 +76,4 @@ export type {
   TimeSlot,
 } from "./content-gaps";
 
-export {
-  detectContentGaps,
-  getTimeSlotForHour,
-  summarizeGaps,
-} from "./content-gaps";
+export { detectContentGaps, getTimeSlotForHour, summarizeGaps } from "./content-gaps";
