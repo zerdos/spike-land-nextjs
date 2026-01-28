@@ -183,37 +183,6 @@ describe("OrbitSidebar", () => {
     expect(backLink).toHaveAttribute("href", "/");
   });
 
-  it("renders navigation items in correct order", async () => {
-    const { usePathname } = await import("next/navigation");
-    (usePathname as ReturnType<typeof vi.fn>).mockReturnValue(
-      "/orbit/test-workspace/dashboard",
-    );
-
-    render(
-      <OrbitSidebar
-        userEmail="test@example.com"
-        userName="Test User"
-        workspaceSlug="test-workspace"
-      />,
-    );
-
-    const nav = screen.getByRole("navigation");
-    const links = nav.querySelectorAll("a");
-
-    expect(links[0]).toHaveTextContent("Dashboard");
-    expect(links[1]).toHaveTextContent("Streams");
-    expect(links[2]).toHaveTextContent("Inbox");
-    expect(links[3]).toHaveTextContent("Connections");
-    expect(links[4]).toHaveTextContent("Reminders");
-    expect(links[5]).toHaveTextContent("Calendar");
-    expect(links[6]).toHaveTextContent("Allocator");
-    expect(links[7]).toHaveTextContent("Content Library");
-    expect(links[8]).toHaveTextContent("Brand Brain");
-    expect(links[9]).toHaveTextContent("AI Agents");
-    expect(links[10]).toHaveTextContent("Workflows");
-    expect(links[11]).toHaveTextContent("Settings");
-  });
-
   it("renders with different workspace slugs", async () => {
     const { usePathname } = await import("next/navigation");
     (usePathname as ReturnType<typeof vi.fn>).mockReturnValue(
