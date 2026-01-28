@@ -699,7 +699,7 @@ async function runStage3(browser: Browser): Promise<StageResult> {
         `Pixel app UI not visible. URL: ${currentUrl}, ` +
           `errors: [${lastError}], ` +
           `headings: [${visibleHeadings.join(", ")}], ` +
-          `bodyLength: ${allText.length}`,
+          `bodyLength: ${allText?.length ?? 0}`,
       );
     }
 
