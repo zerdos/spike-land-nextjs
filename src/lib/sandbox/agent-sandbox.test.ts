@@ -242,7 +242,7 @@ describe("Agent Sandbox Service", () => {
       // Verify context.json contains correct callback URL
       const writeFilesCall = mockSandboxInstance.writeFiles.mock.calls[0];
       expect(writeFilesCall).toBeDefined();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const contextFile = (writeFilesCall as any)[0].find(
         (f: { path: string; }) => f.path === "context.json",
       );
@@ -264,7 +264,7 @@ describe("Agent Sandbox Service", () => {
 
       const writeFilesCall = mockSandboxInstance.writeFiles.mock.calls[0];
       expect(writeFilesCall).toBeDefined();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const contextFile = (writeFilesCall as any)[0].find(
         (f: { path: string; }) => f.path === "context.json",
       );

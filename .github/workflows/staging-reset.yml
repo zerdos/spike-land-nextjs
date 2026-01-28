@@ -40,56 +40,14 @@ jobs:
           fi
           echo "Manual reset confirmed by $ACTOR"
 
-      - name: Get staging branch ID
-        id: get-branch
-        env:
-          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
-          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
-        run: |
-          # Get the staging branch ID from Neon
-          RESPONSE=$(curl -s -X GET \
-            "https://console.neon.tech/api/v2/projects/${NEON_PROJECT_ID}/branches" \
-            -H "Authorization: Bearer ${NEON_API_KEY}" \
-            -H "Content-Type: application/json")
-
-          BRANCH_ID=$(echo "$RESPONSE" | jq -r '.branches[] | select(.name == "staging") | .id')
-
-          if [ -z "$BRANCH_ID" ] || [ "$BRANCH_ID" == "null" ]; then
-            echo "::error::Staging branch not found. Please create it first."
-            echo "Available branches:"
-            echo "$RESPONSE" | jq '.branches[].name'
-            exit 1
-          fi
-
-          echo "Found staging branch ID: $BRANCH_ID"
-          echo "branch_id=$BRANCH_ID" >> $GITHUB_OUTPUT
-
       - name: Reset staging branch to production
-        env:
-          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
-          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
-          BRANCH_ID: ${{ steps.get-branch.outputs.branch_id }}
-        run: |
-          echo "Resetting staging branch to match production (main branch)..."
-
-          # Reset the staging branch - this copies all data from parent (main/production)
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-            "https://console.neon.tech/api/v2/projects/${NEON_PROJECT_ID}/branches/${BRANCH_ID}/reset" \
-            -H "Authorization: Bearer ${NEON_API_KEY}" \
-            -H "Content-Type: application/json" \
-            -d '{"parent": true}')
-
-          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
-
-          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
-            echo "Staging database successfully reset!"
-            echo "$BODY" | jq .
-          else
-            echo "::error::Failed to reset staging branch (HTTP $HTTP_CODE)"
-            echo "$BODY"
-            exit 1
-          fi
+        uses: neondatabase/reset-branch-action@v1
+        id: reset-branch
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch: staging
+          parent: true
 
       - name: Notify success
         if: success()
@@ -97,6 +55,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           ACTOR: ${{ github.actor }}
           PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+          BRANCH_ID: ${{ steps.reset-branch.outputs.branch_id }}
         run: |
           if [ "$EVENT_NAME" = "schedule" ]; then
             TRIGGERED_BY="Scheduled (3 AM UTC)"
@@ -111,6 +70,7 @@ jobs:
           echo "- **Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
           echo "- **Triggered by**: $TRIGGERED_BY" >> $GITHUB_STEP_SUMMARY
           echo "- **Project**: $PROJECT_ID" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch ID**: $BRANCH_ID" >> $GITHUB_STEP_SUMMARY
 
       - name: Notify failure
         if: failure()
