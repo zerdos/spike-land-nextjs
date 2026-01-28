@@ -1,4 +1,5 @@
 export { ApprovalActions } from "./approval-actions";
+export { ApprovalQueue } from "./approval-queue";
 export { AuditLogViewer } from "./audit-log-viewer";
 export { DraftCard } from "./draft-card";
 export { DraftEditor } from "./draft-editor";
