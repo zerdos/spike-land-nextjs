@@ -4,13 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -18,112 +11,46 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SocialPlatform } from "@prisma/client";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useState } from "react";
 
-type Competitor = {
+interface Competitor {
   id: string;
-  workspaceId: string;
   platform: string;
   handle: string;
-  name: string | null;
-};
+  name: string;
+}
 
 export default function CompetitorsPage() {
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
-  const [newCompetitor, setNewCompetitor] = useState({
+  const [formData, setFormData] = useState({
     platform: "",
     handle: "",
     name: "",
   });
 
-  useEffect(() => {
-    const fetchWorkspaceId = async () => {
-      try {
-        const res = await fetch("/api/workspace/personal");
-        if (!res.ok) {
-          throw new Error("Failed to get workspace ID");
-        }
-        const data = await res.json();
-        setWorkspaceId(data.workspaceId);
-      } catch (_error) {
-        toast.error("Failed to get workspace ID.");
-      }
-    };
-
-    const fetchCompetitors = async () => {
-      try {
-        const res = await fetch("/api/competitors");
-        if (!res.ok) {
-          throw new Error("Failed to fetch competitors");
-        }
-        const data = await res.json();
-        setCompetitors(data);
-      } catch (_error) {
-        toast.error("Failed to fetch competitors.");
-      }
-    };
-
-    fetchWorkspaceId();
-    fetchCompetitors();
-  }, []);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setNewCompetitor((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handlePlatformChange = (value: string) => {
-    setNewCompetitor((prev) => ({ ...prev, platform: value }));
-  };
-
-  const handleAddCompetitor = async () => {
-    if (!workspaceId) {
-      toast.error("You must be in a workspace to add a competitor.");
+  const handleAddCompetitor = () => {
+    if (!formData.platform || !formData.handle || !formData.name) {
       return;
     }
 
-    try {
-      const res = await fetch("/api/competitors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...newCompetitor, workspaceId }),
-      });
+    const newCompetitor: Competitor = {
+      id: crypto.randomUUID(),
+      platform: formData.platform,
+      handle: formData.handle,
+      name: formData.name,
+    };
 
-      if (!res.ok) {
-        throw new Error("Failed to add competitor");
-      }
-
-      const addedCompetitor = await res.json();
-      setCompetitors((prev) => [...prev, addedCompetitor]);
-      setNewCompetitor({
-        platform: "",
-        handle: "",
-        name: "",
-      });
-      toast.success("Competitor added successfully.");
-    } catch (_error) {
-      toast.error("Failed to add competitor.");
-    }
+    setCompetitors((prev) => [...prev, newCompetitor]);
+    setFormData({ platform: "", handle: "", name: "" });
   };
 
-  const handleDeleteCompetitor = async (id: string) => {
-    try {
-      const res = await fetch(`/api/competitors/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to delete competitor");
-      }
-
-      setCompetitors((prev) => prev.filter((c) => c.id !== id));
-      toast.success("Competitor deleted successfully.");
-    } catch (_error) {
-      toast.error("Failed to delete competitor.");
-    }
+  const handleDeleteCompetitor = (id: string) => {
+    setCompetitors((prev) => prev.filter((c) => c.id !== id));
   };
 
   return (
@@ -135,28 +62,22 @@ export default function CompetitorsPage() {
             <CardTitle>Add New Competitor</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Select onValueChange={handlePlatformChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a platform" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.values(SocialPlatform).map((platform) => (
-                  <SelectItem key={platform} value={platform}>
-                    {platform}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              name="platform"
+              placeholder="Platform (e.g., TWITTER)"
+              value={formData.platform}
+              onChange={handleInputChange}
+            />
             <Input
               name="handle"
               placeholder="Handle (e.g., @username)"
-              value={newCompetitor.handle}
+              value={formData.handle}
               onChange={handleInputChange}
             />
             <Input
               name="name"
               placeholder="Display Name"
-              value={newCompetitor.name}
+              value={formData.name}
               onChange={handleInputChange}
             />
             <Button onClick={handleAddCompetitor}>Add Competitor</Button>
