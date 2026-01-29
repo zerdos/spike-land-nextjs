@@ -5,7 +5,7 @@
  * to their boosted ad campaigns with complete metadata tracking.
  */
 
-import { PrismaClient, type BoostCampaign as PrismaBoostCampaign } from '@/generated/prisma';
+import { PrismaClient } from '@/generated/prisma';
 import type {
   BoostCampaignData,
   BoostCampaignFilters,
@@ -13,7 +13,6 @@ import type {
   CreateBoostCampaignRequest,
   OrganicMetricsSnapshot,
 } from '@repo/shared/types';
-
 
 export class BoostCampaignService {
   constructor(private prisma: PrismaClient) {}
@@ -267,7 +266,7 @@ export class BoostCampaignService {
   /**
    * Map Prisma model to BoostCampaignData type
    */
-  private mapToBoostCampaignData(boostCampaign: PrismaBoostCampaign): BoostCampaignData {
+  private mapToBoostCampaignData(boostCampaign: any): BoostCampaignData {
     return {
       id: boostCampaign.id,
       workspaceId: boostCampaign.workspaceId,

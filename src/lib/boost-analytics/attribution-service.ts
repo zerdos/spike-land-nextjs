@@ -5,16 +5,15 @@
  * and paid sources using multiple attribution models.
  */
 
-import { PrismaClient, type BoostAttributionEvent as PrismaBoostAttributionEvent } from '@/generated/prisma';
+import { PrismaClient } from '@/generated/prisma';
 import type {
   AttributionEventType,
+  AttributionModel,
   AttributionReport,
   AttributionResult,
   BoostAttributionEvent,
   TouchpointType,
-} from '@spike-npm-land/shared/types';
-import { AttributionModel } from '@spike-npm-land/shared/types';
-
+} from '@repo/shared/types';
 
 interface AttributionEventInput {
   boostCampaignId: string;
@@ -72,11 +71,11 @@ export class AttributionService {
     );
 
     switch (model) {
-      case AttributionModel.LINEAR:
+      case 'LINEAR':
         return this.calculateLinearAttribution(boostId, events, conversions);
-      case AttributionModel.TIME_DECAY:
+      case 'TIME_DECAY':
         return this.calculateTimeDecayAttribution(boostId, events, conversions);
-      case AttributionModel.POSITION_BASED:
+      case 'POSITION_BASED':
         return this.calculatePositionBasedAttribution(boostId, events, conversions);
       default:
         return this.calculateLinearAttribution(boostId, events, conversions);
@@ -88,9 +87,9 @@ export class AttributionService {
    */
   async getAttributionReport(boostId: string): Promise<AttributionReport> {
     // Calculate attribution using all models
-    const linearResult = await this.calculateAttribution(boostId, AttributionModel.LINEAR);
-    const timeDecayResult = await this.calculateAttribution(boostId, AttributionModel.TIME_DECAY);
-    const positionBasedResult = await this.calculateAttribution(boostId, AttributionModel.POSITION_BASED);
+    const linearResult = await this.calculateAttribution(boostId, 'LINEAR');
+    const timeDecayResult = await this.calculateAttribution(boostId, 'TIME_DECAY');
+    const positionBasedResult = await this.calculateAttribution(boostId, 'POSITION_BASED');
 
     const results = [linearResult, timeDecayResult, positionBasedResult];
 
@@ -123,15 +122,15 @@ export class AttributionService {
    */
   private async calculateLinearAttribution(
     boostId: string,
-    events: PrismaBoostAttributionEvent[],
-    conversions: PrismaBoostAttributionEvent[]
+    events: any[],
+    conversions: any[]
   ): Promise<AttributionResult> {
     const organicTouchpoints = events.filter((e) => e.touchpointType === 'ORGANIC');
     const paidTouchpoints = events.filter((e) => e.touchpointType === 'PAID');
     const totalTouchpoints = events.length;
 
     if (totalTouchpoints === 0) {
-      return this.getEmptyAttribution(boostId, AttributionModel.LINEAR);
+      return this.getEmptyAttribution(boostId, 'LINEAR');
     }
 
     const organicContribution = organicTouchpoints.length / totalTouchpoints;
@@ -140,11 +139,11 @@ export class AttributionService {
     // Calculate attributed conversions
     const attributedOrganic = Math.round(conversions.length * organicContribution);
     const attributedPaid = Math.round(conversions.length * paidContribution);
-    const attributedOverlap = Math.max(0, conversions.length - attributedOrganic - attributedPaid);
+    const attributedOverlap = conversions.length - attributedOrganic - attributedPaid;
 
     return {
       boostCampaignId: boostId,
-      model: AttributionModel.LINEAR,
+      model: 'LINEAR',
       organicContribution,
       paidContribution,
       overlapContribution: Math.max(0, 1 - organicContribution - paidContribution),
@@ -166,11 +165,11 @@ export class AttributionService {
    */
   private async calculateTimeDecayAttribution(
     boostId: string,
-    events: PrismaBoostAttributionEvent[],
-    conversions: PrismaBoostAttributionEvent[]
+    events: any[],
+    conversions: any[]
   ): Promise<AttributionResult> {
     if (events.length === 0) {
-      return this.getEmptyAttribution(boostId, AttributionModel.TIME_DECAY);
+      return this.getEmptyAttribution(boostId, 'TIME_DECAY');
     }
 
     // Half-life of 7 days
@@ -202,11 +201,11 @@ export class AttributionService {
 
     const attributedOrganic = Math.round(conversions.length * organicContribution);
     const attributedPaid = Math.round(conversions.length * paidContribution);
-    const attributedOverlap = Math.max(0, conversions.length - attributedOrganic - attributedPaid);
+    const attributedOverlap = conversions.length - attributedOrganic - attributedPaid;
 
     return {
       boostCampaignId: boostId,
-      model: AttributionModel.TIME_DECAY,
+      model: 'TIME_DECAY',
       organicContribution,
       paidContribution,
       overlapContribution: Math.max(0, 1 - organicContribution - paidContribution),
@@ -228,11 +227,11 @@ export class AttributionService {
    */
   private async calculatePositionBasedAttribution(
     boostId: string,
-    events: PrismaBoostAttributionEvent[],
-    conversions: PrismaBoostAttributionEvent[]
+    events: any[],
+    conversions: any[]
   ): Promise<AttributionResult> {
     if (events.length === 0) {
-      return this.getEmptyAttribution(boostId, AttributionModel.POSITION_BASED);
+      return this.getEmptyAttribution(boostId, 'POSITION_BASED');
     }
 
     // 40% to first, 40% to last, 20% split among middle
@@ -290,11 +289,11 @@ export class AttributionService {
 
     const attributedOrganic = Math.round(conversions.length * organicContribution);
     const attributedPaid = Math.round(conversions.length * paidContribution);
-    const attributedOverlap = Math.max(0, conversions.length - attributedOrganic - attributedPaid);
+    const attributedOverlap = conversions.length - attributedOrganic - attributedPaid;
 
     return {
       boostCampaignId: boostId,
-      model: AttributionModel.POSITION_BASED,
+      model: 'POSITION_BASED',
       organicContribution,
       paidContribution,
       overlapContribution: Math.max(0, 1 - organicContribution - paidContribution),
@@ -340,7 +339,7 @@ export class AttributionService {
   /**
    * Map Prisma model to BoostAttributionEvent type
    */
-  private mapToAttributionEvent(event: PrismaBoostAttributionEvent): BoostAttributionEvent {
+  private mapToAttributionEvent(event: any): BoostAttributionEvent {
     return {
       id: event.id,
       boostCampaignId: event.boostCampaignId,
