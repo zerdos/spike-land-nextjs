@@ -150,6 +150,21 @@ applications:
 - **Mobile Apps** - iOS, Android, and Web (Expo)
 - **MCP Server** - Claude Desktop/Code integration
 
+### Recent Updates
+
+**Pivot Announcement (February 2026)** - spike.land has evolved from a vibe coding platform to an AI-powered social media command center, while maintaining development capabilities as core features. Read the full story: [Blog: I Built the Perfect Developer Tool - Then Realized Nobody Could Find It](./blog/16-pivot-announcement.md)
+
+**Key Changes:**
+- **Primary Focus**: AI-powered social media management for content creators, small businesses, and freelance marketers
+- **Core Features**: Multi-platform scheduling (Twitter, LinkedIn, Instagram, Facebook, YouTube, Discord), AI content generation with brand voice, automated A/B testing, real-time analytics
+- **Development Tools**: Vibe coding and live React environments remain available for creating marketing content and visual assets
+- **Target Users**: Solo content creators, small business marketing managers, freelance social media managers
+
+For marketing materials and launch plans, see:
+- [Product Hunt Launch Materials](./marketing/product-hunt-materials.md)
+- [Social Media Content](./marketing/social-content.md)
+- [Marketing Launch Sequence](./marketing/launch-sequence.md)
+
 ---
 
 ## Monorepo Structure
