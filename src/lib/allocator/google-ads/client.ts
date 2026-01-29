@@ -295,12 +295,19 @@ export class GoogleAdsAllocatorClient {
         updateMask: "amount_micros",
       };
 
+      const developerToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
+      if (!developerToken) {
+        throw new Error(
+          "Google Ads Developer Token not configured. Set GOOGLE_ADS_DEVELOPER_TOKEN environment variable.",
+        );
+      }
+
       const response = await fetch(mutateUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.client["accessToken"]}`,
-          "developer-token": process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "",
+          "developer-token": developerToken,
         },
         body: JSON.stringify({
           operations: [operation],

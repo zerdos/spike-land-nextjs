@@ -1,5 +1,6 @@
+import { decryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
-import { Prisma, type AllocatorPlatform } from "@prisma/client";
+import { type AllocatorPlatform, Prisma } from "@prisma/client";
 import { FeatureFlagService } from "../feature-flags/feature-flag-service";
 import { allocatorAuditLogger } from "./allocator-audit-logger";
 import { AutopilotAnomalyIntegration } from "./autopilot-anomaly-integration";
@@ -9,10 +10,9 @@ import type {
   AutopilotRecommendation,
   UpdateAutopilotConfigInput,
 } from "./autopilot-types";
-import { GuardrailAlertService } from "./guardrail-alert-service";
-import { decryptToken } from "@/lib/crypto/token-encryption";
 import { FacebookMarketingApiClient } from "./facebook-ads/client";
 import { GoogleAdsAllocatorClient } from "./google-ads/client";
+import { GuardrailAlertService } from "./guardrail-alert-service";
 
 const Decimal = Prisma.Decimal;
 
@@ -462,6 +462,20 @@ export class AutopilotService {
         },
       });
       throw new Error(`Campaign ${recommendation.campaignId} not found`);
+    }
+
+    if (!campaign.platformCampaignId) {
+      await prisma.allocatorAutopilotExecution.update({
+        where: { id: execution.id },
+        data: {
+          status: "FAILED",
+          metadata: {
+            error: `Campaign ${recommendation.campaignId} has no platformCampaignId`,
+            triggerSource,
+          },
+        },
+      });
+      throw new Error(`Campaign ${recommendation.campaignId} has no platformCampaignId`);
     }
 
     // Update budget on the platform API

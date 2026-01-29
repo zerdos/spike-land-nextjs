@@ -131,7 +131,9 @@ describe("GoogleAdsAllocatorClient", () => {
       // Mock successful fetch response
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ results: [{ resourceName: "customers/1234567890/campaignBudgets/111222333" }] }),
+        json: async () => ({
+          results: [{ resourceName: "customers/1234567890/campaignBudgets/111222333" }],
+        }),
       });
 
       await expect(
