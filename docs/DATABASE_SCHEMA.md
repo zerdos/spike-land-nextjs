@@ -965,6 +965,14 @@ erDiagram
   DateTime publishedAt "nullable"
   SocialPostStatus status
   Json metadata "nullable"
+  Int likes "nullable"
+  Int comments "nullable"
+  Int shares "nullable"
+  Int impressions "nullable"
+  Int reach "nullable"
+  Decimal(5) engagementRate "nullable"
+  Boolean isEligibleForAd
+  DateTime lastMetricsSync "nullable"
   String createdById FK
   DateTime createdAt
   DateTime updatedAt
@@ -1790,6 +1798,70 @@ erDiagram
   String postId FK
   String assetId FK
 }
+"organic_post_conversions" {
+  String id PK
+  String workspaceId FK
+  String postId
+  SocialPlatform platform
+  ConversionStatus status
+  Int organicLikes
+  Int organicComments
+  Int organicShares
+  Int organicImpressions
+  Int organicReach
+  Decimal(5) engagementRate
+  Json targetingData "nullable"
+  Json recommendedBudget "nullable"
+  String selectedVariantId "nullable"
+  String platformCampaignId "nullable"
+  DateTime campaignStartDate "nullable"
+  DateTime campaignEndDate "nullable"
+  Decimal(10) dailyBudget "nullable"
+  Decimal(10) totalBudget "nullable"
+  Decimal(10) adSpend
+  Int adImpressions
+  Int adReach
+  Int adClicks
+  Int adConversions
+  String errorMessage "nullable"
+  Json errorDetails "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"organic_post_engagers" {
+  String id PK
+  String conversionId FK
+  String ageRange "nullable"
+  String gender "nullable"
+  String location "nullable"
+  String interests
+  String engagementType
+  SocialPlatform platform
+  DateTime fetchedAt
+  EngagerDataStatus dataQuality
+  DateTime createdAt
+}
+"ad_creative_variants" {
+  String id PK
+  String conversionId FK
+  String format
+  String placement
+  String headline "nullable"
+  String primaryText "nullable"
+  String description "nullable"
+  String callToAction "nullable"
+  String mediaUrl
+  String mediaType
+  Int width
+  Int height
+  String aspectRatio
+  Boolean textOptimized
+  Boolean ctaOptimized
+  Boolean aspectRatioAdjusted
+  Boolean isSelected
+  DateTime createdAt
+  DateTime updatedAt
+}
 "identities" {
   String id PK
   String userId FK,UK "nullable"
@@ -1998,6 +2070,9 @@ erDiagram
 "post_assets" }o--|| "assets" : asset
 "scheduled_post_assets" }o--|| "scheduled_posts" : post
 "scheduled_post_assets" }o--|| "assets" : asset
+"organic_post_conversions" }o--|| "workspaces" : workspace
+"organic_post_engagers" }o--|| "organic_post_conversions" : conversion
+"ad_creative_variants" }o--|| "organic_post_conversions" : conversion
 "identities" |o--o| "users" : user
 "identifiers" }o--|| "identities" : identity
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
@@ -3201,6 +3276,14 @@ Properties as follows:
 - `publishedAt`:
 - `status`:
 - `metadata`:
+- `likes`:
+- `comments`:
+- `shares`:
+- `impressions`:
+- `reach`:
+- `engagementRate`:
+- `isEligibleForAd`:
+- `lastMetricsSync`:
 - `createdById`:
 - `createdAt`:
 - `updatedAt`:
@@ -4266,6 +4349,88 @@ Properties as follows:
 
 - `postId`:
 - `assetId`:
+
+### `organic_post_conversions`
+
+Tracks the conversion of organic social posts into ad campaigns
+Links original post performance to resulting ad campaigns
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `postId`:
+- `platform`:
+- `status`:
+- `organicLikes`:
+- `organicComments`:
+- `organicShares`:
+- `organicImpressions`:
+- `organicReach`:
+- `engagementRate`:
+- `targetingData`:
+- `recommendedBudget`:
+- `selectedVariantId`:
+- `platformCampaignId`:
+- `campaignStartDate`:
+- `campaignEndDate`:
+- `dailyBudget`:
+- `totalBudget`:
+- `adSpend`:
+- `adImpressions`:
+- `adReach`:
+- `adClicks`:
+- `adConversions`:
+- `errorMessage`:
+- `errorDetails`:
+- `createdAt`:
+- `updatedAt`:
+
+### `organic_post_engagers`
+
+Stores aggregated data about users who engaged with organic posts
+Used for AI-powered targeting analysis (anonymized & aggregated)
+
+Properties as follows:
+
+- `id`:
+- `conversionId`:
+- `ageRange`:
+- `gender`:
+- `location`:
+- `interests`:
+- `engagementType`:
+- `platform`:
+- `fetchedAt`:
+- `dataQuality`:
+- `createdAt`:
+
+### `ad_creative_variants`
+
+Stores format-specific creative adaptations for different ad placements
+Optimizes organic content for various ad formats and placements
+
+Properties as follows:
+
+- `id`:
+- `conversionId`:
+- `format`:
+- `placement`:
+- `headline`:
+- `primaryText`:
+- `description`:
+- `callToAction`:
+- `mediaUrl`:
+- `mediaType`:
+- `width`:
+- `height`:
+- `aspectRatio`:
+- `textOptimized`:
+- `ctaOptimized`:
+- `aspectRatioAdjusted`:
+- `isSelected`:
+- `createdAt`:
+- `updatedAt`:
 
 ### `identities`
 
