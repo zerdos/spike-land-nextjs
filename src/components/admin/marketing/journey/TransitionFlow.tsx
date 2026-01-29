@@ -48,8 +48,7 @@ export function TransitionFlow({
               <div key={platform} className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <div
-                    className={`h-3 w-3 rounded-full ${PLATFORM_COLORS[platform] || "bg-gray-400"
-                      }`}
+                    className={`h-3 w-3 rounded-full ${PLATFORM_COLORS[platform] || "bg-gray-400"}`}
                   />
                   <span className="text-xs font-medium text-muted-foreground">
                     {platform}
@@ -80,8 +79,9 @@ export function TransitionFlow({
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
                       <div
-                        className={`h-8 w-8 rounded-full ${PLATFORM_COLORS[transition.from] || "bg-gray-400"
-                          } flex items-center justify-center text-xs font-bold text-white`}
+                        className={`h-8 w-8 rounded-full ${
+                          PLATFORM_COLORS[transition.from] || "bg-gray-400"
+                        } flex items-center justify-center text-xs font-bold text-white`}
                       >
                         {transition.from[0]}
                       </div>
@@ -92,8 +92,9 @@ export function TransitionFlow({
                     <ArrowRightIcon className="h-5 w-5 text-muted-foreground" />
                     <div className="flex items-center gap-2">
                       <div
-                        className={`h-8 w-8 rounded-full ${PLATFORM_COLORS[transition.to] || "bg-gray-400"
-                          } flex items-center justify-center text-xs font-bold text-white`}
+                        className={`h-8 w-8 rounded-full ${
+                          PLATFORM_COLORS[transition.to] || "bg-gray-400"
+                        } flex items-center justify-center text-xs font-bold text-white`}
                       >
                         {transition.to[0]}
                       </div>
