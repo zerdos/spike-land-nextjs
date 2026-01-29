@@ -8,6 +8,7 @@
 import { auth } from "@/auth";
 import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
+import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import { SnapchatClient, SnapchatHttpError } from "@/lib/social/clients/snapchat";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
@@ -44,7 +45,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     prisma.socialAccount.findFirst({
       where: {
         id: accountId,
-        userId: session.user.id,
         platform: "SNAPCHAT",
       },
     }),
@@ -63,6 +63,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       { error: "Snapchat account not found" },
       { status: 404 },
     );
+  }
+
+  // Verify user has permission to view social analytics in this workspace
+  const { error: permError } = await tryCatch(
+    requireWorkspacePermission(session, account.workspaceId, "social:view"),
+  );
+
+  if (permError) {
+    const status = permError.message.includes("Unauthorized") ? 401 : 403;
+    return NextResponse.json({ error: permError.message }, { status });
   }
 
   // Check if account is active
@@ -154,7 +164,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     prisma.socialAccount.findFirst({
       where: {
         id: accountId,
-        userId: session.user.id,
         platform: "SNAPCHAT",
       },
     }),
@@ -167,12 +176,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { status: 500 },
     );
   }
-
   if (!account) {
     return NextResponse.json(
       { error: "Snapchat account not found" },
       { status: 404 },
     );
+  }
+
+  // Verify user has permission to connect/manage social accounts in this workspace
+  const { error: permError } = await tryCatch(
+    requireWorkspacePermission(session, account.workspaceId, "social:connect"),
+  );
+
+  if (permError) {
+    const status = permError.message.includes("Unauthorized") ? 401 : 403;
+    return NextResponse.json({ error: permError.message }, { status });
   }
 
   // Check if account is active
