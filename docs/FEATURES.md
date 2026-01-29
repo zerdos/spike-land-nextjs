@@ -25,6 +25,7 @@
 **Supporting Tools**: Pixel (image enhancement), Vibe Coding (landing pages)
 
 **Target Market Shift**:
+
 - **From**: Developers and technical creators
 - **To**: Social media managers, content creators, small business marketing teams
 
@@ -34,17 +35,17 @@ See [#836 - Strategic Pivot Epic](https://github.com/zerdos/spike-land-nextjs/is
 
 ## Related Documentation
 
-| Topic               | Document                                                    |
-| ------------------- | ----------------------------------------------------------- |
-| Orbit User Guide    | [ORBIT_USER_GUIDE.md](./ORBIT_USER_GUIDE.md)               |
-| A/B Testing Guide   | [AB_TESTING_GUIDE.md](./AB_TESTING_GUIDE.md)               |
-| Subscription Tiers  | [SUBSCRIPTION_TIERS.md](./SUBSCRIPTION_TIERS.md)            |
-| Marketing Personas  | [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md)            |
-| User Guide          | [USER_GUIDE.md](./USER_GUIDE.md)                            |
-| API Reference       | [API_REFERENCE.md](./API_REFERENCE.md)                      |
-| Database Schema     | [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)                  |
-| Token System        | [TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md)                        |
-| Business Structure  | [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md)            |
+| Topic              | Document                                         |
+| ------------------ | ------------------------------------------------ |
+| Orbit User Guide   | [ORBIT_USER_GUIDE.md](./ORBIT_USER_GUIDE.md)     |
+| A/B Testing Guide  | [AB_TESTING_GUIDE.md](./AB_TESTING_GUIDE.md)     |
+| Subscription Tiers | [SUBSCRIPTION_TIERS.md](./SUBSCRIPTION_TIERS.md) |
+| Marketing Personas | [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) |
+| User Guide         | [USER_GUIDE.md](./USER_GUIDE.md)                 |
+| API Reference      | [API_REFERENCE.md](./API_REFERENCE.md)           |
+| Database Schema    | [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)       |
+| Token System       | [TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md)             |
+| Business Structure | [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md) |
 
 ---
 
@@ -89,6 +90,7 @@ See [#836 - Strategic Pivot Epic](https://github.com/zerdos/spike-land-nextjs/is
 **Problem**: Social media managers waste 4-6 hours/day switching between platforms, manually responding to messages, and creating content without data-driven insights.
 
 **Solution**: Orbit consolidates all social media management into one AI-powered interface:
+
 - Monitor all accounts in real-time
 - Respond to messages from one inbox
 - Generate on-brand content with AI
@@ -125,18 +127,21 @@ See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona docume
 #### Key Features
 
 **Health Scores (0-100)**:
+
 - Follower growth velocity
 - Engagement rate trends
 - Reach and impressions
 - Response time metrics
 
 **Anomaly Detection**:
+
 - Sudden follower drops (bot purges, viral unfollows)
 - Engagement spikes (viral content, fake engagement)
 - Unusual mention volume (PR crises, trending topics)
 - Spam attack detection
 
 **Metrics Tracked**:
+
 - **Follower Growth**: Daily/weekly trends with forecasts
 - **Engagement Rate**: Likes, comments, shares per post
 - **Reach**: Unique accounts seeing your content
@@ -144,11 +149,13 @@ See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona docume
 - **Response Time**: Average time to reply to messages
 
 **Alert System**:
+
 - Email notifications for anomalies
 - Slack integration (BUSINESS tier)
 - Customizable alert thresholds
 
 **Subscription Tier Features**:
+
 - **FREE**: Basic dashboard, 3 accounts, daily updates
 - **PRO**: Advanced analytics, 10 accounts, hourly updates
 - **BUSINESS**: Custom KPIs, unlimited accounts, real-time updates
@@ -169,22 +176,26 @@ See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona docume
 #### Key Features
 
 **Unified View**:
+
 - All social messages in one chronological feed
 - Platform indicators (IG, FB, X, LI, TT badges)
 - Message threading (conversations grouped)
 - Unread/read status across platforms
 
 **AI Priority Scoring (0-100)**:
+
 - **High Priority (80-100)**: Complaints, negative sentiment, influencer mentions, urgent questions
 - **Medium Priority (40-79)**: General questions, neutral mentions, partnership inquiries
 - **Low Priority (0-39)**: Thank-yous, positive comments, spam
 
 **Sentiment Analysis**:
+
 - **Positive**: Green badge, emoji indicators
 - **Negative**: Red badge, priority boost
 - **Neutral**: Gray badge
 
 **Smart Filters**:
+
 - By platform (show only Instagram messages)
 - By priority (high/medium/low)
 - By sentiment (positive/negative/neutral)
@@ -192,12 +203,14 @@ See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona docume
 - By status (unread, replied, archived)
 
 **Bulk Actions**:
+
 - Archive multiple messages
 - Assign to team members
 - Reply with templates
 - Mark as spam
 
 **Keyboard Shortcuts**:
+
 - `J` / `K`: Next/previous message
 - `R`: Start reply
 - `A`: Assign to team member
@@ -205,6 +218,7 @@ See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona docume
 - `1-4`: Set priority
 
 **Subscription Tier Features**:
+
 - **FREE**: Basic inbox, manual prioritization
 - **PRO**: AI priority scoring, team assignment (3 members)
 - **BUSINESS**: Advanced filters, custom rules, team assignment (10 members)
@@ -225,34 +239,40 @@ See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona docume
 #### Key Features
 
 **Budget Recommendations**:
+
 - Analyze historical ad performance across platforms
 - Predict ROI (ROAS) for different budget allocations
 - Suggest budget shifts between platforms/campaigns
 - Identify underperforming campaigns to pause
 
 **Autopilot Mode (BUSINESS tier)**:
+
 - AI automatically executes budget adjustments
 - Set constraints (max daily spend, platform budgets)
 - Requires approval for changes >$500 or >20%
 - Weekly performance reports
 
 **Historical Analysis**:
+
 - Track performance over time (30/60/90 days)
 - Identify trends and seasonality
 - Export data for stakeholder reports
 
 **Integration**:
+
 - Facebook Ads Manager
 - LinkedIn Campaign Manager
 - Twitter/X Ads
 - TikTok Ads Manager
 
 **Example Recommendations**:
+
 - "Increase Instagram budget by 15% (predicted +22% ROAS)"
 - "Pause Facebook campaign 'Summer2026' (underperforming by 40%)"
 - "Shift $200/day from LinkedIn to Twitter/X (better engagement at 60% cost)"
 
 **Subscription Tier Features**:
+
 - **FREE**: View recommendations only (no execution)
 - **PRO**: Manual execution, historical data, CSV export
 - **BUSINESS**: Autopilot mode, custom constraints, API access
@@ -273,35 +293,41 @@ See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona docume
 #### Key Features
 
 **Competitor Tracking**:
+
 - Add competitors by social handle
 - Scrapes public data (no account access required)
 - Updates daily (PRO) or hourly (BUSINESS)
 - Track up to 5 competitors (PRO) or unlimited (BUSINESS)
 
 **Benchmarking**:
+
 - Side-by-side performance comparison
 - Your metrics vs. competitor averages
 - Industry percentile ranking
 - Growth rate comparisons
 
 **Content Analysis**:
+
 - Top-performing content themes
 - Posting frequency (daily/weekly averages)
 - Content format breakdown (video, image, carousel, text)
 - Hashtag strategy analysis
 
 **Alert System**:
+
 - Notified when competitor posts viral content (>10k engagements)
 - Detect new campaigns or product launches
 - Track follower growth milestones
 
 **Insights Provided**:
+
 - **Posting Frequency**: "Competitor X posts 3x/day on Instagram, 2x/day on Twitter"
 - **Engagement Rates**: "Your Instagram ER: 4.2%. Competitor average: 5.8%"
 - **Content Themes**: "Competitors use 60% video content vs. your 30%"
 - **Audience Growth**: "Competitor Y grew 5k followers last week (vs. your 2k)"
 
 **Subscription Tier Features**:
+
 - **FREE**: Not available
 - **PRO**: Track 5 competitors, basic analysis, daily updates
 - **BUSINESS**: Unlimited competitors, predictive analytics, hourly updates, API access
@@ -322,30 +348,35 @@ See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona docume
 #### Key Features
 
 **Brand Voice Training**:
+
 - Upload 10-50 examples of past content (posts, captions, blog articles)
 - Orbit analyzes tone, vocabulary, style, emoji usage
 - Generates "brand voice profile" (formal/casual, enthusiastic/serious, etc.)
 - Continuously improves as you approve/reject AI drafts
 
 **Content Guardrails**:
+
 - **Forbidden Words**: Block profanity, competitor names, sensitive topics
 - **Required Elements**: Always include CTA, hashtags, brand handle
 - **Tone Constraints**: Never negative, always enthusiastic, formal only
 - **Compliance Rules**: Industry-specific regulations (finance, healthcare)
 
 **Tone Analysis**:
+
 - Score draft content for brand alignment (0-100)
 - Highlight mismatched words/phrases
 - Suggest replacements to improve score
 - Real-time feedback as you type
 
 **Compliance Checks**:
+
 - Financial services (FCA compliance)
 - Healthcare (HIPAA guidelines)
 - Legal (copyright, trademark flags)
 - Custom industry rules
 
 **Example Guardrails**:
+
 - "Never mention competitor brands by name"
 - "All posts must include at least one emoji"
 - "Avoid jargon; use simple language"
@@ -353,6 +384,7 @@ See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona docume
 - "No political or religious content"
 
 **Subscription Tier Features**:
+
 - **FREE**: Not available
 - **PRO**: Basic voice training, 5 guardrails, tone scoring
 - **BUSINESS**: Advanced training, unlimited guardrails, compliance templates, API access
@@ -373,34 +405,40 @@ See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona docume
 #### Key Features
 
 **AI Draft Generation**:
+
 - Provide topic, platform, tone, length
 - Orbit generates 3-5 variations
 - Each variation scored for brand alignment (Brand Brain)
 - Edit, approve, or regenerate
 
 **Multi-Variation**:
+
 - Generate 3-5 different takes on same topic
 - Compare side-by-side
 - Select favorite or combine elements
 - A/B test top 2 variations
 
 **Approval Workflow**:
+
 - Owner/Admin must approve before publishing
 - Review → Edit → Approve → Schedule
 - Rejection feedback improves AI over time
 
 **Scheduled Publishing**:
+
 - Set future publish times
 - Optimal time suggestions based on historical engagement
 - Recurring posts (daily, weekly, monthly)
 - Time zone support for global audiences
 
 **A/B Testing Integration**:
+
 - Test 2+ draft variations
 - Automatically select winner based on engagement
 - Apply learnings to future drafts
 
 **AI Credit Consumption**:
+
 - 10 credits per draft generation (5 variations)
 - 20 credits for A/B test setup (includes generation)
 - **FREE**: 100 credits/month = 10 draft generations
@@ -408,6 +446,7 @@ See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona docume
 - **BUSINESS**: 5,000 credits/month = 500 draft generations
 
 **Subscription Tier Features**:
+
 - **FREE**: Not available
 - **PRO**: Basic draft generation, 1,000 credits/month, manual scheduling
 - **BUSINESS**: Advanced prompts, 5,000 credits/month, custom templates, auto-scheduling
@@ -426,6 +465,7 @@ See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona docume
 ### What Is a Workspace?
 
 A **workspace** is an isolated environment containing:
+
 - Social media accounts
 - Team members
 - Content calendar
@@ -464,12 +504,14 @@ A **workspace** is an isolated environment containing:
 ### Team Management
 
 **Roles**:
+
 - **Owner**: Full access, billing, transfer ownership
 - **Admin**: Full access except billing/transfer
 - **Editor**: Post, reply, edit content (no settings)
 - **Viewer**: Read-only (for stakeholders)
 
 **Subscription Limits**:
+
 - FREE: 1 member (owner only)
 - PRO: 3 members
 - BUSINESS: 10 members
@@ -482,23 +524,23 @@ A **workspace** is an isolated environment containing:
 
 Unlike user-level tokens (Pixel), Orbit uses **workspace-level subscriptions**. Each workspace has its own tier and billing.
 
-| Feature               | FREE      | PRO         | BUSINESS    |
-| --------------------- | --------- | ----------- | ----------- |
-| **Price**             | $0/month  | $29/month   | $99/month   |
-| **Social Accounts**   | 3         | 10          | Unlimited   |
-| **Scheduled Posts**   | 30/month  | Unlimited   | Unlimited   |
-| **A/B Tests**         | 1         | 10          | Unlimited   |
-| **AI Credits**        | 100/month | 1,000/month | 5,000/month |
-| **Team Members**      | 1         | 3           | 10          |
-| **Pulse Dashboard**   | ✓         | ✓           | ✓           |
-| **Unified Inbox**     | ✓         | ✓           | ✓           |
-| **Smart Allocator**   | Basic     | ✓           | Autopilot   |
-| **Scout**             | ✗         | ✓           | ✓           |
-| **Brand Brain**       | ✗         | ✓           | ✓           |
-| **Relay**             | ✗         | ✓           | ✓           |
-| **White-Label Reports**| ✗         | ✗           | ✓           |
-| **API Access**        | ✗         | ✗           | ✓           |
-| **Priority Support**  | ✗         | ✗           | ✓           |
+| Feature                 | FREE      | PRO         | BUSINESS    |
+| ----------------------- | --------- | ----------- | ----------- |
+| **Price**               | $0/month  | $29/month   | $99/month   |
+| **Social Accounts**     | 3         | 10          | Unlimited   |
+| **Scheduled Posts**     | 30/month  | Unlimited   | Unlimited   |
+| **A/B Tests**           | 1         | 10          | Unlimited   |
+| **AI Credits**          | 100/month | 1,000/month | 5,000/month |
+| **Team Members**        | 1         | 3           | 10          |
+| **Pulse Dashboard**     | ✓         | ✓           | ✓           |
+| **Unified Inbox**       | ✓         | ✓           | ✓           |
+| **Smart Allocator**     | Basic     | ✓           | Autopilot   |
+| **Scout**               | ✗         | ✓           | ✓           |
+| **Brand Brain**         | ✗         | ✓           | ✓           |
+| **Relay**               | ✗         | ✓           | ✓           |
+| **White-Label Reports** | ✗         | ✗           | ✓           |
+| **API Access**          | ✗         | ✗           | ✓           |
+| **Priority Support**    | ✗         | ✗           | ✓           |
 
 ### Pricing Philosophy
 
@@ -579,17 +621,18 @@ Limited beta - contact sales@spike.land for access
 
 This project is a monorepo containing multiple packages:
 
-| Package                                             | Description                             | Technology                 |
-| --------------------------------------------------- | --------------------------------------- | -------------------------- |
-| **Web App** (`src/`)                                | Next.js 16 web application              | React 19, TypeScript       |
-| **Code Editor** (`packages/code/`)                  | React code editor (Vite + Monaco)       | Vite, Monaco Editor        |
-| **Backend Worker** (`packages/testing.spike.land/`) | Cloudflare Worker backend with MCP      | Cloudflare Workers, Hono   |
-| **Transpiler** (`packages/js.spike.land/`)          | Cloudflare Worker transpilation service | Cloudflare Workers, esbuild|
-| **Shared** (`packages/shared/`)                     | Shared types, constants, and utilities  | TypeScript, Prisma types   |
+| Package                                             | Description                             | Technology                  |
+| --------------------------------------------------- | --------------------------------------- | --------------------------- |
+| **Web App** (`src/`)                                | Next.js 16 web application              | React 19, TypeScript        |
+| **Code Editor** (`packages/code/`)                  | React code editor (Vite + Monaco)       | Vite, Monaco Editor         |
+| **Backend Worker** (`packages/testing.spike.land/`) | Cloudflare Worker backend with MCP      | Cloudflare Workers, Hono    |
+| **Transpiler** (`packages/js.spike.land/`)          | Cloudflare Worker transpilation service | Cloudflare Workers, esbuild |
+| **Shared** (`packages/shared/`)                     | Shared types, constants, and utilities  | TypeScript, Prisma types    |
 
 ### Cross-Platform Code Sharing
 
 The `@spike-npm-land/shared` package provides:
+
 - **Types**: TypeScript interfaces from Prisma schema
 - **Constants**: Token costs, limits, and configuration
 - **Validations**: Zod schemas for API requests
@@ -645,26 +688,31 @@ import { ENHANCEMENT_COSTS, formatCurrency, User } from "@spike-npm-land/shared"
 ### Key Models
 
 **Workspace**:
+
 - Isolated environment for managing accounts
 - Subscription tier and billing information
 - Team members and permissions
 
 **SocialAccount**:
+
 - Connected social media accounts
 - OAuth tokens and permissions
 - Platform-specific metadata
 
 **Post**:
+
 - Scheduled and published content
 - Associated with workspace and social accounts
 - Engagement metrics and analytics
 
 **Inbox**:
+
 - Unified messages from all platforms
 - AI priority scores and sentiment
 - Assignment to team members
 
 **AbTest**:
+
 - A/B test configurations
 - Variations and performance metrics
 - Statistical significance calculations
@@ -682,6 +730,7 @@ See [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) for full schema documentation.
 **Authentication**: Bearer token (JWT)
 
 **Key Endpoints**:
+
 - `POST /api/workspaces` - Create workspace
 - `POST /api/social-accounts` - Connect social account
 - `POST /api/posts/schedule` - Schedule post
