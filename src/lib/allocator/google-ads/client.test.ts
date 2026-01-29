@@ -1,5 +1,5 @@
 import { GoogleAdsClient } from "@/lib/marketing/google-ads-client";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GoogleAdsAllocatorClient } from "./client";
 
 vi.mock("@/lib/marketing/google-ads-client", () => {
@@ -33,9 +33,16 @@ describe("GoogleAdsAllocatorClient", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mock the GOOGLE_ADS_DEVELOPER_TOKEN environment variable
+    process.env.GOOGLE_ADS_DEVELOPER_TOKEN = "fake_developer_token";
     client = new GoogleAdsAllocatorClient("fake_token", "fake_id");
     const mockResult = vi.mocked(GoogleAdsClient).mock.results[0];
     mockMarketingClient = mockResult?.value as typeof mockMarketingClient;
+  });
+
+  afterEach(() => {
+    // Clean up environment variable
+    delete process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
   });
 
   it("should get ad accounts and sub-accounts", async () => {
