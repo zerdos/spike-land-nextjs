@@ -106,6 +106,11 @@ model User {
   workspaceFavorites    WorkspaceFavorite[]
   workspaceRecentAccess WorkspaceRecentAccess[]
 
+  // Content-to-Ads Loop (Organic to Paid) - Resolves #521
+  approvedBoosts    BoostedPost[]
+  createdBoosts     BoostedPost[]  @relation("BoostedPostCreator")
+  dismissedInsights BoostInsight[]
+
   @@map("users")
 }
 
@@ -2150,6 +2155,10 @@ model SocialPost {
   // Content Library
   assets PostAsset[]
 
+  // Performance tracking (Organic to Paid)
+  performance  OrganicPostPerformance?
+  boostedPosts BoostedPost[]           @relation("OriginalPost")
+
   @@index([createdById])
   @@index([createdById, createdAt])
   @@index([status])
@@ -2296,6 +2305,7 @@ enum ExternalAgentStatus {
 // =============================================================================
 
 enum SocialPlatform {
+  GOOGLE_ADS
   TWITTER
   LINKEDIN
   FACEBOOK
@@ -2491,6 +2501,11 @@ model Workspace {
   // Multi-workspace management
   favorites    WorkspaceFavorite[]
   recentAccess WorkspaceRecentAccess[]
+
+  // Content-to-Ads Loop (Organic to Paid) - Resolves #521
+  performanceRankingConfig PerformanceRankingConfig?
+  boostedPosts             BoostedPost[]
+  boostInsights            BoostInsight[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -4366,4 +4381,266 @@ enum IdentifierType {
   VISITOR_ID
   USER_ID
   EMAIL
+}
+
+// =============================================================================
+// Content-to-Ads Loop Models (Organic to Paid Pipeline)
+// Resolves #521
+// =============================================================================
+
+/// Tracks performance metrics for organic social posts
+/// Used by boost detector to identify top performers
+model OrganicPostPerformance {
+  id           String     @id @default(cuid())
+  socialPostId String     @unique
+  socialPost   SocialPost @relation(fields: [socialPostId], references: [id], onDelete: Cascade)
+
+  // Performance metrics
+  engagementRate Decimal @db.Decimal(5, 4)
+  impressions    Int     @default(0)
+  reach          Int     @default(0)
+  likes          Int     @default(0)
+  comments       Int     @default(0)
+  shares         Int     @default(0)
+  clicks         Int     @default(0)
+
+  // Performance score (calculated)
+  performanceScore Decimal  @db.Decimal(7, 4)
+  percentileRank   Decimal? @db.Decimal(5, 4) // 0.0-1.0
+
+  // Classification
+  isTopPerformer Boolean @default(false)
+  boosted        Boolean @default(false)
+  boostEligible  Boolean @default(true)
+
+  // Timestamps
+  metricsUpdatedAt DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([performanceScore])
+  @@index([isTopPerformer])
+  @@index([boosted])
+  @@map("organic_post_performance")
+}
+
+/// Configuration for performance ranking algorithm
+/// Workspace-specific settings for boost detection
+model PerformanceRankingConfig {
+  id          String    @id @default(cuid())
+  workspaceId String    @unique
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Ranking algorithm weights
+  engagementRateWeight Decimal @default(0.3) @db.Decimal(3, 2)
+  impressionsWeight    Decimal @default(0.2) @db.Decimal(3, 2)
+  reachWeight          Decimal @default(0.15) @db.Decimal(3, 2)
+  sharesWeight         Decimal @default(0.2) @db.Decimal(3, 2)
+  clicksWeight         Decimal @default(0.15) @db.Decimal(3, 2)
+
+  // Thresholds
+  topPerformerPercentile Decimal @default(0.9) @db.Decimal(3, 2) // Top 10%
+  minImpressions         Int     @default(100)
+  minEngagementRate      Decimal @default(0.01) @db.Decimal(5, 4) // 1%
+
+  // Time windows
+  evaluationPeriodDays Int @default(7)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("performance_ranking_configs")
+}
+
+/// Represents a boosted organic post (organic-to-ad conversion)
+/// Tracks the ad campaign created from a top-performing organic post
+model BoostedPost {
+  id String @id @default(cuid())
+
+  // Original organic post
+  originalPostId String
+  originalPost   SocialPost @relation("OriginalPost", fields: [originalPostId], references: [id], onDelete: Cascade)
+
+  // Ad campaign details
+  campaignName String
+  platform     SocialPlatform
+  budget       Decimal        @db.Decimal(10, 2)
+  currency     String         @default("USD")
+  duration     Int // days
+
+  // Targeting
+  targetingData       Json // Platform-specific targeting JSON
+  audienceSuggestions Json? // AI-generated suggestions
+
+  // Status
+  status       BoostStatus @default(DRAFT)
+  approvedAt   DateTime?
+  approvedById String?
+  approvedBy   User?       @relation(fields: [approvedById], references: [id])
+
+  // Platform IDs
+  platformCampaignId String? // ID from ad platform
+  platformAdId       String?
+
+  // Workspace
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Created by
+  createdById String
+  createdBy   User   @relation("BoostedPostCreator", fields: [createdById], references: [id])
+
+  // Timestamps
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Performance
+  performance    BoostPerformance?
+  impactAnalysis BoostImpactAnalysis?
+
+  @@index([originalPostId])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([platform])
+  @@map("boosted_posts")
+}
+
+/// Tracks performance metrics for boosted posts
+/// Synced from ad platforms
+model BoostPerformance {
+  id            String      @id @default(cuid())
+  boostedPostId String      @unique
+  boostedPost   BoostedPost @relation(fields: [boostedPostId], references: [id], onDelete: Cascade)
+
+  // Ad metrics
+  impressions Int @default(0)
+  clicks      Int @default(0)
+  conversions Int @default(0)
+  reach       Int @default(0)
+
+  // Cost metrics
+  spend Decimal  @default(0) @db.Decimal(10, 2)
+  cpc   Decimal? @db.Decimal(10, 4) // Cost per click
+  cpm   Decimal? @db.Decimal(10, 4) // Cost per mille
+  ctr   Decimal? @db.Decimal(5, 4) // Click-through rate
+
+  // Last sync
+  lastSyncedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("boost_performance")
+}
+
+/// Analyzes incremental impact of boosting vs organic performance
+/// Calculates ROI and lift metrics
+model BoostImpactAnalysis {
+  id            String      @id @default(cuid())
+  boostedPostId String      @unique
+  boostedPost   BoostedPost @relation(fields: [boostedPostId], references: [id], onDelete: Cascade)
+
+  // Organic baseline (before boost)
+  organicImpressions    Int
+  organicEngagementRate Decimal @db.Decimal(5, 4)
+  organicReach          Int
+  organicClicks         Int
+
+  // Incremental lift (during/after boost)
+  totalImpressions Int // Organic + Paid
+  totalReach       Int
+  totalClicks      Int
+  totalEngagements Int
+
+  // Calculated metrics
+  incrementalImpressions Int // Total - Organic baseline
+  incrementalReach       Int
+  incrementalClicks      Int
+  liftPercentage         Decimal? @db.Decimal(7, 4) // % increase
+
+  // ROI metrics
+  totalSpend              Decimal  @db.Decimal(10, 2)
+  costPerIncrementalClick Decimal? @db.Decimal(10, 4)
+  roi                     Decimal? @db.Decimal(10, 4) // (Value - Cost) / Cost
+
+  // Time periods
+  baselinePeriodStart DateTime
+  baselinePeriodEnd   DateTime
+  boostPeriodStart    DateTime
+  boostPeriodEnd      DateTime
+
+  // Analysis status
+  analyzed   Boolean   @default(false)
+  analyzedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("boost_impact_analysis")
+}
+
+/// AI-generated insights about boost performance
+/// Actionable recommendations for optimization
+model BoostInsight {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Insight data
+  insightType    InsightType
+  title          String
+  description    String      @db.Text
+  recommendation String      @db.Text
+
+  // Context
+  relatedBoostIds String[] // Array of boost IDs
+  metrics         Json // Supporting metrics
+
+  // Priority
+  priority Int @default(5) // 1-10
+
+  // Status
+  status        InsightStatus @default(NEW)
+  dismissedAt   DateTime?
+  dismissedById String?
+  dismissedBy   User?         @relation(fields: [dismissedById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([priority])
+  @@map("boost_insights")
+}
+
+// Boost status enum
+enum BoostStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+  FAILED
+}
+
+// Insight type enum
+enum InsightType {
+  HIGH_PERFORMING_CONTENT
+  OPTIMAL_BUDGET
+  BEST_TIME_TO_BOOST
+  AUDIENCE_TARGETING
+  PLATFORM_RECOMMENDATION
+  UNDERPERFORMING_BOOST
+  ROI_OPPORTUNITY
+}
+
+// Insight status enum
+enum InsightStatus {
+  NEW
+  VIEWED
+  APPLIED
+  DISMISSED
 }

@@ -121,6 +121,13 @@ const PLATFORM_CONFIG: Record<
     bgColor: "bg-indigo-500/10",
     connectPath: "", // Not implemented yet
   },
+  GOOGLE_ADS: {
+    name: "Google Ads",
+    icon: () => <span className="text-lg">📢</span>,
+    color: "text-green-600",
+    bgColor: "bg-green-600/10",
+    connectPath: "/api/marketing/google-ads/connect",
+  },
 };
 
 const STATUS_CONFIG: Record<

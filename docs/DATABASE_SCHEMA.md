@@ -1803,6 +1803,119 @@ erDiagram
   String value
   DateTime createdAt
 }
+"organic_post_performance" {
+  String id PK
+  String socialPostId FK,UK
+  Decimal(5) engagementRate
+  Int impressions
+  Int reach
+  Int likes
+  Int comments
+  Int shares
+  Int clicks
+  Decimal(7) performanceScore
+  Decimal(5) percentileRank "nullable"
+  Boolean isTopPerformer
+  Boolean boosted
+  Boolean boostEligible
+  DateTime metricsUpdatedAt
+  DateTime createdAt
+  DateTime updatedAt
+}
+"performance_ranking_configs" {
+  String id PK
+  String workspaceId FK,UK
+  Decimal(3) engagementRateWeight
+  Decimal(3) impressionsWeight
+  Decimal(3) reachWeight
+  Decimal(3) sharesWeight
+  Decimal(3) clicksWeight
+  Decimal(3) topPerformerPercentile
+  Int minImpressions
+  Decimal(5) minEngagementRate
+  Int evaluationPeriodDays
+  DateTime createdAt
+  DateTime updatedAt
+}
+"boosted_posts" {
+  String id PK
+  String originalPostId FK
+  String campaignName
+  SocialPlatform platform
+  Decimal(10) budget
+  String currency
+  Int duration
+  Json targetingData
+  Json audienceSuggestions "nullable"
+  BoostStatus status
+  DateTime approvedAt "nullable"
+  String approvedById FK "nullable"
+  String platformCampaignId "nullable"
+  String platformAdId "nullable"
+  String workspaceId FK
+  String createdById FK
+  DateTime startedAt "nullable"
+  DateTime endedAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"boost_performance" {
+  String id PK
+  String boostedPostId FK,UK
+  Int impressions
+  Int clicks
+  Int conversions
+  Int reach
+  Decimal(10) spend
+  Decimal(10) cpc "nullable"
+  Decimal(10) cpm "nullable"
+  Decimal(5) ctr "nullable"
+  DateTime lastSyncedAt
+  DateTime createdAt
+  DateTime updatedAt
+}
+"boost_impact_analysis" {
+  String id PK
+  String boostedPostId FK,UK
+  Int organicImpressions
+  Decimal(5) organicEngagementRate
+  Int organicReach
+  Int organicClicks
+  Int totalImpressions
+  Int totalReach
+  Int totalClicks
+  Int totalEngagements
+  Int incrementalImpressions
+  Int incrementalReach
+  Int incrementalClicks
+  Decimal(7) liftPercentage "nullable"
+  Decimal(10) totalSpend
+  Decimal(10) costPerIncrementalClick "nullable"
+  Decimal(10) roi "nullable"
+  DateTime baselinePeriodStart
+  DateTime baselinePeriodEnd
+  DateTime boostPeriodStart
+  DateTime boostPeriodEnd
+  Boolean analyzed
+  DateTime analyzedAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"boost_insights" {
+  String id PK
+  String workspaceId FK
+  InsightType insightType
+  String title
+  String description
+  String recommendation
+  String relatedBoostIds
+  Json metrics
+  Int priority
+  InsightStatus status
+  DateTime dismissedAt "nullable"
+  String dismissedById FK "nullable"
+  DateTime createdAt
+}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
@@ -2000,6 +2113,16 @@ erDiagram
 "scheduled_post_assets" }o--|| "assets" : asset
 "identities" |o--o| "users" : user
 "identifiers" }o--|| "identities" : identity
+"organic_post_performance" |o--|| "social_posts" : socialPost
+"performance_ranking_configs" |o--|| "workspaces" : workspace
+"boosted_posts" }o--|| "social_posts" : originalPost
+"boosted_posts" }o--o| "users" : approvedBy
+"boosted_posts" }o--|| "workspaces" : workspace
+"boosted_posts" }o--|| "users" : createdBy
+"boost_performance" |o--|| "boosted_posts" : boostedPost
+"boost_impact_analysis" |o--|| "boosted_posts" : boostedPost
+"boost_insights" }o--|| "workspaces" : workspace
+"boost_insights" }o--o| "users" : dismissedBy
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
 "_ConnectionToConnectionTag" }o--|| "connection_tags" : ConnectionTag
 ```
@@ -4284,6 +4407,155 @@ Properties as follows:
 - `identityId`:
 - `type`:
 - `value`:
+- `createdAt`:
+
+### `organic_post_performance`
+
+Tracks performance metrics for organic social posts
+Used by boost detector to identify top performers
+
+Properties as follows:
+
+- `id`:
+- `socialPostId`:
+- `engagementRate`:
+- `impressions`:
+- `reach`:
+- `likes`:
+- `comments`:
+- `shares`:
+- `clicks`:
+- `performanceScore`:
+- `percentileRank`:
+- `isTopPerformer`:
+- `boosted`:
+- `boostEligible`:
+- `metricsUpdatedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `performance_ranking_configs`
+
+Configuration for performance ranking algorithm
+Workspace-specific settings for boost detection
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `engagementRateWeight`:
+- `impressionsWeight`:
+- `reachWeight`:
+- `sharesWeight`:
+- `clicksWeight`:
+- `topPerformerPercentile`:
+- `minImpressions`:
+- `minEngagementRate`:
+- `evaluationPeriodDays`:
+- `createdAt`:
+- `updatedAt`:
+
+### `boosted_posts`
+
+Represents a boosted organic post (organic-to-ad conversion)
+Tracks the ad campaign created from a top-performing organic post
+
+Properties as follows:
+
+- `id`:
+- `originalPostId`:
+- `campaignName`:
+- `platform`:
+- `budget`:
+- `currency`:
+- `duration`:
+- `targetingData`:
+- `audienceSuggestions`:
+- `status`:
+- `approvedAt`:
+- `approvedById`:
+- `platformCampaignId`:
+- `platformAdId`:
+- `workspaceId`:
+- `createdById`:
+- `startedAt`:
+- `endedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `boost_performance`
+
+Tracks performance metrics for boosted posts
+Synced from ad platforms
+
+Properties as follows:
+
+- `id`:
+- `boostedPostId`:
+- `impressions`:
+- `clicks`:
+- `conversions`:
+- `reach`:
+- `spend`:
+- `cpc`:
+- `cpm`:
+- `ctr`:
+- `lastSyncedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `boost_impact_analysis`
+
+Analyzes incremental impact of boosting vs organic performance
+Calculates ROI and lift metrics
+
+Properties as follows:
+
+- `id`:
+- `boostedPostId`:
+- `organicImpressions`:
+- `organicEngagementRate`:
+- `organicReach`:
+- `organicClicks`:
+- `totalImpressions`:
+- `totalReach`:
+- `totalClicks`:
+- `totalEngagements`:
+- `incrementalImpressions`:
+- `incrementalReach`:
+- `incrementalClicks`:
+- `liftPercentage`:
+- `totalSpend`:
+- `costPerIncrementalClick`:
+- `roi`:
+- `baselinePeriodStart`:
+- `baselinePeriodEnd`:
+- `boostPeriodStart`:
+- `boostPeriodEnd`:
+- `analyzed`:
+- `analyzedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `boost_insights`
+
+AI-generated insights about boost performance
+Actionable recommendations for optimization
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `insightType`:
+- `title`:
+- `description`:
+- `recommendation`:
+- `relatedBoostIds`:
+- `metrics`:
+- `priority`:
+- `status`:
+- `dismissedAt`:
+- `dismissedById`:
 - `createdAt`:
 
 ### `_ConnectionToConnectionTag`
