@@ -8,16 +8,13 @@
  * Resolves #797: Type Safety Improvements
  */
 
-import type { SocialPlatform } from "@prisma/client";
 import type {
   FacebookErrorResponse,
   LinkedInErrorResponse,
   SocialPlatformErrorResponse,
 } from "@/lib/types/common";
-import {
-  isFacebookErrorResponse,
-  isLinkedInErrorResponse,
-} from "@/lib/types/common";
+import { isFacebookErrorResponse, isLinkedInErrorResponse } from "@/lib/types/common";
+import type { SocialPlatform } from "@prisma/client";
 
 import prisma from "@/lib/prisma";
 

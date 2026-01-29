@@ -344,34 +344,34 @@ export interface FeaturedGalleryItem {
 
 // Social Platform API Types
 export type {
-  TwitterRateLimitHeaders,
-  TwitterErrorResponse,
-  FacebookBusinessUsageHeader,
+  DiscordRateLimitHeaders,
   FacebookAppUsageHeader,
+  FacebookBusinessUsageHeader,
   FacebookErrorResponse,
   LinkedInErrorResponse,
-  DiscordRateLimitHeaders,
   SocialPlatformErrorResponse,
+  TwitterErrorResponse,
+  TwitterRateLimitHeaders,
 } from "./social-api-responses";
 
 // Social API Type Guards
 export {
   isFacebookErrorResponse,
   isLinkedInErrorResponse,
-  isTwitterErrorResponse,
   isSocialPlatformErrorResponse,
+  isTwitterErrorResponse,
 } from "./social-api-guards";
 
 // Pipeline Configuration Types
 export type {
   AnalysisConfig,
   AutoCropConfig,
-  ReferenceImage,
-  DefectOverrides,
   DefectKey,
-  PromptConfig,
+  DefectOverrides,
   GenerationConfig,
   PipelineConfig,
+  PromptConfig,
+  ReferenceImage,
   ValidatedPipelineConfigs,
 } from "./pipeline";
 
@@ -379,8 +379,4 @@ export type {
 export type { CacheEntry, CacheKey, CacheMap } from "./cache";
 
 // Health Event Types
-export type {
-  RateLimitEventInfo,
-  TokenEventInfo,
-  HealthEventDetails,
-} from "./health-events";
+export type { HealthEventDetails, RateLimitEventInfo, TokenEventInfo } from "./health-events";

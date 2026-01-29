@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type {
   AnalysisConfig,
   AutoCropConfig,
@@ -5,7 +6,6 @@ import type {
   PromptConfig,
   ValidatedPipelineConfigs,
 } from "./pipeline-types";
-import { z } from "zod";
 
 /**
  * Zod schemas for pipeline configuration validation.

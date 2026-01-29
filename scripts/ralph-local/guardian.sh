@@ -1,37 +1,27 @@
 #!/bin/bash
-# Ralph Guardian - Continuous health monitoring and auto-recovery
-# Runs health checks every 5 minutes and restarts if needed
+# Ralph Guardian - Continuous monitoring and auto-recovery
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-HEALTHCHECK="$SCRIPT_DIR/healthcheck.sh"
-CHECK_INTERVAL=300  # 5 minutes
-RUNTIME_HOURS=${1:-12}  # Default 12 hours
+END_TIME=$(($(date +%s) + 43200))  # 12 hours
+HEALTHCHECK="/Users/z/Developer/spike-land-nextjs/scripts/ralph-local/healthcheck.sh"
+LOG="/tmp/ralph-guardian.log"
 
-log() {
-    echo -e "$(date '+%Y-%m-%d %H:%M:%S') $1" | tee -a /tmp/ralph-guardian.log
-}
+echo "🛡️  Ralph Guardian started at $(date)" | tee -a "$LOG"
+echo "Will monitor until $(date -r $END_TIME)" | tee -a "$LOG"
 
-main() {
-    local start_time=$(date +%s)
-    local end_time=$((start_time + RUNTIME_HOURS * 3600))
+while [ $(date +%s) -lt $END_TIME ]; do
+    # Run healthcheck every 5 minutes
+    if [ $(($(date +%s) % 300)) -lt 60 ]; then
+        echo "" | tee -a "$LOG"
+        echo "🔍 Running healthcheck at $(date)" | tee -a "$LOG"
+        "$HEALTHCHECK" 2>&1 | tee -a "$LOG"
+    fi
+    
+    # Check for errors in orchestrator output
+    if tail -n 50 /private/tmp/claude-501/-Users-z-Developer-spike-land-nextjs/tasks/be4fffc.output 2>/dev/null | grep -qi "error\|failed\|exception"; then
+        echo "⚠️  Errors detected in orchestrator output" | tee -a "$LOG"
+    fi
+    
+    sleep 60
+done
 
-    log "🛡️  Ralph Guardian started (will run for $RUNTIME_HOURS hours)"
-
-    while [ $(date +%s) -lt $end_time ]; do
-        # Run health check
-        bash "$HEALTHCHECK"
-
-        # Calculate remaining time
-        local now=$(date +%s)
-        local remaining=$((end_time - now))
-        local hours=$((remaining / 3600))
-        local minutes=$(((remaining % 3600) / 60))
-
-        log "⏰ Next check in 5 minutes (${hours}h ${minutes}m remaining)"
-        sleep $CHECK_INTERVAL
-    done
-
-    log "🏁 Ralph Guardian completed $RUNTIME_HOURS hour run"
-}
-
-main
+echo "🛡️  Guardian completed 12-hour watch at $(date)" | tee -a "$LOG"
