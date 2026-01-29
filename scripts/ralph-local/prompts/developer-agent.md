@@ -17,6 +17,8 @@ You are working in an isolated git worktree at:
 
 ### Implementation Plan
 
+Reference: @docs/plans/{{ISSUE_NUMBER}}.md
+
 {{PLAN_CONTENT}}
 
 ## Instructions
