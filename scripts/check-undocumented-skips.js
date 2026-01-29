@@ -17,8 +17,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const SKIP_REASON_PATTERN = /SKIP REASON:/;
+const CATEGORY_PATTERN = /CATEGORY:/;
+const TRACKING_PATTERN = /TRACKING:/;
+const ACTION_PATTERN = /ACTION:/;
 const SKIP_CALL_PATTERN = /(it|describe|test)\.skip\(/;
-const CONTEXT_LINES = 5;
+const CONTEXT_LINES = 10;
 
 const IGNORED_DIRS = [
   'node_modules',
@@ -31,13 +34,27 @@ const IGNORED_DIRS = [
 ];
 
 /**
- * Check if a skip call has a SKIP REASON comment within context lines
+ * Check if a skip call has all required documentation within context lines
  */
-function hasSkipReason(lines, skipLineIndex) {
+function hasRequiredDocumentation(lines, skipLineIndex) {
   const startIndex = Math.max(0, skipLineIndex - CONTEXT_LINES);
   const contextLines = lines.slice(startIndex, skipLineIndex);
+  const contextText = contextLines.join('\n');
 
-  return contextLines.some(line => SKIP_REASON_PATTERN.test(line));
+  const hasReason = SKIP_REASON_PATTERN.test(contextText);
+  const hasCategory = CATEGORY_PATTERN.test(contextText);
+  const hasTracking = TRACKING_PATTERN.test(contextText);
+  const hasAction = ACTION_PATTERN.test(contextText);
+
+  return {
+    complete: hasReason && hasCategory && hasTracking && hasAction,
+    missing: {
+      reason: !hasReason,
+      category: !hasCategory,
+      tracking: !hasTracking,
+      action: !hasAction,
+    }
+  };
 }
 
 /**
@@ -50,11 +67,13 @@ function findUndocumentedSkips(filePath) {
 
   lines.forEach((line, index) => {
     if (SKIP_CALL_PATTERN.test(line)) {
-      if (!hasSkipReason(lines, index)) {
+      const docStatus = hasRequiredDocumentation(lines, index);
+      if (!docStatus.complete) {
         undocumented.push({
           file: filePath,
           line: index + 1,
           code: line.trim(),
+          missing: docStatus.missing,
         });
       }
     }
@@ -116,17 +135,31 @@ async function main() {
 
   console.error('❌ Found undocumented skipped tests:\n');
 
-  allUndocumented.forEach(({ file, line, code }) => {
+  allUndocumented.forEach(({ file, line, code, missing }) => {
     // Make paths relative to root for cleaner output
     const relativePath = path.relative(rootDir, file);
     console.error(`  ${relativePath}:${line}`);
     console.error(`    ${code}`);
+
+    const missingFields = [];
+    if (missing.reason) missingFields.push('SKIP REASON');
+    if (missing.category) missingFields.push('CATEGORY');
+    if (missing.tracking) missingFields.push('TRACKING');
+    if (missing.action) missingFields.push('ACTION');
+
+    if (missingFields.length > 0) {
+      console.error(`    Missing: ${missingFields.join(', ')}`);
+    }
     console.error('');
   });
 
   console.error('\n📝 All .skip() calls must have a comment above them with:');
-  console.error('   // SKIP REASON: <explanation>');
-  console.error('   // TRACKING: <issue reference or "Intentionally skipped">');
+  console.error('   // SKIP REASON: <brief explanation>');
+  console.error('   // CATEGORY: [intentional|environment|unfinished]');
+  console.error('   // TRACKING: #<issue-number>');
+  console.error('   // ACTION: [keep|fix|remove]');
+  console.error('');
+  console.error('   See docs/SKIPPED_TESTS.md for more information');
   console.error('');
 
   process.exit(1);

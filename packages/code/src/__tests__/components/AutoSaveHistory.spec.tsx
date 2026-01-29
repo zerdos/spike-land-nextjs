@@ -21,10 +21,10 @@ vi.mock("@/hooks/getCodeSpace", () => ({
   getCodeSpace: () => "test-code-space",
 }));
 
-// SKIP REASON: CodeHistoryCarousel requires Monaco editor integration,
-// virtualizer mocking, and complex async state management.
-// Component is deprecated pending UI redesign.
-// TRACKING: Re-enable after UI redesign or remove component (#798)
+// SKIP REASON: CodeHistoryCarousel requires Monaco editor integration and complex async state
+// CATEGORY: unfinished
+// TRACKING: #798
+// ACTION: fix or remove - Component may be deprecated pending UI redesign
 describe.skip("CodeHistoryCarousel", () => {
   (globalThis as unknown as { monaco: typeof Monaco; }).monaco = {
     editor: {

@@ -346,9 +346,10 @@ describe("serveWithCache", () => {
     });
   });
 
-  // SKIP REASON: Asset versioning with different ASSET_HASH values requires
-  // complex cache state management across multiple service instances.
-  // TRACKING: Re-enable when cache isolation utilities are available (#798)
+  // SKIP REASON: Asset versioning with ASSET_HASH requires complex cache state management
+  // CATEGORY: unfinished
+  // TRACKING: #798
+  // ACTION: fix - Asset versioning is critical for production cache busting
   it.skip("should handle different asset versions (different ASSET_HASH)", async () => {
     const filesV1 = { "main.js": "main.js", ASSET_HASH: "abc123" };
     const filesV2 = { "main.js": "main.js", ASSET_HASH: "def456" };
@@ -395,9 +396,10 @@ describe("serveWithCache", () => {
     expect(await resultV2.text()).toBe('console.warn("v2");');
   });
 
-  // SKIP REASON: Special character handling in filenames requires URL encoding
-  // edge case testing. Basic filename handling is already covered.
-  // TRACKING: Low priority - re-enable if special char bugs arise (#798)
+  // SKIP REASON: Special character handling in filenames requires URL encoding edge case testing
+  // CATEGORY: unfinished
+  // TRACKING: #798
+  // ACTION: fix - Special characters can cause production issues
   it.skip("should handle assets with special characters in the filename", async () => {
     const { serve } = serveWithCache(files, cacheToUse);
     vi.mocked(cache.match).mockResolvedValue(undefined);
@@ -416,9 +418,10 @@ describe("serveWithCache", () => {
     expect(result.headers.get("Content-Type")).toBe("application/javascript");
   });
 
-  // SKIP REASON: Error status code propagation from assetFetcher is tested
-  // in integration tests. Unit test requires complex mock orchestration.
-  // TRACKING: Re-enable when assetFetcher mock utilities are improved (#798)
+  // SKIP REASON: Error status code propagation requires complex assetFetcher mock orchestration
+  // CATEGORY: unfinished
+  // TRACKING: #798
+  // ACTION: fix - Status code handling is important for error scenarios
   it.skip("should handle different status codes from assetFetcher", async () => {
     const { serve } = serveWithCache(files, cacheToUse);
     vi.mocked(cache.match).mockResolvedValue(undefined);
@@ -537,9 +540,10 @@ describe("serveWithCache", () => {
     expect(result.headers.get("Content-Type")).toBe("application/octet-stream");
   });
 
-  // SKIP REASON: COEP header setting is better tested via integration tests
-  // with real browser security context. Unit test is redundant.
-  // TRACKING: Covered by E2E tests - consider removing (#798)
+  // SKIP REASON: COEP header setting requires browser security context testing
+  // CATEGORY: unfinished
+  // TRACKING: #798
+  // ACTION: fix - Security headers are critical for production
   it.skip("should set 'Cross-Origin-Embedder-Policy' header correctly", async () => {
     const { serve } = serveWithCache(files, cacheToUse);
     vi.mocked(cache.match).mockResolvedValue(undefined);
@@ -639,9 +643,10 @@ describe("serveWithCache", () => {
     expect(result.headers.get("Content-Type")).toBe("text/css");
   });
 
-  // SKIP REASON: Complex import map transformation requires full HTML parsing
-  // and multiple async operations. Better tested via E2E or integration tests.
-  // TRACKING: Re-enable when HTML transformation test utilities available (#798)
+  // SKIP REASON: Complex import map transformation requires full HTML parsing and async operations
+  // CATEGORY: unfinished
+  // TRACKING: #798
+  // ACTION: fix - Import map handling is critical for module resolution
   it.skip("should correctly update import map in index.html with complex import map", async () => {
     vi.mocked(cache.match).mockResolvedValue(undefined);
 

@@ -368,6 +368,7 @@ See [README.md](./README.md) for full development setup.
 - **100% code coverage required** for unit tests
 - **Test files**: Place `.test.ts(x)` alongside source files
 - **E2E tests**: Create `.feature` files in `e2e/features/`
+- **Skipped tests**: All `.skip()` calls must be documented - see [docs/SKIPPED_TESTS.md](./docs/SKIPPED_TESTS.md)
 
 ---
 
