@@ -58,7 +58,8 @@ export function ModelComparisonTable({
         comparison = a.conversionCount - b.conversionCount;
         break;
       case "avg":
-        comparison = a.value / (a.conversionCount || 1) -
+        comparison =
+          a.value / (a.conversionCount || 1) -
           b.value / (b.conversionCount || 1);
         break;
       case "percent":
@@ -78,7 +79,7 @@ export function ModelComparisonTable({
     }
   };
 
-  const SortIcon = ({ field }: { field: SortField; }) => {
+  const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return <MinusIcon className="h-4 w-4" />;
     return sortDirection === "asc"
       ? <ArrowUpIcon className="h-4 w-4" />

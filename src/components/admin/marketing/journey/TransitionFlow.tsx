@@ -48,7 +48,9 @@ export function TransitionFlow({
               <div key={platform} className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <div
-                    className={`h-3 w-3 rounded-full ${PLATFORM_COLORS[platform] || "bg-gray-400"}`}
+                    className={`h-3 w-3 rounded-full ${
+                      PLATFORM_COLORS[platform] || "bg-gray-400"
+                    }`}
                   />
                   <span className="text-xs font-medium text-muted-foreground">
                     {platform}

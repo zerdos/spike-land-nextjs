@@ -92,7 +92,8 @@ export async function getUserJourney(userId: string): Promise<JourneyStep[]> {
       try {
         const url = new URL(session.referrer);
         const hostname = url.hostname.toLowerCase();
-        const isOrganic = hostname === "google.com" ||
+        const isOrganic =
+          hostname === "google.com" ||
           hostname.endsWith(".google.com") ||
           hostname === "bing.com" ||
           hostname.endsWith(".bing.com") ||
