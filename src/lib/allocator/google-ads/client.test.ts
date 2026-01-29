@@ -36,6 +36,7 @@ describe("GoogleAdsAllocatorClient", () => {
     client = new GoogleAdsAllocatorClient("fake_token", "fake_id");
     const mockResult = vi.mocked(GoogleAdsClient).mock.results[0];
     mockMarketingClient = mockResult?.value as typeof mockMarketingClient;
+    vi.stubEnv("GOOGLE_ADS_DEVELOPER_TOKEN", "test-token");
   });
 
   it("should get ad accounts and sub-accounts", async () => {

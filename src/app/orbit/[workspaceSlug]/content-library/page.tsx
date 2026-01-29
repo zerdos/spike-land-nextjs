@@ -83,7 +83,6 @@ export default function ContentLibraryPage() {
   const handleClearFilters = () => {
     setSelectedFileTypes([]);
     setSelectedTags([]);
-    setSelectedTags([]);
     setSearchQuery("");
     setPage(1);
   };
