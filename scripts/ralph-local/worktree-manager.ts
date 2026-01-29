@@ -208,7 +208,15 @@ function removeWorktreeDirectory(worktreePath: string, config: RalphLocalConfig)
 }
 
 /**
- * Sync a worktree with main branch
+ * Sync a worktree with main branch using full git sync sequence:
+ * 1. git pull (fetch + merge current tracking branch)
+ * 2. git push (push any local commits)
+ * 3. git fetch origin main
+ * 4. git merge origin/main -m "merge with main"
+ * 5. git push (push merge commit)
+ *
+ * Security Note: This function uses execSync with controlled inputs only (worktree paths
+ * from state management). All paths are validated before use in the calling code.
  */
 export function syncWorktreeWithMain(
   worktreePath: string,
@@ -229,7 +237,43 @@ export function syncWorktreeWithMain(
   }
 
   try {
-    // Fetch latest
+    // Step 1: git pull (fetch + merge current tracking branch)
+    try {
+      execSync("git pull --rebase=false", {
+        cwd: worktreePath,
+        encoding: "utf-8",
+        timeout: 60000,
+        stdio: "pipe",
+      });
+    } catch (pullError) {
+      // Pull might fail if no upstream is set - that's ok
+      const pullMsg = pullError instanceof Error ? pullError.message : String(pullError);
+      if (!pullMsg.includes("no tracking information") && !pullMsg.includes("no upstream")) {
+        // Check for conflicts
+        if (pullMsg.includes("CONFLICT") || pullMsg.includes("Automatic merge failed")) {
+          console.log(`   ⚠️ Pull conflict detected`);
+          return { success: false, conflict: true, message: "Pull conflict detected" };
+        }
+      }
+    }
+
+    // Step 2: git push (push any local commits) - with error handling if no upstream
+    try {
+      execSync("git push", {
+        cwd: worktreePath,
+        encoding: "utf-8",
+        timeout: 120000,
+        stdio: "pipe",
+      });
+    } catch (pushError) {
+      // Push might fail if no upstream or nothing to push - that's ok
+      const pushMsg = pushError instanceof Error ? pushError.message : String(pushError);
+      if (!pushMsg.includes("no upstream") && !pushMsg.includes("Everything up-to-date")) {
+        console.log(`   ⚠️ Initial push warning: ${pushMsg.slice(0, 100)}`);
+      }
+    }
+
+    // Step 3: git fetch origin main
     execSync("git fetch origin main", {
       cwd: worktreePath,
       encoding: "utf-8",
@@ -237,13 +281,33 @@ export function syncWorktreeWithMain(
       stdio: "pipe",
     });
 
-    // Try to merge main
-    execSync("git merge origin/main --no-edit", {
+    // Step 4: git merge origin/main -m "merge with main"
+    execSync('git merge origin/main -m "merge with main"', {
       cwd: worktreePath,
       encoding: "utf-8",
       timeout: 60000,
       stdio: "pipe",
     });
+
+    // Step 5: git push (push merge commit)
+    try {
+      execSync("git push", {
+        cwd: worktreePath,
+        encoding: "utf-8",
+        timeout: 120000,
+        stdio: "pipe",
+      });
+    } catch (finalPushError) {
+      // Push might fail if nothing to push or no upstream - that's ok
+      const finalPushMsg = finalPushError instanceof Error
+        ? finalPushError.message
+        : String(finalPushError);
+      if (
+        !finalPushMsg.includes("Everything up-to-date") && !finalPushMsg.includes("no upstream")
+      ) {
+        console.log(`   ⚠️ Final push warning: ${finalPushMsg.slice(0, 100)}`);
+      }
+    }
 
     console.log(`   ✅ Synced with main`);
     return { success: true, conflict: false, message: "Synced successfully" };
