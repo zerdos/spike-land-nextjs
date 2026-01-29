@@ -337,3 +337,50 @@ export interface FeaturedGalleryItem {
   sortOrder: number;
   isActive: boolean;
 }
+
+// ============================================================================
+// Type Safety Improvements (#797)
+// ============================================================================
+
+// Social Platform API Types
+export type {
+  TwitterRateLimitHeaders,
+  TwitterErrorResponse,
+  FacebookBusinessUsageHeader,
+  FacebookAppUsageHeader,
+  FacebookErrorResponse,
+  LinkedInErrorResponse,
+  DiscordRateLimitHeaders,
+  SocialPlatformErrorResponse,
+} from "./social-api-responses";
+
+// Social API Type Guards
+export {
+  isFacebookErrorResponse,
+  isLinkedInErrorResponse,
+  isTwitterErrorResponse,
+  isSocialPlatformErrorResponse,
+} from "./social-api-guards";
+
+// Pipeline Configuration Types
+export type {
+  AnalysisConfig,
+  AutoCropConfig,
+  ReferenceImage,
+  DefectOverrides,
+  DefectKey,
+  PromptConfig,
+  GenerationConfig,
+  PipelineConfig,
+  ValidatedPipelineConfigs,
+} from "./pipeline";
+
+// Cache Types
+export type { CacheEntry, CacheKey, CacheMap } from "./cache";
+
+// Health Event Types
+export type {
+  RateLimitEventInfo,
+  TokenEventInfo,
+  HealthEventDetails,
+} from "./health-events";

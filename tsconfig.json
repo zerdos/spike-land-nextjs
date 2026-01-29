@@ -28,6 +28,10 @@
     "noFallthroughCasesInSwitch": true,
     "noPropertyAccessFromIndexSignature": true,
     "forceConsistentCasingInFileNames": true,
+    // Additional strict options to consider enabling (Resolves #797):
+    // "noImplicitOverride": true,        // Require explicit override keyword
+    // "exactOptionalPropertyTypes": true, // Distinguish undefined from optional
+    // "noUncheckedSideEffectImports": true, // Require explicit side-effect imports
     "plugins": [
       {
         "name": "next"

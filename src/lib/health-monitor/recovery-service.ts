@@ -5,6 +5,7 @@
  * Matches issues to recovery templates and tracks resolution.
  *
  * Resolves #586: Implement Account Health Monitor
+ * Resolves #797: Type Safety Improvements
  */
 
 import type {
@@ -61,6 +62,7 @@ function formatGuidance(guidance: RecoveryGuidance): RecoveryGuidanceInfo {
     severity: guidance.severity,
     title: guidance.title,
     description: guidance.description,
+    // Prisma stores JSON as JsonValue - we know this is RecoveryStep[] from our schema
     steps: guidance.steps as unknown as RecoveryStep[],
     estimatedTime: guidance.estimatedTime,
     requiresAction: guidance.requiresAction,
@@ -103,6 +105,7 @@ export async function upsertRecoveryGuidance(options: {
     },
   });
 
+  // Convert RecoveryStep[] to Prisma JSON input format
   const stepsJson = options.steps as unknown as Prisma.InputJsonValue;
 
   let guidance: RecoveryGuidance;

@@ -170,3 +170,14 @@ export function isValidPipelineConfig(
     c["generation"] !== null
   );
 }
+
+/**
+ * Result type for validated pipeline configurations
+ * Contains only the successfully validated config sections
+ */
+export interface ValidatedPipelineConfigs {
+  analysisConfig?: AnalysisConfig;
+  autoCropConfig?: AutoCropConfig;
+  promptConfig?: PromptConfig;
+  generationConfig?: GenerationConfig;
+}
