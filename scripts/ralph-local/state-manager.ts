@@ -7,11 +7,14 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join } from "path";
 import type {
   AgentPool,
+  AgentRole,
   BlockedTicket,
   CodeWork,
   LocalAgent,
+  MainBranchCIStatus,
   OrchestratorState,
   Plan,
+  PRFixWork,
   RalphLocalConfig,
 } from "./types";
 
@@ -36,6 +39,7 @@ export function createInitialState(config: RalphLocalConfig): OrchestratorState 
     planning: createAgentPool("planning", config.poolSizes.planning, config),
     developer: createAgentPool("developer", config.poolSizes.developer, config),
     tester: createAgentPool("tester", config.poolSizes.tester, config),
+    fixer: createAgentPool("fixer", config.poolSizes.fixer, config),
   };
 
   return {
@@ -45,9 +49,11 @@ export function createInitialState(config: RalphLocalConfig): OrchestratorState 
     pools,
     pendingPlans: [],
     pendingCode: [],
+    pendingPRFixes: [],
     completedTickets: [],
     failedTickets: [],
     blockedTickets: [],
+    mainBranchStatus: null,
   };
 }
 
@@ -55,7 +61,7 @@ export function createInitialState(config: RalphLocalConfig): OrchestratorState 
  * Create a pool of agents with the given role
  */
 function createAgentPool(
-  role: "planning" | "developer" | "tester",
+  role: AgentRole,
   count: number,
   config: RalphLocalConfig,
 ): LocalAgent[] {
@@ -172,6 +178,7 @@ function reconcilePools(pools: AgentPool, config: RalphLocalConfig): AgentPool {
     planning: reconcilePool(pools.planning, "planning", config.poolSizes.planning, config),
     developer: reconcilePool(pools.developer, "developer", config.poolSizes.developer, config),
     tester: reconcilePool(pools.tester, "tester", config.poolSizes.tester, config),
+    fixer: reconcilePool(pools.fixer || [], "fixer", config.poolSizes.fixer, config),
   };
   return reconciled;
 }
@@ -181,7 +188,7 @@ function reconcilePools(pools: AgentPool, config: RalphLocalConfig): AgentPool {
  */
 function reconcilePool(
   existing: LocalAgent[],
-  role: "planning" | "developer" | "tester",
+  role: AgentRole,
   targetCount: number,
   config: RalphLocalConfig,
 ): LocalAgent[] {
@@ -232,6 +239,13 @@ function reconcilePool(
 // ============================================================================
 
 /**
+ * Get all pools as an array for iteration
+ */
+function getAllPools(state: OrchestratorState): LocalAgent[][] {
+  return [state.pools.planning, state.pools.developer, state.pools.tester, state.pools.fixer];
+}
+
+/**
  * Update an agent in the state
  */
 export function updateAgent(
@@ -239,7 +253,7 @@ export function updateAgent(
   agentId: string,
   updates: Partial<LocalAgent>,
 ): void {
-  for (const pool of [state.pools.planning, state.pools.developer, state.pools.tester]) {
+  for (const pool of getAllPools(state)) {
     const agent = pool.find((a) => a.id === agentId);
     if (agent) {
       Object.assign(agent, updates);
@@ -252,7 +266,7 @@ export function updateAgent(
  * Get an agent by ID
  */
 export function getAgent(state: OrchestratorState, agentId: string): LocalAgent | undefined {
-  for (const pool of [state.pools.planning, state.pools.developer, state.pools.tester]) {
+  for (const pool of getAllPools(state)) {
     const agent = pool.find((a) => a.id === agentId);
     if (agent) {
       return agent;
@@ -266,7 +280,7 @@ export function getAgent(state: OrchestratorState, agentId: string): LocalAgent 
  */
 export function getIdleAgents(
   state: OrchestratorState,
-  role: "planning" | "developer" | "tester",
+  role: AgentRole,
 ): LocalAgent[] {
   return state.pools[role].filter((a) => a.status === "idle");
 }
@@ -356,7 +370,7 @@ export function removeBlockedTicket(state: OrchestratorState, ticketId: string):
  */
 export function isTicketInProgress(state: OrchestratorState, ticketId: string): boolean {
   // Check if any agent is working on this ticket
-  for (const pool of [state.pools.planning, state.pools.developer, state.pools.tester]) {
+  for (const pool of getAllPools(state)) {
     if (pool.some((a) => a.ticketId === ticketId && a.status === "running")) {
       return true;
     }
@@ -367,6 +381,9 @@ export function isTicketInProgress(state: OrchestratorState, ticketId: string): 
     return true;
   }
   if (state.pendingCode.some((c) => c.ticketId === ticketId)) {
+    return true;
+  }
+  if (state.pendingPRFixes?.some((f) => f.ticketId === ticketId)) {
     return true;
   }
 
@@ -381,4 +398,104 @@ export function isTicketDone(state: OrchestratorState, ticketId: string): boolea
     state.completedTickets.includes(ticketId) ||
     state.failedTickets.includes(ticketId)
   );
+}
+
+// ============================================================================
+// PR Fix State Helpers
+// ============================================================================
+
+/**
+ * Add a pending PR fix
+ */
+export function addPendingPRFix(state: OrchestratorState, prFix: PRFixWork): void {
+  // Ensure array exists (for migrated states)
+  if (!state.pendingPRFixes) {
+    state.pendingPRFixes = [];
+  }
+
+  // Check if already exists
+  const existing = state.pendingPRFixes.find((f) => f.prNumber === prFix.prNumber);
+  if (existing) {
+    // Update existing entry
+    Object.assign(existing, prFix);
+  } else {
+    state.pendingPRFixes.push(prFix);
+  }
+}
+
+/**
+ * Remove a pending PR fix
+ */
+export function removePendingPRFix(
+  state: OrchestratorState,
+  prNumber: number,
+): PRFixWork | undefined {
+  if (!state.pendingPRFixes) {
+    return undefined;
+  }
+
+  const index = state.pendingPRFixes.findIndex((f) => f.prNumber === prNumber);
+  if (index !== -1) {
+    return state.pendingPRFixes.splice(index, 1)[0];
+  }
+  return undefined;
+}
+
+/**
+ * Get pending PR fix by PR number
+ */
+export function getPendingPRFix(
+  state: OrchestratorState,
+  prNumber: number,
+): PRFixWork | undefined {
+  return state.pendingPRFixes?.find((f) => f.prNumber === prNumber);
+}
+
+/**
+ * Check if a PR fix is already in progress
+ */
+export function isPRFixInProgress(state: OrchestratorState, prNumber: number): boolean {
+  // Check pending fixes queue
+  if (state.pendingPRFixes?.some((f) => f.prNumber === prNumber)) {
+    return true;
+  }
+
+  // Check if any fixer agent is working on this PR
+  for (const agent of state.pools.fixer || []) {
+    if (agent.status === "running" && agent.ticketId?.includes(`PR#${prNumber}`)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// ============================================================================
+// Main Branch CI Status Helpers
+// ============================================================================
+
+/**
+ * Update main branch CI status
+ */
+export function updateMainBranchStatus(
+  state: OrchestratorState,
+  status: MainBranchCIStatus,
+): void {
+  state.mainBranchStatus = status;
+}
+
+/**
+ * Get main branch CI status
+ */
+export function getMainBranchStatus(
+  state: OrchestratorState,
+): MainBranchCIStatus | null {
+  return state.mainBranchStatus || null;
+}
+
+/**
+ * Check if main branch is failing
+ */
+export function isMainBranchFailing(state: OrchestratorState): boolean {
+  return state.mainBranchStatus?.status === "failing";
 }
