@@ -152,9 +152,12 @@ export async function refreshOptimalTimes(
 
 /**
  * Get heatmap data for visualizing best posting times (7 days x 24 hours)
+ * @param accountId - The account ID to fetch heatmap data for
+ * @param attemptGenerate - Whether to attempt generating data if none exists (prevents infinite recursion)
  */
 export async function getHeatmapData(
   accountId: string,
+  attemptGenerate: boolean = true,
 ): Promise<HeatmapData> {
   // Fetch account details
   const account = await prisma.socialAccount.findUnique({
@@ -188,8 +191,8 @@ export async function getHeatmapData(
     if (rec.score < minScore) minScore = rec.score;
   }
 
-  // If no recommendations exist, generate them
-  if (recommendations.length === 0) {
+  // If no recommendations exist, attempt to generate them (with recursion guard)
+  if (recommendations.length === 0 && attemptGenerate) {
     const accountWithWorkspace = await prisma.socialAccount.findUnique({
       where: { id: accountId },
       select: { workspaceId: true },
@@ -202,8 +205,8 @@ export async function getHeatmapData(
         refreshCache: true,
       });
 
-      // Recursively call to get the newly generated data
-      return getHeatmapData(accountId);
+      // Call again with attemptGenerate=false to prevent infinite recursion
+      return getHeatmapData(accountId, false);
     }
   }
 

@@ -4,87 +4,112 @@
  * Issue #841
  */
 
-import type { NextRequest} from "next/server";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getOptimalTimes, getHeatmapData } from "@/lib/calendar/optimal-time-service";
+import {
+  getOptimalTimes,
+  getHeatmapData,
+} from "@/lib/calendar/optimal-time-service";
 import prisma from "@/lib/prisma";
+import { tryCatch } from "@/lib/try-catch";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ workspaceSlug: string }> },
 ): Promise<NextResponse> {
-  try {
-    // 1. Authenticate
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  // 1. Authenticate
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const { workspaceSlug } = await params;
+  const { workspaceSlug } = await params;
 
-    // 2. Verify workspace access
-    const workspace = await prisma.workspace.findUnique({
+  // 2. Verify workspace access
+  const { data: workspace, error: workspaceError } = await tryCatch(
+    prisma.workspace.findUnique({
       where: { slug: workspaceSlug },
       include: {
         members: {
           where: { userId: session.user.id },
         },
       },
-    });
+    }),
+  );
 
-    if (!workspace || workspace.members.length === 0) {
-      return NextResponse.json(
-        { error: "Workspace not found or access denied" },
-        { status: 403 },
-      );
-    }
+  if (workspaceError) {
+    return NextResponse.json(
+      { error: "Failed to fetch workspace" },
+      { status: 500 },
+    );
+  }
 
-    // 3. Parse query params
-    const searchParams = request.nextUrl.searchParams;
-    const accountIdsParam = searchParams.get("accountIds");
-    const refreshCacheParam = searchParams.get("refreshCache");
-    const includeHeatmapParam = searchParams.get("includeHeatmap");
+  if (!workspace || workspace.members.length === 0) {
+    return NextResponse.json(
+      { error: "Workspace not found or access denied" },
+      { status: 403 },
+    );
+  }
 
-    const accountIds = accountIdsParam
-      ? accountIdsParam.split(",").filter(Boolean)
-      : undefined;
-    const refreshCache = refreshCacheParam === "true";
-    const includeHeatmap = includeHeatmapParam === "true";
+  // 3. Parse query params
+  const searchParams = request.nextUrl.searchParams;
+  const accountIdsParam = searchParams.get("accountIds");
+  const refreshCacheParam = searchParams.get("refreshCache");
+  const includeHeatmapParam = searchParams.get("includeHeatmap");
 
-    // 4. Call getOptimalTimes
-    const optimalTimes = await getOptimalTimes({
+  const accountIds = accountIdsParam
+    ? accountIdsParam.split(",").filter(Boolean)
+    : undefined;
+  const refreshCache = refreshCacheParam === "true";
+  const includeHeatmap = includeHeatmapParam === "true";
+
+  // 4. Call getOptimalTimes
+  const { data: optimalTimes, error: optimalTimesError } = await tryCatch(
+    getOptimalTimes({
       workspaceId: workspace.id,
       accountIds,
       refreshCache,
-    });
+    }),
+  );
 
-    // 5. Optionally include heatmap data
-    let heatmaps = undefined;
-    if (includeHeatmap && accountIds) {
-      heatmaps = await Promise.all(
-        accountIds.map((accountId) => getHeatmapData(accountId)),
-      );
-    }
+  if (optimalTimesError) {
+    return NextResponse.json(
+      {
+        error: optimalTimesError instanceof Error
+          ? optimalTimesError.message
+          : "Failed to fetch optimal times",
+      },
+      { status: 500 },
+    );
+  }
 
-    // 6. Return JSON
-    return NextResponse.json({
-      success: true,
-      optimalTimes,
-      heatmaps,
-      count: optimalTimes.length,
-    });
-  } catch (error) {
-    if (error instanceof Error) {
+  // 5. Optionally include heatmap data
+  let heatmaps = undefined;
+  if (includeHeatmap && accountIds) {
+    const { data: heatmapData, error: heatmapError } = await tryCatch(
+      Promise.all(accountIds.map((accountId) => getHeatmapData(accountId))),
+    );
+
+    if (heatmapError) {
       return NextResponse.json(
-        { error: error.message },
+        {
+          error: heatmapError instanceof Error
+            ? heatmapError.message
+            : "Failed to fetch heatmap data",
+        },
         { status: 500 },
       );
     }
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    heatmaps = heatmapData;
   }
+
+  // 6. Return JSON
+  return NextResponse.json({
+    success: true,
+    optimalTimes,
+    heatmaps,
+    count: optimalTimes.length,
+  });
 }

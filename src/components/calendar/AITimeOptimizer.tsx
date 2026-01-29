@@ -17,6 +17,7 @@ interface AITimeOptimizerProps {
 }
 
 export function AITimeOptimizer({
+  workspaceId,
   onRefreshComplete,
 }: AITimeOptimizerProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -24,8 +25,14 @@ export function AITimeOptimizer({
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      // This would call the API - simplified for now
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch(
+        `/api/orbit/${workspaceId}/calendar/optimal-times?refreshCache=true`,
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to refresh optimal times");
+      }
 
       toast.success("Optimal times refreshed", {
         description: "AI analysis complete. New recommendations available.",
