@@ -329,11 +329,16 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
         run: |
+          # Clean up old enum types that may block migrations
+          if psql "${DATABASE_URL}" -f scripts/fix-e2e-db-enum.sql 2>/dev/null; then
+            echo "✓ Applied E2E database cleanup script"
+          fi
+
           # Try to apply migrations, but continue if database isn't baselined
           # The E2E database may have been set up before Prisma migrations were used
           yarn prisma migrate deploy || {
             echo "⚠️ Migration deploy failed (P3005 = database not baselined). Proceeding with db push instead..."
-            yarn prisma db push --accept-data-loss
+            yarn prisma db push --accept-data-loss --skip-generate
           }
 
       - name: Seed E2E test database
