@@ -358,21 +358,21 @@ The `@spike-npm-land/shared/types` module provides typed interfaces for all exte
 import type {
   FacebookErrorResponse,
   LinkedInErrorResponse,
-  TwitterErrorResponse,
   SocialPlatformErrorResponse,
+  TwitterErrorResponse,
 } from "@spike-npm-land/shared/types";
 ```
 
-| Type                             | Description                                       |
-| -------------------------------- | ------------------------------------------------- |
-| `TwitterErrorResponse`           | Twitter/X API error format                        |
-| `FacebookErrorResponse`          | Facebook/Instagram Graph API error format         |
-| `LinkedInErrorResponse`          | LinkedIn API error format                         |
-| `SocialPlatformErrorResponse`    | Union type for all platform error responses       |
-| `FacebookBusinessUsageHeader`    | Facebook business usage rate limit header         |
-| `FacebookAppUsageHeader`         | Facebook app usage rate limit header              |
-| `TwitterRateLimitHeaders`        | Twitter rate limit headers                        |
-| `DiscordRateLimitHeaders`        | Discord rate limit headers                        |
+| Type                          | Description                                 |
+| ----------------------------- | ------------------------------------------- |
+| `TwitterErrorResponse`        | Twitter/X API error format                  |
+| `FacebookErrorResponse`       | Facebook/Instagram Graph API error format   |
+| `LinkedInErrorResponse`       | LinkedIn API error format                   |
+| `SocialPlatformErrorResponse` | Union type for all platform error responses |
+| `FacebookBusinessUsageHeader` | Facebook business usage rate limit header   |
+| `FacebookAppUsageHeader`      | Facebook app usage rate limit header        |
+| `TwitterRateLimitHeaders`     | Twitter rate limit headers                  |
+| `DiscordRateLimitHeaders`     | Discord rate limit headers                  |
 
 #### Type Guards
 
@@ -382,8 +382,8 @@ Use type guards from `@spike-npm-land/shared/types` to safely validate external 
 import {
   isFacebookErrorResponse,
   isLinkedInErrorResponse,
-  isTwitterErrorResponse,
   isSocialPlatformErrorResponse,
+  isTwitterErrorResponse,
 } from "@spike-npm-land/shared/types";
 
 // Example: Validate Facebook error response
@@ -406,8 +406,8 @@ Type-safe pipeline configuration types for AI processing:
 import type {
   AnalysisConfig,
   AutoCropConfig,
-  PromptConfig,
   GenerationConfig,
+  PromptConfig,
   ValidatedPipelineConfigs,
 } from "@spike-npm-land/shared/types";
 ```
