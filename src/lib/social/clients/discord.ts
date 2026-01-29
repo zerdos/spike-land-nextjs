@@ -338,7 +338,7 @@ export class DiscordClient {
       // Log for debugging but return false as this is a verification method
       console.warn(
         `Discord bot cannot access channel ${channelId}:`,
-        error instanceof Error ? error.message : String(error)
+        error instanceof Error ? error.message : String(error),
       );
       return false;
     }

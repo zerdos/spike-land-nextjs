@@ -85,10 +85,10 @@ export function parseFacebookRateLimits(
       // Facebook may return malformed JSON in x-business-use-case-usage header
       // Fall through to try x-app-usage header instead
       console.debug(
-        'Failed to parse x-business-use-case-usage header:',
+        "Failed to parse x-business-use-case-usage header:",
         error instanceof Error ? error.message : String(error),
-        'Header value:',
-        businessUsage
+        "Header value:",
+        businessUsage,
       );
       // Continue to try x-app-usage
     }
@@ -115,10 +115,10 @@ export function parseFacebookRateLimits(
       // Facebook may return malformed JSON in x-app-usage header
       // This is not critical - function will return null to indicate no rate limit data available
       console.debug(
-        'Failed to parse x-app-usage header:',
+        "Failed to parse x-app-usage header:",
         error instanceof Error ? error.message : String(error),
-        'Header value:',
-        appUsage
+        "Header value:",
+        appUsage,
       );
       // Return null below
     }
