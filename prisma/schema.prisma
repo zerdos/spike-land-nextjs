@@ -2434,6 +2434,7 @@ model Workspace {
   contentRewrites        ContentRewrite[]
   socialAccounts         SocialAccount[]
   abTests                SocialPostAbTest[]
+  experiments            Experiment[] // Hypothesis Agent experiments (Epic #516)
   scheduledPosts         ScheduledPost[]
   inboxItems             InboxItem[]
   // Comprehensive audit logs
@@ -4055,6 +4056,154 @@ enum AbTestStatus {
   RUNNING
   COMPLETED
   ARCHIVED
+}
+
+// =============================================================================
+// Hypothesis Agent - Experimentation Framework
+// Epic #516 - Generic experiment models with pluggable adapters
+// =============================================================================
+
+/// Generic experiment model supporting multiple content types
+/// Uses adapters for content delivery (social posts, emails, landing pages, etc.)
+model Experiment {
+  id                  String           @id @default(cuid())
+  workspaceId         String
+  name                String
+  description         String?          @db.Text
+  hypothesis          String?          @db.Text // What we're testing
+  status              ExperimentStatus @default(DRAFT)
+  contentType         String // "social_post", "email", "landing_page", "generic"
+  adapterConfig       Json? // Adapter-specific configuration
+
+  // Statistical configuration
+  significanceLevel   Float            @default(0.95)
+  minimumSampleSize   Int              @default(100)
+
+  // Winner selection configuration
+  winnerStrategy      WinnerStrategy   @default(CONSERVATIVE)
+  autoSelectWinner    Boolean          @default(false)
+  winnerVariantId     String?
+  selectedAt          DateTime?
+
+  // Metadata
+  tags                String[]
+  metadata            Json?
+
+  // Relations
+  workspace           Workspace              @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  variants            ExperimentVariant[]
+  events              ExperimentEvent[]
+  results             ExperimentResult[]
+
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  startedAt           DateTime?
+  completedAt         DateTime?
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([contentType])
+  @@index([createdAt])
+  @@map("experiments")
+}
+
+/// Experiment variant - represents a version to test
+model ExperimentVariant {
+  id                  String                @id @default(cuid())
+  experimentId        String
+  name                String
+  description         String?               @db.Text
+  content             Json // Adapter-specific content structure
+  splitPercentage     Float                 @default(50.0)
+  isControl           Boolean               @default(false)
+
+  // Performance metrics (aggregated from events)
+  impressions         Int                   @default(0)
+  conversions         Int                   @default(0)
+  totalValue          Float                 @default(0) // For economic calculations
+
+  // Relations
+  experiment          Experiment            @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  events              ExperimentEvent[]
+  results             ExperimentResult[]
+
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  @@unique([experimentId, name])
+  @@index([experimentId])
+  @@map("experiment_variants")
+}
+
+/// Event tracking for experiments (impressions, conversions, etc.)
+model ExperimentEvent {
+  id                  String            @id @default(cuid())
+  experimentId        String
+  variantId           String
+  eventType           String // "impression", "click", "conversion", "custom"
+  eventName           String? // For custom events
+  value               Float? // For economic value tracking
+  metadata            Json?
+  visitorId           String? // Anonymous visitor tracking
+  userId              String? // Authenticated user
+
+  // Relations
+  experiment          Experiment        @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  variant             ExperimentVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  createdAt           DateTime          @default(now())
+
+  @@index([experimentId])
+  @@index([variantId])
+  @@index([eventType])
+  @@index([visitorId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("experiment_events")
+}
+
+/// Aggregated results for statistical analysis
+model ExperimentResult {
+  id                  String            @id @default(cuid())
+  experimentId        String
+  variantId           String
+  calculatedAt        DateTime          @default(now())
+
+  // Statistical metrics
+  conversionRate      Float
+  confidenceLower     Float // Lower bound of confidence interval
+  confidenceUpper     Float // Upper bound of confidence interval
+  zScore              Float?
+  pValue              Float?
+  isSignificant       Boolean           @default(false)
+
+  // Bayesian metrics (if enabled)
+  bayesianProbability Float?
+  expectedLift        Float?
+
+  // Relations
+  experiment          Experiment        @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  variant             ExperimentVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([experimentId])
+  @@index([variantId])
+  @@index([calculatedAt])
+  @@map("experiment_results")
+}
+
+enum ExperimentStatus {
+  DRAFT // Not yet started
+  RUNNING // Currently collecting data
+  PAUSED // Temporarily stopped
+  COMPLETED // Finished and winner selected
+  ARCHIVED // Historical record
+}
+
+enum WinnerStrategy {
+  IMMEDIATE // Select winner as soon as significance is reached
+  CONSERVATIVE // Wait for additional confirmation period
+  ECONOMIC // Factor in economic value, not just conversion rate
+  SAFETY_FIRST // Require very high confidence (99%+)
 }
 
 model FeatureFlag {

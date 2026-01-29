@@ -1707,6 +1707,68 @@ erDiagram
   Boolean converted
   DateTime createdAt
 }
+"experiments" {
+  String id PK
+  String workspaceId FK
+  String name
+  String description "nullable"
+  String hypothesis "nullable"
+  ExperimentStatus status
+  String contentType
+  Json adapterConfig "nullable"
+  Float significanceLevel
+  Int minimumSampleSize
+  WinnerStrategy winnerStrategy
+  Boolean autoSelectWinner
+  String winnerVariantId "nullable"
+  DateTime selectedAt "nullable"
+  String tags
+  Json metadata "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+  DateTime startedAt "nullable"
+  DateTime completedAt "nullable"
+}
+"experiment_variants" {
+  String id PK
+  String experimentId FK
+  String name
+  String description "nullable"
+  Json content
+  Float splitPercentage
+  Boolean isControl
+  Int impressions
+  Int conversions
+  Float totalValue
+  DateTime createdAt
+  DateTime updatedAt
+}
+"experiment_events" {
+  String id PK
+  String experimentId FK
+  String variantId FK
+  String eventType
+  String eventName "nullable"
+  Float value "nullable"
+  Json metadata "nullable"
+  String visitorId "nullable"
+  String userId "nullable"
+  DateTime createdAt
+}
+"experiment_results" {
+  String id PK
+  String experimentId FK
+  String variantId FK
+  DateTime calculatedAt
+  Float conversionRate
+  Float confidenceLower
+  Float confidenceUpper
+  Float zScore "nullable"
+  Float pValue "nullable"
+  Boolean isSignificant
+  Float bayesianProbability "nullable"
+  Float expectedLift "nullable"
+}
 "feature_flags" {
   String id PK
   String name UK
@@ -1957,6 +2019,12 @@ erDiagram
 "AbTestVariant" }o--|| "AbTest" : abTest
 "AbTestResult" }o--|| "visitor_sessions" : visitorSession
 "AbTestResult" }o--|| "AbTestVariant" : abTestVariant
+"experiments" }o--|| "workspaces" : workspace
+"experiment_variants" }o--|| "experiments" : experiment
+"experiment_events" }o--|| "experiments" : experiment
+"experiment_events" }o--|| "experiment_variants" : variant
+"experiment_results" }o--|| "experiments" : experiment
+"experiment_results" }o--|| "experiment_variants" : variant
 "asset_folders" }o--|| "workspaces" : workspace
 "asset_folders" }o--o| "asset_folders" : parent
 "asset_folders" }o--|| "users" : createdBy
@@ -4123,6 +4191,89 @@ Properties as follows:
 - `abTestVariantId`:
 - `converted`:
 - `createdAt`:
+
+### `experiments`
+
+Generic experiment model supporting multiple content types
+Uses adapters for content delivery (social posts, emails, landing pages, etc.)
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `name`:
+- `description`:
+- `hypothesis`:
+- `status`:
+- `contentType`:
+- `adapterConfig`:
+- `significanceLevel`:
+- `minimumSampleSize`:
+- `winnerStrategy`:
+- `autoSelectWinner`:
+- `winnerVariantId`:
+- `selectedAt`:
+- `tags`:
+- `metadata`:
+- `createdAt`:
+- `updatedAt`:
+- `startedAt`:
+- `completedAt`:
+
+### `experiment_variants`
+
+Experiment variant - represents a version to test
+
+Properties as follows:
+
+- `id`:
+- `experimentId`:
+- `name`:
+- `description`:
+- `content`:
+- `splitPercentage`:
+- `isControl`:
+- `impressions`:
+- `conversions`:
+- `totalValue`:
+- `createdAt`:
+- `updatedAt`:
+
+### `experiment_events`
+
+Event tracking for experiments (impressions, conversions, etc.)
+
+Properties as follows:
+
+- `id`:
+- `experimentId`:
+- `variantId`:
+- `eventType`:
+- `eventName`:
+- `value`:
+- `metadata`:
+- `visitorId`:
+- `userId`:
+- `createdAt`:
+
+### `experiment_results`
+
+Aggregated results for statistical analysis
+
+Properties as follows:
+
+- `id`:
+- `experimentId`:
+- `variantId`:
+- `calculatedAt`:
+- `conversionRate`:
+- `confidenceLower`:
+- `confidenceUpper`:
+- `zScore`:
+- `pValue`:
+- `isSignificant`:
+- `bayesianProbability`:
+- `expectedLift`:
 
 ### `feature_flags`
 

@@ -819,6 +819,65 @@ Owner 11. Content Creator
 
 ---
 
+## Hypothesis AI Agent - Experimentation Framework
+
+Epic #516 - Advanced A/B testing and experimentation framework for data-driven decision making.
+
+| Feature                  | Status      | Description                                  |
+| ------------------------ | ----------- | -------------------------------------------- |
+| Generic Experiments      | ✅ Complete | Content-agnostic experiment framework        |
+| Statistical Engine       | ✅ Complete | Wilson Score CI, Bayesian, Sequential SPRT   |
+| Winner Selection         | ✅ Complete | 4 strategies (IMMEDIATE, CONSERVATIVE, etc.) |
+| Content Adapters         | ✅ Complete | Social posts, generic content                |
+| Event Tracking           | ✅ Complete | Impressions, conversions, custom events      |
+| Confidence Intervals     | ✅ Complete | Wilson score for accurate proportions        |
+| Bayesian Analysis        | ✅ Complete | Probability of being best, expected loss     |
+| Multi-Variant ANOVA      | ✅ Complete | Test 3+ variants simultaneously              |
+| API Endpoints            | ✅ Complete | RESTful API for experiment management        |
+
+### Statistical Methods
+
+1. **Wilson Score Confidence Intervals** - More accurate than normal approximation
+2. **Bayesian Inference** - Beta-Binomial conjugate priors
+3. **Sequential Testing (SPRT)** - Early stopping without error inflation
+4. **Multi-Variant ANOVA** - F-test for 3+ variants
+
+### Winner Selection Strategies
+
+- **IMMEDIATE** - Select winner at 95% confidence
+- **CONSERVATIVE** - Wait for confirmation period (1.5x min sample)
+- **ECONOMIC** - Optimize for economic value (revenue/profit)
+- **SAFETY_FIRST** - Require 99% confidence (2x min sample)
+
+### Database Models
+
+- `Experiment` - Core experiment metadata and config
+- `ExperimentVariant` - Variant content and metrics
+- `ExperimentEvent` - Event tracking (impressions, conversions)
+- `ExperimentResult` - Statistical analysis results
+
+### API Endpoints
+
+- `POST /api/hypothesis/experiments` - Create experiment
+- `GET /api/hypothesis/experiments` - List experiments
+- `GET /api/hypothesis/experiments/[id]` - Get experiment
+- `GET /api/hypothesis/experiments/[id]/results` - Get analysis
+- `POST /api/hypothesis/experiments/[id]/events` - Track event
+- `POST /api/hypothesis/experiments/[id]/winner` - Select winner
+
+### Key Files
+
+- `src/lib/hypothesis-agent/` - Core framework
+- `src/lib/hypothesis-agent/statistical-engine/` - Statistical methods
+- `src/lib/hypothesis-agent/winner-selection/` - Winner strategies
+- `src/lib/hypothesis-agent/adapters/` - Content type adapters
+- `src/app/api/hypothesis/` - API endpoints
+- `docs/HYPOTHESIS_AGENT.md` - Comprehensive documentation
+
+**See [HYPOTHESIS_AGENT.md](./HYPOTHESIS_AGENT.md) for complete documentation.**
+
+---
+
 ## Image Enhancement Pipelines
 
 Advanced image processing workflows with customizable steps.
