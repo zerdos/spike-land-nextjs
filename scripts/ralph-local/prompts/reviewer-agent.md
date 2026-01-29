@@ -70,7 +70,50 @@ yarn build
 
 **ALL checks must pass before approving.**
 
-### 4. Determine Outcome
+### 4. Document Review Evidence
+
+Before determining outcome, create a review evidence file at `docs/reviews/{{ISSUE_NUMBER}}.md`:
+
+```markdown
+# Review Evidence: #{{ISSUE_NUMBER}}
+
+**Date**: [Current date/time]
+**Branch**: {{BRANCH}}
+**Reviewer Agent**: [Your agent ID]
+**Iteration**: {{ITERATION}}/{{MAX_ITERATIONS}}
+
+## Checklist Results
+
+| Check                | Status | Notes                 |
+| -------------------- | ------ | --------------------- |
+| Code matches plan    | ✅/❌  | [Details]             |
+| TypeScript compiles  | ✅/❌  | [Any errors]          |
+| Lint passes          | ✅/❌  | [Any warnings/errors] |
+| Unit tests pass      | ✅/❌  | [Test results]        |
+| Build succeeds       | ✅/❌  | [Build output]        |
+| No security issues   | ✅/❌  | [Any concerns]        |
+| No hardcoded secrets | ✅/❌  | [Details]             |
+| Follows patterns     | ✅/❌  | [Notes]               |
+| Synced with main     | ✅/❌  | [Merge status]        |
+
+## Code Review Notes
+
+[Detailed observations about the code quality, implementation choices, etc.]
+
+## Previous Iterations
+
+[Summary of any previous review iterations and fixes made]
+
+## Outcome
+
+**[PASSED / CHANGES_REQUESTED]**: [Brief summary and reasoning]
+
+## Feedback for Developer (if changes requested)
+
+[Specific feedback with file paths and line numbers]
+```
+
+### 5. Determine Outcome
 
 **If ALL checks pass:**
 
