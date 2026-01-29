@@ -190,7 +190,7 @@ describe("YouTubeClient", () => {
 
       await expect(
         client.createPost("Test video"),
-      ).rejects.toThrow("does not support direct post creation");
+      ).rejects.toThrow("must be uploaded using the resumable upload API");
     });
   });
 
