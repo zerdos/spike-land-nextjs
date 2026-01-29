@@ -29,6 +29,7 @@ export interface SocialAccountInfo {
   displayName: string;
   profileUrl?: string;
   avatarUrl?: string;
+  bio?: string;
   followersCount?: number;
   followingCount?: number;
 }
@@ -41,7 +42,10 @@ export interface PostOptions {
   mediaIds?: string[];
   scheduledAt?: Date;
   replyToId?: string;
-  // Platform-specific options
+  link?: string;
+  // Platform-specific options (Pinterest, TikTok, etc.)
+  boardId?: string;
+  imageUrl?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -76,6 +80,7 @@ export interface PostMetrics {
   likes: number;
   comments: number;
   shares: number;
+  views?: number;
   impressions?: number;
   reach?: number;
   engagementRate?: number;
@@ -85,8 +90,13 @@ export interface PostMetrics {
  * Account-level metrics (normalized)
  */
 export interface SocialMetricsData {
-  followers: number;
-  following: number;
+  platform?: SocialPlatform;
+  // New naming (preferred)
+  followersCount?: number;
+  followingCount?: number;
+  // Legacy naming (for backward compatibility)
+  followers?: number;
+  following?: number;
   postsCount: number;
   engagementRate?: number;
   impressions?: number;
@@ -197,6 +207,66 @@ export interface TwitterMedia {
   type: "photo" | "video" | "animated_gif";
   url?: string;
   preview_image_url?: string;
+}
+
+/**
+ * TikTok-specific types
+ */
+export interface TikTokVideo {
+  id: string;
+  title: string;
+  cover_image_url: string;
+  share_url: string;
+  video_description: string;
+  duration: number;
+  height: number;
+  width: number;
+  create_time: number;
+  embed_html: string;
+  embed_link: string;
+  like_count: number;
+  comment_count: number;
+  share_count: number;
+  view_count: number;
+}
+
+/**
+ * Pinterest-specific types
+ */
+export interface PinterestPin {
+  id: string;
+  title?: string;
+  description?: string;
+  link?: string;
+  media: {
+    images?: {
+      [key: string]: {
+        url: string;
+        width: number;
+        height: number;
+      };
+    };
+  };
+  board_id: string;
+  created_at: string;
+}
+
+export interface PinterestBoard {
+  id: string;
+  name: string;
+  description?: string;
+  privacy: "PUBLIC" | "PRIVATE" | "SECRET";
+  pin_count?: number;
+}
+
+/**
+ * Snapchat-specific types
+ */
+export interface SnapchatAdAccount {
+  id: string;
+  name: string;
+  status: "ACTIVE" | "PAUSED";
+  organization_id: string;
 }
 
 /**
@@ -517,7 +587,9 @@ export const PLATFORM_CAPABILITIES: Record<
   FACEBOOK: { canLike: true, canReply: true, canShare: false },
   INSTAGRAM: { canLike: true, canReply: true, canShare: false },
   LINKEDIN: { canLike: true, canReply: true, canShare: false },
-  TIKTOK: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
-  YOUTUBE: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
+  TIKTOK: { canLike: true, canReply: true, canShare: false },
+  YOUTUBE: { canLike: true, canReply: true, canShare: false },
   DISCORD: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
+  PINTEREST: { canLike: true, canReply: true, canShare: false },
+  SNAPCHAT: { canLike: false, canReply: false, canShare: false },
 };

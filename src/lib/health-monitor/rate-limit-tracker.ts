@@ -198,6 +198,15 @@ export function parseRateLimitHeaders(
 
     case "TIKTOK":
       // TikTok API rate limits vary by endpoint
+      // Default: 100 requests/hour, 1000/day
+      return null;
+
+    case "PINTEREST":
+      // Pinterest API v5: 300 requests/hour
+      return null;
+
+    case "SNAPCHAT":
+      // Snapchat Marketing API: 100 requests/hour
       return null;
 
     case "DISCORD":

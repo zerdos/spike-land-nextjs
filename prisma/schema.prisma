@@ -2299,6 +2299,8 @@ enum SocialPlatform {
   TIKTOK
   YOUTUBE
   DISCORD
+  PINTEREST
+  SNAPCHAT
 }
 
 enum SocialAccountStatus {

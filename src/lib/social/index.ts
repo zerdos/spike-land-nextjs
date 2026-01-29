@@ -56,8 +56,18 @@ export async function createSocialClient(
       throw new Error(
         "Discord uses bot authentication, not OAuth. Configure DISCORD_BOT_TOKEN and DISCORD_SERVER_ID in environment variables.",
       );
-    case "TIKTOK":
-      throw new Error(`Platform ${platform} is not yet implemented`);
+    case "TIKTOK": {
+      const { TikTokClient } = await import("./clients/tiktok");
+      return new TikTokClient(options);
+    }
+    case "PINTEREST": {
+      const { PinterestClient } = await import("./clients/pinterest");
+      return new PinterestClient(options);
+    }
+    case "SNAPCHAT": {
+      const { SnapchatClient } = await import("./clients/snapchat");
+      return new SnapchatClient(options);
+    }
     default:
       throw new Error(`Unknown platform: ${platform}`);
   }
