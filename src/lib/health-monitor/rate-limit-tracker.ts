@@ -166,10 +166,18 @@ export function parseRateLimitHeaders(
 
     case "FACEBOOK":
     case "INSTAGRAM":
-      return parseFacebookRateLimits(headers, body);
+      // Narrow the type to FacebookErrorResponse for Facebook/Instagram
+      return parseFacebookRateLimits(
+        headers,
+        isFacebookErrorResponse(body) ? body : undefined,
+      );
 
     case "LINKEDIN":
-      return parseLinkedInRateLimits(headers, body);
+      // Narrow the type to LinkedInErrorResponse for LinkedIn
+      return parseLinkedInRateLimits(
+        headers,
+        isLinkedInErrorResponse(body) ? body : undefined,
+      );
 
     case "YOUTUBE":
       // YouTube uses quota-based limits, not easily tracked per-request

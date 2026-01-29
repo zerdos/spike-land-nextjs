@@ -45,6 +45,26 @@ export interface HealthEventDetails {
   rateLimitInfo?: RateLimitEventInfo;
   /** Token expiry information */
   tokenInfo?: TokenEventInfo;
+  /** Social platform identifier */
+  platform?: string;
+  /** Account name for the social platform */
+  accountName?: string;
+  /** Reason for the event */
+  reason?: string;
+  /** User who initiated the action */
+  initiatedBy?: string;
+  /** Related event ID that was resolved */
+  resolvedEventId?: string;
+  /** User who resolved the event */
+  resolvedBy?: string;
+  /** Rate limit reset timestamp */
+  rateLimitResetAt?: Date | string | null;
+  /** Error message or details */
+  error?: string;
+  /** Number of consecutive errors */
+  consecutiveErrors?: number;
+  /** Token expiration timestamp */
+  tokenExpiresAt?: Date | string | null;
   /** Additional metadata (keep flexible for extensibility) */
   metadata?: Record<string, string | number | boolean>;
 }
