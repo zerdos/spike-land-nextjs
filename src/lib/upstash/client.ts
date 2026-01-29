@@ -187,7 +187,7 @@ export interface SSEEventWithSource {
  */
 export async function publishSSEEvent(
   appId: string,
-  event: { type: string; data: unknown; timestamp: number },
+  event: { type: string; data: unknown; timestamp: number; },
 ): Promise<void> {
   const eventWithSource: SSEEventWithSource = {
     ...event,
@@ -225,8 +225,7 @@ export async function getSSEEvents(
   return events
     .map((e) => JSON.parse(e) as SSEEventWithSource)
     .filter(
-      (e) =>
-        e.timestamp > afterTimestamp && e.sourceInstanceId !== INSTANCE_ID,
+      (e) => e.timestamp > afterTimestamp && e.sourceInstanceId !== INSTANCE_ID,
     )
     .reverse(); // Oldest first for replay
 }
