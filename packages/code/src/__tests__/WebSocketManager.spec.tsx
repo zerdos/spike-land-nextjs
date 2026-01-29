@@ -213,6 +213,10 @@ describe("WebSocketManager", () => {
       expect(mockSessionSynchronizer.subscribe).toHaveBeenCalled();
     });
 
+    // SKIP REASON: Complex route handling requires full DOM environment setup and SessionSynchronizer mocking
+    // CATEGORY: unfinished
+    // TRACKING: #798
+    // ACTION: fix - Core routing functionality should be unit tested
     it.skip("should handle dehydrated page route", async () => {
       location.pathname = "/live/test-space/dehydrated";
       const mockEmbed = document.createElement("div");
@@ -243,6 +247,10 @@ describe("WebSocketManager", () => {
       expect(styles?.textContent).toContain(".test{}");
     });
 
+    // SKIP REASON: Complex route handling requires full DOM environment setup and SessionSynchronizer mocking
+    // CATEGORY: unfinished
+    // TRACKING: #798
+    // ACTION: fix - Core routing functionality should be unit tested
     it.skip("should handle default route", async () => {
       // Initialize and wait for setup
       await webSocketManager.init();
