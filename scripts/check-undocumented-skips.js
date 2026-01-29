@@ -9,9 +9,9 @@
  * Usage: node scripts/check-undocumented-skips.js
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,13 +24,13 @@ const SKIP_CALL_PATTERN = /(it|describe|test)\.skip\(/;
 const CONTEXT_LINES = 10;
 
 const IGNORED_DIRS = [
-  'node_modules',
-  'dist',
-  'build',
-  '.next',
-  'coverage',
-  '.git',
-  '.yarn',
+  "node_modules",
+  "dist",
+  "build",
+  ".next",
+  "coverage",
+  ".git",
+  ".yarn",
 ];
 
 /**
@@ -39,7 +39,7 @@ const IGNORED_DIRS = [
 function hasRequiredDocumentation(lines, skipLineIndex) {
   const startIndex = Math.max(0, skipLineIndex - CONTEXT_LINES);
   const contextLines = lines.slice(startIndex, skipLineIndex);
-  const contextText = contextLines.join('\n');
+  const contextText = contextLines.join("\n");
 
   const hasReason = SKIP_REASON_PATTERN.test(contextText);
   const hasCategory = CATEGORY_PATTERN.test(contextText);
@@ -53,7 +53,7 @@ function hasRequiredDocumentation(lines, skipLineIndex) {
       category: !hasCategory,
       tracking: !hasTracking,
       action: !hasAction,
-    }
+    },
   };
 }
 
@@ -61,8 +61,8 @@ function hasRequiredDocumentation(lines, skipLineIndex) {
  * Find all undocumented skip calls in a file
  */
 function findUndocumentedSkips(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
-  const lines = content.split('\n');
+  const content = fs.readFileSync(filePath, "utf8");
+  const lines = content.split("\n");
   const undocumented = [];
 
   lines.forEach((line, index) => {
@@ -107,13 +107,13 @@ function findTestFiles(dir, testFiles = []) {
 }
 
 async function main() {
-  console.log('🔍 Checking for undocumented skipped tests...\n');
+  console.log("🔍 Checking for undocumented skipped tests...\n");
 
-  const rootDir = path.join(__dirname, '..');
+  const rootDir = path.join(__dirname, "..");
   const testFiles = findTestFiles(rootDir);
 
   if (testFiles.length === 0) {
-    console.log('⚠️  No test files found');
+    console.log("⚠️  No test files found");
     process.exit(0);
   }
 
@@ -129,11 +129,11 @@ async function main() {
   }
 
   if (allUndocumented.length === 0) {
-    console.log('✅ All skipped tests are documented\n');
+    console.log("✅ All skipped tests are documented\n");
     process.exit(0);
   }
 
-  console.error('❌ Found undocumented skipped tests:\n');
+  console.error("❌ Found undocumented skipped tests:\n");
 
   allUndocumented.forEach(({ file, line, code, missing }) => {
     // Make paths relative to root for cleaner output
@@ -142,30 +142,30 @@ async function main() {
     console.error(`    ${code}`);
 
     const missingFields = [];
-    if (missing.reason) missingFields.push('SKIP REASON');
-    if (missing.category) missingFields.push('CATEGORY');
-    if (missing.tracking) missingFields.push('TRACKING');
-    if (missing.action) missingFields.push('ACTION');
+    if (missing.reason) missingFields.push("SKIP REASON");
+    if (missing.category) missingFields.push("CATEGORY");
+    if (missing.tracking) missingFields.push("TRACKING");
+    if (missing.action) missingFields.push("ACTION");
 
     if (missingFields.length > 0) {
-      console.error(`    Missing: ${missingFields.join(', ')}`);
+      console.error(`    Missing: ${missingFields.join(", ")}`);
     }
-    console.error('');
+    console.error("");
   });
 
-  console.error('\n📝 All .skip() calls must have a comment above them with:');
-  console.error('   // SKIP REASON: <brief explanation>');
-  console.error('   // CATEGORY: [intentional|environment|unfinished]');
-  console.error('   // TRACKING: #<issue-number>');
-  console.error('   // ACTION: [keep|fix|remove]');
-  console.error('');
-  console.error('   See docs/SKIPPED_TESTS.md for more information');
-  console.error('');
+  console.error("\n📝 All .skip() calls must have a comment above them with:");
+  console.error("   // SKIP REASON: <brief explanation>");
+  console.error("   // CATEGORY: [intentional|environment|unfinished]");
+  console.error("   // TRACKING: #<issue-number>");
+  console.error("   // ACTION: [keep|fix|remove]");
+  console.error("");
+  console.error("   See docs/SKIPPED_TESTS.md for more information");
+  console.error("");
 
   process.exit(1);
 }
 
 main().catch((error) => {
-  console.error('Error:', error);
+  console.error("Error:", error);
   process.exit(1);
 });

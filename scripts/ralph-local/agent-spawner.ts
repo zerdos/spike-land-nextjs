@@ -26,6 +26,7 @@ import type {
   Plan,
   PRFixWork,
   RalphLocalConfig,
+  ReviewWork,
 } from "./types";
 
 // Prompt templates paths
@@ -130,6 +131,39 @@ function buildFixerPrompt(
     .replaceAll("{{FIX_REASON}}", prFix.reason)
     .replaceAll("{{REVIEW_COMMENTS}}", reviewCommentsText)
     .replaceAll("{{FAILURE_DETAILS}}", prFix.failureDetails || "No failure details available")
+    .replaceAll("{{REPO}}", config.repo);
+}
+
+/**
+ * Build the prompt for a reviewer agent
+ */
+function buildReviewerPrompt(
+  review: ReviewWork,
+  config: RalphLocalConfig,
+): string {
+  const promptPath = join(config.workDir, PROMPTS_DIR, "reviewer-agent.md");
+  if (!existsSync(promptPath)) {
+    throw new Error(`Prompt template not found: ${promptPath}`);
+  }
+  const template = readFileSync(promptPath, "utf-8");
+
+  const planContent = existsSync(review.planPath)
+    ? readFileSync(review.planPath, "utf-8")
+    : "Plan file not found";
+
+  const previousFeedback = review.feedback
+    ? `Previous review feedback:\n\n${review.feedback}`
+    : "No previous feedback - this is the first review.";
+
+  return template
+    .replaceAll("{{ISSUE_NUMBER}}", String(review.issueNumber))
+    .replaceAll("{{TICKET_ID}}", review.ticketId)
+    .replaceAll("{{BRANCH}}", review.branch)
+    .replaceAll("{{WORKTREE_PATH}}", review.worktree)
+    .replaceAll("{{PLAN_CONTENT}}", planContent)
+    .replaceAll("{{ITERATION}}", String(review.iterations))
+    .replaceAll("{{MAX_ITERATIONS}}", String(review.maxIterations))
+    .replaceAll("{{PREVIOUS_FEEDBACK}}", previousFeedback)
     .replaceAll("{{REPO}}", config.repo);
 }
 
@@ -312,6 +346,23 @@ export function spawnFixerAgent(
 }
 
 /**
+ * Spawn a reviewer agent for code review
+ */
+export function spawnReviewerAgent(
+  agent: LocalAgent,
+  review: ReviewWork,
+  config: RalphLocalConfig,
+): ChildProcess | null {
+  if (!validateTicketId(review.ticketId)) {
+    console.error(`Invalid ticket ID: ${review.ticketId}`);
+    return null;
+  }
+
+  const prompt = buildReviewerPrompt(review, config);
+  return spawnAgent(agent, prompt, review.worktree, config);
+}
+
+/**
  * Spawn a fixer agent for main branch build failures
  */
 export function spawnMainBuildFixerAgent(
@@ -426,6 +477,30 @@ export function parseAgentMarkers(output: string): AgentMarker[] {
       type: "CODE_READY",
       ticketId: match[1],
       branch: match[2],
+    });
+  }
+
+  // Parse REVIEW_PASSED markers
+  const reviewPassedRegex =
+    /<REVIEW_PASSED\s+ticket="([^"]+)"\s+iterations="(\d+)"\s+force="(true|false)"\s*\/>/g;
+  while ((match = reviewPassedRegex.exec(text)) !== null) {
+    markers.push({
+      type: "REVIEW_PASSED",
+      ticketId: match[1],
+      iterations: parseInt(match[2], 10),
+      force: match[3] === "true",
+    });
+  }
+
+  // Parse REVIEW_CHANGES_REQUESTED markers (feedback may contain quotes, so match until closing " iteration=)
+  const reviewChangesRegex =
+    /<REVIEW_CHANGES_REQUESTED\s+ticket="([^"]+)"\s+feedback="([\s\S]*?)"\s+iteration="(\d+)"\s*\/>/g;
+  while ((match = reviewChangesRegex.exec(text)) !== null) {
+    markers.push({
+      type: "REVIEW_CHANGES_REQUESTED",
+      ticketId: match[1],
+      feedback: match[2],
+      iteration: parseInt(match[3], 10),
     });
   }
 
