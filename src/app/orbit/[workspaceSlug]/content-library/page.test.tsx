@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import ContentLibraryPage from "./page";
 
@@ -9,16 +10,43 @@ vi.mock("next/navigation", () => ({
   useParams: () => ({ workspaceSlug: "test-workspace" }),
 }));
 
-describe("ContentLibraryPage", () => {
-  it("renders the coming soon placeholder", async () => {
-    const params = Promise.resolve({ workspaceSlug: "test-workspace" });
-    const page = await ContentLibraryPage({ params });
-    render(page);
+// Mock fetch for workspace API
+global.fetch = vi.fn().mockResolvedValue({
+  ok: true,
+  json: async () => ({ workspace: { id: "test-workspace-id" } }),
+} as Response);
 
-    // Use level: 1 to find the main h1 heading specifically
-    expect(screen.getByRole("heading", { name: "Content Library", level: 1 })).toBeInTheDocument();
+// Mock hooks
+vi.mock("@/hooks/use-assets", () => ({
+  useAssets: () => ({
+    data: {
+      assets: [],
+      pagination: { page: 1, limit: 50, total: 0, totalPages: 0, hasMore: false },
+    },
+    isLoading: false,
+  }),
+  useAssetFolders: () => ({ data: [] }),
+  useUploadAsset: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
+describe("ContentLibraryPage", () => {
+  it("renders the content library page", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ContentLibraryPage />
+      </QueryClientProvider>,
+    );
+
+    // Wait for the workspace ID to be fetched
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Content Library", level: 1 }))
+        .toBeInTheDocument();
+    });
+
     expect(screen.getByText("Manage and organize your media assets")).toBeInTheDocument();
-    expect(screen.getByText("Coming Soon")).toBeInTheDocument();
-    expect(screen.getByText(/Store, organize, and reuse your media assets/)).toBeInTheDocument();
   });
 });

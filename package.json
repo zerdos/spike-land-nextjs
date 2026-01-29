@@ -103,6 +103,10 @@
     "ralph:local:watch": "tsx scripts/ralph-local/orchestrator.ts --watch",
     "ralph:local:dry-run": "tsx scripts/ralph-local/orchestrator.ts --dry-run",
     "ralph:local:status": "tsx scripts/ralph-local/orchestrator.ts --status",
+    "ralph:local:supervised": "./scripts/ralph-local/supervisor.sh",
+    "ralph:local:stop": "./scripts/ralph-local/supervisor.sh stop",
+    "ralph:local:reset": "tsx scripts/ralph-local/reset-state.ts",
+    "ralph:local:reset:full": "tsx scripts/ralph-local/reset-state.ts --full",
     "reset:db": "tsx scripts/reset-staging-db.ts",
     "reset:db:confirm": "tsx scripts/reset-staging-db.ts --confirm",
     "backup": "tsx --tsconfig scripts/backup/tsconfig.json scripts/backup/backup.ts"
@@ -185,6 +189,7 @@
     "react": "19.2.4",
     "react-day-picker": "^9.13.0",
     "react-dom": "19.2.4",
+    "react-dropzone": "^14.3.8",
     "react-hook-form": "7.71.1",
     "react-is": "^19.2.4",
     "react-markdown": "10.1.0",
@@ -279,9 +284,6 @@
       "unplugged": true
     },
     "prisma": {
-      "unplugged": true
-    },
-    "sharp": {
       "unplugged": true
     },
     "styled-jsx": {
