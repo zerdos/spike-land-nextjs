@@ -26,6 +26,15 @@ const querySchema = z.object({
     message: "Invalid end date format",
   }),
   format: z.enum(["csv", "json"]).default("csv"),
+  exportType: z.enum(["campaign", "attribution"]).default("campaign"),
+  attributionModel: z.enum([
+    "FIRST_TOUCH",
+    "LAST_TOUCH",
+    "LINEAR",
+    "TIME_DECAY",
+    "POSITION_BASED",
+    "ALL",
+  ]).default("ALL").optional(),
 });
 
 interface ExportRow {
@@ -83,6 +92,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     startDate: searchParams.get("startDate"),
     endDate: searchParams.get("endDate"),
     format: searchParams.get("format") || "csv",
+    exportType: searchParams.get("exportType") || "campaign",
+    attributionModel: searchParams.get("attributionModel") || "ALL",
   });
 
   if (!parseResult.success) {
@@ -92,10 +103,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const { startDate, endDate, format } = parseResult.data;
+  const { startDate, endDate, format, exportType, attributionModel } = parseResult.data;
   const start = new Date(startDate);
   const end = new Date(endDate);
   end.setHours(23, 59, 59, 999);
+
+  // Route to attribution export if requested
+  if (exportType === "attribution") {
+    return handleAttributionExport(
+      start,
+      end,
+      format,
+      attributionModel || "ALL",
+      startDate,
+      endDate,
+    );
+  }
 
   // Get session data grouped by campaign and source
   const { data: sessions, error: sessionsError } = await tryCatch(
@@ -394,4 +417,148 @@ function determinePlatform(source: string | null): string {
   }
 
   return "Organic";
+}
+
+/**
+ * Handle attribution export
+ */
+async function handleAttributionExport(
+  start: Date,
+  end: Date,
+  format: "csv" | "json",
+  attributionModel: string,
+  startDate: string,
+  endDate: string,
+): Promise<NextResponse> {
+  // Determine which models to export
+  const modelsToExport: AttributionType[] = attributionModel === "ALL"
+    ? [
+      AttributionType.FIRST_TOUCH,
+      AttributionType.LAST_TOUCH,
+      AttributionType.LINEAR,
+      AttributionType.TIME_DECAY,
+      AttributionType.POSITION_BASED,
+    ]
+    : [attributionModel as AttributionType];
+
+  // Fetch attribution data
+  const { data: attributions, error: attributionsError } = await tryCatch(
+    prisma.campaignAttribution.groupBy({
+      by: ["utmCampaign", "platform", "attributionType"],
+      where: {
+        convertedAt: {
+          gte: start,
+          lte: end,
+        },
+        attributionType: {
+          in: modelsToExport,
+        },
+      },
+      _sum: {
+        conversionValue: true,
+      },
+      _count: {
+        _all: true,
+      },
+    }),
+  );
+
+  if (attributionsError) {
+    console.error("Failed to export attribution data:", attributionsError);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  interface AttributionExportRow {
+    campaign: string;
+    platform: string;
+    model: string;
+    conversions: number;
+    value: number;
+    avgValue: number;
+    percentOfTotal: number;
+  }
+
+  // Calculate totals for percentage
+  const totalValue = attributions.reduce(
+    (sum, a) => sum + (a._sum?.conversionValue || 0),
+    0,
+  );
+
+  // Build export data
+  const exportData: AttributionExportRow[] = attributions.map((attr) => {
+    const value = attr._sum?.conversionValue || 0;
+    const conversions = attr._count?._all || 0;
+    const avgValue = conversions > 0 ? value / conversions : 0;
+    const percentOfTotal = totalValue > 0 ? (value / totalValue) * 100 : 0;
+
+    return {
+      campaign: attr.utmCampaign || "Direct",
+      platform: attr.platform || "UNKNOWN",
+      model: attr.attributionType,
+      conversions,
+      value: Math.round(value * 100) / 100,
+      avgValue: Math.round(avgValue * 100) / 100,
+      percentOfTotal: Math.round(percentOfTotal * 100) / 100,
+    };
+  });
+
+  // Sort by value descending
+  exportData.sort((a, b) => b.value - a.value);
+
+  if (format === "json") {
+    return NextResponse.json({
+      dateRange: {
+        start: startDate,
+        end: endDate,
+      },
+      attributionModel,
+      exportedAt: new Date().toISOString(),
+      data: exportData,
+    });
+  }
+
+  // Generate CSV
+  const csvHeaders = [
+    "Campaign",
+    "Platform",
+    "Model",
+    "Start Date",
+    "End Date",
+    "Conversions",
+    "Total Value",
+    "Avg Value",
+    "% of Total",
+  ];
+
+  const csvRows = exportData.map((row) => [
+    escapeCsvField(row.campaign),
+    escapeCsvField(row.platform),
+    escapeCsvField(row.model),
+    startDate,
+    endDate,
+    row.conversions,
+    `$${row.value.toFixed(2)}`,
+    `$${row.avgValue.toFixed(2)}`,
+    `${row.percentOfTotal.toFixed(1)}%`,
+  ]);
+
+  const csvContent = [
+    csvHeaders.join(","),
+    ...csvRows.map((row) => row.join(",")),
+  ].join("\n");
+
+  // Generate filename
+  const modelStr = attributionModel === "ALL" ? "all-models" : attributionModel.toLowerCase();
+  const filename = `attribution-${modelStr}-${startDate}-to-${endDate}.csv`;
+
+  return new NextResponse(csvContent, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/csv",
+      "Content-Disposition": `attachment; filename="${filename}"`,
+    },
+  });
 }

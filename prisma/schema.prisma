@@ -1711,6 +1711,8 @@ enum AttributionType {
   FIRST_TOUCH
   LAST_TOUCH
   LINEAR
+  TIME_DECAY
+  POSITION_BASED
 }
 
 enum ConversionType {

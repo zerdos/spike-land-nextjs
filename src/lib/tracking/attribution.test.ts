@@ -409,7 +409,8 @@ describe("attribution", () => {
 
       await attributeConversion("user-123", "SIGNUP", 100);
 
-      expect(prisma.campaignAttribution.create).toHaveBeenCalledTimes(4); // FT, LT, Linear x2
+      // FT, LT, Linear x2, TIME_DECAY x2, POSITION_BASED x2 = 8 total
+      expect(prisma.campaignAttribution.create).toHaveBeenCalledTimes(8);
 
       const calls = vi.mocked(prisma.campaignAttribution.create).mock.calls;
       const conversionId = calls[0]![0]!.data!.conversionId;
@@ -435,7 +436,7 @@ describe("attribution", () => {
         conversionValue: 100,
       });
 
-      // Linear
+      // Linear (2 sessions = 50 each)
       expect(calls[2]![0]!.data).toMatchObject({
         attributionType: "LINEAR",
         sessionId: "session-1",
@@ -446,6 +447,24 @@ describe("attribution", () => {
         attributionType: "LINEAR",
         sessionId: "session-2",
         platform: "FACEBOOK",
+        conversionValue: 50,
+      });
+
+      // Time Decay (2 sessions)
+      expect(calls[4]![0]!.data!.attributionType).toBe("TIME_DECAY");
+      expect(calls[4]![0]!.data!.sessionId).toBe("session-1");
+      expect(calls[5]![0]!.data!.attributionType).toBe("TIME_DECAY");
+      expect(calls[5]![0]!.data!.sessionId).toBe("session-2");
+
+      // Position-Based (2 sessions = 50/50)
+      expect(calls[6]![0]!.data).toMatchObject({
+        attributionType: "POSITION_BASED",
+        sessionId: "session-1",
+        conversionValue: 50,
+      });
+      expect(calls[7]![0]!.data).toMatchObject({
+        attributionType: "POSITION_BASED",
+        sessionId: "session-2",
         conversionValue: 50,
       });
     });
@@ -496,8 +515,8 @@ describe("attribution", () => {
 
       await attributeConversion("user-123", "PURCHASE", 9.99);
 
-      // FT, LT, Linear
-      expect(prisma.campaignAttribution.create).toHaveBeenCalledTimes(3);
+      // FT, LT, Linear, TIME_DECAY, POSITION_BASED (1 session each = 5 total)
+      expect(prisma.campaignAttribution.create).toHaveBeenCalledTimes(5);
       expect(
         vi.mocked(prisma.campaignAttribution.create).mock.calls.every(
           (c) => c[0]!.data!.conversionValue === 9.99,
@@ -546,7 +565,7 @@ describe("attribution", () => {
         fbclid: null,
       });
       vi.mocked(prisma.campaignAttribution.createMany).mockResolvedValue({
-        count: 2,
+        count: 5,
       });
 
       await attributeConversion("user-123", "SIGNUP");
@@ -564,6 +583,8 @@ describe("attribution", () => {
           expect.objectContaining({ attributionType: "FIRST_TOUCH" }),
           expect.objectContaining({ attributionType: "LAST_TOUCH" }),
           expect.objectContaining({ attributionType: "LINEAR" }),
+          expect.objectContaining({ attributionType: "TIME_DECAY" }),
+          expect.objectContaining({ attributionType: "POSITION_BASED" }),
         ],
       });
     });
