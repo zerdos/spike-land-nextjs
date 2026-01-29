@@ -10,7 +10,7 @@
  */
 
 import { execSync } from "child_process";
-import type { PRReviewStatus, RalphLocalConfig } from "./types";
+import type { MainBranchCIStatus, PRReviewStatus, RalphLocalConfig, WorkflowRun } from "./types";
 
 /**
  * Validate PR number (must be positive integer)
@@ -383,6 +383,264 @@ export function getWorkflowRunUrl(prNumber: number, config: RalphLocalConfig): s
     );
 
     return workflowCheck?.targetUrl || null;
+  } catch {
+    return null;
+  }
+}
+
+// ============================================================================
+// Main Branch CI Status
+// ============================================================================
+
+/**
+ * Check main branch CI status
+ * Security Note: Uses gh CLI with validated config.repo from configuration
+ */
+export function checkMainBranchCI(config: RalphLocalConfig): MainBranchCIStatus {
+  try {
+    // Get recent workflow runs on main branch
+    const output = execSync(
+      `gh run list --branch main --limit 5 --json databaseId,name,conclusion,status,url --repo ${config.repo}`,
+      {
+        encoding: "utf-8",
+        timeout: 30000,
+        cwd: config.workDir,
+      },
+    );
+
+    const runs = JSON.parse(output);
+    const failedWorkflows: WorkflowRun[] = [];
+    let overallStatus: MainBranchCIStatus["status"] = "passing";
+
+    for (const run of runs) {
+      if (run.status === "in_progress" || run.status === "queued") {
+        overallStatus = "pending";
+      } else if (run.conclusion === "failure") {
+        overallStatus = "failing";
+        failedWorkflows.push({
+          id: run.databaseId,
+          name: run.name,
+          conclusion: run.conclusion,
+          status: run.status,
+          url: run.url,
+        });
+      }
+    }
+
+    return {
+      status: overallStatus,
+      failedWorkflows,
+      lastCheckedAt: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Failed to check main branch CI:", error);
+    return {
+      status: "pending",
+      failedWorkflows: [],
+      lastCheckedAt: new Date().toISOString(),
+    };
+  }
+}
+
+// ============================================================================
+// Approval Signal Detection
+// ============================================================================
+
+/**
+ * Detect approval signals in PR comments/reviews
+ * Security Note: Uses gh CLI with validated prNumber (integer) and config.repo
+ */
+export function hasApprovalSignal(
+  prNumber: number,
+  config: RalphLocalConfig,
+): { hasSignal: boolean; signalFound: string | null; } {
+  if (!validatePrNumber(prNumber)) {
+    return { hasSignal: false, signalFound: null };
+  }
+
+  try {
+    // Get PR comments and reviews
+    const output = execSync(
+      `gh pr view ${prNumber} --json comments,reviews --repo ${config.repo}`,
+      {
+        encoding: "utf-8",
+        timeout: 30000,
+        cwd: config.workDir,
+      },
+    );
+
+    const data = JSON.parse(output);
+    const allText: string[] = [];
+
+    // Collect all comment bodies
+    if (data.comments) {
+      for (const comment of data.comments) {
+        if (comment.body) {
+          allText.push(comment.body);
+        }
+      }
+    }
+
+    // Collect all review bodies
+    if (data.reviews) {
+      for (const review of data.reviews) {
+        if (review.body) {
+          allText.push(review.body);
+        }
+      }
+    }
+
+    // Check for approval keywords
+    const approvalKeywords = config.approvalKeywords || [
+      "lgtm",
+      "LGTM",
+      "looks good",
+      "ship it",
+      "approved",
+      "ready to merge",
+    ];
+
+    for (const text of allText) {
+      const lowerText = text.toLowerCase();
+      for (const keyword of approvalKeywords) {
+        if (lowerText.includes(keyword.toLowerCase())) {
+          return { hasSignal: true, signalFound: keyword };
+        }
+      }
+    }
+
+    return { hasSignal: false, signalFound: null };
+  } catch (error) {
+    console.error(`Failed to check approval signals for PR #${prNumber}:`, error);
+    return { hasSignal: false, signalFound: null };
+  }
+}
+
+// ============================================================================
+// CI Failure Details
+// ============================================================================
+
+/**
+ * Get CI failure details for a PR
+ * Security Note: Uses gh CLI with validated prNumber (integer) and config.repo
+ */
+export function getCIFailureDetails(prNumber: number, config: RalphLocalConfig): string | null {
+  if (!validatePrNumber(prNumber)) {
+    return null;
+  }
+
+  try {
+    // Get status checks for the PR
+    const output = execSync(
+      `gh pr view ${prNumber} --json statusCheckRollup --repo ${config.repo}`,
+      {
+        encoding: "utf-8",
+        timeout: 30000,
+        cwd: config.workDir,
+      },
+    );
+
+    const data = JSON.parse(output);
+    const checks = data.statusCheckRollup || [];
+
+    // Find failed checks
+    const failedChecks = checks.filter(
+      (c: { state?: string; conclusion?: string; }) =>
+        c.state === "FAILURE" || c.conclusion === "FAILURE",
+    );
+
+    if (failedChecks.length === 0) {
+      return null;
+    }
+
+    // Build failure summary
+    const details = failedChecks
+      .map((c: { name?: string; context?: string; targetUrl?: string; }) => {
+        const name = c.name || c.context || "Unknown check";
+        const url = c.targetUrl || "";
+        return `- ${name}${url ? ` (${url})` : ""}`;
+      })
+      .join("\n");
+
+    return `Failed CI checks:\n${details}`;
+  } catch (error) {
+    console.error(`Failed to get CI failure details for PR #${prNumber}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Get detailed failure logs from a workflow run
+ * Security Note: Uses gh CLI with validated runId (integer) and config.repo
+ */
+export function getWorkflowFailureLogs(runId: number, config: RalphLocalConfig): string | null {
+  if (!Number.isInteger(runId) || runId <= 0) {
+    return null;
+  }
+
+  try {
+    // Get failed jobs from the workflow run
+    const output = execSync(
+      `gh run view ${runId} --json jobs --repo ${config.repo}`,
+      {
+        encoding: "utf-8",
+        timeout: 60000,
+        cwd: config.workDir,
+      },
+    );
+
+    const data = JSON.parse(output);
+    const jobs = data.jobs || [];
+
+    // Find failed jobs
+    const failedJobs = jobs.filter(
+      (j: { conclusion?: string; }) => j.conclusion === "failure",
+    );
+
+    if (failedJobs.length === 0) {
+      return null;
+    }
+
+    // Build failure summary
+    const details = failedJobs
+      .map((j: { name?: string; steps?: { name: string; conclusion: string; }[]; }) => {
+        const jobName = j.name || "Unknown job";
+        const failedSteps = (j.steps || [])
+          .filter((s) => s.conclusion === "failure")
+          .map((s) => `    - Step: ${s.name}`)
+          .join("\n");
+        return `- Job: ${jobName}\n${failedSteps}`;
+      })
+      .join("\n");
+
+    return `Failed workflow run #${runId}:\n${details}`;
+  } catch (error) {
+    console.error(`Failed to get workflow failure logs for run #${runId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Get PR branch name
+ * Security Note: Uses gh CLI with validated prNumber (integer) and config.repo
+ */
+export function getPRBranch(prNumber: number, config: RalphLocalConfig): string | null {
+  if (!validatePrNumber(prNumber)) {
+    return null;
+  }
+
+  try {
+    const output = execSync(
+      `gh pr view ${prNumber} --json headRefName --repo ${config.repo}`,
+      {
+        encoding: "utf-8",
+        timeout: 30000,
+        cwd: config.workDir,
+      },
+    );
+
+    const data = JSON.parse(output);
+    return data.headRefName || null;
   } catch {
     return null;
   }
