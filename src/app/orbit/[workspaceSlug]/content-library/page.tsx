@@ -25,6 +25,7 @@ export default function ContentLibraryPage() {
   const [selectedFileTypes, setSelectedFileTypes] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [detailsPanelOpen, setDetailsPanelOpen] = useState(false);
 
@@ -50,6 +51,7 @@ export default function ContentLibraryPage() {
       search: searchQuery || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       fileType: selectedFileTypes.length === 1 ? (selectedFileTypes[0] as "image" | "video") : undefined,
+      page,
     },
     { enabled: !!workspaceId }
   );
@@ -81,7 +83,9 @@ export default function ContentLibraryPage() {
   const handleClearFilters = () => {
     setSelectedFileTypes([]);
     setSelectedTags([]);
+    setSelectedTags([]);
     setSearchQuery("");
+    setPage(1);
   };
 
   if (!workspaceId) {
@@ -190,6 +194,7 @@ export default function ContentLibraryPage() {
                 variant="outline"
                 size="sm"
                 disabled={assetsData.pagination.page === 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
                 Previous
               </Button>
@@ -200,6 +205,7 @@ export default function ContentLibraryPage() {
                 variant="outline"
                 size="sm"
                 disabled={!assetsData.pagination.hasMore}
+                onClick={() => setPage((p) => p + 1)}
               >
                 Next
               </Button>

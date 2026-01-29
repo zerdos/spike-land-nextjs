@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
         storageProvider: "R2",
         r2Bucket: bucket,
         r2Key,
-        uploadedById: session!.user!.id,
+        uploadedById: session?.user?.id ?? "",
       },
       include: {
         folder: true,

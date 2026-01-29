@@ -235,7 +235,7 @@ export async function PATCH(
             data: {
               assetId,
               tagId: tag.id,
-              assignedById: session!.user!.id,
+              assignedById: session?.user?.id ?? "",
             },
           }),
         );

@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
         workspaceId,
         name: name.trim(),
         parentId: parentId || null,
-        createdById: session!.user!.id,
+        createdById: session?.user?.id ?? "",
       },
       include: {
         _count: {

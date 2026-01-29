@@ -41,8 +41,8 @@ export function FolderTreeView({
           variant={isSelected ? "secondary" : "ghost"}
           className={cn(
             "w-full justify-start gap-2",
-            level > 0 && `pl-${4 + level * 4}`,
           )}
+          style={{ paddingLeft: level > 0 ? `${1 + level}rem` : undefined }}
           onClick={() => onSelectFolder(folder.id)}
         >
           {isSelected ? (

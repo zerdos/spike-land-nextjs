@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
           create: {
             assetId,
             tagId: tag.id,
-            assignedById: session!.user!.id,
+            assignedById: session?.user?.id ?? "",
           },
           update: {},
         }),
