@@ -58,6 +58,8 @@ function getPlatformName(platform: SocialPlatform): string {
     YOUTUBE: "YouTube",
     TIKTOK: "TikTok",
     DISCORD: "Discord",
+    PINTEREST: "Pinterest",
+    SNAPCHAT: "Snapchat",
   };
   return names[platform] || platform;
 }

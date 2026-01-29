@@ -72,6 +72,16 @@ const platformConfig: Record<
     color: "text-indigo-400",
     bgColor: "bg-indigo-500/10",
   },
+  PINTEREST: {
+    name: "Pinterest",
+    color: "text-red-500",
+    bgColor: "bg-red-600/10",
+  },
+  SNAPCHAT: {
+    name: "Snapchat",
+    color: "text-yellow-400",
+    bgColor: "bg-yellow-500/10",
+  },
 };
 
 const statusConfig: Record<

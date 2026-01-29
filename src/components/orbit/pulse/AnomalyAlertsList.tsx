@@ -43,6 +43,8 @@ const platformNames: Record<SocialPlatform, string> = {
   YOUTUBE: "YouTube",
   TIKTOK: "TikTok",
   DISCORD: "Discord",
+  PINTEREST: "Pinterest",
+  SNAPCHAT: "Snapchat",
 };
 
 const metricNames: Record<string, string> = {
