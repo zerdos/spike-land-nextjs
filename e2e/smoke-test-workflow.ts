@@ -13,12 +13,7 @@
 import { type Browser, type BrowserContext, chromium, type Page } from "@playwright/test";
 import { execSync } from "child_process";
 import fs from "fs";
-import {
-  debugAuthState,
-  retryWithAuthBypass,
-  verifyAuthBypass,
-  waitForAuthReady,
-} from "./helpers/auth-bypass";
+import { debugAuthState, retryWithAuthBypass, verifyAuthBypass } from "./helpers/auth-bypass";
 
 // ============================================================================
 // Configuration
@@ -136,7 +131,6 @@ async function mockAuthSession(
   page: Page,
   options: { role?: "USER" | "ADMIN"; email?: string; name?: string; } = {},
 ): Promise<void> {
-  const startTime = Date.now();
   const { role = "USER", email = "test@example.com", name = "Test User" } = options;
 
   console.log(`[Smoke Test] Setting up E2E auth bypass for role: ${role}`);
@@ -202,7 +196,7 @@ async function mockAuthSession(
 
   // PHASE 1: Pre-warm the interceptor by making a test request
   // This forces the route interceptor to activate before any navigation
-  const isVerified = await verifyRouteInterceptor(page, role);
+  await verifyRouteInterceptor(page, role);
 
   // PHASE 2: Inject session into NextAuth's client-side cache
   // This ensures client components have the session immediately available
@@ -560,6 +554,8 @@ async function runStage2(browser: Browser): Promise<StageResult> {
             console.warn("[Job 2.2] Loading indicator didn't disappear in time");
           });
         }
+      },
+    );
 
     // PHASE 3: Wait for network to be idle before checking for content
     await page2.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {
@@ -748,6 +744,7 @@ async function runStage3(browser: Browser): Promise<StageResult> {
 
     if (!foundContent) {
       // PHASE 4: Enhanced debug logging
+      const currentUrl = page1.url();
       const allText = await page1.locator("body").textContent().catch(() => "");
       const visibleHeadings = await page1.locator("h1, h2, h3").allTextContents().catch(() => []);
 
