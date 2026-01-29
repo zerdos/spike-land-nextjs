@@ -25,7 +25,9 @@ export function AIInsightsPanel({ data }: AIInsightsPanelProps) {
     }
   };
 
-  const getVariant = (type: string) => {
+  const getVariant = (
+    type: string
+  ): "default" | "destructive" | "secondary" | "outline" => {
     switch (type) {
       case "OPPORTUNITY":
         return "default";
@@ -63,7 +65,7 @@ export function AIInsightsPanel({ data }: AIInsightsPanelProps) {
                   <div className="flex-1 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <h4 className="font-semibold">{insight.title}</h4>
-                      <Badge variant={getVariant(insight.type) as any}>
+                      <Badge variant={getVariant(insight.type)}>
                         {insight.type}
                       </Badge>
                     </div>
