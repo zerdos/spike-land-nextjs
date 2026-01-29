@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { startCoverage, stopCoverage } from "./helpers/coverage-helper";
+import { getE2eBypassSecret } from "../helpers/env";
 
 // Load environment variables from .env.local if it exists
 // Use quiet: true to suppress verbose logging in CI
@@ -54,7 +55,9 @@ export class CustomWorld extends World {
     // Add E2E bypass header if secret is configured
     // Sanitize the value to remove any newlines or whitespace that could cause
     // "Invalid header value" errors in Chromium
-    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET?.trim().replace(/[\r\n]/g, "");
+    // Sanitize the value to remove any newlines or whitespace that could cause
+    // "Invalid header value" errors in Chromium
+    const e2eBypassSecret = getE2eBypassSecret();
 
     if (!e2eBypassSecret) {
       console.warn("[E2E World] E2E_BYPASS_SECRET not configured - E2E tests may fail on protected routes");

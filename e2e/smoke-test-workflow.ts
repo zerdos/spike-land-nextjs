@@ -14,6 +14,7 @@ import { type Browser, type BrowserContext, chromium, type Page } from "@playwri
 import { execSync } from "child_process";
 import fs from "fs";
 import { debugAuthState, retryWithAuthBypass, verifyAuthBypass } from "./helpers/auth-bypass";
+import { getE2eBypassSecret } from "./helpers/env";
 
 // ============================================================================
 // Configuration
@@ -175,6 +176,12 @@ async function mockAuthSession(
       domain: baseUrlHost,
       path: "/",
     },
+    {
+      name: "e2e-bypass-secret",
+      value: config.e2eBypassSecret || "",
+      domain: baseUrlHost,
+      path: "/",
+    },
   ]);
 
   // Also intercept the session API for client-side components using useSession()
@@ -269,8 +276,8 @@ async function mockAuthSession(
 
     console.log("[Smoke Test] ✓ Pre-flight check passed - middleware accepted E2E bypass");
 
-    // Navigate back to blank page to clean state
-    await page.goto("about:blank");
+    // Navigate back to home page to clean state
+    await page.goto(config.baseUrl);
   } catch (error) {
     console.error(
       "[Smoke Test] Pre-flight check failed:",
@@ -286,7 +293,7 @@ async function mockAuthSession(
 function getExtraHTTPHeaders(): Record<string, string> | undefined {
   const headers: Record<string, string> = {};
 
-  const e2eBypassSecret = config.e2eBypassSecret?.trim().replace(/[\r\n]/g, "");
+  const e2eBypassSecret = getE2eBypassSecret();
 
   if (!e2eBypassSecret) {
     console.warn("[Smoke Test] E2E_BYPASS_SECRET not configured - E2E tests may fail on protected routes");

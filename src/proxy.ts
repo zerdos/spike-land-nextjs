@@ -207,8 +207,15 @@ export async function proxy(request: NextRequest) {
 
   // Check for E2E bypass via cookies (fallback method)
   // This handles cases where the header is sent but cookies are already set
+  // SECURITY: Require key validation matching the header implementation
   const e2eRoleCookie = request.cookies.get("e2e-user-role")?.value;
-  const hasValidCookie = !isProduction && e2eRoleCookie !== undefined;
+  const e2eSecretCookie = request.cookies.get("e2e-bypass-secret")?.value;
+  
+  const hasValidCookie = !isProduction && 
+    e2eBypassSecret && 
+    e2eSecretCookie && 
+    constantTimeCompare(e2eSecretCookie, e2eBypassSecret) &&
+    e2eRoleCookie !== undefined;
 
   if (hasValidHeader || hasValidCookie) {
     // Determine which method succeeded for logging
