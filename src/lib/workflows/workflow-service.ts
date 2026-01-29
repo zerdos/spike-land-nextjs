@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import type {
   CreateVersionInput,
   CreateWorkflowInput,
+  StepExecutionState,
   UpdateWorkflowInput,
   WorkflowData,
   WorkflowRunData,
@@ -12,6 +13,7 @@ import type {
 import type {
   BranchType,
   Prisma,
+  StepRunStatus,
   Workflow,
   WorkflowRun,
   WorkflowRunStatus,
@@ -518,6 +520,9 @@ function mapRunToData(run: RunWithLogs): WorkflowRunData {
     status: run.status,
     startedAt: run.startedAt,
     endedAt: run.endedAt,
+    stepExecutions: run.stepExecutions as Record<string, StepExecutionState> | undefined,
+    triggerType: run.triggerType as WorkflowRunData["triggerType"],
+    triggerData: run.triggerData as Record<string, unknown> | undefined,
     logs: run.logs.map((log) => ({
       stepId: log.stepId ?? undefined,
       stepStatus: log.stepStatus as WorkflowRunLogEntry["stepStatus"],
@@ -526,4 +531,79 @@ function mapRunToData(run: RunWithLogs): WorkflowRunData {
       timestamp: log.timestamp,
     })),
   };
+}
+
+/**
+ * Initializes step execution tracking for a new workflow run
+ *
+ * @param steps - Array of workflow steps to initialize
+ * @returns Record mapping step IDs to their initial execution state
+ */
+export function initializeStepExecutions(
+  steps: WorkflowStep[],
+): Record<string, StepExecutionState> {
+  return steps.reduce(
+    (acc, step) => {
+      acc[step.id] = {
+        stepId: step.id,
+        status: "PENDING" as StepRunStatus,
+      };
+      return acc;
+    },
+    {} as Record<string, StepExecutionState>,
+  );
+}
+
+/**
+ * Updates step execution state within a workflow run
+ *
+ * @param runId - The workflow run ID
+ * @param stepId - The step ID to update
+ * @param update - Partial step execution state to merge
+ */
+export async function updateStepExecution(
+  runId: string,
+  stepId: string,
+  update: Partial<StepExecutionState>,
+): Promise<void> {
+  const run = await prisma.workflowRun.findUnique({
+    where: { id: runId },
+    select: { stepExecutions: true },
+  });
+
+  if (!run) {
+    throw new Error(`Workflow run ${runId} not found`);
+  }
+
+  const executions = (run.stepExecutions as Record<string, StepExecutionState>) ?? {};
+  executions[stepId] = {
+    ...executions[stepId],
+    ...update,
+  };
+
+  await prisma.workflowRun.update({
+    where: { id: runId },
+    data: { stepExecutions: executions as Prisma.InputJsonValue },
+  });
+}
+
+/**
+ * Gets the current execution state for all steps in a workflow run
+ *
+ * @param runId - The workflow run ID
+ * @returns Record mapping step IDs to their execution state
+ */
+export async function getStepExecutions(
+  runId: string,
+): Promise<Record<string, StepExecutionState>> {
+  const run = await prisma.workflowRun.findUnique({
+    where: { id: runId },
+    select: { stepExecutions: true },
+  });
+
+  if (!run) {
+    throw new Error(`Workflow run ${runId} not found`);
+  }
+
+  return (run.stepExecutions as Record<string, StepExecutionState>) ?? {};
 }

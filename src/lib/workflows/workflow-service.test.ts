@@ -5,9 +5,12 @@ import {
   createWorkflow,
   createWorkflowVersion,
   deleteWorkflow,
+  getStepExecutions,
   getWorkflow,
+  initializeStepExecutions,
   listWorkflows,
   publishWorkflowVersion,
+  updateStepExecution,
   updateWorkflow,
 } from "./workflow-service";
 
@@ -31,6 +34,8 @@ vi.mock("@/lib/prisma", () => ({
     workflowRun: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
       count: vi.fn(),
     },
   },
@@ -362,6 +367,181 @@ describe("workflow-service", () => {
       await expect(
         publishWorkflowVersion("wf-1", "ws-1", "ver-1"),
       ).rejects.toThrow("Cannot publish workflow");
+    });
+  });
+
+  describe("Step Execution Tracking", () => {
+    const mockSteps = [
+      {
+        id: "step-1",
+        workflowVersionId: "ver-1",
+        name: "Step 1",
+        type: "ACTION",
+        sequence: 0,
+        config: {},
+        dependencies: null,
+        createdAt: new Date(),
+        parentStepId: null,
+        branchType: null,
+        branchCondition: null,
+      },
+      {
+        id: "step-2",
+        workflowVersionId: "ver-1",
+        name: "Step 2",
+        type: "ACTION",
+        sequence: 1,
+        config: {},
+        dependencies: null,
+        createdAt: new Date(),
+        parentStepId: null,
+        branchType: null,
+        branchCondition: null,
+      },
+    ];
+
+    describe("initializeStepExecutions", () => {
+      it("should initialize execution state for all steps", () => {
+        const result = initializeStepExecutions(mockSteps as any);
+
+        expect(result).toEqual({
+          "step-1": {
+            stepId: "step-1",
+            status: "PENDING",
+          },
+          "step-2": {
+            stepId: "step-2",
+            status: "PENDING",
+          },
+        });
+      });
+
+      it("should handle empty steps array", () => {
+        const result = initializeStepExecutions([]);
+
+        expect(result).toEqual({});
+      });
+    });
+
+    describe("updateStepExecution", () => {
+      beforeEach(() => {
+        vi.clearAllMocks();
+      });
+
+      it("should update step execution state", async () => {
+        const mockRun = {
+          id: "run-1",
+          stepExecutions: {
+            "step-1": {
+              stepId: "step-1",
+              status: "PENDING",
+            },
+          },
+        };
+
+        vi.mocked(prisma.workflowRun.findUnique).mockResolvedValue(mockRun as any);
+        vi.mocked(prisma.workflowRun.update).mockResolvedValue({} as any);
+
+        await updateStepExecution("run-1", "step-1", {
+          status: "RUNNING",
+          startedAt: new Date(),
+        });
+
+        expect(prisma.workflowRun.update).toHaveBeenCalledWith({
+          where: { id: "run-1" },
+          data: {
+            stepExecutions: expect.objectContaining({
+              "step-1": expect.objectContaining({
+                status: "RUNNING",
+                startedAt: expect.any(Date),
+              }),
+            }),
+          },
+        });
+      });
+
+      it("should handle run with no existing step executions", async () => {
+        const mockRun = {
+          id: "run-1",
+          stepExecutions: null,
+        };
+
+        vi.mocked(prisma.workflowRun.findUnique).mockResolvedValue(mockRun as any);
+        vi.mocked(prisma.workflowRun.update).mockResolvedValue({} as any);
+
+        await updateStepExecution("run-1", "step-1", {
+          status: "COMPLETED",
+        });
+
+        expect(prisma.workflowRun.update).toHaveBeenCalledWith({
+          where: { id: "run-1" },
+          data: {
+            stepExecutions: {
+              "step-1": {
+                status: "COMPLETED",
+              },
+            },
+          },
+        });
+      });
+
+      it("should throw if run not found", async () => {
+        vi.mocked(prisma.workflowRun.findUnique).mockResolvedValue(null);
+
+        await expect(
+          updateStepExecution("invalid-run", "step-1", { status: "RUNNING" }),
+        ).rejects.toThrow("Workflow run invalid-run not found");
+      });
+    });
+
+    describe("getStepExecutions", () => {
+      beforeEach(() => {
+        vi.clearAllMocks();
+      });
+
+      it("should return step execution states", async () => {
+        const mockExecutions = {
+          "step-1": {
+            stepId: "step-1",
+            status: "COMPLETED",
+            startedAt: new Date(),
+            endedAt: new Date(),
+          },
+          "step-2": {
+            stepId: "step-2",
+            status: "RUNNING",
+            startedAt: new Date(),
+          },
+        };
+
+        vi.mocked(prisma.workflowRun.findUnique).mockResolvedValue({
+          id: "run-1",
+          stepExecutions: mockExecutions,
+        } as any);
+
+        const result = await getStepExecutions("run-1");
+
+        expect(result).toEqual(mockExecutions);
+      });
+
+      it("should return empty object if no step executions", async () => {
+        vi.mocked(prisma.workflowRun.findUnique).mockResolvedValue({
+          id: "run-1",
+          stepExecutions: null,
+        } as any);
+
+        const result = await getStepExecutions("run-1");
+
+        expect(result).toEqual({});
+      });
+
+      it("should throw if run not found", async () => {
+        vi.mocked(prisma.workflowRun.findUnique).mockResolvedValue(null);
+
+        await expect(getStepExecutions("invalid-run")).rejects.toThrow(
+          "Workflow run invalid-run not found",
+        );
+      });
     });
   });
 });

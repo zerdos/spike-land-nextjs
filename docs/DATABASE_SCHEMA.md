@@ -1655,6 +1655,9 @@ erDiagram
   WorkflowRunStatus status
   DateTime startedAt
   DateTime endedAt "nullable"
+  Json stepExecutions "nullable"
+  String triggerType "nullable"
+  Json triggerData "nullable"
 }
 "workflow_run_logs" {
   String id PK
@@ -4173,6 +4176,9 @@ Properties as follows:
 - `status`:
 - `startedAt`:
 - `endedAt`:
+- `stepExecutions`:
+- `triggerType`:
+- `triggerData`:
 
 ### `workflow_run_logs`
 
