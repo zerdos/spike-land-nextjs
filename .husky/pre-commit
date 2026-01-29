@@ -1,7 +1,18 @@
 # Run code formatter
 yarn dprint
-yarn tsc 
+yarn tsc
 git add -u
+
+# Check for undocumented skipped tests
+echo "Checking for undocumented skipped tests..."
+yarn check:skips
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "ERROR: Found undocumented skipped tests!"
+  echo "Please add SKIP REASON and TRACKING comments above all .skip() calls."
+  echo ""
+  exit 1
+fi
 
 # Secret detection with gitleaks
 # Scans staged changes for accidentally committed secrets

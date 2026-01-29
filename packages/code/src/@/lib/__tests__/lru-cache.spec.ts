@@ -195,10 +195,10 @@ describe("LRUCache", () => {
       expect(cache.has("nonexistent")).toBe(false);
     });
 
-    // SKIP REASON: TTL expiration requires mocking performance.now at module load time,
-    // which is captured by the lru-cache module before test mocks are applied.
-    // TTL functionality is already tested in the upstream lru-cache package.
-    // TRACKING: Intentionally skipped - testing upstream package behavior
+    // SKIP REASON: TTL expiration requires mocking performance.now at module load time
+    // CATEGORY: intentional
+    // TRACKING: #798
+    // ACTION: keep - TTL functionality is tested in upstream lru-cache package
     it.skip("should return false for expired entries by default", () => {
       const { advanceTime } = mockPerformanceNow();
       const cache = new LRUCache<string, { value: string; }>({
