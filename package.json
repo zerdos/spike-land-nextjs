@@ -103,7 +103,8 @@
     "ralph:local:dry-run": "tsx scripts/ralph-local/orchestrator.ts --dry-run",
     "ralph:local:status": "tsx scripts/ralph-local/orchestrator.ts --status",
     "reset:db": "tsx scripts/reset-staging-db.ts",
-    "reset:db:confirm": "tsx scripts/reset-staging-db.ts --confirm"
+    "reset:db:confirm": "tsx scripts/reset-staging-db.ts --confirm",
+    "backup": "tsx --tsconfig scripts/backup/tsconfig.json scripts/backup/backup.ts"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.2.20",
