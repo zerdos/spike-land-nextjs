@@ -2492,6 +2492,9 @@ model Workspace {
   favorites    WorkspaceFavorite[]
   recentAccess WorkspaceRecentAccess[]
 
+  // White-label configuration (PRO/BUSINESS tiers only) - Resolves #535
+  whiteLabelConfig WorkspaceWhiteLabelConfig?
+
   @@index([slug])
   @@index([isPersonal])
   @@map("workspaces")
@@ -4366,4 +4369,79 @@ enum IdentifierType {
   VISITOR_ID
   USER_ID
   EMAIL
+}
+
+// =============================================================================
+// White-Label Configuration Models (ORB-057)
+// =============================================================================
+
+enum DomainVerificationStatus {
+  PENDING         // Awaiting DNS TXT record verification
+  VERIFYING       // Checking DNS records
+  VERIFIED        // DNS verified successfully
+  FAILED          // Verification failed
+  EXPIRED         // Verification token expired
+}
+
+enum SslCertificateStatus {
+  PENDING         // Certificate not yet issued
+  PROVISIONING    // Certificate being provisioned (Let's Encrypt)
+  ACTIVE          // Certificate active and valid
+  EXPIRING_SOON   // Less than 30 days until expiration
+  EXPIRED         // Certificate expired
+  FAILED          // Certificate provisioning failed
+}
+
+model WorkspaceWhiteLabelConfig {
+  id          String   @id @default(cuid())
+  workspaceId String   @unique
+
+  // Custom Domain Configuration
+  customDomain           String?  @unique
+  customDomainVerified   Boolean  @default(false)
+  dnsVerificationToken   String?  @unique // TXT record value for verification
+  dnsVerificationStatus  DomainVerificationStatus @default(PENDING)
+  sslCertificateStatus   SslCertificateStatus @default(PENDING)
+  sslCertificateIssuedAt DateTime?
+  sslCertificateExpiresAt DateTime?
+
+  // Visual Customization (CSS Custom Properties)
+  primaryColor     String? // Hex color for primary brand color
+  secondaryColor   String? // Hex color for secondary brand color
+  accentColor      String? // Hex color for accent/CTA elements
+  fontFamily       String? // Google Fonts family name or web-safe font stack
+  logoUrl          String? // CDN URL for workspace logo
+  logoR2Key        String? // R2 storage key for logo asset
+  faviconUrl       String? // CDN URL for favicon
+  faviconR2Key     String? // R2 storage key for favicon
+
+  // Email Branding
+  emailSenderName       String? // Custom sender name for workspace emails
+  emailSenderDomain     String? // Custom domain for From: email@customdomain.com
+  emailSenderVerified   Boolean @default(false)
+  emailHeaderLogoUrl    String? // Logo for email headers
+  emailFooterText       String? @db.Text // Custom footer for all emails
+
+  // Login & Portal Customization
+  loginPageTitle         String? // Custom title for login page
+  loginPageDescription   String? @db.Text // Custom description/welcome text
+  loginBackgroundUrl     String? // Custom background image for login
+  loginBackgroundR2Key   String?
+  showPoweredBySpikeLand Boolean @default(true) // Toggle "Powered by Spike Land" footer
+
+  // PDF Report Branding
+  pdfHeaderLogoUrl  String?
+  pdfFooterText     String? @db.Text
+  pdfWatermarkUrl   String? // Optional watermark for PDFs
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([customDomain])
+  @@index([dnsVerificationStatus])
+  @@map("workspace_white_label_configs")
 }

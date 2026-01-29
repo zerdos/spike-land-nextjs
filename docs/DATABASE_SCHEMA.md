@@ -1803,6 +1803,40 @@ erDiagram
   String value
   DateTime createdAt
 }
+"workspace_white_label_configs" {
+  String id PK
+  String workspaceId FK,UK
+  String customDomain UK "nullable"
+  Boolean customDomainVerified
+  String dnsVerificationToken UK "nullable"
+  DomainVerificationStatus dnsVerificationStatus
+  SslCertificateStatus sslCertificateStatus
+  DateTime sslCertificateIssuedAt "nullable"
+  DateTime sslCertificateExpiresAt "nullable"
+  String primaryColor "nullable"
+  String secondaryColor "nullable"
+  String accentColor "nullable"
+  String fontFamily "nullable"
+  String logoUrl "nullable"
+  String logoR2Key "nullable"
+  String faviconUrl "nullable"
+  String faviconR2Key "nullable"
+  String emailSenderName "nullable"
+  String emailSenderDomain "nullable"
+  Boolean emailSenderVerified
+  String emailHeaderLogoUrl "nullable"
+  String emailFooterText "nullable"
+  String loginPageTitle "nullable"
+  String loginPageDescription "nullable"
+  String loginBackgroundUrl "nullable"
+  String loginBackgroundR2Key "nullable"
+  Boolean showPoweredBySpikeLand
+  String pdfHeaderLogoUrl "nullable"
+  String pdfFooterText "nullable"
+  String pdfWatermarkUrl "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
@@ -2000,6 +2034,7 @@ erDiagram
 "scheduled_post_assets" }o--|| "assets" : asset
 "identities" |o--o| "users" : user
 "identifiers" }o--|| "identities" : identity
+"workspace_white_label_configs" |o--|| "workspaces" : workspace
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
 "_ConnectionToConnectionTag" }o--|| "connection_tags" : ConnectionTag
 ```
@@ -4285,6 +4320,43 @@ Properties as follows:
 - `type`:
 - `value`:
 - `createdAt`:
+
+### `workspace_white_label_configs`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `customDomain`:
+- `customDomainVerified`:
+- `dnsVerificationToken`:
+- `dnsVerificationStatus`:
+- `sslCertificateStatus`:
+- `sslCertificateIssuedAt`:
+- `sslCertificateExpiresAt`:
+- `primaryColor`:
+- `secondaryColor`:
+- `accentColor`:
+- `fontFamily`:
+- `logoUrl`:
+- `logoR2Key`:
+- `faviconUrl`:
+- `faviconR2Key`:
+- `emailSenderName`:
+- `emailSenderDomain`:
+- `emailSenderVerified`:
+- `emailHeaderLogoUrl`:
+- `emailFooterText`:
+- `loginPageTitle`:
+- `loginPageDescription`:
+- `loginBackgroundUrl`:
+- `loginBackgroundR2Key`:
+- `showPoweredBySpikeLand`:
+- `pdfHeaderLogoUrl`:
+- `pdfFooterText`:
+- `pdfWatermarkUrl`:
+- `createdAt`:
+- `updatedAt`:
 
 ### `_ConnectionToConnectionTag`
 
