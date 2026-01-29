@@ -119,6 +119,14 @@ describe("GoogleAdsAllocatorClient", () => {
     beforeEach(() => {
       // Mock global fetch
       global.fetch = vi.fn();
+
+      // Mock the Google Ads Developer Token environment variable
+      vi.stubEnv('GOOGLE_ADS_DEVELOPER_TOKEN', 'test-developer-token-12345');
+    });
+
+    afterEach(() => {
+      // Clean up all environment variable stubs
+      vi.unstubAllEnvs();
     });
 
     it("should successfully update campaign budget", async () => {
