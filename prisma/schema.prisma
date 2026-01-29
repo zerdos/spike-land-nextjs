@@ -103,7 +103,7 @@ model User {
   identity Identity?
 
   // Multi-workspace management
-  workspaceFavorites   WorkspaceFavorite[]
+  workspaceFavorites    WorkspaceFavorite[]
   workspaceRecentAccess WorkspaceRecentAccess[]
 
   @@map("users")
@@ -2353,6 +2353,13 @@ enum ReminderStatus {
   CANCELLED
 }
 
+enum InsightType {
+  OPPORTUNITY
+  WARNING
+  ACHIEVEMENT
+  TREND
+}
+
 model Workspace {
   id          String    @id @default(cuid())
   name        String
@@ -2428,9 +2435,12 @@ model Workspace {
   connections    Connection[]
   connectionTags ConnectionTag[]
 
+  // Analytics - Resolves #842
+  aiInsights AIInsight[]
+
   // Multi-workspace management
-  favorites     WorkspaceFavorite[]
-  recentAccess  WorkspaceRecentAccess[]
+  favorites    WorkspaceFavorite[]
+  recentAccess WorkspaceRecentAccess[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -2493,6 +2503,31 @@ model WorkspaceMember {
   @@index([userId])
   @@index([role])
   @@map("workspace_members")
+}
+
+// =============================================================================
+// Analytics Models - Resolves #842
+// =============================================================================
+
+model AIInsight {
+  id             String      @id @default(cuid())
+  workspaceId    String
+  type           InsightType
+  title          String
+  description    String      @db.Text
+  recommendation String?     @db.Text
+  metrics        Json
+  confidence     Float
+  isRead         Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([createdAt(sort: Desc)])
+  @@index([isRead])
+  @@map("ai_insights")
 }
 
 // =============================================================================

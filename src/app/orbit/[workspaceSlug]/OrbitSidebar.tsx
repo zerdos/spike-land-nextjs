@@ -23,6 +23,7 @@ const getNavItems = (workspaceSlug: string) => [
   },
   { href: `/orbit/${workspaceSlug}/reminders`, label: "Reminders", icon: "🔔" },
   { href: `/orbit/${workspaceSlug}/calendar`, label: "Calendar", icon: "📅" },
+  { href: `/orbit/${workspaceSlug}/analytics`, label: "Analytics", icon: "📈" },
   { href: `/orbit/${workspaceSlug}/allocator`, label: "Allocator", icon: "💰" },
   {
     href: `/orbit/${workspaceSlug}/content-library`,

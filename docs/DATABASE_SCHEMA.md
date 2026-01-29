@@ -1052,6 +1052,19 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
 }
+"ai_insights" {
+  String id PK
+  String workspaceId FK
+  InsightType type
+  String title
+  String description
+  String recommendation "nullable"
+  Json metrics
+  Float confidence
+  Boolean isRead
+  DateTime createdAt
+  DateTime updatedAt
+}
 "connections" {
   String id PK
   String workspaceId FK
@@ -1859,6 +1872,7 @@ erDiagram
 "workspace_members" }o--|| "workspaces" : workspace
 "workspace_members" }o--|| "users" : user
 "workspace_members" }o--o| "users" : invitedBy
+"ai_insights" }o--|| "workspaces" : workspace
 "connections" }o--|| "workspaces" : workspace
 "connections" |o--o| "identities" : identity
 "connection_platform_presence" }o--|| "connections" : connection
@@ -3258,6 +3272,22 @@ Properties as follows:
 - `invitedAt`:
 - `joinedAt`:
 - `invitedById`:
+- `createdAt`:
+- `updatedAt`:
+
+### `ai_insights`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `type`:
+- `title`:
+- `description`:
+- `recommendation`:
+- `metrics`:
+- `confidence`:
+- `isRead`:
 - `createdAt`:
 - `updatedAt`:
 
