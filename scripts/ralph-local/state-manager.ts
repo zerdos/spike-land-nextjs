@@ -16,6 +16,7 @@ import type {
   Plan,
   PRFixWork,
   RalphLocalConfig,
+  ReviewWork,
 } from "./types";
 
 const STATE_VERSION = 1;
@@ -38,6 +39,7 @@ export function createInitialState(config: RalphLocalConfig): OrchestratorState 
   const pools: AgentPool = {
     planning: createAgentPool("planning", config.poolSizes.planning, config),
     developer: createAgentPool("developer", config.poolSizes.developer, config),
+    reviewer: createAgentPool("reviewer", config.poolSizes.reviewer, config),
     tester: createAgentPool("tester", config.poolSizes.tester, config),
     fixer: createAgentPool("fixer", config.poolSizes.fixer, config),
   };
@@ -48,6 +50,7 @@ export function createInitialState(config: RalphLocalConfig): OrchestratorState 
     iteration: 0,
     pools,
     pendingPlans: [],
+    pendingReview: [],
     pendingCode: [],
     pendingPRFixes: [],
     completedTickets: [],
@@ -177,6 +180,7 @@ function reconcilePools(pools: AgentPool, config: RalphLocalConfig): AgentPool {
   const reconciled: AgentPool = {
     planning: reconcilePool(pools.planning, "planning", config.poolSizes.planning, config),
     developer: reconcilePool(pools.developer, "developer", config.poolSizes.developer, config),
+    reviewer: reconcilePool(pools.reviewer || [], "reviewer", config.poolSizes.reviewer, config),
     tester: reconcilePool(pools.tester, "tester", config.poolSizes.tester, config),
     fixer: reconcilePool(pools.fixer || [], "fixer", config.poolSizes.fixer, config),
   };
@@ -242,7 +246,13 @@ function reconcilePool(
  * Get all pools as an array for iteration
  */
 function getAllPools(state: OrchestratorState): LocalAgent[][] {
-  return [state.pools.planning, state.pools.developer, state.pools.tester, state.pools.fixer];
+  return [
+    state.pools.planning,
+    state.pools.developer,
+    state.pools.reviewer,
+    state.pools.tester,
+    state.pools.fixer,
+  ];
 }
 
 /**
@@ -324,6 +334,66 @@ export function removePendingCode(
   return undefined;
 }
 
+// ============================================================================
+// Review Work Management
+// ============================================================================
+
+/**
+ * Add pending review work
+ */
+export function addPendingReview(state: OrchestratorState, review: ReviewWork): void {
+  if (!state.pendingReview) {
+    state.pendingReview = [];
+  }
+  state.pendingReview.push(review);
+}
+
+/**
+ * Remove pending review work
+ */
+export function removePendingReview(
+  state: OrchestratorState,
+  ticketId: string,
+): ReviewWork | undefined {
+  if (!state.pendingReview) {
+    return undefined;
+  }
+  const index = state.pendingReview.findIndex((r) => r.ticketId === ticketId);
+  if (index !== -1) {
+    return state.pendingReview.splice(index, 1)[0];
+  }
+  return undefined;
+}
+
+/**
+ * Get pending review by ticket ID
+ */
+export function getPendingReview(
+  state: OrchestratorState,
+  ticketId: string,
+): ReviewWork | undefined {
+  return state.pendingReview?.find((r) => r.ticketId === ticketId);
+}
+
+/**
+ * Check if a review is already in progress for a ticket
+ */
+export function isReviewInProgress(state: OrchestratorState, ticketId: string): boolean {
+  // Check pending review queue
+  if (state.pendingReview?.some((r) => r.ticketId === ticketId)) {
+    return true;
+  }
+
+  // Check if any reviewer agent is working on this ticket
+  for (const agent of state.pools.reviewer || []) {
+    if (agent.status === "running" && agent.ticketId === ticketId) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /**
  * Mark a ticket as completed
  */
@@ -378,6 +448,9 @@ export function isTicketInProgress(state: OrchestratorState, ticketId: string): 
 
   // Check if in pending queues
   if (state.pendingPlans.some((p) => p.ticketId === ticketId)) {
+    return true;
+  }
+  if (state.pendingReview?.some((r) => r.ticketId === ticketId)) {
     return true;
   }
   if (state.pendingCode.some((c) => c.ticketId === ticketId)) {
