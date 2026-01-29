@@ -198,6 +198,14 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/yarn.lock') }}-
             ${{ runner.os }}-nextjs-
 
+      - name: Generate Prisma client and update PnP manifest
+        run: |
+          yarn db:generate
+          yarn install
+
+      - name: Build shared package
+        run: yarn workspace @spike-npm-land/shared build
+
       - name: Build application
         run: yarn build
         env:
