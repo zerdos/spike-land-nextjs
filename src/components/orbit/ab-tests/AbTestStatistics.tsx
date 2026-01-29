@@ -8,13 +8,7 @@
  */
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SignificanceResult } from "@/types/ab-test";
 import { useCallback, useEffect, useState } from "react";
 import { AbTestResultsChart } from "./AbTestResultsChart";
@@ -30,14 +24,13 @@ export function AbTestStatistics({
   workspaceSlug,
   status,
 }: AbTestStatisticsProps) {
-  const [significance, setSignificance] =
-    useState<SignificanceResult | null>(null);
+  const [significance, setSignificance] = useState<SignificanceResult | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchSignificance = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/orbit/${workspaceSlug}/ab-tests/${testId}/results`
+        `/api/orbit/${workspaceSlug}/ab-tests/${testId}/results`,
       );
       if (!response.ok) {
         throw new Error("Failed to fetch significance");
@@ -90,26 +83,24 @@ export function AbTestStatistics({
               Confidence: {confidencePercent}%
             </CardDescription>
           </div>
-          {significance.isSignificant ? (
-            <Badge variant="default">Significant</Badge>
-          ) : (
-            <Badge variant="secondary">Not Significant</Badge>
-          )}
+          {significance.isSignificant
+            ? <Badge variant="default">Significant</Badge>
+            : <Badge variant="secondary">Not Significant</Badge>}
         </div>
       </CardHeader>
       <CardContent>
-        {significance.metrics.length > 0 ? (
-          <AbTestResultsChart metrics={significance.metrics} />
-        ) : (
-          <div className="text-center text-muted-foreground py-4">
-            No data available yet
-          </div>
-        )}
+        {significance.metrics.length > 0
+          ? <AbTestResultsChart metrics={significance.metrics} />
+          : (
+            <div className="text-center text-muted-foreground py-4">
+              No data available yet
+            </div>
+          )}
 
         {!significance.isSignificant && (
           <p className="text-xs text-muted-foreground mt-4">
-            Continue running the test to gather more data. At least 100
-            impressions per variant are required for statistical significance.
+            Continue running the test to gather more data. At least 100 impressions per variant are
+            required for statistical significance.
           </p>
         )}
       </CardContent>

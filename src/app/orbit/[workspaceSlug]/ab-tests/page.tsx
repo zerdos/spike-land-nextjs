@@ -8,18 +8,12 @@
 import { auth } from "@/auth";
 import { AbTestsList } from "@/components/orbit/ab-tests/AbTestsList";
 import { CreateAbTestDialog } from "@/components/orbit/ab-tests/CreateAbTestDialog";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
 interface AbTestsPageProps {
-  params: Promise<{ workspaceSlug: string }>;
+  params: Promise<{ workspaceSlug: string; }>;
 }
 
 export default async function AbTestsPage({ params }: AbTestsPageProps) {
