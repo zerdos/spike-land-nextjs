@@ -2,7 +2,7 @@
 active: true
 pool_planning: 10
 pool_developer: 4
-pool_reviewer: 2
+pool_reviewer: 6
 pool_tester: 2
 pool_fixer: 1
 sync_interval_min: 2
@@ -41,10 +41,10 @@ This file configures the Ralph Local multi-agent orchestrator.
 | --------- | ---- | ------------------------------------------- |
 | Planning  | 10   | Analyze issues, create implementation plans |
 | Developer | 4    | Implement code based on plans               |
-| Reviewer  | 2    | Local code review before PR creation        |
+| Reviewer  | 6    | Local code review before PR creation        |
 | Tester    | 2    | Create PRs for reviewed code                |
 | Fixer     | 1    | Fix PRs with failing CI or change requests  |
-| **Total** | 19   | Parallel local Claude Code agents           |
+| **Total** | 23   | Parallel local Claude Code agents           |
 
 ## Workflow
 
@@ -167,7 +167,7 @@ eliminating the ~5 minute `yarn install` delay when assigning work to developer 
 - Implement the plan
 - Output: `<CODE_READY ticket="#123" branch="ralph/123" />`
 
-### Reviewer Agents (2) - NEW
+### Reviewer Agents (6)
 
 - Local code review before PR creation
 - Run tests, lint, typecheck locally
