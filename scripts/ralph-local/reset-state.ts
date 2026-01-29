@@ -8,7 +8,6 @@
  *   yarn ralph:local:reset --full   # Full reset, clear everything
  */
 
-import { execSync } from "child_process";
 import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { join, resolve } from "path";
 import type { OrchestratorState, RalphLocalConfig } from "./types";
@@ -86,7 +85,7 @@ function cleanOutputFiles(): void {
   console.log(`   Cleaned ${files.length} output files`);
 }
 
-function processCompletedWork(state: OrchestratorState): { plans: number; code: number; } {
+function processCompletedWork(): { plans: number; code: number; } {
   let plans = 0;
   let code = 0;
 
@@ -208,7 +207,7 @@ async function main(): Promise<void> {
       console.log(
         `   Completed: ${existingState?.completedTickets.length}, Failed: ${existingState?.failedTickets.length}`,
       );
-    } catch (error) {
+    } catch (_parseError) {
       console.log("   Failed to parse existing state, will create fresh");
     }
   } else {
@@ -217,7 +216,7 @@ async function main(): Promise<void> {
 
   // Step 3: Process any completed work before resetting
   console.log("\n📋 Step 3: Check for unreported completed work");
-  const completed = processCompletedWork(existingState!);
+  const completed = processCompletedWork();
   if (completed.plans > 0 || completed.code > 0) {
     console.log(`   Found ${completed.plans} plans, ${completed.code} code implementations`);
     console.log("   ⚠️  These were completed but may not be recorded in state");
