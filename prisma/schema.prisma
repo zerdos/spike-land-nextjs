@@ -2105,14 +2105,16 @@ model SocialAccount {
   updatedAt DateTime @updatedAt
 
   // Relations
-  metrics               SocialMetrics[]
-  postAccounts          SocialPostAccount[]
-  anomalies             SocialMetricAnomaly[]
-  scheduledPostAccounts ScheduledPostAccount[]
-  inboxItems            InboxItem[]
+  metrics                    SocialMetrics[]
+  postAccounts               SocialPostAccount[]
+  anomalies                  SocialMetricAnomaly[]
+  scheduledPostAccounts      ScheduledPostAccount[]
+  inboxItems                 InboxItem[]
   // Account health monitoring
-  health                SocialAccountHealth?
-  healthEvents          AccountHealthEvent[]
+  health                     SocialAccountHealth?
+  healthEvents               AccountHealthEvent[]
+  // AI Content Calendar
+  postingTimeRecommendations PostingTimeRecommendation[]
 
   @@unique([workspaceId, platform, accountId])
   @@index([userId])
@@ -2453,10 +2455,12 @@ model Workspace {
   policyViolations       PolicyViolation[]
 
   // Scout Competitor Tracking
-  scoutCompetitors   ScoutCompetitor[]
-  scoutBenchmarks    ScoutBenchmark[]
+  scoutCompetitors           ScoutCompetitor[]
+  scoutBenchmarks            ScoutBenchmark[]
   // Scout content suggestions
-  contentSuggestions ContentSuggestion[]
+  contentSuggestions         ContentSuggestion[]
+  // AI Calendar content suggestions
+  calendarContentSuggestions CalendarContentSuggestion[]
 
   // Scout Topic Monitoring
   scoutTopics        ScoutTopic[]
@@ -2780,6 +2784,13 @@ enum ScheduledPostStatus {
   CANCELLED // User cancelled the scheduled post
 }
 
+enum ContentSuggestionStatus {
+  PENDING // Suggestion generated, awaiting review
+  ACCEPTED // User accepted and scheduled
+  REJECTED // User rejected
+  MODIFIED // User modified and scheduled
+}
+
 /// Scheduled posts for the Calendar feature
 /// Supports multi-platform cross-posting and recurrence
 model ScheduledPost {
@@ -2845,6 +2856,62 @@ model ScheduledPostAccount {
   @@index([accountId])
   @@index([status])
   @@map("scheduled_post_accounts")
+}
+
+// =============================================================================
+// AI Content Calendar Models - Issue #841
+// =============================================================================
+
+/// AI-generated posting time recommendations per social account
+/// Stores optimal posting times based on historical engagement data
+model PostingTimeRecommendation {
+  id        String        @id @default(cuid())
+  accountId String
+  account   SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  dayOfWeek Int // 0-6 (Sunday=0)
+  hourUtc   Int // 0-23
+  score     Float // Engagement prediction score (0-100)
+
+  // Metadata
+  confidence  String // "high", "medium", "low"
+  reason      String   @db.Text // Explanation for the recommendation
+  lastUpdated DateTime @default(now()) @updatedAt
+
+  @@unique([accountId, dayOfWeek, hourUtc])
+  @@index([accountId])
+  @@index([score])
+  @@map("posting_time_recommendations")
+}
+
+/// AI-generated content suggestions for the calendar
+/// Provides content ideas based on trends, gaps, and optimal times
+model CalendarContentSuggestion {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  content      String                  @db.Text // Suggested post content
+  suggestedFor DateTime // Recommended posting time
+  platform     SocialPlatform // Target platform
+  reason       String                  @db.Text // "trending", "optimal time", "content gap", etc.
+  status       ContentSuggestionStatus @default(PENDING)
+
+  // AI metadata
+  confidence Float // 0-100 confidence score
+  keywords   String[] // Relevant keywords/hashtags
+  metadata   Json? // Additional AI reasoning, trends, etc.
+
+  // User tracking
+  createdAt  DateTime  @default(now())
+  acceptedAt DateTime?
+  rejectedAt DateTime?
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([suggestedFor])
+  @@index([platform])
+  @@map("calendar_content_suggestions")
 }
 
 // ============================================
