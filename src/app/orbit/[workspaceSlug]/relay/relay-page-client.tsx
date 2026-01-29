@@ -14,7 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, Clock, FileCheck, Plus, XCircle } from "lucide-react";
 import Link from "next/link";
@@ -127,7 +126,6 @@ function MetricsCards({ metrics }: { metrics: RelayMetrics | undefined; }) {
 
 export function RelayPageClient({ workspaceSlug }: RelayPageClientProps) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [composerOpen, setComposerOpen] = useState(false);
 
   const {
@@ -148,13 +146,10 @@ export function RelayPageClient({ workspaceSlug }: RelayPageClientProps) {
     queryClient.invalidateQueries({ queryKey: ["approvalQueue", workspaceSlug] });
   };
 
-  const handlePublish = async (data: PostData) => {
+  const handlePublish = async (_data: PostData) => {
     // TODO: Implement actual publish logic
-    // For now, just show a toast and close the dialog
-    toast({
-      title: "Post created",
-      description: `Post will be published to ${data.platforms.length} platform(s)`,
-    });
+    // For now, just close the dialog
+    // Post will be sent to approval queue
     setComposerOpen(false);
   };
 

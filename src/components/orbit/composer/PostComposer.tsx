@@ -11,7 +11,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SocialPlatform } from "@prisma/client";
-import { ImagePlus, Loader2, Plus, Sparkles, Trash2, Upload, X } from "lucide-react";
+import { ImagePlus, Loader2, Plus, Sparkles, Trash2, Upload } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -84,7 +85,7 @@ export function PostComposer({
   const [enhanceDialogOpen, setEnhanceDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: brandProfile } = useBrandProfile(workspaceSlug);
+  const { brandProfile } = useBrandProfile({ workspaceId: workspaceSlug });
 
   const form = useForm<PostFormData>({
     resolver: zodResolver(postFormSchema),
@@ -108,7 +109,7 @@ export function PostComposer({
   const contentLength = watchedContent.length;
   const isOverLimit = contentLength > currentLimit;
 
-  const handleImageGenerated = (jobId: string, imageUrl?: string) => {
+  const handleImageGenerated = (_jobId: string, imageUrl?: string) => {
     if (imageUrl) {
       const currentImages = form.getValues("images");
       form.setValue("images", [...currentImages, imageUrl], { shouldValidate: true });
@@ -116,7 +117,7 @@ export function PostComposer({
     setGenerateDialogOpen(false);
   };
 
-  const handleImageEnhanced = (jobId: string, imageUrl?: string) => {
+  const handleImageEnhanced = (_jobId: string, imageUrl?: string) => {
     if (imageUrl) {
       const currentImages = form.getValues("images");
       form.setValue("images", [...currentImages, imageUrl], { shouldValidate: true });
@@ -189,7 +190,7 @@ export function PostComposer({
                     </FormControl>
                     <FormDescription className="flex justify-between">
                       <span>
-                        {watchedPlatforms.length > 0
+                        {watchedPlatforms.length > 0 && watchedPlatforms[0]
                           ? `${PLATFORM_NAMES[watchedPlatforms[0]]} ${
                               watchedPlatforms.length > 1
                                 ? `(+${watchedPlatforms.length - 1} more)`
@@ -273,10 +274,11 @@ export function PostComposer({
                           key={index}
                           className="relative group aspect-square rounded-lg overflow-hidden border border-border"
                         >
-                          <img
+                          <Image
                             src={url}
                             alt={`Attachment ${index + 1}`}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                           />
                           <button
                             type="button"
@@ -375,7 +377,8 @@ export function PostComposer({
         open={generateDialogOpen}
         onOpenChange={setGenerateDialogOpen}
         workspaceId={workspaceSlug}
-        brandProfile={brandProfile ?? null}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        brandProfile={brandProfile as any}
         onImageGenerated={handleImageGenerated}
       />
 
@@ -384,8 +387,9 @@ export function PostComposer({
         open={enhanceDialogOpen}
         onOpenChange={setEnhanceDialogOpen}
         workspaceId={workspaceSlug}
-        brandProfile={brandProfile ?? null}
-        initialImage={watchedImages[0]}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        brandProfile={brandProfile as any}
+        imageUrl={watchedImages[0]}
         onImageEnhanced={handleImageEnhanced}
       />
     </>

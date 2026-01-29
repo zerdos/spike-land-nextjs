@@ -454,7 +454,7 @@ describe("PostComposer", () => {
 
     it("shows loading state during submission", async () => {
       const user = userEvent.setup();
-      const onPublish = vi.fn(() => new Promise((resolve) => setTimeout(resolve, 100)));
+      const onPublish = vi.fn(() => new Promise<void>((resolve) => setTimeout(resolve, 100)));
 
       render(
         <PostComposer workspaceSlug="test-workspace" onPublish={onPublish} />,
