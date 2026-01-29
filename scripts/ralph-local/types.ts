@@ -259,6 +259,8 @@ export interface RalphLocalConfig {
   planDir: string;
   issuesDir: string;
   worktreeBase: string;
+  worktreePoolSize: number;
+  worktreePoolDir: string;
 }
 
 // ============================================================================
