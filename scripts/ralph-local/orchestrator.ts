@@ -270,6 +270,24 @@ async function step0_cleanupStaleAgents(
     }
   }
 
+  // Reset any "stale" agents back to "idle" so they can be reused
+  for (const pool of [state.pools.planning, state.pools.developer, state.pools.tester]) {
+    for (const agent of pool) {
+      if (agent.status === "stale" && !dryRun) {
+        console.log(`   🔄 Resetting stale agent ${agent.id} to idle`);
+        updateAgent(state, agent.id, {
+          status: "idle",
+          ticketId: null,
+          worktree: null,
+          pid: null,
+          startedAt: null,
+          lastHeartbeat: null,
+        });
+        cleanedCount++;
+      }
+    }
+  }
+
   if (cleanedCount === 0) {
     console.log("   No stale agents found");
   }
@@ -428,6 +446,25 @@ async function step2_collectAgentOutputs(
       // If agent completed, mark as idle
       if (completed && !stillRunning) {
         console.log(`   ✅ Agent ${agent.id} completed`);
+        updateAgent(state, agent.id, {
+          status: "idle",
+          ticketId: null,
+          pid: null,
+          worktree: null,
+        });
+      }
+    }
+  }
+
+  // Check for dead agents (process not running but still marked as running)
+  for (const pool of [state.pools.planning, state.pools.developer, state.pools.tester]) {
+    for (const agent of pool) {
+      if (agent.status !== "running") continue;
+
+      const stillRunning = isAgentRunning(agent);
+      if (!stillRunning) {
+        console.log(`   💀 Dead agent detected: ${agent.id} (ticket: ${agent.ticketId})`);
+        // Mark as idle so it can pick up new work
         updateAgent(state, agent.id, {
           status: "idle",
           ticketId: null,
