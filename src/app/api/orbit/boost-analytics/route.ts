@@ -4,7 +4,7 @@
  * Main endpoint for boost analytics operations
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/db';
 import { BoostCampaignService } from '@/lib/boost-analytics/boost-campaign-service';
@@ -42,7 +42,7 @@ const ListFiltersSchema = z.object({
   boostStrategy: z.string().optional(),
   sortBy: z.enum(['createdAt', 'boostedAt', 'initialBudget']).optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),
-  limit: z.coerce.number().optional(),
+  limit: z.coerce.number().min(1).max(100).optional(),
   offset: z.coerce.number().optional(),
 });
 

@@ -8,12 +8,12 @@
 import { PrismaClient } from '@/generated/prisma';
 import type {
   AttributionEventType,
-  AttributionModel,
   AttributionReport,
   AttributionResult,
   BoostAttributionEvent,
   TouchpointType,
-} from '@repo/shared/types';
+} from '@spike-npm-land/shared/types';
+import { AttributionModel } from '@spike-npm-land/shared/types';
 
 interface AttributionEventInput {
   boostCampaignId: string;
@@ -71,11 +71,11 @@ export class AttributionService {
     );
 
     switch (model) {
-      case 'LINEAR':
+      case AttributionModel.LINEAR:
         return this.calculateLinearAttribution(boostId, events, conversions);
-      case 'TIME_DECAY':
+      case AttributionModel.TIME_DECAY:
         return this.calculateTimeDecayAttribution(boostId, events, conversions);
-      case 'POSITION_BASED':
+      case AttributionModel.POSITION_BASED:
         return this.calculatePositionBasedAttribution(boostId, events, conversions);
       default:
         return this.calculateLinearAttribution(boostId, events, conversions);
@@ -87,9 +87,9 @@ export class AttributionService {
    */
   async getAttributionReport(boostId: string): Promise<AttributionReport> {
     // Calculate attribution using all models
-    const linearResult = await this.calculateAttribution(boostId, 'LINEAR');
-    const timeDecayResult = await this.calculateAttribution(boostId, 'TIME_DECAY');
-    const positionBasedResult = await this.calculateAttribution(boostId, 'POSITION_BASED');
+    const linearResult = await this.calculateAttribution(boostId, AttributionModel.LINEAR);
+    const timeDecayResult = await this.calculateAttribution(boostId, AttributionModel.TIME_DECAY);
+    const positionBasedResult = await this.calculateAttribution(boostId, AttributionModel.POSITION_BASED);
 
     const results = [linearResult, timeDecayResult, positionBasedResult];
 
@@ -130,7 +130,7 @@ export class AttributionService {
     const totalTouchpoints = events.length;
 
     if (totalTouchpoints === 0) {
-      return this.getEmptyAttribution(boostId, 'LINEAR');
+      return this.getEmptyAttribution(boostId, AttributionModel.LINEAR);
     }
 
     const organicContribution = organicTouchpoints.length / totalTouchpoints;
@@ -139,11 +139,11 @@ export class AttributionService {
     // Calculate attributed conversions
     const attributedOrganic = Math.round(conversions.length * organicContribution);
     const attributedPaid = Math.round(conversions.length * paidContribution);
-    const attributedOverlap = conversions.length - attributedOrganic - attributedPaid;
+    const attributedOverlap = Math.max(0, conversions.length - attributedOrganic - attributedPaid);
 
     return {
       boostCampaignId: boostId,
-      model: 'LINEAR',
+      model: AttributionModel.LINEAR,
       organicContribution,
       paidContribution,
       overlapContribution: Math.max(0, 1 - organicContribution - paidContribution),
@@ -169,7 +169,7 @@ export class AttributionService {
     conversions: any[]
   ): Promise<AttributionResult> {
     if (events.length === 0) {
-      return this.getEmptyAttribution(boostId, 'TIME_DECAY');
+      return this.getEmptyAttribution(boostId, AttributionModel.TIME_DECAY);
     }
 
     // Half-life of 7 days
@@ -201,11 +201,11 @@ export class AttributionService {
 
     const attributedOrganic = Math.round(conversions.length * organicContribution);
     const attributedPaid = Math.round(conversions.length * paidContribution);
-    const attributedOverlap = conversions.length - attributedOrganic - attributedPaid;
+    const attributedOverlap = Math.max(0, conversions.length - attributedOrganic - attributedPaid);
 
     return {
       boostCampaignId: boostId,
-      model: 'TIME_DECAY',
+      model: AttributionModel.TIME_DECAY,
       organicContribution,
       paidContribution,
       overlapContribution: Math.max(0, 1 - organicContribution - paidContribution),
@@ -231,7 +231,7 @@ export class AttributionService {
     conversions: any[]
   ): Promise<AttributionResult> {
     if (events.length === 0) {
-      return this.getEmptyAttribution(boostId, 'POSITION_BASED');
+      return this.getEmptyAttribution(boostId, AttributionModel.POSITION_BASED);
     }
 
     // 40% to first, 40% to last, 20% split among middle
@@ -289,11 +289,11 @@ export class AttributionService {
 
     const attributedOrganic = Math.round(conversions.length * organicContribution);
     const attributedPaid = Math.round(conversions.length * paidContribution);
-    const attributedOverlap = conversions.length - attributedOrganic - attributedPaid;
+    const attributedOverlap = Math.max(0, conversions.length - attributedOrganic - attributedPaid);
 
     return {
       boostCampaignId: boostId,
-      model: 'POSITION_BASED',
+      model: AttributionModel.POSITION_BASED,
       organicContribution,
       paidContribution,
       overlapContribution: Math.max(0, 1 - organicContribution - paidContribution),
