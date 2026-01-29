@@ -103,7 +103,7 @@ model User {
   identity Identity?
 
   // Multi-workspace management
-  workspaceFavorites   WorkspaceFavorite[]
+  workspaceFavorites    WorkspaceFavorite[]
   workspaceRecentAccess WorkspaceRecentAccess[]
 
   @@map("users")
@@ -2140,6 +2140,9 @@ model SocialPost {
   // Relations (many-to-many with accounts via join table)
   postAccounts SocialPostAccount[]
 
+  // A/B testing
+  abTests SocialPostAbTest[]
+
   // Content Library
   assets PostAsset[]
 
@@ -2215,6 +2218,56 @@ model SocialMetricAnomaly {
   @@index([detectedAt])
   @@index([severity])
   @@map("social_metric_anomalies")
+}
+
+/// A/B testing for social media posts
+/// Allows testing different variations of content
+/// Resolves #840
+model SocialPostAbTest {
+  id                String       @id @default(cuid())
+  workspaceId       String
+  name              String
+  status            AbTestStatus @default(DRAFT)
+  originalPostId    String
+  significanceLevel Float        @default(0.95)
+  winnerVariantId   String?
+
+  // Relations
+  workspace    Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  originalPost SocialPost                @relation(fields: [originalPostId], references: [id], onDelete: Cascade)
+  variants     SocialPostAbTestVariant[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([originalPostId])
+  @@map("social_post_ab_tests")
+}
+
+/// Individual variant in an A/B test
+/// Tracks performance metrics for comparison
+/// Resolves #840
+model SocialPostAbTestVariant {
+  id            String @id @default(cuid())
+  testId        String
+  content       String @db.Text
+  variationType String // "headline", "cta", "emoji", "hashtags", "tone"
+
+  // Performance metrics
+  impressions Int @default(0)
+  engagements Int @default(0)
+  clicks      Int @default(0)
+
+  // Relations
+  test SocialPostAbTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([testId])
+  @@map("social_post_ab_test_variants")
 }
 
 enum AgentProvider {
@@ -2380,6 +2433,7 @@ model Workspace {
   brandProfile           BrandProfile?
   contentRewrites        ContentRewrite[]
   socialAccounts         SocialAccount[]
+  abTests                SocialPostAbTest[]
   scheduledPosts         ScheduledPost[]
   inboxItems             InboxItem[]
   // Comprehensive audit logs
@@ -2429,8 +2483,8 @@ model Workspace {
   connectionTags ConnectionTag[]
 
   // Multi-workspace management
-  favorites     WorkspaceFavorite[]
-  recentAccess  WorkspaceRecentAccess[]
+  favorites    WorkspaceFavorite[]
+  recentAccess WorkspaceRecentAccess[]
 
   @@index([slug])
   @@index([isPersonal])
