@@ -478,6 +478,7 @@ describe("workflow-service", () => {
           data: {
             stepExecutions: {
               "step-1": {
+                stepId: "step-1",
                 status: "COMPLETED",
               },
             },

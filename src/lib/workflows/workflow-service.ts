@@ -520,9 +520,11 @@ function mapRunToData(run: RunWithLogs): WorkflowRunData {
     status: run.status,
     startedAt: run.startedAt,
     endedAt: run.endedAt,
-    stepExecutions: run.stepExecutions as Record<string, StepExecutionState> | undefined,
+    stepExecutions: run.stepExecutions as unknown as
+      | Record<string, StepExecutionState>
+      | undefined,
     triggerType: run.triggerType as WorkflowRunData["triggerType"],
-    triggerData: run.triggerData as Record<string, unknown> | undefined,
+    triggerData: run.triggerData as unknown as Record<string, unknown> | undefined,
     logs: run.logs.map((log) => ({
       stepId: log.stepId ?? undefined,
       stepStatus: log.stepStatus as WorkflowRunLogEntry["stepStatus"],
@@ -575,15 +577,18 @@ export async function updateStepExecution(
     throw new Error(`Workflow run ${runId} not found`);
   }
 
-  const executions = (run.stepExecutions as Record<string, StepExecutionState>) ?? {};
+  const executions =
+    (run.stepExecutions as unknown as Record<string, StepExecutionState>) ?? {};
+  const currentExecution = executions[stepId] ?? { stepId, status: "PENDING" as StepRunStatus };
   executions[stepId] = {
-    ...executions[stepId],
+    ...currentExecution,
     ...update,
+    stepId, // Ensure stepId is always present
   };
 
   await prisma.workflowRun.update({
     where: { id: runId },
-    data: { stepExecutions: executions as Prisma.InputJsonValue },
+    data: { stepExecutions: executions as unknown as Prisma.InputJsonValue },
   });
 }
 
@@ -605,5 +610,5 @@ export async function getStepExecutions(
     throw new Error(`Workflow run ${runId} not found`);
   }
 
-  return (run.stepExecutions as Record<string, StepExecutionState>) ?? {};
+  return (run.stepExecutions as unknown as Record<string, StepExecutionState>) ?? {};
 }
