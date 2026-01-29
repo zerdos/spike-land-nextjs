@@ -3961,10 +3961,19 @@ model WorkflowRun {
   status     WorkflowRunStatus
   startedAt  DateTime          @default(now())
   endedAt    DateTime?
+
+  // Enhanced execution tracking
+  stepExecutions Json? // Map<stepId, { status, startedAt, endedAt, output, error }>
+
+  // Trigger context
+  triggerType String? // "schedule" | "webhook" | "event" | "manual"
+  triggerData Json? // Payload/context from trigger
+
   logs       WorkflowRunLog[]
 
   @@index([workflowId])
   @@index([status])
+  @@index([triggerType])
   @@map("workflow_runs")
 }
 
