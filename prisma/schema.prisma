@@ -280,6 +280,7 @@ model App {
   images             AppImage[] // Uploaded images for this app
   codeVersions       AppCodeVersion[] // Code snapshots for undo/restore
   sandboxJobs        SandboxJob[] // Vercel Sandbox execution jobs
+  workspaceLink      WorkspaceApp? // Link to workspace (campaign tools)
 
   @@index([userId])
   @@index([forkedFrom])
@@ -2494,9 +2495,34 @@ model Workspace {
   favorites    WorkspaceFavorite[]
   recentAccess WorkspaceRecentAccess[]
 
+  // My-Apps integration (campaign tools)
+  apps WorkspaceApp[]
+
   @@index([slug])
   @@index([isPersonal])
   @@map("workspaces")
+}
+
+// ============================================================================
+// Workspace Apps (My-Apps Integration for Campaign Tools)
+// ============================================================================
+
+model WorkspaceApp {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  appId          String   @unique // One-to-one: each app belongs to max 1 workspace
+  purpose        String? // "link-in-bio", "campaign-landing", "poll", "contest"
+  linkedCampaign String? // Campaign ID or name for tracking
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  app       App       @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([appId])
+  @@index([purpose])
+  @@map("workspace_apps")
 }
 
 // ============================================================================
