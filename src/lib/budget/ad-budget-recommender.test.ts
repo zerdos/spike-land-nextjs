@@ -3,23 +3,35 @@
  * Issue: #567 (ORB-063)
  */
 
-import { describe, it, expect } from 'vitest';
-import { AdBudgetRecommender } from './ad-budget-recommender';
+import { describe, expect, it } from "vitest";
+import { AdBudgetRecommender } from "./ad-budget-recommender";
 
-describe('AdBudgetRecommender', () => {
+describe("AdBudgetRecommender", () => {
   const recommender = new AdBudgetRecommender();
 
   const mockTargeting = {
-    platform: 'FACEBOOK' as const,
+    platform: "FACEBOOK" as const,
     options: [
-      { type: 'demographic' as const, key: 'age', value: '25-34', confidenceScore: 0.8, source: 'ai' as const },
-      { type: 'interest' as const, key: 'interest', value: 'technology', confidenceScore: 0.7, source: 'ai' as const },
+      {
+        type: "demographic" as const,
+        key: "age",
+        value: "25-34",
+        confidenceScore: 0.8,
+        source: "ai" as const,
+      },
+      {
+        type: "interest" as const,
+        key: "interest",
+        value: "technology",
+        confidenceScore: 0.7,
+        source: "ai" as const,
+      },
     ],
     audienceSize: { min: 100000, max: 500000 },
     generatedAt: new Date(),
   };
 
-  it('should generate budget recommendation', async () => {
+  it("should generate budget recommendation", async () => {
     const result = await recommender.recommendBudget({
       reachGoal: 10000,
       campaignDuration: 7,
@@ -34,7 +46,7 @@ describe('AdBudgetRecommender', () => {
     expect(result.projectedReach.max).toBeGreaterThan(result.projectedReach.min);
   });
 
-  it('should calculate daily budget correctly', async () => {
+  it("should calculate daily budget correctly", async () => {
     const result = await recommender.recommendBudget({
       reachGoal: 10000,
       campaignDuration: 10,
@@ -46,9 +58,9 @@ describe('AdBudgetRecommender', () => {
     expect(result.weekly).toBeCloseTo(result.daily * 7, 1);
   });
 
-  it('should provide projected reach range', async () => {
+  it("should provide projected reach range", async () => {
     const reachGoal = 10000;
-    
+
     const result = await recommender.recommendBudget({
       reachGoal,
       campaignDuration: 7,
@@ -61,7 +73,7 @@ describe('AdBudgetRecommender', () => {
     expect(result.projectedReach.max).toBeCloseTo(reachGoal * 1.2, -2);
   });
 
-  it('should calculate confidence level based on targeting', async () => {
+  it("should calculate confidence level based on targeting", async () => {
     const result = await recommender.recommendBudget({
       reachGoal: 10000,
       campaignDuration: 7,
@@ -73,7 +85,7 @@ describe('AdBudgetRecommender', () => {
     expect(result.confidenceLevel).toBeLessThanOrEqual(1);
   });
 
-  it('should generate rationale', async () => {
+  it("should generate rationale", async () => {
     const result = await recommender.recommendBudget({
       reachGoal: 10000,
       campaignDuration: 7,
@@ -81,11 +93,11 @@ describe('AdBudgetRecommender', () => {
       organicEngagementRate: 0.05,
     });
 
-    expect(result.rationale).toContain('10,000');
-    expect(result.rationale).toContain('7 days');
+    expect(result.rationale).toContain("10,000");
+    expect(result.rationale).toContain("7 days");
   });
 
-  it('should handle zero targeting options', async () => {
+  it("should handle zero targeting options", async () => {
     const emptyTargeting = {
       ...mockTargeting,
       options: [],

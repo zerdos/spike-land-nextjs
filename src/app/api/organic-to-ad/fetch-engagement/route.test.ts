@@ -3,11 +3,11 @@
  * Issue: #567 (ORB-063)
  */
 
-import { describe, it, expect, vi } from 'vitest';
-import { POST } from './route';
+import { describe, expect, it, vi } from "vitest";
+import { POST } from "./route";
 
 // Mock the engagement fetcher factory
-vi.mock('@/lib/social/platform-api/engagement-fetcher-factory', () => ({
+vi.mock("@/lib/social/platform-api/engagement-fetcher-factory", () => ({
   EngagementFetcherFactory: {
     getFetcher: vi.fn(() => ({
       fetchEngagement: vi.fn().mockResolvedValue({
@@ -19,23 +19,23 @@ vi.mock('@/lib/social/platform-api/engagement-fetcher-factory', () => ({
         engagementRate: 0.15,
       }),
       fetchAudienceInsights: vi.fn().mockResolvedValue({
-        ageRanges: { '18-24': 0.3, '25-34': 0.5 },
-        genders: { 'male': 0.4, 'female': 0.6 },
-        locations: { 'US': 0.7 },
-        interests: ['technology'],
+        ageRanges: { "18-24": 0.3, "25-34": 0.5 },
+        genders: { "male": 0.4, "female": 0.6 },
+        locations: { "US": 0.7 },
+        interests: ["technology"],
       }),
     })),
   },
 }));
 
-describe('POST /api/organic-to-ad/fetch-engagement', () => {
-  it('should return engagement data for valid request', async () => {
-    const request = new Request('http://localhost:3000/api/organic-to-ad/fetch-engagement', {
-      method: 'POST',
+describe("POST /api/organic-to-ad/fetch-engagement", () => {
+  it("should return engagement data for valid request", async () => {
+    const request = new Request("http://localhost:3000/api/organic-to-ad/fetch-engagement", {
+      method: "POST",
       body: JSON.stringify({
-        postId: 'test-post',
-        platform: 'FACEBOOK',
-        accessToken: 'test-token',
+        postId: "test-post",
+        platform: "FACEBOOK",
+        accessToken: "test-token",
       }),
     });
 
@@ -48,10 +48,10 @@ describe('POST /api/organic-to-ad/fetch-engagement', () => {
     expect(data.data.insights).toBeDefined();
   });
 
-  it('should return 400 for missing fields', async () => {
-    const request = new Request('http://localhost:3000/api/organic-to-ad/fetch-engagement', {
-      method: 'POST',
-      body: JSON.stringify({ postId: 'test' }),
+  it("should return 400 for missing fields", async () => {
+    const request = new Request("http://localhost:3000/api/organic-to-ad/fetch-engagement", {
+      method: "POST",
+      body: JSON.stringify({ postId: "test" }),
     });
 
     const response = await POST(request);

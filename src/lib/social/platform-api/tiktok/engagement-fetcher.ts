@@ -3,12 +3,12 @@
  * Issue: #567 (ORB-063)
  */
 
-import type { PlatformEngagementFetcher, EngagementDataResponse, AudienceInsights } from '../types';
+import type { AudienceInsights, EngagementDataResponse, PlatformEngagementFetcher } from "../types";
 
 export class TikTokEngagementFetcher implements PlatformEngagementFetcher {
-  platform = 'TIKTOK' as const;
+  platform = "TIKTOK" as const;
 
-  async fetchEngagement(postId: string, accessToken: string): Promise<EngagementDataResponse> {
+  async fetchEngagement(_postId: string, _accessToken: string): Promise<EngagementDataResponse> {
     // TODO: Implement TikTok for Business API integration
     return {
       likes: 0,
@@ -20,7 +20,7 @@ export class TikTokEngagementFetcher implements PlatformEngagementFetcher {
     };
   }
 
-  async fetchAudienceInsights(postId: string, accessToken: string): Promise<AudienceInsights> {
+  async fetchAudienceInsights(_postId: string, _accessToken: string): Promise<AudienceInsights> {
     // TODO: Implement TikTok Audience Insights
     return {
       ageRanges: {},

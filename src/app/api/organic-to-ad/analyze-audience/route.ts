@@ -3,9 +3,9 @@
  * Issue: #567 (ORB-063)
  */
 
-import { NextResponse } from 'next/server';
-import { AudienceAnalyzer } from '@/lib/ai/audience-analyzer';
-import type { SocialPlatform } from '@/lib/types/organic-to-ad';
+import { AudienceAnalyzer } from "@/lib/ai/audience-analyzer";
+import type { SocialPlatform } from "@/lib/types/organic-to-ad";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -13,15 +13,15 @@ export async function POST(request: Request) {
 
     if (!platform || !engagementData) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+        { error: "Missing required fields" },
+        { status: 400 },
       );
     }
 
     const analyzer = new AudienceAnalyzer();
     const targeting = await analyzer.analyzeAudience(
       platform as SocialPlatform,
-      engagementData
+      engagementData,
     );
 
     return NextResponse.json({
@@ -30,8 +30,11 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to analyze audience', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+      {
+        error: "Failed to analyze audience",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
     );
   }
 }

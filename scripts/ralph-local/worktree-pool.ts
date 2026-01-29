@@ -19,7 +19,7 @@
  * This follows the same patterns as worktree-manager.ts which was reviewed.
  */
 
-import { exec, execSync, spawn } from "child_process";
+import { exec, execSync, spawn as _spawn } from "child_process";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync } from "fs";
 import { basename, join } from "path";
 import { promisify } from "util";

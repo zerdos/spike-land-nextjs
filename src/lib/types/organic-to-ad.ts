@@ -8,11 +8,11 @@
 // Platform Types
 // ============================================================================
 
-export type SocialPlatform = 'FACEBOOK' | 'INSTAGRAM' | 'TWITTER' | 'LINKEDIN' | 'TIKTOK';
+export type SocialPlatform = "FACEBOOK" | "INSTAGRAM" | "TWITTER" | "LINKEDIN" | "TIKTOK";
 
-export type AdPlacement = 'FEED' | 'STORY' | 'REELS' | 'EXPLORE';
+export type AdPlacement = "FEED" | "STORY" | "REELS" | "EXPLORE";
 
-export type CreativeFormat = 'IMAGE' | 'VIDEO' | 'CAROUSEL' | 'COLLECTION';
+export type CreativeFormat = "IMAGE" | "VIDEO" | "CAROUSEL" | "COLLECTION";
 
 // ============================================================================
 // Engagement Data Types
@@ -50,11 +50,11 @@ export interface PlatformEngagementResponse {
 // ============================================================================
 
 export interface TargetingOption {
-  type: 'demographic' | 'interest' | 'behavior' | 'lookalike';
+  type: "demographic" | "interest" | "behavior" | "lookalike";
   key: string;
   value: string | number;
   confidenceScore: number; // 0-1
-  source: 'ai' | 'manual' | 'platform';
+  source: "ai" | "manual" | "platform";
 }
 
 export interface TargetingSuggestion {
@@ -84,7 +84,7 @@ export interface CreativeVariant {
   };
   media: {
     url: string;
-    type: 'image' | 'video';
+    type: "image" | "video";
     width: number;
     height: number;
     aspectRatio: string;
@@ -157,7 +157,7 @@ export interface OrganicToAdConversionRequest {
 export interface OrganicToAdConversionResponse {
   conversionId: string;
   campaignId: string;
-  status: 'pending' | 'active' | 'failed';
+  status: "pending" | "active" | "failed";
   platformCampaignId?: string;
   error?: string;
   createdAt: Date;
@@ -203,21 +203,21 @@ export interface OrganicToAdError {
 // ============================================================================
 
 export enum ConversionStatus {
-  DRAFT = 'DRAFT',
-  FETCHING_ENGAGEMENT = 'FETCHING_ENGAGEMENT',
-  ANALYZING_AUDIENCE = 'ANALYZING_AUDIENCE',
-  ADAPTING_CREATIVE = 'ADAPTING_CREATIVE',
-  READY_FOR_LAUNCH = 'READY_FOR_LAUNCH',
-  LAUNCHING = 'LAUNCHING',
-  ACTIVE = 'ACTIVE',
-  PAUSED = 'PAUSED',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
+  DRAFT = "DRAFT",
+  FETCHING_ENGAGEMENT = "FETCHING_ENGAGEMENT",
+  ANALYZING_AUDIENCE = "ANALYZING_AUDIENCE",
+  ADAPTING_CREATIVE = "ADAPTING_CREATIVE",
+  READY_FOR_LAUNCH = "READY_FOR_LAUNCH",
+  LAUNCHING = "LAUNCHING",
+  ACTIVE = "ACTIVE",
+  PAUSED = "PAUSED",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
 }
 
 export enum EngagerDataStatus {
-  PENDING = 'PENDING',
-  FETCHING = 'FETCHING',
-  COMPLETE = 'COMPLETE',
-  FAILED = 'FAILED',
+  PENDING = "PENDING",
+  FETCHING = "FETCHING",
+  COMPLETE = "COMPLETE",
+  FAILED = "FAILED",
 }

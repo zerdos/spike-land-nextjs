@@ -4,27 +4,27 @@
  * Part of #567: ORB-063 - Organic-to-Ad Derivation
  */
 
-import type { EngagementData, EngagerDemographics } from "@spike-npm-land/shared/types";
 import type { SocialPlatform } from "@/lib/types/organic-to-ad";
-
-interface IEngagementFetcher {
-  fetchEngagement(postId: string, accessToken: string): Promise<EngagementData>;
-  fetchAudienceInsights(postId: string, accessToken: string): Promise<EngagerDemographics>;
-}
-
-class BaseFetcher implements IEngagementFetcher {
-  async fetchEngagement(postId: string, accessToken: string): Promise<EngagementData> {
-    throw new Error("Not implemented");
-  }
-  
-  async fetchAudienceInsights(postId: string, accessToken: string): Promise<EngagerDemographics> {
-    throw new Error("Not implemented");
-  }
-}
+import { FacebookEngagementFetcher } from "./facebook/engagement-fetcher";
+import { LinkedInEngagementFetcher } from "./linkedin/engagement-fetcher";
+import { TikTokEngagementFetcher } from "./tiktok/engagement-fetcher";
+import { TwitterEngagementFetcher } from "./twitter/engagement-fetcher";
+import type { PlatformEngagementFetcher } from "./types";
 
 export class EngagementFetcherFactory {
-  static getFetcher(platform: SocialPlatform): IEngagementFetcher {
-    // TODO: Return platform-specific fetchers
-    return new BaseFetcher();
+  static getFetcher(platform: SocialPlatform): PlatformEngagementFetcher {
+    switch (platform) {
+      case "FACEBOOK":
+      case "INSTAGRAM":
+        return new FacebookEngagementFetcher();
+      case "TWITTER":
+        return new TwitterEngagementFetcher();
+      case "LINKEDIN":
+        return new LinkedInEngagementFetcher();
+      case "TIKTOK":
+        return new TikTokEngagementFetcher();
+      default:
+        throw new Error(`Unsupported platform: ${platform}`);
+    }
   }
 }

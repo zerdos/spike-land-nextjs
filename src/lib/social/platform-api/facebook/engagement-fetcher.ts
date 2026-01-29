@@ -4,29 +4,36 @@
  * Part of #567: ORB-063 - Organic-to-Ad Derivation
  */
 
-import type {
-  EngagementData,
-  EngagerDemographics,
-} from "@spike-npm-land/shared/types";
-import type { SocialPlatform } from "@prisma/client";
-import logger from "@/lib/logger";
+import type { AudienceInsights, EngagementDataResponse, PlatformEngagementFetcher } from "../types";
 
-export interface FacebookEngagementFetcherOptions {
-  accessToken: string;
-  postId: string;
-  platform: SocialPlatform;
-}
+export class FacebookEngagementFetcher implements PlatformEngagementFetcher {
+  platform = "FACEBOOK" as const;
 
-export async function fetchFacebookEngagement(
-  options: FacebookEngagementFetcherOptions,
-): Promise<{
-  engagementData: EngagementData;
-  demographics?: EngagerDemographics;
-}> {
-  logger.info("[Facebook Engagement] Fetching engagement data", {
-    platform: options.platform,
-    postId: options.postId,
-  });
+  async fetchEngagement(
+    _postId: string,
+    _accessToken: string,
+  ): Promise<EngagementDataResponse> {
+    // TODO: Implement Facebook Graph API integration
+    return {
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      impressions: 0,
+      reach: 0,
+      engagementRate: 0,
+    };
+  }
 
-  throw new Error("Facebook engagement fetcher not yet implemented");
+  async fetchAudienceInsights(
+    _postId: string,
+    _accessToken: string,
+  ): Promise<AudienceInsights> {
+    // TODO: Implement Facebook Audience Insights
+    return {
+      ageRanges: {},
+      genders: {},
+      locations: {},
+      interests: [],
+    };
+  }
 }

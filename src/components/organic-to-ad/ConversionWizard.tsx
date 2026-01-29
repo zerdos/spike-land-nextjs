@@ -3,9 +3,9 @@
  * Issue: #567 (ORB-063)
  */
 
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
 interface ConversionWizardProps {
   postId: string;
@@ -32,10 +32,10 @@ export function ConversionWizard({ postId, onComplete }: ConversionWizardProps) 
     // 3. Adapt creative
     // 4. Recommend budget
     // 5. Create campaign
-    
+
     setTimeout(() => {
       setLoading(false);
-      onComplete?.('mock-conversion-id');
+      onComplete?.("mock-conversion-id");
     }, 1000);
   };
 
@@ -95,7 +95,7 @@ export function ConversionWizard({ postId, onComplete }: ConversionWizardProps) 
           <p>Review your campaign settings</p>
           <button onClick={handlePrevious}>Back</button>
           <button onClick={handleLaunch} disabled={loading}>
-            {loading ? 'Launching...' : 'Launch Campaign'}
+            {loading ? "Launching..." : "Launch Campaign"}
           </button>
         </div>
       )}

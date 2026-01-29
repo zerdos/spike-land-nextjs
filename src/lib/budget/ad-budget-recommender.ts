@@ -4,7 +4,7 @@
  * Issue: #567 (ORB-063)
  */
 
-import type { BudgetRecommendation, TargetingSuggestion } from '@/lib/types/organic-to-ad';
+import type { BudgetRecommendation, TargetingSuggestion } from "@/lib/types/organic-to-ad";
 
 export interface BudgetParams {
   reachGoal: number;
@@ -20,7 +20,7 @@ export class AdBudgetRecommender {
   async recommendBudget(params: BudgetParams): Promise<BudgetRecommendation> {
     const estimatedCPM = this.estimateCPM(params.targeting);
     const estimatedCTR = this.estimateCTR(params.organicEngagementRate);
-    
+
     // Calculate budget needed to reach goal
     const impressionsNeeded = params.reachGoal * 1.2; // 20% buffer for frequency
     const totalBudget = (impressionsNeeded / 1000) * estimatedCPM;
@@ -48,7 +48,7 @@ export class AdBudgetRecommender {
     // Base CPM varies by platform and targeting specificity
     const baseCPM = 10; // $10 baseline
     const targetingComplexity = targeting.options.length * 0.5;
-    
+
     return baseCPM + targetingComplexity;
   }
 
@@ -60,10 +60,10 @@ export class AdBudgetRecommender {
 
   private calculateConfidenceLevel(targeting: TargetingSuggestion): number {
     if (targeting.options.length === 0) return 0.3;
-    
+
     const avgConfidence = targeting.options.reduce(
       (sum, opt) => sum + opt.confidenceScore,
-      0
+      0,
     ) / targeting.options.length;
 
     return Math.min(0.95, avgConfidence);
@@ -72,8 +72,12 @@ export class AdBudgetRecommender {
   private generateRationale(
     params: BudgetParams,
     cpm: number,
-    ctr: number
+    ctr: number,
   ): string {
-    return `Budget calculated based on ${params.reachGoal.toLocaleString()} reach goal over ${params.campaignDuration} days. Estimated CPM: $${cpm.toFixed(2)}, estimated CTR: ${(ctr * 100).toFixed(2)}%. Targeting includes ${params.targeting.options.length} criteria for precision.`;
+    return `Budget calculated based on ${params.reachGoal.toLocaleString()} reach goal over ${params.campaignDuration} days. Estimated CPM: $${
+      cpm.toFixed(2)
+    }, estimated CTR: ${
+      (ctr * 100).toFixed(2)
+    }%. Targeting includes ${params.targeting.options.length} criteria for precision.`;
   }
 }

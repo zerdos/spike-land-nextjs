@@ -3,8 +3,8 @@
  * Issue: #567 (ORB-063)
  */
 
-import { NextResponse } from 'next/server';
-import { AdBudgetRecommender } from '@/lib/budget/ad-budget-recommender';
+import { AdBudgetRecommender } from "@/lib/budget/ad-budget-recommender";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -12,8 +12,8 @@ export async function POST(request: Request) {
 
     if (!reachGoal || !campaignDuration || !targeting || organicEngagementRate === undefined) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+        { error: "Missing required fields" },
+        { status: 400 },
       );
     }
 
@@ -31,8 +31,11 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to recommend budget', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+      {
+        error: "Failed to recommend budget",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
     );
   }
 }

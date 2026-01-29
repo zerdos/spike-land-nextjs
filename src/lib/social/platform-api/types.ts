@@ -3,7 +3,7 @@
  * Issue: #567 (ORB-063)
  */
 
-import type { SocialPlatform } from '@/lib/types/organic-to-ad';
+import type { SocialPlatform } from "@/lib/types/organic-to-ad";
 
 export interface EngagementDataResponse {
   likes: number;

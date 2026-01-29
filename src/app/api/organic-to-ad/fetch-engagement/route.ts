@@ -3,9 +3,9 @@
  * Issue: #567 (ORB-063)
  */
 
-import { NextResponse } from 'next/server';
-import { EngagementFetcherFactory } from '@/lib/social/platform-api/engagement-fetcher-factory';
-import type { SocialPlatform } from '@/lib/types/organic-to-ad';
+import { EngagementFetcherFactory } from "@/lib/social/platform-api/engagement-fetcher-factory";
+import type { SocialPlatform } from "@/lib/types/organic-to-ad";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -13,13 +13,13 @@ export async function POST(request: Request) {
 
     if (!postId || !platform || !accessToken) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+        { error: "Missing required fields" },
+        { status: 400 },
       );
     }
 
     const fetcher = EngagementFetcherFactory.getFetcher(platform as SocialPlatform);
-    
+
     const [engagement, insights] = await Promise.all([
       fetcher.fetchEngagement(postId, accessToken),
       fetcher.fetchAudienceInsights(postId, accessToken),
@@ -34,8 +34,11 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to fetch engagement data', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+      {
+        error: "Failed to fetch engagement data",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
     );
   }
 }

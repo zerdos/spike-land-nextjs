@@ -4,7 +4,7 @@
  * Issue: #567 (ORB-063)
  */
 
-import type { CreativeVariant, AdPlacement, CreativeFormat } from '@/lib/types/organic-to-ad';
+import type { AdPlacement, CreativeFormat, CreativeVariant } from "@/lib/types/organic-to-ad";
 
 export class FormatAdapter {
   /**
@@ -53,11 +53,11 @@ export class FormatAdapter {
         headline: optimizedText.headline,
         primaryText: optimizedText.primaryText,
         description: optimizedText.description,
-        callToAction: 'Learn More',
+        callToAction: "Learn More",
       },
       media: {
         url: params.mediaUrl,
-        type: 'image',
+        type: "image",
         width,
         height,
         aspectRatio,
@@ -76,16 +76,16 @@ export class FormatAdapter {
     height: number;
   } {
     switch (placement) {
-      case 'FEED':
-        return { aspectRatio: '1:1', width: 1080, height: 1080 };
-      case 'STORY':
-        return { aspectRatio: '9:16', width: 1080, height: 1920 };
-      case 'REELS':
-        return { aspectRatio: '9:16', width: 1080, height: 1920 };
-      case 'EXPLORE':
-        return { aspectRatio: '1:1', width: 1080, height: 1080 };
+      case "FEED":
+        return { aspectRatio: "1:1", width: 1080, height: 1080 };
+      case "STORY":
+        return { aspectRatio: "9:16", width: 1080, height: 1920 };
+      case "REELS":
+        return { aspectRatio: "9:16", width: 1080, height: 1920 };
+      case "EXPLORE":
+        return { aspectRatio: "1:1", width: 1080, height: 1080 };
       default:
-        return { aspectRatio: '1:1', width: 1080, height: 1080 };
+        return { aspectRatio: "1:1", width: 1080, height: 1080 };
     }
   }
 
@@ -95,7 +95,7 @@ export class FormatAdapter {
     description?: string;
   } {
     const maxLengths = this.getPlacementTextLimits(placement);
-    
+
     return {
       headline: content.slice(0, maxLengths.headline),
       primaryText: content.slice(0, maxLengths.primaryText),
@@ -111,7 +111,7 @@ export class FormatAdapter {
     // Platform-specific text limits
     return {
       headline: 40,
-      primaryText: placement === 'STORY' ? 125 : 280,
+      primaryText: placement === "STORY" ? 125 : 280,
       description: 90,
     };
   }

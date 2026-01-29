@@ -5,17 +5,19 @@
  * Part of #567: ORB-063 - Organic-to-Ad Derivation
  *
  * These types are shared between the web app and any other packages that need them.
+ * ConversionStatus values are aligned with Prisma schema as the single source of truth.
  */
 
 /**
  * Status of an organic-to-ad conversion
+ * Values aligned with Prisma enum ConversionStatus
  */
 export type ConversionStatus =
   | "DRAFT"
-  | "ANALYZING"
-  | "GENERATING_TARGETING"
+  | "FETCHING_ENGAGEMENT"
+  | "ANALYZING_AUDIENCE"
   | "ADAPTING_CREATIVE"
-  | "READY"
+  | "READY_FOR_LAUNCH"
   | "LAUNCHING"
   | "ACTIVE"
   | "PAUSED"

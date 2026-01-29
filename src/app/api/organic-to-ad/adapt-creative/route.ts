@@ -3,8 +3,8 @@
  * Issue: #567 (ORB-063)
  */
 
-import { NextResponse } from 'next/server';
-import { FormatAdapter } from '@/lib/creative/format-adapter';
+import { FormatAdapter } from "@/lib/creative/format-adapter";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -12,8 +12,8 @@ export async function POST(request: Request) {
 
     if (!postId || !content || !mediaUrl || !formats || !placements) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+        { error: "Missing required fields" },
+        { status: 400 },
       );
     }
 
@@ -32,8 +32,11 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to adapt creative', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+      {
+        error: "Failed to adapt creative",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
     );
   }
 }
