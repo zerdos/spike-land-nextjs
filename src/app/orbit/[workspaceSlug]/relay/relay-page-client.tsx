@@ -8,11 +8,17 @@
 "use client";
 
 import { ApprovalQueue } from "@/components/orbit/relay/approval-queue";
+import { PostComposer } from "@/components/orbit/composer";
+import type { PostData } from "@/components/orbit/composer";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, Clock, FileCheck, XCircle } from "lucide-react";
+import { CheckCircle, Clock, FileCheck, Plus, XCircle } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 interface RelayPageClientProps {
   workspaceSlug: string;
@@ -121,6 +127,8 @@ function MetricsCards({ metrics }: { metrics: RelayMetrics | undefined; }) {
 
 export function RelayPageClient({ workspaceSlug }: RelayPageClientProps) {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [composerOpen, setComposerOpen] = useState(false);
 
   const {
     data: drafts,
@@ -140,6 +148,16 @@ export function RelayPageClient({ workspaceSlug }: RelayPageClientProps) {
     queryClient.invalidateQueries({ queryKey: ["approvalQueue", workspaceSlug] });
   };
 
+  const handlePublish = async (data: PostData) => {
+    // TODO: Implement actual publish logic
+    // For now, just show a toast and close the dialog
+    toast({
+      title: "Post created",
+      description: `Post will be published to ${data.platforms.length} platform(s)`,
+    });
+    setComposerOpen(false);
+  };
+
   return (
     <div className="space-y-6" data-testid="relay-page">
       {/* Header */}
@@ -150,13 +168,22 @@ export function RelayPageClient({ workspaceSlug }: RelayPageClientProps) {
             Review and approve AI-generated response drafts
           </p>
         </div>
-        <Link
-          href={`/orbit/${workspaceSlug}/settings/approvals`}
-          className="text-sm text-primary hover:underline"
-          data-testid="settings-link"
-        >
-          Approval Settings
-        </Link>
+        <div className="flex items-center gap-4">
+          <Button
+            onClick={() => setComposerOpen(true)}
+            data-testid="create-post-button"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create Post
+          </Button>
+          <Link
+            href={`/orbit/${workspaceSlug}/settings/approvals`}
+            className="text-sm text-primary hover:underline"
+            data-testid="settings-link"
+          >
+            Approval Settings
+          </Link>
+        </div>
       </div>
 
       {/* Metrics */}
@@ -188,6 +215,19 @@ export function RelayPageClient({ workspaceSlug }: RelayPageClientProps) {
           />
         </CardContent>
       </Card>
+
+      {/* Post Composer Dialog */}
+      <Dialog open={composerOpen} onOpenChange={setComposerOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Post</DialogTitle>
+          </DialogHeader>
+          <PostComposer
+            workspaceSlug={workspaceSlug}
+            onPublish={handlePublish}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

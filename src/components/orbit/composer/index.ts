@@ -8,7 +8,9 @@
 export { ImageGenerationDialog } from "./ImageGenerationDialog";
 export { ImageEnhancementDialog } from "./ImageEnhancementDialog";
 export { BrandImagePromptBuilder, buildBrandAwarePrompt } from "./BrandImagePromptBuilder";
+export { PostComposer } from "./PostComposer";
 
 export type { ImageGenerationDialogProps } from "./ImageGenerationDialog";
 export type { ImageEnhancementDialogProps } from "./ImageEnhancementDialog";
 export type { BrandImagePromptBuilderProps } from "./BrandImagePromptBuilder";
+export type { PostComposerProps, PostData, ScheduledPostData } from "./PostComposer";
