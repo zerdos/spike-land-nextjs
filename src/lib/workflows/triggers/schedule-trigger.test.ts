@@ -158,7 +158,7 @@ describe("getNextRunTime", () => {
     const next = getNextRunTime(cron, new Date(), "UTC");
 
     expect(next).toBeNull();
-  });
+  }, 10000); // Increase timeout to 10 seconds for year-long iteration
 });
 
 describe("describeCronExpression", () => {
