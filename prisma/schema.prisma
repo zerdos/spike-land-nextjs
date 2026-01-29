@@ -105,6 +105,9 @@ model User {
   // Multi-workspace management
   workspaceFavorites    WorkspaceFavorite[]
   workspaceRecentAccess WorkspaceRecentAccess[]
+  // Multi-workspace management relations
+  reports               WorkspaceReport[]      @relation("UserReports")
+  bulkOperations        BulkOperation[]        @relation("UserBulkOperations")
 
   @@map("users")
 }
@@ -2491,6 +2494,9 @@ model Workspace {
   // Multi-workspace management
   favorites    WorkspaceFavorite[]
   recentAccess WorkspaceRecentAccess[]
+  // Multi-workspace management relations
+  inheritance       WorkspaceRoleInheritance? @relation("WorkspaceInheritance")
+  childWorkspaces   WorkspaceRoleInheritance[] @relation("ChildWorkspaces")
 
   @@index([slug])
   @@index([isPersonal])
@@ -2553,6 +2559,125 @@ model WorkspaceMember {
   @@index([userId])
   @@index([role])
   @@map("workspace_members")
+}
+
+// =============================================================================
+// Multi-Workspace Management Models
+// Resolves #533
+// =============================================================================
+
+model WorkspaceReport {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation("UserReports", fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+
+  workspaceIds String[]
+  metrics      String[]
+  dateRange    Json?
+
+  schedule     ReportSchedule @default(MANUAL)
+  scheduleFrequency String?
+  lastRunAt    DateTime?
+  nextRunAt    DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  instances   WorkspaceReportInstance[]
+
+  @@index([userId])
+  @@index([schedule])
+  @@map("workspace_reports")
+}
+
+model WorkspaceReportInstance {
+  id          String   @id @default(cuid())
+  reportId    String
+  report      WorkspaceReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  data        Json
+  format      ReportFormat @default(JSON)
+  fileUrl     String?
+
+  generatedAt DateTime @default(now())
+  period      Json
+
+  @@index([reportId, generatedAt(sort: Desc)])
+  @@map("workspace_report_instances")
+}
+
+model BulkOperation {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation("UserBulkOperations", fields: [userId], references: [id], onDelete: Cascade)
+
+  type        BulkOperationType
+  status      BulkOperationStatus @default(PENDING)
+
+  workspaceIds String[]
+  operationData Json
+
+  successCount  Int @default(0)
+  failureCount  Int @default(0)
+  totalCount    Int
+  results       Json[]
+
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, status])
+  @@index([status])
+  @@map("bulk_operations")
+}
+
+model WorkspaceRoleInheritance {
+  id              String   @id @default(cuid())
+  workspaceId     String   @unique
+  workspace       Workspace @relation("WorkspaceInheritance", fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  parentWorkspaceId String?
+  parentWorkspace   Workspace? @relation("ChildWorkspaces", fields: [parentWorkspaceId], references: [id], onDelete: SetNull)
+
+  inheritPermissions Boolean @default(true)
+  inheritMembers     Boolean @default(false)
+  roleMapping        Json?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([parentWorkspaceId])
+  @@map("workspace_role_inheritance")
+}
+
+enum ReportSchedule {
+  MANUAL
+  SCHEDULED
+}
+
+enum ReportFormat {
+  JSON
+  CSV
+  PDF
+}
+
+enum BulkOperationType {
+  SCHEDULE_POST
+  PUBLISH_POST
+  DELETE_POST
+  UPDATE_SETTINGS
+  INVITE_MEMBER
+}
+
+enum BulkOperationStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
 }
 
 // =============================================================================

@@ -1074,6 +1074,55 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
 }
+"workspace_reports" {
+  String id PK
+  String userId FK
+  String name
+  String description "nullable"
+  String workspaceIds
+  String metrics
+  Json dateRange "nullable"
+  ReportSchedule schedule
+  String scheduleFrequency "nullable"
+  DateTime lastRunAt "nullable"
+  DateTime nextRunAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"workspace_report_instances" {
+  String id PK
+  String reportId FK
+  Json data
+  ReportFormat format
+  String fileUrl "nullable"
+  DateTime generatedAt
+  Json period
+}
+"bulk_operations" {
+  String id PK
+  String userId FK
+  BulkOperationType type
+  BulkOperationStatus status
+  String workspaceIds
+  Json operationData
+  Int successCount
+  Int failureCount
+  Int totalCount
+  Json results
+  DateTime startedAt "nullable"
+  DateTime completedAt "nullable"
+  DateTime createdAt
+}
+"workspace_role_inheritance" {
+  String id PK
+  String workspaceId FK,UK
+  String parentWorkspaceId FK "nullable"
+  Boolean inheritPermissions
+  Boolean inheritMembers
+  Json roleMapping "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
 "connections" {
   String id PK
   String workspaceId FK
@@ -1909,6 +1958,11 @@ erDiagram
 "workspace_members" }o--|| "workspaces" : workspace
 "workspace_members" }o--|| "users" : user
 "workspace_members" }o--o| "users" : invitedBy
+"workspace_reports" }o--|| "users" : user
+"workspace_report_instances" }o--|| "workspace_reports" : report
+"bulk_operations" }o--|| "users" : user
+"workspace_role_inheritance" |o--|| "workspaces" : workspace
+"workspace_role_inheritance" }o--o| "workspaces" : parentWorkspace
 "connections" }o--|| "workspaces" : workspace
 "connections" |o--o| "identities" : identity
 "connection_platform_presence" }o--|| "connections" : connection
@@ -3346,6 +3400,67 @@ Properties as follows:
 - `invitedAt`:
 - `joinedAt`:
 - `invitedById`:
+- `createdAt`:
+- `updatedAt`:
+
+### `workspace_reports`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `name`:
+- `description`:
+- `workspaceIds`:
+- `metrics`:
+- `dateRange`:
+- `schedule`:
+- `scheduleFrequency`:
+- `lastRunAt`:
+- `nextRunAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `workspace_report_instances`
+
+Properties as follows:
+
+- `id`:
+- `reportId`:
+- `data`:
+- `format`:
+- `fileUrl`:
+- `generatedAt`:
+- `period`:
+
+### `bulk_operations`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `type`:
+- `status`:
+- `workspaceIds`:
+- `operationData`:
+- `successCount`:
+- `failureCount`:
+- `totalCount`:
+- `results`:
+- `startedAt`:
+- `completedAt`:
+- `createdAt`:
+
+### `workspace_role_inheritance`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `parentWorkspaceId`:
+- `inheritPermissions`:
+- `inheritMembers`:
+- `roleMapping`:
 - `createdAt`:
 - `updatedAt`:
 
