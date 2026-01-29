@@ -107,4 +107,142 @@ describe("GoogleAdsAllocatorClient", () => {
     expect(metrics.spend).toBe(100);
     expect(metrics.impressions).toBe(100);
   });
+
+  describe("updateCampaignBudget", () => {
+    beforeEach(() => {
+      // Mock global fetch
+      global.fetch = vi.fn();
+    });
+
+    it("should successfully update campaign budget", async () => {
+      const customerId = "1234567890";
+      const campaignId = "9876543210";
+      const newBudgetMicros = 5000000; // $50 in micros
+
+      // Mock the query to return budget resource name
+      mockMarketingClient.executeQuery.mockResolvedValueOnce([
+        {
+          campaign: {
+            campaignBudget: "customers/1234567890/campaignBudgets/111222333",
+          },
+        },
+      ]);
+
+      // Mock successful fetch response
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [{ resourceName: "customers/1234567890/campaignBudgets/111222333" }],
+        }),
+      });
+
+      await expect(
+        client.updateCampaignBudget(customerId, campaignId, newBudgetMicros),
+      ).resolves.toBeUndefined();
+
+      // Verify the mutation request
+      expect(global.fetch).toHaveBeenCalledWith(
+        `https://googleads.googleapis.com/v18/customers/${customerId}/campaignBudgets:mutate`,
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            Authorization: expect.stringContaining("Bearer"),
+          }),
+        }),
+      );
+    });
+
+    it("should handle rate limit errors", async () => {
+      const customerId = "1234567890";
+      const campaignId = "9876543210";
+
+      mockMarketingClient.executeQuery.mockResolvedValueOnce([
+        {
+          campaign: {
+            campaignBudget: "customers/1234567890/campaignBudgets/111222333",
+          },
+        },
+      ]);
+
+      // Mock rate limit response
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        statusText: "Too Many Requests",
+        json: async () => ({
+          error: { message: "Rate limit exceeded" },
+        }),
+      });
+
+      await expect(
+        client.updateCampaignBudget(customerId, campaignId, 1000000),
+      ).rejects.toThrow(/rate limit exceeded/i);
+    });
+
+    it("should handle permission errors", async () => {
+      const customerId = "1234567890";
+      const campaignId = "9876543210";
+
+      mockMarketingClient.executeQuery.mockResolvedValueOnce([
+        {
+          campaign: {
+            campaignBudget: "customers/1234567890/campaignBudgets/111222333",
+          },
+        },
+      ]);
+
+      // Mock permission denied response
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        statusText: "Forbidden",
+        json: async () => ({
+          error: { message: "Insufficient permissions" },
+        }),
+      });
+
+      await expect(
+        client.updateCampaignBudget(customerId, campaignId, 1000000),
+      ).rejects.toThrow(/permission denied/i);
+    });
+
+    it("should handle campaign not found", async () => {
+      const customerId = "1234567890";
+      const campaignId = "9876543210";
+
+      mockMarketingClient.executeQuery.mockResolvedValueOnce([]);
+
+      await expect(
+        client.updateCampaignBudget(customerId, campaignId, 1000000),
+      ).rejects.toThrow(/campaign.*not found/i);
+    });
+
+    it("should normalize customer ID (remove dashes)", async () => {
+      const customerIdWithDashes = "123-456-7890";
+      const normalizedId = "1234567890";
+      const campaignId = "9876543210";
+
+      mockMarketingClient.executeQuery.mockResolvedValueOnce([
+        {
+          campaign: {
+            campaignBudget: `customers/${normalizedId}/campaignBudgets/111222333`,
+          },
+        },
+      ]);
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: [] }),
+      });
+
+      await client.updateCampaignBudget(customerIdWithDashes, campaignId, 1000000);
+
+      // Verify fetch was called with normalized ID
+      expect(global.fetch).toHaveBeenCalledWith(
+        `https://googleads.googleapis.com/v18/customers/${normalizedId}/campaignBudgets:mutate`,
+        expect.any(Object),
+      );
+    });
+  });
 });
