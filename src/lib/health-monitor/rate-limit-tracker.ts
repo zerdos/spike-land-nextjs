@@ -5,8 +5,15 @@
  * Parses platform-specific headers and updates account health.
  *
  * Resolves #586: Implement Account Health Monitor
+ * Resolves #797: Type Safety Improvements
  */
 
+import type {
+  FacebookErrorResponse,
+  LinkedInErrorResponse,
+  SocialPlatformErrorResponse,
+} from "@/lib/types/common";
+import { isFacebookErrorResponse, isLinkedInErrorResponse } from "@/lib/types/common";
 import type { SocialPlatform } from "@prisma/client";
 
 import prisma from "@/lib/prisma";
@@ -45,7 +52,7 @@ export function parseTwitterRateLimits(headers: Headers): RateLimitInfo | null {
  */
 export function parseFacebookRateLimits(
   headers: Headers,
-  body?: unknown,
+  body?: FacebookErrorResponse,
 ): RateLimitInfo | null {
   // Try x-business-use-case-usage first
   const businessUsage = headers.get("x-business-use-case-usage");
@@ -115,14 +122,8 @@ export function parseFacebookRateLimits(
   }
 
   // Check response body for error info
-  if (body && typeof body === "object" && "error" in body) {
-    const error = (body as Record<string, unknown>)["error"];
-    if (
-      error &&
-      typeof error === "object" &&
-      "code" in error &&
-      (error as Record<string, unknown>)["code"] === 4
-    ) {
+  if (isFacebookErrorResponse(body)) {
+    if (body.error?.code === 4) {
       // Rate limit error
       return {
         remaining: 0,
@@ -142,16 +143,14 @@ export function parseFacebookRateLimits(
  */
 export function parseLinkedInRateLimits(
   _headers: Headers,
-  body?: unknown,
+  body?: LinkedInErrorResponse,
 ): RateLimitInfo | null {
   // LinkedIn doesn't provide standard rate limit headers
   // Check for rate limit error in response body
-  if (body && typeof body === "object") {
-    const errorBody = body as Record<string, unknown>;
+  if (isLinkedInErrorResponse(body)) {
     if (
-      errorBody["status"] === 429 ||
-      (errorBody["message"] &&
-        String(errorBody["message"]).toLowerCase().includes("rate limit"))
+      body.status === 429 ||
+      (body.message && body.message.toLowerCase().includes("rate limit"))
     ) {
       return {
         remaining: 0,
@@ -172,7 +171,7 @@ export function parseLinkedInRateLimits(
 export function parseRateLimitHeaders(
   platform: SocialPlatform,
   headers: Headers,
-  body?: unknown,
+  body?: SocialPlatformErrorResponse,
 ): RateLimitInfo | null {
   switch (platform) {
     case "TWITTER":
@@ -180,10 +179,18 @@ export function parseRateLimitHeaders(
 
     case "FACEBOOK":
     case "INSTAGRAM":
-      return parseFacebookRateLimits(headers, body);
+      // Narrow the type to FacebookErrorResponse for Facebook/Instagram
+      return parseFacebookRateLimits(
+        headers,
+        isFacebookErrorResponse(body) ? body : undefined,
+      );
 
     case "LINKEDIN":
-      return parseLinkedInRateLimits(headers, body);
+      // Narrow the type to LinkedInErrorResponse for LinkedIn
+      return parseLinkedInRateLimits(
+        headers,
+        isLinkedInErrorResponse(body) ? body : undefined,
+      );
 
     case "YOUTUBE":
       // YouTube uses quota-based limits, not easily tracked per-request
