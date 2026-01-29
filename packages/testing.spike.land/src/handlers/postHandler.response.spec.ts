@@ -128,9 +128,10 @@ describe("PostHandler - Response", () => {
   });
 
   describe("createStreamResponse", () => {
-    // SKIP REASON: Complex AI SDK streaming internals require mocking multiple
-    // async generators and stream transformations. Better covered by integration tests.
-    // TRACKING: Re-enable when AI SDK test utilities provide proper mocking support (#798)
+    // SKIP REASON: Complex AI SDK streaming internals require mocking async generators
+    // CATEGORY: intentional
+    // TRACKING: #798
+    // ACTION: keep - Better covered by integration tests
     it.skip("should create stream with correct parameters", async () => {
       const messages = [{ role: "user" as const, content: "Hello" }];
       const tools: McpTool[] = mockMcpServer.tools;

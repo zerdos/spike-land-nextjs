@@ -56,16 +56,6 @@ describe("PublicInstagramClient", () => {
 
       expect(result?.avatarUrl).toContain(handle);
     });
-
-    // SKIP REASON: NODE_ENV modification is not reliable in Vitest environment
-    // TRACKING: Test environment is already "test" so delays are disabled by default
-    it.skip("should not delay in test environment", async () => {
-      const startTime = Date.now();
-      await client.getAccountInfo("testuser");
-      const endTime = Date.now();
-
-      expect(endTime - startTime).toBeLessThan(100);
-    });
   });
 
   describe("getPosts", () => {
@@ -172,24 +162,6 @@ describe("PublicInstagramClient", () => {
         expect(timeDiff).toBeCloseTo(expectedDiff, -2);
       }
     });
-
-    // SKIP REASON: NODE_ENV modification is not reliable in Vitest environment
-    it.skip("should not delay in test environment", async () => {
-      const startTime = Date.now();
-      await client.getPosts("testuser");
-      const endTime = Date.now();
-
-      expect(endTime - startTime).toBeLessThan(100);
-    });
-
-    // SKIP REASON: CI env modification is not reliable in Vitest environment
-    it.skip("should not delay in CI environment", async () => {
-      const startTime = Date.now();
-      await client.getPosts("testuser");
-      const endTime = Date.now();
-
-      expect(endTime - startTime).toBeLessThan(100);
-    });
   });
 
   describe("validateAccount", () => {
@@ -217,17 +189,4 @@ describe("PublicInstagramClient", () => {
     });
   });
 
-  // SKIP REASON: NODE_ENV/CI modification is not reliable in Vitest environment
-  // Tests verify internal enableDelays flag which is automatically false in test
-  describe("enableDelays flag", () => {
-    it.skip("should be false in test environment", () => {
-      const testClient = new PublicInstagramClient();
-      expect((testClient as any).enableDelays).toBe(false);
-    });
-
-    it.skip("should be false in CI environment", () => {
-      const ciClient = new PublicInstagramClient();
-      expect((ciClient as any).enableDelays).toBe(false);
-    });
-  });
 });

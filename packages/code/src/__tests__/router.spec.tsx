@@ -93,6 +93,10 @@ describe("Router Configuration", () => {
     unmount(); // Make sure to unmount the component
   });
 
+  // SKIP REASON: TanStack Router parameter passing requires complex async router state mocking
+  // CATEGORY: unfinished
+  // TRACKING: #798
+  // ACTION: fix - Core routing with parameters should be unit tested
   it.skip("should handle live page route with parameters", async () => {
     await router.navigate({
       to: "/live/$codeSpace",
@@ -110,6 +114,10 @@ describe("Router Configuration", () => {
     unmount(); // Make sure to unmount the component
   });
 
+  // SKIP REASON: TanStack Router multiple navigation requires complex async router state mocking
+  // CATEGORY: unfinished
+  // TRACKING: #798
+  // ACTION: fix - Multiple route navigation should be unit tested
   it.skip("should handle multiple route navigations", async () => {
     await router.navigate({
       to: "/live/$codeSpace",

@@ -56,14 +56,6 @@ describe("PublicFacebookClient", () => {
 
       expect(result?.avatarUrl).toContain(handle);
     });
-
-    // SKIP REASON: NODE_ENV modification is not reliable in Vitest environment
-    it.skip("should not delay in test environment", async () => {
-      const startTime = Date.now();
-      await client.getAccountInfo("testpage");
-      const endTime = Date.now();
-      expect(endTime - startTime).toBeLessThan(100);
-    });
   });
 
   describe("getPosts", () => {
@@ -147,22 +139,6 @@ describe("PublicFacebookClient", () => {
         expect(post.content).toContain("#testing");
       });
     });
-
-    // SKIP REASON: NODE_ENV modification is not reliable in Vitest environment
-    it.skip("should not delay in test environment", async () => {
-      const startTime = Date.now();
-      await client.getPosts("testpage");
-      const endTime = Date.now();
-      expect(endTime - startTime).toBeLessThan(100);
-    });
-
-    // SKIP REASON: CI env modification is not reliable in Vitest environment
-    it.skip("should not delay in CI environment", async () => {
-      const startTime = Date.now();
-      await client.getPosts("testpage");
-      const endTime = Date.now();
-      expect(endTime - startTime).toBeLessThan(100);
-    });
   });
 
   describe("validateAccount", () => {
@@ -190,17 +166,4 @@ describe("PublicFacebookClient", () => {
     });
   });
 
-  // SKIP REASON: NODE_ENV/CI modification is not reliable in Vitest environment
-  // Tests verify internal enableDelays flag which is automatically false in test
-  describe("enableDelays flag", () => {
-    it.skip("should be false in test environment", () => {
-      const testClient = new PublicFacebookClient();
-      expect((testClient as any).enableDelays).toBe(false);
-    });
-
-    it.skip("should be false in CI environment", () => {
-      const ciClient = new PublicFacebookClient();
-      expect((ciClient as any).enableDelays).toBe(false);
-    });
-  });
 });
