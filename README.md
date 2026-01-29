@@ -1,8 +1,8 @@
-# Next.js 16 Application with Full Testing & CI/CD
+# Spike Land - AI-Powered Social Media Command Center
 
-A production-ready Next.js 16 application with TypeScript, Tailwind CSS 4,
-shadcn/ui components, comprehensive testing (100% coverage), and automated CI/CD
-pipeline.
+**Orbit** is your comprehensive social media management platform powered by AI. Manage multiple accounts, automate workflows, and optimize your social presence—all from one unified command center.
+
+Built on Next.js 16 with TypeScript, Tailwind CSS 4, shadcn/ui components, comprehensive testing (100% coverage), and automated CI/CD pipeline.
 
 [![CI/CD Pipeline](https://github.com/zerdos/spike-land-nextjs/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/zerdos/spike-land-nextjs/actions/workflows/ci-cd.yml)
 
@@ -17,6 +17,29 @@ pipeline.
 | GitHub    | [zerdos/spike-land-nextjs](https://github.com/zerdos/spike-land-nextjs) |
 
 ## ✨ Features
+
+### 🚀 Core Product: Orbit
+
+**AI-Powered Social Media Management**
+
+- 📊 **Pulse Dashboard** - Real-time health monitoring with anomaly detection
+- 📥 **Unified Inbox** - All mentions, DMs, and comments in one place with AI-powered triage
+- 💰 **Smart Allocator** - AI budget recommendations with autopilot mode
+- 🔍 **Competitive Scout** - Track competitors and benchmark your performance
+- 🧠 **Brand Brain** - Centralized brand voice and content guardrails
+- ✍️ **Relay** - AI draft generation with approval workflows
+- 🧪 **A/B Testing** - Data-driven content optimization
+
+**Platform Support**: Instagram, Facebook, Twitter/X, LinkedIn, TikTok
+
+📖 **[Full Orbit Documentation →](./docs/ORBIT_USER_GUIDE.md)** | 📖 **[A/B Testing Guide →](./docs/AB_TESTING_GUIDE.md)**
+
+### 🖼️ Supporting Tools
+
+- **Pixel** - AI image enhancement for social media content
+- **Vibe Coding** - Build landing pages and interactive content with AI agents
+
+### 🔧 Technical Stack
 
 - ⚡ **Next.js 16** - App Router with React Server Components
 - 🔷 **TypeScript** - Strict mode enabled
