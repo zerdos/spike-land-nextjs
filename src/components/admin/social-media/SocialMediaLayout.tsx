@@ -25,6 +25,7 @@ export type SocialPlatform =
   | "YOUTUBE"
   | "TIKTOK"
   | "DISCORD"
+  | "PINTEREST"
   | "REDDIT"
   | "DEVTO"
   | "HACKERNEWS"

@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { OrbitSidebar } from "./OrbitSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 // Mock usePathname
 vi.mock("next/navigation", () => ({
@@ -41,11 +42,13 @@ describe("OrbitSidebar", () => {
     );
 
     render(
-      <OrbitSidebar
-        userEmail="test@example.com"
-        userName="Test User"
-        workspaceSlug="test-workspace"
-      />,
+      <SidebarProvider>
+        <OrbitSidebar
+          userEmail="test@example.com"
+          userName="Test User"
+          workspaceSlug="test-workspace"
+        />
+      </SidebarProvider>,
     );
 
     expect(screen.getByTestId("workspace-switcher")).toBeInTheDocument();
@@ -58,11 +61,13 @@ describe("OrbitSidebar", () => {
     );
 
     render(
-      <OrbitSidebar
-        userEmail="test@example.com"
-        userName="Test User"
-        workspaceSlug="test-workspace"
-      />,
+      <SidebarProvider>
+        <OrbitSidebar
+          userEmail="test@example.com"
+          userName="Test User"
+          workspaceSlug="test-workspace"
+        />
+      </SidebarProvider>,
     );
 
     const notificationBell = screen.getByTestId("notification-bell");
@@ -77,11 +82,13 @@ describe("OrbitSidebar", () => {
     );
 
     render(
-      <OrbitSidebar
-        userEmail="test@example.com"
-        userName="Test User"
-        workspaceSlug="my-workspace"
-      />,
+      <SidebarProvider>
+        <OrbitSidebar
+          userEmail="test@example.com"
+          userName="Test User"
+          workspaceSlug="my-workspace"
+        />
+      </SidebarProvider>,
     );
 
     const links = [
@@ -116,15 +123,17 @@ describe("OrbitSidebar", () => {
     );
 
     render(
-      <OrbitSidebar
-        userEmail="test@example.com"
-        userName="Test User"
-        workspaceSlug="test-workspace"
-      />,
+      <SidebarProvider>
+        <OrbitSidebar
+          userEmail="test@example.com"
+          userName="Test User"
+          workspaceSlug="test-workspace"
+        />
+      </SidebarProvider>,
     );
 
     const activeLink = screen.getByRole("link", { name: /Dashboard/i });
-    expect(activeLink).toHaveClass("bg-primary");
+    expect(activeLink).toHaveAttribute("data-active", "true");
   });
 
   it("does not highlight inactive links", async () => {
@@ -134,16 +143,17 @@ describe("OrbitSidebar", () => {
     );
 
     render(
-      <OrbitSidebar
-        userEmail="test@example.com"
-        userName="Test User"
-        workspaceSlug="test-workspace"
-      />,
+      <SidebarProvider>
+        <OrbitSidebar
+          userEmail="test@example.com"
+          userName="Test User"
+          workspaceSlug="test-workspace"
+        />
+      </SidebarProvider>,
     );
 
     const inactiveLink = screen.getByRole("link", { name: /Settings/i });
-    expect(inactiveLink).not.toHaveClass("bg-primary");
-    expect(inactiveLink).toHaveClass("text-muted-foreground");
+    expect(inactiveLink).not.toHaveAttribute("data-active", "true");
   });
 
   it("renders user information", async () => {
@@ -153,11 +163,13 @@ describe("OrbitSidebar", () => {
     );
 
     render(
-      <OrbitSidebar
-        userEmail="test@example.com"
-        userName="Test User"
-        workspaceSlug="test-workspace"
-      />,
+      <SidebarProvider>
+        <OrbitSidebar
+          userEmail="test@example.com"
+          userName="Test User"
+          workspaceSlug="test-workspace"
+        />
+      </SidebarProvider>,
     );
 
     expect(screen.getByText("Test User")).toBeInTheDocument();
@@ -171,11 +183,13 @@ describe("OrbitSidebar", () => {
     );
 
     render(
-      <OrbitSidebar
-        userEmail="test@example.com"
-        userName="Test User"
-        workspaceSlug="test-workspace"
-      />,
+      <SidebarProvider>
+        <OrbitSidebar
+          userEmail="test@example.com"
+          userName="Test User"
+          workspaceSlug="test-workspace"
+        />
+      </SidebarProvider>,
     );
 
     const backLink = screen.getByRole("link", { name: "Back to App" });
@@ -190,11 +204,13 @@ describe("OrbitSidebar", () => {
     );
 
     render(
-      <OrbitSidebar
-        userEmail="user@example.com"
-        userName="Another User"
-        workspaceSlug="another-workspace"
-      />,
+      <SidebarProvider>
+        <OrbitSidebar
+          userEmail="user@example.com"
+          userName="Another User"
+          workspaceSlug="another-workspace"
+        />
+      </SidebarProvider>,
     );
 
     const streamsLink = screen.getByRole("link", { name: /Streams/i });
@@ -202,6 +218,6 @@ describe("OrbitSidebar", () => {
       "href",
       "/orbit/another-workspace/streams",
     );
-    expect(streamsLink).toHaveClass("bg-primary");
+    expect(streamsLink).toHaveAttribute("data-active", "true");
   });
 });

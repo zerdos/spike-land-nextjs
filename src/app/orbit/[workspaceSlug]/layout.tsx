@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { WorkspaceProvider } from "@/components/orbit/WorkspaceContext";
+import { SidebarWrapper } from "@/components/orbit/SidebarWrapper";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
@@ -26,16 +27,17 @@ export default async function OrbitWorkspaceLayout({
   return (
     <QueryProvider>
       <WorkspaceProvider>
-        <div className="min-h-screen bg-background">
-          <OrbitSidebar
-            userEmail={session.user.email}
-            userName={session.user.name}
-            workspaceSlug={workspaceSlug}
-          />
-          <main className="min-h-screen lg:pl-64">
-            <div className="container mx-auto p-4 lg:p-8">{children}</div>
-          </main>
-        </div>
+        <SidebarWrapper
+          sidebar={
+            <OrbitSidebar
+              userEmail={session.user.email}
+              userName={session.user.name}
+              workspaceSlug={workspaceSlug}
+            />
+          }
+        >
+          {children}
+        </SidebarWrapper>
       </WorkspaceProvider>
     </QueryProvider>
   );
