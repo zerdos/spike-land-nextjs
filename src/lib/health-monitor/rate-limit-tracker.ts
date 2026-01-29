@@ -71,8 +71,16 @@ export function parseFacebookRateLimits(
           isLimited: callCount >= 100,
         };
       }
-    } catch {
-      // Invalid JSON, try x-app-usage
+    } catch (error) {
+      // Facebook may return malformed JSON in x-business-use-case-usage header
+      // Fall through to try x-app-usage header instead
+      console.debug(
+        'Failed to parse x-business-use-case-usage header:',
+        error instanceof Error ? error.message : String(error),
+        'Header value:',
+        businessUsage
+      );
+      // Continue to try x-app-usage
     }
   }
 
@@ -93,8 +101,16 @@ export function parseFacebookRateLimits(
         resetAt: new Date(Date.now() + 60 * 60 * 1000),
         isLimited: callCount >= 100,
       };
-    } catch {
-      // Invalid JSON
+    } catch (error) {
+      // Facebook may return malformed JSON in x-app-usage header
+      // This is not critical - function will return null to indicate no rate limit data available
+      console.debug(
+        'Failed to parse x-app-usage header:',
+        error instanceof Error ? error.message : String(error),
+        'Header value:',
+        appUsage
+      );
+      // Return null below
     }
   }
 

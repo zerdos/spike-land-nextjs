@@ -1,7 +1,11 @@
 # Technical Debt Registry
 
-> Last updated: 2026-01-17
+> Last updated: 2026-01-28
 > Maintainer: Development Team
+
+> **Recent Stabilization Work**: See [TECH_STABILIZATION_SPRINT_1.md](./TECH_STABILIZATION_SPRINT_1.md)
+> and [TECH_STABILIZATION_SPRINT_2.md](./TECH_STABILIZATION_SPRINT_2.md) for completed and in-progress
+> debt reduction efforts.
 
 This document tracks identified technical debt across the spike.land codebase. Items are prioritized by impact and categorized by component.
 
