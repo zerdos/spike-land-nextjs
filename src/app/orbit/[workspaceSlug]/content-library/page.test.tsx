@@ -25,8 +25,15 @@ vi.mock("@/hooks/use-assets", () => ({
     },
     isLoading: false,
   }),
+  useAsset: () => ({ data: null, isLoading: false }),
   useAssetFolders: () => ({ data: [] }),
   useUploadAsset: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateAsset: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteAsset: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useAnalyzeAsset: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useCreateFolder: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useRenameFolder: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteFolder: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 describe("ContentLibraryPage", () => {

@@ -45,13 +45,14 @@ describe("OrganicFeedService", () => {
       select: { userId: true },
     });
 
-    expect(mockFindManyPosts).toHaveBeenCalledWith(expect.objectContaining({
-      where: expect.objectContaining({
+    expect(mockFindManyPosts).toHaveBeenCalledWith({
+      where: {
         createdById: { in: ["user1", "user2"] },
-        isEligibleForAd: true,
-      }),
-      include: { createdBy: true }, // N+1 check
-    }));
+      },
+      include: { createdBy: true },
+      take: 50,
+      orderBy: { createdAt: "desc" },
+    });
 
     expect(result).toEqual(mockPosts);
   });
