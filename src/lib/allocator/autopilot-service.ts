@@ -1,5 +1,6 @@
+import { decryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { type AllocatorPlatform, Prisma } from "@prisma/client";
 import { FeatureFlagService } from "../feature-flags/feature-flag-service";
 import { allocatorAuditLogger } from "./allocator-audit-logger";
 import { AutopilotAnomalyIntegration } from "./autopilot-anomaly-integration";
@@ -9,6 +10,8 @@ import type {
   AutopilotRecommendation,
   UpdateAutopilotConfigInput,
 } from "./autopilot-types";
+import { FacebookMarketingApiClient } from "./facebook-ads/client";
+import { GoogleAdsAllocatorClient } from "./google-ads/client";
 import { GuardrailAlertService } from "./guardrail-alert-service";
 
 const Decimal = Prisma.Decimal;
@@ -419,8 +422,6 @@ export class AutopilotService {
       }).catch((e) => console.error("Audit log error:", e));
     }
 
-    // Execute Change (Simulated for now, would call platform API)
-    // TODO(#804): Integrate with Facebook/Google Ads API to actually update campaign budgets
     const budgetChange = recommendation.suggestedBudget -
       recommendation.currentBudget;
 
@@ -438,6 +439,88 @@ export class AutopilotService {
         metadata: { triggerSource },
       },
     });
+
+    // Fetch campaign to get platform info
+    const campaign = await prisma.allocatorCampaign.findUnique({
+      where: { id: recommendation.campaignId },
+      select: {
+        platform: true,
+        platformCampaignId: true,
+        workspaceId: true,
+      },
+    });
+
+    if (!campaign) {
+      await prisma.allocatorAutopilotExecution.update({
+        where: { id: execution.id },
+        data: {
+          status: "FAILED",
+          metadata: {
+            error: `Campaign ${recommendation.campaignId} not found`,
+            triggerSource,
+          },
+        },
+      });
+      throw new Error(`Campaign ${recommendation.campaignId} not found`);
+    }
+
+    if (!campaign.platformCampaignId) {
+      await prisma.allocatorAutopilotExecution.update({
+        where: { id: execution.id },
+        data: {
+          status: "FAILED",
+          metadata: {
+            error: `Campaign ${recommendation.campaignId} has no platformCampaignId`,
+            triggerSource,
+          },
+        },
+      });
+      throw new Error(`Campaign ${recommendation.campaignId} has no platformCampaignId`);
+    }
+
+    // Update budget on the platform API
+    try {
+      await updatePlatformBudget(
+        campaign.workspaceId,
+        campaign.platform,
+        campaign.platformCampaignId,
+        recommendation.suggestedBudget,
+      );
+    } catch (platformError) {
+      // If platform API call fails, mark execution as FAILED and don't proceed
+      await prisma.allocatorAutopilotExecution.update({
+        where: { id: execution.id },
+        data: {
+          status: "FAILED",
+          metadata: {
+            error: platformError instanceof Error
+              ? platformError.message
+              : "Unknown platform API error",
+            triggerSource,
+            stage: "PLATFORM_UPDATE",
+          },
+        },
+      });
+
+      // Log failure in audit
+      if (recommendation.correlationId) {
+        await allocatorAuditLogger.logExecution({
+          workspaceId: recommendation.workspaceId,
+          campaignId: recommendation.campaignId,
+          executionId: execution.id,
+          stage: "FAILED",
+          outcome: "FAILED",
+          correlationId: recommendation.correlationId,
+          triggeredBy: triggerSource,
+          userId: recommendation.metadata?.["userId"] as string,
+          error: platformError instanceof Error
+            ? platformError.message
+            : "Unknown error",
+        }).catch((e) => console.error("Audit log error:", e));
+      }
+
+      throw platformError;
+    }
 
     try {
       const result = await prisma.$transaction(async (tx) => {
@@ -696,4 +779,71 @@ export class AutopilotService {
 
     return newTotalMoved <= limitAmount;
   }
+}
+
+/**
+ * Update campaign budget on the actual ad platform
+ */
+async function updatePlatformBudget(
+  workspaceId: string,
+  platform: AllocatorPlatform,
+  platformCampaignId: string,
+  newBudgetCents: number,
+): Promise<void> {
+  if (platform === "FACEBOOK_ADS") {
+    // Get Facebook access token from SocialAccount
+    const socialAccount = await prisma.socialAccount.findFirst({
+      where: { workspaceId, platform: "FACEBOOK" },
+    });
+
+    if (!socialAccount) {
+      throw new Error("Facebook account not connected for workspace");
+    }
+
+    const accessToken = decryptToken(socialAccount.accessTokenEncrypted);
+    const client = new FacebookMarketingApiClient(accessToken);
+    await client.updateCampaignBudget(platformCampaignId, newBudgetCents);
+  } else if (platform === "GOOGLE_ADS") {
+    // Get Google Ads access token from MarketingAccount
+    const marketingAccount = await prisma.marketingAccount.findFirst({
+      where: {
+        platform: "GOOGLE_ADS",
+        userId: { in: await getWorkspaceUserIds(workspaceId) },
+      },
+    });
+
+    if (!marketingAccount) {
+      throw new Error("Google Ads account not connected for workspace");
+    }
+
+    const accessToken = decryptToken(marketingAccount.accessToken);
+    const client = new GoogleAdsAllocatorClient(
+      accessToken,
+      marketingAccount.accountId,
+    );
+
+    // For Google Ads, platformCampaignId is just the numeric campaign ID
+    // customerId is stored in marketingAccount.accountId
+    const customerId = marketingAccount.accountId;
+    const campaignId = platformCampaignId;
+
+    await client.updateCampaignBudget(
+      customerId,
+      campaignId,
+      newBudgetCents * 10000, // Convert cents to micros
+    );
+  } else {
+    throw new Error(`Unsupported platform: ${platform}`);
+  }
+}
+
+/**
+ * Helper to get workspace user IDs
+ */
+async function getWorkspaceUserIds(workspaceId: string): Promise<string[]> {
+  const members = await prisma.workspaceMember.findMany({
+    where: { workspaceId },
+    select: { userId: true },
+  });
+  return members.map((m) => m.userId);
 }
