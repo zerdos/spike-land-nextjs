@@ -57,6 +57,7 @@ export function getAvailableIssues(
         encoding: "utf-8",
         timeout: 30000,
         cwd: config.workDir,
+        shell: true,
       },
     );
 

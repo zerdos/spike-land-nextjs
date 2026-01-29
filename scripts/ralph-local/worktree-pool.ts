@@ -109,6 +109,7 @@ function isWarmWorktreeValid(worktreePath: string): boolean {
       encoding: "utf-8",
       timeout: 5000,
       stdio: ["pipe", "pipe", "pipe"],
+      shell: true,
     });
 
     // Verify git status is clean
@@ -117,6 +118,7 @@ function isWarmWorktreeValid(worktreePath: string): boolean {
       encoding: "utf-8",
       timeout: 10000,
       stdio: ["pipe", "pipe", "pipe"],
+      shell: true,
     }).trim();
 
     // Allow empty status (clean) or only untracked files
@@ -343,7 +345,8 @@ async function createWarmWorktreeAsync(index: number, config: RalphLocalConfig):
         encoding: "utf-8",
         timeout: 30000,
         stdio: "pipe",
-      });
+        shell: true,
+    });
     }
   }
 
@@ -440,7 +443,8 @@ function createWarmWorktree(index: number, config: RalphLocalConfig): boolean {
         encoding: "utf-8",
         timeout: 30000,
         stdio: "pipe",
-      });
+        shell: true,
+    });
     }
   }
 
@@ -463,6 +467,7 @@ function createWarmWorktree(index: number, config: RalphLocalConfig): boolean {
       encoding: "utf-8",
       timeout: 60000,
       stdio: "pipe",
+      shell: true,
     });
 
     // Create the worktree with a pool branch
@@ -480,6 +485,7 @@ function createWarmWorktree(index: number, config: RalphLocalConfig): boolean {
       encoding: "utf-8",
       timeout: 600000, // 10 minutes for yarn install
       stdio: "pipe",
+      shell: true,
     });
 
     console.log(`   ✅ Warm worktree ${index} ready`);
@@ -643,6 +649,7 @@ export function acquireFromPool(ticketId: string, config: RalphLocalConfig): str
       encoding: "utf-8",
       timeout: 30000,
       stdio: "pipe",
+      shell: true,
     });
 
     // Re-register the worktree at its new location
@@ -652,6 +659,7 @@ export function acquireFromPool(ticketId: string, config: RalphLocalConfig): str
       encoding: "utf-8",
       timeout: 10000,
       stdio: "pipe",
+      shell: true,
     });
 
     console.log(`   ✅ Acquired worktree for ${ticketId}`);
@@ -678,7 +686,8 @@ export function acquireFromPool(ticketId: string, config: RalphLocalConfig): str
         encoding: "utf-8",
         timeout: 30000,
         stdio: "pipe",
-      });
+        shell: true,
+    });
     } catch {
       // Ignore cleanup errors
     }
@@ -852,6 +861,7 @@ export function cleanupPool(config: RalphLocalConfig): void {
       encoding: "utf-8",
       timeout: 30000,
       stdio: "pipe",
+      shell: true,
     });
   } catch {
     // Ignore
@@ -863,6 +873,7 @@ export function cleanupPool(config: RalphLocalConfig): void {
       cwd: config.workDir,
       encoding: "utf-8",
       timeout: 30000,
+      shell: true,
     })
       .trim()
       .split("\n")

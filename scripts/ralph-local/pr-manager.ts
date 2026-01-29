@@ -53,6 +53,7 @@ export function getPRStatus(prNumber: number, config: RalphLocalConfig): PRRevie
         encoding: "utf-8",
         timeout: 30000,
         cwd: config.workDir,
+        shell: true,
       },
     );
 
@@ -127,6 +128,7 @@ export function listRalphPRs(config: RalphLocalConfig): number[] {
         encoding: "utf-8",
         timeout: 30000,
         cwd: config.workDir,
+        shell: true,
       },
     );
 
@@ -159,6 +161,7 @@ export function mergePR(prNumber: number, config: RalphLocalConfig): boolean {
         timeout: 120000,
         cwd: config.workDir,
         stdio: "pipe",
+        shell: true,
       },
     );
 
@@ -196,6 +199,7 @@ export function createPR(
         encoding: "utf-8",
         timeout: 60000,
         cwd: config.workDir,
+        shell: true,
       },
     );
 
@@ -227,6 +231,7 @@ export function getPRComments(prNumber: number, config: RalphLocalConfig): strin
         encoding: "utf-8",
         timeout: 30000,
         cwd: config.workDir,
+        shell: true,
       },
     );
 
@@ -257,6 +262,7 @@ export function addPRComment(prNumber: number, comment: string, config: RalphLoc
         timeout: 30000,
         cwd: config.workDir,
         stdio: "pipe",
+        shell: true,
       },
     );
     return true;
@@ -282,6 +288,7 @@ export function updatePRBranch(prNumber: number, config: RalphLocalConfig): bool
         timeout: 120000,
         cwd: config.workDir,
         stdio: "pipe",
+        shell: true,
       },
     );
 
@@ -312,6 +319,7 @@ export function closePR(prNumber: number, reason: string, config: RalphLocalConf
         timeout: 30000,
         cwd: config.workDir,
         stdio: "pipe",
+        shell: true,
       },
     );
 
@@ -338,6 +346,7 @@ export function hasCodeReviewRun(prNumber: number, config: RalphLocalConfig): bo
         encoding: "utf-8",
         timeout: 30000,
         cwd: config.workDir,
+        shell: true,
       },
     );
 
@@ -370,6 +379,7 @@ export function getWorkflowRunUrl(prNumber: number, config: RalphLocalConfig): s
         encoding: "utf-8",
         timeout: 30000,
         cwd: config.workDir,
+        shell: true,
       },
     );
 
@@ -405,6 +415,7 @@ export function checkMainBranchCI(config: RalphLocalConfig): MainBranchCIStatus 
         encoding: "utf-8",
         timeout: 30000,
         cwd: config.workDir,
+        shell: true,
       },
     );
 
@@ -466,6 +477,7 @@ export function hasApprovalSignal(
         encoding: "utf-8",
         timeout: 30000,
         cwd: config.workDir,
+        shell: true,
       },
     );
 
@@ -537,6 +549,7 @@ export function getCIFailureDetails(prNumber: number, config: RalphLocalConfig):
         encoding: "utf-8",
         timeout: 30000,
         cwd: config.workDir,
+        shell: true,
       },
     );
 
@@ -586,6 +599,7 @@ export function getWorkflowFailureLogs(runId: number, config: RalphLocalConfig):
         encoding: "utf-8",
         timeout: 60000,
         cwd: config.workDir,
+        shell: true,
       },
     );
 
@@ -636,6 +650,7 @@ export function getPRBranch(prNumber: number, config: RalphLocalConfig): string 
         encoding: "utf-8",
         timeout: 30000,
         cwd: config.workDir,
+        shell: true,
       },
     );
 

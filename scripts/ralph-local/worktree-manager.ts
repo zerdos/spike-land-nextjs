@@ -76,6 +76,7 @@ export function createWorktree(
       encoding: "utf-8",
       timeout: 60000,
       stdio: "pipe",
+      shell: true,
     });
 
     // Create the worktree with a new branch based on main
@@ -85,6 +86,7 @@ export function createWorktree(
       encoding: "utf-8",
       timeout: 60000,
       stdio: "pipe",
+      shell: true,
     });
 
     console.log(`   ✅ Worktree created: ${worktreePath}`);
@@ -97,7 +99,8 @@ export function createWorktree(
         encoding: "utf-8",
         timeout: 300000, // 5 minutes for yarn install
         stdio: "pipe",
-      });
+        shell: true,
+    });
       console.log(`   ✅ Dependencies installed`);
     } catch {
       console.log(`   ⚠️ Dependency install failed, continuing anyway`);
@@ -118,7 +121,8 @@ export function createWorktree(
           encoding: "utf-8",
           timeout: 60000,
           stdio: "pipe",
-        });
+          shell: true,
+    });
         copyEnvLocal(worktreePath, config);
         return worktreePath;
       } catch (reuseError) {
@@ -199,7 +203,8 @@ function removeWorktreeDirectory(worktreePath: string, config: RalphLocalConfig)
           encoding: "utf-8",
           timeout: 30000,
           stdio: "pipe",
-        });
+          shell: true,
+    });
       } catch (rmError) {
         console.error(`   ❌ Failed to force-remove:`, rmError);
       }
@@ -244,7 +249,8 @@ export function syncWorktreeWithMain(
         encoding: "utf-8",
         timeout: 60000,
         stdio: "pipe",
-      });
+        shell: true,
+    });
     } catch (pullError) {
       // Pull might fail if no upstream is set - that's ok
       const pullMsg = pullError instanceof Error ? pullError.message : String(pullError);
@@ -264,7 +270,8 @@ export function syncWorktreeWithMain(
         encoding: "utf-8",
         timeout: 120000,
         stdio: "pipe",
-      });
+        shell: true,
+    });
     } catch (pushError) {
       // Push might fail if no upstream or nothing to push - that's ok
       const pushMsg = pushError instanceof Error ? pushError.message : String(pushError);
@@ -279,6 +286,7 @@ export function syncWorktreeWithMain(
       encoding: "utf-8",
       timeout: 60000,
       stdio: "pipe",
+      shell: true,
     });
 
     // Step 4: git merge origin/main -m "merge with main"
@@ -287,6 +295,7 @@ export function syncWorktreeWithMain(
       encoding: "utf-8",
       timeout: 60000,
       stdio: "pipe",
+      shell: true,
     });
 
     // Step 5: git push (push merge commit)
@@ -296,7 +305,8 @@ export function syncWorktreeWithMain(
         encoding: "utf-8",
         timeout: 120000,
         stdio: "pipe",
-      });
+        shell: true,
+    });
     } catch (finalPushError) {
       // Push might fail if nothing to push or no upstream - that's ok
       const finalPushMsg = finalPushError instanceof Error
@@ -323,7 +333,8 @@ export function syncWorktreeWithMain(
           cwd: worktreePath,
           encoding: "utf-8",
           timeout: 30000,
-        });
+          shell: true,
+    });
 
         if (status.includes("UU ") || status.includes("AA ") || status.includes("DD ")) {
           return { success: false, conflict: true, message: "Merge conflict detected" };
@@ -349,6 +360,7 @@ export function listWorktrees(config: RalphLocalConfig): string[] {
       cwd: config.workDir,
       encoding: "utf-8",
       timeout: 30000,
+      shell: true,
     });
 
     const worktrees: string[] = [];
@@ -395,6 +407,7 @@ export function getWorktreeBranch(worktreePath: string): string | null {
       cwd: worktreePath,
       encoding: "utf-8",
       timeout: 10000,
+      shell: true,
     }).trim();
     return branch;
   } catch {
@@ -411,6 +424,7 @@ export function hasUncommittedChanges(worktreePath: string): boolean {
       cwd: worktreePath,
       encoding: "utf-8",
       timeout: 30000,
+      shell: true,
     });
     return status.trim().length > 0;
   } catch {
