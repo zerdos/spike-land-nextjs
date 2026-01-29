@@ -292,7 +292,7 @@ export type AsyncCallback<T, R = void> = (value: T) => Promise<R>;
 /**
  * Facebook error response type (alias for compatibility with rate-limit-tracker)
  */
-export type FacebookErrorResponse = { error: FacebookApiError };
+export type FacebookErrorResponse = { error: FacebookApiError; };
 
 /**
  * LinkedIn error response type (alias for compatibility with rate-limit-tracker)
