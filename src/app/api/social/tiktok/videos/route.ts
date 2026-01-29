@@ -8,6 +8,7 @@
 import { auth } from "@/auth";
 import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
+import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -55,12 +56,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Verify user has access to this account
-  if (account.userId !== session.user.id) {
-    return NextResponse.json(
-      { error: "You don't have permission to use this account" },
-      { status: 403 },
-    );
+  // Verify user has permission to connect/manage social accounts in this workspace
+  const { error: permError } = await tryCatch(
+    requireWorkspacePermission(session, account.workspaceId, "social:connect"),
+  );
+
+  if (permError) {
+    const status = permError.message.includes("Unauthorized") ? 401 : 403;
+    return NextResponse.json({ error: permError.message }, { status });
   }
 
   // Decrypt access token

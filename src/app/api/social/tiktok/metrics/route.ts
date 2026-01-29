@@ -8,6 +8,7 @@
 import { auth } from "@/auth";
 import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import prisma from "@/lib/prisma";
+import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import { TikTokClient } from "@/lib/social/clients/tiktok";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
@@ -50,12 +51,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Verify user has access to this account
-  if (account.userId !== session.user.id) {
-    return NextResponse.json(
-      { error: "You don't have permission to access this account" },
-      { status: 403 },
-    );
+  // Verify user has permission to view social analytics in this workspace
+  const { error: permError } = await tryCatch(
+    requireWorkspacePermission(session, account.workspaceId, "social:view"),
+  );
+
+  if (permError) {
+    const status = permError.message.includes("Unauthorized") ? 401 : 403;
+    return NextResponse.json({ error: permError.message }, { status });
   }
 
   // Decrypt access token
