@@ -7,17 +7,33 @@
  */
 
 import { execSync } from "child_process";
-import { spawnDeveloperAgent, spawnPlanningAgent, spawnTesterAgent } from "./agent-spawner";
+import {
+  spawnDeveloperAgent,
+  spawnFixerAgent,
+  spawnPlanningAgent,
+  spawnTesterAgent,
+} from "./agent-spawner";
 import {
   addPendingCode,
   addPendingPlan,
+  addPendingPRFix,
   getIdleAgents,
+  isPRFixInProgress,
   isTicketDone,
   isTicketInProgress,
+  removePendingPRFix,
   updateAgent,
 } from "./state-manager";
-import type { CodeWork, GitHubIssue, OrchestratorState, Plan, RalphLocalConfig } from "./types";
-import { createWorktree, getBranchName } from "./worktree-manager";
+import type {
+  CodeWork,
+  GitHubIssue,
+  OrchestratorState,
+  Plan,
+  PRFixReason,
+  PRFixWork,
+  RalphLocalConfig,
+} from "./types";
+import { createWorktree, getBranchName, getWorktreePath } from "./worktree-manager";
 
 /**
  * Get available GitHub issues for processing
@@ -365,21 +381,159 @@ export function enqueueCode(
 export function getQueueStats(state: OrchestratorState): {
   pendingPlans: number;
   pendingCode: number;
+  pendingPRFixes: number;
   idlePlanners: number;
   idleDevelopers: number;
   idleTesters: number;
+  idleFixers: number;
   runningPlanners: number;
   runningDevelopers: number;
   runningTesters: number;
+  runningFixers: number;
 } {
   return {
     pendingPlans: state.pendingPlans.filter((p) => p.status === "pending").length,
     pendingCode: state.pendingCode.filter((c) => c.status === "pending").length,
+    pendingPRFixes: state.pendingPRFixes?.filter((f) => f.status === "pending").length || 0,
     idlePlanners: getIdleAgents(state, "planning").length,
     idleDevelopers: getIdleAgents(state, "developer").length,
     idleTesters: getIdleAgents(state, "tester").length,
+    idleFixers: getIdleAgents(state, "fixer").length,
     runningPlanners: state.pools.planning.filter((a) => a.status === "running").length,
     runningDevelopers: state.pools.developer.filter((a) => a.status === "running").length,
     runningTesters: state.pools.tester.filter((a) => a.status === "running").length,
+    runningFixers: state.pools.fixer?.filter((a) => a.status === "running").length || 0,
   };
+}
+
+// ============================================================================
+// PR Fix Routing
+// ============================================================================
+
+/**
+ * Queue a PR for fixing
+ */
+export function enqueuePRFix(
+  state: OrchestratorState,
+  prNumber: number,
+  ticketId: string,
+  branch: string,
+  worktree: string,
+  reason: PRFixReason,
+  reviewComments: string[],
+  failureDetails: string | null,
+): void {
+  // Check if already in queue
+  if (isPRFixInProgress(state, prNumber)) {
+    console.log(`   📝 PR #${prNumber} already queued for fixes`);
+    return;
+  }
+
+  const prFix: PRFixWork = {
+    prNumber,
+    ticketId,
+    branch,
+    worktree,
+    status: "pending",
+    assignedTo: null,
+    reason,
+    reviewComments,
+    failureDetails,
+    createdAt: new Date().toISOString(),
+  };
+
+  addPendingPRFix(state, prFix);
+  console.log(`   📝 PR #${prNumber} queued for fixes (${reason})`);
+}
+
+/**
+ * Route pending PR fixes to idle fixer agents
+ */
+export function routePRsToFixers(
+  state: OrchestratorState,
+  config: RalphLocalConfig,
+): number {
+  const idleFixers = getIdleAgents(state, "fixer");
+  if (idleFixers.length === 0) {
+    console.log("   No idle fixer agents");
+    return 0;
+  }
+
+  // Ensure pendingPRFixes exists
+  if (!state.pendingPRFixes) {
+    state.pendingPRFixes = [];
+    return 0;
+  }
+
+  // Get pending PR fixes sorted by creation time (oldest first)
+  const pendingFixes = state.pendingPRFixes
+    .filter((f) => f.status === "pending")
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+  if (pendingFixes.length === 0) {
+    console.log("   No pending PR fixes");
+    return 0;
+  }
+
+  console.log(
+    `   Routing ${Math.min(pendingFixes.length, idleFixers.length)} PR fixes to fixers`,
+  );
+
+  let routedCount = 0;
+
+  for (let i = 0; i < Math.min(pendingFixes.length, idleFixers.length); i++) {
+    const prFix = pendingFixes[i];
+    const agent = idleFixers[i];
+
+    if (!prFix || !agent) continue;
+
+    console.log(`   🔧 Assigning PR #${prFix.prNumber} fix to ${agent.id}`);
+
+    try {
+      // Get or create worktree for the ticket
+      let worktreePath = prFix.worktree;
+      if (!worktreePath) {
+        worktreePath = getWorktreePath(prFix.ticketId, config);
+        prFix.worktree = worktreePath;
+      }
+
+      // Spawn the fixer agent
+      const process = spawnFixerAgent(agent, prFix, config);
+
+      if (process) {
+        // Update fix status
+        prFix.status = "assigned";
+        prFix.assignedTo = agent.id;
+
+        // Update agent state
+        updateAgent(state, agent.id, {
+          status: "running",
+          ticketId: `PR#${prFix.prNumber}:${prFix.ticketId}`,
+          worktree: worktreePath,
+          pid: process.pid ?? null,
+          startedAt: new Date().toISOString(),
+          lastHeartbeat: new Date().toISOString(),
+        });
+
+        routedCount++;
+      }
+    } catch (error) {
+      console.error(`   Failed to route PR fix #${prFix.prNumber}:`, error);
+    }
+  }
+
+  return routedCount;
+}
+
+/**
+ * Mark a PR fix as completed
+ */
+export function completePRFix(
+  state: OrchestratorState,
+  prNumber: number,
+): void {
+  const fix = removePendingPRFix(state, prNumber);
+  if (fix) {
+    console.log(`   ✅ PR #${prNumber} fix completed`);
+  }
 }

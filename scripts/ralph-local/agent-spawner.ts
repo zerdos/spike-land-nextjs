@@ -17,7 +17,16 @@ import {
   writeFileSync,
 } from "fs";
 import { dirname, join } from "path";
-import type { AgentMarker, AgentRole, CodeWork, LocalAgent, Plan, RalphLocalConfig } from "./types";
+import type {
+  AgentMarker,
+  AgentRole,
+  CodeWork,
+  LocalAgent,
+  MainBranchCIStatus,
+  Plan,
+  PRFixWork,
+  RalphLocalConfig,
+} from "./types";
 
 // Prompt templates paths
 const PROMPTS_DIR = "scripts/ralph-local/prompts";
@@ -51,11 +60,11 @@ function buildPlanningPrompt(
 ): string {
   const template = getPromptTemplate("planning", config);
   return template
-    .replace("{{ISSUE_NUMBER}}", String(issueNumber))
-    .replace("{{ISSUE_TITLE}}", issueTitle)
-    .replace("{{ISSUE_BODY}}", issueBody)
-    .replace("{{REPO}}", config.repo)
-    .replace("{{PLAN_DIR}}", config.planDir);
+    .replaceAll("{{ISSUE_NUMBER}}", String(issueNumber))
+    .replaceAll("{{ISSUE_TITLE}}", issueTitle)
+    .replaceAll("{{ISSUE_BODY}}", issueBody)
+    .replaceAll("{{REPO}}", config.repo)
+    .replaceAll("{{PLAN_DIR}}", config.planDir);
 }
 
 /**
@@ -72,11 +81,11 @@ function buildDeveloperPrompt(
     : "Plan file not found";
 
   return template
-    .replace("{{ISSUE_NUMBER}}", String(plan.issueNumber))
-    .replace("{{TICKET_ID}}", plan.ticketId)
-    .replace("{{PLAN_CONTENT}}", planContent)
-    .replace("{{WORKTREE_PATH}}", worktreePath)
-    .replace("{{REPO}}", config.repo);
+    .replaceAll("{{ISSUE_NUMBER}}", String(plan.issueNumber))
+    .replaceAll("{{TICKET_ID}}", plan.ticketId)
+    .replaceAll("{{PLAN_CONTENT}}", planContent)
+    .replaceAll("{{WORKTREE_PATH}}", worktreePath)
+    .replaceAll("{{REPO}}", config.repo);
 }
 
 /**
@@ -92,12 +101,61 @@ function buildTesterPrompt(
     : "Plan file not found";
 
   return template
-    .replace("{{ISSUE_NUMBER}}", String(codeWork.issueNumber))
-    .replace("{{TICKET_ID}}", codeWork.ticketId)
-    .replace("{{BRANCH}}", codeWork.branch)
-    .replace("{{WORKTREE_PATH}}", codeWork.worktree)
-    .replace("{{PLAN_CONTENT}}", planContent)
-    .replace("{{REPO}}", config.repo);
+    .replaceAll("{{ISSUE_NUMBER}}", String(codeWork.issueNumber))
+    .replaceAll("{{TICKET_ID}}", codeWork.ticketId)
+    .replaceAll("{{BRANCH}}", codeWork.branch)
+    .replaceAll("{{WORKTREE_PATH}}", codeWork.worktree)
+    .replaceAll("{{PLAN_CONTENT}}", planContent)
+    .replaceAll("{{REPO}}", config.repo);
+}
+
+/**
+ * Build the prompt for a fixer agent (PR fixes)
+ */
+function buildFixerPrompt(
+  prFix: PRFixWork,
+  config: RalphLocalConfig,
+): string {
+  const template = getPromptTemplate("fixer", config);
+
+  const reviewCommentsText = prFix.reviewComments.length > 0
+    ? prFix.reviewComments.join("\n\n---\n\n")
+    : "No specific review comments";
+
+  return template
+    .replaceAll("{{PR_NUMBER}}", String(prFix.prNumber))
+    .replaceAll("{{TICKET_ID}}", prFix.ticketId)
+    .replaceAll("{{BRANCH}}", prFix.branch)
+    .replaceAll("{{WORKTREE_PATH}}", prFix.worktree)
+    .replaceAll("{{FIX_REASON}}", prFix.reason)
+    .replaceAll("{{REVIEW_COMMENTS}}", reviewCommentsText)
+    .replaceAll("{{FAILURE_DETAILS}}", prFix.failureDetails || "No failure details available")
+    .replaceAll("{{REPO}}", config.repo);
+}
+
+/**
+ * Build the prompt for main branch build fixer
+ */
+function buildMainBuildFixerPrompt(
+  mainBranchStatus: MainBranchCIStatus,
+  config: RalphLocalConfig,
+): string {
+  const promptPath = join(config.workDir, PROMPTS_DIR, "main-build-fixer.md");
+  if (!existsSync(promptPath)) {
+    throw new Error(`Prompt template not found: ${promptPath}`);
+  }
+  const template = readFileSync(promptPath, "utf-8");
+
+  const failedWorkflowsText = mainBranchStatus.failedWorkflows
+    .map((w) => `- ${w.name} (ID: ${w.id}): ${w.conclusion}\n  URL: ${w.url}`)
+    .join("\n");
+
+  const firstFailedRunId = mainBranchStatus.failedWorkflows[0]?.id || 0;
+
+  return template
+    .replaceAll("{{RUN_ID}}", String(firstFailedRunId))
+    .replaceAll("{{FAILED_WORKFLOWS}}", failedWorkflowsText)
+    .replaceAll("{{REPO}}", config.repo);
 }
 
 /**
@@ -237,6 +295,35 @@ export function spawnTesterAgent(
 }
 
 /**
+ * Spawn a fixer agent for PR fixes
+ */
+export function spawnFixerAgent(
+  agent: LocalAgent,
+  prFix: PRFixWork,
+  config: RalphLocalConfig,
+): ChildProcess | null {
+  if (!validateTicketId(prFix.ticketId)) {
+    console.error(`Invalid ticket ID: ${prFix.ticketId}`);
+    return null;
+  }
+
+  const prompt = buildFixerPrompt(prFix, config);
+  return spawnAgent(agent, prompt, prFix.worktree, config);
+}
+
+/**
+ * Spawn a fixer agent for main branch build failures
+ */
+export function spawnMainBuildFixerAgent(
+  agent: LocalAgent,
+  mainBranchStatus: MainBranchCIStatus,
+  config: RalphLocalConfig,
+): ChildProcess | null {
+  const prompt = buildMainBuildFixerPrompt(mainBranchStatus, config);
+  return spawnAgent(agent, prompt, config.workDir, config);
+}
+
+/**
  * Check if an agent process is still running
  */
 export function isAgentRunning(agent: LocalAgent): boolean {
@@ -372,6 +459,26 @@ export function parseAgentMarkers(output: string): AgentMarker[] {
       type: "ERROR",
       ticketId: match[1],
       error: match[2],
+    });
+  }
+
+  // Parse PR_FIXED markers
+  const prFixedRegex = /<PR_FIXED\s+pr_number="(\d+)"\s+ticket="([^"]+)"\s*\/>/g;
+  while ((match = prFixedRegex.exec(text)) !== null) {
+    markers.push({
+      type: "PR_FIXED",
+      prNumber: parseInt(match[1], 10),
+      ticketId: match[2],
+    });
+  }
+
+  // Parse MAIN_BUILD_FIX markers
+  const mainBuildFixRegex = /<MAIN_BUILD_FIX\s+run_id="(\d+)"\s+fixed="(true|false)"\s*\/>/g;
+  while ((match = mainBuildFixRegex.exec(text)) !== null) {
+    markers.push({
+      type: "MAIN_BUILD_FIX",
+      runId: parseInt(match[1], 10),
+      fixed: match[2] === "true",
     });
   }
 

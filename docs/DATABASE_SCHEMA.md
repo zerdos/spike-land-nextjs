@@ -1008,6 +1008,28 @@ erDiagram
   Float percentChange
   DateTime createdAt
 }
+"social_post_ab_tests" {
+  String id PK
+  String workspaceId FK
+  String name
+  AbTestStatus status
+  String originalPostId FK
+  Float significanceLevel
+  String winnerVariantId "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"social_post_ab_test_variants" {
+  String id PK
+  String testId FK
+  String content
+  String variationType
+  Int impressions
+  Int engagements
+  Int clicks
+  DateTime createdAt
+  DateTime updatedAt
+}
 "workspaces" {
   String id PK
   String name
@@ -1194,6 +1216,31 @@ erDiagram
   DateTime publishedAt "nullable"
   ScheduledPostStatus status
   String errorMessage "nullable"
+}
+"posting_time_recommendations" {
+  String id PK
+  String accountId FK
+  Int dayOfWeek
+  Int hourUtc
+  Float score
+  String confidence
+  String reason
+  DateTime lastUpdated
+}
+"calendar_content_suggestions" {
+  String id PK
+  String workspaceId FK
+  String content
+  DateTime suggestedFor
+  SocialPlatform platform
+  String reason
+  ContentSuggestionStatus status
+  Float confidence
+  String keywords
+  Json metadata "nullable"
+  DateTime createdAt
+  DateTime acceptedAt "nullable"
+  DateTime rejectedAt "nullable"
 }
 "inbox_items" {
   String id PK
@@ -1852,6 +1899,9 @@ erDiagram
 "social_post_accounts" }o--|| "social_accounts" : account
 "social_metrics" }o--|| "social_accounts" : account
 "social_metric_anomalies" }o--|| "social_accounts" : account
+"social_post_ab_tests" }o--|| "workspaces" : workspace
+"social_post_ab_tests" }o--|| "social_posts" : originalPost
+"social_post_ab_test_variants" }o--|| "social_post_ab_tests" : test
 "workspace_favorites" }o--|| "users" : user
 "workspace_favorites" }o--|| "workspaces" : workspace
 "workspace_recent_access" }o--|| "users" : user
@@ -1877,6 +1927,8 @@ erDiagram
 "scheduled_posts" }o--|| "users" : createdBy
 "scheduled_post_accounts" }o--|| "scheduled_posts" : post
 "scheduled_post_accounts" }o--|| "social_accounts" : account
+"posting_time_recommendations" }o--|| "social_accounts" : account
+"calendar_content_suggestions" }o--|| "workspaces" : workspace
 "inbox_items" }o--|| "workspaces" : workspace
 "inbox_items" }o--|| "social_accounts" : account
 "inbox_items" }o--o| "workspace_members" : assignedTo
@@ -3205,6 +3257,42 @@ Properties as follows:
 - `percentChange`:
 - `createdAt`:
 
+### `social_post_ab_tests`
+
+A/B testing for social media posts
+Allows testing different variations of content
+Resolves #840
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `name`:
+- `status`:
+- `originalPostId`:
+- `significanceLevel`:
+- `winnerVariantId`:
+- `createdAt`:
+- `updatedAt`:
+
+### `social_post_ab_test_variants`
+
+Individual variant in an A/B test
+Tracks performance metrics for comparison
+Resolves #840
+
+Properties as follows:
+
+- `id`:
+- `testId`:
+- `content`:
+- `variationType`:
+- `impressions`:
+- `engagements`:
+- `clicks`:
+- `createdAt`:
+- `updatedAt`:
+
 ### `workspaces`
 
 Properties as follows:
@@ -3441,6 +3529,43 @@ Properties as follows:
 - `publishedAt`:
 - `status`:
 - `errorMessage`:
+
+### `posting_time_recommendations`
+
+AI-generated posting time recommendations per social account
+Stores optimal posting times based on historical engagement data
+
+Properties as follows:
+
+- `id`:
+- `accountId`:
+- `dayOfWeek`:
+- `hourUtc`:
+- `score`:
+- `confidence`:
+- `reason`:
+- `lastUpdated`:
+
+### `calendar_content_suggestions`
+
+AI-generated content suggestions for the calendar
+Provides content ideas based on trends, gaps, and optimal times
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `content`:
+- `suggestedFor`:
+- `platform`:
+- `reason`:
+- `status`:
+- `confidence`:
+- `keywords`:
+- `metadata`:
+- `createdAt`:
+- `acceptedAt`:
+- `rejectedAt`:
 
 ### `inbox_items`
 

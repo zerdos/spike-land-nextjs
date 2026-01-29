@@ -2,10 +2,14 @@
  * System Report Aggregator
  *
  * Aggregates data from multiple sources into a unified system report.
+ *
+ * Resolves #797: Type Safety Improvements
  */
 
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
+import type { CacheMap } from "@/lib/types/common";
+// Duplicate import removed
 import { JobStatus, UserRole } from "@prisma/client";
 
 import { fetchMetaAdsAggregated } from "./meta-marketing-client";
@@ -34,7 +38,7 @@ import { fetchVercelAnalytics } from "./vercel-analytics-client";
 /**
  * Cache for external API data (5 minute TTL)
  */
-const cache = new Map<string, { data: unknown; expiry: number; }>();
+const cache: CacheMap<unknown> = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 function getCached<T>(key: string): T | null {

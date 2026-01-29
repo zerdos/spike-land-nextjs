@@ -5,6 +5,7 @@ import { chromium } from "@playwright/test";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
+import { getE2eBypassSecret } from "../helpers/env";
 import { startCoverage, stopCoverage } from "./helpers/coverage-helper";
 
 // Load environment variables from .env.local if it exists
@@ -54,8 +55,21 @@ export class CustomWorld extends World {
     // Add E2E bypass header if secret is configured
     // Sanitize the value to remove any newlines or whitespace that could cause
     // "Invalid header value" errors in Chromium
-    const e2eBypassSecret = process.env.E2E_BYPASS_SECRET?.trim().replace(/[\r\n]/g, "");
-    if (e2eBypassSecret) {
+    // Sanitize the value to remove any newlines or whitespace that could cause
+    // "Invalid header value" errors in Chromium
+    const e2eBypassSecret = getE2eBypassSecret();
+
+    if (!e2eBypassSecret) {
+      console.warn(
+        "[E2E World] E2E_BYPASS_SECRET not configured - E2E tests may fail on protected routes",
+      );
+    } else if (e2eBypassSecret.length < 16) {
+      console.warn("[E2E World] E2E_BYPASS_SECRET is too short (< 16 chars) - may not be secure");
+    } else {
+      console.log("[E2E World] E2E bypass header configured:", {
+        length: e2eBypassSecret.length,
+        preview: `${e2eBypassSecret.substring(0, 8)}...`,
+      });
       extraHTTPHeaders["x-e2e-auth-bypass"] = e2eBypassSecret;
     }
 

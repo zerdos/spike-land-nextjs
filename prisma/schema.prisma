@@ -103,7 +103,7 @@ model User {
   identity Identity?
 
   // Multi-workspace management
-  workspaceFavorites   WorkspaceFavorite[]
+  workspaceFavorites    WorkspaceFavorite[]
   workspaceRecentAccess WorkspaceRecentAccess[]
 
   @@map("users")
@@ -1711,6 +1711,8 @@ enum AttributionType {
   FIRST_TOUCH
   LAST_TOUCH
   LINEAR
+  TIME_DECAY
+  POSITION_BASED
 }
 
 enum ConversionType {
@@ -2105,14 +2107,16 @@ model SocialAccount {
   updatedAt DateTime @updatedAt
 
   // Relations
-  metrics               SocialMetrics[]
-  postAccounts          SocialPostAccount[]
-  anomalies             SocialMetricAnomaly[]
-  scheduledPostAccounts ScheduledPostAccount[]
-  inboxItems            InboxItem[]
+  metrics                    SocialMetrics[]
+  postAccounts               SocialPostAccount[]
+  anomalies                  SocialMetricAnomaly[]
+  scheduledPostAccounts      ScheduledPostAccount[]
+  inboxItems                 InboxItem[]
   // Account health monitoring
-  health                SocialAccountHealth?
-  healthEvents          AccountHealthEvent[]
+  health                     SocialAccountHealth?
+  healthEvents               AccountHealthEvent[]
+  // AI Content Calendar
+  postingTimeRecommendations PostingTimeRecommendation[]
 
   @@unique([workspaceId, platform, accountId])
   @@index([userId])
@@ -2139,6 +2143,9 @@ model SocialPost {
 
   // Relations (many-to-many with accounts via join table)
   postAccounts SocialPostAccount[]
+
+  // A/B testing
+  abTests SocialPostAbTest[]
 
   // Content Library
   assets PostAsset[]
@@ -2215,6 +2222,56 @@ model SocialMetricAnomaly {
   @@index([detectedAt])
   @@index([severity])
   @@map("social_metric_anomalies")
+}
+
+/// A/B testing for social media posts
+/// Allows testing different variations of content
+/// Resolves #840
+model SocialPostAbTest {
+  id                String       @id @default(cuid())
+  workspaceId       String
+  name              String
+  status            AbTestStatus @default(DRAFT)
+  originalPostId    String
+  significanceLevel Float        @default(0.95)
+  winnerVariantId   String?
+
+  // Relations
+  workspace    Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  originalPost SocialPost                @relation(fields: [originalPostId], references: [id], onDelete: Cascade)
+  variants     SocialPostAbTestVariant[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([originalPostId])
+  @@map("social_post_ab_tests")
+}
+
+/// Individual variant in an A/B test
+/// Tracks performance metrics for comparison
+/// Resolves #840
+model SocialPostAbTestVariant {
+  id            String @id @default(cuid())
+  testId        String
+  content       String @db.Text
+  variationType String // "headline", "cta", "emoji", "hashtags", "tone"
+
+  // Performance metrics
+  impressions Int @default(0)
+  engagements Int @default(0)
+  clicks      Int @default(0)
+
+  // Relations
+  test SocialPostAbTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([testId])
+  @@map("social_post_ab_test_variants")
 }
 
 enum AgentProvider {
@@ -2380,6 +2437,7 @@ model Workspace {
   brandProfile           BrandProfile?
   contentRewrites        ContentRewrite[]
   socialAccounts         SocialAccount[]
+  abTests                SocialPostAbTest[]
   scheduledPosts         ScheduledPost[]
   inboxItems             InboxItem[]
   // Comprehensive audit logs
@@ -2398,10 +2456,12 @@ model Workspace {
   policyViolations       PolicyViolation[]
 
   // Scout Competitor Tracking
-  scoutCompetitors   ScoutCompetitor[]
-  scoutBenchmarks    ScoutBenchmark[]
+  scoutCompetitors           ScoutCompetitor[]
+  scoutBenchmarks            ScoutBenchmark[]
   // Scout content suggestions
-  contentSuggestions ContentSuggestion[]
+  contentSuggestions         ContentSuggestion[]
+  // AI Calendar content suggestions
+  calendarContentSuggestions CalendarContentSuggestion[]
 
   // Scout Topic Monitoring
   scoutTopics        ScoutTopic[]
@@ -2429,8 +2489,8 @@ model Workspace {
   connectionTags ConnectionTag[]
 
   // Multi-workspace management
-  favorites     WorkspaceFavorite[]
-  recentAccess  WorkspaceRecentAccess[]
+  favorites    WorkspaceFavorite[]
+  recentAccess WorkspaceRecentAccess[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -2725,6 +2785,13 @@ enum ScheduledPostStatus {
   CANCELLED // User cancelled the scheduled post
 }
 
+enum ContentSuggestionStatus {
+  PENDING // Suggestion generated, awaiting review
+  ACCEPTED // User accepted and scheduled
+  REJECTED // User rejected
+  MODIFIED // User modified and scheduled
+}
+
 /// Scheduled posts for the Calendar feature
 /// Supports multi-platform cross-posting and recurrence
 model ScheduledPost {
@@ -2790,6 +2857,62 @@ model ScheduledPostAccount {
   @@index([accountId])
   @@index([status])
   @@map("scheduled_post_accounts")
+}
+
+// =============================================================================
+// AI Content Calendar Models - Issue #841
+// =============================================================================
+
+/// AI-generated posting time recommendations per social account
+/// Stores optimal posting times based on historical engagement data
+model PostingTimeRecommendation {
+  id        String        @id @default(cuid())
+  accountId String
+  account   SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  dayOfWeek Int // 0-6 (Sunday=0)
+  hourUtc   Int // 0-23
+  score     Float // Engagement prediction score (0-100)
+
+  // Metadata
+  confidence  String // "high", "medium", "low"
+  reason      String   @db.Text // Explanation for the recommendation
+  lastUpdated DateTime @default(now()) @updatedAt
+
+  @@unique([accountId, dayOfWeek, hourUtc])
+  @@index([accountId])
+  @@index([score])
+  @@map("posting_time_recommendations")
+}
+
+/// AI-generated content suggestions for the calendar
+/// Provides content ideas based on trends, gaps, and optimal times
+model CalendarContentSuggestion {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  content      String                  @db.Text // Suggested post content
+  suggestedFor DateTime // Recommended posting time
+  platform     SocialPlatform // Target platform
+  reason       String                  @db.Text // "trending", "optimal time", "content gap", etc.
+  status       ContentSuggestionStatus @default(PENDING)
+
+  // AI metadata
+  confidence Float // 0-100 confidence score
+  keywords   String[] // Relevant keywords/hashtags
+  metadata   Json? // Additional AI reasoning, trends, etc.
+
+  // User tracking
+  createdAt  DateTime  @default(now())
+  acceptedAt DateTime?
+  rejectedAt DateTime?
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([suggestedFor])
+  @@index([platform])
+  @@map("calendar_content_suggestions")
 }
 
 // ============================================

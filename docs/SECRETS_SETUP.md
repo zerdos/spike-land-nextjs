@@ -315,17 +315,41 @@ GEMINI_API_KEY=your-gemini-api-key
 
 #### Cloudflare R2 (Required)
 
+Used for image storage and database backups.
+
+**Setup Steps:**
+
 1. Go to: https://dash.cloudflare.com/
 2. Navigate to R2 > Overview
-3. Create bucket (e.g., `spike-land-images`)
+3. Create bucket (e.g., `spike-land-images` for images, `spike-land-backups` for database backups)
 4. Go to "Manage R2 API Tokens" > Create API Token
+5. Configure token:
+   - **Permissions**: Read & Write (required for uploads and deletion during backup rotation)
+   - **Bucket Scope**: Limit to specific bucket(s) for security
+6. Copy the following values (shown only once):
+   - **Access Key ID**
+   - **Secret Access Key**
+   - **Endpoint URL** (format: `https://<account-id>.r2.cloudflarestorage.com`)
 
 ```bash
 CLOUDFLARE_ACCOUNT_ID=your-cloudflare-account-id
 CLOUDFLARE_R2_ACCESS_KEY_ID=your-r2-access-key-id
 CLOUDFLARE_R2_SECRET_ACCESS_KEY=your-r2-secret-access-key
 CLOUDFLARE_R2_BUCKET_NAME=spike-land-images
+CLOUDFLARE_R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
 ```
+
+**For database backups**, you may want a separate bucket and configuration:
+
+```bash
+# Used by scripts/backup/backup.ts
+CLOUDFLARE_R2_BUCKET_NAME=spike-land-backups  # Separate bucket for backups
+CLOUDFLARE_R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
+CLOUDFLARE_R2_ACCESS_KEY_ID=your-r2-access-key-id
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=your-r2-secret-access-key
+```
+
+**IMPORTANT**: The endpoint URL must include the full `https://` prefix.
 
 #### Cloudflare Workers (Wrangler Configuration)
 
@@ -491,6 +515,29 @@ secret**
      `Pull
      requests` (read/write)
 
+#### CLOUDFLARE_R2_BUCKET_NAME
+
+- **Used by**: `backup.yml`
+- **Purpose**: R2 bucket name for database backups
+- **Example**: `spike-land-backups`
+
+#### CLOUDFLARE_R2_ENDPOINT
+
+- **Used by**: `backup.yml`
+- **Purpose**: Cloudflare R2 endpoint URL
+- **Format**: `https://<account-id>.r2.cloudflarestorage.com`
+- **Important**: Must include full `https://` prefix
+
+#### CLOUDFLARE_R2_ACCESS_KEY_ID
+
+- **Used by**: `backup.yml`
+- **Purpose**: R2 API access key ID for authentication
+
+#### CLOUDFLARE_R2_SECRET_ACCESS_KEY
+
+- **Used by**: `backup.yml`
+- **Purpose**: R2 API secret access key for authentication
+
 ### Optional Secrets
 
 #### VERCEL_TOKEN
@@ -514,11 +561,12 @@ secret**
 
 ### Workflow Files Reference
 
-| Workflow                 | Secrets Used                                                |
-| ------------------------ | ----------------------------------------------------------- |
-| `ci-cd.yml`              | DATABASE_URL, AUTH_SECRET, E2E_BYPASS_SECRET, CODECOV_TOKEN |
-| `claude.yml`             | GH_PAT_TOKEN, CLAUDE_CODE_OAUTH_TOKEN                       |
-| `claude-code-review.yml` | GH_PAT_TOKEN, CLAUDE_CODE_OAUTH_TOKEN                       |
+| Workflow                 | Secrets Used                                                                                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `ci-cd.yml`              | DATABASE_URL, AUTH_SECRET, E2E_BYPASS_SECRET, CODECOV_TOKEN                                                                   |
+| `claude.yml`             | GH_PAT_TOKEN, CLAUDE_CODE_OAUTH_TOKEN                                                                                         |
+| `claude-code-review.yml` | GH_PAT_TOKEN, CLAUDE_CODE_OAUTH_TOKEN                                                                                         |
+| `backup.yml`             | DATABASE_URL, CLOUDFLARE_R2_BUCKET_NAME, CLOUDFLARE_R2_ENDPOINT, CLOUDFLARE_R2_ACCESS_KEY_ID, CLOUDFLARE_R2_SECRET_ACCESS_KEY |
 
 ---
 

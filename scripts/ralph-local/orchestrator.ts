@@ -19,27 +19,49 @@ import {
   isAgentRunning,
   isAgentStale,
   parseAgentMarkers,
+  spawnMainBuildFixerAgent,
   stopAgent,
 } from "./agent-spawner";
-import { getPRStatus, listRalphPRs, mergePR } from "./pr-manager";
+import {
+  checkMainBranchCI,
+  getCIFailureDetails,
+  getPRBranch,
+  getPRComments,
+  getPRStatus,
+  hasApprovalSignal,
+  listRalphPRs,
+  mergePR,
+} from "./pr-manager";
 import {
   addBlockedTicket,
+  getIdleAgents,
+  isMainBranchFailing,
   loadState,
   markTicketCompleted,
   markTicketFailed,
+  removePendingPRFix,
   saveState,
   updateAgent,
+  updateMainBranchStatus,
 } from "./state-manager";
 import {
+  completePRFix,
   enqueueCode,
   enqueuePlan,
+  enqueuePRFix,
   getQueueStats,
   routeCodeToTesters,
   routeIssuesToPlanners,
   routePlansToDevelopers,
+  routePRsToFixers,
 } from "./ticket-router";
 import type { LocalIterationResult, OrchestratorState, RalphLocalConfig } from "./types";
-import { cleanupStaleWorktrees, cleanupWorktree, syncWorktreeWithMain } from "./worktree-manager";
+import {
+  cleanupStaleWorktrees,
+  cleanupWorktree,
+  getWorktreePath,
+  syncWorktreeWithMain,
+} from "./worktree-manager";
 
 // ============================================================================
 // Helpers
@@ -57,17 +79,33 @@ function normalizeTicketId(ticketId: string): string {
 // ============================================================================
 
 const CONFIG_FILE = "content/ralph-local.config.md";
+const DEFAULT_APPROVAL_KEYWORDS = [
+  "lgtm",
+  "LGTM",
+  "looks good",
+  "Looks good",
+  "ship it",
+  "Ship it",
+  "approved",
+  "Approved",
+  "ready to merge",
+  "Ready to merge",
+];
+
 const DEFAULT_CONFIG: RalphLocalConfig = {
   active: true,
   poolSizes: {
     planning: 8,
     developer: 4,
     tester: 4,
+    fixer: 1,
   },
   syncIntervalMs: 2 * 60 * 1000, // 2 minutes
   staleThresholdMs: 30 * 60 * 1000, // 30 minutes
   maxRetries: 2,
   autoMerge: true,
+  mainBranchPriority: true,
+  approvalKeywords: DEFAULT_APPROVAL_KEYWORDS,
   repo: "zerdos/spike-land-nextjs",
   workDir: process.cwd(),
   outputDir: "/tmp/ralph-output",
@@ -98,11 +136,14 @@ function loadConfig(): RalphLocalConfig {
         planning: data.pool_planning ?? DEFAULT_CONFIG.poolSizes.planning,
         developer: data.pool_developer ?? DEFAULT_CONFIG.poolSizes.developer,
         tester: data.pool_tester ?? DEFAULT_CONFIG.poolSizes.tester,
+        fixer: data.pool_fixer ?? DEFAULT_CONFIG.poolSizes.fixer,
       },
       syncIntervalMs: (data.sync_interval_min ?? 2) * 60 * 1000,
       staleThresholdMs: (data.stale_threshold_min ?? 30) * 60 * 1000,
       maxRetries: data.max_retries ?? DEFAULT_CONFIG.maxRetries,
       autoMerge: data.auto_merge ?? DEFAULT_CONFIG.autoMerge,
+      mainBranchPriority: data.main_branch_priority ?? DEFAULT_CONFIG.mainBranchPriority,
+      approvalKeywords: data.approval_keywords ?? DEFAULT_CONFIG.approvalKeywords,
       repo: data.repo ?? DEFAULT_CONFIG.repo,
     };
   } catch (error) {
@@ -145,7 +186,7 @@ async function runOrchestrationLoop(
 
   console.log(`\n🔄 Iteration ${state.iteration}`);
   console.log(
-    `   Pools: ${config.poolSizes.planning}P / ${config.poolSizes.developer}D / ${config.poolSizes.tester}T`,
+    `   Pools: ${config.poolSizes.planning}P / ${config.poolSizes.developer}D / ${config.poolSizes.tester}T / ${config.poolSizes.fixer}F`,
   );
 
   if (dryRun) {
@@ -156,7 +197,18 @@ async function runOrchestrationLoop(
   console.log("\n📋 STEP 0: Clean up stale agents");
   result.staleAgentsCleaned = await step0_cleanupStaleAgents(state, config, dryRun);
 
-  // Step 1: Check PR status
+  // Step 0.5: Check main branch CI (PRIORITY)
+  console.log("\n📋 STEP 0.5: Check main branch CI");
+  const mainBranchFixerSpawned = await step0_5_checkMainBranchCI(state, config, dryRun);
+  if (mainBranchFixerSpawned) {
+    result.agentsSpawned += 1;
+  }
+
+  // Step 0.75: Detect PRs needing fixes
+  console.log("\n📋 STEP 0.75: Detect PRs needing fixes");
+  await step0_75_detectPRsNeedingFixes(state, config);
+
+  // Step 1: Check PR status (with approval signal detection)
   console.log("\n📋 STEP 1: Check PR status");
   result.prsMerged = await step1_checkPRStatus(state, config, dryRun);
 
@@ -173,6 +225,12 @@ async function runOrchestrationLoop(
     result.agentsSpawned += routePlansToDevelopers(state, config);
   }
 
+  // Step 3.5: Route PR fixes to fixer agents
+  console.log("\n📋 STEP 3.5: Route PR fixes to fixers");
+  if (!dryRun) {
+    result.agentsSpawned += routePRsToFixers(state, config);
+  }
+
   // Step 4: Route completed code to testers
   console.log("\n📋 STEP 4: Route code to testers");
   if (!dryRun) {
@@ -182,7 +240,12 @@ async function runOrchestrationLoop(
   // Step 5: Fill planning pool with new issues
   console.log("\n📋 STEP 5: Fill planning pool");
   if (!dryRun) {
-    result.agentsSpawned += routeIssuesToPlanners(state, config);
+    // If main branch is failing and mainBranchPriority is enabled, don't spawn new work
+    if (config.mainBranchPriority && isMainBranchFailing(state)) {
+      console.log("   ⚠️ Main branch CI failing - pausing new work");
+    } else {
+      result.agentsSpawned += routeIssuesToPlanners(state, config);
+    }
   }
 
   // Step 6: Handle blocked agents
@@ -226,7 +289,13 @@ async function step0_cleanupStaleAgents(
   let cleanedCount = 0;
 
   // Check all running agents for staleness
-  for (const pool of [state.pools.planning, state.pools.developer, state.pools.tester]) {
+  const allPools = [
+    state.pools.planning,
+    state.pools.developer,
+    state.pools.tester,
+    state.pools.fixer,
+  ];
+  for (const pool of allPools) {
     for (const agent of pool) {
       if (agent.status !== "running") continue;
 
@@ -270,6 +339,24 @@ async function step0_cleanupStaleAgents(
     }
   }
 
+  // Reset any "stale" agents back to "idle" so they can be reused
+  for (const pool of allPools) {
+    for (const agent of pool) {
+      if (agent.status === "stale" && !dryRun) {
+        console.log(`   🔄 Resetting stale agent ${agent.id} to idle`);
+        updateAgent(state, agent.id, {
+          status: "idle",
+          ticketId: null,
+          worktree: null,
+          pid: null,
+          startedAt: null,
+          lastHeartbeat: null,
+        });
+        cleanedCount++;
+      }
+    }
+  }
+
   if (cleanedCount === 0) {
     console.log("   No stale agents found");
   }
@@ -278,7 +365,140 @@ async function step0_cleanupStaleAgents(
 }
 
 /**
+ * Step 0.5: Check main branch CI status
+ * If main branch is failing, spawn a fixer agent immediately (highest priority)
+ */
+async function step0_5_checkMainBranchCI(
+  state: OrchestratorState,
+  config: RalphLocalConfig,
+  dryRun: boolean,
+): Promise<boolean> {
+  // Check main branch CI status
+  const mainStatus = checkMainBranchCI(config);
+  updateMainBranchStatus(state, mainStatus);
+
+  if (mainStatus.status !== "failing") {
+    console.log(`   Main branch CI: ${mainStatus.status}`);
+    return false;
+  }
+
+  console.log(
+    `   🚨 MAIN BRANCH CI FAILING - ${mainStatus.failedWorkflows.length} failed workflows`,
+  );
+  for (const workflow of mainStatus.failedWorkflows) {
+    console.log(`      - ${workflow.name} (Run #${workflow.id})`);
+  }
+
+  // If mainBranchPriority is enabled, spawn a fixer agent immediately
+  if (!config.mainBranchPriority) {
+    console.log("   ⚠️ Main branch priority disabled, skipping auto-fix");
+    return false;
+  }
+
+  // Check if we have an idle fixer agent
+  const idleFixers = getIdleAgents(state, "fixer");
+  if (idleFixers.length === 0) {
+    console.log("   ⚠️ No idle fixer agents available for main branch fix");
+    return false;
+  }
+
+  if (dryRun) {
+    console.log("   [DRY RUN] Would spawn main branch fixer agent");
+    return false;
+  }
+
+  // Spawn a fixer agent for the main branch
+  const fixerAgent = idleFixers[0];
+  console.log(`   🔧 Spawning main branch fixer: ${fixerAgent.id}`);
+
+  const process = spawnMainBuildFixerAgent(fixerAgent, mainStatus, config);
+
+  if (process) {
+    updateAgent(state, fixerAgent.id, {
+      status: "running",
+      ticketId: `#main-${mainStatus.failedWorkflows[0]?.id || "unknown"}`,
+      worktree: config.workDir,
+      pid: process.pid ?? null,
+      startedAt: new Date().toISOString(),
+      lastHeartbeat: new Date().toISOString(),
+    });
+
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Step 0.75: Detect PRs that need fixes (CI failing or changes requested)
+ * Queue them for fixer agents
+ */
+async function step0_75_detectPRsNeedingFixes(
+  state: OrchestratorState,
+  config: RalphLocalConfig,
+): Promise<void> {
+  const ralphPRs = listRalphPRs(config);
+  if (ralphPRs.length === 0) {
+    console.log("   No open Ralph PRs to check");
+    return;
+  }
+
+  let queuedCount = 0;
+
+  for (const prNumber of ralphPRs) {
+    const status = getPRStatus(prNumber, config);
+    if (!status) continue;
+
+    // Check if PR needs fixes
+    if (status.status === "CI_FAILING" || status.status === "CHANGES_REQUESTED") {
+      // Find the corresponding code work to get ticket info
+      const codeWork = state.pendingCode.find((c) => c.prNumber === prNumber);
+
+      // We can only queue fixes for PRs we have proper tracking for
+      // Skip unknown PRs - they may be from a previous run or manual creation
+      if (!codeWork) {
+        console.log(`   ⚠️ PR #${prNumber} needs fixes but has no tracking info, skipping`);
+        continue;
+      }
+
+      const ticketId = codeWork.ticketId;
+      const branch = getPRBranch(prNumber, config) || codeWork.branch;
+      const worktreePath = codeWork.worktree || getWorktreePath(ticketId, config);
+
+      // Get failure details or review comments
+      const failureDetails = status.status === "CI_FAILING"
+        ? getCIFailureDetails(prNumber, config)
+        : null;
+      const reviewComments = status.status === "CHANGES_REQUESTED"
+        ? [...status.reviewComments, ...getPRComments(prNumber, config)]
+        : [];
+
+      // Queue for fixing
+      enqueuePRFix(
+        state,
+        prNumber,
+        ticketId,
+        branch,
+        worktreePath,
+        status.status === "CI_FAILING" ? "CI_FAILING" : "CHANGES_REQUESTED",
+        reviewComments,
+        failureDetails,
+      );
+
+      queuedCount++;
+    }
+  }
+
+  if (queuedCount === 0) {
+    console.log("   No PRs need fixes");
+  } else {
+    console.log(`   Queued ${queuedCount} PRs for fixes`);
+  }
+}
+
+/**
  * Step 1: Check PR status and merge/fix as needed
+ * Enhanced with approval signal detection
  */
 async function step1_checkPRStatus(
   state: OrchestratorState,
@@ -301,6 +521,12 @@ async function step1_checkPRStatus(
 
     console.log(`   PR #${prNumber}: ${status.status} (CI: ${status.ciStatus})`);
 
+    // Check for approval signals in comments (e.g., "LGTM", "ship it")
+    const approvalCheck = hasApprovalSignal(prNumber, config);
+    if (approvalCheck.hasSignal) {
+      console.log(`   ✨ Approval signal detected: "${approvalCheck.signalFound}"`);
+    }
+
     switch (status.status) {
       case "APPROVED":
         if (config.autoMerge && status.ciStatus === "passing") {
@@ -315,23 +541,46 @@ async function step1_checkPRStatus(
                 markTicketCompleted(state, codeWork.ticketId);
                 cleanupWorktree(codeWork.ticketId, config);
               }
+
+              // Also clean up any pending PR fix for this PR
+              removePendingPRFix(state, prNumber);
             }
           }
         }
         break;
 
+      case "PENDING":
+        // Check if there's an approval signal - treat as approved if CI passes
+        if (approvalCheck.hasSignal && config.autoMerge && status.ciStatus === "passing") {
+          console.log(`   🔀 Merging PR #${prNumber} (approval signal detected)...`);
+          if (!dryRun) {
+            if (mergePR(prNumber, config)) {
+              mergedCount++;
+
+              // Find and complete the ticket
+              const codeWork = state.pendingCode.find((c) => c.prNumber === prNumber);
+              if (codeWork) {
+                markTicketCompleted(state, codeWork.ticketId);
+                cleanupWorktree(codeWork.ticketId, config);
+              }
+
+              // Also clean up any pending PR fix
+              removePendingPRFix(state, prNumber);
+            }
+          }
+        } else {
+          console.log(`   ⏳ PR #${prNumber} awaiting review`);
+        }
+        break;
+
       case "CHANGES_REQUESTED":
         console.log(`   📝 PR #${prNumber} needs fixes (${status.reviewComments.length} comments)`);
-        // Developer agents will pick this up
+        // Fixer agents will pick this up (queued in step 0.75)
         break;
 
       case "CI_FAILING":
         console.log(`   ❌ PR #${prNumber} has failing CI`);
-        // Developer agents will pick this up
-        break;
-
-      case "PENDING":
-        console.log(`   ⏳ PR #${prNumber} awaiting review`);
+        // Fixer agents will pick this up (queued in step 0.75)
         break;
     }
   }
@@ -350,7 +599,13 @@ async function step2_collectAgentOutputs(
   let code = 0;
   let prs = 0;
 
-  for (const pool of [state.pools.planning, state.pools.developer, state.pools.tester]) {
+  const allPools = [
+    state.pools.planning,
+    state.pools.developer,
+    state.pools.tester,
+    state.pools.fixer,
+  ];
+  for (const pool of allPools) {
     for (const agent of pool) {
       if (agent.status !== "running") continue;
 
@@ -422,12 +677,44 @@ async function step2_collectAgentOutputs(
             console.log(`   ❌ Error: ${normalizedErrorTicketId} - ${marker.error}`);
             markTicketFailed(state, normalizedErrorTicketId);
             break;
+
+          case "PR_FIXED":
+            console.log(`   ✅ PR #${marker.prNumber} fixed (${marker.ticketId})`);
+            completePRFix(state, marker.prNumber);
+            break;
+
+          case "MAIN_BUILD_FIX":
+            if (marker.fixed) {
+              console.log(`   ✅ Main build fix attempted for run #${marker.runId}`);
+            } else {
+              console.log(`   ⚠️ Main build fix failed for run #${marker.runId}`);
+            }
+            break;
         }
       }
 
       // If agent completed, mark as idle
       if (completed && !stillRunning) {
         console.log(`   ✅ Agent ${agent.id} completed`);
+        updateAgent(state, agent.id, {
+          status: "idle",
+          ticketId: null,
+          pid: null,
+          worktree: null,
+        });
+      }
+    }
+  }
+
+  // Check for dead agents (process not running but still marked as running)
+  for (const pool of allPools) {
+    for (const agent of pool) {
+      if (agent.status !== "running") continue;
+
+      const stillRunning = isAgentRunning(agent);
+      if (!stillRunning) {
+        console.log(`   💀 Dead agent detected: ${agent.id} (ticket: ${agent.ticketId})`);
+        // Mark as idle so it can pick up new work
         updateAgent(state, agent.id, {
           status: "idle",
           ticketId: null,
@@ -488,7 +775,8 @@ async function step7_syncBranches(
   // Find all active worktrees
   const activeWorktrees = new Set<string>();
 
-  for (const pool of [state.pools.developer, state.pools.tester]) {
+  const poolsWithWorktrees = [state.pools.developer, state.pools.tester, state.pools.fixer];
+  for (const pool of poolsWithWorktrees) {
     for (const agent of pool) {
       if (agent.worktree && agent.status === "running") {
         activeWorktrees.add(agent.worktree);
@@ -530,16 +818,23 @@ function generateSummary(result: LocalIterationResult, state: OrchestratorState)
 
   const summary = parts.length > 0 ? parts.join(", ") : "no significant actions";
 
+  // Main branch status indicator
+  const mainStatus = state.mainBranchStatus?.status || "unknown";
+  const mainStatusIcon = mainStatus === "failing" ? "🚨" : mainStatus === "passing" ? "✅" : "⏳";
+
   return `
 📊 Iteration ${result.iteration} Summary (${duration.toFixed(1)}s)
    ${summary}
 
-   Queues: ${stats.pendingPlans} plans | ${stats.pendingCode} code
+   Main Branch CI: ${mainStatusIcon} ${mainStatus}
+   Queues: ${stats.pendingPlans} plans | ${stats.pendingCode} code | ${stats.pendingPRFixes} PR fixes
    Agents: ${stats.runningPlanners}/${
     stats.idlePlanners + stats.runningPlanners
   }P | ${stats.runningDevelopers}/${
     stats.idleDevelopers + stats.runningDevelopers
-  }D | ${stats.runningTesters}/${stats.idleTesters + stats.runningTesters}T
+  }D | ${stats.runningTesters}/${
+    stats.idleTesters + stats.runningTesters
+  }T | ${stats.runningFixers}/${stats.idleFixers + stats.runningFixers}F
    Completed: ${state.completedTickets.length} | Failed: ${state.failedTickets.length} | Blocked: ${state.blockedTickets.length}
 `;
 }
@@ -558,6 +853,22 @@ function showStatus(config: RalphLocalConfig): void {
   console.log(`\nIteration: ${state.iteration}`);
   console.log(`Last Updated: ${state.lastUpdated}`);
 
+  // Main branch CI status
+  const mainStatus = state.mainBranchStatus;
+  if (mainStatus) {
+    const statusIcon = mainStatus.status === "failing"
+      ? "🚨"
+      : mainStatus.status === "passing"
+      ? "✅"
+      : "⏳";
+    console.log(`\n🔧 Main Branch CI: ${statusIcon} ${mainStatus.status}`);
+    if (mainStatus.status === "failing" && mainStatus.failedWorkflows.length > 0) {
+      for (const workflow of mainStatus.failedWorkflows) {
+        console.log(`   - ${workflow.name} (Run #${workflow.id})`);
+      }
+    }
+  }
+
   console.log("\n📋 Agent Pools:");
   console.log(
     `   Planning:  ${stats.runningPlanners} running / ${stats.idlePlanners} idle (${config.poolSizes.planning} total)`,
@@ -568,10 +879,14 @@ function showStatus(config: RalphLocalConfig): void {
   console.log(
     `   Tester:    ${stats.runningTesters} running / ${stats.idleTesters} idle (${config.poolSizes.tester} total)`,
   );
+  console.log(
+    `   Fixer:     ${stats.runningFixers} running / ${stats.idleFixers} idle (${config.poolSizes.fixer} total)`,
+  );
 
   console.log("\n📬 Queues:");
-  console.log(`   Pending Plans: ${stats.pendingPlans}`);
-  console.log(`   Pending Code:  ${stats.pendingCode}`);
+  console.log(`   Pending Plans:    ${stats.pendingPlans}`);
+  console.log(`   Pending Code:     ${stats.pendingCode}`);
+  console.log(`   Pending PR Fixes: ${stats.pendingPRFixes}`);
 
   console.log("\n📈 Tickets:");
   console.log(`   Completed: ${state.completedTickets.length}`);
