@@ -965,14 +965,6 @@ erDiagram
   DateTime publishedAt "nullable"
   SocialPostStatus status
   Json metadata "nullable"
-  Int likes "nullable"
-  Int comments "nullable"
-  Int shares "nullable"
-  Int impressions "nullable"
-  Int reach "nullable"
-  Decimal(5) engagementRate "nullable"
-  Boolean isEligibleForAd
-  DateTime lastMetricsSync "nullable"
   String createdById FK
   DateTime createdAt
   DateTime updatedAt
@@ -1058,15 +1050,6 @@ erDiagram
   Int maxTeamMembers
   DateTime billingCycleStart "nullable"
   String stripeSubscriptionId UK "nullable"
-}
-"workspace_apps" {
-  String id PK
-  String workspaceId FK
-  String appId FK,UK
-  String purpose "nullable"
-  String linkedCampaign "nullable"
-  DateTime createdAt
-  DateTime updatedAt
 }
 "workspace_favorites" {
   String id PK
@@ -1807,69 +1790,69 @@ erDiagram
   String postId FK
   String assetId FK
 }
-"organic_post_conversions" {
+"post_performance" {
   String id PK
-  String workspaceId FK
   String postId
-  SocialPlatform platform
-  ConversionStatus status
-  Int organicLikes
-  Int organicComments
-  Int organicShares
-  Int organicImpressions
-  Int organicReach
-  Decimal(5) engagementRate
-  Json targetingData "nullable"
-  Json recommendedBudget "nullable"
-  String selectedVariantId "nullable"
-  String platformCampaignId "nullable"
-  DateTime campaignStartDate "nullable"
-  DateTime campaignEndDate "nullable"
-  Decimal(10) dailyBudget "nullable"
-  Decimal(10) totalBudget "nullable"
-  Decimal(10) adSpend
-  Int adImpressions
-  Int adReach
-  Int adClicks
-  Int adConversions
-  String errorMessage "nullable"
-  Json errorDetails "nullable"
+  PostType postType
+  String workspaceId FK
+  Int impressions
+  Int engagementCount
+  Float engagementRate
+  Int clicks
+  Int conversions
+  Float conversionValue
+  Float engagementVelocity
+  Float impressionVelocity
+  Float boostScore "nullable"
+  String boostTrigger "nullable"
+  Float estimatedROI "nullable"
+  DateTime metricPeriod
+  DateTime checkedAt
   DateTime createdAt
   DateTime updatedAt
 }
-"organic_post_engagers" {
+"post_boost_recommendations" {
   String id PK
-  String conversionId FK
-  String ageRange "nullable"
-  String gender "nullable"
-  String location "nullable"
-  String interests
-  String engagementType
-  SocialPlatform platform
-  DateTime fetchedAt
-  EngagerDataStatus dataQuality
+  String postPerformanceId FK
+  String postId
+  PostType postType
+  String workspaceId FK
+  String userId FK
+  BoostRecommendationStatus status
+  String reasoning
+  Float suggestedBudget
+  Int estimatedImpressions
+  Int estimatedClicks
+  Int estimatedConversions
+  Float estimatedCost
+  Float confidenceScore
+  String recommendedPlatforms
+  Json targetAudience "nullable"
+  DateTime acceptedAt "nullable"
+  DateTime rejectedAt "nullable"
+  DateTime appliedAt "nullable"
+  Float actualSpend "nullable"
+  Float actualROI "nullable"
   DateTime createdAt
+  DateTime expiresAt
 }
-"ad_creative_variants" {
+"applied_boosts" {
   String id PK
-  String conversionId FK
-  String format
-  String placement
-  String headline "nullable"
-  String primaryText "nullable"
-  String description "nullable"
-  String callToAction "nullable"
-  String mediaUrl
-  String mediaType
-  Int width
-  Int height
-  String aspectRatio
-  Boolean textOptimized
-  Boolean ctaOptimized
-  Boolean aspectRatioAdjusted
-  Boolean isSelected
-  DateTime createdAt
-  DateTime updatedAt
+  String recommendationId FK,UK
+  String postId
+  PostType postType
+  String workspaceId FK
+  MarketingPlatform platform
+  String externalCampaignId "nullable"
+  Float budget
+  Int actualImpressions
+  Int actualClicks
+  Int actualConversions
+  Float actualSpend
+  Float actualROI "nullable"
+  AppliedBoostStatus status
+  DateTime startedAt
+  DateTime endedAt "nullable"
 }
 "identities" {
   String id PK
@@ -1983,8 +1966,6 @@ erDiagram
 "social_post_ab_tests" }o--|| "workspaces" : workspace
 "social_post_ab_tests" }o--|| "social_posts" : originalPost
 "social_post_ab_test_variants" }o--|| "social_post_ab_tests" : test
-"workspace_apps" }o--|| "workspaces" : workspace
-"workspace_apps" |o--|| "apps" : app
 "workspace_favorites" }o--|| "users" : user
 "workspace_favorites" }o--|| "workspaces" : workspace
 "workspace_recent_access" }o--|| "users" : user
@@ -2081,9 +2062,12 @@ erDiagram
 "post_assets" }o--|| "assets" : asset
 "scheduled_post_assets" }o--|| "scheduled_posts" : post
 "scheduled_post_assets" }o--|| "assets" : asset
-"organic_post_conversions" }o--|| "workspaces" : workspace
-"organic_post_engagers" }o--|| "organic_post_conversions" : conversion
-"ad_creative_variants" }o--|| "organic_post_conversions" : conversion
+"post_performance" }o--|| "workspaces" : workspace
+"post_boost_recommendations" }o--|| "post_performance" : postPerformance
+"post_boost_recommendations" }o--|| "workspaces" : workspace
+"post_boost_recommendations" }o--|| "users" : user
+"applied_boosts" |o--|| "post_boost_recommendations" : recommendation
+"applied_boosts" }o--|| "workspaces" : workspace
 "identities" |o--o| "users" : user
 "identifiers" }o--|| "identities" : identity
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
@@ -3287,14 +3271,6 @@ Properties as follows:
 - `publishedAt`:
 - `status`:
 - `metadata`:
-- `likes`:
-- `comments`:
-- `shares`:
-- `impressions`:
-- `reach`:
-- `engagementRate`:
-- `isEligibleForAd`:
-- `lastMetricsSync`:
 - `createdById`:
 - `createdAt`:
 - `updatedAt`:
@@ -3410,18 +3386,6 @@ Properties as follows:
 - `maxTeamMembers`:
 - `billingCycleStart`:
 - `stripeSubscriptionId`:
-
-### `workspace_apps`
-
-Properties as follows:
-
-- `id`:
-- `workspaceId`:
-- `appId`:
-- `purpose`:
-- `linkedCampaign`:
-- `createdAt`:
-- `updatedAt`:
 
 ### `workspace_favorites`
 
@@ -4373,87 +4337,78 @@ Properties as follows:
 - `postId`:
 - `assetId`:
 
-### `organic_post_conversions`
-
-Tracks the conversion of organic social posts into ad campaigns
-Links original post performance to resulting ad campaigns
+### `post_performance`
 
 Properties as follows:
 
 - `id`:
-- `workspaceId`:
 - `postId`:
-- `platform`:
-- `status`:
-- `organicLikes`:
-- `organicComments`:
-- `organicShares`:
-- `organicImpressions`:
-- `organicReach`:
+- `postType`:
+- `workspaceId`:
+- `impressions`:
+- `engagementCount`:
 - `engagementRate`:
-- `targetingData`:
-- `recommendedBudget`:
-- `selectedVariantId`:
-- `platformCampaignId`:
-- `campaignStartDate`:
-- `campaignEndDate`:
-- `dailyBudget`:
-- `totalBudget`:
-- `adSpend`:
-- `adImpressions`:
-- `adReach`:
-- `adClicks`:
-- `adConversions`:
-- `errorMessage`:
-- `errorDetails`:
+- `clicks`:
+- `conversions`:
+- `conversionValue`:
+- `engagementVelocity`:
+- `impressionVelocity`:
+- `boostScore`:
+- `boostTrigger`:
+- `estimatedROI`:
+- `metricPeriod`:
+- `checkedAt`:
 - `createdAt`:
 - `updatedAt`:
 
-### `organic_post_engagers`
-
-Stores aggregated data about users who engaged with organic posts
-Used for AI-powered targeting analysis (anonymized & aggregated)
+### `post_boost_recommendations`
 
 Properties as follows:
 
 - `id`:
-- `conversionId`:
-- `ageRange`:
-- `gender`:
-- `location`:
-- `interests`:
-- `engagementType`:
+- `postPerformanceId`:
+- `postId`:
+- `postType`:
+- `workspaceId`:
+- `userId`:
+- `status`:
+- `reasoning`:
+- `suggestedBudget`:
+- `estimatedImpressions`:
+- `estimatedClicks`:
+- `estimatedConversions`:
+- `estimatedCost`:
+- `confidenceScore`:
+- `recommendedPlatforms`:
+- `targetAudience`:
+- `acceptedAt`:
+- `rejectedAt`:
+- `appliedAt`:
+- `actualSpend`:
+- `actualROI`:
+- `createdAt`:
+- `expiresAt`:
+
+### `applied_boosts`
+
+Properties as follows:
+
+- `id`:
+- `recommendationId`:
+- `postId`:
+- `postType`:
+- `workspaceId`:
 - `platform`:
-- `fetchedAt`:
-- `dataQuality`:
-- `createdAt`:
-
-### `ad_creative_variants`
-
-Stores format-specific creative adaptations for different ad placements
-Optimizes organic content for various ad formats and placements
-
-Properties as follows:
-
-- `id`:
-- `conversionId`:
-- `format`:
-- `placement`:
-- `headline`:
-- `primaryText`:
-- `description`:
-- `callToAction`:
-- `mediaUrl`:
-- `mediaType`:
-- `width`:
-- `height`:
-- `aspectRatio`:
-- `textOptimized`:
-- `ctaOptimized`:
-- `aspectRatioAdjusted`:
-- `isSelected`:
-- `createdAt`:
-- `updatedAt`:
+- `externalCampaignId`:
+- `budget`:
+- `actualImpressions`:
+- `actualClicks`:
+- `actualConversions`:
+- `actualSpend`:
+- `actualROI`:
+- `status`:
+- `startedAt`:
+- `endedAt`:
 
 ### `identities`
 
