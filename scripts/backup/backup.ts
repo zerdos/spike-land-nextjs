@@ -479,6 +479,14 @@ export async function main(args: string[] = process.argv.slice(2)): Promise<void
     console.log("Mode: DRY-RUN (no actual changes will be made)\n");
   }
 
+  // Environment variable diagnostics
+  console.log("Environment check:");
+  console.log(`- DATABASE_URL: ${process.env.DATABASE_URL ? "[SET]" : "[MISSING]"}`);
+  console.log(`- CLOUDFLARE_R2_BUCKET_NAME: ${process.env.CLOUDFLARE_R2_BUCKET_NAME ? "[SET]" : "[MISSING]"}`);
+  console.log(`- CLOUDFLARE_R2_ENDPOINT: ${process.env.CLOUDFLARE_R2_ENDPOINT ? "[SET]" : "[MISSING]"}`);
+  console.log(`- CLOUDFLARE_R2_ACCESS_KEY_ID: ${process.env.CLOUDFLARE_R2_ACCESS_KEY_ID ? "[SET]" : "[MISSING]"}`);
+  console.log(`- CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY ? "[SET]" : "[MISSING]"}\n`);
+
   try {
     const config = getConfigFromEnv();
     const s3Client = createS3Client(config);
