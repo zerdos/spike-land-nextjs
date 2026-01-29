@@ -561,11 +561,11 @@ secret**
 
 ### Workflow Files Reference
 
-| Workflow                 | Secrets Used                                                                                                  |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| `ci-cd.yml`              | DATABASE_URL, AUTH_SECRET, E2E_BYPASS_SECRET, CODECOV_TOKEN                                                   |
-| `claude.yml`             | GH_PAT_TOKEN, CLAUDE_CODE_OAUTH_TOKEN                                                                         |
-| `claude-code-review.yml` | GH_PAT_TOKEN, CLAUDE_CODE_OAUTH_TOKEN                                                                         |
+| Workflow                 | Secrets Used                                                                                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `ci-cd.yml`              | DATABASE_URL, AUTH_SECRET, E2E_BYPASS_SECRET, CODECOV_TOKEN                                                                   |
+| `claude.yml`             | GH_PAT_TOKEN, CLAUDE_CODE_OAUTH_TOKEN                                                                                         |
+| `claude-code-review.yml` | GH_PAT_TOKEN, CLAUDE_CODE_OAUTH_TOKEN                                                                                         |
 | `backup.yml`             | DATABASE_URL, CLOUDFLARE_R2_BUCKET_NAME, CLOUDFLARE_R2_ENDPOINT, CLOUDFLARE_R2_ACCESS_KEY_ID, CLOUDFLARE_R2_SECRET_ACCESS_KEY |
 
 ---
