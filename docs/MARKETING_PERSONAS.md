@@ -25,12 +25,12 @@ These 3 personas represent the core addressable market for Orbit. All marketing,
 
 **Demographics**
 
-| Attribute | Value |
-|-----------|-------|
-| Age | 25-35 |
-| Gender | Mixed (55% Female) |
-| Income | £25-50k |
-| Location | UK/Global (Remote-first) |
+| Attribute | Value                                |
+| --------- | ------------------------------------ |
+| Age       | 25-35                                |
+| Gender    | Mixed (55% Female)                   |
+| Income    | £25-50k                              |
+| Location  | UK/Global (Remote-first)             |
 | Platforms | Instagram, TikTok, YouTube, LinkedIn |
 
 **Professional Profile**
@@ -102,12 +102,12 @@ These 3 personas represent the core addressable market for Orbit. All marketing,
 
 **Demographics**
 
-| Attribute | Value |
-|-----------|-------|
-| Age | 28-45 |
-| Gender | 60% Female |
-| Income | £35-65k |
-| Location | UK (Urban/Suburban) |
+| Attribute | Value                                    |
+| --------- | ---------------------------------------- |
+| Age       | 28-45                                    |
+| Gender    | 60% Female                               |
+| Income    | £35-65k                                  |
+| Location  | UK (Urban/Suburban)                      |
 | Platforms | LinkedIn, Facebook, Instagram, Twitter/X |
 
 **Professional Profile**
@@ -181,12 +181,12 @@ These 3 personas represent the core addressable market for Orbit. All marketing,
 
 **Demographics**
 
-| Attribute | Value |
-|-----------|-------|
-| Age | 25-40 |
-| Gender | 70% Female |
-| Income | £30-80k (variable, freelance) |
-| Location | UK/Global (Remote) |
+| Attribute | Value                                                                  |
+| --------- | ---------------------------------------------------------------------- |
+| Age       | 25-40                                                                  |
+| Gender    | 70% Female                                                             |
+| Income    | £30-80k (variable, freelance)                                          |
+| Location  | UK/Global (Remote)                                                     |
 | Platforms | All major platforms (Instagram, LinkedIn, Facebook, Twitter/X, TikTok) |
 
 **Professional Profile**
@@ -260,21 +260,22 @@ These 3 personas represent the core addressable market for Orbit. All marketing,
 
 ### Platform Targeting
 
-| Persona | Primary Platform | Secondary Platform | Ad Format |
-|---------|------------------|-------------------|-----------|
-| Solo Content Creator | Instagram | TikTok | Story ads, Reels ads |
-| Small Business Manager | LinkedIn | Facebook | Sponsored posts, InMail |
-| Freelance SMM | LinkedIn | Twitter/X | Sponsored posts, Video ads |
+| Persona                | Primary Platform | Secondary Platform | Ad Format                  |
+| ---------------------- | ---------------- | ------------------ | -------------------------- |
+| Solo Content Creator   | Instagram        | TikTok             | Story ads, Reels ads       |
+| Small Business Manager | LinkedIn         | Facebook           | Sponsored posts, InMail    |
+| Freelance SMM          | LinkedIn         | Twitter/X          | Sponsored posts, Video ads |
 
 ### Budget Allocation (Initial Launch)
 
-| Persona | Budget % | Expected CAC | Lifetime Value (LTV) | Payback Period |
-|---------|----------|--------------|---------------------|----------------|
-| Solo Content Creator | 35% | £40-80 | £348-1,044 (12-36 mo) | 1-3 months |
-| Small Business Manager | 40% | £100-200 | £1,188-3,564 (12-36 mo) | 1-2 months |
-| Freelance SMM | 25% | £60-120 | £522-1,566 (18-54 mo) | 2-4 months |
+| Persona                | Budget % | Expected CAC | Lifetime Value (LTV)    | Payback Period |
+| ---------------------- | -------- | ------------ | ----------------------- | -------------- |
+| Solo Content Creator   | 35%      | £40-80       | £348-1,044 (12-36 mo)   | 1-3 months     |
+| Small Business Manager | 40%      | £100-200     | £1,188-3,564 (12-36 mo) | 1-2 months     |
+| Freelance SMM          | 25%      | £60-120      | £522-1,566 (18-54 mo)   | 2-4 months     |
 
 **Assumptions:**
+
 - Solo Creator: $29/mo PRO tier, 12-36 month retention
 - Small Business: $99/mo BUSINESS tier, 12-36 month retention
 - Freelancer: 3 workspaces × $29/mo, 18-54 month retention
@@ -318,11 +319,13 @@ Test these value propositions across all personas:
 ## Persona Evolution (Future Phases)
 
 **Phase 2 Expansion (Q2 2026)**:
+
 - Agency owner (10-50 employees)
 - Enterprise social media director
 - Creator economy manager (MCN/talent management)
 
 **Phase 3 Niche Verticals (Q3 2026)**:
+
 - E-commerce brand manager (Shopify/WooCommerce focus)
 - SaaS growth marketer (B2B tech companies)
 - Non-profit communications director
@@ -331,28 +334,31 @@ Test these value propositions across all personas:
 
 ## Competitive Positioning
 
-| Competitor | Positioning vs. Orbit |
-|------------|----------------------|
-| **Hootsuite** | "Modern AI vs. legacy tool" |
-| **Buffer** | "Smart automation vs. manual scheduling" |
+| Competitor        | Positioning vs. Orbit                        |
+| ----------------- | -------------------------------------------- |
+| **Hootsuite**     | "Modern AI vs. legacy tool"                  |
+| **Buffer**        | "Smart automation vs. manual scheduling"     |
 | **Sprout Social** | "Affordable pro tool vs. enterprise pricing" |
-| **Later** | "Full command center vs. scheduling-only" |
+| **Later**         | "Full command center vs. scheduling-only"    |
 
 ---
 
 ## Key Messaging by Persona
 
 ### Solo Content Creator
+
 - **Hero Message**: "Focus on creating. We'll handle the rest."
 - **Pain Point Amplification**: "Stop spending 60% of your time on busywork."
 - **Differentiation**: "AI that learns your voice, not generic templates."
 
 ### Small Business Marketing Manager
+
 - **Hero Message**: "Enterprise-grade social management at SMB pricing."
 - **Pain Point Amplification**: "What's the cost of a PR crisis at 2 AM?"
 - **Differentiation**: "Anomaly detection and brand guardrails others don't offer."
 
 ### Freelance Social Media Manager
+
 - **Hero Message**: "Scale your freelance business without hiring."
 - **Pain Point Amplification**: "Turning down clients = turning down money."
 - **Differentiation**: "Multi-workspace management built for agencies."
@@ -361,12 +367,12 @@ Test these value propositions across all personas:
 
 ## Success Metrics by Persona
 
-| Metric | Solo Creator | Small Business | Freelancer |
-|--------|-------------|----------------|------------|
-| **Trial-to-Paid Conversion** | 20-30% | 30-40% | 25-35% |
-| **Month 1 Churn** | <15% | <10% | <12% |
-| **6-Month Retention** | 60-70% | 70-80% | 65-75% |
-| **NPS Score** | 40-50 | 50-60 | 45-55 |
+| Metric                       | Solo Creator | Small Business | Freelancer |
+| ---------------------------- | ------------ | -------------- | ---------- |
+| **Trial-to-Paid Conversion** | 20-30%       | 30-40%         | 25-35%     |
+| **Month 1 Churn**            | <15%         | <10%           | <12%       |
+| **6-Month Retention**        | 60-70%       | 70-80%         | 65-75%     |
+| **NPS Score**                | 40-50        | 50-60          | 45-55      |
 
 ---
 
