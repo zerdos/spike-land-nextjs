@@ -380,3 +380,13 @@ export type { CacheEntry, CacheKey, CacheMap } from "./cache";
 
 // Health Event Types
 export type { HealthEventDetails, RateLimitEventInfo, TokenEventInfo } from "./health-events";
+
+// Attribution Types
+export type {
+  AttributionModelType,
+  AttributionWeight,
+  JourneyStep,
+  PlatformTransition,
+  TimeDecayConfig,
+  PositionBasedConfig,
+} from "./attribution";
