@@ -390,3 +390,49 @@ export type {
   PositionBasedConfig,
   TimeDecayConfig,
 } from "./attribution";
+
+// Boost Analytics Types - Issue #570
+export type {
+  // Enums
+  BoostStatus,
+  AttributionEventType,
+  TouchpointType,
+  RecommendationType,
+  RecommendationStatus,
+  InsightType,
+  InsightCategory,
+  InsightSeverity,
+  AttributionModel,
+  // Data Structures
+  OrganicMetricsSnapshot,
+  TargetingCriteria,
+  BoostCampaignData,
+  BoostPerformanceMetrics,
+  BoostPerformanceSnapshot,
+  BoostAttributionEvent,
+  AttributionResult,
+  AttributionReport,
+  // Analytics & Insights
+  BoostEffectivenessAnalysis,
+  BoostInsightData,
+  ChartData,
+  ComparisonMetrics,
+  SuggestedAction,
+  // ML Recommendations
+  BoostRecommendationData,
+  MLFeatures,
+  MLLabels,
+  MLTrainingDataRecord,
+  PredictedOutcome,
+  TargetingRecommendation,
+  BudgetRecommendation,
+  // API Request/Response Types
+  CreateBoostCampaignRequest,
+  CreateBoostCampaignResponse,
+  UpdateBoostStatusRequest,
+  BoostCampaignFilters,
+  ApplyRecommendationRequest,
+  ApplyRecommendationResponse,
+  AcknowledgeInsightRequest,
+  DashboardOverview,
+} from "./boost-analytics";

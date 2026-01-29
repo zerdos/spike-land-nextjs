@@ -1803,6 +1803,114 @@ erDiagram
   String value
   DateTime createdAt
 }
+"boost_campaigns" {
+  String id PK
+  String workspaceId FK
+  String originalPostId FK "nullable"
+  String campaignId FK,UK
+  DateTime boostedAt
+  String boostedBy
+  String boostReason
+  String boostStrategy
+  Json organicMetrics
+  Json targetingCriteria "nullable"
+  Int initialBudget
+  Int duration
+  BoostStatus status
+  DateTime createdAt
+  DateTime updatedAt
+}
+"boost_performance_snapshots" {
+  String id PK
+  String boostCampaignId FK
+  DateTime snapshotAt
+  Int daysSinceBoosted
+  Int organicImpressions
+  Int organicEngagements
+  Int organicReach
+  Int paidImpressions
+  Int paidClicks
+  Int paidConversions
+  Int paidSpend
+  Float paidCtr
+  Float paidCpa
+  Float paidRoas
+  Int attributedOrganic
+  Int attributedPaid
+  Int attributedOverlap
+  Int incrementalReach
+  Float costPerResult
+  Float totalRoi
+  DateTime createdAt
+}
+"boost_attribution_events" {
+  String id PK
+  String boostCampaignId FK
+  String sessionId "nullable"
+  String userId "nullable"
+  AttributionEventType eventType
+  TouchpointType touchpointType
+  String platform
+  Int eventValue "nullable"
+  Json eventMetadata "nullable"
+  DateTime occurredAt
+  DateTime createdAt
+}
+"boost_ml_training_data" {
+  String id PK
+  String workspaceId FK
+  String boostCampaignId FK,UK
+  Json features
+  Json labels
+  Float dataQualityScore
+  Boolean isTrainingReady
+  DateTime aggregatedAt
+  DateTime createdAt
+  DateTime updatedAt
+}
+"boost_recommendations" {
+  String id PK
+  String workspaceId FK
+  String suggestedPostId FK "nullable"
+  RecommendationType recommendationType
+  Float confidence
+  Int priority
+  Int suggestedBudget
+  Int suggestedDuration
+  DateTime suggestedTiming
+  Json suggestedTargeting
+  Int projectedReach
+  Int projectedConversions
+  Float projectedRoi
+  Json confidenceInterval
+  String reason
+  Json supportingData
+  RecommendationStatus status
+  DateTime appliedAt "nullable"
+  String resultingBoostId "nullable"
+  DateTime createdAt
+  DateTime expiresAt
+}
+"boost_insights" {
+  String id PK
+  String workspaceId FK
+  InsightType insightType
+  InsightCategory category
+  InsightSeverity severity
+  String title
+  String description
+  Json visualization "nullable"
+  Json dataPoints
+  Json comparisonMetrics "nullable"
+  Boolean actionable
+  Json suggestedActions "nullable"
+  DateTime periodStart
+  DateTime periodEnd
+  Boolean acknowledged
+  String acknowledgedBy "nullable"
+  DateTime acknowledgedAt "nullable"
+  DateTime createdAt
+}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
@@ -2000,6 +2108,16 @@ erDiagram
 "scheduled_post_assets" }o--|| "assets" : asset
 "identities" |o--o| "users" : user
 "identifiers" }o--|| "identities" : identity
+"boost_campaigns" }o--|| "workspaces" : workspace
+"boost_campaigns" }o--o| "social_posts" : originalPost
+"boost_campaigns" |o--|| "allocator_campaigns" : campaign
+"boost_performance_snapshots" }o--|| "boost_campaigns" : boostCampaign
+"boost_attribution_events" }o--|| "boost_campaigns" : boostCampaign
+"boost_ml_training_data" }o--|| "workspaces" : workspace
+"boost_ml_training_data" |o--|| "boost_campaigns" : boostCampaign
+"boost_recommendations" }o--|| "workspaces" : workspace
+"boost_recommendations" }o--o| "social_posts" : suggestedPost
+"boost_insights" }o--|| "workspaces" : workspace
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
 "_ConnectionToConnectionTag" }o--|| "connection_tags" : ConnectionTag
 ```
@@ -4284,6 +4402,132 @@ Properties as follows:
 - `identityId`:
 - `type`:
 - `value`:
+- `createdAt`:
+
+### `boost_campaigns`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `originalPostId`:
+- `campaignId`:
+- `boostedAt`:
+- `boostedBy`:
+- `boostReason`:
+- `boostStrategy`:
+- `organicMetrics`:
+- `targetingCriteria`:
+- `initialBudget`:
+- `duration`:
+- `status`:
+- `createdAt`:
+- `updatedAt`:
+
+### `boost_performance_snapshots`
+
+Properties as follows:
+
+- `id`:
+- `boostCampaignId`:
+- `snapshotAt`:
+- `daysSinceBoosted`:
+- `organicImpressions`:
+- `organicEngagements`:
+- `organicReach`:
+- `paidImpressions`:
+- `paidClicks`:
+- `paidConversions`:
+- `paidSpend`:
+- `paidCtr`:
+- `paidCpa`:
+- `paidRoas`:
+- `attributedOrganic`:
+- `attributedPaid`:
+- `attributedOverlap`:
+- `incrementalReach`:
+- `costPerResult`:
+- `totalRoi`:
+- `createdAt`:
+
+### `boost_attribution_events`
+
+Properties as follows:
+
+- `id`:
+- `boostCampaignId`:
+- `sessionId`:
+- `userId`:
+- `eventType`:
+- `touchpointType`:
+- `platform`:
+- `eventValue`:
+- `eventMetadata`:
+- `occurredAt`:
+- `createdAt`:
+
+### `boost_ml_training_data`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `boostCampaignId`:
+- `features`:
+- `labels`:
+- `dataQualityScore`:
+- `isTrainingReady`:
+- `aggregatedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `boost_recommendations`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `suggestedPostId`:
+- `recommendationType`:
+- `confidence`:
+- `priority`:
+- `suggestedBudget`:
+- `suggestedDuration`:
+- `suggestedTiming`:
+- `suggestedTargeting`:
+- `projectedReach`:
+- `projectedConversions`:
+- `projectedRoi`:
+- `confidenceInterval`:
+- `reason`:
+- `supportingData`:
+- `status`:
+- `appliedAt`:
+- `resultingBoostId`:
+- `createdAt`:
+- `expiresAt`:
+
+### `boost_insights`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `insightType`:
+- `category`:
+- `severity`:
+- `title`:
+- `description`:
+- `visualization`:
+- `dataPoints`:
+- `comparisonMetrics`:
+- `actionable`:
+- `suggestedActions`:
+- `periodStart`:
+- `periodEnd`:
+- `acknowledged`:
+- `acknowledgedBy`:
+- `acknowledgedAt`:
 - `createdAt`:
 
 ### `_ConnectionToConnectionTag`

@@ -2150,6 +2150,10 @@ model SocialPost {
   // Content Library
   assets PostAsset[]
 
+  // Boost Analytics - Issue #570
+  boostCampaigns       BoostCampaign[]
+  boostRecommendations BoostRecommendation[]
+
   @@index([createdById])
   @@index([createdById, createdAt])
   @@index([status])
@@ -2491,6 +2495,12 @@ model Workspace {
   // Multi-workspace management
   favorites    WorkspaceFavorite[]
   recentAccess WorkspaceRecentAccess[]
+
+  // Boost Analytics - Issue #570
+  boostCampaigns       BoostCampaign[]
+  boostRecommendations BoostRecommendation[]
+  boostInsights        BoostInsight[]
+  boostMlTrainingData  BoostMlTrainingData[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -3715,6 +3725,9 @@ model AllocatorCampaign {
   dailyBudgetMoves    AllocatorDailyBudgetMove[]
   guardrailAlerts     AllocatorGuardrailAlert[]
 
+  // Boost Analytics - Issue #570
+  boostCampaign BoostCampaign?
+
   @@unique([workspaceId, platform, platformCampaignId])
   @@index([workspaceId])
   @@index([platform])
@@ -4366,4 +4379,304 @@ enum IdentifierType {
   VISITOR_ID
   USER_ID
   EMAIL
+}
+
+// =============================================================================
+// Boost Analytics Models - Issue #570
+// =============================================================================
+
+// Links organic posts to their boosted campaigns with boost decision metadata
+model BoostCampaign {
+  id                    String   @id @default(cuid())
+  workspaceId           String
+  workspace             Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Source organic content
+  originalPostId        String?
+  originalPost          SocialPost? @relation(fields: [originalPostId], references: [id], onDelete: SetNull)
+
+  // Linked campaign
+  campaignId            String   @unique
+  campaign              AllocatorCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  // Boost decision metadata
+  boostedAt             DateTime
+  boostedBy             String   // userId or "AI_AGENT"
+  boostReason           String   // Why was this boosted?
+  boostStrategy         String   // e.g., "HIGH_ENGAGEMENT", "VIRAL_POTENTIAL"
+
+  // Pre-boost organic metrics (snapshot)
+  organicMetrics        Json     // { impressions, engagement, reach, likes, comments, shares }
+
+  // Boost configuration
+  targetingCriteria     Json?    // { demographics, interests, locations }
+  initialBudget         Int      // in cents
+  duration              Int      // in days
+
+  // Status
+  status                BoostStatus @default(ACTIVE)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  performanceSnapshots  BoostPerformanceSnapshot[]
+  attributionEvents     BoostAttributionEvent[]
+  mlTrainingData        BoostMlTrainingData?
+
+  @@map("boost_campaigns")
+  @@index([workspaceId])
+  @@index([originalPostId])
+  @@index([campaignId])
+  @@index([boostedAt])
+  @@index([status])
+}
+
+// Time-series data capturing boost performance at regular intervals
+model BoostPerformanceSnapshot {
+  id                    String   @id @default(cuid())
+  boostCampaignId       String
+  boostCampaign         BoostCampaign @relation(fields: [boostCampaignId], references: [id], onDelete: Cascade)
+
+  // Snapshot timestamp
+  snapshotAt            DateTime
+  daysSinceBoosted      Int      // Days elapsed since boost started
+
+  // Organic metrics (continued organic performance)
+  organicImpressions    Int
+  organicEngagements    Int
+  organicReach          Int
+
+  // Paid metrics (from campaign)
+  paidImpressions       Int
+  paidClicks            Int
+  paidConversions       Int
+  paidSpend             Int      // in cents
+  paidCtr               Float    // click-through rate
+  paidCpa               Float    // cost per acquisition
+  paidRoas              Float    // return on ad spend
+
+  // Attribution metrics
+  attributedOrganic     Int      // Conversions attributed to organic
+  attributedPaid        Int      // Conversions attributed to paid
+  attributedOverlap     Int      // Conversions with both touchpoints
+
+  // Computed metrics
+  incrementalReach      Int      // Paid reach - organic reach overlap
+  costPerResult         Float    // paidSpend / (paidConversions + attributedOverlap)
+  totalRoi              Float    // (total value - cost) / cost
+
+  createdAt             DateTime @default(now())
+
+  @@map("boost_performance_snapshots")
+  @@index([boostCampaignId, snapshotAt])
+  @@index([snapshotAt])
+}
+
+// Granular attribution tracking for individual user interactions
+model BoostAttributionEvent {
+  id                    String   @id @default(cuid())
+  boostCampaignId       String
+  boostCampaign         BoostCampaign @relation(fields: [boostCampaignId], references: [id], onDelete: Cascade)
+
+  // User/session tracking
+  sessionId             String?
+  userId                String?
+
+  // Interaction details
+  eventType             AttributionEventType
+  touchpointType        TouchpointType  // ORGANIC or PAID
+  platform              String          // e.g., "FACEBOOK", "INSTAGRAM"
+
+  // Event metadata
+  eventValue            Int?            // in cents, for conversion events
+  eventMetadata         Json?           // platform-specific data
+
+  // Timestamp
+  occurredAt            DateTime
+
+  createdAt             DateTime @default(now())
+
+  @@map("boost_attribution_events")
+  @@index([boostCampaignId, occurredAt])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([occurredAt])
+}
+
+// Aggregated data for ML model training
+model BoostMlTrainingData {
+  id                    String   @id @default(cuid())
+  workspaceId           String
+  workspace             Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  boostCampaignId       String   @unique
+  boostCampaign         BoostCampaign @relation(fields: [boostCampaignId], references: [id], onDelete: Cascade)
+
+  // Features (inputs)
+  features              Json     // All input features for ML model
+
+  // Labels (outcomes)
+  labels                Json     // Target variables (success metrics)
+
+  // Training metadata
+  dataQualityScore      Float    // 0-1 score for data completeness
+  isTrainingReady       Boolean  @default(false)
+
+  aggregatedAt          DateTime
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("boost_ml_training_data")
+  @@index([workspaceId, isTrainingReady])
+  @@index([aggregatedAt])
+}
+
+// ML-generated recommendations for future boosts
+model BoostRecommendation {
+  id                    String   @id @default(cuid())
+  workspaceId           String
+  workspace             Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Recommendation target
+  suggestedPostId       String?
+  suggestedPost         SocialPost? @relation(fields: [suggestedPostId], references: [id], onDelete: SetNull)
+
+  // Recommendation details
+  recommendationType    RecommendationType
+  confidence            Float    // 0-1 confidence score
+  priority              Int      // 1-5 priority ranking
+
+  // Boost parameters
+  suggestedBudget       Int      // in cents
+  suggestedDuration     Int      // in days
+  suggestedTiming       DateTime // Best time to boost
+  suggestedTargeting    Json     // Targeting recommendations
+
+  // Projected impact
+  projectedReach        Int
+  projectedConversions  Int
+  projectedRoi          Float
+  confidenceInterval    Json     // { low, high } bounds
+
+  // Reasoning
+  reason                String   @db.Text
+  supportingData        Json     // Supporting metrics and insights
+
+  // Status
+  status                RecommendationStatus @default(PENDING)
+  appliedAt             DateTime?
+  resultingBoostId      String?  // Link to boost if recommendation was applied
+
+  createdAt             DateTime @default(now())
+  expiresAt             DateTime
+
+  @@map("boost_recommendations")
+  @@index([workspaceId, status])
+  @@index([confidence])
+  @@index([createdAt])
+  @@index([expiresAt])
+}
+
+// Dashboard insights and best practices derived from historical data
+model BoostInsight {
+  id                    String   @id @default(cuid())
+  workspaceId           String
+  workspace             Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Insight metadata
+  insightType           InsightType
+  category              InsightCategory
+  severity              InsightSeverity // How important is this insight?
+
+  // Insight content
+  title                 String
+  description           String   @db.Text
+  visualization         Json?    // Chart/graph data for dashboard
+
+  // Supporting data
+  dataPoints            Json     // Raw data supporting the insight
+  comparisonMetrics     Json?    // Before/after or benchmark comparisons
+
+  // Actionability
+  actionable            Boolean  @default(true)
+  suggestedActions      Json?    // Array of recommended actions
+
+  // Time period
+  periodStart           DateTime
+  periodEnd             DateTime
+
+  // Status
+  acknowledged          Boolean  @default(false)
+  acknowledgedBy        String?
+  acknowledgedAt        DateTime?
+
+  createdAt             DateTime @default(now())
+
+  @@map("boost_insights")
+  @@index([workspaceId, acknowledged])
+  @@index([severity, acknowledged])
+  @@index([createdAt])
+}
+
+// Boost Analytics Enums
+enum BoostStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum AttributionEventType {
+  VIEW
+  CLICK
+  ENGAGEMENT
+  CONVERSION
+  SHARE
+}
+
+enum TouchpointType {
+  ORGANIC
+  PAID
+  UNKNOWN
+}
+
+enum RecommendationType {
+  BOOST_HIGH_PERFORMER
+  BOOST_TRENDING
+  OPTIMIZE_TARGETING
+  INCREASE_BUDGET
+  ADJUST_TIMING
+  REPLICATE_SUCCESS
+}
+
+enum RecommendationStatus {
+  PENDING
+  APPLIED
+  DISMISSED
+  EXPIRED
+}
+
+enum InsightType {
+  PATTERN
+  ANOMALY
+  BEST_PRACTICE
+  WARNING
+  OPPORTUNITY
+}
+
+enum InsightCategory {
+  TIMING
+  TARGETING
+  BUDGET
+  CONTENT_TYPE
+  PLATFORM
+  AUDIENCE
+}
+
+enum InsightSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }
