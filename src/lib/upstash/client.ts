@@ -218,7 +218,7 @@ export async function publishSSEEvent(
       await redis.ltrim(key, 0, 99);
     })().catch(err => {
       console.error(`[SSE] Failed to store event in list:`, err);
-    })
+    }),
   ]);
 }
 
