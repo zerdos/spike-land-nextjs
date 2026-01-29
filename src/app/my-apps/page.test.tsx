@@ -215,7 +215,9 @@ describe("MyAppsPage", () => {
       render(component);
 
       expect(
-        screen.getByText("Build custom tools, landing pages, and interactive content"),
+        screen.getByText(
+          "Build Custom Link-in-Bio Pages, Interactive Polls, and Campaign Microsites",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -226,7 +228,7 @@ describe("MyAppsPage", () => {
       expect(screen.getByText("No apps yet")).toBeInTheDocument();
       expect(
         screen.getByText(
-          "Get started by creating your first custom tool or landing page",
+          "Create campaign tools like link-in-bio pages, landing pages, interactive polls, or contest entry forms",
         ),
       ).toBeInTheDocument();
     });
