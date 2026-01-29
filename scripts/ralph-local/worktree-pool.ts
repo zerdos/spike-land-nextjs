@@ -285,7 +285,114 @@ async function recycleIntoWarmWorktreeAsync(
 }
 
 /**
- * Create a single warm worktree at the specified index
+ * Create a single warm worktree at the specified index (async version)
+ * Prefers recycling over fresh creation for speed
+ * Returns true if successful, false otherwise
+ */
+async function createWarmWorktreeAsync(index: number, config: RalphLocalConfig): Promise<boolean> {
+  if (!validatePoolIndex(index)) {
+    console.log(`   ❌ Invalid pool index: ${index}`);
+    return false;
+  }
+
+  // First, try to recycle an existing worktree (much faster!)
+  const recyclable = listRecyclableWorktrees(config);
+  if (recyclable.length > 0) {
+    const recyclePath = recyclable[0];
+    console.log(`   ♻️ Found recyclable worktree: ${basename(recyclePath)}`);
+    return recycleIntoWarmWorktreeAsync(recyclePath, index, config);
+  }
+
+  // Fall back to fresh creation
+  const poolDir = getPoolDir(config);
+  const worktreePath = getWarmWorktreePath(index, config);
+  const branchName = `ralph/pool-${index}`;
+
+  console.log(`   🔥 Creating warm worktree ${index} at ${worktreePath}`);
+
+  // Ensure pool directory exists
+  if (!existsSync(poolDir)) {
+    mkdirSync(poolDir, { recursive: true });
+  }
+
+  // Clean up if exists
+  if (existsSync(worktreePath)) {
+    try {
+      execSync(`git worktree remove "${worktreePath}" --force`, {
+        cwd: config.workDir,
+        encoding: "utf-8",
+        timeout: 60000,
+        stdio: "pipe",
+      });
+    } catch {
+      // Try force removing the directory
+      rmSync(worktreePath, { recursive: true, force: true });
+      execSync("git worktree prune", {
+        cwd: config.workDir,
+        encoding: "utf-8",
+        timeout: 30000,
+        stdio: "pipe",
+      });
+    }
+  }
+
+  // Delete branch if it exists
+  try {
+    execSync(`git branch -D ${branchName}`, {
+      cwd: config.workDir,
+      encoding: "utf-8",
+      timeout: 30000,
+      stdio: "pipe",
+    });
+  } catch {
+    // Branch doesn't exist, that's fine
+  }
+
+  try {
+    // Fetch latest main
+    await execAsync("git fetch origin main", {
+      cwd: config.workDir,
+      timeout: 60000,
+    });
+
+    // Create the worktree with a pool branch
+    await execAsync(`git worktree add -b ${branchName} "${worktreePath}" origin/main`, {
+      cwd: config.workDir,
+      timeout: 60000,
+    });
+
+    // Install dependencies
+    console.log(`   📦 Installing dependencies for warm worktree ${index}...`);
+    await execAsync("yarn install --immutable 2>&1 || yarn install 2>&1", {
+      cwd: worktreePath,
+      timeout: 600000, // 10 minutes for yarn install
+    });
+
+    console.log(`   ✅ Warm worktree ${index} ready`);
+    return true;
+  } catch (error) {
+    console.error(`   ❌ Failed to create warm worktree ${index}:`, error);
+
+    // Cleanup on failure
+    try {
+      if (existsSync(worktreePath)) {
+        execSync(`git worktree remove "${worktreePath}" --force`, {
+          cwd: config.workDir,
+          encoding: "utf-8",
+          timeout: 60000,
+          stdio: "pipe",
+        });
+      }
+    } catch {
+      // Ignore cleanup errors
+    }
+
+    return false;
+  }
+}
+
+/**
+ * Create a single warm worktree at the specified index (sync version)
  * Returns true if successful, false otherwise
  */
 function createWarmWorktree(index: number, config: RalphLocalConfig): boolean {
@@ -481,6 +588,33 @@ export function acquireFromPool(ticketId: string, config: RalphLocalConfig): str
   console.log(`   ⚡ Acquiring warm worktree ${poolIndex} for ${ticketId}`);
 
   try {
+    // First, delete the ticket branch if it already exists (stale from previous run)
+    try {
+      execSync(`git branch -D ${ticketBranchName}`, {
+        cwd: config.workDir,
+        encoding: "utf-8",
+        timeout: 30000,
+        stdio: "pipe",
+      });
+      console.log(`   🧹 Cleaned up existing branch ${ticketBranchName}`);
+    } catch {
+      // Branch doesn't exist, that's fine
+    }
+
+    // If target path exists, clean it up
+    if (existsSync(targetPath)) {
+      try {
+        execSync(`git worktree remove "${targetPath}" --force`, {
+          cwd: config.workDir,
+          encoding: "utf-8",
+          timeout: 30000,
+          stdio: "pipe",
+        });
+      } catch {
+        rmSync(targetPath, { recursive: true, force: true });
+      }
+    }
+
     // Rename the branch from pool name to ticket name
     execSync(`git branch -m ${poolBranchName} ${ticketBranchName}`, {
       cwd: warmPath,
@@ -511,7 +645,7 @@ export function acquireFromPool(ticketId: string, config: RalphLocalConfig): str
 
     console.log(`   ✅ Acquired worktree for ${ticketId}`);
 
-    // Trigger background replenishment
+    // Trigger background replenishment (non-blocking)
     setImmediate(() => {
       replenishPool(config);
     });
@@ -562,8 +696,9 @@ export function getPoolStatus(config: RalphLocalConfig): {
 }
 
 /**
- * Replenish the pool in the background (non-blocking)
+ * Replenish the pool asynchronously in the background (truly non-blocking)
  * Creates new warm worktrees to fill up to the configured pool size
+ * Returns immediately - replenishment happens in background
  */
 export function replenishPool(config: RalphLocalConfig): void {
   const status = getPoolStatus(config);
@@ -572,9 +707,32 @@ export function replenishPool(config: RalphLocalConfig): void {
     return; // Pool is full
   }
 
-  const needed = config.worktreePoolSize - status.available;
-  console.log(`   🔄 Replenishing pool: need ${needed} warm worktrees`);
+  // If already replenishing, don't start another one
+  if (isReplenishing) {
+    console.log(`   ⏳ Pool replenishment already in progress`);
+    return;
+  }
 
+  const needed = config.worktreePoolSize - status.available;
+  console.log(`   🔄 Starting background pool replenishment: need ${needed} warm worktrees`);
+
+  // Start async replenishment in background (fire-and-forget)
+  isReplenishing = true;
+  replenishmentPromise = replenishPoolAsync(config, needed)
+    .catch((error) => {
+      console.log(`   ⚠️ Background replenishment error: ${error}`);
+    })
+    .finally(() => {
+      isReplenishing = false;
+      replenishmentPromise = null;
+    });
+}
+
+/**
+ * Async implementation of pool replenishment
+ * Runs in background without blocking main orchestration loop
+ */
+async function replenishPoolAsync(config: RalphLocalConfig, needed: number): Promise<void> {
   // Find available indices
   const warmWorktrees = listWarmWorktrees(config);
   const usedIndices = new Set(
@@ -587,9 +745,12 @@ export function replenishPool(config: RalphLocalConfig): void {
 
   let created = 0;
   let index = 1;
+
+  // Create worktrees one at a time (to avoid overwhelming the system)
   while (created < needed) {
     if (!usedIndices.has(index)) {
-      if (createWarmWorktree(index, config)) {
+      const success = await createWarmWorktreeAsync(index, config);
+      if (success) {
         created++;
         usedIndices.add(index);
       }
@@ -603,7 +764,23 @@ export function replenishPool(config: RalphLocalConfig): void {
   }
 
   if (created > 0) {
-    console.log(`   ✅ Replenished ${created} warm worktrees`);
+    console.log(`   ✅ Background replenishment complete: ${created} warm worktrees`);
+  }
+}
+
+/**
+ * Check if pool replenishment is currently running
+ */
+export function isPoolReplenishing(): boolean {
+  return isReplenishing;
+}
+
+/**
+ * Wait for pool replenishment to complete (if running)
+ */
+export async function waitForReplenishment(): Promise<void> {
+  if (replenishmentPromise) {
+    await replenishmentPromise;
   }
 }
 
