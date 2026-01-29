@@ -23,7 +23,7 @@ interface VariantData {
  */
 export function calculateSignificance(
   variants: VariantData[],
-  significanceLevel = 0.95
+  significanceLevel = 0.95,
 ): SignificanceResult {
   if (variants.length < 2) {
     return {
@@ -144,13 +144,12 @@ function erf(x: number): number {
 
   // Save sign of x
   const sign = x < 0 ? -1 : 1;
-  x = Math.abs(x);
+  const absX = Math.abs(x);
 
   // Abramowitz and Stegun formula
-  const t = 1.0 / (1.0 + p * x);
-  const y =
-    1.0 -
-    ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+  const t = 1.0 / (1.0 + p * absX);
+  const y = 1.0 -
+    ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-absX * absX);
 
   return sign * y;
 }

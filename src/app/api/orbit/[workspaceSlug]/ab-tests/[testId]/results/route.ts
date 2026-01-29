@@ -14,7 +14,7 @@ import type { SignificanceResult } from "@/types/ab-test";
 import { NextResponse } from "next/server";
 
 interface RouteParams {
-  params: Promise<{ workspaceSlug: string; testId: string }>;
+  params: Promise<{ workspaceSlug: string; testId: string; }>;
 }
 
 /**
@@ -44,7 +44,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     if (!workspace) {
       return NextResponse.json(
         { error: "Workspace not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -60,7 +60,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
         include: {
           variants: true,
         },
-      })
+      }),
     );
 
     if (testError || !test) {
@@ -70,7 +70,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     // Calculate significance
     const significance: SignificanceResult = calculateSignificance(
       test.variants,
-      test.significanceLevel
+      test.significanceLevel,
     );
 
     // Auto-declare winner if significant and test is running
@@ -96,7 +96,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     console.error("Failed to get test results:", error);
     return NextResponse.json(
       { error: "Failed to get test results" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

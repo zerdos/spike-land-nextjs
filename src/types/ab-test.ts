@@ -15,7 +15,7 @@ export interface AbTestVariant {
   impressions: number;
   engagements: number;
   clicks: number;
-  conversionRate: number; // calculated
+  conversionRate?: number; // calculated client-side, not stored in DB
   createdAt: Date;
   updatedAt: Date;
 }

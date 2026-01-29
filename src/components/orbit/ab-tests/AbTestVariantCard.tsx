@@ -8,12 +8,7 @@
  */
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AbTestVariant } from "@/types/ab-test";
 import { Crown } from "lucide-react";
 
@@ -26,10 +21,9 @@ export function AbTestVariantCard({
   variant,
   isWinner = false,
 }: AbTestVariantCardProps) {
-  const conversionRate =
-    variant.impressions > 0
-      ? ((variant.clicks / variant.impressions) * 100).toFixed(2)
-      : "0.00";
+  const conversionRate = variant.impressions > 0
+    ? ((variant.clicks / variant.impressions) * 100).toFixed(2)
+    : "0.00";
 
   return (
     <Card className={isWinner ? "border-primary" : ""}>
