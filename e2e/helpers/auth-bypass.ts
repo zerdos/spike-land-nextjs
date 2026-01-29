@@ -24,9 +24,7 @@ export async function verifyAuthBypass(page: Page): Promise<boolean> {
 
     // Check if E2E cookies are set
     const cookies = await page.context().cookies();
-    const e2eCookies = cookies.filter((c) =>
-      c.name.startsWith("e2e-")
-    );
+    const e2eCookies = cookies.filter((c) => c.name.startsWith("e2e-"));
 
     console.log(
       `[Auth Bypass] Found ${e2eCookies.length} E2E cookies:`,
@@ -176,7 +174,7 @@ export async function debugAuthState(page: Page): Promise<Record<string, unknown
     // Get client-side session state (if useSession hook is available)
     const clientSessionState = await page.evaluate(() => {
       // Check if window has any session-related state
-      const anyWindow = window as unknown as { __NEXT_DATA__?: unknown };
+      const anyWindow = window as unknown as { __NEXT_DATA__?: unknown; };
       return {
         hasNextData: !!anyWindow.__NEXT_DATA__,
         url: window.location.href,

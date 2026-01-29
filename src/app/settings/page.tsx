@@ -23,7 +23,7 @@ import { CreditCard } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -38,7 +38,7 @@ export default function SettingsPage() {
   const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   // Add timeout for loading state to prevent infinite loading
-  useState(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       if (status === "loading") {
         console.error("[Settings] Auth loading timeout after 10 seconds");
@@ -46,7 +46,7 @@ export default function SettingsPage() {
       }
     }, 10000);
     return () => clearTimeout(timer);
-  });
+  }, [status]);
 
   if (status === "loading" && !loadingTimeout) {
     return (

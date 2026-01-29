@@ -706,7 +706,9 @@ async function runStage3(browser: Browser): Promise<StageResult> {
 
         if (!hasTokenOrTier) {
           // Not a failure, just informational
-          console.log("[Job 3.1] Token balance or tier selector not immediately visible (this is OK)");
+          console.log(
+            "[Job 3.1] Token balance or tier selector not immediately visible (this is OK)",
+          );
         }
       },
       {

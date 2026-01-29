@@ -32,18 +32,22 @@ vi.mock("@/components/admin/AdminDashboardClient", () => ({
 }));
 
 vi.mock("next/headers", () => ({
-  headers: vi.fn(() => Promise.resolve({
-    get: vi.fn(() => null),
-  })),
+  headers: vi.fn(() =>
+    Promise.resolve({
+      get: vi.fn(() => null),
+    })
+  ),
 }));
 
 vi.mock("@/auth", () => ({
-  auth: vi.fn(() => Promise.resolve({
-    user: {
-      id: "test-user-id",
-      role: "ADMIN",
-    },
-  })),
+  auth: vi.fn(() =>
+    Promise.resolve({
+      user: {
+        id: "test-user-id",
+        role: "ADMIN",
+      },
+    })
+  ),
 }));
 
 const { default: prisma } = await import("@/lib/prisma");
