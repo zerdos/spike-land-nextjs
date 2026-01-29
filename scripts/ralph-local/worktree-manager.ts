@@ -11,7 +11,7 @@ import { execSync } from "child_process";
 import { existsSync, mkdirSync, rmSync, statSync } from "fs";
 import { join } from "path";
 import type { RalphLocalConfig } from "./types";
-import { acquireFromPool, copyEnvLocal } from "./worktree-pool";
+import { acquireFromPool, copyEnvLocal, recycleWorktree } from "./worktree-pool";
 
 /**
  * Validate ticket ID format (must be # followed by digits only)
@@ -147,13 +147,29 @@ export function getBranchName(ticketId: string): string {
 }
 
 /**
- * Cleanup a worktree
+ * Cleanup a worktree - prefers recycling to preserve node_modules
  */
 export function cleanupWorktree(ticketId: string, config: RalphLocalConfig): void {
   const worktreePath = getWorktreePath(ticketId, config);
 
   console.log(`   🧹 Cleaning up worktree for ${ticketId}`);
 
+  // Try to recycle the worktree first (preserves node_modules for faster reuse)
+  if (existsSync(worktreePath) && existsSync(join(worktreePath, "node_modules"))) {
+    const recycled = recycleWorktree(ticketId, worktreePath, config);
+    if (recycled) {
+      return; // Successfully recycled, no further cleanup needed
+    }
+  }
+
+  // Standard cleanup path
+  removeWorktreeDirectory(worktreePath, config);
+}
+
+/**
+ * Internal helper to remove a worktree directory
+ */
+function removeWorktreeDirectory(worktreePath: string, config: RalphLocalConfig): void {
   try {
     // Remove the worktree first
     if (existsSync(worktreePath)) {
