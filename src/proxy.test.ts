@@ -129,6 +129,9 @@ describe("proxy", () => {
         nextUrl: new URL(baseUrl),
         url: baseUrl,
         headers: new Headers(),
+        cookies: {
+          get: () => undefined,
+        },
       } as unknown as NextRequest;
     };
 
@@ -309,6 +312,9 @@ describe("proxy", () => {
           nextUrl: new URL(baseUrl),
           url: baseUrl,
           headers,
+          cookies: {
+            get: () => undefined,
+          },
         } as unknown as NextRequest;
       };
 
@@ -438,6 +444,9 @@ describe("proxy", () => {
           nextUrl: new URL(baseUrl),
           url: baseUrl,
           headers,
+          cookies: {
+            get: () => undefined,
+          },
         } as unknown as NextRequest;
       };
 
@@ -567,6 +576,7 @@ describe("proxy", () => {
         expect(consoleWarnSpy).toHaveBeenCalledWith("[E2E Bypass]", {
           timestamp: expect.any(String),
           path: "/my-apps/app-123",
+          method: "header",
           environment: {
             NODE_ENV: "test",
             VERCEL_ENV: "preview",
