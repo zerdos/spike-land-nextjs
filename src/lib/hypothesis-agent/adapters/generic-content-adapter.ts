@@ -25,7 +25,7 @@ export class GenericContentAdapter extends BaseContentAdapter<
     return !!(content && typeof content === "object" && content.content);
   }
 
-  validateConfig(config: Record<string, unknown>): boolean {
+  validateConfig(_config: Record<string, unknown>): boolean {
     return true; // Generic adapter accepts any config
   }
 

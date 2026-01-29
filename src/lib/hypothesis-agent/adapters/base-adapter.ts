@@ -50,7 +50,9 @@ export abstract class BaseContentAdapter<TContent = unknown, TConfig = unknown>
     }
 
     if (variants.length === 1) {
-      return variants[0];
+      const first = variants[0];
+      if (!first) throw new Error("Variant is undefined");
+      return first;
     }
 
     // Use hash-based assignment for consistency
@@ -66,7 +68,9 @@ export abstract class BaseContentAdapter<TContent = unknown, TConfig = unknown>
     }
 
     // Fallback to last variant
-    return variants[variants.length - 1];
+    const last = variants[variants.length - 1];
+    if (!last) throw new Error("No variants available");
+    return last;
   }
 
   /**

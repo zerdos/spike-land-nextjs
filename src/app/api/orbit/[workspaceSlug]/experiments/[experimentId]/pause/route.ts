@@ -5,7 +5,7 @@
  */
 
 import { auth } from "@/auth";
-import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
+import { requireWorkspacePermissionBySlug } from "@/lib/permissions/workspace-middleware";
 import { tryCatch } from "@/lib/try-catch";
 import {
   getExperiment,
@@ -21,7 +21,7 @@ interface RouteParams {
  * POST /api/orbit/[workspaceSlug]/experiments/[experimentId]/pause
  * Pause an experiment
  */
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export async function POST(_request: NextRequest, { params }: RouteParams) {
   const { workspaceSlug, experimentId } = await params;
   const session = await auth();
 
@@ -29,12 +29,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Verify workspace permission
-  const { data: workspace, error: permissionError } = await requireWorkspacePermission(
-    workspaceSlug,
-    session.user.id,
-    "UPDATE_EXPERIMENT"
+  const { data: membership, error: permissionError } = await tryCatch(
+    requireWorkspacePermissionBySlug(session, workspaceSlug, "experiments:edit")
   );
+
+  if (permissionError || !membership) {
+    return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+  }
+
+  const workspace = { id: membership.workspaceId };
 
   if (permissionError || !workspace) {
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });

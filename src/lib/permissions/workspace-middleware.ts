@@ -152,6 +152,40 @@ export async function requireWorkspacePermission(
 }
 
 /**
+ * Require specific permission for API route access using workspace slug.
+ *
+ * @param session - NextAuth session object
+ * @param workspaceSlug - Workspace slug to check permission in
+ * @param action - Required action permission
+ * @returns Membership info if authorized
+ * @throws Error if user lacks permission
+ */
+export async function requireWorkspacePermissionBySlug(
+  session: Session | null,
+  workspaceSlug: string,
+  action: WorkspaceAction,
+): Promise<WorkspaceMemberInfo> {
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized: Authentication required");
+  }
+
+  const membership = await getWorkspaceMembershipBySlug(
+    session.user.id,
+    workspaceSlug,
+  );
+
+  if (!membership) {
+    throw new Error("Forbidden: Not a workspace member");
+  }
+
+  if (!hasPermission(membership.role, action)) {
+    throw new Error(`Forbidden: Requires ${action} permission`);
+  }
+
+  return membership;
+}
+
+/**
  * Require workspace membership (any role)
  *
  * @param session - NextAuth session object
@@ -168,6 +202,34 @@ export async function requireWorkspaceMembership(
   }
 
   const membership = await getWorkspaceMembership(session.user.id, workspaceId);
+
+  if (!membership) {
+    throw new Error("Forbidden: Not a workspace member");
+  }
+
+  return membership;
+}
+
+/**
+ * Require workspace membership using workspace slug.
+ *
+ * @param session - NextAuth session object
+ * @param workspaceSlug - Workspace slug to check membership in
+ * @returns Membership info if authorized
+ * @throws Error if not a member
+ */
+export async function requireWorkspaceMembershipBySlug(
+  session: Session | null,
+  workspaceSlug: string,
+): Promise<WorkspaceMemberInfo> {
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized: Authentication required");
+  }
+
+  const membership = await getWorkspaceMembershipBySlug(
+    session.user.id,
+    workspaceSlug,
+  );
 
   if (!membership) {
     throw new Error("Forbidden: Not a workspace member");

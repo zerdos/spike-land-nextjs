@@ -36,7 +36,7 @@ export class SocialPostAdapter extends BaseContentAdapter<SocialPostContent, { a
   async deliverVariant(variant: ExperimentVariant, context: DeliveryContext): Promise<void> {
     // For social posts, delivery means selecting which variant content to post
     // The actual posting would be done by the social media integration
-    const content = variant.content as SocialPostContent;
+    const content = variant.content as unknown as SocialPostContent;
 
     // Track impression
     await this.trackEvent(context.experimentId, variant.id, {

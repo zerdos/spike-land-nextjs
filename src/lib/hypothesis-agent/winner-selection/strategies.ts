@@ -9,7 +9,6 @@
 import type { WinnerStrategy } from "@prisma/client";
 import type {
   ExperimentVariant,
-  StatisticalResult,
   WinnerCandidate,
   WinnerSelectionConfig,
 } from "@/types/hypothesis-agent";
@@ -88,8 +87,10 @@ export class ImmediateStrategy extends WinnerSelectionStrategy {
       return null;
     }
 
-    // Calculate lift vs control (assuming first variant is control)
     const control = variants.find((v) => v.isControl) || variants[0];
+    if (!control) {
+      return null;
+    }
     const controlRate = control.impressions > 0 ? control.conversions / control.impressions : 0;
 
     const lift = controlRate > 0 ? (best.rate - controlRate) / controlRate : 0;
@@ -217,15 +218,18 @@ export class EconomicStrategy extends WinnerSelectionStrategy {
 
     // Calculate economic lift
     const economicLift =
-      control.avgValue > 0 ? (best.avgValue - control.avgValue) / control.avgValue : 0;
+      control && control.avgValue > 0
+        ? (best.avgValue - control.avgValue) / control.avgValue
+        : 0;
 
-    // Check if economic improvement is significant
-    // For economic strategy, we use a higher threshold for total value improvement
-    const totalValueGain = (best.avgValue - control.avgValue) * best.variant.impressions;
+    const totalValueGain =
+      control && best
+        ? (best.avgValue - control.avgValue) * best.variant.impressions
+        : 0;
 
-    const meetsEconomicThreshold = totalValueGain >= (config.minimumSampleSize * 0.1); // 10% of minimum sample size
+    const meetsEconomicThreshold = totalValueGain >= config.minimumSampleSize * 0.1; // 10% of minimum sample size
 
-    if (!meetsEconomicThreshold) {
+    if (!meetsEconomicThreshold || !control || !best) {
       return null;
     }
 
@@ -324,8 +328,10 @@ export class SafetyFirstStrategy extends WinnerSelectionStrategy {
       };
     }
 
-    // Calculate lift vs control
     const control = variants.find((v) => v.isControl) || variants[0];
+    if (!control) {
+      return null;
+    }
     const controlRate = control.impressions > 0 ? control.conversions / control.impressions : 0;
 
     const liftCalc = liftInterval(

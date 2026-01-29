@@ -83,14 +83,16 @@ export interface ContentAdapter<TContent = unknown, TConfig = unknown> {
     context: DeliveryContext
   ): Promise<void>;
 
-  /**
-   * Track an event for this experiment
-   */
   trackEvent(
     experimentId: string,
     variantId: string,
     event: ExperimentEventData
   ): Promise<void>;
+
+  /**
+   * Get human-readable description of the experimental change
+   */
+  getDescription?(): string;
 }
 
 export interface DeliveryContext {

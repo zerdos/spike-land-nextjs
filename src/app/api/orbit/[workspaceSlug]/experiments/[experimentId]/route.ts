@@ -5,7 +5,7 @@
  */
 
 import { auth } from "@/auth";
-import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
+import { requireWorkspacePermissionBySlug } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import {
@@ -30,14 +30,14 @@ const updateExperimentSchema = z.object({
   winnerStrategy: z.enum(["IMMEDIATE", "CONSERVATIVE", "ECONOMIC", "SAFETY_FIRST"]).optional(),
   autoSelectWinner: z.boolean().optional(),
   tags: z.array(z.string()).optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 /**
  * GET /api/orbit/[workspaceSlug]/experiments/[experimentId]
  * Get experiment details
  */
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   const { workspaceSlug, experimentId } = await params;
   const session = await auth();
 
@@ -91,16 +91,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Verify workspace permission
-  const { data: workspace, error: permissionError } = await requireWorkspacePermission(
-    workspaceSlug,
-    session.user.id,
-    "UPDATE_EXPERIMENT"
+  const { data: membership, error: permissionError } = await tryCatch(
+    requireWorkspacePermissionBySlug(session, workspaceSlug, "experiments:edit")
   );
 
-  if (permissionError || !workspace) {
+  if (permissionError || !membership) {
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
   }
+
+  const workspace = { id: membership.workspaceId };
 
   // Verify experiment exists and belongs to workspace
   const { data: existingExperiment, error: fetchError } = await tryCatch(
@@ -123,7 +122,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   const validation = updateExperimentSchema.safeParse(body);
   if (!validation.success) {
     return NextResponse.json(
-      { error: "Validation failed", details: validation.error.errors },
+      { error: "Validation failed", details: validation.error.issues },
       { status: 400 }
     );
   }
@@ -149,7 +148,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
  * DELETE /api/orbit/[workspaceSlug]/experiments/[experimentId]
  * Delete experiment
  */
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   const { workspaceSlug, experimentId } = await params;
   const session = await auth();
 
@@ -157,16 +156,15 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Verify workspace permission
-  const { data: workspace, error: permissionError } = await requireWorkspacePermission(
-    workspaceSlug,
-    session.user.id,
-    "DELETE_EXPERIMENT"
+  const { data: membership, error: permissionError } = await tryCatch(
+    requireWorkspacePermissionBySlug(session, workspaceSlug, "experiments:delete")
   );
 
-  if (permissionError || !workspace) {
+  if (permissionError || !membership) {
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
   }
+
+  const workspace = { id: membership.workspaceId };
 
   // Verify experiment exists and belongs to workspace
   const { data: existingExperiment, error: fetchError } = await tryCatch(

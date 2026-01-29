@@ -25,7 +25,7 @@ const createExperimentSchema = z.object({
   description: z.string().optional(),
   hypothesis: z.string().optional(),
   contentType: z.string(),
-  adapterConfig: z.record(z.unknown()).optional(),
+  adapterConfig: z.record(z.string(), z.unknown()).optional(),
   significanceLevel: z.number().min(0.8).max(0.999).default(0.95),
   minimumSampleSize: z.number().int().min(10).default(100),
   winnerStrategy: z
@@ -37,7 +37,7 @@ const createExperimentSchema = z.object({
       z.object({
         name: z.string().min(1),
         description: z.string().optional(),
-        content: z.record(z.unknown()),
+        content: z.record(z.string(), z.unknown()),
         splitPercentage: z.number().min(0).max(100).optional(),
         isControl: z.boolean().optional(),
       })
@@ -45,7 +45,7 @@ const createExperimentSchema = z.object({
     .min(2)
     .max(10),
   tags: z.array(z.string()).optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 /**
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const validation = createExperimentSchema.safeParse(body);
   if (!validation.success) {
     return NextResponse.json(
-      { error: "Validation failed", details: validation.error.errors },
+      { error: "Validation failed", details: validation.error.issues },
       { status: 400 }
     );
   }

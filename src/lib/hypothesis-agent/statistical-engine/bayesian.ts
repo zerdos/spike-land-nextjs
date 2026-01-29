@@ -99,8 +99,12 @@ export function probabilityBest(
       sampleBeta(dist.alpha, dist.beta)
     );
 
-    const maxIndex = samplesThisRound.indexOf(Math.max(...samplesThisRound));
-    counts[maxIndex]++;
+    if (samplesThisRound.length > 0) {
+      const maxIndex = samplesThisRound.indexOf(Math.max(...samplesThisRound));
+      if (maxIndex >= 0) {
+        counts[maxIndex]++;
+      }
+    }
   }
 
   return counts.map((count) => count / samples);
@@ -160,9 +164,11 @@ export function expectedLoss(
     );
 
     const maxSample = Math.max(...samplesThisRound);
-    const loss = Math.max(0, maxSample - samplesThisRound[variantIndex]);
-
-    totalLoss += loss;
+    const variantSample = samplesThisRound[variantIndex];
+    if (variantSample !== undefined) {
+      const loss = Math.max(0, maxSample - variantSample);
+      totalLoss += loss;
+    }
   }
 
   return totalLoss / samples;
@@ -196,13 +202,19 @@ export function analyzeBayesian(
   const probabilities = probabilityBest(distributions, samples);
 
   // Calculate results for each variant
-  return variants.map((v, i) => ({
-    variantId: v.id,
-    probabilityBest: probabilities[i],
-    expectedValue: expectedValue(distributions[i]),
-    credibleInterval: credibleInterval(distributions[i]),
-    expectedLoss: expectedLoss(distributions, i, samples),
-  }));
+  return variants.map((v, i) => {
+    const dist = distributions[i];
+    if (!dist) {
+      throw new Error(`Distribution not found for variant ${v.id}`);
+    }
+    return {
+      variantId: v.id,
+      probabilityBest: probabilities[i] ?? 0,
+      expectedValue: expectedValue(dist),
+      credibleInterval: credibleInterval(dist),
+      expectedLoss: expectedLoss(distributions, i, samples),
+    };
+  });
 }
 
 // =============================================================================
@@ -417,7 +429,10 @@ function logGamma(x: number): number {
 
   let ser = 1.000000000190015;
   for (let i = 0; i < coefficients.length; i++) {
-    ser += coefficients[i] / ++y;
+    const coeff = coefficients[i];
+    if (coeff !== undefined) {
+      ser += coeff / ++y;
+    }
   }
 
   return -tmp + Math.log((2.5066282746310005 * ser) / x);

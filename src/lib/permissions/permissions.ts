@@ -54,7 +54,11 @@ export type WorkspaceAction =
   | "social:disconnect"
   // Notifications
   | "notifications:view"
-  | "notifications:manage";
+  | "notifications:manage"
+  // Experiments (Epic #516)
+  | "experiments:read"
+  | "experiments:edit"
+  | "experiments:delete";
 
 /**
  * Role hierarchy - higher index = more permissions
@@ -123,6 +127,11 @@ const PERMISSION_MATRIX: Record<WorkspaceAction, WorkspaceRole> = {
   // Notifications
   "notifications:view": "MEMBER",
   "notifications:manage": "ADMIN",
+
+  // Experiments (Epic #516)
+  "experiments:read": "MEMBER",
+  "experiments:edit": "MEMBER",
+  "experiments:delete": "ADMIN",
 };
 
 /**

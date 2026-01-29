@@ -6,7 +6,7 @@
  */
 
 import prisma from "@/lib/prisma";
-import type { ExperimentEvent } from "@prisma/client";
+import type { ExperimentEvent, Prisma } from "@prisma/client";
 import type { ExperimentEventData } from "@/types/hypothesis-agent";
 import { updateVariantMetrics } from "./variant-manager";
 
@@ -31,7 +31,7 @@ export async function trackEvent(
       eventType: event.eventType,
       eventName: event.eventName,
       value: event.value,
-      metadata: event.metadata ?? {},
+      metadata: (event.metadata ?? {}) as Prisma.InputJsonValue,
       visitorId: event.visitorId,
       userId: event.userId,
     },
@@ -78,7 +78,7 @@ export async function trackEventsBatch(
       eventType: e.event.eventType,
       eventName: e.event.eventName,
       value: e.event.value,
-      metadata: e.event.metadata ?? {},
+      metadata: (e.event.metadata ?? {}) as Prisma.InputJsonValue,
       visitorId: e.event.visitorId,
       userId: e.event.userId,
     })),
@@ -175,19 +175,24 @@ export async function getEventCounts(experimentId: string): Promise<
   > = {};
 
   for (const event of events) {
-    if (!counts[event.eventType]) {
-      counts[event.eventType] = {
+    const eventType = event.eventType;
+    if (!counts[eventType]) {
+      counts[eventType] = {
         total: 0,
         byVariant: {},
       };
     }
 
-    counts[event.eventType].total++;
+    const typeCount = counts[eventType]!;
+    typeCount.total++;
 
-    if (!counts[event.eventType].byVariant[event.variantId]) {
-      counts[event.eventType].byVariant[event.variantId] = 0;
+    const variantId = event.variantId;
+    if (!variantId) continue;
+
+    if (!typeCount.byVariant[variantId]) {
+      typeCount.byVariant[variantId] = 0;
     }
-    counts[event.eventType].byVariant[event.variantId]++;
+    typeCount.byVariant[variantId]++;
   }
 
   return counts;
@@ -254,11 +259,14 @@ export async function getEventTimeline(
       timeline[key] = {};
     }
 
-    if (!timeline[key][event.eventType]) {
-      timeline[key][event.eventType] = 0;
+    const eventType = event.eventType;
+    const typeCounts = timeline[key]!;
+
+    if (!typeCounts[eventType]) {
+      typeCounts[eventType] = 0;
     }
 
-    timeline[key][event.eventType]++;
+    typeCounts[eventType]++;
   }
 
   // Convert to array format

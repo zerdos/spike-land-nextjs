@@ -104,9 +104,6 @@ function calculateLLR(
 ): number {
   if (n0 === 0 || n1 === 0) return 0;
 
-  const p0 = c0 / n0;
-  const p1 = c1 / n1;
-
   // Under H0: both variants have same conversion rate
   const pooled = (c0 + c1) / (n0 + n1);
 
@@ -240,8 +237,6 @@ export function estimateSequentialSampleSize(
   const p1 = baselineRate * (1 + effect);
 
   if (p1 >= 1) return Infinity;
-
-  const d = p1 - p0;
 
   // Average sample number under H1
   const asn =

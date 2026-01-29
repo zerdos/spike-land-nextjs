@@ -65,8 +65,10 @@ export function oneWayANOVA(
   let ssb = 0;
   for (let i = 0; i < variants.length; i++) {
     const rate = rates[i];
-    const n = variants[i].total;
-    ssb += n * Math.pow(rate - grandMean, 2);
+    const variant = variants[i];
+    if (rate !== undefined && variant !== undefined) {
+      ssb += variant.total * Math.pow(rate - grandMean, 2);
+    }
   }
 
   // Calculate sum of squares within groups (SSW)
@@ -74,8 +76,10 @@ export function oneWayANOVA(
   let ssw = 0;
   for (let i = 0; i < variants.length; i++) {
     const rate = rates[i];
-    const n = variants[i].total;
-    ssw += n * rate * (1 - rate);
+    const variant = variants[i];
+    if (rate !== undefined && variant !== undefined) {
+      ssw += variant.total * rate * (1 - rate);
+    }
   }
 
   // Degrees of freedom
@@ -142,8 +146,12 @@ export function pairwiseComparisons(
       const v1 = variants[i];
       const v2 = variants[j];
 
-      const p1 = v1.total > 0 ? v1.conversions / v1.total : 0;
-      const p2 = v2.total > 0 ? v2.conversions / v2.total : 0;
+      if (!v1 || !v2 || v1.total === 0 || v2.total === 0) {
+        continue;
+      }
+
+      const p1 = v1.conversions / v1.total;
+      const p2 = v2.conversions / v2.total;
 
       // Two-proportion z-test
       const pooled = (v1.conversions + v2.conversions) / (v1.total + v2.total);
@@ -187,6 +195,14 @@ export function identifyBestVariant(variants: VariantData[]): {
   rates.sort((a, b) => b.rate - a.rate);
 
   const best = rates[0];
+
+  if (!best) {
+    return {
+      bestVariantId: "",
+      conversionRate: 0,
+      significantlyBetterThan: [],
+    };
+  }
 
   // Perform pairwise comparisons to find which variants the best beats
   const comparisons = pairwiseComparisons(variants);
@@ -294,7 +310,10 @@ function logGamma(x: number): number {
 
   let ser = 1.000000000190015;
   for (let i = 0; i < coefficients.length; i++) {
-    ser += coefficients[i] / ++y;
+    const coeff = coefficients[i];
+    if (coeff !== undefined) {
+      ser += coeff / ++y;
+    }
   }
 
   return -tmp + Math.log((2.5066282746310005 * ser) / x);

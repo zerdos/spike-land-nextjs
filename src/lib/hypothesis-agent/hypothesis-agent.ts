@@ -26,9 +26,7 @@ import * as EventTracker from "./core/event-tracker";
 // Statistical engine
 import {
   wilsonScoreInterval,
-  liftInterval,
 } from "./statistical-engine/confidence-intervals";
-import { analyzeBayesian } from "./statistical-engine/bayesian";
 
 // Winner selection
 import { selectWinner, checkTimeConstraints } from "./winner-selection/winner-selector";
@@ -74,21 +72,27 @@ export class HypothesisAgent {
     await this.verifyExperimentOwnership(experimentId);
 
     const experiment = await ExperimentManager.updateExperiment(experimentId, request);
-    return await this.getExperiment(experiment.id);
+    const updated = await this.getExperiment(experiment.id);
+    if (!updated) throw new Error("Failed to retrieve updated experiment");
+    return updated;
   }
 
   async startExperiment(experimentId: string): Promise<ExperimentWithRelations> {
     await this.verifyExperimentOwnership(experimentId);
 
     const experiment = await ExperimentManager.startExperiment(experimentId);
-    return await this.getExperiment(experiment.id);
+    const updated = await this.getExperiment(experiment.id);
+    if (!updated) throw new Error("Failed to retrieve updated experiment");
+    return updated;
   }
 
   async pauseExperiment(experimentId: string): Promise<ExperimentWithRelations> {
     await this.verifyExperimentOwnership(experimentId);
 
     const experiment = await ExperimentManager.pauseExperiment(experimentId);
-    return await this.getExperiment(experiment.id);
+    const updated = await this.getExperiment(experiment.id);
+    if (!updated) throw new Error("Failed to retrieve updated experiment");
+    return updated;
   }
 
   async deleteExperiment(experimentId: string): Promise<void> {
@@ -165,19 +169,7 @@ export class HypothesisAgent {
 
       // Calculate lift vs control
       const control = variants.find((v) => v.isControl) || variants[0];
-      const controlRate =
-        control.impressions > 0 ? control.conversions / control.impressions : 0;
-
-      const liftCalc =
-        controlRate > 0 && variant.id !== control.id
-          ? liftInterval(
-              conversionRate,
-              variant.impressions,
-              controlRate,
-              control.impressions,
-              experiment.significanceLevel
-            )
-          : { lift: 0, lower: 0, upper: 0 };
+      if (!control) throw new Error("No variants found");
 
       return {
         variantId: variant.id,
@@ -260,7 +252,7 @@ export class HypothesisAgent {
   async selectWinnerAndComplete(
     experimentId: string,
     variantId?: string,
-    reason?: string
+    _reason?: string
   ): Promise<ExperimentWithRelations> {
     await this.verifyExperimentOwnership(experimentId);
 
@@ -286,7 +278,9 @@ export class HypothesisAgent {
     // Store final results
     await this.storeResults(experimentId);
 
-    return await this.getExperiment(experiment.id);
+    const completed = await this.getExperiment(experiment.id);
+    if (!completed) throw new Error("Failed to retrieve completed experiment");
+    return completed;
   }
 
   // ============================================================================

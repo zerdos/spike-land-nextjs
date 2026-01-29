@@ -6,7 +6,7 @@
  */
 
 import prisma from "@/lib/prisma";
-import type { ExperimentVariant } from "@prisma/client";
+import type { ExperimentVariant, Prisma } from "@prisma/client";
 import { createHash } from "crypto";
 
 /**
@@ -33,7 +33,9 @@ export async function assignVariant(
   }
 
   if (variants.length === 1) {
-    return variants[0];
+    const first = variants[0];
+    if (!first) throw new Error("Variant is undefined");
+    return first;
   }
 
   // Use consistent hashing to assign variant
@@ -54,7 +56,9 @@ export async function assignVariant(
   }
 
   // Fallback to last variant (shouldn't happen with proper split percentages)
-  return variants[variants.length - 1];
+  const last = variants[variants.length - 1];
+  if (!last) throw new Error("No variants found");
+  return last;
 }
 
 /**
@@ -125,7 +129,7 @@ export async function updateVariantContent(
 ): Promise<ExperimentVariant> {
   return await prisma.experimentVariant.update({
     where: { id: variantId },
-    data: { content },
+    data: { content: content as Prisma.InputJsonValue },
   });
 }
 

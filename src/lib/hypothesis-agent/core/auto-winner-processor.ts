@@ -9,13 +9,14 @@
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import {
-  getExperiment,
   completeExperiment,
-  getActiveExperiments as getAllActiveExperiments,
 } from "./experiment-manager";
 import { selectWinner } from "../winner-selection/winner-selector";
 import { checkTimeConstraints } from "../winner-selection/winner-selector";
-import type { WinnerSelectionConfig } from "@/types/hypothesis-agent";
+import type {
+  WinnerSelectionConfig,
+  ExperimentVariant,
+} from "@/types/hypothesis-agent";
 
 export interface AutoWinnerResult {
   totalChecked: number;
@@ -198,7 +199,10 @@ async function shouldSelectWinner(experiment: {
     significanceLevel: experiment.significanceLevel,
   };
 
-  const winnerCandidate = selectWinner(experiment.variants, config);
+  const winnerCandidate = selectWinner(
+    experiment.variants as ExperimentVariant[],
+    config
+  );
 
   if (winnerCandidate && winnerCandidate.meetsThreshold) {
     return {

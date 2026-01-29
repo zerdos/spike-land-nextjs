@@ -24,7 +24,7 @@ const trackEventSchema = z.object({
   value: z.number().optional(),
   visitorId: z.string().optional(),
   userId: z.string().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 /**
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const validation = trackEventSchema.safeParse(body);
   if (!validation.success) {
     return NextResponse.json(
-      { error: "Validation failed", details: validation.error.errors },
+      { error: "Validation failed", details: validation.error.issues },
       { status: 400 }
     );
   }

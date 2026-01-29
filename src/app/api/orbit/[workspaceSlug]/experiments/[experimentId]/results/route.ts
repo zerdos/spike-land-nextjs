@@ -80,7 +80,7 @@ function erf(x: number): number {
  * GET /api/orbit/[workspaceSlug]/experiments/[experimentId]/results
  * Get experiment results and statistical analysis
  */
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   const { workspaceSlug, experimentId } = await params;
   const session = await auth();
 
@@ -144,11 +144,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   // Compare each variant to control for statistical significance
   const controlVariant = experiment.variants.find((v) => v.isControl) || experiment.variants[0];
+
+  if (!controlVariant) {
+    return NextResponse.json({ experiment, analysis: null, error: "No variants found" });
+  }
+
   const controlResult = variantResults.find((r) => r.variantId === controlVariant.id);
 
   if (controlResult) {
     variantResults.forEach((result) => {
-      if (result.variantId === controlVariant.id) {
+      if (controlVariant && result.variantId === controlVariant.id) {
         result.isSignificant = false; // Control is baseline
         return;
       }

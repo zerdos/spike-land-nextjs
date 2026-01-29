@@ -8,15 +8,14 @@
 import prisma from "@/lib/prisma";
 import type {
   Experiment,
-  ExperimentVariant,
   ExperimentStatus,
-  WinnerStrategy,
 } from "@prisma/client";
 import type {
   CreateExperimentRequest,
   UpdateExperimentRequest,
   ExperimentWithRelations,
 } from "@/types/hypothesis-agent";
+import type { Prisma } from "@prisma/client";
 
 /**
  * Create a new experiment.
@@ -51,20 +50,20 @@ export async function createExperiment(
       description: request.description,
       hypothesis: request.hypothesis,
       contentType: request.contentType,
-      adapterConfig: request.adapterConfig ?? {},
+      adapterConfig: (request.adapterConfig ?? {}) as Prisma.InputJsonValue,
       significanceLevel: request.significanceLevel ?? 0.95,
       minimumSampleSize: request.minimumSampleSize ?? 100,
       winnerStrategy: request.winnerStrategy ?? "CONSERVATIVE",
       autoSelectWinner: request.autoSelectWinner ?? false,
       tags: request.tags ?? [],
-      metadata: request.metadata ?? {},
+      metadata: (request.metadata ?? {}) as Prisma.InputJsonValue,
       variants: {
-        create: request.variants.map((v, index) => ({
+        create: request.variants.map((v, _index) => ({
           name: v.name,
           description: v.description,
-          content: v.content,
-          splitPercentage: v.splitPercentage ?? 100 / request.variants.length,
-          isControl: v.isControl ?? index === 0, // First variant is control by default
+          content: (v.content ?? {}) as Prisma.InputJsonValue,
+          splitPercentage: v.splitPercentage,
+          isControl: v.isControl,
         })),
       },
     },
@@ -72,8 +71,7 @@ export async function createExperiment(
       variants: true,
     },
   });
-
-  return experiment;
+  return experiment as ExperimentWithRelations;
 }
 
 /**
@@ -161,7 +159,7 @@ export async function updateExperiment(
         autoSelectWinner: request.autoSelectWinner,
       }),
       ...(request.tags && { tags: request.tags }),
-      ...(request.metadata && { metadata: request.metadata }),
+      ...(request.metadata && { metadata: request.metadata as Prisma.InputJsonValue }),
     },
   });
 }
