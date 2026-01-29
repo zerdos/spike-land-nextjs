@@ -1,13 +1,9 @@
 /**
- * React Query hooks for asset management
+ * React Query Hooks for Asset Management
+ *
+ * Provides hooks for interacting with the asset API
  */
 
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type UseQueryOptions,
-} from "@tanstack/react-query";
 import {
   analyzeAsset,
   createFolder,
@@ -16,26 +12,30 @@ import {
   getAsset,
   listAssets,
   listFolders,
+  renameFolder,
   updateAsset,
-  updateFolder,
   uploadAsset,
-  type AnalysisResult,
-  type AssetFolderWithCounts,
-  type AssetListFilters,
-  type AssetWithRelations,
+  type Asset,
+  type AssetFolder,
   type CreateFolderParams,
+  type ListAssetsParams,
   type PaginatedAssets,
   type UpdateAssetParams,
-  type UpdateFolderParams,
   type UploadAssetParams,
 } from "@/lib/assets/asset-client";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationOptions,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
 
 // Query keys
 export const assetKeys = {
   all: ["assets"] as const,
   lists: () => [...assetKeys.all, "list"] as const,
-  list: (filters: AssetListFilters) =>
-    [...assetKeys.lists(), filters] as const,
+  list: (params: ListAssetsParams) => [...assetKeys.lists(), params] as const,
   details: () => [...assetKeys.all, "detail"] as const,
   detail: (id: string) => [...assetKeys.details(), id] as const,
   folders: (workspaceId: string) =>
@@ -43,209 +43,203 @@ export const assetKeys = {
 };
 
 /**
- * List assets with filters and pagination
+ * Hook to fetch paginated list of assets
  */
 export function useAssets(
-  filters: AssetListFilters,
+  params: ListAssetsParams,
   options?: Omit<
     UseQueryOptions<PaginatedAssets, Error>,
     "queryKey" | "queryFn"
   >,
 ) {
   return useQuery<PaginatedAssets, Error>({
-    queryKey: assetKeys.list(filters),
-    queryFn: () => listAssets(filters),
+    queryKey: assetKeys.list(params),
+    queryFn: () => listAssets(params),
     ...options,
   });
 }
 
 /**
- * Get single asset with full details
+ * Hook to fetch single asset details
  */
 export function useAsset(
-  assetId: string | null,
-  options?: Omit<
-    UseQueryOptions<AssetWithRelations, Error>,
-    "queryKey" | "queryFn"
-  >,
+  assetId: string,
+  options?: Omit<UseQueryOptions<Asset, Error>, "queryKey" | "queryFn">,
 ) {
-  return useQuery<AssetWithRelations, Error>({
-    queryKey: assetKeys.detail(assetId || ""),
-    queryFn: () => {
-      if (!assetId) throw new Error("Asset ID is required");
-      return getAsset(assetId);
-    },
+  return useQuery<Asset, Error>({
+    queryKey: assetKeys.detail(assetId),
+    queryFn: () => getAsset(assetId),
     enabled: !!assetId,
     ...options,
   });
 }
 
 /**
- * Upload asset mutation
+ * Hook to upload an asset
  */
-export function useUploadAsset() {
+export function useUploadAsset(
+  options?: UseMutationOptions<Asset, Error, UploadAssetParams>,
+) {
   const queryClient = useQueryClient();
 
-  return useMutation<AssetWithRelations, Error, UploadAssetParams>({
+  return useMutation<Asset, Error, UploadAssetParams>({
     mutationFn: uploadAsset,
-    onSuccess: (_data, variables) => {
-      // Invalidate asset lists for this workspace
-      queryClient.invalidateQueries({
-        queryKey: assetKeys.lists(),
-        predicate: (query) => {
-          const filters = query.queryKey[2] as AssetListFilters | undefined;
-          return filters?.workspaceId === variables.workspaceId;
-        },
-      });
-
-      // Invalidate folder counts if asset was uploaded to a folder
-      if (variables.folderId) {
-        queryClient.invalidateQueries({
-          queryKey: assetKeys.folders(variables.workspaceId),
-        });
-      }
+    onSuccess: () => {
+      // Invalidate asset lists to refetch with new asset
+      queryClient.invalidateQueries({ queryKey: assetKeys.lists() });
     },
+    ...options,
   });
 }
 
 /**
- * Update asset mutation
+ * Hook to update asset metadata
  */
-export function useUpdateAsset() {
+export function useUpdateAsset(
+  options?: UseMutationOptions<
+    Asset,
+    Error,
+    { assetId: string; params: UpdateAssetParams }
+  >,
+) {
   const queryClient = useQueryClient();
 
-  return useMutation<AssetWithRelations, Error, UpdateAssetParams>({
-    mutationFn: updateAsset,
+  return useMutation<
+    Asset,
+    Error,
+    { assetId: string; params: UpdateAssetParams }
+  >({
+    mutationFn: ({ assetId, params }) => updateAsset(assetId, params),
     onSuccess: (data, variables) => {
-      // Update asset detail cache
-      queryClient.setQueryData(
-        assetKeys.detail(variables.assetId),
-        data,
-      );
+      // Update cached asset
+      queryClient.setQueryData(assetKeys.detail(variables.assetId), data);
 
-      // Invalidate asset lists
-      queryClient.invalidateQueries({
-        queryKey: assetKeys.lists(),
-      });
-
-      // Invalidate folders if folder was changed
-      if (variables.folderId !== undefined) {
-        queryClient.invalidateQueries({
-          queryKey: assetKeys.folders(data.workspaceId),
-        });
-      }
+      // Invalidate lists to refetch with updated asset
+      queryClient.invalidateQueries({ queryKey: assetKeys.lists() });
     },
+    ...options,
   });
 }
 
 /**
- * Delete asset mutation
+ * Hook to delete an asset
  */
-export function useDeleteAsset() {
+export function useDeleteAsset(
+  options?: UseMutationOptions<void, Error, string>,
+) {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, string>({
     mutationFn: deleteAsset,
     onSuccess: (_, assetId) => {
-      // Remove asset from detail cache
-      queryClient.removeQueries({
-        queryKey: assetKeys.detail(assetId),
-      });
+      // Remove from cache
+      queryClient.removeQueries({ queryKey: assetKeys.detail(assetId) });
 
-      // Invalidate asset lists
-      queryClient.invalidateQueries({
-        queryKey: assetKeys.lists(),
-      });
-
-      // Invalidate folders
-      queryClient.invalidateQueries({
-        queryKey: [...assetKeys.all, "folders"],
-      });
+      // Invalidate lists to refetch without deleted asset
+      queryClient.invalidateQueries({ queryKey: assetKeys.lists() });
     },
+    ...options,
   });
 }
 
 /**
- * Trigger AI analysis mutation
+ * Hook to trigger AI analysis for an asset
  */
-export function useAnalyzeAsset() {
-  const queryClient = useQueryClient();
-
-  return useMutation<AnalysisResult, Error, string>({
-    mutationFn: analyzeAsset,
-    onSuccess: (_data, assetId) => {
-      // Invalidate asset detail to refetch with new analysis
-      queryClient.invalidateQueries({
-        queryKey: assetKeys.detail(assetId),
-      });
-
-      // Invalidate asset lists (tags may have changed)
-      queryClient.invalidateQueries({
-        queryKey: assetKeys.lists(),
-      });
-    },
-  });
-}
-
-/**
- * List folders for workspace
- */
-export function useAssetFolders(
-  workspaceId: string | null,
-  options?: Omit<
-    UseQueryOptions<AssetFolderWithCounts[], Error>,
-    "queryKey" | "queryFn"
+export function useAnalyzeAsset(
+  options?: UseMutationOptions<
+    { analysis: any; asset: Asset },
+    Error,
+    string
   >,
 ) {
-  return useQuery<AssetFolderWithCounts[], Error>({
-    queryKey: assetKeys.folders(workspaceId || ""),
-    queryFn: () => {
-      if (!workspaceId) throw new Error("Workspace ID is required");
-      return listFolders(workspaceId);
+  const queryClient = useQueryClient();
+
+  return useMutation<{ analysis: any; asset: Asset }, Error, string>({
+    mutationFn: analyzeAsset,
+    onSuccess: (data, assetId) => {
+      // Update cached asset with analysis results
+      queryClient.setQueryData(assetKeys.detail(assetId), data.asset);
+
+      // Invalidate lists to refetch with updated asset
+      queryClient.invalidateQueries({ queryKey: assetKeys.lists() });
     },
+    ...options,
+  });
+}
+
+/**
+ * Hook to fetch folders for a workspace
+ */
+export function useAssetFolders(
+  workspaceId: string,
+  options?: Omit<UseQueryOptions<AssetFolder[], Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery<AssetFolder[], Error>({
+    queryKey: assetKeys.folders(workspaceId),
+    queryFn: () => listFolders(workspaceId),
     enabled: !!workspaceId,
     ...options,
   });
 }
 
 /**
- * Create folder mutation
+ * Hook to create a folder
  */
-export function useCreateFolder() {
+export function useCreateFolder(
+  options?: UseMutationOptions<AssetFolder, Error, CreateFolderParams>,
+) {
   const queryClient = useQueryClient();
 
-  return useMutation<AssetFolderWithCounts, Error, CreateFolderParams>({
+  return useMutation<AssetFolder, Error, CreateFolderParams>({
     mutationFn: createFolder,
-    onSuccess: (_data, variables) => {
-      // Invalidate folders list
+    onSuccess: (_, variables) => {
+      // Invalidate folders to refetch with new folder
       queryClient.invalidateQueries({
         queryKey: assetKeys.folders(variables.workspaceId),
       });
     },
+    ...options,
   });
 }
 
 /**
- * Update folder mutation
+ * Hook to rename a folder
  */
-export function useUpdateFolder() {
+export function useRenameFolder(
+  options?: UseMutationOptions<
+    AssetFolder,
+    Error,
+    { folderId: string; name: string; workspaceId: string }
+  >,
+) {
   const queryClient = useQueryClient();
 
-  return useMutation<AssetFolderWithCounts, Error, UpdateFolderParams>({
-    mutationFn: updateFolder,
-    onSuccess: (data) => {
-      // Invalidate folders list
+  return useMutation<
+    AssetFolder,
+    Error,
+    { folderId: string; name: string; workspaceId: string }
+  >({
+    mutationFn: ({ folderId, name }) => renameFolder(folderId, name),
+    onSuccess: (_, variables) => {
+      // Invalidate folders to refetch with renamed folder
       queryClient.invalidateQueries({
-        queryKey: assetKeys.folders(data.workspaceId),
+        queryKey: assetKeys.folders(variables.workspaceId),
       });
     },
+    ...options,
   });
 }
 
 /**
- * Delete folder mutation
+ * Hook to delete a folder
  */
-export function useDeleteFolder() {
+export function useDeleteFolder(
+  options?: UseMutationOptions<
+    void,
+    Error,
+    { folderId: string; workspaceId: string; cascade?: boolean }
+  >,
+) {
   const queryClient = useQueryClient();
 
   return useMutation<
@@ -255,15 +249,14 @@ export function useDeleteFolder() {
   >({
     mutationFn: ({ folderId, cascade }) => deleteFolder(folderId, cascade),
     onSuccess: (_, variables) => {
-      // Invalidate folders list
+      // Invalidate folders to refetch without deleted folder
       queryClient.invalidateQueries({
         queryKey: assetKeys.folders(variables.workspaceId),
       });
 
       // Invalidate asset lists (assets may have been moved or deleted)
-      queryClient.invalidateQueries({
-        queryKey: assetKeys.lists(),
-      });
+      queryClient.invalidateQueries({ queryKey: assetKeys.lists() });
     },
+    ...options,
   });
 }

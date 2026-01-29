@@ -24,7 +24,7 @@ export function AssetDetailsPanel({
   open,
   onOpenChange,
 }: AssetDetailsPanelProps) {
-  const { data: asset } = useAsset(assetId);
+  const { data: asset } = useAsset(assetId || "");
   const updateMutation = useUpdateAsset();
   const deleteMutation = useDeleteAsset();
   const analyzeMutation = useAnalyzeAsset();
@@ -37,7 +37,7 @@ export function AssetDetailsPanel({
     if (asset) {
       setFilename(asset.filename);
       setAltText(asset.altText || "");
-      setTags(asset.tags.map((t) => t.tag.name));
+      setTags(asset.tags?.map((t) => t.name) || []);
     }
   }, [asset]);
 
@@ -49,9 +49,10 @@ export function AssetDetailsPanel({
     try {
       await updateMutation.mutateAsync({
         assetId: asset.id,
-        filename,
-        altText,
-        tags,
+        params: {
+          filename,
+          tags,
+        },
       });
       toast.success("Asset updated");
     } catch (_error) {
@@ -179,8 +180,8 @@ export function AssetDetailsPanel({
                 <p>Dimensions: {asset.width} × {asset.height}px</p>
               )}
               <p>Uploaded: {new Date(asset.createdAt).toLocaleDateString()}</p>
-              {asset.usageCount !== undefined && (
-                <p>Used in {asset.usageCount} posts</p>
+              {asset.usage && (
+                <p>Used in {asset.usage.total} posts</p>
               )}
             </div>
           </div>

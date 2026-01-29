@@ -2,12 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { AssetFolderWithCounts } from "@/lib/assets/asset-client";
+import type { AssetFolder } from "@/lib/assets/asset-client";
 import { Folder, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FolderTreeViewProps {
-  folders: AssetFolderWithCounts[];
+  folders: AssetFolder[];
   selectedFolderId: string | null;
   onSelectFolder: (folderId: string | null) => void;
 }
@@ -20,7 +20,7 @@ export function FolderTreeView({
   // Build folder tree structure
   const rootFolders = folders.filter((f) => !f.parentId);
 
-  const getFolderChildren = (parentId: string): AssetFolderWithCounts[] => {
+  const getFolderChildren = (parentId: string): AssetFolder[] => {
     return folders.filter((f) => f.parentId === parentId);
   };
 
@@ -28,7 +28,7 @@ export function FolderTreeView({
     folder,
     level = 0,
   }: {
-    folder: AssetFolderWithCounts;
+    folder: AssetFolder;
     level?: number;
   }) => {
     const children = getFolderChildren(folder.id);
@@ -52,7 +52,7 @@ export function FolderTreeView({
           )}
           <span className="flex-1 text-left truncate">{folder.name}</span>
           <span className="text-xs text-muted-foreground">
-            {folder._count.assets}
+            {folder.assetCount || 0}
           </span>
         </Button>
 

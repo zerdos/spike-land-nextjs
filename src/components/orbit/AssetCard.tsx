@@ -8,7 +8,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import type { AssetWithRelations } from "@/lib/assets/asset-client";
+import type { Asset } from "@/lib/assets/asset-client";
 import { Copy, Eye, FileImage, FileVideo, MoreVertical, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -22,9 +22,9 @@ import {
 import { toast } from "sonner";
 
 interface AssetCardProps {
-  asset: AssetWithRelations;
-  onPreview?: (asset: AssetWithRelations) => void;
-  onDelete?: (asset: AssetWithRelations) => void;
+  asset: Asset;
+  onPreview?: (asset: Asset) => void;
+  onDelete?: (asset: Asset) => void;
 }
 
 export function AssetCard({ asset, onPreview, onDelete }: AssetCardProps) {
@@ -127,15 +127,15 @@ export function AssetCard({ asset, onPreview, onDelete }: AssetCardProps) {
         </h3>
 
         {/* Tags */}
-        {asset.tags.length > 0 && (
+        {asset.tags && asset.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
-            {asset.tags.slice(0, 3).map((tagAssignment) => (
+            {asset.tags.slice(0, 3).map((tag) => (
               <Badge
-                key={tagAssignment.tag.id}
+                key={tag.id}
                 variant="outline"
                 className="text-xs"
               >
-                {tagAssignment.tag.name}
+                {tag.name}
               </Badge>
             ))}
             {asset.tags.length > 3 && (
@@ -148,8 +148,8 @@ export function AssetCard({ asset, onPreview, onDelete }: AssetCardProps) {
       </CardContent>
 
       <CardFooter className="p-4 pt-0 text-xs text-muted-foreground">
-        {asset.usageCount !== undefined && asset.usageCount > 0 && (
-          <span>Used in {asset.usageCount} post{asset.usageCount !== 1 ? "s" : ""}</span>
+        {asset.usage && asset.usage.total > 0 && (
+          <span>Used in {asset.usage.total} post{asset.usage.total !== 1 ? "s" : ""}</span>
         )}
       </CardFooter>
     </Card>

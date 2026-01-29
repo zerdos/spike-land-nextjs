@@ -1,48 +1,78 @@
 /**
+ * Asset Management Client
+ *
  * Client-side API wrapper for asset operations
  */
 
-import type { Asset, AssetFolder, AssetTag, User } from "@prisma/client";
-
-// Extended types with relations
-export interface AssetWithRelations extends Asset {
-  folder: AssetFolder | null;
-  uploadedBy: Pick<User, "id" | "name" | "email" | "image">;
-  tags: Array<{
-    tag: AssetTag;
+export interface Asset {
+  id: string;
+  workspaceId: string;
+  folderId: string | null;
+  folder?: {
+    id: string;
+    name: string;
+  };
+  filename: string;
+  fileType: string;
+  sizeBytes: number;
+  width: number | null;
+  height: number | null;
+  duration: number | null;
+  url: string;
+  altText: string | null;
+  qualityScore: number | null;
+  analysisJson?: any;
+  uploadedBy?: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  tags?: Array<{
+    id: string;
+    name: string;
   }>;
-  url: string | null;
-  usageCount?: number;
+  usage?: {
+    posts: number;
+    scheduledPosts: number;
+    total: number;
+  };
 }
 
-export interface AssetFolderWithCounts extends AssetFolder {
-  _count: {
-    assets: number;
-    children: number;
-  };
-  parent: Pick<AssetFolder, "id" | "name"> | null;
-  createdBy: Pick<User, "id" | "name">;
+export interface AssetFolder {
+  id: string;
+  name: string;
+  workspaceId: string;
+  parentId: string | null;
+  children?: Array<{
+    id: string;
+    name: string;
+  }>;
+  assetCount?: number;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface ListAssetsParams {
+  workspaceId: string;
+  folderId?: string;
+  search?: string;
+  fileType?: string;
+  tags?: string[];
+  page?: number;
+  limit?: number;
 }
 
 export interface PaginatedAssets {
-  assets: AssetWithRelations[];
+  assets: Asset[];
   pagination: {
     page: number;
     limit: number;
-    totalCount: number;
+    total: number;
     totalPages: number;
     hasMore: boolean;
   };
-}
-
-export interface AssetListFilters {
-  workspaceId: string;
-  folderId?: string | null;
-  search?: string;
-  tags?: string[];
-  fileType?: "image" | "video";
-  page?: number;
-  limit?: number;
 }
 
 export interface UploadAssetParams {
@@ -52,10 +82,8 @@ export interface UploadAssetParams {
 }
 
 export interface UpdateAssetParams {
-  assetId: string;
   filename?: string;
   folderId?: string | null;
-  altText?: string;
   tags?: string[];
 }
 
@@ -65,34 +93,25 @@ export interface CreateFolderParams {
   parentId?: string;
 }
 
-export interface UpdateFolderParams {
-  folderId: string;
-  name: string;
-}
-
-export interface AnalysisResult {
-  success: boolean;
-  analysis: {
-    altText: string;
-    qualityScore: number;
-    suggestedTags: string[];
-    analysisDetails: {
-      mainSubject: string;
-      imageStyle: string;
-      technicalQuality: string;
-      colorPalette?: string[];
-      detectedObjects?: string[];
-    };
+export interface AssetAnalysisResult {
+  altText: string;
+  qualityScore: number;
+  suggestedTags: string[];
+  analysisDetails: {
+    mainSubject: string;
+    imageStyle: string;
+    technicalQuality: string;
+    colorPalette?: string[];
+    detectedObjects?: string[];
   };
-  appliedTags: Array<{ id: string; name: string }>;
 }
 
 /**
- * Upload asset to workspace content library
+ * Upload an asset to the content library
  */
 export async function uploadAsset(
   params: UploadAssetParams,
-): Promise<AssetWithRelations> {
+): Promise<Asset> {
   const formData = new FormData();
   formData.append("file", params.file);
   formData.append("workspaceId", params.workspaceId);
@@ -110,39 +129,30 @@ export async function uploadAsset(
     throw new Error(error.error || "Failed to upload asset");
   }
 
-  const data = await response.json();
-  return data.asset;
+  const result = await response.json();
+  return result.asset;
 }
 
 /**
- * List assets with filters and pagination
+ * List assets with optional filters
  */
 export async function listAssets(
-  filters: AssetListFilters,
+  params: ListAssetsParams,
 ): Promise<PaginatedAssets> {
-  const params = new URLSearchParams();
-  params.set("workspaceId", filters.workspaceId);
+  const searchParams = new URLSearchParams({
+    workspaceId: params.workspaceId,
+  });
 
-  if (filters.folderId !== undefined) {
-    params.set("folderId", filters.folderId || "");
-  }
-  if (filters.search) {
-    params.set("search", filters.search);
-  }
-  if (filters.tags) {
-    filters.tags.forEach((tag) => params.append("tags[]", tag));
-  }
-  if (filters.fileType) {
-    params.set("fileType", filters.fileType);
-  }
-  if (filters.page) {
-    params.set("page", filters.page.toString());
-  }
-  if (filters.limit) {
-    params.set("limit", filters.limit.toString());
+  if (params.folderId) searchParams.set("folderId", params.folderId);
+  if (params.search) searchParams.set("search", params.search);
+  if (params.fileType) searchParams.set("fileType", params.fileType);
+  if (params.page) searchParams.set("page", String(params.page));
+  if (params.limit) searchParams.set("limit", String(params.limit));
+  if (params.tags) {
+    params.tags.forEach((tag) => searchParams.append("tags", tag));
   }
 
-  const response = await fetch(`/api/orbit/assets?${params.toString()}`);
+  const response = await fetch(`/api/orbit/assets?${searchParams}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -153,34 +163,32 @@ export async function listAssets(
 }
 
 /**
- * Get single asset with full details
+ * Get a single asset by ID
  */
-export async function getAsset(assetId: string): Promise<AssetWithRelations> {
+export async function getAsset(assetId: string): Promise<Asset> {
   const response = await fetch(`/api/orbit/assets/${assetId}`);
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || "Failed to get asset");
+    throw new Error(error.error || "Failed to fetch asset");
   }
 
-  const data = await response.json();
-  return data.asset;
+  return response.json();
 }
 
 /**
  * Update asset metadata
  */
 export async function updateAsset(
+  assetId: string,
   params: UpdateAssetParams,
-): Promise<AssetWithRelations> {
-  const { assetId, ...body } = params;
-
+): Promise<Asset> {
   const response = await fetch(`/api/orbit/assets/${assetId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(params),
   });
 
   if (!response.ok) {
@@ -188,12 +196,12 @@ export async function updateAsset(
     throw new Error(error.error || "Failed to update asset");
   }
 
-  const data = await response.json();
-  return data.asset;
+  const result = await response.json();
+  return result.asset;
 }
 
 /**
- * Delete asset
+ * Delete an asset
  */
 export async function deleteAsset(assetId: string): Promise<void> {
   const response = await fetch(`/api/orbit/assets/${assetId}`, {
@@ -207,9 +215,14 @@ export async function deleteAsset(assetId: string): Promise<void> {
 }
 
 /**
- * Trigger AI analysis for asset
+ * Trigger AI analysis for an asset
  */
-export async function analyzeAsset(assetId: string): Promise<AnalysisResult> {
+export async function analyzeAsset(
+  assetId: string,
+): Promise<{
+  analysis: AssetAnalysisResult;
+  asset: Asset;
+}> {
   const response = await fetch("/api/orbit/assets/analyze", {
     method: "POST",
     headers: {
@@ -227,11 +240,11 @@ export async function analyzeAsset(assetId: string): Promise<AnalysisResult> {
 }
 
 /**
- * List folders for workspace
+ * List folders for a workspace
  */
 export async function listFolders(
   workspaceId: string,
-): Promise<AssetFolderWithCounts[]> {
+): Promise<AssetFolder[]> {
   const response = await fetch(
     `/api/orbit/assets/folders?workspaceId=${workspaceId}`,
   );
@@ -241,16 +254,16 @@ export async function listFolders(
     throw new Error(error.error || "Failed to list folders");
   }
 
-  const data = await response.json();
-  return data.folders;
+  const result = await response.json();
+  return result.folders;
 }
 
 /**
- * Create new folder
+ * Create a new folder
  */
 export async function createFolder(
   params: CreateFolderParams,
-): Promise<AssetFolderWithCounts> {
+): Promise<AssetFolder> {
   const response = await fetch("/api/orbit/assets/folders", {
     method: "POST",
     headers: {
@@ -264,52 +277,49 @@ export async function createFolder(
     throw new Error(error.error || "Failed to create folder");
   }
 
-  const data = await response.json();
-  return data.folder;
+  const result = await response.json();
+  return result.folder;
 }
 
 /**
- * Update folder (rename)
+ * Rename a folder
  */
-export async function updateFolder(
-  params: UpdateFolderParams,
-): Promise<AssetFolderWithCounts> {
+export async function renameFolder(
+  folderId: string,
+  name: string,
+): Promise<AssetFolder> {
   const response = await fetch("/api/orbit/assets/folders", {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(params),
+    body: JSON.stringify({ folderId, name }),
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || "Failed to update folder");
+    throw new Error(error.error || "Failed to rename folder");
   }
 
-  const data = await response.json();
-  return data.folder;
+  const result = await response.json();
+  return result.folder;
 }
 
 /**
- * Delete folder
+ * Delete a folder
  */
 export async function deleteFolder(
   folderId: string,
-  cascade: boolean = false,
+  cascade = false,
 ): Promise<void> {
-  const params = new URLSearchParams();
-  params.set("folderId", folderId);
-  if (cascade) {
-    params.set("cascade", "true");
-  }
+  const params = new URLSearchParams({
+    folderId,
+    cascade: String(cascade),
+  });
 
-  const response = await fetch(
-    `/api/orbit/assets/folders?${params.toString()}`,
-    {
-      method: "DELETE",
-    },
-  );
+  const response = await fetch(`/api/orbit/assets/folders?${params}`, {
+    method: "DELETE",
+  });
 
   if (!response.ok) {
     const error = await response.json();

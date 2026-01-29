@@ -12,7 +12,7 @@ import { Upload, Search, Plus, Folder } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState, useMemo, useEffect } from "react";
 import { tryCatch } from "@/lib/try-catch";
-import type { AssetWithRelations } from "@/lib/assets/asset-client";
+import type { Asset } from "@/lib/assets/asset-client";
 
 export default function ContentLibraryPage() {
   const params = useParams();
@@ -42,11 +42,11 @@ export default function ContentLibraryPage() {
   }, [workspaceSlug]);
 
   // Queries
-  const { data: foldersData } = useAssetFolders(workspaceId);
+  const { data: foldersData } = useAssetFolders(workspaceId || "");
   const { data: assetsData, isLoading } = useAssets(
     {
       workspaceId: workspaceId || "",
-      folderId: selectedFolderId,
+      folderId: selectedFolderId || undefined,
       search: searchQuery || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       fileType: selectedFileTypes.length === 1 ? (selectedFileTypes[0] as "image" | "video") : undefined,
@@ -59,8 +59,8 @@ export default function ContentLibraryPage() {
     if (!assetsData?.assets) return [];
     const tagSet = new Set<string>();
     assetsData.assets.forEach((asset) => {
-      asset.tags.forEach((tagAssignment) => {
-        tagSet.add(tagAssignment.tag.name);
+      asset.tags?.forEach((tag) => {
+        tagSet.add(tag.name);
       });
     });
     return Array.from(tagSet).sort();
@@ -68,12 +68,12 @@ export default function ContentLibraryPage() {
 
   const fileTypes = ["image", "video"];
 
-  const handlePreview = (asset: AssetWithRelations) => {
+  const handlePreview = (asset: Asset) => {
     setSelectedAssetId(asset.id);
     setDetailsPanelOpen(true);
   };
 
-  const handleDelete = (asset: AssetWithRelations) => {
+  const handleDelete = (asset: Asset) => {
     setSelectedAssetId(asset.id);
     setDetailsPanelOpen(true);
   };
