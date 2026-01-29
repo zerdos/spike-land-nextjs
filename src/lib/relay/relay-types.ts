@@ -201,6 +201,7 @@ export const PLATFORM_CHARACTER_LIMITS: Record<SocialPlatform, number> = {
   TIKTOK: 2200,
   YOUTUBE: 10000,
   DISCORD: 2000,
+  PINTEREST: 500, // Pinterest description limit
 };
 
 /**

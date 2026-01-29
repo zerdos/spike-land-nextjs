@@ -72,6 +72,11 @@ const platformConfig: Record<
     color: "text-indigo-400",
     bgColor: "bg-indigo-500/10",
   },
+  PINTEREST: {
+    name: "Pinterest",
+    color: "text-red-600",
+    bgColor: "bg-red-600/10",
+  },
 };
 
 const statusConfig: Record<

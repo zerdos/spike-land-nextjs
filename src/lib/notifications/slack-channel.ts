@@ -20,6 +20,7 @@ const PLATFORM_EMOJIS: Record<string, string> = {
   YOUTUBE: ":youtube:",
   TIKTOK: ":tiktok:",
   DISCORD: ":discord:",
+  PINTEREST: "Pinterest",
 };
 
 /**

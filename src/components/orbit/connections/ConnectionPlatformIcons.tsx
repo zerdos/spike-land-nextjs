@@ -14,6 +14,7 @@ const PLATFORM_ICONS: Record<SocialPlatform, React.ComponentType<{ className?: s
   YOUTUBE: Youtube,
   TIKTOK: MessageCircle, // Using generic icon for TikTok as Lucide might not have it or it's named differently
   DISCORD: MessageCircle,
+  PINTEREST: () => <span className="text-lg">📌</span>,
 };
 
 export function ConnectionPlatformIcons({ platforms, className }: ConnectionPlatformIconsProps) {

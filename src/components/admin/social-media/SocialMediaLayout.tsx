@@ -90,6 +90,11 @@ export const PLATFORM_CONFIG: Record<
   YOUTUBE: { name: "YouTube", icon: "▶", color: "bg-[#FF0000] text-white" },
   TIKTOK: { name: "TikTok", icon: "♪", color: "bg-black text-white" },
   DISCORD: { name: "Discord", icon: "💬", color: "bg-[#5865F2] text-white" },
+  PINTEREST: {
+    name: "Pinterest",
+    icon: "📌",
+    color: "bg-[#E60023] text-white",
+  },
   REDDIT: { name: "Reddit", icon: "🔴", color: "bg-[#FF4500] text-white" },
   DEVTO: { name: "Dev.to", icon: "DEV", color: "bg-black text-white" },
   HACKERNEWS: {

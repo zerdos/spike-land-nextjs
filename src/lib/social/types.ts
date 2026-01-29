@@ -507,6 +507,49 @@ export interface StreamsQueryParams {
 }
 
 /**
+ * Pinterest-specific types
+ */
+export interface PinterestBoard {
+  id: string;
+  name: string;
+  description?: string;
+  privacy: "PUBLIC" | "PROTECTED" | "SECRET";
+  follower_count?: number;
+  pin_count?: number;
+  image_thumbnail_url?: string;
+  created_at: string;
+}
+
+export interface PinterestPin {
+  id: string;
+  title?: string;
+  description?: string;
+  link?: string;
+  alt_text?: string;
+  board_id: string;
+  created_at: string;
+  media: {
+    media_type: "image" | "video";
+    images?: {
+      original: { url: string; width: number; height: number; };
+      [key: string]: { url: string; width?: number; height?: number; };
+    };
+  };
+}
+
+export interface PinterestMetrics {
+  pin_id: string;
+  impression: number;
+  save: number;
+  pin_click: number;
+  outbound_click: number;
+}
+
+export interface PinterestClientOptions extends SocialClientOptions {
+  boardId?: string; // Default board for pins
+}
+
+/**
  * Platform engagement capabilities
  */
 export const PLATFORM_CAPABILITIES: Record<
@@ -520,4 +563,5 @@ export const PLATFORM_CAPABILITIES: Record<
   TIKTOK: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
   YOUTUBE: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
   DISCORD: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
+  PINTEREST: { canLike: false, canReply: false, canShare: true }, // Pinterest uses "saves"
 };

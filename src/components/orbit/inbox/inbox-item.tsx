@@ -32,6 +32,7 @@ const PLATFORM_ICONS: Record<
   TIKTOK: Music2,
   YOUTUBE: Youtube,
   DISCORD: MessageCircle,
+  PINTEREST: () => <span className="text-lg">📌</span>,
 };
 
 function PlatformIcon({ platform }: { platform: string; }) {

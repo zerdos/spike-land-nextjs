@@ -32,6 +32,7 @@ const PLATFORM_COLORS: Record<SocialPlatform, string> = {
   TIKTOK: "bg-black",
   YOUTUBE: "bg-[#FF0000]",
   DISCORD: "bg-[#5865F2]",
+  PINTEREST: "Pinterest",
 };
 
 const PLATFORM_ICONS: Record<SocialPlatform, string> = {
@@ -42,6 +43,7 @@ const PLATFORM_ICONS: Record<SocialPlatform, string> = {
   TIKTOK: "♪",
   YOUTUBE: "▶",
   DISCORD: "🎮",
+  PINTEREST: "Pinterest",
 };
 
 const STATUS_CONFIG: Record<

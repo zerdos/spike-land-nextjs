@@ -33,6 +33,7 @@ const PLATFORM_CONFIG: Record<
   TIKTOK: { name: "TikTok", shortName: "TT" },
   YOUTUBE: { name: "YouTube", shortName: "YT" },
   DISCORD: { name: "Discord", shortName: "DC" },
+  PINTEREST: { name: "Pinterest", shortName: "P" },
 };
 
 /**
