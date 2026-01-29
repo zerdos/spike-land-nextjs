@@ -27,6 +27,31 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
+      - name: Validate secrets
+        run: |
+          echo "Validating required secrets..."
+          if [ -z "${{ secrets.DATABASE_URL }}" ]; then
+            echo "❌ DATABASE_URL is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}" ]; then
+            echo "❌ CLOUDFLARE_R2_BUCKET_NAME is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.CLOUDFLARE_R2_ENDPOINT }}" ]; then
+            echo "❌ CLOUDFLARE_R2_ENDPOINT is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}" ]; then
+            echo "❌ CLOUDFLARE_R2_ACCESS_KEY_ID is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}" ]; then
+            echo "❌ CLOUDFLARE_R2_SECRET_ACCESS_KEY is not set"
+            exit 1
+          fi
+          echo "✅ All required secrets are configured"
+
       - name: Run backup script
         id: backup
         continue-on-error: true
@@ -36,7 +61,7 @@ jobs:
           CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
           CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
           CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-        run: yarn tsx scripts/backup/backup.ts
+        run: yarn backup
 
       - name: Retry backup on failure
         if: steps.backup.outcome == 'failure'
@@ -49,7 +74,7 @@ jobs:
         run: |
           echo "First backup attempt failed. Waiting 30 seconds before retry..."
           sleep 30
-          yarn tsx scripts/backup/backup.ts
+          yarn backup
 
       - name: Check for existing failure issue and notify
         if: failure()
