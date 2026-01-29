@@ -39,6 +39,7 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 **Files with Skips:** 7
 
 **Status Summary:**
+
 - ✅ All skips are documented with SKIP REASON comments
 - ✅ Pre-commit hook enforces documentation (see `.husky/pre-commit`)
 - ✅ Validation script at `scripts/check-undocumented-skips.js`
@@ -46,44 +47,44 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 
 ### Category A: Integration Tests (Documented) - 1 test
 
-| File | Test | Reason | Status |
-|------|------|--------|--------|
-| `src/app/api/orbit/[workspaceSlug]/scout/competitors/[id]/metrics/route.integration.test.ts` | "Competitor Metrics API" (entire suite) | Integration test requiring real database | Keep |
+| File                                                                                         | Test                                    | Reason                                   | Status |
+| -------------------------------------------------------------------------------------------- | --------------------------------------- | ---------------------------------------- | ------ |
+| `src/app/api/orbit/[workspaceSlug]/scout/competitors/[id]/metrics/route.integration.test.ts` | "Competitor Metrics API" (entire suite) | Integration test requiring real database | Keep   |
 
 ### Category C: AI SDK Tests (Complex Mocking) - 5 tests
 
-| File | Test | Reason | Status |
-|------|------|--------|--------|
-| `packages/testing.spike.land/src/handlers/postHandler.spec.ts` | "should handle tool execution in onStepFinish" | AI SDK streaming callback mocking complexity | Fixing |
-| `packages/testing.spike.land/src/handlers/postHandler.spec.ts` | "should handle errors during tool result saving" | AI SDK streaming callback mocking complexity | Fixing |
-| `packages/testing.spike.land/src/handlers/postHandler.response.spec.ts` | "should create stream with correct parameters" | AI SDK streamText mocking | Fixing |
-| `packages/testing.spike.land/src/handlers/postHandler.tools.spec.ts` | "should convert tools to correct format" | AI SDK tool conversion | Fixing |
-| `packages/testing.spike.land/src/routeHandler.spec.ts` | "should handle websocket upgrade" | WebSocket upgrade mocking | Fixing |
+| File                                                                    | Test                                             | Reason                                       | Status |
+| ----------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------- | ------ |
+| `packages/testing.spike.land/src/handlers/postHandler.spec.ts`          | "should handle tool execution in onStepFinish"   | AI SDK streaming callback mocking complexity | Fixing |
+| `packages/testing.spike.land/src/handlers/postHandler.spec.ts`          | "should handle errors during tool result saving" | AI SDK streaming callback mocking complexity | Fixing |
+| `packages/testing.spike.land/src/handlers/postHandler.response.spec.ts` | "should create stream with correct parameters"   | AI SDK streamText mocking                    | Fixing |
+| `packages/testing.spike.land/src/handlers/postHandler.tools.spec.ts`    | "should convert tools to correct format"         | AI SDK tool conversion                       | Fixing |
+| `packages/testing.spike.land/src/routeHandler.spec.ts`                  | "should handle websocket upgrade"                | WebSocket upgrade mocking                    | Fixing |
 
 ### Category D: Routing & Caching Tests - 9 tests
 
-| File | Test | Reason | Status |
-|------|------|--------|--------|
-| `packages/code/src/__tests__/WebSocketManager.spec.tsx` | "should handle dehydrated page route" | Complex DOM setup for embed routing | Fixing |
-| `packages/code/src/__tests__/WebSocketManager.spec.tsx` | "should handle default route" | Complex DOM setup for embed routing | Fixing |
-| `packages/code/src/__tests__/router.spec.tsx` | "should handle live page route with parameters" | Route parameter handling incomplete | Fixing |
-| `packages/code/src/__tests__/router.spec.tsx` | "should handle multiple route navigations" | Route parameter handling incomplete | Fixing |
-| `packages/code/src/__tests__/serve-with-cache.spec.tsx` | "should handle different asset versions" | Asset fetcher mocking | Fixing |
-| `packages/code/src/__tests__/serve-with-cache.spec.tsx` | "should handle assets with special characters" | Asset fetcher mocking | Fixing |
-| `packages/code/src/__tests__/serve-with-cache.spec.tsx` | "should handle different status codes" | Asset fetcher mocking | Fixing |
-| `packages/code/src/__tests__/serve-with-cache.spec.tsx` | "should set 'Cross-Origin-Embedder-Policy' header" | COEP header testing | Fixing |
-| `packages/code/src/__tests__/serve-with-cache.spec.tsx` | "should correctly update import map" | Complex import map updates | Fixing |
+| File                                                    | Test                                               | Reason                              | Status |
+| ------------------------------------------------------- | -------------------------------------------------- | ----------------------------------- | ------ |
+| `packages/code/src/__tests__/WebSocketManager.spec.tsx` | "should handle dehydrated page route"              | Complex DOM setup for embed routing | Fixing |
+| `packages/code/src/__tests__/WebSocketManager.spec.tsx` | "should handle default route"                      | Complex DOM setup for embed routing | Fixing |
+| `packages/code/src/__tests__/router.spec.tsx`           | "should handle live page route with parameters"    | Route parameter handling incomplete | Fixing |
+| `packages/code/src/__tests__/router.spec.tsx`           | "should handle multiple route navigations"         | Route parameter handling incomplete | Fixing |
+| `packages/code/src/__tests__/serve-with-cache.spec.tsx` | "should handle different asset versions"           | Asset fetcher mocking               | Fixing |
+| `packages/code/src/__tests__/serve-with-cache.spec.tsx` | "should handle assets with special characters"     | Asset fetcher mocking               | Fixing |
+| `packages/code/src/__tests__/serve-with-cache.spec.tsx` | "should handle different status codes"             | Asset fetcher mocking               | Fixing |
+| `packages/code/src/__tests__/serve-with-cache.spec.tsx` | "should set 'Cross-Origin-Embedder-Policy' header" | COEP header testing                 | Fixing |
+| `packages/code/src/__tests__/serve-with-cache.spec.tsx` | "should correctly update import map"               | Complex import map updates          | Fixing |
 
 ### Category E: TTL/Timing Tests - 1 test
 
-| File | Test | Reason | Status |
-|------|------|--------|--------|
+| File                                                  | Test                                      | Reason                      | Status |
+| ----------------------------------------------------- | ----------------------------------------- | --------------------------- | ------ |
 | `packages/code/src/@/lib/__tests__/lru-cache.spec.ts` | "should return false for expired entries" | TTL expiry with fake timers | Fixing |
 
 ### Category F: Feature Under Review - 1 test
 
-| File | Test | Reason | Status |
-|------|------|--------|--------|
+| File                                                              | Test                                 | Reason                                      | Status        |
+| ----------------------------------------------------------------- | ------------------------------------ | ------------------------------------------- | ------------- |
 | `packages/code/src/__tests__/components/AutoSaveHistory.spec.tsx` | "CodeHistoryCarousel" (entire suite) | Monaco editor mocking or incomplete feature | Investigation |
 
 ## Historical Changes
