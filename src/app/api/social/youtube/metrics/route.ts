@@ -11,14 +11,13 @@
  */
 
 import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 import { safeDecryptToken } from "@/lib/crypto/token-encryption";
+import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import { YouTubeClient } from "@/lib/social/clients/youtube";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-
-// Uncomment when YOUTUBE is added to SocialPlatform enum:
-// import prisma from "@/lib/prisma";
 
 /**
  * GET /api/social/youtube/metrics
@@ -27,13 +26,10 @@ import { NextResponse } from "next/server";
  * video count, and recent video performance.
  *
  * Query params:
- * - accessToken: Required (temporary). Encrypted access token
+ * - accountId: Required. The SocialAccount ID
  * - channelId: Optional. The YouTube channel ID (for validation)
  * - includeRecentVideos: Optional. Include stats for recent videos (default: true)
  * - recentVideoCount: Optional. Number of recent videos to include (default: 5)
- *
- * When database storage is enabled (YOUTUBE in enum):
- * - accountId: The SocialAccount ID (replaces accessToken param)
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { data: session, error: authError } = await tryCatch(auth());
@@ -43,7 +39,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const searchParams = request.nextUrl.searchParams;
-  const accessTokenParam = searchParams.get("accessToken");
+  const accountId = searchParams.get("accountId");
   const channelId = searchParams.get("channelId");
   const includeRecentVideos = searchParams.get("includeRecentVideos") !== "false";
   const recentVideoCount = Math.min(
@@ -51,67 +47,53 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     25,
   );
 
-  // ============================================================================
-  // TEMPORARY: Direct token authentication
-  // ============================================================================
-
-  if (!accessTokenParam) {
+  if (!accountId) {
     return NextResponse.json(
-      {
-        error: "accessToken query parameter is required",
-        note: "YouTube database storage requires YOUTUBE to be added to SocialPlatform enum. " +
-          "Until then, pass the encrypted access token directly.",
-      },
+      { error: "accountId query parameter is required" },
       { status: 400 },
     );
   }
 
-  // Decrypt the access token
-  const accessToken = safeDecryptToken(accessTokenParam);
+  // Get the social account
+  const { data: account, error: accountError } = await tryCatch(
+    prisma.socialAccount.findFirst({
+      where: {
+        id: accountId,
+        platform: "YOUTUBE",
+      },
+    }),
+  );
 
-  // ============================================================================
-  // DATABASE-BASED AUTHENTICATION (enable when YOUTUBE is in enum)
-  // ============================================================================
-  // const accountId = searchParams.get("accountId");
-  //
-  // if (!accountId) {
-  //   return NextResponse.json(
-  //     { error: "accountId query parameter is required" },
-  //     { status: 400 },
-  //   );
-  // }
-  //
-  // const { data: account, error: accountError } = await tryCatch(
-  //   prisma.socialAccount.findFirst({
-  //     where: {
-  //       id: accountId,
-  //       userId: session.user.id,
-  //       platform: "YOUTUBE",
-  //     },
-  //   }),
-  // );
-  //
-  // if (accountError || !account) {
-  //   return NextResponse.json(
-  //     { error: accountError ? "Failed to fetch account" : "YouTube account not found" },
-  //     { status: accountError ? 500 : 404 },
-  //   );
-  // }
-  //
-  // if (account.status !== "ACTIVE") {
-  //   return NextResponse.json(
-  //     { error: "YouTube account is not active. Please reconnect." },
-  //     { status: 403 },
-  //   );
-  // }
-  //
-  // const accessToken = safeDecryptToken(account.accessTokenEncrypted);
-  // ============================================================================
+  if (accountError || !account) {
+    return NextResponse.json(
+      { error: accountError ? "Failed to fetch account" : "YouTube account not found" },
+      { status: accountError ? 500 : 404 },
+    );
+  }
+
+  // Verify user has permission to view social analytics in this workspace
+  const { error: permError } = await tryCatch(
+    requireWorkspacePermission(session, (account as any).workspaceId, "social:view"),
+  );
+
+  if (permError) {
+    const status = permError.message.includes("Unauthorized") ? 401 : 403;
+    return NextResponse.json({ error: permError.message }, { status });
+  }
+
+  if ((account as any).status !== "ACTIVE") {
+    return NextResponse.json(
+      { error: "YouTube account is not active. Please reconnect." },
+      { status: 403 },
+    );
+  }
+
+  const accessToken = safeDecryptToken((account as any).accessTokenEncrypted);
 
   // Create YouTube client
   const client = new YouTubeClient({
     accessToken,
-    accountId: channelId || undefined,
+    accountId: channelId || (account as any).accountId || undefined,
   });
 
   // Get channel metrics
