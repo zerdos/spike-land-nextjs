@@ -5,7 +5,6 @@
  */
 
 import { auth } from "@/auth";
-import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import {
@@ -113,15 +112,21 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Verify workspace permission
-  const { data: workspace, error: permissionError } = await requireWorkspacePermission(
-    workspaceSlug,
-    session.user.id,
-    "CREATE_EXPERIMENT"
+  // Find workspace and verify membership
+  const { data: workspace, error: workspaceError } = await tryCatch(
+    prisma.workspace.findFirst({
+      where: {
+        slug: workspaceSlug,
+        members: {
+          some: { userId: session.user.id },
+        },
+      },
+      select: { id: true },
+    })
   );
 
-  if (permissionError || !workspace) {
-    return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+  if (workspaceError || !workspace) {
+    return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
   }
 
   // Parse request body
