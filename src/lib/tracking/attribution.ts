@@ -14,7 +14,7 @@ import { getPlatformFromUTM, type UTMParams } from "./utm-capture";
 /**
  * Attribution types matching Prisma schema
  */
-type AttributionType = "FIRST_TOUCH" | "LAST_TOUCH" | "LINEAR";
+type AttributionType = "FIRST_TOUCH" | "LAST_TOUCH" | "LINEAR" | "TIME_DECAY" | "POSITION_BASED";
 
 /**
  * Conversion types matching Prisma schema
@@ -280,6 +280,53 @@ export async function attributeConversion(
       utmParams: extractUTMFromSession(session),
     });
   }
+
+  // Create time-decay attribution records for all sessions
+  const conversionDate = new Date();
+  const timeDecayWeights = calculateTimeDecayAttribution(sessions, conversionDate);
+  for (let i = 0; i < sessions.length; i++) {
+    const session = sessions[i]!;
+    const weight = timeDecayWeights[i]!;
+    const timeDecayValue = value ? value * weight : undefined;
+
+    await createAttribution({
+      userId,
+      sessionId: session.id,
+      conversionId,
+      attributionType: "TIME_DECAY",
+      conversionType,
+      conversionValue: timeDecayValue,
+      platform: await determineSessionPlatform(session),
+      externalCampaignId: (await getExternalCampaignId(session)) ||
+        session.gclid ||
+        session.fbclid ||
+        undefined,
+      utmParams: extractUTMFromSession(session),
+    });
+  }
+
+  // Create position-based attribution records for all sessions
+  const positionWeights = calculatePositionBasedAttribution(sessions);
+  for (let i = 0; i < sessions.length; i++) {
+    const session = sessions[i]!;
+    const weight = positionWeights[i]!;
+    const positionValue = value ? value * weight : undefined;
+
+    await createAttribution({
+      userId,
+      sessionId: session.id,
+      conversionId,
+      attributionType: "POSITION_BASED",
+      conversionType,
+      conversionValue: positionValue,
+      platform: await determineSessionPlatform(session),
+      externalCampaignId: (await getExternalCampaignId(session)) ||
+        session.gclid ||
+        session.fbclid ||
+        undefined,
+      utmParams: extractUTMFromSession(session),
+    });
+  }
 }
 
 /**
@@ -331,6 +378,24 @@ async function createDirectAttribution(
         sessionId: session.id,
         conversionId,
         attributionType: "LINEAR",
+        conversionType,
+        conversionValue: value,
+        platform: "DIRECT",
+      },
+      {
+        userId,
+        sessionId: session.id,
+        conversionId,
+        attributionType: "TIME_DECAY",
+        conversionType,
+        conversionValue: value,
+        platform: "DIRECT",
+      },
+      {
+        userId,
+        sessionId: session.id,
+        conversionId,
+        attributionType: "POSITION_BASED",
         conversionType,
         conversionValue: value,
         platform: "DIRECT",
@@ -455,6 +520,110 @@ function extractUTMFromSession(session: VisitorSession): UTMParams {
 }
 
 /**
+ * Calculate the number of days between a session date and conversion date
+ *
+ * @param sessionDate - The session start date
+ * @param conversionDate - The conversion date
+ * @returns Number of days difference (can be fractional)
+ */
+export function calculateDaysDifference(
+  sessionDate: Date,
+  conversionDate: Date,
+): number {
+  const diffMs = conversionDate.getTime() - sessionDate.getTime();
+  return diffMs / (1000 * 60 * 60 * 24); // Convert milliseconds to days
+}
+
+/**
+ * Calculate time-decay attribution weights for sessions
+ *
+ * Uses exponential decay with a 7-day half-life by default.
+ * Formula: weight = e^(-0.1 * days_ago)
+ *
+ * @param sessions - Array of sessions ordered by time
+ * @param conversionDate - Date of conversion
+ * @param halfLifeDays - Half-life in days (default: 7)
+ * @returns Array of weights for each session
+ *
+ * @example
+ * ```typescript
+ * const sessions = await getSessionsForUser(userId);
+ * const weights = calculateTimeDecayAttribution(sessions, new Date(), 7);
+ * // Session 1 day ago gets ~0.93 weight
+ * // Session 7 days ago gets ~0.50 weight
+ * // Session 14 days ago gets ~0.25 weight
+ * ```
+ */
+export function calculateTimeDecayAttribution(
+  sessions: VisitorSession[],
+  conversionDate: Date,
+  halfLifeDays: number = 7,
+): number[] {
+  if (sessions.length === 0) return [];
+
+  // Calculate decay rate from half-life: ln(0.5) / half_life = -0.693147 / 7 ≈ -0.099
+  const decayRate = Math.log(0.5) / halfLifeDays;
+
+  // Calculate raw weights using exponential decay
+  const rawWeights = sessions.map((session) => {
+    const daysBefore = calculateDaysDifference(session.sessionStart, conversionDate);
+    // Clamp to 0 if future date (shouldn't happen, but safe)
+    const daysAgo = Math.max(0, daysBefore);
+    return Math.exp(decayRate * daysAgo);
+  });
+
+  // Normalize weights to sum to 1
+  const totalWeight = rawWeights.reduce((sum, w) => sum + w, 0);
+  if (totalWeight === 0) return sessions.map(() => 1 / sessions.length); // Fallback to equal
+
+  return rawWeights.map((w) => w / totalWeight);
+}
+
+/**
+ * Calculate position-based attribution weights for sessions
+ *
+ * Assigns 40% to first touch, 40% to last touch, and 20% distributed equally among middle touches.
+ * If only 1 session: 100% to that session
+ * If only 2 sessions: 50% each
+ *
+ * @param sessions - Array of sessions ordered by time
+ * @returns Array of weights for each session
+ *
+ * @example
+ * ```typescript
+ * const sessions = [session1, session2, session3, session4, session5];
+ * const weights = calculatePositionBasedAttribution(sessions);
+ * // Results: [0.4, 0.067, 0.067, 0.067, 0.4]
+ * // First: 40%, Middle 3: 6.7% each (20/3), Last: 40%
+ * ```
+ */
+export function calculatePositionBasedAttribution(
+  sessions: VisitorSession[],
+  firstTouchWeight: number = 0.4,
+  lastTouchWeight: number = 0.4,
+  middleTouchWeight: number = 0.2,
+): number[] {
+  if (sessions.length === 0) return [];
+  if (sessions.length === 1) return [1.0]; // 100% to only session
+  if (sessions.length === 2) return [0.5, 0.5]; // 50/50 split
+
+  const weights = new Array(sessions.length).fill(0);
+
+  // Assign first and last touch
+  weights[0] = firstTouchWeight;
+  weights[sessions.length - 1] = lastTouchWeight;
+
+  // Distribute middle weight equally
+  const middleCount = sessions.length - 2;
+  const perMiddleWeight = middleTouchWeight / middleCount;
+  for (let i = 1; i < sessions.length - 1; i++) {
+    weights[i] = perMiddleWeight;
+  }
+
+  return weights;
+}
+
+/**
  * Get attribution summary for a campaign
  *
  * @param campaignName - The campaign name to analyze
@@ -569,7 +738,7 @@ export async function getGlobalAttributionSummary(
 ): Promise<{
   totalConversions: number;
   comparison: {
-    model: AttributionType | "LINEAR";
+    model: AttributionType;
     value: number;
     conversionCount: number;
   }[];
@@ -577,7 +746,7 @@ export async function getGlobalAttributionSummary(
     platform: string;
     conversionCount: number;
     value: number;
-    model: AttributionType | "LINEAR";
+    model: AttributionType;
   }[];
 }> {
   const where = {
@@ -609,22 +778,23 @@ export async function getGlobalAttributionSummary(
   ]);
 
   // Map model stats to comparison array
-  const models: (AttributionType | "LINEAR")[] = [
+  const models: AttributionType[] = [
     "FIRST_TOUCH",
     "LAST_TOUCH",
     "LINEAR",
+    "TIME_DECAY",
+    "POSITION_BASED",
   ];
   const comparison = models.map((model) => {
     const stat = modelStats.find((s) => s.attributionType === model);
     return {
       model,
       value: stat?._sum?.conversionValue || 0,
-      // For First/Last, count is conversion count. For Linear, count of attributions is usually higher,
-      // but the total conversion count remains the same.
-      // The original code used conversion count (unique conversionIds) for comparison.
-      conversionCount: model === "LINEAR"
-        ? totalConversions // Each conversion has linear attribution
-        : (stat?._count?._all || 0),
+      // For First/Last, count is conversion count. For multi-touch models (LINEAR, TIME_DECAY, POSITION_BASED),
+      // count of attributions is usually higher, but the total conversion count remains the same.
+      conversionCount: model === "FIRST_TOUCH" || model === "LAST_TOUCH"
+        ? (stat?._count?._all || 0)
+        : totalConversions, // Each conversion has multi-touch attribution
     };
   });
 
@@ -632,7 +802,7 @@ export async function getGlobalAttributionSummary(
     platform: s.platform || "UNKNOWN",
     conversionCount: s._count?._all || 0,
     value: s._sum?.conversionValue || 0,
-    model: s.attributionType as AttributionType | "LINEAR",
+    model: s.attributionType as AttributionType,
   }));
 
   return {
