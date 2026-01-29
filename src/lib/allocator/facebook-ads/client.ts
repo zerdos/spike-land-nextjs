@@ -54,6 +54,54 @@ export class FacebookMarketingApiClient {
     return allData;
   }
 
+  /**
+   * Make a mutation request (POST/DELETE) to Facebook Marketing API
+   */
+  private async facebookMutate(
+    path: string,
+    method: "POST" | "DELETE",
+    body?: Record<string, unknown>,
+  ): Promise<void> {
+    const url = new URL(`${GRAPH_API_BASE}/${path}`);
+    url.searchParams.set("access_token", this.accessToken);
+
+    // Add body params to URL for POST (Facebook's convention)
+    if (body && method === "POST") {
+      for (const [key, value] of Object.entries(body)) {
+        if (value !== undefined && value !== null) {
+          url.searchParams.set(key, String(value));
+        }
+      }
+    }
+
+    const response = await fetch(url.toString(), {
+      method,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.error?.message || response.statusText;
+      const errorCode = errorData.error?.code;
+
+      // Handle specific error codes
+      if (errorCode === 17 || errorCode === 80004) {
+        throw new Error(
+          `Facebook rate limit exceeded: ${errorMessage}`,
+        );
+      }
+
+      if (errorCode === 200 || errorCode === 10) {
+        throw new Error(
+          `Permission denied. Check Facebook Ads account permissions: ${errorMessage}`,
+        );
+      }
+
+      throw new Error(
+        `Facebook Marketing API mutation failed: ${errorMessage}`,
+      );
+    }
+  }
+
   async getAdAccounts(): Promise<FacebookAdAccount[]> {
     return await this.facebookRequest<{ data: FacebookAdAccount[]; }>(
       "me/adaccounts",
@@ -93,5 +141,40 @@ export class FacebookMarketingApiClient {
     );
 
     return response?.[0] || null;
+  }
+
+  /**
+   * Update campaign daily budget on Facebook Ads platform
+   *
+   * @param campaignId - The Facebook campaign ID
+   * @param dailyBudgetCents - The new daily budget in cents
+   * @throws Error if the update fails or permissions are insufficient
+   */
+  async updateCampaignBudget(
+    campaignId: string,
+    dailyBudgetCents: number,
+  ): Promise<void> {
+    try {
+      await this.facebookMutate(
+        campaignId,
+        "POST",
+        {
+          daily_budget: dailyBudgetCents.toString(),
+        },
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        // Re-throw with context if not already wrapped
+        if (!error.message.includes("Facebook")) {
+          throw new Error(
+            `Facebook Ads budget update failed for campaign ${campaignId}: ${error.message}`,
+          );
+        }
+        throw error;
+      }
+      throw new Error(
+        `Unknown error updating Facebook Ads budget for campaign ${campaignId}`,
+      );
+    }
   }
 }

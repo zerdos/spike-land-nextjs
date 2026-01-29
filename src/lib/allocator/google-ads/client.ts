@@ -235,6 +235,119 @@ export class GoogleAdsAllocatorClient {
     };
   }
 
+  /**
+   * Update campaign budget on Google Ads platform
+   *
+   * @param customerId - The Google Ads customer ID (without dashes)
+   * @param campaignId - The campaign ID (numeric string)
+   * @param newBudgetMicros - The new budget amount in micros (cents × 10000)
+   * @throws Error if the update fails or permissions are insufficient
+   */
+  async updateCampaignBudget(
+    customerId: string,
+    campaignId: string,
+    newBudgetMicros: number,
+  ): Promise<void> {
+    const normalizedId = customerId.replace(/-/g, "");
+    this.client.setCustomerId(normalizedId);
+
+    try {
+      // Step 1: Get the campaign's budget resource name
+      const campaignQuery = `
+        SELECT
+          campaign.campaign_budget
+        FROM campaign
+        WHERE campaign.id = ${campaignId}
+        LIMIT 1
+      `;
+
+      interface CampaignBudgetQueryResult {
+        campaign: {
+          campaignBudget: string;
+        };
+      }
+
+      const campaignResults = await this.client.executeQuery<
+        CampaignBudgetQueryResult
+      >(
+        normalizedId,
+        campaignQuery,
+      );
+
+      if (!campaignResults[0]?.campaign?.campaignBudget) {
+        throw new Error(
+          `Campaign ${campaignId} not found or has no budget resource`,
+        );
+      }
+
+      const budgetResourceName = campaignResults[0].campaign.campaignBudget;
+
+      // Step 2: Update the budget using the Google Ads API
+      // We need to make a mutation request to update the campaign budget
+      const mutateUrl =
+        `https://googleads.googleapis.com/v18/customers/${normalizedId}/campaignBudgets:mutate`;
+
+      const operation = {
+        update: {
+          resourceName: budgetResourceName,
+          amountMicros: newBudgetMicros.toString(),
+        },
+        updateMask: "amount_micros",
+      };
+
+      const response = await fetch(mutateUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.client["accessToken"]}`,
+          "developer-token": process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "",
+        },
+        body: JSON.stringify({
+          operations: [operation],
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error?.message ||
+          response.statusText ||
+          "Unknown error";
+
+        // Handle specific error types
+        if (response.status === 429) {
+          throw new Error(
+            `Google Ads rate limit exceeded: ${errorMessage}`,
+          );
+        }
+
+        if (response.status === 403) {
+          throw new Error(
+            `Permission denied to update budget. Check Google Ads account permissions: ${errorMessage}`,
+          );
+        }
+
+        throw new Error(
+          `Failed to update Google Ads campaign budget: ${errorMessage}`,
+        );
+      }
+
+      // Mutation successful
+    } catch (error) {
+      if (error instanceof Error) {
+        // Re-throw with context if not already wrapped
+        if (!error.message.includes("Google Ads")) {
+          throw new Error(
+            `Google Ads budget update failed for campaign ${campaignId}: ${error.message}`,
+          );
+        }
+        throw error;
+      }
+      throw new Error(
+        `Unknown error updating Google Ads budget for campaign ${campaignId}`,
+      );
+    }
+  }
+
   private mapStatus(status: string): CampaignStatus {
     const statusMap: Record<string, CampaignStatus> = {
       ENABLED: "ACTIVE",

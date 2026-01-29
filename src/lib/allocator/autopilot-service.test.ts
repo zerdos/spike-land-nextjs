@@ -60,6 +60,16 @@ vi.mock("@/lib/prisma", () => ({
     },
     allocatorCampaign: {
       update: vi.fn(),
+      findUnique: vi.fn(),
+    },
+    socialAccount: {
+      findFirst: vi.fn(),
+    },
+    marketingAccount: {
+      findFirst: vi.fn(),
+    },
+    workspaceMember: {
+      findMany: vi.fn(),
     },
     allocatorDailyBudgetMove: {
       findUnique: vi.fn(),
@@ -78,6 +88,22 @@ vi.mock("../feature-flags/feature-flag-service", () => ({
 vi.mock("./autopilot-anomaly-integration", () => ({
   AutopilotAnomalyIntegration: {
     checkForAnomalies: vi.fn(),
+  },
+}));
+
+vi.mock("@/lib/crypto/token-encryption", () => ({
+  decryptToken: vi.fn((token: string) => token.replace("encrypted_", "")),
+}));
+
+vi.mock("./facebook-ads/client", () => ({
+  FacebookMarketingApiClient: class {
+    updateCampaignBudget = vi.fn().mockResolvedValue(undefined);
+  },
+}));
+
+vi.mock("./google-ads/client", () => ({
+  GoogleAdsAllocatorClient: class {
+    updateCampaignBudget = vi.fn().mockResolvedValue(undefined);
   },
 }));
 
@@ -125,6 +151,23 @@ describe("AutopilotService", () => {
     (prisma.allocatorAutopilotExecution.create as any).mockResolvedValue({
       id: "exec-1",
     });
+
+    // Mock campaign lookup for platform API integration
+    (prisma.allocatorCampaign.findUnique as any).mockResolvedValue({
+      platform: "FACEBOOK_ADS",
+      platformCampaignId: "123456789",
+      workspaceId: "ws-1",
+    });
+
+    // Mock social account lookup
+    (prisma.socialAccount.findFirst as any).mockResolvedValue({
+      accessTokenEncrypted: "encrypted_token",
+    });
+
+    // Mock workspace members
+    (prisma.workspaceMember.findMany as any).mockResolvedValue([
+      { userId: "user-1" },
+    ]);
   });
 
   describe("evaluateRecommendation", () => {
