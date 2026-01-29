@@ -75,8 +75,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const where: {
       workspaceId: string;
       folderId?: string;
-      filename?: { contains: string; mode: "insensitive" };
-      fileType?: { startsWith: string };
+      filename?: { contains: string; mode: "insensitive"; };
+      fileType?: { startsWith: string; };
       tags?: {
         some: {
           tag: {

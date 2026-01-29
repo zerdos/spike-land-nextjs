@@ -282,9 +282,6 @@
     "prisma": {
       "unplugged": true
     },
-    "sharp": {
-      "unplugged": true
-    },
     "styled-jsx": {
       "unplugged": true
     },

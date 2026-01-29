@@ -103,20 +103,22 @@ export function AssetUploadDialog({
           >
             <input {...getInputProps()} />
             <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            {isDragActive ? (
-              <p className="text-sm text-muted-foreground">
-                Drop files here...
-              </p>
-            ) : (
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Drag & drop files here, or click to select
+            {isDragActive
+              ? (
+                <p className="text-sm text-muted-foreground">
+                  Drop files here...
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Supports images and videos up to 50MB
-                </p>
-              </div>
-            )}
+              )
+              : (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Drag & drop files here, or click to select
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Supports images and videos up to 50MB
+                  </p>
+                </div>
+              )}
           </div>
 
           {/* File list */}

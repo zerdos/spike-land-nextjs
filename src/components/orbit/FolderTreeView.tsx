@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { AssetFolder } from "@/lib/assets/asset-client";
-import { Folder, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Folder, FolderOpen } from "lucide-react";
 
 interface FolderTreeViewProps {
   folders: AssetFolder[];
@@ -45,11 +45,7 @@ export function FolderTreeView({
           style={{ paddingLeft: level > 0 ? `${1 + level}rem` : undefined }}
           onClick={() => onSelectFolder(folder.id)}
         >
-          {isSelected ? (
-            <FolderOpen className="h-4 w-4" />
-          ) : (
-            <Folder className="h-4 w-4" />
-          )}
+          {isSelected ? <FolderOpen className="h-4 w-4" /> : <Folder className="h-4 w-4" />}
           <span className="flex-1 text-left truncate">{folder.name}</span>
           <span className="text-xs text-muted-foreground">
             {folder.assetCount || 0}
@@ -57,9 +53,7 @@ export function FolderTreeView({
         </Button>
 
         {hasChildren &&
-          children.map((child) => (
-            <FolderItem key={child.id} folder={child} level={level + 1} />
-          ))}
+          children.map((child) => <FolderItem key={child.id} folder={child} level={level + 1} />)}
       </div>
     );
   };
@@ -76,9 +70,7 @@ export function FolderTreeView({
           <span className="flex-1 text-left">All Assets</span>
         </Button>
 
-        {rootFolders.map((folder) => (
-          <FolderItem key={folder.id} folder={folder} />
-        ))}
+        {rootFolders.map((folder) => <FolderItem key={folder.id} folder={folder} />)}
       </div>
     </ScrollArea>
   );

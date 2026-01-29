@@ -1,10 +1,10 @@
 import { auth } from "@/auth";
 import { analyzeAssetForLibrary } from "@/lib/ai/gemini-client";
+import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
 import { downloadFromR2 } from "@/lib/storage/r2-client";
 import { tryCatch } from "@/lib/try-catch";
-import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
-import type { NextRequest} from "next/server";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 /**
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { assetId } = body as { assetId: string };
+  const { assetId } = body as { assetId: string; };
 
   if (!assetId) {
     return NextResponse.json(

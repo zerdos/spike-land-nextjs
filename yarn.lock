@@ -24721,8 +24721,6 @@ __metadata:
       unplugged: true
     prisma:
       unplugged: true
-    sharp:
-      unplugged: true
     styled-jsx:
       unplugged: true
     tailwindcss:

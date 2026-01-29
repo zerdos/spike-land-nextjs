@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { useAsset, useUpdateAsset, useDeleteAsset, useAnalyzeAsset } from "@/hooks/use-assets";
+import { useAnalyzeAsset, useAsset, useDeleteAsset, useUpdateAsset } from "@/hooks/use-assets";
 import { Copy, Sparkles, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AssetTagSelector } from "./AssetTagSelector";
 
@@ -100,18 +100,22 @@ export function AssetDetailsPanel({
         <div className="space-y-6 py-6">
           {/* Preview */}
           <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-            {isImage && asset.url ? (
-              <Image
-                src={asset.url}
-                alt={asset.altText || asset.filename}
-                fill
-                className="object-contain"
-              />
-            ) : asset.url ? (
-              <video src={asset.url} controls className="w-full h-full">
-                <track kind="captions" />
-              </video>
-            ) : null}
+            {isImage && asset.url
+              ? (
+                <Image
+                  src={asset.url}
+                  alt={asset.altText || asset.filename}
+                  fill
+                  className="object-contain"
+                />
+              )
+              : asset.url
+              ? (
+                <video src={asset.url} controls className="w-full h-full">
+                  <track kind="captions" />
+                </video>
+              )
+              : null}
           </div>
 
           {/* Filename */}
@@ -156,7 +160,11 @@ export function AssetDetailsPanel({
               <div className="flex items-center gap-2 mt-2">
                 <Badge variant="secondary">{asset.qualityScore}/100</Badge>
                 <span className="text-sm text-muted-foreground">
-                  {asset.qualityScore >= 80 ? "Excellent" : asset.qualityScore >= 60 ? "Good" : "Fair"}
+                  {asset.qualityScore >= 80
+                    ? "Excellent"
+                    : asset.qualityScore >= 60
+                    ? "Good"
+                    : "Fair"}
                 </span>
               </div>
             </div>
@@ -176,13 +184,9 @@ export function AssetDetailsPanel({
             <Label>Metadata</Label>
             <div className="text-sm text-muted-foreground space-y-1">
               <p>Size: {(asset.sizeBytes / 1024 / 1024).toFixed(2)} MB</p>
-              {asset.width && asset.height && (
-                <p>Dimensions: {asset.width} × {asset.height}px</p>
-              )}
+              {asset.width && asset.height && <p>Dimensions: {asset.width} × {asset.height}px</p>}
               <p>Uploaded: {new Date(asset.createdAt).toLocaleDateString()}</p>
-              {asset.usage && (
-                <p>Used in {asset.usage.total} posts</p>
-              )}
+              {asset.usage && <p>Used in {asset.usage.total} posts</p>}
             </div>
           </div>
 

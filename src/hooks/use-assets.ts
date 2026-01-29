@@ -6,29 +6,29 @@
 
 import {
   analyzeAsset,
+  type Asset,
+  type AssetAnalysisResult,
+  type AssetFolder,
   createFolder,
+  type CreateFolderParams,
   deleteAsset,
   deleteFolder,
   getAsset,
   listAssets,
+  type ListAssetsParams,
   listFolders,
+  type PaginatedAssets,
   renameFolder,
   updateAsset,
-  uploadAsset,
-  type Asset,
-  type AssetAnalysisResult,
-  type AssetFolder,
-  type CreateFolderParams,
-  type ListAssetsParams,
-  type PaginatedAssets,
   type UpdateAssetParams,
+  uploadAsset,
   type UploadAssetParams,
 } from "@/lib/assets/asset-client";
 import {
   useMutation,
+  type UseMutationOptions,
   useQuery,
   useQueryClient,
-  type UseMutationOptions,
   type UseQueryOptions,
 } from "@tanstack/react-query";
 
@@ -39,8 +39,7 @@ export const assetKeys = {
   list: (params: ListAssetsParams) => [...assetKeys.lists(), params] as const,
   details: () => [...assetKeys.all, "detail"] as const,
   detail: (id: string) => [...assetKeys.details(), id] as const,
-  folders: (workspaceId: string) =>
-    [...assetKeys.all, "folders", workspaceId] as const,
+  folders: (workspaceId: string) => [...assetKeys.all, "folders", workspaceId] as const,
 };
 
 /**
@@ -100,7 +99,7 @@ export function useUpdateAsset(
   options?: UseMutationOptions<
     Asset,
     Error,
-    { assetId: string; params: UpdateAssetParams }
+    { assetId: string; params: UpdateAssetParams; }
   >,
 ) {
   const queryClient = useQueryClient();
@@ -108,7 +107,7 @@ export function useUpdateAsset(
   return useMutation<
     Asset,
     Error,
-    { assetId: string; params: UpdateAssetParams }
+    { assetId: string; params: UpdateAssetParams; }
   >({
     mutationFn: ({ assetId, params }) => updateAsset(assetId, params),
     onSuccess: (data, variables) => {
@@ -148,7 +147,7 @@ export function useDeleteAsset(
  */
 export function useAnalyzeAsset(
   options?: UseMutationOptions<
-    { analysis: AssetAnalysisResult; asset: Asset },
+    { analysis: AssetAnalysisResult; asset: Asset; },
     Error,
     string
   >,
@@ -156,7 +155,7 @@ export function useAnalyzeAsset(
   const queryClient = useQueryClient();
 
   return useMutation<
-    { analysis: AssetAnalysisResult; asset: Asset },
+    { analysis: AssetAnalysisResult; asset: Asset; },
     Error,
     string
   >({
@@ -214,7 +213,7 @@ export function useRenameFolder(
   options?: UseMutationOptions<
     AssetFolder,
     Error,
-    { folderId: string; name: string; workspaceId: string }
+    { folderId: string; name: string; workspaceId: string; }
   >,
 ) {
   const queryClient = useQueryClient();
@@ -222,7 +221,7 @@ export function useRenameFolder(
   return useMutation<
     AssetFolder,
     Error,
-    { folderId: string; name: string; workspaceId: string }
+    { folderId: string; name: string; workspaceId: string; }
   >({
     mutationFn: ({ folderId, name }) => renameFolder(folderId, name),
     onSuccess: (_, variables) => {
@@ -242,7 +241,7 @@ export function useDeleteFolder(
   options?: UseMutationOptions<
     void,
     Error,
-    { folderId: string; workspaceId: string; cascade?: boolean }
+    { folderId: string; workspaceId: string; cascade?: boolean; }
   >,
 ) {
   const queryClient = useQueryClient();
@@ -250,7 +249,7 @@ export function useDeleteFolder(
   return useMutation<
     void,
     Error,
-    { folderId: string; workspaceId: string; cascade?: boolean }
+    { folderId: string; workspaceId: string; cascade?: boolean; }
   >({
     mutationFn: ({ folderId, cascade }) => deleteFolder(folderId, cascade),
     onSuccess: (_, variables) => {

@@ -1,8 +1,8 @@
 import { auth } from "@/auth";
+import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
-import type { NextRequest} from "next/server";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 /**

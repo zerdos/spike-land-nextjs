@@ -152,6 +152,7 @@ eliminating the ~5 minute `yarn install` delay when assigning work to developer 
 6. Return path instantly (no yarn install!)
 
 ### Planning Agents (8)
+
 ### Planning Agents (10)
 
 - Pick open GitHub issues (synced to `.github/issues/`)
@@ -189,28 +190,28 @@ eliminating the ~5 minute `yarn install` delay when assigning work to developer 
 
 ## Settings
 
-| Setting                | Value                      | Description                                            |
-| ---------------------- | -------------------------- | ------------------------------------------------------ |
-| `sync_interval_min`    | 2                          | How often to run orchestration loop (minutes)          |
-| `stale_threshold_min`  | 30                         | Mark agents as stale after this time without heartbeat |
-| `max_retries`          | 2                          | Retry failed tickets before marking as failed          |
-| `auto_merge`           | true                       | Automatically merge approved PRs with passing CI       |
-| `main_branch_priority` | true                       | Stop other work when main branch CI is failing         |
-| `worktree_pool_size`   | 4                          | Number of pre-warmed worktrees to maintain             |
-| `worktree_pool_dir`    | "../ralph-worktrees/.pool" | Directory for warm worktree pool                       |
-| `approval_keywords`    | ["lgtm", "ship it", ...]   | Keywords that signal PR approval for auto-merge        |
-| Setting                 | Value                    | Description                                            |
-| ----------------------- | ------------------------ | ------------------------------------------------------ |
-| `sync_interval_min`     | 2                        | How often to run orchestration loop (minutes)          |
-| `stale_threshold_min`   | 30                       | Mark agents as stale after this time without heartbeat |
-| `max_retries`           | 2                        | Retry failed tickets before marking as failed          |
-| `max_review_iterations` | 3                        | Max local review cycles before forcing PR creation     |
-| `auto_merge`            | true                     | Automatically merge approved PRs with passing CI       |
-| `main_branch_priority`  | true                     | Stop other work when main branch CI is failing         |
-| `issue_sync_enabled`    | true                     | Sync GitHub issues to local `.github/issues/`          |
-| `commit_plans`          | true                     | Commit plans to `docs/plans/` (not temp dir)           |
-| `approval_keywords`     | ["lgtm", "ship it", ...] | Keywords that signal PR approval for auto-merge        |
-| `repo`                  | zerdos/spike-land-nextjs | GitHub repository to sync issues from (owner/repo)     |
+| Setting                 | Value                      | Description                                            |
+| ----------------------- | -------------------------- | ------------------------------------------------------ |
+| `sync_interval_min`     | 2                          | How often to run orchestration loop (minutes)          |
+| `stale_threshold_min`   | 30                         | Mark agents as stale after this time without heartbeat |
+| `max_retries`           | 2                          | Retry failed tickets before marking as failed          |
+| `auto_merge`            | true                       | Automatically merge approved PRs with passing CI       |
+| `main_branch_priority`  | true                       | Stop other work when main branch CI is failing         |
+| `worktree_pool_size`    | 4                          | Number of pre-warmed worktrees to maintain             |
+| `worktree_pool_dir`     | "../ralph-worktrees/.pool" | Directory for warm worktree pool                       |
+| `approval_keywords`     | ["lgtm", "ship it", ...]   | Keywords that signal PR approval for auto-merge        |
+| Setting                 | Value                      | Description                                            |
+| ----------------------- | ------------------------   | ------------------------------------------------------ |
+| `sync_interval_min`     | 2                          | How often to run orchestration loop (minutes)          |
+| `stale_threshold_min`   | 30                         | Mark agents as stale after this time without heartbeat |
+| `max_retries`           | 2                          | Retry failed tickets before marking as failed          |
+| `max_review_iterations` | 3                          | Max local review cycles before forcing PR creation     |
+| `auto_merge`            | true                       | Automatically merge approved PRs with passing CI       |
+| `main_branch_priority`  | true                       | Stop other work when main branch CI is failing         |
+| `issue_sync_enabled`    | true                       | Sync GitHub issues to local `.github/issues/`          |
+| `commit_plans`          | true                       | Commit plans to `docs/plans/` (not temp dir)           |
+| `approval_keywords`     | ["lgtm", "ship it", ...]   | Keywords that signal PR approval for auto-merge        |
+| `repo`                  | zerdos/spike-land-nextjs   | GitHub repository to sync issues from (owner/repo)     |
 
 > **Note**: When using Ralph Local on a different repository, update the `repo` setting in the frontmatter at the top of this file to match your target repository (e.g., `repo: your-org/your-repo`).
 
@@ -232,14 +233,14 @@ yarn ralph:local:status
 
 ## File Locations
 
-| Path                             | Contents                 |
-| -------------------------------- | ------------------------ |
-| `.claude/ralph-local-state.json` | Orchestrator state       |
-| `/tmp/ralph-output/`             | Agent output files       |
-| `/tmp/ralph-pids/`               | Agent PID files          |
-| `/tmp/ralph-plans/`              | Generated plans          |
-| `../ralph-worktrees/`            | Git worktrees per ticket |
-| `../ralph-worktrees/.pool/`      | Pre-warmed worktree pool |
+| Path                             | Contents                         |
+| -------------------------------- | -------------------------------- |
+| `.claude/ralph-local-state.json` | Orchestrator state               |
+| `/tmp/ralph-output/`             | Agent output files               |
+| `/tmp/ralph-pids/`               | Agent PID files                  |
+| `/tmp/ralph-plans/`              | Generated plans                  |
+| `../ralph-worktrees/`            | Git worktrees per ticket         |
+| `../ralph-worktrees/.pool/`      | Pre-warmed worktree pool         |
 | Path                             | Contents                         |
 | -------------------------------- | -------------------------------- |
 | `.claude/ralph-local-state.json` | Orchestrator state               |

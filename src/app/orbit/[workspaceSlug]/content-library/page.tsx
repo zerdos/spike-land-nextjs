@@ -1,18 +1,18 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { AssetCard } from "@/components/orbit/AssetCard";
 import { AssetDetailsPanel } from "@/components/orbit/AssetDetailsPanel";
 import { AssetFilters } from "@/components/orbit/AssetFilters";
 import { AssetUploadDialog } from "@/components/orbit/AssetUploadDialog";
 import { FolderTreeView } from "@/components/orbit/FolderTreeView";
-import { useAssets, useAssetFolders } from "@/hooks/use-assets";
-import { Upload, Search, Plus, Folder } from "lucide-react";
-import { useParams } from "next/navigation";
-import { useState, useMemo, useEffect } from "react";
-import { tryCatch } from "@/lib/try-catch";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAssetFolders, useAssets } from "@/hooks/use-assets";
 import type { Asset } from "@/lib/assets/asset-client";
+import { tryCatch } from "@/lib/try-catch";
+import { Folder, Plus, Search, Upload } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 export default function ContentLibraryPage() {
   const params = useParams();
@@ -33,7 +33,7 @@ export default function ContentLibraryPage() {
   useEffect(() => {
     async function fetchWorkspaceId() {
       const { data } = await tryCatch(
-        fetch(`/api/orbit/workspaces/by-slug/${workspaceSlug}`).then((r) => r.json())
+        fetch(`/api/orbit/workspaces/by-slug/${workspaceSlug}`).then((r) => r.json()),
       );
       if (data?.workspace?.id) {
         setWorkspaceId(data.workspace.id);
@@ -50,10 +50,12 @@ export default function ContentLibraryPage() {
       folderId: selectedFolderId || undefined,
       search: searchQuery || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
-      fileType: selectedFileTypes.length === 1 ? (selectedFileTypes[0] as "image" | "video") : undefined,
+      fileType: selectedFileTypes.length === 1
+        ? (selectedFileTypes[0] as "image" | "video")
+        : undefined,
       page,
     },
-    { enabled: !!workspaceId }
+    { enabled: !!workspaceId },
   );
 
   // Extract available tags and file types from assets
@@ -157,34 +159,38 @@ export default function ContentLibraryPage() {
 
         {/* Asset Grid */}
         <div className="lg:col-span-3">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <p className="text-muted-foreground">Loading assets...</p>
-            </div>
-          ) : assetsData?.assets.length === 0 ? (
-            <div className="border rounded-lg p-12 text-center">
-              <Folder className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-medium mb-2">No assets found</h3>
-              <p className="text-muted-foreground mb-4">
-                Upload your first asset to get started
-              </p>
-              <Button onClick={() => setUploadDialogOpen(true)}>
-                <Upload className="h-4 w-4 mr-2" />
-                Upload Assets
-              </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {assetsData?.assets.map((asset) => (
-                <AssetCard
-                  key={asset.id}
-                  asset={asset}
-                  onPreview={handlePreview}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          )}
+          {isLoading
+            ? (
+              <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">Loading assets...</p>
+              </div>
+            )
+            : assetsData?.assets.length === 0
+            ? (
+              <div className="border rounded-lg p-12 text-center">
+                <Folder className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">No assets found</h3>
+                <p className="text-muted-foreground mb-4">
+                  Upload your first asset to get started
+                </p>
+                <Button onClick={() => setUploadDialogOpen(true)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Assets
+                </Button>
+              </div>
+            )
+            : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {assetsData?.assets.map((asset) => (
+                  <AssetCard
+                    key={asset.id}
+                    asset={asset}
+                    onPreview={handlePreview}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            )}
 
           {/* Pagination */}
           {assetsData && assetsData.pagination.totalPages > 1 && (

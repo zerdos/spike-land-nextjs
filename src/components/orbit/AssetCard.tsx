@@ -2,16 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
-import type { Asset } from "@/lib/assets/asset-client";
-import { Copy, Eye, FileImage, FileVideo, MoreVertical, Trash2 } from "lucide-react";
-import Image from "next/image";
-import { useState } from "react";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +10,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { Asset } from "@/lib/assets/asset-client";
+import { Copy, Eye, FileImage, FileVideo, MoreVertical, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface AssetCardProps {
@@ -55,29 +50,31 @@ export function AssetCard({ asset, onPreview, onDelete }: AssetCardProps) {
     <Card className="group overflow-hidden hover:shadow-lg transition-shadow">
       <CardHeader className="p-0">
         <div className="relative aspect-square bg-muted">
-          {isImage && asset.url && !imageError ? (
-            <Image
-              src={asset.url}
-              alt={asset.altText || asset.filename}
-              fill
-              className="object-cover"
-              onError={() => setImageError(true)}
-            />
-          ) : isVideo && asset.url ? (
-            <video
-              src={asset.url}
-              className="w-full h-full object-cover"
-              muted
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              {isImage ? (
-                <FileImage className="h-16 w-16 text-muted-foreground" />
-              ) : (
-                <FileVideo className="h-16 w-16 text-muted-foreground" />
-              )}
-            </div>
-          )}
+          {isImage && asset.url && !imageError
+            ? (
+              <Image
+                src={asset.url}
+                alt={asset.altText || asset.filename}
+                fill
+                className="object-cover"
+                onError={() => setImageError(true)}
+              />
+            )
+            : isVideo && asset.url
+            ? (
+              <video
+                src={asset.url}
+                className="w-full h-full object-cover"
+                muted
+              />
+            )
+            : (
+              <div className="flex items-center justify-center h-full">
+                {isImage
+                  ? <FileImage className="h-16 w-16 text-muted-foreground" />
+                  : <FileVideo className="h-16 w-16 text-muted-foreground" />}
+              </div>
+            )}
 
           {/* Hover overlay with quick actions */}
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">

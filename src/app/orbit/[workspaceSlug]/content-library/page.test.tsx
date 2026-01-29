@@ -1,7 +1,7 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import ContentLibraryPage from "./page";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Mock Next.js navigation
 vi.mock("next/navigation", () => ({
@@ -38,12 +38,13 @@ describe("ContentLibraryPage", () => {
     render(
       <QueryClientProvider client={queryClient}>
         <ContentLibraryPage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     // Wait for the workspace ID to be fetched
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Content Library", level: 1 })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Content Library", level: 1 }))
+        .toBeInTheDocument();
     });
 
     expect(screen.getByText("Manage and organize your media assets")).toBeInTheDocument();

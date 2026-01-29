@@ -1,13 +1,13 @@
 import { auth } from "@/auth";
+import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
 import { deleteFromR2 } from "@/lib/storage/r2-client";
 import { tryCatch } from "@/lib/try-catch";
-import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
-import type { NextRequest} from "next/server";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 interface RouteContext {
-  params: Promise<{ assetId: string }>;
+  params: Promise<{ assetId: string; }>;
 }
 
 /**

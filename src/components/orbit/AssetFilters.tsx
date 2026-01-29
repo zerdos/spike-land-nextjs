@@ -41,8 +41,7 @@ export function AssetFilters({
     }
   };
 
-  const activeFiltersCount =
-    selectedFileTypes.length + selectedTags.length;
+  const activeFiltersCount = selectedFileTypes.length + selectedTags.length;
 
   return (
     <div className="space-y-4 p-4 border rounded-lg">

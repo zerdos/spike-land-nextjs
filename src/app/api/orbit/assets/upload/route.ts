@@ -1,13 +1,13 @@
 import { auth } from "@/auth";
 import { analyzeAssetForLibrary } from "@/lib/ai/gemini-client";
+import { getImageDimensionsFromBuffer } from "@/lib/images/image-dimensions";
+import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
 import { uploadToR2 } from "@/lib/storage/r2-client";
 import { tryCatch } from "@/lib/try-catch";
-import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
-import sharp from "sharp";
 import { nanoid } from "nanoid";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
@@ -129,18 +129,15 @@ export async function POST(request: NextRequest) {
 
   const buffer = Buffer.from(arrayBuffer);
 
-  // Extract image dimensions if it's an image
+  // Extract image dimensions if it's an image (using lightweight header parsing)
   let width: number | undefined;
   let height: number | undefined;
 
   if (ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    const { data: metadata, error: metaError } = await tryCatch(
-      sharp(buffer).metadata(),
-    );
-
-    if (!metaError && metadata) {
-      width = metadata.width;
-      height = metadata.height;
+    const dimensions = getImageDimensionsFromBuffer(buffer);
+    if (dimensions) {
+      width = dimensions.width;
+      height = dimensions.height;
     }
   }
 

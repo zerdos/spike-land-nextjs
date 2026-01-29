@@ -1090,9 +1090,7 @@ Response must be valid JSON only, no additional text.`;
   if (error) {
     logger.error("Failed to analyze asset:", { error });
     throw new Error(
-      `Asset analysis failed: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`,
+      `Asset analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 
@@ -1137,7 +1135,7 @@ Response must be valid JSON only, no additional text.`;
     analysisDetails: {
       mainSubject: String(parsed.analysisDetails?.mainSubject || "Unknown"),
       imageStyle: ["photo", "illustration", "graphic", "screenshot", "other"]
-        .includes(parsed.analysisDetails?.imageStyle)
+          .includes(parsed.analysisDetails?.imageStyle)
         ? parsed.analysisDetails.imageStyle
         : "other",
       technicalQuality: String(
