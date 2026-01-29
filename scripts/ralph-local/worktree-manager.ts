@@ -11,6 +11,7 @@ import { execSync } from "child_process";
 import { existsSync, mkdirSync, rmSync, statSync } from "fs";
 import { join } from "path";
 import type { RalphLocalConfig } from "./types";
+import { acquireFromPool, copyEnvLocal } from "./worktree-pool";
 
 /**
  * Validate ticket ID format (must be # followed by digits only)
@@ -33,6 +34,10 @@ function safeTicketId(ticketId: string): string {
 /**
  * Create a worktree for a specific ticket
  * Returns the worktree path
+ *
+ * This function first tries to acquire a pre-warmed worktree from the pool,
+ * which has dependencies already installed. If the pool is empty, it falls
+ * back to creating a fresh worktree (slower, requires yarn install).
  */
 export function createWorktree(
   ticketId: string,
@@ -41,8 +46,6 @@ export function createWorktree(
   const safeName = safeTicketId(ticketId);
   const worktreePath = getWorktreePath(ticketId, config);
   const branchName = getBranchName(ticketId);
-
-  console.log(`   📁 Creating worktree for ${ticketId} at ${worktreePath}`);
 
   // Ensure base directory exists
   if (!existsSync(config.worktreeBase)) {
@@ -55,6 +58,17 @@ export function createWorktree(
     cleanupWorktree(ticketId, config);
   }
 
+  // Try to acquire from pool first (instant!)
+  const poolPath = acquireFromPool(ticketId, config);
+  if (poolPath) {
+    console.log(`   ⚡ Acquired warm worktree for ${ticketId}`);
+    copyEnvLocal(poolPath, config);
+    return poolPath;
+  }
+
+  // Fall back to fresh creation (slower - requires yarn install)
+  console.log(`   📁 Creating fresh worktree for ${ticketId} (pool empty)`);
+
   try {
     // Fetch latest main first
     execSync("git fetch origin main", {
@@ -65,7 +79,6 @@ export function createWorktree(
     });
 
     // Create the worktree with a new branch based on main
-    // Using array-style construction to avoid shell interpretation
     const worktreeCmd = `git worktree add -b ralph/${safeName} "${worktreePath}" origin/main`;
     execSync(worktreeCmd, {
       cwd: config.workDir,
@@ -90,6 +103,9 @@ export function createWorktree(
       console.log(`   ⚠️ Dependency install failed, continuing anyway`);
     }
 
+    // Copy .env.local after fresh creation too
+    copyEnvLocal(worktreePath, config);
+
     return worktreePath;
   } catch (error) {
     // If branch already exists, try to use it
@@ -103,6 +119,7 @@ export function createWorktree(
           timeout: 60000,
           stdio: "pipe",
         });
+        copyEnvLocal(worktreePath, config);
         return worktreePath;
       } catch (reuseError) {
         console.error(`   ❌ Failed to reuse branch:`, reuseError);
