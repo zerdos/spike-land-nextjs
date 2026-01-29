@@ -49,6 +49,21 @@ export type ReferralStatus = "PENDING" | "COMPLETED" | "INVALID";
 
 export type McpJobType = "GENERATE" | "MODIFY";
 
+// Organic-to-Ad Conversion Types (#567)
+export type ConversionStatus =
+  | "DRAFT"
+  | "FETCHING_ENGAGEMENT"
+  | "ANALYZING_AUDIENCE"
+  | "ADAPTING_CREATIVE"
+  | "READY_FOR_LAUNCH"
+  | "LAUNCHING"
+  | "ACTIVE"
+  | "PAUSED"
+  | "COMPLETED"
+  | "FAILED";
+
+export type EngagerDataStatus = "PENDING" | "FETCHING" | "COMPLETE" | "FAILED";
+
 export type GalleryCategory =
   | "PORTRAIT"
   | "LANDSCAPE"
@@ -379,7 +394,11 @@ export type {
 export type { CacheEntry, CacheKey, CacheMap } from "./cache";
 
 // Health Event Types
-export type { HealthEventDetails, RateLimitEventInfo, TokenEventInfo } from "./health-events";
+export type {
+  HealthEventDetails,
+  RateLimitEventInfo,
+  TokenEventInfo,
+} from "./health-events";
 
 // Attribution Types
 export type {
@@ -440,3 +459,25 @@ export type {
   AcknowledgeInsightRequest,
   DashboardOverview,
 } from "./boost-analytics";
+// Organic-to-Ad Conversion Types
+export type {
+  AdaptCreativeRequest,
+  AdaptCreativeResponse,
+  AdFormat,
+  AdPlacement,
+  AnalyzeAudienceRequest,
+  AnalyzeAudienceResponse,
+  BudgetRecommendation,
+  ConversionAnalytics,
+  ConversionStatus,
+  ConvertToAdRequest,
+  ConvertToAdResponse,
+  CreativeVariant,
+  EngagementData,
+  EngagerDemographics,
+  FetchEngagementRequest,
+  FetchEngagementResponse,
+  RecommendBudgetRequest,
+  RecommendBudgetResponse,
+  TargetingSuggestion,
+} from "./organic-to-ad";

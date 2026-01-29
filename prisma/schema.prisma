@@ -2133,6 +2133,16 @@ model SocialPost {
   status      SocialPostStatus @default(DRAFT)
   metadata    Json?
 
+  // Performance tracking for organic-to-ad eligibility (#567)
+  likes              Int?
+  comments           Int?
+  shares             Int?
+  impressions        Int?
+  reach              Int?
+  engagementRate     Decimal?          @db.Decimal(5, 4)
+  isEligibleForAd    Boolean           @default(false)
+  lastMetricsSync    DateTime?
+
   // User ownership
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
@@ -2157,6 +2167,7 @@ model SocialPost {
   @@index([createdById])
   @@index([createdById, createdAt])
   @@index([status])
+  @@index([isEligibleForAd])
   @@map("social_posts")
 }
 
@@ -2277,6 +2288,9 @@ model SocialPostAbTestVariant {
   @@index([testId])
   @@map("social_post_ab_test_variants")
 }
+
+// NOTE: Organic-to-Ad models defined at end of file (see line ~4488)
+// Resolves #567 (ORB-063)
 
 enum AgentProvider {
   JULES
@@ -2487,6 +2501,9 @@ model Workspace {
 
   // Notification system
   notifications Notification[]
+
+  // Organic-to-Ad Conversion (#567)
+  organicPostConversions OrganicPostConversion[]
 
   // Connection Management (Orbit CRM) - Resolves #826
   connections    Connection[]
@@ -4338,6 +4355,159 @@ enum WorkflowEventType {
   CRISIS_DETECTED
   POST_PUBLISHED
   INBOX_ITEM_RECEIVED
+}
+
+// =============================================================================
+// Organic-to-Ad Conversion Models
+// Resolves #567 (ORB-063)
+// Epic: #521 (Content-to-Ads Loop)
+// =============================================================================
+
+/// Tracks the conversion of organic social posts into ad campaigns
+/// Links original post performance to resulting ad campaigns
+model OrganicPostConversion {
+  id                 String            @id @default(cuid())
+  workspaceId        String
+  workspace          Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  postId             String
+  platform           SocialPlatform
+  status             ConversionStatus  @default(DRAFT)
+
+  // Engagement data from organic post
+  organicLikes       Int               @default(0)
+  organicComments    Int               @default(0)
+  organicShares      Int               @default(0)
+  organicImpressions Int               @default(0)
+  organicReach       Int               @default(0)
+  engagementRate     Decimal           @db.Decimal(5, 4)
+
+  // AI-generated targeting data
+  targetingData      Json?             // TargetingSuggestion
+
+  // Budget recommendations
+  recommendedBudget  Json?             // BudgetRecommendation
+
+  // Creative variants
+  selectedVariantId  String?
+
+  // Campaign details after launch
+  platformCampaignId String?
+  campaignStartDate  DateTime?
+  campaignEndDate    DateTime?
+  dailyBudget        Decimal?          @db.Decimal(10, 2)
+  totalBudget        Decimal?          @db.Decimal(10, 2)
+
+  // Performance tracking
+  adSpend            Decimal           @default(0) @db.Decimal(10, 2)
+  adImpressions      Int               @default(0)
+  adReach            Int               @default(0)
+  adClicks           Int               @default(0)
+  adConversions      Int               @default(0)
+
+  // Error handling
+  errorMessage       String?
+  errorDetails       Json?
+
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  // Relations
+  engagers           OrganicPostEngager[]
+  creativeVariants   AdCreativeVariant[]
+
+  @@index([workspaceId, status])
+  @@index([workspaceId, createdAt])
+  @@index([platform])
+  @@index([postId])
+  @@map("organic_post_conversions")
+}
+
+/// Stores aggregated data about users who engaged with organic posts
+/// Used for AI-powered targeting analysis (anonymized & aggregated)
+model OrganicPostEngager {
+  id           String                 @id @default(cuid())
+  conversionId String
+  conversion   OrganicPostConversion  @relation(fields: [conversionId], references: [id], onDelete: Cascade)
+
+  // Aggregated demographics (no PII)
+  ageRange     String?                // e.g., "18-24", "25-34"
+  gender       String?                // e.g., "male", "female", "unknown"
+  location     String?                // e.g., "US", "UK", "CA"
+  interests    String[]               // Array of interest categories
+
+  // Engagement type
+  engagementType String              // "like", "comment", "share", "save"
+
+  // Data source metadata
+  platform     SocialPlatform
+  fetchedAt    DateTime              @default(now())
+  dataQuality  EngagerDataStatus     @default(PENDING)
+
+  createdAt    DateTime              @default(now())
+
+  @@index([conversionId])
+  @@index([platform])
+  @@map("organic_post_engagers")
+}
+
+/// Stores format-specific creative adaptations for different ad placements
+/// Optimizes organic content for various ad formats and placements
+model AdCreativeVariant {
+  id           String                @id @default(cuid())
+  conversionId String
+  conversion   OrganicPostConversion @relation(fields: [conversionId], references: [id], onDelete: Cascade)
+
+  // Variant identification
+  format       String                // "IMAGE", "VIDEO", "CAROUSEL", "COLLECTION"
+  placement    String                // "FEED", "STORY", "REELS", "EXPLORE"
+
+  // Content adaptations
+  headline     String?
+  primaryText  String?               @db.Text
+  description  String?               @db.Text
+  callToAction String?
+
+  // Media specifications
+  mediaUrl     String
+  mediaType    String                // "image", "video"
+  width        Int
+  height       Int
+  aspectRatio  String                // e.g., "1:1", "9:16", "16:9"
+
+  // Optimization flags
+  textOptimized       Boolean        @default(false)
+  ctaOptimized        Boolean        @default(false)
+  aspectRatioAdjusted Boolean        @default(false)
+
+  // Selection
+  isSelected   Boolean               @default(false)
+
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  @@index([conversionId])
+  @@index([format, placement])
+  @@map("ad_creative_variants")
+}
+
+enum ConversionStatus {
+  DRAFT
+  FETCHING_ENGAGEMENT
+  ANALYZING_AUDIENCE
+  ADAPTING_CREATIVE
+  READY_FOR_LAUNCH
+  LAUNCHING
+  ACTIVE
+  PAUSED
+  COMPLETED
+  FAILED
+}
+
+enum EngagerDataStatus {
+  PENDING
+  FETCHING
+  COMPLETE
+  FAILED
 }
 
 // =============================================================================
