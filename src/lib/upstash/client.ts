@@ -30,7 +30,12 @@ const KEYS = {
   APP_STATUS: (appId: string) => `app:${appId}:status`,
   AGENT_WORKING: (appId: string) => `app:${appId}:agent_working`,
   APP_CODE_HASH: (appId: string) => `app:${appId}:code_hash`,
+  SSE_EVENTS: (appId: string) => `sse:${appId}:events`,
 } as const;
+
+// Generate a unique instance ID for this process
+// Used to prevent instances from processing their own events
+const INSTANCE_ID = crypto.randomUUID();
 
 /**
  * Add a message to the pending queue for an app
@@ -161,4 +166,74 @@ export async function setCodeHash(
   hash: string,
 ): Promise<void> {
   await redis.set(KEYS.APP_CODE_HASH(appId), hash, { ex: 3600 }); // 1 hour TTL
+}
+
+/**
+ * SSE Event structure for cross-instance broadcasting
+ */
+export interface SSEEventWithSource {
+  type: string;
+  data: unknown;
+  timestamp: number;
+  sourceInstanceId: string;
+}
+
+/**
+ * Publish an SSE event to Redis for cross-instance broadcasting
+ * Events are stored in a list and expire after 60 seconds
+ *
+ * This enables multi-instance SSE support by allowing instances to
+ * poll for events published by other instances.
+ */
+export async function publishSSEEvent(
+  appId: string,
+  event: { type: string; data: unknown; timestamp: number },
+): Promise<void> {
+  const eventWithSource: SSEEventWithSource = {
+    ...event,
+    sourceInstanceId: INSTANCE_ID,
+  };
+
+  const key = KEYS.SSE_EVENTS(appId);
+
+  // Add to list (newest first)
+  await redis.lpush(key, JSON.stringify(eventWithSource));
+
+  // Set expiration to prevent memory leak
+  await redis.expire(key, 60);
+
+  // Trim to last 100 events
+  await redis.ltrim(key, 0, 99);
+}
+
+/**
+ * Get SSE events published after a given timestamp
+ * Used by instances to poll for new events from other instances
+ *
+ * Events from the current instance (matching INSTANCE_ID) are filtered out
+ * to prevent duplicate processing.
+ */
+export async function getSSEEvents(
+  appId: string,
+  afterTimestamp: number,
+): Promise<SSEEventWithSource[]> {
+  const key = KEYS.SSE_EVENTS(appId);
+
+  // Get all events from list
+  const events = await redis.lrange<string>(key, 0, -1);
+
+  return events
+    .map((e) => JSON.parse(e) as SSEEventWithSource)
+    .filter(
+      (e) =>
+        e.timestamp > afterTimestamp && e.sourceInstanceId !== INSTANCE_ID,
+    )
+    .reverse(); // Oldest first for replay
+}
+
+/**
+ * Get the current instance ID (for testing/debugging)
+ */
+export function getInstanceId(): string {
+  return INSTANCE_ID;
 }
