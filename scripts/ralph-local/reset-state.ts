@@ -21,7 +21,7 @@ const DEFAULT_CONFIG: Partial<RalphLocalConfig> = {
   poolSizes: {
     planning: 10,
     developer: 4,
-    reviewer: 2,
+    reviewer: 6,
     tester: 2,
     fixer: 1,
   },
