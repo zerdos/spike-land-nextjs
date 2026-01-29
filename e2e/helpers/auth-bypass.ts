@@ -31,9 +31,9 @@ export async function verifyAuthBypass(page: Page): Promise<boolean> {
       e2eCookies.map((c) => c.name),
     );
 
-    if (e2eCookies.length < 3) {
+    if (e2eCookies.length < 4) {
       console.error(
-        "[Auth Bypass] Missing E2E cookies. Expected at least 3 (role, email, name)",
+        "[Auth Bypass] Missing E2E cookies. Expected at least 4 (role, email, name, secret)",
       );
       return false;
     }
