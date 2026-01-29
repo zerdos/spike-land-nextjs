@@ -14,3 +14,9 @@ export {
   type SocialAccountOption,
 } from "./CreatePostDialog";
 export { ScheduledPostCard, type ScheduledPostCardProps } from "./ScheduledPostCard";
+
+// AI Content Calendar Components (Issue #841)
+export { AITimeOptimizer } from "./AITimeOptimizer";
+export { BestTimeHeatmap } from "./BestTimeHeatmap";
+export { ContentSuggestionCard } from "./ContentSuggestionCard";
+export { WeeklyPlanGenerator } from "./WeeklyPlanGenerator";
