@@ -66,6 +66,9 @@ export const appPromptCreationSchema = z.object({
     )
     .optional(),
   imageIds: z.array(z.string()).optional(),
+  templateId: z.string().optional(), // Template to use for initial code
+  workspaceId: z.string().optional(), // Workspace to link this app to
+  linkedCampaign: z.string().optional(), // Campaign name/ID for tracking
 });
 
 // Schema for app message creation

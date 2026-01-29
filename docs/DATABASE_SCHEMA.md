@@ -1051,6 +1051,15 @@ erDiagram
   DateTime billingCycleStart "nullable"
   String stripeSubscriptionId UK "nullable"
 }
+"workspace_apps" {
+  String id PK
+  String workspaceId FK
+  String appId FK,UK
+  String purpose "nullable"
+  String linkedCampaign "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
 "workspace_favorites" {
   String id PK
   String userId FK
@@ -2015,6 +2024,8 @@ erDiagram
 "social_post_ab_tests" }o--|| "workspaces" : workspace
 "social_post_ab_tests" }o--|| "social_posts" : originalPost
 "social_post_ab_test_variants" }o--|| "social_post_ab_tests" : test
+"workspace_apps" }o--|| "workspaces" : workspace
+"workspace_apps" |o--|| "apps" : app
 "workspace_favorites" }o--|| "users" : user
 "workspace_favorites" }o--|| "workspaces" : workspace
 "workspace_recent_access" }o--|| "users" : user
@@ -3439,6 +3450,18 @@ Properties as follows:
 - `maxTeamMembers`:
 - `billingCycleStart`:
 - `stripeSubscriptionId`:
+
+### `workspace_apps`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `appId`:
+- `purpose`:
+- `linkedCampaign`:
+- `createdAt`:
+- `updatedAt`:
 
 ### `workspace_favorites`
 
