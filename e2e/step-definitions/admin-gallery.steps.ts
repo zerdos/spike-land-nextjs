@@ -438,7 +438,11 @@ When(
     // Wait for button to be visible and enabled with retry
     await expect(button).toBeVisible({ timeout: TIMEOUTS.LONG });
     await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
+    // Wait for the reorder API call to complete
+    const responsePromise = waitForApiResponse(this.page, "**/api/admin/gallery/*/reorder");
     await button.click();
+    await responsePromise;
   },
 );
 
@@ -462,7 +466,11 @@ When(
     // Wait for button to be visible and enabled with retry
     await expect(button).toBeVisible({ timeout: TIMEOUTS.LONG });
     await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
+
+    // Wait for the reorder API call to complete
+    const responsePromise = waitForApiResponse(this.page, "**/api/admin/gallery/*/reorder");
     await button.click();
+    await responsePromise;
   },
 );
 
