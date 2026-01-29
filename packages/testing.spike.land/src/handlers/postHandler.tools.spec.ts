@@ -112,10 +112,10 @@ describe("PostHandler - Tool Schema Validation", () => {
       });
     });
 
-    // SKIP REASON: MCP to AI SDK tool format conversion requires mocking streamText
-    // internals which is brittle and hard to maintain. Tool format validation is
-    // better tested through integration tests with actual AI SDK calls.
-    // TRACKING: Re-enable when AI SDK provides stable tool format test utilities (#798)
+    // SKIP REASON: MCP to AI SDK tool format conversion requires mocking streamText internals
+    // CATEGORY: intentional
+    // TRACKING: #798
+    // ACTION: keep - Better tested through integration tests
     it.skip("should convert tools to correct format for AI SDK", async () => {
       let capturedTools: Record<string, unknown> | undefined;
 
