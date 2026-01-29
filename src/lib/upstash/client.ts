@@ -242,9 +242,19 @@ export async function getSSEEvents(
   const events = await redis.lrange<string>(key, 0, -1);
 
   return events
-    .map((e) => JSON.parse(e) as SSEEventWithSource)
+    .map((e) => {
+      try {
+        return JSON.parse(e) as SSEEventWithSource;
+      } catch {
+        // Skip malformed events - should not happen, but handle gracefully
+        return null;
+      }
+    })
     .filter(
-      (e) => e.timestamp > afterTimestamp && e.sourceInstanceId !== INSTANCE_ID,
+      (e): e is SSEEventWithSource =>
+        e !== null &&
+        e.timestamp > afterTimestamp &&
+        e.sourceInstanceId !== INSTANCE_ID,
     )
     .reverse(); // Oldest first for replay
 }
