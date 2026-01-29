@@ -5,7 +5,7 @@
  * and paid sources using multiple attribution models.
  */
 
-import { PrismaClient } from '@/generated/prisma';
+import { PrismaClient, type BoostAttributionEvent as PrismaBoostAttributionEvent } from '@/generated/prisma';
 import type {
   AttributionEventType,
   AttributionReport,
@@ -14,6 +14,7 @@ import type {
   TouchpointType,
 } from '@spike-npm-land/shared/types';
 import { AttributionModel } from '@spike-npm-land/shared/types';
+
 
 interface AttributionEventInput {
   boostCampaignId: string;
@@ -122,8 +123,8 @@ export class AttributionService {
    */
   private async calculateLinearAttribution(
     boostId: string,
-    events: any[],
-    conversions: any[]
+    events: PrismaBoostAttributionEvent[],
+    conversions: PrismaBoostAttributionEvent[]
   ): Promise<AttributionResult> {
     const organicTouchpoints = events.filter((e) => e.touchpointType === 'ORGANIC');
     const paidTouchpoints = events.filter((e) => e.touchpointType === 'PAID');
@@ -165,8 +166,8 @@ export class AttributionService {
    */
   private async calculateTimeDecayAttribution(
     boostId: string,
-    events: any[],
-    conversions: any[]
+    events: PrismaBoostAttributionEvent[],
+    conversions: PrismaBoostAttributionEvent[]
   ): Promise<AttributionResult> {
     if (events.length === 0) {
       return this.getEmptyAttribution(boostId, AttributionModel.TIME_DECAY);
@@ -227,8 +228,8 @@ export class AttributionService {
    */
   private async calculatePositionBasedAttribution(
     boostId: string,
-    events: any[],
-    conversions: any[]
+    events: PrismaBoostAttributionEvent[],
+    conversions: PrismaBoostAttributionEvent[]
   ): Promise<AttributionResult> {
     if (events.length === 0) {
       return this.getEmptyAttribution(boostId, AttributionModel.POSITION_BASED);
@@ -339,7 +340,7 @@ export class AttributionService {
   /**
    * Map Prisma model to BoostAttributionEvent type
    */
-  private mapToAttributionEvent(event: any): BoostAttributionEvent {
+  private mapToAttributionEvent(event: PrismaBoostAttributionEvent): BoostAttributionEvent {
     return {
       id: event.id,
       boostCampaignId: event.boostCampaignId,

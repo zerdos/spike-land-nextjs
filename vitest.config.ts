@@ -244,6 +244,9 @@ export default defineConfig({
       "next/server": require.resolve("next/server"),
       // Map @prisma/client to the generated Prisma client location
       "@prisma/client": path.resolve(__dirname, "./src/generated/prisma"),
+      // Map shared package aliases for workspace packages
+      "@spike-npm-land/shared/types": path.resolve(__dirname, "./packages/shared/src/types/index.ts"),
+      "@repo/shared/types": path.resolve(__dirname, "./packages/shared/src/types/index.ts"),
     },
   },
 });
