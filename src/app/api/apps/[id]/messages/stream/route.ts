@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { isAgentWorking } from "@/lib/upstash";
+import { getSSEEvents, isAgentWorking, publishSSEEvent } from "@/lib/upstash";
 import type { NextRequest } from "next/server";
 
 // Event types for SSE
@@ -23,17 +23,24 @@ interface SSEEvent {
 /**
  * SSE Connection Store
  *
- * IMPORTANT: Current implementation uses in-memory storage which has limitations:
+ * Two-layer architecture for multi-instance support:
  *
- * 1. SINGLE INSTANCE ONLY: Connections are not shared across server instances.
- *    In multi-instance deployments (Vercel, Kubernetes), clients connected to
- *    different instances won't receive broadcasts from other instances.
+ * 1. LOCAL LAYER (this Map): Each instance maintains its own SSE connections.
+ *    Fast local broadcasting to connected clients.
  *
- * 2. NO PERSISTENCE: Connections are lost on server restart.
+ * 2. REDIS LAYER: Cross-instance communication via hybrid Pub/Sub + Lists pattern.
+ *    When broadcasting, events are:
+ *    - Published to Redis Pub/Sub channel (for real-time notification)
+ *    - Stored in Redis Lists (for reliable delivery fallback)
+ *    Each instance polls Redis every 2 seconds for events from other instances.
  *
- * TODO(#805): For production multi-instance support, implement Redis Pub/Sub
+ * This hybrid approach provides:
+ * - Real-time delivery via Pub/Sub when possible
+ * - Reliable delivery via Lists as fallback
+ * - Support for Upstash Redis REST API limitations
  *
- * For now, this works correctly for single-instance deployments.
+ * This enables horizontal scaling across multiple Vercel instances while maintaining
+ * real-time updates for all connected clients.
  */
 const activeConnections = new Map<
   string,
@@ -42,6 +49,11 @@ const activeConnections = new Map<
 
 /**
  * Broadcast an event to all connected clients for an app
+ *
+ * Three-step broadcast process:
+ * 1. Publish to Redis Pub/Sub channel (real-time notification)
+ * 2. Store in Redis Lists (reliable fallback)
+ * 3. Broadcast to local connections in this instance
  */
 export function broadcastToApp(
   appId: string,
@@ -49,14 +61,24 @@ export function broadcastToApp(
 ) {
   const connections = activeConnections.get(appId);
   console.log(
-    `[SSE] Broadcasting ${event.type} to app ${appId}: ${connections?.size || 0} connections`,
+    `[SSE] Broadcasting ${event.type} to app ${appId}: ${connections?.size || 0} local connections`,
   );
-  if (!connections || connections.size === 0) return;
 
   const fullEvent: SSEEvent = {
     ...event,
     timestamp: Date.now(),
   };
+
+  // 1. Publish to Redis (Pub/Sub + Lists hybrid)
+  // This will publish to Redis Pub/Sub channel AND store in a List
+  // See: https://upstash.com/docs/redis/features/pubsub
+  publishSSEEvent(appId, fullEvent).catch((error) => {
+    console.error(`[SSE] Failed to publish to Redis:`, error);
+    // Don't fail the broadcast if Redis is down - continue with local broadcast
+  });
+
+  // 2. Broadcast to local connections (existing logic)
+  if (!connections || connections.size === 0) return;
 
   const eventString = `data: ${JSON.stringify(fullEvent)}\n\n`;
   const encoder = new TextEncoder();
@@ -146,6 +168,9 @@ export async function GET(
         }`,
       );
 
+      // Track last processed timestamp for Redis event deduplication
+      let lastProcessedTimestamp = Date.now();
+
       // Send connected event
       const connectedEvent: SSEEvent = {
         type: "connected",
@@ -191,9 +216,40 @@ export async function GET(
         }
       }, 30000);
 
+      // Set up Redis polling interval (every 2 seconds)
+      // Poll for events from other instances and forward to this connection
+      const redisInterval = setInterval(() => {
+        getSSEEvents(id, lastProcessedTimestamp)
+          .then((events) => {
+            for (const event of events) {
+              try {
+                // Skip if we already processed this event
+                if (event.timestamp <= lastProcessedTimestamp) continue;
+
+                // Forward to local connection
+                const eventString = `data: ${JSON.stringify(event)}\n\n`;
+                controller.enqueue(encoder.encode(eventString));
+
+                // Update last processed timestamp
+                lastProcessedTimestamp = Math.max(
+                  lastProcessedTimestamp,
+                  event.timestamp,
+                );
+              } catch {
+                // Intentionally silent: Connection closed
+              }
+            }
+          })
+          .catch((error) => {
+            console.error(`[SSE] Failed to poll Redis events:`, error);
+            // Don't stop polling on errors - Redis might be temporarily unavailable
+          });
+      }, 2000); // Poll every 2 seconds
+
       // Clean up on close
       const cleanup = () => {
         clearInterval(heartbeatInterval);
+        clearInterval(redisInterval);
         const connections = activeConnections.get(id);
         if (connections) {
           connections.delete(controller);

@@ -346,6 +346,98 @@ Changes to this package automatically propagate to:
 
 ---
 
+## Type Safety Improvements (#797)
+
+### Social Platform API Types
+
+The `@spike-npm-land/shared/types` module provides typed interfaces for all external social platform API responses, improving type safety when parsing rate limits and error responses.
+
+#### Available Types
+
+```typescript
+import type {
+  FacebookErrorResponse,
+  LinkedInErrorResponse,
+  SocialPlatformErrorResponse,
+  TwitterErrorResponse,
+} from "@spike-npm-land/shared/types";
+```
+
+| Type                          | Description                                 |
+| ----------------------------- | ------------------------------------------- |
+| `TwitterErrorResponse`        | Twitter/X API error format                  |
+| `FacebookErrorResponse`       | Facebook/Instagram Graph API error format   |
+| `LinkedInErrorResponse`       | LinkedIn API error format                   |
+| `SocialPlatformErrorResponse` | Union type for all platform error responses |
+| `FacebookBusinessUsageHeader` | Facebook business usage rate limit header   |
+| `FacebookAppUsageHeader`      | Facebook app usage rate limit header        |
+| `TwitterRateLimitHeaders`     | Twitter rate limit headers                  |
+| `DiscordRateLimitHeaders`     | Discord rate limit headers                  |
+
+#### Type Guards
+
+Use type guards from `@spike-npm-land/shared/types` to safely validate external API responses:
+
+```typescript
+import {
+  isFacebookErrorResponse,
+  isLinkedInErrorResponse,
+  isSocialPlatformErrorResponse,
+  isTwitterErrorResponse,
+} from "@spike-npm-land/shared/types";
+
+// Example: Validate Facebook error response
+if (isFacebookErrorResponse(apiBody)) {
+  // TypeScript now knows apiBody is FacebookErrorResponse
+  console.log(apiBody.error?.message);
+}
+
+// Example: Generic platform error handling
+if (isSocialPlatformErrorResponse(apiBody)) {
+  // Handle any platform error
+}
+```
+
+### Pipeline Configuration Types
+
+Type-safe pipeline configuration types for AI processing:
+
+```typescript
+import type {
+  AnalysisConfig,
+  AutoCropConfig,
+  GenerationConfig,
+  PromptConfig,
+  ValidatedPipelineConfigs,
+} from "@spike-npm-land/shared/types";
+```
+
+### Cache Types
+
+Generic cache types with expiry tracking:
+
+```typescript
+import type { CacheEntry, CacheKey, CacheMap } from "@spike-npm-land/shared/types";
+
+// Example: Type-safe cache
+const cache: CacheMap<MyDataType> = new Map();
+cache.set("key", { data: myData, expiry: Date.now() + 5000 });
+```
+
+### Health Event Types
+
+Structured types for health monitoring event details:
+
+```typescript
+import type {
+  HealthEventDetails,
+  RateLimitEventInfo,
+  TokenEventInfo,
+} from "@spike-npm-land/shared/types";
+```
+
+---
+
 ## Related Documentation
 
 - [Mobile App README](../mobile-app/README.md) - Mobile app documentation

@@ -252,18 +252,67 @@ jobs:
       - name: Wake up E2E database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
         run: |
           # Neon auto-suspends inactive branches after ~5 minutes
-          # A simple query wakes them up (may take a few seconds)
-          echo "Waking up E2E database..."
-          for i in 1 2 3; do
-            if npx prisma db execute --stdin <<< "SELECT 1" 2>/dev/null; then
-              echo "Database is ready"
-              break
+          # Cold starts can take 30-60 seconds, so we need extended retry logic
+          # Note: Neon API requires matching project ID - if E2E uses a different project,
+          # the API call will 404 and we fall back to connection-based wake-up
+
+          API_WAKE_SUCCESS=false
+
+          # Try Neon API wake-up if credentials are available
+          if [ -n "$NEON_API_KEY" ] && [ -n "$NEON_PROJECT_ID" ]; then
+            # Extract endpoint ID from DATABASE_URL (format: ep-xxx-yyy-zzz)
+            ENDPOINT_ID=$(echo "$DATABASE_URL" | grep -oE 'ep-[a-z]+-[a-z]+-[a-z0-9]+' | head -1)
+
+            if [ -n "$ENDPOINT_ID" ]; then
+              echo "🔌 Attempting to start Neon endpoint via API: $ENDPOINT_ID"
+
+              # Start the endpoint via Neon API
+              HTTP_STATUS=$(curl -s -o /tmp/neon_response.json -w "%{http_code}" \
+                -X POST "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/endpoints/$ENDPOINT_ID/start" \
+                -H "Authorization: Bearer $NEON_API_KEY" \
+                -H "Content-Type: application/json")
+
+              if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "202" ]; then
+                echo "✅ Neon API accepted start request (status: $HTTP_STATUS)"
+                API_WAKE_SUCCESS=true
+                # Give the endpoint time to start (Neon cold starts can take 30-60s)
+                echo "⏳ Waiting 30s for endpoint to start..."
+                sleep 30
+              else
+                echo "⚠️ Neon API returned status $HTTP_STATUS (endpoint may be in different project)"
+                cat /tmp/neon_response.json 2>/dev/null || true
+                echo "Falling back to connection-based wake-up..."
+              fi
             fi
-            echo "Attempt $i: Database waking up, waiting 5s..."
-            sleep 5
+          fi
+
+          # Connection-based wake-up with extended retry loop
+          # If API succeeded, we need fewer retries. If not, we need more time.
+          if [ "$API_WAKE_SUCCESS" = "true" ]; then
+            MAX_ATTEMPTS=6
+            SLEEP_TIME=10
+          else
+            MAX_ATTEMPTS=12
+            SLEEP_TIME=10
+            echo "🔄 Using extended retry loop (cold start may take 60-120s)..."
+          fi
+
+          echo "🔄 Verifying database connection..."
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            if npx prisma db execute --stdin <<< "SELECT 1" 2>/dev/null; then
+              echo "✅ Database is ready!"
+              exit 0
+            fi
+            echo "Attempt $i/$MAX_ATTEMPTS: Database still waking up, waiting ${SLEEP_TIME}s..."
+            sleep $SLEEP_TIME
           done
+
+          echo "❌ Database failed to respond after $MAX_ATTEMPTS attempts"
+          exit 1
 
       - name: Apply Prisma migrations to E2E database
         env:

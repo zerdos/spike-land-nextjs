@@ -284,3 +284,85 @@ export type Callback<T, R = void> = (value: T) => R;
  * Async callback function
  */
 export type AsyncCallback<T, R = void> = (value: T) => Promise<R>;
+
+// =============================================================================
+// Social Platform Error Response Types (aliases for compatibility)
+// =============================================================================
+
+/**
+ * Facebook error response type (alias for compatibility with rate-limit-tracker)
+ */
+export type FacebookErrorResponse = { error: FacebookApiError; };
+
+/**
+ * LinkedIn error response type (alias for compatibility with rate-limit-tracker)
+ */
+export type LinkedInErrorResponse = LinkedInApiErrorBody;
+
+/**
+ * Union type for social platform error responses
+ */
+export type SocialPlatformErrorResponse = FacebookErrorResponse | LinkedInErrorResponse;
+
+/**
+ * Type guard for LinkedIn error response
+ */
+export function isLinkedInErrorResponse(
+  body: unknown,
+): body is LinkedInErrorResponse {
+  if (typeof body !== "object" || body === null) {
+    return false;
+  }
+  const errorBody = body as Record<string, unknown>;
+  return (
+    "status" in errorBody ||
+    "message" in errorBody ||
+    "serviceErrorCode" in errorBody
+  );
+}
+
+// =============================================================================
+// Health Monitor Types
+// =============================================================================
+
+/**
+ * Details for account health events
+ * Flexible type to accommodate various event contexts
+ */
+export interface HealthEventDetails {
+  /** Error code if applicable */
+  errorCode?: string | number;
+  /** Error message if applicable */
+  errorMessage?: string;
+  /** Generic error string */
+  error?: string;
+  /** Rate limit information */
+  rateLimit?: {
+    remaining: number;
+    limit: number;
+    resetAt?: Date | string;
+  };
+  /** Platform name for account events */
+  platform?: string;
+  /** Account name for account events */
+  accountName?: string;
+  /** Rate limit reset timestamp */
+  rateLimitResetAt?: Date | string | null;
+  /** Number of consecutive errors */
+  consecutiveErrors?: number;
+  /** Event that was resolved */
+  resolvedEventId?: string;
+  /** User who initiated the action */
+  initiatedBy?: string;
+  /** Reason for the event */
+  reason?: string;
+  /** Additional context data */
+  metadata?: Record<string, unknown>;
+  /** Allow additional string-keyed properties */
+  [key: string]: unknown;
+}
+
+/**
+ * Cache map type (alias for TypedCache for backwards compatibility)
+ */
+export type CacheMap<T> = TypedCache<T>;

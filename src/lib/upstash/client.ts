@@ -30,7 +30,12 @@ const KEYS = {
   APP_STATUS: (appId: string) => `app:${appId}:status`,
   AGENT_WORKING: (appId: string) => `app:${appId}:agent_working`,
   APP_CODE_HASH: (appId: string) => `app:${appId}:code_hash`,
+  SSE_EVENTS: (appId: string) => `sse:${appId}:events`,
 } as const;
+
+// Generate a unique instance ID for this process
+// Used to prevent instances from processing their own events
+const INSTANCE_ID = crypto.randomUUID();
 
 /**
  * Add a message to the pending queue for an app
@@ -161,4 +166,92 @@ export async function setCodeHash(
   hash: string,
 ): Promise<void> {
   await redis.set(KEYS.APP_CODE_HASH(appId), hash, { ex: 3600 }); // 1 hour TTL
+}
+
+/**
+ * SSE Event structure for cross-instance broadcasting
+ */
+export interface SSEEventWithSource {
+  type: string;
+  data: unknown;
+  timestamp: number;
+  sourceInstanceId: string;
+}
+
+/**
+ * Publish an SSE event to Redis using a hybrid approach:
+ * 1. Pub/Sub for real-time notifications
+ * 2. List for reliable delivery (fallback)
+ *
+ * This hybrid approach ensures:
+ * - Real-time delivery via Pub/Sub when instances are listening
+ * - Reliable delivery via List for instances that weren't subscribed
+ * - Backward compatibility with polling clients
+ *
+ * See: https://upstash.com/docs/redis/features/pubsub
+ */
+export async function publishSSEEvent(
+  appId: string,
+  event: { type: string; data: unknown; timestamp: number; },
+): Promise<void> {
+  const eventWithSource: SSEEventWithSource = {
+    ...event,
+    sourceInstanceId: INSTANCE_ID,
+  };
+
+  const channel = `sse:${appId}`;
+  const key = KEYS.SSE_EVENTS(appId);
+  const payload = JSON.stringify(eventWithSource);
+
+  // Parallel execution for speed
+  await Promise.all([
+    // 1. Publish to Pub/Sub channel for real-time delivery
+    redis.publish(channel, payload).catch(err => {
+      console.error(`[SSE] Failed to publish to channel ${channel}:`, err);
+      // Don't throw - List storage is the fallback
+    }),
+
+    // 2. Store in List for reliable delivery (fallback + persistence)
+    (async () => {
+      await redis.lpush(key, payload);
+      await redis.expire(key, 60);
+      await redis.ltrim(key, 0, 99);
+    })().catch(err => {
+      console.error(`[SSE] Failed to store event in list:`, err);
+    })
+  ]);
+}
+
+/**
+ * Get SSE events published after a given timestamp
+ * Used by instances to poll for new events from other instances
+ *
+ * This provides backward compatibility with the polling pattern
+ * and ensures reliable delivery even if Pub/Sub messages are missed.
+ *
+ * Events from the current instance (matching INSTANCE_ID) are filtered out
+ * to prevent duplicate processing.
+ */
+export async function getSSEEvents(
+  appId: string,
+  afterTimestamp: number,
+): Promise<SSEEventWithSource[]> {
+  const key = KEYS.SSE_EVENTS(appId);
+
+  // Get all events from list
+  const events = await redis.lrange<string>(key, 0, -1);
+
+  return events
+    .map((e) => JSON.parse(e) as SSEEventWithSource)
+    .filter(
+      (e) => e.timestamp > afterTimestamp && e.sourceInstanceId !== INSTANCE_ID,
+    )
+    .reverse(); // Oldest first for replay
+}
+
+/**
+ * Get the current instance ID (for testing/debugging)
+ */
+export function getInstanceId(): string {
+  return INSTANCE_ID;
 }

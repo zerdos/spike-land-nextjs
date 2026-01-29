@@ -51,11 +51,11 @@ function buildPlanningPrompt(
 ): string {
   const template = getPromptTemplate("planning", config);
   return template
-    .replace("{{ISSUE_NUMBER}}", String(issueNumber))
-    .replace("{{ISSUE_TITLE}}", issueTitle)
-    .replace("{{ISSUE_BODY}}", issueBody)
-    .replace("{{REPO}}", config.repo)
-    .replace("{{PLAN_DIR}}", config.planDir);
+    .replaceAll("{{ISSUE_NUMBER}}", String(issueNumber))
+    .replaceAll("{{ISSUE_TITLE}}", issueTitle)
+    .replaceAll("{{ISSUE_BODY}}", issueBody)
+    .replaceAll("{{REPO}}", config.repo)
+    .replaceAll("{{PLAN_DIR}}", config.planDir);
 }
 
 /**
@@ -72,11 +72,11 @@ function buildDeveloperPrompt(
     : "Plan file not found";
 
   return template
-    .replace("{{ISSUE_NUMBER}}", String(plan.issueNumber))
-    .replace("{{TICKET_ID}}", plan.ticketId)
-    .replace("{{PLAN_CONTENT}}", planContent)
-    .replace("{{WORKTREE_PATH}}", worktreePath)
-    .replace("{{REPO}}", config.repo);
+    .replaceAll("{{ISSUE_NUMBER}}", String(plan.issueNumber))
+    .replaceAll("{{TICKET_ID}}", plan.ticketId)
+    .replaceAll("{{PLAN_CONTENT}}", planContent)
+    .replaceAll("{{WORKTREE_PATH}}", worktreePath)
+    .replaceAll("{{REPO}}", config.repo);
 }
 
 /**
@@ -92,12 +92,12 @@ function buildTesterPrompt(
     : "Plan file not found";
 
   return template
-    .replace("{{ISSUE_NUMBER}}", String(codeWork.issueNumber))
-    .replace("{{TICKET_ID}}", codeWork.ticketId)
-    .replace("{{BRANCH}}", codeWork.branch)
-    .replace("{{WORKTREE_PATH}}", codeWork.worktree)
-    .replace("{{PLAN_CONTENT}}", planContent)
-    .replace("{{REPO}}", config.repo);
+    .replaceAll("{{ISSUE_NUMBER}}", String(codeWork.issueNumber))
+    .replaceAll("{{TICKET_ID}}", codeWork.ticketId)
+    .replaceAll("{{BRANCH}}", codeWork.branch)
+    .replaceAll("{{WORKTREE_PATH}}", codeWork.worktree)
+    .replaceAll("{{PLAN_CONTENT}}", planContent)
+    .replaceAll("{{REPO}}", config.repo);
 }
 
 /**
