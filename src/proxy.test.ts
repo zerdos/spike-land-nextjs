@@ -129,6 +129,9 @@ describe("proxy", () => {
         nextUrl: new URL(baseUrl),
         url: baseUrl,
         headers: new Headers(),
+        cookies: {
+          get: () => undefined,
+        },
       } as unknown as NextRequest;
     };
 
@@ -309,6 +312,9 @@ describe("proxy", () => {
           nextUrl: new URL(baseUrl),
           url: baseUrl,
           headers,
+          cookies: {
+            get: () => undefined,
+          },
         } as unknown as NextRequest;
       };
 
@@ -419,6 +425,106 @@ describe("proxy", () => {
       });
     });
 
+    describe("E2E test bypass with secret cookie", () => {
+      let originalEnv: string | undefined;
+
+      const createMockRequestWithCookies = (
+        pathname: string,
+        cookies: Record<string, string>,
+      ): NextRequest => {
+        const baseUrl = `http://localhost:3000${pathname}`;
+        return {
+          nextUrl: new URL(baseUrl),
+          url: baseUrl,
+          headers: new Headers(),
+          cookies: {
+            get: (name: string) => cookies[name] ? { value: cookies[name] } : undefined,
+          },
+        } as unknown as NextRequest;
+      };
+
+      beforeEach(() => {
+        originalEnv = process.env.E2E_BYPASS_SECRET;
+      });
+
+      afterEach(() => {
+        if (originalEnv === undefined) {
+          delete process.env.E2E_BYPASS_SECRET;
+        } else {
+          process.env.E2E_BYPASS_SECRET = originalEnv;
+        }
+      });
+
+      it("should bypass auth with valid secret cookie and role cookie", async () => {
+        process.env.E2E_BYPASS_SECRET = "test-secret-123";
+
+        vi.mocked(auth).mockResolvedValue(null);
+        const request = createMockRequestWithCookies("/my-apps", {
+          "e2e-bypass-secret": "test-secret-123",
+          "e2e-user-role": "USER",
+        });
+        const response = await proxy(request);
+
+        expect(response.status).toBe(200);
+        expect(response.headers.get("x-middleware-next")).toBe("1");
+        expect(auth).not.toHaveBeenCalled();
+      });
+
+      it("should NOT bypass auth with valid secret cookie but NO role cookie", async () => {
+        process.env.E2E_BYPASS_SECRET = "test-secret-123";
+
+        vi.mocked(auth).mockResolvedValue(null);
+        const request = createMockRequestWithCookies("/my-apps", {
+          "e2e-bypass-secret": "test-secret-123",
+        });
+        const response = await proxy(request);
+
+        expect(response.status).toBe(307);
+        expect(auth).toHaveBeenCalled();
+      });
+
+      it("should NOT bypass auth with invalid secret cookie", async () => {
+        process.env.E2E_BYPASS_SECRET = "test-secret-123";
+
+        vi.mocked(auth).mockResolvedValue(null);
+        const request = createMockRequestWithCookies("/my-apps", {
+          "e2e-bypass-secret": "wrong-secret",
+          "e2e-user-role": "USER",
+        });
+        const response = await proxy(request);
+
+        expect(response.status).toBe(307);
+        expect(auth).toHaveBeenCalled();
+      });
+
+      it("should NOT bypass auth with role cookie only (no secret cookie)", async () => {
+        process.env.E2E_BYPASS_SECRET = "test-secret-123";
+
+        vi.mocked(auth).mockResolvedValue(null);
+        const request = createMockRequestWithCookies("/my-apps", {
+          "e2e-user-role": "USER",
+        });
+        const response = await proxy(request);
+
+        expect(response.status).toBe(307);
+        expect(auth).toHaveBeenCalled();
+      });
+
+      it("should NOT bypass auth when E2E_BYPASS_SECRET is not configured", async () => {
+        delete process.env.E2E_BYPASS_SECRET;
+
+        vi.mocked(auth).mockResolvedValue(null);
+        const request = createMockRequestWithCookies("/my-apps", {
+          "e2e-bypass-secret": "any-secret",
+          "e2e-user-role": "USER",
+        });
+        const response = await proxy(request);
+
+        expect(response.status).toBe(307);
+        expect(auth).toHaveBeenCalled();
+      });
+    });
+
     describe("E2E test bypass - production environment protection", () => {
       let originalEnv: string | undefined;
       let originalNodeEnv: string | undefined;
@@ -438,6 +544,9 @@ describe("proxy", () => {
           nextUrl: new URL(baseUrl),
           url: baseUrl,
           headers,
+          cookies: {
+            get: () => undefined,
+          },
         } as unknown as NextRequest;
       };
 
@@ -567,6 +676,7 @@ describe("proxy", () => {
         expect(consoleWarnSpy).toHaveBeenCalledWith("[E2E Bypass]", {
           timestamp: expect.any(String),
           path: "/my-apps/app-123",
+          method: "header",
           environment: {
             NODE_ENV: "test",
             VERCEL_ENV: "preview",

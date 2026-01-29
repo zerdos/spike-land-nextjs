@@ -201,14 +201,31 @@ export async function proxy(request: NextRequest) {
   const isProduction = process.env.NODE_ENV === "production" &&
     process.env.VERCEL_ENV === "production";
 
-  if (
-    !isProduction && e2eBypassSecret && e2eBypassHeader &&
-    constantTimeCompare(e2eBypassHeader, e2eBypassSecret)
-  ) {
+  // Check for E2E bypass via header (primary method)
+  const hasValidHeader = !isProduction && e2eBypassSecret && e2eBypassHeader &&
+    constantTimeCompare(e2eBypassHeader, e2eBypassSecret);
+
+  // Check for E2E bypass via cookies (fallback method)
+  // This handles cases where the header is sent but cookies are already set
+  // SECURITY: Require key validation matching the header implementation
+  const e2eRoleCookie = request.cookies.get("e2e-user-role")?.value;
+  const e2eSecretCookie = request.cookies.get("e2e-bypass-secret")?.value;
+  
+  const hasValidCookie = !isProduction && 
+    e2eBypassSecret && 
+    e2eSecretCookie && 
+    constantTimeCompare(e2eSecretCookie, e2eBypassSecret) &&
+    e2eRoleCookie !== undefined;
+
+  if (hasValidHeader || hasValidCookie) {
+    // Determine which method succeeded for logging
+    const bypassMethod = hasValidHeader ? "header" : "cookie";
+
     // Audit log for security monitoring and debugging
     console.warn("[E2E Bypass]", {
       timestamp: new Date().toISOString(),
       path: pathname,
+      method: bypassMethod,
       environment: {
         NODE_ENV: process.env.NODE_ENV,
         VERCEL_ENV: process.env.VERCEL_ENV,
