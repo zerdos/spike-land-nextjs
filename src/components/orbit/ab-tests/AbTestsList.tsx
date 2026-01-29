@@ -19,9 +19,11 @@ interface AbTestsListProps {
 export function AbTestsList({ workspaceSlug }: AbTestsListProps) {
   const [tests, setTests] = useState<AbTest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchTests = useCallback(async () => {
     try {
+      setError(null);
       const response = await fetch(`/api/orbit/${workspaceSlug}/ab-tests`);
       if (!response.ok) {
         throw new Error("Failed to fetch tests");
@@ -30,6 +32,7 @@ export function AbTestsList({ workspaceSlug }: AbTestsListProps) {
       setTests(data.tests || []);
     } catch (error) {
       console.error("Failed to fetch tests:", error);
+      setError("Failed to load A/B tests. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -46,6 +49,10 @@ export function AbTestsList({ workspaceSlug }: AbTestsListProps) {
 
   if (loading) {
     return <div className="text-center py-8">Loading tests...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-500">{error}</div>;
   }
 
   if (tests.length === 0) {
