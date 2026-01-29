@@ -73,7 +73,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   // Verify user has permission to view social analytics in this workspace
   const { error: permError } = await tryCatch(
-    requireWorkspacePermission(session, (account as any).workspaceId, "social:view"),
+    requireWorkspacePermission(session, account.workspaceId, "social:view"),
   );
 
   if (permError) {
@@ -81,19 +81,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: permError.message }, { status });
   }
 
-  if ((account as any).status !== "ACTIVE") {
+  if (account.status !== "ACTIVE") {
     return NextResponse.json(
       { error: "YouTube account is not active. Please reconnect." },
       { status: 403 },
     );
   }
 
-  const accessToken = safeDecryptToken((account as any).accessTokenEncrypted);
+  const accessToken = safeDecryptToken(account.accessTokenEncrypted);
 
   // Create YouTube client
   const client = new YouTubeClient({
     accessToken,
-    accountId: channelId || (account as any).accountId || undefined,
+    accountId: channelId || account.accountId || undefined,
   });
 
   // Get channel metrics
