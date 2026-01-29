@@ -11,17 +11,22 @@ import {
   spawnDeveloperAgent,
   spawnFixerAgent,
   spawnPlanningAgent,
+  spawnReviewerAgent,
   spawnTesterAgent,
 } from "./agent-spawner";
 import {
   addPendingCode,
   addPendingPlan,
   addPendingPRFix,
+  addPendingReview,
   getIdleAgents,
+  getPendingReview,
   isPRFixInProgress,
+  isReviewInProgress,
   isTicketDone,
   isTicketInProgress,
   removePendingPRFix,
+  removePendingReview,
   updateAgent,
 } from "./state-manager";
 import type {
@@ -32,8 +37,9 @@ import type {
   PRFixReason,
   PRFixWork,
   RalphLocalConfig,
+  ReviewWork,
 } from "./types";
-import { createWorktree, getBranchName, getWorktreePath } from "./worktree-manager";
+import { createWorktree, getWorktreePath } from "./worktree-manager";
 
 /**
  * Get available GitHub issues for processing
@@ -319,6 +325,175 @@ export function routeCodeToTesters(
   return routedCount;
 }
 
+// ============================================================================
+// Review Routing (Local review step)
+// ============================================================================
+
+/**
+ * Route completed code to idle reviewer agents (instead of directly to testers)
+ */
+export function routeCodeToReviewers(
+  state: OrchestratorState,
+  config: RalphLocalConfig,
+): number {
+  const idleReviewers = getIdleAgents(state, "reviewer");
+  if (idleReviewers.length === 0) {
+    console.log("   No idle reviewer agents");
+    return 0;
+  }
+
+  // Ensure pendingReview exists
+  if (!state.pendingReview) {
+    state.pendingReview = [];
+  }
+
+  // Get pending reviews sorted by creation time (oldest first)
+  const pendingReviews = state.pendingReview
+    .filter((r) => r.status === "pending" || r.status === "changes_requested")
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+  if (pendingReviews.length === 0) {
+    console.log("   No pending reviews");
+    return 0;
+  }
+
+  console.log(
+    `   Routing ${Math.min(pendingReviews.length, idleReviewers.length)} reviews to reviewers`,
+  );
+
+  let routedCount = 0;
+
+  for (let i = 0; i < Math.min(pendingReviews.length, idleReviewers.length); i++) {
+    const review = pendingReviews[i];
+    const agent = idleReviewers[i];
+
+    if (!review || !agent) continue;
+
+    console.log(
+      `   🔍 Assigning ${review.ticketId} to ${agent.id} (iteration ${review.iterations})`,
+    );
+
+    // Spawn the reviewer agent
+    const process = spawnReviewerAgent(agent, review, config);
+
+    if (process) {
+      // Update review status
+      review.status = "in_review";
+      review.assignedTo = agent.id;
+
+      // Update agent state
+      updateAgent(state, agent.id, {
+        status: "running",
+        ticketId: review.ticketId,
+        worktree: review.worktree,
+        pid: process.pid ?? null,
+        startedAt: new Date().toISOString(),
+        lastHeartbeat: new Date().toISOString(),
+      });
+
+      routedCount++;
+    }
+  }
+
+  return routedCount;
+}
+
+/**
+ * Add code to review queue (called when CODE_READY marker is detected)
+ */
+export function enqueueReview(
+  state: OrchestratorState,
+  ticketId: string,
+  issueNumber: number,
+  branch: string,
+  worktree: string,
+  planPath: string,
+  codeCreatedBy: string,
+  config: RalphLocalConfig,
+): void {
+  // Check if already in review
+  if (isReviewInProgress(state, ticketId)) {
+    console.log(`   📝 ${ticketId} already in review queue`);
+    return;
+  }
+
+  const review: ReviewWork = {
+    ticketId,
+    issueNumber,
+    branch,
+    worktree,
+    planPath,
+    codeCreatedBy,
+    status: "pending",
+    assignedTo: null,
+    iterations: 1,
+    maxIterations: config.maxReviewIterations,
+    lastReviewBy: null,
+    feedback: null,
+    createdAt: new Date().toISOString(),
+  };
+
+  addPendingReview(state, review);
+  console.log(`   🔍 Review queued for ${ticketId}`);
+}
+
+/**
+ * Move review back to pending with feedback (for changes requested)
+ */
+export function requeueReviewWithFeedback(
+  state: OrchestratorState,
+  ticketId: string,
+  feedback: string,
+  reviewedBy: string,
+): void {
+  const review = getPendingReview(state, ticketId);
+  if (!review) {
+    console.error(`   ❌ Review not found for ${ticketId}`);
+    return;
+  }
+
+  review.status = "changes_requested";
+  review.feedback = feedback;
+  review.lastReviewBy = reviewedBy;
+  review.assignedTo = null;
+  review.iterations++;
+
+  console.log(`   🔄 Review requeued for ${ticketId} (iteration ${review.iterations})`);
+}
+
+/**
+ * Complete a review and move to code queue (for tester)
+ */
+export function completeReviewAndEnqueueCode(
+  state: OrchestratorState,
+  ticketId: string,
+  reviewedBy: string,
+): void {
+  const review = removePendingReview(state, ticketId);
+  if (!review) {
+    console.error(`   ❌ Review not found for ${ticketId}`);
+    return;
+  }
+
+  // Now enqueue for tester (the actual code queue)
+  const code: CodeWork = {
+    ticketId: review.ticketId,
+    issueNumber: review.issueNumber,
+    branch: review.branch,
+    worktree: review.worktree,
+    planPath: review.planPath,
+    createdAt: new Date().toISOString(),
+    createdBy: reviewedBy,
+    status: "pending",
+    assignedTo: null,
+    prUrl: null,
+    prNumber: null,
+  };
+
+  addPendingCode(state, code);
+  console.log(`   ✅ Review passed for ${ticketId}, queued for tester`);
+}
+
 /**
  * Add a completed plan to the pending queue
  */
@@ -346,61 +521,39 @@ export function enqueuePlan(
 }
 
 /**
- * Add completed code to the pending queue
- */
-export function enqueueCode(
-  state: OrchestratorState,
-  ticketId: string,
-  issueNumber: number,
-  worktree: string,
-  planPath: string,
-  createdBy: string,
-): void {
-  const branch = getBranchName(ticketId);
-  const code: CodeWork = {
-    ticketId,
-    issueNumber,
-    branch,
-    worktree,
-    planPath,
-    createdAt: new Date().toISOString(),
-    createdBy,
-    status: "pending",
-    assignedTo: null,
-    prUrl: null,
-    prNumber: null,
-  };
-
-  addPendingCode(state, code);
-  console.log(`   💾 Code queued for ${ticketId}`);
-}
-
-/**
  * Get statistics about the routing queues
  */
 export function getQueueStats(state: OrchestratorState): {
   pendingPlans: number;
+  pendingReview: number;
   pendingCode: number;
   pendingPRFixes: number;
   idlePlanners: number;
   idleDevelopers: number;
+  idleReviewers: number;
   idleTesters: number;
   idleFixers: number;
   runningPlanners: number;
   runningDevelopers: number;
+  runningReviewers: number;
   runningTesters: number;
   runningFixers: number;
 } {
   return {
     pendingPlans: state.pendingPlans.filter((p) => p.status === "pending").length,
+    pendingReview:
+      state.pendingReview?.filter((r) => r.status === "pending" || r.status === "changes_requested")
+        .length || 0,
     pendingCode: state.pendingCode.filter((c) => c.status === "pending").length,
     pendingPRFixes: state.pendingPRFixes?.filter((f) => f.status === "pending").length || 0,
     idlePlanners: getIdleAgents(state, "planning").length,
     idleDevelopers: getIdleAgents(state, "developer").length,
+    idleReviewers: getIdleAgents(state, "reviewer").length,
     idleTesters: getIdleAgents(state, "tester").length,
     idleFixers: getIdleAgents(state, "fixer").length,
     runningPlanners: state.pools.planning.filter((a) => a.status === "running").length,
     runningDevelopers: state.pools.developer.filter((a) => a.status === "running").length,
+    runningReviewers: state.pools.reviewer?.filter((a) => a.status === "running").length || 0,
     runningTesters: state.pools.tester.filter((a) => a.status === "running").length,
     runningFixers: state.pools.fixer?.filter((a) => a.status === "running").length || 0,
   };
