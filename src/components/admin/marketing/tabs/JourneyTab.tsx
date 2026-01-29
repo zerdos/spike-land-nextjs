@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { PlatformTransition } from "@spike-npm-land/shared/types";
+import type { PlatformTransition } from "@spike-npm-land/shared";
 import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type { DateRange, DateRangePreset } from "../DateRangePicker";

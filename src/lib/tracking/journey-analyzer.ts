@@ -6,7 +6,7 @@
  */
 
 import prisma from "@/lib/prisma";
-import type { JourneyStep, PlatformTransition } from "@spike-npm-land/shared/types";
+import type { JourneyStep, PlatformTransition } from "@spike-npm-land/shared";
 
 /**
  * Journey statistics aggregated over a time period
