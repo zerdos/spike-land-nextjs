@@ -33,6 +33,7 @@ import {
   getDefaultDimensions,
   getImageDimensionsFromBuffer,
 } from "@/lib/images/image-dimensions";
+import { applyAutoTags } from "@/lib/images/auto-tagger";
 import prisma from "@/lib/prisma";
 import { downloadFromR2, uploadToR2 } from "@/lib/storage/r2-client";
 import { TokenBalanceManager } from "@/lib/tokens/balance-manager";
@@ -247,7 +248,7 @@ async function updateJobStage(
  * - Gemini output is used directly (no post-processing resize)
  */
 async function processEnhancement(input: EnhanceImageInput): Promise<string> {
-  const { jobId, originalR2Key, tier, blendSource } = input;
+  const { jobId, imageId, originalR2Key, tier, blendSource } = input;
 
   const isBlendMode = !!blendSource;
   console.log(
@@ -463,6 +464,20 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
       geminiTemp: DEFAULT_TEMPERATURE,
     },
   });
+
+  // Step 11: Apply auto-tags if analysis result exists
+  if (analysisResult) {
+    console.log(`[Direct Enhancement] Applying auto-tags for image ${imageId}`);
+    try {
+      await applyAutoTags(imageId);
+    } catch (error) {
+      // Log but don't fail the enhancement if tagging fails
+      console.error(
+        `[Direct Enhancement] Failed to apply auto-tags for image ${imageId}:`,
+        error,
+      );
+    }
+  }
 
   return uploadResult.url;
 }
