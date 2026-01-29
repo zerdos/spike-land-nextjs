@@ -11,6 +11,7 @@
 **Current State**: The application already uses shadcn/ui extensively with 60+ components installed and properly configured. The aurora theme (green/teal/lime/yellow) and glass-morphism effects are well-implemented.
 
 **Key Findings**:
+
 - ✅ shadcn/ui is properly installed and configured (New York style)
 - ✅ Most UI primitives already use shadcn components (Button, Card, Input, etc.)
 - ✅ Aurora theme is consistent across shadcn components
@@ -25,6 +26,7 @@
 ### ✅ Already Installed and Working
 
 #### Form Primitives
+
 - `button.tsx` - Aurora gradient variants, loading state, excellent implementation
 - `input.tsx` - Glass-input styling, variant support (default/error/success)
 - `textarea.tsx` - Consistent with Input component
@@ -37,6 +39,7 @@
 - `form.tsx` - React Hook Form integration
 
 #### Feedback Components
+
 - `dialog.tsx` - Modal dialogs
 - `alert-dialog.tsx` - Confirmation dialogs
 - `alert.tsx` - Notification alerts
@@ -48,6 +51,7 @@
 - `skeleton.tsx` - Loading skeletons
 
 #### Layout Components
+
 - `card.tsx` - Multiple variants (default, solid, highlighted, dashed, ghost, magic, floating, colored)
 - `tabs.tsx` - Tab navigation
 - `accordion.tsx` - Collapsible content
@@ -56,14 +60,17 @@
 - `collapsible.tsx` - Expandable sections
 
 #### Navigation Components
+
 - `dropdown-menu.tsx` - Context menus
 
 #### Data Display
+
 - `table.tsx` - Data tables
 - `badge.tsx` - Labels and tags
 - `avatar.tsx` - User avatars
 
 #### Custom Components
+
 - `code.tsx` - Code syntax highlighting
 - `copy-button.tsx` - Copy to clipboard
 - `link.tsx` - Enhanced links
@@ -79,6 +86,7 @@
 These components should be added to enhance functionality:
 
 ### High Priority
+
 1. **Command** - For search/command palette
    - Use case: Global app search, keyboard shortcuts
    - Install: `npx shadcn@latest add command`
@@ -92,6 +100,7 @@ These components should be added to enhance functionality:
    - Install: `npx shadcn@latest add breadcrumb`
 
 ### Medium Priority
+
 4. **Context Menu** - For right-click menus
    - Use case: Image galleries, file management
    - Install: `npx shadcn@latest add context-menu`
@@ -119,6 +128,7 @@ These components should be added to enhance functionality:
 ### ✅ Excellent Examples (Follow These)
 
 #### 1. app-card.tsx
+
 ```tsx
 // Perfect shadcn usage:
 // - Uses Card, CardHeader, CardContent, CardFooter primitives
@@ -131,6 +141,7 @@ These components should be added to enhance functionality:
 **Status**: No changes needed
 
 #### 2. sign-in-button.tsx
+
 ```tsx
 // Perfect shadcn Button usage:
 // - Uses Button component with variant prop
@@ -142,6 +153,7 @@ These components should be added to enhance functionality:
 **Status**: No changes needed
 
 #### 3. ui/button.tsx
+
 ```tsx
 // Excellent theme implementation:
 // - Aurora gradient variants (default, success, warning, gradient, aurora)
@@ -161,10 +173,12 @@ These components should be added to enhance functionality:
 **Issue**: Using raw `<input>` elements instead of shadcn Input component
 
 **Location**:
+
 - Lines 125-131 (disabled search, empty state)
 - Lines 183-190 (disabled search, active state)
 
 **Current Code**:
+
 ```tsx
 <input
   type="search"
@@ -172,10 +186,11 @@ These components should be added to enhance functionality:
   className="w-full rounded-md border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
   disabled
   aria-label="Search apps"
-/>
+/>;
 ```
 
 **Recommended Fix**:
+
 ```tsx
 import { Input } from "@/components/ui/input";
 
@@ -185,10 +200,11 @@ import { Input } from "@/components/ui/input";
   className="w-full"
   disabled
   aria-label="Search apps"
-/>
+/>;
 ```
 
 **Benefits**:
+
 - Consistent glass-input styling
 - Aurora focus ring automatically applied
 - Reduced className duplication
@@ -204,6 +220,7 @@ import { Input } from "@/components/ui/input";
 **Recommended**: Use shadcn Pagination component (after installing)
 
 **Benefits**:
+
 - Consistent keyboard navigation
 - Better accessibility (ARIA labels)
 - Mobile-responsive design
@@ -232,11 +249,13 @@ import { Input } from "@/components/ui/input";
 ### ⚠️ Accessibility Improvements Needed
 
 #### 1. Keyboard Navigation
+
 **Issue**: Pagination links don't prevent keyboard focus when disabled
 
 **Location**: `src/app/my-apps/page.tsx:232-259`
 
 **Current**:
+
 ```tsx
 <Link
   href={`/my-apps?page=${page - 1}`}
@@ -246,7 +265,7 @@ import { Input } from "@/components/ui/input";
   <Button variant="outline" size="sm" disabled={page <= 1}>
     Previous
   </Button>
-</Link>
+</Link>;
 ```
 
 **Issue**: `pointer-events-none` doesn't prevent keyboard navigation
@@ -254,17 +273,21 @@ import { Input } from "@/components/ui/input";
 **Fix**: Use `tabIndex={-1}` on disabled links or use Pagination component
 
 #### 2. ARIA Attributes
+
 **Missing**:
+
 - `aria-current="page"` on active page indicator
 - `aria-label` on pagination controls
 - `aria-live` region for search result count
 
 **Recommendations**:
+
 - Add `aria-live="polite"` to app grid for dynamic updates
 - Add `role="search"` to search container
 - Add `aria-label` to filter badges when interactive
 
 #### 3. Focus Trapping
+
 **Check needed**: Ensure dialogs trap focus (shadcn Dialog should handle this)
 
 ---
@@ -274,21 +297,24 @@ import { Input } from "@/components/ui/input";
 ### ✅ Excellent Theme Implementation
 
 #### Aurora Color Palette
+
 ```css
---aurora-green: hsl(var(--aurora-green))  /* Primary brand */
---aurora-teal: hsl(var(--aurora-teal))    /* Accent */
---aurora-lime: hsl(var(--aurora-lime))    /* Highlight */
---aurora-yellow: hsl(var(--aurora-yellow)) /* Warning/energy */
+--aurora-green: hsl(var(--aurora-green)) /* Primary brand */ --aurora-teal: hsl(var(--aurora-teal))
+  /* Accent */ --aurora-lime: hsl(var(--aurora-lime)) /* Highlight */ --aurora-yellow:
+  hsl(var(--aurora-yellow)); /* Warning/energy */
 ```
 
 **Used in**:
+
 - Button variants (default, gradient, aurora)
 - Focus rings (Input component)
 - Shadows (glow effects)
 - Card highlights
 
 #### Glass-Morphism
+
 **Implementation**: Excellent with multiple variants
+
 - `glass-1` - Light glass effect
 - `glass-2` - Medium glass effect
 - `glass-input` - Input-specific glass
@@ -296,6 +322,7 @@ import { Input } from "@/components/ui/input";
 - `glass-aura-*` - Colored glass variants
 
 **Used in**:
+
 - Card component (multiple variants)
 - Input component (glass-input)
 - Buttons (outline variant)
@@ -309,6 +336,7 @@ import { Input } from "@/components/ui/input";
 **Issue**: Some elements use raw Tailwind instead of theme variables
 
 **Example**:
+
 ```tsx
 // Current: Raw Tailwind
 className="border border-input bg-background px-4 py-2"
@@ -320,6 +348,7 @@ className="border border-input bg-background px-4 py-2"
 **Impact**: Low (only affects one page currently)
 
 #### 2. Hardcoded Colors
+
 **Scan needed**: Search for hardcoded hex colors or raw HSL values
 
 **Command**: `grep -r "text-\[#" src/` (none found - good!)
@@ -332,6 +361,7 @@ className="border border-input bg-background px-4 py-2"
 ### Category 1: Forms & Inputs (Priority: High)
 
 #### Already Using shadcn ✅
+
 - Button (60+ usages)
 - Label
 - Checkbox
@@ -342,6 +372,7 @@ className="border border-input bg-background px-4 py-2"
 - Switch
 
 #### Needs Migration ❌
+
 - Raw `<input>` in my-apps page → Use Input component
 
 **Files to Update**: 1
@@ -352,6 +383,7 @@ className="border border-input bg-background px-4 py-2"
 ### Category 2: Layout & Cards (Priority: Medium)
 
 #### Already Using shadcn ✅
+
 - Card (200+ usages with excellent variants)
 - Tabs
 - Accordion
@@ -359,6 +391,7 @@ className="border border-input bg-background px-4 py-2"
 - ScrollArea
 
 #### Needs Enhancement ⚠️
+
 - Add Breadcrumb component for navigation
 - Consider Card variant consolidation (10 variants may be too many)
 
@@ -370,10 +403,12 @@ className="border border-input bg-background px-4 py-2"
 ### Category 3: Navigation (Priority: Medium)
 
 #### Already Using shadcn ✅
+
 - Dropdown Menu
 - Link component
 
 #### Needs Addition 📦
+
 - Pagination component (replace custom implementation)
 - Navigation Menu (for main nav)
 - Breadcrumb (for deep navigation)
@@ -387,6 +422,7 @@ className="border border-input bg-background px-4 py-2"
 ### Category 4: Feedback & Overlays (Priority: Low)
 
 #### Already Using shadcn ✅
+
 - Dialog
 - Alert Dialog
 - Alert
@@ -404,11 +440,13 @@ className="border border-input bg-background px-4 py-2"
 ### Category 5: Data Display (Priority: Low)
 
 #### Already Using shadcn ✅
+
 - Table
 - Badge
 - Avatar
 
 #### Needs Addition 📦
+
 - Hover Card (for rich previews)
 
 **Files to Update**: 0 (add new component)
@@ -421,11 +459,13 @@ className="border border-input bg-background px-4 py-2"
 ### Unit Tests
 
 #### ✅ Existing Test Coverage
+
 - All UI components have `.test.tsx` files ✅
 - Button, Input, Card, Dialog tests comprehensive ✅
 - Test coverage is at 100% ✅
 
 #### 📝 Tests to Add/Update
+
 - Add tests for new components (Command, Pagination, etc.)
 - Update my-apps page tests after Input migration
 - Add accessibility tests (ARIA attributes, keyboard nav)
@@ -433,6 +473,7 @@ className="border border-input bg-background px-4 py-2"
 ### E2E Tests
 
 #### Required Test Scenarios
+
 - [ ] Search input works on my-apps page
 - [ ] Pagination navigates correctly
 - [ ] Keyboard navigation works (Tab, Enter, Space)
@@ -442,12 +483,14 @@ className="border border-input bg-background px-4 py-2"
 ### Accessibility Testing
 
 #### Tools to Use
+
 - axe-core (automated)
 - NVDA/VoiceOver (manual)
 - Chrome DevTools Lighthouse
 - Keyboard-only navigation
 
 #### Checks Required
+
 - [ ] All interactive elements keyboard accessible
 - [ ] Focus indicators visible
 - [ ] ARIA labels present
@@ -468,6 +511,7 @@ className="border border-input bg-background px-4 py-2"
 ### Phase 2: Install Missing Components (1-2 hours)
 
 **Components to Install**:
+
 1. Command
 2. Pagination
 3. Breadcrumb
@@ -478,6 +522,7 @@ className="border border-input bg-background px-4 py-2"
 8. Resizable
 
 **Tasks**:
+
 ```bash
 npx shadcn@latest add command
 npx shadcn@latest add pagination
@@ -490,6 +535,7 @@ npx shadcn@latest add resizable
 ```
 
 **Post-Install**:
+
 - Verify each component renders with aurora theme
 - Add `.test.tsx` for each new component
 - Update this document with component locations
@@ -503,11 +549,13 @@ npx shadcn@latest add resizable
 **File**: `src/app/my-apps/page.tsx`
 
 **Changes**:
+
 - Line 125-131: Replace `<input>` with `<Input>`
 - Line 183-190: Replace `<input>` with `<Input>`
 - Add import: `import { Input } from "@/components/ui/input"`
 
 **Testing**:
+
 - Update my-apps page tests
 - Verify disabled state renders correctly
 - Test focus states
@@ -522,13 +570,22 @@ npx shadcn@latest add resizable
 **File**: `src/app/my-apps/page.tsx`
 
 **Changes**:
+
 - Lines 229-261: Replace custom pagination with Pagination component
 - Improve accessibility (ARIA labels, keyboard nav)
 - Add proper focus management
 
 **Example**:
+
 ```tsx
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 <Pagination>
   <PaginationContent>
@@ -542,10 +599,11 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
       <PaginationNext href={`/my-apps?page=${page + 1}`} />
     </PaginationItem>
   </PaginationContent>
-</Pagination>
+</Pagination>;
 ```
 
 **Testing**:
+
 - Test keyboard navigation
 - Verify disabled states
 - Check screen reader announcements
@@ -614,23 +672,27 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 ### Phase 7: Testing & Validation (2-3 hours)
 
 **Unit Tests**:
+
 - Run `yarn test:coverage` (must be 100%)
 - Add tests for new components
 - Update tests for modified components
 
 **E2E Tests**:
+
 - Run `yarn test:e2e:local`
 - Test my-apps page flows
 - Test pagination navigation
 - Test keyboard navigation
 
 **Accessibility Tests**:
+
 - Run axe-core
 - Manual keyboard navigation
 - Screen reader testing
 - Lighthouse audit
 
 **Visual Regression**:
+
 - Screenshot comparisons
 - Verify aurora theme
 - Check glass-morphism
@@ -643,6 +705,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 ## Files Summary
 
 ### Files to Create (16)
+
 - `src/components/ui/command.tsx` + test
 - `src/components/ui/pagination.tsx` + test
 - `src/components/ui/breadcrumb.tsx` + test
@@ -653,20 +716,25 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 - `src/components/ui/resizable.tsx` + test
 
 ### Files to Modify (10-20)
+
 **High Priority**:
+
 - `src/app/my-apps/page.tsx` - Replace input, add pagination
 - `src/app/my-apps/page.test.tsx` - Update tests
 
 **Medium Priority**:
+
 - `src/components/ui/button.tsx` - Minor refinements (if needed)
 - `src/components/ui/input.tsx` - Verify variants
 - `src/components/ui/card.tsx` - Variant review
 
 **Low Priority**:
+
 - Various components for accessibility improvements
 - Test files for new components
 
 ### Files Unchanged (50+)
+
 - All other UI components (already excellent)
 - Auth components (already using shadcn)
 - Most page components (already consistent)
@@ -676,21 +744,25 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 ## Risks & Mitigations
 
 ### Risk 1: Breaking Input Styling
+
 **Impact**: Medium
 **Probability**: Low
 **Mitigation**: Input component already has glass-input styling, should work seamlessly
 
 ### Risk 2: Pagination Accessibility
+
 **Impact**: High
 **Probability**: Medium
 **Mitigation**: Use shadcn Pagination component (has built-in accessibility)
 
 ### Risk 3: Test Coverage Drop
+
 **Impact**: High
 **Probability**: Low
 **Mitigation**: Update tests alongside code changes, verify 100% coverage
 
 ### Risk 4: Theme Inconsistency
+
 **Impact**: Medium
 **Probability**: Low
 **Mitigation**: Aurora theme already well-implemented in UI components
@@ -700,16 +772,19 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 ## Recommendations
 
 ### Immediate Actions (Phase 2-3)
+
 1. ✅ Install missing shadcn components (Command, Pagination, Breadcrumb, etc.)
 2. ✅ Replace raw inputs in my-apps page with Input component
 3. ✅ Add Pagination component to my-apps page
 
 ### Short-term (Phase 4-5)
+
 4. ⚠️ Improve accessibility (ARIA labels, keyboard nav)
 5. ⚠️ Add breadcrumb navigation to album pages
 6. ⚠️ Consider Command palette for global search
 
 ### Long-term Considerations
+
 7. 📊 Monitor bundle size impact of new components
 8. 📊 Collect user feedback on new navigation patterns
 9. 📊 Consider adding more keyboard shortcuts
@@ -720,6 +795,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 ## Success Metrics
 
 ### Quantitative
+
 - [ ] 100% unit test coverage maintained ✅
 - [ ] Zero TypeScript errors ✅
 - [ ] Zero ESLint errors ✅
@@ -728,6 +804,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 - [ ] All E2E tests passing ✅
 
 ### Qualitative
+
 - [ ] Consistent Input styling across app
 - [ ] Improved keyboard navigation
 - [ ] Better screen reader experience
