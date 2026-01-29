@@ -22,6 +22,7 @@ import {
   spawnMainBuildFixerAgent,
   stopAgent,
 } from "./agent-spawner";
+import { removeIssueFile, syncIssuesToRepo } from "./issue-sync";
 import {
   checkMainBranchCI,
   getCIFailureDetails,
@@ -46,10 +47,13 @@ import {
 } from "./state-manager";
 import {
   completePRFix,
-  enqueueCode,
+  completeReviewAndEnqueueCode,
   enqueuePlan,
   enqueuePRFix,
+  enqueueReview,
   getQueueStats,
+  requeueReviewWithFeedback,
+  routeCodeToReviewers,
   routeCodeToTesters,
   routeIssuesToPlanners,
   routePlansToDevelopers,
@@ -62,6 +66,7 @@ import {
   getWorktreePath,
   syncWorktreeWithMain,
 } from "./worktree-manager";
+import { getPoolStatus, initializePool, listWarmWorktrees, replenishPool } from "./worktree-pool";
 
 // ============================================================================
 // Helpers
@@ -97,21 +102,28 @@ const DEFAULT_CONFIG: RalphLocalConfig = {
   poolSizes: {
     planning: 8,
     developer: 4,
+    reviewer: 2,
     tester: 4,
     fixer: 1,
   },
   syncIntervalMs: 2 * 60 * 1000, // 2 minutes
   staleThresholdMs: 30 * 60 * 1000, // 30 minutes
   maxRetries: 2,
+  maxReviewIterations: 3,
   autoMerge: true,
   mainBranchPriority: true,
+  issueSyncEnabled: true,
+  commitPlans: true,
   approvalKeywords: DEFAULT_APPROVAL_KEYWORDS,
   repo: "zerdos/spike-land-nextjs",
   workDir: process.cwd(),
   outputDir: "/tmp/ralph-output",
   pidDir: "/tmp/ralph-pids",
-  planDir: "/tmp/ralph-plans",
+  planDir: join(process.cwd(), "docs/plans"),
+  issuesDir: join(process.cwd(), ".github/issues"),
   worktreeBase: resolve(process.cwd(), "../ralph-worktrees"),
+  worktreePoolSize: 4, // Match developer pool size for instant worktree acquisition
+  worktreePoolDir: resolve(process.cwd(), "../ralph-worktrees/.pool"),
 };
 
 /**
@@ -135,16 +147,24 @@ function loadConfig(): RalphLocalConfig {
       poolSizes: {
         planning: data.pool_planning ?? DEFAULT_CONFIG.poolSizes.planning,
         developer: data.pool_developer ?? DEFAULT_CONFIG.poolSizes.developer,
+        reviewer: data.pool_reviewer ?? DEFAULT_CONFIG.poolSizes.reviewer,
         tester: data.pool_tester ?? DEFAULT_CONFIG.poolSizes.tester,
         fixer: data.pool_fixer ?? DEFAULT_CONFIG.poolSizes.fixer,
       },
       syncIntervalMs: (data.sync_interval_min ?? 2) * 60 * 1000,
       staleThresholdMs: (data.stale_threshold_min ?? 30) * 60 * 1000,
       maxRetries: data.max_retries ?? DEFAULT_CONFIG.maxRetries,
+      maxReviewIterations: data.max_review_iterations ?? DEFAULT_CONFIG.maxReviewIterations,
       autoMerge: data.auto_merge ?? DEFAULT_CONFIG.autoMerge,
       mainBranchPriority: data.main_branch_priority ?? DEFAULT_CONFIG.mainBranchPriority,
+      issueSyncEnabled: data.issue_sync_enabled ?? DEFAULT_CONFIG.issueSyncEnabled,
+      commitPlans: data.commit_plans ?? DEFAULT_CONFIG.commitPlans,
       approvalKeywords: data.approval_keywords ?? DEFAULT_CONFIG.approvalKeywords,
       repo: data.repo ?? DEFAULT_CONFIG.repo,
+      worktreePoolSize: data.worktree_pool_size ?? DEFAULT_CONFIG.worktreePoolSize,
+      worktreePoolDir: data.worktree_pool_dir
+        ? resolve(process.cwd(), data.worktree_pool_dir)
+        : DEFAULT_CONFIG.worktreePoolDir,
     };
   } catch (error) {
     console.error("Failed to load config:", error);
@@ -186,16 +206,38 @@ async function runOrchestrationLoop(
 
   console.log(`\n🔄 Iteration ${state.iteration}`);
   console.log(
-    `   Pools: ${config.poolSizes.planning}P / ${config.poolSizes.developer}D / ${config.poolSizes.tester}T / ${config.poolSizes.fixer}F`,
+    `   Pools: ${config.poolSizes.planning}P / ${config.poolSizes.developer}D / ${config.poolSizes.reviewer}R / ${config.poolSizes.tester}T / ${config.poolSizes.fixer}F`,
   );
 
   if (dryRun) {
     console.log("   🔒 DRY RUN MODE - no changes will be made");
   }
 
+  // Step -1: Sync GitHub issues to local files
+  console.log("\n📋 STEP -1: Sync GitHub issues");
+  if (!dryRun && config.issueSyncEnabled) {
+    const syncResult = syncIssuesToRepo(config);
+    if (syncResult.synced > 0 || syncResult.removed > 0) {
+      console.log(`   Synced ${syncResult.synced} issues, removed ${syncResult.removed}`);
+    } else {
+      console.log("   No changes to issues");
+    }
+  } else if (!config.issueSyncEnabled) {
+    console.log("   Issue sync disabled");
+  }
+
   // Step 0: Clean up stale agents
   console.log("\n📋 STEP 0: Clean up stale agents");
   result.staleAgentsCleaned = await step0_cleanupStaleAgents(state, config, dryRun);
+
+  // Check and replenish worktree pool
+  const poolStatus = getPoolStatus(config);
+  console.log(
+    `\n🏊 Worktree pool: ${poolStatus.available}/${poolStatus.poolSize} available`,
+  );
+  if (!dryRun && poolStatus.available < poolStatus.poolSize) {
+    replenishPool(config);
+  }
 
   // Step 0.5: Check main branch CI (PRIORITY)
   console.log("\n📋 STEP 0.5: Check main branch CI");
@@ -231,8 +273,18 @@ async function runOrchestrationLoop(
     result.agentsSpawned += routePRsToFixers(state, config);
   }
 
-  // Step 4: Route completed code to testers
-  console.log("\n📋 STEP 4: Route code to testers");
+  // Step 3.75: Route completed code to reviewers (local review)
+  console.log("\n📋 STEP 3.75: Route code to reviewers");
+  if (!dryRun) {
+    result.agentsSpawned += routeCodeToReviewers(state, config);
+  }
+
+  // Step 3.8: Process review results
+  console.log("\n📋 STEP 3.8: Process review results");
+  await step3_8_processReviewResults(state, config);
+
+  // Step 4: Route reviewed code to testers
+  console.log("\n📋 STEP 4: Route reviewed code to testers");
   if (!dryRun) {
     result.agentsSpawned += routeCodeToTesters(state, config);
   }
@@ -292,6 +344,7 @@ async function step0_cleanupStaleAgents(
   const allPools = [
     state.pools.planning,
     state.pools.developer,
+    state.pools.reviewer,
     state.pools.tester,
     state.pools.fixer,
   ];
@@ -540,6 +593,11 @@ async function step1_checkPRStatus(
               if (codeWork) {
                 markTicketCompleted(state, codeWork.ticketId);
                 cleanupWorktree(codeWork.ticketId, config);
+
+                // Remove issue file after merge (cleanup)
+                if (config.issueSyncEnabled) {
+                  removeIssueFile(codeWork.issueNumber, config);
+                }
               }
 
               // Also clean up any pending PR fix for this PR
@@ -562,6 +620,11 @@ async function step1_checkPRStatus(
               if (codeWork) {
                 markTicketCompleted(state, codeWork.ticketId);
                 cleanupWorktree(codeWork.ticketId, config);
+
+                // Remove issue file after merge (cleanup)
+                if (config.issueSyncEnabled) {
+                  removeIssueFile(codeWork.issueNumber, config);
+                }
               }
 
               // Also clean up any pending PR fix
@@ -593,7 +656,7 @@ async function step1_checkPRStatus(
  */
 async function step2_collectAgentOutputs(
   state: OrchestratorState,
-  _config: RalphLocalConfig,
+  config: RalphLocalConfig,
 ): Promise<{ plans: number; code: number; prs: number; }> {
   let plans = 0;
   let code = 0;
@@ -602,6 +665,7 @@ async function step2_collectAgentOutputs(
   const allPools = [
     state.pools.planning,
     state.pools.developer,
+    state.pools.reviewer,
     state.pools.tester,
     state.pools.fixer,
   ];
@@ -632,16 +696,19 @@ async function step2_collectAgentOutputs(
 
           case "CODE_READY":
             const normalizedCodeTicketId = normalizeTicketId(marker.ticketId);
-            console.log(`   💻 Code ready: ${normalizedCodeTicketId}`);
+            console.log(`   💻 Code ready: ${normalizedCodeTicketId} -> queuing for review`);
             const codeIssueNum = parseInt(normalizedCodeTicketId.replace("#", ""), 10);
             if (agent.worktree) {
-              enqueueCode(
+              // Route to review queue instead of directly to code queue
+              enqueueReview(
                 state,
                 normalizedCodeTicketId,
                 codeIssueNum,
+                marker.branch,
                 agent.worktree,
-                "",
+                join(config.planDir, `${codeIssueNum}.md`),
                 agent.id,
+                config,
               );
               code++;
             }
@@ -766,32 +833,99 @@ async function step6_handleBlockedAgents(
 }
 
 /**
- * Step 7: Sync active branches with main
+ * Step 3.8: Process review results from reviewer agents
  */
-async function step7_syncBranches(
+async function step3_8_processReviewResults(
   state: OrchestratorState,
   _config: RalphLocalConfig,
 ): Promise<void> {
-  // Find all active worktrees
-  const activeWorktrees = new Set<string>();
+  // Check reviewer agent outputs for markers
+  for (const agent of state.pools.reviewer || []) {
+    if (agent.status !== "running") continue;
 
-  const poolsWithWorktrees = [state.pools.developer, state.pools.tester, state.pools.fixer];
-  for (const pool of poolsWithWorktrees) {
-    for (const agent of pool) {
-      if (agent.worktree && agent.status === "running") {
-        activeWorktrees.add(agent.worktree);
+    const output = getAgentOutput(agent);
+    if (!output) continue;
+
+    const markers = parseAgentMarkers(output);
+    for (const marker of markers) {
+      if (marker.type === "REVIEW_PASSED") {
+        const normalizedTicketId = normalizeTicketId(marker.ticketId);
+        console.log(
+          `   ✅ Review passed: ${normalizedTicketId} (${marker.iterations} iterations, force=${marker.force})`,
+        );
+        // Move from pendingReview to pendingCode (for tester)
+        completeReviewAndEnqueueCode(state, normalizedTicketId, agent.id);
+      }
+
+      if (marker.type === "REVIEW_CHANGES_REQUESTED") {
+        const normalizedTicketId = normalizeTicketId(marker.ticketId);
+        console.log(
+          `   🔄 Changes requested: ${normalizedTicketId} (iteration ${marker.iteration})`,
+        );
+        // Loop back - update review with feedback for developer to fix
+        requeueReviewWithFeedback(state, normalizedTicketId, marker.feedback, agent.id);
       }
     }
   }
+}
 
-  if (activeWorktrees.size === 0) {
-    console.log("   No active worktrees to sync");
+/**
+ * Step 7: Sync active branches with main (enhanced to include all worktrees including warm pool)
+ * Runs full git sync sequence: pull, push, fetch main, merge main, push
+ */
+async function step7_syncBranches(
+  state: OrchestratorState,
+  config: RalphLocalConfig,
+): Promise<void> {
+  // Collect ALL worktrees (not just from running agents)
+  const allWorktrees = new Set<string>();
+
+  // From pending review
+  for (const review of state.pendingReview || []) {
+    if (review.worktree) allWorktrees.add(review.worktree);
+  }
+
+  // From pending code
+  for (const code of state.pendingCode) {
+    if (code.worktree) allWorktrees.add(code.worktree);
+  }
+
+  // From pending PR fixes
+  for (const fix of state.pendingPRFixes || []) {
+    if (fix.worktree) allWorktrees.add(fix.worktree);
+  }
+
+  // From running agents
+  const poolsWithWorktrees = [
+    state.pools.developer,
+    state.pools.reviewer,
+    state.pools.tester,
+    state.pools.fixer,
+  ];
+  for (const pool of poolsWithWorktrees) {
+    for (const agent of pool || []) {
+      if (agent.worktree) allWorktrees.add(agent.worktree);
+    }
+  }
+
+  // Also include warm worktrees from the pool
+  const warmWorktrees = listWarmWorktrees(config);
+  for (const warmPath of warmWorktrees) {
+    allWorktrees.add(warmPath);
+  }
+
+  if (allWorktrees.size === 0) {
+    console.log("   No worktrees to sync");
     return;
   }
 
-  console.log(`   Syncing ${activeWorktrees.size} active worktrees`);
+  const warmCount = warmWorktrees.length;
+  const activeCount = allWorktrees.size - warmCount;
+  console.log(
+    `   Syncing ${allWorktrees.size} worktrees with main (${activeCount} active, ${warmCount} warm)`,
+  );
 
-  for (const worktree of Array.from(activeWorktrees)) {
+  for (const worktree of Array.from(allWorktrees)) {
     const result = syncWorktreeWithMain(worktree);
     if (!result.success) {
       console.log(`   ⚠️ Sync failed for ${worktree}: ${result.message}`);
@@ -827,12 +961,14 @@ function generateSummary(result: LocalIterationResult, state: OrchestratorState)
    ${summary}
 
    Main Branch CI: ${mainStatusIcon} ${mainStatus}
-   Queues: ${stats.pendingPlans} plans | ${stats.pendingCode} code | ${stats.pendingPRFixes} PR fixes
+   Queues: ${stats.pendingPlans} plans | ${stats.pendingReview} reviews | ${stats.pendingCode} code | ${stats.pendingPRFixes} PR fixes
    Agents: ${stats.runningPlanners}/${
     stats.idlePlanners + stats.runningPlanners
   }P | ${stats.runningDevelopers}/${
     stats.idleDevelopers + stats.runningDevelopers
-  }D | ${stats.runningTesters}/${
+  }D | ${stats.runningReviewers}/${
+    stats.idleReviewers + stats.runningReviewers
+  }R | ${stats.runningTesters}/${
     stats.idleTesters + stats.runningTesters
   }T | ${stats.runningFixers}/${stats.idleFixers + stats.runningFixers}F
    Completed: ${state.completedTickets.length} | Failed: ${state.failedTickets.length} | Blocked: ${state.blockedTickets.length}
@@ -869,12 +1005,21 @@ function showStatus(config: RalphLocalConfig): void {
     }
   }
 
+  // Worktree pool status
+  const poolStatus = getPoolStatus(config);
+  console.log(
+    `\n🏊 Worktree Pool: ${poolStatus.available}/${poolStatus.poolSize} warm worktrees available`,
+  );
+
   console.log("\n📋 Agent Pools:");
   console.log(
     `   Planning:  ${stats.runningPlanners} running / ${stats.idlePlanners} idle (${config.poolSizes.planning} total)`,
   );
   console.log(
     `   Developer: ${stats.runningDevelopers} running / ${stats.idleDevelopers} idle (${config.poolSizes.developer} total)`,
+  );
+  console.log(
+    `   Reviewer:  ${stats.runningReviewers} running / ${stats.idleReviewers} idle (${config.poolSizes.reviewer} total)`,
   );
   console.log(
     `   Tester:    ${stats.runningTesters} running / ${stats.idleTesters} idle (${config.poolSizes.tester} total)`,
@@ -885,6 +1030,7 @@ function showStatus(config: RalphLocalConfig): void {
 
   console.log("\n📬 Queues:");
   console.log(`   Pending Plans:    ${stats.pendingPlans}`);
+  console.log(`   Pending Reviews:  ${stats.pendingReview}`);
   console.log(`   Pending Code:     ${stats.pendingCode}`);
   console.log(`   Pending PR Fixes: ${stats.pendingPRFixes}`);
 
@@ -928,6 +1074,11 @@ async function main(): Promise<void> {
   if (watchMode) {
     console.log("🔄 Starting Ralph Local in watch mode...");
     console.log(`   Sync interval: ${config.syncIntervalMs / 1000 / 60} minutes`);
+
+    // Initialize worktree pool on startup
+    if (!dryRun) {
+      initializePool(config);
+    }
 
     while (true) {
       try {

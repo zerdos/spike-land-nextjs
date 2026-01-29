@@ -1,7 +1,8 @@
 "use client";
 
 import { useTransitionRouter as useRouter } from "next-view-transitions";
-import { useEffect } from "react";
+import { useState } from "react";
+import { TemplateSelector } from "./template-selector";
 
 // Word lists for generating random codespace IDs
 const ADJECTIVES = [
@@ -66,13 +67,36 @@ function generateCodespaceId(): string {
 
 export default function NewAppPage() {
   const router = useRouter();
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null | undefined>(
+    undefined,
+  );
 
-  useEffect(() => {
-    // Generate a random ID and redirect immediately to the codespace
+  const handleTemplateSelect = (templateId: string | null) => {
+    setSelectedTemplate(templateId);
+
+    // Generate a random ID and redirect to the codespace with template info
     const tempId = generateCodespaceId();
-    router.replace(`/my-apps/${tempId}`);
-  }, [router]);
 
+    // Build URL with template parameter if selected
+    const url = templateId
+      ? `/my-apps/${tempId}?template=${templateId}`
+      : `/my-apps/${tempId}`;
+
+    router.push(url);
+  };
+
+  // Show template selector first
+  if (selectedTemplate === undefined) {
+    return (
+      <div className="min-h-screen bg-background pt-24 pb-12">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <TemplateSelector onSelect={handleTemplateSelect} />
+        </div>
+      </div>
+    );
+  }
+
+  // After selection, show loading state while redirecting
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-4 animate-pulse">

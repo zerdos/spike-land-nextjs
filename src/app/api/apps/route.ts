@@ -240,7 +240,14 @@ export async function POST(request: NextRequest) {
  */
 async function createAppFromPrompt(
   userId: string,
-  data: { prompt: string; imageIds?: string[]; codespaceId?: string; },
+  data: {
+    prompt: string;
+    imageIds?: string[];
+    codespaceId?: string;
+    templateId?: string;
+    workspaceId?: string;
+    linkedCampaign?: string;
+  },
 ) {
   // If codespaceId is provided, use it. Otherwise generate a new slug.
   const slug = data.codespaceId ? data.codespaceId : generateSlug();
@@ -322,12 +329,26 @@ async function createAppFromPrompt(
         },
       });
 
-      // Create the first message with the prompt
+      // Create the first message with the prompt (or template code if provided)
+      let messageContent = data.prompt;
+
+      // If a template is specified, prepend template code to the prompt
+      if (data.templateId) {
+        // Import template dynamically at runtime
+        const { getTemplateById } = await import("@/app/my-apps/templates");
+        const template = getTemplateById(data.templateId);
+
+        if (template) {
+          // Send template code as initial content
+          messageContent = `I'd like to start with this template code:\n\n\`\`\`tsx\n${template.code}\n\`\`\`\n\n${data.prompt}`;
+        }
+      }
+
       const message = await tx.appMessage.create({
         data: {
           appId: app.id,
           role: "USER",
-          content: data.prompt,
+          content: messageContent,
         },
       });
 
@@ -354,6 +375,43 @@ async function createAppFromPrompt(
               messageId: message.id,
               imageId: img.id,
             })),
+          });
+        }
+      }
+
+      // Link to workspace if provided
+      if (data.workspaceId) {
+        // Verify workspace exists and user has access
+        const workspace = await tx.workspace.findFirst({
+          where: {
+            id: data.workspaceId,
+            members: {
+              some: {
+                userId,
+              },
+            },
+          },
+          select: { id: true },
+        });
+
+        if (workspace) {
+          // Determine purpose from templateId if available
+          let purpose: string | null = null;
+          if (data.templateId) {
+            const { getTemplateById } = await import("@/app/my-apps/templates");
+            const template = getTemplateById(data.templateId);
+            if (template) {
+              purpose = template.purpose;
+            }
+          }
+
+          await tx.workspaceApp.create({
+            data: {
+              workspaceId: data.workspaceId,
+              appId: app.id,
+              purpose,
+              linkedCampaign: data.linkedCampaign || null,
+            },
           });
         }
       }

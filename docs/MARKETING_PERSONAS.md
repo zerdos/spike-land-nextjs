@@ -1,533 +1,375 @@
-# Marketing Personas - Pixel AI Photo Enhancement
+# Marketing Personas - Orbit Social Media Command Center
 
-> **Last Updated**: December 2025 **Product**: Pixel by spike.land **Primary
-> Platforms**: Instagram, TikTok, Facebook
-
----
-
-## Priority Personas (Initial Campaign Focus)
-
-These 4 personas should be targeted first due to higher social media engagement
-and viral potential.
+> **Last Updated**: January 2026
+> **Product**: Orbit by spike.land
+> **Primary Platforms**: LinkedIn, Instagram, Facebook, Twitter/X
 
 ---
 
-### 1. The Tech-Savvy Grandson
+## Strategic Shift
+
+**Previous Focus**: Pixel AI Photo Enhancement (consumer app, viral campaigns)
+**New Focus**: Orbit Social Media Management (B2B/prosumer SaaS, professional workflows)
+
+This document reflects the pivot to Orbit as the core product offering, targeting social media management professionals rather than casual photo enhancers.
+
+---
+
+## Primary Target Personas
+
+These 3 personas represent the core addressable market for Orbit. All marketing, product development, and sales efforts should prioritize these segments.
+
+---
+
+### 1. The Solo Content Creator
 
 **Demographics**
 
-| Attribute | Value             |
-| --------- | ----------------- |
-| Age       | 25-35             |
-| Gender    | Mixed             |
-| Income    | £30-60k           |
-| Location  | Urban/Suburban UK |
-| Platform  | Instagram, TikTok |
+| Attribute | Value |
+|-----------|-------|
+| Age | 25-35 |
+| Gender | Mixed (55% Female) |
+| Income | £25-50k |
+| Location | UK/Global (Remote-first) |
+| Platforms | Instagram, TikTok, YouTube, LinkedIn |
+
+**Professional Profile**
+
+- Manages 3-5 social media accounts across multiple platforms
+- Posts 5-10 times per week per account
+- Earns revenue through brand partnerships, sponsorships, affiliate marketing
+- Works solo or with 1-2 freelance collaborators
+- Active in creator communities (Discord, Slack groups)
 
 **Psychographics**
 
-- Values family connections but lives away from home
-- Tech-forward, early adopter of new apps
-- Active on social media, shares content regularly
-- Enjoys impressing older family members with technology
+- Highly motivated, entrepreneurial mindset
+- Values efficiency and automation to maximize output
+- Constantly seeking tools to reduce manual work
+- Sensitive to pricing (bootstrapped business)
+- Active early adopter of creator tools
 
 **Pain Points**
 
-- Grandparents have boxes of faded photos they treasure
-- Family photos are scattered across old devices
-- Wants meaningful gifts but hates shopping
-- Feels disconnected from family history
+- **Time Management**: Spending 4-6 hours/day on social media tasks
+- **Platform Juggling**: Switching between 5+ apps daily
+- **Inconsistent Posting**: Missing optimal posting times
+- **Response Burnout**: Can't keep up with DMs/comments across platforms
+- **Analytics Overload**: Data scattered across platform-specific dashboards
+- **Brand Voice Drift**: Tone varies when rushed or tired
 
 **Triggers**
 
-- Family birthdays and anniversaries
-- Christmas/holiday gatherings
-- Grandparent health scares
-- Visiting family home
+- Missing a brand partnership deadline due to overwhelm
+- Losing followers from slow response times
+- Competitor creator launching with better consistency
+- Seasonal content campaigns (Q4, summer, back-to-school)
 
 **Primary Hook**
 
-> "Make grandma cry (happy tears)"
+> "3 hours back in your day. Every day."
+
+**Value Proposition**
+
+- **Unified Inbox**: All mentions, DMs, comments in one place
+- **AI Draft Generation**: Speed up content creation by 70%
+- **Smart Scheduling**: Post at optimal times automatically
+- **Brand Voice Consistency**: Train AI on your existing content style
+
+**Pricing Sensitivity**
+
+- **Budget**: £50-100/month for tools
+- **Target Tier**: PRO ($29/month) - perfect fit
+- **Upgrade Trigger**: When managing 5+ accounts or hiring first team member
 
 **Ad Copy Variations**
 
-- "Restored my grandmother's wedding photo. She didn't stop hugging me for 10
-  minutes."
-- "My grandad thought I was a wizard. All I did was upload his 1960s photos."
-- "The best gift I ever gave cost me 60 seconds and zero shipping."
+- "I got 3 hours back every day. Here's how."
+- "Managing 5 accounts solo? Stop switching tabs."
+- "The AI that sounds like you—because it learned from you."
+- "Never miss a DM again. Even while you sleep."
 
 **Content Ideas**
 
-- Before/after reaction videos (grandparent seeing restored photo)
-- "POV: You're about to make grandma cry"
-- Tutorial: "How I restored 50 years of family photos"
+- "Day in the life" comparison: before/after Orbit
+- Tutorial: "How I schedule 50 posts in 30 minutes"
+- Case study: "Doubled engagement with half the time investment"
+- Behind-the-scenes: "My social media tech stack"
 
 ---
 
-### 2. The Social Media Historian
+### 2. The Small Business Marketing Manager
 
 **Demographics**
 
-| Attribute | Value                   |
-| --------- | ----------------------- |
-| Age       | 18-30                   |
-| Gender    | 60% Female              |
-| Income    | £20-40k                 |
-| Location  | UK (all areas)          |
-| Platform  | TikTok, Instagram Reels |
+| Attribute | Value |
+|-----------|-------|
+| Age | 28-45 |
+| Gender | 60% Female |
+| Income | £35-65k |
+| Location | UK (Urban/Suburban) |
+| Platforms | LinkedIn, Facebook, Instagram, Twitter/X |
+
+**Professional Profile**
+
+- Solo or 1-2 person marketing team at 10-50 person company
+- Manages brand social presence across 3-5 platforms
+- Reports to CEO/CMO on social media performance
+- Responsible for brand reputation, customer engagement, and lead generation
+- Juggles social media with other marketing responsibilities (email, content, events)
 
 **Psychographics**
 
-- Lives online, content creator mindset
-- Loves nostalgic trends (#TBT, #ThrowbackThursday)
-- Seeks engagement and shares on social
-- Appreciates aesthetic transformations
+- Results-driven, needs to prove ROI to leadership
+- Values professionalism and brand consistency
+- Risk-averse (fears public PR mistakes)
+- Time-constrained (social is 30-50% of job, not 100%)
+- Collaborative (works with sales, support, product teams)
 
 **Pain Points**
 
-- Old photos look terrible on modern screens
-- Embarrassed by low-quality childhood photos
-- Wants viral content but needs unique angles
-- Runs out of interesting content ideas
+- **Multi-Tasking Chaos**: Social is just one of many responsibilities
+- **Brand Risk**: One off-brand post can damage reputation
+- **Budget Justification**: Needs clear ROI data to defend marketing spend
+- **Crisis Management**: Can't monitor mentions 24/7
+- **Team Coordination**: Sales/support need visibility into social conversations
+- **Reporting Overhead**: Spending hours compiling monthly reports
 
 **Triggers**
 
-- Throwback Thursday posts
-- Birthday posts of self/friends
-- Trending nostalgia content
-- Milestone birthdays (21, 25, 30)
+- Negative viral mention or PR crisis
+- CEO asking for social media ROI metrics
+- Competitor launching aggressive social campaign
+- Quarterly budget planning season
+- Hiring freeze forcing automation needs
 
 **Primary Hook**
 
-> "Throwback Thursday just got an upgrade"
+> "Sleep soundly. We'll catch what matters."
+
+**Value Proposition**
+
+- **Anomaly Detection (Pulse)**: Catch PR crises before they explode
+- **Brand Guardrails (Brand Brain)**: Enforce tone, avoid compliance risks
+- **Competitive Intelligence (Scout)**: Track competitors without manual monitoring
+- **ROI Dashboard**: Exportable reports for leadership
+- **Team Collaboration**: Share inbox access with sales/support
+
+**Pricing Sensitivity**
+
+- **Budget**: £200-500/month for social tools
+- **Target Tier**: BUSINESS ($99/month) - room for team members
+- **Upgrade Trigger**: First PR scare or need for 3+ team member seats
 
 **Ad Copy Variations**
 
-- "My 2008 flip phone photos are now HD. The internet wasn't ready."
-- "Turned my embarrassing baby photos into actual content."
-- "Before: blurry mess. After: main character energy."
+- "We caught a PR crisis at 2 AM. You slept through it."
+- "Your CEO wants ROI? Here's the dashboard."
+- "Brand voice guardrails. Because one bad tweet costs more than $99."
+- "What if you could add 10 hours to your week?"
 
 **Content Ideas**
 
-- Transformation reels with trending audio
-- "Glow up but make it your photos"
-- Challenge: "Restore your oldest photo"
-- Duet/stitch format with reactions
+- Case study: "How we prevented a viral PR disaster"
+- Webinar: "Social media ROI for marketing teams"
+- White paper: "The real cost of manual social media management"
+- Testimonial video: Marketing manager explaining time savings
 
 ---
 
-### 3. The iPhone Upgrader
+### 3. The Freelance Social Media Manager
 
 **Demographics**
 
-| Attribute | Value             |
-| --------- | ----------------- |
-| Age       | 25-45             |
-| Gender    | Mixed             |
-| Income    | £35-70k           |
-| Location  | UK (tech hubs)    |
-| Platform  | Instagram, TikTok |
+| Attribute | Value |
+|-----------|-------|
+| Age | 25-40 |
+| Gender | 70% Female |
+| Income | £30-80k (variable, freelance) |
+| Location | UK/Global (Remote) |
+| Platforms | All major platforms (Instagram, LinkedIn, Facebook, Twitter/X, TikTok) |
+
+**Professional Profile**
+
+- Manages 3-8 client accounts simultaneously
+- Charges £500-2,000/month per client
+- Solo operator or small 2-3 person agency
+- Provides content creation, scheduling, community management, reporting
+- Constantly seeking new clients while retaining existing ones
 
 **Psychographics**
 
-- Upgrades phone every 2-3 years
-- Cares about photo quality
-- Frustrated by old photos looking dated
-- Practical, results-oriented
+- Entrepreneurial, profit-margin conscious
+- Values scalability (more clients without more hours)
+- Competitive (many freelancers in market)
+- Service-oriented (client satisfaction is everything)
+- Tool-savvy (uses 5-10 SaaS tools daily)
 
 **Pain Points**
 
-- 10 years of photos look worse than today's screenshots
-- Camera roll is a mix of HD and potato quality
-- Printing old photos reveals how bad they are
-- Lost photos when switching phones
+- **Client Juggling**: Context-switching between brand voices all day
+- **Scaling Ceiling**: Can't take on more clients without burning out
+- **Client Churn**: Clients leave when overwhelmed or dissatisfied
+- **Reporting Time Sink**: Each client needs monthly reports
+- **Billing Complexity**: Tracking time per client for invoicing
+- **Competitive Pressure**: Agencies offering lower prices
 
 **Triggers**
 
-- New iPhone releases
-- iCloud "memories" showing old photos
-- Wanting to print photos for home
-- Backing up/organizing photo library
+- Turning down new clients due to capacity
+- Client threatens to leave due to slow response times
+- Competitor offering AI-powered services
+- End-of-year client contract renewals
+- Onboarding 3rd or 4th simultaneous client
 
 **Primary Hook**
 
-> "Your iPhone 4 photos deserve iPhone 16 quality"
+> "Manage 8 clients like you're managing 2."
+
+**Value Proposition**
+
+- **Multi-Workspace Management**: Separate workspace per client
+- **AI Drafts with Client Voice**: Train Brand Brain per client
+- **White-Label Reporting**: Client-ready analytics exports
+- **Scalable Workflow**: Add clients without proportional time increase
+- **Agency Pricing**: Volume discount for 3+ workspaces
+
+**Pricing Sensitivity**
+
+- **Budget**: £100-300/month for tools (passes cost to clients)
+- **Target Tier**: PRO ($29/month) × 3-5 workspaces = $87-145/month
+- **Upgrade Trigger**: When managing 5+ clients or needing team members
 
 **Ad Copy Variations**
 
-- "My 2012 photos finally match my 2025 photos."
-- "Apple won't upgrade your old photos. We will."
-- "Stop scrolling past your old photos in shame."
+- "I 3x'd my client roster without hiring anyone."
+- "The secret to managing 8 brands without losing your mind."
+- "Freelancers: Stop trading hours for money."
+- "Your clients think you have a team. It's just you + Orbit."
 
 **Content Ideas**
 
-- Side-by-side: same location, old vs. enhanced photo
-- "I enhanced every photo from my first iPhone"
-- Camera roll cleanup transformation
+- Tutorial: "How I onboard new clients in 15 minutes"
+- Income breakdown: "How I went from 3 to 8 clients in 6 months"
+- Case study: "White-label reporting that impressed my clients"
+- LinkedIn post: "The #1 tool every freelance SMM needs"
 
 ---
 
-### 4. The Childhood Throwback
-
-**Demographics**
-
-| Attribute | Value                   |
-| --------- | ----------------------- |
-| Age       | 25-40                   |
-| Gender    | 55% Female              |
-| Income    | £25-55k                 |
-| Location  | UK (all areas)          |
-| Platform  | TikTok, Instagram Reels |
-
-**Psychographics**
-
-- Deeply nostalgic about own childhood
-- Loves reaction content and before/after reveals
-- Shares personal memories for emotional connection
-- Values authenticity and warm, cozy aesthetics
-
-**Pain Points**
-
-- Childhood photos from the 90s/2000s are embarrassingly low quality
-- Wants to see themselves clearly in old photos
-- Parents' old prints/scans are faded or damaged
-- Can't share childhood photos without feeling embarrassed by quality
-
-**Triggers**
-
-- Seeing childhood reaction videos trending
-- Finding old photo albums at parents' house
-- Birthday nostalgia (especially milestone ages)
-- "What you looked like as a kid" trends
-
-**Primary Hook**
-
-> "A memory that will last forever"
-
-**Ad Copy Variations**
-
-- "I enhanced my baby photos. I wasn't ready for the emotions."
-- "Found a box of photos at my mum's. Now I can finally see 5-year-old me
-  clearly."
-- "This is what my childhood actually looked like. I'm not crying, you are."
-
-**Content Ideas**
-
-- Emotional reaction videos to enhanced childhood photos
-- Before/after reveals with trending "cozy" audio
-- "POV: You see your childhood in HD for the first time"
-- Parent reactions to seeing their kids' enhanced photos
-
----
-
-## Secondary Personas
-
----
-
-### 5. The Memory Keeper
-
-**Demographics**
-
-| Attribute | Value             |
-| --------- | ----------------- |
-| Age       | 55-70             |
-| Gender    | 65% Female        |
-| Income    | £40-80k           |
-| Location  | Suburban/Rural UK |
-| Platform  | Facebook          |
-
-**Psychographics**
-
-- Values family history and legacy
-- Organized, maintains photo albums
-- Worries about photos deteriorating
-- Not highly technical but willing to try
-
-**Pain Points**
-
-- Physical photos are fading and yellowing
-- Doesn't know how to digitize properly
-- Worried about losing memories forever
-- Wants to pass down quality photos to children
-
-**Primary Hook**
-
-> "Your photos are fading. Time isn't."
-
-**Ad Copy Variations**
-
-- "50 years of memories. Restored in 60 seconds."
-- "Don't let time steal your family's faces."
-- "Your children deserve to see these clearly."
-
----
-
-### 6. The Genealogist
-
-**Demographics**
-
-| Attribute | Value          |
-| --------- | -------------- |
-| Age       | 40-65          |
-| Gender    | 55% Female     |
-| Income    | £50-90k        |
-| Location  | UK (all areas) |
-| Platform  | Facebook       |
-
-**Psychographics**
-
-- Researches family history actively
-- Uses Ancestry.com, FindMyPast
-- Values documentation and preservation
-- Detail-oriented, patient
-
-**Pain Points**
-
-- Old ancestor photos are barely recognizable
-- Can't see facial features for family tree
-- Historical photos have damage and wear
-- Wants to create family history books
-
-**Primary Hook**
-
-> "Your ancestors deserve HD"
-
-**Ad Copy Variations**
-
-- "Finally see Great-Great-Grandma's face clearly."
-- "100-year-old photos. Crystal clear today."
-- "Document your lineage in the quality they deserved."
-
----
-
-### 7. The Grieving Pet Owner
-
-**Demographics**
-
-| Attribute | Value               |
-| --------- | ------------------- |
-| Age       | 25-55               |
-| Gender    | 70% Female          |
-| Income    | £25-60k             |
-| Location  | UK (all areas)      |
-| Platform  | Instagram, Facebook |
-
-**Psychographics**
-
-- Deep emotional bond with pets
-- Treasures memories of passed pets
-- Active in pet communities online
-- Willing to spend on pet-related items
-
-**Pain Points**
-
-- Best photos of passed pet are blurry
-- Regrets not taking better photos
-- Wants to create memorial or portrait
-- Old phone photos don't print well
-
-**Primary Hook**
-
-> "Your best friend, restored"
-
-**Ad Copy Variations**
-
-- "The only photo I have of him. Now I can actually see his face."
-- "She's been gone 3 years. Now I have a photo worth framing."
-- "No more blurry memories of your best friend."
-
-**Note**: Handle with sensitivity. Focus on preservation, not loss.
-
----
-
-### 8. The Nostalgic Parent
-
-**Demographics**
-
-| Attribute | Value               |
-| --------- | ------------------- |
-| Age       | 35-50               |
-| Gender    | 60% Female          |
-| Income    | £40-80k             |
-| Location  | UK (suburban)       |
-| Platform  | Facebook, Instagram |
-
-**Psychographics**
-
-- Kids are now teenagers/adults
-- Sentimental about childhood photos
-- Active on Facebook/Instagram
-- Shares family memories regularly
-
-**Pain Points**
-
-- Early 2000s digital photos are low quality
-- Flip phone era photos are unusable
-- Wants to create albums for kids
-- 18th/21st birthday approaching
-
-**Primary Hook**
-
-> "Those 2005 phone photos? Now printable."
-
-**Ad Copy Variations**
-
-- "Your kids' childhood photos deserve better than 480p."
-- "From potato quality to portrait quality."
-- "The baby photos you can finally frame."
-
----
-
-### 9. The Wedding Planner
-
-**Demographics**
-
-| Attribute | Value                |
-| --------- | -------------------- |
-| Age       | 25-40                |
-| Gender    | 75% Female           |
-| Income    | £30-70k              |
-| Location  | UK (all areas)       |
-| Platform  | Pinterest, Instagram |
-
-**Psychographics**
-
-- Planning wedding or anniversary
-- Values tradition and family
-- Active on Pinterest for ideas
-- Willing to invest in meaningful touches
-
-**Pain Points**
-
-- Parents'/grandparents' wedding photos are faded
-- Wants to display at own wedding
-- Making anniversary gift for parents
-- Creating family tribute slideshow
-
-**Primary Hook**
-
-> "Their wedding day, your anniversary gift"
-
-**Ad Copy Variations**
-
-- "Restored my parents' 1985 wedding photo. 40th anniversary gift: sorted."
-- "Display their wedding next to yours."
-- "The gift that made my mum frame it immediately."
-
----
-
-### 10. The Real Estate Flipper
-
-**Demographics**
-
-| Attribute | Value                  |
-| --------- | ---------------------- |
-| Age       | 30-55                  |
-| Gender    | 60% Male               |
-| Income    | £60-150k+              |
-| Location  | UK (property hotspots) |
-| Platform  | LinkedIn, Facebook     |
-
-**Psychographics**
-
-- Business-minded, ROI focused
-- Manages multiple properties
-- Needs quick solutions
-- Values efficiency over perfection
-
-**Pain Points**
-
-- Old property photos in archives
-- Historical listing photos look dated
-- Before/after comparisons needed
-- Quick turnaround required
-
-**Primary Hook**
-
-> "Sell the memory, not the blur"
-
-**Ad Copy Variations**
-
-- "Old listing photos → professional quality. 60 seconds."
-- "Your properties deserve better photos than 2010 gave them."
-- "Restore property archives without re-shooting."
-
----
-
-### 11. The Memorial Creator
-
-**Demographics**
-
-| Attribute | Value          |
-| --------- | -------------- |
-| Age       | 40-70          |
-| Gender    | 65% Female     |
-| Income    | £35-80k        |
-| Location  | UK (all areas) |
-| Platform  | Facebook       |
-
-**Psychographics**
-
-- Creating displays for funerals/memorials
-- Organizing celebration of life events
-- Values dignity and quality
-- Time-sensitive needs
-
-**Pain Points**
-
-- Only photos available are low quality
-- Need print-ready images quickly
-- Creating memorial slideshow
-- Want to honor loved one properly
-
-**Primary Hook**
-
-> "Honor them in crystal clarity"
-
-**Ad Copy Variations**
-
-- "They deserve to be remembered clearly."
-- "Create a memorial they would be proud of."
-- "When quality matters most."
-
-**Note**: Handle with extreme sensitivity. Focus on honor and dignity.
-
----
-
-## Campaign Priority Matrix
-
-| Persona                | Platform  | Budget % | Expected CAC | Viral Potential |
-| ---------------------- | --------- | -------- | ------------ | --------------- |
-| Tech-Savvy Grandson    | IG/TikTok | 25%      | £3-8         | High            |
-| Social Media Historian | TikTok/IG | 25%      | £2-6         | Very High       |
-| iPhone Upgrader        | IG/TikTok | 25%      | £5-12        | Medium          |
-| Childhood Throwback    | TikTok/IG | 25%      | £2-5         | Very High       |
-
-**Phase 2 expansion**: Memory Keeper, Nostalgic Parent, Pet Owner
+## Campaign Strategy
+
+### Platform Targeting
+
+| Persona | Primary Platform | Secondary Platform | Ad Format |
+|---------|------------------|-------------------|-----------|
+| Solo Content Creator | Instagram | TikTok | Story ads, Reels ads |
+| Small Business Manager | LinkedIn | Facebook | Sponsored posts, InMail |
+| Freelance SMM | LinkedIn | Twitter/X | Sponsored posts, Video ads |
+
+### Budget Allocation (Initial Launch)
+
+| Persona | Budget % | Expected CAC | Lifetime Value (LTV) | Payback Period |
+|---------|----------|--------------|---------------------|----------------|
+| Solo Content Creator | 35% | £40-80 | £348-1,044 (12-36 mo) | 1-3 months |
+| Small Business Manager | 40% | £100-200 | £1,188-3,564 (12-36 mo) | 1-2 months |
+| Freelance SMM | 25% | £60-120 | £522-1,566 (18-54 mo) | 2-4 months |
+
+**Assumptions:**
+- Solo Creator: $29/mo PRO tier, 12-36 month retention
+- Small Business: $99/mo BUSINESS tier, 12-36 month retention
+- Freelancer: 3 workspaces × $29/mo, 18-54 month retention
+
+### Funnel Stages
+
+**Awareness**: Social ads, content marketing, influencer partnerships
+**Consideration**: Free tier signup, 14-day PRO trial, feature comparison landing pages
+**Decision**: Upgrade prompts on limit hit, sales demo for BUSINESS tier
+**Retention**: Onboarding emails, feature adoption tracking, success stories
 
 ---
 
 ## UTM Tracking by Persona
 
 ```
-?utm_source=instagram&utm_medium=paid&utm_campaign=grandson
-?utm_source=tiktok&utm_medium=paid&utm_campaign=historian
-?utm_source=instagram&utm_medium=paid&utm_campaign=upgrader
-?utm_source=tiktok&utm_medium=paid&utm_campaign=throwback
+Solo Creator:
+?utm_source=instagram&utm_medium=paid&utm_campaign=creator&utm_content=time-saver
+
+Small Business:
+?utm_source=linkedin&utm_medium=paid&utm_campaign=smb&utm_content=roi-dashboard
+
+Freelancer:
+?utm_source=linkedin&utm_medium=paid&utm_campaign=freelance&utm_content=scale
 ```
 
 ---
 
-## A/B Testing Headlines
+## A/B Testing Themes
 
-Test these across all personas:
+Test these value propositions across all personas:
 
-1. "Old Photos. New Life."
-2. "Your memories deserve better than 480p."
-3. "60 seconds. 50 years younger."
-4. "Restore what time took away."
-5. "The AI that turns blurry to brilliant."
+1. **Time Savings**: "3 hours back every day"
+2. **Risk Mitigation**: "Catch crises before they go viral"
+3. **Revenue Growth**: "Manage 2x the clients without burning out"
+4. **AI Differentiation**: "The AI that sounds like you"
+5. **Professional Credibility**: "Enterprise-grade social media management"
 
 ---
 
-_Document created: December 2025_ _Next review: January 2026_
+## Persona Evolution (Future Phases)
+
+**Phase 2 Expansion (Q2 2026)**:
+- Agency owner (10-50 employees)
+- Enterprise social media director
+- Creator economy manager (MCN/talent management)
+
+**Phase 3 Niche Verticals (Q3 2026)**:
+- E-commerce brand manager (Shopify/WooCommerce focus)
+- SaaS growth marketer (B2B tech companies)
+- Non-profit communications director
+
+---
+
+## Competitive Positioning
+
+| Competitor | Positioning vs. Orbit |
+|------------|----------------------|
+| **Hootsuite** | "Modern AI vs. legacy tool" |
+| **Buffer** | "Smart automation vs. manual scheduling" |
+| **Sprout Social** | "Affordable pro tool vs. enterprise pricing" |
+| **Later** | "Full command center vs. scheduling-only" |
+
+---
+
+## Key Messaging by Persona
+
+### Solo Content Creator
+- **Hero Message**: "Focus on creating. We'll handle the rest."
+- **Pain Point Amplification**: "Stop spending 60% of your time on busywork."
+- **Differentiation**: "AI that learns your voice, not generic templates."
+
+### Small Business Marketing Manager
+- **Hero Message**: "Enterprise-grade social management at SMB pricing."
+- **Pain Point Amplification**: "What's the cost of a PR crisis at 2 AM?"
+- **Differentiation**: "Anomaly detection and brand guardrails others don't offer."
+
+### Freelance Social Media Manager
+- **Hero Message**: "Scale your freelance business without hiring."
+- **Pain Point Amplification**: "Turning down clients = turning down money."
+- **Differentiation**: "Multi-workspace management built for agencies."
+
+---
+
+## Success Metrics by Persona
+
+| Metric | Solo Creator | Small Business | Freelancer |
+|--------|-------------|----------------|------------|
+| **Trial-to-Paid Conversion** | 20-30% | 30-40% | 25-35% |
+| **Month 1 Churn** | <15% | <10% | <12% |
+| **6-Month Retention** | 60-70% | 70-80% | 65-75% |
+| **NPS Score** | 40-50 | 50-60 | 45-55 |
+
+---
+
+_Document created: January 2026_
+_Next review: April 2026_
+_Owner: Marketing Team_

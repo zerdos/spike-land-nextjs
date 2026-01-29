@@ -1,4 +1,5 @@
-import { render, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import NewAppPage from "./page";
 
@@ -27,21 +28,27 @@ describe("NewAppPage", () => {
     vi.resetAllMocks();
   });
 
-  it("should render loading state initially", () => {
+  it("should render template selector", () => {
     render(<NewAppPage />);
-    expect(
-      screen.getByText("Initializing workspace..."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Choose a Template")).toBeInTheDocument();
+    expect(screen.getByText("Start from Scratch")).toBeInTheDocument();
   });
 
-  it("should redirect to a generated codespace ID", async () => {
+  it("should redirect to a generated codespace ID when template is selected", async () => {
+    const user = userEvent.setup();
     render(<NewAppPage />);
 
+    // Click on "Start from Scratch" option
+    const scratchCard = screen.getByText("Start from Scratch").closest("div");
+    if (scratchCard) {
+      await user.click(scratchCard);
+    }
+
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledTimes(1);
+      expect(mockPush).toHaveBeenCalledTimes(1);
     });
 
-    const redirectPath = mockReplace.mock.calls[0]![0];
+    const redirectPath = mockPush.mock.calls[0]![0];
     // Check format: /my-apps/[generated-id]
     // ID format is adj.noun.verb.suffix (e.g., swift.forge.launch.a1b2)
     expect(redirectPath).toMatch(
@@ -49,6 +56,3 @@ describe("NewAppPage", () => {
     );
   });
 });
-
-// Import screen from testing-library/react
-import { screen } from "@testing-library/react";

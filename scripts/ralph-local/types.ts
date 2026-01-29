@@ -7,7 +7,7 @@
 // Agent Types
 // ============================================================================
 
-export type AgentRole = "planning" | "developer" | "tester" | "fixer";
+export type AgentRole = "planning" | "developer" | "reviewer" | "tester" | "fixer";
 
 export type AgentStatus =
   | "idle"
@@ -38,6 +38,7 @@ export interface LocalAgent {
 export interface PoolConfig {
   planning: number;
   developer: number;
+  reviewer: number;
   tester: number;
   fixer: number;
 }
@@ -45,6 +46,7 @@ export interface PoolConfig {
 export interface AgentPool {
   planning: LocalAgent[];
   developer: LocalAgent[];
+  reviewer: LocalAgent[];
   tester: LocalAgent[];
   fixer: LocalAgent[];
 }
@@ -76,6 +78,26 @@ export interface CodeWork {
   assignedTo: string | null; // Tester agent ID
   prUrl: string | null;
   prNumber: number | null;
+}
+
+// ============================================================================
+// Review Work (local review step between developer and tester)
+// ============================================================================
+
+export interface ReviewWork {
+  ticketId: string;
+  issueNumber: number;
+  branch: string;
+  worktree: string;
+  planPath: string;
+  codeCreatedBy: string;
+  status: "pending" | "assigned" | "in_review" | "changes_requested" | "passed";
+  assignedTo: string | null;
+  iterations: number;
+  maxIterations: number;
+  lastReviewBy: string | null;
+  feedback: string | null;
+  createdAt: string;
 }
 
 // ============================================================================
@@ -125,6 +147,7 @@ export interface OrchestratorState {
   iteration: number;
   pools: AgentPool;
   pendingPlans: Plan[];
+  pendingReview: ReviewWork[];
   pendingCode: CodeWork[];
   pendingPRFixes: PRFixWork[];
   completedTickets: string[];
@@ -148,6 +171,8 @@ export interface BlockedTicket {
 export type AgentMarker =
   | PlanReadyMarker
   | CodeReadyMarker
+  | ReviewPassedMarker
+  | ReviewChangesRequestedMarker
   | PRCreatedMarker
   | PRFixedMarker
   | MainBuildFixMarker
@@ -164,6 +189,20 @@ export interface CodeReadyMarker {
   type: "CODE_READY";
   ticketId: string;
   branch: string;
+}
+
+export interface ReviewPassedMarker {
+  type: "REVIEW_PASSED";
+  ticketId: string;
+  iterations: number;
+  force: boolean;
+}
+
+export interface ReviewChangesRequestedMarker {
+  type: "REVIEW_CHANGES_REQUESTED";
+  ticketId: string;
+  feedback: string;
+  iteration: number;
 }
 
 export interface PRCreatedMarker {
@@ -207,15 +246,21 @@ export interface RalphLocalConfig {
   syncIntervalMs: number;
   staleThresholdMs: number;
   maxRetries: number;
+  maxReviewIterations: number;
   autoMerge: boolean;
   mainBranchPriority: boolean;
+  issueSyncEnabled: boolean;
+  commitPlans: boolean;
   approvalKeywords: string[];
   repo: string;
   workDir: string;
   outputDir: string;
   pidDir: string;
   planDir: string;
+  issuesDir: string;
   worktreeBase: string;
+  worktreePoolSize: number;
+  worktreePoolDir: string;
 }
 
 // ============================================================================
