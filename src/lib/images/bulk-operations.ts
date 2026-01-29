@@ -223,7 +223,7 @@ export async function bulkRemoveTags(
 
       // Remove specified tags
       const updatedTags = image.tags.filter(
-        (tag) => !normalizedTagsToRemove.includes(tag.toLowerCase()),
+        (tag: string) => !normalizedTagsToRemove.includes(tag.toLowerCase()),
       );
 
       await prisma.enhancedImage.update({
@@ -297,7 +297,9 @@ export async function bulkAddToAlbum(
       select: { imageId: true },
     });
 
-    const existingImageIds = new Set(existing.map((ai) => ai.imageId));
+    const existingImageIds = new Set(
+      existing.map((ai: { imageId: string }) => ai.imageId),
+    );
 
     // Filter out images already in the album
     const newImageIds = imageIds.filter((id) => !existingImageIds.has(id));
@@ -340,7 +342,7 @@ export async function getUserTags(userId: string): Promise<string[]> {
   });
 
   // Flatten and deduplicate all tags
-  const allTags = images.flatMap((img) => img.tags);
+  const allTags = images.flatMap((img: { tags: string[] }) => img.tags);
   const uniqueTags = Array.from(new Set(allTags));
 
   return uniqueTags.sort();

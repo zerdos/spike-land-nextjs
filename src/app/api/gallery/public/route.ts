@@ -8,7 +8,8 @@
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, type EnhancementTier } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
 
 // Cache for 5 minutes, stale-while-revalidate for 10 minutes
 export const revalidate = 300;

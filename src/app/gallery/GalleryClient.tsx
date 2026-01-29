@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { EnhancementTier } from "@prisma/client";
+import type { EnhancementTier } from "@prisma/client";
 import { Loader2 } from "lucide-react";
 
 interface PublicGalleryItem {

@@ -229,7 +229,7 @@ export async function applyAutoTags(
       imageId,
       status: "COMPLETED",
       analysisResult: {
-        not: null,
+        not: undefined,
       },
     },
     orderBy: {
