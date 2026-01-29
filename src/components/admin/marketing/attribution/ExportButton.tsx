@@ -58,7 +58,9 @@ export function ExportButton({
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `attribution-${model.toLowerCase()}-${params.get("startDate")}-to-${params.get("endDate")}.json`;
+        a.download = `attribution-${model.toLowerCase()}-${params.get("startDate")}-to-${
+          params.get("endDate")
+        }.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -69,7 +71,9 @@ export function ExportButton({
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `attribution-${model.toLowerCase()}-${params.get("startDate")}-to-${params.get("endDate")}.csv`;
+        a.download = `attribution-${model.toLowerCase()}-${params.get("startDate")}-to-${
+          params.get("endDate")
+        }.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
