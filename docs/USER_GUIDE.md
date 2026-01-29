@@ -84,6 +84,7 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
 **What It Does**: Real-time health monitoring for your social media accounts with AI-powered anomaly detection.
 
 **Key Metrics**:
+
 - **Health Score** (0-100): Overall account health
 - **Follower Growth**: Daily/weekly trends
 - **Engagement Rate**: Likes, comments, shares per post
@@ -98,11 +99,13 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
 4. Set up **anomaly alerts** (email/Slack notifications)
 
 **Anomaly Detection Examples**:
+
 - Sudden follower drop (possible bot purge)
 - Engagement spike (viral post or fake engagement)
 - Unusual mention volume (potential PR crisis)
 
 **Subscription Tier Features**:
+
 - **FREE**: Basic dashboard, 3 accounts
 - **PRO**: Advanced analytics, 10 accounts
 - **BUSINESS**: Custom KPI tracking, unlimited accounts
@@ -116,6 +119,7 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
 **What It Does**: Aggregates all mentions, DMs, and comments from all platforms into one interface with AI-powered triage.
 
 **Key Features**:
+
 - **Unified View**: All social messages in one place
 - **AI Priority Scoring**: Orbit ranks messages by urgency (0-100)
 - **Sentiment Analysis**: Positive, negative, neutral indicators
@@ -131,11 +135,13 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
 5. Assign messages to team members (PRO/BUSINESS tier)
 
 **AI Triage Logic**:
+
 - **High Priority**: Complaints, negative sentiment, influencer mentions
 - **Medium Priority**: Questions, neutral mentions
 - **Low Priority**: Thank-yous, positive comments
 
 **Subscription Tier Features**:
+
 - **FREE**: Basic inbox, no team assignment
 - **PRO**: Priority scoring, 3 team members
 - **BUSINESS**: Advanced filters, 10 team members, custom rules
@@ -149,6 +155,7 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
 **What It Does**: AI-powered budget recommendations for social media advertising with optional autopilot mode.
 
 **Key Features**:
+
 - **Budget Recommendations**: AI suggests where to allocate spend
 - **ROI Predictions**: Expected return on ad spend (ROAS)
 - **Autopilot Mode**: AI automatically adjusts budgets
@@ -163,11 +170,13 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
 5. Monitor results in real-time
 
 **Example Recommendations**:
+
 - "Increase Instagram budget by 15% (predicted +22% ROAS)"
 - "Pause Facebook campaign 'Summer2026' (underperforming by 40%)"
 - "Shift $200 from LinkedIn to Twitter/X (better engagement)"
 
 **Subscription Tier Features**:
+
 - **FREE**: View recommendations only (no autopilot)
 - **PRO**: Manual execution, historical data
 - **BUSINESS**: Autopilot mode, custom constraints
@@ -181,6 +190,7 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
 **What It Does**: Tracks competitors' social media activity and provides benchmarking insights.
 
 **Key Features**:
+
 - **Competitor Tracking**: Monitor up to 10 competitors (PRO) or unlimited (BUSINESS)
 - **Benchmarking**: Compare your performance to competitors
 - **Content Analysis**: See what content types work for them
@@ -195,12 +205,14 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
 5. View side-by-side performance comparison
 
 **Insights Provided**:
+
 - Posting frequency (daily/weekly averages)
 - Engagement rates (compared to yours)
 - Top-performing content themes
 - Audience growth trends
 
 **Subscription Tier Features**:
+
 - **FREE**: Not available
 - **PRO**: Track 5 competitors, basic analysis
 - **BUSINESS**: Unlimited competitors, predictive analytics
@@ -214,6 +226,7 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
 **What It Does**: Centralized brand voice management and content guardrails to ensure consistent, on-brand messaging.
 
 **Key Features**:
+
 - **Brand Voice Training**: Upload past content to train AI on your tone
 - **Content Guardrails**: Rules preventing off-brand posts
 - **Tone Analysis**: Score draft content for brand alignment (0-100)
@@ -231,12 +244,14 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
    - **Tone constraints**: (e.g., never negative, always enthusiastic)
 
 **Example Guardrails**:
+
 - "Never mention competitor brands"
 - "All posts must include at least one emoji"
 - "Avoid jargon; use simple language"
 - "Always include a call-to-action"
 
 **Subscription Tier Features**:
+
 - **FREE**: Not available
 - **PRO**: Basic voice training, 5 guardrails
 - **BUSINESS**: Advanced training, unlimited guardrails, compliance templates
@@ -250,6 +265,7 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
 **What It Does**: AI generates draft social media posts based on your brand voice, with approval workflows.
 
 **Key Features**:
+
 - **AI Draft Generation**: Orbit writes posts in your brand voice
 - **Multi-Variation**: Generate 3-5 variations per prompt
 - **Approval Workflow**: Review, edit, approve before posting
@@ -270,12 +286,14 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
 6. Schedule or publish immediately
 
 **AI Consumes Credits**:
+
 - 10 AI credits per draft generation (5 variations)
 - FREE tier: 100 credits/month = 10 draft generations
 - PRO tier: 1,000 credits/month = 100 draft generations
 - BUSINESS tier: 5,000 credits/month = 500 draft generations
 
 **Subscription Tier Features**:
+
 - **FREE**: Not available
 - **PRO**: Basic draft generation, 1,000 credits/month
 - **BUSINESS**: Advanced prompts, 5,000 credits/month, custom templates
@@ -290,6 +308,7 @@ Once connected, navigate to **Pulse** (the dashboard) to see:
 
 **What Is a Workspace?**
 A workspace is an isolated environment for managing:
+
 - Social media accounts
 - Team members
 - Content calendar
@@ -297,6 +316,7 @@ A workspace is an isolated environment for managing:
 - Subscription tier
 
 **Use Cases**:
+
 - **Solo creator**: 1 workspace for your personal brand
 - **Small business**: 1 workspace for your company
 - **Freelancer**: 1 workspace per client (3-8 workspaces)
@@ -310,6 +330,7 @@ A workspace is an isolated environment for managing:
 4. Click **"Create"**
 
 **Each workspace requires its own subscription**. Example:
+
 - Freelancer managing 5 clients = 5 × $29/month PRO = $145/month
 - Agency discount (3+ workspaces): 15% off = $123/month
 
@@ -336,10 +357,12 @@ A workspace is an isolated environment for managing:
 ### Inviting Team Members
 
 **Who Can Invite**:
+
 - Workspace owner
 - Admins
 
 **Roles**:
+
 - **Owner**: Full access, billing, transfer ownership
 - **Admin**: Full access except billing and transfer
 - **Editor**: Can post, reply, edit content (no settings access)
@@ -355,6 +378,7 @@ A workspace is an isolated environment for managing:
 6. Team member receives email and accepts
 
 **Subscription Limits**:
+
 - FREE: 1 member (owner only)
 - PRO: 3 members
 - BUSINESS: 10 members
@@ -362,14 +386,17 @@ A workspace is an isolated environment for managing:
 ### Team Workflows
 
 **Inbox Assignment**:
+
 - Admin assigns incoming messages to specific team members
 - Team members see only their assigned items (unless Admin)
 
 **Content Approval**:
+
 - Editor drafts posts in Relay
 - Admin reviews and approves before publishing
 
 **Notifications**:
+
 - Email/Slack notifications for assignments
 - Real-time in-app notifications
 
@@ -379,20 +406,20 @@ A workspace is an isolated environment for managing:
 
 Orbit uses **workspace-level subscriptions** (not user-level). Each workspace has its own tier.
 
-| Feature | FREE | PRO | BUSINESS |
-|---------|------|-----|----------|
-| **Price** | $0/month | $29/month | $99/month |
-| **Social Accounts** | 3 | 10 | Unlimited |
-| **Scheduled Posts** | 30/month | Unlimited | Unlimited |
-| **A/B Tests** | 1 | 10 | Unlimited |
-| **AI Credits** | 100/month | 1,000/month | 5,000/month |
-| **Team Members** | 1 | 3 | 10 |
-| **Pulse Dashboard** | ✓ | ✓ | ✓ |
-| **Unified Inbox** | ✓ | ✓ | ✓ |
-| **Smart Allocator** | Basic | ✓ | Autopilot |
-| **Scout** | ✗ | ✓ | ✓ |
-| **Brand Brain** | ✗ | ✓ | ✓ |
-| **Relay** | ✗ | ✓ | ✓ |
+| Feature             | FREE      | PRO         | BUSINESS    |
+| ------------------- | --------- | ----------- | ----------- |
+| **Price**           | $0/month  | $29/month   | $99/month   |
+| **Social Accounts** | 3         | 10          | Unlimited   |
+| **Scheduled Posts** | 30/month  | Unlimited   | Unlimited   |
+| **A/B Tests**       | 1         | 10          | Unlimited   |
+| **AI Credits**      | 100/month | 1,000/month | 5,000/month |
+| **Team Members**    | 1         | 3           | 10          |
+| **Pulse Dashboard** | ✓         | ✓           | ✓           |
+| **Unified Inbox**   | ✓         | ✓           | ✓           |
+| **Smart Allocator** | Basic     | ✓           | Autopilot   |
+| **Scout**           | ✗         | ✓           | ✓           |
+| **Brand Brain**     | ✗         | ✓           | ✓           |
+| **Relay**           | ✗         | ✓           | ✓           |
 
 **How to Upgrade**:
 
@@ -422,10 +449,12 @@ Orbit uses **workspace-level subscriptions** (not user-level). Each workspace ha
 6. Download enhanced image
 
 **Pricing** (separate from Orbit subscriptions):
+
 - **Passive token generation**: 1 token every 15 minutes (up to 100 max)
 - **Purchase tokens**: $0.99-2.99 per enhancement (pay-per-use)
 
 **Use Cases**:
+
 - Upscale old photos for social media
 - Enhance product images for Instagram
 - Improve resolution of screenshots
@@ -441,6 +470,7 @@ Orbit uses **workspace-level subscriptions** (not user-level). Each workspace ha
 **Status**: Limited beta (contact sales@spike.land for access)
 
 **Use Cases**:
+
 - Create custom landing pages for campaigns
 - Build link-in-bio pages (Linktree alternative)
 - Generate interactive content (quizzes, calculators)
@@ -465,11 +495,13 @@ Orbit uses **workspace-level subscriptions** (not user-level). Each workspace ha
 ### Notification Preferences
 
 **Available Channels**:
+
 - In-app notifications (bell icon)
 - Email notifications
 - Slack integration (BUSINESS tier)
 
 **Configurable Events**:
+
 - Anomaly detected (Pulse)
 - High-priority message (Inbox)
 - Team member assigned you a task
@@ -479,6 +511,7 @@ Orbit uses **workspace-level subscriptions** (not user-level). Each workspace ha
 ### Integrations
 
 **Available Integrations**:
+
 - **Slack**: Receive Orbit notifications in Slack channels
 - **Zapier**: Connect Orbit to 5,000+ apps
 - **Webhooks**: Custom integrations (BUSINESS tier)
@@ -551,6 +584,7 @@ A: Yes (BUSINESS tier). See [API Reference](./API_REFERENCE.md).
 **Problem**: "Failed to connect Instagram account"
 
 **Solutions**:
+
 1. Ensure you're logged into Instagram in the same browser
 2. Grant all requested permissions (don't uncheck anything)
 3. If you're managing a business account, connect via Facebook Business Manager first
@@ -561,6 +595,7 @@ A: Yes (BUSINESS tier). See [API Reference](./API_REFERENCE.md).
 **Problem**: "Permission error: Cannot read messages"
 
 **Solutions**:
+
 1. Reconnect the account (Settings → Social Accounts → Reconnect)
 2. Ensure you granted message reading permissions
 3. For Instagram business accounts, verify Facebook Page connection
@@ -572,6 +607,7 @@ A: Yes (BUSINESS tier). See [API Reference](./API_REFERENCE.md).
 **Problem**: "Inbox shows old messages but I know there are new ones"
 
 **Solutions**:
+
 1. Click **"Refresh"** button (top right)
 2. Check platform API status (some platforms have downtime)
 3. Verify account connection is active (green dot in Settings → Social Accounts)
@@ -584,6 +620,7 @@ A: Yes (BUSINESS tier). See [API Reference](./API_REFERENCE.md).
 **Problem**: "Relay says 'Out of AI credits'"
 
 **Solutions**:
+
 1. Check your AI credit balance (Settings → Billing)
 2. Wait until next billing cycle for reset (shown in Settings)
 3. Purchase one-time credit pack ($10 for 500 credits)
@@ -594,6 +631,7 @@ A: Yes (BUSINESS tier). See [API Reference](./API_REFERENCE.md).
 ### Still Need Help?
 
 **Support Channels**:
+
 - **Email**: support@spike.land (Response time: 24h FREE/PRO, 8h BUSINESS)
 - **Live Chat**: In-app chat button (Mon-Fri 9am-5pm EST)
 - **Documentation**: [docs.spike.land](https://spike.land/docs)

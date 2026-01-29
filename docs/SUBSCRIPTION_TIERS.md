@@ -143,18 +143,21 @@ Custom Integrations       ✗            ✗            ✓
 ### Why These Tiers?
 
 **FREE Tier ($0/month)**:
+
 - **Purpose**: Onboarding funnel, product-qualified leads
 - **Target**: Solo creators testing the platform
 - **Conversion Goal**: Upgrade within 30 days when hitting limits
 - **Economics**: Loss leader (supported by PRO/BUSINESS margins)
 
 **PRO Tier ($29/month)**:
+
 - **Purpose**: Core revenue driver for solo/small teams
 - **Target**: Solo content creators, freelancers (1-5 clients)
 - **Value Prop**: 10x FREE limits at affordable price point
 - **Competitive Positioning**: Undercuts Buffer ($60/mo), Hootsuite ($99/mo)
 
 **BUSINESS Tier ($99/month)**:
+
 - **Purpose**: High-value customers with team needs
 - **Target**: Small business marketing teams, freelancers (5+ clients)
 - **Value Prop**: Unlimited core features + enterprise extras
@@ -162,13 +165,14 @@ Custom Integrations       ✗            ✗            ✓
 
 ### Price Anchoring Strategy
 
-| Metric | FREE | PRO | BUSINESS |
-|--------|------|-----|----------|
-| **$/Social Account** | $0 | $2.90 | <$0.50 |
-| **$/Team Member** | $0 | $9.67 | $9.90 |
-| **$/AI Credit** | $0 | $0.029 | $0.020 |
+| Metric               | FREE | PRO    | BUSINESS |
+| -------------------- | ---- | ------ | -------- |
+| **$/Social Account** | $0   | $2.90  | <$0.50   |
+| **$/Team Member**    | $0   | $9.67  | $9.90    |
+| **$/AI Credit**      | $0   | $0.029 | $0.020   |
 
 The BUSINESS tier becomes economically compelling at:
+
 - **7+ social accounts** (vs. PRO's 10 limit)
 - **4+ team members** (vs. PRO's 3 limit)
 - **5,000+ AI credits/mo** (vs. PRO's 1,000 limit)
@@ -245,16 +249,17 @@ A: Yes. Navigate to Settings → Workspace → Transfer Ownership.
 
 **CRITICAL**: Orbit subscriptions are **workspace-level** and distinct from Pixel's **user-level** token system.
 
-| Aspect | Pixel Tokens | Orbit Subscriptions |
-|--------|--------------|---------------------|
-| **Scope** | User-level (follows your account) | Workspace-level (shared by team) |
-| **Purpose** | AI image enhancement credits | Social media management limits |
-| **Pricing** | Pay-per-use ($0.99-2.99/image) | Monthly subscription ($0-99/mo) |
-| **Persistence** | Tokens never expire | Credits reset monthly |
-| **Refills** | Buy more anytime | Automatic monthly reset |
-| **Use Case** | Casual photo editing | Professional social media work |
+| Aspect          | Pixel Tokens                      | Orbit Subscriptions              |
+| --------------- | --------------------------------- | -------------------------------- |
+| **Scope**       | User-level (follows your account) | Workspace-level (shared by team) |
+| **Purpose**     | AI image enhancement credits      | Social media management limits   |
+| **Pricing**     | Pay-per-use ($0.99-2.99/image)    | Monthly subscription ($0-99/mo)  |
+| **Persistence** | Tokens never expire               | Credits reset monthly            |
+| **Refills**     | Buy more anytime                  | Automatic monthly reset          |
+| **Use Case**    | Casual photo editing              | Professional social media work   |
 
 **Why Two Systems?**
+
 - **Different user personas**: Casual users (Pixel) vs. professionals (Orbit)
 - **Different economics**: Transactional (Pixel) vs. subscription (Orbit)
 - **Cross-sell opportunity**: Orbit users may also use Pixel for image prep
