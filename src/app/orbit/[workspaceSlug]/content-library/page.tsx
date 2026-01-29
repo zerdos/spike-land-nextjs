@@ -33,7 +33,7 @@ export default function ContentLibraryPage() {
   useEffect(() => {
     async function fetchWorkspaceId() {
       const { data } = await tryCatch(
-        fetch(`/api/orbit/workspaces/by-slug/${workspaceSlug}`).then((r) => r.json()),
+        fetch(`/api/workspaces/by-slug/${workspaceSlug}`).then((r) => r.json()),
       );
       if (data?.workspace?.id) {
         setWorkspaceId(data.workspace.id);
