@@ -439,4 +439,180 @@ describe("MyAppsPage", () => {
       expect(screen.getByText("A failed app description")).toBeInTheDocument();
     });
   });
+
+  describe("Pagination", () => {
+    beforeEach(() => {
+      mockAuth.mockResolvedValue({
+        user: {
+          id: "user-123",
+          name: "Test User",
+          email: "test@example.com",
+          role: "USER",
+        },
+        expires: "2025-12-31",
+      });
+    });
+
+    it("should not show pagination controls when there is only one page", async () => {
+      const mockApps = [
+        createMockApp({ id: "app-1", name: "App 1" }),
+      ];
+      mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(1);
+
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
+      render(component);
+
+      expect(screen.queryByText("Previous")).not.toBeInTheDocument();
+      expect(screen.queryByText("Next")).not.toBeInTheDocument();
+    });
+
+    it("should show pagination controls when there are multiple pages", async () => {
+      const mockApps = Array.from(
+        { length: 8 },
+        (_, i) => createMockApp({ id: `app-${i}`, name: `App ${i}` }),
+      );
+      mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(20); // 3 pages total
+
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
+      render(component);
+
+      expect(screen.getByText("Previous")).toBeInTheDocument();
+      expect(screen.getByText("Next")).toBeInTheDocument();
+      expect(screen.getByText("Page 1 of 3")).toBeInTheDocument();
+    });
+
+    it("should disable Previous button on first page", async () => {
+      const mockApps = Array.from(
+        { length: 8 },
+        (_, i) => createMockApp({ id: `app-${i}`, name: `App ${i}` }),
+      );
+      mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(20);
+
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
+      render(component);
+
+      const prevButton = screen.getByText("Previous").closest("button");
+      expect(prevButton).toBeDisabled();
+    });
+
+    it("should enable Next button when not on last page", async () => {
+      const mockApps = Array.from(
+        { length: 8 },
+        (_, i) => createMockApp({ id: `app-${i}`, name: `App ${i}` }),
+      );
+      mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(20);
+
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
+      render(component);
+
+      const nextButton = screen.getByText("Next").closest("button");
+      expect(nextButton).not.toBeDisabled();
+    });
+
+    it("should handle page 2 correctly", async () => {
+      const mockApps = Array.from(
+        { length: 8 },
+        (_, i) => createMockApp({ id: `app-${i + 8}`, name: `App ${i + 8}` }),
+      );
+      mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(20);
+
+      const component = await MyAppsPage({
+        searchParams: Promise.resolve({ page: "2" }),
+      });
+      render(component);
+
+      expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
+      expect(mockFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          take: 8,
+          skip: 8, // (2-1) * 8 = 8
+        }),
+      );
+    });
+
+    it("should disable Next button on last page", async () => {
+      const mockApps = Array.from(
+        { length: 4 },
+        (_, i) => createMockApp({ id: `app-${i + 16}`, name: `App ${i + 16}` }),
+      );
+      mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(20);
+
+      const component = await MyAppsPage({
+        searchParams: Promise.resolve({ page: "3" }),
+      });
+      render(component);
+
+      const nextButton = screen.getByText("Next").closest("button");
+      expect(nextButton).toBeDisabled();
+
+      const prevButton = screen.getByText("Previous").closest("button");
+      expect(prevButton).not.toBeDisabled();
+    });
+
+    it("should handle exactly 8 apps (1 page)", async () => {
+      const mockApps = Array.from(
+        { length: 8 },
+        (_, i) => createMockApp({ id: `app-${i}`, name: `App ${i}` }),
+      );
+      mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(8);
+
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
+      render(component);
+
+      // No pagination controls for exactly 1 page
+      expect(screen.queryByText("Previous")).not.toBeInTheDocument();
+      expect(screen.queryByText("Next")).not.toBeInTheDocument();
+    });
+
+    it("should handle exactly 16 apps (2 pages)", async () => {
+      const mockApps = Array.from(
+        { length: 8 },
+        (_, i) => createMockApp({ id: `app-${i}`, name: `App ${i}` }),
+      );
+      mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(16);
+
+      const component = await MyAppsPage({ searchParams: Promise.resolve({}) });
+      render(component);
+
+      expect(screen.getByText("Page 1 of 2")).toBeInTheDocument();
+    });
+
+    it("should default to page 1 when page parameter is missing", async () => {
+      const mockApps = [createMockApp({ id: "app-1" })];
+      mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(1);
+
+      await MyAppsPage({ searchParams: Promise.resolve({}) });
+
+      expect(mockFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip: 0, // page 1 = skip 0
+        }),
+      );
+    });
+
+    it("should default to page 1 when page parameter is invalid", async () => {
+      const mockApps = [createMockApp({ id: "app-1" })];
+      mockFindMany.mockResolvedValue(mockApps);
+      mockCount.mockResolvedValue(1);
+
+      await MyAppsPage({
+        searchParams: Promise.resolve({ page: "invalid" }),
+      });
+
+      expect(mockFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip: 0, // defaults to page 1
+        }),
+      );
+    });
+  });
 });
