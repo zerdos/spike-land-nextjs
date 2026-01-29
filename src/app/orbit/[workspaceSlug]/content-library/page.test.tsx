@@ -25,6 +25,10 @@ vi.mock("@/hooks/use-assets", () => ({
     },
     isLoading: false,
   }),
+  useAsset: () => ({ data: null, isLoading: false }),
+  useUpdateAsset: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteAsset: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useAnalyzeAsset: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useAssetFolders: () => ({ data: [] }),
   useUploadAsset: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
