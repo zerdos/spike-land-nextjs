@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "rm -f .yarnrc.yml yarn.lock .pnp.cjs .pnp.loader.mjs && rm -rf .yarn && npm install",
-  "buildCommand": "prisma generate --no-hints && DATABASE_URL='postgresql://dummy:dummy@dummy/dummy' NODE_OPTIONS='--max-old-space-size=4096' next build --turbopack",
+  "buildCommand": "yarn workspace @spike-npm-land/shared build && prisma generate --no-hints && DATABASE_URL='postgresql://dummy:dummy@dummy/dummy' NODE_OPTIONS='--max-old-space-size=4096' next build --turbopack",
   "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]",
   "redirects": [
     {
