@@ -103,7 +103,8 @@
     "ralph:local:dry-run": "tsx scripts/ralph-local/orchestrator.ts --dry-run",
     "ralph:local:status": "tsx scripts/ralph-local/orchestrator.ts --status",
     "reset:db": "tsx scripts/reset-staging-db.ts",
-    "reset:db:confirm": "tsx scripts/reset-staging-db.ts --confirm"
+    "reset:db:confirm": "tsx scripts/reset-staging-db.ts --confirm",
+    "backup": "tsx --tsconfig scripts/backup/tsconfig.json scripts/backup/backup.ts"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.2.20",
@@ -300,11 +301,13 @@
     "undici@5.28.4": "5.29.0",
     "esbuild@0.14.47": "0.25.0",
     "esbuild@0.23.1": "0.25.0",
-    "tsx@4.19.2": "4.21.0"
+    "tsx@4.19.2": "4.21.0",
+    "graphmatch@npm:^1.1.0": "patch:graphmatch@npm%3A1.1.0#~/.yarn/patches/graphmatch-npm-1.1.0-d85b5ee191.patch"
   },
   "resolutions-comments": {
     "esbuild@0.14.47": "Source dependency not identified; this resolution may be obsolete. See docs/DEPENDENCY_RESOLUTIONS.md for details.",
-    "esbuild@0.23.1": "Required by @tanstack/router-generator. Overridden to ensure a consistent version across the project. See docs/DEPENDENCY_RESOLUTIONS.md."
+    "esbuild@0.23.1": "Required by @tanstack/router-generator. Overridden to ensure a consistent version across the project. See docs/DEPENDENCY_RESOLUTIONS.md.",
+    "graphmatch@npm:^1.1.0": "Adds subpath export './dist/index.js' to package.json exports. Required for ESM compatibility when imported by unplugged zeptomatch package. Fixes GitHub Actions workflow failures. See #828."
   },
   "workspaces": [
     "packages/*"
