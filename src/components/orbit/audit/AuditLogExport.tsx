@@ -5,13 +5,21 @@
 
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Download } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface AuditLogExportProps {
   workspaceSlug: string;
@@ -28,7 +36,7 @@ export function AuditLogExport({ workspaceSlug, filters }: AuditLogExportProps) 
     try {
       const params = new URLSearchParams({ ...filters, format });
       const response = await fetch(
-        `/api/orbit/${workspaceSlug}/audit/export?${params.toString()}`
+        `/api/orbit/${workspaceSlug}/audit/export?${params.toString()}`,
       );
 
       if (!response.ok) throw new Error("Export failed");

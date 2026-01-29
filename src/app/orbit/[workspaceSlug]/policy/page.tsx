@@ -7,13 +7,13 @@
  * Resolves #522 (ORB-065): Build Policy Checker UI
  */
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PolicyCheckPanel } from "@/components/orbit/policy/PolicyCheckPanel";
 import { PolicyRuleList } from "@/components/orbit/policy/PolicyRuleList";
 import { PolicyStatsDashboard } from "@/components/orbit/policy/PolicyStatsDashboard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PolicyPageProps {
-  params: Promise<{ workspaceSlug: string }>;
+  params: Promise<{ workspaceSlug: string; }>;
 }
 
 export default async function PolicyPage({ params }: PolicyPageProps) {

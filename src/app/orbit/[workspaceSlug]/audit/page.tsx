@@ -5,16 +5,16 @@
 
 "use client";
 
+import { AuditLogExport } from "@/components/orbit/audit/AuditLogExport";
+import { AuditLogFilters } from "@/components/orbit/audit/AuditLogFilters";
+import { type AuditLog, AuditLogTable } from "@/components/orbit/audit/AuditLogTable";
+import { RetentionPolicyManager } from "@/components/orbit/audit/RetentionPolicyManager";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AuditLogTable, type AuditLog } from "@/components/orbit/audit/AuditLogTable";
-import { AuditLogFilters } from "@/components/orbit/audit/AuditLogFilters";
-import { AuditLogExport } from "@/components/orbit/audit/AuditLogExport";
-import { RetentionPolicyManager } from "@/components/orbit/audit/RetentionPolicyManager";
 
 interface AuditPageProps {
-  params: Promise<{ workspaceSlug: string }>;
+  params: Promise<{ workspaceSlug: string; }>;
 }
 
 export default function AuditPage({ params }: AuditPageProps) {
@@ -44,7 +44,7 @@ export default function AuditPage({ params }: AuditPageProps) {
       queryParams.set("dateRange", filters.dateRange);
 
       const response = await fetch(
-        `/api/orbit/${workspaceSlug}/audit/logs?${queryParams.toString()}`
+        `/api/orbit/${workspaceSlug}/audit/logs?${queryParams.toString()}`,
       );
 
       if (!response.ok) throw new Error("Failed to fetch logs");

@@ -9,20 +9,10 @@
 
 "use client";
 
+import { Copy, Pencil, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Copy } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,10 +23,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
-import type { PolicyRule, PolicyCategory, SocialPlatform, PolicySeverity } from "@prisma/client";
+import type { PolicyCategory, PolicyRule, PolicySeverity, SocialPlatform } from "@prisma/client";
 
 interface PolicyRuleListProps {
   workspaceSlug: string;
@@ -94,7 +94,7 @@ export function PolicyRuleList({ workspaceSlug }: PolicyRuleListProps) {
       }
 
       const response = await fetch(
-        `/api/orbit/${workspaceSlug}/policy/rules?${params.toString()}`
+        `/api/orbit/${workspaceSlug}/policy/rules?${params.toString()}`,
       );
 
       if (!response.ok) {
@@ -128,7 +128,7 @@ export function PolicyRuleList({ workspaceSlug }: PolicyRuleListProps) {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ isActive: !rule.isActive }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -153,7 +153,7 @@ export function PolicyRuleList({ workspaceSlug }: PolicyRuleListProps) {
         `/api/orbit/${workspaceSlug}/policy/rules/${ruleToDelete.id}`,
         {
           method: "DELETE",
-        }
+        },
       );
 
       if (!response.ok) {
@@ -196,8 +196,7 @@ export function PolicyRuleList({ workspaceSlug }: PolicyRuleListProps) {
               <Select
                 value={filters.platform || "ALL"}
                 onValueChange={(value) =>
-                  setFilters((f) => ({ ...f, platform: value as SocialPlatform | "ALL" }))
-                }
+                  setFilters((f) => ({ ...f, platform: value as SocialPlatform | "ALL" }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -218,8 +217,7 @@ export function PolicyRuleList({ workspaceSlug }: PolicyRuleListProps) {
               <Select
                 value={filters.category || "ALL"}
                 onValueChange={(value) =>
-                  setFilters((f) => ({ ...f, category: value as PolicyCategory | "ALL" }))
-                }
+                  setFilters((f) => ({ ...f, category: value as PolicyCategory | "ALL" }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -240,8 +238,7 @@ export function PolicyRuleList({ workspaceSlug }: PolicyRuleListProps) {
               <Select
                 value={filters.severity || "ALL"}
                 onValueChange={(value) =>
-                  setFilters((f) => ({ ...f, severity: value as PolicySeverity | "ALL" }))
-                }
+                  setFilters((f) => ({ ...f, severity: value as PolicySeverity | "ALL" }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -262,8 +259,7 @@ export function PolicyRuleList({ workspaceSlug }: PolicyRuleListProps) {
                 <Switch
                   checked={filters.showInactive || false}
                   onCheckedChange={(checked) =>
-                    setFilters((f) => ({ ...f, showInactive: checked }))
-                  }
+                    setFilters((f) => ({ ...f, showInactive: checked }))}
                 />
               </div>
             </div>
@@ -272,23 +268,23 @@ export function PolicyRuleList({ workspaceSlug }: PolicyRuleListProps) {
       </Card>
 
       <div className="space-y-3">
-        {isLoading ? (
-          <p className="text-center text-muted-foreground py-8">Loading rules...</p>
-        ) : filteredRules.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No rules found</p>
-        ) : (
-          filteredRules.map((rule) => (
-            <RuleCard
-              key={rule.id}
-              rule={rule}
-              onToggleActive={handleToggleActive}
-              onDelete={(r) => {
-                setRuleToDelete(r);
-                setDeleteDialogOpen(true);
-              }}
-            />
-          ))
-        )}
+        {isLoading
+          ? <p className="text-center text-muted-foreground py-8">Loading rules...</p>
+          : filteredRules.length === 0
+          ? <p className="text-center text-muted-foreground py-8">No rules found</p>
+          : (
+            filteredRules.map((rule) => (
+              <RuleCard
+                key={rule.id}
+                rule={rule}
+                onToggleActive={handleToggleActive}
+                onDelete={(r) => {
+                  setRuleToDelete(r);
+                  setDeleteDialogOpen(true);
+                }}
+              />
+            ))
+          )}
       </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -296,8 +292,7 @@ export function PolicyRuleList({ workspaceSlug }: PolicyRuleListProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Policy Rule</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{ruleToDelete?.name}"? This action cannot be
-              undone.
+              Are you sure you want to delete "{ruleToDelete?.name}"? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -335,12 +330,8 @@ function RuleCard({ rule, onToggleActive, onDelete }: RuleCardProps) {
               <Badge variant="outline">
                 {CATEGORY_LABELS[rule.category]}
               </Badge>
-              {rule.platform && (
-                <Badge variant="outline">{rule.platform}</Badge>
-              )}
-              {rule.isBlocking && (
-                <Badge variant="destructive">Blocking</Badge>
-              )}
+              {rule.platform && <Badge variant="outline">{rule.platform}</Badge>}
+              {rule.isBlocking && <Badge variant="destructive">Blocking</Badge>}
             </div>
 
             <p className="text-sm text-muted-foreground">{rule.description}</p>

@@ -9,10 +9,12 @@
 
 "use client";
 
+import { AlertCircle, CheckCircle, Shield, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AlertCircle, CheckCircle, Shield, XCircle } from "lucide-react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -24,14 +26,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
-import type {
-  PolicyCheckOutput,
-  ViolationSummary
-} from "@/lib/policy-checker/types";
-import type { SocialPlatform, PolicyCheckScope } from "@prisma/client";
+import type { PolicyCheckOutput, ViolationSummary } from "@/lib/policy-checker/types";
+import type { PolicyCheckScope, SocialPlatform } from "@prisma/client";
 
 interface PolicyCheckPanelProps {
   workspaceSlug: string;
@@ -40,7 +37,7 @@ interface PolicyCheckPanelProps {
   onCheckComplete?: (result: PolicyCheckOutput) => void;
 }
 
-const PLATFORMS: { value: SocialPlatform; label: string }[] = [
+const PLATFORMS: { value: SocialPlatform; label: string; }[] = [
   { value: "FACEBOOK", label: "Facebook" },
   { value: "INSTAGRAM", label: "Instagram" },
   { value: "TWITTER", label: "Twitter" },
@@ -70,7 +67,7 @@ export function PolicyCheckPanel({
   onCheckComplete,
 }: PolicyCheckPanelProps) {
   const [content, setContent] = useState(initialContent);
-  const [platform, setPlatform] = useState<SocialPlatform | "">( initialPlatform || "");
+  const [platform, setPlatform] = useState<SocialPlatform | "">(initialPlatform || "");
   const [checkScope, setCheckScope] = useState<PolicyCheckScope>("FULL");
   const [isChecking, setIsChecking] = useState(false);
   const [result, setResult] = useState<PolicyCheckOutput | null>(null);
@@ -98,7 +95,7 @@ export function PolicyCheckPanel({
             platform: platform || undefined,
             checkScope,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -121,7 +118,7 @@ export function PolicyCheckPanel({
     } catch (error) {
       console.error("Policy check failed:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to check content"
+        error instanceof Error ? error.message : "Failed to check content",
       );
     } finally {
       setIsChecking(false);
@@ -205,15 +202,13 @@ export function PolicyCheckPanel({
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {RESULT_ICONS[result.overallResult!]}
+                {result.overallResult && RESULT_ICONS[result.overallResult]}
                 <CardTitle>Check Results</CardTitle>
               </div>
               <Badge
-                variant={
-                  result.canPublish
-                    ? "default"
-                    : ("destructive" as const)
-                }
+                variant={result.canPublish
+                  ? "default"
+                  : ("destructive" as const)}
               >
                 {result.canPublish ? "Can Publish" : "Cannot Publish"}
               </Badge>
@@ -261,9 +256,13 @@ export function PolicyCheckPanel({
   );
 }
 
-function ViolationCard({ violation }: { violation: ViolationSummary }) {
+function ViolationCard({ violation }: { violation: ViolationSummary; }) {
   return (
-    <Alert variant={violation.severity === "CRITICAL" || violation.severity === "ERROR" ? "destructive" : "default"}>
+    <Alert
+      variant={violation.severity === "CRITICAL" || violation.severity === "ERROR"
+        ? "destructive"
+        : "default"}
+    >
       <AlertDescription className="space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
@@ -285,9 +284,7 @@ function ViolationCard({ violation }: { violation: ViolationSummary }) {
               </p>
             )}
           </div>
-          {violation.isBlocking && (
-            <Badge variant="destructive">Blocking</Badge>
-          )}
+          {violation.isBlocking && <Badge variant="destructive">Blocking</Badge>}
         </div>
       </AlertDescription>
     </Alert>

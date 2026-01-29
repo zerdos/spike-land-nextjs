@@ -6,7 +6,7 @@
 import { HealthDashboard } from "@/components/orbit/health/HealthDashboard";
 
 interface HealthPageProps {
-  params: Promise<{ workspaceSlug: string }>;
+  params: Promise<{ workspaceSlug: string; }>;
 }
 
 export default async function HealthPage({ params }: HealthPageProps) {

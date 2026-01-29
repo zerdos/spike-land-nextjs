@@ -5,13 +5,13 @@
 
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { AlertCircle, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const STATUS_COLORS = {
   HEALTHY: "bg-green-100 text-green-800 border-green-200",
@@ -42,7 +42,7 @@ export function AccountHealthCard({ account, workspaceSlug, onRefresh }: Account
     try {
       const response = await fetch(
         `/api/orbit/${workspaceSlug}/accounts/health/${account.accountId}/recover`,
-        { method: "POST" }
+        { method: "POST" },
       );
       if (!response.ok) throw new Error("Recovery failed");
       toast.success("Recovery initiated");

@@ -7,9 +7,9 @@
 
 "use client";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AccountHealthCard } from "./AccountHealthCard";
 
 interface HealthDashboardProps {
@@ -44,7 +44,7 @@ export function HealthDashboard({ workspaceSlug }: HealthDashboardProps) {
   const fetchHealth = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/orbit/${workspaceSlug}/accounts/health`
+        `/api/orbit/${workspaceSlug}/accounts/health`,
       );
       if (!response.ok) throw new Error("Failed to fetch health data");
       const result = await response.json();
@@ -118,24 +118,26 @@ export function HealthDashboard({ workspaceSlug }: HealthDashboardProps) {
 
       <div className="space-y-4">
         <h2 className="text-xl font-bold">Account Health Status</h2>
-        {data.accounts.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              No connected accounts
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {data.accounts.map((account) => (
-              <AccountHealthCard
-                key={account.accountId}
-                account={account}
-                workspaceSlug={workspaceSlug}
-                onRefresh={fetchHealth}
-              />
-            ))}
-          </div>
-        )}
+        {data.accounts.length === 0
+          ? (
+            <Card>
+              <CardContent className="pt-6 text-center text-muted-foreground">
+                No connected accounts
+              </CardContent>
+            </Card>
+          )
+          : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {data.accounts.map((account) => (
+                <AccountHealthCard
+                  key={account.accountId}
+                  account={account}
+                  workspaceSlug={workspaceSlug}
+                  onRefresh={fetchHealth}
+                />
+              ))}
+            </div>
+          )}
       </div>
     </div>
   );

@@ -9,12 +9,12 @@
 
 "use client";
 
+import { AlertTriangle, CheckCircle, TrendingDown, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from "lucide-react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -22,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 
 interface PolicyStatsData {
   totalChecks: number;
@@ -72,7 +71,7 @@ export function PolicyStatsDashboard({ workspaceSlug }: PolicyStatsDashboardProp
       }
 
       const response = await fetch(
-        `/api/orbit/${workspaceSlug}/policy/statistics?${params.toString()}`
+        `/api/orbit/${workspaceSlug}/policy/statistics?${params.toString()}`,
       );
 
       if (!response.ok) {
@@ -186,33 +185,35 @@ export function PolicyStatsDashboard({ workspaceSlug }: PolicyStatsDashboardProp
             <CardDescription>Top 5 rules with most violations</CardDescription>
           </CardHeader>
           <CardContent>
-            {stats.topViolatedRules.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4">
-                No violations recorded
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {stats.topViolatedRules.map((rule, index) => (
-                  <div
-                    key={rule.ruleId}
-                    className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-background font-semibold">
-                        {index + 1}
+            {stats.topViolatedRules.length === 0
+              ? (
+                <p className="text-center text-muted-foreground py-4">
+                  No violations recorded
+                </p>
+              )
+              : (
+                <div className="space-y-3">
+                  {stats.topViolatedRules.map((rule, index) => (
+                    <div
+                      key={rule.ruleId}
+                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-background font-semibold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium">{rule.ruleName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {rule.category}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">{rule.ruleName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {rule.category}
-                        </p>
-                      </div>
+                      <Badge variant="destructive">{rule.violationCount}</Badge>
                     </div>
-                    <Badge variant="destructive">{rule.violationCount}</Badge>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
           </CardContent>
         </Card>
 
@@ -222,39 +223,41 @@ export function PolicyStatsDashboard({ workspaceSlug }: PolicyStatsDashboardProp
             <CardDescription>Distribution across platforms</CardDescription>
           </CardHeader>
           <CardContent>
-            {stats.violationsByPlatform.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4">
-                No platform data available
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {stats.violationsByPlatform.map((item) => (
-                  <div
-                    key={item.platform}
-                    className="flex items-center justify-between"
-                  >
-                    <span className="font-medium">{item.platform}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-red-600"
-                          style={{
-                            width: `${
-                              (item.count /
-                                Math.max(
-                                  ...stats.violationsByPlatform.map((p) => p.count)
-                                )) *
-                              100
-                            }%`,
-                          }}
-                        />
+            {stats.violationsByPlatform.length === 0
+              ? (
+                <p className="text-center text-muted-foreground py-4">
+                  No platform data available
+                </p>
+              )
+              : (
+                <div className="space-y-3">
+                  {stats.violationsByPlatform.map((item) => (
+                    <div
+                      key={item.platform}
+                      className="flex items-center justify-between"
+                    >
+                      <span className="font-medium">{item.platform}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-red-600"
+                            style={{
+                              width: `${
+                                (item.count /
+                                  Math.max(
+                                    ...stats.violationsByPlatform.map((p) => p.count),
+                                  )) *
+                                100
+                              }%`,
+                            }}
+                          />
+                        </div>
+                        <Badge variant="outline">{item.count}</Badge>
                       </div>
-                      <Badge variant="outline">{item.count}</Badge>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
           </CardContent>
         </Card>
       </div>
@@ -282,20 +285,14 @@ function StatCard({ title, value, icon, description, trend }: StatCardProps) {
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
-        )}
+        {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         {trend && trend.direction !== "stable" && (
           <div className="flex items-center gap-1 mt-2 text-xs">
-            {trend.direction === "up" ? (
-              <TrendingUp className="h-3 w-3 text-green-600" />
-            ) : (
-              <TrendingDown className="h-3 w-3 text-red-600" />
-            )}
+            {trend.direction === "up"
+              ? <TrendingUp className="h-3 w-3 text-green-600" />
+              : <TrendingDown className="h-3 w-3 text-red-600" />}
             <span
-              className={
-                trend.direction === "up" ? "text-green-600" : "text-red-600"
-              }
+              className={trend.direction === "up" ? "text-green-600" : "text-red-600"}
             >
               {Math.abs(trend.percentageChange).toFixed(1)}%
             </span>

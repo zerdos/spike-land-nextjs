@@ -5,10 +5,16 @@
 
 "use client";
 
+import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CrisisEventCard } from "./CrisisEventCard";
 
 interface CrisisEvent {
@@ -37,7 +43,7 @@ export function CrisisEventList({ workspaceSlug }: CrisisEventListProps) {
       if (severityFilter !== "all") params.set("severity", severityFilter);
 
       const response = await fetch(
-        `/api/orbit/${workspaceSlug}/crisis/events?${params.toString()}`
+        `/api/orbit/${workspaceSlug}/crisis/events?${params.toString()}`,
       );
       if (!response.ok) throw new Error("Failed to fetch events");
       const data = await response.json();
@@ -86,22 +92,24 @@ export function CrisisEventList({ workspaceSlug }: CrisisEventListProps) {
       </div>
 
       <div className="space-y-3">
-        {isLoading ? (
-          <p className="text-center py-8 text-muted-foreground">Loading events...</p>
-        ) : events.length === 0 ? (
-          <Card className="p-6 text-center text-muted-foreground">
-            No crisis events found
-          </Card>
-        ) : (
-          events.map((event) => (
-            <CrisisEventCard
-              key={event.id}
-              event={event}
-              workspaceSlug={workspaceSlug}
-              onUpdate={fetchEvents}
-            />
-          ))
-        )}
+        {isLoading
+          ? <p className="text-center py-8 text-muted-foreground">Loading events...</p>
+          : events.length === 0
+          ? (
+            <Card className="p-6 text-center text-muted-foreground">
+              No crisis events found
+            </Card>
+          )
+          : (
+            events.map((event) => (
+              <CrisisEventCard
+                key={event.id}
+                event={event}
+                workspaceSlug={workspaceSlug}
+                onUpdate={fetchEvents}
+              />
+            ))
+          )}
       </div>
     </div>
   );

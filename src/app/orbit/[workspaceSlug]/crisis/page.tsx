@@ -3,13 +3,13 @@
  * Resolves #522 (ORB-067): Crisis Detection UI
  */
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CrisisEventList } from "@/components/orbit/crisis/CrisisEventList";
 import { EmergencyPauseButton } from "@/components/orbit/crisis/EmergencyPauseButton";
 import { ResponseTemplateManager } from "@/components/orbit/crisis/ResponseTemplateManager";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface CrisisPageProps {
-  params: Promise<{ workspaceSlug: string }>;
+  params: Promise<{ workspaceSlug: string; }>;
 }
 
 export default async function CrisisPage({ params }: CrisisPageProps) {

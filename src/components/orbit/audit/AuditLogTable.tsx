@@ -5,11 +5,18 @@
 
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Fragment, useState } from "react";
 
 export interface AuditLog {
   id: string;
@@ -60,20 +67,15 @@ export function AuditLogTable({ logs, isLoading }: AuditLogTableProps) {
           </TableHeader>
           <TableBody>
             {logs.map((log) => (
-              <>
+              <Fragment key={log.id}>
                 <TableRow
-                  key={log.id}
                   className="cursor-pointer hover:bg-muted/50"
-                  onClick={() =>
-                    setExpandedRow(expandedRow === log.id ? null : log.id)
-                  }
+                  onClick={() => setExpandedRow(expandedRow === log.id ? null : log.id)}
                 >
                   <TableCell>
-                    {expandedRow === log.id ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
+                    {expandedRow === log.id
+                      ? <ChevronUp className="h-4 w-4" />
+                      : <ChevronDown className="h-4 w-4" />}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">{log.action}</Badge>
@@ -102,7 +104,7 @@ export function AuditLogTable({ logs, isLoading }: AuditLogTableProps) {
                     </TableCell>
                   </TableRow>
                 )}
-              </>
+              </Fragment>
             ))}
           </TableBody>
         </Table>

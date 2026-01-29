@@ -5,8 +5,8 @@
 
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface TimelineEvent {
   timestamp: string;
@@ -26,9 +26,7 @@ export function CrisisTimeline({ events }: CrisisTimelineProps) {
         <div key={index} className="flex gap-4">
           <div className="flex flex-col items-center">
             <div className="h-3 w-3 rounded-full bg-primary" />
-            {index < events.length - 1 && (
-              <div className="w-px h-full bg-border mt-1" />
-            )}
+            {index < events.length - 1 && <div className="w-px h-full bg-border mt-1" />}
           </div>
           <Card className="flex-1">
             <CardContent className="pt-4">

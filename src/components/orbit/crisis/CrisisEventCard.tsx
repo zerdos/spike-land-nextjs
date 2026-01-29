@@ -5,12 +5,12 @@
 
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const SEVERITY_COLORS = {
   CRITICAL: { bg: "bg-red-100", text: "text-red-800", border: "border-red-200" },
@@ -41,7 +41,7 @@ export function CrisisEventCard({ event, workspaceSlug, onUpdate }: CrisisEventC
     try {
       const response = await fetch(
         `/api/orbit/${workspaceSlug}/crisis/events/${event.id}/acknowledge`,
-        { method: "POST" }
+        { method: "POST" },
       );
       if (!response.ok) throw new Error("Failed to acknowledge");
       toast.success("Crisis acknowledged");
@@ -58,7 +58,7 @@ export function CrisisEventCard({ event, workspaceSlug, onUpdate }: CrisisEventC
     try {
       const response = await fetch(
         `/api/orbit/${workspaceSlug}/crisis/events/${event.id}/resolve`,
-        { method: "POST" }
+        { method: "POST" },
       );
       if (!response.ok) throw new Error("Failed to resolve");
       toast.success("Crisis resolved");

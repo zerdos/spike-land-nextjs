@@ -9,13 +9,13 @@
 
 "use client";
 
+import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -24,10 +24,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
-import type { PolicyViolation, PolicySeverity } from "@prisma/client";
+import type { PolicySeverity, PolicyViolation } from "@prisma/client";
 
 interface PolicyViolationCardProps {
   violation: PolicyViolation & {
@@ -83,7 +83,7 @@ export function PolicyViolationCard({
   const [isOverriding, setIsOverriding] = useState(false);
 
   const severityConfig = SEVERITY_CONFIG[violation.severity];
-  const matchLocation = violation.matchLocation as { context?: string } | null;
+  const matchLocation = violation.matchLocation as { context?: string; } | null;
 
   const handleOverride = async () => {
     if (!overrideReason.trim()) {
@@ -103,7 +103,7 @@ export function PolicyViolationCard({
           body: JSON.stringify({
             reason: overrideReason,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -139,12 +139,8 @@ export function PolicyViolationCard({
                   <span className="font-semibold">
                     {violation.rule?.name || "Unknown Rule"}
                   </span>
-                  {violation.rule?.isBlocking && (
-                    <Badge variant="destructive">Blocking</Badge>
-                  )}
-                  {violation.isOverridden && (
-                    <Badge variant="secondary">Overridden</Badge>
-                  )}
+                  {violation.rule?.isBlocking && <Badge variant="destructive">Blocking</Badge>}
+                  {violation.isOverridden && <Badge variant="secondary">Overridden</Badge>}
                 </div>
 
                 <p className="text-sm">{violation.message}</p>
@@ -226,8 +222,8 @@ export function PolicyViolationCard({
           <DialogHeader>
             <DialogTitle>Override Policy Violation</DialogTitle>
             <DialogDescription>
-              You are about to override a policy violation. Please provide a
-              clear reason for this override. This action will be logged.
+              You are about to override a policy violation. Please provide a clear reason for this
+              override. This action will be logged.
             </DialogDescription>
           </DialogHeader>
 

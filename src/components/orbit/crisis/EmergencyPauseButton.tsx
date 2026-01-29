@@ -5,11 +5,20 @@
 
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, Play } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { AlertTriangle, Play } from "lucide-react";
 
 interface EmergencyPauseButtonProps {
   workspaceSlug: string;
@@ -17,7 +26,9 @@ interface EmergencyPauseButtonProps {
   onToggle: () => void;
 }
 
-export function EmergencyPauseButton({ workspaceSlug, isPaused, onToggle }: EmergencyPauseButtonProps) {
+export function EmergencyPauseButton(
+  { workspaceSlug, isPaused, onToggle }: EmergencyPauseButtonProps,
+) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isActing, setIsActing] = useState(false);
 
@@ -27,7 +38,7 @@ export function EmergencyPauseButton({ workspaceSlug, isPaused, onToggle }: Emer
       const endpoint = isPaused ? "resume" : "pause";
       const response = await fetch(
         `/api/orbit/${workspaceSlug}/crisis/${endpoint}`,
-        { method: "POST" }
+        { method: "POST" },
       );
       if (!response.ok) throw new Error(`Failed to ${endpoint}`);
       toast.success(isPaused ? "Automation resumed" : "Automation paused");
@@ -48,17 +59,19 @@ export function EmergencyPauseButton({ workspaceSlug, isPaused, onToggle }: Emer
         onClick={() => setDialogOpen(true)}
         className="w-full md:w-auto"
       >
-        {isPaused ? (
-          <>
-            <Play className="h-5 w-5 mr-2" />
-            Resume Automation
-          </>
-        ) : (
-          <>
-            <AlertTriangle className="h-5 w-5 mr-2" />
-            Emergency Pause
-          </>
-        )}
+        {isPaused
+          ? (
+            <>
+              <Play className="h-5 w-5 mr-2" />
+              Resume Automation
+            </>
+          )
+          : (
+            <>
+              <AlertTriangle className="h-5 w-5 mr-2" />
+              Emergency Pause
+            </>
+          )}
       </Button>
 
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
