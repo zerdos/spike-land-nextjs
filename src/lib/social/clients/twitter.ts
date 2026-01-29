@@ -746,8 +746,13 @@ export class TwitterClient implements ISocialClient {
       const userInfo = await this.getAccountInfo();
       this.cachedUsername = userInfo.username;
       return this.cachedUsername;
-    } catch {
-      // Fall back to generic "i" format
+    } catch (error) {
+      // Fallback to Twitter's generic "i" URL format when username fetch fails
+      // This can happen if the access token is expired or user info is unavailable
+      console.warn(
+        'Failed to fetch Twitter username, using fallback:',
+        error instanceof Error ? error.message : String(error)
+      );
       return "i";
     }
   }
