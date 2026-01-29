@@ -378,6 +378,67 @@ export interface DiscordMetrics {
 }
 
 /**
+ * Snapchat-specific types
+ */
+export interface SnapchatOrganization {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SnapchatAdAccount {
+  id: string;
+  name: string;
+  organization_id: string;
+  status: string;
+  currency: string;
+}
+
+export interface SnapchatStory {
+  id: string;
+  creative_id: string;
+  media_url: string;
+  created_at: string;
+  type: "IMAGE" | "VIDEO";
+  duration?: number;
+}
+
+export interface StoryMetrics {
+  views: number;
+  screenshots: number;
+  replies: number;
+  completionRate: number;
+  impressions?: number;
+  reach?: number;
+}
+
+export interface SnapchatContent {
+  type: "SNAP" | "STORY" | "SPOTLIGHT";
+  media: {
+    url: string;
+    type: "IMAGE" | "VIDEO";
+  };
+  interactive?: {
+    stickers?: Array<unknown>;
+    cta?: { text: string; url: string };
+  };
+}
+
+export interface MediaValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+  metadata: {
+    width: number;
+    height: number;
+    duration?: number;
+    fileSize: number;
+    aspectRatio: string;
+  };
+}
+
+/**
  * Extended platform type that includes platforms not in Prisma enum
  * Use this for runtime platform identification
  */
@@ -520,4 +581,5 @@ export const PLATFORM_CAPABILITIES: Record<
   TIKTOK: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
   YOUTUBE: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
   DISCORD: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
+  SNAPCHAT: { canLike: false, canReply: true, canShare: false },
 };

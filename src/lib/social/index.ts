@@ -52,6 +52,10 @@ export async function createSocialClient(
       const { YouTubeClient } = await import("./clients/youtube");
       return new YouTubeClient(options);
     }
+    case "SNAPCHAT": {
+      const { SnapchatClient } = await import("./clients/snapchat");
+      return new SnapchatClient(options);
+    }
     case "DISCORD":
       throw new Error(
         "Discord uses bot authentication, not OAuth. Configure DISCORD_BOT_TOKEN and DISCORD_SERVER_ID in environment variables.",
@@ -95,6 +99,11 @@ export async function getSocialAuthUrl(
     case "YOUTUBE": {
       const { YouTubeClient } = await import("./clients/youtube");
       const client = new YouTubeClient();
+      return client.getAuthUrl(redirectUri, state);
+    }
+    case "SNAPCHAT": {
+      const { SnapchatClient } = await import("./clients/snapchat");
+      const client = new SnapchatClient();
       return client.getAuthUrl(redirectUri, state);
     }
     case "DISCORD":
