@@ -22,14 +22,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { VariationType } from "@/types/ab-test";
 import { Loader2, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 interface CreateAbTestDialogProps {
   workspaceSlug: string;
+  originalPostId?: string; // Required for creating a test linked to a post
 }
 
-const VARIATION_TYPES: { value: VariationType; label: string }[] = [
+const VARIATION_TYPES: { value: VariationType; label: string; }[] = [
   { value: "headline", label: "Headline" },
   { value: "cta", label: "Call to Action" },
   { value: "emoji", label: "Emoji" },
@@ -37,14 +39,18 @@ const VARIATION_TYPES: { value: VariationType; label: string }[] = [
   { value: "tone", label: "Tone" },
 ];
 
-export function CreateAbTestDialog({ workspaceSlug }: CreateAbTestDialogProps) {
+export function CreateAbTestDialog({
+  workspaceSlug,
+  originalPostId: propOriginalPostId,
+}: CreateAbTestDialogProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [originalContent, setOriginalContent] = useState("");
   const [variationTypes, setVariationTypes] = useState<VariationType[]>([]);
   const [loading, setLoading] = useState(false);
   const [generatedVariations, setGeneratedVariations] = useState<
-    { type: VariationType; content: string }[]
+    { type: VariationType; content: string; }[]
   >([]);
 
   const handleGenerateVariations = async () => {
@@ -65,7 +71,7 @@ export function CreateAbTestDialog({ workspaceSlug }: CreateAbTestDialogProps) {
             variationTypes,
             count: 2,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -98,7 +104,7 @@ export function CreateAbTestDialog({ workspaceSlug }: CreateAbTestDialogProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
-          originalPostId: "placeholder", // Would be selected from existing posts
+          originalPostId: propOriginalPostId ?? "DRAFT_" + Date.now(), // Pass from parent or mark as draft
           significanceLevel: 0.95,
           variants: generatedVariations,
         }),
@@ -116,12 +122,12 @@ export function CreateAbTestDialog({ workspaceSlug }: CreateAbTestDialogProps) {
       setOriginalContent("");
       setVariationTypes([]);
       setGeneratedVariations([]);
-      // Refresh the page to show new test
-      window.location.reload();
+      // Refresh data to show new test without full page reload
+      router.refresh();
     } catch (error) {
       console.error("Failed to create test:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to create test"
+        error instanceof Error ? error.message : "Failed to create test",
       );
     } finally {
       setLoading(false);
@@ -185,7 +191,8 @@ export function CreateAbTestDialog({ workspaceSlug }: CreateAbTestDialogProps) {
                   <Checkbox
                     id={type.value}
                     checked={variationTypes.includes(type.value)}
-                    onCheckedChange={() => toggleVariationType(type.value)}
+                    onCheckedChange={() =>
+                      toggleVariationType(type.value)}
                   />
                   <label
                     htmlFor={type.value}
@@ -204,14 +211,16 @@ export function CreateAbTestDialog({ workspaceSlug }: CreateAbTestDialogProps) {
             disabled={loading || !originalContent || variationTypes.length === 0}
             className="w-full"
           >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              "Generate Variations"
-            )}
+            {loading
+              ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              )
+              : (
+                "Generate Variations"
+              )}
           </Button>
 
           {/* Generated Variations Preview */}
@@ -241,14 +250,16 @@ export function CreateAbTestDialog({ workspaceSlug }: CreateAbTestDialogProps) {
               disabled={loading || !name}
               className="w-full"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                "Create Test"
-              )}
+              {loading
+                ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                )
+                : (
+                  "Create Test"
+                )}
             </Button>
           )}
         </div>

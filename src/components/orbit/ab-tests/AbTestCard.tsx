@@ -8,13 +8,7 @@
  */
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AbTest } from "@/types/ab-test";
 import { AbTestStatistics } from "./AbTestStatistics";
 import { AbTestVariantCard } from "./AbTestVariantCard";

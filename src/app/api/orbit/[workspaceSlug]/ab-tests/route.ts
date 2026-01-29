@@ -10,11 +10,11 @@ import { requireWorkspacePermission } from "@/lib/permissions/workspace-middlewa
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import type { AbTestStatus } from "@prisma/client";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 interface RouteParams {
-  params: Promise<{ workspaceSlug: string }>;
+  params: Promise<{ workspaceSlug: string; }>;
 }
 
 // Validation schemas
@@ -27,7 +27,7 @@ const createAbTestSchema = z.object({
       z.object({
         content: z.string().min(1),
         variationType: z.enum(["headline", "cta", "emoji", "hashtags", "tone"]),
-      })
+      }),
     )
     .min(2)
     .max(5),
@@ -55,13 +55,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         },
       },
       select: { id: true },
-    })
+    }),
   );
 
   if (workspaceError || !workspace) {
     return NextResponse.json(
       { error: "Workspace not found" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -87,13 +87,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         },
       },
       orderBy: { createdAt: "desc" },
-    })
+    }),
   );
 
   if (testsError) {
     return NextResponse.json(
       { error: "Failed to fetch A/B tests" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -119,7 +119,7 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (!validated.success) {
     return NextResponse.json(
       { error: validated.error.issues },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -144,7 +144,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     if (!workspace) {
       return NextResponse.json(
         { error: "Workspace not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -162,9 +162,11 @@ export async function POST(request: Request, { params }: RouteParams) {
     if (activeTestsCount >= workspace.maxAbTests) {
       return NextResponse.json(
         {
-          error: `Maximum active A/B tests reached (${workspace.maxAbTests}). Upgrade to ${workspace.subscriptionTier === "FREE" ? "PRO" : "ENTERPRISE"} for more.`,
+          error: `Maximum active A/B tests reached (${workspace.maxAbTests}). Upgrade to ${
+            workspace.subscriptionTier === "FREE" ? "PRO" : "ENTERPRISE"
+          } for more.`,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -181,7 +183,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     if (!originalPost) {
       return NextResponse.json(
         { error: "Original post not found or not accessible" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 

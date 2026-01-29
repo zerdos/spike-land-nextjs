@@ -15,7 +15,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 interface RouteParams {
-  params: Promise<{ workspaceSlug: string }>;
+  params: Promise<{ workspaceSlug: string; }>;
 }
 
 const generateVariationsSchema = z.object({
@@ -33,7 +33,7 @@ const variationResponseSchema = z.object({
       type: z.enum(["headline", "cta", "emoji", "hashtags", "tone"]),
       content: z.string(),
       reasoning: z.string().optional(),
-    })
+    }),
   ),
 });
 
@@ -56,7 +56,7 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (!validated.success) {
     return NextResponse.json(
       { error: validated.error.issues },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -80,7 +80,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     if (!workspace) {
       return NextResponse.json(
         { error: "Workspace not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -93,11 +93,11 @@ export async function POST(request: Request, { params }: RouteParams) {
       count,
       workspace.brandProfile
         ? {
-            brandName: workspace.brandProfile.name,
-            tone: workspace.brandProfile.mission,
-            targetAudience: null,
-          }
-        : null
+          brandName: workspace.brandProfile.name,
+          tone: workspace.brandProfile.mission,
+          targetAudience: null,
+        }
+        : null,
     );
 
     // Generate variations using AI
@@ -107,14 +107,14 @@ export async function POST(request: Request, { params }: RouteParams) {
         systemPrompt:
           "You are an expert social media copywriter. Generate engaging variations that maintain the core message while testing different approaches.",
         temperature: 0.7,
-      })
+      }),
     );
 
     if (aiError || !result) {
       console.error("AI generation error:", aiError);
       return NextResponse.json(
         { error: "Failed to generate variations" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -125,7 +125,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       console.error("Invalid AI response schema:", parsedResult.error);
       return NextResponse.json(
         { error: "Invalid AI response format" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -134,7 +134,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     console.error("Failed to generate variations:", error);
     return NextResponse.json(
       { error: "Failed to generate variations" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -150,7 +150,7 @@ function buildVariationPrompt(
     brandName?: string | null;
     tone?: string | null;
     targetAudience?: string | null;
-  } | null
+  } | null,
 ): string {
   const brandContext = brandProfile
     ? `

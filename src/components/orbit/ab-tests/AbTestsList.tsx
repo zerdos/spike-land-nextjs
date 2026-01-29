@@ -73,7 +73,11 @@ export function AbTestsList({ workspaceSlug }: AbTestsListProps) {
 
       <TabsContent value="all" className="space-y-4 mt-4">
         {tests.map((test) => (
-          <AbTestCard key={test.id} test={test} workspaceSlug={workspaceSlug} />
+          <AbTestCard
+            key={test.id}
+            test={test}
+            workspaceSlug={workspaceSlug}
+          />
         ))}
       </TabsContent>
 
