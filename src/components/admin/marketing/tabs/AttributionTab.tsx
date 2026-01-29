@@ -249,8 +249,7 @@ export function AttributionTab({ className }: AttributionTabProps) {
             <Tabs
               defaultValue="FIRST_TOUCH"
               value={activeModel}
-              onValueChange={(value) =>
-                setActiveModel(value as AttributionModel)}
+              onValueChange={(value) => setActiveModel(value as AttributionModel)}
             >
               <TabsList className="mb-4 hidden">
                 <TabsTrigger value="FIRST_TOUCH">First Touch</TabsTrigger>

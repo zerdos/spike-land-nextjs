@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Customer Journey Analytics | Marketing Admin | spike.land",
-  description:
-    "Analyze cross-platform customer journeys and understand conversion paths.",
+  description: "Analyze cross-platform customer journeys and understand conversion paths.",
 };
 
 export default function JourneyPage() {
