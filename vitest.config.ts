@@ -136,7 +136,8 @@ export default defineConfig({
         "src/lib/allocator/**/*.ts", // Budget allocator - requires external APIs
 
         // ===== Scout Services =====
-        "src/lib/scout/**/*.ts", // Scout services - require external APIs
+        // Scout services now have comprehensive test coverage with proper mocking
+        // Tests removed from exclusion as part of issue #800
 
         // ===== Social Media Clients =====
         "src/lib/social/**/*.ts", // Social media clients - require OAuth/API credentials
