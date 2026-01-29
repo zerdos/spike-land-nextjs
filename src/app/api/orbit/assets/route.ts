@@ -8,7 +8,8 @@ import { auth } from "@/auth";
 import logger from "@/lib/logger";
 import { hasPermission } from "@/lib/permissions/permissions";
 import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 100;
@@ -71,7 +72,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Build Prisma where clause
-    const where: any = {
+    const where: {
+      workspaceId: string;
+      folderId?: string;
+      filename?: { contains: string; mode: "insensitive" };
+      fileType?: { startsWith: string };
+      tags?: {
+        some: {
+          tag: {
+            name: {
+              in: string[];
+            };
+          };
+        };
+      };
+    } = {
       workspaceId,
     };
 
@@ -151,7 +166,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Construct public URLs
     const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL?.trim();
 
-    const formattedAssets = assets.map((asset: any) => ({
+    const formattedAssets = assets.map((asset) => ({
       id: asset.id,
       workspaceId: asset.workspaceId,
       folderId: asset.folderId,
@@ -168,7 +183,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       uploadedBy: asset.uploadedBy,
       createdAt: asset.createdAt,
       updatedAt: asset.updatedAt,
-      tags: asset.tags.map((t: any) => t.tag),
+      tags: asset.tags.map((t) => t.tag),
       usage: {
         posts: asset._count.socialPosts,
         scheduledPosts: asset._count.scheduledPosts,

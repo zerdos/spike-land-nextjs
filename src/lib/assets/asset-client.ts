@@ -21,7 +21,7 @@ export interface Asset {
   url: string;
   altText: string | null;
   qualityScore: number | null;
-  analysisJson?: any;
+  analysisJson?: AssetAnalysisResult;
   uploadedBy?: {
     id: string;
     email: string;

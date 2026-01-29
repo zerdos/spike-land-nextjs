@@ -16,6 +16,7 @@ import {
   updateAsset,
   uploadAsset,
   type Asset,
+  type AssetAnalysisResult,
   type AssetFolder,
   type CreateFolderParams,
   type ListAssetsParams,
@@ -147,14 +148,18 @@ export function useDeleteAsset(
  */
 export function useAnalyzeAsset(
   options?: UseMutationOptions<
-    { analysis: any; asset: Asset },
+    { analysis: AssetAnalysisResult; asset: Asset },
     Error,
     string
   >,
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<{ analysis: any; asset: Asset }, Error, string>({
+  return useMutation<
+    { analysis: AssetAnalysisResult; asset: Asset },
+    Error,
+    string
+  >({
     mutationFn: analyzeAsset,
     onSuccess: (data, assetId) => {
       // Update cached asset with analysis results
