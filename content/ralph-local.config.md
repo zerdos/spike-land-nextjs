@@ -4,7 +4,7 @@ pool_planning: 10
 pool_developer: 4
 pool_reviewer: 6
 pool_tester: 2
-pool_fixer: 1
+pool_fixer: 6
 sync_interval_min: 2
 stale_threshold_min: 30
 max_retries: 2
@@ -43,8 +43,8 @@ This file configures the Ralph Local multi-agent orchestrator.
 | Developer | 4    | Implement code based on plans               |
 | Reviewer  | 6    | Local code review before PR creation        |
 | Tester    | 2    | Create PRs for reviewed code                |
-| Fixer     | 1    | Fix PRs with failing CI or change requests  |
-| **Total** | 23   | Parallel local Claude Code agents           |
+| Fixer     | 6    | Fix PRs with failing CI or change requests  |
+| **Total** | 28   | Parallel local Claude Code agents           |
 
 ## Workflow
 
