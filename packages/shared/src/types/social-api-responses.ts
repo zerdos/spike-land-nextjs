@@ -83,6 +83,39 @@ export interface DiscordRateLimitHeaders {
 }
 
 // ============================================================================
+// TikTok API Response Types
+// ============================================================================
+
+export interface TikTokErrorResponse {
+  error?: {
+    code: string;
+    message: string;
+    log_id?: string;
+  };
+  message?: string;
+}
+
+// ============================================================================
+// Pinterest API Response Types
+// ============================================================================
+
+export interface PinterestErrorResponse {
+  message?: string;
+  code?: number;
+}
+
+// ============================================================================
+// Snapchat API Response Types
+// ============================================================================
+
+export interface SnapchatErrorResponse {
+  request_status?: string;
+  request_id?: string;
+  debug_message?: string;
+  display_message?: string;
+}
+
+// ============================================================================
 // Union Types
 // ============================================================================
 
@@ -93,4 +126,7 @@ export interface DiscordRateLimitHeaders {
 export type SocialPlatformErrorResponse =
   | TwitterErrorResponse
   | FacebookErrorResponse
-  | LinkedInErrorResponse;
+  | LinkedInErrorResponse
+  | TikTokErrorResponse
+  | PinterestErrorResponse
+  | SnapchatErrorResponse;

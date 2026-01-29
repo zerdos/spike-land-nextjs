@@ -18,6 +18,8 @@ export const SOCIAL_PLATFORMS = [
   "TIKTOK",
   "YOUTUBE",
   "DISCORD",
+  "PINTEREST",
+  "SNAPCHAT",
 ] as const;
 
 /**

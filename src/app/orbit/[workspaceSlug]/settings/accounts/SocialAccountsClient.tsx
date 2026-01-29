@@ -121,6 +121,20 @@ const PLATFORM_CONFIG: Record<
     bgColor: "bg-indigo-500/10",
     connectPath: "", // Not implemented yet
   },
+  PINTEREST: {
+    name: "Pinterest",
+    icon: () => <span className="text-lg">📌</span>,
+    color: "text-red-600",
+    bgColor: "bg-red-600/10",
+    connectPath: "/api/social/pinterest/connect",
+  },
+  SNAPCHAT: {
+    name: "Snapchat",
+    icon: () => <span className="text-lg">👻</span>,
+    color: "text-yellow-400",
+    bgColor: "bg-yellow-400/10",
+    connectPath: "/api/social/snapchat/connect",
+  },
 };
 
 const STATUS_CONFIG: Record<
