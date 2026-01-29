@@ -125,6 +125,7 @@ model CampaignBrief {
   // Phase 4: New typed relations (expand phase)
   targetAudienceTyped CampaignTargetAudience?
   objectivesTyped     CampaignObjective[]
+  audienceAnalysis    AudienceAnalysis?
 
   @@index([userId])
   @@map("campaign_briefs")
@@ -168,6 +169,21 @@ model CampaignObjective {
 
   @@index([briefId])
   @@map("campaign_objectives")
+}
+
+// AI-powered audience analysis results
+model AudienceAnalysis {
+  id          String   @id @default(cuid())
+  briefId     String   @unique
+  insights    Json // AI-generated insights about the audience
+  suggestions Json // Targeting recommendations
+  score       Float? // Overall audience definition quality score (0-100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  brief CampaignBrief @relation(fields: [briefId], references: [id], onDelete: Cascade)
+
+  @@map("audience_analyses")
 }
 
 enum ObjectiveType {

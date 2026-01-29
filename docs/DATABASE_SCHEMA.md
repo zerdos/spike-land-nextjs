@@ -56,6 +56,15 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
 }
+"audience_analyses" {
+  String id PK
+  String briefId FK,UK
+  Json insights
+  Json suggestions
+  Float score "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
 "accounts" {
   String id PK
   String userId FK
@@ -1811,6 +1820,7 @@ erDiagram
 "campaign_briefs" }o--|| "users" : user
 "campaign_target_audiences" |o--|| "campaign_briefs" : brief
 "campaign_objectives" }o--|| "campaign_briefs" : brief
+"audience_analyses" |o--|| "campaign_briefs" : brief
 "accounts" }o--|| "users" : user
 "marketing_accounts" }o--|| "users" : user
 "google_ads_campaigns" }o--|| "marketing_accounts" : marketingAccount
@@ -2061,6 +2071,18 @@ Properties as follows:
 - `targetValue`:
 - `deadline`:
 - `priority`:
+- `createdAt`:
+- `updatedAt`:
+
+### `audience_analyses`
+
+Properties as follows:
+
+- `id`:
+- `briefId`:
+- `insights`:
+- `suggestions`:
+- `score`:
 - `createdAt`:
 - `updatedAt`:
 

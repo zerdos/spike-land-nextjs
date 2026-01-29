@@ -155,3 +155,9 @@ export type SignUpRequest = z.infer<typeof SignUpRequestSchema>;
 // ============================================================================
 
 export * from "./json-schemas";
+
+// ============================================================================
+// Audience Analysis Validations
+// ============================================================================
+
+export * from "./audience-analysis";
