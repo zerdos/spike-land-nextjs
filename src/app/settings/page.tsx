@@ -35,8 +35,20 @@ export default function SettingsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
 
-  if (status === "loading") {
+  // Add timeout for loading state to prevent infinite loading
+  useState(() => {
+    const timer = setTimeout(() => {
+      if (status === "loading") {
+        console.error("[Settings] Auth loading timeout after 10 seconds");
+        setLoadingTimeout(true);
+      }
+    }, 10000);
+    return () => clearTimeout(timer);
+  });
+
+  if (status === "loading" && !loadingTimeout) {
     return (
       <div
         className="container mx-auto pt-24 pb-8 px-4"
@@ -44,6 +56,25 @@ export default function SettingsPage() {
       >
         <div className="flex items-center justify-center min-h-[400px]">
           <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If loading timed out, show error message
+  if (loadingTimeout) {
+    return (
+      <div
+        className="container mx-auto pt-24 pb-8 px-4"
+        data-testid="loading-timeout-state"
+      >
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+          <p className="text-muted-foreground">
+            Authentication is taking longer than expected...
+          </p>
+          <Button onClick={() => window.location.reload()}>
+            Retry
+          </Button>
         </div>
       </div>
     );

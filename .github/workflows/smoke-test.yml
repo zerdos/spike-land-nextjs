@@ -97,6 +97,19 @@ jobs:
         env:
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
 
+      - name: Verify E2E Bypass Secret
+        run: |
+          if [ -z "$E2E_BYPASS_SECRET" ]; then
+            echo "::error::E2E_BYPASS_SECRET is not configured in GitHub Secrets"
+            echo "::error::Smoke tests require this secret for authentication bypass"
+            echo "::error::Please configure E2E_BYPASS_SECRET in repository settings"
+            exit 1
+          fi
+          SECRET_LENGTH="${#E2E_BYPASS_SECRET}"
+          echo "✓ E2E_BYPASS_SECRET is configured (length: $SECRET_LENGTH characters)"
+        env:
+          E2E_BYPASS_SECRET: ${{ secrets.E2E_BYPASS_SECRET }}
+
       - name: Run Smoke Test Workflow
         run: |
           STAGE_ARG=""

@@ -25,6 +25,13 @@ export default async function PixelPage() {
     e2eBypassHeader === process.env.E2E_BYPASS_SECRET &&
     process.env.NODE_ENV !== "production";
 
+  console.log("[PixelPage] E2E bypass check:", {
+    isE2EBypass,
+    hasHeader: !!e2eBypassHeader,
+    hasSecret: !!process.env.E2E_BYPASS_SECRET,
+    nodeEnv: process.env.NODE_ENV,
+  });
+
   let session;
   try {
     session = await auth();
@@ -39,8 +46,9 @@ export default async function PixelPage() {
 
   // For E2E bypass, allow access with empty images
   if (isE2EBypass && !session) {
+    console.log("[PixelPage] E2E bypass active, showing app with empty images");
     return (
-      <div className="min-h-screen bg-grid-pattern">
+      <div className="min-h-screen bg-grid-pattern" data-testid="pixel-app">
         <div className="pt-16">
           <EnhancePageClient images={[]} />
         </div>
@@ -50,6 +58,7 @@ export default async function PixelPage() {
 
   // For non-authenticated users, redirect to sign in
   if (!session?.user?.id) {
+    console.log("[PixelPage] No session, redirecting to sign in");
     redirect("/auth/signin?callbackUrl=/apps/pixel");
   }
 

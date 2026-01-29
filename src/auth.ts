@@ -447,16 +447,19 @@ export const auth = async () => {
   // Check for E2E bypass via env var FIRST (local dev with yarn dev:e2e)
   // This is checked first because it's faster (no headers() call needed if bypassing)
   if (process.env.E2E_BYPASS_AUTH === "true") {
+    console.log("[Auth] E2E_BYPASS_AUTH is enabled");
     const { data: cookieStore } = await tryCatch(cookies());
     // Check for mock session token cookie
     if (cookieStore) {
       const sessionToken = cookieStore.get("authjs.session-token")?.value;
       if (sessionToken === "mock-session-token") {
+        console.log("[Auth] E2E bypass: Mock session token found, returning mock session");
         return getMockE2ESession();
       }
     }
     // In E2E mode without mock session, return null (unauthenticated)
     // This prevents hanging on database connections during E2E tests
+    console.log("[Auth] E2E bypass: No mock session token, returning null");
     return null;
   }
 
@@ -466,15 +469,41 @@ export const auth = async () => {
   const isProduction = process.env.NODE_ENV === "production" &&
     process.env.VERCEL_ENV === "production";
   const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
+
+  console.log("[Auth] Environment check:", {
+    isProduction,
+    hasE2ESecret: !!e2eBypassSecret,
+    nodeEnv: process.env.NODE_ENV,
+    vercelEnv: process.env.VERCEL_ENV,
+  });
+
   if (!isProduction && e2eBypassSecret) {
     const { data: headersList } = await tryCatch(headers());
     const bypassHeader = headersList?.get("x-e2e-auth-bypass");
 
+    console.log("[Auth] E2E bypass header check:", {
+      hasHeader: !!bypassHeader,
+      headerValue: bypassHeader ? `${bypassHeader.substring(0, 8)}...` : undefined,
+      expectedValue: e2eBypassSecret ? `${e2eBypassSecret.substring(0, 8)}...` : undefined,
+    });
+
     if (bypassHeader && constantTimeCompare(bypassHeader, e2eBypassSecret)) {
+      console.log("[Auth] ✓ E2E bypass successful: Header matched secret, returning mock session");
       return getMockE2ESession();
+    } else if (bypassHeader) {
+      console.error("[Auth] ✗ E2E bypass FAILED: Header present but does not match secret");
+    } else {
+      console.log("[Auth] E2E bypass not attempted: No bypass header present");
+    }
+  } else {
+    if (isProduction) {
+      console.log("[Auth] E2E bypass disabled: Production environment");
+    } else if (!e2eBypassSecret) {
+      console.warn("[Auth] E2E bypass disabled: E2E_BYPASS_SECRET not configured");
     }
   }
 
+  console.log("[Auth] Proceeding with standard authentication");
   return originalAuth();
 };
 export { handlers, signIn, signOut };
