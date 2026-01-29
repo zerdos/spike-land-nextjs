@@ -9,7 +9,7 @@
 
 import type { SocialPlatform } from "@prisma/client";
 import { format } from "date-fns";
-import { Calendar, Clock, Repeat } from "lucide-react";
+import { Calendar, Clock, ImagePlus, Repeat, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 import type { CalendarPostItem, CreateScheduledPostInput } from "@/lib/calendar/types";
+import {
+  ImageGenerationDialog,
+  ImageEnhancementDialog,
+} from "@/components/orbit/composer";
 
 export interface SocialAccountOption {
   id: string;
@@ -52,6 +56,7 @@ export interface CreatePostDialogProps {
   editingPost?: CalendarPostItem | null;
   isSubmitting?: boolean;
   timezone?: string;
+  workspaceId?: string;
 }
 
 const PLATFORM_LABELS: Record<SocialPlatform, string> = {
@@ -79,6 +84,7 @@ export function CreatePostDialog({
   editingPost,
   isSubmitting,
   timezone = "UTC",
+  workspaceId,
 }: CreatePostDialogProps) {
   const [content, setContent] = useState("");
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
@@ -87,6 +93,10 @@ export function CreatePostDialog({
   const [recurrenceEnabled, setRecurrenceEnabled] = useState(false);
   const [recurrenceFrequency, setRecurrenceFrequency] = useState("WEEKLY");
   const [error, setError] = useState<string | null>(null);
+  const [imageUrl] = useState<string>(""); // TODO: Will be set via job polling
+  const [imageGenOpen, setImageGenOpen] = useState(false);
+  const [imageEnhanceOpen, setImageEnhanceOpen] = useState(false);
+  const [generatingJobId, setGeneratingJobId] = useState<string | null>(null);
 
   // Initialize form when dialog opens or editing post changes
   useEffect(() => {
@@ -208,6 +218,60 @@ export function CreatePostDialog({
               <p className="text-xs text-muted-foreground">
                 {content.length} characters
               </p>
+
+              {/* AI Image Generation Buttons */}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setImageGenOpen(true)}
+                  disabled={!workspaceId}
+                  data-testid="generate-image-button"
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate Image
+                </Button>
+                {imageUrl && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setImageEnhanceOpen(true)}
+                    disabled={!workspaceId}
+                    data-testid="enhance-image-button"
+                  >
+                    <ImagePlus className="mr-2 h-4 w-4" />
+                    Enhance Image
+                  </Button>
+                )}
+              </div>
+
+              {/* Image Preview */}
+              {imageUrl && (
+                <div className="space-y-2">
+                  <Label>Attached Image</Label>
+                  <div className="relative overflow-hidden rounded-lg border">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imageUrl}
+                      alt="Post attachment"
+                      className="max-h-48 w-full object-contain"
+                      data-testid="post-image-preview"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Generation in progress */}
+              {generatingJobId && !imageUrl && (
+                <div className="rounded-lg bg-muted p-3 text-sm">
+                  <p>Generating image... Job ID: {generatingJobId}</p>
+                  <p className="text-xs text-muted-foreground">
+                    This may take a few moments
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Account selection */}
@@ -355,6 +419,36 @@ export function CreatePostDialog({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {/* Image Generation Dialog */}
+      {workspaceId && (
+        <>
+          <ImageGenerationDialog
+            open={imageGenOpen}
+            onOpenChange={setImageGenOpen}
+            workspaceId={workspaceId}
+            onImageGenerated={(jobId) => {
+              setGeneratingJobId(jobId);
+              // In a real implementation, we would poll the job status
+              // For now, just store the job ID
+              // TODO: Implement job polling to get the actual image URL
+            }}
+          />
+
+          <ImageEnhancementDialog
+            open={imageEnhanceOpen}
+            onOpenChange={setImageEnhanceOpen}
+            workspaceId={workspaceId}
+            imageUrl={imageUrl}
+            onImageEnhanced={(jobId) => {
+              setGeneratingJobId(jobId);
+              // In a real implementation, we would poll the job status
+              // For now, just store the job ID
+              // TODO: Implement job polling to get the enhanced image URL
+            }}
+          />
+        </>
+      )}
     </Dialog>
   );
 }
