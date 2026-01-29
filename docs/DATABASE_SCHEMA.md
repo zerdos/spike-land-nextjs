@@ -248,12 +248,14 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
   String shareToken UK "nullable"
+  String tags
 }
 "image_enhancement_jobs" {
   String id PK
   String imageId FK
   String userId FK
   EnhancementTier tier
+  EnhancementType enhancementType
   Int tokensCost
   JobStatus status
   PipelineStage currentStage "nullable"
@@ -2396,6 +2398,7 @@ Properties as follows:
 - `createdAt`:
 - `updatedAt`:
 - `shareToken`:
+- `tags`:
 
 ### `image_enhancement_jobs`
 
@@ -2405,6 +2408,7 @@ Properties as follows:
 - `imageId`:
 - `userId`:
 - `tier`:
+- `enhancementType`:
 - `tokensCost`:
 - `status`:
 - `currentStage`:
