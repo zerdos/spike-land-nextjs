@@ -102,11 +102,21 @@ function isWarmWorktreeValid(worktreePath: string): boolean {
       return false;
     }
 
+    // Verify git rev-parse works first (catches corrupted worktrees that would
+    // fail with "not a git repository" error)
+    execSync("git rev-parse --is-inside-work-tree", {
+      cwd: worktreePath,
+      encoding: "utf-8",
+      timeout: 5000,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
     // Verify git status is clean
     const status = execSync("git status --porcelain", {
       cwd: worktreePath,
       encoding: "utf-8",
       timeout: 10000,
+      stdio: ["pipe", "pipe", "pipe"],
     }).trim();
 
     // Allow empty status (clean) or only untracked files
@@ -116,6 +126,7 @@ function isWarmWorktreeValid(worktreePath: string): boolean {
 
     return true;
   } catch {
+    // If any git command fails, the worktree is not valid
     return false;
   }
 }
