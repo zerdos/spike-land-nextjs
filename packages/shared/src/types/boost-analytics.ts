@@ -566,6 +566,3 @@ export interface DashboardOverview {
 // Export all types
 // =============================================================================
 
-export type {
-  // Already exported inline above
-};

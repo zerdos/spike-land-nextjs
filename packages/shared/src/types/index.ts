@@ -482,8 +482,8 @@ export type {
 } from "./organic-to-ad";
 
 // Boost Analytics Types - Issue #570
-export type {
-  // Enums
+// Boost Analytics Enums - Issue #570
+export {
   BoostStatus,
   AttributionEventType,
   TouchpointType,
@@ -493,6 +493,10 @@ export type {
   InsightCategory,
   InsightSeverity,
   AttributionModel,
+} from "./boost-analytics";
+
+// Boost Analytics Types
+export type {
   // Data Structures
   OrganicMetricsSnapshot,
   TargetingCriteria,
