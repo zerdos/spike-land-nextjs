@@ -157,13 +157,15 @@ export default async function MyAppsPage(props: {
                 <CardHeader className="text-center">
                   <CardTitle className="text-2xl">No apps yet</CardTitle>
                   <CardDescription className="mt-2">
-                    Create campaign tools like link-in-bio pages, landing pages, interactive polls, or contest entry forms
+                    Create campaign tools like link-in-bio pages, landing pages, interactive polls,
+                    or contest entry forms
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-4 pb-8">
                   <div className="grid gap-2 text-center text-sm text-muted-foreground">
                     <p>
-                      Choose from pre-built templates or start from scratch with AI-powered development
+                      Choose from pre-built templates or start from scratch with AI-powered
+                      development
                     </p>
                   </div>
                   <Link href="/my-apps/new">

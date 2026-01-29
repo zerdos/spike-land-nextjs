@@ -340,7 +340,8 @@ async function createAppFromPrompt(
 
         if (template) {
           // Send template code as initial content
-          messageContent = `I'd like to start with this template code:\n\n\`\`\`tsx\n${template.code}\n\`\`\`\n\n${data.prompt}`;
+          messageContent =
+            `I'd like to start with this template code:\n\n\`\`\`tsx\n${template.code}\n\`\`\`\n\n${data.prompt}`;
         }
       }
 
