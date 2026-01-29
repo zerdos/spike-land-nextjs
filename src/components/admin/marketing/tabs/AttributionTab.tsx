@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  type AttributionModel,
+  AttributionModelSelector,
+} from "@/components/admin/marketing/attribution/AttributionModelSelector";
+import { ExportButton } from "@/components/admin/marketing/attribution/ExportButton";
+import { ModelComparisonTable } from "@/components/admin/marketing/attribution/ModelComparisonTable";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -52,7 +58,7 @@ export function AttributionTab({ className }: AttributionTabProps) {
   const [dateRange, setDateRange] = useState<DateRange>(
     getDateRangeFromPreset("30d"),
   );
-  const [activeModel, setActiveModel] = useState<string>("FIRST_TOUCH");
+  const [activeModel, setActiveModel] = useState<AttributionModel>("FIRST_TOUCH");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -151,13 +157,38 @@ export function AttributionTab({ className }: AttributionTabProps) {
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
         />
+        <ExportButton
+          startDate={dateRange.startDate}
+          endDate={dateRange.endDate}
+          selectedModel={activeModel}
+        />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Model Comparison Chart */}
+        {/* Model Comparison Table */}
         <Card className="col-span-2">
           <CardHeader>
             <CardTitle>Attribution Model Comparison</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading
+              ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              )
+              : <ModelComparisonTable models={data?.comparison || []} />}
+          </CardContent>
+        </Card>
+
+        {/* Model Comparison Chart */}
+        <Card className="col-span-2">
+          <CardHeader>
+            <CardTitle>Attribution Value by Model</CardTitle>
           </CardHeader>
           <CardContent>
             {loading
@@ -205,18 +236,28 @@ export function AttributionTab({ className }: AttributionTabProps) {
         {/* Breakdown by Platform */}
         <Card className="col-span-2 md:col-span-1">
           <CardHeader>
-            <CardTitle>Platform Breakdown</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Platform Breakdown</CardTitle>
+              <AttributionModelSelector
+                selectedModel={activeModel}
+                onModelChange={setActiveModel}
+                className="w-[200px]"
+              />
+            </div>
           </CardHeader>
           <CardContent>
             <Tabs
               defaultValue="FIRST_TOUCH"
               value={activeModel}
-              onValueChange={setActiveModel}
+              onValueChange={(value) =>
+                setActiveModel(value as AttributionModel)}
             >
-              <TabsList className="mb-4">
+              <TabsList className="mb-4 hidden">
                 <TabsTrigger value="FIRST_TOUCH">First Touch</TabsTrigger>
                 <TabsTrigger value="LAST_TOUCH">Last Touch</TabsTrigger>
                 <TabsTrigger value="LINEAR">Linear</TabsTrigger>
+                <TabsTrigger value="TIME_DECAY">Time Decay</TabsTrigger>
+                <TabsTrigger value="POSITION_BASED">Position-Based</TabsTrigger>
               </TabsList>
 
               <TabsContent value={activeModel} className="h-[300px]">
