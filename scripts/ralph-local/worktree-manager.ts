@@ -215,6 +215,19 @@ export function syncWorktreeWithMain(
 ): { success: boolean; conflict: boolean; message: string; } {
   console.log(`   🔄 Syncing worktree with main...`);
 
+  // First, check if the worktree directory actually exists
+  if (!existsSync(worktreePath)) {
+    console.log(`   ⚠️ Worktree directory doesn't exist, skipping: ${worktreePath}`);
+    return { success: false, conflict: false, message: "Worktree directory does not exist" };
+  }
+
+  // Check if it's a valid git directory
+  const gitPath = join(worktreePath, ".git");
+  if (!existsSync(gitPath)) {
+    console.log(`   ⚠️ Not a valid git worktree, skipping: ${worktreePath}`);
+    return { success: false, conflict: false, message: "Not a valid git worktree" };
+  }
+
   try {
     // Fetch latest
     execSync("git fetch origin main", {
