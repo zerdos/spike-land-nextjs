@@ -284,3 +284,39 @@ export type Callback<T, R = void> = (value: T) => R;
  * Async callback function
  */
 export type AsyncCallback<T, R = void> = (value: T) => Promise<R>;
+
+// =============================================================================
+// Social Platform Error Response Types (aliases for compatibility)
+// =============================================================================
+
+/**
+ * Facebook error response type (alias for compatibility with rate-limit-tracker)
+ */
+export type FacebookErrorResponse = { error: FacebookApiError };
+
+/**
+ * LinkedIn error response type (alias for compatibility with rate-limit-tracker)
+ */
+export type LinkedInErrorResponse = LinkedInApiErrorBody;
+
+/**
+ * Union type for social platform error responses
+ */
+export type SocialPlatformErrorResponse = FacebookErrorResponse | LinkedInErrorResponse;
+
+/**
+ * Type guard for LinkedIn error response
+ */
+export function isLinkedInErrorResponse(
+  body: unknown,
+): body is LinkedInErrorResponse {
+  if (typeof body !== "object" || body === null) {
+    return false;
+  }
+  const errorBody = body as Record<string, unknown>;
+  return (
+    "status" in errorBody ||
+    "message" in errorBody ||
+    "serviceErrorCode" in errorBody
+  );
+}

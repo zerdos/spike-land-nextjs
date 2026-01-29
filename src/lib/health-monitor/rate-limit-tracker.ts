@@ -13,11 +13,11 @@ import type {
   FacebookErrorResponse,
   LinkedInErrorResponse,
   SocialPlatformErrorResponse,
-} from "@spike-npm-land/shared/types";
+} from "@/lib/types/common";
 import {
   isFacebookErrorResponse,
   isLinkedInErrorResponse,
-} from "@spike-npm-land/shared/types";
+} from "@/lib/types/common";
 
 import prisma from "@/lib/prisma";
 
