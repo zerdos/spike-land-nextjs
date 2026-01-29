@@ -6,6 +6,7 @@
 
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,10 +16,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Check, X, Edit, Clock, TrendingUp } from "lucide-react";
 import type { CalendarContentSuggestion } from "@/types/ai-calendar";
 import { formatDistanceToNow } from "date-fns";
+import { Check, Clock, Edit, TrendingUp, X } from "lucide-react";
 
 interface ContentSuggestionCardProps {
   suggestion: CalendarContentSuggestion;
@@ -61,8 +61,7 @@ export function ContentSuggestionCard({
             <CardDescription className="mt-2 flex items-center gap-2">
               <Clock className="h-3 w-3" />
               <span>
-                Suggested for{" "}
-                {formatDistanceToNow(suggestion.suggestedFor, {
+                Suggested for {formatDistanceToNow(suggestion.suggestedFor, {
                   addSuffix: true,
                 })}
               </span>

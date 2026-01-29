@@ -4,19 +4,16 @@
  * Issue #841
  */
 
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import {
-  getOptimalTimes,
-  getHeatmapData,
-} from "@/lib/calendar/optimal-time-service";
+import { getHeatmapData, getOptimalTimes } from "@/lib/calendar/optimal-time-service";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ): Promise<NextResponse> {
   // 1. Authenticate
   const session = await auth();

@@ -4,14 +4,11 @@
  * Issue #841
  */
 
-import prisma from "@/lib/prisma";
 import { generateStructuredResponse } from "@/lib/ai/gemini-client";
-import type {
-  GenerateContentRequest,
-  CalendarContentSuggestion,
-} from "@/types/ai-calendar";
-import { getBestTimeRecommendations } from "./best-time-service";
+import prisma from "@/lib/prisma";
+import type { CalendarContentSuggestion, GenerateContentRequest } from "@/types/ai-calendar";
 import type { SocialPlatform } from "@prisma/client";
+import { getBestTimeRecommendations } from "./best-time-service";
 
 interface AIContentSuggestionResponse {
   content: string;

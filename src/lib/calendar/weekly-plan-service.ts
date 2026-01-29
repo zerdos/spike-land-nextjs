@@ -6,8 +6,8 @@
 
 import prisma from "@/lib/prisma";
 import type { WeeklyPlan } from "@/types/ai-calendar";
-import { getOptimalTimes } from "./optimal-time-service";
 import { generateContentSuggestions } from "./ai-content-service";
+import { getOptimalTimes } from "./optimal-time-service";
 
 /**
  * Generate a weekly content plan for a workspace
@@ -43,7 +43,7 @@ export async function generateWeeklyPlan(
   });
 
   // 4. Identify gaps (optimal time slots not filled)
-  const gaps: Array<{ day: number; hour: number; reason: string }> = [];
+  const gaps: Array<{ day: number; hour: number; reason: string; }> = [];
   const scheduledSlots = new Set(
     scheduledPosts.map((post) => {
       const day = post.scheduledAt.getUTCDay();
@@ -100,9 +100,7 @@ export async function generateWeeklyPlan(
 
   // 6. Calculate coverage percentage
   const totalOptimalSlots = optimalSlotKeys.length;
-  const filledSlots = optimalSlotKeys.filter(([key]) =>
-    scheduledSlots.has(key)
-  ).length;
+  const filledSlots = optimalSlotKeys.filter(([key]) => scheduledSlots.has(key)).length;
   const coveragePct = totalOptimalSlots > 0
     ? Math.round((filledSlots / totalOptimalSlots) * 100)
     : 0;

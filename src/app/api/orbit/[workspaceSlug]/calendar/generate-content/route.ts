@@ -4,17 +4,18 @@
  * Issue #841
  */
 
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { generateContentSuggestions } from "@/lib/calendar/ai-content-service";
-import { SOCIAL_PLATFORMS } from "@/lib/constants/social-platforms";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { z } from "zod";
+// SOCIAL_PLATFORMS import removed
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
-import { z } from "zod";
+import { SocialPlatform } from "@prisma/client";
 
 const generateContentSchema = z.object({
-  platform: z.enum(SOCIAL_PLATFORMS).optional(),
+  platform: z.nativeEnum(SocialPlatform).optional(),
   count: z.number().min(1).max(20).optional().default(5),
   dateRange: z
     .object({
@@ -26,7 +27,7 @@ const generateContentSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ): Promise<NextResponse> {
   // 1. Authenticate user
   const session = await auth();
@@ -89,9 +90,9 @@ export async function POST(
       count: validatedData.count,
       dateRange: validatedData.dateRange
         ? {
-            start: new Date(validatedData.dateRange.start),
-            end: new Date(validatedData.dateRange.end),
-          }
+          start: new Date(validatedData.dateRange.start),
+          end: new Date(validatedData.dateRange.end),
+        }
         : undefined,
     }),
   );

@@ -6,9 +6,9 @@
 
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Clock } from "lucide-react";
+import { Clock, RefreshCw } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface AITimeOptimizerProps {

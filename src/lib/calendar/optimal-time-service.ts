@@ -5,13 +5,13 @@
  */
 
 import prisma from "@/lib/prisma";
-import { getBestTimeRecommendations } from "./best-time-service";
 import type {
-  PostingTimeRecommendation,
-  OptimalTimesRequest,
   HeatmapData,
+  OptimalTimesRequest,
+  PostingTimeRecommendation,
 } from "@/types/ai-calendar";
 import type { SocialPlatform } from "@prisma/client";
+import { getBestTimeRecommendations } from "./best-time-service";
 
 /**
  * Cache duration for recommendations (24 hours)
@@ -175,9 +175,7 @@ export async function getHeatmapData(
   });
 
   // Build 7x24 matrix (days x hours)
-  const heatmap: number[][] = Array.from({ length: 7 }, () =>
-    Array(24).fill(0)
-  );
+  const heatmap: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
 
   let maxScore = 0;
   let minScore = 100;

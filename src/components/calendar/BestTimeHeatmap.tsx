@@ -6,8 +6,8 @@
 
 "use client";
 
-import { Fragment, useState, useEffect } from "react";
 import type { HeatmapData } from "@/types/ai-calendar";
+import { Fragment, useEffect, useState } from "react";
 
 interface BestTimeHeatmapProps {
   accountId: string;
@@ -21,10 +21,12 @@ export function BestTimeHeatmap({
   onSlotClick,
 }: BestTimeHeatmapProps) {
   const [heatmapData, setHeatmapData] = useState<HeatmapData | null>(null);
-  const [hoveredSlot, setHoveredSlot] = useState<{
-    day: number;
-    hour: number;
-  } | null>(null);
+  const [hoveredSlot, setHoveredSlot] = useState<
+    {
+      day: number;
+      hour: number;
+    } | null
+  >(null);
 
   useEffect(() => {
     // This would fetch from API - simplified for now
@@ -92,8 +94,7 @@ export function BestTimeHeatmap({
                   {DAYS[dayIdx]}
                 </div>
                 {dayData.map((score, hourIdx) => {
-                  const isHovered =
-                    hoveredSlot?.day === dayIdx &&
+                  const isHovered = hoveredSlot?.day === dayIdx &&
                     hoveredSlot?.hour === hourIdx;
 
                   return (
@@ -102,11 +103,8 @@ export function BestTimeHeatmap({
                       type="button"
                       className={`relative h-8 w-full cursor-pointer transition-all ${
                         getColorForScore(score)
-                      } ${
-                        isHovered ? "ring-2 ring-blue-500 ring-offset-1" : ""
-                      }`}
-                      onMouseEnter={() =>
-                        setHoveredSlot({ day: dayIdx, hour: hourIdx })}
+                      } ${isHovered ? "ring-2 ring-blue-500 ring-offset-1" : ""}`}
+                      onMouseEnter={() => setHoveredSlot({ day: dayIdx, hour: hourIdx })}
                       onMouseLeave={() => setHoveredSlot(null)}
                       onClick={() => onSlotClick?.(dayIdx, hourIdx)}
                       title={`${DAYS[dayIdx]} ${hourIdx}:00 - Score: ${Math.round(score)}`}
@@ -126,8 +124,7 @@ export function BestTimeHeatmap({
             {DAYS[hoveredSlot.day]} at {hoveredSlot.hour}:00
           </strong>
           <p className="text-muted-foreground">
-            Engagement Score:{" "}
-            {Math.round(
+            Engagement Score: {Math.round(
               heatmapData.heatmap[hoveredSlot.day]?.[hoveredSlot.hour] ?? 0,
             )}
           </p>

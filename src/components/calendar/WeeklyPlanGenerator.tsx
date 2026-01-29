@@ -6,13 +6,13 @@
 
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
-import { ContentSuggestionCard } from "./ContentSuggestionCard";
-import { toast } from "sonner";
-import { format, addWeeks, subWeeks } from "date-fns";
 import type { WeeklyPlan } from "@/types/ai-calendar";
+import { addWeeks, format, subWeeks } from "date-fns";
+import { Calendar, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { ContentSuggestionCard } from "./ContentSuggestionCard";
 
 interface WeeklyPlanGeneratorProps {
   workspaceId: string;
@@ -96,8 +96,7 @@ export function WeeklyPlanGenerator({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm font-medium">
-            {format(weekStart, "MMM d")} -{" "}
-            {format(addWeeks(weekStart, 1), "MMM d, yyyy")}
+            {format(weekStart, "MMM d")} - {format(addWeeks(weekStart, 1), "MMM d, yyyy")}
           </span>
           <Button
             variant="outline"

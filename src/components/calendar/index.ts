@@ -17,6 +17,6 @@ export { ScheduledPostCard, type ScheduledPostCardProps } from "./ScheduledPostC
 
 // AI Content Calendar Components (Issue #841)
 export { AITimeOptimizer } from "./AITimeOptimizer";
+export { BestTimeHeatmap } from "./BestTimeHeatmap";
 export { ContentSuggestionCard } from "./ContentSuggestionCard";
 export { WeeklyPlanGenerator } from "./WeeklyPlanGenerator";
-export { BestTimeHeatmap } from "./BestTimeHeatmap";
