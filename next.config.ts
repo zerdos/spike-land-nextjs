@@ -60,8 +60,6 @@ const nextConfig: NextConfig = {
   },
   // Transpile ESM packages to avoid runtime resolution issues with PnP
   transpilePackages: ["next-mdx-remote"],
-  // Externalize sharp to load native binaries at runtime instead of bundling
-  serverExternalPackages: ["sharp"],
   typescript: {
     // TypeScript checking is handled by CI's `tsc --noEmit` step
     // Skip during build to reduce memory usage when SKIP_TS_BUILD_CHECK=true
