@@ -246,6 +246,38 @@ async function mockAuthSession(
     );
     await debugAuthState(page);
   }
+
+  // PRE-FLIGHT CHECK: Test that middleware accepts the E2E bypass
+  // This catches configuration issues early before running actual tests
+  console.log("[Smoke Test] Running pre-flight check on protected route...");
+  try {
+    const testResponse = await page.goto(`${config.baseUrl}/settings`, {
+      waitUntil: "commit",
+      timeout: 10000,
+    });
+
+    const finalUrl = page.url();
+    if (finalUrl.includes("/auth/signin")) {
+      throw new Error(
+        `E2E bypass failed: Middleware redirected to sign-in. ` +
+        `This indicates the middleware is not receiving or accepting the bypass. ` +
+        `Check that E2E_BYPASS_SECRET matches between test and server. ` +
+        `Secret configured: ${!!config.e2eBypassSecret}, ` +
+        `Response status: ${testResponse?.status() ?? "unknown"}`,
+      );
+    }
+
+    console.log("[Smoke Test] ✓ Pre-flight check passed - middleware accepted E2E bypass");
+
+    // Navigate back to blank page to clean state
+    await page.goto("about:blank");
+  } catch (error) {
+    console.error(
+      "[Smoke Test] Pre-flight check failed:",
+      error instanceof Error ? error.message : String(error),
+    );
+    throw error;
+  }
 }
 
 /**
@@ -253,9 +285,19 @@ async function mockAuthSession(
  */
 function getExtraHTTPHeaders(): Record<string, string> | undefined {
   const headers: Record<string, string> = {};
-  if (config.e2eBypassSecret) {
-    headers["x-e2e-auth-bypass"] = config.e2eBypassSecret.trim();
+
+  const e2eBypassSecret = config.e2eBypassSecret?.trim().replace(/[\r\n]/g, "");
+
+  if (!e2eBypassSecret) {
+    console.warn("[Smoke Test] E2E_BYPASS_SECRET not configured - E2E tests may fail on protected routes");
+  } else {
+    console.log("[Smoke Test] E2E bypass header configured:", {
+      length: e2eBypassSecret.length,
+      preview: `${e2eBypassSecret.substring(0, 8)}...`,
+    });
+    headers["x-e2e-auth-bypass"] = e2eBypassSecret;
   }
+
   return Object.keys(headers).length > 0 ? headers : undefined;
 }
 
