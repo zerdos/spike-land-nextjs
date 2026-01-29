@@ -28,9 +28,16 @@ interface SSEEvent {
  * 1. LOCAL LAYER (this Map): Each instance maintains its own SSE connections.
  *    Fast local broadcasting to connected clients.
  *
- * 2. REDIS LAYER: Cross-instance communication via Redis Lists (polling pattern).
- *    When broadcasting, events are published to Redis for other instances to consume.
+ * 2. REDIS LAYER: Cross-instance communication via hybrid Pub/Sub + Lists pattern.
+ *    When broadcasting, events are:
+ *    - Published to Redis Pub/Sub channel (for real-time notification)
+ *    - Stored in Redis Lists (for reliable delivery fallback)
  *    Each instance polls Redis every 2 seconds for events from other instances.
+ *
+ * This hybrid approach provides:
+ * - Real-time delivery via Pub/Sub when possible
+ * - Reliable delivery via Lists as fallback
+ * - Support for Upstash Redis REST API limitations
  *
  * This enables horizontal scaling across multiple Vercel instances while maintaining
  * real-time updates for all connected clients.
@@ -43,9 +50,10 @@ const activeConnections = new Map<
 /**
  * Broadcast an event to all connected clients for an app
  *
- * Two-step broadcast process:
- * 1. Publish to Redis for other instances to consume
- * 2. Broadcast to local connections in this instance
+ * Three-step broadcast process:
+ * 1. Publish to Redis Pub/Sub channel (real-time notification)
+ * 2. Store in Redis Lists (reliable fallback)
+ * 3. Broadcast to local connections in this instance
  */
 export function broadcastToApp(
   appId: string,
@@ -61,7 +69,9 @@ export function broadcastToApp(
     timestamp: Date.now(),
   };
 
-  // 1. Publish to Redis for other instances
+  // 1. Publish to Redis (Pub/Sub + Lists hybrid)
+  // This will publish to Redis Pub/Sub channel AND store in a List
+  // See: https://upstash.com/docs/redis/features/pubsub
   publishSSEEvent(appId, fullEvent).catch((error) => {
     console.error(`[SSE] Failed to publish to Redis:`, error);
     // Don't fail the broadcast if Redis is down - continue with local broadcast

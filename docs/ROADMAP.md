@@ -399,15 +399,16 @@ documentation.
 
 See [TECH_STABILIZATION_SPRINT_1.md](./TECH_STABILIZATION_SPRINT_1.md) for full details.
 
-| Task                      | Priority | Completed  | Impact                 |
-| ------------------------- | -------- | ---------- | ---------------------- |
-| Upgrade to Next.js 16     | Medium   | 2026-01-19 | Better performance     |
-| Upgrade to Vitest 4       | Medium   | 2026-01-19 | Improved testing       |
-| Security vulnerability fixes | Critical | 2026-01-19 | P0 issues eliminated |
-| API response standardization | High   | 2026-01-19 | Consistent error handling |
-| Shared package exports fix  | Critical | 2026-01-19 | Build chain fixed    |
+| Task                         | Priority | Completed  | Impact                    |
+| ---------------------------- | -------- | ---------- | ------------------------- |
+| Upgrade to Next.js 16        | Medium   | 2026-01-19 | Better performance        |
+| Upgrade to Vitest 4          | Medium   | 2026-01-19 | Improved testing          |
+| Security vulnerability fixes | Critical | 2026-01-19 | P0 issues eliminated      |
+| API response standardization | High     | 2026-01-19 | Consistent error handling |
+| Shared package exports fix   | Critical | 2026-01-19 | Build chain fixed         |
 
 **Sprint #1 Metrics:**
+
 - P0 security issues: 2 → 0 ✅
 - Next.js: 15.x → 16.1.4 ✅
 - Vitest: 3.x → 4.0.17 ✅
@@ -422,6 +423,7 @@ See [TECH_STABILIZATION_SPRINT_1.md](./TECH_STABILIZATION_SPRINT_1.md) for full 
 See [TECH_STABILIZATION_SPRINT_2.md](./TECH_STABILIZATION_SPRINT_2.md) for full details.
 
 **Focus Areas:**
+
 - Smoke test stabilization (#794) - P0
 - Database backup reliability (#795) - P0
 - Empty catch block remediation (#796) - P1

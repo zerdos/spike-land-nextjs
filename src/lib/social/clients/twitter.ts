@@ -750,8 +750,8 @@ export class TwitterClient implements ISocialClient {
       // Fallback to Twitter's generic "i" URL format when username fetch fails
       // This can happen if the access token is expired or user info is unavailable
       console.warn(
-        'Failed to fetch Twitter username, using fallback:',
-        error instanceof Error ? error.message : String(error)
+        "Failed to fetch Twitter username, using fallback:",
+        error instanceof Error ? error.message : String(error),
       );
       return "i";
     }

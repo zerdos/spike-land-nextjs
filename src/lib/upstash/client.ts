@@ -179,36 +179,55 @@ export interface SSEEventWithSource {
 }
 
 /**
- * Publish an SSE event to Redis for cross-instance broadcasting
- * Events are stored in a list and expire after 60 seconds
+ * Publish an SSE event to Redis using a hybrid approach:
+ * 1. Pub/Sub for real-time notifications
+ * 2. List for reliable delivery (fallback)
  *
- * This enables multi-instance SSE support by allowing instances to
- * poll for events published by other instances.
+ * This hybrid approach ensures:
+ * - Real-time delivery via Pub/Sub when instances are listening
+ * - Reliable delivery via List for instances that weren't subscribed
+ * - Backward compatibility with polling clients
+ *
+ * See: https://upstash.com/docs/redis/features/pubsub
  */
 export async function publishSSEEvent(
   appId: string,
-  event: { type: string; data: unknown; timestamp: number },
+  event: { type: string; data: unknown; timestamp: number; },
 ): Promise<void> {
   const eventWithSource: SSEEventWithSource = {
     ...event,
     sourceInstanceId: INSTANCE_ID,
   };
 
+  const channel = `sse:${appId}`;
   const key = KEYS.SSE_EVENTS(appId);
+  const payload = JSON.stringify(eventWithSource);
 
-  // Add to list (newest first)
-  await redis.lpush(key, JSON.stringify(eventWithSource));
+  // Parallel execution for speed
+  await Promise.all([
+    // 1. Publish to Pub/Sub channel for real-time delivery
+    redis.publish(channel, payload).catch(err => {
+      console.error(`[SSE] Failed to publish to channel ${channel}:`, err);
+      // Don't throw - List storage is the fallback
+    }),
 
-  // Set expiration to prevent memory leak
-  await redis.expire(key, 60);
-
-  // Trim to last 100 events
-  await redis.ltrim(key, 0, 99);
+    // 2. Store in List for reliable delivery (fallback + persistence)
+    (async () => {
+      await redis.lpush(key, payload);
+      await redis.expire(key, 60);
+      await redis.ltrim(key, 0, 99);
+    })().catch(err => {
+      console.error(`[SSE] Failed to store event in list:`, err);
+    })
+  ]);
 }
 
 /**
  * Get SSE events published after a given timestamp
  * Used by instances to poll for new events from other instances
+ *
+ * This provides backward compatibility with the polling pattern
+ * and ensures reliable delivery even if Pub/Sub messages are missed.
  *
  * Events from the current instance (matching INSTANCE_ID) are filtered out
  * to prevent duplicate processing.
@@ -225,8 +244,7 @@ export async function getSSEEvents(
   return events
     .map((e) => JSON.parse(e) as SSEEventWithSource)
     .filter(
-      (e) =>
-        e.timestamp > afterTimestamp && e.sourceInstanceId !== INSTANCE_ID,
+      (e) => e.timestamp > afterTimestamp && e.sourceInstanceId !== INSTANCE_ID,
     )
     .reverse(); // Oldest first for replay
 }

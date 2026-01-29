@@ -9,6 +9,7 @@
 import type { CacheMap } from "@/lib/types/common";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
+import type { CacheMap } from "@/lib/types/common";
 import { JobStatus, UserRole } from "@prisma/client";
 
 import { fetchMetaAdsAggregated } from "./meta-marketing-client";

@@ -1008,6 +1008,28 @@ erDiagram
   Float percentChange
   DateTime createdAt
 }
+"social_post_ab_tests" {
+  String id PK
+  String workspaceId FK
+  String name
+  AbTestStatus status
+  String originalPostId FK
+  Float significanceLevel
+  String winnerVariantId "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"social_post_ab_test_variants" {
+  String id PK
+  String testId FK
+  String content
+  String variationType
+  Int impressions
+  Int engagements
+  Int clicks
+  DateTime createdAt
+  DateTime updatedAt
+}
 "workspaces" {
   String id PK
   String name
@@ -1877,6 +1899,9 @@ erDiagram
 "social_post_accounts" }o--|| "social_accounts" : account
 "social_metrics" }o--|| "social_accounts" : account
 "social_metric_anomalies" }o--|| "social_accounts" : account
+"social_post_ab_tests" }o--|| "workspaces" : workspace
+"social_post_ab_tests" }o--|| "social_posts" : originalPost
+"social_post_ab_test_variants" }o--|| "social_post_ab_tests" : test
 "workspace_favorites" }o--|| "users" : user
 "workspace_favorites" }o--|| "workspaces" : workspace
 "workspace_recent_access" }o--|| "users" : user
@@ -3231,6 +3256,42 @@ Properties as follows:
 - `direction`:
 - `percentChange`:
 - `createdAt`:
+
+### `social_post_ab_tests`
+
+A/B testing for social media posts
+Allows testing different variations of content
+Resolves #840
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `name`:
+- `status`:
+- `originalPostId`:
+- `significanceLevel`:
+- `winnerVariantId`:
+- `createdAt`:
+- `updatedAt`:
+
+### `social_post_ab_test_variants`
+
+Individual variant in an A/B test
+Tracks performance metrics for comparison
+Resolves #840
+
+Properties as follows:
+
+- `id`:
+- `testId`:
+- `content`:
+- `variationType`:
+- `impressions`:
+- `engagements`:
+- `clicks`:
+- `createdAt`:
+- `updatedAt`:
 
 ### `workspaces`
 
