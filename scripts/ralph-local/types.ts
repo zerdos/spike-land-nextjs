@@ -216,6 +216,8 @@ export interface RalphLocalConfig {
   pidDir: string;
   planDir: string;
   worktreeBase: string;
+  worktreePoolSize: number;
+  worktreePoolDir: string;
 }
 
 // ============================================================================

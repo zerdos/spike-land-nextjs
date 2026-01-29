@@ -9,6 +9,8 @@ stale_threshold_min: 30
 max_retries: 2
 auto_merge: true
 main_branch_priority: true
+worktree_pool_size: 4
+worktree_pool_dir: "../ralph-worktrees/.pool"
 approval_keywords:
   - "lgtm"
   - "LGTM"
@@ -53,6 +55,7 @@ GH Issues → Planning Agents → Plans → Developer Agents → Code → Tester
 
 ```
 Step 0:    Cleanup stale agents
+           Check & replenish worktree pool
 Step 0.5:  Check main branch CI (if failing, spawn fixer immediately)
 Step 0.75: Detect PRs needing fixes (CHANGES_REQUESTED or CI_FAILING)
 Step 1:    Check PR status (detect approval signals, auto-merge)
@@ -64,6 +67,39 @@ Step 5:    Fill planning pool
 Step 6:    Handle blocked agents
 Step 7:    Sync branches
 ```
+
+## Worktree Pool
+
+The worktree pool pre-creates "warm" worktrees with dependencies already installed,
+eliminating the ~5 minute `yarn install` delay when assigning work to developer agents.
+
+### How It Works
+
+1. **On startup** (watch mode), the pool initializes up to `worktree_pool_size` warm worktrees
+2. **When a developer needs a worktree**, it's acquired instantly from the pool
+3. **After acquisition**, the pool automatically replenishes in the background
+4. **If the pool is empty**, falls back to fresh worktree creation (slow)
+
+### Pool Structure
+
+```
+../ralph-worktrees/
+├── .pool/                    # Pool directory
+│   ├── warm-1/               # Pre-warmed worktree (ready to use)
+│   ├── warm-2/               # Pre-warmed worktree (ready to use)
+│   └── ...
+├── 520/                      # Active ticket worktree (claimed from pool)
+└── 521/                      # Active ticket worktree
+```
+
+### Acquisition Flow
+
+1. Pick first available warm worktree (e.g., `warm-1`)
+2. Rename branch: `ralph/pool-1` → `ralph/520`
+3. Move directory: `.pool/warm-1` → `520`
+4. Copy `.env.local` from main repo
+5. Trigger background replenishment
+6. Return path instantly (no yarn install!)
 
 ### Planning Agents (8)
 
@@ -95,14 +131,16 @@ Step 7:    Sync branches
 
 ## Settings
 
-| Setting                | Value                    | Description                                            |
-| ---------------------- | ------------------------ | ------------------------------------------------------ |
-| `sync_interval_min`    | 2                        | How often to run orchestration loop (minutes)          |
-| `stale_threshold_min`  | 30                       | Mark agents as stale after this time without heartbeat |
-| `max_retries`          | 2                        | Retry failed tickets before marking as failed          |
-| `auto_merge`           | true                     | Automatically merge approved PRs with passing CI       |
-| `main_branch_priority` | true                     | Stop other work when main branch CI is failing         |
-| `approval_keywords`    | ["lgtm", "ship it", ...] | Keywords that signal PR approval for auto-merge        |
+| Setting                | Value                      | Description                                            |
+| ---------------------- | -------------------------- | ------------------------------------------------------ |
+| `sync_interval_min`    | 2                          | How often to run orchestration loop (minutes)          |
+| `stale_threshold_min`  | 30                         | Mark agents as stale after this time without heartbeat |
+| `max_retries`          | 2                          | Retry failed tickets before marking as failed          |
+| `auto_merge`           | true                       | Automatically merge approved PRs with passing CI       |
+| `main_branch_priority` | true                       | Stop other work when main branch CI is failing         |
+| `worktree_pool_size`   | 4                          | Number of pre-warmed worktrees to maintain             |
+| `worktree_pool_dir`    | "../ralph-worktrees/.pool" | Directory for warm worktree pool                       |
+| `approval_keywords`    | ["lgtm", "ship it", ...]   | Keywords that signal PR approval for auto-merge        |
 
 ## Commands
 
@@ -129,6 +167,7 @@ yarn ralph:local:status
 | `/tmp/ralph-pids/`               | Agent PID files          |
 | `/tmp/ralph-plans/`              | Generated plans          |
 | `../ralph-worktrees/`            | Git worktrees per ticket |
+| `../ralph-worktrees/.pool/`      | Pre-warmed worktree pool |
 
 ## Markers
 

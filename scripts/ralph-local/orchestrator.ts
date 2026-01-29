@@ -62,6 +62,7 @@ import {
   getWorktreePath,
   syncWorktreeWithMain,
 } from "./worktree-manager";
+import { getPoolStatus, initializePool, replenishPool } from "./worktree-pool";
 
 // ============================================================================
 // Helpers
@@ -112,6 +113,8 @@ const DEFAULT_CONFIG: RalphLocalConfig = {
   pidDir: "/tmp/ralph-pids",
   planDir: "/tmp/ralph-plans",
   worktreeBase: resolve(process.cwd(), "../ralph-worktrees"),
+  worktreePoolSize: 4, // Match developer pool size for instant worktree acquisition
+  worktreePoolDir: resolve(process.cwd(), "../ralph-worktrees/.pool"),
 };
 
 /**
@@ -145,6 +148,10 @@ function loadConfig(): RalphLocalConfig {
       mainBranchPriority: data.main_branch_priority ?? DEFAULT_CONFIG.mainBranchPriority,
       approvalKeywords: data.approval_keywords ?? DEFAULT_CONFIG.approvalKeywords,
       repo: data.repo ?? DEFAULT_CONFIG.repo,
+      worktreePoolSize: data.worktree_pool_size ?? DEFAULT_CONFIG.worktreePoolSize,
+      worktreePoolDir: data.worktree_pool_dir
+        ? resolve(process.cwd(), data.worktree_pool_dir)
+        : DEFAULT_CONFIG.worktreePoolDir,
     };
   } catch (error) {
     console.error("Failed to load config:", error);
@@ -196,6 +203,15 @@ async function runOrchestrationLoop(
   // Step 0: Clean up stale agents
   console.log("\n📋 STEP 0: Clean up stale agents");
   result.staleAgentsCleaned = await step0_cleanupStaleAgents(state, config, dryRun);
+
+  // Check and replenish worktree pool
+  const poolStatus = getPoolStatus(config);
+  console.log(
+    `\n🏊 Worktree pool: ${poolStatus.available}/${poolStatus.poolSize} available`,
+  );
+  if (!dryRun && poolStatus.available < poolStatus.poolSize) {
+    replenishPool(config);
+  }
 
   // Step 0.5: Check main branch CI (PRIORITY)
   console.log("\n📋 STEP 0.5: Check main branch CI");
@@ -869,6 +885,12 @@ function showStatus(config: RalphLocalConfig): void {
     }
   }
 
+  // Worktree pool status
+  const poolStatus = getPoolStatus(config);
+  console.log(
+    `\n🏊 Worktree Pool: ${poolStatus.available}/${poolStatus.poolSize} warm worktrees available`,
+  );
+
   console.log("\n📋 Agent Pools:");
   console.log(
     `   Planning:  ${stats.runningPlanners} running / ${stats.idlePlanners} idle (${config.poolSizes.planning} total)`,
@@ -928,6 +950,11 @@ async function main(): Promise<void> {
   if (watchMode) {
     console.log("🔄 Starting Ralph Local in watch mode...");
     console.log(`   Sync interval: ${config.syncIntervalMs / 1000 / 60} minutes`);
+
+    // Initialize worktree pool on startup
+    if (!dryRun) {
+      initializePool(config);
+    }
 
     while (true) {
       try {
