@@ -210,10 +210,10 @@ export async function proxy(request: NextRequest) {
   // SECURITY: Require key validation matching the header implementation
   const e2eRoleCookie = request.cookies.get("e2e-user-role")?.value;
   const e2eSecretCookie = request.cookies.get("e2e-bypass-secret")?.value;
-  
-  const hasValidCookie = !isProduction && 
-    e2eBypassSecret && 
-    e2eSecretCookie && 
+
+  const hasValidCookie = !isProduction &&
+    e2eBypassSecret &&
+    e2eSecretCookie &&
     constantTimeCompare(e2eSecretCookie, e2eBypassSecret) &&
     e2eRoleCookie !== undefined;
 

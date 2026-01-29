@@ -267,10 +267,10 @@ async function mockAuthSession(
     if (finalUrl.includes("/auth/signin")) {
       throw new Error(
         `E2E bypass failed: Middleware redirected to sign-in. ` +
-        `This indicates the middleware is not receiving or accepting the bypass. ` +
-        `Check that E2E_BYPASS_SECRET matches between test and server. ` +
-        `Secret configured: ${!!config.e2eBypassSecret}, ` +
-        `Response status: ${testResponse?.status() ?? "unknown"}`,
+          `This indicates the middleware is not receiving or accepting the bypass. ` +
+          `Check that E2E_BYPASS_SECRET matches between test and server. ` +
+          `Secret configured: ${!!config.e2eBypassSecret}, ` +
+          `Response status: ${testResponse?.status() ?? "unknown"}`,
       );
     }
 
@@ -296,7 +296,9 @@ function getExtraHTTPHeaders(): Record<string, string> | undefined {
   const e2eBypassSecret = getE2eBypassSecret();
 
   if (!e2eBypassSecret) {
-    console.warn("[Smoke Test] E2E_BYPASS_SECRET not configured - E2E tests may fail on protected routes");
+    console.warn(
+      "[Smoke Test] E2E_BYPASS_SECRET not configured - E2E tests may fail on protected routes",
+    );
   } else {
     console.log("[Smoke Test] E2E bypass header configured:", {
       length: e2eBypassSecret.length,
