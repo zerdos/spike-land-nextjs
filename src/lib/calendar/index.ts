@@ -77,3 +77,18 @@ export type {
 } from "./content-gaps";
 
 export { detectContentGaps, getTimeSlotForHour, summarizeGaps } from "./content-gaps";
+
+// AI Content Calendar (Issue #841)
+export {
+  generateContentSuggestions,
+  acceptContentSuggestion,
+  rejectContentSuggestion,
+} from "./ai-content-service";
+
+export {
+  getOptimalTimes,
+  refreshOptimalTimes,
+  getHeatmapData,
+} from "./optimal-time-service";
+
+export { generateWeeklyPlan } from "./weekly-plan-service";
