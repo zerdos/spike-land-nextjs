@@ -90,6 +90,9 @@ model User {
   policyChecks             PolicyCheck[]
   policyViolationOverrides PolicyViolation[]
   campaignBriefs           CampaignBrief[]
+  // Creative Factory relations
+  creativeVariants         CreativeVariant[]
+  variantGenerationJobs    VariantGenerationJob[]
 
   // Workflow relations
   workflows Workflow[]
@@ -125,6 +128,9 @@ model CampaignBrief {
   // Phase 4: New typed relations (expand phase)
   targetAudienceTyped CampaignTargetAudience?
   objectivesTyped     CampaignObjective[]
+  // Creative Factory relations
+  variants            CreativeVariant[]
+  generationJobs      VariantGenerationJob[]
 
   @@index([userId])
   @@map("campaign_briefs")
@@ -176,6 +182,124 @@ enum ObjectiveType {
   CONVERSION
   RETENTION
   ADVOCACY
+}
+
+// =============================================================================
+// Creative Factory Models (Epic #520)
+// =============================================================================
+
+model CreativeVariant {
+  id                    String         @id @default(cuid())
+  briefId               String
+  brief                 CampaignBrief  @relation(fields: [briefId], references: [id], onDelete: Cascade)
+  userId                String
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId           String?
+  workspace             Workspace?     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  name                  String
+  type                  VariantType
+  status                VariantStatus  @default(DRAFT)
+
+  headline              String?        @db.VarChar(500)
+  body                  String?        @db.Text
+  callToAction          String?        @db.VarChar(100)
+  imageUrl              String?
+  imageR2Key            String?
+
+  generatedPrompt       String?        @db.Text
+  aiModel               String?
+  tokensCost            Int?
+
+  impressions           Int            @default(0)
+  clicks                Int            @default(0)
+  conversions           Int            @default(0)
+  ctr                   Decimal?       @db.Decimal(10, 4)
+  lastPerformanceUpdate DateTime?
+
+  fatigueScore          Decimal?       @db.Decimal(5, 2)
+  refreshRecommended    Boolean        @default(false)
+  refreshRecommendedAt  DateTime?
+
+  campaigns             CampaignCreativeVariant[]
+
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([briefId])
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([status])
+  @@map("creative_variants")
+}
+
+model CampaignCreativeVariant {
+  id                 String            @id @default(cuid())
+  campaignId         String
+  variantId          String
+  variant            CreativeVariant   @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  platform           MarketingPlatform
+
+  platformAdId       String?
+  platformCreativeId String?
+
+  startDate          DateTime?
+  endDate            DateTime?
+
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@unique([campaignId, variantId])
+  @@index([campaignId])
+  @@index([variantId])
+  @@index([platform])
+  @@map("campaign_creative_variants")
+}
+
+model VariantGenerationJob {
+  id                    String                  @id @default(cuid())
+  briefId               String
+  brief                 CampaignBrief           @relation(fields: [briefId], references: [id], onDelete: Cascade)
+  userId                String
+  user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type                  VariantGenerationType
+  status                JobStatus               @default(PENDING)
+
+  variantCount          Int
+  platforms             Json
+
+  generatedVariantIds   Json?
+  errorMessage          String?                 @db.Text
+
+  tokensCost            Int?
+
+  createdAt             DateTime                @default(now())
+  completedAt           DateTime?
+
+  @@index([briefId])
+  @@index([userId])
+  @@index([status])
+  @@map("variant_generation_jobs")
+}
+
+enum VariantType {
+  TEXT
+  IMAGE
+  COMBINED
+}
+
+enum VariantStatus {
+  DRAFT
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum VariantGenerationType {
+  TEXT_ONLY
+  IMAGE_ONLY
+  COMBINED
 }
 
 model Account {
@@ -2480,6 +2604,9 @@ model Workspace {
 
   // Workflow relations
   workflows Workflow[]
+
+  // Creative Factory relations
+  creativeVariants CreativeVariant[]
 
   // Notification system
   notifications Notification[]

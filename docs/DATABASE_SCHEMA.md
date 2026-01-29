@@ -56,6 +56,59 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
 }
+"creative_variants" {
+  String id PK
+  String briefId FK
+  String userId FK
+  String workspaceId FK "nullable"
+  String name
+  VariantType type
+  VariantStatus status
+  String(500) headline "nullable"
+  String body "nullable"
+  String(100) callToAction "nullable"
+  String imageUrl "nullable"
+  String imageR2Key "nullable"
+  String generatedPrompt "nullable"
+  String aiModel "nullable"
+  Int tokensCost "nullable"
+  Int impressions
+  Int clicks
+  Int conversions
+  Decimal(10) ctr "nullable"
+  DateTime lastPerformanceUpdate "nullable"
+  Decimal(5) fatigueScore "nullable"
+  Boolean refreshRecommended
+  DateTime refreshRecommendedAt "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"campaign_creative_variants" {
+  String id PK
+  String campaignId
+  String variantId FK
+  MarketingPlatform platform
+  String platformAdId "nullable"
+  String platformCreativeId "nullable"
+  DateTime startDate "nullable"
+  DateTime endDate "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"variant_generation_jobs" {
+  String id PK
+  String briefId FK
+  String userId FK
+  VariantGenerationType type
+  JobStatus status
+  Int variantCount
+  Json platforms
+  Json generatedVariantIds "nullable"
+  String errorMessage "nullable"
+  Int tokensCost "nullable"
+  DateTime createdAt
+  DateTime completedAt "nullable"
+}
 "accounts" {
   String id PK
   String userId FK
@@ -1811,6 +1864,12 @@ erDiagram
 "campaign_briefs" }o--|| "users" : user
 "campaign_target_audiences" |o--|| "campaign_briefs" : brief
 "campaign_objectives" }o--|| "campaign_briefs" : brief
+"creative_variants" }o--|| "campaign_briefs" : brief
+"creative_variants" }o--|| "users" : user
+"creative_variants" }o--o| "workspaces" : workspace
+"campaign_creative_variants" }o--|| "creative_variants" : variant
+"variant_generation_jobs" }o--|| "campaign_briefs" : brief
+"variant_generation_jobs" }o--|| "users" : user
 "accounts" }o--|| "users" : user
 "marketing_accounts" }o--|| "users" : user
 "google_ads_campaigns" }o--|| "marketing_accounts" : marketingAccount
@@ -2063,6 +2122,68 @@ Properties as follows:
 - `priority`:
 - `createdAt`:
 - `updatedAt`:
+
+### `creative_variants`
+
+Properties as follows:
+
+- `id`:
+- `briefId`:
+- `userId`:
+- `workspaceId`:
+- `name`:
+- `type`:
+- `status`:
+- `headline`:
+- `body`:
+- `callToAction`:
+- `imageUrl`:
+- `imageR2Key`:
+- `generatedPrompt`:
+- `aiModel`:
+- `tokensCost`:
+- `impressions`:
+- `clicks`:
+- `conversions`:
+- `ctr`:
+- `lastPerformanceUpdate`:
+- `fatigueScore`:
+- `refreshRecommended`:
+- `refreshRecommendedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `campaign_creative_variants`
+
+Properties as follows:
+
+- `id`:
+- `campaignId`:
+- `variantId`:
+- `platform`:
+- `platformAdId`:
+- `platformCreativeId`:
+- `startDate`:
+- `endDate`:
+- `createdAt`:
+- `updatedAt`:
+
+### `variant_generation_jobs`
+
+Properties as follows:
+
+- `id`:
+- `briefId`:
+- `userId`:
+- `type`:
+- `status`:
+- `variantCount`:
+- `platforms`:
+- `generatedVariantIds`:
+- `errorMessage`:
+- `tokensCost`:
+- `createdAt`:
+- `completedAt`:
 
 ### `accounts`
 
