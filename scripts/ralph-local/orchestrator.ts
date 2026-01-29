@@ -102,7 +102,7 @@ const DEFAULT_CONFIG: RalphLocalConfig = {
   poolSizes: {
     planning: 8,
     developer: 4,
-    reviewer: 2,
+    reviewer: 6,
     tester: 4,
     fixer: 1,
   },
