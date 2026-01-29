@@ -39,7 +39,7 @@ import type {
   RalphLocalConfig,
   ReviewWork,
 } from "./types";
-import { createWorktree, getBranchName, getWorktreePath } from "./worktree-manager";
+import { createWorktree, getWorktreePath } from "./worktree-manager";
 
 /**
  * Get available GitHub issues for processing
@@ -518,36 +518,6 @@ export function enqueuePlan(
 
   addPendingPlan(state, plan);
   console.log(`   📄 Plan queued for ${ticketId}`);
-}
-
-/**
- * Add completed code to the pending queue
- */
-export function enqueueCode(
-  state: OrchestratorState,
-  ticketId: string,
-  issueNumber: number,
-  worktree: string,
-  planPath: string,
-  createdBy: string,
-): void {
-  const branch = getBranchName(ticketId);
-  const code: CodeWork = {
-    ticketId,
-    issueNumber,
-    branch,
-    worktree,
-    planPath,
-    createdAt: new Date().toISOString(),
-    createdBy,
-    status: "pending",
-    assignedTo: null,
-    prUrl: null,
-    prNumber: null,
-  };
-
-  addPendingCode(state, code);
-  console.log(`   💾 Code queued for ${ticketId}`);
 }
 
 /**

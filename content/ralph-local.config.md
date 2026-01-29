@@ -163,6 +163,9 @@ Step 7:    Sync all worktrees with main
 | `issue_sync_enabled`    | true                     | Sync GitHub issues to local `.github/issues/`          |
 | `commit_plans`          | true                     | Commit plans to `docs/plans/` (not temp dir)           |
 | `approval_keywords`     | ["lgtm", "ship it", ...] | Keywords that signal PR approval for auto-merge        |
+| `repo`                  | zerdos/spike-land-nextjs | GitHub repository to sync issues from (owner/repo)     |
+
+> **Note**: When using Ralph Local on a different repository, update the `repo` setting in the frontmatter at the top of this file to match your target repository (e.g., `repo: your-org/your-repo`).
 
 ## Commands
 

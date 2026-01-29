@@ -135,7 +135,7 @@ function formatIssueAsMarkdown(issue: GitHubIssueResponse): string {
     .map((l) => (typeof l === "string" ? l : l.name))
     .filter((l): l is string => Boolean(l));
 
-  const safeTitle = issue.title.replace(/"/g, '\\"');
+  const safeTitle = issue.title.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
   const labelsStr = labels.length > 0
     ? `[${labels.map((l) => `"${l}"`).join(", ")}]`
     : "[]";

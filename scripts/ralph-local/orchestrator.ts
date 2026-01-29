@@ -328,6 +328,7 @@ async function step0_cleanupStaleAgents(
   const allPools = [
     state.pools.planning,
     state.pools.developer,
+    state.pools.reviewer,
     state.pools.tester,
     state.pools.fixer,
   ];
