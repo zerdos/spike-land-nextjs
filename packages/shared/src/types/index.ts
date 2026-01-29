@@ -387,6 +387,6 @@ export type {
   AttributionWeight,
   JourneyStep,
   PlatformTransition,
-  TimeDecayConfig,
   PositionBasedConfig,
+  TimeDecayConfig,
 } from "./attribution";

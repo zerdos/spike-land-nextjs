@@ -7,7 +7,7 @@
 // Agent Types
 // ============================================================================
 
-export type AgentRole = "planning" | "developer" | "tester";
+export type AgentRole = "planning" | "developer" | "tester" | "fixer";
 
 export type AgentStatus =
   | "idle"
@@ -39,12 +39,14 @@ export interface PoolConfig {
   planning: number;
   developer: number;
   tester: number;
+  fixer: number;
 }
 
 export interface AgentPool {
   planning: LocalAgent[];
   developer: LocalAgent[];
   tester: LocalAgent[];
+  fixer: LocalAgent[];
 }
 
 // ============================================================================
@@ -77,6 +79,43 @@ export interface CodeWork {
 }
 
 // ============================================================================
+// PR Fix Work (for fixer agents)
+// ============================================================================
+
+export type PRFixReason = "CI_FAILING" | "CHANGES_REQUESTED";
+
+export interface PRFixWork {
+  prNumber: number;
+  ticketId: string;
+  branch: string;
+  worktree: string;
+  status: "pending" | "assigned" | "fixed";
+  assignedTo: string | null;
+  reason: PRFixReason;
+  reviewComments: string[];
+  failureDetails: string | null;
+  createdAt: string;
+}
+
+// ============================================================================
+// Main Branch CI Status
+// ============================================================================
+
+export interface WorkflowRun {
+  id: number;
+  name: string;
+  conclusion: string | null;
+  status: string;
+  url: string;
+}
+
+export interface MainBranchCIStatus {
+  status: "passing" | "failing" | "pending";
+  failedWorkflows: WorkflowRun[];
+  lastCheckedAt: string;
+}
+
+// ============================================================================
 // State Management
 // ============================================================================
 
@@ -87,9 +126,11 @@ export interface OrchestratorState {
   pools: AgentPool;
   pendingPlans: Plan[];
   pendingCode: CodeWork[];
+  pendingPRFixes: PRFixWork[];
   completedTickets: string[];
   failedTickets: string[];
   blockedTickets: BlockedTicket[];
+  mainBranchStatus: MainBranchCIStatus | null;
 }
 
 export interface BlockedTicket {
@@ -108,6 +149,8 @@ export type AgentMarker =
   | PlanReadyMarker
   | CodeReadyMarker
   | PRCreatedMarker
+  | PRFixedMarker
+  | MainBuildFixMarker
   | BlockedMarker
   | ErrorMarker;
 
@@ -128,6 +171,18 @@ export interface PRCreatedMarker {
   ticketId: string;
   prUrl: string;
   prNumber: number;
+}
+
+export interface PRFixedMarker {
+  type: "PR_FIXED";
+  prNumber: number;
+  ticketId: string;
+}
+
+export interface MainBuildFixMarker {
+  type: "MAIN_BUILD_FIX";
+  runId: number;
+  fixed: boolean;
 }
 
 export interface BlockedMarker {
@@ -153,6 +208,8 @@ export interface RalphLocalConfig {
   staleThresholdMs: number;
   maxRetries: number;
   autoMerge: boolean;
+  mainBranchPriority: boolean;
+  approvalKeywords: string[];
   repo: string;
   workDir: string;
   outputDir: string;
