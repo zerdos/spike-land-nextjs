@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from "vitest";
 import AnalyticsPage from "./page";
 
 // Mock the AnalyticsDashboard component
-vi.mock("@/components/orbit/analytics", () => ({
+vi.mock("@/components/orbit/analytics/AnalyticsDashboard", () => ({
   AnalyticsDashboard: ({ workspaceSlug }: { workspaceSlug: string }) => (
     <div data-testid="analytics-dashboard">Dashboard for {workspaceSlug}</div>
   ),
