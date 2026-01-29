@@ -65,7 +65,7 @@ function getWarmWorktreePath(index: number, config: RalphLocalConfig): string {
 /**
  * List available warm worktrees in the pool
  */
-function listWarmWorktrees(config: RalphLocalConfig): string[] {
+export function listWarmWorktrees(config: RalphLocalConfig): string[] {
   const poolDir = getPoolDir(config);
 
   if (!existsSync(poolDir)) {
@@ -206,7 +206,8 @@ export function recycleWorktree(
 
     return false;
   } catch (error) {
-    console.log(`   ⚠️ Failed to recycle worktree: ${error}`);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.log(`   ⚠️ Failed to recycle worktree: ${errMsg.trim()}`);
     return false;
   }
 }
@@ -280,7 +281,8 @@ async function recycleIntoWarmWorktreeAsync(
     console.log(`   ✅ Recycled warm worktree ${index} ready`);
     return true;
   } catch (error) {
-    console.log(`   ❌ Failed to recycle warm worktree ${index}:`, error);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.log(`   ❌ Failed to recycle warm worktree ${index}: ${errMsg.trim()}`);
 
     // Cleanup on failure
     try {
@@ -382,7 +384,8 @@ async function createWarmWorktreeAsync(index: number, config: RalphLocalConfig):
     console.log(`   ✅ Warm worktree ${index} ready`);
     return true;
   } catch (error) {
-    console.error(`   ❌ Failed to create warm worktree ${index}:`, error);
+    const createErrMsg = error instanceof Error ? error.message : String(error);
+    console.error(`   ❌ Failed to create warm worktree ${index}: ${createErrMsg.trim()}`);
 
     // Cleanup on failure
     try {
@@ -485,7 +488,8 @@ function createWarmWorktree(index: number, config: RalphLocalConfig): boolean {
     console.log(`   ✅ Warm worktree ${index} ready`);
     return true;
   } catch (error) {
-    console.error(`   ❌ Failed to create warm worktree ${index}:`, error);
+    const createErrMsg = error instanceof Error ? error.message : String(error);
+    console.error(`   ❌ Failed to create warm worktree ${index}: ${createErrMsg.trim()}`);
 
     // Cleanup on failure
     try {
@@ -663,7 +667,8 @@ export function acquireFromPool(ticketId: string, config: RalphLocalConfig): str
 
     return targetPath;
   } catch (error) {
-    console.error(`   ❌ Failed to acquire warm worktree:`, error);
+    const acquireErrMsg = error instanceof Error ? error.message : String(error);
+    console.error(`   ❌ Failed to acquire warm worktree: ${acquireErrMsg.trim()}`);
 
     // Try to recover - the warm worktree might be corrupted
     try {
@@ -731,7 +736,8 @@ export function replenishPool(config: RalphLocalConfig): void {
   isReplenishing = true;
   replenishmentPromise = replenishPoolAsync(config, needed)
     .catch((error) => {
-      console.log(`   ⚠️ Background replenishment error: ${error}`);
+      const replenishErrMsg = error instanceof Error ? error.message : String(error);
+      console.log(`   ⚠️ Background replenishment error: ${replenishErrMsg.trim()}`);
     })
     .finally(() => {
       isReplenishing = false;
@@ -807,7 +813,8 @@ export function copyEnvLocal(worktreePath: string, config: RalphLocalConfig): vo
       copyFileSync(mainEnvPath, worktreeEnvPath);
       console.log(`   📋 Copied .env.local to worktree`);
     } catch (error) {
-      console.error(`   ⚠️ Failed to copy .env.local:`, error);
+      const copyErrMsg = error instanceof Error ? error.message : String(error);
+      console.error(`   ⚠️ Failed to copy .env.local: ${copyErrMsg.trim()}`);
     }
   }
 }

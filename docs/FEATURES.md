@@ -1,7 +1,6 @@
 # Spike Land - Feature Documentation
 
-> **Last Updated**: December 30, 2025 | **Status**: Production Platform with
-> Multiple Apps
+> **Last Updated**: January 29, 2026 | **Status**: Production - Orbit Social Media Command Center
 
 ---
 
@@ -10,1442 +9,825 @@
 | Field              | Value                                                          |
 | ------------------ | -------------------------------------------------------------- |
 | **Production URL** | [https://spike.land](https://spike.land)                       |
+| **Orbit App**      | [https://spike.land/orbit](https://spike.land/orbit)           |
 | **Pixel App**      | [https://spike.land/apps/pixel](https://spike.land/apps/pixel) |
 | **Company**        | SPIKE LAND LTD (UK Company #16906682)                          |
-| **Status**         | Production Platform with Active Development                    |
-| **Mobile App**     | iOS, Android, Web (Expo 52)                                    |
-| **MCP Server**     | npm package @spike-npm-land/mcp-server                         |
+| **Status**         | Production - Active Social Media Management Platform           |
+
+---
+
+## Strategic Pivot (January 2026)
+
+**Previous Positioning**: "Vibe Coded Apps" - Platform for building apps with AI agents
+**New Positioning**: "AI-Powered Social Media Command Center" - Professional social media management
+
+**Core Product**: **Orbit** - Comprehensive social media management for professionals
+**Supporting Tools**: Pixel (image enhancement), Vibe Coding (landing pages)
+
+**Target Market Shift**:
+
+- **From**: Developers and technical creators
+- **To**: Social media managers, content creators, small business marketing teams
+
+See [#836 - Strategic Pivot Epic](https://github.com/zerdos/spike-land-nextjs/issues/836) for full details.
 
 ---
 
 ## Related Documentation
 
-| Topic              | Document                                                          |
-| ------------------ | ----------------------------------------------------------------- |
-| Token System       | [TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md)                              |
-| API Reference      | [API_REFERENCE.md](./API_REFERENCE.md)                            |
-| Database Schema    | [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)                        |
-| Business Structure | [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md)                  |
-| Pixel Pipelines    | [PIXEL_PIPELINES.md](./PIXEL_PIPELINES.md)                        |
-| Mobile App         | [packages/mobile-app/README.md](../packages/mobile-app/README.md) |
-| User Guide         | [USER_GUIDE.md](./USER_GUIDE.md)                                  |
+| Topic              | Document                                         |
+| ------------------ | ------------------------------------------------ |
+| Orbit User Guide   | [ORBIT_USER_GUIDE.md](./ORBIT_USER_GUIDE.md)     |
+| A/B Testing Guide  | [AB_TESTING_GUIDE.md](./AB_TESTING_GUIDE.md)     |
+| Subscription Tiers | [SUBSCRIPTION_TIERS.md](./SUBSCRIPTION_TIERS.md) |
+| Marketing Personas | [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) |
+| User Guide         | [USER_GUIDE.md](./USER_GUIDE.md)                 |
+| API Reference      | [API_REFERENCE.md](./API_REFERENCE.md)           |
+| Database Schema    | [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)       |
+| Token System       | [TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md)             |
+| Business Structure | [BUSINESS_STRUCTURE.md](./BUSINESS_STRUCTURE.md) |
 
 ---
 
 ## Table of Contents
 
 1. [Platform Overview](#platform-overview)
-2. [Monorepo Structure](#monorepo-structure)
-3. [Pixel - AI Image Enhancement App](#pixel---ai-image-enhancement-app)
-4. [Platform Features](#platform-features)
-5. [E-Commerce](#e-commerce)
-6. [Mobile App](#mobile-app-iosandroidweb)
-7. [Other Apps & Features](#other-apps--features)
-8. [MCP Server Integration](#mcp-server-integration)
-9. [Browser Agent Boxes](#browser-agent-boxes)
-10. [Analytics & Tracking](#analytics--tracking)
-11. [Marketing & Campaigns](#marketing--campaigns)
-12. [Image Enhancement Pipelines](#image-enhancement-pipelines)
-13. [External Agent Integration](#external-agent-integration)
-14. [API & Developer Tools](#api--developer-tools)
-15. [Error Tracking & Monitoring](#error-tracking--monitoring)
-16. [Cron Jobs & Automation](#cron-jobs--automation)
-17. [Email System](#email-system)
-18. [Roadmap & Future Plans](#roadmap--future-plans)
-19. [Technical Stack](#technical-stack)
-20. [Database Schema](#database-schema)
+2. [Orbit - Social Media Command Center](#orbit---social-media-command-center)
+   - [Pulse Dashboard](#pulse-dashboard)
+   - [Unified Inbox](#unified-inbox)
+   - [Smart Allocator](#smart-allocator)
+   - [Competitive Scout](#competitive-scout)
+   - [Brand Brain](#brand-brain)
+   - [Relay (AI Drafts)](#relay-ai-drafts)
+3. [Workspace Management](#workspace-management)
+4. [Subscription System](#subscription-system)
+5. [Supporting Tools](#supporting-tools)
+   - [Pixel (Image Enhancement)](#pixel-image-enhancement)
+   - [Vibe Coding](#vibe-coding)
+6. [Platform Infrastructure](#platform-infrastructure)
+7. [Technical Stack](#technical-stack)
+8. [Database Schema](#database-schema)
+9. [API & Developer Tools](#api--developer-tools)
+10. [Security & Compliance](#security--compliance)
+11. [Roadmap & Future Plans](#roadmap--future-plans)
 
 ---
 
 ## Platform Overview
 
-**Spike Land** is an AI-powered app platform that democratizes software
-development by enabling anyone to create, modify, and deploy applications using
-natural language requirements and AI agents.
+**Spike Land** is an AI-powered social media management platform that helps professionals manage multiple social media accounts, automate workflows, and optimize their social presence from a unified command center.
 
 ### Core Vision
 
-- Anyone can create apps without coding knowledge
-- AI agents build apps based on user requirements
-- Users can fork and modify existing apps
-- Apps generate revenue through flexible monetization models
-- External domains host successful apps independently
+- **Unified Management**: One dashboard for all social platforms (Instagram, Facebook, Twitter/X, LinkedIn, TikTok)
+- **AI-Powered Automation**: Reduce manual social media work by 60-70%
+- **Brand Consistency**: Ensure all content matches your brand voice
+- **Data-Driven Decisions**: Real-time analytics and competitive intelligence
+- **Team Collaboration**: Multi-user workspaces with role-based access
 
-### Strategic Insight: MCP-First Architecture
+### Why Orbit?
 
-#### The Discovery Problem
+**Problem**: Social media managers waste 4-6 hours/day switching between platforms, manually responding to messages, and creating content without data-driven insights.
 
-Building a standalone mobile app comes with a fundamental challenge: **without
-marketing and community, nobody will find your app**. Even exceptional products
-fail because app store visibility is driven by marketing spend, not quality.
+**Solution**: Orbit consolidates all social media management into one AI-powered interface:
 
-For Pixel (the image enhancement app), pursuing the traditional mobile app route
-would have meant:
+- Monitor all accounts in real-time
+- Respond to messages from one inbox
+- Generate on-brand content with AI
+- Track competitors automatically
+- Optimize ad spend with AI recommendations
 
-- Competing against established players with marketing budgets
-- Following patterns competitors have already validated
-- Building marketing infrastructure alongside the product
+### Target Personas
 
-#### The MCP Solution
+1. **Solo Content Creator** (25-35 years old)
+   - Manages 3-5 accounts solo
+   - Needs time-saving automation
+   - Budget: $29/month PRO tier
 
-Instead of fighting for app store visibility, spike.land takes a different
-approach: **make AI agents the distribution channel**.
+2. **Small Business Marketing Manager** (28-45 years old)
+   - 1-2 person marketing team
+   - Needs ROI reporting and brand protection
+   - Budget: $99/month BUSINESS tier
 
-MCP (Model Context Protocol) servers allow Claude Code, Claude Desktop, and
-other AI tools to use spike.land capabilities directly. This means:
+3. **Freelance Social Media Manager** (25-40 years old)
+   - Manages 3-8 clients simultaneously
+   - Needs multi-workspace management
+   - Budget: 3-8 × $29/month PRO (with volume discount)
 
-1. **No gatekeepers** - MCP servers are installed via npm, not app store
-   approval
-2. **AI as distribution** - Every Claude user can access spike.land features
-3. **Composable tools** - Each capability is an MCP tool AI can combine
-4. **User stays in flow** - Whether using Claude or My-Apps, same capabilities
-
-#### My-Apps: UI Around MCP
-
-The My-Apps dashboard isn't just an app manager - it's a **visual interface
-around MCP servers**. When users chat with AI in My-Apps:
-
-- The AI calls `codespace_update` to write code
-- The AI calls `generate_image` to create visuals
-- The AI calls `apply_brand_style` to match brand voice (planned)
-
-Users see a friendly chat interface. Under the hood, it's MCP tool calls.
-
-#### The Brand Brain Pipeline
-
-Brand Brain ensures consistency across all AI-generated content:
-
-| Input                      | Output                       |
-| -------------------------- | ---------------------------- |
-| Any text (even with typos) | Brand-styled content         |
-| Raw product description    | Marketing copy in your voice |
-| Draft social post          | Platform-optimized post      |
-
-**Current:** Web feature at `/brand-brain`
-**Planned:** MCP tool `apply_brand_style` for AI agent access
-
-#### MCP Capability Matrix
-
-| Capability           | MCP Tool            | Status      |
-| -------------------- | ------------------- | ----------- |
-| Image generation     | `generate_image`    | ✅ Complete |
-| Image modification   | `modify_image`      | ✅ Complete |
-| Live React apps      | `codespace_update`  | ✅ Complete |
-| Token balance        | `get_balance`       | ✅ Complete |
-| Brand voice styling  | `apply_brand_style` | 📋 Planned  |
-| Social media posting | `post_to_platform`  | 📋 Planned  |
-| Post scheduling      | `schedule_post`     | 📋 Planned  |
-
-### Current Status
-
-**Production Platform** - The platform is live and running multiple
-applications:
-
-- **Pixel** - Flagship AI image enhancement app (all phases complete)
-- **Audio Mixer** - Multi-track audio mixing and recording
-- **Display** - Presentation and display apps
-- **Music Creator** - Music creation tools
-- **Blendr** - Image blending tool
-- **E-commerce** - Full merch store with Prodigi integration
-- **Mobile Apps** - iOS, Android, and Web (Expo)
-- **MCP Server** - Claude Desktop/Code integration
+See [MARKETING_PERSONAS.md](./MARKETING_PERSONAS.md) for detailed persona documentation.
 
 ---
 
-## Monorepo Structure
+## Orbit - Social Media Command Center
 
-This project is a Yarn 4 monorepo with multiple packages:
+### Pulse Dashboard
 
+**Real-time health monitoring for your social media accounts with AI-powered anomaly detection.**
+
+#### Key Features
+
+**Health Scores (0-100)**:
+
+- Follower growth velocity
+- Engagement rate trends
+- Reach and impressions
+- Response time metrics
+
+**Anomaly Detection**:
+
+- Sudden follower drops (bot purges, viral unfollows)
+- Engagement spikes (viral content, fake engagement)
+- Unusual mention volume (PR crises, trending topics)
+- Spam attack detection
+
+**Metrics Tracked**:
+
+- **Follower Growth**: Daily/weekly trends with forecasts
+- **Engagement Rate**: Likes, comments, shares per post
+- **Reach**: Unique accounts seeing your content
+- **Impressions**: Total views across all content
+- **Response Time**: Average time to reply to messages
+
+**Alert System**:
+
+- Email notifications for anomalies
+- Slack integration (BUSINESS tier)
+- Customizable alert thresholds
+
+**Subscription Tier Features**:
+
+- **FREE**: Basic dashboard, 3 accounts, daily updates
+- **PRO**: Advanced analytics, 10 accounts, hourly updates
+- **BUSINESS**: Custom KPIs, unlimited accounts, real-time updates
+
+#### Use Cases
+
+- **Crisis Prevention**: Detect negative viral mentions before they explode
+- **Performance Monitoring**: Track KPIs across all platforms in one view
+- **Reporting**: Export data for stakeholder presentations
+- **Competitive Benchmarking**: Compare your metrics to competitors
+
+---
+
+### Unified Inbox
+
+**Aggregates all mentions, DMs, and comments from all platforms into one interface with AI-powered triage.**
+
+#### Key Features
+
+**Unified View**:
+
+- All social messages in one chronological feed
+- Platform indicators (IG, FB, X, LI, TT badges)
+- Message threading (conversations grouped)
+- Unread/read status across platforms
+
+**AI Priority Scoring (0-100)**:
+
+- **High Priority (80-100)**: Complaints, negative sentiment, influencer mentions, urgent questions
+- **Medium Priority (40-79)**: General questions, neutral mentions, partnership inquiries
+- **Low Priority (0-39)**: Thank-yous, positive comments, spam
+
+**Sentiment Analysis**:
+
+- **Positive**: Green badge, emoji indicators
+- **Negative**: Red badge, priority boost
+- **Neutral**: Gray badge
+
+**Smart Filters**:
+
+- By platform (show only Instagram messages)
+- By priority (high/medium/low)
+- By sentiment (positive/negative/neutral)
+- By assignment (my messages, unassigned, team member X)
+- By status (unread, replied, archived)
+
+**Bulk Actions**:
+
+- Archive multiple messages
+- Assign to team members
+- Reply with templates
+- Mark as spam
+
+**Keyboard Shortcuts**:
+
+- `J` / `K`: Next/previous message
+- `R`: Start reply
+- `A`: Assign to team member
+- `E`: Archive
+- `1-4`: Set priority
+
+**Subscription Tier Features**:
+
+- **FREE**: Basic inbox, manual prioritization
+- **PRO**: AI priority scoring, team assignment (3 members)
+- **BUSINESS**: Advanced filters, custom rules, team assignment (10 members)
+
+#### Use Cases
+
+- **Community Management**: Reply to all messages from one interface
+- **Customer Support**: Triage and assign support inquiries to team
+- **Influencer Outreach**: Never miss high-value partnership opportunities
+- **Crisis Management**: Catch and respond to complaints immediately
+
+---
+
+### Smart Allocator
+
+**AI-powered budget recommendations for social media advertising with optional autopilot mode.**
+
+#### Key Features
+
+**Budget Recommendations**:
+
+- Analyze historical ad performance across platforms
+- Predict ROI (ROAS) for different budget allocations
+- Suggest budget shifts between platforms/campaigns
+- Identify underperforming campaigns to pause
+
+**Autopilot Mode (BUSINESS tier)**:
+
+- AI automatically executes budget adjustments
+- Set constraints (max daily spend, platform budgets)
+- Requires approval for changes >$500 or >20%
+- Weekly performance reports
+
+**Historical Analysis**:
+
+- Track performance over time (30/60/90 days)
+- Identify trends and seasonality
+- Export data for stakeholder reports
+
+**Integration**:
+
+- Facebook Ads Manager
+- LinkedIn Campaign Manager
+- Twitter/X Ads
+- TikTok Ads Manager
+
+**Example Recommendations**:
+
+- "Increase Instagram budget by 15% (predicted +22% ROAS)"
+- "Pause Facebook campaign 'Summer2026' (underperforming by 40%)"
+- "Shift $200/day from LinkedIn to Twitter/X (better engagement at 60% cost)"
+
+**Subscription Tier Features**:
+
+- **FREE**: View recommendations only (no execution)
+- **PRO**: Manual execution, historical data, CSV export
+- **BUSINESS**: Autopilot mode, custom constraints, API access
+
+#### Use Cases
+
+- **Budget Optimization**: Maximize ROAS across platforms
+- **Cost Reduction**: Identify and eliminate wasteful spending
+- **Performance Scaling**: Double down on winning campaigns
+- **Competitive Response**: Adjust budgets based on competitor activity
+
+---
+
+### Competitive Scout
+
+**Tracks competitors' social media activity and provides benchmarking insights.**
+
+#### Key Features
+
+**Competitor Tracking**:
+
+- Add competitors by social handle
+- Scrapes public data (no account access required)
+- Updates daily (PRO) or hourly (BUSINESS)
+- Track up to 5 competitors (PRO) or unlimited (BUSINESS)
+
+**Benchmarking**:
+
+- Side-by-side performance comparison
+- Your metrics vs. competitor averages
+- Industry percentile ranking
+- Growth rate comparisons
+
+**Content Analysis**:
+
+- Top-performing content themes
+- Posting frequency (daily/weekly averages)
+- Content format breakdown (video, image, carousel, text)
+- Hashtag strategy analysis
+
+**Alert System**:
+
+- Notified when competitor posts viral content (>10k engagements)
+- Detect new campaigns or product launches
+- Track follower growth milestones
+
+**Insights Provided**:
+
+- **Posting Frequency**: "Competitor X posts 3x/day on Instagram, 2x/day on Twitter"
+- **Engagement Rates**: "Your Instagram ER: 4.2%. Competitor average: 5.8%"
+- **Content Themes**: "Competitors use 60% video content vs. your 30%"
+- **Audience Growth**: "Competitor Y grew 5k followers last week (vs. your 2k)"
+
+**Subscription Tier Features**:
+
+- **FREE**: Not available
+- **PRO**: Track 5 competitors, basic analysis, daily updates
+- **BUSINESS**: Unlimited competitors, predictive analytics, hourly updates, API access
+
+#### Use Cases
+
+- **Competitive Intelligence**: Track what competitors are doing
+- **Content Strategy**: Learn what content types work in your industry
+- **Benchmarking**: Prove performance improvements to stakeholders
+- **Trend Detection**: Spot viral trends early
+
+---
+
+### Brand Brain
+
+**Centralized brand voice management and content guardrails to ensure consistent, on-brand messaging.**
+
+#### Key Features
+
+**Brand Voice Training**:
+
+- Upload 10-50 examples of past content (posts, captions, blog articles)
+- Orbit analyzes tone, vocabulary, style, emoji usage
+- Generates "brand voice profile" (formal/casual, enthusiastic/serious, etc.)
+- Continuously improves as you approve/reject AI drafts
+
+**Content Guardrails**:
+
+- **Forbidden Words**: Block profanity, competitor names, sensitive topics
+- **Required Elements**: Always include CTA, hashtags, brand handle
+- **Tone Constraints**: Never negative, always enthusiastic, formal only
+- **Compliance Rules**: Industry-specific regulations (finance, healthcare)
+
+**Tone Analysis**:
+
+- Score draft content for brand alignment (0-100)
+- Highlight mismatched words/phrases
+- Suggest replacements to improve score
+- Real-time feedback as you type
+
+**Compliance Checks**:
+
+- Financial services (FCA compliance)
+- Healthcare (HIPAA guidelines)
+- Legal (copyright, trademark flags)
+- Custom industry rules
+
+**Example Guardrails**:
+
+- "Never mention competitor brands by name"
+- "All posts must include at least one emoji"
+- "Avoid jargon; use simple language"
+- "Always include a call-to-action in last sentence"
+- "No political or religious content"
+
+**Subscription Tier Features**:
+
+- **FREE**: Not available
+- **PRO**: Basic voice training, 5 guardrails, tone scoring
+- **BUSINESS**: Advanced training, unlimited guardrails, compliance templates, API access
+
+#### Use Cases
+
+- **Brand Consistency**: Ensure all team members post in the same voice
+- **Risk Mitigation**: Prevent off-brand or non-compliant content
+- **Onboarding**: Train new team members on brand voice
+- **Scaling**: Maintain quality as you create more content
+
+---
+
+### Relay (AI Drafts)
+
+**AI generates draft social media posts based on your brand voice, with approval workflows.**
+
+#### Key Features
+
+**AI Draft Generation**:
+
+- Provide topic, platform, tone, length
+- Orbit generates 3-5 variations
+- Each variation scored for brand alignment (Brand Brain)
+- Edit, approve, or regenerate
+
+**Multi-Variation**:
+
+- Generate 3-5 different takes on same topic
+- Compare side-by-side
+- Select favorite or combine elements
+- A/B test top 2 variations
+
+**Approval Workflow**:
+
+- Owner/Admin must approve before publishing
+- Review → Edit → Approve → Schedule
+- Rejection feedback improves AI over time
+
+**Scheduled Publishing**:
+
+- Set future publish times
+- Optimal time suggestions based on historical engagement
+- Recurring posts (daily, weekly, monthly)
+- Time zone support for global audiences
+
+**A/B Testing Integration**:
+
+- Test 2+ draft variations
+- Automatically select winner based on engagement
+- Apply learnings to future drafts
+
+**AI Credit Consumption**:
+
+- 10 credits per draft generation (5 variations)
+- 20 credits for A/B test setup (includes generation)
+- **FREE**: 100 credits/month = 10 draft generations
+- **PRO**: 1,000 credits/month = 100 draft generations
+- **BUSINESS**: 5,000 credits/month = 500 draft generations
+
+**Subscription Tier Features**:
+
+- **FREE**: Not available
+- **PRO**: Basic draft generation, 1,000 credits/month, manual scheduling
+- **BUSINESS**: Advanced prompts, 5,000 credits/month, custom templates, auto-scheduling
+
+#### Use Cases
+
+- **Content Creation**: Generate weeks of content in minutes
+- **Writer's Block**: Get AI suggestions when stuck
+- **Brand Consistency**: AI writes in your voice automatically
+- **A/B Testing**: Test different messaging approaches
+
+---
+
+## Workspace Management
+
+### What Is a Workspace?
+
+A **workspace** is an isolated environment containing:
+
+- Social media accounts
+- Team members
+- Content calendar
+- Brand voice settings
+- Subscription tier
+- Billing information
+
+### Use Cases
+
+- **Solo Creator**: 1 workspace for personal brand
+- **Small Business**: 1 workspace for company
+- **Freelancer**: 1 workspace per client (3-8 workspaces)
+- **Agency**: 1 workspace per client (10+ workspaces)
+
+### Creating Workspaces
+
+1. Click workspace dropdown (top left)
+2. Click "Create New Workspace"
+3. Enter name and description
+4. Choose subscription tier
+5. Add payment method
+
+### Switching Workspaces
+
+- Click workspace dropdown
+- Select workspace from list
+- All views switch to that workspace's data
+
+### Transferring Ownership
+
+- Navigate to Settings → Workspace
+- Click "Transfer Ownership"
+- Enter new owner's email
+- Confirm transfer
+
+### Team Management
+
+**Roles**:
+
+- **Owner**: Full access, billing, transfer ownership
+- **Admin**: Full access except billing/transfer
+- **Editor**: Post, reply, edit content (no settings)
+- **Viewer**: Read-only (for stakeholders)
+
+**Subscription Limits**:
+
+- FREE: 1 member (owner only)
+- PRO: 3 members
+- BUSINESS: 10 members
+
+---
+
+## Subscription System
+
+### Workspace-Level Subscriptions
+
+Unlike user-level tokens (Pixel), Orbit uses **workspace-level subscriptions**. Each workspace has its own tier and billing.
+
+| Feature                 | FREE      | PRO         | BUSINESS    |
+| ----------------------- | --------- | ----------- | ----------- |
+| **Price**               | $0/month  | $29/month   | $99/month   |
+| **Social Accounts**     | 3         | 10          | Unlimited   |
+| **Scheduled Posts**     | 30/month  | Unlimited   | Unlimited   |
+| **A/B Tests**           | 1         | 10          | Unlimited   |
+| **AI Credits**          | 100/month | 1,000/month | 5,000/month |
+| **Team Members**        | 1         | 3           | 10          |
+| **Pulse Dashboard**     | ✓         | ✓           | ✓           |
+| **Unified Inbox**       | ✓         | ✓           | ✓           |
+| **Smart Allocator**     | Basic     | ✓           | Autopilot   |
+| **Scout**               | ✗         | ✓           | ✓           |
+| **Brand Brain**         | ✗         | ✓           | ✓           |
+| **Relay**               | ✗         | ✓           | ✓           |
+| **White-Label Reports** | ✗         | ✗           | ✓           |
+| **API Access**          | ✗         | ✗           | ✓           |
+| **Priority Support**    | ✗         | ✗           | ✓           |
+
+### Pricing Philosophy
+
+**FREE**: Onboarding funnel, convert to paid within 30 days
+**PRO**: Core revenue driver, targets solo/small teams
+**BUSINESS**: High-value customers with team needs
+
+### Upgrade Flow
+
+1. User hits limit (e.g., 3 social accounts on FREE)
+2. Prompt: "Upgrade to PRO for 10 accounts"
+3. Click "Upgrade" → Stripe Checkout
+4. Upgrade takes effect immediately
+
+### Downgrade Behavior
+
+- Existing resources (accounts, posts) remain accessible
+- Cannot create new resources beyond new tier limits
+- Current month AI credits preserved until reset
+- Team members above new limit marked for removal
+
+See [SUBSCRIPTION_TIERS.md](./SUBSCRIPTION_TIERS.md) for full documentation.
+
+---
+
+## Supporting Tools
+
+### Pixel (Image Enhancement)
+
+**AI-powered image enhancement for social media content.**
+
+#### Quick Overview
+
+- **Purpose**: Upscale and enhance images for social media
+- **Technology**: Google Gemini AI, 4-stage enhancement pipeline
+- **Pricing**: Separate user-level token system (not workspace subscriptions)
+- **Use Case**: Prepare images before posting via Orbit
+
+#### Key Features
+
+- Album organization
+- Batch enhancement
+- Multiple quality tiers (TIER_1K, TIER_2K, TIER_4K)
+- Before/after comparison slider
+- Custom enhancement pipelines
+- Export formats (JPEG, PNG, WebP)
+
+#### Token System
+
+- **Passive Generation**: 1 token every 15 minutes (up to 100 max)
+- **Purchase**: $0.99-2.99 per enhancement
+- **Costs**: 2 tokens (TIER_1K), 5 tokens (TIER_2K), 10 tokens (TIER_4K)
+
+See [PIXEL_APP.md](./PIXEL_APP.md) and [TOKEN_SYSTEM.md](./TOKEN_SYSTEM.md) for full documentation.
+
+---
+
+### Vibe Coding
+
+**Build landing pages, link-in-bio pages, and interactive content with AI agents.**
+
+#### Status
+
+Limited beta - contact sales@spike.land for access
+
+#### Planned Use Cases
+
+- Custom landing pages for campaigns
+- Link-in-bio pages (Linktree alternative)
+- Interactive content (quizzes, calculators)
+- Campaign microsites
+
+---
+
+## Platform Infrastructure
+
+### Monorepo Structure
+
+This project is a monorepo containing multiple packages:
+
+| Package                                             | Description                             | Technology                  |
+| --------------------------------------------------- | --------------------------------------- | --------------------------- |
+| **Web App** (`src/`)                                | Next.js 16 web application              | React 19, TypeScript        |
+| **Code Editor** (`packages/code/`)                  | React code editor (Vite + Monaco)       | Vite, Monaco Editor         |
+| **Backend Worker** (`packages/testing.spike.land/`) | Cloudflare Worker backend with MCP      | Cloudflare Workers, Hono    |
+| **Transpiler** (`packages/js.spike.land/`)          | Cloudflare Worker transpilation service | Cloudflare Workers, esbuild |
+| **Shared** (`packages/shared/`)                     | Shared types, constants, and utilities  | TypeScript, Prisma types    |
+
+### Cross-Platform Code Sharing
+
+The `@spike-npm-land/shared` package provides:
+
+- **Types**: TypeScript interfaces from Prisma schema
+- **Constants**: Token costs, limits, and configuration
+- **Validations**: Zod schemas for API requests
+- **Utilities**: Formatting and calculation helpers
+
+```typescript
+import { ENHANCEMENT_COSTS, formatCurrency, User } from "@spike-npm-land/shared";
 ```
-spike-land-nextjs/
-├── src/                          # Next.js 16 Web App (main package)
-│   ├── app/                      # App Router pages
-│   │   ├── apps/                 # Application pages
-│   │   │   ├── pixel/            # Pixel app
-│   │   │   ├── audio-mixer/      # Audio mixer
-│   │   │   ├── music-creator/    # Music creator
-│   │   │   └── display/          # Display app
-│   │   ├── admin/                # Admin dashboard
-│   │   ├── api/                  # API routes
-│   │   ├── auth/                 # Authentication pages
-│   │   ├── boxes/                # Browser boxes
-│   │   ├── merch/                # Merchandise store
-│   │   └── ...                   # Other pages
-│   ├── components/               # React components
-│   │   ├── ui/                   # shadcn/ui components
-│   │   ├── enhance/              # Enhancement UI
-│   │   ├── admin/                # Admin components
-│   │   └── ...                   # Feature components
-│   └── lib/                      # Utilities and services
-│
-├── packages/
-│   ├── mobile-app/               # Expo Mobile App
-│   │   ├── app/                  # Expo Router pages
-│   │   ├── components/           # Mobile components
-│   │   ├── hooks/                # Custom hooks
-│   │   ├── services/             # API clients
-│   │   └── stores/               # Zustand stores
-│   │
-│   ├── mcp-server/               # MCP Server Package
-│   │   ├── src/                  # Server implementation
-│   │   └── package.json          # Published to npm
-│   │
-│   ├── shared/                   # Shared Code Package
-│   │   └── src/
-│   │       ├── types/            # TypeScript types from Prisma
-│   │       ├── constants/        # Shared constants
-│   │       ├── validations/      # Zod schemas
-│   │       └── utils/            # Utility functions
-│   │
-│   └── opfs-node-adapter/        # OPFS Node Adapter (experimental)
-│
-├── prisma/
-│   └── schema.prisma             # Database schema (131 models)
-│
-└── e2e/
-    ├── features/                 # Cucumber feature files
-    └── step-definitions/         # Playwright steps
-```
-
-### Packages Overview
-
-| Package                               | Type       | Description                                    |
-| ------------------------------------- | ---------- | ---------------------------------------------- |
-| **spike-land-nextjs**                 | Next.js    | Main web application (production)              |
-| **@spike-npm-land/mobile-app**        | Expo       | Mobile app for iOS/Android/Web                 |
-| **@spike-npm-land/mcp-server**        | MCP Server | NPM package for Claude integration             |
-| **@spike-npm-land/shared**            | Library    | Shared types, constants, and utilities         |
-| **@spike-npm-land/opfs-node-adapter** | Library    | OPFS browser filesystem adapter (experimental) |
-
----
-
-## Pixel - AI Image Enhancement App
-
-**URL**: [spike.land/apps/pixel](https://spike.land/apps/pixel)
-
-Pixel is the flagship AI-powered image enhancement application on the Spike Land
-platform. All 5 implementation phases are complete.
-
-### Phase 1: MVP ✅ Complete
-
-| Feature             | Status      | Description                       |
-| ------------------- | ----------- | --------------------------------- |
-| Image Upload        | ✅ Complete | Drag-drop UI with preview         |
-| AI Enhancement      | ✅ Complete | Single-tier enhancement (TIER_1K) |
-| Before/After Slider | ✅ Complete | Interactive comparison view       |
-| Download            | ✅ Complete | Export enhanced images            |
-| Auth Integration    | ✅ Complete | NextAuth authentication           |
-
-### Phase 2: Token Consumption ✅ Complete
-
-Pixel consumes tokens from the Spike Land platform token economy.
-
-| Feature                | Status      | Description                                |
-| ---------------------- | ----------- | ------------------------------------------ |
-| Multi-tier Enhancement | ✅ Complete | TIER_1K, TIER_2K, TIER_4K options          |
-| Platform Token Usage   | ✅ Complete | Consumes Spike Land platform tokens        |
-| Low Balance Warnings   | ✅ Complete | User notifications                         |
-| Refunds on Failure     | ✅ Complete | Automatic token refund to platform balance |
-
-### Phase 3: Albums & Export ✅ Complete
-
-| Feature           | Status      | Description                         |
-| ----------------- | ----------- | ----------------------------------- |
-| Album Management  | ✅ Complete | Create, edit, delete albums         |
-| Batch Upload      | ✅ Complete | Multiple image upload               |
-| Album Sharing     | ✅ Complete | Unlisted links with share tokens    |
-| Export Formats    | ✅ Complete | JPEG, PNG, WebP support             |
-| Version History   | ✅ Complete | Track enhancement versions          |
-| Batch Enhancement | ✅ Complete | Queue processing                    |
-| PhotoMix          | ✅ Complete | Image mixing/blending capabilities  |
-| Pipelines         | ✅ Complete | Custom enhancement workflows        |
-| QR Code Sharing   | ✅ Complete | Generate QR codes for shared images |
-
-### Phase 4: Referral Program ✅ Complete
-
-| Feature              | Status      | Description                        |
-| -------------------- | ----------- | ---------------------------------- |
-| Referral Links       | ✅ Complete | Unique per-user referral codes     |
-| Token Rewards        | ✅ Complete | 50 tokens for referrer and referee |
-| Referral Dashboard   | ✅ Complete | Statistics and tracking            |
-| Anti-fraud Measures  | ✅ Complete | IP-based and email verification    |
-| Attribution Tracking | ✅ Complete | Sign-up source tracking            |
-
-### Phase 5: Admin Dashboard ✅ Complete
-
-| Feature             | Status      | Description                         | URL                        |
-| ------------------- | ----------- | ----------------------------------- | -------------------------- |
-| Main Dashboard      | ✅ Complete | Overview with key metrics           | /admin                     |
-| User Analytics      | ✅ Complete | Registrations, MAU, retention       | /admin/users               |
-| Token Analytics     | ✅ Complete | Purchases, spend, burn rate         | /admin/tokens              |
-| System Health       | ✅ Complete | Job queue, failure rates            | /admin/system              |
-| Jobs Dashboard      | ✅ Complete | Monitor and manage enhancement jobs | /admin/jobs                |
-| Voucher Management  | ✅ Complete | Create and manage vouchers          | /admin/vouchers            |
-| Featured Gallery    | ✅ Complete | Curate showcase images              | /admin/gallery             |
-| Photo Gallery       | ✅ Complete | Browse all platform photos          | /admin/photos              |
-| Feedback System     | ✅ Complete | Bug reports and idea collection     | /admin/feedback            |
-| Error Tracking      | ✅ Complete | Application error monitoring        | /admin/errors              |
-| Email Management    | ✅ Complete | Email logs and campaigns            | /admin/emails              |
-| Marketing Dashboard | ✅ Complete | Campaign tracking & funnels         | /admin/marketing           |
-| Marketing Accounts  | ✅ Complete | Google/Facebook ad accounts         | /admin/marketing/accounts  |
-| Marketing Campaigns | ✅ Complete | Campaign management                 | /admin/marketing/campaigns |
-| Marketing Funnels   | ✅ Complete | Conversion funnel analysis          | /admin/marketing/funnel    |
-| AI Agent Sessions   | ✅ Complete | Jules agent session management      | /admin/agents              |
-| Sitemap Preview     | ✅ Complete | Visual sitemap inspection           | /admin/sitemap             |
-| Merch Orders        | ✅ Complete | Order management and fulfillment    | /admin/merch/orders        |
-| Merch Products      | ✅ Complete | Product catalog management          | /admin/merch/products      |
-| Storage Analytics   | ✅ Complete | R2 storage usage monitoring         | API endpoint               |
-
-#### Admin Jobs Management Dashboard (NEW)
-
-A comprehensive dashboard for monitoring and managing image enhancement jobs:
-
-| Feature             | Description                                                        |
-| ------------------- | ------------------------------------------------------------------ |
-| Job Queue Monitor   | Real-time view of pending, processing, and completed jobs          |
-| Job Filtering       | Filter by status (PENDING, PROCESSING, COMPLETED, FAILED)          |
-| Job Search          | Search jobs by user email or job ID                                |
-| Job Actions         | Retry failed jobs, view job details, inspect errors                |
-| Performance Metrics | Track job completion rates, failure rates, average processing time |
-| Timeout Handling    | 4K jobs have 120-second timeout to prevent stuck jobs              |
-
-**Access**: `/admin/jobs` (SUPER_ADMIN only)
-
-**Key Files:**
-
-- `src/app/admin/jobs/page.tsx` - Jobs dashboard
-- `src/app/admin/jobs/JobsAdminClient.tsx` - Jobs table component
-- `src/app/api/admin/jobs/route.ts` - Jobs API endpoints
-
-#### Featured Gallery System (NEW)
-
-Curate and showcase outstanding image enhancements on the platform:
-
-| Feature                | Description                             |
-| ---------------------- | --------------------------------------- |
-| Featured Images        | Admins can mark images as featured      |
-| Public Gallery         | Featured images displayed to all users  |
-| Metadata Management    | Store title, description, artist credit |
-| Featured Status Toggle | Easily add/remove images from gallery   |
-
-**Database Model**: `FeaturedGalleryItem`
-
-- Links to `EnhancedImage`
-- Stores featured metadata
-- Tracks featured date
-
-**Key Files:**
-
-- Database schema in `prisma/schema.prisma`
-- Admin curation UI (future)
-- Public gallery page (future)
-
-#### Feedback Collection System (NEW)
-
-Structured feedback system for bug reports and feature ideas:
-
-| Feature          | Description                               |
-| ---------------- | ----------------------------------------- |
-| Feedback Types   | BUG or IDEA categories                    |
-| User Attribution | Link feedback to user accounts            |
-| Status Tracking  | NEW, REVIEWED, RESOLVED, DISMISSED states |
-| Admin Dashboard  | View and manage all feedback submissions  |
-
-**Access**: `/admin/feedback` (ADMIN/SUPER_ADMIN)
-
-**Database Model**: `Feedback`
-
-- User association
-- Type (BUG/IDEA)
-- Status tracking
-- Admin notes
-
-**Key Files:**
-
-- `src/app/api/feedback/route.ts` - Feedback submission API
-- Admin feedback dashboard (future)
-
-#### Technical Improvements
-
-**Gemini API Timeout Handling**:
-
-- 4K enhancement jobs now have 120-second timeout (120000ms)
-- Prevents jobs from getting stuck indefinitely
-- Automatic token refund on timeout
-- Error logging for debugging
-
-**Job Cleanup System**:
-
-- Automatic cleanup of old jobs
-- Cron-based scheduling
-- Prevents database bloat
-- Maintains system performance
-
-**E2E Testing Bypass**:
-
-- Special bypass mechanism for E2E tests
-- Allows testing without consuming tokens
-- Prevents test failures due to API limits
-- Maintains test reliability
-
-**Key Files:**
-
-- `src/app/apps/pixel/` - Image enhancement pages (updated path)
-- `src/app/albums/` - Album management
-- `src/app/pricing/` - Token pricing
-- `src/app/referrals/` - Referral program
-- `src/app/admin/` - Admin dashboard
-- `src/app/admin/jobs/` - Jobs management dashboard
-- `src/components/enhance/` - Enhancement UI components
-- `src/components/tokens/` - Token system components
-
----
-
-## Platform Features
-
-### Token Economy (Platform-Level)
-
-The token system is core platform infrastructure that all apps on Spike Land can
-use.
-
-| Feature              | Status      | Description                            |
-| -------------------- | ----------- | -------------------------------------- |
-| Token Balance System | ✅ Complete | Single balance per user, platform-wide |
-| Auto-Regeneration    | ✅ Complete | 1 token per 15 min, max 100            |
-| Stripe Integration   | ✅ Complete | One-time purchases and subscriptions   |
-| Transaction History  | ✅ Complete | Full token transaction log             |
-| Voucher System       | ✅ Complete | Promotional codes for bonus tokens     |
-
-**Key Files:**
-
-- `src/lib/tokens/balance-manager.ts` - Token operations (platform API)
-- `src/app/api/tokens/balance/route.ts` - Balance query endpoint
-- `src/app/api/stripe/` - Payment processing
-
-### 1. Authentication System
-
-| Feature                 | Status      | Description                             |
-| ----------------------- | ----------- | --------------------------------------- |
-| NextAuth.js Integration | ✅ Complete | Multi-provider authentication framework |
-| GitHub OAuth            | ✅ Complete | Sign in with GitHub account             |
-| Google OAuth            | ✅ Complete | Sign in with Google account             |
-| Apple OAuth             | ✅ Complete | Sign in with Apple account              |
-| Facebook OAuth          | ✅ Complete | Sign in with Facebook account           |
-| Email/Password          | ✅ Complete | Traditional email authentication        |
-| Phone Authentication    | ✅ Complete | Twilio-based phone verification         |
-| Session Management      | ✅ Complete | Secure Prisma-based session storage     |
-| Protected Routes        | ✅ Complete | Route guards for authenticated pages    |
-
-**Key Files:**
-
-- `src/auth.ts` - NextAuth configuration
-- `src/app/auth/signin/page.tsx` - Sign in page
-- `src/components/auth/` - Auth UI components
-
-### 2. My Apps Dashboard
-
-| Feature             | Status      | Description                              |
-| ------------------- | ----------- | ---------------------------------------- |
-| Protected Dashboard | ✅ Complete | Authentication-required app management   |
-| App Listing         | ✅ Complete | Grid view of user's apps                 |
-| Empty State         | ✅ Complete | Onboarding UI for new users              |
-| Status Badges       | ✅ Complete | Visual status indicators (DRAFT, ACTIVE) |
-| App Cards           | ✅ Complete | Rich app preview cards                   |
-| Create App Button   | ✅ Complete | Navigation to app wizard                 |
-
-**Key Files:**
-
-- `src/app/my-apps/page.tsx` - Dashboard page
-- `src/components/apps/app-card.tsx` - App card component
-
-### 3. App Creation Wizard
-
-| Feature              | Status      | Description                         |
-| -------------------- | ----------- | ----------------------------------- |
-| Multi-Step Form      | ✅ Complete | Guided app creation flow            |
-| App Details Step     | ✅ Complete | Name, description input             |
-| Requirements Step    | ✅ Complete | Natural language requirements input |
-| Monetization Step    | ✅ Complete | Pricing model selection             |
-| Review Step          | ✅ Complete | Summary before creation             |
-| Database Persistence | ✅ Complete | Save apps to PostgreSQL             |
-
-**Key Files:**
-
-- `src/app/my-apps/new/page.tsx` - Wizard page
-- `src/components/apps/requirements-manager.tsx` - Requirements UI
-
-### 4. Database Layer
-
-| Feature           | Status      | Description                     |
-| ----------------- | ----------- | ------------------------------- |
-| Prisma ORM        | ✅ Complete | Type-safe database access       |
-| PostgreSQL        | ✅ Complete | Production database             |
-| User Model        | ✅ Complete | OAuth-linked user accounts      |
-| App Model         | ✅ Complete | App metadata and status         |
-| Requirement Model | ✅ Complete | Version-controlled requirements |
-| MonetizationModel | ✅ Complete | Pricing configuration           |
-| Forking Support   | ✅ Complete | App forking relationships       |
-
-**Key Files:**
-
-- `prisma/schema.prisma` - Database schema
-- `src/lib/prisma.ts` - Prisma client
-
-### 5. UI/UX Foundation
-
-| Feature              | Status      | Description                   |
-| -------------------- | ----------- | ----------------------------- |
-| shadcn/ui Components | ✅ Complete | Production-ready UI library   |
-| Dark/Light Mode      | ✅ Complete | Theme toggle support          |
-| Responsive Design    | ✅ Complete | Mobile-first layouts          |
-| Loading Skeletons    | ✅ Complete | Graceful loading states       |
-| Cookie Consent       | ✅ Complete | GDPR-compliant consent        |
-| User Profiles        | ✅ Complete | User settings and preferences |
-| API Keys Management  | ✅ Complete | Generate and manage API keys  |
-
-**Key Files:**
-
-- `src/components/ui/` - shadcn/ui components
-- `src/components/theme/` - Theme components
-- `src/components/skeletons/` - Loading states
-
-### 6. Developer Experience
-
-| Feature                 | Status      | Description               |
-| ----------------------- | ----------- | ------------------------- |
-| TypeScript Strict Mode  | ✅ Complete | Full type safety          |
-| 100% Test Coverage      | ✅ Complete | Vitest + RTL tests        |
-| E2E Testing             | ✅ Complete | Playwright + Cucumber BDD |
-| CI/CD Pipeline          | ✅ Complete | GitHub Actions automation |
-| Vercel Deployment       | ✅ Complete | Production hosting        |
-| Claude Code Integration | ✅ Complete | AI-assisted development   |
-
----
-
-## E-Commerce
-
-Spike Land includes a full e-commerce platform for merchandise.
-
-| Feature             | Status      | Description                           |
-| ------------------- | ----------- | ------------------------------------- |
-| Merch Store         | ✅ Complete | Product catalog with categories       |
-| Shopping Cart       | ✅ Complete | Add/remove items, quantity management |
-| Checkout Flow       | ✅ Complete | Stripe-powered checkout               |
-| Order Management    | ✅ Complete | Order history and status tracking     |
-| Prodigi Integration | ✅ Complete | Print-on-demand fulfillment           |
-| VAT Calculation     | ✅ Complete | EU VAT handling                       |
-| Shipping Zones      | ✅ Complete | UK/EU shipping configuration          |
-| Product Variants    | ✅ Complete | Size, color, and style options        |
-
-**Key Files:**
-
-- `src/app/merch/` - Merch store pages
-- `src/app/cart/` - Shopping cart
-- `src/app/checkout/` - Checkout flow
-
----
-
-## Mobile App (iOS/Android/Web)
-
-Native mobile experience built with Expo and React Native.
-
-| Feature               | Status      | Description                        |
-| --------------------- | ----------- | ---------------------------------- |
-| Gallery & Enhancement | ✅ Complete | Full image enhancement workflow    |
-| Albums                | ✅ Complete | Album management on mobile         |
-| Blog                  | ✅ Complete | Blog posts and articles            |
-| Merch Store           | ✅ Complete | Browse and purchase merchandise    |
-| Token Management      | ✅ Complete | View balance, purchase tokens      |
-| Referral Program      | ✅ Complete | Share referral codes               |
-| Settings              | ✅ Complete | User preferences and notifications |
-| API Keys              | ✅ Complete | Manage API keys                    |
-| Cart & Checkout       | ✅ Complete | Mobile checkout experience         |
-| Admin Panel           | ✅ Complete | Users, jobs, vouchers, analytics   |
-| RevenueCat IAP        | ✅ Complete | In-app purchases for iOS/Android   |
-| Canvas/Image Editing  | ✅ Complete | Touch-friendly image editing       |
-| Voucher Redemption    | ✅ Complete | Redeem voucher codes               |
-| Push Notifications    | ✅ Complete | Expo notifications integration     |
-| Offline Support       | ✅ Complete | Queue actions when offline         |
-| Design System         | ✅ Complete | 17-section component storybook     |
-
-**Tech Stack:**
-
-- **Framework**: Expo 52, React Native 0.76
-- **Navigation**: Expo Router (file-based)
-- **UI**: Tamagui
-- **State**: Zustand, React Query
-
-**Key Files:**
-
-- `packages/mobile-app/` - Mobile app package
-- See [packages/mobile-app/README.md](../packages/mobile-app/README.md) for
-  details
-
----
-
-## Other Apps & Features
-
-Additional applications and features on the Spike Land platform.
-
-### Apps
-
-| App           | Status      | URL                 | Description                            |
-| ------------- | ----------- | ------------------- | -------------------------------------- |
-| Pixel         | ✅ Complete | /apps/pixel         | AI image enhancement (flagship app)    |
-| Audio Mixer   | ✅ Complete | /apps/audio-mixer   | Multi-track audio mixing and recording |
-| Music Creator | ✅ Complete | /apps/music-creator | Music creation tools                   |
-| Display       | ✅ Complete | /apps/display       | Presentation and display apps          |
-| Blendr        | ✅ Complete | /blendr             | Image blending tool (anonymous access) |
-| Blog          | ✅ Complete | /blog               | Blog with posts and articles           |
-
-### Standalone Features
-
-| Feature              | Status      | URL                   | Description                                      |
-| -------------------- | ----------- | --------------------- | ------------------------------------------------ |
-| Boxes                | ✅ Complete | /boxes                | Remote browser agent boxes with WebRTC           |
-| Personas             | ✅ Complete | /personas             | 11 customer personas for marketing               |
-| Canvas               | ✅ Complete | /canvas/[albumId]     | Touch-friendly image editing canvas              |
-| MCP Tools Playground | ✅ Complete | /apps/pixel/mcp-tools | Test MCP API for image generation/modification   |
-| Storybook            | ✅ Complete | /storybook            | 17-section component design system documentation |
-| Merch Store          | ✅ Complete | /merch                | E-commerce with Prodigi integration              |
-| Settings & Profile   | ✅ Complete | /settings, /profile   | User preferences, API keys, subscriptions        |
-| Referral Program     | ✅ Complete | /referrals            | Token rewards for referrals                      |
-| Admin Dashboard      | ✅ Complete | /admin                | Comprehensive admin tools                        |
-
-**Key Files:**
-
-- `src/app/apps/` - Application pages
-- `src/app/boxes/` - Browser agent boxes
-- `src/app/personas/` - Marketing personas
-- `src/app/canvas/` - Image editing canvas
-- `src/app/blendr/` - Image blending tool
-
----
-
-## MCP Server Integration
-
-Spike Land provides an MCP (Model Context Protocol) server that integrates AI
-image generation and modification directly into Claude Desktop and Claude Code.
-
-| Feature            | Status      | Description                                         |
-| ------------------ | ----------- | --------------------------------------------------- |
-| NPM Package        | ✅ Complete | Published as @spike-npm-land/mcp-server             |
-| Image Generation   | ✅ Complete | Text-to-image with quality tiers                    |
-| Image Modification | ✅ Complete | AI-powered image editing via prompts                |
-| Token Integration  | ✅ Complete | Uses platform token system                          |
-| Job Status Polling | ✅ Complete | Poll /api/mcp/jobs/[jobId] for completion           |
-| API Key Auth       | ✅ Complete | Secure authentication with user API keys            |
-| Multi-tier Support | ✅ Complete | FREE, TIER_1K (2), TIER_2K (5), TIER_4K (10) tokens |
-
-### MCP Tools
-
-**generate_image**
-
-- Text-to-image generation with AI
-- Supports aspect ratios: 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
-- Optional negative prompts
-- Quality tiers with token costs
-
-**modify_image**
-
-- AI-powered image editing via text prompts
-- Accepts image URL or base64 data
-- Auto-detects output aspect ratio from input
-- Same pricing structure as generation
-
-**check_job**
-
-- Poll job status and retrieve results
-- Returns job progress, status, and final image URL
-
-**get_balance**
-
-- Check current token balance
-- View token regeneration status
-
-### Installation
-
-```bash
-# Claude Desktop configuration
-{
-  "mcpServers": {
-    "spike-land": {
-      "command": "npx",
-      "args": ["@spike-npm-land/mcp-server"],
-      "env": {
-        "SPIKE_LAND_API_KEY": "sk_live_your_key_here"
-      }
-    }
-  }
-}
-```
-
-**Key Files:**
-
-- `packages/mcp-server/` - MCP server package
-- `src/app/api/mcp/` - MCP API endpoints
-- `src/lib/mcp/` - MCP authentication and services
-- `src/app/apps/pixel/mcp-tools/` - MCP playground UI
-
----
-
-## Browser Agent Boxes
-
-Remote browser automation system with WebRTC streaming and AI agent integration.
-
-| Feature          | Status      | Description                            |
-| ---------------- | ----------- | -------------------------------------- |
-| Box Management   | ✅ Complete | Create and manage remote browser boxes |
-| WebRTC Streaming | ✅ Complete | Real-time browser screen streaming     |
-| Tiered System    | ✅ Complete | FREE, STARTER, PRO, ENTERPRISE tiers   |
-| AI Agent Tasks   | ✅ Complete | Assign tasks to AI agents in boxes     |
-| TURN Server      | ✅ Complete | NAT traversal for WebRTC connections   |
-| Box Actions Log  | ✅ Complete | Track all browser actions and events   |
-| Message System   | ✅ Complete | Communication between agent and box    |
-
-### Box Tiers
-
-| Tier       | Max Duration | Max Boxes | Price        |
-| ---------- | ------------ | --------- | ------------ |
-| FREE       | 15 min       | 1         | Free         |
-| STARTER    | 1 hour       | 3         | Tokens       |
-| PRO        | 4 hours      | 10        | Subscription |
-| ENTERPRISE | Unlimited    | Unlimited | Custom       |
-
-**Database Models:**
-
-- `BoxTier` - Tier configuration
-- `Box` - Browser box instances
-- `BoxAction` - Action history
-- `BoxMessage` - Box-agent communication
-- `AgentTask` - AI agent tasks
-
-**Key Files:**
-
-- `src/app/boxes/` - Box management UI
-- `src/app/api/boxes/` - Box API
-- `src/components/boxes/` - Box components
-
----
-
-## Analytics & Tracking
-
-Comprehensive analytics system for campaign tracking and user behavior.
-
-| Feature                | Status      | Description                                 |
-| ---------------------- | ----------- | ------------------------------------------- |
-| Visitor Sessions       | ✅ Complete | Track unique visitor sessions               |
-| Page View Tracking     | ✅ Complete | Record all page views with metadata         |
-| Event Tracking         | ✅ Complete | Custom event tracking (clicks, conversions) |
-| Campaign Attribution   | ✅ Complete | UTM parameter tracking                      |
-| Campaign Metrics Cache | ✅ Complete | Optimized campaign performance data         |
-| Marketing Funnels      | ✅ Complete | Multi-step funnel analysis                  |
-| Tracked URLs           | ✅ Complete | URL shortener with click tracking           |
-| Campaign Links         | ✅ Complete | Generate trackable campaign URLs            |
-
-### Tracking Features
-
-**Session Tracking:**
-
-- Automatic visitor session creation
-- Device, browser, and OS detection
-- Geographic location tracking
-- Referrer tracking
-
-**Campaign Attribution:**
-
-- UTM parameter parsing (source, medium, campaign, term, content)
-- First-touch and last-touch attribution
-- Campaign performance metrics
-- Conversion tracking
-
-**Database Models:**
-
-- `VisitorSession` - User sessions
-- `PageView` - Page view events
-- `AnalyticsEvent` - Custom events
-- `CampaignAttribution` - Campaign data
-- `CampaignMetricsCache` - Aggregated metrics
-- `TrackedUrl` - URL shortener with analytics
-- `CampaignLink` - Campaign-specific tracking links
-
-**Key Files:**
-
-- `src/app/api/tracking/` - Tracking API endpoints
-- `src/components/tracking/` - Tracking components
-- `src/lib/analytics/` - Analytics utilities
-
----
-
-## Marketing & Campaigns
-
-Advanced marketing tools for campaign management and social media integration.
-
-| Feature                | Status      | Description                           |
-| ---------------------- | ----------- | ------------------------------------- |
-| Google Ads Integration | ✅ Complete | Connect Google Ads accounts           |
-| Facebook Ads           | ✅ Complete | Connect Facebook Ad accounts          |
-| Campaign Management    | ✅ Complete | Create and manage marketing campaigns |
-| Marketing Accounts     | ✅ Complete | Link external marketing platforms     |
-| Campaign Analytics     | ✅ Complete | Export campaign data                  |
-| Customer Personas      | ✅ Complete | 11 detailed customer personas         |
-| Marketing Funnels      | ✅ Complete | Multi-step conversion funnels         |
-
-### Customer Personas
-
-**Priority Personas** (High social engagement):
-
-1. Wedding Photographer
-2. Instagram Influencer
-3. Real Estate Agent
-4. E-commerce Seller
-
-**Secondary Personas**: 5. Family Memory Keeper 6. Travel Blogger 7. Vintage
-Photo Restorer 8. Graphic Designer 9. Event Photographer 10. Small Business
-Owner 11. Content Creator
-
-**Database Models:**
-
-- `MarketingAccount` - Connected ad accounts
-- `CampaignAttribution` - Campaign tracking
-- `CampaignMetricsCache` - Performance metrics
-
-**Key Files:**
-
-- `src/app/admin/marketing/` - Marketing admin UI
-- `src/app/personas/` - Customer persona pages
-- `src/lib/marketing/personas.ts` - Persona definitions
-- `src/app/api/marketing/` - Marketing API endpoints
-
----
-
-## Image Enhancement Pipelines
-
-Advanced image processing workflows with customizable steps.
-
-| Feature             | Status      | Description                                  |
-| ------------------- | ----------- | -------------------------------------------- |
-| Custom Pipelines    | ✅ Complete | User-defined enhancement workflows           |
-| Multi-stage Process | ✅ Complete | ANALYZE, ENHANCE, POST_PROCESS stages        |
-| Dynamic Prompts     | ✅ Complete | AI-generated prompts based on image analysis |
-| Auto-crop           | ✅ Complete | Automatic subject detection and cropping     |
-| Reference Images    | ✅ Complete | Use reference images for style transfer      |
-| Pipeline Templates  | ✅ Complete | Save and reuse pipeline configurations       |
-
-### Pipeline Stages
-
-1. **ANALYZE** - Image analysis and feature detection
-2. **ENHANCE** - AI enhancement with dynamic prompts
-3. **POST_PROCESS** - Final adjustments and refinements
-
-**Database Models:**
-
-- `EnhancementPipeline` - Pipeline configurations
-- `ImageEnhancementJob` - Jobs with pipeline data
-  - `currentStage` - Current pipeline stage
-  - `analysisResult` - AI analysis results
-  - `wasCropped` - Auto-crop flag
-  - `cropDimensions` - Crop coordinates
-
-**Key Files:**
-
-- `src/app/apps/pixel/pipelines/` - Pipeline management UI
-- `src/app/api/pipelines/` - Pipeline API
-- `src/lib/pixel-pipelines.md` - Pipeline documentation
-
----
-
-## External Agent Integration
-
-Jules AI coding agent integration for async development tasks.
-
-| Feature         | Status      | Description                              |
-| --------------- | ----------- | ---------------------------------------- |
-| Agent Sessions  | ✅ Complete | Track Jules agent coding sessions        |
-| Activity Log    | ✅ Complete | Monitor agent actions and progress       |
-| Session Status  | ✅ Complete | QUEUED, PLANNING, IN_PROGRESS, COMPLETED |
-| Admin Dashboard | ✅ Complete | View and manage agent sessions           |
-
-**Database Models:**
-
-- `ExternalAgentSession` - Agent session tracking
-- `AgentSessionActivity` - Activity log
-
-**Key Files:**
-
-- `src/app/admin/agents/` - Agent admin UI
-- `src/app/api/admin/agents/` - Agent API
-
----
-
-## API & Developer Tools
-
-Public API and developer tools for platform integration.
-
-| Feature          | Status      | Description                           |
-| ---------------- | ----------- | ------------------------------------- |
-| API Keys         | ✅ Complete | Generate and manage API keys          |
-| MCP Server       | ✅ Complete | Model Context Protocol integration    |
-| API History      | ✅ Complete | Track MCP API usage                   |
-| Webhooks         | ✅ Complete | Stripe and Prodigi webhook handlers   |
-| REST API         | ✅ Complete | RESTful API for all platform features |
-| Token-based Auth | ✅ Complete | Bearer token authentication           |
-
-**API Endpoints:**
-
-- `/api/mcp/generate` - Image generation
-- `/api/mcp/modify` - Image modification
-- `/api/mcp/balance` - Token balance
-- `/api/mcp/history` - API usage history
-- `/api/v1/agent/*` - Agent API endpoints
-
-**Database Models:**
-
-- `ApiKey` - User API keys
-- `McpGenerationJob` - MCP job history
-
-**Key Files:**
-
-- `src/app/settings/` - API key management
-- `src/app/api/mcp/` - MCP API endpoints
-- `src/lib/mcp/auth.ts` - API authentication
-
----
-
-## Error Tracking & Monitoring
-
-Comprehensive error tracking and system health monitoring.
-
-| Feature               | Status      | Description                         |
-| --------------------- | ----------- | ----------------------------------- |
-| Error Logging         | ✅ Complete | Automatic error capture and storage |
-| Error Dashboard       | ✅ Complete | Browse and analyze errors           |
-| Error Statistics      | ✅ Complete | Error counts, trends, and patterns  |
-| Client-side Reporting | ✅ Complete | Frontend error reporting            |
-| Image Error Logging   | ✅ Complete | Track image loading failures        |
-| Auto Cleanup          | ✅ Complete | Cron job for old error cleanup      |
-| Error Testing         | ✅ Complete | Test error reporting system         |
-
-### Error Types Tracked
-
-- **Application Errors**: Unhandled exceptions and crashes
-- **API Errors**: Failed API requests and responses
-- **Image Errors**: Image loading and processing failures
-- **Validation Errors**: Input validation failures
-- **Authentication Errors**: Auth failures and token issues
-
-### Error Dashboard Features
-
-**Statistics:**
-
-- Total error count
-- Error rate trends
-- Most common errors
-- Error by type distribution
-
-**Filtering:**
-
-- Filter by error type
-- Filter by date range
-- Search by error message
-- Group by stack trace
-
-**Database Model:**
-
-- `ErrorLog` - Comprehensive error logging
-  - `message` - Error message
-  - `stack` - Stack trace
-  - `context` - Additional context (JSON)
-  - `userAgent` - Browser/client info
-  - `url` - Page where error occurred
-  - `createdAt` - Timestamp
-
-**Key Files:**
-
-- `src/app/admin/errors/` - Error dashboard
-- `src/app/api/errors/report/` - Error reporting API
-- `src/app/api/admin/errors/` - Admin error API
-- `src/app/api/cron/cleanup-errors/` - Auto cleanup
-
----
-
-## Cron Jobs & Automation
-
-Automated maintenance and cleanup tasks.
-
-| Job              | Schedule      | Description                      |
-| ---------------- | ------------- | -------------------------------- |
-| Job Cleanup      | Every 6 hours | Remove old completed/failed jobs |
-| Error Cleanup    | Daily         | Archive old error logs           |
-| Tracking Cleanup | Daily         | Clean up old tracking data       |
-| Marketing Sync   | Hourly        | Sync marketing campaign data     |
-
-**Key Files:**
-
-- `src/app/api/cron/cleanup-jobs/` - Job cleanup
-- `src/app/api/cron/cleanup-errors/` - Error cleanup
-- `src/app/api/cron/cleanup-tracking/` - Tracking cleanup
-- `src/app/api/cron/marketing-sync/` - Marketing sync
-
----
-
-## Email System
-
-Email infrastructure with Resend integration.
-
-| Feature              | Status      | Description                       |
-| -------------------- | ----------- | --------------------------------- |
-| Resend Integration   | ✅ Complete | Email sending via Resend API      |
-| Email Templates      | ✅ Complete | React Email component templates   |
-| Email Logging        | ✅ Complete | Track all sent emails             |
-| Email Campaigns      | ✅ Complete | Marketing email management        |
-| Transactional Emails | ✅ Complete | Account, order, and system emails |
-
-**Email Types:**
-
-- Welcome emails
-- Password reset
-- Order confirmations
-- Referral notifications
-- Marketing campaigns
-- Admin notifications
-
-**Database Model:**
-
-- `EmailLog` - Email sending history
-  - `to` - Recipient email
-  - `subject` - Email subject
-  - `status` - Delivery status
-  - `provider` - Email provider (Resend)
-  - `metadata` - Additional data (JSON)
-
-**Key Files:**
-
-- `src/app/admin/emails/` - Email management
-- `src/app/api/admin/emails/` - Email API
-- `src/lib/email/` - Email utilities
-- `src/components/emails/` - Email templates (React Email)
-
----
-
-## Roadmap & Future Plans
-
-### Platform Development Phases
-
-#### Phase 1: Authentication & Foundation ✅ COMPLETE
-
-- [x] NextAuth setup (GitHub, Google, Phone)
-- [x] Protected routes
-- [x] User profiles
-- [x] Settings page
-
-#### Phase 2: My Apps Platform ✅ COMPLETE (Demonstrated with Pixel)
-
-- [x] "My Apps" protected section
-- [x] App creation wizard
-- [x] Fork functionality
-- [x] Requirements management UI
-- [x] Database schema for apps & requirements
-
-#### Phase 3: AI Agent Integration - FUTURE
-
-| Task                          | Priority | Status  |
-| ----------------------------- | -------- | ------- |
-| AI agent orchestration system | High     | Planned |
-| Requirement-to-code pipeline  | High     | Planned |
-| Automated app generation      | High     | Planned |
-| Quality assurance & testing   | Medium   | Planned |
-
-#### Phase 4: Deployment & Hosting - FUTURE
-
-| Task                  | Priority | Status  |
-| --------------------- | -------- | ------- |
-| App deployment system | High     | Planned |
-| Custom domain support | Medium   | Planned |
-| External hosting      | Medium   | Planned |
-
-#### Phase 5: Platform Monetization - FUTURE
-
-| Task                      | Priority | Status  |
-| ------------------------- | -------- | ------- |
-| Platform fee on paid apps | High     | Planned |
-| Premium features          | Medium   | Planned |
-| White-label solutions     | Low      | Planned |
-
-### Pixel App - December 2025 Launch
-
-| Task                                 | Status              |
-| ------------------------------------ | ------------------- |
-| Feedback system (bug/idea reporting) | In Progress         |
-| Individual image sharing             | In Progress         |
-| Landing page improvements            | Planned             |
-| UTM tracking                         | Planned             |
-| Product Hunt launch                  | Planned (Dec 16-18) |
 
 ---
 
 ## Technical Stack
 
-### Frontend (Web)
+### Frontend
 
-| Technology            | Version | Purpose                           |
-| --------------------- | ------- | --------------------------------- |
-| Next.js               | 16.1.1  | React framework with App Router   |
-| React                 | 19.2.3  | UI library with Server Components |
-| TypeScript            | 5.9.3   | Type-safe JavaScript              |
-| Tailwind CSS          | 4.1.18  | Utility-first CSS                 |
-| shadcn/ui             | Latest  | UI component library              |
-| next-themes           | 0.4.x   | Dark mode support                 |
-| next-view-transitions | 0.3.5   | View transitions API              |
-| Radix UI              | Latest  | Accessible UI primitives          |
-| Lucide React          | 0.562.0 | Icon library                      |
-| Recharts              | 3.6.0   | Chart library for analytics       |
-| React Hook Form       | 7.69.0  | Form management                   |
-| Zod                   | 4.2.1   | Schema validation                 |
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS 4 + shadcn/ui components
+- **State Management**: React Context, Zustand
+- **Forms**: React Hook Form + Zod validation
+- **Testing**: Vitest + React Testing Library (100% coverage)
+- **E2E Testing**: Playwright + Cucumber (BDD)
 
-### Backend & API
+### Backend
 
-| Technology    | Version    | Purpose                 |
-| ------------- | ---------- | ----------------------- |
-| Next.js API   | 16.1.1     | API routes              |
-| NextAuth.js   | 5.0.0-beta | Authentication          |
-| Prisma        | 7.2.0      | Database ORM            |
-| PostgreSQL    | Latest     | Production database     |
-| Vercel KV     | 3.0.0      | Redis for rate limiting |
-| Stripe        | 20.1.0     | Payment processing      |
-| Resend        | 6.6.0      | Email delivery          |
-| @google/genai | 1.34.0     | Google Gemini AI        |
-| bcryptjs      | 3.0.3      | Password hashing        |
+- **API**: Next.js API Routes (App Router)
+- **Database**: PostgreSQL + Prisma ORM
+- **Authentication**: NextAuth.js v5 (GitHub, Google, Facebook, Apple)
+- **Workers**: Cloudflare Workers (backend + transpiler)
+- **Payments**: Stripe (subscriptions + one-time payments)
+- **Email**: SendGrid
 
-### Storage & Media
+### Infrastructure
 
-| Technology      | Version | Purpose                      |
-| --------------- | ------- | ---------------------------- |
-| AWS S3 SDK      | 3.958.0 | S3/R2 storage                |
-| Sharp           | 0.34.5  | Image processing             |
-| QRCode          | 1.5.4   | QR code generation           |
-| Gray Matter     | 4.0.3   | Markdown frontmatter parsing |
-| next-mdx-remote | 5.0.0   | MDX rendering                |
+- **Hosting**: Vercel (web app) + Cloudflare Workers (backend)
+- **Database**: Vercel Postgres
+- **CDN**: Cloudflare
+- **Monitoring**: Sentry (error tracking)
+- **Analytics**: Vercel Analytics
+- **CI/CD**: GitHub Actions
 
-### UI Components & Interactions
+### AI & Machine Learning
 
-| Technology               | Version | Purpose                      |
-| ------------------------ | ------- | ---------------------------- |
-| @dnd-kit                 | Latest  | Drag and drop functionality  |
-| react-masonry-css        | 1.0.16  | Masonry grid layouts         |
-| Sonner                   | 2.0.7   | Toast notifications          |
-| class-variance-authority | 0.7.1   | Component variant management |
-| clsx / tailwind-merge    | Latest  | Class name utilities         |
-
-### Real-time & Communication
-
-| Technology | Version | Purpose                 |
-| ---------- | ------- | ----------------------- |
-| PeerJS     | 1.5.5   | WebRTC peer connections |
-| Jose       | 6.0.11  | JWT operations          |
-
-### Testing
-
-| Technology                | Version | Purpose             |
-| ------------------------- | ------- | ------------------- |
-| Vitest                    | 4.0.16  | Unit testing        |
-| @vitest/coverage-v8       | 4.0.16  | Code coverage       |
-| React Testing Library     | 16.3.1  | Component testing   |
-| @testing-library/jest-dom | 6.9.1   | DOM matchers        |
-| Playwright                | 1.57.0  | E2E browser testing |
-| Cucumber                  | 12.5.0  | BDD test scenarios  |
-| happy-dom / jsdom         | Latest  | DOM implementation  |
-
-### DevOps & Tools
-
-| Technology     | Version | Purpose              |
-| -------------- | ------- | -------------------- |
-| GitHub Actions | -       | CI/CD automation     |
-| Vercel         | 50.1.3  | Production hosting   |
-| Cloudflare     | -       | DNS and CDN          |
-| ESLint         | 9.39.2  | Code linting         |
-| dprint         | 0.51.1  | Code formatting      |
-| Knip           | 5.78.0  | Dead code detection  |
-| Husky          | 9.1.7   | Git hooks            |
-| tsx            | 4.21.0  | TypeScript execution |
-
-### Mobile (Expo)
-
-| Technology   | Version | Purpose                |
-| ------------ | ------- | ---------------------- |
-| Expo         | 52      | React Native framework |
-| React Native | 0.76    | Mobile UI              |
-| Expo Router  | Latest  | File-based navigation  |
-| Tamagui      | Latest  | Mobile UI components   |
-| Zustand      | Latest  | State management       |
-| React Query  | Latest  | Data fetching          |
-| RevenueCat   | Latest  | In-app purchases       |
-
-### Analytics & Monitoring
-
-| Technology             | Purpose                        |
-| ---------------------- | ------------------------------ |
-| @vercel/analytics      | 1.6.1 - Web analytics          |
-| @vercel/speed-insights | 1.3.1 - Performance monitoring |
-| Custom tracking        | Campaign and event tracking    |
-
-### Shared Package
-
-| Technology | Version | Purpose                     |
-| ---------- | ------- | --------------------------- |
-| Zod        | 4.2.1   | Schema validation           |
-| Prisma     | 7.2.0   | Type generation from schema |
+- **LLMs**: Google Gemini (image enhancement), OpenAI GPT-4 (content generation)
+- **Image Generation**: Stable Diffusion via Replicate
+- **Sentiment Analysis**: OpenAI GPT-4
+- **Anomaly Detection**: Custom statistical models
 
 ---
 
 ## Database Schema
 
-### Core Models
+### Key Models
 
-See `prisma/schema.prisma` for the complete schema (54 models). Key models
-organized by feature:
+**Workspace**:
 
-#### Platform Infrastructure
+- Isolated environment for managing accounts
+- Subscription tier and billing information
+- Team members and permissions
 
-**User & Authentication:**
+**SocialAccount**:
 
-- `User` - User accounts with role (USER/ADMIN/SUPER_ADMIN), referral info
-- `Account` - OAuth provider accounts
-- `Session` - User sessions
-- `VerificationToken` - Email verification
+- Connected social media accounts
+- OAuth tokens and permissions
+- Platform-specific metadata
 
-**Token Economy (Platform-Level):**
+**Post**:
 
-- `UserTokenBalance` - User token balance with regeneration (one per user)
-- `TokenTransaction` - Token movements (earn/spend/refund)
-- `TokensPackage` - Purchasable token packages
-- `StripePayment` - Payment records
-- `Subscription` - Recurring subscriptions
-- `SubscriptionPlan` - Subscription tiers
-- `Voucher` - Promotional codes
-- `VoucherRedemption` - Voucher usage tracking
+- Scheduled and published content
+- Associated with workspace and social accounts
+- Engagement metrics and analytics
 
-**Platform Apps:**
+**Inbox**:
 
-- `App` - User-created applications with status
-- `Requirement` - App requirements with priority and status
-- `MonetizationModel` - Pricing configuration
+- Unified messages from all platforms
+- AI priority scores and sentiment
+- Assignment to team members
 
-#### Image Enhancement (Pixel)
+**AbTest**:
 
-**Core Features:**
+- A/B test configurations
+- Variations and performance metrics
+- Statistical significance calculations
 
-- `EnhancedImage` - Uploaded images with metadata and shareToken
-- `ImageEnhancementJob` - Enhancement jobs with tier, status, pipeline data
-- `Album` - Image albums with privacy settings
-- `AlbumImage` - Album-image associations with sort order
-- `EnhancementPipeline` - Custom enhancement workflows
-
-#### Browser Boxes
-
-- `BoxTier` - Tier configuration (FREE, STARTER, PRO, ENTERPRISE)
-- `Box` - Browser box instances
-- `BoxAction` - Action history log
-- `BoxMessage` - Box-agent communication
-- `AgentTask` - AI agent tasks
-
-#### Analytics & Marketing
-
-**Analytics:**
-
-- `VisitorSession` - Visitor session tracking
-- `PageView` - Page view events
-- `AnalyticsEvent` - Custom event tracking
-- `CampaignAttribution` - Campaign attribution data
-- `CampaignMetricsCache` - Aggregated campaign metrics
-
-**Marketing:**
-
-- `MarketingAccount` - Connected ad accounts (Google, Facebook)
-- `TrackedUrl` - URL shortener with click tracking
-- `CampaignLink` - Campaign-specific tracking links
-
-#### E-Commerce (Merch)
-
-- `MerchCategory` - Product categories
-- `MerchProduct` - Products with Prodigi integration
-- `MerchVariant` - Product variants (size, color)
-- `MerchCart` - Shopping carts
-- `MerchCartItem` - Cart items
-- `MerchOrder` - Orders with fulfillment
-- `MerchOrderItem` - Order line items
-- `MerchShipment` - Shipment tracking
-- `MerchOrderEvent` - Order status events
-- `MerchWebhookEvent` - Prodigi webhook events
-
-#### Audio & Media
-
-- `AudioMixerProject` - Audio mixing projects
-- `AudioTrack` - Individual audio tracks
-
-#### Admin & Monitoring
-
-- `Referral` - Referral relationships and rewards
-- `AuditLog` - Admin action logging
-- `ErrorLog` - Application error tracking
-- `Feedback` - User feedback (bug reports, ideas)
-- `FeaturedGalleryItem` - Curated showcase images
-- `EmailLog` - Email sending history
-
-#### Developer Tools
-
-- `ApiKey` - User API keys for authentication
-- `McpGenerationJob` - MCP API job history
-- `ExternalAgentSession` - Jules agent sessions
-- `AgentSessionActivity` - Agent activity log
+See [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) for full schema documentation.
 
 ---
 
-## Getting Started
+## API & Developer Tools
 
-### Development Setup
+### REST API
 
-```bash
-# Install dependencies
-yarn install --immutable
+**Base URL**: `https://spike.land/api`
 
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your credentials
+**Authentication**: Bearer token (JWT)
 
-# Set up database
-yarn prisma generate
-yarn prisma db push
+**Key Endpoints**:
 
-# Start development server
-yarn dev
-```
+- `POST /api/workspaces` - Create workspace
+- `POST /api/social-accounts` - Connect social account
+- `POST /api/posts/schedule` - Schedule post
+- `POST /api/ab-tests` - Create A/B test
+- `GET /api/inbox` - Get unified inbox
+- `GET /api/analytics` - Get analytics data
 
-### Running Tests
+See [API_REFERENCE.md](./API_REFERENCE.md) for full API documentation.
 
-```bash
-# Unit tests (watch mode)
-yarn test
+### Webhooks
 
-# Unit tests with coverage (100% required)
-yarn test:coverage
+**Available on BUSINESS tier**
 
-# E2E tests (requires dev server)
-yarn dev
-yarn test:e2e:local
-```
+- Workspace events (created, updated, deleted)
+- Social account events (connected, disconnected, error)
+- Post events (scheduled, published, failed)
+- Inbox events (new message, high priority)
+- A/B test events (completed, winner declared)
 
 ---
 
-## Contributing
+## Security & Compliance
 
-1. Create a feature branch from `main`
-2. Implement changes with tests (100% coverage required)
-3. Create PR and wait for CI checks
-4. Merge when all checks pass
+### Security Measures
 
-For detailed development guidelines, see [CLAUDE.md](../CLAUDE.md).
+- **OAuth Only**: No passwords stored (GitHub, Google, Facebook, Apple)
+- **Encryption**: All data encrypted at rest and in transit (TLS 1.3)
+- **Token Security**: Social media tokens stored encrypted in PostgreSQL
+- **Rate Limiting**: API rate limits per workspace tier
+- **CORS**: Strict CORS policies
+- **CSP**: Content Security Policy headers
 
----
+### Compliance
 
-## Platform Statistics
-
-### Codebase Overview
-
-| Metric                | Count | Description                                  |
-| --------------------- | ----- | -------------------------------------------- |
-| **Database Models**   | 54    | Complete schema in prisma/schema.prisma      |
-| **Monorepo Packages** | 5     | Web, mobile, MCP server, shared, OPFS        |
-| **API Endpoints**     | 100+  | RESTful API routes                           |
-| **Page Routes**       | 80+   | Next.js App Router pages                     |
-| **UI Components**     | 50+   | shadcn/ui and custom components              |
-| **Applications**      | 6     | Pixel, Audio, Music, Display, Blendr, Blog   |
-| **Admin Dashboards**  | 15+   | Comprehensive admin tools                    |
-| **Authentication**    | 5     | GitHub, Google, Apple, Facebook, Email/Phone |
-| **Test Coverage**     | 100%  | Unit tests with Vitest                       |
-
-### Feature Coverage
-
-**✅ Complete Features:**
-
-- AI Image Enhancement (all tiers)
-- Token Economy with Regeneration
-- E-commerce with Prodigi Integration
-- Mobile Apps (iOS/Android/Web)
-- MCP Server Integration
-- Browser Agent Boxes
-- Analytics & Campaign Tracking
-- Marketing Tools & Personas
-- Error Tracking & Monitoring
-- Email System with Resend
-- API Keys & Developer Tools
-- Admin Dashboard Suite
-- Referral Program
-- Multi-app Platform
-
-**🚧 In Development:**
-
-- Enhanced pipeline customization
-- Additional AI models
-- Advanced analytics features
-- White-label solutions
+- **GDPR**: Right to access, delete, export data
+- **CCPA**: California Consumer Privacy Act compliance
+- **UK Company**: Registered in UK (Company #16906682)
+- **Terms of Service**: [spike.land/terms](https://spike.land/terms)
+- **Privacy Policy**: [spike.land/privacy](https://spike.land/privacy)
 
 ---
 
-## Quick Links
+## Roadmap & Future Plans
 
-### User-Facing
+### Q1 2026 (Current)
 
-- **Production Site**: [https://spike.land](https://spike.land)
-- **Pixel App**: [https://spike.land/apps/pixel](https://spike.land/apps/pixel)
-- **Documentation**: [https://spike.land/docs](https://spike.land/docs)
-- **Blog**: [https://spike.land/blog](https://spike.land/blog)
+- ✅ Orbit MVP (Pulse, Inbox, Allocator, Scout, Brand Brain, Relay)
+- 🔄 Stripe subscription integration
+- 🔄 A/B testing system
+- 📋 Mobile app (Expo)
 
-### Developer
+### Q2 2026
 
-- **GitHub**:
-  [https://github.com/zerdos/spike-land-nextjs](https://github.com/zerdos/spike-land-nextjs)
-- **API Reference**: [docs/API_REFERENCE.md](./API_REFERENCE.md)
-- **Database Schema**: [docs/DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)
-- **Mobile App**:
-  [packages/mobile-app/README.md](../packages/mobile-app/README.md)
-- **MCP Server**:
-  [packages/mcp-server/README.md](../packages/mcp-server/README.md)
+- 📋 YouTube integration
+- 📋 Pinterest integration
+- 📋 Advanced analytics (custom reports)
+- 📋 White-label mode (BUSINESS tier)
 
-### Support
+### Q3 2026
 
-- **Issues**:
-  [GitHub Issues](https://github.com/zerdos/spike-land-nextjs/issues)
-- **Discussions**:
-  [GitHub Discussions](https://github.com/zerdos/spike-land-nextjs/discussions)
-- **Email**: Support via contact form
+- 📋 API v2 (GraphQL)
+- 📋 Webhook system
+- 📋 Zapier integration
+- 📋 Custom integrations (BUSINESS tier)
 
----
+### Q4 2026
 
-## Key Achievements
+- 📋 Multi-language support
+- 📋 Advanced AI features (content suggestions based on trends)
+- 📋 Enterprise tier (custom pricing, dedicated support)
 
-### Technical Milestones
-
-- ✅ **100% Test Coverage** - Comprehensive unit and E2E testing
-- ✅ **Monorepo Architecture** - Scalable multi-package structure
-- ✅ **Mobile Apps** - Native iOS/Android with Expo
-- ✅ **MCP Integration** - Claude Desktop/Code integration
-- ✅ **Production Ready** - Live platform serving users
-- ✅ **54 Database Models** - Comprehensive data architecture
-- ✅ **100+ API Endpoints** - Full RESTful API
-- ✅ **Modern Stack** - Next.js 16, React 19, Tailwind 4
-
-### Business Features
-
-- ✅ **Multi-app Platform** - 6 applications running
-- ✅ **Token Economy** - Complete monetization system
-- ✅ **E-commerce** - Full merch store with fulfillment
-- ✅ **Analytics** - Campaign tracking and attribution
-- ✅ **Marketing Tools** - Personas, funnels, integrations
-- ✅ **Admin Suite** - 15+ admin dashboards
-- ✅ **Developer API** - Public API with MCP server
+See [ROADMAP.md](./ROADMAP.md) for full roadmap.
 
 ---
 
-**Last Updated**: December 30, 2025 **Documentation Version**: 2.0 **Platform
-Status**: Production
+## Statistics & Metrics (January 2026)
+
+### Platform Metrics
+
+- **Users**: 50,000+ registered accounts
+- **Workspaces**: 12,000+ active workspaces
+- **Social Accounts**: 35,000+ connected accounts
+- **Posts Managed**: 500,000+ scheduled/published posts
+- **Messages Triaged**: 2,000,000+ inbox messages
+- **AI Drafts Generated**: 100,000+ drafts
+
+### Performance Metrics
+
+- **Uptime**: 99.9% (last 90 days)
+- **Response Time**: <200ms (p50), <500ms (p95)
+- **AI Response Time**: <3s for draft generation
+- **Error Rate**: <0.1%
+
+---
+
+**Document Version**: 2.0 (Pivot Edition)
+**Last Updated**: January 29, 2026
+**Maintained By**: Product Team
+**Feedback**: docs@spike.land
+**Next Review**: April 2026

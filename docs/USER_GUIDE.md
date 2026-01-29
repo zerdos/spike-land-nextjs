@@ -1,1469 +1,645 @@
 # Spike Land - User Guide
 
-> **Last Updated**: December 2025 **Platform**: [spike.land](https://spike.land)
+> **Last Updated**: January 2026
+> **Platform**: [spike.land](https://spike.land)
 > **Company**: SPIKE LAND LTD (UK Company #16906682)
 
 ---
 
-## 🚀 Quick Start (60 Seconds to Your First Enhancement)
+## 🚀 Quick Start (2 Minutes to Your Social Media Command Center)
 
-Welcome to Spike Land! Here's the fastest way to get started with Pixel, our
-AI-powered image enhancement app:
+Welcome to Spike Land! Here's the fastest way to get started with **Orbit**, your AI-powered social media command center:
 
-### Step 1: Sign Up (15 seconds)
+### Step 1: Sign Up (30 seconds)
 
-1. Visit [spike.land](https://spike.land) or go directly to
-   [spike.land/apps/pixel](https://spike.land/apps/pixel)
-2. Click "Sign In" in the header
+1. Visit [spike.land/orbit](https://spike.land/orbit)
+2. Click **"Get Started"**
 3. Choose your authentication method:
    - **GitHub OAuth**: Sign in with your GitHub account
    - **Google OAuth**: Sign in with your Google account
+   - **Email**: Sign up with your email address
 
-### Step 2: Automatic Free Tokens
+### Step 2: Create Your First Workspace (30 seconds)
 
-✨ **Your account automatically generates FREE tokens** - 1 token every 15
-minutes, up to 100 tokens maximum.
+A **workspace** is your isolated environment for managing social media accounts, team members, and content.
 
-**What you can do with free tokens:**
+1. After signing in, you'll be prompted to create a workspace
+2. Enter workspace details:
+   - **Name**: Your brand or client name (e.g., "Acme Corporation")
+   - **Description** (optional): Internal notes about this workspace
+3. Click **"Create Workspace"**
 
-- **TIER_1K** (2 tokens): 50 enhancements at 1024px resolution
-- **TIER_2K** (5 tokens): 20 enhancements at 2048px resolution
-- **TIER_4K** (10 tokens): 10 enhancements at 4096px resolution
+### Step 3: Connect Social Accounts (60 seconds)
 
-### Step 3: Create Your First Album (15 seconds)
+1. You'll be redirected to the **Settings → Social Accounts** page
+2. Click **"Connect Account"** for your desired platform(s):
+   - Instagram
+   - Facebook
+   - Twitter/X
+   - LinkedIn
+   - TikTok
+3. Follow the OAuth flow to grant permissions
+4. Verify connection success
 
-1. After signing in, you'll be on the Pixel app homepage
-2. Click **"New Album"** button
-3. Give your album a name (e.g., "My Photos")
-4. Click "Create"
+**Free Tier Limit**: Connect up to 3 social accounts
 
-### Step 4: Upload and Enhance (30 seconds)
+### Step 4: Explore Your Dashboard
 
-1. Click on your new album to open it
-2. Drag and drop images into the album, or click the upload button
-3. Once uploaded, images appear as cards in your album
-4. Click on an image to view it in detail
-5. Use the enhancement controls to enhance at your chosen quality tier
-6. View the before/after comparison with the interactive slider
-7. Download your enhanced image
+Once connected, navigate to **Pulse** (the dashboard) to see:
 
-**That's it!** You've successfully enhanced your first image with AI.
+- **Health Scores** for each connected account
+- **Real-Time Metrics** (followers, engagement, reach)
+- **Anomaly Alerts** (unusual activity detected by AI)
+- **Quick Actions** (schedule post, check inbox, analyze competitors)
 
-### What Makes Pixel Special?
-
-- **AI-Powered Enhancement**: Uses Google Gemini AI to intelligently upscale and
-  enhance images
-- **4-Stage Enhancement Pipeline**: Analysis → Auto-Crop → Smart Prompting →
-  Generation
-- **Album Organization**: Keep your images organized in albums
-- **Multiple Quality Tiers**: Choose from FREE, TIER_1K, TIER_2K, or TIER_4K
-- **Custom Pipelines**: Create and customize your own enhancement workflows
-- **Free to Start**: Passive token generation means you can use it for free
-- **No Forced Subscription**: Pay only for what you use, when you need it
-
-Ready for more? Keep reading for the complete guide.
+**That's it!** You're now managing your social media presence from one unified command center.
 
 ---
 
 ## Table of Contents
 
-1. [Getting Started](#getting-started)
-2. [Understanding Tokens](#understanding-tokens)
-3. [Creating and Managing Albums](#creating-and-managing-albums)
-4. [Uploading Images](#uploading-images)
-5. [Image Enhancement](#image-enhancement)
-6. [Enhancement Pipelines](#enhancement-pipelines)
-7. [Viewing and Organizing Images](#viewing-and-organizing-images)
-8. [Export and Download](#export-and-download)
-9. [Referral Program](#referral-program)
-10. [Account Settings](#account-settings)
-11. [FAQ](#faq)
-12. [Troubleshooting](#troubleshooting)
+1. [Core Features](#core-features)
+   - [Pulse Dashboard](#pulse-dashboard)
+   - [Unified Inbox](#unified-inbox)
+   - [Smart Allocator](#smart-allocator)
+   - [Competitive Scout](#competitive-scout)
+   - [Brand Brain](#brand-brain)
+   - [Relay (AI Drafts)](#relay-ai-drafts)
+2. [Workspace Management](#workspace-management)
+3. [Team Collaboration](#team-collaboration)
+4. [Subscription Tiers](#subscription-tiers)
+5. [Supporting Tools](#supporting-tools)
+   - [Pixel (Image Enhancement)](#pixel-image-enhancement)
+   - [Vibe Coding](#vibe-coding)
+6. [Account Settings](#account-settings)
+7. [FAQ](#faq)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
-## Getting Started
+## Core Features
 
-### Creating Your Account
+### Pulse Dashboard
 
-1. Visit [spike.land](https://spike.land) or go directly to the Pixel app at
-   [spike.land/apps/pixel](https://spike.land/apps/pixel)
-2. Click **"Sign In"** in the header (top right)
-3. Choose your authentication method:
-   - **GitHub OAuth**: Sign in with your GitHub account
-   - **Google OAuth**: Sign in with your Google account
-4. You're automatically signed in - no email verification required
-5. Your account starts generating **1 free token every 15 minutes** (up to 100
-   tokens)
+**What It Does**: Real-time health monitoring for your social media accounts with AI-powered anomaly detection.
 
-### Understanding the Interface
+**Key Metrics**:
 
-After signing in, you'll be redirected to the **Pixel app homepage**
-(`/apps/pixel`):
+- **Health Score** (0-100): Overall account health
+- **Follower Growth**: Daily/weekly trends
+- **Engagement Rate**: Likes, comments, shares per post
+- **Reach**: Unique accounts seeing your content
+- **Anomalies**: Unusual patterns detected (spikes, drops, spam attacks)
 
-**Header Elements:**
+**How to Use**:
 
-- **Pixel Logo**: Brand logo with "AI Image Enhancement" subtitle
-- **Pipelines Button**: Access to enhancement pipeline configurations
-- **Token Display**: Shows your current token balance and time until next free
-  token
+1. Navigate to **Pulse** from the sidebar
+2. View overview cards for all connected accounts
+3. Click any account for detailed analytics
+4. Set up **anomaly alerts** (email/Slack notifications)
 
-**Main Content:**
+**Anomaly Detection Examples**:
 
-- **Your Albums Section**: Grid view of all your albums
-- **New Album Button**: Create a new album to organize images
-- **Getting Started Tutorial**: Step-by-step guide for first-time users
+- Sudden follower drop (possible bot purge)
+- Engagement spike (viral post or fake engagement)
+- Unusual mention volume (potential PR crisis)
 
-### Supported Image Formats
+**Subscription Tier Features**:
 
-Pixel accepts these image formats:
+- **FREE**: Basic dashboard, 3 accounts
+- **PRO**: Advanced analytics, 10 accounts
+- **BUSINESS**: Custom KPI tracking, unlimited accounts
 
-| Format | Best For               | Notes                                 |
-| ------ | ---------------------- | ------------------------------------- |
-| JPEG   | Photos, general use    | Most common, good compression         |
-| PNG    | Graphics, transparency | Lossless quality, larger files        |
-| WebP   | Modern formats         | Excellent compression, newer browsers |
-| GIF    | Single-frame images    | Legacy support                        |
-| BMP    | Legacy formats         | Rare, full compatibility              |
-
-**Maximum File Size**: 25 MB per image **Upload Limit**: Up to 20 images can be
-uploaded at once
+📖 **[Full Pulse Documentation →](./ORBIT_USER_GUIDE.md#dashboard-pulse)**
 
 ---
 
-## Understanding Tokens
+### Unified Inbox
 
-### What Are Tokens?
+**What It Does**: Aggregates all mentions, DMs, and comments from all platforms into one interface with AI-powered triage.
 
-Tokens are Spike Land's platform currency. When you create a Spike Land account,
-you get a token balance that can be spent across any app on the platform. Think
-of tokens like credits that work everywhere on Spike Land.
+**Key Features**:
 
-Currently, the Pixel image enhancement app uses tokens to pay for AI-powered
-image enhancements. As more apps are added to the platform, your same token
-balance will work with all of them.
+- **Unified View**: All social messages in one place
+- **AI Priority Scoring**: Orbit ranks messages by urgency (0-100)
+- **Sentiment Analysis**: Positive, negative, neutral indicators
+- **Smart Filters**: By platform, priority, sentiment, unread status
+- **Bulk Actions**: Archive, assign, reply to multiple items
 
-### Token Sources
+**How to Use**:
 
-You can get tokens through four methods:
+1. Navigate to **Inbox** from the sidebar
+2. See all unread messages sorted by priority
+3. Click any message to view full context
+4. Use keyboard shortcuts (`J`/`K` to navigate, `R` to reply)
+5. Assign messages to team members (PRO/BUSINESS tier)
 
-#### 1. Free Automatic Regeneration
+**AI Triage Logic**:
 
-Get 1 free token every 15 minutes, up to a maximum of 100 tokens.
+- **High Priority**: Complaints, negative sentiment, influencer mentions
+- **Medium Priority**: Questions, neutral mentions
+- **Low Priority**: Thank-yous, positive comments
 
-**How it works:**
+**Subscription Tier Features**:
 
-- Tokens generate automatically while you sleep, work, or are away
-- You never need to do anything - it's passive
-- Perfect for casual users who enhance 1-2 images per day
-- Maximum balance: 100 free tokens
+- **FREE**: Basic inbox, no team assignment
+- **PRO**: Priority scoring, 3 team members
+- **BUSINESS**: Advanced filters, 10 team members, custom rules
 
-**Example Timeline:**
-
-- Start with 0 tokens
-- After 15 minutes: 1 token
-- After 2 hours: 8 tokens
-- After 25 hours: 100 tokens (capped)
-
-#### 2. Promotional Vouchers
-
-Redeem voucher codes for bonus tokens.
-
-**Current Vouchers:**
-
-| Code      | Tokens | Usage               | Link               |
-| --------- | ------ | ------------------- | ------------------ |
-| WELCOME50 | 50     | Unlimited           | Share with friends |
-| LAUNCH100 | 100    | Limited (1000 uses) | New user special   |
-| BETA25    | 25     | Limited (500 uses)  | Beta testers only  |
-
-**How to Redeem:**
-
-1. Go to Settings → Tokens → Redeem Voucher
-2. Enter voucher code
-3. Click "Redeem"
-4. Tokens added instantly
-
-**Important**: You can redeem multiple vouchers (one per code), but cannot
-redeem the same code twice.
-
-#### 3. Stripe One-Time Purchases
-
-Buy tokens directly with your credit or debit card.
-
-**Token Packages:**
-
-| Package           | Tokens | Price  | Per Token | Best For            |
-| ----------------- | ------ | ------ | --------- | ------------------- |
-| Starter Pack      | 50     | £2.99  | 6p        | Try it out          |
-| Essential Pack    | 150    | £7.99  | 5p        | Monthly user        |
-| Professional Pack | 500    | £19.99 | 4p        | Heavy usage         |
-| Enterprise Pack   | 2000   | £59.99 | 3p        | Teams/organizations |
-
-**How to Purchase:**
-
-1. Go to Settings → Tokens → Buy Tokens
-2. Select a package
-3. Click "Purchase"
-4. Complete Stripe checkout
-5. Tokens credited instantly
-
-**Important**: Purchased tokens never expire and combine with your free token
-balance.
-
-#### 4. Subscription Plans
-
-Subscribe for automatic monthly token allocation.
-
-**Available Plans:**
-
-| Plan         | Tokens/Month | Price/Month | Best For      | Rollover |
-| ------------ | ------------ | ----------- | ------------- | -------- |
-| Starter      | 20           | £2.99       | Casual users  | 20 max   |
-| Professional | 100          | £9.99       | Regular users | 100 max  |
-| Enterprise   | 500          | £29.99      | Power users   | 250 max  |
-
-**How Subscriptions Work:**
-
-1. **Sign Up**: Go to Settings → Tokens → Subscribe
-2. **Monthly Renewal**: Charged automatically each month
-3. **Token Allocation**: Tokens added on your renewal date
-4. **Rollover**: Unused tokens carry to next month (up to limit)
-5. **Management**: Pause, upgrade, downgrade, or cancel anytime
-
-**Subscription Example** (Professional Plan, 100 tokens/month):
-
-- Month 1: Allocated 100, used 60, rollover 40
-- Month 2: Allocated 100 + rollover 40 = 140 (capped at 100)
-- Month 3: New allocation, previous unused tokens still available
-
-**Pause Subscription**: No charge during pause, no tokens added **Cancel
-Anytime**: Keep remaining tokens forever
-
-### Token Costs (Pixel App)
-
-When you enhance an image in Pixel, the cost depends on the quality tier you
-choose:
-
-| Tier    | Max Resolution | Cost      | Use Case                        |
-| ------- | -------------- | --------- | ------------------------------- |
-| FREE    | 1024px         | 0 tokens  | Testing, previews (nano model)  |
-| TIER_1K | 1024px         | 2 tokens  | Quick enhancement, social media |
-| TIER_2K | 2048px         | 5 tokens  | Professional use, print preview |
-| TIER_4K | 4096px         | 10 tokens | High-res print, archival        |
-
-**Important Notes:**
-
-- **FREE tier** uses a faster but lower-quality "nano" AI model - perfect for
-  testing
-- **TIER_1K/2K/4K** use the full Google Gemini AI model for best results
-- All tiers use the same 4-stage enhancement pipeline (Analysis → Auto-Crop →
-  Prompting → Generation)
-
-**Token Calculation Examples:**
-
-- **With 100 free auto-generated tokens**:
-  - FREE tier: Unlimited enhancements (0 tokens each)
-  - TIER_1K: 50 enhancements (2 tokens each)
-  - TIER_2K: 20 enhancements (5 tokens each)
-  - TIER_4K: 10 enhancements (10 tokens each)
-
-- **With 50-token Starter Pack**:
-  - TIER_1K: 25 enhancements
-  - TIER_2K: 10 enhancements
-  - TIER_4K: 5 enhancements
-
-- **With Professional Subscription (100/month)**:
-  - TIER_2K: 20 enhancements per month
-  - Mixed usage: Could stretch to 40+ with TIER_1K
-
-### Monitoring Your Token Balance
-
-Your token balance is always visible in the header (top right corner). It shows:
-
-- Current balance
-- Time until next free token regeneration
-- Purchase link for quick access
+📖 **[Full Inbox Documentation →](./ORBIT_USER_GUIDE.md#inbox)**
 
 ---
 
-## Creating and Managing Albums
+### Smart Allocator
 
-### What are Albums?
+**What It Does**: AI-powered budget recommendations for social media advertising with optional autopilot mode.
 
-Albums are containers that organize your images. In Pixel, **all images must be
-uploaded to an album** - there's no standalone image upload. Albums help you:
+**Key Features**:
 
-- Organize images by project, date, or category
-- Batch upload multiple images at once
-- Share collections with others via unique links
-- Keep your work organized and accessible
+- **Budget Recommendations**: AI suggests where to allocate spend
+- **ROI Predictions**: Expected return on ad spend (ROAS)
+- **Autopilot Mode**: AI automatically adjusts budgets
+- **Historical Analysis**: Track performance over time
 
-### Creating an Album
+**How to Use**:
 
-1. Go to the Pixel app homepage (`/apps/pixel`)
-2. Click the **"New Album"** button (top right of the albums section)
-3. Enter an album name (e.g., "Family Photos 2025", "Product Images")
-4. Optionally add a description
-5. Click **"Create"**
-6. Your new album appears in the grid
+1. Navigate to **Allocator** from the sidebar
+2. Connect your ad accounts (Facebook Ads Manager, LinkedIn Campaign Manager)
+3. View AI recommendations for budget allocation
+4. Choose **manual** (review and approve) or **autopilot** (AI executes)
+5. Monitor results in real-time
 
-### Album Settings
+**Example Recommendations**:
 
-Click on an album's settings menu (three dots) to:
+- "Increase Instagram budget by 15% (predicted +22% ROAS)"
+- "Pause Facebook campaign 'Summer2026' (underperforming by 40%)"
+- "Shift $200 from LinkedIn to Twitter/X (better engagement)"
 
-**Edit Album:**
+**Subscription Tier Features**:
 
-- Change the album name
-- Update the description
-- Modify privacy settings
+- **FREE**: View recommendations only (no autopilot)
+- **PRO**: Manual execution, historical data
+- **BUSINESS**: Autopilot mode, custom constraints
 
-**Privacy Options:**
-
-- **Private**: Only you can view (default)
-- **Unlisted**: Anyone with the share link can view
-- **Public**: Listed in the public gallery (future feature)
-
-**Share Album:**
-
-- Generate a unique share link
-- Copy link to clipboard
-- Share with friends, family, or clients
-- Recipients can view but not download or edit
-
-**Delete Album:**
-
-- Permanently delete the album and all its images
-- This action cannot be undone
-- Confirm deletion in the dialog
-
-### Album View Modes
-
-When viewing an album, you can switch between:
-
-**Display Types:**
-
-- **Auto**: Show enhanced version if available, otherwise original
-- **Original**: Always show original uploaded images
-- **Enhanced**: Only show enhanced versions
-
-**Zoom Levels:**
-
-- Use the zoom slider to adjust thumbnail size
-- Ranges from small thumbnails to large previews
-- Your preference is saved per session
+📖 **[Full Allocator Documentation →](./ORBIT_USER_GUIDE.md#allocator)**
 
 ---
 
-## Uploading Images
+### Competitive Scout
 
-### How to Upload Images
+**What It Does**: Tracks competitors' social media activity and provides benchmarking insights.
 
-There are two ways to upload images to an album:
+**Key Features**:
 
-**Method 1: Drag and Drop**
+- **Competitor Tracking**: Monitor up to 10 competitors (PRO) or unlimited (BUSINESS)
+- **Benchmarking**: Compare your performance to competitors
+- **Content Analysis**: See what content types work for them
+- **Alert System**: Get notified when competitors post viral content
 
-1. Open an album
-2. Drag image files from your computer
-3. Drop them anywhere in the album area
-4. Upload progress shows for each file
-5. Images appear in the album when complete
+**How to Use**:
 
-**Method 2: File Browser**
+1. Navigate to **Scout** from the sidebar
+2. Click **"Add Competitor"**
+3. Enter competitor's social media handle
+4. Orbit scrapes public data (no account access required)
+5. View side-by-side performance comparison
 
-1. Open an album
-2. Click the **upload button** (shown when album is empty or in toolbar)
-3. Select one or multiple images from your computer
-4. Click "Open"
-5. Upload begins automatically
+**Insights Provided**:
 
-**Upload Features:**
+- Posting frequency (daily/weekly averages)
+- Engagement rates (compared to yours)
+- Top-performing content themes
+- Audience growth trends
 
-- **Multi-file upload**: Upload up to 20 images at once
-- **Progress tracking**: See upload progress for each file
-- **Error handling**: Failed uploads can be retried
-- **Automatic organization**: Images are added to the album immediately
+**Subscription Tier Features**:
 
-### After Upload
+- **FREE**: Not available
+- **PRO**: Track 5 competitors, basic analysis
+- **BUSINESS**: Unlimited competitors, predictive analytics
 
-Once uploaded, your images appear as cards in the album with:
-
-- Thumbnail preview
-- Upload timestamp
-- Enhancement status (if enhanced)
-- Action buttons (enhance, download, delete)
+📖 **[Full Scout Documentation →](./ORBIT_USER_GUIDE.md#scout)**
 
 ---
 
-## Image Enhancement
+### Brand Brain
 
-### Understanding Enhancement Tiers
+**What It Does**: Centralized brand voice management and content guardrails to ensure consistent, on-brand messaging.
 
-Pixel offers four quality tiers to balance quality, speed, and cost:
+**Key Features**:
 
-#### FREE Tier (0 tokens)
+- **Brand Voice Training**: Upload past content to train AI on your tone
+- **Content Guardrails**: Rules preventing off-brand posts
+- **Tone Analysis**: Score draft content for brand alignment (0-100)
+- **Compliance Checks**: Flag content violating industry regulations
 
-**Maximum Output**: 1024px on longest side **AI Model**: Nano (faster, lower
-quality)
+**How to Use**:
 
-**Best For:**
+1. Navigate to **Brand Brain** from the sidebar
+2. Click **"Train Brand Voice"**
+3. Upload 10-50 examples of past content (posts, captions, blog articles)
+4. Orbit analyzes tone, vocabulary, style
+5. Set up guardrails:
+   - **Forbidden words**: (e.g., profanity, competitor names)
+   - **Required elements**: (e.g., always include CTA, hashtags)
+   - **Tone constraints**: (e.g., never negative, always enthusiastic)
 
-- Testing the enhancement pipeline
-- Quick previews before committing tokens
-- Experimenting with different images
+**Example Guardrails**:
 
-**Limitations:**
+- "Never mention competitor brands"
+- "All posts must include at least one emoji"
+- "Avoid jargon; use simple language"
+- "Always include a call-to-action"
 
-- Lower quality than paid tiers
-- Uses a simpler AI model
-- Good for testing, not final output
+**Subscription Tier Features**:
 
-#### TIER_1K (2 tokens)
+- **FREE**: Not available
+- **PRO**: Basic voice training, 5 guardrails
+- **BUSINESS**: Advanced training, unlimited guardrails, compliance templates
 
-**Maximum Output**: 1024px on longest side **AI Model**: Full Google Gemini
-
-**Best For:**
-
-- Social media posts (Instagram, Twitter, Facebook)
-- Web thumbnails and avatars
-- Quick enhancements on a budget
-- Images that will be viewed on screens
-
-**Example:**
-
-- Original: 1920x1440 photo
-- Enhanced: 1024x768 (maintains aspect ratio)
-
-#### TIER_2K (5 tokens)
-
-**Maximum Output**: 2048px on longest side **AI Model**: Full Google Gemini
-
-**Best For:**
-
-- Professional use and portfolios
-- Print preview (up to 8x10 inches at 300 DPI)
-- High-quality web display
-- Most common choice for general use
-
-**Example:**
-
-- Original: 1920x1440 photo
-- Enhanced: 2048x1536 (upscaled 1.07x)
-
-#### TIER_4K (10 tokens)
-
-**Maximum Output**: 4096px on longest side **AI Model**: Full Google Gemini
-
-**Best For:**
-
-- High-resolution printing
-- Professional photography
-- Archival quality preservation
-- Large format displays
-
-**Example:**
-
-- Original: 1920x1440 photo
-- Enhanced: 4096x3072 (upscaled 2.13x)
-
-### The 4-Stage Enhancement Pipeline
-
-Every enhancement goes through four intelligent stages:
-
-**Stage 1: Analysis**
-
-- AI analyzes the image to detect defects
-- Identifies issues like darkness, blur, noise, low resolution
-- Detects problems like VHS artifacts, color cast, overexposure
-- Analysis takes 2-5 seconds
-
-**Stage 2: Auto-Crop**
-
-- Automatically removes unwanted elements
-- Crops black bars (letterbox/pillarbox)
-- Removes UI elements, watermarks, overlays
-- Only crops if improvement is significant (configurable minimum: 5%)
-
-**Stage 3: Smart Prompting**
-
-- Builds a dynamic enhancement prompt
-- Combines defect corrections with custom instructions
-- Adapts to the image's specific needs
-- Allows selective skipping of certain corrections
-
-**Stage 4: Generation**
-
-- Calls Google Gemini AI to generate enhanced image
-- Uses the smart prompt from Stage 3
-- Automatically retries on failure (up to 3 times by default)
-- Returns the enhanced image
-
-### How to Enhance an Image
-
-**From Album View:**
-
-1. Open an album containing uploaded images
-2. Find the image you want to enhance
-3. Click on the image card
-4. In the image detail view, select your quality tier
-5. Click **"Enhance"** button
-6. Watch the progress through the 4 stages
-7. View the before/after comparison when complete
-
-**Batch Enhancement:**
-
-1. In album view, enter selection mode (checkbox icon)
-2. Select multiple images
-3. Click **"Enhance Selected"**
-4. Choose the quality tier
-5. All selected images are enhanced using the same pipeline
-6. Track progress for each image
-
-### Enhancement Progress
-
-During enhancement, you'll see real-time status:
-
-- **Analyzing...** - AI is analyzing the image (Stage 1)
-- **Cropping...** - Auto-crop is being applied (Stage 2)
-- **Prompting...** - Enhancement prompt is being generated (Stage 3)
-- **Generating...** - Gemini AI is creating the enhanced image (Stage 4)
-
-Typical processing time: **10-45 seconds** depending on tier and server load
-
-### Tips for Best Results
-
-1. **Start with FREE tier**: Test enhancement before spending tokens
-2. **Choose appropriate tier**: Don't overpay for resolution you don't need
-3. **Original quality matters**: Higher quality originals produce better
-   enhancements
-4. **Aspect ratio preserved**: Original aspect ratio is always maintained
-5. **Use custom pipelines**: Configure enhancement behavior for specific use
-   cases
-6. **Batch similar images**: Enhance similar photos together for consistency
-
-### What the AI Enhances
-
-The enhancement process improves:
-
-- **Resolution**: Upscales to your chosen tier
-- **Sharpness**: Improves detail and clarity
-- **Noise Reduction**: Removes digital noise and grain
-- **Color Correction**: Fixes color cast and exposure issues
-- **Defect Removal**: Addresses blur, artifacts, and distortion
-- **Overall Quality**: General enhancement while preserving character
-
-### Enhancement Failures and Refunds
-
-If an enhancement fails:
-
-- **Automatic token refund**: Tokens are immediately returned to your balance
-- **No penalty**: You can retry immediately at no additional cost
-- **Error message**: Shows why the enhancement failed
-- **Retry options**: Try again with same or different settings
-- **Support available**: Contact support if failures persist
-
-Common failure reasons:
-
-- API rate limits (temporary)
-- Invalid image format
-- File too large for tier
-- Network timeout
-- Server overload
+📖 **[Full Brand Brain Documentation →](./ORBIT_USER_GUIDE.md#brand-brain)**
 
 ---
 
-## Enhancement Pipelines
+### Relay (AI Drafts)
 
-### What are Pipelines?
+**What It Does**: AI generates draft social media posts based on your brand voice, with approval workflows.
 
-Pipelines are reusable AI enhancement configurations that control how images are
-processed through the 4-stage enhancement workflow. Think of them as presets or
-recipes for different enhancement scenarios.
+**Key Features**:
 
-**Why Use Pipelines?**
+- **AI Draft Generation**: Orbit writes posts in your brand voice
+- **Multi-Variation**: Generate 3-5 variations per prompt
+- **Approval Workflow**: Review, edit, approve before posting
+- **Scheduled Publishing**: Set future publish times
+- **A/B Testing Integration**: Test draft variations before full rollout
 
-- **Customize behavior**: Control exactly how the AI enhances images
-- **Reuse configurations**: Save settings for different use cases
-- **Share with others**: Public pipelines can be used by anyone
-- **Fork and modify**: Copy existing pipelines and customize them
+**How to Use**:
 
-### Accessing Pipelines
+1. Navigate to **Relay** from the sidebar
+2. Click **"Generate New Drafts"**
+3. Provide AI with context:
+   - **Topic**: What to write about (e.g., "new product launch")
+   - **Platform**: Instagram, LinkedIn, etc.
+   - **Tone**: Formal, casual, enthusiastic, etc.
+   - **Length**: Short (1-2 sentences), medium (paragraph), long (story)
+4. Orbit generates 3-5 variations
+5. Review, edit, and approve your favorite
+6. Schedule or publish immediately
 
-1. From the Pixel app homepage, click **"Pipelines"** button in the header
-2. Or navigate directly to `/apps/pixel/pipelines`
-3. You'll see:
-   - **System Default Pipelines**: Pre-configured by Spike Land
-   - **Your Pipelines**: Pipelines you've created
-   - **Public Pipelines**: Shared by other users (future feature)
+**AI Consumes Credits**:
 
-### Creating a Custom Pipeline
+- 10 AI credits per draft generation (5 variations)
+- FREE tier: 100 credits/month = 10 draft generations
+- PRO tier: 1,000 credits/month = 100 draft generations
+- BUSINESS tier: 5,000 credits/month = 500 draft generations
 
-1. Click **"New Pipeline"** button
-2. Configure each of the 4 stages (see configuration options below)
-3. Set basic information:
-   - **Name**: Descriptive name (e.g., "Portrait Enhancement")
-   - **Description**: What this pipeline optimizes for
-   - **Default Tier**: TIER_1K, TIER_2K, or TIER_4K
-   - **Visibility**: Private, Public, or Unlisted
-4. Click **"Save"**
+**Subscription Tier Features**:
 
-### Pipeline Configuration
+- **FREE**: Not available
+- **PRO**: Basic draft generation, 1,000 credits/month
+- **BUSINESS**: Advanced prompts, 5,000 credits/month, custom templates
 
-#### Stage 1: Analysis Configuration
-
-Controls how the AI vision model analyzes images.
-
-**Settings:**
-
-- **Enable Analysis** (toggle): Turn analysis on/off
-- **Temperature** (0.0-1.0): Lower = more consistent, higher = more varied
-  - Default: 0.1 (very consistent)
-  - Use low values (0.1-0.3) for predictable results
-  - Use higher values (0.5-0.8) for more creative analysis
-
-**What Gets Analyzed:**
-
-- Darkness (underexposure)
-- Blur (motion or focus issues)
-- Noise and grain
-- VHS/tape artifacts
-- Low resolution
-- Overexposure
-- Color cast
-
-#### Stage 2: Auto-Crop Configuration
-
-Automatically removes unwanted elements.
-
-**Settings:**
-
-- **Enable Auto-Crop** (toggle): Turn auto-crop on/off
-- **Remove Black Bars** (toggle): Crop letterbox/pillarbox bars
-- **Remove UI Elements** (toggle): Crop overlays, watermarks, HUD
-- **Minimum Crop Ratio** (1-20%): Only crop if removing at least this much
-  - Default: 5%
-  - Higher values = more conservative cropping
-
-#### Stage 3: Prompt Configuration
-
-Controls the dynamic prompt generation.
-
-**Settings:**
-
-- **Custom Instructions** (text): Additional instructions for the AI
-  - Examples: "Preserve film grain", "Enhance faces", "Maintain vintage look"
-  - These are appended to the automatic prompt
-- **Skip Corrections** (checkboxes): Disable corrections for specific defects
-  - Skip darkness correction (preserve dark aesthetic)
-  - Skip blur correction (keep motion blur)
-  - Skip noise correction (preserve film grain)
-  - Skip VHS artifacts (keep retro look)
-  - Skip low resolution correction
-  - Skip overexposure correction
-  - Skip color cast correction
-
-#### Stage 4: Generation Configuration
-
-Controls the Gemini API image generation.
-
-**Settings:**
-
-- **Retry Attempts** (1/2/3/5): Number of retries on failure
-  - Default: 3
-  - More retries = better reliability, longer wait on failures
-- **Temperature** (0.0-1.0): AI creativity vs consistency
-  - Default: 0.7 (balanced)
-  - Lower (0.1-0.4) = more consistent, predictable
-  - Higher (0.7-1.0) = more creative, varied
-
-### Pipeline Actions
-
-**Fork a Pipeline:**
-
-1. Find any pipeline (system default or public)
-2. Click **"Fork"** button
-3. A copy is created in your pipelines
-4. Edit the fork to customize it
-
-**Edit a Pipeline:**
-
-1. Only works for pipelines you own
-2. Click **"Edit"** button
-3. Modify settings
-4. Click **"Save"**
-
-**Delete a Pipeline:**
-
-1. Only works for pipelines you own
-2. Click **"Delete"** button
-3. Confirm in the dialog
-4. Cannot be undone
-
-**Use a Pipeline:**
-
-1. When enhancing an image, select the pipeline from dropdown
-2. The selected pipeline's settings are used for all 4 stages
-3. You can still override the tier (1K/2K/4K) per enhancement
-
-### System Default Pipelines
-
-System defaults are maintained by Spike Land and optimized for common scenarios:
-
-- Cannot be edited or deleted
-- Can be forked to create custom versions
-- Recommended for most users
-- Updated periodically with improvements
-
-### Example Pipeline Use Cases
-
-**Portrait Enhancement:**
-
-- Analysis: Enabled, low temperature
-- Auto-Crop: Disabled (preserve composition)
-- Custom Instructions: "Enhance facial details, maintain skin tones"
-- Skip: Grain correction (preserve texture)
-
-**Vintage Film Preservation:**
-
-- Analysis: Enabled
-- Auto-Crop: Enabled (remove scan borders)
-- Custom Instructions: "Preserve film character"
-- Skip: Grain, color cast (keep vintage look)
-
-**Screenshot Cleanup:**
-
-- Analysis: Enabled
-- Auto-Crop: Aggressive (remove all UI)
-- Custom Instructions: "Maximize content area"
-- Skip: None (fix all issues)
+📖 **[Full Relay Documentation →](./ORBIT_USER_GUIDE.md#relay)**
 
 ---
 
-## Viewing and Organizing Images
+## Workspace Management
 
-### Image Detail View
+### Creating Workspaces
 
-Click any image in an album to open the detail view, where you can:
+**What Is a Workspace?**
+A workspace is an isolated environment for managing:
 
-**View Modes:**
+- Social media accounts
+- Team members
+- Content calendar
+- Brand voice settings
+- Subscription tier
 
-- **Before/After Slider**: Interactive comparison (drag slider left/right)
-- **Side-by-Side**: View original and enhanced side-by-side
-- **Original Only**: View just the original
-- **Enhanced Only**: View just the enhanced version
+**Use Cases**:
 
-**Actions:**
+- **Solo creator**: 1 workspace for your personal brand
+- **Small business**: 1 workspace for your company
+- **Freelancer**: 1 workspace per client (3-8 workspaces)
+- **Agency**: 1 workspace per client (10+ workspaces)
 
-- **Enhance**: Start a new enhancement with chosen tier and pipeline
-- **Download**: Download original or enhanced version
-- **Delete**: Remove image from album
-- **Share**: Generate share link for this specific image
+**To Create a Workspace**:
 
-**Version History:**
+1. Click workspace dropdown (top left)
+2. Click **"Create New Workspace"**
+3. Enter name and description
+4. Click **"Create"**
 
-- See all enhancement attempts for this image
-- Compare different tiers (1K vs 2K vs 4K)
-- Compare different pipelines
-- Download any version
-- Delete unwanted versions
+**Each workspace requires its own subscription**. Example:
 
-### Organizing Images in Albums
+- Freelancer managing 5 clients = 5 × $29/month PRO = $145/month
+- Agency discount (3+ workspaces): 15% off = $123/month
 
-**Reordering Images:**
+### Switching Workspaces
 
-1. In album view, drag any image card
-2. Drop it in a new position
-3. Order is saved automatically
-4. Reorder affects album cover and presentation
+- Click workspace dropdown (top left)
+- Select workspace from list
+- All views (Pulse, Inbox, etc.) switch to that workspace's data
 
-**Moving Images Between Albums:**
+### Transferring Ownership
 
-1. Enter selection mode (checkbox icon)
-2. Select one or more images
-3. Click **"Move to Album"**
-4. Choose destination album
-5. Confirm move
+**To transfer workspace ownership** (e.g., handing off client to another freelancer):
 
-**Removing Images from Album:**
-
-1. Enter selection mode
-2. Select images to remove
-3. Click **"Remove from Album"**
-4. Confirm removal
-5. Images are permanently deleted
-
-**Bulk Operations:**
-
-- **Select All**: Select all images in album
-- **Deselect All**: Clear selection
-- **Bulk Enhance**: Enhance all selected images at once
-- **Bulk Download**: Download selected images as ZIP
-- **Bulk Delete**: Remove selected images
-
-### Image Blending (Advanced)
-
-Blend two enhanced images to create unique results:
-
-1. Drag one enhanced image
-2. Drop it onto another enhanced image
-3. The two images are blended using AI
-4. Result appears as a new image in the album
-5. Original images remain unchanged
-
-**Note**: Both images must be enhanced before blending
+1. Navigate to **Settings → Workspace**
+2. Click **"Transfer Ownership"**
+3. Enter new owner's email
+4. Confirm transfer
+5. New owner receives invite and accepts
 
 ---
 
-## Export and Download
+## Team Collaboration
 
-### Downloading Single Images
+### Inviting Team Members
 
-**From Image Detail View:**
+**Who Can Invite**:
 
-1. Click **"Download"** button
-2. Choose which version:
-   - Original (as uploaded)
-   - Enhanced (current enhancement)
-   - Specific version (from version history)
-3. Image downloads to your browser's download folder
+- Workspace owner
+- Admins
 
-**From Album View:**
+**Roles**:
 
-1. Right-click on image thumbnail
-2. Select "Download Original" or "Download Enhanced"
-3. Image downloads immediately
+- **Owner**: Full access, billing, transfer ownership
+- **Admin**: Full access except billing and transfer
+- **Editor**: Can post, reply, edit content (no settings access)
+- **Viewer**: Read-only access (for stakeholders)
 
-### Batch Download
+**To Invite a Team Member**:
 
-Download multiple images at once:
+1. Navigate to **Settings → Team Members**
+2. Click **"Invite Member"**
+3. Enter email address
+4. Select role
+5. Click **"Send Invite"**
+6. Team member receives email and accepts
 
-1. In album view, enter selection mode
-2. Select images to download
-3. Click **"Download Selected"**
-4. Images are packaged into a ZIP file
-5. ZIP downloads with album name and timestamp
+**Subscription Limits**:
 
-**ZIP Contents:**
+- FREE: 1 member (owner only)
+- PRO: 3 members
+- BUSINESS: 10 members
 
-- All selected images
-- Organized by original/enhanced in folders
-- File names preserve original names
-- Metadata preserved where possible
+### Team Workflows
 
-### Export Formats
+**Inbox Assignment**:
 
-Images are exported in their original format or enhanced format:
+- Admin assigns incoming messages to specific team members
+- Team members see only their assigned items (unless Admin)
 
-| Format | Size     | Quality   | Web       | Print     | Best For        |
-| ------ | -------- | --------- | --------- | --------- | --------------- |
-| JPEG   | Small    | Good      | Excellent | Good      | Photos, web     |
-| PNG    | Large    | Lossless  | Good      | Excellent | Graphics, print |
-| WebP   | Smallest | Excellent | Very Good | Fair      | Modern web      |
+**Content Approval**:
 
-**Note**: The enhancement preserves the original format. If you upload a PNG,
-the enhanced version is also PNG. Same for JPEG, WebP, etc.
+- Editor drafts posts in Relay
+- Admin reviews and approves before publishing
 
-### Sharing Images and Albums
+**Notifications**:
 
-**Share an Entire Album:**
-
-1. Open album
-2. Click settings menu (three dots)
-3. Select **"Share"**
-4. Copy the generated share link
-5. Share link with anyone
-6. Recipients can view all images in album
-
-**Share a Single Image:**
-
-1. Open image detail view
-2. Click **"Share"** button
-3. Copy the generated share link
-4. Share link with anyone
-5. Recipients see the image with before/after slider
-
-**Share Link Behavior:**
-
-- Works indefinitely (until album/image deleted)
-- No login required for recipients
-- View-only (no download, no edit)
-- No token cost for viewers
-- Privacy: Only those with link can access
+- Email/Slack notifications for assignments
+- Real-time in-app notifications
 
 ---
 
-## Referral Program
+## Subscription Tiers
 
-### Earn Tokens by Inviting Friends
+Orbit uses **workspace-level subscriptions** (not user-level). Each workspace has its own tier.
 
-The referral program lets you earn bonus tokens by inviting friends to join
-Spike Land.
+| Feature             | FREE      | PRO         | BUSINESS    |
+| ------------------- | --------- | ----------- | ----------- |
+| **Price**           | $0/month  | $29/month   | $99/month   |
+| **Social Accounts** | 3         | 10          | Unlimited   |
+| **Scheduled Posts** | 30/month  | Unlimited   | Unlimited   |
+| **A/B Tests**       | 1         | 10          | Unlimited   |
+| **AI Credits**      | 100/month | 1,000/month | 5,000/month |
+| **Team Members**    | 1         | 3           | 10          |
+| **Pulse Dashboard** | ✓         | ✓           | ✓           |
+| **Unified Inbox**   | ✓         | ✓           | ✓           |
+| **Smart Allocator** | Basic     | ✓           | Autopilot   |
+| **Scout**           | ✗         | ✓           | ✓           |
+| **Brand Brain**     | ✗         | ✓           | ✓           |
+| **Relay**           | ✗         | ✓           | ✓           |
 
-### Rewards
+**How to Upgrade**:
 
-**You Get**: 50 tokens per successful referral **Your Friend Gets**: 50 tokens
-when they sign up
+1. Navigate to **Settings → Billing**
+2. Click **"Upgrade to PRO"** or **"Upgrade to BUSINESS"**
+3. Enter payment information (Stripe Checkout)
+4. Confirm subscription
+5. Upgrade takes effect immediately
 
-Both rewards are credited automatically once your friend verifies their email
-address.
+📖 **[Full Pricing Documentation →](./SUBSCRIPTION_TIERS.md)**
 
-### How to Access
+---
 
-1. Navigate to the **Referrals** page at `/referrals`
-2. Or click your profile menu and select "Referrals"
+## Supporting Tools
 
-### Your Referral Dashboard
+### Pixel (Image Enhancement)
 
-The dashboard shows:
+**What It Does**: AI-powered image enhancement for social media content.
 
-**Your Referral Link:**
+**Quick Start**:
 
-- Unique URL with your referral code
-- Copy button for easy sharing
-- Social sharing buttons (Twitter, Facebook, LinkedIn)
+1. Navigate to **Pixel** app at [spike.land/apps/pixel](https://spike.land/apps/pixel)
+2. Create an album
+3. Upload images
+4. Click **"Enhance"**
+5. Choose quality tier (TIER_1K, TIER_2K, TIER_4K)
+6. Download enhanced image
 
-**Statistics Cards:**
+**Pricing** (separate from Orbit subscriptions):
 
-- **Total Referrals**: All-time referral count
-- **Completed**: Referrals who verified email
-- **Pending**: Referrals waiting to verify
-- **Tokens Earned**: Total tokens from referrals
+- **Passive token generation**: 1 token every 15 minutes (up to 100 max)
+- **Purchase tokens**: $0.99-2.99 per enhancement (pay-per-use)
 
-**Referral Table:**
+**Use Cases**:
 
-- Email of referred users
-- Status (COMPLETED, PENDING, FAILED)
-- Sign-up date
-- Tokens earned from each referral
+- Upscale old photos for social media
+- Enhance product images for Instagram
+- Improve resolution of screenshots
 
-### Sharing Your Link
+📖 **[Full Pixel Documentation →](./PIXEL_APP.md)**
 
-**Quick Copy:**
+---
 
-1. Click the **"Copy"** button next to your referral link
-2. Paste the link anywhere (email, chat, social media)
+### Vibe Coding
 
-**Social Media Sharing:**
+**What It Does**: Build landing pages, link-in-bio pages, and interactive content with AI agents.
 
-- **Twitter**: Pre-filled tweet with your link
-- **Facebook**: Share to your timeline
-- **LinkedIn**: Share professionally
+**Status**: Limited beta (contact sales@spike.land for access)
 
-**Manual Sharing:** Your referral link format:
-`https://spike.land?ref=YOUR_CODE`
+**Use Cases**:
 
-**Best Places to Share:**
-
-- Email to friends and family
-- Social media posts
-- Discord, Slack, or group chats
-- Blog or personal website
-- SMS or messaging apps
-- Professional networks
-
-### How It Works
-
-**Step 1: Friend Clicks Your Link**
-
-- They arrive at Spike Land with your referral code automatically applied
-
-**Step 2: Friend Signs Up**
-
-- They create an account using GitHub or Google OAuth
-- Your referral is tracked as "PENDING"
-
-**Step 3: Friend Verifies Email**
-
-- After email verification, the referral becomes "COMPLETED"
-- You receive 50 tokens immediately
-- Your friend receives 50 tokens
-
-**Step 4: Track Progress**
-
-- View all referrals in the dashboard table
-- See real-time status updates
-- Monitor total tokens earned
-
-### Referral Limits
-
-- **No limit** on number of referrals
-- Each friend can only be referred once
-- You cannot refer yourself
-- Anti-fraud measures in place
-
-### Anti-Fraud Protection
-
-To maintain system integrity:
-
-- Same IP/device detection prevents self-referrals
-- Disposable email addresses are blocked
-- Email verification required for tokens
-- Rate limiting on referral claims
-- Suspicious activity is flagged and reviewed
+- Create custom landing pages for campaigns
+- Build link-in-bio pages (Linktree alternative)
+- Generate interactive content (quizzes, calculators)
 
 ---
 
 ## Account Settings
 
-Access your account settings at `/settings` or click your profile picture and
-select "Settings".
+### Profile Settings
 
-### Profile Tab
+**To Update Profile**:
 
-**Profile Information:**
+1. Click profile icon (top right)
+2. Select **"Settings"**
+3. Update:
+   - Display name
+   - Email address
+   - Profile photo
+   - Notification preferences
+4. Click **"Save Changes"**
 
-- **Display Name**: Customize how your name appears (optional)
-- **Email**: Shown but managed by your OAuth provider (GitHub/Google)
-- **Profile Picture**: Managed by your OAuth provider
-- **Save Button**: Save any display name changes
+### Notification Preferences
 
-**Profile Management:**
+**Available Channels**:
 
-- Your profile info comes from your OAuth provider (GitHub or Google)
-- Email cannot be changed in Spike Land - update it with your provider
-- Profile picture syncs from your OAuth account
-- Display name is separate from your OAuth name
+- In-app notifications (bell icon)
+- Email notifications
+- Slack integration (BUSINESS tier)
 
-### API Keys Tab
+**Configurable Events**:
 
-**API Key Management:**
+- Anomaly detected (Pulse)
+- High-priority message (Inbox)
+- Team member assigned you a task
+- A/B test completed
+- Budget recommendation (Allocator)
 
-- Create API keys for programmatic access to Spike Land
-- View existing API keys
-- Revoke API keys
-- Copy API keys for use in applications
+### Integrations
 
-**API Key Security:**
+**Available Integrations**:
 
-- Keys are only shown once when created
-- Store keys securely
-- Revoke compromised keys immediately
-- Each key has full account access
+- **Slack**: Receive Orbit notifications in Slack channels
+- **Zapier**: Connect Orbit to 5,000+ apps
+- **Webhooks**: Custom integrations (BUSINESS tier)
 
-### Preferences Tab
+**To Connect Slack**:
 
-**Email Notifications:**
-
-- Toggle email updates about account activity
-- Default: Enabled
-
-**Push Notifications:**
-
-- Toggle push notifications for important updates
-- Default: Disabled
-
-**Customization:**
-
-- Adjust notification preferences to your liking
-- Changes save automatically
-
-### Privacy Tab
-
-**Profile Visibility:**
-
-- **Public Profile**: Toggle whether others can view your profile
-  - Default: Disabled
-- **Show Activity Status**: Toggle whether others see when you're online
-  - Default: Enabled
-
-**Danger Zone:**
-
-- **Delete Account**: Permanently delete your account
-  - Requires confirmation
-  - Cannot be undone
-  - All data is permanently removed
-  - Active subscriptions are cancelled
-
-### Subscription Management
-
-**Accessing Subscription Settings:**
-
-1. From Settings page, click "Manage Subscription" button
-2. Or navigate to `/settings/subscription`
-
-**Current Plan Display:**
-
-- See your current tier (FREE, STARTER, PROFESSIONAL, POWER)
-- Tier badge with visual indicator
-- Quick link to manage subscription
-
-**Subscription Features:**
-
-- View current plan and pricing
-- See next billing date
-- Upgrade or downgrade plan
-- Pause subscription (keep tokens, pause billing)
-- Cancel subscription (keep remaining tokens)
-- View billing history
-
-**Payment Processing:**
-
-- All payments handled by Stripe
-- PCI-DSS Level 1 compliant
-- Secure payment processing
-- Supports major credit/debit cards
-
-### Billing & Transactions
-
-**Token Purchase History:**
-
-1. Go to `/tokens` page
-2. View token balance and statistics
-3. See all token transactions:
-   - Purchases
-   - Voucher redemptions
-   - Referral rewards
-   - Auto-regeneration
-   - Spending history
-
-**Invoices and Receipts:**
-
-- Email receipts sent after each purchase
-- Download PDF invoices from Stripe
-- View transaction details
-- Track spending over time
-
-### Security Best Practices
-
-**Account Security:**
-
-- Use strong OAuth provider (GitHub, Google)
-- Enable 2FA on your OAuth account
-- Keep API keys secure and private
-- Revoke unused API keys
-- Review account activity regularly
-
-**Privacy Tips:**
-
-- Control profile visibility
-- Be selective with album sharing
-- Use private albums for sensitive content
-- Review share links periodically
-- Delete old albums you no longer need
+1. Navigate to **Settings → Integrations**
+2. Click **"Connect Slack"**
+3. Authorize Orbit in Slack OAuth flow
+4. Select channel for notifications
+5. Configure which events to send
 
 ---
 
 ## FAQ
 
-### General Questions
+### General
 
-**Q: Is Spike Land free to use?** A: Yes! Spike Land is free to sign up and use.
-Your account automatically generates 1 free token every 15 minutes (up to 100
-tokens maximum). You can use the FREE tier (0 tokens) for unlimited
-enhancements, or use tokens for higher quality tiers. Additional tokens can be
-purchased, earned through referrals, or redeemed via vouchers.
+**Q: What's the difference between Orbit and Pixel?**
+A: **Orbit** is social media management (workspace subscriptions). **Pixel** is image enhancement (user-level tokens). They're separate products under the Spike Land umbrella.
 
-**Q: How long does image enhancement take?** A: Most enhancements complete in
-10-45 seconds depending on the quality tier and server load. The process goes
-through 4 stages: Analysis (2-5s), Auto-Crop (1-3s), Prompting (1-2s), and
-Generation (10-35s).
+**Q: Can I use Orbit for free?**
+A: Yes. The FREE tier supports 3 social accounts with basic features. Upgrade to PRO ($29/mo) or BUSINESS ($99/mo) for advanced features.
 
-**Q: What image formats do you support?** A: JPEG, PNG, WebP, GIF, and BMP.
-Maximum file size is 25 MB per image. You can upload up to 20 images at once.
+**Q: Do I need a separate subscription for each workspace?**
+A: Yes. Each workspace (e.g., client account) requires its own subscription. Freelancers/agencies get 15% off for 3+ workspaces.
 
-**Q: Is my image data safe?** A: Yes! All data is encrypted at rest and in
-transit. We use Cloudflare R2 for secure cloud storage. Images are private by
-default. See our Privacy Policy at `/privacy` for complete details.
+### Features
 
-**Q: What's the difference between Spike Land and Pixel?** A: Spike Land is the
-platform; Pixel is the AI image enhancement app that runs on Spike Land. Your
-Spike Land account and tokens work across all apps on the platform.
+**Q: Which social platforms does Orbit support?**
+A: Instagram, Facebook, Twitter/X, LinkedIn, TikTok. More platforms coming soon (YouTube, Pinterest, Snapchat).
 
-### Token Questions
+**Q: Can Orbit post content automatically?**
+A: Yes. Use **Relay** to generate drafts, then schedule them for future publishing.
 
-**Q: Do my auto-generated tokens expire?** A: Auto-generated tokens (1 per 15
-minutes) are capped at 100. If you're inactive for 30 days, your token balance
-may be adjusted. Purchased tokens and referral tokens never expire.
+**Q: Does Orbit provide analytics?**
+A: Yes. **Pulse** shows real-time metrics, and you can export reports for stakeholders.
 
-**Q: Can I transfer tokens to a friend?** A: No, tokens are account-specific and
-cannot be transferred. However, you can use the referral program to give your
-friend 50 tokens when they sign up.
+**Q: Can I track competitors?**
+A: Yes (PRO/BUSINESS tier). **Scout** monitors competitors' public social media activity.
 
-**Q: Do purchased tokens expire?** A: No, purchased tokens never expire. Use
-them anytime at your own pace.
+### Billing
 
-**Q: What's the difference between FREE tier and TIER_1K?** A: Both output at
-1024px resolution, but FREE tier uses a faster "nano" AI model with lower
-quality, while TIER_1K uses the full Google Gemini AI model with better results.
-FREE costs 0 tokens, TIER_1K costs 2 tokens.
+**Q: Can I cancel anytime?**
+A: Yes. Cancel from **Settings → Billing**. Access continues until end of billing period.
 
-**Q: Can I pause my subscription?** A: Yes, you can pause your subscription
-through the subscription management page. No charges during pause, and you keep
-all existing tokens.
+**Q: Do you offer annual billing?**
+A: Coming soon (20% discount: PRO $278/year, BUSINESS $950/year).
 
-### Enhancement Questions
+**Q: What happens if I exceed my social account limit?**
+A: You'll be prompted to upgrade or remove accounts. Existing connections remain active.
 
-**Q: Are my images private?** A: Yes, all images and albums are private by
-default. Only you can access them unless you explicitly create and share a share
-link.
+### Technical
 
-**Q: What happens if an enhancement fails?** A: Tokens are automatically
-refunded to your account immediately. You can retry the enhancement at no
-additional cost. Check the error message for why it failed.
+**Q: Is my data secure?**
+A: Yes. We use OAuth (no passwords stored), encrypt all data at rest and in transit, and comply with GDPR/CCPA.
 
-**Q: Can I enhance the same image multiple times?** A: Yes! You can enhance an
-image as many times as you want. Each enhancement is saved in the version
-history, and you can compare different tiers and pipelines.
+**Q: Can I export my data?**
+A: Yes. Export all content, analytics, and settings from **Settings → Data Export**.
 
-**Q: What quality can I expect?** A: Results depend on your original image
-quality and the tier you choose. Higher quality originals produce better
-enhancements. The AI uses Google Gemini for intelligent upscaling and
-enhancement. Try the FREE tier first to preview results.
-
-**Q: Can I customize how images are enhanced?** A: Yes! Use Enhancement
-Pipelines to customize the 4-stage process. Control analysis, auto-crop,
-prompting, and generation settings. Create custom pipelines or fork existing
-ones.
-
-### Album & Sharing Questions
-
-**Q: Why do I need to create an album before uploading?** A: Albums organize
-your images and make it easy to manage, share, and batch-enhance multiple
-images. All images must belong to an album.
-
-**Q: Can others edit my shared albums?** A: No, shared albums are view-only.
-Recipients cannot download, edit, or enhance images. You maintain full control.
-
-**Q: How long do share links work?** A: Share links work indefinitely until you
-delete the album or image. There's no expiration date.
-
-**Q: Can I make my albums public?** A: Currently albums can be Private (only
-you) or Unlisted (anyone with link). Public galleries are a future feature.
-
-**Q: Can I password-protect shared albums?** A: Password protection for share
-links is a planned future feature. Currently, albums are protected by obscure
-share links.
-
-### Referral Questions
-
-**Q: How do I earn referral tokens?** A: Share your unique referral link from
-the `/referrals` page. When a friend signs up using your link and verifies their
-email, you both receive 50 tokens.
-
-**Q: Is there a limit to referrals?** A: No limit! Refer as many friends as you
-like and earn 50 tokens for each successful referral.
-
-**Q: What if my friend already has an account?** A: Referral rewards only work
-for new sign-ups. Existing users cannot be referred.
-
-**Q: When do I receive referral tokens?** A: Tokens are credited immediately
-after your friend verifies their email address. Check the referrals dashboard to
-track status.
-
-### Payment & Billing Questions
-
-**Q: What payment methods do you accept?** A: We accept all major credit and
-debit cards (Visa, Mastercard, American Express, Discover, etc.) through Stripe
-payment processing.
-
-**Q: Is my payment information secure?** A: Yes, all payments are processed by
-Stripe, which is PCI-DSS Level 1 compliant (the highest security standard).
-Spike Land never stores your full credit card details.
-
-**Q: Can I get a refund?** A: Token purchases can be refunded within 30 days of
-purchase. Contact support@spike.land with your transaction details. Subscription
-cancellations are processed immediately, and you keep access until the end of
-your billing period.
-
-**Q: What happens to my tokens if I cancel my subscription?** A: You keep all
-tokens (purchased, earned, and subscription tokens). Tokens never expire, so you
-can use them anytime even after cancellation.
+**Q: Do you have an API?**
+A: Yes (BUSINESS tier). See [API Reference](./API_REFERENCE.md).
 
 ---
 
 ## Troubleshooting
 
-### Upload Issues
+### Social Account Connection Issues
 
-**"File too large" error**
+**Problem**: "Failed to connect Instagram account"
 
-- Solution: Maximum 25 MB per file. Compress or resize your image.
+**Solutions**:
 
-**"Unsupported format" error**
+1. Ensure you're logged into Instagram in the same browser
+2. Grant all requested permissions (don't uncheck anything)
+3. If you're managing a business account, connect via Facebook Business Manager first
+4. Try incognito/private browser window
 
-- **Cause**: File type not supported
-- **Solution**:
-  - Convert to JPEG, PNG, WebP, GIF, or BMP
-  - Use online conversion tool or image editor
-  - Check file extension matches actual format
-  - Re-save from image editor in supported format
+---
 
-**Upload takes forever**
+**Problem**: "Permission error: Cannot read messages"
 
-- Solution: Check your internet speed. Try a smaller file first.
+**Solutions**:
 
-### Enhancement Issues
+1. Reconnect the account (Settings → Social Accounts → Reconnect)
+2. Ensure you granted message reading permissions
+3. For Instagram business accounts, verify Facebook Page connection
 
-**"Insufficient tokens" error**
+---
 
-- Solution: You don't have enough tokens. Options:
-  1. Wait for free token regeneration (1 per 15 min)
-  2. Redeem a voucher code
-  3. Purchase tokens via Stripe
-  4. Subscribe to a plan
+### Inbox Not Updating
 
-**Enhancement fails after processing**
+**Problem**: "Inbox shows old messages but I know there are new ones"
 
-- Solution: Tokens are refunded automatically. Causes:
-  - File too large for tier (reduce TIER_4K for large images)
-  - Temporary server issue (try again)
-  - Rate limit exceeded (wait before retrying)
+**Solutions**:
 
-**Long processing time (> 60 seconds)**
+1. Click **"Refresh"** button (top right)
+2. Check platform API status (some platforms have downtime)
+3. Verify account connection is active (green dot in Settings → Social Accounts)
+4. Wait 5 minutes (sync runs every 5 minutes on FREE tier, every 1 minute on PRO/BUSINESS)
 
-- Solution: This is unusual. Reasons:
-  - Server load spike (be patient, it should complete)
-  - API rate limit hit (retry after waiting)
-  - Network timeout (refresh and check status)
+---
 
-### Viewing & Sharing Issues
+### AI Features Not Working
 
-**Share link isn't working**
+**Problem**: "Relay says 'Out of AI credits'"
 
-- Verify link is correct (check for typos)
-- Share link expires 30 days after album deletion
-- Contact support if still broken
+**Solutions**:
 
-**Images won't display in shared album**
+1. Check your AI credit balance (Settings → Billing)
+2. Wait until next billing cycle for reset (shown in Settings)
+3. Purchase one-time credit pack ($10 for 500 credits)
+4. Upgrade to higher tier (PRO: 1,000/mo, BUSINESS: 5,000/mo)
 
-- Your original images might have been deleted
-- Refresh the page
-- Try a different browser
-
-### Account Issues
-
-**Can't log in**
-
-- Verify email is correct
-- Check for typo in password
-- Try "Forgot Password" reset
-- Try different auth method (GitHub/Google/Phone)
-
-**Token balance wrong**
-
-- Refresh page to reload balance
-- Recent purchases take a few seconds
-- Check transaction history for details
-
-**Didn't receive confirmation email**
-
-- Check spam/junk folder
-- Resend from sign-up page
-- Try different email address if persistent
-
-### Payment Issues
-
-**Stripe checkout won't load**
-
-- Check internet connection
-- Try different browser or device
-- Clear browser cookies/cache
-- Try incognito/private mode
-
-**Payment declined**
-
-- Check card has sufficient funds
-- Verify card isn't expired
-- Contact your bank about fraud flags
-- Try different card if available
+---
 
 ### Still Need Help?
 
-- Check this guide's FAQ section
-- Visit docs at [next.spike.land/docs](https://spike.land/docs)
-- Contact support: support@spike.land
-- Email: hello@spike.land
+**Support Channels**:
+
+- **Email**: support@spike.land (Response time: 24h FREE/PRO, 8h BUSINESS)
+- **Live Chat**: In-app chat button (Mon-Fri 9am-5pm EST)
+- **Documentation**: [docs.spike.land](https://spike.land/docs)
+- **Community**: [Discord server](https://discord.gg/spike-land)
 
 ---
 
-## Tips & Tricks
-
-### Maximizing Your Tokens
-
-1. **Use Free Regeneration First**: Wait for passive tokens before buying
-2. **Batch Enhancements**: Process multiple images to reduce overhead
-3. **Subscribe if Regular User**: Better value than one-time purchases
-4. **Referral Program**: Earn tokens by sharing with friends
-5. **Watch for Promotions**: Follow social media for voucher codes
-
-### Best Practices
-
-1. **Check Balance First**: Always verify tokens before enhancing
-2. **Start with TIER_1K**: Preview at lowest cost before higher tiers
-3. **Organize in Albums**: Keep projects together for batch work
-4. **Export Comparison**: Download JPEG for quick sharing, PNG for quality
-5. **Backup Originals**: Always keep original files separately
-
-### Performance Tips
-
-1. **Clear Browser Cache**: Improves page load speed
-2. **Close Extra Tabs**: Frees up system memory for processing
-3. **Use Stable Wifi**: Reduces timeout risk during upload
-4. **Compress Originals**: 1-5 MB files process faster than 20+ MB
-5. **Off-Peak Usage**: Likely faster processing at night/early morning
-
----
-
-## Contact & Support
-
-### Support Channels
-
-If you can't resolve your issue with this guide:
-
-**Documentation:**
-
-- Browse the [full documentation](https://spike.land/docs)
-- Check the [API Reference](/docs/API_REFERENCE.md)
-- Read the [Features documentation](/docs/FEATURES.md)
-- Review the [Pipeline documentation](/docs/PIXEL_PIPELINES.md)
-
-**Email Support:**
-
-- **General Support**: support@spike.land
-- **General Inquiries**: hello@spike.land
-- **Bug Reports**: Include error messages, screenshots, and steps to reproduce
-
-**Platform Information:**
-
-- **Status Updates**: [status.spike.land](https://status.spike.land) (future
-  feature)
-- **Company**: SPIKE LAND LTD (UK Company #16906682)
-- **Website**: [spike.land](https://spike.land)
-
-**Response Times:**
-
-- Business hours (9 AM - 5 PM GMT): 2-4 hours
-- Outside business hours: Next business day
-- Critical issues: Mark as urgent in subject line
-
----
-
-## Additional Resources
-
-### Platform Links
-
-- **Homepage**: [spike.land](https://spike.land)
-- **Pixel App**: [spike.land/apps/pixel](https://spike.land/apps/pixel)
-- **Token Management**: [spike.land/tokens](https://spike.land/tokens)
-- **Referral Program**: [spike.land/referrals](https://spike.land/referrals)
-- **Account Settings**: [spike.land/settings](https://spike.land/settings)
-- **Enhancement Pipelines**:
-  [spike.land/apps/pixel/pipelines](https://spike.land/apps/pixel/pipelines)
-
-### Legal & Privacy
-
-- **Terms of Service**: [spike.land/terms](https://spike.land/terms)
-- **Privacy Policy**: [spike.land/privacy](https://spike.land/privacy)
-- **Cookie Policy**: [spike.land/cookies](https://spike.land/cookies)
-
----
-
-**Last Updated**: December 30, 2025 **Version**: 2.0 (Comprehensive update
-reflecting actual platform implementation) **Guide Status**: Production-ready,
-based on current codebase
-
----
-
-_Thank you for using Spike Land! We're continuously improving the platform based
-on user feedback. If you have suggestions or feature requests, please reach out
-to hello@spike.land_
+**Document Version**: 2.0 (Pivot Edition)
+**Last Updated**: January 2026
+**Feedback**: docs@spike.land
+**Next Review**: April 2026

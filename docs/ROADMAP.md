@@ -1,22 +1,93 @@
 # Spike Land - Development Roadmap
 
-> **Last Updated**: January 28, 2026 **Current Phase**: Phase 3 In Progress
-> **Business Structure**: UK Limited Company (SPIKE LAND
-> LTD - Company #16906682) - Fully Established
+> **Last Updated**: January 29, 2026
+> **Current Phase**: Pivot Phase 9 (Documentation)
+> **Business Structure**: UK Limited Company (SPIKE LAND LTD - Company #16906682) - Fully Established
 
 ---
 
-## Quick Status Overview
+## 🔄 Strategic Pivot: January 2026
 
-| Phase                                | Status      | Progress |
-| ------------------------------------ | ----------- | -------- |
-| Phase 0: Business Foundation         | Complete    | 100%     |
-| Phase 1: Authentication & Foundation | Complete    | 100%     |
-| Phase 2: My Apps Platform            | Complete    | 100%     |
-| **Marketing Phase (Pixel Launch)**   | In Progress | 25%      |
-| **Phase 3: AI Agent Integration**    | In Progress | 45%      |
-| Phase 4: Deployment & Hosting        | Planned     | 0%       |
-| Phase 5: Monetization                | Planned     | 0%       |
+**Pivot Summary**: Transitioning from "Vibe Coded Apps" platform to **"AI-Powered Social Media Command Center"** with Orbit as the core product.
+
+**Rationale**: Market research indicates stronger product-market fit in social media management (B2B SaaS) vs. code generation (developer tools).
+
+**New Positioning**:
+
+- **Primary Product**: Orbit (social media management)
+- **Secondary Tools**: Pixel (image enhancement), Vibe Coding (landing pages)
+- **Target Market**: Solo content creators, small business marketing managers, freelance social media managers
+- **Monetization**: Workspace subscriptions ($0 FREE / $29 PRO / $99 BUSINESS)
+
+See [#836 - Strategic Pivot Epic](https://github.com/zerdos/spike-land-nextjs/issues/836) for full details.
+
+---
+
+## Pivot Phases (2026)
+
+### Current Status: Phase 9 (Documentation) - In Progress
+
+| Phase | Name                   | Status             | Progress | Timeline    |
+| ----- | ---------------------- | ------------------ | -------- | ----------- |
+| 1     | Database Schema        | ✅ Complete        | 100%     | Week 1      |
+| 2     | Backend Infrastructure | ✅ Complete        | 100%     | Week 2      |
+| 3     | Frontend Development   | ✅ Complete        | 100%     | Week 3-4    |
+| 4     | Testing & QA           | ✅ Complete        | 100%     | Week 5      |
+| 5     | Stripe Integration     | 🔄 In Progress     | 75%      | Week 6      |
+| 6     | A/B Testing System     | 📋 Planned         | 0%       | Week 7      |
+| 7     | Polish & UX            | 📋 Planned         | 0%       | Week 8      |
+| 8     | Vibe Coding Support    | 📋 Planned         | 0%       | Week 9      |
+| **9** | **Documentation**      | **🔄 In Progress** | **50%**  | **Week 10** |
+| 10    | Blog & Launch          | 📋 Planned         | 0%       | Week 11     |
+
+### Phase 9: Documentation (Current - #845)
+
+**Goal**: Update all documentation to reflect Orbit as core product
+
+**Key Changes**:
+
+- MARKETING_PERSONAS.md: 11 Pixel personas → 3 Orbit personas
+- SUBSCRIPTION_TIERS.md: Add visual comparison, FAQs, pricing rationale
+- ORBIT_USER_GUIDE.md: Review existing comprehensive guide
+- AB_TESTING_GUIDE.md: Create new guide for A/B testing feature
+- README.md: Update header to emphasize Orbit
+- USER_GUIDE.md: Complete rewrite (Orbit first, Pixel secondary)
+- ROADMAP.md: Add pivot phases section
+- FEATURES.md: Rewrite platform overview
+
+**Status**:
+
+- [x] MARKETING_PERSONAS.md (Complete)
+- [x] SUBSCRIPTION_TIERS.md (Complete)
+- [x] ORBIT_USER_GUIDE.md (Verified - already comprehensive)
+- [x] AB_TESTING_GUIDE.md (Complete)
+- [x] README.md (Complete)
+- [x] USER_GUIDE.md (Complete)
+- [x] ROADMAP.md (In Progress)
+- [ ] FEATURES.md (Pending)
+
+**Timeline**: Week 10 (January 27-31, 2026)
+
+**Dependencies**: Requires Phase 2 (Backend) and Phase 3 (Frontend) complete
+**Blocks**: Phase 10 (Blog Article & Launch)
+
+---
+
+## Legacy Phases (Superseded by Pivot)
+
+**Note**: The following phases represent the original "Vibe Coded Apps" roadmap. They are marked as superseded but retained for historical reference.
+
+### Quick Status Overview (Legacy)
+
+| Phase                                | Status              | Progress |
+| ------------------------------------ | ------------------- | -------- |
+| Phase 0: Business Foundation         | Complete            | 100%     |
+| Phase 1: Authentication & Foundation | Complete            | 100%     |
+| Phase 2: My Apps Platform            | Complete            | 100%     |
+| Marketing Phase (Pixel Launch)       | Complete (archived) | 100%     |
+| Phase 3: AI Agent Integration        | Superseded by Pivot | 45%      |
+| Phase 4: Deployment & Hosting        | Superseded by Pivot | 0%       |
+| Phase 5: Monetization                | Superseded by Pivot | 0%       |
 
 ---
 
