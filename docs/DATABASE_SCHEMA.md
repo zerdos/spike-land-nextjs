@@ -4325,38 +4325,38 @@ Properties as follows:
 
 Properties as follows:
 
-- `id`:
-- `workspaceId`:
-- `customDomain`:
-- `customDomainVerified`:
-- `dnsVerificationToken`:
-- `dnsVerificationStatus`:
-- `sslCertificateStatus`:
-- `sslCertificateIssuedAt`:
-- `sslCertificateExpiresAt`:
-- `primaryColor`:
-- `secondaryColor`:
-- `accentColor`:
-- `fontFamily`:
-- `logoUrl`:
-- `logoR2Key`:
-- `faviconUrl`:
-- `faviconR2Key`:
-- `emailSenderName`:
-- `emailSenderDomain`:
-- `emailSenderVerified`:
-- `emailHeaderLogoUrl`:
-- `emailFooterText`:
-- `loginPageTitle`:
-- `loginPageDescription`:
-- `loginBackgroundUrl`:
-- `loginBackgroundR2Key`:
-- `showPoweredBySpikeLand`:
-- `pdfHeaderLogoUrl`:
-- `pdfFooterText`:
-- `pdfWatermarkUrl`:
-- `createdAt`:
-- `updatedAt`:
+- `id`: Unique identifier for the configuration
+- `workspaceId`: Foreign key to the workspace
+- `customDomain`: Custom domain for the white-labeled application (e.g., app.example.com)
+- `customDomainVerified`: Boolean status of domain verification (TXT record check)
+- `dnsVerificationToken`: Token used for DNS TXT record verification
+- `dnsVerificationStatus`: Current status of DNS verification (PENDING, VERIFIED, FAILED)
+- `sslCertificateStatus`: Status of SSL certificate provisioning (PENDING, ISSUED, FAILED)
+- `sslCertificateIssuedAt`: Timestamp when SSL certificate was issued
+- `sslCertificateExpiresAt`: Timestamp when SSL certificate expires
+- `primaryColor`: Primary brand color hex code
+- `secondaryColor`: Secondary brand color hex code
+- `accentColor`: Accent brand color hex code
+- `fontFamily`: Custom font family to use
+- `logoUrl`: URL to the workspace logo image
+- `logoR2Key`: Storage key for the logo in R2
+- `faviconUrl`: URL to the workspace favicon
+- `faviconR2Key`: Storage key for the favicon in R2
+- `emailSenderName`: Custom "From" name for emails
+- `emailSenderDomain`: Custom domain for email sending
+- `emailSenderVerified`: Boolean status of email domain verification
+- `emailHeaderLogoUrl`: URL for logo to use in email headers
+- `emailFooterText`: Custom text for email footers
+- `loginPageTitle`: Custom title for the login page
+- `loginPageDescription`: Custom description for the login page
+- `loginBackgroundUrl`: URL for login page background image
+- `loginBackgroundR2Key`: Storage key for login background in R2
+- `showPoweredBySpikeLand`: Whether to show "Powered by Spike Land" branding
+- `pdfHeaderLogoUrl`: URL for logo in generated PDFs
+- `pdfFooterText`: Custom footer text for generated PDFs
+- `pdfWatermarkUrl`: URL for watermark image in PDFs
+- `createdAt`: Timestamp of creation
+- `updatedAt`: Timestamp of last update
 
 ### `_ConnectionToConnectionTag`
 

@@ -225,10 +225,28 @@ export async function DELETE(
       );
     }
 
+    // Check subscription tier (PRO or BUSINESS required)
+    if (workspace.subscriptionTier === 'FREE') {
+      return NextResponse.json(
+        { success: false, error: 'White-label features require PRO or BUSINESS subscription' },
+        { status: 403 }
+      );
+    }
+
     // Delete white-label configuration
-    await prisma.workspaceWhiteLabelConfig.delete({
-      where: { workspaceId: workspace.id },
-    });
+    try {
+      await prisma.workspaceWhiteLabelConfig.delete({
+        where: { workspaceId: workspace.id },
+      });
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        // Record didn't exist, considered success
+        return NextResponse.json({
+          success: true,
+        });
+      }
+      throw error;
+    }
 
     return NextResponse.json({
       success: true,

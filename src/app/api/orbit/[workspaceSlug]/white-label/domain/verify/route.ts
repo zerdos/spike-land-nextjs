@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma';
 import {
   generateVerificationToken,
   getVerificationInstructions,
+  isValidDomain,
 } from '@/lib/white-label/domain-verification';
 import type { DomainVerificationResponse } from '@/types/white-label';
 
@@ -33,6 +34,13 @@ export async function POST(
     if (!domain || typeof domain !== 'string') {
       return NextResponse.json(
         { success: false, error: 'Domain is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!isValidDomain(domain)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid domain format' },
         { status: 400 }
       );
     }
