@@ -26,6 +26,7 @@ erDiagram
 "campaign_briefs" {
   String id PK
   String userId FK
+  String workspaceId FK "nullable"
   String name
   Json targetAudience
   Json campaignObjectives
@@ -1871,6 +1872,58 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
 }
+"variant_generation_jobs" {
+  String id PK
+  String workspaceId FK
+  String briefId FK "nullable"
+  String seedContent
+  Json targetAudience "nullable"
+  String variationTypes
+  Int requestedCount
+  JobStatus status
+  Int progress
+  String errorMessage "nullable"
+  DateTime createdAt
+  DateTime completedAt "nullable"
+}
+"marketing_variants" {
+  String id PK
+  String workspaceId FK
+  String generationJobId FK "nullable"
+  String seedContent "nullable"
+  String generatedText
+  String variationType
+  String tone "nullable"
+  Int targetLength "nullable"
+  Int characterCount
+  String ctaStyle "nullable"
+  String aiPrompt "nullable"
+  String aiModel "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"variant_performance_predictions" {
+  String id PK
+  String variantId FK,UK
+  Float predictedCTR
+  Float predictedER
+  Float predictedCR
+  Float confidenceScore
+  Json factorsAnalyzed
+  DateTime createdAt
+  DateTime updatedAt
+}
+"variant_image_suggestions" {
+  String id PK
+  String variantId FK
+  String prompt
+  String theme
+  String description
+  String aspectRatio "nullable"
+  Boolean includePeople
+  String colorPalette
+  DateTime createdAt
+}
 "identities" {
   String id PK
   String userId FK,UK "nullable"
@@ -1890,6 +1943,7 @@ erDiagram
 }
 "users" }o--o| "users" : referredBy
 "campaign_briefs" }o--|| "users" : user
+"campaign_briefs" }o--o| "workspaces" : workspace
 "campaign_target_audiences" |o--|| "campaign_briefs" : brief
 "campaign_objectives" }o--|| "campaign_briefs" : brief
 "accounts" }o--|| "users" : user
@@ -2084,6 +2138,12 @@ erDiagram
 "organic_post_conversions" }o--|| "workspaces" : workspace
 "organic_post_engagers" }o--|| "organic_post_conversions" : conversion
 "ad_creative_variants" }o--|| "organic_post_conversions" : conversion
+"variant_generation_jobs" }o--|| "workspaces" : workspace
+"variant_generation_jobs" }o--o| "campaign_briefs" : brief
+"marketing_variants" }o--|| "workspaces" : workspace
+"marketing_variants" }o--o| "variant_generation_jobs" : generationJob
+"variant_performance_predictions" |o--|| "marketing_variants" : variant
+"variant_image_suggestions" }o--|| "marketing_variants" : variant
 "identities" |o--o| "users" : user
 "identifiers" }o--|| "identities" : identity
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
@@ -2114,6 +2174,7 @@ Properties as follows:
 
 - `id`:
 - `userId`:
+- `workspaceId`:
 - `name`:
 - `targetAudience`:
 - `campaignObjectives`:
@@ -4454,6 +4515,70 @@ Properties as follows:
 - `isSelected`:
 - `createdAt`:
 - `updatedAt`:
+
+### `variant_generation_jobs`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `briefId`:
+- `seedContent`:
+- `targetAudience`:
+- `variationTypes`:
+- `requestedCount`:
+- `status`:
+- `progress`:
+- `errorMessage`:
+- `createdAt`:
+- `completedAt`:
+
+### `marketing_variants`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `generationJobId`:
+- `seedContent`:
+- `generatedText`:
+- `variationType`:
+- `tone`:
+- `targetLength`:
+- `characterCount`:
+- `ctaStyle`:
+- `aiPrompt`:
+- `aiModel`:
+- `createdAt`:
+- `updatedAt`:
+
+### `variant_performance_predictions`
+
+Properties as follows:
+
+- `id`:
+- `variantId`:
+- `predictedCTR`:
+- `predictedER`:
+- `predictedCR`:
+- `confidenceScore`:
+- `factorsAnalyzed`:
+- `createdAt`:
+- `updatedAt`:
+
+### `variant_image_suggestions`
+
+Properties as follows:
+
+- `id`:
+- `variantId`:
+- `prompt`:
+- `theme`:
+- `description`:
+- `aspectRatio`:
+- `includePeople`:
+- `colorPalette`:
+- `createdAt`:
 
 ### `identities`
 
