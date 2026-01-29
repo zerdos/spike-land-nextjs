@@ -112,7 +112,7 @@ const PLATFORM_CONFIG: Record<
     icon: () => <span className="text-lg">🎵</span>,
     color: "text-black dark:text-white",
     bgColor: "bg-black/10 dark:bg-white/10",
-    connectPath: "", // Not implemented yet
+    connectPath: "/api/social/tiktok/connect",
   },
   DISCORD: {
     name: "Discord",

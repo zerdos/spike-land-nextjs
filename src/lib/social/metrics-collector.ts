@@ -18,6 +18,7 @@ import { tryCatch } from "@/lib/try-catch";
 import { FacebookClient } from "./clients/facebook";
 import { InstagramClient } from "./clients/instagram";
 import { LinkedInClient } from "./clients/linkedin";
+import { TikTokClient } from "./clients/tiktok";
 import { TwitterClient } from "./clients/twitter";
 import { YouTubeClient } from "./clients/youtube";
 import type { ISocialClient, SocialMetricsData } from "./types";
@@ -78,6 +79,7 @@ const SUPPORTED_PLATFORMS: SocialPlatform[] = [
   "FACEBOOK",
   "TWITTER",
   "YOUTUBE",
+  "TIKTOK",
 ];
 
 /**
@@ -104,10 +106,9 @@ function createSocialClient(
       return new TwitterClient({ accessToken });
     case "YOUTUBE":
       return new YouTubeClient({ accessToken });
-    // Discord doesn't support account-level metrics
     case "TIKTOK":
-      // TikTok not yet implemented
-      return null;
+      return new TikTokClient({ accessToken, accountId: organizationId });
+    // Discord doesn't support account-level metrics
     default:
       return null;
   }

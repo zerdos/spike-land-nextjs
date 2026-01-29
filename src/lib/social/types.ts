@@ -517,7 +517,61 @@ export const PLATFORM_CAPABILITIES: Record<
   FACEBOOK: { canLike: true, canReply: true, canShare: false },
   INSTAGRAM: { canLike: true, canReply: true, canShare: false },
   LINKEDIN: { canLike: true, canReply: true, canShare: false },
-  TIKTOK: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
+  TIKTOK: { canLike: true, canReply: true, canShare: false },
   YOUTUBE: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
   DISCORD: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
 };
+
+/**
+ * TikTok-specific types
+ */
+export interface TikTokVideo {
+  id: string;
+  title: string;
+  description?: string;
+  coverImageUrl: string;
+  videoUrl?: string;
+  duration: number; // seconds
+  createTime: number; // Unix timestamp
+  shareUrl: string;
+  statistics: {
+    viewCount: number;
+    likeCount: number;
+    commentCount: number;
+    shareCount: number;
+  };
+}
+
+export interface TikTokUserInfo {
+  openId: string;
+  unionId: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string;
+  followerCount: number;
+  followingCount: number;
+  videoCount: number;
+  bioDescription?: string;
+}
+
+export interface TikTokTrend {
+  id: string;
+  name: string;
+  type: "hashtag" | "sound";
+  viewCount: number;
+  videoCount: number;
+  growthRate: number;
+  category?: string;
+}
+
+export interface TikTokUploadOptions extends PostOptions {
+  videoFile: File | Buffer;
+  title: string;
+  caption?: string;
+  hashtags?: string[];
+  soundId?: string; // Use trending sound
+  privacyLevel?: "PUBLIC" | "FRIENDS" | "SELF";
+  allowComment?: boolean;
+  allowDuet?: boolean;
+  allowStitch?: boolean;
+}
