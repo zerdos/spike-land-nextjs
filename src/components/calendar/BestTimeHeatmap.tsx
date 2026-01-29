@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { Fragment, useState, useEffect } from "react";
 import type { HeatmapData } from "@/types/ai-calendar";
 
 interface BestTimeHeatmapProps {
@@ -87,11 +87,8 @@ export function BestTimeHeatmap({
 
             {/* Data rows */}
             {heatmapData.heatmap.map((dayData, dayIdx) => (
-              <>
-                <div
-                  key={`day-${dayIdx}`}
-                  className="bg-white p-2 text-xs font-medium"
-                >
+              <Fragment key={`row-${dayIdx}`}>
+                <div className="bg-white p-2 text-xs font-medium">
                   {DAYS[dayIdx]}
                 </div>
                 {dayData.map((score, hourIdx) => {
@@ -117,7 +114,7 @@ export function BestTimeHeatmap({
                     />
                   );
                 })}
-              </>
+              </Fragment>
             ))}
           </div>
         </div>

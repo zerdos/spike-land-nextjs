@@ -18,7 +18,9 @@ interface WeeklyPlanGeneratorProps {
   workspaceId: string;
 }
 
-export function WeeklyPlanGenerator({}: WeeklyPlanGeneratorProps) {
+export function WeeklyPlanGenerator({
+  workspaceId,
+}: WeeklyPlanGeneratorProps) {
   const [weekStart, setWeekStart] = useState(() => {
     const now = new Date();
     const day = now.getDay();
@@ -34,24 +36,27 @@ export function WeeklyPlanGenerator({}: WeeklyPlanGeneratorProps) {
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
-      // This would call the API - simplified for now
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch(
+        `/api/orbit/${workspaceId}/calendar/weekly-plan?weekStart=${weekStart.toISOString()}`,
+      );
 
-      // Placeholder plan
-      const mockPlan: WeeklyPlan = {
-        weekStart,
-        weekEnd: addWeeks(weekStart, 1),
-        suggestions: [],
-        coveragePct: 45,
-        gaps: [
-          { day: 1, hour: 10, reason: "High engagement slot not filled" },
-          { day: 3, hour: 14, reason: "High engagement slot not filled" },
-        ],
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to generate weekly plan");
+      }
+
+      const data = await response.json();
+      const weeklyPlan: WeeklyPlan = {
+        weekStart: new Date(data.plan.weekStart),
+        weekEnd: new Date(data.plan.weekEnd),
+        suggestions: data.plan.suggestions,
+        coveragePct: data.plan.coveragePct,
+        gaps: data.plan.gaps,
       };
 
-      setPlan(mockPlan);
+      setPlan(weeklyPlan);
       toast.success("Weekly plan generated", {
-        description: `Found ${mockPlan.suggestions.length} suggestions for this week`,
+        description: `Found ${weeklyPlan.suggestions.length} suggestions for this week`,
       });
     } catch (error) {
       toast.error("Generation failed", {
