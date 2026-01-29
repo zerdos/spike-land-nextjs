@@ -4,7 +4,7 @@ import type {
   GenerationConfig,
   PromptConfig,
   ValidatedPipelineConfigs,
-} from "@spike-npm-land/shared/types";
+} from "./pipeline-types";
 import { z } from "zod";
 
 /**

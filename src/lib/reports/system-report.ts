@@ -6,7 +6,7 @@
  * Resolves #797: Type Safety Improvements
  */
 
-import type { CacheMap } from "@spike-npm-land/shared/types";
+import type { CacheMap } from "@/lib/types/common";
 import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { JobStatus, UserRole } from "@prisma/client";

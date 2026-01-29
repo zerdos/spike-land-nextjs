@@ -7,7 +7,7 @@
  * Resolves #797: Type Safety Improvements
  */
 
-import type { HealthEventDetails } from "@spike-npm-land/shared/types";
+import type { HealthEventDetails } from "@/lib/types/common";
 import type {
   AccountHealthEventType,
   AccountHealthStatus,
