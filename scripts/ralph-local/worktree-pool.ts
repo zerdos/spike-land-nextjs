@@ -8,6 +8,9 @@
  *   │   ├── warm-1/               # Pre-warmed worktree 1
  *   │   ├── warm-2/               # Pre-warmed worktree 2
  *   │   └── ...
+ *   ├── .recycle/                 # Worktrees waiting to be recycled
+ *   │   ├── from-520/             # Recycled from ticket 520
+ *   │   └── ...
  *   ├── 520/                      # Active ticket worktree
  *   └── 521/                      # Active ticket worktree
  *
@@ -16,10 +19,17 @@
  * This follows the same patterns as worktree-manager.ts which was reviewed.
  */
 
-import { execSync } from "child_process";
+import { exec, execSync, spawn } from "child_process";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync } from "fs";
 import { basename, join } from "path";
+import { promisify } from "util";
 import type { RalphLocalConfig } from "./types";
+
+const execAsync = promisify(exec);
+
+// Track background replenishment state
+let isReplenishing = false;
+let replenishmentPromise: Promise<void> | null = null;
 
 /**
  * Validate pool index (must be a positive integer)
@@ -33,6 +43,13 @@ function validatePoolIndex(index: number): boolean {
  */
 function getPoolDir(config: RalphLocalConfig): string {
   return config.worktreePoolDir;
+}
+
+/**
+ * Get the recycle directory path
+ */
+function getRecycleDir(config: RalphLocalConfig): string {
+  return join(config.worktreeBase, ".recycle");
 }
 
 /**
@@ -99,6 +116,170 @@ function isWarmWorktreeValid(worktreePath: string): boolean {
 
     return true;
   } catch {
+    return false;
+  }
+}
+
+/**
+ * List recyclable worktrees (worktrees that can be reset and reused)
+ */
+function listRecyclableWorktrees(config: RalphLocalConfig): string[] {
+  const recycleDir = getRecycleDir(config);
+
+  if (!existsSync(recycleDir)) {
+    return [];
+  }
+
+  try {
+    const entries = readdirSync(recycleDir, { withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isDirectory() && entry.name.startsWith("from-"))
+      .map((entry) => join(recycleDir, entry.name))
+      .filter((path) => {
+        // Verify it has node_modules (the valuable part)
+        return existsSync(join(path, "node_modules"));
+      });
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Move a completed worktree to recycle bin for later reuse
+ * This preserves node_modules which is expensive to recreate
+ */
+export function recycleWorktree(
+  ticketId: string,
+  worktreePath: string,
+  config: RalphLocalConfig,
+): boolean {
+  const recycleDir = getRecycleDir(config);
+  const ticketNum = ticketId.replace("#", "");
+  const recyclePath = join(recycleDir, `from-${ticketNum}`);
+
+  try {
+    // Ensure recycle directory exists
+    if (!existsSync(recycleDir)) {
+      mkdirSync(recycleDir, { recursive: true });
+    }
+
+    // Clean up if a recycle with this name exists
+    if (existsSync(recyclePath)) {
+      rmSync(recyclePath, { recursive: true, force: true });
+    }
+
+    // Only recycle if it has node_modules
+    if (!existsSync(join(worktreePath, "node_modules"))) {
+      console.log(`   ⚠️ No node_modules to recycle for ${ticketId}`);
+      return false;
+    }
+
+    // First, remove from git worktree list but keep the directory
+    try {
+      execSync(`git worktree remove "${worktreePath}" --force`, {
+        cwd: config.workDir,
+        encoding: "utf-8",
+        timeout: 30000,
+        stdio: "pipe",
+      });
+    } catch {
+      // Worktree might already be pruned, that's ok
+    }
+
+    // Move the directory to recycle
+    if (existsSync(worktreePath)) {
+      renameSync(worktreePath, recyclePath);
+      console.log(`   ♻️ Recycled worktree ${ticketId} for later reuse`);
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.log(`   ⚠️ Failed to recycle worktree: ${error}`);
+    return false;
+  }
+}
+
+/**
+ * Recycle a worktree into a warm pool slot (async - non-blocking)
+ * This resets the worktree to main and runs yarn install
+ */
+async function recycleIntoWarmWorktreeAsync(
+  recyclePath: string,
+  index: number,
+  config: RalphLocalConfig,
+): Promise<boolean> {
+  const poolDir = getPoolDir(config);
+  const warmPath = getWarmWorktreePath(index, config);
+  const branchName = `ralph/pool-${index}`;
+
+  console.log(`   ♻️ Recycling worktree into warm-${index}...`);
+
+  try {
+    // Ensure pool directory exists
+    if (!existsSync(poolDir)) {
+      mkdirSync(poolDir, { recursive: true });
+    }
+
+    // Clean up existing warm path if it exists
+    if (existsSync(warmPath)) {
+      rmSync(warmPath, { recursive: true, force: true });
+    }
+
+    // Delete the target branch if it exists
+    try {
+      execSync(`git branch -D ${branchName}`, {
+        cwd: config.workDir,
+        encoding: "utf-8",
+        timeout: 30000,
+        stdio: "pipe",
+      });
+    } catch {
+      // Branch doesn't exist, fine
+    }
+
+    // Move recycled worktree to warm location
+    renameSync(recyclePath, warmPath);
+
+    // Remove any .git file/directory (it's from the old worktree)
+    const gitPath = join(warmPath, ".git");
+    if (existsSync(gitPath)) {
+      rmSync(gitPath, { recursive: true, force: true });
+    }
+
+    // Fetch latest main
+    await execAsync("git fetch origin main", {
+      cwd: config.workDir,
+      timeout: 60000,
+    });
+
+    // Create a fresh worktree at the existing path
+    await execAsync(`git worktree add -b ${branchName} "${warmPath}" origin/main`, {
+      cwd: config.workDir,
+      timeout: 60000,
+    });
+
+    // Run yarn install (should be fast since node_modules exists)
+    console.log(`   📦 Running yarn install for warm-${index} (recycled)...`);
+    await execAsync("yarn install --immutable 2>&1 || yarn install 2>&1", {
+      cwd: warmPath,
+      timeout: 300000, // 5 minutes
+    });
+
+    console.log(`   ✅ Recycled warm worktree ${index} ready`);
+    return true;
+  } catch (error) {
+    console.log(`   ❌ Failed to recycle warm worktree ${index}:`, error);
+
+    // Cleanup on failure
+    try {
+      if (existsSync(warmPath)) {
+        rmSync(warmPath, { recursive: true, force: true });
+      }
+    } catch {
+      // Ignore cleanup errors
+    }
+
     return false;
   }
 }
