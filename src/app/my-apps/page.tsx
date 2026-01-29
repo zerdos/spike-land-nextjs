@@ -3,7 +3,15 @@ import { AppCatalog, UserStatsCard } from "@/components/my-apps";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Link } from "@/components/ui/link";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import prisma from "@/lib/prisma";
 import { AppBuildStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
@@ -122,10 +130,10 @@ export default async function MyAppsPage(props: {
               {/* Search and Filter Bar - Disabled when no apps */}
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="flex-1">
-                  <input
+                  <Input
                     type="search"
                     placeholder="Search apps..."
-                    className="w-full rounded-md border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="w-full"
                     disabled
                     aria-label="Search apps"
                   />
@@ -181,10 +189,10 @@ export default async function MyAppsPage(props: {
               {/* Search and Filter Bar */}
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="flex-1">
-                  <input
+                  <Input
                     type="search"
                     placeholder="Search apps..."
-                    className="w-full rounded-md border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="w-full"
                     disabled
                     aria-label="Search apps"
                   />
@@ -227,37 +235,29 @@ export default async function MyAppsPage(props: {
 
               {/* Pagination Controls */}
               {totalPages > 1 && (
-                <div className="mt-8 flex items-center justify-center gap-2">
-                  <Link
-                    href={`/my-apps?page=${page - 1}`}
-                    className={page <= 1 ? "pointer-events-none" : ""}
-                    aria-disabled={page <= 1}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page <= 1}
-                    >
-                      Previous
-                    </Button>
-                  </Link>
-                  <div className="text-sm text-muted-foreground">
-                    Page {page} of {totalPages}
-                  </div>
-                  <Link
-                    href={`/my-apps?page=${page + 1}`}
-                    className={page >= totalPages ? "pointer-events-none" : ""}
-                    aria-disabled={page >= totalPages}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page >= totalPages}
-                    >
-                      Next
-                    </Button>
-                  </Link>
-                </div>
+                <Pagination className="mt-8">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href={page <= 1 ? "#" : `/my-apps?page=${page - 1}`}
+                        aria-disabled={page <= 1}
+                        className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                    <PaginationItem>
+                      <span className="text-sm text-muted-foreground px-4">
+                        Page {page} of {totalPages}
+                      </span>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationNext
+                        href={page >= totalPages ? "#" : `/my-apps?page=${page + 1}`}
+                        aria-disabled={page >= totalPages}
+                        className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               )}
             </>
           )}
