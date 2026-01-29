@@ -106,6 +106,15 @@ model User {
   workspaceFavorites    WorkspaceFavorite[]
   workspaceRecentAccess WorkspaceRecentAccess[]
 
+  // Client portal relations
+  clientAccess           ClientPortalAccess[]    @relation("ClientAccess")
+  authoredComments       ContentComment[]        @relation("CommentAuthor")
+  resolvedComments       ContentComment[]        @relation("CommentResolver")
+  submittedApprovals     ApprovalRequest[]       @relation("ApprovalSubmitter")
+  finalApprovalDecisions ApprovalRequest[]       @relation("ApprovalFinalDecision")
+  stageApprovals         ApprovalStageApprover[] @relation("StageApprovals")
+  activityFeed           ClientActivityFeed[]    @relation("ActivityActor")
+
   @@map("users")
 }
 
@@ -891,6 +900,7 @@ enum UserRole {
   USER
   ADMIN
   SUPER_ADMIN
+  CLIENT
 }
 
 enum MarketingPlatform {
@@ -2491,6 +2501,13 @@ model Workspace {
   // Multi-workspace management
   favorites    WorkspaceFavorite[]
   recentAccess WorkspaceRecentAccess[]
+
+  // Client portal relations
+  clientAccess       ClientPortalAccess[]
+  contentComments    ContentComment[]
+  approvalWorkflows  ApprovalWorkflow[]
+  approvalRequests   ApprovalRequest[]
+  clientActivityFeed ClientActivityFeed[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -4366,4 +4383,254 @@ enum IdentifierType {
   VISITOR_ID
   USER_ID
   EMAIL
+}
+
+// =============================================================================
+// Client Collaboration Portal - Issue #534
+// =============================================================================
+
+// Approval system enums
+enum ApprovalStatus {
+  PENDING
+  IN_PROGRESS
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum StageStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SKIPPED
+}
+
+enum ApproverDecision {
+  APPROVED
+  REJECTED
+  REQUESTED_CHANGES
+}
+
+// Activity feed enum
+enum ClientActivityType {
+  CONTENT_ADDED
+  CONTENT_UPDATED
+  COMMENT_ADDED
+  MENTION_RECEIVED
+  APPROVAL_REQUESTED
+  APPROVAL_APPROVED
+  APPROVAL_REJECTED
+  STATUS_CHANGED
+}
+
+// Client portal access control
+model ClientPortalAccess {
+  id          String @id @default(cuid())
+  clientId    String
+  workspaceId String
+
+  // Permissions
+  canViewContent   Boolean @default(true)
+  canComment       Boolean @default(true)
+  canApprove       Boolean @default(true)
+  canViewAnalytics Boolean @default(false)
+
+  // Scope restrictions (JSON arrays)
+  accessibleContentIds Json?
+  accessibleFolderIds  Json?
+
+  // Relations
+  client    User      @relation("ClientAccess", fields: [clientId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  expiresAt DateTime?
+
+  @@unique([clientId, workspaceId])
+  @@index([clientId])
+  @@index([workspaceId])
+  @@map("client_portal_access")
+}
+
+// Threaded comments with @mentions
+model ContentComment {
+  id String @id @default(cuid())
+
+  // Target content (generic)
+  contentType String
+  contentId   String
+
+  // Comment data
+  content    String   @db.Text
+  authorId   String
+  authorRole UserRole
+
+  // Threading
+  parentId   String?
+  threadRoot String?
+
+  // Mentions
+  mentions Json?
+
+  // Resolution
+  isResolved   Boolean   @default(false)
+  resolvedAt   DateTime?
+  resolvedById String?
+
+  workspaceId String
+
+  // Relations
+  author     User             @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  resolvedBy User?            @relation("CommentResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  workspace  Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  parent     ContentComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    ContentComment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([contentType, contentId])
+  @@index([workspaceId, createdAt])
+  @@index([authorId])
+  @@index([threadRoot])
+  @@index([parentId])
+  @@map("content_comments")
+}
+
+// Define approval processes
+model ApprovalWorkflow {
+  id          String @id @default(cuid())
+  workspaceId String
+
+  name        String
+  description String? @db.Text
+  isDefault   Boolean @default(false)
+  isActive    Boolean @default(true)
+
+  // Workflow stages (JSON)
+  stages Json
+
+  workspace Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  approvals ApprovalRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@map("approval_workflows")
+}
+
+// Track approval progress
+model ApprovalRequest {
+  id         String @id @default(cuid())
+  workflowId String
+
+  // Content
+  contentType String
+  contentId   String
+
+  // State
+  currentStage Int            @default(1)
+  status       ApprovalStatus @default(PENDING)
+
+  // Metadata
+  submittedById     String
+  finalDecisionById String?
+  finalDecisionAt   DateTime?
+  notes             String?   @db.Text
+
+  workspaceId String
+
+  // Relations
+  workflow        ApprovalWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  submittedBy     User             @relation("ApprovalSubmitter", fields: [submittedById], references: [id], onDelete: Cascade)
+  finalDecisionBy User?            @relation("ApprovalFinalDecision", fields: [finalDecisionById], references: [id], onDelete: SetNull)
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  stages          ApprovalStage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contentType, contentId])
+  @@index([workspaceId, status])
+  @@index([workflowId])
+  @@index([status])
+  @@map("approval_requests")
+}
+
+// Individual workflow stages
+model ApprovalStage {
+  id        String @id @default(cuid())
+  requestId String
+
+  stageOrder Int
+  stageName  String
+  status     StageStatus @default(PENDING)
+
+  requiredApprovers Json
+  approvalThreshold Int
+
+  approvers ApprovalStageApprover[]
+  request   ApprovalRequest         @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([requestId, stageOrder])
+  @@index([requestId])
+  @@map("approval_stages")
+}
+
+// Individual approver actions
+model ApprovalStageApprover {
+  id         String @id @default(cuid())
+  stageId    String
+  approverId String
+
+  decision  ApproverDecision?
+  decidedAt DateTime?
+  comments  String?           @db.Text
+
+  stage    ApprovalStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  approver User          @relation("StageApprovals", fields: [approverId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([stageId, approverId])
+  @@index([stageId])
+  @@index([approverId])
+  @@map("approval_stage_approvers")
+}
+
+// Activity log for clients
+model ClientActivityFeed {
+  id String @id @default(cuid())
+
+  activityType ClientActivityType
+
+  contentType String
+  contentId   String
+
+  actorId   String
+  actorRole UserRole
+
+  title       String
+  description String? @db.Text
+  metadata    Json?
+
+  workspaceId     String
+  isClientVisible Boolean @default(true)
+
+  actor     User      @relation("ActivityActor", fields: [actorId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([workspaceId, createdAt])
+  @@index([actorId])
+  @@index([contentType, contentId])
+  @@map("client_activity_feed")
 }

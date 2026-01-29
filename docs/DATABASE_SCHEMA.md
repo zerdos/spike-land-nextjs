@@ -1803,6 +1803,98 @@ erDiagram
   String value
   DateTime createdAt
 }
+"client_portal_access" {
+  String id PK
+  String clientId FK
+  String workspaceId FK
+  Boolean canViewContent
+  Boolean canComment
+  Boolean canApprove
+  Boolean canViewAnalytics
+  Json accessibleContentIds "nullable"
+  Json accessibleFolderIds "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+  DateTime expiresAt "nullable"
+}
+"content_comments" {
+  String id PK
+  String contentType
+  String contentId
+  String content
+  String authorId FK
+  UserRole authorRole
+  String parentId FK "nullable"
+  String threadRoot "nullable"
+  Json mentions "nullable"
+  Boolean isResolved
+  DateTime resolvedAt "nullable"
+  String resolvedById FK "nullable"
+  String workspaceId FK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"approval_workflows" {
+  String id PK
+  String workspaceId FK
+  String name
+  String description "nullable"
+  Boolean isDefault
+  Boolean isActive
+  Json stages
+  DateTime createdAt
+  DateTime updatedAt
+}
+"approval_requests" {
+  String id PK
+  String workflowId FK
+  String contentType
+  String contentId
+  Int currentStage
+  ApprovalStatus status
+  String submittedById FK
+  String finalDecisionById FK "nullable"
+  DateTime finalDecisionAt "nullable"
+  String notes "nullable"
+  String workspaceId FK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"approval_stages" {
+  String id PK
+  String requestId FK
+  Int stageOrder
+  String stageName
+  StageStatus status
+  Json requiredApprovers
+  Int approvalThreshold
+  DateTime createdAt
+  DateTime updatedAt
+}
+"approval_stage_approvers" {
+  String id PK
+  String stageId FK
+  String approverId FK
+  ApproverDecision decision "nullable"
+  DateTime decidedAt "nullable"
+  String comments "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"client_activity_feed" {
+  String id PK
+  ClientActivityType activityType
+  String contentType
+  String contentId
+  String actorId FK
+  UserRole actorRole
+  String title
+  String description "nullable"
+  Json metadata "nullable"
+  String workspaceId FK
+  Boolean isClientVisible
+  DateTime createdAt
+}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
@@ -2000,6 +2092,22 @@ erDiagram
 "scheduled_post_assets" }o--|| "assets" : asset
 "identities" |o--o| "users" : user
 "identifiers" }o--|| "identities" : identity
+"client_portal_access" }o--|| "users" : client
+"client_portal_access" }o--|| "workspaces" : workspace
+"content_comments" }o--|| "users" : author
+"content_comments" }o--o| "users" : resolvedBy
+"content_comments" }o--|| "workspaces" : workspace
+"content_comments" }o--o| "content_comments" : parent
+"approval_workflows" }o--|| "workspaces" : workspace
+"approval_requests" }o--|| "approval_workflows" : workflow
+"approval_requests" }o--|| "users" : submittedBy
+"approval_requests" }o--o| "users" : finalDecisionBy
+"approval_requests" }o--|| "workspaces" : workspace
+"approval_stages" }o--|| "approval_requests" : request
+"approval_stage_approvers" }o--|| "approval_stages" : stage
+"approval_stage_approvers" }o--|| "users" : approver
+"client_activity_feed" }o--|| "users" : actor
+"client_activity_feed" }o--|| "workspaces" : workspace
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
 "_ConnectionToConnectionTag" }o--|| "connection_tags" : ConnectionTag
 ```
@@ -4284,6 +4392,119 @@ Properties as follows:
 - `identityId`:
 - `type`:
 - `value`:
+- `createdAt`:
+
+### `client_portal_access`
+
+Properties as follows:
+
+- `id`:
+- `clientId`:
+- `workspaceId`:
+- `canViewContent`:
+- `canComment`:
+- `canApprove`:
+- `canViewAnalytics`:
+- `accessibleContentIds`:
+- `accessibleFolderIds`:
+- `createdAt`:
+- `updatedAt`:
+- `expiresAt`:
+
+### `content_comments`
+
+Properties as follows:
+
+- `id`:
+- `contentType`:
+- `contentId`:
+- `content`:
+- `authorId`:
+- `authorRole`:
+- `parentId`:
+- `threadRoot`:
+- `mentions`:
+- `isResolved`:
+- `resolvedAt`:
+- `resolvedById`:
+- `workspaceId`:
+- `createdAt`:
+- `updatedAt`:
+
+### `approval_workflows`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `name`:
+- `description`:
+- `isDefault`:
+- `isActive`:
+- `stages`:
+- `createdAt`:
+- `updatedAt`:
+
+### `approval_requests`
+
+Properties as follows:
+
+- `id`:
+- `workflowId`:
+- `contentType`:
+- `contentId`:
+- `currentStage`:
+- `status`:
+- `submittedById`:
+- `finalDecisionById`:
+- `finalDecisionAt`:
+- `notes`:
+- `workspaceId`:
+- `createdAt`:
+- `updatedAt`:
+
+### `approval_stages`
+
+Properties as follows:
+
+- `id`:
+- `requestId`:
+- `stageOrder`:
+- `stageName`:
+- `status`:
+- `requiredApprovers`:
+- `approvalThreshold`:
+- `createdAt`:
+- `updatedAt`:
+
+### `approval_stage_approvers`
+
+Properties as follows:
+
+- `id`:
+- `stageId`:
+- `approverId`:
+- `decision`:
+- `decidedAt`:
+- `comments`:
+- `createdAt`:
+- `updatedAt`:
+
+### `client_activity_feed`
+
+Properties as follows:
+
+- `id`:
+- `activityType`:
+- `contentType`:
+- `contentId`:
+- `actorId`:
+- `actorRole`:
+- `title`:
+- `description`:
+- `metadata`:
+- `workspaceId`:
+- `isClientVisible`:
 - `createdAt`:
 
 ### `_ConnectionToConnectionTag`
