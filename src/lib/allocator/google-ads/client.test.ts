@@ -46,6 +46,11 @@ describe("GoogleAdsAllocatorClient", () => {
     delete process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
   });
 
+  afterEach(() => {
+    // Clean up environment variable
+    delete process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
+  });
+
   it("should get ad accounts and sub-accounts", async () => {
     mockMarketingClient.getAccounts.mockResolvedValue([
       { accountId: "manager_1", accountName: "Manager 1" },
