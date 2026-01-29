@@ -2117,6 +2117,9 @@ model SocialAccount {
   healthEvents               AccountHealthEvent[]
   // AI Content Calendar
   postingTimeRecommendations PostingTimeRecommendation[]
+  // YouTube Integration
+  youtubeVideoAnalytics      YouTubeVideoAnalytics[]
+  youtubeComments            YouTubeComment[]
 
   @@unique([workspaceId, platform, accountId])
   @@index([userId])
@@ -2491,6 +2494,9 @@ model Workspace {
   // Multi-workspace management
   favorites    WorkspaceFavorite[]
   recentAccess WorkspaceRecentAccess[]
+
+  // YouTube Integration
+  youtubeVideoAnalytics YouTubeVideoAnalytics[]
 
   @@index([slug])
   @@index([isPersonal])
@@ -4325,6 +4331,95 @@ enum WorkflowEventType {
   CRISIS_DETECTED
   POST_PUBLISHED
   INBOX_ITEM_RECEIVED
+}
+
+// =============================================================================
+// YouTube Integration Models - Issue #525
+// =============================================================================
+
+/// Analytics data for YouTube videos
+/// Stores comprehensive metrics including views, engagement, retention, and demographics
+model YouTubeVideoAnalytics {
+  id        String   @id @default(cuid())
+  videoId   String // YouTube video ID
+  platformPostId String? // Link to ScheduledPostAccount.platformPostId
+
+  // View metrics
+  views     Int      @default(0)
+  likes     Int      @default(0)
+  dislikes  Int      @default(0)
+  comments  Int      @default(0)
+  shares    Int      @default(0)
+
+  // Engagement
+  averageViewDuration   Int? // Seconds
+  averageViewPercentage Float?
+  subscribersGained     Int    @default(0)
+  subscribersLost       Int    @default(0)
+
+  // Traffic sources
+  trafficSourcesData Json? // {source: string, views: number}[]
+
+  // Demographics
+  viewerDemographics Json? // {ageGroup: string, gender: string, percentage: number}[]
+  topGeographies     Json? // {country: string, views: number}[]
+
+  // Retention
+  retentionData Json? // {elapsedVideoTime: string, audienceWatchRatio: number}[]
+
+  // Timestamps
+  fetchedAt        DateTime @default(now())
+  videoPublishedAt DateTime
+
+  // Relations
+  accountId   String
+  account     SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([videoId])
+  @@index([accountId])
+  @@index([workspaceId])
+  @@map("youtube_video_analytics")
+}
+
+/// YouTube comments and replies
+/// Stores comment data for video engagement tracking and moderation
+model YouTubeComment {
+  id              String  @id @default(cuid())
+  commentId       String // YouTube comment ID
+  videoId         String // YouTube video ID
+  parentCommentId String? // For replies
+
+  // Content
+  authorName         String
+  authorChannelId    String
+  authorProfileImage String?
+  textDisplay        String   @db.Text
+  textOriginal       String   @db.Text
+
+  // Metrics
+  likeCount  Int @default(0)
+  replyCount Int @default(0)
+
+  // Status
+  moderationStatus String  @default("published") // 'published' | 'heldForReview' | 'likelySpam' | 'rejected'
+  canReply         Boolean @default(true)
+
+  // Timestamps
+  publishedAt DateTime
+  updatedAt   DateTime
+  fetchedAt   DateTime @default(now())
+
+  // Relations
+  accountId String
+  account   SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId])
+  @@index([videoId])
+  @@index([accountId])
+  @@index([moderationStatus])
+  @@map("youtube_comments")
 }
 
 // =============================================================================

@@ -330,6 +330,59 @@ export interface YouTubeVideo {
 }
 
 /**
+ * YouTube video upload options for scheduled posts
+ */
+export interface YouTubeVideoUploadOptions {
+  title: string;
+  description?: string;
+  tags?: string[];
+  categoryId?: string;
+  privacyStatus?: "public" | "private" | "unlisted";
+  videoUrl: string; // R2/S3 URL where video is stored
+  videoFileSize: number;
+  thumbnailUrl?: string;
+  playlistIds?: string[];
+}
+
+/**
+ * YouTube analytics data structure
+ * Stored in YouTubeVideoAnalytics.trafficSourcesData
+ */
+export interface YouTubeTrafficSourceData {
+  source: string; // 'YT_SEARCH', 'EXT_URL', 'RELATED_VIDEO', etc.
+  views: number;
+  watchTime: number; // Minutes
+}
+
+/**
+ * YouTube viewer demographics data
+ * Stored in YouTubeVideoAnalytics.viewerDemographics
+ */
+export interface YouTubeViewerDemographicsData {
+  ageGroup: string;
+  gender: string;
+  percentage: number;
+}
+
+/**
+ * YouTube geography data
+ * Stored in YouTubeVideoAnalytics.topGeographies
+ */
+export interface YouTubeGeographyData {
+  country: string;
+  views: number;
+}
+
+/**
+ * YouTube audience retention data
+ * Stored in YouTubeVideoAnalytics.retentionData
+ */
+export interface YouTubeRetentionData {
+  elapsedVideoTime: string; // ISO 8601 duration
+  audienceWatchRatio: number; // Percentage still watching
+}
+
+/**
  * Discord-specific types
  * Note: Discord uses Bot Token auth, not OAuth
  */
@@ -518,6 +571,6 @@ export const PLATFORM_CAPABILITIES: Record<
   INSTAGRAM: { canLike: true, canReply: true, canShare: false },
   LINKEDIN: { canLike: true, canReply: true, canShare: false },
   TIKTOK: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
-  YOUTUBE: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
+  YOUTUBE: { canLike: true, canReply: true, canShare: false }, // Fully implemented
   DISCORD: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
 };

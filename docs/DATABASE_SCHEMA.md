@@ -1790,6 +1790,47 @@ erDiagram
   String postId FK
   String assetId FK
 }
+"youtube_video_analytics" {
+  String id PK
+  String videoId
+  String platformPostId "nullable"
+  Int views
+  Int likes
+  Int dislikes
+  Int comments
+  Int shares
+  Int averageViewDuration "nullable"
+  Float averageViewPercentage "nullable"
+  Int subscribersGained
+  Int subscribersLost
+  Json trafficSourcesData "nullable"
+  Json viewerDemographics "nullable"
+  Json topGeographies "nullable"
+  Json retentionData "nullable"
+  DateTime fetchedAt
+  DateTime videoPublishedAt
+  String accountId FK
+  String workspaceId FK
+}
+"youtube_comments" {
+  String id PK
+  String commentId UK
+  String videoId
+  String parentCommentId "nullable"
+  String authorName
+  String authorChannelId
+  String authorProfileImage "nullable"
+  String textDisplay
+  String textOriginal
+  Int likeCount
+  Int replyCount
+  String moderationStatus
+  Boolean canReply
+  DateTime publishedAt
+  DateTime updatedAt
+  DateTime fetchedAt
+  String accountId FK
+}
 "identities" {
   String id PK
   String userId FK,UK "nullable"
@@ -1998,6 +2039,9 @@ erDiagram
 "post_assets" }o--|| "assets" : asset
 "scheduled_post_assets" }o--|| "scheduled_posts" : post
 "scheduled_post_assets" }o--|| "assets" : asset
+"youtube_video_analytics" }o--|| "social_accounts" : account
+"youtube_video_analytics" }o--|| "workspaces" : workspace
+"youtube_comments" }o--|| "social_accounts" : account
 "identities" |o--o| "users" : user
 "identifiers" }o--|| "identities" : identity
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
@@ -4266,6 +4310,59 @@ Properties as follows:
 
 - `postId`:
 - `assetId`:
+
+### `youtube_video_analytics`
+
+Analytics data for YouTube videos
+Stores comprehensive metrics including views, engagement, retention, and demographics
+
+Properties as follows:
+
+- `id`:
+- `videoId`:
+- `platformPostId`:
+- `views`:
+- `likes`:
+- `dislikes`:
+- `comments`:
+- `shares`:
+- `averageViewDuration`:
+- `averageViewPercentage`:
+- `subscribersGained`:
+- `subscribersLost`:
+- `trafficSourcesData`:
+- `viewerDemographics`:
+- `topGeographies`:
+- `retentionData`:
+- `fetchedAt`:
+- `videoPublishedAt`:
+- `accountId`:
+- `workspaceId`:
+
+### `youtube_comments`
+
+YouTube comments and replies
+Stores comment data for video engagement tracking and moderation
+
+Properties as follows:
+
+- `id`:
+- `commentId`:
+- `videoId`:
+- `parentCommentId`:
+- `authorName`:
+- `authorChannelId`:
+- `authorProfileImage`:
+- `textDisplay`:
+- `textOriginal`:
+- `likeCount`:
+- `replyCount`:
+- `moderationStatus`:
+- `canReply`:
+- `publishedAt`:
+- `updatedAt`:
+- `fetchedAt`:
+- `accountId`:
 
 ### `identities`
 
