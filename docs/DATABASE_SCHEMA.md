@@ -541,6 +541,45 @@ erDiagram
   DateTime updatedAt
   DateTime deletedAt "nullable"
 }
+"claude_code_agents" {
+  String id PK
+  String userId FK
+  String machineId
+  String sessionId
+  String displayName
+  String projectPath "nullable"
+  String workingDirectory "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+  DateTime lastSeenAt "nullable"
+  DateTime deletedAt "nullable"
+  Int totalTokensUsed
+  Int totalTasksCompleted
+  Int totalSessionTime
+}
+"agent_connection_requests" {
+  String id PK
+  String connectId UK
+  String machineId
+  String sessionId
+  String displayName "nullable"
+  String projectPath "nullable"
+  ConnectionStatus status
+  String userId "nullable"
+  String agentId "nullable"
+  DateTime expiresAt
+  DateTime createdAt
+  DateTime completedAt "nullable"
+}
+"agent_messages" {
+  String id PK
+  String agentId FK
+  AgentMessageRole role
+  String content
+  Boolean isRead
+  Json metadata "nullable"
+  DateTime createdAt
+}
 "box_actions" {
   String id PK
   String boxId FK
@@ -2037,6 +2076,8 @@ erDiagram
 "featured_gallery_items" }o--|| "users" : creator
 "boxes" }o--|| "users" : user
 "boxes" }o--o| "box_tiers" : tier
+"claude_code_agents" }o--|| "users" : user
+"agent_messages" }o--|| "claude_code_agents" : agent
 "box_actions" }o--|| "boxes" : box
 "agent_tasks" }o--|| "boxes" : box
 "sandbox_jobs" }o--|| "apps" : app
@@ -2853,6 +2894,54 @@ Properties as follows:
 - `createdAt`:
 - `updatedAt`:
 - `deletedAt`:
+
+### `claude_code_agents`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `machineId`:
+- `sessionId`:
+- `displayName`:
+- `projectPath`:
+- `workingDirectory`:
+- `createdAt`:
+- `updatedAt`:
+- `lastSeenAt`:
+- `deletedAt`:
+- `totalTokensUsed`:
+- `totalTasksCompleted`:
+- `totalSessionTime`:
+
+### `agent_connection_requests`
+
+Properties as follows:
+
+- `id`:
+- `connectId`:
+- `machineId`:
+- `sessionId`:
+- `displayName`:
+- `projectPath`:
+- `status`:
+- `userId`:
+- `agentId`:
+- `expiresAt`:
+- `createdAt`:
+- `completedAt`:
+
+### `agent_messages`
+
+Properties as follows:
+
+- `id`:
+- `agentId`:
+- `role`:
+- `content`:
+- `isRead`:
+- `metadata`:
+- `createdAt`:
 
 ### `box_actions`
 
