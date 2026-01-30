@@ -48,6 +48,11 @@ export type WorkspaceAction =
   | "brand:read"
   | "brand:write"
   | "brand:delete"
+  // Asset Library
+  | "asset:read"
+  | "asset:write"
+  | "asset:delete"
+  | "asset:analyze"
   // Social Accounts
   | "social:view"
   | "social:connect"
@@ -114,6 +119,12 @@ const PERMISSION_MATRIX: Record<WorkspaceAction, WorkspaceRole> = {
   "brand:read": "MEMBER",
   "brand:write": "ADMIN",
   "brand:delete": "ADMIN",
+
+  // Asset Library
+  "asset:read": "MEMBER",
+  "asset:write": "MEMBER",
+  "asset:delete": "MEMBER",
+  "asset:analyze": "MEMBER",
 
   // Social Accounts
   "social:view": "MEMBER",

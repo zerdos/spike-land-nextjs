@@ -231,6 +231,24 @@ Then(
 );
 
 // Form interaction steps
+When(
+  "I select the {string} tier",
+  async function(this: CustomWorld, tierName: string) {
+    const boxesPage = getBoxesPage(this);
+    const tierCard = await boxesPage.getTierCard(tierName);
+    await tierCard.click();
+  },
+);
+
+When(
+  "I enter {string} into the box name field",
+  async function(this: CustomWorld, text: string) {
+    const boxesPage = getBoxesPage(this);
+    const input = await boxesPage.getBoxNameInput();
+    await input.fill(text);
+  },
+);
+
 When("I leave the box name empty", async function(this: CustomWorld) {
   const boxesPage = getBoxesPage(this);
   const input = await boxesPage.getBoxNameInput();

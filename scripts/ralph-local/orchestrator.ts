@@ -66,7 +66,7 @@ import {
   getWorktreePath,
   syncWorktreeWithMain,
 } from "./worktree-manager";
-import { getPoolStatus, initializePool, replenishPool } from "./worktree-pool";
+import { getPoolStatus, initializePool, listWarmWorktrees, replenishPool } from "./worktree-pool";
 
 // ============================================================================
 // Helpers
@@ -102,7 +102,7 @@ const DEFAULT_CONFIG: RalphLocalConfig = {
   poolSizes: {
     planning: 8,
     developer: 4,
-    reviewer: 2,
+    reviewer: 6,
     tester: 4,
     fixer: 1,
   },
@@ -870,11 +870,12 @@ async function step3_8_processReviewResults(
 }
 
 /**
- * Step 7: Sync active branches with main (enhanced to include all worktrees)
+ * Step 7: Sync active branches with main (enhanced to include all worktrees including warm pool)
+ * Runs full git sync sequence: pull, push, fetch main, merge main, push
  */
 async function step7_syncBranches(
   state: OrchestratorState,
-  _config: RalphLocalConfig,
+  config: RalphLocalConfig,
 ): Promise<void> {
   // Collect ALL worktrees (not just from running agents)
   const allWorktrees = new Set<string>();
@@ -907,12 +908,22 @@ async function step7_syncBranches(
     }
   }
 
+  // Also include warm worktrees from the pool
+  const warmWorktrees = listWarmWorktrees(config);
+  for (const warmPath of warmWorktrees) {
+    allWorktrees.add(warmPath);
+  }
+
   if (allWorktrees.size === 0) {
     console.log("   No worktrees to sync");
     return;
   }
 
-  console.log(`   Syncing ${allWorktrees.size} worktrees with main`);
+  const warmCount = warmWorktrees.length;
+  const activeCount = allWorktrees.size - warmCount;
+  console.log(
+    `   Syncing ${allWorktrees.size} worktrees with main (${activeCount} active, ${warmCount} warm)`,
+  );
 
   for (const worktree of Array.from(allWorktrees)) {
     const result = syncWorktreeWithMain(worktree);

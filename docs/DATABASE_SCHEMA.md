@@ -965,6 +965,14 @@ erDiagram
   DateTime publishedAt "nullable"
   SocialPostStatus status
   Json metadata "nullable"
+  Int likes "nullable"
+  Int comments "nullable"
+  Int shares "nullable"
+  Int impressions "nullable"
+  Int reach "nullable"
+  Decimal(5) engagementRate "nullable"
+  Boolean isEligibleForAd
+  DateTime lastMetricsSync "nullable"
   String createdById FK
   DateTime createdAt
   DateTime updatedAt
@@ -1050,6 +1058,15 @@ erDiagram
   Int maxTeamMembers
   DateTime billingCycleStart "nullable"
   String stripeSubscriptionId UK "nullable"
+}
+"workspace_apps" {
+  String id PK
+  String workspaceId FK
+  String appId FK,UK
+  String purpose "nullable"
+  String linkedCampaign "nullable"
+  DateTime createdAt
+  DateTime updatedAt
 }
 "workspace_favorites" {
   String id PK
@@ -1790,6 +1807,70 @@ erDiagram
   String postId FK
   String assetId FK
 }
+"organic_post_conversions" {
+  String id PK
+  String workspaceId FK
+  String postId
+  SocialPlatform platform
+  ConversionStatus status
+  Int organicLikes
+  Int organicComments
+  Int organicShares
+  Int organicImpressions
+  Int organicReach
+  Decimal(5) engagementRate
+  Json targetingData "nullable"
+  Json recommendedBudget "nullable"
+  String selectedVariantId "nullable"
+  String platformCampaignId "nullable"
+  DateTime campaignStartDate "nullable"
+  DateTime campaignEndDate "nullable"
+  Decimal(10) dailyBudget "nullable"
+  Decimal(10) totalBudget "nullable"
+  Decimal(10) adSpend
+  Int adImpressions
+  Int adReach
+  Int adClicks
+  Int adConversions
+  String errorMessage "nullable"
+  Json errorDetails "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+}
+"organic_post_engagers" {
+  String id PK
+  String conversionId FK
+  String ageRange "nullable"
+  String gender "nullable"
+  String location "nullable"
+  String interests
+  String engagementType
+  SocialPlatform platform
+  DateTime fetchedAt
+  EngagerDataStatus dataQuality
+  DateTime createdAt
+}
+"ad_creative_variants" {
+  String id PK
+  String conversionId FK
+  String format
+  String placement
+  String headline "nullable"
+  String primaryText "nullable"
+  String description "nullable"
+  String callToAction "nullable"
+  String mediaUrl
+  String mediaType
+  Int width
+  Int height
+  String aspectRatio
+  Boolean textOptimized
+  Boolean ctaOptimized
+  Boolean aspectRatioAdjusted
+  Boolean isSelected
+  DateTime createdAt
+  DateTime updatedAt
+}
 "identities" {
   String id PK
   String userId FK,UK "nullable"
@@ -1936,6 +2017,8 @@ erDiagram
 "social_post_ab_tests" }o--|| "workspaces" : workspace
 "social_post_ab_tests" }o--|| "social_posts" : originalPost
 "social_post_ab_test_variants" }o--|| "social_post_ab_tests" : test
+"workspace_apps" }o--|| "workspaces" : workspace
+"workspace_apps" |o--|| "apps" : app
 "workspace_favorites" }o--|| "users" : user
 "workspace_favorites" }o--|| "workspaces" : workspace
 "workspace_recent_access" }o--|| "users" : user
@@ -2032,6 +2115,9 @@ erDiagram
 "post_assets" }o--|| "assets" : asset
 "scheduled_post_assets" }o--|| "scheduled_posts" : post
 "scheduled_post_assets" }o--|| "assets" : asset
+"organic_post_conversions" }o--|| "workspaces" : workspace
+"organic_post_engagers" }o--|| "organic_post_conversions" : conversion
+"ad_creative_variants" }o--|| "organic_post_conversions" : conversion
 "identities" |o--o| "users" : user
 "identifiers" }o--|| "identities" : identity
 "workspace_white_label_configs" |o--|| "workspaces" : workspace
@@ -3236,6 +3322,14 @@ Properties as follows:
 - `publishedAt`:
 - `status`:
 - `metadata`:
+- `likes`:
+- `comments`:
+- `shares`:
+- `impressions`:
+- `reach`:
+- `engagementRate`:
+- `isEligibleForAd`:
+- `lastMetricsSync`:
 - `createdById`:
 - `createdAt`:
 - `updatedAt`:
@@ -3351,6 +3445,18 @@ Properties as follows:
 - `maxTeamMembers`:
 - `billingCycleStart`:
 - `stripeSubscriptionId`:
+
+### `workspace_apps`
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `appId`:
+- `purpose`:
+- `linkedCampaign`:
+- `createdAt`:
+- `updatedAt`:
 
 ### `workspace_favorites`
 
@@ -4301,6 +4407,88 @@ Properties as follows:
 
 - `postId`:
 - `assetId`:
+
+### `organic_post_conversions`
+
+Tracks the conversion of organic social posts into ad campaigns
+Links original post performance to resulting ad campaigns
+
+Properties as follows:
+
+- `id`:
+- `workspaceId`:
+- `postId`:
+- `platform`:
+- `status`:
+- `organicLikes`:
+- `organicComments`:
+- `organicShares`:
+- `organicImpressions`:
+- `organicReach`:
+- `engagementRate`:
+- `targetingData`:
+- `recommendedBudget`:
+- `selectedVariantId`:
+- `platformCampaignId`:
+- `campaignStartDate`:
+- `campaignEndDate`:
+- `dailyBudget`:
+- `totalBudget`:
+- `adSpend`:
+- `adImpressions`:
+- `adReach`:
+- `adClicks`:
+- `adConversions`:
+- `errorMessage`:
+- `errorDetails`:
+- `createdAt`:
+- `updatedAt`:
+
+### `organic_post_engagers`
+
+Stores aggregated data about users who engaged with organic posts
+Used for AI-powered targeting analysis (anonymized & aggregated)
+
+Properties as follows:
+
+- `id`:
+- `conversionId`:
+- `ageRange`:
+- `gender`:
+- `location`:
+- `interests`:
+- `engagementType`:
+- `platform`:
+- `fetchedAt`:
+- `dataQuality`:
+- `createdAt`:
+
+### `ad_creative_variants`
+
+Stores format-specific creative adaptations for different ad placements
+Optimizes organic content for various ad formats and placements
+
+Properties as follows:
+
+- `id`:
+- `conversionId`:
+- `format`:
+- `placement`:
+- `headline`:
+- `primaryText`:
+- `description`:
+- `callToAction`:
+- `mediaUrl`:
+- `mediaType`:
+- `width`:
+- `height`:
+- `aspectRatio`:
+- `textOptimized`:
+- `ctaOptimized`:
+- `aspectRatioAdjusted`:
+- `isSelected`:
+- `createdAt`:
+- `updatedAt`:
 
 ### `identities`
 

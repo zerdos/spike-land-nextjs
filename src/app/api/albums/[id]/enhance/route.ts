@@ -9,7 +9,7 @@ import type { EnhancementTier } from "@prisma/client";
 import type { NextRequest } from "next/server";
 import { after, NextResponse } from "next/server";
 
-// Force dynamic rendering - skip static page data collection that requires sharp
+// Force dynamic rendering - skip static page data collection
 export const dynamic = "force-dynamic";
 
 const MAX_BATCH_SIZE = 20;

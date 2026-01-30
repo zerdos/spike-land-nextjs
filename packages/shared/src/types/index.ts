@@ -49,6 +49,12 @@ export type ReferralStatus = "PENDING" | "COMPLETED" | "INVALID";
 
 export type McpJobType = "GENERATE" | "MODIFY";
 
+export type EngagerDataStatus =
+  | "PENDING"
+  | "FETCHING"
+  | "COMPLETE"
+  | "FAILED";
+
 export type GalleryCategory =
   | "PORTRAIT"
   | "LANDSCAPE"
@@ -390,3 +396,26 @@ export type {
   PositionBasedConfig,
   TimeDecayConfig,
 } from "./attribution";
+
+// Organic-to-Ad Conversion Types
+export type {
+  AdaptCreativeRequest,
+  AdaptCreativeResponse,
+  AdFormat,
+  AdPlacement,
+  AnalyzeAudienceRequest,
+  AnalyzeAudienceResponse,
+  BudgetRecommendation,
+  ConversionAnalytics,
+  ConversionStatus,
+  ConvertToAdRequest,
+  ConvertToAdResponse,
+  CreativeVariant,
+  EngagementData,
+  EngagerDemographics,
+  FetchEngagementRequest,
+  FetchEngagementResponse,
+  RecommendBudgetRequest,
+  RecommendBudgetResponse,
+  TargetingSuggestion,
+} from "./organic-to-ad";

@@ -9,7 +9,7 @@ import { isSecureFilename } from "@/lib/upload/validation";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-// Force dynamic rendering - skip static page data collection (sharp requires native modules)
+// Force dynamic rendering - skip static page data collection
 export const dynamic = "force-dynamic";
 
 // Allow longer execution time for image processing

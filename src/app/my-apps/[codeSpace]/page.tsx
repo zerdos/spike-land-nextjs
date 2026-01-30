@@ -28,7 +28,7 @@ import { motion } from "framer-motion";
 import { FileText, ImagePlus, Paperclip, StopCircle, Trash2, X } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import Image from "next/image";
-import { redirect, useParams } from "next/navigation";
+import { redirect, useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
@@ -154,7 +154,9 @@ function MarkdownContent({ content }: { content: string; }) {
 export default function CodeSpacePage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const codeSpace = params["codeSpace"] as string;
+  const templateId = searchParams.get("template");
 
   // Page state
   const [mode, setMode] = useState<PageMode>("loading");
@@ -762,6 +764,9 @@ export default function CodeSpacePage() {
       const formData = new FormData();
       formData.append("prompt", content || "[Files attached]");
       formData.append("codespaceId", codeSpace);
+      if (templateId) {
+        formData.append("templateId", templateId);
+      }
 
       pendingFiles.forEach((pf) => {
         formData.append("files", pf.file);
@@ -772,6 +777,7 @@ export default function CodeSpacePage() {
         body: pendingFiles.length > 0 ? formData : JSON.stringify({
           prompt: content,
           codespaceId: codeSpace,
+          ...(templateId && { templateId }),
         }),
         headers: pendingFiles.length > 0
           ? undefined

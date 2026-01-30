@@ -8,6 +8,47 @@
 
 ## Decision Log
 
+### January 2026
+
+#### DEC-003: No Sharp Dependency - Client-Side Image Optimization
+
+**Decision Date**: January 29, 2026 **Decision Maker**: Zoltan Erdos (CEO)
+**Status**: ACTIVE
+
+**Decision**: Sharp shall NOT be used as a direct dependency for image
+processing. All image optimization happens client-side, and server-side
+dimension extraction uses lightweight header parsing instead.
+
+**Rationale**:
+
+- Sharp is a native Node.js module (~50MB+) with platform-specific binaries
+- Causes issues with Yarn PnP's zero-install approach
+- Complicates CI/CD builds with native compilation requirements
+- Lightweight header parsing is sufficient for dimension extraction
+- Client-side processing already exists for resize/convert operations
+
+**Technical Details**:
+
+- Dimension extraction: `src/lib/images/image-dimensions.ts` (reads PNG/JPEG/WebP/GIF headers)
+- Client-side processing: `src/lib/images/browser-image-processor.ts`
+- Sharp remains as a transitive dependency of Next.js but is not directly used
+
+**Impact**:
+
+- Eliminates ~50MB+ native dependency from direct usage
+- Simpler deployments (no native binary concerns)
+- Better Yarn PnP compatibility
+- Faster CI/CD builds
+- No platform-specific build issues
+
+**Related Files Updated**:
+
+- `src/app/api/orbit/assets/upload/route.ts` - replaced sharp with header parser
+- `package.json` - removed sharp from dependenciesMeta
+- `next.config.ts` - removed sharp from serverExternalPackages
+
+---
+
 ### December 2025
 
 #### DEC-001: No Sentry in Tech Stack
@@ -82,6 +123,7 @@ export const GEMINI_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 - DEC-001: No Sentry in tech stack
 - DEC-002: Gemini model for image enhancement
+- DEC-003: No Sharp dependency - client-side image optimization
 
 ### Business Decisions
 
@@ -143,4 +185,4 @@ _(None recorded yet)_
 ---
 
 **Document Owner**: [Zoltan Erdos](./ZOLTAN_ERDOS.md) (CEO) | **Last Updated**:
-December 11, 2025 | **Version**: 1.0
+January 29, 2026 | **Version**: 1.1
