@@ -62,9 +62,12 @@ When(
   },
 );
 
-When("I set {string} to {string}", async function(this: CustomWorld, label: string, value: string) {
-  await this.page.getByLabel(label).fill(value);
-});
+When(
+  "I set autopilot {string} to {string}",
+  async function(this: CustomWorld, label: string, value: string) {
+    await this.page.getByLabel(label).fill(value);
+  },
+);
 
 When("I click {string}", async function(this: CustomWorld, name: string) {
   await this.page.getByRole("button", { name }).click();

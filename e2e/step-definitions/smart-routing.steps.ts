@@ -229,7 +229,7 @@ When(
 );
 
 When(
-  "I set {string} to {string}",
+  "I set routing {string} to {string}",
   async function(this: CustomWorld, fieldLabel: string, value: string) {
     if (fieldLabel === "Negative Sentiment Threshold") {
       // Try generic input
