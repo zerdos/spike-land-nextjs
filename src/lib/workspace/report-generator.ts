@@ -1,11 +1,11 @@
 import prisma from "@/lib/prisma";
 import type {
-  DateRange,
-  ReportData,
-  WorkspaceReportData,
-  WorkspaceMetrics,
   AggregateMetrics,
+  DateRange,
   PostSummary,
+  ReportData,
+  WorkspaceMetrics,
+  WorkspaceReportData,
 } from "@/types/workspace-reports";
 import type { ReportFormat } from "@prisma/client";
 
@@ -15,7 +15,7 @@ import type { ReportFormat } from "@prisma/client";
 export async function generateReportData(
   workspaceIds: string[],
   dateRange: DateRange,
-  metrics: string[]
+  metrics: string[],
 ): Promise<ReportData> {
   const startDate = new Date(dateRange.startDate);
   const endDate = new Date(dateRange.endDate);
@@ -44,7 +44,7 @@ async function generateWorkspaceData(
   workspaceId: string,
   startDate: Date,
   endDate: Date,
-  metrics: string[]
+  metrics: string[],
 ): Promise<WorkspaceReportData> {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -63,7 +63,7 @@ async function generateWorkspaceData(
     workspaceId,
     startDate,
     endDate,
-    metrics
+    metrics,
   );
 
   return {
@@ -81,7 +81,7 @@ async function calculateWorkspaceMetrics(
   workspaceId: string,
   startDate: Date,
   endDate: Date,
-  _metrics: string[]
+  _metrics: string[],
 ): Promise<WorkspaceMetrics> {
   // Fetch counts in parallel
   const [
@@ -193,7 +193,7 @@ async function calculateWorkspaceMetrics(
  * Calculate aggregate metrics across all workspaces
  */
 function calculateAggregates(
-  workspaceData: WorkspaceReportData[]
+  workspaceData: WorkspaceReportData[],
 ): AggregateMetrics {
   let totalSocialAccounts = 0;
   let totalScheduledPosts = 0;
@@ -217,8 +217,9 @@ function calculateAggregates(
     totalEngagementRates += workspace.metrics.avgEngagementRate;
   }
 
-  const avgEngagementRate =
-    workspaceData.length > 0 ? totalEngagementRates / workspaceData.length : 0;
+  const avgEngagementRate = workspaceData.length > 0
+    ? totalEngagementRates / workspaceData.length
+    : 0;
 
   return {
     totalWorkspaces: workspaceData.length,
@@ -246,31 +247,33 @@ export function exportToCSV(data: ReportData): string {
   // Workspace data
   for (const workspace of data.workspaces) {
     lines.push(
-      `${workspace.workspaceName},Social Accounts,${workspace.metrics.socialAccountCount}`
+      `${workspace.workspaceName},Social Accounts,${workspace.metrics.socialAccountCount}`,
     );
     lines.push(
-      `${workspace.workspaceName},Scheduled Posts,${workspace.metrics.scheduledPostCount}`
+      `${workspace.workspaceName},Scheduled Posts,${workspace.metrics.scheduledPostCount}`,
     );
     lines.push(
-      `${workspace.workspaceName},Published Posts,${workspace.metrics.publishedPostCount}`
+      `${workspace.workspaceName},Published Posts,${workspace.metrics.publishedPostCount}`,
     );
     lines.push(
-      `${workspace.workspaceName},Drafts,${workspace.metrics.draftCount}`
+      `${workspace.workspaceName},Drafts,${workspace.metrics.draftCount}`,
     );
     lines.push(
-      `${workspace.workspaceName},Total Engagements,${workspace.metrics.totalEngagements}`
+      `${workspace.workspaceName},Total Engagements,${workspace.metrics.totalEngagements}`,
     );
     lines.push(
-      `${workspace.workspaceName},Total Followers,${workspace.metrics.totalFollowers}`
+      `${workspace.workspaceName},Total Followers,${workspace.metrics.totalFollowers}`,
     );
     lines.push(
-      `${workspace.workspaceName},Total Impressions,${workspace.metrics.totalImpressions}`
+      `${workspace.workspaceName},Total Impressions,${workspace.metrics.totalImpressions}`,
     );
     lines.push(
-      `${workspace.workspaceName},Total Reach,${workspace.metrics.totalReach}`
+      `${workspace.workspaceName},Total Reach,${workspace.metrics.totalReach}`,
     );
     lines.push(
-      `${workspace.workspaceName},Avg Engagement Rate,${workspace.metrics.avgEngagementRate.toFixed(2)}%`
+      `${workspace.workspaceName},Avg Engagement Rate,${
+        workspace.metrics.avgEngagementRate.toFixed(2)
+      }%`,
     );
   }
 
@@ -279,13 +282,13 @@ export function exportToCSV(data: ReportData): string {
   lines.push("Aggregate Metrics");
   lines.push(`Total Workspaces,${data.aggregates.totalWorkspaces}`);
   lines.push(
-    `Total Social Accounts,${data.aggregates.totalSocialAccounts}`
+    `Total Social Accounts,${data.aggregates.totalSocialAccounts}`,
   );
   lines.push(
-    `Total Scheduled Posts,${data.aggregates.totalScheduledPosts}`
+    `Total Scheduled Posts,${data.aggregates.totalScheduledPosts}`,
   );
   lines.push(
-    `Total Published Posts,${data.aggregates.totalPublishedPosts}`
+    `Total Published Posts,${data.aggregates.totalPublishedPosts}`,
   );
   lines.push(`Total Drafts,${data.aggregates.totalDrafts}`);
   lines.push(`Total Engagements,${data.aggregates.totalEngagements}`);
@@ -293,7 +296,7 @@ export function exportToCSV(data: ReportData): string {
   lines.push(`Total Impressions,${data.aggregates.totalImpressions}`);
   lines.push(`Total Reach,${data.aggregates.totalReach}`);
   lines.push(
-    `Avg Engagement Rate,${data.aggregates.avgEngagementRate.toFixed(2)}%`
+    `Avg Engagement Rate,${data.aggregates.avgEngagementRate.toFixed(2)}%`,
   );
 
   return lines.join("\n");
@@ -304,7 +307,7 @@ export function exportToCSV(data: ReportData): string {
  */
 export function formatReportData(
   data: ReportData,
-  format: ReportFormat
+  format: ReportFormat,
 ): string {
   switch (format) {
     case "CSV":

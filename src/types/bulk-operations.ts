@@ -1,4 +1,4 @@
-import type { BulkOperationType, BulkOperationStatus } from "@prisma/client";
+import type { BulkOperationStatus, BulkOperationType } from "@prisma/client";
 
 /**
  * Bulk Operation

@@ -1,6 +1,6 @@
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import type { CreateReportRequest } from "@/types/workspace-reports";
@@ -43,7 +43,7 @@ export async function GET(_request: NextRequest) {
     console.error("Error fetching reports:", error);
     return NextResponse.json(
       { error: "Failed to fetch reports" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -79,11 +79,11 @@ export async function POST(request: NextRequest) {
     });
 
     const accessibleWorkspaceIds = new Set(
-      accessibleWorkspaces.map((w) => w.workspaceId)
+      accessibleWorkspaces.map((w) => w.workspaceId),
     );
 
     const inaccessibleWorkspaces = body.workspaceIds.filter(
-      (id) => !accessibleWorkspaceIds.has(id)
+      (id) => !accessibleWorkspaceIds.has(id),
     );
 
     if (inaccessibleWorkspaces.length > 0) {
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
           error: "Access denied to some workspaces",
           inaccessibleWorkspaces,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     console.error("Error creating report:", error);
     return NextResponse.json(
       { error: "Failed to create report" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

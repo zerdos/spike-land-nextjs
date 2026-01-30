@@ -1,6 +1,6 @@
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import { executeBulkOperation } from "@/lib/workspace/bulk-operations";
@@ -38,7 +38,7 @@ export async function GET(_request: NextRequest) {
     console.error("Error fetching bulk operations:", error);
     return NextResponse.json(
       { error: "Failed to fetch bulk operations" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -62,8 +62,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const body: CreateBulkOperationRequest & { executeNow?: boolean } =
-      await request.json();
+    const body: CreateBulkOperationRequest & { executeNow?: boolean; } = await request.json();
 
     // Validate that user has access to all specified workspaces
     const accessibleWorkspaces = await prisma.workspaceMember.findMany({
@@ -75,11 +74,11 @@ export async function POST(request: NextRequest) {
     });
 
     const accessibleWorkspaceIds = new Set(
-      accessibleWorkspaces.map((w) => w.workspaceId)
+      accessibleWorkspaces.map((w) => w.workspaceId),
     );
 
     const inaccessibleWorkspaces = body.workspaceIds.filter(
-      (id) => !accessibleWorkspaceIds.has(id)
+      (id) => !accessibleWorkspaceIds.has(id),
     );
 
     if (inaccessibleWorkspaces.length > 0) {
@@ -88,7 +87,7 @@ export async function POST(request: NextRequest) {
           error: "Access denied to some workspaces",
           inaccessibleWorkspaces,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -117,7 +116,7 @@ export async function POST(request: NextRequest) {
     console.error("Error creating bulk operation:", error);
     return NextResponse.json(
       { error: "Failed to create bulk operation" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

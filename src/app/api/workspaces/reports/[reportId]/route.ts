@@ -1,6 +1,6 @@
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import type { UpdateReportRequest } from "@/types/workspace-reports";
@@ -52,7 +52,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
     console.error("Error fetching report:", error);
     return NextResponse.json(
       { error: "Failed to fetch report" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -101,11 +101,11 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       });
 
       const accessibleWorkspaceIds = new Set(
-        accessibleWorkspaces.map((w) => w.workspaceId)
+        accessibleWorkspaces.map((w) => w.workspaceId),
       );
 
       const inaccessibleWorkspaces = body.workspaceIds.filter(
-        (id) => !accessibleWorkspaceIds.has(id)
+        (id) => !accessibleWorkspaceIds.has(id),
       );
 
       if (inaccessibleWorkspaces.length > 0) {
@@ -114,7 +114,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
             error: "Access denied to some workspaces",
             inaccessibleWorkspaces,
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -139,7 +139,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     console.error("Error updating report:", error);
     return NextResponse.json(
       { error: "Failed to update report" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -185,7 +185,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
     console.error("Error deleting report:", error);
     return NextResponse.json(
       { error: "Failed to delete report" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

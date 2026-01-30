@@ -1,6 +1,6 @@
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import { executeBulkOperation } from "@/lib/workspace/bulk-operations";
@@ -41,11 +41,11 @@ export async function POST(request: NextRequest) {
     });
 
     const accessibleWorkspaceIds = new Set(
-      accessibleWorkspaces.map((w) => w.workspaceId)
+      accessibleWorkspaces.map((w) => w.workspaceId),
     );
 
     const inaccessibleWorkspaces = body.workspaceIds.filter(
-      (id) => !accessibleWorkspaceIds.has(id)
+      (id) => !accessibleWorkspaceIds.has(id),
     );
 
     if (inaccessibleWorkspaces.length > 0) {
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
           error: "Insufficient permissions for some workspaces",
           inaccessibleWorkspaces,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         operationData: {
           type: "PUBLISH_POST",
           draftIds: body.draftIds,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         totalCount: body.workspaceIds.length,
       },
@@ -83,13 +83,13 @@ export async function POST(request: NextRequest) {
         operationId: operation.id,
         message: "Publishing drafts across workspaces",
       },
-      { status: 202 }
+      { status: 202 },
     );
   } catch (error) {
     console.error("Error publishing drafts:", error);
     return NextResponse.json(
       { error: "Failed to publish drafts" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

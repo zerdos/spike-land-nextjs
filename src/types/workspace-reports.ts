@@ -1,4 +1,4 @@
-import type { ReportSchedule, ReportFormat } from "@prisma/client";
+import type { ReportFormat, ReportSchedule } from "@prisma/client";
 
 /**
  * Workspace Report

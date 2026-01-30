@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import { auth } from "@/auth";
+import { Suspense } from "react";
 
 import { redirect } from "next/navigation";
 
@@ -27,9 +27,8 @@ export default async function ReportsPage() {
         <div className="rounded-lg border p-8 text-center">
           <h2 className="text-xl font-semibold mb-2">Reports Coming Soon</h2>
           <p className="text-muted-foreground">
-            Cross-workspace reporting is under development. You'll be able to
-            create custom reports, schedule them, and export data in multiple
-            formats.
+            Cross-workspace reporting is under development. You'll be able to create custom reports,
+            schedule them, and export data in multiple formats.
           </p>
         </div>
       </Suspense>

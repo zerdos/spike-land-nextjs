@@ -3,19 +3,19 @@ import type {
   BulkOperation,
   BulkOperationData,
   BulkOperationResult,
-  SchedulePostData,
-  PublishPostData,
   DeletePostData,
-  UpdateSettingsData,
   InviteMemberData,
+  PublishPostData,
+  SchedulePostData,
+  UpdateSettingsData,
 } from "@/types/bulk-operations";
-import type { BulkOperationType, BulkOperationStatus } from "@prisma/client";
+import type { BulkOperationStatus, BulkOperationType } from "@prisma/client";
 
 /**
  * Execute a bulk operation across multiple workspaces
  */
 export async function executeBulkOperation(
-  operationId: string
+  operationId: string,
 ): Promise<BulkOperation> {
   const operation = await prisma.bulkOperation.findUnique({
     where: { id: operationId },
@@ -49,7 +49,7 @@ export async function executeBulkOperation(
         const result = await executeForWorkspace(
           workspaceId,
           operation.type,
-          operation.operationData as unknown as BulkOperationData
+          operation.operationData as unknown as BulkOperationData,
         );
         results.push(result);
         if (result.success) {
@@ -57,9 +57,8 @@ export async function executeBulkOperation(
         } else {
           failureCount++;
         }
-      } catch (_error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error";
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
         results.push({
           workspaceId,
           workspaceName: workspaceId, // We'll fetch the name later if needed
@@ -108,7 +107,7 @@ export async function executeBulkOperation(
 async function executeForWorkspace(
   workspaceId: string,
   type: BulkOperationType,
-  data: BulkOperationData
+  data: BulkOperationData,
 ): Promise<BulkOperationResult> {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -140,7 +139,7 @@ async function executeForWorkspace(
       case "UPDATE_SETTINGS":
         result = await updateSettings(
           workspaceId,
-          data as UpdateSettingsData
+          data as UpdateSettingsData,
         );
         break;
       case "INVITE_MEMBER":
@@ -156,9 +155,8 @@ async function executeForWorkspace(
       success: true,
       data: result,
     };
-  } catch (_error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return {
       workspaceId,
       workspaceName: workspace.name,
@@ -173,8 +171,8 @@ async function executeForWorkspace(
  */
 async function schedulePost(
   workspaceId: string,
-  data: SchedulePostData
-): Promise<{ postId: string }> {
+  data: SchedulePostData,
+): Promise<{ postId: string; }> {
   // Get first workspace member to use as creator
   const member = await prisma.workspaceMember.findFirst({
     where: { workspaceId },
@@ -207,8 +205,8 @@ async function schedulePost(
  */
 async function publishPosts(
   workspaceId: string,
-  data: PublishPostData
-): Promise<{ publishedCount: number }> {
+  data: PublishPostData,
+): Promise<{ publishedCount: number; }> {
   // RelayDraft doesn't have direct workspaceId, needs to go through inboxItem
   const result = await prisma.relayDraft.updateMany({
     where: {
@@ -230,8 +228,8 @@ async function publishPosts(
  */
 async function deletePosts(
   workspaceId: string,
-  data: DeletePostData
-): Promise<{ deletedCount: number }> {
+  data: DeletePostData,
+): Promise<{ deletedCount: number; }> {
   const result = await prisma.scheduledPost.deleteMany({
     where: {
       id: { in: data.postIds },
@@ -247,8 +245,8 @@ async function deletePosts(
  */
 async function updateSettings(
   workspaceId: string,
-  data: UpdateSettingsData
-): Promise<{ updated: boolean }> {
+  data: UpdateSettingsData,
+): Promise<{ updated: boolean; }> {
   await prisma.workspace.update({
     where: { id: workspaceId },
     data: {
@@ -265,8 +263,8 @@ async function updateSettings(
  */
 async function inviteMember(
   workspaceId: string,
-  data: InviteMemberData
-): Promise<{ memberId: string }> {
+  data: InviteMemberData,
+): Promise<{ memberId: string; }> {
   // First, find or create user with this email
   let user = await prisma.user.findUnique({
     where: { email: data.email },
@@ -313,7 +311,7 @@ async function inviteMember(
  * Cancel a pending bulk operation
  */
 export async function cancelBulkOperation(
-  operationId: string
+  operationId: string,
 ): Promise<BulkOperation> {
   const operation = await prisma.bulkOperation.findUnique({
     where: { id: operationId },
@@ -325,7 +323,7 @@ export async function cancelBulkOperation(
 
   if (operation.status !== "PENDING" && operation.status !== "IN_PROGRESS") {
     throw new Error(
-      `Cannot cancel bulk operation ${operationId} with status ${operation.status}`
+      `Cannot cancel bulk operation ${operationId} with status ${operation.status}`,
     );
   }
 
@@ -344,7 +342,7 @@ export async function cancelBulkOperation(
  * Get bulk operation status
  */
 export async function getBulkOperationStatus(
-  operationId: string
+  operationId: string,
 ): Promise<{
   status: BulkOperationStatus;
   progress: number;
@@ -367,10 +365,9 @@ export async function getBulkOperationStatus(
   }
 
   const completedCount = operation.successCount + operation.failureCount;
-  const progress =
-    operation.totalCount > 0
-      ? (completedCount / operation.totalCount) * 100
-      : 0;
+  const progress = operation.totalCount > 0
+    ? (completedCount / operation.totalCount) * 100
+    : 0;
 
   return {
     status: operation.status,

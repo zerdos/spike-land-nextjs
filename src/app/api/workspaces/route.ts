@@ -16,7 +16,6 @@ const createWorkspaceSchema = z.object({
   isPersonal: z.boolean().optional().default(false),
 });
 
-
 // GET /api/workspaces - List user's workspaces with favorites and recents
 export async function GET() {
   const session = await auth();
@@ -112,13 +111,15 @@ export async function POST(request: Request) {
 
   // Use WorkspaceService to create workspace
   const { data: result, error: createError } = await tryCatch(
-    WorkspaceService.createWorkspace(session.user.id, validation.data)
+    WorkspaceService.createWorkspace(session.user.id, validation.data),
   );
 
   if (createError) {
     console.error("Failed to create workspace:", createError);
     // Return 400 if it's a limit error, otherwise 500
-    const status = createError instanceof Error && createError.message.includes("limit") ? 400 : 500;
+    const status = createError instanceof Error && createError.message.includes("limit")
+      ? 400
+      : 500;
     return NextResponse.json(
       { error: createError instanceof Error ? createError.message : "Failed to create workspace" },
       { status: status },

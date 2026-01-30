@@ -18,7 +18,7 @@ export class WorkspaceService {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "")
       .slice(0, 40);
-    
+
     return slug || `workspace-${Date.now().toString(36)}`;
   }
 
@@ -57,7 +57,9 @@ export class WorkspaceService {
     });
 
     if (ownedCount >= this.MAX_WORKSPACES_PER_USER) {
-      throw new Error(`Workspace limit reached. You can create up to ${this.MAX_WORKSPACES_PER_USER} workspaces.`);
+      throw new Error(
+        `Workspace limit reached. You can create up to ${this.MAX_WORKSPACES_PER_USER} workspaces.`,
+      );
     }
 
     // 2. Generate unique slug

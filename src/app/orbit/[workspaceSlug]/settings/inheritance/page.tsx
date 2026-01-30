@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import { auth } from "@/auth";
+import { Suspense } from "react";
 
 import { redirect } from "next/navigation";
 
@@ -31,9 +31,9 @@ export default async function InheritanceSettingsPage(
             Inheritance Configuration
           </h2>
           <p className="text-muted-foreground mb-4">
-            Role inheritance allows agency workspaces to automatically grant
-            permissions to client workspaces. When enabled, members of a parent
-            workspace will have mapped roles in child workspaces.
+            Role inheritance allows agency workspaces to automatically grant permissions to client
+            workspaces. When enabled, members of a parent workspace will have mapped roles in child
+            workspaces.
           </p>
 
           <div className="space-y-4">

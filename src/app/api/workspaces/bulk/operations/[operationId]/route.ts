@@ -1,11 +1,11 @@
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import {
-  executeBulkOperation,
   cancelBulkOperation,
+  executeBulkOperation,
   getBulkOperationStatus,
 } from "@/lib/workspace/bulk-operations";
 
@@ -44,7 +44,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
     if (!operation) {
       return NextResponse.json(
         { error: "Bulk operation not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -59,7 +59,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
     console.error("Error fetching bulk operation:", error);
     return NextResponse.json(
       { error: "Failed to fetch bulk operation" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -94,7 +94,7 @@ export async function POST(_request: NextRequest, { params }: Params) {
     if (!existingOperation) {
       return NextResponse.json(
         { error: "Bulk operation not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -111,7 +111,7 @@ export async function POST(_request: NextRequest, { params }: Params) {
     console.error("Error starting bulk operation:", error);
     return NextResponse.json(
       { error: "Failed to start bulk operation" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -146,7 +146,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
     if (!existingOperation) {
       return NextResponse.json(
         { error: "Bulk operation not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -158,7 +158,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
     console.error("Error cancelling bulk operation:", error);
     return NextResponse.json(
       { error: "Failed to cancel bulk operation" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

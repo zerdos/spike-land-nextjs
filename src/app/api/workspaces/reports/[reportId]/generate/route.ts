@@ -1,6 +1,6 @@
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import {
@@ -50,13 +50,13 @@ export async function POST(request: NextRequest, { params }: Params) {
     const format = body.format || "JSON";
 
     // Use provided date range or report's default
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dateRange = body.dateRange || (report.dateRange as any);
 
     if (!dateRange) {
       return NextResponse.json(
         { error: "Date range is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     const reportData = await generateReportData(
       report.workspaceIds,
       dateRange,
-      report.metrics
+      report.metrics,
     );
 
     // Create report instance
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     console.error("Error generating report:", error);
     return NextResponse.json(
       { error: "Failed to generate report" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

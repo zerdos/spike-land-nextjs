@@ -29,10 +29,9 @@ export async function configureInheritance(
     inheritPermissions?: boolean;
     inheritMembers?: boolean;
     roleMapping?: RoleMapping;
-  }
+  },
 ): Promise<void> {
-  const { inheritPermissions = true, inheritMembers = false, roleMapping } =
-    options;
+  const { inheritPermissions = true, inheritMembers = false, roleMapping } = options;
 
   // Check if workspace already has inheritance configured
   const existing = await prisma.workspaceRoleInheritance.findUnique({
@@ -74,7 +73,7 @@ export async function configureInheritance(
  */
 export async function getEffectiveRole(
   workspaceId: string,
-  userId: string
+  userId: string,
 ): Promise<WorkspaceRole | null> {
   // First check direct membership
   const directMember = await prisma.workspaceMember.findUnique({
@@ -131,7 +130,7 @@ export async function getEffectiveRole(
 export async function hasPermission(
   workspaceId: string,
   userId: string,
-  requiredRole: WorkspaceRole
+  requiredRole: WorkspaceRole,
 ): Promise<boolean> {
   const effectiveRole = await getEffectiveRole(workspaceId, userId);
 
@@ -156,7 +155,7 @@ export async function hasPermission(
 async function syncInheritedMembers(
   workspaceId: string,
   parentWorkspaceId: string,
-  roleMapping?: RoleMapping
+  roleMapping?: RoleMapping,
 ): Promise<void> {
   const mapping = roleMapping || DEFAULT_ROLE_MAPPING;
 
@@ -194,7 +193,7 @@ async function syncInheritedMembers(
  * Get all child workspaces for a parent workspace
  */
 export async function getChildWorkspaces(
-  parentWorkspaceId: string
+  parentWorkspaceId: string,
 ): Promise<string[]> {
   const children = await prisma.workspaceRoleInheritance.findMany({
     where: { parentWorkspaceId },
@@ -208,7 +207,7 @@ export async function getChildWorkspaces(
  * Get parent workspace for a child workspace
  */
 export async function getParentWorkspace(
-  workspaceId: string
+  workspaceId: string,
 ): Promise<string | null> {
   const inheritance = await prisma.workspaceRoleInheritance.findUnique({
     where: { workspaceId },

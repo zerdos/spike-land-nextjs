@@ -1,6 +1,6 @@
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import { formatReportData } from "@/lib/workspace/report-generator";
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest, { params }: Params) {
     if (!instanceId) {
       return NextResponse.json(
         { error: "Instance ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -56,23 +56,23 @@ export async function GET(request: NextRequest, { params }: Params) {
     if (!instance) {
       return NextResponse.json(
         { error: "Report instance not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Format data
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formattedData = formatReportData(instance.data as any, format);
 
     // Set appropriate headers based on format
     const headers: Record<string, string> = {
-      "Content-Type":
-        format === "CSV"
-          ? "text/csv"
-          : format === "PDF"
-            ? "application/pdf"
-            : "application/json",
-      "Content-Disposition": `attachment; filename="report-${params.reportId}-${instance.id}.${format.toLowerCase()}"`,
+      "Content-Type": format === "CSV"
+        ? "text/csv"
+        : format === "PDF"
+        ? "application/pdf"
+        : "application/json",
+      "Content-Disposition":
+        `attachment; filename="report-${params.reportId}-${instance.id}.${format.toLowerCase()}"`,
     };
 
     return new NextResponse(formattedData, { headers });
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest, { params }: Params) {
     console.error("Error exporting report:", error);
     return NextResponse.json(
       { error: "Failed to export report" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
