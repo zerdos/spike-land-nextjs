@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 const connectionString = process.env.DATABASE_URL;
 
 // Replicating src/lib/prisma.ts exactly
-// @ts-ignore - Ignoring type check to test runtime behavior
+// @ts-expect-error - Ignoring type check to test runtime behavior
 const adapter = new PrismaPg({ connectionString });
 
 const prisma = new PrismaClient({

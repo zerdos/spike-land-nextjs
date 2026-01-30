@@ -520,4 +520,6 @@ export const PLATFORM_CAPABILITIES: Record<
   TIKTOK: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
   YOUTUBE: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
   DISCORD: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
+  SNAPCHAT: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
+  PINTEREST: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
 };

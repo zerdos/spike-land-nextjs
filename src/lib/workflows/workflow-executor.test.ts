@@ -271,7 +271,8 @@ describe("Built-in Handlers", () => {
       const result = await handler!(step, createContext());
       const elapsed = Date.now() - start;
 
-      expect(elapsed).toBeGreaterThanOrEqual(10);
+      // Allow 1ms tolerance for timer precision variations across systems
+      expect(elapsed).toBeGreaterThanOrEqual(9);
       expect(result.output?.["delayed"]).toBe(10);
     });
 
