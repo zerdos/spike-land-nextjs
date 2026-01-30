@@ -1,12 +1,12 @@
-import prisma from '@/lib/prisma';
+import prisma from "@/lib/prisma";
 
 /**
  * Default email sender configuration for Spike Land
  */
 const DEFAULT_SENDER = {
-  name: 'Spike Land',
-  email: 'noreply@spike.land',
-  domain: 'spike.land',
+  name: "Spike Land",
+  email: "noreply@spike.land",
+  domain: "spike.land",
 };
 
 /**
@@ -47,7 +47,7 @@ export async function getEmailSenderInfo(workspaceId: string): Promise<{
     // Fall back to default Spike Land sender
     return DEFAULT_SENDER;
   } catch (error) {
-    console.error('Error fetching email sender info:', error);
+    console.error("Error fetching email sender info:", error);
     return DEFAULT_SENDER;
   }
 }
@@ -81,14 +81,14 @@ export async function verifyEmailDomain(domain: string): Promise<{
     return {
       success: true,
       verified: false,
-      message: 'Email domain verification initiated. Please add the required DNS records.',
+      message: "Email domain verification initiated. Please add the required DNS records.",
     };
   } catch (error) {
-    console.error('Error verifying email domain:', error);
+    console.error("Error verifying email domain:", error);
     return {
       success: false,
       verified: false,
-      message: 'Failed to initiate email domain verification',
+      message: "Failed to initiate email domain verification",
     };
   }
 }
@@ -135,7 +135,7 @@ export async function getEmailHeaderLogoUrl(workspaceId: string): Promise<string
     // No custom logo configured
     return null;
   } catch (error) {
-    console.error('Error fetching email header logo:', error);
+    console.error("Error fetching email header logo:", error);
     return null;
   }
 }
@@ -157,11 +157,11 @@ export async function getEmailFooterText(workspaceId: string): Promise<string> {
       },
     });
 
-    let footerText = config?.emailFooterText || '';
+    let footerText = config?.emailFooterText || "";
 
     // Add "Powered by Spike Land" if enabled
     if (config?.showPoweredBySpikeLand !== false) {
-      const poweredBy = 'Powered by Spike Land';
+      const poweredBy = "Powered by Spike Land";
       footerText = footerText
         ? `${footerText}\n\n${poweredBy}`
         : poweredBy;
@@ -169,8 +169,8 @@ export async function getEmailFooterText(workspaceId: string): Promise<string> {
 
     return footerText;
   } catch (error) {
-    console.error('Error fetching email footer text:', error);
-    return 'Powered by Spike Land';
+    console.error("Error fetching email footer text:", error);
+    return "Powered by Spike Land";
   }
 }
 

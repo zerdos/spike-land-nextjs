@@ -1,13 +1,13 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
+import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 import {
   generateVerificationToken,
   getVerificationInstructions,
   isValidDomain,
-} from '@/lib/white-label/domain-verification';
-import type { DomainVerificationResponse } from '@/types/white-label';
+} from "@/lib/white-label/domain-verification";
+import type { DomainVerificationResponse } from "@/types/white-label";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 /**
  * POST /api/orbit/[workspaceSlug]/white-label/domain/verify
@@ -16,14 +16,14 @@ import type { DomainVerificationResponse } from '@/types/white-label';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> }
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ): Promise<NextResponse<DomainVerificationResponse>> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
       );
     }
 
@@ -31,17 +31,17 @@ export async function POST(
     const body = await request.json();
     const { domain } = body;
 
-    if (!domain || typeof domain !== 'string') {
+    if (!domain || typeof domain !== "string") {
       return NextResponse.json(
-        { success: false, error: 'Domain is required' },
-        { status: 400 }
+        { success: false, error: "Domain is required" },
+        { status: 400 },
       );
     }
 
     if (!isValidDomain(domain)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid domain format' },
-        { status: 400 }
+        { success: false, error: "Invalid domain format" },
+        { status: 400 },
       );
     }
 
@@ -57,32 +57,32 @@ export async function POST(
 
     if (!workspace) {
       return NextResponse.json(
-        { success: false, error: 'Workspace not found' },
-        { status: 404 }
+        { success: false, error: "Workspace not found" },
+        { status: 404 },
       );
     }
 
     const member = workspace.members[0];
     if (!member) {
       return NextResponse.json(
-        { success: false, error: 'Not a member of this workspace' },
-        { status: 403 }
+        { success: false, error: "Not a member of this workspace" },
+        { status: 403 },
       );
     }
 
     // Check role (OWNER or ADMIN only)
-    if (member.role !== 'OWNER' && member.role !== 'ADMIN') {
+    if (member.role !== "OWNER" && member.role !== "ADMIN") {
       return NextResponse.json(
-        { success: false, error: 'Only workspace owners and admins can configure custom domains' },
-        { status: 403 }
+        { success: false, error: "Only workspace owners and admins can configure custom domains" },
+        { status: 403 },
       );
     }
 
     // Check subscription tier (PRO or BUSINESS required)
-    if (workspace.subscriptionTier === 'FREE') {
+    if (workspace.subscriptionTier === "FREE") {
       return NextResponse.json(
-        { success: false, error: 'Custom domains require PRO or BUSINESS subscription' },
-        { status: 403 }
+        { success: false, error: "Custom domains require PRO or BUSINESS subscription" },
+        { status: 403 },
       );
     }
 
@@ -96,12 +96,12 @@ export async function POST(
         workspaceId: workspace.id,
         customDomain: domain,
         dnsVerificationToken: verificationToken,
-        dnsVerificationStatus: 'PENDING',
+        dnsVerificationStatus: "PENDING",
       },
       update: {
         customDomain: domain,
         dnsVerificationToken: verificationToken,
-        dnsVerificationStatus: 'PENDING',
+        dnsVerificationStatus: "PENDING",
         customDomainVerified: false,
       },
     });
@@ -114,14 +114,14 @@ export async function POST(
       data: {
         verificationToken,
         instructions,
-        status: 'PENDING',
+        status: "PENDING",
       },
     });
   } catch (error) {
-    console.error('Error initiating domain verification:', error);
+    console.error("Error initiating domain verification:", error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { success: false, error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

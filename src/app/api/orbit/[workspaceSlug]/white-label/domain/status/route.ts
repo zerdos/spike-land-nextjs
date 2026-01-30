@@ -1,9 +1,9 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
-import { calculateDaysUntilExpiration } from '@/lib/white-label/domain-verification';
-import type { DomainStatusResponse } from '@/types/white-label';
+import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
+import { calculateDaysUntilExpiration } from "@/lib/white-label/domain-verification";
+import type { DomainStatusResponse } from "@/types/white-label";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 /**
  * GET /api/orbit/[workspaceSlug]/white-label/domain/status
@@ -11,14 +11,14 @@ import type { DomainStatusResponse } from '@/types/white-label';
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> }
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ): Promise<NextResponse<DomainStatusResponse>> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
       );
     }
 
@@ -37,15 +37,15 @@ export async function GET(
 
     if (!workspace) {
       return NextResponse.json(
-        { success: false, error: 'Workspace not found' },
-        { status: 404 }
+        { success: false, error: "Workspace not found" },
+        { status: 404 },
       );
     }
 
     if (workspace.members.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Not a member of this workspace' },
-        { status: 403 }
+        { success: false, error: "Not a member of this workspace" },
+        { status: 403 },
       );
     }
 
@@ -53,14 +53,14 @@ export async function GET(
 
     if (!config || !config.customDomain) {
       return NextResponse.json(
-        { success: false, error: 'No custom domain configured' },
-        { status: 404 }
+        { success: false, error: "No custom domain configured" },
+        { status: 404 },
       );
     }
 
     // Calculate days until SSL expiration
     const daysUntilExpiration = calculateDaysUntilExpiration(
-      config.sslCertificateExpiresAt
+      config.sslCertificateExpiresAt,
     );
 
     return NextResponse.json({
@@ -75,10 +75,10 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('Error checking domain status:', error);
+    console.error("Error checking domain status:", error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { success: false, error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

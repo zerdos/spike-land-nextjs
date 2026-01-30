@@ -1,11 +1,9 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
-import {
-  whiteLabelConfigPatchSchema,
-  type WhiteLabelConfigResponse,
-} from '@/types/white-label';
+import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
+import { whiteLabelConfigPatchSchema, type WhiteLabelConfigResponse } from "@/types/white-label";
+import { Prisma } from "@prisma/client";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 /**
  * GET /api/orbit/[workspaceSlug]/white-label
@@ -13,14 +11,14 @@ import {
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> }
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ): Promise<NextResponse<WhiteLabelConfigResponse>> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
       );
     }
 
@@ -39,23 +37,23 @@ export async function GET(
 
     if (!workspace) {
       return NextResponse.json(
-        { success: false, error: 'Workspace not found' },
-        { status: 404 }
+        { success: false, error: "Workspace not found" },
+        { status: 404 },
       );
     }
 
     if (workspace.members.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Not a member of this workspace' },
-        { status: 403 }
+        { success: false, error: "Not a member of this workspace" },
+        { status: 403 },
       );
     }
 
     // Check subscription tier (PRO or BUSINESS required)
-    if (workspace.subscriptionTier === 'FREE') {
+    if (workspace.subscriptionTier === "FREE") {
       return NextResponse.json(
-        { success: false, error: 'White-label features require PRO or BUSINESS subscription' },
-        { status: 403 }
+        { success: false, error: "White-label features require PRO or BUSINESS subscription" },
+        { status: 403 },
       );
     }
 
@@ -64,10 +62,10 @@ export async function GET(
       data: workspace.whiteLabelConfig ?? undefined,
     });
   } catch (error) {
-    console.error('Error fetching white-label config:', error);
+    console.error("Error fetching white-label config:", error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { success: false, error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -79,14 +77,14 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> }
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ): Promise<NextResponse<WhiteLabelConfigResponse>> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
       );
     }
 
@@ -104,32 +102,35 @@ export async function PATCH(
 
     if (!workspace) {
       return NextResponse.json(
-        { success: false, error: 'Workspace not found' },
-        { status: 404 }
+        { success: false, error: "Workspace not found" },
+        { status: 404 },
       );
     }
 
     const member = workspace.members[0];
     if (!member) {
       return NextResponse.json(
-        { success: false, error: 'Not a member of this workspace' },
-        { status: 403 }
+        { success: false, error: "Not a member of this workspace" },
+        { status: 403 },
       );
     }
 
     // Check role (OWNER or ADMIN only)
-    if (member.role !== 'OWNER' && member.role !== 'ADMIN') {
+    if (member.role !== "OWNER" && member.role !== "ADMIN") {
       return NextResponse.json(
-        { success: false, error: 'Only workspace owners and admins can configure white-label settings' },
-        { status: 403 }
+        {
+          success: false,
+          error: "Only workspace owners and admins can configure white-label settings",
+        },
+        { status: 403 },
       );
     }
 
     // Check subscription tier (PRO or BUSINESS required)
-    if (workspace.subscriptionTier === 'FREE') {
+    if (workspace.subscriptionTier === "FREE") {
       return NextResponse.json(
-        { success: false, error: 'White-label features require PRO or BUSINESS subscription' },
-        { status: 403 }
+        { success: false, error: "White-label features require PRO or BUSINESS subscription" },
+        { status: 403 },
       );
     }
 
@@ -141,9 +142,11 @@ export async function PATCH(
       return NextResponse.json(
         {
           success: false,
-          error: `Validation error: ${validationResult.error.issues.map((e) => e.message).join(', ')}`,
+          error: `Validation error: ${
+            validationResult.error.issues.map((e) => e.message).join(", ")
+          }`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -164,10 +167,10 @@ export async function PATCH(
       data: whiteLabelConfig,
     });
   } catch (error) {
-    console.error('Error updating white-label config:', error);
+    console.error("Error updating white-label config:", error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { success: false, error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -179,14 +182,14 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> }
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ): Promise<NextResponse<WhiteLabelConfigResponse>> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
       );
     }
 
@@ -204,32 +207,32 @@ export async function DELETE(
 
     if (!workspace) {
       return NextResponse.json(
-        { success: false, error: 'Workspace not found' },
-        { status: 404 }
+        { success: false, error: "Workspace not found" },
+        { status: 404 },
       );
     }
 
     const member = workspace.members[0];
     if (!member) {
       return NextResponse.json(
-        { success: false, error: 'Not a member of this workspace' },
-        { status: 403 }
+        { success: false, error: "Not a member of this workspace" },
+        { status: 403 },
       );
     }
 
     // Check role (OWNER only for deletion)
-    if (member.role !== 'OWNER') {
+    if (member.role !== "OWNER") {
       return NextResponse.json(
-        { success: false, error: 'Only workspace owners can delete white-label configuration' },
-        { status: 403 }
+        { success: false, error: "Only workspace owners can delete white-label configuration" },
+        { status: 403 },
       );
     }
 
     // Check subscription tier (PRO or BUSINESS required)
-    if (workspace.subscriptionTier === 'FREE') {
+    if (workspace.subscriptionTier === "FREE") {
       return NextResponse.json(
-        { success: false, error: 'White-label features require PRO or BUSINESS subscription' },
-        { status: 403 }
+        { success: false, error: "White-label features require PRO or BUSINESS subscription" },
+        { status: 403 },
       );
     }
 
@@ -238,8 +241,8 @@ export async function DELETE(
       await prisma.workspaceWhiteLabelConfig.delete({
         where: { workspaceId: workspace.id },
       });
-    } catch (error: any) {
-      if (error.code === 'P2025') {
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
         // Record didn't exist, considered success
         return NextResponse.json({
           success: true,
@@ -252,10 +255,10 @@ export async function DELETE(
       success: true,
     });
   } catch (error) {
-    console.error('Error deleting white-label config:', error);
+    console.error("Error deleting white-label config:", error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { success: false, error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

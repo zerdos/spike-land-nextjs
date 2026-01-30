@@ -1,15 +1,15 @@
-import { z } from 'zod';
 import type {
-  WorkspaceWhiteLabelConfig,
   DomainVerificationStatus,
   SslCertificateStatus,
-} from '@/generated/prisma';
+  WorkspaceWhiteLabelConfig,
+} from "@/generated/prisma";
+import { z } from "zod";
 
 // =============================================================================
 // Type Definitions
 // =============================================================================
 
-export type { WorkspaceWhiteLabelConfig, DomainVerificationStatus, SslCertificateStatus };
+export type { DomainVerificationStatus, SslCertificateStatus, WorkspaceWhiteLabelConfig };
 
 // =============================================================================
 // Validation Schemas
@@ -21,7 +21,7 @@ export type { WorkspaceWhiteLabelConfig, DomainVerificationStatus, SslCertificat
  */
 const hexColorSchema = z
   .string()
-  .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid hex color format')
+  .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid hex color format")
   .optional();
 
 /**
@@ -32,7 +32,7 @@ const domainSchema = z
   .string()
   .regex(
     /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i,
-    'Invalid domain format'
+    "Invalid domain format",
   )
   .optional();
 
@@ -46,14 +46,14 @@ const fontFamilySchema = z
   .max(200)
   .regex(
     /^[a-zA-Z0-9\s,'-]+$/,
-    'Font family must contain only letters, numbers, spaces, commas, hyphens, and apostrophes'
+    "Font family must contain only letters, numbers, spaces, commas, hyphens, and apostrophes",
   )
   .optional();
 
 /**
  * URL validation schema
  */
-const urlSchema = z.string().url('Invalid URL format').optional();
+const urlSchema = z.string().url("Invalid URL format").optional();
 
 /**
  * Validation schema for creating/updating white-label configuration
@@ -64,10 +64,10 @@ export const whiteLabelConfigSchema = z.object({
   customDomainVerified: z.boolean().optional(),
   dnsVerificationToken: z.string().optional(),
   dnsVerificationStatus: z
-    .enum(['PENDING', 'VERIFYING', 'VERIFIED', 'FAILED', 'EXPIRED'])
+    .enum(["PENDING", "VERIFYING", "VERIFIED", "FAILED", "EXPIRED"])
     .optional(),
   sslCertificateStatus: z
-    .enum(['PENDING', 'PROVISIONING', 'ACTIVE', 'EXPIRING_SOON', 'EXPIRED', 'FAILED'])
+    .enum(["PENDING", "PROVISIONING", "ACTIVE", "EXPIRING_SOON", "EXPIRED", "FAILED"])
     .optional(),
   sslCertificateIssuedAt: z.string().datetime().optional().nullable(),
   sslCertificateExpiresAt: z.string().datetime().optional().nullable(),
@@ -124,19 +124,19 @@ export type WhiteLabelConfigPatchInput = z.infer<typeof whiteLabelConfigPatchSch
 /**
  * Supported image formats for logo upload
  */
-export const LOGO_FORMATS = ['image/png', 'image/jpeg', 'image/svg+xml'] as const;
+export const LOGO_FORMATS = ["image/png", "image/jpeg", "image/svg+xml"] as const;
 export type LogoFormat = (typeof LOGO_FORMATS)[number];
 
 /**
  * Supported formats for favicon upload
  */
-export const FAVICON_FORMATS = ['image/x-icon', 'image/png'] as const;
+export const FAVICON_FORMATS = ["image/x-icon", "image/png"] as const;
 export type FaviconFormat = (typeof FAVICON_FORMATS)[number];
 
 /**
  * Supported formats for background image upload
  */
-export const BACKGROUND_FORMATS = ['image/png', 'image/jpeg', 'image/webp'] as const;
+export const BACKGROUND_FORMATS = ["image/png", "image/jpeg", "image/webp"] as const;
 export type BackgroundFormat = (typeof BACKGROUND_FORMATS)[number];
 
 /**
@@ -152,7 +152,7 @@ export const MAX_BACKGROUND_SIZE = 10 * 1024 * 1024; // 10MB
 export const logoUploadSchema = z.object({
   file: z.instanceof(File),
   mimeType: z.enum(LOGO_FORMATS),
-  size: z.number().max(MAX_LOGO_SIZE, 'Logo file size must not exceed 5MB'),
+  size: z.number().max(MAX_LOGO_SIZE, "Logo file size must not exceed 5MB"),
 });
 
 /**
@@ -161,7 +161,7 @@ export const logoUploadSchema = z.object({
 export const faviconUploadSchema = z.object({
   file: z.instanceof(File),
   mimeType: z.enum(FAVICON_FORMATS),
-  size: z.number().max(MAX_FAVICON_SIZE, 'Favicon file size must not exceed 100KB'),
+  size: z.number().max(MAX_FAVICON_SIZE, "Favicon file size must not exceed 100KB"),
 });
 
 /**
@@ -170,7 +170,7 @@ export const faviconUploadSchema = z.object({
 export const backgroundUploadSchema = z.object({
   file: z.instanceof(File),
   mimeType: z.enum(BACKGROUND_FORMATS),
-  size: z.number().max(MAX_BACKGROUND_SIZE, 'Background image file size must not exceed 10MB'),
+  size: z.number().max(MAX_BACKGROUND_SIZE, "Background image file size must not exceed 10MB"),
 });
 
 // =============================================================================
@@ -194,7 +194,7 @@ export interface DomainVerificationResponse {
   data?: {
     verificationToken: string;
     instructions: {
-      recordType: 'TXT';
+      recordType: "TXT";
       host: string;
       value: string;
       ttl: number;
@@ -240,10 +240,10 @@ export interface ImageUploadResponse {
  * CSS custom properties generated from white-label config
  */
 export interface ThemeCssVariables {
-  '--wl-primary': string;
-  '--wl-secondary': string;
-  '--wl-accent': string;
-  '--wl-font-family': string;
+  "--wl-primary": string;
+  "--wl-secondary": string;
+  "--wl-accent": string;
+  "--wl-font-family": string;
 }
 
 /**

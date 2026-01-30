@@ -1,4 +1,4 @@
-import type { Workspace, WorkspaceMember, WorkspaceSubscriptionTier } from '@/generated/prisma';
+import type { Workspace, WorkspaceMember, WorkspaceSubscriptionTier } from "@/generated/prisma";
 
 /**
  * Check if a workspace can access white-label features
@@ -8,9 +8,9 @@ import type { Workspace, WorkspaceMember, WorkspaceSubscriptionTier } from '@/ge
  * @returns True if workspace has PRO or BUSINESS subscription
  */
 export function canAccessWhiteLabel(
-  workspace: Pick<Workspace, 'subscriptionTier'>
+  workspace: Pick<Workspace, "subscriptionTier">,
 ): boolean {
-  return workspace.subscriptionTier === 'PRO' || workspace.subscriptionTier === 'BUSINESS';
+  return workspace.subscriptionTier === "PRO" || workspace.subscriptionTier === "BUSINESS";
 }
 
 /**
@@ -22,8 +22,8 @@ export function canAccessWhiteLabel(
  * @returns True if member has permission to configure white-label settings
  */
 export function canConfigureWhiteLabel(
-  workspace: Pick<Workspace, 'subscriptionTier'>,
-  member: Pick<WorkspaceMember, 'role'>
+  workspace: Pick<Workspace, "subscriptionTier">,
+  member: Pick<WorkspaceMember, "role">,
 ): boolean {
   // First check if workspace has access to white-label features
   if (!canAccessWhiteLabel(workspace)) {
@@ -31,7 +31,7 @@ export function canConfigureWhiteLabel(
   }
 
   // Then check if member has appropriate role
-  return member.role === 'OWNER' || member.role === 'ADMIN';
+  return member.role === "OWNER" || member.role === "ADMIN";
 }
 
 /**
@@ -43,8 +43,8 @@ export function canConfigureWhiteLabel(
  * @returns True if member has permission to configure custom domain
  */
 export function canConfigureDomain(
-  workspace: Pick<Workspace, 'subscriptionTier'>,
-  member: Pick<WorkspaceMember, 'role'>
+  workspace: Pick<Workspace, "subscriptionTier">,
+  member: Pick<WorkspaceMember, "role">,
 ): boolean {
   // Custom domain configuration has the same requirements as general white-label config
   return canConfigureWhiteLabel(workspace, member);
@@ -58,9 +58,9 @@ export function canConfigureDomain(
  * @returns True if member has permission to delete white-label config
  */
 export function canDeleteWhiteLabelConfig(
-  member: Pick<WorkspaceMember, 'role'>
+  member: Pick<WorkspaceMember, "role">,
 ): boolean {
-  return member.role === 'OWNER';
+  return member.role === "OWNER";
 }
 
 /**
@@ -68,7 +68,7 @@ export function canDeleteWhiteLabelConfig(
  * @returns Array of subscription tiers that support white-label
  */
 export function getWhiteLabelTiers(): WorkspaceSubscriptionTier[] {
-  return ['PRO', 'BUSINESS'];
+  return ["PRO", "BUSINESS"];
 }
 
 /**
@@ -76,7 +76,7 @@ export function getWhiteLabelTiers(): WorkspaceSubscriptionTier[] {
  * @returns Message explaining tier requirements
  */
 export function getWhiteLabelTierMessage(): string {
-  return 'White-label features require a PRO or BUSINESS subscription. Upgrade your workspace to access custom branding, domains, and email configuration.';
+  return "White-label features require a PRO or BUSINESS subscription. Upgrade your workspace to access custom branding, domains, and email configuration.";
 }
 
 /**
@@ -84,5 +84,5 @@ export function getWhiteLabelTierMessage(): string {
  * @returns Message explaining permission requirements
  */
 export function getWhiteLabelPermissionMessage(): string {
-  return 'Only workspace owners and administrators can configure white-label settings.';
+  return "Only workspace owners and administrators can configure white-label settings.";
 }

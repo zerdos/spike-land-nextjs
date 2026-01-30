@@ -1,13 +1,13 @@
-import { randomBytes } from 'crypto';
-import { promises as dns } from 'dns';
-import type { SslCertificateStatus } from '@/types/white-label';
+import type { SslCertificateStatus } from "@/types/white-label";
+import { randomBytes } from "crypto";
+import { promises as dns } from "dns";
 
 /**
  * Generate a unique verification token for DNS TXT record
  * Format: spike-land-verify=<random-hex-32>
  */
 export function generateVerificationToken(): string {
-  const randomHex = randomBytes(16).toString('hex');
+  const randomHex = randomBytes(16).toString("hex");
   return `spike-land-verify=${randomHex}`;
 }
 
@@ -19,7 +19,7 @@ export function generateVerificationToken(): string {
  */
 export async function verifyDomainOwnership(
   domain: string,
-  expectedToken: string
+  expectedToken: string,
 ): Promise<boolean> {
   try {
     // Query TXT records for the domain
@@ -31,7 +31,7 @@ export async function verifyDomainOwnership(
     // Check if any record matches the expected token
     return flattenedRecords.some((record) => record === expectedToken);
   } catch (error) {
-    console.error('Error verifying domain ownership:', error);
+    console.error("Error verifying domain ownership:", error);
     return false;
   }
 }
@@ -43,7 +43,7 @@ export async function verifyDomainOwnership(
  */
 export function getVerificationInstructions(domain: string, verificationToken: string) {
   return {
-    recordType: 'TXT' as const,
+    recordType: "TXT" as const,
     host: domain,
     value: verificationToken,
     ttl: 3600, // 1 hour (standard TTL)
@@ -58,8 +58,8 @@ export function getVerificationInstructions(domain: string, verificationToken: s
  * @returns Status of SSL provisioning request
  */
 export async function initiateSslProvisioning(
-  domain: string
-): Promise<{ success: boolean; status: SslCertificateStatus }> {
+  domain: string,
+): Promise<{ success: boolean; status: SslCertificateStatus; }> {
   try {
     // TODO: Implement actual SSL provisioning
     // For Vercel: Use Vercel Domains API
@@ -75,13 +75,13 @@ export async function initiateSslProvisioning(
 
     return {
       success: true,
-      status: 'PROVISIONING',
+      status: "PROVISIONING",
     };
   } catch (error) {
-    console.error('Error initiating SSL provisioning:', error);
+    console.error("Error initiating SSL provisioning:", error);
     return {
       success: false,
-      status: 'FAILED',
+      status: "FAILED",
     };
   }
 }
@@ -113,12 +113,12 @@ export async function checkSslStatus(domain: string): Promise<{
     // 3. Calculate days until expiration
 
     return {
-      status: 'PENDING',
+      status: "PENDING",
     };
   } catch (error) {
-    console.error('Error checking SSL status:', error);
+    console.error("Error checking SSL status:", error);
     return {
-      status: 'FAILED',
+      status: "FAILED",
     };
   }
 }
@@ -145,17 +145,17 @@ export function calculateDaysUntilExpiration(expiresAt: Date | null | undefined)
  * @returns Appropriate SSL certificate status
  */
 export function getSslStatusFromExpiration(
-  expiresAt: Date | null | undefined
+  expiresAt: Date | null | undefined,
 ): SslCertificateStatus {
-  if (!expiresAt) return 'PENDING';
+  if (!expiresAt) return "PENDING";
 
   const daysUntilExpiration = calculateDaysUntilExpiration(expiresAt);
 
-  if (daysUntilExpiration === null) return 'EXPIRED';
-  if (daysUntilExpiration <= 0) return 'EXPIRED';
-  if (daysUntilExpiration <= 30) return 'EXPIRING_SOON';
+  if (daysUntilExpiration === null) return "EXPIRED";
+  if (daysUntilExpiration <= 0) return "EXPIRED";
+  if (daysUntilExpiration <= 30) return "EXPIRING_SOON";
 
-  return 'ACTIVE';
+  return "ACTIVE";
 }
 
 /**
@@ -164,6 +164,7 @@ export function getSslStatusFromExpiration(
  * @returns True if domain format is valid
  */
 export function isValidDomain(domain: string): boolean {
-  const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
+  const domainRegex =
+    /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
   return domainRegex.test(domain);
 }

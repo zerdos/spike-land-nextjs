@@ -1,13 +1,13 @@
-import type { WorkspaceWhiteLabelConfig } from '@/types/white-label';
-import type { ThemeCssVariables, RuntimeThemeConfig } from '@/types/white-label';
+import type { WorkspaceWhiteLabelConfig } from "@/types/white-label";
+import type { RuntimeThemeConfig, ThemeCssVariables } from "@/types/white-label";
 
 /**
  * Default color values when no custom colors are configured
  */
 const DEFAULT_COLORS = {
-  primary: '#3b82f6', // blue-500
-  secondary: '#8b5cf6', // violet-500
-  accent: '#f59e0b', // amber-500
+  primary: "#3b82f6", // blue-500
+  secondary: "#8b5cf6", // violet-500
+  accent: "#f59e0b", // amber-500
 };
 
 /**
@@ -28,16 +28,16 @@ export function buildThemeCss(config: WorkspaceWhiteLabelConfig | null | undefin
   }
 
   const variables: ThemeCssVariables = {
-    '--wl-primary': config.primaryColor || DEFAULT_COLORS.primary,
-    '--wl-secondary': config.secondaryColor || DEFAULT_COLORS.secondary,
-    '--wl-accent': config.accentColor || DEFAULT_COLORS.accent,
-    '--wl-font-family': config.fontFamily || DEFAULT_FONT_FAMILY,
+    "--wl-primary": config.primaryColor || DEFAULT_COLORS.primary,
+    "--wl-secondary": config.secondaryColor || DEFAULT_COLORS.secondary,
+    "--wl-accent": config.accentColor || DEFAULT_COLORS.accent,
+    "--wl-font-family": config.fontFamily || DEFAULT_FONT_FAMILY,
   };
 
   // Generate CSS string
   const cssVariables = Object.entries(variables)
     .map(([key, value]) => `  ${key}: ${value};`)
-    .join('\n');
+    .join("\n");
 
   return `:root {\n${cssVariables}\n}`;
 }
@@ -47,15 +47,15 @@ export function buildThemeCss(config: WorkspaceWhiteLabelConfig | null | undefin
  */
 function buildDefaultThemeCss(): string {
   const variables: ThemeCssVariables = {
-    '--wl-primary': DEFAULT_COLORS.primary,
-    '--wl-secondary': DEFAULT_COLORS.secondary,
-    '--wl-accent': DEFAULT_COLORS.accent,
-    '--wl-font-family': DEFAULT_FONT_FAMILY,
+    "--wl-primary": DEFAULT_COLORS.primary,
+    "--wl-secondary": DEFAULT_COLORS.secondary,
+    "--wl-accent": DEFAULT_COLORS.accent,
+    "--wl-font-family": DEFAULT_FONT_FAMILY,
   };
 
   const cssVariables = Object.entries(variables)
     .map(([key, value]) => `  ${key}: ${value};`)
-    .join('\n');
+    .join("\n");
 
   return `:root {\n${cssVariables}\n}`;
 }
@@ -68,7 +68,7 @@ function buildDefaultThemeCss(): string {
  * @returns Runtime theme configuration object
  */
 export function buildRuntimeThemeConfig(
-  config: WorkspaceWhiteLabelConfig | null | undefined
+  config: WorkspaceWhiteLabelConfig | null | undefined,
 ): RuntimeThemeConfig {
   return {
     colors: {
@@ -114,16 +114,16 @@ export function isValidHexColor(color: string): boolean {
  * @param hex - Hex color string
  * @returns RGB object or null if invalid
  */
-export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+export function hexToRgb(hex: string): { r: number; g: number; b: number; } | null {
   if (!isValidHexColor(hex)) return null;
 
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (!result) return null;
 
   return {
-    r: parseInt(result[1] ?? '0', 16),
-    g: parseInt(result[2] ?? '0', 16),
-    b: parseInt(result[3] ?? '0', 16),
+    r: parseInt(result[1] ?? "0", 16),
+    g: parseInt(result[2] ?? "0", 16),
+    b: parseInt(result[3] ?? "0", 16),
   };
 }
 
@@ -135,7 +135,7 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } | nul
  * @returns Extended CSS with RGB and alpha variants
  */
 export function buildThemeCssWithAlpha(
-  config: WorkspaceWhiteLabelConfig | null | undefined
+  config: WorkspaceWhiteLabelConfig | null | undefined,
 ): string {
   const baseCss = buildThemeCss(config);
 
@@ -151,17 +151,17 @@ export function buildThemeCssWithAlpha(
   const alphaVariables = [
     primaryRgb && `  --wl-primary-rgb: ${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b};`,
     secondaryRgb &&
-      `  --wl-secondary-rgb: ${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b};`,
+    `  --wl-secondary-rgb: ${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b};`,
     accentRgb && `  --wl-accent-rgb: ${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b};`,
   ]
     .filter(Boolean)
-    .join('\n');
+    .join("\n");
 
   // Combine base CSS with alpha variants
-  const lines = baseCss.split('\n');
+  const lines = baseCss.split("\n");
   lines.splice(lines.length - 1, 0, alphaVariables);
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -173,8 +173,8 @@ export function buildThemeCssWithAlpha(
  */
 export function buildTailwindColors(config: WorkspaceWhiteLabelConfig | null | undefined) {
   return {
-    'wl-primary': config?.primaryColor || DEFAULT_COLORS.primary,
-    'wl-secondary': config?.secondaryColor || DEFAULT_COLORS.secondary,
-    'wl-accent': config?.accentColor || DEFAULT_COLORS.accent,
+    "wl-primary": config?.primaryColor || DEFAULT_COLORS.primary,
+    "wl-secondary": config?.secondaryColor || DEFAULT_COLORS.secondary,
+    "wl-accent": config?.accentColor || DEFAULT_COLORS.accent,
   };
 }
