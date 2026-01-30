@@ -333,6 +333,12 @@ jobs:
           # The E2E database may have been set up before Prisma migrations were used
           yarn prisma migrate deploy || {
             echo "⚠️ Migration deploy failed (P3005 = database not baselined). Proceeding with db push instead..."
+
+            # Clean up orphaned tables that block enum alterations
+            # These tables were removed from schema but may still exist in non-baselined databases
+            echo "🧹 Cleaning up orphaned tables and types..."
+            echo 'DROP TABLE IF EXISTS content_comments CASCADE; DROP TABLE IF EXISTS client_activity_feed CASCADE; DROP TABLE IF EXISTS client_portal_access CASCADE; DROP TABLE IF EXISTS approval_stage_approvers CASCADE; DROP TABLE IF EXISTS approval_stages CASCADE; DROP TABLE IF EXISTS approval_requests CASCADE; DROP TABLE IF EXISTS approval_workflows CASCADE; DROP TYPE IF EXISTS "UserRole_old" CASCADE; DROP TYPE IF EXISTS "ApprovalRequestStatus" CASCADE; DROP TYPE IF EXISTS "ContentType" CASCADE;' | npx prisma db execute --stdin
+
             yarn prisma db push --accept-data-loss
           }
 
