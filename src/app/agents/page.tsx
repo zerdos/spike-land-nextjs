@@ -121,7 +121,7 @@ export default async function AgentsPage() {
   };
 
   return (
-    <main className="container max-w-7xl py-8">
+    <main className="container max-w-7xl px-4 pt-24 pb-8">
       <AgentCatalog initialData={initialData} />
     </main>
   );

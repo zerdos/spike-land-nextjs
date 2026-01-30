@@ -115,7 +115,7 @@ export default async function AgentDetailPage({ params }: PageProps) {
   }));
 
   return (
-    <main className="container max-w-4xl py-8">
+    <main className="container max-w-4xl px-4 pt-24 pb-8">
       <AgentChatPage agent={agentResponse} initialMessages={initialMessages} />
     </main>
   );
