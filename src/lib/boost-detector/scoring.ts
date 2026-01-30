@@ -109,7 +109,6 @@ export async function predictROI(
   const avgCTR = calculateAverageCTR(historicalCampaigns);
   const avgCPC = calculateAverageCPC(historicalCampaigns);
   const avgConversionRate = calculateAverageConversionRate(historicalCampaigns);
-  const _avgCPA = calculateAverageCPA(historicalCampaigns);
 
   // Apply engagement rate multiplier
   const engagementMultiplier = Math.max(
@@ -256,17 +255,6 @@ function calculateAverageConversionRate(
   }, 0);
 
   return totalConversionRate / campaigns.length;
-}
-
-function calculateAverageCPA(campaigns: HistoricalCampaign[]): number {
-  if (campaigns.length === 0) return 30; // $30 default
-
-  const totalCPA = campaigns.reduce((sum, campaign) => {
-    const cpa = campaign.conversions > 0 ? campaign.spend / campaign.conversions : 0;
-    return sum + cpa;
-  }, 0);
-
-  return totalCPA / campaigns.length;
 }
 
 function getIndustryAveragePrediction(

@@ -12,6 +12,9 @@ import prisma from "@/lib/prisma";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+// Valid status values for recommendations
+type RecommendationStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "EXPIRED";
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ workspaceSlug: string; }>; },
@@ -37,14 +40,12 @@ export async function GET(
     const limit = parseInt(searchParams.get("limit") || "20");
     const offset = parseInt(searchParams.get("offset") || "0");
 
-    // Build where clause
-    const where: { workspaceId: string; status?: string; } = {
+    // Build where clause - use type assertion for status since Prisma types
+    // may not be regenerated yet after schema migration
+    const where = {
       workspaceId: workspace.id,
+      ...(status && { status: status as RecommendationStatus }),
     };
-
-    if (status) {
-      where.status = status;
-    }
 
     // Fetch recommendations
     const recommendations = await prisma.postBoostRecommendation.findMany({
@@ -82,7 +83,7 @@ export async function GET(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
   try {

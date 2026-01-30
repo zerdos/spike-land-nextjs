@@ -49,9 +49,9 @@ export async function syncCampaignMetrics(
 // Facebook Integration
 
 async function createFacebookCampaign(
-  postId: string,
-  budget: number,
-  targeting: TargetAudience,
+  _postId: string,
+  _budget: number,
+  _targeting: TargetAudience,
 ): Promise<string> {
   // Get Facebook marketing account
   const account = await prisma.marketingAccount.findFirst({
@@ -68,21 +68,10 @@ async function createFacebookCampaign(
   // In a real implementation, this would call Facebook Marketing API
   // For now, we'll simulate the campaign creation
   try {
-    const _campaignData = {
-      name: `Boost Post ${postId}`,
-      objective: "OUTCOME_ENGAGEMENT", // or OUTCOME_TRAFFIC, CONVERSIONS
-      status: "ACTIVE",
-      daily_budget: Math.round(budget * 100), // cents
-      bid_strategy: "LOWEST_COST_WITHOUT_CAP",
-      targeting: {
-        geo_locations: {
-          countries: targeting.locations || ["US"],
-        },
-        age_min: targeting.ageRange?.min || 18,
-        age_max: targeting.ageRange?.max || 65,
-        interests: targeting.interests?.map((i) => ({ name: i })) || [],
-      },
-    };
+    // Campaign configuration that would be sent to Facebook API:
+    // - objective: OUTCOME_ENGAGEMENT
+    // - daily_budget: budget * 100 (cents)
+    // - targeting: geo_locations, age range, interests from targeting param
 
     // Simulate API call
     // const response = await fetch(`https://graph.facebook.com/v18.0/${account.adAccountId}/campaigns`, {
@@ -148,8 +137,8 @@ async function syncFacebookMetrics(
 // Google Ads Integration
 
 async function createGoogleAdsCampaign(
-  postId: string,
-  budget: number,
+  _postId: string,
+  _budget: number,
   _targeting: TargetAudience,
 ): Promise<string> {
   // Get Google Ads marketing account
@@ -166,24 +155,10 @@ async function createGoogleAdsCampaign(
 
   try {
     // In a real implementation, this would use Google Ads API
-    const _campaignData = {
-      name: `Boost Post ${postId}`,
-      advertisingChannelType: "SEARCH", // or DISPLAY, VIDEO
-      status: "ENABLED",
-      biddingStrategyType: "TARGET_CPA",
-      budget: {
-        amountMicros: budget * 1000000, // Convert to micros
-        deliveryMethod: "STANDARD",
-      },
-      networkSettings: {
-        targetGoogleSearch: true,
-        targetSearchNetwork: true,
-        targetContentNetwork: false,
-      },
-      geoTargetTypeSetting: {
-        positiveGeoTargetType: "PRESENCE_OR_INTEREST",
-      },
-    };
+    // Campaign configuration that would be sent:
+    // - name: Boost Post ${postId}
+    // - budget: ${budget * 1000000} micros
+    // - networkSettings: Google Search + Search Network
 
     // Simulate API call
     // const response = await fetch(`https://googleads.googleapis.com/v14/customers/${account.adAccountId}/campaigns:mutate`, {

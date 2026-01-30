@@ -13,7 +13,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ workspaceSlug: string; id: string; }>; },
 ) {
   try {

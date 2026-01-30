@@ -8,6 +8,7 @@ import type {
   MarketingPlatform,
   PostBoostRecommendation,
   PostPerformance,
+  Prisma,
 } from "@/generated/prisma";
 import prisma from "@/lib/prisma";
 import { calculateBoostScore, predictROI } from "./scoring";
@@ -173,7 +174,7 @@ export async function generateRecommendation(
       estimatedCost: roiPrediction.estimatedCost,
       confidenceScore: roiPrediction.confidenceScore,
       recommendedPlatforms: availablePlatforms,
-      targetAudience,
+      targetAudience: targetAudience as Prisma.InputJsonValue,
       expiresAt,
     },
   });

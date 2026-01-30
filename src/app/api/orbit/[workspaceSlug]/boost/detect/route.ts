@@ -11,7 +11,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
   try {
@@ -29,10 +29,8 @@ export async function POST(
       );
     }
 
-    // Parse query params
-    const searchParams = request.nextUrl.searchParams;
-    const _postIds = searchParams.get("postIds")?.split(",") || [];
-    const _force = searchParams.get("force") === "true";
+    // Note: postIds and force params could be used for filtering in the future
+    // Currently we detect all eligible posts in the workspace
 
     // Default configuration
     const config: BoostDetectorConfig = {

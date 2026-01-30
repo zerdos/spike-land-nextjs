@@ -19,7 +19,7 @@ import type {
 export class BoostROIPredictor {
   private weights: number[] = [];
   private bias: number = 0;
-  private isTraned: boolean = false;
+  private isTrained: boolean = false;
   private lastTrainedAt: Date | null = null;
   private trainingMetrics: ModelPerformanceMetrics | null = null;
 
@@ -57,21 +57,21 @@ export class BoostROIPredictor {
       let dBias = 0;
 
       for (let i = 0; i < n; i++) {
-        const error = predictions[i] - y[i];
+        const error = (predictions[i] ?? 0) - (y[i] ?? 0);
         dBias += error;
         for (let j = 0; j < this.weights.length; j++) {
-          dWeights[j] += error * X[i]![j]!;
+          dWeights[j] += error * (X[i]?.[j] ?? 0);
         }
       }
 
       // Update weights and bias
       for (let j = 0; j < this.weights.length; j++) {
-        this.weights[j] -= (learningRate * dWeights[j]) / n;
+        this.weights[j] = (this.weights[j] ?? 0) - (learningRate * (dWeights[j] ?? 0)) / n;
       }
       this.bias -= (learningRate * dBias) / n;
     }
 
-    this.isTraned = true;
+    this.isTrained = true;
     this.lastTrainedAt = new Date();
 
     // Calculate training metrics
@@ -82,7 +82,7 @@ export class BoostROIPredictor {
    * Predict ROI for a given set of post features
    */
   async predict(features: PostFeatures): Promise<ROIPrediction> {
-    if (!this.isTraned) {
+    if (!this.isTrained) {
       throw new Error("Model must be trained before making predictions");
     }
 
@@ -148,7 +148,7 @@ export class BoostROIPredictor {
   private predict_raw(features: number[]): number {
     let prediction = this.bias;
     for (let i = 0; i < this.weights.length; i++) {
-      prediction += this.weights[i]! * features[i];
+      prediction += (this.weights[i] ?? 0) * (features[i] ?? 0);
     }
     return prediction;
   }
@@ -164,15 +164,15 @@ export class BoostROIPredictor {
     const n = yTrue.length;
 
     // Calculate metrics
-    const mae = yTrue.reduce((sum, y, i) => sum + Math.abs(y - yPred[i]), 0) / n;
+    const mae = yTrue.reduce((sum, y, i) => sum + Math.abs(y - (yPred[i] ?? 0)), 0) / n;
 
-    const mse = yTrue.reduce((sum, y, i) => sum + Math.pow(y - yPred[i], 2), 0) / n;
+    const mse = yTrue.reduce((sum, y, i) => sum + Math.pow(y - (yPred[i] ?? 0), 2), 0) / n;
     const rmse = Math.sqrt(mse);
 
     const yMean = yTrue.reduce((sum, y) => sum + y, 0) / n;
     const ssTot = yTrue.reduce((sum, y) => sum + Math.pow(y - yMean, 2), 0);
     const ssRes = yTrue.reduce(
-      (sum, y, i) => sum + Math.pow(y - yPred[i], 2),
+      (sum, y, i) => sum + Math.pow(y - (yPred[i] ?? 0), 2),
       0,
     );
     const r2Score = 1 - ssRes / ssTot;
@@ -181,7 +181,7 @@ export class BoostROIPredictor {
     // These are not standard regression metrics but useful for monitoring
     const threshold = 0.1; // 10% error threshold
     const accurate = yTrue.filter(
-      (y, i) => Math.abs(y - yPred[i]) < threshold * Math.abs(y),
+      (y, i) => Math.abs(y - (yPred[i] ?? 0)) < threshold * Math.abs(y),
     ).length;
     const accuracy = accurate / n;
 
