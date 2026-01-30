@@ -216,8 +216,9 @@ describe("transformToStreamPost", () => {
 
     const result = transformToStreamPost(post, context);
 
-    expect(result.canLike).toBe(false);
-    expect(result.canReply).toBe(false);
+    // TikTok supports likes and replies but not shares
+    expect(result.canLike).toBe(true);
+    expect(result.canReply).toBe(true);
     expect(result.canShare).toBe(false);
   });
 

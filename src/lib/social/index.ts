@@ -56,8 +56,18 @@ export async function createSocialClient(
       throw new Error(
         "Discord uses bot authentication, not OAuth. Configure DISCORD_BOT_TOKEN and DISCORD_SERVER_ID in environment variables.",
       );
-    case "TIKTOK":
-      throw new Error(`Platform ${platform} is not yet implemented`);
+    case "TIKTOK": {
+      const { TikTokClient } = await import("./clients/tiktok");
+      return new TikTokClient(options);
+    }
+    case "SNAPCHAT": {
+      const { SnapchatClient } = await import("./clients/snapchat");
+      return new SnapchatClient(options);
+    }
+    case "PINTEREST": {
+      const { PinterestClient } = await import("./clients/pinterest");
+      return new PinterestClient(options);
+    }
     default:
       throw new Error(`Unknown platform: ${platform}`);
   }
@@ -101,8 +111,21 @@ export async function getSocialAuthUrl(
       throw new Error(
         "Discord uses bot authentication, not OAuth. Configure DISCORD_BOT_TOKEN and DISCORD_SERVER_ID in environment variables.",
       );
-    case "TIKTOK":
-      throw new Error(`Platform ${platform} is not yet implemented`);
+    case "TIKTOK": {
+      const { TikTokClient } = await import("./clients/tiktok");
+      const client = new TikTokClient();
+      return client.getAuthUrl(redirectUri, state);
+    }
+    case "SNAPCHAT": {
+      const { SnapchatClient } = await import("./clients/snapchat");
+      const client = new SnapchatClient();
+      return client.getAuthUrl(redirectUri, state);
+    }
+    case "PINTEREST": {
+      const { PinterestClient } = await import("./clients/pinterest");
+      const client = new PinterestClient();
+      return client.getAuthUrl(redirectUri, state);
+    }
     default:
       throw new Error(`Unknown platform: ${platform}`);
   }

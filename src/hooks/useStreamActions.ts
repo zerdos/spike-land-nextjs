@@ -11,14 +11,17 @@ import { useCallback } from "react";
 import type { SocialPlatform, StreamPost } from "@/lib/social/types";
 
 /**
- * Platform-specific character limits for replies
+ * Platform-specific character limits for replies/comments
+ * Note: These differ from post limits (in relay-types.ts) because
+ * platforms often have different limits for comments vs posts.
+ * Example: TikTok posts support 2200 chars, but comments are limited to 150.
  */
-export const PLATFORM_CHARACTER_LIMITS: Record<SocialPlatform, number> = {
+export const PLATFORM_REPLY_LIMITS: Record<SocialPlatform, number> = {
   TWITTER: 280,
   FACEBOOK: 8000,
   INSTAGRAM: 2200,
   LINKEDIN: 3000,
-  TIKTOK: 150,
+  TIKTOK: 150, // TikTok comments are limited to 150 chars
   YOUTUBE: 10000,
   DISCORD: 2000,
   SNAPCHAT: 250,
@@ -377,7 +380,7 @@ export function useStreamActions(workspaceId: string): UseStreamActionsResult {
    * Get character limit for a platform
    */
   const getCharacterLimit = useCallback((platform: SocialPlatform): number => {
-    return PLATFORM_CHARACTER_LIMITS[platform] ?? 280;
+    return PLATFORM_REPLY_LIMITS[platform] ?? 280;
   }, []);
 
   return {
