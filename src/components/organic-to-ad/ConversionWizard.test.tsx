@@ -3,7 +3,7 @@
  * Issue: #567 (ORB-063)
  */
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ConversionWizard } from "./ConversionWizard";
 
@@ -55,6 +55,7 @@ describe("ConversionWizard", () => {
   });
 
   it("should call onComplete when launch is clicked", async () => {
+    vi.useFakeTimers();
     const onComplete = vi.fn();
     render(<ConversionWizard postId="test-post" onComplete={onComplete} />);
 
@@ -68,9 +69,13 @@ describe("ConversionWizard", () => {
 
     expect(screen.getByText("Launching...")).toBeDefined();
 
-    await waitFor(() => {
-      expect(onComplete).toHaveBeenCalledWith("mock-conversion-id");
+    // Advance timers to complete the setTimeout
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
     });
+
+    expect(onComplete).toHaveBeenCalledWith("mock-conversion-id");
+    vi.useRealTimers();
   });
 
   it("should display post ID", () => {

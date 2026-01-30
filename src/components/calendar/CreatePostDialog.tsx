@@ -62,6 +62,8 @@ const PLATFORM_LABELS: Record<SocialPlatform, string> = {
   TIKTOK: "TikTok",
   YOUTUBE: "YouTube",
   DISCORD: "Discord",
+  SNAPCHAT: "Snapchat",
+  PINTEREST: "Pinterest",
 };
 
 const RECURRENCE_FREQUENCY_OPTIONS = [

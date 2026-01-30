@@ -64,6 +64,8 @@ const PLATFORM_LABELS: Record<SocialPlatform, string> = {
   TIKTOK: "TikTok",
   YOUTUBE: "YouTube",
   DISCORD: "Discord",
+  SNAPCHAT: "Snapchat",
+  PINTEREST: "Pinterest",
 };
 
 export function CalendarHeader({
