@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { PLATFORM_CHARACTER_LIMITS, useStreamActions } from "./useStreamActions";
+import { PLATFORM_REPLY_LIMITS, useStreamActions } from "./useStreamActions";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -23,29 +23,29 @@ function createWrapper() {
   };
 }
 
-describe("PLATFORM_CHARACTER_LIMITS", () => {
+describe("PLATFORM_REPLY_LIMITS", () => {
   it("has correct limit for TWITTER", () => {
-    expect(PLATFORM_CHARACTER_LIMITS.TWITTER).toBe(280);
+    expect(PLATFORM_REPLY_LIMITS.TWITTER).toBe(280);
   });
 
   it("has correct limit for FACEBOOK", () => {
-    expect(PLATFORM_CHARACTER_LIMITS.FACEBOOK).toBe(8000);
+    expect(PLATFORM_REPLY_LIMITS.FACEBOOK).toBe(8000);
   });
 
   it("has correct limit for INSTAGRAM", () => {
-    expect(PLATFORM_CHARACTER_LIMITS.INSTAGRAM).toBe(2200);
+    expect(PLATFORM_REPLY_LIMITS.INSTAGRAM).toBe(2200);
   });
 
   it("has correct limit for LINKEDIN", () => {
-    expect(PLATFORM_CHARACTER_LIMITS.LINKEDIN).toBe(3000);
+    expect(PLATFORM_REPLY_LIMITS.LINKEDIN).toBe(3000);
   });
 
   it("has correct limit for TIKTOK", () => {
-    expect(PLATFORM_CHARACTER_LIMITS.TIKTOK).toBe(150);
+    expect(PLATFORM_REPLY_LIMITS.TIKTOK).toBe(150);
   });
 
   it("has correct limit for YOUTUBE", () => {
-    expect(PLATFORM_CHARACTER_LIMITS.YOUTUBE).toBe(10000);
+    expect(PLATFORM_REPLY_LIMITS.YOUTUBE).toBe(10000);
   });
 });
 

@@ -55,6 +55,20 @@ interface PinterestUser {
   username: string;
 }
 
+/**
+ * Custom error class for Pinterest API errors that includes HTTP status
+ */
+export class PinterestHttpError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly statusText: string,
+  ) {
+    super(message);
+    this.name = "PinterestHttpError";
+  }
+}
+
 export class PinterestClient implements ISocialClient {
   readonly platform = "PINTEREST" as const;
 
@@ -126,8 +140,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Pinterest token exchange failed: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -183,8 +199,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Pinterest token refresh failed: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -219,8 +237,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Failed to get Pinterest account info: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -303,8 +323,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Failed to create Pinterest pin: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -340,8 +362,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Failed to get Pinterest pins: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -378,8 +402,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Failed to delete Pinterest pin: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
   }
@@ -404,8 +430,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Failed to get Pinterest metrics: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -453,8 +481,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Failed to list Pinterest boards: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -491,8 +521,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Failed to create Pinterest board: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -533,8 +565,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Failed to update Pinterest board: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
 
@@ -558,8 +592,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Failed to delete Pinterest board: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
   }
@@ -587,8 +623,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Failed to move Pinterest pin: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
   }
@@ -612,8 +650,10 @@ export class PinterestClient implements ISocialClient {
       const errorData = (await response
         .json()
         .catch(() => ({}))) as PinterestApiError;
-      throw new Error(
+      throw new PinterestHttpError(
         `Failed to get Pinterest pin analytics: ${errorData.message || response.statusText}`,
+        response.status,
+        response.statusText,
       );
     }
 

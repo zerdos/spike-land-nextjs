@@ -19,25 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { PLATFORM_REPLY_LIMITS } from "@/hooks/useStreamActions";
 import type { SocialPlatform, StreamPost } from "@/lib/social/types";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-
-/**
- * Platform-specific character limits
- */
-export const PLATFORM_CHARACTER_LIMITS: Record<SocialPlatform, number> = {
-  TWITTER: 280,
-  FACEBOOK: 8000,
-  INSTAGRAM: 2200,
-  LINKEDIN: 3000,
-  TIKTOK: 150,
-  YOUTUBE: 10000,
-  DISCORD: 2000,
-  SNAPCHAT: 250, // Snapchat stories have limited text
-  PINTEREST: 500, // Pinterest pin descriptions
-};
 
 /**
  * Connected account info for the selector
@@ -113,7 +99,7 @@ export function ReplyDialog({
     (account) => account.platform === post.platform,
   );
 
-  const characterLimit = PLATFORM_CHARACTER_LIMITS[post.platform];
+  const characterLimit = PLATFORM_REPLY_LIMITS[post.platform];
   const remainingChars = characterLimit - content.length;
   const isOverLimit = remainingChars < 0;
   const isNearLimit = remainingChars <= 20 && remainingChars >= 0;

@@ -105,7 +105,7 @@ export class TikTokClient implements ISocialClient {
     state: string,
     _codeChallenge?: string,
   ): string {
-    const clientKey = process.env["TIKTOK_CLIENT_KEY"];
+    const clientKey = process.env["TIKTOK_CLIENT_KEY"]?.trim();
     if (!clientKey) {
       throw new Error("TIKTOK_CLIENT_KEY not configured");
     }
@@ -129,8 +129,8 @@ export class TikTokClient implements ISocialClient {
     redirectUri: string,
     _codeVerifier?: string,
   ): Promise<OAuthTokenResponse> {
-    const clientKey = process.env["TIKTOK_CLIENT_KEY"];
-    const clientSecret = process.env["TIKTOK_CLIENT_SECRET"];
+    const clientKey = process.env["TIKTOK_CLIENT_KEY"]?.trim();
+    const clientSecret = process.env["TIKTOK_CLIENT_SECRET"]?.trim();
 
     if (!clientKey || !clientSecret) {
       throw new Error("TikTok credentials not configured");
@@ -185,8 +185,8 @@ export class TikTokClient implements ISocialClient {
    * Refresh access token using refresh token
    */
   async refreshAccessToken(refreshToken: string): Promise<OAuthTokenResponse> {
-    const clientKey = process.env["TIKTOK_CLIENT_KEY"];
-    const clientSecret = process.env["TIKTOK_CLIENT_SECRET"];
+    const clientKey = process.env["TIKTOK_CLIENT_KEY"]?.trim();
+    const clientSecret = process.env["TIKTOK_CLIENT_SECRET"]?.trim();
 
     if (!clientKey || !clientSecret) {
       throw new Error("TikTok credentials not configured");

@@ -680,6 +680,4 @@ export const PLATFORM_CAPABILITIES: Record<
   SNAPCHAT: { canLike: false, canReply: true, canShare: false }, // Stories support replies
   PINTEREST: { canLike: false, canReply: false, canShare: true }, // Pinterest uses "saves"
   DISCORD: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
-  SNAPCHAT: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
-  PINTEREST: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
 };

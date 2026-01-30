@@ -111,7 +111,7 @@ export class SnapchatClient implements ISocialClient {
     redirectUri: string,
     state: string,
   ): string {
-    const clientId = process.env["SNAPCHAT_CLIENT_ID"];
+    const clientId = process.env["SNAPCHAT_CLIENT_ID"]?.trim();
     if (!clientId) {
       throw new Error(
         "SNAPCHAT_CLIENT_ID environment variable is not configured",
@@ -136,8 +136,8 @@ export class SnapchatClient implements ISocialClient {
     code: string,
     redirectUri: string,
   ): Promise<OAuthTokenResponse> {
-    const clientId = process.env["SNAPCHAT_CLIENT_ID"];
-    const clientSecret = process.env["SNAPCHAT_CLIENT_SECRET"];
+    const clientId = process.env["SNAPCHAT_CLIENT_ID"]?.trim();
+    const clientSecret = process.env["SNAPCHAT_CLIENT_SECRET"]?.trim();
 
     if (!clientId || !clientSecret) {
       throw new Error(
@@ -195,8 +195,8 @@ export class SnapchatClient implements ISocialClient {
    * Refresh an expired access token
    */
   async refreshAccessToken(refreshToken: string): Promise<OAuthTokenResponse> {
-    const clientId = process.env["SNAPCHAT_CLIENT_ID"];
-    const clientSecret = process.env["SNAPCHAT_CLIENT_SECRET"];
+    const clientId = process.env["SNAPCHAT_CLIENT_ID"]?.trim();
+    const clientSecret = process.env["SNAPCHAT_CLIENT_SECRET"]?.trim();
 
     if (!clientId || !clientSecret) {
       throw new Error(
