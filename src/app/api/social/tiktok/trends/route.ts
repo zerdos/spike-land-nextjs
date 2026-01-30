@@ -7,8 +7,8 @@
 
 import { auth } from "@/auth";
 import { safeDecryptToken } from "@/lib/crypto/token-encryption";
-import prisma from "@/lib/prisma";
 import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
+import prisma from "@/lib/prisma";
 import { TikTokClient } from "@/lib/social/clients/tiktok";
 import { tryCatch } from "@/lib/try-catch";
 import type { NextRequest } from "next/server";

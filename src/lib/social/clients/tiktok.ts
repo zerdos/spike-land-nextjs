@@ -14,8 +14,8 @@ import type {
   SocialClientOptions,
   SocialMetricsData,
   SocialPost,
-  TikTokVideo,
   TikTokTrend,
+  TikTokVideo,
 } from "../types";
 
 const TIKTOK_API_BASE = "https://open.tiktokapis.com";
@@ -91,6 +91,13 @@ export class TikTokClient implements ISocialClient {
   }
 
   /**
+   * Set access token for API calls
+   */
+  setAccessToken(token: string): void {
+    this.accessToken = token;
+  }
+
+  /**
    * Get TikTok OAuth authorization URL
    */
   getAuthUrl(
@@ -162,6 +169,9 @@ export class TikTokClient implements ISocialClient {
       open_id: string;
     } = await response.json();
 
+    // Set access token for subsequent API calls
+    this.accessToken = data.access_token;
+
     return {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
@@ -228,7 +238,9 @@ export class TikTokClient implements ISocialClient {
   async getAccountInfo(): Promise<SocialAccountInfo> {
     const token = this.getAccessTokenOrThrow();
 
-    const response = await fetch(`${TIKTOK_API_BASE}/v2/user/info/`, {
+    const fields =
+      "open_id,union_id,avatar_url,display_name,username,follower_count,following_count";
+    const response = await fetch(`${TIKTOK_API_BASE}/v2/user/info/?fields=${fields}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -329,12 +341,11 @@ export class TikTokClient implements ISocialClient {
         shares: video.share_count,
         impressions: video.view_count,
         reach: video.view_count,
-        engagementRate:
-          video.view_count > 0
-            ? ((video.like_count + video.comment_count + video.share_count) /
-                video.view_count) *
-              100
-            : 0,
+        engagementRate: video.view_count > 0
+          ? ((video.like_count + video.comment_count + video.share_count) /
+            video.view_count) *
+            100
+          : 0,
       },
       rawData: video,
     }));
@@ -377,7 +388,8 @@ export class TikTokClient implements ISocialClient {
     // Calculate aggregate metrics
     const totalEngagements = posts.reduce(
       (sum, post) =>
-        sum + (post.metrics?.likes || 0) + (post.metrics?.comments || 0) + (post.metrics?.shares || 0),
+        sum + (post.metrics?.likes || 0) + (post.metrics?.comments || 0) +
+        (post.metrics?.shares || 0),
       0,
     );
     const totalImpressions = posts.reduce(
@@ -389,8 +401,7 @@ export class TikTokClient implements ISocialClient {
       followers: accountInfo.followersCount || 0,
       following: accountInfo.followingCount || 0,
       postsCount: posts.length,
-      engagementRate:
-        totalImpressions > 0 ? (totalEngagements / totalImpressions) * 100 : 0,
+      engagementRate: totalImpressions > 0 ? (totalEngagements / totalImpressions) * 100 : 0,
       impressions: totalImpressions,
       reach: totalImpressions,
     };
