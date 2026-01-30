@@ -378,6 +378,164 @@ export interface DiscordMetrics {
 }
 
 /**
+ * TikTok-specific types
+ */
+export interface TikTokVideo {
+  id: string;
+  title: string;
+  description?: string;
+  coverImageUrl: string;
+  videoUrl?: string;
+  duration: number; // seconds
+  createTime: number; // Unix timestamp
+  shareUrl: string;
+  statistics: {
+    viewCount: number;
+    likeCount: number;
+    commentCount: number;
+    shareCount: number;
+  };
+}
+
+export interface TikTokUserInfo {
+  openId: string;
+  unionId: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string;
+  followerCount: number;
+  followingCount: number;
+  videoCount: number;
+  bioDescription?: string;
+}
+
+export interface TikTokTrend {
+  id: string;
+  name: string;
+  type: "hashtag" | "sound";
+  viewCount: number;
+  videoCount: number;
+  growthRate: number;
+  category?: string;
+}
+
+export interface TikTokUploadOptions extends PostOptions {
+  videoFile: File | Buffer;
+  title: string;
+  caption?: string;
+  hashtags?: string[];
+  soundId?: string; // Use trending sound
+  privacyLevel?: "PUBLIC" | "FRIENDS" | "SELF";
+  allowComment?: boolean;
+  allowDuet?: boolean;
+  allowStitch?: boolean;
+}
+
+/**
+ * Snapchat-specific types
+ */
+export interface SnapchatOrganization {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SnapchatAdAccount {
+  id: string;
+  name: string;
+  organization_id: string;
+  status: string;
+  currency: string;
+}
+
+export interface SnapchatStory {
+  id: string;
+  creative_id: string;
+  media_url: string;
+  created_at: string;
+  type: "IMAGE" | "VIDEO";
+  duration?: number;
+}
+
+export interface StoryMetrics {
+  views: number;
+  screenshots: number;
+  replies: number;
+  completionRate: number;
+  impressions?: number;
+  reach?: number;
+}
+
+export interface SnapchatContent {
+  type: "SNAP" | "STORY" | "SPOTLIGHT";
+  media: {
+    url: string;
+    type: "IMAGE" | "VIDEO";
+  };
+  interactive?: {
+    stickers?: Array<unknown>;
+    cta?: { text: string; url: string; };
+  };
+}
+
+export interface MediaValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+  metadata: {
+    width: number;
+    height: number;
+    duration?: number;
+    fileSize: number;
+    aspectRatio: string;
+  };
+}
+
+/**
+ * Pinterest-specific types
+ */
+export interface PinterestBoard {
+  id: string;
+  name: string;
+  description?: string;
+  privacy: "PUBLIC" | "PROTECTED" | "SECRET";
+  follower_count?: number;
+  pin_count?: number;
+  image_thumbnail_url?: string;
+  created_at: string;
+}
+
+export interface PinterestPin {
+  id: string;
+  title?: string;
+  description?: string;
+  link?: string;
+  alt_text?: string;
+  board_id: string;
+  created_at: string;
+  media: {
+    media_type: "image" | "video";
+    images?: {
+      original: { url: string; width: number; height: number; };
+      [key: string]: { url: string; width?: number; height?: number; };
+    };
+  };
+}
+
+export interface PinterestMetrics {
+  pin_id: string;
+  impression: number;
+  save: number;
+  pin_click: number;
+  outbound_click: number;
+}
+
+export interface PinterestClientOptions extends SocialClientOptions {
+  boardId?: string; // Default board for pins
+}
+
+/**
  * Extended platform type that includes platforms not in Prisma enum
  * Use this for runtime platform identification
  */
@@ -517,8 +675,10 @@ export const PLATFORM_CAPABILITIES: Record<
   FACEBOOK: { canLike: true, canReply: true, canShare: false },
   INSTAGRAM: { canLike: true, canReply: true, canShare: false },
   LINKEDIN: { canLike: true, canReply: true, canShare: false },
-  TIKTOK: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
-  YOUTUBE: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
+  TIKTOK: { canLike: true, canReply: true, canShare: false },
+  YOUTUBE: { canLike: true, canReply: true, canShare: false },
+  SNAPCHAT: { canLike: false, canReply: true, canShare: false }, // Stories support replies
+  PINTEREST: { canLike: false, canReply: false, canShare: true }, // Pinterest uses "saves"
   DISCORD: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
   SNAPCHAT: { canLike: false, canReply: false, canShare: false }, // Not yet implemented
   PINTEREST: { canLike: false, canReply: false, canShare: false }, // Not yet implemented

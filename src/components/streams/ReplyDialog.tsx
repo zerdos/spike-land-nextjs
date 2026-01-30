@@ -35,8 +35,8 @@ export const PLATFORM_CHARACTER_LIMITS: Record<SocialPlatform, number> = {
   TIKTOK: 150,
   YOUTUBE: 10000,
   DISCORD: 2000,
-  SNAPCHAT: 250,
-  PINTEREST: 500,
+  SNAPCHAT: 250, // Snapchat stories have limited text
+  PINTEREST: 500, // Pinterest pin descriptions
 };
 
 /**

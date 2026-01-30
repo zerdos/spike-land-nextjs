@@ -34,7 +34,7 @@ const PLATFORM_CONFIG: Record<
   YOUTUBE: { name: "YouTube", shortName: "YT" },
   DISCORD: { name: "Discord", shortName: "DC" },
   SNAPCHAT: { name: "Snapchat", shortName: "SC" },
-  PINTEREST: { name: "Pinterest", shortName: "PT" },
+  PINTEREST: { name: "Pinterest", shortName: "PN" },
 };
 
 /**
