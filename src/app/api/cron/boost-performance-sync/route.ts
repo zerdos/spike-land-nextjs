@@ -4,9 +4,10 @@
  * Issue #565 - Content-to-Ads Loop
  */
 
-import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
 import { syncCampaignMetrics } from "@/lib/boost-detector/platform-integration";
+import prisma from "@/lib/prisma";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,8 +43,7 @@ export async function GET(request: NextRequest) {
 
         // Calculate ROI
         const conversionValue = metrics.conversions * 50; // $50 per conversion
-        const actualROI =
-          metrics.spend > 0 ? (conversionValue - metrics.spend) / metrics.spend : 0;
+        const actualROI = metrics.spend > 0 ? (conversionValue - metrics.spend) / metrics.spend : 0;
 
         // Update boost with new metrics
         await prisma.appliedBoost.update({

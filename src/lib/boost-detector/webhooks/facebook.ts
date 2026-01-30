@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 /**
  * Facebook Webhook Handler
  * Processes real-time post performance updates from Facebook
@@ -95,19 +93,15 @@ async function handlePostInsightsUpdate(data: Record<string, unknown>): Promise<
 
     // Calculate new metrics
     const newImpressions = insights["impressions"] || performance.impressions;
-    const newEngagements =
-      (insights["likes"] || 0) +
+    const newEngagements = (insights["likes"] || 0) +
       (insights["comments"] || 0) +
       (insights["shares"] || 0);
-    const newEngagementRate =
-      newImpressions > 0 ? newEngagements / newImpressions : 0;
+    const newEngagementRate = newImpressions > 0 ? newEngagements / newImpressions : 0;
 
     // Calculate velocity (engagements per hour since last check)
-    const hoursSinceCheck =
-      (Date.now() - performance.checkedAt.getTime()) / (1000 * 60 * 60);
+    const hoursSinceCheck = (Date.now() - performance.checkedAt.getTime()) / (1000 * 60 * 60);
     const engagementDelta = newEngagements - performance.engagementCount;
-    const newEngagementVelocity =
-      hoursSinceCheck > 0 ? engagementDelta / hoursSinceCheck : 0;
+    const newEngagementVelocity = hoursSinceCheck > 0 ? engagementDelta / hoursSinceCheck : 0;
 
     // Update performance record
     await prisma.postPerformance.update({
@@ -160,8 +154,7 @@ async function handleCampaignUpdate(data: Record<string, unknown>): Promise<void
     const actualSpend = insights["spend"] || 0;
     const actualConversions = insights["conversions"] || 0;
     const conversionValue = actualConversions * 50; // $50 per conversion
-    const actualROI =
-      actualSpend > 0 ? (conversionValue - actualSpend) / actualSpend : 0;
+    const actualROI = actualSpend > 0 ? (conversionValue - actualSpend) / actualSpend : 0;
 
     // Update AppliedBoost record
     await prisma.appliedBoost.update({

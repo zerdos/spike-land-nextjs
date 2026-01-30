@@ -4,14 +4,14 @@
  * Issue #565 - Content-to-Ads Loop
  */
 
-import prisma from "@/lib/prisma";
 import type {
   MarketingPlatform,
-  PostPerformance,
   PostBoostRecommendation,
+  PostPerformance,
 } from "@/generated/prisma";
-import type { BoostDetectorConfig } from "./types";
+import prisma from "@/lib/prisma";
 import { calculateBoostScore, predictROI } from "./scoring";
+import type { BoostDetectorConfig, BoostScore, ROIPrediction, TargetAudience } from "./types";
 
 /**
  * Detect boost opportunities for a workspace
@@ -51,10 +51,8 @@ export async function detectBoostOpportunities(
 
   // Filter by thresholds
   const qualifiedPosts = performances.filter((p) => {
-    const meetsEngagementThreshold =
-      p.engagementRate >= config.engagementThreshold;
-    const meetsVelocityThreshold =
-      p.engagementVelocity >= config.velocityThreshold;
+    const meetsEngagementThreshold = p.engagementRate >= config.engagementThreshold;
+    const meetsVelocityThreshold = p.engagementVelocity >= config.velocityThreshold;
 
     return meetsEngagementThreshold || meetsVelocityThreshold;
   });
@@ -239,22 +237,26 @@ async function getAvailableMarketingPlatforms(
 
 function generateReasoningText(
   performance: PostPerformance,
-  boostScore: any,
-  prediction: any,
+  boostScore: BoostScore,
+  prediction: ROIPrediction,
 ): string {
   const reasons: string[] = [];
 
   // Engagement velocity reason
   if (boostScore.factors.engagementVelocity > 70) {
     reasons.push(
-      `This post is gaining momentum with ${performance.engagementVelocity.toFixed(1)} engagements per hour.`,
+      `This post is gaining momentum with ${
+        performance.engagementVelocity.toFixed(1)
+      } engagements per hour.`,
     );
   }
 
   // Engagement rate reason
   if (performance.engagementRate > 0.05) {
     reasons.push(
-      `Strong audience resonance with ${(performance.engagementRate * 100).toFixed(1)}% engagement rate.`,
+      `Strong audience resonance with ${
+        (performance.engagementRate * 100).toFixed(1)
+      }% engagement rate.`,
     );
   }
 
@@ -268,14 +270,16 @@ function generateReasoningText(
   // ROI prediction
   if (prediction.estimatedROI > 1) {
     reasons.push(
-      `Predicted ${(prediction.estimatedROI * 100).toFixed(0)}% ROI with ${prediction.estimatedConversions} estimated conversions.`,
+      `Predicted ${
+        (prediction.estimatedROI * 100).toFixed(0)
+      }% ROI with ${prediction.estimatedConversions} estimated conversions.`,
     );
   }
 
   return reasons.join(" ");
 }
 
-function generateTargetAudience(performance: PostPerformance): any {
+function generateTargetAudience(_performance: PostPerformance): TargetAudience {
   // In a real implementation, this would analyze the post content
   // and existing audience to suggest targeting
   return {

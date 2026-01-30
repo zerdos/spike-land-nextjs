@@ -8,12 +8,13 @@
  * Issue #565 - Content-to-Ads Loop
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; id: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; id: string; }>; },
 ) {
   try {
     const { workspaceSlug, id } = await params;
@@ -68,7 +69,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string; id: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; id: string; }>; },
 ) {
   try {
     const { workspaceSlug, id } = await params;

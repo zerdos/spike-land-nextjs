@@ -68,7 +68,7 @@ export interface CampaignMetrics {
 
 export interface TargetAudience {
   locations?: string[];
-  ageRange?: { min: number; max: number };
+  ageRange?: { min: number; max: number; };
   interests?: string[];
   customAudiences?: string[];
   lookalikes?: string[];

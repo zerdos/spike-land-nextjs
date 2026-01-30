@@ -4,12 +4,8 @@
  * Issue #565 - Content-to-Ads Loop
  */
 
+import type { MarketingPlatform, PostPerformance, PostType } from "@/generated/prisma";
 import prisma from "@/lib/prisma";
-import type {
-  MarketingPlatform,
-  PostPerformance,
-  PostType,
-} from "@/generated/prisma";
 import type { BoostScore, ROIPrediction } from "./types";
 
 /**
@@ -64,15 +60,13 @@ export async function calculateBoostScore(
   const timingScore = 80; // Simplified for now, would analyze publishing time
 
   // Weighted average
-  const totalScore =
-    velocityScore * 0.4 +
+  const totalScore = velocityScore * 0.4 +
     audienceScore * 0.3 +
     contentScore * 0.2 +
     timingScore * 0.1;
 
   // Determine trigger type
-  let trigger: "HIGH_ENGAGEMENT" | "VIRAL_VELOCITY" | "CONVERSION_SPIKE" =
-    "HIGH_ENGAGEMENT";
+  let trigger: "HIGH_ENGAGEMENT" | "VIRAL_VELOCITY" | "CONVERSION_SPIKE" = "HIGH_ENGAGEMENT";
   if (performance.engagementVelocity > 50) {
     trigger = "VIRAL_VELOCITY";
   } else if (performance.conversions > 10) {
@@ -115,7 +109,7 @@ export async function predictROI(
   const avgCTR = calculateAverageCTR(historicalCampaigns);
   const avgCPC = calculateAverageCPC(historicalCampaigns);
   const avgConversionRate = calculateAverageConversionRate(historicalCampaigns);
-  const avgCPA = calculateAverageCPA(historicalCampaigns);
+  const _avgCPA = calculateAverageCPA(historicalCampaigns);
 
   // Apply engagement rate multiplier
   const engagementMultiplier = Math.max(
@@ -159,7 +153,7 @@ export async function predictROI(
  */
 export async function analyzeEngagementVelocity(
   postId: string,
-  lookbackHours: number = 24,
+  _lookbackHours: number = 24,
 ): Promise<number> {
   // In a real implementation, this would query time-series engagement data
   // For now, we'll use a simplified calculation from PostPerformance
@@ -233,8 +227,7 @@ function calculateAverageCTR(campaigns: HistoricalCampaign[]): number {
   if (campaigns.length === 0) return 0.02; // 2% default
 
   const totalCTR = campaigns.reduce((sum, campaign) => {
-    const ctr =
-      campaign.impressions > 0 ? campaign.clicks / campaign.impressions : 0;
+    const ctr = campaign.impressions > 0 ? campaign.clicks / campaign.impressions : 0;
     return sum + ctr;
   }, 0);
 
@@ -258,8 +251,7 @@ function calculateAverageConversionRate(
   if (campaigns.length === 0) return 0.05; // 5% default
 
   const totalConversionRate = campaigns.reduce((sum, campaign) => {
-    const convRate =
-      campaign.clicks > 0 ? campaign.conversions / campaign.clicks : 0;
+    const convRate = campaign.clicks > 0 ? campaign.conversions / campaign.clicks : 0;
     return sum + convRate;
   }, 0);
 
@@ -270,8 +262,7 @@ function calculateAverageCPA(campaigns: HistoricalCampaign[]): number {
   if (campaigns.length === 0) return 30; // $30 default
 
   const totalCPA = campaigns.reduce((sum, campaign) => {
-    const cpa =
-      campaign.conversions > 0 ? campaign.spend / campaign.conversions : 0;
+    const cpa = campaign.conversions > 0 ? campaign.spend / campaign.conversions : 0;
     return sum + cpa;
   }, 0);
 
@@ -283,20 +274,19 @@ function getIndustryAveragePrediction(
   platform: MarketingPlatform,
 ): ROIPrediction {
   // Industry averages vary by platform
-  const metrics =
-    platform === "FACEBOOK"
-      ? {
-          cpc: 1.2,
-          ctr: 0.025,
-          conversionRate: 0.08,
-          costPerConversion: 15,
-        }
-      : {
-          cpc: 2.5,
-          ctr: 0.035,
-          conversionRate: 0.1,
-          costPerConversion: 25,
-        };
+  const metrics = platform === "FACEBOOK"
+    ? {
+      cpc: 1.2,
+      ctr: 0.025,
+      conversionRate: 0.08,
+      costPerConversion: 15,
+    }
+    : {
+      cpc: 2.5,
+      ctr: 0.035,
+      conversionRate: 0.1,
+      costPerConversion: 25,
+    };
 
   const estimatedClicks = Math.round(budget / metrics.cpc);
   const estimatedImpressions = Math.round(estimatedClicks / metrics.ctr);

@@ -4,15 +4,16 @@
  * Issue #565 - Content-to-Ads Loop
  */
 
-import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { createAdCampaign } from "@/lib/boost-detector/platform-integration";
 import type { MarketingPlatform } from "@/generated/prisma";
+import { createAdCampaign } from "@/lib/boost-detector/platform-integration";
 import type { TargetAudience } from "@/lib/boost-detector/types";
+import prisma from "@/lib/prisma";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
   try {
     const { workspaceSlug } = await params;
@@ -62,11 +63,11 @@ export async function POST(
     }
 
     // Use provided values or defaults from recommendation
-    const finalPlatform: MarketingPlatform =
-      platform || (recommendation.recommendedPlatforms[0] as MarketingPlatform) || "FACEBOOK";
+    const finalPlatform: MarketingPlatform = platform ||
+      (recommendation.recommendedPlatforms[0] as MarketingPlatform) || "FACEBOOK";
     const finalBudget = budget || recommendation.suggestedBudget;
-    const finalTargeting: TargetAudience =
-      targetAudience || (recommendation.targetAudience as TargetAudience) || {};
+    const finalTargeting: TargetAudience = targetAudience ||
+      (recommendation.targetAudience as TargetAudience) || {};
 
     // Create ad campaign
     const externalCampaignId = await createAdCampaign(

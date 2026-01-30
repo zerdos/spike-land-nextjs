@@ -8,12 +8,13 @@
  * Issue #565 - Content-to-Ads Loop
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
   try {
     const { workspaceSlug } = await params;
@@ -37,7 +38,7 @@ export async function GET(
     const offset = parseInt(searchParams.get("offset") || "0");
 
     // Build where clause
-    const where: any = {
+    const where: { workspaceId: string; status?: string; } = {
       workspaceId: workspace.id,
     };
 
@@ -82,7 +83,7 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
   try {
     const { workspaceSlug } = await params;

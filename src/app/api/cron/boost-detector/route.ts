@@ -5,10 +5,11 @@
  * Issue #565 - Content-to-Ads Loop
  */
 
-import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
 import { detectBoostOpportunities } from "@/lib/boost-detector/detector";
 import type { BoostDetectorConfig } from "@/lib/boost-detector/types";
+import prisma from "@/lib/prisma";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {

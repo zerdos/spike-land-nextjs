@@ -1,5 +1,3 @@
-
-// @ts-nocheck - Simplified ML implementation, will be replaced with production ML library
 /**
  * ML Prediction Model for Boost ROI
  * Uses linear regression to predict campaign performance
@@ -166,11 +164,9 @@ export class BoostROIPredictor {
     const n = yTrue.length;
 
     // Calculate metrics
-    const mae =
-      yTrue.reduce((sum, y, i) => sum + Math.abs(y - yPred[i]), 0) / n;
+    const mae = yTrue.reduce((sum, y, i) => sum + Math.abs(y - yPred[i]), 0) / n;
 
-    const mse =
-      yTrue.reduce((sum, y, i) => sum + Math.pow(y - yPred[i], 2), 0) / n;
+    const mse = yTrue.reduce((sum, y, i) => sum + Math.pow(y - yPred[i], 2), 0) / n;
     const rmse = Math.sqrt(mse);
 
     const yMean = yTrue.reduce((sum, y) => sum + y, 0) / n;

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 /**
  * Google Ads Webhook Handler
  * Processes real-time campaign performance updates from Google Ads
@@ -98,8 +96,7 @@ async function handleCampaignPerformanceUpdate(
 
     // Calculate ROI
     const conversionValue = actualConversions * 50; // $50 per conversion
-    const actualROI =
-      actualSpend > 0 ? (conversionValue - actualSpend) / actualSpend : 0;
+    const actualROI = actualSpend > 0 ? (conversionValue - actualSpend) / actualSpend : 0;
 
     // Update AppliedBoost record
     await prisma.appliedBoost.update({

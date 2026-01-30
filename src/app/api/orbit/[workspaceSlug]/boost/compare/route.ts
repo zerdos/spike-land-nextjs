@@ -4,12 +4,13 @@
  * Issue #565 - Content-to-Ads Loop
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
   try {
     const { workspaceSlug } = await params;
@@ -80,28 +81,26 @@ export async function GET(
       },
       boosted: appliedBoost
         ? {
-            impressions: appliedBoost.actualImpressions,
-            clicks: appliedBoost.actualClicks,
-            conversions: appliedBoost.actualConversions,
-            spend: appliedBoost.actualSpend,
-            roi: appliedBoost.actualROI,
-            platform: appliedBoost.platform,
-            status: appliedBoost.status,
-          }
+          impressions: appliedBoost.actualImpressions,
+          clicks: appliedBoost.actualClicks,
+          conversions: appliedBoost.actualConversions,
+          spend: appliedBoost.actualSpend,
+          roi: appliedBoost.actualROI,
+          platform: appliedBoost.platform,
+          status: appliedBoost.status,
+        }
         : null,
       lift: appliedBoost
         ? {
-            impressions:
-              organicPerformance.impressions > 0
-                ? (appliedBoost.actualImpressions - organicPerformance.impressions) /
-                  organicPerformance.impressions
-                : 0,
-            conversions:
-              organicPerformance.conversions > 0
-                ? (appliedBoost.actualConversions - organicPerformance.conversions) /
-                  organicPerformance.conversions
-                : appliedBoost.actualConversions,
-          }
+          impressions: organicPerformance.impressions > 0
+            ? (appliedBoost.actualImpressions - organicPerformance.impressions) /
+              organicPerformance.impressions
+            : 0,
+          conversions: organicPerformance.conversions > 0
+            ? (appliedBoost.actualConversions - organicPerformance.conversions) /
+              organicPerformance.conversions
+            : appliedBoost.actualConversions,
+        }
         : null,
     };
 

@@ -4,14 +4,15 @@
  * Issue #565 - Content-to-Ads Loop
  */
 
-import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
 import { detectBoostOpportunities } from "@/lib/boost-detector/detector";
 import type { BoostDetectorConfig } from "@/lib/boost-detector/types";
+import prisma from "@/lib/prisma";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
   try {
     const { workspaceSlug } = await params;
@@ -30,8 +31,8 @@ export async function POST(
 
     // Parse query params
     const searchParams = request.nextUrl.searchParams;
-    const postIds = searchParams.get("postIds")?.split(",") || [];
-    const force = searchParams.get("force") === "true";
+    const _postIds = searchParams.get("postIds")?.split(",") || [];
+    const _force = searchParams.get("force") === "true";
 
     // Default configuration
     const config: BoostDetectorConfig = {

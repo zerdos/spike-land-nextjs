@@ -4,12 +4,13 @@
  * Issue #565 - Content-to-Ads Loop
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
   try {
     const { workspaceSlug } = await params;
@@ -76,11 +77,10 @@ export async function GET(
 
     // Calculate average ROI
     const boostsWithROI = appliedBoosts.filter((b) => b.actualROI !== null);
-    const avgROI =
-      boostsWithROI.length > 0
-        ? boostsWithROI.reduce((sum, b) => sum + (b.actualROI || 0), 0) /
-          boostsWithROI.length
-        : 0;
+    const avgROI = boostsWithROI.length > 0
+      ? boostsWithROI.reduce((sum, b) => sum + (b.actualROI || 0), 0) /
+        boostsWithROI.length
+      : 0;
 
     // Get performance by platform
     const performanceByPlatform = appliedBoosts.reduce(
@@ -102,7 +102,10 @@ export async function GET(
         acc[platform].count += 1;
         return acc;
       },
-      {} as Record<string, any>,
+      {} as Record<
+        string,
+        { spend: number; impressions: number; clicks: number; conversions: number; count: number; }
+      >,
     );
 
     return NextResponse.json({
@@ -114,8 +117,7 @@ export async function GET(
         totalConversions,
         averageROI: avgROI,
         averageCTR: totalImpressions > 0 ? totalClicks / totalImpressions : 0,
-        averageCPA:
-          totalConversions > 0 ? totalSpend / totalConversions : 0,
+        averageCPA: totalConversions > 0 ? totalSpend / totalConversions : 0,
       },
       performanceByPlatform,
       recentBoosts: appliedBoosts.slice(0, 10).map((boost) => ({

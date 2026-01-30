@@ -4,8 +4,8 @@
  * Issue #565 - Content-to-Ads Loop
  */
 
-import prisma from "@/lib/prisma";
 import type { MarketingPlatform } from "@/generated/prisma";
+import prisma from "@/lib/prisma";
 import type { CampaignMetrics, TargetAudience } from "./types";
 
 /**
@@ -68,7 +68,7 @@ async function createFacebookCampaign(
   // In a real implementation, this would call Facebook Marketing API
   // For now, we'll simulate the campaign creation
   try {
-    const campaignData = {
+    const _campaignData = {
       name: `Boost Post ${postId}`,
       objective: "OUTCOME_ENGAGEMENT", // or OUTCOME_TRAFFIC, CONVERSIONS
       status: "ACTIVE",
@@ -104,7 +104,7 @@ async function createFacebookCampaign(
 }
 
 async function syncFacebookMetrics(
-  externalCampaignId: string,
+  _externalCampaignId: string,
 ): Promise<CampaignMetrics> {
   // Get Facebook marketing account
   const account = await prisma.marketingAccount.findFirst({
@@ -150,7 +150,7 @@ async function syncFacebookMetrics(
 async function createGoogleAdsCampaign(
   postId: string,
   budget: number,
-  targeting: TargetAudience,
+  _targeting: TargetAudience,
 ): Promise<string> {
   // Get Google Ads marketing account
   const account = await prisma.marketingAccount.findFirst({
@@ -166,7 +166,7 @@ async function createGoogleAdsCampaign(
 
   try {
     // In a real implementation, this would use Google Ads API
-    const campaignData = {
+    const _campaignData = {
       name: `Boost Post ${postId}`,
       advertisingChannelType: "SEARCH", // or DISPLAY, VIDEO
       status: "ENABLED",
@@ -205,7 +205,7 @@ async function createGoogleAdsCampaign(
 }
 
 async function syncGoogleAdsMetrics(
-  externalCampaignId: string,
+  _externalCampaignId: string,
 ): Promise<CampaignMetrics> {
   // Get Google Ads marketing account
   const account = await prisma.marketingAccount.findFirst({
@@ -248,13 +248,4 @@ async function syncGoogleAdsMetrics(
     console.error("Failed to sync Google Ads metrics:", error);
     throw new Error("Failed to sync Google Ads metrics");
   }
-}
-
-/**
- * Helper function to decrypt access tokens
- * In production, tokens should be encrypted at rest
- */
-function decryptToken(encryptedToken: string): string {
-  // Implement decryption logic here
-  return encryptedToken;
 }
