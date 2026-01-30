@@ -1807,6 +1807,70 @@ erDiagram
   String postId FK
   String assetId FK
 }
+"post_performance" {
+  String id PK
+  String postId
+  PostType postType
+  String workspaceId FK
+  Int impressions
+  Int engagementCount
+  Float engagementRate
+  Int clicks
+  Int conversions
+  Float conversionValue
+  Float engagementVelocity
+  Float impressionVelocity
+  Float boostScore "nullable"
+  String boostTrigger "nullable"
+  Float estimatedROI "nullable"
+  DateTime metricPeriod
+  DateTime checkedAt
+  DateTime createdAt
+  DateTime updatedAt
+}
+"post_boost_recommendations" {
+  String id PK
+  String postPerformanceId FK
+  String postId
+  PostType postType
+  String workspaceId FK
+  String userId FK
+  BoostRecommendationStatus status
+  String reasoning
+  Float suggestedBudget
+  Int estimatedImpressions
+  Int estimatedClicks
+  Int estimatedConversions
+  Float estimatedCost
+  Float confidenceScore
+  String recommendedPlatforms
+  Json targetAudience "nullable"
+  DateTime acceptedAt "nullable"
+  DateTime rejectedAt "nullable"
+  DateTime appliedAt "nullable"
+  Float actualSpend "nullable"
+  Float actualROI "nullable"
+  DateTime createdAt
+  DateTime expiresAt
+}
+"applied_boosts" {
+  String id PK
+  String recommendationId FK,UK
+  String postId
+  PostType postType
+  String workspaceId FK
+  MarketingPlatform platform
+  String externalCampaignId "nullable"
+  Float budget
+  Int actualImpressions
+  Int actualClicks
+  Int actualConversions
+  Float actualSpend
+  Float actualROI "nullable"
+  AppliedBoostStatus status
+  DateTime startedAt
+  DateTime endedAt "nullable"
+}
 "organic_post_conversions" {
   String id PK
   String workspaceId FK
@@ -2081,6 +2145,12 @@ erDiagram
 "post_assets" }o--|| "assets" : asset
 "scheduled_post_assets" }o--|| "scheduled_posts" : post
 "scheduled_post_assets" }o--|| "assets" : asset
+"post_performance" }o--|| "workspaces" : workspace
+"post_boost_recommendations" }o--|| "post_performance" : postPerformance
+"post_boost_recommendations" }o--|| "workspaces" : workspace
+"post_boost_recommendations" }o--|| "users" : user
+"applied_boosts" |o--|| "post_boost_recommendations" : recommendation
+"applied_boosts" }o--|| "workspaces" : workspace
 "organic_post_conversions" }o--|| "workspaces" : workspace
 "organic_post_engagers" }o--|| "organic_post_conversions" : conversion
 "ad_creative_variants" }o--|| "organic_post_conversions" : conversion
@@ -4372,6 +4442,79 @@ Properties as follows:
 
 - `postId`:
 - `assetId`:
+
+### `post_performance`
+
+Properties as follows:
+
+- `id`:
+- `postId`:
+- `postType`:
+- `workspaceId`:
+- `impressions`:
+- `engagementCount`:
+- `engagementRate`:
+- `clicks`:
+- `conversions`:
+- `conversionValue`:
+- `engagementVelocity`:
+- `impressionVelocity`:
+- `boostScore`:
+- `boostTrigger`:
+- `estimatedROI`:
+- `metricPeriod`:
+- `checkedAt`:
+- `createdAt`:
+- `updatedAt`:
+
+### `post_boost_recommendations`
+
+Properties as follows:
+
+- `id`:
+- `postPerformanceId`:
+- `postId`:
+- `postType`:
+- `workspaceId`:
+- `userId`:
+- `status`:
+- `reasoning`:
+- `suggestedBudget`:
+- `estimatedImpressions`:
+- `estimatedClicks`:
+- `estimatedConversions`:
+- `estimatedCost`:
+- `confidenceScore`:
+- `recommendedPlatforms`:
+- `targetAudience`:
+- `acceptedAt`:
+- `rejectedAt`:
+- `appliedAt`:
+- `actualSpend`:
+- `actualROI`:
+- `createdAt`:
+- `expiresAt`:
+
+### `applied_boosts`
+
+Properties as follows:
+
+- `id`:
+- `recommendationId`:
+- `postId`:
+- `postType`:
+- `workspaceId`:
+- `platform`:
+- `externalCampaignId`:
+- `budget`:
+- `actualImpressions`:
+- `actualClicks`:
+- `actualConversions`:
+- `actualSpend`:
+- `actualROI`:
+- `status`:
+- `startedAt`:
+- `endedAt`:
 
 ### `organic_post_conversions`
 
