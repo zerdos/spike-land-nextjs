@@ -66,10 +66,10 @@ export class CustomWorld extends World {
     } else if (e2eBypassSecret.length < 16) {
       console.warn("[E2E World] E2E_BYPASS_SECRET is too short (< 16 chars) - may not be secure");
     } else {
-      console.log("[E2E World] E2E bypass header configured:", {
+      /* console.log("[E2E World] E2E bypass header configured:", {
         length: e2eBypassSecret.length,
         preview: `${e2eBypassSecret.substring(0, 8)}...`,
-      });
+      }); */
       extraHTTPHeaders["x-e2e-auth-bypass"] = e2eBypassSecret;
     }
 
