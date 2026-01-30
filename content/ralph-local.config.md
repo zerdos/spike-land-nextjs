@@ -1,10 +1,10 @@
 ---
 active: true
-pool_planning: 10
-pool_developer: 4
-pool_reviewer: 6
-pool_tester: 2
-pool_fixer: 6
+pool_planning: 0
+pool_developer: 1
+pool_reviewer: 1
+pool_tester: 1
+pool_fixer: 1
 sync_interval_min: 2
 stale_threshold_min: 30
 max_retries: 2
@@ -39,12 +39,12 @@ This file configures the Ralph Local multi-agent orchestrator.
 
 | Pool      | Size | Role                                        |
 | --------- | ---- | ------------------------------------------- |
-| Planning  | 10   | Analyze issues, create implementation plans |
-| Developer | 4    | Implement code based on plans               |
-| Reviewer  | 6    | Local code review before PR creation        |
-| Tester    | 2    | Create PRs for reviewed code                |
-| Fixer     | 6    | Fix PRs with failing CI or change requests  |
-| **Total** | 28   | Parallel local Claude Code agents           |
+| Planning  | 0    | Analyze issues, create implementation plans |
+| Developer | 1    | Implement code based on plans               |
+| Reviewer  | 1    | Local code review before PR creation        |
+| Tester    | 1    | Create PRs for reviewed code                |
+| Fixer     | 1    | Fix PRs with failing CI or change requests  |
+| **Total** | 4    | Minimal pipeline for testing                |
 
 ## Workflow
 
