@@ -13,7 +13,7 @@ Feature: Smart Routing
     Then I should see the "Enable Smart Routing" toggle
     When I toggle "Enable Smart Routing" to "on"
     And I toggle "Auto-Analysis" to "on"
-    And I set "Negative Sentiment Threshold" to "-0.7"
+    And I set routing "Negative Sentiment Threshold" to "-0.7"
     And I click the "Save Changes" button
     Then I should see a success toast "Settings saved successfully"
 

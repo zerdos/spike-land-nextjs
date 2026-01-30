@@ -13,9 +13,9 @@ Feature: Allocator Autopilot
     And I click the settings icon
     Then I should see the autopilot configuration panel
     When I select "Moderate" from the "Aggressiveness Mode" dropdown
-    And I set "Max Daily Budget Change" to "15"
-    And I set "Max Single Change" to "10"
-    And I set "Require Approval Above" to "1000"
+    And I set autopilot "Max Daily Budget Change" to "15"
+    And I set autopilot "Max Single Change" to "10"
+    And I set autopilot "Require Approval Above" to "1000"
     And I click "Save Configuration"
     Then I should see a success message "Autopilot configuration updated"
 
