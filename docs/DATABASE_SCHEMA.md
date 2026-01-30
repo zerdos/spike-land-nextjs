@@ -541,6 +541,22 @@ erDiagram
   DateTime updatedAt
   DateTime deletedAt "nullable"
 }
+"claude_code_agents" {
+  String id PK
+  String userId FK
+  String machineId
+  String sessionId
+  String displayName
+  String projectPath "nullable"
+  String workingDirectory "nullable"
+  DateTime createdAt
+  DateTime updatedAt
+  DateTime lastSeenAt "nullable"
+  DateTime deletedAt "nullable"
+  Int totalTokensUsed
+  Int totalTasksCompleted
+  Int totalSessionTime
+}
 "box_actions" {
   String id PK
   String boxId FK
@@ -2037,6 +2053,7 @@ erDiagram
 "featured_gallery_items" }o--|| "users" : creator
 "boxes" }o--|| "users" : user
 "boxes" }o--o| "box_tiers" : tier
+"claude_code_agents" }o--|| "users" : user
 "box_actions" }o--|| "boxes" : box
 "agent_tasks" }o--|| "boxes" : box
 "sandbox_jobs" }o--|| "apps" : app
@@ -2853,6 +2870,25 @@ Properties as follows:
 - `createdAt`:
 - `updatedAt`:
 - `deletedAt`:
+
+### `claude_code_agents`
+
+Properties as follows:
+
+- `id`:
+- `userId`:
+- `machineId`:
+- `sessionId`:
+- `displayName`:
+- `projectPath`:
+- `workingDirectory`:
+- `createdAt`:
+- `updatedAt`:
+- `lastSeenAt`:
+- `deletedAt`:
+- `totalTokensUsed`:
+- `totalTasksCompleted`:
+- `totalSessionTime`:
 
 ### `box_actions`
 
