@@ -335,14 +335,14 @@ describe("collectPulseMetrics", () => {
     expect(result.results[0]!.error).toContain("Database error");
   });
 
-  it("should skip unsupported platforms (TikTok)", async () => {
-    const mockAccount = createMockAccount("TIKTOK");
+  it("should skip unsupported platforms (Discord)", async () => {
+    const mockAccount = createMockAccount("DISCORD");
     vi.mocked(prisma.socialAccount.findMany).mockResolvedValue([mockAccount]);
 
-    // Pass TikTok explicitly in platforms filter to test the skipping behavior
-    const result = await collectPulseMetrics({ platforms: ["TIKTOK"] });
+    // Pass Discord explicitly in platforms filter to test the skipping behavior
+    const result = await collectPulseMetrics({ platforms: ["DISCORD"] });
 
-    // TikTok should be skipped as client returns null
+    // Discord should be skipped as client returns null (not implemented for metrics)
     expect(result.totalAccounts).toBe(1);
     expect(result.skippedCount).toBe(1);
     expect(result.successCount).toBe(0);

@@ -216,8 +216,8 @@ describe("transformToStreamPost", () => {
 
     const result = transformToStreamPost(post, context);
 
-    expect(result.canLike).toBe(false);
-    expect(result.canReply).toBe(false);
+    expect(result.canLike).toBe(true);
+    expect(result.canReply).toBe(true);
     expect(result.canShare).toBe(false);
   });
 
