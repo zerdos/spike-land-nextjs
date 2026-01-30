@@ -23,3 +23,4 @@ TypeError: Cannot read properties of undefined (reading 'length')
     at ignore-listed frames
 [Tracking] Created new session cml0qana30000nugl7ccf43i0 for visitor test_visitor
  POST /api/tracking/session 201 in 2.8s (compile: 654ms, proxy.ts: 73ms, render: 2.1s)
+○ Compiling /admin/agents ...

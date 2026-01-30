@@ -4,7 +4,7 @@
 **/node_modules
 /node_modules
 
-# Yarn - commit cache for semi-zero-install (faster installs)
+# Yarn cache - NOT tracked (use yarn install to populate)
 .yarn/cache
 !.yarn/patches
 !.yarn/plugins
