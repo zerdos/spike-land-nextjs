@@ -14434,14 +14434,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:5.3.3":
-  version: 5.3.3
-  resolution: "fast-xml-parser@npm:5.3.3"
+"fast-xml-parser@npm:5.3.4":
+  version: 5.3.4
+  resolution: "fast-xml-parser@npm:5.3.4"
   dependencies:
     strnum: "npm:^2.1.0"
   bin:
     fxparser: src/cli/cli.js
-  checksum: 10c9/02c68a9f6eaade8312bcbc9e94bfa567786f5123ff25a1f7617d2b7880d5fde6baf0d4fe0478374e7e325f2cdb57c1fef0e6298c6d37fd49661bff049ecf2adc
+  checksum: 10c9/c4825840e6222d994e8ef6781a4288c2f20a843997d0967626dd30d969b63feca830d82efe949ad645f400498f1c1426680cbb33849b6fcf0292e4b7117734c3
   languageName: node
   linkType: hard
 
@@ -24646,7 +24646,7 @@ __metadata:
     eslint-plugin-react: "npm:^7.37.5"
     eslint-plugin-react-hooks: "npm:^7.0.1"
     expr-eval-fork: "npm:3.0.1"
-    fast-xml-parser: "npm:5.3.3"
+    fast-xml-parser: "npm:5.3.4"
     framer-motion: "npm:12.29.2"
     gray-matter: "npm:4.0.3"
     happy-dom: "npm:20.3.9"
