@@ -51,9 +51,18 @@ export async function GET(req: NextRequest) {
   const pollInterval = 2000;
   let isActive = true;
 
+  // Maximum connection duration to prevent memory leaks (5 minutes)
+  const MAX_CONNECTION_DURATION = 5 * 60 * 1000;
+  const connectionStart = Date.now();
+
   // Start polling for events
   const pollForEvents = async () => {
     while (isActive) {
+      // Check if connection has exceeded maximum duration
+      if (Date.now() - connectionStart > MAX_CONNECTION_DURATION) {
+        isActive = false;
+        break;
+      }
       try {
         const { data: events, error } = await tryCatch(
           getAgentSSEEvents(userId, lastTimestamp),

@@ -81,8 +81,8 @@ export async function POST(
     );
   }
 
-  // Generate task ID
-  const taskId = `task_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  // Generate task ID with strong uniqueness guarantee
+  const taskId = `task_${crypto.randomUUID()}`;
 
   // Send task to agent via Redis queue
   const { error: taskError } = await tryCatch(

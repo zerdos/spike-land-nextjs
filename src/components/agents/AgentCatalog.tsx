@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import type { AgentListResponse, AgentResponse } from "@/lib/validations/agent";
 import { Bot, RefreshCw, Wifi, WifiOff } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { AgentCard } from "./AgentCard";
 import { AgentStatsCard } from "./AgentStatsCard";
 import { RenameAgentDialog } from "./RenameAgentDialog";
@@ -129,33 +130,45 @@ export function AgentCatalog({ initialData }: AgentCatalogProps) {
   const disconnectAgent = async () => {
     if (!selectedAgent) return;
 
-    const response = await fetch(`/api/agents/${selectedAgent.id}`, {
-      method: "DELETE",
-    });
+    try {
+      const response = await fetch(`/api/agents/${selectedAgent.id}`, {
+        method: "DELETE",
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Failed to disconnect agent");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to disconnect agent");
+      }
+
+      toast.success(`${selectedAgent.displayName} disconnected`);
+      setDisconnectDialogOpen(false);
+      await fetchAgents();
+    } catch (err) {
+      console.error("Failed to disconnect agent:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to disconnect agent");
     }
-
-    setDisconnectDialogOpen(false);
-    await fetchAgents();
   };
 
   const deleteAgent = async () => {
     if (!selectedAgent) return;
 
-    const response = await fetch(`/api/agents/${selectedAgent.id}?permanent=true`, {
-      method: "DELETE",
-    });
+    try {
+      const response = await fetch(`/api/agents/${selectedAgent.id}?permanent=true`, {
+        method: "DELETE",
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Failed to delete agent");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to delete agent");
+      }
+
+      toast.success(`${selectedAgent.displayName} deleted`);
+      setDeleteDialogOpen(false);
+      await fetchAgents();
+    } catch (err) {
+      console.error("Failed to delete agent:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to delete agent");
     }
-
-    setDeleteDialogOpen(false);
-    await fetchAgents();
   };
 
   return (
