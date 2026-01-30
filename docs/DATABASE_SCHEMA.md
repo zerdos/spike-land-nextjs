@@ -557,6 +557,29 @@ erDiagram
   Int totalTasksCompleted
   Int totalSessionTime
 }
+"agent_connection_requests" {
+  String id PK
+  String connectId UK
+  String machineId
+  String sessionId
+  String displayName "nullable"
+  String projectPath "nullable"
+  ConnectionStatus status
+  String userId "nullable"
+  String agentId "nullable"
+  DateTime expiresAt
+  DateTime createdAt
+  DateTime completedAt "nullable"
+}
+"agent_messages" {
+  String id PK
+  String agentId FK
+  AgentMessageRole role
+  String content
+  Boolean isRead
+  Json metadata "nullable"
+  DateTime createdAt
+}
 "box_actions" {
   String id PK
   String boxId FK
@@ -2054,6 +2077,7 @@ erDiagram
 "boxes" }o--|| "users" : user
 "boxes" }o--o| "box_tiers" : tier
 "claude_code_agents" }o--|| "users" : user
+"agent_messages" }o--|| "claude_code_agents" : agent
 "box_actions" }o--|| "boxes" : box
 "agent_tasks" }o--|| "boxes" : box
 "sandbox_jobs" }o--|| "apps" : app
@@ -2889,6 +2913,35 @@ Properties as follows:
 - `totalTokensUsed`:
 - `totalTasksCompleted`:
 - `totalSessionTime`:
+
+### `agent_connection_requests`
+
+Properties as follows:
+
+- `id`:
+- `connectId`:
+- `machineId`:
+- `sessionId`:
+- `displayName`:
+- `projectPath`:
+- `status`:
+- `userId`:
+- `agentId`:
+- `expiresAt`:
+- `createdAt`:
+- `completedAt`:
+
+### `agent_messages`
+
+Properties as follows:
+
+- `id`:
+- `agentId`:
+- `role`:
+- `content`:
+- `isRead`:
+- `metadata`:
+- `createdAt`:
 
 ### `box_actions`
 

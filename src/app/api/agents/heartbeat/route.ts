@@ -163,6 +163,35 @@ export async function POST(req: NextRequest) {
     console.warn("Failed to get pending tasks:", tasksError);
   }
 
+  // Get unread messages for this agent
+  const { data: messages, error: messagesError } = await tryCatch(
+    prisma.agentMessage.findMany({
+      where: {
+        agentId,
+        isRead: false,
+        role: "USER", // Only get user messages (agent doesn't need to see its own messages)
+      },
+      orderBy: { createdAt: "asc" },
+      take: 10, // Limit to 10 unread messages per heartbeat
+    }),
+  );
+
+  if (messagesError) {
+    console.warn("Failed to get unread messages:", messagesError);
+  }
+
+  // Mark messages as read
+  if (messages && messages.length > 0) {
+    await tryCatch(
+      prisma.agentMessage.updateMany({
+        where: {
+          id: { in: messages.map((m) => m.id) },
+        },
+        data: { isRead: true },
+      }),
+    );
+  }
+
   const response: AgentHeartbeatResponse = {
     success: true,
     timestamp: new Date().toISOString(),
@@ -170,6 +199,12 @@ export async function POST(req: NextRequest) {
       id: t.id,
       prompt: t.prompt,
       createdAt: t.createdAt,
+    })),
+    messages: messages?.map((m) => ({
+      id: m.id,
+      role: m.role as "USER" | "AGENT" | "SYSTEM",
+      content: m.content,
+      createdAt: m.createdAt.toISOString(),
     })),
   };
 

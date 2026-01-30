@@ -17,12 +17,14 @@ import {
   Clock,
   Code2,
   FolderOpen,
+  MessageSquare,
   MoreVertical,
   Pencil,
   Power,
   Send,
   Trash2,
 } from "lucide-react";
+import Link from "next/link";
 
 interface AgentCardProps {
   agent: AgentResponse;
@@ -220,18 +222,31 @@ export function AgentCard({
           </div>
         )}
 
-        {/* Action buttons for online agents */}
-        {agent.status === "online" && (
+        {/* Action buttons */}
+        <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="w-full"
-            onClick={() => onSendTask?.(agent)}
+            className="flex-1"
+            asChild
           >
-            <Send className="mr-2 h-4 w-4" />
-            Send Task
+            <Link href={`/agents/${agent.id}`}>
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Chat
+            </Link>
           </Button>
-        )}
+          {agent.status === "online" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => onSendTask?.(agent)}
+            >
+              <Send className="mr-2 h-4 w-4" />
+              Task
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

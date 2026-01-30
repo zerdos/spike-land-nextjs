@@ -1319,12 +1319,63 @@ model ClaudeCodeAgent {
   totalTasksCompleted Int       @default(0)
   totalSessionTime    Int       @default(0) // In seconds
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AgentMessage[]
 
   @@unique([userId, machineId, sessionId])
   @@index([userId, lastSeenAt])
   @@index([machineId])
   @@map("claude_code_agents")
+}
+
+// Browser-based connection request for Claude Code agents
+// Used for the /ai/connect/[connectId] flow
+model AgentConnectionRequest {
+  id          String           @id @default(cuid())
+  connectId   String           @unique
+  machineId   String
+  sessionId   String
+  displayName String?
+  projectPath String?
+  status      ConnectionStatus @default(PENDING)
+  userId      String? // Set when user authenticates
+  agentId     String? // Set when connection completes
+  expiresAt   DateTime
+  createdAt   DateTime         @default(now())
+  completedAt DateTime?
+
+  @@index([connectId, status])
+  @@index([expiresAt])
+  @@map("agent_connection_requests")
+}
+
+enum ConnectionStatus {
+  PENDING
+  CONNECTED
+  EXPIRED
+}
+
+// Chat messages between users and Claude Code agents
+model AgentMessage {
+  id        String           @id @default(cuid())
+  agentId   String
+  role      AgentMessageRole
+  content   String           @db.Text
+  isRead    Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
+
+  agent ClaudeCodeAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId, createdAt])
+  @@index([agentId, isRead])
+  @@map("agent_messages")
+}
+
+enum AgentMessageRole {
+  USER
+  AGENT
+  SYSTEM
 }
 
 model BoxAction {

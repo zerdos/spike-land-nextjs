@@ -150,6 +150,12 @@ export interface AgentHeartbeatResponse {
     prompt: string;
     createdAt: number;
   }>;
+  messages?: Array<{
+    id: string;
+    role: "USER" | "AGENT" | "SYSTEM";
+    content: string;
+    createdAt: string;
+  }>;
 }
 
 export interface SendTaskResponse {
@@ -226,3 +232,133 @@ export function parseAgentId(agentId: string): { machineId: string; sessionId: s
   }
   return { machineId: parts[0], sessionId: parts[1] };
 }
+
+// =============================================================================
+// Browser-Based Connection Flow
+// =============================================================================
+
+/**
+ * Schema for browser-based connection request registration
+ * Called by agent script to register a pending connection
+ */
+export const connectionRequestSchema = z.object({
+  machineId: z
+    .string()
+    .min(8, "machineId must be at least 8 characters")
+    .max(64, "machineId must be at most 64 characters"),
+  sessionId: z
+    .string()
+    .min(8, "sessionId must be at least 8 characters")
+    .max(64, "sessionId must be at most 64 characters"),
+  displayName: z
+    .string()
+    .max(100, "displayName must be at most 100 characters")
+    .optional(),
+  projectPath: z
+    .string()
+    .max(500, "projectPath must be at most 500 characters")
+    .optional(),
+});
+
+export type ConnectionRequestInput = z.infer<typeof connectionRequestSchema>;
+
+/**
+ * Validate connection request
+ */
+export function validateConnectionRequest(
+  body: unknown,
+): { success: true; data: ConnectionRequestInput; } | { success: false; error: string; } {
+  const result = connectionRequestSchema.safeParse(body);
+  if (!result.success) {
+    const issues = result.error.issues;
+    const firstIssue = issues[0];
+    const path = firstIssue?.path.join(".") || "";
+    const message = path ? `${path}: ${firstIssue?.message}` : firstIssue?.message;
+    return { success: false, error: message || "Invalid request" };
+  }
+  return { success: true, data: result.data };
+}
+
+/**
+ * Response types for connection API
+ */
+export interface ConnectionStatusResponse {
+  status: "pending" | "connected" | "expired";
+  connectId: string;
+  agentId?: string;
+  displayName?: string;
+  expiresAt: string;
+}
+
+export interface ConnectionCompleteResponse {
+  success: true;
+  agentId: string;
+  displayName: string;
+  message: string;
+}
+
+// =============================================================================
+// Agent Message (Chat) System
+// =============================================================================
+
+/**
+ * Schema for sending a message to an agent
+ */
+export const agentMessageSchema = z.object({
+  content: z
+    .string()
+    .min(1, "Message content is required")
+    .max(10000, "Message must be at most 10000 characters"),
+  role: z.enum(["USER", "AGENT", "SYSTEM"]).optional().default("USER"),
+});
+
+export type AgentMessageInput = z.infer<typeof agentMessageSchema>;
+
+/**
+ * Validate agent message
+ */
+export function validateAgentMessage(
+  body: unknown,
+): { success: true; data: AgentMessageInput; } | { success: false; error: string; } {
+  const result = agentMessageSchema.safeParse(body);
+  if (!result.success) {
+    const issues = result.error.issues;
+    const firstIssue = issues[0];
+    const path = firstIssue?.path.join(".") || "";
+    const message = path ? `${path}: ${firstIssue?.message}` : firstIssue?.message;
+    return { success: false, error: message || "Invalid request" };
+  }
+  return { success: true, data: result.data };
+}
+
+/**
+ * Response type for agent messages
+ */
+export interface AgentMessageResponse {
+  id: string;
+  agentId: string;
+  role: "USER" | "AGENT" | "SYSTEM";
+  content: string;
+  isRead: boolean;
+  metadata?: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+export interface AgentMessagesListResponse {
+  messages: AgentMessageResponse[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
+}
+
+/**
+ * Schema for message list query
+ */
+export const messageListQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).optional().default(50),
+  offset: z.coerce.number().int().min(0).optional().default(0),
+  unreadOnly: z.coerce.boolean().optional().default(false),
+});
