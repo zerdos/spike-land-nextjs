@@ -440,7 +440,7 @@ When(
     await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
 
     // Wait for the reorder API call to complete
-    const responsePromise = waitForApiResponse(this.page, "**/api/admin/gallery/*/reorder");
+    const responsePromise = waitForApiResponse(this.page, "**/api/admin/gallery/reorder");
     await button.click();
     await responsePromise;
   },
@@ -468,7 +468,7 @@ When(
     await expect(button).toBeEnabled({ timeout: TIMEOUTS.DEFAULT });
 
     // Wait for the reorder API call to complete
-    const responsePromise = waitForApiResponse(this.page, "**/api/admin/gallery/*/reorder");
+    const responsePromise = waitForApiResponse(this.page, "**/api/admin/gallery/reorder");
     await button.click();
     await responsePromise;
   },
