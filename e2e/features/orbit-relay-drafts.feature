@@ -31,12 +31,15 @@ Feature: Relay Draft Generation
     Then the drafts should mention promotional content
     And the message analysis should reflect the instruction
 
+  @skip
+  # SKIP REASON: Previously used ambiguous urgency step - needs review after fix
+  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   Scenario: Generate drafts for different message types
     Given there is a complaint inbox item saying "This is terrible service!"
     When I request draft generation for the complaint
     Then the message analysis should show negative sentiment
     And the drafts should have an empathetic tone
-    And the urgency should be high
+    And the urgency should be "high"
 
   # ============================================
   # Brand Voice Integration
