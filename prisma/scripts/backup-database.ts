@@ -68,7 +68,6 @@ async function backup() {
     { name: "mcp_generation_jobs", query: () => prisma.mcpGenerationJob.findMany() },
     { name: "external_agent_sessions", query: () => prisma.externalAgentSession.findMany() },
     { name: "agent_session_activities", query: () => prisma.agentSessionActivity.findMany() },
-    { name: "feedback", query: () => prisma.feedback.findMany() },
     { name: "merch_categories", query: () => prisma.merchCategory.findMany() },
     { name: "merch_products", query: () => prisma.merchProduct.findMany() },
     { name: "merch_variants", query: () => prisma.merchVariant.findMany() },

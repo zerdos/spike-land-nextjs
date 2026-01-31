@@ -1218,7 +1218,6 @@ async function runStage5(browser: Browser): Promise<StageResult> {
     "/admin/jobs",
     "/admin/photos",
     "/admin/gallery",
-    "/admin/feedback",
   ];
 
   const context2 = await createContext(browser);
