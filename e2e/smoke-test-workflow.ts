@@ -753,6 +753,7 @@ async function runStage3(browser: Browser): Promise<StageResult> {
   try {
     console.log("[Job 3.1] Testing Pixel app...");
     await mockAuthSession(page1, { role: "USER" });
+    await page1.goto(`${config.baseUrl}/apps/pixel`);
 
     await page1.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {
       console.log("[Info] Network idle timeout on pixel app");
