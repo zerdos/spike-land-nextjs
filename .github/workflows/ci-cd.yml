@@ -448,6 +448,12 @@ jobs:
       - name: Install Playwright dependencies (always needed for system libs)
         run: yarn playwright install-deps chromium
 
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: nextjs-build
+          path: .next
+
       - name: Generate Prisma client and update PnP manifest
         run: |
           yarn db:generate
