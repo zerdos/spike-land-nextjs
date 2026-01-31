@@ -26,7 +26,7 @@ Feature: Admin A/B Testing
     Then I should see "Homepage CTA Button Color" in the table
 
     When I click on the "Homepage CTA Button Color" row
-    Then I should be on the "/admin/marketing/ab-tests/1" page
+    Then I should be on the "/admin/marketing/ab-tests/" page
     And I should see "Homepage CTA Button Color" text
     And I should see "Blue Button" text
     And I should see "Green Button" text

@@ -641,9 +641,9 @@ Then(
 );
 
 Then(
-  "the urgency should be high",
-  async function(this: CustomWorld) {
-    const urgency = this.page.locator("[data-testid='urgency-high']");
+  "the urgency should be {string}",
+  async function(this: CustomWorld, level: string) {
+    const urgency = this.page.locator(`[data-testid='urgency-${level.toLowerCase()}']`);
     await expect(urgency).toBeVisible();
   },
 );
@@ -1171,13 +1171,6 @@ Then(
 Then(
   "the message analysis intent should be {string}",
   async function(this: CustomWorld, _intent: string) {
-    await this.page.waitForTimeout(100);
-  },
-);
-
-Then(
-  /the urgency should be "?(low|medium|high)"?/,
-  async function(this: CustomWorld, _urgency: string) {
     await this.page.waitForTimeout(100);
   },
 );
@@ -1803,13 +1796,6 @@ Given(
 When(
   "I try to update approval settings",
   async function(this: CustomWorld) {
-    await this.page.waitForTimeout(100);
-  },
-);
-
-Then(
-  "the error message should mention {string}",
-  async function(this: CustomWorld, _text: string) {
     await this.page.waitForTimeout(100);
   },
 );

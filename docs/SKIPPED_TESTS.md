@@ -1,6 +1,6 @@
 # Skipped Tests Documentation
 
-**Last Updated:** 2026-01-29
+**Last Updated:** 2026-01-31
 **Tracking Issue:** #798
 
 ## Overview
@@ -35,8 +35,8 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 
 ## Current Inventory
 
-**Total Skipped Tests:** 17 (down from 27 - scout tests fixed!)
-**Files with Skips:** 7
+**Total Skipped Tests:** 17 unit tests + 13 E2E scenarios
+**Files with Skips:** 7 (unit) + 6 (E2E feature files)
 
 **Status Summary:**
 
@@ -86,6 +86,28 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 | File                                                              | Test                                 | Reason                                      | Status        |
 | ----------------------------------------------------------------- | ------------------------------------ | ------------------------------------------- | ------------- |
 | `packages/code/src/__tests__/components/AutoSaveHistory.spec.tsx` | "CodeHistoryCarousel" (entire suite) | Monaco editor mocking or incomplete feature | Investigation |
+
+### Category G: E2E Tests - Missing Step Definitions - 13 scenarios
+
+These Cucumber E2E scenarios are skipped because they reference step definitions that don't exist yet. They require implementing the missing step definitions before they can run.
+
+| Feature File                                         | Scenario                                                | Missing Steps                              |
+| ---------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------ |
+| `e2e/features/orbit-calendar.feature`                | "Cannot schedule post in the past"                      | Date selection validation steps            |
+| `e2e/features/orbit-calendar.feature`                | "Must select at least one platform"                     | Platform selection validation steps        |
+| `e2e/features/orbit-calendar.feature`                | "Scheduled post is published when due"                  | Cron job and publishing status steps       |
+| `e2e/features/orbit-calendar.feature`                | "Post fails permanently after max retries"              | Retry logic steps                          |
+| `e2e/features/orbit-calendar.feature`                | "Partial success when publishing to multiple platforms" | Multi-platform partial success steps       |
+| `e2e/features/orbit-calendar.feature`                | "View publishing history for a post"                    | Publishing history steps                   |
+| `e2e/features/orbit-social-integration.feature`      | "Connect multiple LinkedIn organizations"               | Organization selection steps               |
+| `e2e/features/connections.feature`                   | "Managing Connections"                                  | Orbit login and workspace background steps |
+| `e2e/features/connections.feature`                   | "Managing Reminders"                                    | Orbit login and workspace background steps |
+| `e2e/features/competitor-tracking.feature`           | "Add and delete a competitor"                           | Competitor page and action steps           |
+| `e2e/features/orbit-relay-approval-workflow.feature` | "Handle unauthorized access"                            | "I am not logged in" with drafts step      |
+| `e2e/features/orbit-relay-approval-workflow.feature` | "Handle missing required fields"                        | Ambiguous step after fix - needs review    |
+| `e2e/features/orbit-relay-drafts.feature`            | "Generate drafts for different message types"           | Previously used ambiguous urgency step     |
+
+**Status:** All scenarios marked with `@skip` tag to prevent CI failures. Implementation of missing step definitions should be tracked as separate issues.
 
 ## Historical Changes
 

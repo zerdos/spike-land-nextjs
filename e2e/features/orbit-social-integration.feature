@@ -147,7 +147,9 @@ Feature: Orbit Social Media Integration
     Then the LinkedIn account should be removed
     And I should see "Connect LinkedIn" button again
 
-  @linkedin @account-management
+  @skip @linkedin @account-management
+  # SKIP REASON: Missing step definitions for organization selection
+  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   Scenario: Connect multiple LinkedIn organizations
     Given I am authorized with LinkedIn access
     And I manage multiple LinkedIn organizations

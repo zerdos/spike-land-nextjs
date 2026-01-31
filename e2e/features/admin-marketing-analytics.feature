@@ -27,7 +27,7 @@ Feature: Admin Marketing Analytics
     When I visit "/admin/marketing"
     Then I should see "Visitors" metric card
     And I should see "Signups" metric card
-    And I should see "Conv Rate" metric card
+    And I should see "Conv. Rate" metric card
     And I should see "Revenue" metric card
 
   Scenario: Overview tab displays date range picker
