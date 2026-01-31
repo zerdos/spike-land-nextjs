@@ -164,12 +164,13 @@ Then("I should see {string} or {string} text", async function(
   await expect(element.first()).toBeVisible();
 });
 
-// Common tab visibility check (handles both tab and button roles)
+// Common tab visibility check (handles tab, button, and link roles)
 Then(
   "I should see {string} tab",
   async function(this: CustomWorld, tabName: string) {
     const tab = this.page.getByRole("tab", { name: new RegExp(tabName, "i") })
-      .or(this.page.getByRole("button", { name: new RegExp(tabName, "i") }));
+      .or(this.page.getByRole("button", { name: new RegExp(tabName, "i") }))
+      .or(this.page.getByRole("link", { name: new RegExp(tabName, "i") }));
     await expect(tab.first()).toBeVisible();
   },
 );
@@ -200,7 +201,7 @@ Then(
   },
 );
 
-// Common tab click action (handles both tab and button roles)
+// Common tab click action (handles tab, button, and link roles)
 When(
   "I click the {string} tab",
   async function(this: CustomWorld, tabName: string) {
@@ -212,7 +213,8 @@ When(
     }
 
     const tab = this.page.getByRole("tab", { name: new RegExp(tabName, "i") })
-      .or(this.page.getByRole("button", { name: new RegExp(tabName, "i") }));
+      .or(this.page.getByRole("button", { name: new RegExp(tabName, "i") }))
+      .or(this.page.getByRole("link", { name: new RegExp(tabName, "i") }));
 
     // Add visibility check and scroll like button clicking
     await expect(tab.first()).toBeVisible({ timeout: 15000 });
@@ -1194,8 +1196,7 @@ Then(
     const status = this.page.locator(
       `[data-testid*="status"]:has-text("${statusText}"), ` +
         `[class*="badge"]:has-text("${statusText}"), ` +
-        `[class*="status"]:has-text("${statusText}"), ` +
-        `text="${statusText}"`,
+        `[class*="status"]:has-text("${statusText}")`,
     );
     await expect(status.first()).toBeVisible({ timeout: 10000 });
   },

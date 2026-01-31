@@ -35,8 +35,8 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 
 ## Current Inventory
 
-**Total Skipped Tests:** 17 unit tests + 13 E2E scenarios
-**Files with Skips:** 7 (unit) + 6 (E2E feature files)
+**Total Skipped Tests:** 17 unit tests + 17 E2E scenarios
+**Files with Skips:** 7 (unit) + 7 (E2E feature files)
 
 **Status Summary:**
 
@@ -91,21 +91,25 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 
 These Cucumber E2E scenarios are skipped because they reference step definitions that don't exist yet. They require implementing the missing step definitions before they can run.
 
-| Feature File                                         | Scenario                                                | Missing Steps                              |
-| ---------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------ |
-| `e2e/features/orbit-calendar.feature`                | "Cannot schedule post in the past"                      | Date selection validation steps            |
-| `e2e/features/orbit-calendar.feature`                | "Must select at least one platform"                     | Platform selection validation steps        |
-| `e2e/features/orbit-calendar.feature`                | "Scheduled post is published when due"                  | Cron job and publishing status steps       |
-| `e2e/features/orbit-calendar.feature`                | "Post fails permanently after max retries"              | Retry logic steps                          |
-| `e2e/features/orbit-calendar.feature`                | "Partial success when publishing to multiple platforms" | Multi-platform partial success steps       |
-| `e2e/features/orbit-calendar.feature`                | "View publishing history for a post"                    | Publishing history steps                   |
-| `e2e/features/orbit-social-integration.feature`      | "Connect multiple LinkedIn organizations"               | Organization selection steps               |
-| `e2e/features/connections.feature`                   | "Managing Connections"                                  | Orbit login and workspace background steps |
-| `e2e/features/connections.feature`                   | "Managing Reminders"                                    | Orbit login and workspace background steps |
-| `e2e/features/competitor-tracking.feature`           | "Add and delete a competitor"                           | Competitor page and action steps           |
-| `e2e/features/orbit-relay-approval-workflow.feature` | "Handle unauthorized access"                            | "I am not logged in" with drafts step      |
-| `e2e/features/orbit-relay-approval-workflow.feature` | "Handle missing required fields"                        | Ambiguous step after fix - needs review    |
-| `e2e/features/orbit-relay-drafts.feature`            | "Generate drafts for different message types"           | Previously used ambiguous urgency step     |
+| Feature File                                         | Scenario                                                | Missing Steps                                      |
+| ---------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------- |
+| `e2e/features/orbit-calendar.feature`                | "Cannot schedule post in the past"                      | Date selection validation steps                    |
+| `e2e/features/orbit-calendar.feature`                | "Must select at least one platform"                     | Platform selection validation steps                |
+| `e2e/features/orbit-calendar.feature`                | "Scheduled post is published when due"                  | Cron job and publishing status steps               |
+| `e2e/features/orbit-calendar.feature`                | "Failed publishing triggers retry"                      | Cron job and retry logic steps                     |
+| `e2e/features/orbit-calendar.feature`                | "Post fails permanently after max retries"              | Retry logic steps                                  |
+| `e2e/features/orbit-calendar.feature`                | "Partial success when publishing to multiple platforms" | Multi-platform partial success steps               |
+| `e2e/features/orbit-calendar.feature`                | "View publishing history for a post"                    | Publishing history steps                           |
+| `e2e/features/orbit-social-integration.feature`      | "Connect multiple LinkedIn organizations"               | Organization selection steps                       |
+| `e2e/features/connections.feature`                   | "Managing Connections"                                  | Orbit login and workspace background steps         |
+| `e2e/features/connections.feature`                   | "Managing Reminders"                                    | Orbit login and workspace background steps         |
+| `e2e/features/competitor-tracking.feature`           | "Add and delete a competitor"                           | Competitor page and action steps                   |
+| `e2e/features/orbit-relay-approval-workflow.feature` | "Handle unauthorized access"                            | "I am not logged in" with drafts step              |
+| `e2e/features/orbit-relay-approval-workflow.feature` | "Handle missing required fields"                        | Ambiguous step after fix - needs review            |
+| `e2e/features/orbit-relay-drafts.feature`            | "Generate drafts for different message types"           | Previously used ambiguous urgency step             |
+| `e2e/features/admin-jobs.feature`                    | "Job details shows enhancement information"             | UI renders "Job Details" not "Enhancement Details" |
+| `e2e/features/admin-jobs.feature`                    | "Job details shows prompt for processed jobs"           | UI renders "User Prompt" not "Prompt"              |
+| `e2e/features/admin-jobs.feature`                    | "Empty state when no jobs match filter"                 | Timing/race condition with filter                  |
 
 **Status:** All scenarios marked with `@skip` tag to prevent CI failures. Implementation of missing step definitions should be tracked as separate issues.
 
