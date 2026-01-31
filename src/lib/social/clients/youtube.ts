@@ -793,6 +793,76 @@ export class YouTubeClient implements ISocialClient {
   }
 
   /**
+   * Like a YouTube video
+   *
+   * Uses the videos.rate API endpoint to add a 'like' rating.
+   * Requires youtube.force-ssl scope.
+   *
+   * @param videoId - The YouTube video ID to like
+   */
+  async likePost(videoId: string): Promise<void> {
+    const token = this.getAccessTokenOrThrow();
+
+    const params = new URLSearchParams({
+      id: videoId,
+      rating: "like",
+    });
+
+    const response = await fetch(
+      `${YOUTUBE_API_BASE}/videos/rate?${params.toString()}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Length": "0",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = (await response.json().catch(() => ({}))) as YouTubeApiError;
+      throw new Error(
+        `Failed to like YouTube video: ${errorData.error?.message || response.statusText}`,
+      );
+    }
+  }
+
+  /**
+   * Unlike a YouTube video
+   *
+   * Uses the videos.rate API endpoint to remove the rating (set to 'none').
+   * Requires youtube.force-ssl scope.
+   *
+   * @param videoId - The YouTube video ID to unlike
+   */
+  async unlikePost(videoId: string): Promise<void> {
+    const token = this.getAccessTokenOrThrow();
+
+    const params = new URLSearchParams({
+      id: videoId,
+      rating: "none",
+    });
+
+    const response = await fetch(
+      `${YOUTUBE_API_BASE}/videos/rate?${params.toString()}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Length": "0",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = (await response.json().catch(() => ({}))) as YouTubeApiError;
+      throw new Error(
+        `Failed to unlike YouTube video: ${errorData.error?.message || response.statusText}`,
+      );
+    }
+  }
+
+  /**
    * Get access token or throw if not set
    */
   private getAccessTokenOrThrow(): string {

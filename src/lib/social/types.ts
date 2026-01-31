@@ -675,7 +675,7 @@ export const PLATFORM_CAPABILITIES: Record<
   FACEBOOK: { canLike: true, canReply: true, canShare: false },
   INSTAGRAM: { canLike: true, canReply: true, canShare: false },
   LINKEDIN: { canLike: true, canReply: true, canShare: false },
-  TIKTOK: { canLike: true, canReply: true, canShare: false },
+  TIKTOK: { canLike: false, canReply: true, canShare: false },
   YOUTUBE: { canLike: true, canReply: true, canShare: false },
   SNAPCHAT: { canLike: false, canReply: true, canShare: false }, // Stories support replies
   PINTEREST: { canLike: false, canReply: false, canShare: true }, // Pinterest uses "saves"

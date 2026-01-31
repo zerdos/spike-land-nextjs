@@ -333,4 +333,124 @@ describe("YouTubeClient", () => {
       expect(metrics.following).toBe(0);
     });
   });
+
+  describe("likePost", () => {
+    it("should like a video using the videos.rate endpoint", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({}),
+      });
+
+      const client = new YouTubeClient({
+        accessToken: "test_token",
+        accountId: "UC1234567890",
+      });
+
+      await expect(client.likePost("video123")).resolves.not.toThrow();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/videos/rate?"),
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            Authorization: "Bearer test_token",
+          }),
+        }),
+      );
+
+      // Verify the rating parameter is set to "like"
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0]!;
+      expect(fetchCall[0]).toContain("rating=like");
+      expect(fetchCall[0]).toContain("id=video123");
+    });
+
+    it("should throw error on failed like", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        statusText: "Forbidden",
+        json: async () => ({
+          error: { message: "Video not accessible" },
+        }),
+      });
+
+      const client = new YouTubeClient({
+        accessToken: "test_token",
+        accountId: "UC1234567890",
+      });
+
+      await expect(client.likePost("video123")).rejects.toThrow(
+        "Failed to like YouTube video",
+      );
+    });
+
+    it("should throw error when no access token is set", async () => {
+      const client = new YouTubeClient();
+
+      await expect(client.likePost("video123")).rejects.toThrow(
+        "Access token is required",
+      );
+    });
+  });
+
+  describe("unlikePost", () => {
+    it("should unlike a video by setting rating to none", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({}),
+      });
+
+      const client = new YouTubeClient({
+        accessToken: "test_token",
+        accountId: "UC1234567890",
+      });
+
+      await expect(client.unlikePost("video123")).resolves.not.toThrow();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/videos/rate?"),
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            Authorization: "Bearer test_token",
+          }),
+        }),
+      );
+
+      // Verify the rating parameter is set to "none"
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0]!;
+      expect(fetchCall[0]).toContain("rating=none");
+      expect(fetchCall[0]).toContain("id=video123");
+    });
+
+    it("should throw error on failed unlike", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        statusText: "Forbidden",
+        json: async () => ({
+          error: { message: "Video not accessible" },
+        }),
+      });
+
+      const client = new YouTubeClient({
+        accessToken: "test_token",
+        accountId: "UC1234567890",
+      });
+
+      await expect(client.unlikePost("video123")).rejects.toThrow(
+        "Failed to unlike YouTube video",
+      );
+    });
+
+    it("should throw error when no access token is set", async () => {
+      const client = new YouTubeClient();
+
+      await expect(client.unlikePost("video123")).rejects.toThrow(
+        "Access token is required",
+      );
+    });
+  });
 });
