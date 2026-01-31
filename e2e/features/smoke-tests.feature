@@ -129,14 +129,6 @@ Feature: Smoke Tests
     And I should see "Featured Gallery" heading
 
   @fast @requires-db
-  Scenario: Admin feedback page loads for admin user
-    Given I am logged in as "Admin User" with email "admin@example.com"
-    And the user is an admin
-    When I visit "/admin/feedback"
-    Then the page should load successfully
-    And I should see "Feedback Management" heading
-
-  @fast @requires-db
   Scenario: Admin emails page loads for admin user
     Given I am logged in as "Admin User" with email "admin@example.com"
     And the user is an admin

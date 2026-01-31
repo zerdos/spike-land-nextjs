@@ -460,19 +460,6 @@ erDiagram
   String errorCode "nullable"
   Json metadata "nullable"
 }
-"feedback" {
-  String id PK
-  String userId FK "nullable"
-  String email "nullable"
-  FeedbackType type
-  String message
-  String page
-  String userAgent "nullable"
-  FeedbackStatus status
-  String adminNote "nullable"
-  DateTime createdAt
-  DateTime updatedAt
-}
 "inbox_suggested_responses" {
   String id PK
   String inboxItemId FK
@@ -2068,7 +2055,6 @@ erDiagram
 "ai_decision_logs" }o--o| "workspaces" : workspace
 "ai_decision_logs" }o--o| "users" : user
 "audit_retention_policies" }o--o| "workspaces" : workspace
-"feedback" }o--o| "users" : user
 "inbox_suggested_responses" }o--|| "inbox_items" : inboxItem
 "escalation_events" }o--|| "inbox_items" : inboxItem
 "featured_gallery_items" }o--o| "enhanced_images" : sourceImage
@@ -2795,22 +2781,6 @@ Properties as follows:
 - `errorType`:
 - `errorCode`:
 - `metadata`:
-
-### `feedback`
-
-Properties as follows:
-
-- `id`:
-- `userId`:
-- `email`:
-- `type`:
-- `message`:
-- `page`:
-- `userAgent`:
-- `status`:
-- `adminNote`:
-- `createdAt`:
-- `updatedAt`:
 
 ### `inbox_suggested_responses`
 

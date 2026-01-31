@@ -88,12 +88,29 @@ export const FeedbackButton = memo(
           }),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-          const data = await response.json();
           throw new Error(data.error || "Failed to submit feedback");
         }
 
-        toast.success("Thank you for your feedback!");
+        if (data.issueUrl) {
+          toast.success(
+            <span>
+              Thank you for your feedback!{" "}
+              <a
+                href={data.issueUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline font-medium"
+              >
+                View issue #{data.issueNumber}
+              </a>
+            </span>,
+          );
+        } else {
+          toast.success("Thank you for your feedback!");
+        }
         setOpen(false);
       } catch (error) {
         console.error("Error submitting feedback:", error);

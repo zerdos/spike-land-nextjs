@@ -155,6 +155,52 @@ export async function listIssues(options?: {
 }
 
 /**
+ * Create a new issue in the repository
+ */
+export async function createIssue(options: {
+  title: string;
+  body: string;
+  labels?: string[];
+}): Promise<{ data: GitHubIssue | null; error: string | null; }> {
+  const { owner, repo } = getGitHubConfig();
+  const { title, body, labels = [] } = options;
+
+  const { data, error } = await githubRequest<GitHubApiIssue>(
+    `/repos/${owner}/${repo}/issues`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title,
+        body,
+        labels,
+      }),
+    },
+  );
+
+  if (error || !data) {
+    return { data: null, error };
+  }
+
+  const issue: GitHubIssue = {
+    number: data.number,
+    title: data.title,
+    state: data.state,
+    labels: data.labels.map((l) => l.name),
+    author: data.user.login,
+    assignees: data.assignees.map((a) => a.login),
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    url: data.html_url,
+    body: data.body,
+  };
+
+  return { data: issue, error: null };
+}
+
+/**
  * Get workflow runs (CI/CD status)
  */
 export async function getWorkflowRuns(options?: { limit?: number; }): Promise<{

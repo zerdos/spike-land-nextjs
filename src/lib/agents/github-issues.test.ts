@@ -229,6 +229,205 @@ describe("github-issues", () => {
     });
   });
 
+  describe("createIssue", () => {
+    beforeEach(() => {
+      process.env.GH_PAT_TOKEN = "ghp_test_token";
+      process.env.GITHUB_OWNER = "test-owner";
+      process.env.GITHUB_REPO = "test-repo";
+    });
+
+    it("should create an issue successfully", async () => {
+      const mockApiIssue = {
+        number: 456,
+        title: "Test Issue",
+        state: "open",
+        labels: [{ name: "bug" }, { name: "user-feedback" }],
+        user: { login: "github-actions[bot]" },
+        assignees: [],
+        created_at: "2024-01-01T00:00:00Z",
+        updated_at: "2024-01-01T00:00:00Z",
+        html_url: "https://github.com/test-owner/test-repo/issues/456",
+        body: "Issue body content",
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockApiIssue,
+      });
+
+      const { createIssue } = await import("./github-issues");
+      const result = await createIssue({
+        title: "Test Issue",
+        body: "Issue body content",
+        labels: ["bug", "user-feedback"],
+      });
+
+      expect(result.error).toBeNull();
+      expect(result.data).toEqual({
+        number: 456,
+        title: "Test Issue",
+        state: "open",
+        labels: ["bug", "user-feedback"],
+        author: "github-actions[bot]",
+        assignees: [],
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
+        url: "https://github.com/test-owner/test-repo/issues/456",
+        body: "Issue body content",
+      });
+    });
+
+    it("should use POST method with correct headers", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          number: 1,
+          title: "Test",
+          state: "open",
+          labels: [],
+          user: { login: "test" },
+          assignees: [],
+          created_at: "2024-01-01T00:00:00Z",
+          updated_at: "2024-01-01T00:00:00Z",
+          html_url: "https://github.com/test/test/issues/1",
+          body: null,
+        }),
+      });
+
+      const { createIssue } = await import("./github-issues");
+      await createIssue({
+        title: "Test",
+        body: "Body",
+      });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining("/repos/test-owner/test-repo/issues"),
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            Authorization: "Bearer ghp_test_token",
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({
+            title: "Test",
+            body: "Body",
+            labels: [],
+          }),
+        }),
+      );
+    });
+
+    it("should create issue without labels", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          number: 2,
+          title: "No labels",
+          state: "open",
+          labels: [],
+          user: { login: "test" },
+          assignees: [],
+          created_at: "2024-01-01T00:00:00Z",
+          updated_at: "2024-01-01T00:00:00Z",
+          html_url: "https://github.com/test/test/issues/2",
+          body: "Content",
+        }),
+      });
+
+      const { createIssue } = await import("./github-issues");
+      const result = await createIssue({
+        title: "No labels",
+        body: "Content",
+      });
+
+      expect(result.error).toBeNull();
+      expect(result.data?.labels).toEqual([]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          body: expect.stringContaining('"labels":[]'),
+        }),
+      );
+    });
+
+    it("should return error when token is not configured", async () => {
+      delete process.env.GH_PAT_TOKEN;
+      vi.resetModules();
+
+      const { createIssue } = await import("./github-issues");
+      const result = await createIssue({
+        title: "Test",
+        body: "Body",
+      });
+
+      expect(result.data).toBeNull();
+      expect(result.error).toBe("GH_PAT_TOKEN is not configured");
+    });
+
+    it("should handle API errors", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 422,
+        json: async () => ({ message: "Validation Failed" }),
+      });
+
+      const { createIssue } = await import("./github-issues");
+      const result = await createIssue({
+        title: "Test",
+        body: "Body",
+      });
+
+      expect(result.data).toBeNull();
+      expect(result.error).toBe("Validation Failed");
+    });
+
+    it("should handle network errors", async () => {
+      mockFetch.mockRejectedValueOnce(new Error("Connection refused"));
+
+      const { createIssue } = await import("./github-issues");
+      const result = await createIssue({
+        title: "Test",
+        body: "Body",
+      });
+
+      expect(result.data).toBeNull();
+      expect(result.error).toBe("Network error: Connection refused");
+    });
+
+    it("should use default owner and repo when not configured", async () => {
+      delete process.env.GITHUB_OWNER;
+      delete process.env.GITHUB_REPO;
+      vi.resetModules();
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          number: 3,
+          title: "Default repo",
+          state: "open",
+          labels: [],
+          user: { login: "test" },
+          assignees: [],
+          created_at: "2024-01-01T00:00:00Z",
+          updated_at: "2024-01-01T00:00:00Z",
+          html_url: "https://github.com/zerdos/spike-land-nextjs/issues/3",
+          body: "Content",
+        }),
+      });
+
+      const { createIssue } = await import("./github-issues");
+      await createIssue({
+        title: "Default repo",
+        body: "Content",
+      });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining("/repos/zerdos/spike-land-nextjs/issues"),
+        expect.any(Object),
+      );
+    });
+  });
+
   describe("getWorkflowRuns", () => {
     beforeEach(() => {
       process.env.GH_PAT_TOKEN = "ghp_test_token";
