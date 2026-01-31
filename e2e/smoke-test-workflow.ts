@@ -178,7 +178,8 @@ async function mockAuthSession(
     },
     {
       name: "e2e-bypass-secret",
-      value: config.e2eBypassSecret || "",
+      // Use sanitized secret to match middleware comparison
+      value: getE2eBypassSecret() || "",
       domain: baseUrlHost,
       path: "/",
     },
