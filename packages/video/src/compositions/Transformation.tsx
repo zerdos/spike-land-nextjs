@@ -7,24 +7,24 @@ import {
   useVideoConfig,
 } from "remotion";
 import { GradientMesh } from "../components/branding/GradientMesh";
+import { StageProgress } from "../components/ui/ProgressBar";
 import { bezierPath, pulse } from "../lib/animations";
 import { COLORS, SPRING_CONFIGS } from "../lib/constants";
 
 /**
- * Scene 2: My-Apps Agent - AI Dashboard Transformation (90-240 frames / 3-8 seconds)
+ * Scene 5: Transformation (930-1230 frames / 31-41 seconds)
  *
- * Shows an AI agent orb visually "upgrading" a basic dashboard to an enhanced version.
- * Single centered panel with AI orb overlay - no split panels.
+ * AI analyzes and transforms the dashboard.
  *
- * Timeline (150 frames / 5 seconds):
- * - 0-20: Dashboard panel fades in (basic state)
- * - 20-40: AI orb enters from right with particle trail
- * - 40-70: Orb scans dashboard with cyan highlight effect
- * - 70-100: Transformation wipe reveals enhanced dashboard
- * - 100-130: "OPTIMIZED BY AI" badge appears with bouncy animation
- * - 130-150: Final settled state with subtle glow
+ * Timeline (300 frames / 10s):
+ * - 0-60f: ProgressBar fills (stages: Analyzing, Optimizing, Deploying)
+ * - 60-90f: Preview panel focuses, progress continues
+ * - 90-150f: AI orb enters preview, begins scan effect
+ * - 150-210f: Scan line sweeps across dashboard
+ * - 210-270f: Dashboard morphs: 3 cards -> 5 cards, basic -> enhanced
+ * - 270-300f: "OPTIMIZED BY AI" badge appears with bounce
  */
-export function MyAppsAgent() {
+export function Transformation() {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -35,25 +35,21 @@ export function MyAppsAgent() {
     config: SPRING_CONFIGS.smooth,
   });
 
-  // AI orb animation phases
-  const orbEntryProgress = interpolate(frame, [20, 40], [0, 1], {
+  // Scan effect timing
+  const scanProgress = interpolate(frame, [90, 210], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  const scanProgress = interpolate(frame, [40, 70], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const transformationProgress = interpolate(frame, [70, 100], [0, 1], {
+  // Transformation timing
+  const transformationProgress = interpolate(frame, [210, 270], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   // Badge animation
   const badgeProgress = spring({
-    frame: frame - 100,
+    frame: frame - 270,
     fps,
     config: SPRING_CONFIGS.bouncy,
   });
@@ -61,10 +57,37 @@ export function MyAppsAgent() {
   // Determine dashboard state
   const showEnhanced = transformationProgress > 0.5;
 
+  // Current stage for progress indicator
+  const currentStage = frame < 60 ? 0 : frame < 150 ? 1 : frame < 240 ? 2 : 3;
+
   return (
     <AbsoluteFill>
       {/* Background */}
       <GradientMesh animationSpeed={0.008} />
+
+      {/* Progress indicator at top */}
+      <AbsoluteFill
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          paddingTop: 50,
+        }}
+      >
+        <div
+          style={{
+            padding: "16px 32px",
+            backgroundColor: `${COLORS.darkCard}ee`,
+            borderRadius: 16,
+            border: `1px solid ${COLORS.darkBorder}`,
+          }}
+        >
+          <StageProgress
+            stages={["Analyzing", "Optimizing", "Deploying", "Complete"]}
+            currentStage={currentStage}
+            delay={0}
+          />
+        </div>
+      </AbsoluteFill>
 
       {/* Centered layout */}
       <AbsoluteFill
@@ -72,7 +95,7 @@ export function MyAppsAgent() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: 60,
+          padding: "120px 60px 60px",
         }}
       >
         {/* Main dashboard panel */}
@@ -86,7 +109,7 @@ export function MyAppsAgent() {
             border: `1px solid ${COLORS.darkBorder}`,
             overflow: "hidden",
             boxShadow: showEnhanced
-              ? `0 0 40px ${COLORS.cyan}30, 0 20px 60px rgba(0,0,0,0.5)`
+              ? `0 0 50px ${COLORS.cyan}30, 0 20px 60px rgba(0,0,0,0.5)`
               : "0 20px 60px rgba(0,0,0,0.5)",
             position: "relative",
           }}
@@ -98,7 +121,7 @@ export function MyAppsAgent() {
           <div
             style={{
               position: "relative",
-              height: 480,
+              height: 520,
               background: `linear-gradient(180deg, ${COLORS.darkBg} 0%, #0f0f1a 100%)`,
               overflow: "hidden",
             }}
@@ -113,7 +136,7 @@ export function MyAppsAgent() {
             />
 
             {/* Optimized badge */}
-            <Sequence from={100}>
+            <Sequence from={270}>
               <OptimizedBadge progress={badgeProgress} />
             </Sequence>
           </div>
@@ -121,7 +144,6 @@ export function MyAppsAgent() {
 
         {/* AI Agent Orb - positioned absolutely */}
         <AIAgentOrb
-          entryProgress={orbEntryProgress}
           scanProgress={scanProgress}
           transformationProgress={transformationProgress}
         />
@@ -143,14 +165,14 @@ function BrowserChrome() {
   return (
     <div
       style={{
-        padding: "14px 20px",
+        padding: "16px 24px",
         backgroundColor: COLORS.darkBorder,
         display: "flex",
         alignItems: "center",
         gap: 16,
       }}
     >
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ display: "flex", gap: 10 }}>
         <div
           style={{
             width: 14,
@@ -181,17 +203,17 @@ function BrowserChrome() {
         style={{
           flex: 1,
           backgroundColor: COLORS.darkBg,
-          borderRadius: 8,
-          padding: "10px 16px",
+          borderRadius: 10,
+          padding: "12px 18px",
           display: "flex",
           alignItems: "center",
-          gap: 8,
+          gap: 10,
         }}
       >
         <span style={{ color: COLORS.success, fontSize: 14 }}>🔒</span>
         <span
           style={{
-            fontSize: 14,
+            fontSize: 15,
             color: COLORS.textMuted,
             fontFamily: "Inter, sans-serif",
           }}
@@ -204,7 +226,6 @@ function BrowserChrome() {
 }
 
 type AIAgentOrbProps = {
-  entryProgress: number;
   scanProgress: number;
   transformationProgress: number;
 };
@@ -213,42 +234,25 @@ type AIAgentOrbProps = {
  * Floating AI orb that scans the dashboard
  */
 function AIAgentOrb({
-  entryProgress,
   scanProgress,
   transformationProgress,
 }: AIAgentOrbProps) {
   const frame = useCurrentFrame();
   const glowPulse = pulse(frame, 30, 2);
 
-  // Orb path using bezier curve
-  // Entry: comes from right side
-  // Scan: moves across the panel
-  // Settle: moves to corner
-
+  // Orb movement
   let orbX: number;
   let orbY: number;
   let orbScale: number;
 
-  if (entryProgress < 1) {
-    // Entry phase: coming from right
-    const entryPath = bezierPath(
-      entryProgress,
-      { x: 700, y: 200 }, // Start off-screen right
-      { x: 500, y: 150 },
-      { x: 400, y: 250 },
-      { x: 350, y: 200 }, // End position for scan start
-    );
-    orbX = entryPath.x;
-    orbY = entryPath.y;
-    orbScale = interpolate(entryProgress, [0, 1], [0.5, 1]);
-  } else if (scanProgress > 0 && scanProgress < 1) {
+  if (scanProgress > 0 && scanProgress < 1) {
     // Scan phase: moving across dashboard
     const scanPath = bezierPath(
       scanProgress,
-      { x: 350, y: 200 },
-      { x: 100, y: 250 },
-      { x: -100, y: 200 },
-      { x: -300, y: 150 },
+      { x: 400, y: 0 },
+      { x: 200, y: 50 },
+      { x: 0, y: 50 },
+      { x: -200, y: 0 },
     );
     orbX = scanPath.x;
     orbY = scanPath.y;
@@ -256,20 +260,24 @@ function AIAgentOrb({
   } else if (transformationProgress > 0) {
     // Settle phase: shrink and move to badge position
     const settleProgress = Math.min(1, transformationProgress);
-    orbX = interpolate(settleProgress, [0, 1], [-300, 450]);
-    orbY = interpolate(settleProgress, [0, 1], [150, -180]);
+    orbX = interpolate(settleProgress, [0, 1], [-200, 500]);
+    orbY = interpolate(settleProgress, [0, 1], [0, -200]);
     orbScale = interpolate(settleProgress, [0, 0.5], [1, 0], {
       extrapolateRight: "clamp",
     });
   } else {
-    orbX = 350;
-    orbY = 200;
-    orbScale = 1;
+    // Entry position
+    orbX = 400;
+    orbY = 0;
+    orbScale = interpolate(frame, [60, 90], [0, 1], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    });
   }
 
   if (orbScale <= 0) return null;
 
-  const orbSize = 60;
+  const orbSize = 80;
 
   return (
     <div
@@ -287,16 +295,13 @@ function AIAgentOrb({
       <div
         style={{
           position: "absolute",
-          inset: -20,
+          inset: -30,
           borderRadius: "50%",
-          background: `radial-gradient(circle, ${COLORS.cyan}40 0%, transparent 70%)`,
-          filter: "blur(15px)",
-          opacity: 0.5 + glowPulse * 0.3,
+          background: `radial-gradient(circle, ${COLORS.cyan}50 0%, transparent 70%)`,
+          filter: "blur(20px)",
+          opacity: 0.6 + glowPulse * 0.3,
         }}
       />
-
-      {/* Particle trail */}
-      {entryProgress > 0 && scanProgress < 1 && <ParticleTrail frame={frame} />}
 
       {/* Main orb */}
       <div
@@ -306,8 +311,8 @@ function AIAgentOrb({
           borderRadius: "50%",
           background: `linear-gradient(135deg, ${COLORS.cyan} 0%, ${COLORS.purple} 100%)`,
           boxShadow: `
-            0 0 ${20 + glowPulse * 15}px ${COLORS.cyan}80,
-            inset 0 0 20px rgba(255,255,255,0.3)
+            0 0 ${30 + glowPulse * 20}px ${COLORS.cyan}80,
+            inset 0 0 25px rgba(255,255,255,0.3)
           `,
           display: "flex",
           alignItems: "center",
@@ -315,14 +320,14 @@ function AIAgentOrb({
         }}
       >
         {/* AI icon */}
-        <span style={{ fontSize: 28 }}>🤖</span>
+        <span style={{ fontSize: 36 }}>🤖</span>
       </div>
 
       {/* Orbiting ring */}
       <div
         style={{
           position: "absolute",
-          inset: -8,
+          inset: -12,
           borderRadius: "50%",
           border: `2px solid ${COLORS.cyan}60`,
           transform: `rotate(${frame * 3}deg)`,
@@ -331,53 +336,19 @@ function AIAgentOrb({
         <div
           style={{
             position: "absolute",
-            top: -4,
+            top: -5,
             left: "50%",
-            width: 8,
-            height: 8,
+            width: 10,
+            height: 10,
             borderRadius: "50%",
             backgroundColor: COLORS.cyan,
             transform: "translateX(-50%)",
+            boxShadow: `0 0 10px ${COLORS.cyan}`,
           }}
         />
       </div>
     </div>
   );
-}
-
-type ParticleTrailProps = {
-  frame: number;
-};
-
-/**
- * Particle trail following the AI orb
- */
-function ParticleTrail({ frame }: ParticleTrailProps) {
-  const particles = Array.from({ length: 8 }, (_, i) => {
-    const delay = i * 3;
-    const opacity = Math.max(0, 1 - (frame % 15 + delay) / 20);
-    const offsetX = -i * 12;
-    const offsetY = Math.sin((frame + i * 10) * 0.2) * 8;
-
-    return (
-      <div
-        key={i}
-        style={{
-          position: "absolute",
-          left: offsetX,
-          top: "50%",
-          width: 6 - i * 0.5,
-          height: 6 - i * 0.5,
-          borderRadius: "50%",
-          backgroundColor: COLORS.cyan,
-          opacity: opacity * 0.6,
-          transform: `translateY(${offsetY}px)`,
-        }}
-      />
-    );
-  });
-
-  return <>{particles}</>;
 }
 
 type ScanEffectProps = {
@@ -399,9 +370,9 @@ function ScanEffect({ progress }: ScanEffectProps) {
           left: 0,
           right: 0,
           top: `${scanLineY}%`,
-          height: 3,
+          height: 4,
           background: `linear-gradient(90deg, transparent, ${COLORS.cyan}, transparent)`,
-          boxShadow: `0 0 20px ${COLORS.cyan}, 0 0 40px ${COLORS.cyan}50`,
+          boxShadow: `0 0 30px ${COLORS.cyan}, 0 0 60px ${COLORS.cyan}50`,
           transform: "translateY(-50%)",
         }}
       />
@@ -414,7 +385,7 @@ function ScanEffect({ progress }: ScanEffectProps) {
           right: 0,
           top: 0,
           height: `${scanLineY}%`,
-          background: `linear-gradient(180deg, ${COLORS.cyan}08 0%, ${COLORS.cyan}15 100%)`,
+          background: `linear-gradient(180deg, ${COLORS.cyan}08 0%, ${COLORS.cyan}18 100%)`,
         }}
       />
     </AbsoluteFill>
@@ -441,11 +412,11 @@ function DashboardPanel({
   return (
     <AbsoluteFill
       style={{
-        padding: 28,
+        padding: 32,
         opacity: Math.max(0.3, contentOpacity),
         display: "flex",
         flexDirection: "column",
-        gap: 16,
+        gap: 18,
       }}
     >
       {/* Dashboard header */}
@@ -456,17 +427,17 @@ function DashboardPanel({
           justifyContent: "space-between",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: 12,
+              width: 48,
+              height: 48,
+              borderRadius: 14,
               background: `linear-gradient(135deg, ${COLORS.success}, #059669)`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 22,
+              fontSize: 24,
             }}
           >
             📊
@@ -474,7 +445,7 @@ function DashboardPanel({
           <div>
             <div
               style={{
-                fontSize: 24,
+                fontSize: 26,
                 fontWeight: 700,
                 color: COLORS.textPrimary,
                 fontFamily: "Inter, sans-serif",
@@ -484,7 +455,7 @@ function DashboardPanel({
             </div>
             <div
               style={{
-                fontSize: 13,
+                fontSize: 14,
                 color: COLORS.textSecondary,
                 fontFamily: "Inter, sans-serif",
               }}
@@ -502,17 +473,17 @@ function DashboardPanel({
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
-              padding: "10px 18px",
+              gap: 10,
+              padding: "12px 20px",
               backgroundColor: `${COLORS.cyan}20`,
-              borderRadius: 16,
-              border: `1px solid ${COLORS.cyan}40`,
+              borderRadius: 18,
+              border: `1px solid ${COLORS.cyan}50`,
             }}
           >
-            <span style={{ fontSize: 14 }}>⚡</span>
+            <span style={{ fontSize: 16 }}>⚡</span>
             <span
               style={{
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: 600,
                 color: COLORS.cyan,
                 fontFamily: "Inter, sans-serif",
@@ -531,7 +502,7 @@ function DashboardPanel({
           gridTemplateColumns: showEnhanced
             ? "repeat(5, 1fr)"
             : "repeat(3, 1fr)",
-          gap: 12,
+          gap: 14,
         }}
       >
         {(showEnhanced
@@ -550,27 +521,27 @@ function DashboardPanel({
             <div
               key={platform.name}
               style={{
-                padding: 14,
+                padding: 16,
                 backgroundColor: `${COLORS.darkBg}80`,
-                borderRadius: 10,
+                borderRadius: 12,
                 border: `1px solid ${COLORS.darkBorder}`,
                 textAlign: "center",
               }}
             >
               <div
                 style={{
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: 600,
                   color: "color" in platform ? platform.color : COLORS.textMuted,
                   fontFamily: "Inter, sans-serif",
-                  marginBottom: 4,
+                  marginBottom: 6,
                 }}
               >
                 {platform.name}
               </div>
               <div
                 style={{
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: 700,
                   color: COLORS.textPrimary,
                   fontFamily: "Inter, sans-serif",
@@ -581,12 +552,12 @@ function DashboardPanel({
               {"change" in platform && (
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 12,
                     color: platform.change.startsWith("+")
                       ? COLORS.success
                       : "#EF4444",
                     fontFamily: "Inter, sans-serif",
-                    marginTop: 2,
+                    marginTop: 4,
                   }}
                 >
                   {platform.change}
@@ -601,8 +572,8 @@ function DashboardPanel({
         style={{
           flex: 1,
           backgroundColor: `${COLORS.darkBg}60`,
-          borderRadius: 12,
-          padding: 18,
+          borderRadius: 14,
+          padding: 20,
           display: "flex",
           flexDirection: "column",
         }}
@@ -612,12 +583,12 @@ function DashboardPanel({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: 14,
+            marginBottom: 16,
           }}
         >
           <div
             style={{
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: 600,
               color: COLORS.textPrimary,
               fontFamily: "Inter, sans-serif",
@@ -630,14 +601,14 @@ function DashboardPanel({
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 6,
-                color: "#EF4444",
-                fontSize: 12,
+                gap: 8,
+                color: COLORS.success,
+                fontSize: 13,
                 fontFamily: "Inter, sans-serif",
               }}
             >
-              <span>📉</span>
-              <span style={{ fontWeight: 600 }}>Anomaly detected</span>
+              <span>📈</span>
+              <span style={{ fontWeight: 600 }}>+24% recovery</span>
             </div>
           )}
         </div>
@@ -648,12 +619,12 @@ function DashboardPanel({
             flex: 1,
             display: "flex",
             alignItems: "flex-end",
-            gap: 10,
+            gap: 12,
           }}
         >
-          {[75, 82, 78, 88, 42, 65, 72].map((value, index) => {
-            const isAnomaly = index === 4;
+          {[75, 82, 78, 88, 72, 78, 85].map((value, index) => {
             const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+            const wasAnomaly = index === 4;
             return (
               <div
                 key={index}
@@ -662,25 +633,28 @@ function DashboardPanel({
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 6,
+                  gap: 8,
                 }}
               >
                 <div
                   style={{
                     width: "80%",
                     height: `${showEnhanced ? value : value * 0.5}%`,
-                    backgroundColor: isAnomaly && showEnhanced ? "#EF4444" : COLORS.success,
-                    borderRadius: 4,
+                    backgroundColor: wasAnomaly && showEnhanced ? COLORS.cyan : COLORS.success,
+                    borderRadius: 5,
                     opacity: 0.85,
+                    boxShadow: wasAnomaly && showEnhanced
+                      ? `0 0 15px ${COLORS.cyan}60`
+                      : "none",
                   }}
                 />
                 {showEnhanced && (
                   <span
                     style={{
-                      fontSize: 10,
-                      color: isAnomaly ? COLORS.amber : COLORS.textMuted,
+                      fontSize: 11,
+                      color: wasAnomaly ? COLORS.cyan : COLORS.textMuted,
                       fontFamily: "Inter, sans-serif",
-                      fontWeight: isAnomaly ? 600 : 400,
+                      fontWeight: wasAnomaly ? 600 : 400,
                     }}
                   >
                     {days[index]}
@@ -696,35 +670,35 @@ function DashboardPanel({
       {showEnhanced && (
         <div
           style={{
-            padding: 14,
-            backgroundColor: `${COLORS.amber}10`,
-            borderRadius: 12,
-            border: `1px solid ${COLORS.amber}30`,
+            padding: 16,
+            backgroundColor: `${COLORS.success}10`,
+            borderRadius: 14,
+            border: `1px solid ${COLORS.success}30`,
             display: "flex",
             alignItems: "center",
-            gap: 12,
+            gap: 14,
           }}
         >
-          <span style={{ fontSize: 18 }}>💡</span>
+          <span style={{ fontSize: 20 }}>✅</span>
           <div>
             <div
               style={{
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: 600,
-                color: COLORS.amber,
+                color: COLORS.success,
                 fontFamily: "Inter, sans-serif",
               }}
             >
-              AI Recommendation
+              AI Optimization Applied
             </div>
             <div
               style={{
-                fontSize: 12,
+                fontSize: 13,
                 color: COLORS.textSecondary,
                 fontFamily: "Inter, sans-serif",
               }}
             >
-              Post at 2PM for +23% engagement recovery
+              Friday posts now scheduled at 2PM for optimal engagement
             </div>
           </div>
         </div>
@@ -755,8 +729,8 @@ function OptimizedBadge({ progress }: OptimizedBadgeProps) {
     <div
       style={{
         position: "absolute",
-        top: 20,
-        right: 20,
+        top: 24,
+        right: 24,
         opacity,
         transform: `scale(${scale})`,
       }}
@@ -765,26 +739,26 @@ function OptimizedBadge({ progress }: OptimizedBadgeProps) {
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 10,
-          padding: "12px 18px",
+          gap: 12,
+          padding: "14px 22px",
           backgroundColor: `${COLORS.success}15`,
-          borderRadius: 12,
+          borderRadius: 14,
           border: `2px solid ${COLORS.success}`,
-          boxShadow: `0 0 ${15 + glowPulse * 10}px ${COLORS.success}40`,
+          boxShadow: `0 0 ${20 + glowPulse * 15}px ${COLORS.success}50`,
         }}
       >
         <div
           style={{
-            width: 10,
-            height: 10,
+            width: 12,
+            height: 12,
             borderRadius: "50%",
             backgroundColor: COLORS.success,
-            boxShadow: `0 0 8px ${COLORS.success}`,
+            boxShadow: `0 0 10px ${COLORS.success}`,
           }}
         />
         <span
           style={{
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: 700,
             color: COLORS.success,
             fontFamily: "Inter, sans-serif",
@@ -810,20 +784,22 @@ function AIStatusBar({
   scanProgress,
   transformationProgress,
 }: AIStatusBarProps) {
+  const frame = useCurrentFrame();
+
   let statusText: string;
   let statusIcon: string;
 
   if (transformationProgress >= 1) {
-    statusText = "Dashboard optimized";
+    statusText = "Dashboard optimized successfully";
     statusIcon = "✅";
   } else if (transformationProgress > 0) {
-    statusText = "Applying improvements...";
+    statusText = "Applying AI improvements...";
     statusIcon = "⚡";
   } else if (scanProgress > 0) {
-    statusText = "Analyzing dashboard...";
+    statusText = "Analyzing dashboard structure...";
     statusIcon = "🔍";
   } else {
-    statusText = "AI Agent ready";
+    statusText = "AI Agent initializing...";
     statusIcon = "🤖";
   }
 
@@ -831,22 +807,22 @@ function AIStatusBar({
     <div
       style={{
         position: "absolute",
-        bottom: 30,
+        bottom: 40,
         left: "50%",
         transform: "translateX(-50%)",
         display: "flex",
         alignItems: "center",
-        gap: 10,
-        padding: "10px 20px",
-        backgroundColor: `${COLORS.darkCard}dd`,
-        borderRadius: 20,
+        gap: 12,
+        padding: "14px 28px",
+        backgroundColor: `${COLORS.darkCard}ee`,
+        borderRadius: 24,
         border: `1px solid ${COLORS.darkBorder}`,
       }}
     >
-      <span style={{ fontSize: 16 }}>{statusIcon}</span>
+      <span style={{ fontSize: 18 }}>{statusIcon}</span>
       <span
         style={{
-          fontSize: 14,
+          fontSize: 15,
           color: transformationProgress >= 1 ? COLORS.success : COLORS.textSecondary,
           fontFamily: "Inter, sans-serif",
           fontWeight: transformationProgress >= 1 ? 600 : 400,
@@ -857,13 +833,12 @@ function AIStatusBar({
       {scanProgress > 0 && transformationProgress < 1 && (
         <div
           style={{
-            width: 16,
-            height: 16,
+            width: 18,
+            height: 18,
             borderRadius: "50%",
             border: `2px solid ${COLORS.cyan}`,
             borderTopColor: "transparent",
-            animation: "none",
-            transform: `rotate(${scanProgress * 720}deg)`,
+            transform: `rotate(${frame * 10}deg)`,
           }}
         />
       )}

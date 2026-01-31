@@ -237,3 +237,40 @@ export function shake(
   const y = glitchOffset(frame * frequency, intensity, 100);
   return { x, y };
 }
+
+/**
+ * Bezier path interpolation for smooth curved movement
+ * Returns {x, y} position along a cubic bezier curve
+ */
+export function bezierPath(
+  progress: number,
+  p0: { x: number; y: number; },
+  p1: { x: number; y: number; },
+  p2: { x: number; y: number; },
+  p3: { x: number; y: number; },
+): { x: number; y: number; } {
+  const t = Math.max(0, Math.min(1, progress));
+  const t2 = t * t;
+  const t3 = t2 * t;
+  const mt = 1 - t;
+  const mt2 = mt * mt;
+  const mt3 = mt2 * mt;
+
+  return {
+    x: mt3 * p0.x + 3 * mt2 * t * p1.x + 3 * mt * t2 * p2.x + t3 * p3.x,
+    y: mt3 * p0.y + 3 * mt2 * t * p1.y + 3 * mt * t2 * p2.y + t3 * p3.y,
+  };
+}
+
+/**
+ * Radial clip path progress for circular reveal effects
+ * Returns CSS clipPath string for a circular wipe
+ */
+export function radialClipPath(
+  progress: number,
+  centerX: number = 50,
+  centerY: number = 50,
+): string {
+  const radius = progress * 150; // 150% to fully cover corners
+  return `circle(${radius}% at ${centerX}% ${centerY}%)`;
+}

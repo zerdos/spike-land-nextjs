@@ -11,10 +11,16 @@ import { pulse, stagger } from "../lib/animations";
 import { COLORS, SPRING_CONFIGS } from "../lib/constants";
 
 /**
- * Scene 4: End Card (360-450 frames / 12-15 seconds)
+ * Scene 8: End Card (1650-1800 frames / 55-60 seconds)
  *
  * Shows the spike.land landing page with Orbit branding.
  * Features zoom reveal animation with URL badge and feature pills.
+ *
+ * Timeline (150 frames / 5s):
+ * - 0-30f: Landing page preview zooms in
+ * - 30-60f: SpikeLandLogo appears large, centered
+ * - 60-90f: URL badge: "spike.land" with glow pulse
+ * - 90-150f: Feature pills stagger in
  */
 export function EndCard() {
   const frame = useCurrentFrame();
@@ -27,13 +33,13 @@ export function EndCard() {
     config: SPRING_CONFIGS.smooth,
   });
 
-  const scale = interpolate(zoomProgress, [0, 1], [1.1, 1]);
+  const scale = interpolate(zoomProgress, [0, 1], [1.08, 1]);
   const opacity = interpolate(zoomProgress, [0, 0.5], [0, 1], {
     extrapolateRight: "clamp",
   });
 
-  // URL badge animation
-  const urlDelay = 30;
+  // URL badge animation - slightly later
+  const urlDelay = 40;
   const urlProgress = spring({
     frame: frame - urlDelay,
     fps,
@@ -41,7 +47,7 @@ export function EndCard() {
   });
 
   // Glow pulse
-  const glowPulse = pulse(frame, fps, 1.5);
+  const glowPulse = pulse(frame, fps, 1.2);
 
   return (
     <AbsoluteFill>
@@ -76,8 +82,8 @@ export function EndCard() {
         <URLBadge progress={urlProgress} glowPulse={glowPulse} />
       </Sequence>
 
-      {/* Feature pills */}
-      <Sequence from={50}>
+      {/* Feature pills - later entry for more breathing room */}
+      <Sequence from={70}>
         <FeaturePills />
       </Sequence>
     </AbsoluteFill>
@@ -165,13 +171,13 @@ function LandingPagePreview() {
             </span>
           </div>
 
-          {/* Headline */}
+          {/* Headline - larger for 60s video */}
           <div
             style={{
-              fontSize: 42,
+              fontSize: 48,
               fontWeight: 700,
               fontFamily: "Inter, sans-serif",
-              marginBottom: 16,
+              marginBottom: 20,
             }}
           >
             <span style={{ color: COLORS.textPrimary }}>Your Social</span>
@@ -248,7 +254,7 @@ function URLBadge({ progress, glowPulse }: URLBadgeProps) {
   const opacity = interpolate(progress, [0, 1], [0, 1], {
     extrapolateRight: "clamp",
   });
-  const translateY = interpolate(progress, [0, 1], [20, 0]);
+  const translateY = interpolate(progress, [0, 1], [25, 0]);
   const scale = interpolate(progress, [0, 1], [0.9, 1]);
 
   return (
@@ -257,7 +263,7 @@ function URLBadge({ progress, glowPulse }: URLBadgeProps) {
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "center",
-        paddingBottom: 100,
+        paddingBottom: 110,
       }}
     >
       <div
@@ -268,21 +274,21 @@ function URLBadge({ progress, glowPulse }: URLBadgeProps) {
       >
         <div
           style={{
-            fontSize: 28,
+            fontSize: 34,
             fontWeight: 600,
             fontFamily: "Inter, sans-serif",
             color: COLORS.textPrimary,
-            padding: "14px 40px",
+            padding: "18px 50px",
             background: `linear-gradient(135deg, ${COLORS.darkCard}ee, ${COLORS.darkBg}ee)`,
-            borderRadius: 16,
-            border: `1px solid ${COLORS.darkBorder}`,
-            boxShadow: `0 0 ${30 + glowPulse * 15}px ${COLORS.cyan}40`,
+            borderRadius: 18,
+            border: `1px solid ${COLORS.cyan}40`,
+            boxShadow: `0 0 ${40 + glowPulse * 20}px ${COLORS.cyan}50`,
             display: "flex",
             alignItems: "center",
-            gap: 12,
+            gap: 14,
           }}
         >
-          <span style={{ color: COLORS.cyan }}>🌐</span>
+          <span style={{ color: COLORS.cyan, fontSize: 28 }}>🌐</span>
           <span>
             spike
             <span style={{ color: COLORS.amber }}>.land</span>
@@ -311,20 +317,21 @@ function FeaturePills() {
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "center",
-        paddingBottom: 30,
+        paddingBottom: 35,
       }}
     >
       <div
         style={{
           display: "flex",
-          gap: 12,
+          gap: 16,
           flexWrap: "wrap",
           justifyContent: "center",
-          maxWidth: 800,
+          maxWidth: 900,
         }}
       >
         {features.map((feature, index) => {
-          const delay = stagger(index, 6);
+          // Slower stagger for more breathing room
+          const delay = stagger(index, 10);
           const progress = spring({
             frame: frame - delay,
             fps,
@@ -334,7 +341,7 @@ function FeaturePills() {
           const opacity = interpolate(progress, [0, 1], [0, 1], {
             extrapolateRight: "clamp",
           });
-          const translateY = interpolate(progress, [0, 1], [10, 0]);
+          const translateY = interpolate(progress, [0, 1], [15, 0]);
           const scale = interpolate(progress, [0, 1], [0.9, 1]);
 
           return (
@@ -345,17 +352,17 @@ function FeaturePills() {
                 transform: `translateY(${translateY}px) scale(${scale})`,
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
-                padding: "10px 20px",
-                backgroundColor: `${COLORS.darkCard}90`,
-                borderRadius: 24,
+                gap: 10,
+                padding: "14px 26px",
+                backgroundColor: `${COLORS.darkCard}95`,
+                borderRadius: 28,
                 border: `1px solid ${COLORS.darkBorder}`,
               }}
             >
-              <span style={{ fontSize: 16 }}>{feature.icon}</span>
+              <span style={{ fontSize: 20 }}>{feature.icon}</span>
               <span
                 style={{
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: 500,
                   color: COLORS.textSecondary,
                   fontFamily: "Inter, sans-serif",

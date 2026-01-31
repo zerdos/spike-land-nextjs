@@ -1,6 +1,20 @@
 import { Composition, Folder } from "remotion";
 import { SCENE_DURATIONS, VIDEO_CONFIG } from "./lib/constants";
-import { EndCard, LiveUpdate, MyAppsAgent, OrbitDashboard, PromoVideo } from "./Video";
+import {
+  AIDiscovery,
+  ChatSolution,
+  EndCard,
+  GoingLive,
+  IntroHook,
+  LiveDeployment,
+  LiveUpdate,
+  MyAppsAgent,
+  OrbitDashboard,
+  PromoVideo,
+  ResultsProof,
+  TheProblem,
+  Transformation,
+} from "./Video";
 
 /**
  * Remotion Root - Composition Registry
@@ -11,7 +25,7 @@ import { EndCard, LiveUpdate, MyAppsAgent, OrbitDashboard, PromoVideo } from "./
 export const RemotionRoot = () => {
   return (
     <>
-      {/* Main promo video - 15 seconds */}
+      {/* Main promo video - 60 seconds */}
       <Composition
         id="PromoVideo"
         component={PromoVideo}
@@ -21,11 +35,11 @@ export const RemotionRoot = () => {
         height={VIDEO_CONFIG.height}
       />
 
-      {/* Individual scenes for preview/development */}
+      {/* New 8-scene structure */}
       <Folder name="Scenes">
         <Composition
-          id="Scene1-OrbitDashboard"
-          component={OrbitDashboard}
+          id="Scene1-IntroHook"
+          component={IntroHook}
           durationInFrames={SCENE_DURATIONS.scene1}
           fps={VIDEO_CONFIG.fps}
           width={VIDEO_CONFIG.width}
@@ -33,8 +47,8 @@ export const RemotionRoot = () => {
         />
 
         <Composition
-          id="Scene2-MyAppsAgent"
-          component={MyAppsAgent}
+          id="Scene2-TheProblem"
+          component={TheProblem}
           durationInFrames={SCENE_DURATIONS.scene2}
           fps={VIDEO_CONFIG.fps}
           width={VIDEO_CONFIG.width}
@@ -42,8 +56,8 @@ export const RemotionRoot = () => {
         />
 
         <Composition
-          id="Scene3-LiveUpdate"
-          component={LiveUpdate}
+          id="Scene3-AIDiscovery"
+          component={AIDiscovery}
           durationInFrames={SCENE_DURATIONS.scene3}
           fps={VIDEO_CONFIG.fps}
           width={VIDEO_CONFIG.width}
@@ -51,29 +65,56 @@ export const RemotionRoot = () => {
         />
 
         <Composition
-          id="Scene4-EndCard"
-          component={EndCard}
+          id="Scene4-ChatSolution"
+          component={ChatSolution}
           durationInFrames={SCENE_DURATIONS.scene4}
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+
+        <Composition
+          id="Scene5-Transformation"
+          component={Transformation}
+          durationInFrames={SCENE_DURATIONS.scene5}
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+
+        <Composition
+          id="Scene6-GoingLive"
+          component={GoingLive}
+          durationInFrames={SCENE_DURATIONS.scene6}
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+
+        <Composition
+          id="Scene7-ResultsProof"
+          component={ResultsProof}
+          durationInFrames={SCENE_DURATIONS.scene7}
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+
+        <Composition
+          id="Scene8-EndCard"
+          component={EndCard}
+          durationInFrames={SCENE_DURATIONS.scene8}
           fps={VIDEO_CONFIG.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
       </Folder>
 
-      {/* Extended durations for development */}
+      {/* Extended durations for development/testing */}
       <Folder name="Extended">
         <Composition
-          id="Scene1-Extended"
-          component={OrbitDashboard}
-          durationInFrames={180} // 6 seconds
-          fps={VIDEO_CONFIG.fps}
-          width={VIDEO_CONFIG.width}
-          height={VIDEO_CONFIG.height}
-        />
-
-        <Composition
-          id="Scene2-Extended"
-          component={MyAppsAgent}
+          id="IntroHook-Extended"
+          component={IntroHook}
           durationInFrames={300} // 10 seconds
           fps={VIDEO_CONFIG.fps}
           width={VIDEO_CONFIG.width}
@@ -81,18 +122,102 @@ export const RemotionRoot = () => {
         />
 
         <Composition
-          id="Scene3-Extended"
-          component={LiveUpdate}
-          durationInFrames={240} // 8 seconds
+          id="TheProblem-Extended"
+          component={TheProblem}
+          durationInFrames={480} // 16 seconds
           fps={VIDEO_CONFIG.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}
         />
 
         <Composition
-          id="Scene4-Extended"
+          id="AIDiscovery-Extended"
+          component={AIDiscovery}
+          durationInFrames={360} // 12 seconds
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+
+        <Composition
+          id="ChatSolution-Extended"
+          component={ChatSolution}
+          durationInFrames={600} // 20 seconds
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+
+        <Composition
+          id="Transformation-Extended"
+          component={Transformation}
+          durationInFrames={480} // 16 seconds
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+
+        <Composition
+          id="GoingLive-Extended"
+          component={GoingLive}
+          durationInFrames={480} // 16 seconds
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+
+        <Composition
+          id="ResultsProof-Extended"
+          component={ResultsProof}
+          durationInFrames={360} // 12 seconds
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+
+        <Composition
+          id="EndCard-Extended"
           component={EndCard}
-          durationInFrames={180} // 6 seconds
+          durationInFrames={300} // 10 seconds
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+      </Folder>
+
+      {/* Legacy scenes (from original 15s video) */}
+      <Folder name="Legacy">
+        <Composition
+          id="Legacy-OrbitDashboard"
+          component={OrbitDashboard}
+          durationInFrames={90}
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+
+        <Composition
+          id="Legacy-MyAppsAgent"
+          component={MyAppsAgent}
+          durationInFrames={150}
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+
+        <Composition
+          id="Legacy-LiveUpdate"
+          component={LiveUpdate}
+          durationInFrames={120}
+          fps={VIDEO_CONFIG.fps}
+          width={VIDEO_CONFIG.width}
+          height={VIDEO_CONFIG.height}
+        />
+
+        <Composition
+          id="Legacy-LiveDeployment"
+          component={LiveDeployment}
+          durationInFrames={240}
           fps={VIDEO_CONFIG.fps}
           width={VIDEO_CONFIG.width}
           height={VIDEO_CONFIG.height}

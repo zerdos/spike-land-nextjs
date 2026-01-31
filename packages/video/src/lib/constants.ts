@@ -5,27 +5,38 @@ export const VIDEO_CONFIG = {
   width: 1920,
   height: 1080,
   fps: 30,
-  durationInFrames: 450, // 15 seconds
+  durationInFrames: 1800, // 60 seconds (expanded for proper storytelling)
 } as const;
 
 /**
  * Scene timing in frames (at 30fps)
+ * Total: 1800 frames = 60 seconds
+ *
+ * Story Arc: Hook -> Problem -> Discovery -> Solution -> Transformation -> Deployment -> Proof -> CTA
  */
 export const TIMING = {
-  scene1: { start: 0, end: 90 }, // 0-3s: Orbit Dashboard
-  scene2: { start: 90, end: 240 }, // 3-8s: My-Apps Agent Chat
-  scene3: { start: 240, end: 360 }, // 8-12s: Live Update + Glitch
-  scene4: { start: 360, end: 450 }, // 12-15s: End Card
+  scene1: { start: 0, end: 150 }, // 0-5s: IntroHook - Brand reveal + hook question
+  scene2: { start: 150, end: 390 }, // 5-13s: TheProblem - Dashboard shows declining metrics
+  scene3: { start: 390, end: 570 }, // 13-19s: AIDiscovery - AI agent awakens
+  scene4: { start: 570, end: 930 }, // 19-31s: ChatSolution - User chats with AI
+  scene5: { start: 930, end: 1230 }, // 31-41s: Transformation - AI transforms dashboard
+  scene6: { start: 1230, end: 1470 }, // 41-49s: GoingLive - Syncing to all platforms
+  scene7: { start: 1470, end: 1650 }, // 49-55s: ResultsProof - Before/after comparison
+  scene8: { start: 1650, end: 1800 }, // 55-60s: EndCard - Brand and CTA
 } as const;
 
 /**
  * Scene durations in frames
  */
 export const SCENE_DURATIONS = {
-  scene1: TIMING.scene1.end - TIMING.scene1.start, // 90 frames (3s)
-  scene2: TIMING.scene2.end - TIMING.scene2.start, // 150 frames (5s)
-  scene3: TIMING.scene3.end - TIMING.scene3.start, // 120 frames (4s)
-  scene4: TIMING.scene4.end - TIMING.scene4.start, // 90 frames (3s)
+  scene1: TIMING.scene1.end - TIMING.scene1.start, // 150 frames (5s) - IntroHook
+  scene2: TIMING.scene2.end - TIMING.scene2.start, // 240 frames (8s) - TheProblem
+  scene3: TIMING.scene3.end - TIMING.scene3.start, // 180 frames (6s) - AIDiscovery
+  scene4: TIMING.scene4.end - TIMING.scene4.start, // 360 frames (12s) - ChatSolution
+  scene5: TIMING.scene5.end - TIMING.scene5.start, // 300 frames (10s) - Transformation
+  scene6: TIMING.scene6.end - TIMING.scene6.start, // 240 frames (8s) - GoingLive
+  scene7: TIMING.scene7.end - TIMING.scene7.start, // 180 frames (6s) - ResultsProof
+  scene8: TIMING.scene8.end - TIMING.scene8.start, // 150 frames (5s) - EndCard
 } as const;
 
 /**
