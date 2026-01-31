@@ -52,6 +52,14 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
       - name: Install dependencies
         run: yarn install --immutable
 
@@ -107,6 +115,14 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
       - name: Install dependencies
         run: yarn install --immutable
 
@@ -128,7 +144,7 @@ jobs:
             yarn vitest run --coverage --coverage.thresholds.lines=0 --coverage.thresholds.functions=0 --coverage.thresholds.branches=0 --coverage.thresholds.statements=0 --shard=${{ matrix.shard }}/4 --reporter=github-actions
           else
             # On PR/feature branch: run only changed tests (no coverage threshold enforcement)
-            yarn test:run --changed $(yarn find-last-passing-ci unit-tests-${{ matrix.shard }}) --shard=${{ matrix.shard }}/4 --reporter=github-actions
+            yarn test:run --changed main --shard=${{ matrix.shard }}/4 --reporter=github-actions
           fi
         env:
           # Provide dummy DATABASE_URL for Prisma 7 client engine initialization
@@ -163,6 +179,14 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
       - name: Install dependencies
         run: yarn install --immutable
 
@@ -188,6 +212,14 @@ jobs:
 
       - name: Enable Corepack
         run: corepack enable
+
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -215,6 +247,9 @@ jobs:
           # Provide dummy DATABASE_URL for Prisma 7 client engine initialization
           # Actual database connection only happens at runtime with real credentials
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
+          # Skip TypeScript during build - it runs in parallel via quality-checks job
+          # Note: Next.js 16 no longer runs ESLint during build by default
+          SKIP_TS_BUILD_CHECK: "true"
 
       - name: Verify build output
         run: |
@@ -223,7 +258,7 @@ jobs:
           echo "=== Checking for BUILD_ID ==="
           cat .next/BUILD_ID || echo "BUILD_ID not found!"
 
-      - name: Upload build artifacts for E2E tests
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-build
@@ -251,6 +286,14 @@ jobs:
 
       - name: Enable Corepack
         run: corepack enable
+
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -352,14 +395,15 @@ jobs:
   # TIER 2: E2E Tests - runs against localhost (after database seed)
   # ============================================================================
 
-  # E2E tests run against localhost with yarn dev, not against Vercel preview.
-  # This speeds up CI by not waiting for Vercel deployment.
+  # E2E tests run against localhost using Turbopack dev server.
+  # This speeds up CI by not waiting for the production build.
+  # Turbopack provides fast incremental compilation for dev mode.
   # Tests are sharded across 4 runners for faster execution.
   # Includes @requires-db tests - all shards connect to test database.
   e2e:
     name: E2E Tests [${{ matrix.shard }}/4]
     runs-on: ubuntu-latest
-    needs: [e2e-seed, build] # Wait for database seeding AND build before running tests
+    needs: [e2e-seed] # Only wait for database seeding, not build
     timeout-minutes: 45
     strategy:
       matrix:
@@ -377,6 +421,14 @@ jobs:
 
       - name: Enable Corepack
         run: corepack enable
+
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -397,11 +449,13 @@ jobs:
       - name: Install Playwright dependencies (always needed for system libs)
         run: yarn playwright install-deps chromium
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: nextjs-build
-          path: .next
+      - name: Generate Prisma client and update PnP manifest
+        run: |
+          yarn db:generate
+          yarn install
+
+      - name: Build shared package
+        run: yarn workspace @spike-npm-land/shared build
 
       - name: Run E2E tests (shard ${{ matrix.shard }}/4)
         env:
@@ -416,7 +470,7 @@ jobs:
           # Upstash Redis for queue operations
           KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
           KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
-        run: yarn start:server:and:test:ci
+        run: yarn start:server:and:test:turbo
       - name: Upload E2E test reports
         uses: actions/upload-artifact@v4
         if: always()
@@ -449,6 +503,14 @@ jobs:
 
       - name: Enable Corepack
         run: corepack enable
+
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -483,6 +545,14 @@ jobs:
 
       - name: Enable Corepack
         run: corepack enable
+
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: yarn install --immutable
