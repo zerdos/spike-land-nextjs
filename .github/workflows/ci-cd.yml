@@ -52,6 +52,14 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
       - name: Install dependencies
         run: yarn install --immutable
 
@@ -107,6 +115,14 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
       - name: Install dependencies
         run: yarn install --immutable
 
@@ -128,7 +144,7 @@ jobs:
             yarn vitest run --coverage --coverage.thresholds.lines=0 --coverage.thresholds.functions=0 --coverage.thresholds.branches=0 --coverage.thresholds.statements=0 --shard=${{ matrix.shard }}/4 --reporter=github-actions
           else
             # On PR/feature branch: run only changed tests (no coverage threshold enforcement)
-            yarn test:run --changed $(yarn find-last-passing-ci unit-tests-${{ matrix.shard }}) --shard=${{ matrix.shard }}/4 --reporter=github-actions
+            yarn test:run --changed main --shard=${{ matrix.shard }}/4 --reporter=github-actions
           fi
         env:
           # Provide dummy DATABASE_URL for Prisma 7 client engine initialization
@@ -163,6 +179,14 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
       - name: Install dependencies
         run: yarn install --immutable
 
@@ -188,6 +212,14 @@ jobs:
 
       - name: Enable Corepack
         run: corepack enable
+
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -254,6 +286,14 @@ jobs:
 
       - name: Enable Corepack
         run: corepack enable
+
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -381,6 +421,14 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
       - name: Install dependencies
         run: yarn install --immutable
 
@@ -455,6 +503,14 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
       - name: Install dependencies
         run: yarn install --immutable
 
@@ -488,6 +544,14 @@ jobs:
 
       - name: Enable Corepack
         run: corepack enable
+
+      - name: Cache Yarn packages
+        uses: actions/cache@v5
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: yarn install --immutable
