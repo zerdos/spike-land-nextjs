@@ -466,8 +466,13 @@ export const auth = async () => {
   // Check for E2E bypass via header (works on Vercel previews)
   // This is the primary bypass mechanism for CI/CD
   // SECURITY: Only enabled in non-production environments
+  // Staging (next.spike.land) is allowed to use E2E bypass for smoke tests
+  const { data: headersList } = await tryCatch(headers());
+  const host = headersList?.get("host") || "";
+  const isStagingDomain = host === "next.spike.land" || host.includes("localhost");
   const isProduction = process.env.NODE_ENV === "production" &&
-    process.env.VERCEL_ENV === "production";
+    process.env.VERCEL_ENV === "production" &&
+    !isStagingDomain;
   const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
 
   console.log("[Auth] Environment check:", {
@@ -475,10 +480,11 @@ export const auth = async () => {
     hasE2ESecret: !!e2eBypassSecret,
     nodeEnv: process.env.NODE_ENV,
     vercelEnv: process.env.VERCEL_ENV,
+    host,
+    isStagingDomain,
   });
 
   if (!isProduction && e2eBypassSecret) {
-    const { data: headersList } = await tryCatch(headers());
     const bypassHeader = headersList?.get("x-e2e-auth-bypass");
 
     console.log("[Auth] E2E bypass header check:", {
