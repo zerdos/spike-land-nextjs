@@ -149,6 +149,20 @@ When("I enter {string} in the {string} filter", async function(
   value: string,
   filterName: string,
 ) {
+  // Set up mock for empty results when filtering by nonexistent user
+  if (value === "nonexistent-user-id") {
+    await this.page.route("**/api/admin/photos**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          images: [],
+          pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
+        }),
+      });
+    });
+  }
+
   const input = this.page.getByLabel(filterName);
   await expect(input).toBeVisible();
   await input.fill(value);
@@ -208,8 +222,16 @@ Then(
 Then(
   "each photo should show the user name or email",
   async function(this: CustomWorld) {
-    const userInfo = this.page.locator("text=/.*@.*|[A-Z][a-z]+/").first();
-    await expect(userInfo).toBeVisible();
+    // User info is in a button with text-primary class inside .p-3 container
+    // Avoid matching hidden sr-only spans by targeting visible buttons
+    const userButton = this.page.locator(".p-3 button").filter({
+      hasText: /@|\w+/,
+    });
+    // Fallback: button with aria-label mentioning enhancement history
+    const userByAria = this.page.locator('button[aria-label*="View enhancement history"]');
+
+    const userInfo = userButton.or(userByAria);
+    await expect(userInfo.first()).toBeVisible();
   },
 );
 

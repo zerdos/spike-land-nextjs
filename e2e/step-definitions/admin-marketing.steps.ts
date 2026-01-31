@@ -91,9 +91,15 @@ Then(
   "the loading indicator should disappear when data loads",
   async function(this: CustomWorld) {
     await waitForPageReady(this.page, { strategy: "both" });
-    // Wait for metrics content to appear rather than loading to disappear
-    // Real-time polling keeps spinners visible, so check for actual content instead
-    const content = this.page.locator('[data-testid="metrics-loaded"], .metrics-content, h2, h3');
+    // Look for specific marketing content indicators, not generic headings
+    // Avoid h2/h3 which can match unrelated elements like "Send Feedback" dialog
+    const metricsCard = this.page.locator('[data-testid="metric-card"]');
+    const chartContainer = this.page.locator('[class*="recharts"], [class*="chart"]');
+    const marketingHeading = this.page.locator("h2, h3").filter({
+      hasText: /Daily Trends|Traffic Sources|Visitors|Sessions/i,
+    });
+
+    const content = metricsCard.or(chartContainer).or(marketingHeading);
     await expect(content.first()).toBeVisible({ timeout: 10000 });
   },
 );

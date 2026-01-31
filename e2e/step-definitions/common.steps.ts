@@ -455,11 +455,15 @@ Then(
 
 // Common date range picker check
 Then("I should see date range picker", async function(this: CustomWorld) {
+  // DateRangePicker is a Radix Select with role="combobox"
   const picker = this.page
-    .locator(
-      '[class*="DatePicker"], [class*="date-picker"], input[type="date"]',
+    .getByRole("combobox")
+    .or(
+      this.page.locator('button, [role="button"]').filter({
+        hasText: /Last \d+ days|Custom range|Select range/i,
+      }),
     )
-    .or(this.page.getByRole("button", { name: /date|calendar/i }));
+    .or(this.page.locator('[class*="DatePicker"], [class*="date-picker"], input[type="date"]'));
   await expect(picker.first()).toBeVisible();
 });
 
@@ -1193,11 +1197,16 @@ When(
 Then(
   "I should see {string} status",
   async function(this: CustomWorld, statusText: string) {
-    const status = this.page.locator(
-      `[data-testid*="status"]:has-text("${statusText}"), ` +
-        `[class*="badge"]:has-text("${statusText}"), ` +
-        `[class*="status"]:has-text("${statusText}")`,
-    );
+    // Use .filter() instead of invalid :has-text() pseudo-selector
+    const statusInTable = this.page.locator('td, [role="cell"]').filter({ hasText: statusText });
+    const statusInBadge = this.page.locator('[class*="badge"], [class*="Badge"]').filter({
+      hasText: statusText,
+    });
+    const statusByTestId = this.page.locator('[data-testid*="status"]').filter({
+      hasText: statusText,
+    });
+
+    const status = statusInTable.or(statusInBadge).or(statusByTestId);
     await expect(status.first()).toBeVisible({ timeout: 10000 });
   },
 );

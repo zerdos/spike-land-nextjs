@@ -12,17 +12,31 @@ import { FacebookClient } from "@/lib/social/clients/facebook";
 import { InstagramClient } from "@/lib/social/clients/instagram";
 import { LinkedInClient } from "@/lib/social/clients/linkedin";
 import { TwitterClient, TwitterHttpError } from "@/lib/social/clients/twitter";
+import { YouTubeClient } from "@/lib/social/clients/youtube";
 import { tryCatch } from "@/lib/try-catch";
 import type { SocialPlatform } from "@prisma/client";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 /**
- * Validate that the platform is a valid social platform
+ * Platforms that support liking posts
+ * Note: SNAPCHAT and PINTEREST don't support likes (SNAPCHAT has story replies, Pinterest has "saves")
+ * Note: DISCORD and TIKTOK are not yet implemented
+ */
+const LIKEABLE_PLATFORMS = [
+  "TWITTER",
+  "FACEBOOK",
+  "INSTAGRAM",
+  "LINKEDIN",
+  "YOUTUBE",
+] as const;
+
+/**
+ * Validate that the platform is a valid social platform that supports likes
  */
 function isValidPlatform(platform: string): platform is SocialPlatform {
-  return ["TWITTER", "FACEBOOK", "INSTAGRAM", "LINKEDIN"].includes(
-    platform.toUpperCase(),
+  return LIKEABLE_PLATFORMS.includes(
+    platform.toUpperCase() as (typeof LIKEABLE_PLATFORMS)[number],
   );
 }
 
@@ -89,6 +103,11 @@ async function likePostByPlatform(
       await client.likePost(postId);
       break;
     }
+    case "YOUTUBE": {
+      const client = new YouTubeClient({ accessToken, accountId });
+      await client.likePost(postId);
+      break;
+    }
     default:
       throw new Error(`Unsupported platform: ${platform}`);
   }
@@ -127,6 +146,11 @@ async function unlikePostByPlatform(
         throw new Error("Organization URN is required for LinkedIn");
       }
       const client = new LinkedInClient({ accessToken, organizationUrn });
+      await client.unlikePost(postId);
+      break;
+    }
+    case "YOUTUBE": {
+      const client = new YouTubeClient({ accessToken, accountId });
       await client.unlikePost(postId);
       break;
     }
