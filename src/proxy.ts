@@ -194,7 +194,8 @@ export async function proxy(request: NextRequest) {
   // Uses constant-time comparison to prevent timing attacks
   // SECURITY: Only enabled in non-production environments
   const e2eBypassHeader = request.headers.get("x-e2e-auth-bypass");
-  const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
+  // Sanitize the secret to handle any trailing whitespace/newlines from environment
+  const e2eBypassSecret = process.env.E2E_BYPASS_SECRET?.trim().replace(/[\r\n]/g, "");
 
   // Only allow E2E bypass in non-production environments
   // This prevents accidental bypass in production even if the secret leaks
