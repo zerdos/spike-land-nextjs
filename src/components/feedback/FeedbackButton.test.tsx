@@ -34,10 +34,34 @@ Object.defineProperty(navigator, "userAgent", {
   writable: true,
 });
 
+// Mock sessionStorage
+const mockSessionStorage = {
+  store: {} as Record<string, string>,
+  getItem: vi.fn((key: string) => mockSessionStorage.store[key] ?? null),
+  setItem: vi.fn((key: string, value: string) => {
+    mockSessionStorage.store[key] = value;
+  }),
+  removeItem: vi.fn((key: string) => {
+    delete mockSessionStorage.store[key];
+  }),
+  clear: vi.fn(() => {
+    mockSessionStorage.store = {};
+  }),
+  get length() {
+    return Object.keys(mockSessionStorage.store).length;
+  },
+  key: vi.fn((index: number) => Object.keys(mockSessionStorage.store)[index] ?? null),
+};
+Object.defineProperty(window, "sessionStorage", { value: mockSessionStorage });
+
 describe("FeedbackButton", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetch.mockReset();
+    mockSessionStorage.clear();
+    mockSessionStorage.getItem.mockClear();
+    mockSessionStorage.setItem.mockClear();
+    mockSessionStorage.removeItem.mockClear();
   });
 
   describe("when not authenticated", () => {
@@ -329,7 +353,7 @@ describe("FeedbackButton", () => {
       });
     });
 
-    it("resets form when panel is closed", async () => {
+    it("preserves form data when panel is closed", async () => {
       const user = userEvent.setup();
       render(<FeedbackButton />);
 
@@ -349,7 +373,7 @@ describe("FeedbackButton", () => {
       // Close panel
       await user.click(screen.getByRole("button", { name: "Close feedback" }));
 
-      // Wait for panel to close and form to reset (reset happens after 300ms timeout)
+      // Wait for panel to close
       await waitFor(
         () => {
           expect(screen.getByRole("button", { name: "Send feedback" }))
@@ -358,19 +382,20 @@ describe("FeedbackButton", () => {
         { timeout: 500 },
       );
 
-      // Wait extra time for the reset timeout to complete (300ms in component)
-      await new Promise((r) => setTimeout(r, 350));
-
       // Reopen panel
       await user.click(screen.getByRole("button", { name: "Send feedback" }));
 
-      // Check form is reset - message and email should be empty
+      // Check form data is preserved - message and email should still have values
       await waitFor(
         () => {
           expect(screen.getByPlaceholderText("Describe your feedback..."))
-            .toHaveValue("");
+            .toHaveValue("Some message");
           expect(screen.getByPlaceholderText("Email (optional)")).toHaveValue(
-            "",
+            "test@test.com",
+          );
+          // Idea type should still be selected
+          expect(screen.getByRole("button", { name: /idea/i })).toHaveClass(
+            "bg-secondary/50",
           );
         },
         { timeout: 500 },
@@ -442,6 +467,88 @@ describe("FeedbackButton", () => {
         expect(screen.getByRole("button", { name: "Send feedback" }))
           .toBeInTheDocument();
       });
+    });
+
+    it("persists form data to sessionStorage on input", async () => {
+      const user = userEvent.setup();
+      render(<FeedbackButton />);
+
+      await user.click(screen.getByRole("button", { name: "Send feedback" }));
+      await user.type(
+        screen.getByPlaceholderText("Describe your feedback..."),
+        "My feedback",
+      );
+
+      expect(mockSessionStorage.setItem).toHaveBeenCalled();
+      const lastCall = mockSessionStorage.setItem.mock.calls[
+        mockSessionStorage.setItem.mock.calls.length - 1
+      ];
+      expect(lastCall).toBeDefined();
+      expect(lastCall![0]).toBe("spike-feedback-draft");
+      const storedData = JSON.parse(lastCall![1]);
+      expect(storedData.message).toBe("My feedback");
+    });
+
+    it("restores form data from sessionStorage on mount", async () => {
+      // Set up saved data before rendering
+      mockSessionStorage.store["spike-feedback-draft"] = JSON.stringify({
+        feedbackType: "IDEA",
+        message: "Saved feedback",
+        email: "saved@example.com",
+      });
+
+      const user = userEvent.setup();
+      render(<FeedbackButton />);
+
+      await user.click(screen.getByRole("button", { name: "Send feedback" }));
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText("Describe your feedback..."))
+          .toHaveValue("Saved feedback");
+        expect(screen.getByPlaceholderText("Email (optional)")).toHaveValue(
+          "saved@example.com",
+        );
+        expect(screen.getByRole("button", { name: /idea/i })).toHaveClass(
+          "bg-secondary/50",
+        );
+      });
+    });
+
+    it("clears sessionStorage on successful submission", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true }),
+      });
+
+      const user = userEvent.setup();
+      render(<FeedbackButton />);
+
+      await user.click(screen.getByRole("button", { name: "Send feedback" }));
+      await user.type(
+        screen.getByPlaceholderText("Describe your feedback..."),
+        "Test feedback",
+      );
+      await user.click(screen.getByRole("button", { name: /submit/i }));
+
+      await waitFor(() => {
+        expect(mockSessionStorage.removeItem).toHaveBeenCalledWith(
+          "spike-feedback-draft",
+        );
+      });
+    });
+
+    it("handles invalid sessionStorage data gracefully", async () => {
+      // Set up invalid JSON in storage
+      mockSessionStorage.store["spike-feedback-draft"] = "invalid json{";
+
+      const user = userEvent.setup();
+      render(<FeedbackButton />);
+
+      // Should not throw and should render normally
+      await user.click(screen.getByRole("button", { name: "Send feedback" }));
+
+      expect(screen.getByPlaceholderText("Describe your feedback..."))
+        .toHaveValue("");
     });
   });
 

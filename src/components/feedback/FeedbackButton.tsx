@@ -12,8 +12,14 @@ import { toast } from "sonner";
 
 type FeedbackType = "BUG" | "IDEA" | "OTHER";
 
-// Animation duration in milliseconds - must match CSS transition duration-300
-const ANIMATION_DURATION_MS = 300;
+// sessionStorage key for persisting draft feedback
+const STORAGE_KEY = "spike-feedback-draft";
+
+interface StoredFeedback {
+  feedbackType: FeedbackType;
+  message: string;
+  email: string;
+}
 
 interface FeedbackButtonProps {
   className?: string;
@@ -35,10 +41,36 @@ export const FeedbackButton = memo(
 
     const isAuthenticated = status === "authenticated" && session?.user;
 
+    // Restore form data from sessionStorage on mount
+    useEffect(() => {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const {
+            feedbackType: savedType,
+            message: savedMsg,
+            email: savedEmail,
+          } = JSON.parse(saved) as StoredFeedback;
+          if (savedType) setFeedbackType(savedType);
+          if (savedMsg) setMessage(savedMsg);
+          if (savedEmail) setEmail(savedEmail);
+        } catch {
+          // Invalid JSON, ignore
+        }
+      }
+    }, []);
+
+    // Persist form data to sessionStorage on every change
+    useEffect(() => {
+      const data: StoredFeedback = { feedbackType, message, email };
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }, [feedbackType, message, email]);
+
     const resetForm = () => {
       setFeedbackType("BUG");
       setMessage("");
       setEmail("");
+      sessionStorage.removeItem(STORAGE_KEY);
     };
 
     // Close when clicking outside - only attach listener when panel is open
@@ -56,15 +88,6 @@ export const FeedbackButton = memo(
 
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [open]);
-
-    // Reset form after close animation
-    useEffect(() => {
-      if (!open) {
-        const timer = setTimeout(() => resetForm(), ANIMATION_DURATION_MS);
-        return () => clearTimeout(timer);
-      }
-      return undefined;
     }, [open]);
 
     const handleSubmit = async () => {
@@ -111,6 +134,7 @@ export const FeedbackButton = memo(
         } else {
           toast.success("Thank you for your feedback!");
         }
+        resetForm();
         setOpen(false);
       } catch (error) {
         console.error("Error submitting feedback:", error);
