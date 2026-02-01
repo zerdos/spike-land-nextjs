@@ -83,9 +83,9 @@ export function AuthButtons({ className }: AuthButtonsProps) {
   const [error, setError] = useState<string | null>(null);
 
   const getCallbackUrl = (): string => {
-    if (typeof window === "undefined") return "/apps/pixel";
+    if (typeof window === "undefined") return "/orbit";
     const params = new URLSearchParams(window.location.search);
-    const callbackUrl = params.get("callbackUrl") || "/apps/pixel";
+    const callbackUrl = params.get("callbackUrl") || "/orbit";
     // Validate URL to prevent open redirect attacks
     try {
       const url = new URL(callbackUrl, window.location.origin);
@@ -95,7 +95,7 @@ export function AuthButtons({ className }: AuthButtonsProps) {
     } catch {
       // Malformed URL; use default
     }
-    return "/apps/pixel";
+    return "/orbit";
   };
 
   const checkEmail = async (): Promise<EmailCheckResponse | null> => {
@@ -163,12 +163,12 @@ export function AuthButtons({ className }: AuthButtonsProps) {
       if (result?.error) {
         setError("Invalid email or password");
       } else if (result?.ok) {
-        // Redirect to callback URL or Pixel app on success
+        // Redirect to callback URL or Orbit on success
         const params = new URLSearchParams(window.location.search);
-        const callbackUrl = params.get("callbackUrl") || "/apps/pixel";
+        const callbackUrl = params.get("callbackUrl") || "/orbit";
 
         // Validate URL to prevent open redirect attacks
-        let safeUrl = "/apps/pixel";
+        let safeUrl = "/orbit";
         try {
           // Only allow same-origin absolute URLs or relative paths
           const url = new URL(callbackUrl, window.location.origin);
@@ -228,9 +228,9 @@ export function AuthButtons({ className }: AuthButtonsProps) {
         );
       } else if (result?.ok) {
         const params = new URLSearchParams(window.location.search);
-        const callbackUrl = params.get("callbackUrl") || "/apps/pixel";
+        const callbackUrl = params.get("callbackUrl") || "/orbit";
 
-        let safeUrl = "/apps/pixel";
+        let safeUrl = "/orbit";
         try {
           const url = new URL(callbackUrl, window.location.origin);
           if (url.origin === window.location.origin) {

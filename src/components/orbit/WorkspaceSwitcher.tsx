@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Check, ChevronDown, Clock, Plus, Star } from "lucide-react";
+import Link from "next/link";
 import { useMemo } from "react";
 import { getGraphemes } from "./constants";
 import { useWorkspace } from "./WorkspaceContext";
@@ -219,12 +220,14 @@ export function WorkspaceSwitcher() {
 
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          className="gap-2"
-          disabled
+          className="gap-2 cursor-pointer"
           data-testid="create-workspace-option"
+          asChild
         >
-          <Plus className="h-4 w-4" />
-          <span>Create Workspace</span>
+          <Link href="/orbit/onboarding">
+            <Plus className="h-4 w-4" />
+            <span>Create Workspace</span>
+          </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
