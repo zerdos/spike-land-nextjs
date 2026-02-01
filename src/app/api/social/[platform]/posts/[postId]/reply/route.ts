@@ -17,6 +17,18 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 /**
+ * Platforms that support replying to posts
+ * Note: TIKTOK, YOUTUBE, SNAPCHAT have canReply in PLATFORM_CAPABILITIES but
+ * the API clients for these platforms don't support replies yet
+ */
+const REPLYABLE_PLATFORMS = [
+  "TWITTER",
+  "FACEBOOK",
+  "INSTAGRAM",
+  "LINKEDIN",
+] as const;
+
+/**
  * Platform-specific character limits for replies
  */
 export const PLATFORM_CHARACTER_LIMITS: Record<string, number> = {
@@ -27,11 +39,13 @@ export const PLATFORM_CHARACTER_LIMITS: Record<string, number> = {
 };
 
 /**
- * Validate that the platform is a valid social platform
+ * Validate that the platform is a valid social platform that supports replies
  */
 function isValidPlatform(platform: string): platform is SocialPlatform {
-  return ["TWITTER", "FACEBOOK", "INSTAGRAM", "LINKEDIN"].includes(
-    platform.toUpperCase(),
+  // Normalize and validate
+  const normalized = platform?.trim().toUpperCase();
+  return REPLYABLE_PLATFORMS.includes(
+    normalized as (typeof REPLYABLE_PLATFORMS)[number],
   );
 }
 
@@ -143,11 +157,15 @@ export async function POST(
   }
 
   const { platform: platformParam, postId } = await params;
-  const platform = platformParam.toUpperCase();
+  const platform = platformParam?.trim().toUpperCase();
 
   if (!isValidPlatform(platform)) {
     return NextResponse.json(
-      { error: `Invalid platform: ${platformParam}` },
+      {
+        error: `Invalid platform: ${platformParam}. Supported platforms: ${
+          REPLYABLE_PLATFORMS.join(", ")
+        }`,
+      },
       { status: 400 },
     );
   }

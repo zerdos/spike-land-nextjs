@@ -131,6 +131,7 @@ describe("Reply API Route", () => {
       expect(response.status).toBe(400);
       const data = await response.json();
       expect(data.error).toContain("Invalid platform");
+      expect(data.error).toContain("Supported platforms");
     });
 
     it("returns 400 when accountId is missing", async () => {
@@ -325,6 +326,35 @@ describe("Reply API Route", () => {
 
       // Should pass validation (500 < 8000)
       expect(response.status).toBe(200);
+    });
+
+    it("successfully replies to a Facebook post (regression test for #972)", async () => {
+      mockAuth.mockResolvedValue({ user: { id: "user-123" } });
+      mockPrisma.socialAccount.findFirst.mockResolvedValue({
+        id: "acc-123",
+        status: "ACTIVE",
+        accessTokenEncrypted: "token",
+        accountId: "fb-page-123",
+      });
+
+      const mockCommentOnPost = vi.fn().mockResolvedValue({
+        id: "comment-789",
+      });
+      MockFacebookClient.mockImplementation(function() {
+        return { commentOnPost: mockCommentOnPost };
+      });
+
+      // Use lowercase "facebook" as would come from URL path
+      const response = await POST(
+        createRequest({ accountId: "acc-123", content: "Great post!" }),
+        createParams("facebook", "post-456"),
+      );
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.success).toBe(true);
+      expect(data.reply).toEqual({ id: "comment-789" });
+      expect(mockCommentOnPost).toHaveBeenCalledWith("post-456", "Great post!");
     });
   });
 });
