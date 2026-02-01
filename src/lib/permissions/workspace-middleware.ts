@@ -31,6 +31,8 @@ export async function getWorkspaceMembership(
   userId: string,
   workspaceId: string,
 ): Promise<WorkspaceMemberInfo | null> {
+  console.log(`[DEBUG] getWorkspaceMembership: userId=${userId}, workspaceId=${workspaceId}`);
+
   const { data: membership, error } = await tryCatch(
     prisma.workspaceMember.findUnique({
       where: {
@@ -46,8 +48,27 @@ export async function getWorkspaceMembership(
   );
 
   if (error) {
-    console.error("Failed to fetch workspace membership:", error);
+    console.error(`[ERROR] getWorkspaceMembership failed:`, error);
     return null;
+  }
+
+  if (!membership) {
+    console.warn(
+      `[WARN] No membership found for userId=${userId} in workspaceId=${workspaceId} with joinedAt != null`,
+    );
+
+    // Check if it exists but joinedAt is null
+    const rawMembership = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId, userId } },
+    });
+
+    if (rawMembership) {
+      console.warn(`[WARN] Membership exists but joinedAt is:`, rawMembership.joinedAt);
+    } else {
+      console.warn(`[WARN] No membership record exists at all for this user/workspace pair.`);
+    }
+  } else {
+    console.log(`[DEBUG] getWorkspaceMembership success: role=${membership.role}`);
   }
 
   return membership;

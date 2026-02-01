@@ -90,7 +90,7 @@ describe("workspace-middleware", () => {
 
       expect(result).toBeNull();
       expect(console.error).toHaveBeenCalledWith(
-        "Failed to fetch workspace membership:",
+        "[ERROR] getWorkspaceMembership failed:",
         error,
       );
     });

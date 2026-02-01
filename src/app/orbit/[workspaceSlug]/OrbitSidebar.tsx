@@ -56,62 +56,79 @@ export function OrbitSidebar({
 }: OrbitSidebarProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const navItems = getNavItems(workspaceSlug);
 
-  const NavContent = () => (
-    <div className="flex h-full flex-col bg-background">
-      <div className="border-b px-3 py-3">
-        <div className="flex items-center justify-between gap-2">
-          <WorkspaceSwitcher />
-          <NotificationBell workspaceSlug={workspaceSlug} />
-        </div>
-      </div>
+  interface NavContentProps {
+    workspaceSlug: string;
+    pathname: string;
+    userName?: string | null;
+    userEmail?: string | null;
+    setOpen: (open: boolean) => void;
+  }
 
-      <div className="flex-1 overflow-y-auto py-4">
-        <nav className="space-y-1 px-3">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <span>{item.icon}</span>
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+  const NavContent = ({
+    workspaceSlug,
+    pathname,
+    userName,
+    userEmail,
+    setOpen,
+  }: NavContentProps) => {
+    const navItems = getNavItems(workspaceSlug);
 
-      <div className="border-t p-4">
-        <div className="flex items-center gap-3">
-          <UserAvatar user={{ name: userName, email: userEmail }} />
-          <div className="flex flex-col overflow-hidden">
-            <span className="truncate text-sm font-medium">{userName}</span>
-            <span className="truncate text-xs text-muted-foreground">
-              {userEmail}
-            </span>
+    return (
+      <div className="flex h-full flex-col bg-background">
+        <div className="border-b px-3 py-3">
+          <div className="flex items-center justify-between gap-2">
+            <WorkspaceSwitcher />
+            <NotificationBell workspaceSlug={workspaceSlug} />
           </div>
         </div>
-        <div className="mt-4">
-          <Link
-            href="/"
-            className="block w-full rounded-md border p-2 text-center text-sm font-medium hover:bg-muted"
-          >
-            Back to App
-          </Link>
+
+        <div className="flex-1 overflow-y-auto py-4">
+          <nav className="space-y-1 px-3">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  <span>{item.icon}</span>
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="border-t p-4">
+          <div className="flex items-center gap-3">
+            <UserAvatar user={{ name: userName, email: userEmail }} />
+            <div className="flex flex-col overflow-hidden">
+              <span className="truncate text-sm font-medium">{userName}</span>
+              <span className="truncate text-xs text-muted-foreground">
+                {userEmail}
+              </span>
+            </div>
+          </div>
+          <div className="mt-4">
+            <Link
+              href="/"
+              className="block w-full rounded-md border p-2 text-center text-sm font-medium hover:bg-muted"
+            >
+              Back to App
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>
@@ -128,13 +145,25 @@ export function OrbitSidebar({
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-[280px] p-0">
-          <NavContent />
+          <NavContent
+            workspaceSlug={workspaceSlug}
+            pathname={pathname}
+            userName={userName}
+            userEmail={userEmail}
+            setOpen={setOpen}
+          />
         </SheetContent>
       </Sheet>
 
       {/* Desktop Sidebar */}
       <div className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r bg-background lg:flex">
-        <NavContent />
+        <NavContent
+          workspaceSlug={workspaceSlug}
+          pathname={pathname}
+          userName={userName}
+          userEmail={userEmail}
+          setOpen={setOpen}
+        />
       </div>
     </>
   );
