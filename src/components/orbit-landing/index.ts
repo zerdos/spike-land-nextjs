@@ -7,6 +7,7 @@
 
 export { ABTestingSection } from "./ABTestingSection";
 export { AIAutomationSection } from "./AIAutomationSection";
+export { BlogPreviewSection } from "./BlogPreviewSection";
 export { EcosystemOverview } from "./EcosystemOverview";
 export { OrbitCTA } from "./OrbitCTA";
 export { OrbitHero } from "./OrbitHero";

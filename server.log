@@ -1,0 +1,32 @@
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+
+✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+✓ Ready in 5.9s
+○ Compiling / ...
+ GET / 200 in 10.7s (compile: 9.7s, proxy.ts: 293ms, render: 725ms)
+ GET /noise.png 404 in 2.4s (compile: 2.0s, render: 400ms)
+○ Compiling /_not-found/page ...
+Upstash Redis environment variables not set, using in-memory storage
+(node:7556) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[Tracking] Created new session cml4asr5d0000twj6jckr8k8s for visitor v_ml4aso8u_amrhy6mv54
+ POST /api/tracking/session 201 in 4.0s (compile: 3.1s, proxy.ts: 34ms, render: 898ms)
+ GET /api/auth/session 200 in 4.9s (compile: 4.8s, proxy.ts: 13ms, render: 46ms)
+ GET /api/auth/session 200 in 159ms (compile: 96ms, proxy.ts: 30ms, render: 33ms)
+ POST /api/errors/report 200 in 1421ms (compile: 1291ms, proxy.ts: 9ms, render: 122ms)
+[Tracking] Recorded event "page_scroll_25" (engagement) for session cml4asr5d0000twj6jckr8k8s
+ POST /api/tracking/event 201 in 858ms (compile: 762ms, proxy.ts: 15ms, render: 81ms)
