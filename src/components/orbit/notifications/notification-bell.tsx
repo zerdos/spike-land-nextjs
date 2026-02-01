@@ -12,6 +12,9 @@ import { AlertCircle, Bell, CheckCheck, CheckCircle2, Info, TriangleAlert } from
 import Link from "next/link";
 import { useCallback, useState } from "react";
 
+const UNDEFINED_SLUG = "undefined";
+const PLACEHOLDER_SLUG = "[workspaceSlug]";
+
 /**
  * Props for the NotificationBell component
  */
@@ -240,8 +243,8 @@ export function NotificationBell({
   pollInterval = 30000,
 }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const skipPolling = !workspaceSlug || workspaceSlug === "undefined" ||
-    workspaceSlug === "[workspaceSlug]";
+  const skipPolling = !workspaceSlug || workspaceSlug === UNDEFINED_SLUG ||
+    workspaceSlug === PLACEHOLDER_SLUG;
 
   const {
     notifications,
