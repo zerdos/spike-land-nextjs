@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -12,9 +12,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -29,9 +29,9 @@ const formSchema = z.object({
   message: z.string().min(10, {
     message: "Message must be at least 10 characters.",
   }),
-})
+});
 
-type ContactFormValues = z.infer<typeof formSchema>
+type ContactFormValues = z.infer<typeof formSchema>;
 
 export function ContactForm() {
   const form = useForm<ContactFormValues>({
@@ -42,11 +42,11 @@ export function ContactForm() {
       company: "",
       message: "",
     },
-  })
+  });
 
   function onSubmit(data: ContactFormValues) {
     // This is where you would handle form submission
-    console.log(data)
+    console.log(data);
   }
 
   return (
@@ -113,5 +113,5 @@ export function ContactForm() {
         </Button>
       </form>
     </Form>
-  )
+  );
 }

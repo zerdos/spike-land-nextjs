@@ -13,12 +13,14 @@ describe("LandingPageStructuredData", () => {
       const json = JSON.parse(script.innerHTML);
       expect(json["@context"]).toBe("https://schema.org");
       expect(json["@graph"]).toHaveLength(5);
-      
+
       const organization = json["@graph"].find((item: any) => item["@type"] === "Organization");
       expect(organization).toBeDefined();
       expect(organization.name).toBe("Spike Land");
-      
-      const localBusiness = json["@graph"].find((item: any) => item["@type"] === "ProfessionalService");
+
+      const localBusiness = json["@graph"].find((item: any) =>
+        item["@type"] === "ProfessionalService"
+      );
       expect(localBusiness).toBeDefined();
       expect(localBusiness.address.addressCountry).toBe("GB");
 

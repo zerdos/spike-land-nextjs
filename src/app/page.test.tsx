@@ -20,7 +20,7 @@ vi.mock("@/components/orbit-landing", () => ({
 describe("Home Page", () => {
   it("should render all sections", () => {
     render(<Home />);
-    
+
     expect(screen.getByTestId("orbit-hero")).toBeInTheDocument();
     expect(screen.getByTestId("platform-connections")).toBeInTheDocument();
     expect(screen.getByTestId("ai-automation-section")).toBeInTheDocument();

@@ -1,18 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as watcher from '../watcher';
-import { existsSync, mkdirSync } from 'fs';
-import { readFile, writeFile } from 'fs/promises';
-import { pullCode, pushCode, withRetry } from '../sync';
-import chokidar from 'chokidar';
-import path from 'path';
+import chokidar from "chokidar";
+import { existsSync, mkdirSync } from "fs";
+import { readFile, writeFile } from "fs/promises";
+import path from "path";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { pullCode, pushCode, withRetry } from "../sync";
+import * as watcher from "../watcher";
 
 // Mock dependencies
-vi.mock('fs');
-vi.mock('fs/promises');
-vi.mock('chokidar');
-vi.mock('../sync');
+vi.mock("fs");
+vi.mock("fs/promises");
+vi.mock("chokidar");
+vi.mock("../sync");
 
-describe('Watcher Module', () => {
+describe("Watcher Module", () => {
   const mockWatcher = {
     on: vi.fn(),
     close: vi.fn(),
@@ -25,81 +25,81 @@ describe('Watcher Module', () => {
     vi.mocked(withRetry).mockImplementation(async (fn) => fn());
   });
 
-  describe('getLiveDir', () => {
-    it('should return live directory path', () => {
+  describe("getLiveDir", () => {
+    it("should return live directory path", () => {
       const dir = watcher.getLiveDir();
-      expect(dir).toBe(path.join(process.cwd(), 'live'));
+      expect(dir).toBe(path.join(process.cwd(), "live"));
     });
   });
 
-  describe('getLocalPath', () => {
-    it('should return local file path', () => {
-      const filePath = watcher.getLocalPath('test-code');
-      expect(filePath).toBe(path.join(process.cwd(), 'live', 'test-code.tsx'));
+  describe("getLocalPath", () => {
+    it("should return local file path", () => {
+      const filePath = watcher.getLocalPath("test-code");
+      expect(filePath).toBe(path.join(process.cwd(), "live", "test-code.tsx"));
     });
 
-    it('should sanitize codespace id', () => {
-      const filePath = watcher.getLocalPath('test/code');
-      expect(filePath).toBe(path.join(process.cwd(), 'live', 'test-code.tsx'));
+    it("should sanitize codespace id", () => {
+      const filePath = watcher.getLocalPath("test/code");
+      expect(filePath).toBe(path.join(process.cwd(), "live", "test-code.tsx"));
     });
   });
 
-  describe('ensureLiveDir', () => {
-    it('should create directory if it does not exist', () => {
+  describe("ensureLiveDir", () => {
+    it("should create directory if it does not exist", () => {
       vi.mocked(existsSync).mockReturnValue(false);
       watcher.ensureLiveDir();
-      expect(mkdirSync).toHaveBeenCalledWith(expect.stringContaining('live'), { recursive: true });
+      expect(mkdirSync).toHaveBeenCalledWith(expect.stringContaining("live"), { recursive: true });
     });
 
-    it('should not create directory if it exists', () => {
+    it("should not create directory if it exists", () => {
       vi.mocked(existsSync).mockReturnValue(true);
       watcher.ensureLiveDir();
       expect(mkdirSync).not.toHaveBeenCalled();
     });
   });
 
-  describe('downloadToLocal', () => {
-    it('should download code and save to file', async () => {
-      vi.mocked(pullCode).mockResolvedValue('code content');
+  describe("downloadToLocal", () => {
+    it("should download code and save to file", async () => {
+      vi.mocked(pullCode).mockResolvedValue("code content");
       vi.mocked(existsSync).mockReturnValue(true);
 
-      const result = await watcher.downloadToLocal('code1');
+      const result = await watcher.downloadToLocal("code1");
 
-      expect(result).toContain('code1.tsx');
-      expect(pullCode).toHaveBeenCalledWith('code1');
+      expect(result).toContain("code1.tsx");
+      expect(pullCode).toHaveBeenCalledWith("code1");
       expect(writeFile).toHaveBeenCalledWith(
-        expect.stringContaining('code1.tsx'),
-        'code content',
-        'utf-8'
+        expect.stringContaining("code1.tsx"),
+        "code content",
+        "utf-8",
       );
       expect(writeFile).toHaveBeenCalledWith(
-        expect.stringContaining('code1.meta.json'),
+        expect.stringContaining("code1.meta.json"),
         expect.any(String),
-        'utf-8'
+        "utf-8",
       );
     });
   });
 
-  describe('watchCodespace', () => {
-    it('should start watching file', () => {
-      const w = watcher.watchCodespace('code1');
+  describe("watchCodespace", () => {
+    it("should start watching file", () => {
+      const w = watcher.watchCodespace("code1");
 
-      expect(w.codespaceId).toBe('code1');
+      expect(w.codespaceId).toBe("code1");
       expect(w.watcher).toBe(mockWatcher);
-      expect(mockWatcher.on).toHaveBeenCalledWith('change', expect.any(Function));
-      expect(mockWatcher.on).toHaveBeenCalledWith('error', expect.any(Function));
+      expect(mockWatcher.on).toHaveBeenCalledWith("change", expect.any(Function));
+      expect(mockWatcher.on).toHaveBeenCalledWith("error", expect.any(Function));
     });
 
-    it('should sync changes when file changes', async () => {
+    it("should sync changes when file changes", async () => {
       vi.useFakeTimers();
-      const w = watcher.watchCodespace('code1', { debounceMs: 100 });
+      const w = watcher.watchCodespace("code1", { debounceMs: 100 });
 
       // Extract the change handler
-      const changeHandler = mockWatcher.on.mock.calls.find(call => call[0] === 'change')?.[1];
+      const changeHandler = mockWatcher.on.mock.calls.find(call => call[0] === "change")?.[1];
       expect(changeHandler).toBeDefined();
 
       // Simulate file change
-      vi.mocked(readFile).mockResolvedValue('new code');
+      vi.mocked(readFile).mockResolvedValue("new code");
       changeHandler();
 
       // Fast forward timer
@@ -109,7 +109,7 @@ describe('Watcher Module', () => {
       await vi.runAllTicks();
 
       expect(readFile).toHaveBeenCalled();
-      expect(pushCode).toHaveBeenCalledWith('code1', 'new code');
+      expect(pushCode).toHaveBeenCalledWith("code1", "new code");
 
       vi.useRealTimers();
     });

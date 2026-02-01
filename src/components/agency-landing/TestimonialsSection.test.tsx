@@ -32,7 +32,7 @@ describe("TestimonialsSection Component", () => {
 
   it("should render all 3 testimonials", () => {
     render(<TestimonialsSection />);
-    
+
     // Check for author names
     expect(screen.getByText("Sarah Johnson")).toBeInTheDocument();
     expect(screen.getByText("Michael Chen")).toBeInTheDocument();

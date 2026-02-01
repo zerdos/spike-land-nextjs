@@ -1,11 +1,14 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { TechStackSection } from "./tech-stack-section";
 
 // Mock framer-motion to avoid animation issues in tests
 vi.mock("framer-motion", () => ({
   motion: {
-    div: ({ children, className, initial, whileInView, viewport, transition, whileHover, ...props }: any) => (
+    div: (
+      { children, className, initial, whileInView, viewport, transition, whileHover, ...props }:
+        any,
+    ) => (
       <div className={className} {...props}>
         {children}
       </div>
@@ -21,7 +24,7 @@ describe("TechStackSection", () => {
 
   it("renders all tech stack items", () => {
     render(<TechStackSection />);
-    
+
     const techs = [
       "Next.js",
       "TypeScript",

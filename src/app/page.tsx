@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import {
   ABTestingSection,
   AIAutomationSection,
@@ -9,6 +8,7 @@ import {
   PlatformConnections,
 } from "@/components/orbit-landing";
 import { LandingPageStructuredData } from "@/components/seo/LandingPageStructuredData";
+import type { Metadata } from "next";
 
 /**
  * Spike Land Landing Page - Orbit Social Media Command Center

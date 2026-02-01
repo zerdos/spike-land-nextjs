@@ -1,37 +1,42 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Search, Palette, Code, Rocket, LifeBuoy } from "lucide-react";
+import { Code, LifeBuoy, Palette, Rocket, Search } from "lucide-react";
 
 const steps = [
   {
     id: "discovery",
     title: "Discovery",
-    description: "We start by diving deep into your vision, goals, and target audience to build a solid foundation.",
+    description:
+      "We start by diving deep into your vision, goals, and target audience to build a solid foundation.",
     icon: Search,
   },
   {
     id: "design",
     title: "Design",
-    description: "We create intuitive, high-fidelity prototypes and designs that perfectly align with your brand identity.",
+    description:
+      "We create intuitive, high-fidelity prototypes and designs that perfectly align with your brand identity.",
     icon: Palette,
   },
   {
     id: "build",
     title: "Build",
-    description: "We develop your product using the latest technologies and best practices for performance and scalability.",
+    description:
+      "We develop your product using the latest technologies and best practices for performance and scalability.",
     icon: Code,
   },
   {
     id: "ship",
     title: "Ship",
-    description: "We handle the deployment process to ensure your product launches smoothly and reaches your users.",
+    description:
+      "We handle the deployment process to ensure your product launches smoothly and reaches your users.",
     icon: Rocket,
   },
   {
     id: "support",
     title: "Support",
-    description: "We provide ongoing maintenance and support to ensure your product continues to perform perfectly.",
+    description:
+      "We provide ongoing maintenance and support to ensure your product continues to perform perfectly.",
     icon: LifeBuoy,
   },
 ];
@@ -62,7 +67,7 @@ export function ProcessSection() {
     <section className="py-24 bg-background overflow-hidden">
       <div className="container px-4 mx-auto">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -70,14 +75,15 @@ export function ProcessSection() {
           >
             Our Process
           </motion.h2>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
             className="text-lg text-muted-foreground"
           >
-            From idea to launch and beyond, we follow a proven workflow to deliver exceptional results.
+            From idea to launch and beyond, we follow a proven workflow to deliver exceptional
+            results.
           </motion.p>
         </div>
 
@@ -85,7 +91,7 @@ export function ProcessSection() {
           {/* Connecting line for desktop */}
           <div className="hidden lg:block absolute top-12 left-0 w-full h-0.5 bg-border -z-10" />
 
-          <motion.div 
+          <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -95,8 +101,8 @@ export function ProcessSection() {
             {steps.map((step, index) => {
               const Icon = step.icon;
               return (
-                <motion.div 
-                  key={step.id} 
+                <motion.div
+                  key={step.id}
                   variants={itemVariants}
                   className="relative flex flex-col items-center text-center group"
                 >

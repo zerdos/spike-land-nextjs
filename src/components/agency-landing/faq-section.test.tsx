@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { FAQSection } from "./faq-section";
 
 // Mock window.scrollTo
@@ -9,7 +9,11 @@ describe("FAQSection", () => {
   it("renders the FAQ section with title", () => {
     render(<FAQSection />);
     expect(screen.getByText("Frequently Asked Questions")).toBeInTheDocument();
-    expect(screen.getByText("Everything you need to know about our AI development services and process.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Everything you need to know about our AI development services and process.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("renders all questions", () => {
@@ -23,16 +27,17 @@ describe("FAQSection", () => {
 
   it("toggles answer visibility on click", async () => {
     render(<FAQSection />);
-    
+
     const question = screen.getByText("What AI development services do you offer?");
-    const answerText = "We specialize in building custom AI agents, intelligent chatbots, and process automation solutions tailored to your business needs. Our team leverages cutting-edge LLMs and robust engineering to deliver scalable and secure AI applications.";
-    
+    const answerText =
+      "We specialize in building custom AI agents, intelligent chatbots, and process automation solutions tailored to your business needs. Our team leverages cutting-edge LLMs and robust engineering to deliver scalable and secure AI applications.";
+
     // Initially, answer should not be in document
     expect(screen.queryByText(answerText)).not.toBeInTheDocument();
 
     // Click to open
     fireEvent.click(question);
-    
+
     // Should be present now
     await waitFor(() => {
       expect(screen.getByText(answerText)).toBeInTheDocument();

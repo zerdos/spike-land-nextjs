@@ -1,5 +1,5 @@
-import { render, screen, act } from "@testing-library/react";
-import { describe, expect, it, vi, beforeAll, afterEach } from "vitest";
+import { act, render, screen } from "@testing-library/react";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { CTABanner } from "./CTABanner";
 
 // Mock framer-motion
@@ -22,12 +22,12 @@ describe("CTABanner Component", () => {
       configurable: true,
       value: 1000,
     });
-    
+
     // Ensure scrollY is writable (it usually is in modern JSDOM but good to be safe)
     Object.defineProperty(window, "scrollY", {
       writable: true,
       configurable: true,
-      value: 0
+      value: 0,
     });
   });
 

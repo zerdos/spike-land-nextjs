@@ -1,7 +1,7 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { toast } from "sonner";
-import { describe, expect, it, vi } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
 import { Footer } from "./Footer";
+import { toast } from "sonner";
 
 // Mock sonner toast
 vi.mock("sonner", () => ({

@@ -30,7 +30,7 @@ describe("About Page", () => {
   it("renders the timeline with key experiences", () => {
     render(<AboutPage />);
     expect(screen.getByText("Journey & Experience")).toBeInTheDocument();
-    
+
     // Check for specific companies in the timeline
     // Using getAllByText because "Spike Land" is in the title too
     expect(screen.getAllByText("Spike Land").length).toBeGreaterThan(0);
