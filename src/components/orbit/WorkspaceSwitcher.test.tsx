@@ -244,7 +244,7 @@ describe("WorkspaceSwitcher", () => {
       expect(mockSwitchWorkspace).toHaveBeenCalledWith("team-workspace");
     });
 
-    it("shows Create Workspace option (disabled)", async () => {
+    it("shows Create Workspace option", async () => {
       const user = userEvent.setup();
 
       mockUseWorkspace.mockReturnValue({

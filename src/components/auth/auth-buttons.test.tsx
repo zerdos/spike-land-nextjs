@@ -152,7 +152,7 @@ describe("AuthButtons Component", () => {
         screen.getByRole("button", { name: /continue with google/i }),
       );
       expect(signIn).toHaveBeenCalledWith("google", {
-        callbackUrl: "/apps/pixel",
+        callbackUrl: "/orbit",
       });
       expect(signIn).toHaveBeenCalledTimes(1);
     });
@@ -165,7 +165,7 @@ describe("AuthButtons Component", () => {
         screen.getByRole("button", { name: /continue with github/i }),
       );
       expect(signIn).toHaveBeenCalledWith("github", {
-        callbackUrl: "/apps/pixel",
+        callbackUrl: "/orbit",
       });
       expect(signIn).toHaveBeenCalledTimes(1);
     });
@@ -178,7 +178,7 @@ describe("AuthButtons Component", () => {
         screen.getByRole("button", { name: /continue with apple/i }),
       );
       expect(signIn).toHaveBeenCalledWith("apple", {
-        callbackUrl: "/apps/pixel",
+        callbackUrl: "/orbit",
       });
       expect(signIn).toHaveBeenCalledTimes(1);
     });
@@ -281,9 +281,9 @@ describe("AuthButtons Component", () => {
         screen.getByRole("button", { name: /continue with google/i }),
       );
 
-      // Should use default /apps/pixel instead of external URL
+      // Should use default /orbit instead of external URL
       expect(signIn).toHaveBeenCalledWith("google", {
-        callbackUrl: "/apps/pixel",
+        callbackUrl: "/orbit",
       });
 
       // Reset
@@ -772,7 +772,7 @@ describe("AuthButtons Component", () => {
       await user.click(screen.getByRole("button", { name: /sign in/i }));
 
       await waitFor(() => {
-        expect(window.location.href).toBe("/apps/pixel");
+        expect(window.location.href).toBe("/orbit");
       });
 
       Object.defineProperty(window, "location", {
@@ -1031,7 +1031,7 @@ describe("AuthButtons Component", () => {
       await user.click(screen.getByRole("button", { name: /create account/i }));
 
       await waitFor(() => {
-        expect(window.location.href).toBe("/apps/pixel");
+        expect(window.location.href).toBe("/orbit");
       });
 
       Object.defineProperty(window, "location", {

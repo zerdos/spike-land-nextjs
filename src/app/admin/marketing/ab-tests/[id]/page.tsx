@@ -1,6 +1,7 @@
 "use client";
 
 import AbTestResults from "@/components/admin/marketing/ab-tests/AbTestResults";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { calculateChiSquared, chiSquaredToPValue } from "@/lib/ab-testing";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -104,11 +105,29 @@ export default function AbTestDetailsPage() {
     return <p>Test not found</p>;
   }
 
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case "RUNNING":
+        return "default";
+      case "COMPLETED":
+        return "secondary";
+      case "ARCHIVED":
+        return "outline";
+      default:
+        return "outline";
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h2 className="text-2xl font-bold">{test.name}</h2>
+          <div className="flex items-center gap-3 mb-1">
+            <h2 className="text-2xl font-bold">{test.name}</h2>
+            <Badge variant={getStatusVariant(test.status)} data-testid="test-status">
+              {test.status}
+            </Badge>
+          </div>
           <p className="text-gray-500">{test.description}</p>
         </div>
         <div className="flex gap-2">
