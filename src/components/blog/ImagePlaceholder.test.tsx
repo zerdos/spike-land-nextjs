@@ -52,7 +52,7 @@ describe("ImagePlaceholder", () => {
       );
 
       const placeholder = screen.getByRole("img");
-      expect(placeholder.className).toContain("bg-gray-100");
+      expect(placeholder.className).toContain("bg-gray-800/50");
     });
   });
 
@@ -103,7 +103,7 @@ describe("ImagePlaceholder", () => {
       );
 
       const placeholder = screen.getByRole("img");
-      expect(placeholder.className).toContain("bg-teal-50");
+      expect(placeholder.className).toContain("bg-teal-950/30");
     });
   });
 
