@@ -8,6 +8,7 @@ Lightweight Docker-based development workflow for vibe-coded apps.
 - 🔄 Auto-syncs code changes to testing.spike.land
 - ♻️ Auto-reloads preview iframe when files change
 - 🤖 Claude Code integration via MCP tools
+- 📬 Redis queue polling for agent message processing
 - 🐳 Runs in Docker for isolation and portability
 
 ## Quick Start
@@ -115,6 +116,24 @@ yarn sync push --codespace my-app
 yarn sync pull --codespace my-app
 ```
 
+### `yarn poll`
+
+Poll Redis queue and process agent messages. Replaces `scripts/agent-poll.ts`.
+
+```bash
+# Start continuous polling (runs in Docker)
+docker compose up vibe-agent
+
+# Run once and exit
+yarn poll --once
+
+# Show queue statistics
+yarn poll --stats
+
+# Custom polling interval
+yarn poll --interval 10000
+```
+
 ### `yarn claude`
 
 Run Claude Code with MCP tools configured.
@@ -139,7 +158,9 @@ packages/vibe-dev/
 │   ├── cli.ts           # CLI entry point
 │   ├── watcher.ts       # File watcher
 │   ├── sync.ts          # Sync to testing.spike.land
-│   └── mcp-config.ts    # MCP configuration for Claude
+│   ├── agent.ts         # Agent processing logic
+│   ├── api.ts           # API client for spike.land
+│   └── redis.ts         # Redis client for queue polling
 └── live/                # Local code files (volume mount)
     ├── my-app.tsx
     └── my-app.meta.json
