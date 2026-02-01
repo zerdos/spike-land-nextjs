@@ -48,8 +48,8 @@ export function ResourcesPanel(
         </CardHeader>
         <CardContent>
           <div className="loading animate-pulse space-y-2">
-            <div className="h-4 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />
-            <div className="h-4 w-1/2 rounded bg-neutral-200 dark:bg-neutral-700" />
+            <div className="h-4 w-3/4 rounded bg-neutral-700" />
+            <div className="h-4 w-1/2 rounded bg-neutral-700" />
           </div>
         </CardContent>
       </Card>
@@ -63,7 +63,7 @@ export function ResourcesPanel(
           <CardTitle>Resources</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-red-600 dark:text-red-400">
+          <p className="text-sm text-red-400">
             Error: {error}
           </p>
         </CardContent>
@@ -79,7 +79,7 @@ export function ResourcesPanel(
         </CardHeader>
         <CardContent>
           <p
-            className="text-sm text-neutral-600 dark:text-neutral-400"
+            className="text-sm text-neutral-400"
             data-testid="resources-empty-state"
           >
             No resource data available

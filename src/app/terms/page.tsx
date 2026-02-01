@@ -1119,14 +1119,14 @@ export default function TermsPage() {
           </section>
 
           {/* Legal Disclaimer */}
-          <Card className="bg-yellow-50 dark:bg-yellow-900/50 border-yellow-200 dark:border-yellow-700">
+          <Card className="bg-yellow-900/50 border-yellow-700">
             <CardHeader>
-              <CardTitle className="text-lg text-yellow-900 dark:text-yellow-100">
+              <CardTitle className="text-lg text-yellow-100">
                 Legal Disclaimer
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <p className="text-sm text-yellow-200">
                 These Terms of Service are a template for informational purposes only. They provide
                 general guidance on service terms and conditions but are not comprehensive. Laws and
                 regulations vary by jurisdiction and change frequently. You should consult with a

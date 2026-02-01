@@ -95,7 +95,7 @@ export default function TokenEconomicsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Token Economics</h1>
-        <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+        <p className="mt-2 text-neutral-400">
           Token purchase, spending, and revenue metrics
         </p>
       </div>
@@ -103,7 +103,7 @@ export default function TokenEconomicsPage() {
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Total Revenue
           </p>
           <p className="mt-2 text-3xl font-bold">
@@ -113,7 +113,7 @@ export default function TokenEconomicsPage() {
         </Card>
 
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Tokens Purchased
           </p>
           <p className="mt-2 text-3xl font-bold">
@@ -123,7 +123,7 @@ export default function TokenEconomicsPage() {
         </Card>
 
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Tokens Spent
           </p>
           <p className="mt-2 text-3xl font-bold">
@@ -135,7 +135,7 @@ export default function TokenEconomicsPage() {
         </Card>
 
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Avg Tokens/User
           </p>
           <p className="mt-2 text-3xl font-bold">
@@ -240,7 +240,7 @@ export default function TokenEconomicsPage() {
         <h2 className="mb-4 text-xl font-semibold">Additional Statistics</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <div>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="text-sm text-neutral-400">
               Token Regenerations
             </p>
             <p className="mt-1 text-2xl font-semibold">
@@ -248,7 +248,7 @@ export default function TokenEconomicsPage() {
             </p>
           </div>
           <div>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="text-sm text-neutral-400">
               Average Purchase Value
             </p>
             <p className="mt-1 text-2xl font-semibold">
@@ -258,7 +258,7 @@ export default function TokenEconomicsPage() {
             </p>
           </div>
           <div>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="text-sm text-neutral-400">
               Burn Rate
             </p>
             <p className="mt-1 text-2xl font-semibold">

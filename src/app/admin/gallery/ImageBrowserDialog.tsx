@@ -210,7 +210,7 @@ export function ImageBrowserDialog({
                     className="cursor-pointer overflow-hidden transition-all hover:ring-2 hover:ring-primary"
                     onClick={() => handleImageClick(image)}
                   >
-                    <div className="relative aspect-video bg-neutral-100 dark:bg-neutral-800">
+                    <div className="relative aspect-video bg-neutral-800">
                       <Image
                         src={image.originalUrl}
                         alt="User image"
@@ -251,7 +251,7 @@ export function ImageBrowserDialog({
               </div>
 
               {/* Selected Image Preview */}
-              <div className="relative aspect-video max-w-sm rounded-md overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+              <div className="relative aspect-video max-w-sm rounded-md overflow-hidden bg-neutral-800">
                 <Image
                   src={selectedImage.originalUrl}
                   alt="Selected image"
@@ -279,7 +279,7 @@ export function ImageBrowserDialog({
                         }`}
                         onClick={() => handleJobClick(job)}
                       >
-                        <div className="relative aspect-video bg-neutral-100 dark:bg-neutral-800">
+                        <div className="relative aspect-video bg-neutral-800">
                           <Image
                             src={job.enhancedUrl}
                             alt={`Enhanced (${job.tier})`}

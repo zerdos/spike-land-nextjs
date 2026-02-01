@@ -147,7 +147,7 @@ export function AdminDashboardClient(
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+          <p className="mt-2 text-neutral-400">
             Platform overview and quick actions
           </p>
         </div>
@@ -173,7 +173,7 @@ export function AdminDashboardClient(
               {isRefreshing ? "Refreshing..." : "Refresh"}
             </Button>
           </div>
-          <div className="text-right text-sm text-neutral-600 dark:text-neutral-400">
+          <div className="text-right text-sm text-neutral-400">
             <p>
               Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "—"}
             </p>
@@ -187,8 +187,8 @@ export function AdminDashboardClient(
       </div>
 
       {error && (
-        <Card className="border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-          <p className="text-red-600 dark:text-red-400">Error: {error}</p>
+        <Card className="border-red-800 bg-red-900/20 p-4">
+          <p className="text-red-400">Error: {error}</p>
         </Card>
       )}
 
@@ -197,7 +197,7 @@ export function AdminDashboardClient(
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              <p className="text-sm text-neutral-400">
                 Total Users
               </p>
               <p className="mt-2 text-3xl font-bold">{metrics.totalUsers}</p>
@@ -222,7 +222,7 @@ export function AdminDashboardClient(
               </svg>
             </div>
           </div>
-          <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-400">
+          <p className="mt-2 text-xs text-neutral-400">
             {metrics.adminCount} admin{metrics.adminCount !== 1 ? "s" : ""}
           </p>
         </Card>
@@ -230,7 +230,7 @@ export function AdminDashboardClient(
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              <p className="text-sm text-neutral-400">
                 Enhancements
               </p>
               <p className="mt-2 text-3xl font-bold">
@@ -256,7 +256,7 @@ export function AdminDashboardClient(
               </svg>
             </div>
           </div>
-          <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-400">
+          <p className="mt-2 text-xs text-neutral-400">
             {metrics.jobStatus.active} active job{metrics.jobStatus.active !== 1 ? "s" : ""}
           </p>
         </Card>
@@ -264,7 +264,7 @@ export function AdminDashboardClient(
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              <p className="text-sm text-neutral-400">
                 Tokens Purchased
               </p>
               <p className="mt-2 text-3xl font-bold">
@@ -291,7 +291,7 @@ export function AdminDashboardClient(
               </svg>
             </div>
           </div>
-          <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-400">
+          <p className="mt-2 text-xs text-neutral-400">
             {metrics.totalTokensSpent.toLocaleString()} spent
           </p>
         </Card>
@@ -299,7 +299,7 @@ export function AdminDashboardClient(
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              <p className="text-sm text-neutral-400">
                 Active Vouchers
               </p>
               <p className="mt-2 text-3xl font-bold">
@@ -326,7 +326,7 @@ export function AdminDashboardClient(
               </svg>
             </div>
           </div>
-          <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-400">
+          <p className="mt-2 text-xs text-neutral-400">
             Promotional campaigns
           </p>
         </Card>
@@ -389,7 +389,7 @@ export function AdminDashboardClient(
                   <QuickLinkIcon icon={link.icon} />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">{link.title}</h3>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                <p className="text-sm text-neutral-400">
                   {link.description}
                 </p>
               </Card>

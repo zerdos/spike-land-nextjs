@@ -42,7 +42,7 @@ export function PipelineProgress(
             <div
               className={cn(
                 "flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all",
-                isPast && "bg-green-500/20 text-green-600 dark:text-green-400",
+                isPast && "bg-green-500/20 text-green-400",
                 isCurrent && "bg-primary/20 text-primary animate-pulse",
                 isFuture && "bg-muted text-muted-foreground",
               )}

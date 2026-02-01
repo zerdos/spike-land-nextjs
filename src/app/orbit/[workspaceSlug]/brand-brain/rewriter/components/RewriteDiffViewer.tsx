@@ -75,10 +75,10 @@ export function RewriteDiffViewer({
       {/* Stats bar */}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div className="flex gap-4">
-          <span className="text-green-600 dark:text-green-400">
+          <span className="text-green-400">
             +{added} additions
           </span>
-          <span className="text-red-600 dark:text-red-400">
+          <span className="text-red-400">
             -{removed} removals
           </span>
           <span>
@@ -128,7 +128,7 @@ export function RewriteDiffViewer({
               <pre
                 className={cn(
                   "whitespace-pre-wrap break-words font-mono text-sm",
-                  isOverLimit && "text-red-600 dark:text-red-400",
+                  isOverLimit && "text-red-400",
                 )}
               >
                 {previewText}
@@ -136,7 +136,7 @@ export function RewriteDiffViewer({
             </div>
           </ScrollArea>
           {isOverLimit && (
-            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+            <p className="mt-2 text-sm text-red-400">
               Content exceeds character limit ({previewLength}/{characterLimit})
             </p>
           )}
@@ -187,13 +187,13 @@ function DiffHunkItem({ hunk, onToggle }: DiffHunkItemProps) {
       className={cn(
         "relative inline",
         isAddition && hunk.selected &&
-          "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+          "bg-green-900/30 text-green-300",
         isAddition && !hunk.selected &&
-          "bg-gray-100 dark:bg-gray-800 text-gray-400 line-through",
+          "bg-gray-800 text-gray-400 line-through",
         isRemoval && hunk.selected &&
-          "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 line-through",
+          "bg-red-900/30 text-red-300 line-through",
         isRemoval && !hunk.selected &&
-          "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
+          "bg-gray-800 text-gray-400",
       )}
     >
       <span

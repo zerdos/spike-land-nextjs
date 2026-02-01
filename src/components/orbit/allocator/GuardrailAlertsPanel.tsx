@@ -75,7 +75,7 @@ export function GuardrailAlertsPanel(
   }
 
   return (
-    <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/10 dark:border-orange-900">
+    <Card className="border-orange-900 bg-orange-950/10">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
           Guardrail Alerts
@@ -91,7 +91,7 @@ export function GuardrailAlertsPanel(
             {alerts.map((alert) => (
               <div
                 key={alert.id}
-                className="flex items-start justify-between p-3 bg-white dark:bg-card rounded-lg border shadow-sm"
+                className="flex items-start justify-between p-3 bg-card rounded-lg border shadow-sm"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">

@@ -193,7 +193,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
     return (
       <div className="space-y-2">
         <h3 className="text-sm font-semibold text-neutral-500">Timeline</h3>
-        <div className="flex h-4 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+        <div className="flex h-4 w-full overflow-hidden rounded-full bg-neutral-800">
           <div
             className="flex items-center justify-center bg-yellow-200 text-[10px] text-yellow-800"
             style={{ width: `${queuePercent}%` }}
@@ -495,7 +495,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">Jobs Management</h1>
-        <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+        <p className="mt-2 text-neutral-400">
           View and manage all enhancement jobs
         </p>
       </div>
@@ -548,14 +548,14 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
         <Card
           className={`p-3 ${
             actionMessage.type === "success"
-              ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20"
-              : "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20"
+              ? "border-green-800 bg-green-900/20"
+              : "border-red-800 bg-red-900/20"
           }`}
         >
           <p
             className={actionMessage.type === "success"
-              ? "text-green-600 dark:text-green-400"
-              : "text-red-600 dark:text-red-400"}
+              ? "text-green-400"
+              : "text-red-400"}
           >
             {actionMessage.text}
           </p>
@@ -587,8 +587,8 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
 
       {/* Error State */}
       {error && (
-        <Card className="border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-          <p className="text-red-600 dark:text-red-400">{error}</p>
+        <Card className="border-red-800 bg-red-900/20 p-4">
+          <p className="text-red-400">{error}</p>
         </Card>
       )}
 
@@ -605,7 +605,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div
                     key={i}
-                    className="h-16 animate-pulse rounded-md bg-neutral-100 dark:bg-neutral-800"
+                    className="h-16 animate-pulse rounded-md bg-neutral-800"
                   />
                 ))}
               </div>
@@ -650,7 +650,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                         {formatRelativeTime(job.createdAt)}
                       </span>
                     </div>
-                    <div className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
+                    <div className="mt-1 text-xs text-neutral-400">
                       <span className="font-mono">
                         {job.id.slice(0, 12)}...
                       </span>
@@ -763,7 +763,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 {selectedJob.status === "COMPLETED" &&
                   selectedJob.outputUrl &&
                   selectedJob.inputUrl && (
-                  <div className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
+                  <div className="overflow-hidden rounded-lg border border-neutral-700">
                     <ImageComparisonSlider
                       originalUrl={selectedJob.inputUrl}
                       enhancedUrl={selectedJob.outputUrl}
@@ -781,7 +781,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 {selectedJob.status === "COMPLETED" &&
                   selectedJob.outputUrl &&
                   !selectedJob.inputUrl && (
-                  <div className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
+                  <div className="overflow-hidden rounded-lg border border-neutral-700">
                     <div className="relative aspect-square w-full">
                       <Image
                         src={selectedJob.outputUrl}
@@ -791,7 +791,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                         unoptimized
                       />
                     </div>
-                    <div className="bg-neutral-100 px-3 py-2 text-center text-sm font-medium dark:bg-neutral-800">
+                    <div className="bg-neutral-800 px-3 py-2 text-center text-sm font-medium">
                       Generated Output
                     </div>
                   </div>
@@ -808,7 +808,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                   <div className="flex gap-4">
                     {/* Original Input */}
                     {selectedJob.inputUrl && (
-                      <div className="group relative aspect-square w-32 overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-700">
+                      <div className="group relative aspect-square w-32 overflow-hidden rounded-md border border-neutral-700">
                         <Image
                           src={selectedJob.inputUrl}
                           alt="Input"
@@ -823,9 +823,9 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                     )}
                     {/* Blend Source Input */}
                     {selectedJob.isBlend && selectedJob.sourceImageId && (
-                      <div className="group relative aspect-square w-32 overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-700">
+                      <div className="group relative aspect-square w-32 overflow-hidden rounded-md border border-neutral-700">
                         {/* Note: We'd ideally fetch the blend source URL here. For now assuming we might have it or just showing the ID */}
-                        <div className="flex h-full w-full items-center justify-center bg-neutral-100 dark:bg-neutral-800">
+                        <div className="flex h-full w-full items-center justify-center bg-neutral-800">
                           <span className="text-xs text-neutral-500">
                             Blend Source
                           </span>
@@ -846,7 +846,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                         ? "User Prompt"
                         : "Final Prompt"}
                     </h3>
-                    <div className="relative rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs font-mono dark:border-neutral-700 dark:bg-neutral-900">
+                    <div className="relative rounded-md border border-neutral-700 bg-neutral-900 p-3 text-xs font-mono">
                       <p className="whitespace-pre-wrap">
                         {selectedJob.prompt}
                       </p>
@@ -946,7 +946,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 </div>
 
                 {/* Job Details */}
-                <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                <div className="border-t border-neutral-700 pt-4">
                   <h3 className="mb-2 text-sm font-semibold">Job Details</h3>
                   <div className="grid gap-2 text-sm">
                     <div className="flex justify-between">
@@ -983,7 +983,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
 
                 {/* AI Model Details */}
                 {selectedJob.geminiModel && (
-                  <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                  <div className="border-t border-neutral-700 pt-4">
                     <h3 className="mb-2 text-sm font-semibold">AI Model</h3>
                     <div className="grid gap-2 text-sm">
                       <div className="flex justify-between">
@@ -1005,18 +1005,18 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
 
                 {/* Error Message */}
                 {selectedJob.errorMessage && (
-                  <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                  <div className="border-t border-neutral-700 pt-4">
                     <h3 className="mb-2 text-sm font-semibold text-red-600">
                       Error
                     </h3>
-                    <pre className="max-h-32 overflow-y-auto whitespace-pre-wrap rounded-md bg-red-50 p-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                    <pre className="max-h-32 overflow-y-auto whitespace-pre-wrap rounded-md bg-red-900/20 p-2 text-xs text-red-400">
                       {selectedJob.errorMessage}
                     </pre>
                   </div>
                 )}
 
                 {/* User Info */}
-                <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                <div className="border-t border-neutral-700 pt-4">
                   <h3 className="mb-2 text-sm font-semibold">User</h3>
                   <div className="text-sm">
                     <p>{selectedJob.userName || "Unknown"}</p>
@@ -1025,7 +1025,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 </div>
 
                 {/* IDs */}
-                <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                <div className="border-t border-neutral-700 pt-4">
                   <h3 className="mb-2 text-sm font-semibold">IDs</h3>
                   <div className="grid gap-1 text-xs font-mono">
                     <div className="flex justify-between">
@@ -1103,7 +1103,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                     (selectedJob.originalHeight ?? 0) > 0) ||
                     selectedJob.originalFormat || selectedJob.originalSizeBytes) &&
                   (
-                    <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                    <div className="border-t border-neutral-700 pt-4">
                       <h3 className="mb-2 text-sm font-semibold">
                         Original Image
                       </h3>
@@ -1138,7 +1138,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
 
                 {/* Processing Details (enhancement jobs only) */}
                 {selectedJob.source === "enhancement" && (
-                  <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                  <div className="border-t border-neutral-700 pt-4">
                     <h3 className="mb-2 text-sm font-semibold">
                       Processing Details
                     </h3>
@@ -1212,7 +1212,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                 {/* Analysis Results (enhancement jobs only) */}
                 {selectedJob.source === "enhancement" &&
                   selectedJob.analysisResult && (
-                  <div className="border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                  <div className="border-t border-neutral-700 pt-4">
                     <h3 className="mb-2 text-sm font-semibold">AI Analysis</h3>
                     <div className="space-y-3">
                       {selectedJob.analysisSource && (
@@ -1367,7 +1367,7 @@ export function JobsAdminClient({ initialJobId }: JobsAdminClientProps) {
                         <summary className="cursor-pointer text-neutral-500 hover:text-neutral-300">
                           View Raw Analysis JSON
                         </summary>
-                        <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-neutral-100 p-2 dark:bg-neutral-800">
+                        <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-neutral-800 p-2">
                           {JSON.stringify(selectedJob.analysisResult, null, 2)}
                         </pre>
                       </details>

@@ -68,15 +68,15 @@ interface ErrorsAdminClientProps {
 }
 
 const ENVIRONMENT_COLORS: Record<ErrorEnvironment, string> = {
-  FRONTEND: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-  BACKEND: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  FRONTEND: "bg-purple-900/30 text-purple-400",
+  BACKEND: "bg-blue-900/30 text-blue-400",
 };
 
 const ERROR_TYPE_COLORS: Record<string, string> = {
-  Error: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-  TypeError: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
-  SyntaxError: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-  ReferenceError: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400",
+  Error: "bg-red-900/30 text-red-400",
+  TypeError: "bg-orange-900/30 text-orange-400",
+  SyntaxError: "bg-yellow-900/30 text-yellow-400",
+  ReferenceError: "bg-pink-900/30 text-pink-400",
 };
 
 function formatDate(dateInput: string | Date): string {
@@ -251,7 +251,7 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                 ? (
                   <>
                     <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-green-500" />
-                    <span className="text-sm text-green-600 dark:text-green-400">
+                    <span className="text-sm text-green-400">
                       Live
                     </span>
                   </>
@@ -329,13 +329,13 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
             >
               {isPolling ? "Pause" : "Resume"}
             </Button>
-            <div className="border-l border-neutral-200 dark:border-neutral-700 pl-4 ml-2 flex gap-2">
+            <div className="border-l border-neutral-700 pl-4 ml-2 flex gap-2">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={simulateFrontendError}
-                className="text-purple-600 border-purple-300 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-700 dark:hover:bg-purple-900/20"
+                className="text-purple-400 border-purple-700 hover:bg-purple-900/20"
               >
                 Test Frontend
               </Button>
@@ -344,12 +344,12 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                 variant="outline"
                 size="sm"
                 onClick={simulateBackendError}
-                className="text-blue-600 border-blue-300 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-700 dark:hover:bg-blue-900/20"
+                className="text-blue-400 border-blue-700 hover:bg-blue-900/20"
               >
                 Test Backend
               </Button>
             </div>
-            <div className="border-l border-neutral-200 dark:border-neutral-700 pl-4 ml-2">
+            <div className="border-l border-neutral-700 pl-4 ml-2">
               <Button
                 type="button"
                 variant="destructive"
@@ -425,14 +425,14 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                             className={ERROR_TYPE_COLORS[
                               error.errorType || "Error"
                             ] ||
-                              "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"}
+                              "bg-gray-800 text-gray-400"}
                             variant="secondary"
                           >
                             {error.errorType || "Error"}
                           </Badge>
                         </td>
                         <td className="px-4 py-3 text-sm max-w-md">
-                          <span className="text-red-600 dark:text-red-400">
+                          <span className="text-red-400">
                             {truncateMessage(error.message)}
                           </span>
                         </td>
@@ -458,7 +458,7 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
 
           {/* Pagination */}
           {pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800 px-4 py-3">
+            <div className="flex items-center justify-between border-t border-neutral-800 px-4 py-3">
               <div className="text-sm text-neutral-500">
                 Page {pagination.page} of {pagination.totalPages} (
                 {pagination.total} total)
@@ -578,8 +578,8 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                 <span className="text-sm font-medium text-neutral-500">
                   Message
                 </span>
-                <div className="mt-1 rounded-md bg-red-50 dark:bg-red-900/20 p-3">
-                  <p className="text-sm text-red-800 dark:text-red-300 break-all">
+                <div className="mt-1 rounded-md bg-red-900/20 p-3">
+                  <p className="text-sm text-red-300 break-all">
                     {selectedError.message}
                   </p>
                 </div>
@@ -603,7 +603,7 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                       Copy
                     </Button>
                   </div>
-                  <pre className="mt-1 rounded-md bg-neutral-100 dark:bg-neutral-900 p-3 text-xs overflow-x-auto max-h-[300px]">
+                  <pre className="mt-1 rounded-md bg-neutral-900 p-3 text-xs overflow-x-auto max-h-[300px]">
                     {selectedError.stack}
                   </pre>
                 </div>
@@ -615,7 +615,7 @@ export function ErrorsAdminClient({ initialData }: ErrorsAdminClientProps) {
                   <span className="text-sm font-medium text-neutral-500">
                     Metadata
                   </span>
-                  <pre className="mt-1 rounded-md bg-neutral-100 dark:bg-neutral-900 p-3 text-xs overflow-x-auto">
+                  <pre className="mt-1 rounded-md bg-neutral-900 p-3 text-xs overflow-x-auto">
                     {JSON.stringify(selectedError.metadata, null, 2)}
                   </pre>
                 </div>

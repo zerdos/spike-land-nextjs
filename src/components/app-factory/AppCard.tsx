@@ -98,8 +98,8 @@ export function AppCard({ app, onResume }: AppCardProps) {
           <div
             className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${
               isJulesActive
-                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                ? "bg-blue-900/30 text-blue-400"
+                : "bg-gray-800 text-gray-400"
             }`}
           >
             <Bot className={`h-3 w-3 ${isJulesActive ? "animate-pulse" : ""}`} />
@@ -121,7 +121,7 @@ export function AppCard({ app, onResume }: AppCardProps) {
       )}
 
       {app.lastError && (
-        <p className="mt-2 truncate text-xs text-red-600 dark:text-red-400">
+        <p className="mt-2 truncate text-xs text-red-400">
           {app.lastError}
         </p>
       )}
@@ -133,7 +133,7 @@ export function AppCard({ app, onResume }: AppCardProps) {
             href={liveUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 rounded bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
+            className="flex items-center gap-1 rounded bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-400 hover:bg-emerald-900/50"
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
           >
@@ -152,7 +152,7 @@ export function AppCard({ app, onResume }: AppCardProps) {
               onResume(app.name);
             }}
             onPointerDown={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50"
+            className="flex items-center gap-1 rounded bg-amber-900/30 px-2 py-0.5 text-xs text-amber-400 hover:bg-amber-900/50"
           >
             <Play className="h-3 w-3" />
             <span>Resume Jules</span>

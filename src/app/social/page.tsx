@@ -12,7 +12,7 @@ const socialPlatforms = [
     url: "https://x.com/ai_spike_land",
     icon: "𝕏",
     description: "Updates, announcements, and community discussions",
-    color: "bg-black dark:bg-white dark:text-black",
+    color: "bg-white text-black",
     followers: null, // Will be populated from API later
   },
   {

@@ -75,13 +75,12 @@ export default async function RootLayout({
   const nonce = await getNonce();
 
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased`}
       >
         <ViewTransitions>
           <ThemeProvider
-            attribute="class"
             defaultTheme="dark"
             forcedTheme="dark"
             disableTransitionOnChange

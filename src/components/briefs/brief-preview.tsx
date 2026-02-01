@@ -18,7 +18,7 @@ export function BriefPreview() {
         {Object.keys(targetAudience).length > 0 && (
           <div>
             <h3 className="font-semibold">Target Audience</h3>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-gray-400">
               <p>
                 <strong>Age Range:</strong> {targetAudience.demographics?.ageRange}
               </p>
@@ -40,7 +40,7 @@ export function BriefPreview() {
         {Object.keys(campaignObjectives).length > 0 && (
           <div>
             <h3 className="font-semibold">Campaign Objectives</h3>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-gray-400">
               <p>
                 <strong>Objective:</strong> {campaignObjectives.objective}
               </p>

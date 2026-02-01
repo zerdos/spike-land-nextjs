@@ -192,11 +192,11 @@ export function PolicyViolationCard({
                 )}
 
                 {violation.isOverridden && violation.overrideReason && (
-                  <div className="text-sm bg-yellow-50 dark:bg-yellow-950 p-3 rounded-md">
-                    <p className="font-medium text-yellow-900 dark:text-yellow-100">
+                  <div className="text-sm bg-yellow-950 p-3 rounded-md">
+                    <p className="font-medium text-yellow-100">
                       Override Reason:
                     </p>
-                    <p className="text-yellow-800 dark:text-yellow-200">
+                    <p className="text-yellow-200">
                       {violation.overrideReason}
                     </p>
                   </div>

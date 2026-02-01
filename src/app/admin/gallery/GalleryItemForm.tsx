@@ -113,7 +113,7 @@ export function GalleryItemForm({
             {previewUrl && (
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Original</p>
-                <div className="relative aspect-video rounded-md overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                <div className="relative aspect-video rounded-md overflow-hidden bg-neutral-800">
                   <Image
                     src={previewUrl}
                     alt="Original"
@@ -127,7 +127,7 @@ export function GalleryItemForm({
             {enhancedPreviewUrl && (
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Enhanced</p>
-                <div className="relative aspect-video rounded-md overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                <div className="relative aspect-video rounded-md overflow-hidden bg-neutral-800">
                   <Image
                     src={enhancedPreviewUrl}
                     alt="Enhanced"

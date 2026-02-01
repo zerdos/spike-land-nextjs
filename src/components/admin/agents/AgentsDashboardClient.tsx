@@ -245,7 +245,7 @@ export function AgentsDashboardClient({ initialData }: Props) {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold">Agents Dashboard</h1>
-          <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+          <p className="mt-2 text-neutral-400">
             Monitor and manage external AI agents
           </p>
         </div>
@@ -277,7 +277,7 @@ export function AgentsDashboardClient({ initialData }: Props) {
             </Button>
           </div>
           <div
-            className="text-right text-sm text-neutral-600 dark:text-neutral-400"
+            className="text-right text-sm text-neutral-400"
             data-testid="timestamp"
           >
             <p>
@@ -293,9 +293,9 @@ export function AgentsDashboardClient({ initialData }: Props) {
       </div>
 
       {error && (
-        <Card className="border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+        <Card className="border-red-800 bg-red-900/20 p-4">
           <div className="flex items-center justify-between">
-            <p className="text-red-600 dark:text-red-400">Error: {error}</p>
+            <p className="text-red-400">Error: {error}</p>
             <Button
               variant="outline"
               size="sm"
@@ -309,14 +309,14 @@ export function AgentsDashboardClient({ initialData }: Props) {
 
       {/* Jules Status Banner */}
       {!data.julesAvailable && (
-        <Card className="border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+        <Card className="border-amber-800 bg-amber-900/20 p-4">
           <div className="flex items-center gap-2">
             <span className="text-xl">⚠️</span>
             <div>
-              <p className="font-medium text-amber-800 dark:text-amber-200">
+              <p className="font-medium text-amber-200">
                 Jules API not configured
               </p>
-              <p className="text-sm text-amber-600 dark:text-amber-300">
+              <p className="text-sm text-amber-300">
                 Set the JULES_API_KEY environment variable to enable Jules integration.
               </p>
             </div>
@@ -327,19 +327,19 @@ export function AgentsDashboardClient({ initialData }: Props) {
       {/* Status Overview */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="p-4">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Total
           </p>
           <p className="mt-1 text-2xl font-bold">{data.pagination.total}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Active
           </p>
           <p className="mt-1 text-2xl font-bold text-cyan-600">{activeCount}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Completed
           </p>
           <p className="mt-1 text-2xl font-bold text-green-600">
@@ -347,7 +347,7 @@ export function AgentsDashboardClient({ initialData }: Props) {
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Failed
           </p>
           <p className="mt-1 text-2xl font-bold text-red-600">
@@ -383,7 +383,7 @@ export function AgentsDashboardClient({ initialData }: Props) {
           {data.sessions.length === 0
             ? (
               <Card className="p-8 text-center">
-                <p className="text-neutral-600 dark:text-neutral-400">
+                <p className="text-neutral-400">
                   No active agents
                 </p>
                 {data.julesAvailable && (
@@ -480,7 +480,7 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
             </Badge>
           </div>
           {session.description && (
-            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
+            <p className="mt-1 text-sm text-neutral-400 line-clamp-2">
               {session.description}
             </p>
           )}
@@ -489,7 +489,7 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
               Error: {approveError}
             </p>
           )}
-          <div className="mt-2 flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
+          <div className="mt-2 flex items-center gap-4 text-xs text-neutral-400">
             {session.sourceRepo && (
               <span>
                 Repo: {session.sourceRepo.split("/").slice(-2).join("/")}
@@ -545,7 +545,7 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
           {session.planSummary && (
             <div className="mb-4">
               <h4 className="text-sm font-medium">Plan Summary</h4>
-              <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+              <p className="mt-1 text-sm text-neutral-400">
                 {session.planSummary}
               </p>
             </div>
@@ -560,20 +560,20 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
           )}
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-neutral-600 dark:text-neutral-400">
+              <span className="text-neutral-400">
                 External ID:
               </span>{" "}
               <code className="text-xs">{session.externalId}</code>
             </div>
             <div>
-              <span className="text-neutral-600 dark:text-neutral-400">
+              <span className="text-neutral-400">
                 Created:
               </span>{" "}
               {new Date(session.createdAt).toLocaleString()}
             </div>
             {session.planApprovedAt && (
               <div>
-                <span className="text-neutral-600 dark:text-neutral-400">
+                <span className="text-neutral-400">
                   Plan Approved:
                 </span>{" "}
                 {new Date(session.planApprovedAt).toLocaleString()}
@@ -581,7 +581,7 @@ function AgentSessionCard({ session, onStatusChange }: AgentSessionCardProps) {
             )}
             {session.outputBranch && (
               <div>
-                <span className="text-neutral-600 dark:text-neutral-400">
+                <span className="text-neutral-400">
                   Output Branch:
                 </span>{" "}
                 {session.outputBranch}
@@ -653,7 +653,7 @@ function CreateSessionModal({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-800"
+              className="mt-1 w-full rounded-md border border-neutral-700 bg-neutral-800 px-3 py-2"
               placeholder="Short title for the task"
               required
             />
@@ -667,7 +667,7 @@ function CreateSessionModal({
               id="task"
               value={task}
               onChange={(e) => setTask(e.target.value)}
-              className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-800"
+              className="mt-1 w-full rounded-md border border-neutral-700 bg-neutral-800 px-3 py-2"
               rows={5}
               placeholder="Detailed description of what the agent should do..."
               required

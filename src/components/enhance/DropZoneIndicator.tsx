@@ -34,7 +34,7 @@ export function DropZoneIndicator({
         data-testid="drop-zone-overlay"
         className={cn(
           "absolute inset-0",
-          "bg-primary/10 dark:bg-primary/15",
+          "bg-primary/15",
           "backdrop-blur-[2px]",
         )}
       />
@@ -63,7 +63,7 @@ export function DropZoneIndicator({
         className={cn(
           "relative z-10 flex flex-col items-center gap-3",
           "p-6 rounded-xl",
-          "bg-background/80 dark:bg-card/80",
+          "bg-card/80",
           "shadow-lg",
           "animate-drop-zone-bounce",
         )}

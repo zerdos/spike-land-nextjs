@@ -42,15 +42,15 @@ export function AIDisclaimer({
     return (
       <Alert
         className={cn(
-          "border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30",
+          "border-blue-900 bg-blue-950/30",
           className,
         )}
       >
-        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-        <AlertTitle className="text-blue-900 dark:text-blue-100">
+        <Info className="h-4 w-4 text-blue-400" />
+        <AlertTitle className="text-blue-100">
           AI-Powered Enhancement
         </AlertTitle>
-        <AlertDescription className="text-blue-800 dark:text-blue-200">
+        <AlertDescription className="text-blue-200">
           <div className="space-y-2">
             <p>
               Images are processed by Google Gemini AI on Google&apos;s servers (US).
@@ -98,7 +98,7 @@ export function AIDisclaimer({
                   <div className="flex gap-3 text-sm">
                     <a
                       href="/privacy"
-                      className="text-blue-700 dark:text-blue-300 underline hover:no-underline"
+                      className="text-blue-300 underline hover:no-underline"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -106,7 +106,7 @@ export function AIDisclaimer({
                     </a>
                     <a
                       href="https://ai.google/responsibility/principles/"
-                      className="text-blue-700 dark:text-blue-300 underline hover:no-underline"
+                      className="text-blue-300 underline hover:no-underline"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -121,7 +121,7 @@ export function AIDisclaimer({
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-0 h-auto text-blue-700 dark:text-blue-300 hover:bg-transparent hover:underline"
+              className="p-0 h-auto text-blue-300 hover:bg-transparent hover:underline"
             >
               {isExpanded
                 ? (
@@ -142,15 +142,15 @@ export function AIDisclaimer({
   }
 
   return (
-    <Card className={cn("border-blue-200 dark:border-blue-900", className)}>
+    <Card className={cn("border-blue-900", className)}>
       <CardHeader>
         <div className="flex items-start gap-3">
-          <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+          <Info className="h-5 w-5 text-blue-400 mt-0.5" />
           <div className="flex-1">
-            <CardTitle className="text-blue-900 dark:text-blue-100">
+            <CardTitle className="text-blue-100">
               AI Enhancement Disclaimer
             </CardTitle>
-            <CardDescription className="text-blue-700 dark:text-blue-300 mt-1">
+            <CardDescription className="text-blue-300 mt-1">
               Important information about AI-powered image processing
             </CardDescription>
           </div>
@@ -158,10 +158,10 @@ export function AIDisclaimer({
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+          <h4 className="font-semibold text-blue-100 mb-2">
             AI Processing Notice
           </h4>
-          <ul className="list-disc list-inside space-y-1.5 text-sm text-blue-800 dark:text-blue-200">
+          <ul className="list-disc list-inside space-y-1.5 text-sm text-blue-200">
             <li>Images are processed by Google Gemini AI</li>
             <li>Processing happens on Google&apos;s servers (United States)</li>
             <li>
@@ -171,10 +171,10 @@ export function AIDisclaimer({
         </div>
 
         <div>
-          <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+          <h4 className="font-semibold text-blue-100 mb-2">
             Quality Disclaimer
           </h4>
-          <ul className="list-disc list-inside space-y-1.5 text-sm text-blue-800 dark:text-blue-200">
+          <ul className="list-disc list-inside space-y-1.5 text-sm text-blue-200">
             <li>AI enhancement results vary based on image content</li>
             <li>No guarantee of specific outcomes or quality improvements</li>
             <li>Results depend on input image quality and characteristics</li>
@@ -182,10 +182,10 @@ export function AIDisclaimer({
         </div>
 
         <div>
-          <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+          <h4 className="font-semibold text-blue-100 mb-2">
             Data Handling
           </h4>
-          <ul className="list-disc list-inside space-y-1.5 text-sm text-blue-800 dark:text-blue-200">
+          <ul className="list-disc list-inside space-y-1.5 text-sm text-blue-200">
             <li>Images are NOT used for AI training purposes</li>
             <li>EXIF metadata is stripped before processing for privacy</li>
             <li>
@@ -195,10 +195,10 @@ export function AIDisclaimer({
         </div>
 
         <div>
-          <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+          <h4 className="font-semibold text-blue-100 mb-2">
             Consent
           </h4>
-          <p className="text-sm text-blue-800 dark:text-blue-200">
+          <p className="text-sm text-blue-200">
             By using the AI enhancement feature, you consent to the processing of your images as
             described above. You acknowledge that image processing involves sending your images to
             Google&apos;s AI services.
@@ -206,14 +206,14 @@ export function AIDisclaimer({
         </div>
 
         {showLearnMore && (
-          <div className="pt-2 border-t border-blue-200 dark:border-blue-900">
-            <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+          <div className="pt-2 border-t border-blue-900">
+            <p className="text-sm text-blue-200 mb-2">
               For more information:
             </p>
             <div className="flex flex-wrap gap-3 text-sm">
               <a
                 href="/privacy"
-                className="text-blue-700 dark:text-blue-300 underline hover:no-underline"
+                className="text-blue-300 underline hover:no-underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -221,7 +221,7 @@ export function AIDisclaimer({
               </a>
               <a
                 href="https://ai.google/responsibility/principles/"
-                className="text-blue-700 dark:text-blue-300 underline hover:no-underline"
+                className="text-blue-300 underline hover:no-underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >

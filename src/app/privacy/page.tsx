@@ -814,14 +814,14 @@ export default function PrivacyPage() {
           </section>
 
           {/* Disclaimer */}
-          <Card className="bg-yellow-50 dark:bg-yellow-900/50 border-yellow-200 dark:border-yellow-700">
+          <Card className="bg-yellow-900/50 border-yellow-700">
             <CardHeader>
-              <CardTitle className="text-lg text-yellow-900 dark:text-yellow-100">
+              <CardTitle className="text-lg text-yellow-100">
                 Legal Disclaimer
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <p className="text-sm text-yellow-200">
                 This Privacy Policy is a template for informational purposes only. It provides
                 general guidance on privacy compliance with GDPR, UK GDPR, and CCPA regulations.
                 However, privacy laws are complex and evolve frequently. You should consult with a

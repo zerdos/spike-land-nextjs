@@ -90,7 +90,7 @@ export default function UserAnalyticsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">User Analytics</h1>
-        <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+        <p className="mt-2 text-neutral-400">
           User registration and activity metrics
         </p>
       </div>
@@ -98,7 +98,7 @@ export default function UserAnalyticsPage() {
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Total Users
           </p>
           <p className="mt-2 text-3xl font-bold">{data.totalUsers}</p>
@@ -108,7 +108,7 @@ export default function UserAnalyticsPage() {
         </Card>
 
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Active Users (7d)
           </p>
           <p className="mt-2 text-3xl font-bold">
@@ -120,7 +120,7 @@ export default function UserAnalyticsPage() {
         </Card>
 
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Active Users (30d)
           </p>
           <p className="mt-2 text-3xl font-bold">

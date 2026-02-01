@@ -110,8 +110,8 @@ const PLATFORM_CONFIG: Record<
   TIKTOK: {
     name: "TikTok",
     icon: () => <span className="text-lg">🎵</span>,
-    color: "text-black dark:text-white",
-    bgColor: "bg-black/10 dark:bg-white/10",
+    color: "text-white",
+    bgColor: "bg-white/10",
     connectPath: "", // Not implemented yet
   },
   DISCORD: {

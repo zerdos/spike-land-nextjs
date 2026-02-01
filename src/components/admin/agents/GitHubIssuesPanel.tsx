@@ -53,7 +53,7 @@ export function GitHubIssuesPanel({
           <CardTitle>GitHub Issues</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             GitHub API is not configured. Set GH_PAT_TOKEN environment variable.
           </p>
         </CardContent>
@@ -69,8 +69,8 @@ export function GitHubIssuesPanel({
         </CardHeader>
         <CardContent>
           <div className="loading animate-pulse space-y-2">
-            <div className="h-4 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />
-            <div className="h-4 w-1/2 rounded bg-neutral-200 dark:bg-neutral-700" />
+            <div className="h-4 w-3/4 rounded bg-neutral-700" />
+            <div className="h-4 w-1/2 rounded bg-neutral-700" />
           </div>
         </CardContent>
       </Card>
@@ -84,7 +84,7 @@ export function GitHubIssuesPanel({
           <CardTitle>GitHub Issues</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-red-600 dark:text-red-400">
+          <p className="text-sm text-red-400">
             Error: {error}
           </p>
         </CardContent>
@@ -99,7 +99,7 @@ export function GitHubIssuesPanel({
           <CardTitle>GitHub Issues</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             No GitHub data available
           </p>
         </CardContent>
@@ -118,7 +118,7 @@ export function GitHubIssuesPanel({
           <h4 className="mb-2 text-sm font-medium">Open Issues</h4>
           {data.issues?.length === 0
             ? (
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              <p className="text-sm text-neutral-400">
                 No open issues
               </p>
             )
@@ -130,7 +130,7 @@ export function GitHubIssuesPanel({
                       href={issue.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+                      className="text-sm text-blue-400 hover:underline"
                     >
                       #{issue.number} {issue.title}
                     </a>
@@ -145,7 +145,7 @@ export function GitHubIssuesPanel({
           <h4 className="mb-2 text-sm font-medium">Recent Workflow Runs</h4>
           {data.workflows?.length === 0
             ? (
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              <p className="text-sm text-neutral-400">
                 No workflow runs
               </p>
             )
@@ -161,7 +161,7 @@ export function GitHubIssuesPanel({
                       href={workflow.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-neutral-700 hover:underline dark:text-neutral-300"
+                      className="text-sm text-neutral-300 hover:underline"
                     >
                       {workflow.name}
                     </a>

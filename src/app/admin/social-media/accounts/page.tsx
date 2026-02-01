@@ -161,7 +161,7 @@ export default function SocialMediaAccountsPage() {
                   key={platform}
                   className={`flex items-center gap-3 p-3 rounded-lg border ${
                     isConnected
-                      ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800"
+                      ? "bg-green-900/20 border-green-800"
                       : "bg-muted/50"
                   }`}
                 >
@@ -180,7 +180,7 @@ export default function SocialMediaAccountsPage() {
                     ? (
                       <Badge
                         variant="outline"
-                        className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        className="bg-green-900 text-green-200"
                       >
                         Connected
                       </Badge>

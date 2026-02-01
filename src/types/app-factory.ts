@@ -162,43 +162,43 @@ export const PHASE_CONFIG: Record<
   plan: {
     label: "Plan",
     color: "text-blue-600",
-    bgColor: "bg-blue-50 dark:bg-blue-900/20",
+    bgColor: "bg-blue-900/20",
     emoji: "📋",
   },
   develop: {
     label: "Develop",
     color: "text-purple-600",
-    bgColor: "bg-purple-50 dark:bg-purple-900/20",
+    bgColor: "bg-purple-900/20",
     emoji: "💻",
   },
   test: {
     label: "Test",
     color: "text-amber-600",
-    bgColor: "bg-amber-50 dark:bg-amber-900/20",
+    bgColor: "bg-amber-900/20",
     emoji: "🧪",
   },
   debug: {
     label: "Debug",
     color: "text-orange-600",
-    bgColor: "bg-orange-50 dark:bg-orange-900/20",
+    bgColor: "bg-orange-900/20",
     emoji: "🔧",
   },
   polish: {
     label: "Polish",
     color: "text-cyan-600",
-    bgColor: "bg-cyan-50 dark:bg-cyan-900/20",
+    bgColor: "bg-cyan-900/20",
     emoji: "✨",
   },
   complete: {
     label: "Complete",
     color: "text-green-600",
-    bgColor: "bg-green-50 dark:bg-green-900/20",
+    bgColor: "bg-green-900/20",
     emoji: "✅",
   },
   done: {
     label: "Done",
     color: "text-emerald-600",
-    bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
+    bgColor: "bg-emerald-900/20",
     emoji: "🎉",
   },
 };
@@ -257,13 +257,13 @@ export function getStatusColor(attempts: number): {
   if (attempts >= 3) {
     return {
       border: "border-red-500",
-      bg: "bg-red-50 dark:bg-red-900/30",
+      bg: "bg-red-900/30",
     };
   }
   if (attempts >= 1) {
     return {
       border: "border-amber-500",
-      bg: "bg-amber-50 dark:bg-amber-900/30",
+      bg: "bg-amber-900/30",
     };
   }
   return {

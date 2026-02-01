@@ -45,7 +45,7 @@ export default function NewBriefPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-gray-100 dark:bg-gray-950">
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-gray-950">
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <Card className="w-full max-w-3xl">
           <CardHeader>

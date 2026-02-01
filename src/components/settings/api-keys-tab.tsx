@@ -210,7 +210,7 @@ export function ApiKeysTab() {
                           </Button>
                         </div>
                       </div>
-                      <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-3 text-sm text-yellow-800 dark:text-yellow-200">
+                      <div className="rounded-md bg-yellow-900/20 p-3 text-sm text-yellow-200">
                         Make sure to copy your API key now. You will not be able to see it again!
                       </div>
                     </div>

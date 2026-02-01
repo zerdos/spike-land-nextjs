@@ -126,7 +126,7 @@ export default function SystemHealthPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">System Health</h1>
-        <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+        <p className="mt-2 text-neutral-400">
           Job processing and system performance metrics
         </p>
       </div>
@@ -134,7 +134,7 @@ export default function SystemHealthPage() {
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Queue Depth
           </p>
           <p className="mt-2 text-3xl font-bold">{data.queueDepth}</p>
@@ -142,7 +142,7 @@ export default function SystemHealthPage() {
         </Card>
 
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Total Jobs
           </p>
           <p className="mt-2 text-3xl font-bold">
@@ -152,7 +152,7 @@ export default function SystemHealthPage() {
         </Card>
 
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Failure Rate
           </p>
           <p className="mt-2 text-3xl font-bold">
@@ -164,7 +164,7 @@ export default function SystemHealthPage() {
         </Card>
 
         <Card className="p-6">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             Avg Processing
           </p>
           <p className="mt-2 text-3xl font-bold">
@@ -288,7 +288,7 @@ export default function SystemHealthPage() {
               {data.recentFailures.map((failure) => (
                 <div
                   key={failure.id}
-                  className="rounded-lg border border-neutral-200 p-3 dark:border-neutral-800"
+                  className="rounded-lg border border-neutral-800 p-3"
                 >
                   <div className="mb-2 flex items-center justify-between">
                     <Badge variant="destructive">{failure.tier}</Badge>
@@ -296,7 +296,7 @@ export default function SystemHealthPage() {
                       {new Date(failure.timestamp).toLocaleString()}
                     </span>
                   </div>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  <p className="text-sm text-neutral-400">
                     {failure.error || "No error message"}
                   </p>
                 </div>
@@ -334,24 +334,24 @@ export default function SystemHealthPage() {
           : (
             <>
               <div className="mb-6 grid gap-4 md:grid-cols-4">
-                <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                <div className="rounded-lg border border-neutral-800 p-4">
+                  <p className="text-sm text-neutral-400">
                     Total Storage
                   </p>
                   <p className="mt-1 text-2xl font-bold">
                     {storageData.totalSizeFormatted}
                   </p>
                 </div>
-                <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                <div className="rounded-lg border border-neutral-800 p-4">
+                  <p className="text-sm text-neutral-400">
                     Total Files
                   </p>
                   <p className="mt-1 text-2xl font-bold">
                     {storageData.totalFiles.toLocaleString()}
                   </p>
                 </div>
-                <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                <div className="rounded-lg border border-neutral-800 p-4">
+                  <p className="text-sm text-neutral-400">
                     Images Stored
                   </p>
                   <p className="mt-1 text-2xl font-bold">
@@ -361,8 +361,8 @@ export default function SystemHealthPage() {
                     {storageData.imageStats.sizeFormatted}
                   </p>
                 </div>
-                <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                <div className="rounded-lg border border-neutral-800 p-4">
+                  <p className="text-sm text-neutral-400">
                     Avg File Size
                   </p>
                   <p className="mt-1 text-2xl font-bold">
@@ -374,7 +374,7 @@ export default function SystemHealthPage() {
               {/* File Type Breakdown */}
               {Object.keys(storageData.byFileType).length > 0 && (
                 <div>
-                  <h3 className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <h3 className="mb-3 text-sm font-medium text-neutral-300">
                     Storage by File Type
                   </h3>
                   <div className="grid gap-2 md:grid-cols-3 lg:grid-cols-4">
@@ -384,7 +384,7 @@ export default function SystemHealthPage() {
                       .map(([ext, fileData]) => (
                         <div
                           key={ext}
-                          className="flex items-center justify-between rounded border border-neutral-200 px-3 py-2 dark:border-neutral-800"
+                          className="flex items-center justify-between rounded border border-neutral-800 px-3 py-2"
                         >
                           <span className="font-mono text-sm uppercase">
                             .{ext}

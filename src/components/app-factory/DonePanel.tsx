@@ -117,7 +117,7 @@ function DoneAppItem({ app }: DoneAppItemProps) {
         href={liveUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="ml-2 flex items-center gap-1 rounded bg-emerald-100 px-2 py-1 text-xs text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
+        className="ml-2 flex items-center gap-1 rounded bg-emerald-900/30 px-2 py-1 text-xs text-emerald-400 hover:bg-emerald-900/50"
       >
         <ExternalLink className="h-3 w-3" />
         <span>View</span>

@@ -42,7 +42,7 @@ export default async function AdminErrorsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Error Logs</h1>
-        <p className="text-neutral-500 dark:text-neutral-400">
+        <p className="text-neutral-400">
           Real-time error tracking from tryCatch blocks across the application
         </p>
       </div>

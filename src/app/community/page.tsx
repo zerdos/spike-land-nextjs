@@ -104,7 +104,7 @@ export default function CommunityPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-3 text-green-600 dark:text-green-400">
+                  <h3 className="font-semibold text-lg mb-3 text-green-400">
                     ✓ Do
                   </h3>
                   <ul className="space-y-2 text-muted-foreground">
@@ -146,7 +146,7 @@ export default function CommunityPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-3 text-red-600 dark:text-red-400">
+                  <h3 className="font-semibold text-lg mb-3 text-red-400">
                     ✗ Don&apos;t
                   </h3>
                   <ul className="space-y-2 text-muted-foreground">
@@ -183,11 +183,11 @@ export default function CommunityPage() {
                   </ul>
                 </div>
 
-                <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg border border-yellow-200 dark:border-yellow-700">
-                  <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                <div className="bg-yellow-900/30 p-4 rounded-lg border border-yellow-700">
+                  <h4 className="font-semibold text-yellow-200 mb-2">
                     Enforcement
                   </h4>
-                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                  <p className="text-sm text-yellow-300">
                     Violations of this code of conduct may result in warnings, temporary suspension,
                     or permanent ban from the platform. We take community safety seriously and will
                     act to protect our members.
@@ -435,35 +435,35 @@ export default function CommunityPage() {
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/30 p-4 rounded-lg">
-                    <h4 className="font-semibold text-amber-700 dark:text-amber-300 mb-2">
+                  <div className="border border-amber-800 bg-amber-900/30 p-4 rounded-lg">
+                    <h4 className="font-semibold text-amber-300 mb-2">
                       🌟 Featured Creators
                     </h4>
-                    <p className="text-sm text-amber-600 dark:text-amber-400">
+                    <p className="text-sm text-amber-400">
                       Outstanding work showcased on our social media and gallery.
                     </p>
                   </div>
-                  <div className="border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/30 p-4 rounded-lg">
-                    <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
+                  <div className="border border-purple-800 bg-purple-900/30 p-4 rounded-lg">
+                    <h4 className="font-semibold text-purple-300 mb-2">
                       💜 Community Contributors
                     </h4>
-                    <p className="text-sm text-purple-600 dark:text-purple-400">
+                    <p className="text-sm text-purple-400">
                       Special recognition for those who help others and contribute code.
                     </p>
                   </div>
-                  <div className="border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30 p-4 rounded-lg">
-                    <h4 className="font-semibold text-green-700 dark:text-green-300 mb-2">
+                  <div className="border border-green-800 bg-green-900/30 p-4 rounded-lg">
+                    <h4 className="font-semibold text-green-300 mb-2">
                       🎁 Token Rewards
                     </h4>
-                    <p className="text-sm text-green-600 dark:text-green-400">
+                    <p className="text-sm text-green-400">
                       Bonus tokens for significant contributions and bug reports.
                     </p>
                   </div>
-                  <div className="border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg">
-                    <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                  <div className="border border-blue-800 bg-blue-900/30 p-4 rounded-lg">
+                    <h4 className="font-semibold text-blue-300 mb-2">
                       🎉 Shoutouts
                     </h4>
-                    <p className="text-sm text-blue-600 dark:text-blue-400">
+                    <p className="text-sm text-blue-400">
                       Regular shoutouts in our newsletter and social channels.
                     </p>
                   </div>

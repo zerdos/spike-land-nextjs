@@ -40,8 +40,8 @@ export function GitInfoPanel({ gitInfo, loading, error }: GitInfoPanelProps) {
         </CardHeader>
         <CardContent>
           <div className="loading animate-pulse space-y-2">
-            <div className="h-4 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />
-            <div className="h-4 w-1/2 rounded bg-neutral-200 dark:bg-neutral-700" />
+            <div className="h-4 w-3/4 rounded bg-neutral-700" />
+            <div className="h-4 w-1/2 rounded bg-neutral-700" />
           </div>
         </CardContent>
       </Card>
@@ -55,7 +55,7 @@ export function GitInfoPanel({ gitInfo, loading, error }: GitInfoPanelProps) {
           <CardTitle>Git Info</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-red-600 dark:text-red-400">
+          <p className="text-sm text-red-400">
             Error: {error}
           </p>
         </CardContent>
@@ -70,7 +70,7 @@ export function GitInfoPanel({ gitInfo, loading, error }: GitInfoPanelProps) {
           <CardTitle>Git Info</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm text-neutral-400">
             No git data available
           </p>
         </CardContent>
@@ -127,7 +127,7 @@ export function GitInfoPanel({ gitInfo, loading, error }: GitInfoPanelProps) {
           className="flex items-center justify-between"
         >
           <span className="text-sm">Sync</span>
-          <span className="text-sm text-neutral-600 dark:text-neutral-400">
+          <span className="text-sm text-neutral-400">
             {getSyncStatus()}
           </span>
         </div>
@@ -138,7 +138,7 @@ export function GitInfoPanel({ gitInfo, loading, error }: GitInfoPanelProps) {
             data-testid="git-last-commit"
             className="border-t pt-2"
           >
-            <p className="text-xs text-neutral-600 dark:text-neutral-400">
+            <p className="text-xs text-neutral-400">
               Last commit: {gitInfo.lastCommit.message}
             </p>
           </div>

@@ -139,7 +139,7 @@ export default function VouchersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Voucher Management</h1>
-          <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+          <p className="mt-2 text-neutral-400">
             Create and manage promotional vouchers
           </p>
         </div>
@@ -250,7 +250,7 @@ export default function VouchersPage() {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+          <tbody className="divide-y divide-neutral-800">
             {vouchers.map((voucher) => (
               <tr key={voucher.id}>
                 <td className="px-6 py-4 font-mono text-sm font-semibold">

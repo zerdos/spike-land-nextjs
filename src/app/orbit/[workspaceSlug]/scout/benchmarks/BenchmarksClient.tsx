@@ -243,7 +243,7 @@ export function BenchmarksClient({
     <div className="space-y-6">
       {/* Data Notice */}
       {report.ownMetrics.totalPosts === 0 && (
-        <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-amber-700 dark:text-amber-400">
+        <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-amber-400">
           <p className="text-sm">
             Note: No social metrics data available yet. Connect social accounts and sync data to see
             your performance metrics.
@@ -422,7 +422,7 @@ export function BenchmarksClient({
               <div className="flex gap-3 rounded-lg border border-green-500/20 bg-green-500/5 p-4">
                 <TrendingUp className="h-5 w-5 text-green-500 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-green-700 dark:text-green-400">
+                  <p className="font-medium text-green-400">
                     Great Performance!
                   </p>
                   <p className="text-sm text-muted-foreground">

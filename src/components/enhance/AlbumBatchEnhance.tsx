@@ -522,11 +522,11 @@ export function AlbumBatchEnhance({
 
           {/* All images already enhanced at selected tier */}
           {enhancingImages.length === 0 && imagesToEnhance === 0 && (
-            <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-900">
+            <div className="p-3 bg-green-950/20 rounded-lg border border-green-900">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600" />
                 <p
-                  className="text-sm text-green-700 dark:text-green-400"
+                  className="text-sm text-green-400"
                   data-testid="all-enhanced-message"
                 >
                   All images in this album are already enhanced at {TIER_INFO[selectedTier].label}!

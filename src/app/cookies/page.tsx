@@ -270,8 +270,8 @@ export default function CookiePage() {
                   <h3 className="font-semibold text-lg mb-3">
                     Cannot Be Disabled
                   </h3>
-                  <div className="bg-yellow-50 dark:bg-yellow-900/50 border border-yellow-200 dark:border-yellow-700 p-4 rounded-lg">
-                    <p className="text-yellow-900 dark:text-yellow-100 text-sm">
+                  <div className="bg-yellow-900/50 border border-yellow-700 p-4 rounded-lg">
+                    <p className="text-yellow-100 text-sm">
                       <strong>Important:</strong>{" "}
                       Essential cookies cannot be disabled. If you block these cookies, you will not
                       be able to log in, authenticate with Google or GitHub, or use key features of
@@ -676,11 +676,11 @@ export default function CookiePage() {
                     What Happens If You Disable Cookies
                   </h3>
                   <div className="space-y-3">
-                    <div className="bg-yellow-50 dark:bg-yellow-900/50 border border-yellow-200 dark:border-yellow-700 p-4 rounded-lg">
-                      <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 text-sm mb-2">
+                    <div className="bg-yellow-900/50 border border-yellow-700 p-4 rounded-lg">
+                      <h4 className="font-semibold text-yellow-100 text-sm mb-2">
                         Impact on Functionality
                       </h4>
-                      <ul className="list-disc list-inside space-y-1 text-yellow-800 dark:text-yellow-200 text-sm">
+                      <ul className="list-disc list-inside space-y-1 text-yellow-200 text-sm">
                         <li>You will not be able to log in to your account</li>
                         <li>Google and GitHub authentication will not work</li>
                         <li>Payment processing may be blocked</li>
@@ -1029,14 +1029,14 @@ export default function CookiePage() {
           </section>
 
           {/* Disclaimer */}
-          <Card className="bg-yellow-50 dark:bg-yellow-900/50 border-yellow-200 dark:border-yellow-700">
+          <Card className="bg-yellow-900/50 border-yellow-700">
             <CardHeader>
-              <CardTitle className="text-lg text-yellow-900 dark:text-yellow-100">
+              <CardTitle className="text-lg text-yellow-100">
                 Legal Disclaimer
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <p className="text-sm text-yellow-200">
                 This Cookie Policy is a template for informational purposes only. It provides
                 general guidance on cookie practices and compliance with GDPR and ePrivacy
                 regulations. However, cookie laws are complex and evolve frequently. You should

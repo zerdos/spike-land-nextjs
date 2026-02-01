@@ -45,8 +45,8 @@ export function ImagePlaceholder({
         "w-full aspect-video rounded-lg border-2 border-dashed",
         "p-6 my-6",
         isEnhanced
-          ? "bg-teal-50 dark:bg-teal-950/30 border-teal-300 dark:border-teal-700"
-          : "bg-gray-100 dark:bg-gray-800/50 border-gray-300 dark:border-gray-600",
+          ? "bg-teal-950/30 border-teal-700"
+          : "bg-gray-800/50 border-gray-600",
         className,
       )}
       role="img"
@@ -56,8 +56,8 @@ export function ImagePlaceholder({
         className={cn(
           "flex items-center justify-center w-16 h-16 rounded-full",
           isEnhanced
-            ? "bg-teal-100 dark:bg-teal-900/50 text-teal-600 dark:text-teal-400"
-            : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400",
+            ? "bg-teal-900/50 text-teal-400"
+            : "bg-gray-700 text-gray-400",
         )}
         aria-hidden="true"
       >
@@ -69,8 +69,8 @@ export function ImagePlaceholder({
         className={cn(
           "text-sm text-center max-w-md leading-relaxed",
           isEnhanced
-            ? "text-teal-700 dark:text-teal-300"
-            : "text-gray-600 dark:text-gray-400",
+            ? "text-teal-300"
+            : "text-gray-400",
         )}
       >
         {description}
@@ -79,8 +79,8 @@ export function ImagePlaceholder({
         className={cn(
           "text-xs font-medium uppercase tracking-wide",
           isEnhanced
-            ? "text-teal-500 dark:text-teal-500"
-            : "text-gray-400 dark:text-gray-500",
+            ? "text-teal-500"
+            : "text-gray-500",
         )}
       >
         {isEnhanced ? "Enhanced" : "Original"}

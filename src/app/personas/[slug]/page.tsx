@@ -106,7 +106,7 @@ export default async function PersonaPage({ params }: PageProps) {
 
       {/* Warning Note */}
       {persona.note && (
-        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-lg mb-8">
+        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 px-4 py-3 rounded-lg mb-8">
           <strong>Note:</strong> {persona.note}
         </div>
       )}

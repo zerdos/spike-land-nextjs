@@ -59,32 +59,32 @@ const STATUS_CONFIG: Record<
   },
   PENDING: {
     icon: <Clock className="h-3 w-3" />,
-    color: "text-amber-600 bg-amber-50 dark:bg-amber-950",
+    color: "text-amber-600 bg-amber-950",
     label: "Pending",
   },
   SCHEDULED: {
     icon: <Clock className="h-3 w-3" />,
-    color: "text-blue-600 bg-blue-50 dark:bg-blue-950",
+    color: "text-blue-600 bg-blue-950",
     label: "Scheduled",
   },
   PUBLISHING: {
     icon: <Send className="h-3 w-3 animate-pulse" />,
-    color: "text-purple-600 bg-purple-50 dark:bg-purple-950",
+    color: "text-purple-600 bg-purple-950",
     label: "Publishing",
   },
   PUBLISHED: {
     icon: <Check className="h-3 w-3" />,
-    color: "text-green-600 bg-green-50 dark:bg-green-950",
+    color: "text-green-600 bg-green-950",
     label: "Published",
   },
   FAILED: {
     icon: <AlertCircle className="h-3 w-3" />,
-    color: "text-red-600 bg-red-50 dark:bg-red-950",
+    color: "text-red-600 bg-red-950",
     label: "Failed",
   },
   CANCELLED: {
     icon: <X className="h-3 w-3" />,
-    color: "text-gray-400 bg-gray-100 dark:bg-gray-800",
+    color: "text-gray-400 bg-gray-800",
     label: "Cancelled",
   },
 };

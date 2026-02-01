@@ -46,25 +46,25 @@ function getEventStyle(event: HistoryEntry): {
       return {
         icon: "+",
         color: "text-blue-600",
-        bgColor: "bg-blue-100 dark:bg-blue-900/30",
+        bgColor: "bg-blue-900/30",
       };
     case "phase_complete":
       return {
         icon: "",
         color: "text-green-600",
-        bgColor: "bg-green-100 dark:bg-green-900/30",
+        bgColor: "bg-green-900/30",
       };
     case "phase_failed":
       return {
         icon: "",
         color: "text-red-600",
-        bgColor: "bg-red-100 dark:bg-red-900/30",
+        bgColor: "bg-red-900/30",
       };
     case "manual_move":
       return {
         icon: "",
         color: "text-purple-600",
-        bgColor: "bg-purple-100 dark:bg-purple-900/30",
+        bgColor: "bg-purple-900/30",
       };
     default:
       return {

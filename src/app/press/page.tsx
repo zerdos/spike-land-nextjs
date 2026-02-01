@@ -217,7 +217,7 @@ export default function PressPage() {
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {/* Full Logo */}
-                    <div className="border rounded-lg p-6 bg-white dark:bg-zinc-900 flex flex-col items-center">
+                    <div className="border rounded-lg p-6 bg-zinc-900 flex flex-col items-center">
                       <div className="h-16 flex items-center justify-center mb-4">
                         <SpikeLandLogo size="md" variant="horizontal" />
                       </div>
@@ -239,7 +239,7 @@ export default function PressPage() {
                     </div>
 
                     {/* Icon Only */}
-                    <div className="border rounded-lg p-6 bg-white dark:bg-zinc-900 flex flex-col items-center">
+                    <div className="border rounded-lg p-6 bg-zinc-900 flex flex-col items-center">
                       <div className="h-16 flex items-center justify-center mb-4">
                         <SpikeLandLogo size="lg" variant="icon" />
                       </div>
@@ -264,7 +264,7 @@ export default function PressPage() {
                     </div>
 
                     {/* Wordmark */}
-                    <div className="border rounded-lg p-6 bg-white dark:bg-zinc-900 flex flex-col items-center">
+                    <div className="border rounded-lg p-6 bg-zinc-900 flex flex-col items-center">
                       <div className="h-16 flex items-center justify-center mb-4">
                         <span className="font-heading font-bold text-xl tracking-tight lowercase text-foreground">
                           spike.land
@@ -322,7 +322,7 @@ export default function PressPage() {
                     </div>
 
                     {/* Pixel Logo */}
-                    <div className="border rounded-lg p-6 bg-white dark:bg-zinc-900 flex flex-col items-center">
+                    <div className="border rounded-lg p-6 bg-zinc-900 flex flex-col items-center">
                       <div className="h-16 flex items-center justify-center mb-4">
                         <PixelLogo size="lg" variant="horizontal" />
                       </div>
@@ -460,7 +460,7 @@ export default function PressPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <h3 className="font-semibold text-lg mb-3 text-green-600 dark:text-green-400">
+                    <h3 className="font-semibold text-lg mb-3 text-green-400">
                       ✓ Do
                     </h3>
                     <ul className="space-y-2 text-muted-foreground">
@@ -491,7 +491,7 @@ export default function PressPage() {
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-lg mb-3 text-red-600 dark:text-red-400">
+                    <h3 className="font-semibold text-lg mb-3 text-red-400">
                       ✗ Don&apos;t
                     </h3>
                     <ul className="space-y-2 text-muted-foreground">
@@ -520,11 +520,11 @@ export default function PressPage() {
                     </ul>
                   </div>
 
-                  <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg border border-yellow-200 dark:border-yellow-700">
-                    <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                  <div className="bg-yellow-900/30 p-4 rounded-lg border border-yellow-700">
+                    <h4 className="font-semibold text-yellow-200 mb-2">
                       Trademark Notice
                     </h4>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                    <p className="text-sm text-yellow-300">
                       spike.land, the spike.land logo, and Pixel are trademarks of SPIKE LAND LTD.
                       Use of these trademarks must comply with these guidelines. For questions about
                       usage, contact hello@spike.land.

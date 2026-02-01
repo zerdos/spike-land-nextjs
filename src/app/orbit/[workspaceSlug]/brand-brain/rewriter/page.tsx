@@ -139,9 +139,9 @@ export default function RewriterPage() {
       )}
 
       {success && (
-        <Alert className="mb-6 border-green-500 bg-green-50 dark:bg-green-950">
+        <Alert className="mb-6 border-green-500 bg-green-950">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-700 dark:text-green-300">
+          <AlertDescription className="text-green-300">
             {success}
           </AlertDescription>
         </Alert>
@@ -201,7 +201,7 @@ export default function RewriterPage() {
           <CardHeader>
             <CardTitle className="text-lg">Tips for Better Results</CardTitle>
           </CardHeader>
-          <CardContent className="prose prose-sm dark:prose-invert">
+          <CardContent className="prose prose-sm prose-invert">
             <ul className="list-disc list-inside space-y-2 text-muted-foreground">
               <li>
                 <strong>Be specific:</strong> Include key messages you want to preserve

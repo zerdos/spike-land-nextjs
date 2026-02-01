@@ -50,10 +50,10 @@ interface SelectedImageData {
 }
 
 const CATEGORY_COLORS: Record<GalleryCategory, string> = {
-  PORTRAIT: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-  LANDSCAPE: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-  PRODUCT: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  ARCHITECTURE: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+  PORTRAIT: "bg-purple-900/30 text-purple-400",
+  LANDSCAPE: "bg-green-900/30 text-green-400",
+  PRODUCT: "bg-blue-900/30 text-blue-400",
+  ARCHITECTURE: "bg-orange-900/30 text-orange-400",
 };
 
 export function GalleryAdminClient() {
@@ -286,13 +286,13 @@ export function GalleryAdminClient() {
     return (
       <div className="space-y-4">
         <div className="flex justify-end">
-          <div className="h-10 w-32 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
+          <div className="h-10 w-32 animate-pulse rounded-md bg-neutral-800" />
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((n) => (
             <Card
               key={n}
-              className="h-64 animate-pulse bg-neutral-100 dark:bg-neutral-800"
+              className="h-64 animate-pulse bg-neutral-800"
             />
           ))}
         </div>
@@ -356,7 +356,7 @@ export function GalleryAdminClient() {
                 </CardHeader>
                 <CardContent className="p-4 pt-2">
                   {/* Thumbnail */}
-                  <div className="relative aspect-video mb-3 rounded-md overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                  <div className="relative aspect-video mb-3 rounded-md overflow-hidden bg-neutral-800">
                     <Image
                       src={item.originalUrl}
                       alt={item.title}

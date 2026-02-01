@@ -28,13 +28,13 @@ describe("getStatusColor", () => {
     it("returns amber border for 1 attempt", () => {
       const result = getStatusColor(1);
       expect(result.border).toBe("border-amber-500");
-      expect(result.bg).toBe("bg-amber-50 dark:bg-amber-900/30");
+      expect(result.bg).toBe("bg-amber-900/30");
     });
 
     it("returns amber border for 2 attempts", () => {
       const result = getStatusColor(2);
       expect(result.border).toBe("border-amber-500");
-      expect(result.bg).toBe("bg-amber-50 dark:bg-amber-900/30");
+      expect(result.bg).toBe("bg-amber-900/30");
     });
   });
 
@@ -42,19 +42,19 @@ describe("getStatusColor", () => {
     it("returns red border for 3 attempts", () => {
       const result = getStatusColor(3);
       expect(result.border).toBe("border-red-500");
-      expect(result.bg).toBe("bg-red-50 dark:bg-red-900/30");
+      expect(result.bg).toBe("bg-red-900/30");
     });
 
     it("returns red border for high attempt counts", () => {
       const result = getStatusColor(10);
       expect(result.border).toBe("border-red-500");
-      expect(result.bg).toBe("bg-red-50 dark:bg-red-900/30");
+      expect(result.bg).toBe("bg-red-900/30");
     });
 
     it("returns red border for very high attempt counts", () => {
       const result = getStatusColor(100);
       expect(result.border).toBe("border-red-500");
-      expect(result.bg).toBe("bg-red-50 dark:bg-red-900/30");
+      expect(result.bg).toBe("bg-red-900/30");
     });
   });
 });

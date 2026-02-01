@@ -76,15 +76,15 @@ export function PlatformSelector({
         <span
           className={cn(
             "font-medium",
-            isOver && "text-red-600 dark:text-red-400",
-            isWarning && "text-yellow-600 dark:text-yellow-400",
+            isOver && "text-red-400",
+            isWarning && "text-yellow-400",
             !isWarning && !isOver && "text-muted-foreground",
           )}
         >
           {currentLength.toLocaleString()} / {limit.toLocaleString()} characters
         </span>
         {isOver && (
-          <span className="text-red-600 dark:text-red-400 text-xs">
+          <span className="text-red-400 text-xs">
             Over limit by {(currentLength - limit).toLocaleString()}
           </span>
         )}

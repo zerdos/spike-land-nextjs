@@ -223,9 +223,9 @@ export function AppFactoryDashboardClient() {
       </div>
 
       {error && (
-        <Card className="border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+        <Card className="border-red-800 bg-red-900/20 p-4">
           <div className="flex items-center justify-between">
-            <p className="text-red-600 dark:text-red-400">Error: {error}</p>
+            <p className="text-red-400">Error: {error}</p>
             <Button variant="outline" size="sm" onClick={handleRefresh}>
               Retry
             </Button>

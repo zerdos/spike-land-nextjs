@@ -148,8 +148,8 @@ export function MyAppsDashboardClient({ initialStats }: MyAppsDashboardClientPro
       </div>
 
       {error && (
-        <Card className="border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-          <p className="text-red-600 dark:text-red-400">Error: {error}</p>
+        <Card className="border-red-800 bg-red-900/20 p-4">
+          <p className="text-red-400">Error: {error}</p>
         </Card>
       )}
 
@@ -192,19 +192,19 @@ export function MyAppsDashboardClient({ initialStats }: MyAppsDashboardClientPro
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Message Breakdown</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-lg border border-purple-200 bg-purple-50 p-4 dark:border-purple-800 dark:bg-purple-900/20">
-            <p className="text-sm font-medium text-purple-700 dark:text-purple-300">
+          <div className="rounded-lg border border-purple-800 bg-purple-900/20 p-4">
+            <p className="text-sm font-medium text-purple-300">
               User Messages
             </p>
-            <p className="mt-1 text-2xl font-bold text-purple-900 dark:text-purple-100">
+            <p className="mt-1 text-2xl font-bold text-purple-100">
               {overview.userMessages}
             </p>
           </div>
-          <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20">
-            <p className="text-sm font-medium text-orange-700 dark:text-orange-300">
+          <div className="rounded-lg border border-orange-800 bg-orange-900/20 p-4">
+            <p className="text-sm font-medium text-orange-300">
               Agent Messages
             </p>
-            <p className="mt-1 text-2xl font-bold text-orange-900 dark:text-orange-100">
+            <p className="mt-1 text-2xl font-bold text-orange-100">
               {overview.agentMessages}
             </p>
           </div>
@@ -312,18 +312,16 @@ export function MyAppsDashboardClient({ initialStats }: MyAppsDashboardClientPro
 
 function StatusBadge({ status }: { status: string; }) {
   const colorMap: Record<string, string> = {
-    LIVE: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-    BUILDING: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-    FAILED: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-    PROMPTING: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-    DRAFTING: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+    LIVE: "bg-green-900/30 text-green-400",
+    BUILDING: "bg-blue-900/30 text-blue-400",
+    FAILED: "bg-red-900/30 text-red-400",
+    PROMPTING: "bg-yellow-900/30 text-yellow-400",
+    DRAFTING: "bg-purple-900/30 text-purple-400",
   };
 
   return (
     <span
-      className={`text-xs px-2 py-1 rounded ${
-        colorMap[status] || "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
-      }`}
+      className={`text-xs px-2 py-1 rounded ${colorMap[status] || "bg-gray-800 text-gray-300"}`}
     >
       {status}
     </span>

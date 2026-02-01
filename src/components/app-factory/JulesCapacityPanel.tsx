@@ -98,7 +98,7 @@ export function JulesCapacityPanel({ capacity }: JulesCapacityPanelProps) {
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full bg-green-500" />
             <span className="text-muted-foreground">Free:</span>
-            <span className="font-semibold text-green-600 dark:text-green-400">
+            <span className="font-semibold text-green-400">
               {freeAgents} agent{freeAgents !== 1 ? "s" : ""}
             </span>
           </div>
@@ -106,7 +106,7 @@ export function JulesCapacityPanel({ capacity }: JulesCapacityPanelProps) {
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full bg-blue-500" />
             <span className="text-muted-foreground">This project:</span>
-            <span className="font-semibold text-blue-600 dark:text-blue-400">
+            <span className="font-semibold text-blue-400">
               {wipThisProject} agent{wipThisProject !== 1 ? "s" : ""}
             </span>
           </div>
@@ -115,7 +115,7 @@ export function JulesCapacityPanel({ capacity }: JulesCapacityPanelProps) {
             <div className="flex items-center gap-2">
               <span className="h-3 w-3 rounded-full bg-amber-500" />
               <span className="text-muted-foreground">Elsewhere:</span>
-              <span className="font-semibold text-amber-600 dark:text-amber-400">
+              <span className="font-semibold text-amber-400">
                 {wipElsewhere} agent{wipElsewhere !== 1 ? "s" : ""}
               </span>
             </div>
