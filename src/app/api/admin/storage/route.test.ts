@@ -9,6 +9,7 @@ vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
 vi.mock("@/lib/auth/admin-middleware", () => ({
+  verifyAdminAccess: vi.fn().mockResolvedValue(true),
   requireAdminByUserId: vi.fn(),
 }));
 vi.mock("@/lib/storage/r2-client", () => ({
