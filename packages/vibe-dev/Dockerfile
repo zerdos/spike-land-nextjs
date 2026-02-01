@@ -71,6 +71,13 @@ RUN mkdir -p /app/live
 ENV NODE_ENV=production
 ENV TESTING_SPIKE_LAND_URL=https://testing.spike.land
 
+# Redis/API environment variables (configured at runtime via docker-compose)
+# UPSTASH_REDIS_REST_URL - Upstash Redis REST URL
+# UPSTASH_REDIS_REST_TOKEN - Upstash Redis REST Token
+# AGENT_API_KEY - API key for agent authentication
+# SPIKE_LAND_API_KEY - API key for spike.land MCP tools
+# CLAUDE_CODE_OAUTH_TOKEN - Claude Code OAuth token
+
 # Volume for local code files
 VOLUME ["/app/live"]
 

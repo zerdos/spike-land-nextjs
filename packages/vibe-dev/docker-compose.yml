@@ -22,6 +22,34 @@ services:
     # Default: run dev mode (override with docker compose run)
     command: ["dev", "--codespace", "${CODESPACE_ID:-my-app}"]
 
+  # Agent polling service - polls Redis queue and processes messages
+  vibe-agent:
+    build: .
+    container_name: vibe-agent
+    environment:
+      # Required: Upstash Redis credentials
+      - UPSTASH_REDIS_REST_URL=${UPSTASH_REDIS_REST_URL}
+      - UPSTASH_REDIS_REST_TOKEN=${UPSTASH_REDIS_REST_TOKEN}
+      # Required: Agent API key for authentication
+      - AGENT_API_KEY=${AGENT_API_KEY}
+      # Required: Claude Code OAuth token
+      - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN}
+      # Required: spike.land API key for MCP tools
+      - SPIKE_LAND_API_KEY=${SPIKE_LAND_API_KEY}
+      # Optional: API base URL (defaults to https://spike.land)
+      - SPIKE_LAND_API_URL=${SPIKE_LAND_API_URL:-https://spike.land}
+      # Optional: Custom testing.spike.land URL
+      - TESTING_SPIKE_LAND_URL=${TESTING_SPIKE_LAND_URL:-https://testing.spike.land}
+    volumes:
+      # Mount local live directory for code files
+      - ./live:/app/live
+      # Mount Claude config for persistence
+      - claude-config:/root/.claude
+    shm_size: 2gb # For Playwright/Chrome
+    restart: unless-stopped
+    # Poll every 5 seconds
+    command: ["poll", "--interval", "5000"]
+
   # Interactive Claude mode with Playwright MCP
   claude:
     build: .

@@ -14,6 +14,9 @@ import { program } from "commander";
 import { readFile, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
+import { poll } from "./agent.js";
+import { getApiConfig } from "./api.js";
+import { getQueueStats, getRedisConfig } from "./redis.js";
 import { pullCode, pushCode } from "./sync.js";
 import { downloadToLocal, getLocalPath, startDevMode } from "./watcher.js";
 
@@ -133,6 +136,76 @@ program
       }
     } catch (error) {
       console.error("Operation failed:", error);
+      process.exit(1);
+    }
+  });
+
+// ============================================================
+// poll command - Poll Redis queue and process agent messages
+// ============================================================
+program
+  .command("poll")
+  .description("Poll Redis queue and process agent messages")
+  .option("--once", "Run once and exit (don't loop)")
+  .option("--interval <ms>", "Polling interval in milliseconds", "5000")
+  .option("--stats", "Show queue statistics and exit")
+  .action(async (options) => {
+    try {
+      const redisConfig = getRedisConfig();
+      const apiConfig = getApiConfig();
+
+      console.log("vibe-dev Agent Poll");
+      console.log("===================");
+      console.log(`API URL: ${apiConfig.baseUrl}`);
+      console.log(`Redis URL: ${redisConfig.url.substring(0, 30)}...`);
+
+      // Show stats and exit
+      if (options.stats) {
+        const stats = await getQueueStats(redisConfig);
+        console.log("\nQueue Statistics:");
+        console.log(`  Apps with pending: ${stats.appsWithPending}`);
+        console.log(`  Total pending messages: ${stats.totalPendingMessages}`);
+        for (const app of stats.apps) {
+          console.log(`  - ${app.appId}: ${app.count} pending`);
+        }
+        process.exit(0);
+      }
+
+      // Run once mode
+      if (options.once) {
+        console.log("Running once...\n");
+        const processed = await poll(redisConfig, apiConfig);
+        console.log(`\nDone. Processed ${processed} apps.`);
+        process.exit(0);
+      }
+
+      // Continuous polling
+      const interval = parseInt(options.interval, 10);
+      console.log(`Polling every ${interval}ms (Ctrl+C to stop)\n`);
+
+      const pollLoop = async () => {
+        try {
+          await poll(redisConfig, apiConfig);
+        } catch (error) {
+          console.error("Poll error:", error);
+        }
+        setTimeout(pollLoop, interval);
+      };
+
+      // Handle graceful shutdown
+      process.on("SIGINT", () => {
+        console.log("\nShutting down...");
+        process.exit(0);
+      });
+
+      process.on("SIGTERM", () => {
+        console.log("\nShutting down...");
+        process.exit(0);
+      });
+
+      await pollLoop();
+    } catch (error) {
+      console.error("Poll command failed:", error);
       process.exit(1);
     }
   });
