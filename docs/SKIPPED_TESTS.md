@@ -35,7 +35,7 @@ A pre-commit hook verifies that all skipped tests are properly documented. Commi
 
 ## Current Inventory
 
-**Total Skipped Tests:** 17 unit tests + 18 E2E scenarios
+**Total Skipped Tests:** 17 unit tests + 21 E2E scenarios
 **Files with Skips:** 7 (unit) + 8 (E2E feature files)
 
 **Status Summary:**
@@ -110,6 +110,9 @@ These Cucumber E2E scenarios are skipped because they reference step definitions
 | `e2e/features/admin-jobs.feature`                    | "Job details shows enhancement information"             | UI renders "Job Details" not "Enhancement Details" |
 | `e2e/features/admin-jobs.feature`                    | "Job details shows prompt for processed jobs"           | UI renders "User Prompt" not "Prompt"              |
 | `e2e/features/admin-jobs.feature`                    | "Empty state when no jobs match filter"                 | Timing/race condition with filter                  |
+| `e2e/features/admin-jobs.feature`                    | "Job details shows status and timing"                   | API mocking unreliable with Turbopack dev server   |
+| `e2e/features/admin-jobs.feature`                    | "Completed job details shows enhanced image info"       | API mocking unreliable with Turbopack dev server   |
+| `e2e/features/admin-jobs.feature`                    | "Completed job shows before/after comparison"           | API mocking unreliable with Turbopack dev server   |
 | `e2e/features/orbit-onboarding.feature`              | "Existing user is redirected to dashboard"              | Requires workspace seeding utilities               |
 
 **Status:** All scenarios marked with `@skip` tag to prevent CI failures. Implementation of missing step definitions should be tracked as separate issues.

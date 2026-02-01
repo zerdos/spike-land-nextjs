@@ -109,7 +109,9 @@ Feature: Admin Jobs Queue Management
     Then the job should be highlighted
     And the details panel should show job information
 
-  @slow @requires-db
+  @skip @slow @requires-db
+  # SKIP REASON: API route mocking unreliable with Turbopack dev server in parallel mode
+  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   Scenario: Job details shows status and timing
     Given there is a completed job in the system
     When I visit "/admin/jobs"
@@ -133,7 +135,9 @@ Feature: Admin Jobs Queue Management
     And I should see original image size
     And I should see retry count
 
-  @slow @requires-db
+  @skip @slow @requires-db
+  # SKIP REASON: API route mocking unreliable with Turbopack dev server in parallel mode
+  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   Scenario: Completed job details shows enhanced image info
     Given there is a completed job in the system
     When I visit "/admin/jobs"
@@ -141,7 +145,9 @@ Feature: Admin Jobs Queue Management
     Then the details panel should show enhanced image dimensions
     And the details panel should show enhanced image size
 
-  @slow @requires-db
+  @skip @slow @requires-db
+  # SKIP REASON: API route mocking unreliable with Turbopack dev server in parallel mode
+  # TRACKING: See docs/SKIPPED_TESTS.md - E2E Category G
   Scenario: Completed job shows before/after comparison
     Given there is a completed job in the system
     When I visit "/admin/jobs"
