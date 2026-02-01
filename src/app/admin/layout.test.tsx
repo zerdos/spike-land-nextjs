@@ -12,6 +12,7 @@ vi.mock("@/auth", () => ({
 }));
 vi.mock("@/lib/auth/admin-middleware", () => ({
   isAdminByUserId: vi.fn(),
+  verifyAdminAccess: vi.fn().mockResolvedValue(true),
 }));
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
@@ -24,7 +25,7 @@ vi.mock("next/headers", () => ({
 }));
 
 const { auth } = await import("@/auth");
-const { isAdminByUserId } = await import("@/lib/auth/admin-middleware");
+const { isAdminByUserId, verifyAdminAccess } = await import("@/lib/auth/admin-middleware");
 const { headers } = await import("next/headers");
 
 describe("AdminLayout", () => {
@@ -49,6 +50,7 @@ describe("AdminLayout", () => {
       user: { id: "user123", name: "Test User", email: "test@example.com" },
     } as any);
     vi.mocked(isAdminByUserId).mockResolvedValue(false);
+    vi.mocked(verifyAdminAccess).mockResolvedValue(false);
 
     try {
       await AdminLayout({ children: <div>Test Content</div> });

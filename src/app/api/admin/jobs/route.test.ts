@@ -33,6 +33,7 @@ vi.mock("@/lib/prisma", () => ({
 
 vi.mock("@/lib/auth/admin-middleware", () => ({
   isAdminByUserId: vi.fn(),
+  verifyAdminAccess: vi.fn().mockResolvedValue(true),
 }));
 
 const { auth } = await import("@/auth");

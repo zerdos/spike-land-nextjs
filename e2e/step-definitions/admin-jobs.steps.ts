@@ -546,27 +546,24 @@ When("I click on the completed job", async function(this: CustomWorld) {
   const jobItem = completedJobByStatus.or(completedJobByText).first();
   await expect(jobItem).toBeVisible({ timeout: TIMEOUTS.LONG });
 
-  // Click using regular click method
-  await jobItem.click();
-
-  // Wait for React to process the state update
-  await this.page.waitForTimeout(300);
-
-  // Wait for the job selection to take effect - try multiple indicators
-  const copyLinkButton = this.page.getByRole("button", { name: /copy link/i });
-  const jobDetailsPanel = this.page.locator('[class*="overflow-y-auto"]').filter({
-    has: copyLinkButton,
-  });
-
-  try {
-    await expect(copyLinkButton.or(jobDetailsPanel).first()).toBeVisible({
-      timeout: TIMEOUTS.LONG,
-    });
-  } catch {
-    // Retry click if job details didn't appear
+  // Retry logic for selection
+  await expect(async () => {
+    // Click using regular click method
     await jobItem.click();
-    await expect(copyLinkButton).toBeVisible({ timeout: TIMEOUTS.LONG });
-  }
+
+    // Check if details panel appeared
+    const copyLinkButton = this.page.getByRole("button", { name: /copy link/i });
+    const jobDetailsPanel = this.page.locator('[class*="overflow-y-auto"]').filter({
+      has: copyLinkButton,
+    });
+
+    await expect(copyLinkButton.or(jobDetailsPanel).first()).toBeVisible({
+      timeout: 2000,
+    });
+  }).toPass({
+    timeout: TIMEOUTS.LONG,
+    intervals: [500, 1000],
+  });
 });
 
 When("I click on the failed job", async function(this: CustomWorld) {
@@ -577,16 +574,19 @@ When("I click on the failed job", async function(this: CustomWorld) {
     '[data-testid="job-list-item"][data-job-status="FAILED"]',
     { timeout: TIMEOUTS.LONG },
   );
-  // Click using evaluate to ensure React event handlers work correctly
-  await jobItem.first().evaluate((el) => {
-    (el as HTMLElement).click();
+
+  // Retry logic for selection
+  await expect(async () => {
+    // Click usage evaluate to ensure React event handlers work correctly
+    await jobItem.first().click();
+
+    // Check if details panel appeared
+    const copyLinkButton = this.page.getByRole("button", { name: /copy link/i });
+    await expect(copyLinkButton).toBeVisible({ timeout: 2000 });
+  }).toPass({
+    timeout: TIMEOUTS.LONG,
+    intervals: [500, 1000],
   });
-  // Wait a moment for React to process the state update
-  await this.page.waitForTimeout(100);
-  // Wait for the job selection to take effect (React state update)
-  // The Copy Link button appears when a job is selected
-  const copyLinkButton = this.page.getByRole("button", { name: /copy link/i });
-  await copyLinkButton.waitFor({ state: "visible", timeout: TIMEOUTS.LONG });
 });
 
 When("I click on that job", async function(this: CustomWorld) {
@@ -597,15 +597,20 @@ When("I click on that job", async function(this: CustomWorld) {
   const jobItem = this.page.locator('[data-testid="job-list-item"]').first();
   await expect(jobItem).toBeVisible({ timeout: TIMEOUTS.LONG });
 
-  // Click the job
-  await jobItem.click();
+  // Retry logic for selection
+  await expect(async () => {
+    // Click the job
+    await jobItem.click();
 
-  // Wait for details panel to load (Copy Link button appears when job is selected)
-  await this.page.waitForTimeout(200); // Allow React state update
-  const detailsPanel = this.page.locator(
-    '[data-testid="job-copy-link-button"], button:has-text("Copy Link")',
-  );
-  await expect(detailsPanel).toBeVisible({ timeout: TIMEOUTS.LONG });
+    // Check if details panel appeared
+    const detailsPanel = this.page.locator(
+      '[data-testid="job-copy-link-button"], button:has-text("Copy Link")',
+    );
+    await expect(detailsPanel).toBeVisible({ timeout: 2000 });
+  }).toPass({
+    timeout: TIMEOUTS.LONG,
+    intervals: [500, 1000],
+  });
 });
 
 // Then steps

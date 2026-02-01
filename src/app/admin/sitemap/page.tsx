@@ -35,9 +35,15 @@ const SITEMAP_PATHS = [
 
 export default async function SitemapPreviewPage() {
   // Fetch ALL tracked paths from database (including hidden ones)
-  const trackedPaths = await prisma.trackedUrl.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  let trackedPaths: { id: string; path: string; isActive: boolean; }[] = [];
+  try {
+    trackedPaths = await prisma.trackedUrl.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch tracked paths:", error);
+    // Continue with empty tracked paths to allow sitemap preview to work even if DB is down
+  }
 
   // Get the current origin from headers
   const headersList = await headers();

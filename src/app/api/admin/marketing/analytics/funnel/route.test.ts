@@ -17,6 +17,7 @@ vi.mock("@/auth", () => ({
 
 // Mock admin middleware
 vi.mock("@/lib/auth/admin-middleware", () => ({
+  verifyAdminAccess: vi.fn().mockResolvedValue(true),
   requireAdminByUserId: vi.fn(),
 }));
 

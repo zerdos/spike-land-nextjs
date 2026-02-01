@@ -28,6 +28,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 vi.mock("@/lib/auth/admin-middleware", () => ({
+  verifyAdminAccess: vi.fn().mockResolvedValue(true),
   requireAdminByUserId: vi.fn(),
 }));
 vi.mock("next/cache", () => ({

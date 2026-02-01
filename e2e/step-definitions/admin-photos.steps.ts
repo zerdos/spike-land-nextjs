@@ -65,13 +65,40 @@ const mockPhotos: Photo[] = [
 async function mockPhotosAPI(
   world: CustomWorld,
   photos: Photo[] = mockPhotos,
-  pagination = { page: 1, limit: 20, total: photos.length, totalPages: 1 },
+  inputPagination = { page: 1, limit: 20, total: photos.length, totalPages: 1 },
 ) {
   await world.page.route("**/api/admin/photos**", async (route) => {
+    // Parse query params to get requested page
+    const url = new URL(route.request().url());
+    const requestedPage = parseInt(url.searchParams.get("page") || String(inputPagination.page));
+    const requestedLimit = parseInt(url.searchParams.get("limit") || String(inputPagination.limit));
+
+    // Calculate pagination for this request
+    const total = inputPagination.total;
+    const limit = requestedLimit;
+    const totalPages = Math.ceil(total / limit);
+    const page = requestedPage;
+
+    // Slice photos if needed (optional, but good for correctness)
+    // Note: This logic assumes 'photos' contains ALL photos.
+    // If 'photos' is just a page worth, we might just return it.
+    // For "more than 20 photos" scenario, we generate 25 photos, so we should slice.
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const paginatedPhotos = photos.length > limit ? photos.slice(start, end) : photos;
+
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ images: photos, pagination }),
+      body: JSON.stringify({
+        images: paginatedPhotos,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+        },
+      }),
     });
   });
 }
