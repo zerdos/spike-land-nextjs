@@ -3,7 +3,7 @@
 import { cursorBlinkAnimation } from "@/lib/animation-variants";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ANIMATION_TIMING } from "../constants/design-tokens";
 
 interface TypewriterTextProps {
@@ -26,6 +26,7 @@ export function TypewriterText({
   const [displayedText, setDisplayedText] = useState("");
   const [isStarted, setIsStarted] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const currentIndexRef = useRef(0);
 
   useEffect(() => {
     const startTimeout = setTimeout(() => {
@@ -38,21 +39,20 @@ export function TypewriterText({
   useEffect(() => {
     if (!isStarted) return;
 
-    let currentIndex = 0;
     const interval = setInterval(() => {
-      if (currentIndex >= text.length) {
+      if (currentIndexRef.current >= text.length) {
         clearInterval(interval);
         setIsComplete(true);
         onComplete?.();
         return;
       }
 
-      setDisplayedText(text.slice(0, currentIndex + 1));
-      currentIndex++;
+      setDisplayedText(text.slice(0, currentIndexRef.current + 1));
+      currentIndexRef.current++;
     }, speed);
 
     return () => clearInterval(interval);
-  }, [isStarted, text, speed, onComplete]);
+  }, [isStarted, text, speed, onComplete]); // Dependency array is correct for this effect
 
   return (
     <span className={cn("inline-flex items-center", className)}>

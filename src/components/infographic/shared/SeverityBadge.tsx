@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils";
 
-interface SeverityBadgeProps {
+interface SeverityBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   level: "critical" | "high" | "medium" | "low";
   className?: string;
   count?: number;
 }
 
-export function SeverityBadge({ level, className, count }: SeverityBadgeProps) {
+export function SeverityBadge({ level, className, count, ...props }: SeverityBadgeProps) {
   const getStyles = () => {
     switch (level) {
       case "critical":
@@ -27,6 +27,7 @@ export function SeverityBadge({ level, className, count }: SeverityBadgeProps) {
         getStyles(),
         className,
       )}
+      {...props}
     >
       {level}
       {count !== undefined && (

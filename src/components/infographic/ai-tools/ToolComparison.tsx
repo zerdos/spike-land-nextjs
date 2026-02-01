@@ -120,7 +120,12 @@ const COMPARISON_DATA = [
 export function ToolComparison() {
   const [activeTab, setActiveTab] = useState("philosophy");
 
-  const currentData = COMPARISON_DATA.find(d => d.id === activeTab)!;
+  const currentData = COMPARISON_DATA.find(d => d.id === activeTab);
+
+  // Early return guard - COMPARISON_DATA always has matching entries
+  if (!currentData) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex flex-col justify-center py-24 bg-zinc-950 relative overflow-hidden">

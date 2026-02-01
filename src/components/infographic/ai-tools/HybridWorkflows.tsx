@@ -1,7 +1,16 @@
+"use client";
+
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Cloud, Database, Link, Server, Shield, Wallet, X } from "lucide-react";
 import { useState } from "react";
 import { FlowDiagram, GlassCard, ScrollReveal } from "../shared";
+
+// Map for dynamic colors to ensure Tailwind JIT picks them up
+const colorClasses: Record<string, string> = {
+  emerald: "bg-emerald-500/10 border-emerald-500/20",
+  amber: "bg-amber-500/10 border-amber-500/20",
+  blue: "bg-blue-500/10 border-blue-500/20",
+};
 
 const WORKFLOWS = [
   {
@@ -107,7 +116,9 @@ export function HybridWorkflows() {
                 <div
                   className={`
                    w-20 h-20 rounded-full flex items-center justify-center mb-6 
-                   bg-${flow.color}-500/10 border border-${flow.color}-500/20 group-hover:scale-110 transition-transform
+                   ${
+                    colorClasses[flow.color] || "bg-gray-500/10 border-gray-500/20"
+                  } group-hover:scale-110 transition-transform
                  `}
                 >
                   {flow.icon}

@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  vibe-dev:
+    build: .
+    container_name: vibe-dev
+    environment:
+      # Required: Claude Code OAuth token (from spike-land-nextjs .env.local)
+      - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN}
+      # Required: spike.land API key for MCP tools
+      - SPIKE_LAND_API_KEY=${SPIKE_LAND_API_KEY}
+      # Optional: Custom testing.spike.land URL
+      - TESTING_SPIKE_LAND_URL=${TESTING_SPIKE_LAND_URL:-https://testing.spike.land}
+    volumes:
+      # Mount local live directory for code files
+      - ./live:/app/live
+      # Mount Claude config for persistence
+      - claude-config:/root/.claude
+    shm_size: 2gb # For Playwright/Chrome
+    stdin_open: true
+    tty: true
+    # Default: run dev mode (override with docker compose run)
+    command: ["dev", "--codespace", "${CODESPACE_ID:-my-app}"]
+
+  # Interactive Claude mode with Playwright MCP
+  claude:
+    build: .
+    container_name: vibe-claude
+    environment:
+      - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN}
+      - SPIKE_LAND_API_KEY=${SPIKE_LAND_API_KEY}
+      - TESTING_SPIKE_LAND_URL=${TESTING_SPIKE_LAND_URL:-https://testing.spike.land}
+    volumes:
+      - ./live:/app/live
+      - claude-config:/root/.claude
+    shm_size: 2gb
+    stdin_open: true
+    tty: true
+    profiles: ["claude"]
+    entrypoint: ["claude"]
+    command: ["--mcp-config", "/app/mcp-config.json"]
+
+volumes:
+  claude-config:

@@ -5,6 +5,7 @@ export const HERO_CONTENT = {
     name: "Claude Code",
     description:
       "The intelligent agent that lives in your terminal. Perfect for planning, complex refactors, and deep architectural changes.",
+    // Note: These statistics are snapshots and should be updated periodically or fetched dynamically.
     stats: {
       stars: 135000,
       users: 50000,
