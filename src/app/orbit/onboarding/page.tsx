@@ -109,7 +109,7 @@ export default function OnboardingPage() {
               onClick={handleCreateWorkspace}
               disabled={isCreating || !formData.name.trim()}
             >
-              {isCreating ? "Creating Team Space..." : "Create Workspace"}
+              {isCreating ? "Creating Workspace..." : "Create Workspace"}
             </Button>
           </CardFooter>
         </Card>

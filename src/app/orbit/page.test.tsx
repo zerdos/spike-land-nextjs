@@ -115,7 +115,7 @@ describe("OrbitPage", () => {
     });
   });
 
-  it("shows welcome state when no workspaces exist", async () => {
+  it("redirects to onboarding when no workspaces exist", async () => {
     localStorageMock.getItem.mockReturnValue(null);
     mockFetch.mockResolvedValue({
       ok: true,
@@ -125,14 +125,8 @@ describe("OrbitPage", () => {
     render(<OrbitPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Welcome to Orbit")).toBeInTheDocument();
-      expect(
-        screen.getByText("Get started by creating your first workspace"),
-      ).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Create Workspace" })).toBeInTheDocument();
+      expect(mockReplace).toHaveBeenCalledWith("/orbit/onboarding");
     });
-
-    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it("shows error state when fetch fails", async () => {
@@ -165,23 +159,5 @@ describe("OrbitPage", () => {
     });
 
     expect(mockReplace).not.toHaveBeenCalled();
-  });
-
-  it("renders branding in all states", async () => {
-    localStorageMock.getItem.mockReturnValue(null);
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ workspaces: [] }),
-    });
-
-    render(<OrbitPage />);
-
-    // Initially shows loading
-    expect(screen.getByRole("heading", { name: "Orbit" })).toBeInTheDocument();
-
-    // After fetch completes, still shows branding
-    await waitFor(() => {
-      expect(screen.getByText("Your Social Command Center")).toBeInTheDocument();
-    });
   });
 });
