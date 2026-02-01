@@ -1,30 +1,35 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import { useState } from "react";
 
 const faqs = [
   {
     question: "What AI development services do you offer?",
-    answer: "We specialize in building custom AI agents, intelligent chatbots, and process automation solutions tailored to your business needs. Our team leverages cutting-edge LLMs and robust engineering to deliver scalable and secure AI applications."
+    answer:
+      "We specialize in building custom AI agents, intelligent chatbots, and process automation solutions tailored to your business needs. Our team leverages cutting-edge LLMs and robust engineering to deliver scalable and secure AI applications.",
   },
   {
     question: "How much does a typical project cost?",
-    answer: "Project costs vary depending on complexity and scope. We offer flexible engagement models including fixed-price projects for well-defined scopes and monthly retainers for ongoing development and support. Contact us for a detailed quote."
+    answer:
+      "Project costs vary depending on complexity and scope. We offer flexible engagement models including fixed-price projects for well-defined scopes and monthly retainers for ongoing development and support. Contact us for a detailed quote.",
   },
   {
     question: "What is the typical timeline for an AI project?",
-    answer: "A typical MVP (Minimum Viable Product) takes 4-8 weeks to deliver. Complex enterprise solutions may take 3-6 months. We follow an agile methodology with bi-weekly sprints to ensure transparent progress and rapid feedback loops."
+    answer:
+      "A typical MVP (Minimum Viable Product) takes 4-8 weeks to deliver. Complex enterprise solutions may take 3-6 months. We follow an agile methodology with bi-weekly sprints to ensure transparent progress and rapid feedback loops.",
   },
   {
     question: "Do you provide ongoing support and maintenance?",
-    answer: "Yes, we offer comprehensive post-launch support packages. This includes monitoring, performance optimization, model updates, and bug fixes to ensure your AI solution remains reliable and up-to-date."
+    answer:
+      "Yes, we offer comprehensive post-launch support packages. This includes monitoring, performance optimization, model updates, and bug fixes to ensure your AI solution remains reliable and up-to-date.",
   },
   {
     question: "How do you ensure data privacy and security?",
-    answer: "Security is our top priority. We implement enterprise-grade security practices including end-to-end encryption, strict access controls, and compliance with GDPR/SOC2 standards. We can also deploy local models to keep your sensitive data within your infrastructure."
-  }
+    answer:
+      "Security is our top priority. We implement enterprise-grade security practices including end-to-end encryption, strict access controls, and compliance with GDPR/SOC2 standards. We can also deploy local models to keep your sensitive data within your infrastructure.",
+  },
 ];
 
 export function FAQSection() {
@@ -50,7 +55,7 @@ export function FAQSection() {
   );
 }
 
-function FAQItem({ question, answer }: { question: string; answer: string }) {
+function FAQItem({ question, answer }: { question: string; answer: string; }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (

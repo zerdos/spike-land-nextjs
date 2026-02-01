@@ -7,7 +7,7 @@ vi.mock("framer-motion", async () => {
   const actual = await vi.importActual("framer-motion");
   return {
     ...actual,
-    AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
+    AnimatePresence: ({ children }: { children: React.ReactNode; }) => children,
     motion: {
       div: ({
         children,
@@ -46,8 +46,8 @@ describe("ProcessSection", () => {
     expect(screen.getByText("Our Process")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "From idea to launch and beyond, we follow a proven workflow to deliver exceptional results."
-      )
+        "From idea to launch and beyond, we follow a proven workflow to deliver exceptional results.",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -65,19 +65,19 @@ describe("ProcessSection", () => {
     render(<ProcessSection />);
 
     expect(
-      screen.getByText(/We start by diving deep into your vision/i)
+      screen.getByText(/We start by diving deep into your vision/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/We create intuitive, high-fidelity prototypes/i)
+      screen.getByText(/We create intuitive, high-fidelity prototypes/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/We develop your product using the latest technologies/i)
+      screen.getByText(/We develop your product using the latest technologies/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/We handle the deployment process/i)
+      screen.getByText(/We handle the deployment process/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/We provide ongoing maintenance and support/i)
+      screen.getByText(/We provide ongoing maintenance and support/i),
     ).toBeInTheDocument();
   });
 

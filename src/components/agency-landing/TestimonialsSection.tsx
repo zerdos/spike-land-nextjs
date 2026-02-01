@@ -69,7 +69,7 @@ const itemVariants = {
   },
 };
 
-export function TestimonialsSection({ className }: { className?: string }) {
+export function TestimonialsSection({ className }: { className?: string; }) {
   return (
     <section className={cn("py-16 sm:py-24 bg-muted/30", className)}>
       <div className="container mx-auto px-4">
@@ -90,7 +90,8 @@ export function TestimonialsSection({ className }: { className?: string }) {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-lg text-muted-foreground"
           >
-            Don't just take our word for it. Here's what our clients have to say about their experience working with us.
+            Don't just take our word for it. Here's what our clients have to say about their
+            experience working with us.
           </motion.p>
         </div>
 

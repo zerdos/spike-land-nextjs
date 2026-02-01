@@ -65,12 +65,10 @@ export function PricingSection() {
             Pricing Plans
           </Badge>
           <h2 className="text-3xl font-bold font-heading text-white sm:text-4xl mb-4">
-            Choose Your Path to{" "}
-            <span className="text-gradient-primary">Success</span>
+            Choose Your Path to <span className="text-gradient-primary">Success</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-white/60">
-            Transparent pricing tailored to your stage of growth. No hidden
-            fees, just results.
+            Transparent pricing tailored to your stage of growth. No hidden fees, just results.
           </p>
         </ScrollReveal>
 
