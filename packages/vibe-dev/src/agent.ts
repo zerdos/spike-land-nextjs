@@ -20,7 +20,15 @@ import { dequeueMessage, getAppsWithPending, setAgentWorking } from "./redis.js"
 // Configuration
 // ============================================================
 
-const CLAUDE_TIMEOUT_MS = 300000; // 5 minutes
+/**
+ * Claude CLI timeout in milliseconds.
+ * Configurable via CLAUDE_TIMEOUT_MS environment variable.
+ * Default: 300000 (5 minutes)
+ */
+const CLAUDE_TIMEOUT_MS = parseInt(
+  process.env["CLAUDE_TIMEOUT_MS"] || "300000",
+  10,
+);
 const TESTING_SPIKE_LAND_URL = process.env["TESTING_SPIKE_LAND_URL"] ||
   "https://testing.spike.land";
 const LIVE_DIR = process.env["LIVE_DIR"] || "/app/live";
@@ -591,6 +599,9 @@ export async function processApp(
 ): Promise<number> {
   console.log(`\nProcessing app: ${appId}`);
 
+  // Track current message ID for error recovery logging
+  let currentMessageId: string | null = null;
+
   try {
     // Mark agent as working
     await setAgentWorking(redisConfig, appId, true);
@@ -603,6 +614,7 @@ export async function processApp(
     let messageId = await dequeueMessage(redisConfig, appId);
 
     while (messageId) {
+      currentMessageId = messageId;
       console.log(`  Message: ${messageId}`);
 
       const result = await processMessage(apiConfig, appId, messageId, context);
@@ -610,7 +622,7 @@ export async function processApp(
       if (result.success) {
         processedCount++;
       } else {
-        console.error(`  Failed: ${result.error}`);
+        console.error(`  Failed to process message ${messageId}: ${result.error}`);
         // Post error message to chat
         await postAgentResponse(apiConfig, appId, {
           content: `Error processing message: ${result.error}`,
@@ -626,7 +638,15 @@ export async function processApp(
     return processedCount;
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
-    console.error(`  Error processing app ${appId}:`, errorMsg);
+    // Log which message ID failed for easier debugging
+    if (currentMessageId) {
+      console.error(
+        `  Error processing app ${appId} at message ${currentMessageId}:`,
+        errorMsg,
+      );
+    } else {
+      console.error(`  Error processing app ${appId} (during setup):`, errorMsg);
+    }
     throw error;
   } finally {
     await setAgentWorking(redisConfig, appId, false);

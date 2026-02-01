@@ -14,6 +14,12 @@ import { NextResponse } from "next/server";
  *
  * Query params:
  *   - historyLimit: number (default: 10) - Number of messages to return
+ *
+ * Rate Limiting Consideration:
+ * This endpoint is protected by AGENT_API_KEY authentication, which limits access
+ * to trusted internal services (vibe-dev Docker container). The agent polls at
+ * controlled intervals, so request volume is predictable. If public access is ever
+ * needed, add rate limiting middleware (e.g., Upstash Ratelimit) to prevent abuse.
  */
 export async function GET(
   request: NextRequest,

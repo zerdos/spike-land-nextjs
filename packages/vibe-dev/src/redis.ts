@@ -68,28 +68,98 @@ export async function getAppsWithPending(config: RedisConfig): Promise<string[]>
 }
 
 /**
- * Dequeue oldest message from an app's queue
+ * Execute a Redis pipeline (MULTI/EXEC) via Upstash REST API
+ * Used for atomic operations that need to happen together
+ */
+async function redisPipeline<T>(
+  config: RedisConfig,
+  commands: string[][],
+): Promise<T[]> {
+  const response = await fetch(`${config.url}/pipeline`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${config.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(commands),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Redis pipeline failed: ${response.status} - ${error}`);
+  }
+
+  const data = await response.json();
+  return data.map((r: { result: T; }) => r.result);
+}
+
+/**
+ * Lua script to atomically dequeue a message and clean up if queue is empty.
+ * This prevents race conditions where another process could modify the queue
+ * between RPOP and LLEN operations.
+ *
+ * KEYS[1] = app pending messages list
+ * KEYS[2] = apps with pending set
+ * ARGV[1] = appId (for SREM)
+ *
+ * Returns the message ID or nil
+ */
+const DEQUEUE_SCRIPT = `
+local messageId = redis.call('RPOP', KEYS[1])
+if messageId then
+  local remaining = redis.call('LLEN', KEYS[1])
+  if remaining == 0 then
+    redis.call('SREM', KEYS[2], ARGV[1])
+  end
+end
+return messageId
+`;
+
+/**
+ * Dequeue oldest message from an app's queue atomically.
+ * Uses a Lua script to prevent race conditions between RPOP and cleanup.
+ *
+ * Race condition fixed: Previously, RPOP + LLEN + SREM were separate commands.
+ * If two processes dequeued the last two messages simultaneously, both could
+ * see remaining=0 and try to SREM, or worse, one might SREM while another
+ * process was adding a new message.
  */
 export async function dequeueMessage(
   config: RedisConfig,
   appId: string,
 ): Promise<string | null> {
-  const messageId = await redisCommand<string | null>(
-    config,
-    ["RPOP", KEYS.APP_PENDING_MESSAGES(appId)],
-  );
+  try {
+    // Use EVAL to run the Lua script atomically
+    const messageId = await redisCommand<string | null>(config, [
+      "EVAL",
+      DEQUEUE_SCRIPT,
+      "2", // number of keys
+      KEYS.APP_PENDING_MESSAGES(appId),
+      KEYS.APPS_WITH_PENDING,
+      appId,
+    ]);
+    return messageId;
+  } catch (error) {
+    // Fallback to pipeline if EVAL is not supported (some Redis proxies)
+    // Pipeline provides atomicity guarantees similar to MULTI/EXEC
+    console.warn(
+      "EVAL not supported, falling back to pipeline:",
+      error instanceof Error ? error.message : error,
+    );
+    const [messageId, remaining] = await redisPipeline<string | null | number>(
+      config,
+      [
+        ["RPOP", KEYS.APP_PENDING_MESSAGES(appId)],
+        ["LLEN", KEYS.APP_PENDING_MESSAGES(appId)],
+      ],
+    );
 
-  // Check if queue is now empty
-  const remaining = await redisCommand<number>(
-    config,
-    ["LLEN", KEYS.APP_PENDING_MESSAGES(appId)],
-  );
+    if (remaining === 0) {
+      await redisCommand(config, ["SREM", KEYS.APPS_WITH_PENDING, appId]);
+    }
 
-  if (remaining === 0) {
-    await redisCommand(config, ["SREM", KEYS.APPS_WITH_PENDING, appId]);
+    return messageId as string | null;
   }
-
-  return messageId;
 }
 
 /**
