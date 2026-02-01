@@ -7,7 +7,7 @@ export default async function SignInPage() {
 
   // If user is already authenticated, redirect to home page
   if (session) {
-    redirect("/");
+    redirect("/orbit");
   }
 
   return <SignInContent />;
