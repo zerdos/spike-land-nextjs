@@ -49,16 +49,24 @@ interface OrbitSidebarProps {
   workspaceSlug: string;
 }
 
-export function OrbitSidebar({
-  userEmail,
-  userName,
+interface NavContentProps {
+  workspaceSlug: string;
+  pathname: string;
+  userName?: string | null;
+  userEmail?: string | null;
+  setOpen: (open: boolean) => void;
+}
+
+const NavContent = ({
   workspaceSlug,
-}: OrbitSidebarProps) {
-  const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  pathname,
+  userName,
+  userEmail,
+  setOpen,
+}: NavContentProps) => {
   const navItems = getNavItems(workspaceSlug);
 
-  const NavContent = () => (
+  return (
     <div className="flex h-full flex-col bg-background">
       <div className="border-b px-3 py-3">
         <div className="flex items-center justify-between gap-2">
@@ -112,6 +120,15 @@ export function OrbitSidebar({
       </div>
     </div>
   );
+};
+
+export function OrbitSidebar({
+  userEmail,
+  userName,
+  workspaceSlug,
+}: OrbitSidebarProps) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   return (
     <>
@@ -128,13 +145,25 @@ export function OrbitSidebar({
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-[280px] p-0">
-          <NavContent />
+          <NavContent
+            workspaceSlug={workspaceSlug}
+            pathname={pathname}
+            userName={userName}
+            userEmail={userEmail}
+            setOpen={setOpen}
+          />
         </SheetContent>
       </Sheet>
 
       {/* Desktop Sidebar */}
       <div className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r bg-background lg:flex">
-        <NavContent />
+        <NavContent
+          workspaceSlug={workspaceSlug}
+          pathname={pathname}
+          userName={userName}
+          userEmail={userEmail}
+          setOpen={setOpen}
+        />
       </div>
     </>
   );

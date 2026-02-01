@@ -46,7 +46,6 @@ export async function getWorkspaceMembership(
   );
 
   if (error) {
-    console.error("Failed to fetch workspace membership:", error);
     return null;
   }
 

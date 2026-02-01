@@ -12,6 +12,9 @@ import { AlertCircle, Bell, CheckCheck, CheckCircle2, Info, TriangleAlert } from
 import Link from "next/link";
 import { useCallback, useState } from "react";
 
+const UNDEFINED_SLUG = "undefined";
+const PLACEHOLDER_SLUG = "[workspaceSlug]";
+
 /**
  * Props for the NotificationBell component
  */
@@ -240,6 +243,9 @@ export function NotificationBell({
   pollInterval = 30000,
 }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const skipPolling = !workspaceSlug || workspaceSlug === UNDEFINED_SLUG ||
+    workspaceSlug === PLACEHOLDER_SLUG;
+
   const {
     notifications,
     unreadCount,
@@ -247,7 +253,10 @@ export function NotificationBell({
     error,
     markAsRead,
     markAllAsRead,
-  } = useNotifications({ workspaceSlug, pollInterval });
+  } = useNotifications({
+    workspaceSlug: skipPolling ? "" : workspaceSlug,
+    pollInterval: skipPolling ? 0 : pollInterval,
+  });
 
   const handleMarkAsRead = useCallback(
     (id: string) => {
@@ -259,6 +268,10 @@ export function NotificationBell({
   const handleMarkAllAsRead = useCallback(() => {
     markAllAsRead();
   }, [markAllAsRead]);
+
+  if (skipPolling) {
+    return null;
+  }
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

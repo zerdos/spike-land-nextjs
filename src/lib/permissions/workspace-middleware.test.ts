@@ -82,17 +82,13 @@ describe("workspace-middleware", () => {
       expect(result).toBeNull();
     });
 
-    it("returns null and logs error on database failure", async () => {
+    it("returns null on database failure", async () => {
       const error = new Error("Database error");
       vi.mocked(prisma.workspaceMember.findUnique).mockRejectedValue(error);
 
       const result = await getWorkspaceMembership("user_123", "ws_123");
 
       expect(result).toBeNull();
-      expect(console.error).toHaveBeenCalledWith(
-        "Failed to fetch workspace membership:",
-        error,
-      );
     });
   });
 
