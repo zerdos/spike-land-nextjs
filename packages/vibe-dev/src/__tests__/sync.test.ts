@@ -109,7 +109,7 @@ describe('Sync Module', () => {
       const fn = vi.fn()
         .mockRejectedValueOnce(new Error('fail 1'))
         .mockResolvedValue('success');
-      
+
       const result = await sync.withRetry(fn);
       expect(result).toBe('success');
       expect(fn).toHaveBeenCalledTimes(2);
@@ -117,7 +117,7 @@ describe('Sync Module', () => {
 
     it('should throw last error after max retries', async () => {
       const fn = vi.fn().mockRejectedValue(new Error('fail'));
-      
+
       await expect(sync.withRetry(fn, 2, 1)).rejects.toThrow('fail');
       expect(fn).toHaveBeenCalledTimes(2);
     });

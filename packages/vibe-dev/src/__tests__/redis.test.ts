@@ -74,7 +74,7 @@ describe('Redis Client', () => {
     it('should fallback to pipeline if EVAL fails', async () => {
       // First call fails (EVAL)
       mockFetch.mockRejectedValueOnce(new Error('EVAL not supported'));
-      
+
       // Second call succeeds (Pipeline: RPOP, LLEN)
       mockFetch.mockResolvedValueOnce({
         ok: true,

@@ -83,7 +83,7 @@ describe('Watcher Module', () => {
   describe('watchCodespace', () => {
     it('should start watching file', () => {
       const w = watcher.watchCodespace('code1');
-      
+
       expect(w.codespaceId).toBe('code1');
       expect(w.watcher).toBe(mockWatcher);
       expect(mockWatcher.on).toHaveBeenCalledWith('change', expect.any(Function));
