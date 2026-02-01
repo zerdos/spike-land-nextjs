@@ -8,7 +8,7 @@
 import { auth } from "@/auth";
 import { SocialMediaLayout } from "@/components/admin/social-media/SocialMediaLayout";
 import type { SocialMediaData } from "@/components/admin/social-media/SocialMediaLayout";
-import { isAdminByUserId } from "@/lib/auth/admin-middleware";
+import { verifyAdminAccess } from "@/lib/auth/admin-middleware";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
@@ -152,7 +152,7 @@ export default async function AdminSocialMediaLayout(
     redirect("/login");
   }
 
-  const isAdmin = await isAdminByUserId(session.user.id);
+  const isAdmin = await verifyAdminAccess(session);
   if (!isAdmin) {
     redirect("/");
   }

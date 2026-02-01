@@ -9,6 +9,36 @@ import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { UserRole } from "@prisma/client";
 import type { Session } from "next-auth";
+import { headers } from "next/headers";
+
+/**
+ * Verified admin access checking both session (for E2E) and database (for Prod).
+ * Supports E2E bypass via header or env var.
+ */
+export async function verifyAdminAccess(session: Session | null): Promise<boolean> {
+  if (!session?.user?.id) {
+    return false;
+  }
+
+  // Check for E2E bypass
+  const headersList = await headers();
+  const e2eBypassHeader = headersList.get("x-e2e-auth-bypass");
+  const e2eBypassSecret = process.env.E2E_BYPASS_SECRET;
+
+  const isE2EBypass = (process.env.NODE_ENV !== "production" &&
+    e2eBypassSecret &&
+    e2eBypassHeader === e2eBypassSecret) ||
+    process.env.E2E_BYPASS_AUTH === "true";
+
+  if (isE2EBypass) {
+    // E2E session has role from cookie
+    const role = session.user.role as unknown as string;
+    return role === "ADMIN" || role === "SUPER_ADMIN" || role === UserRole.ADMIN ||
+      role === UserRole.SUPER_ADMIN;
+  }
+
+  return isAdminByUserId(session.user.id);
+}
 
 /**
  * Checks if a session has admin privileges (ADMIN or SUPER_ADMIN role).

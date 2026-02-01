@@ -82,7 +82,7 @@ export function DateRangePicker({
     <div className={className}>
       <div className="flex items-center gap-2">
         <Select value={preset} onValueChange={handlePresetChange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px]" data-testid="date-range-picker">
             <Calendar className="mr-2 h-4 w-4" />
             <SelectValue placeholder="Select range" />
           </SelectTrigger>
