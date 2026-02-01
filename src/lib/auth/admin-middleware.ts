@@ -28,7 +28,7 @@ export async function verifyAdminAccess(session: Session | null): Promise<boolea
   const isE2EBypass = (process.env.NODE_ENV !== "production" &&
     e2eBypassSecret &&
     e2eBypassHeader === e2eBypassSecret) ||
-    process.env.E2E_BYPASS_AUTH === "true";
+    (process.env.NODE_ENV !== "production" && process.env.E2E_BYPASS_AUTH === "true");
 
   if (isE2EBypass) {
     // E2E session has role from cookie
