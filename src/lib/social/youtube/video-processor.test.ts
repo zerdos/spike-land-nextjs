@@ -1,7 +1,6 @@
-
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { pollVideoProcessingStatus } from "./video-processor";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { YouTubeClient } from "../clients/youtube";
+import { pollVideoProcessingStatus } from "./video-processor";
 
 // Mock fetch
 const fetchMock = vi.fn();
@@ -28,9 +27,9 @@ describe("pollVideoProcessingStatus", () => {
       json: async () => ({
         items: [{
           status: { uploadStatus: "processed" },
-          processingDetails: { processingStatus: "succeeded" }
-        }]
-      })
+          processingDetails: { processingStatus: "succeeded" },
+        }],
+      }),
     });
 
     const result = await pollVideoProcessingStatus(mockClient, "video123", { intervalMs: 100 });
@@ -40,8 +39,8 @@ describe("pollVideoProcessingStatus", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/videos"),
       expect.objectContaining({
-        headers: { Authorization: "Bearer mock-token" }
-      })
+        headers: { Authorization: "Bearer mock-token" },
+      }),
     );
   });
 
@@ -52,9 +51,9 @@ describe("pollVideoProcessingStatus", () => {
       json: async () => ({
         items: [{
           status: { uploadStatus: "uploaded" },
-          processingDetails: { processingStatus: "processing" }
-        }]
-      })
+          processingDetails: { processingStatus: "processing" },
+        }],
+      }),
     });
 
     // Second call: processed
@@ -63,9 +62,9 @@ describe("pollVideoProcessingStatus", () => {
       json: async () => ({
         items: [{
           status: { uploadStatus: "processed" },
-          processingDetails: { processingStatus: "succeeded" }
-        }]
-      })
+          processingDetails: { processingStatus: "succeeded" },
+        }],
+      }),
     });
 
     const promise = pollVideoProcessingStatus(mockClient, "video123", { intervalMs: 100 });
@@ -85,9 +84,12 @@ describe("pollVideoProcessingStatus", () => {
       json: async () => ({
         items: [{
           status: { uploadStatus: "uploaded" },
-          processingDetails: { processingStatus: "failed", processingFailureReason: "transcodeFailed" }
-        }]
-      })
+          processingDetails: {
+            processingStatus: "failed",
+            processingFailureReason: "transcodeFailed",
+          },
+        }],
+      }),
     });
 
     const result = await pollVideoProcessingStatus(mockClient, "video123");
@@ -103,14 +105,14 @@ describe("pollVideoProcessingStatus", () => {
       json: async () => ({
         items: [{
           status: { uploadStatus: "uploaded" },
-          processingDetails: { processingStatus: "processing" }
-        }]
-      })
+          processingDetails: { processingStatus: "processing" },
+        }],
+      }),
     });
 
     const promise = pollVideoProcessingStatus(mockClient, "video123", {
       maxAttempts: 2,
-      intervalMs: 10
+      intervalMs: 10,
     });
 
     // Advance time to trigger retries
@@ -132,7 +134,7 @@ describe("pollVideoProcessingStatus", () => {
 
     const promise = pollVideoProcessingStatus(mockClient, "video123", {
       maxAttempts: 2,
-      intervalMs: 10
+      intervalMs: 10,
     });
 
     // Advance time to trigger retries
