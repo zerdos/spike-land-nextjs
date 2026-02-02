@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { checkCodespaceHasContent, findAppByIdentifier } from "@/lib/app-lookup";
 import { tryCatch } from "@/lib/try-catch";
 import { isAgentWorking } from "@/lib/upstash";
+import { ensureLocalFile } from "@/lib/vibe-watcher";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -57,6 +58,11 @@ export async function GET(
   const { data: hasContent } = await tryCatch(
     checkCodespaceHasContent(codeSpace),
   );
+
+  // In development, ensure local file exists for vibe coding workflow
+  if (process.env.NODE_ENV === "development" && hasContent) {
+    void tryCatch(ensureLocalFile(codeSpace));
+  }
 
   if (!app) {
     // App doesn't exist yet - return info needed to create it

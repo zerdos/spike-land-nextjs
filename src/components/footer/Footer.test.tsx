@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, type Mock, vi } from "vitest";
 import { Footer } from "./Footer";
 
 // Mock sonner toast
@@ -8,6 +9,11 @@ vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
   },
+}));
+
+// Mock next/navigation
+vi.mock("next/navigation", () => ({
+  usePathname: vi.fn(() => "/"),
 }));
 
 describe("Footer", () => {
@@ -45,5 +51,23 @@ describe("Footer", () => {
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith("Thanks for subscribing!");
     });
+  });
+
+  it("returns null on /my-apps routes", () => {
+    (usePathname as Mock).mockReturnValue("/my-apps");
+    const { container } = render(<Footer />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it("returns null on /my-apps/[codeSpace] routes", () => {
+    (usePathname as Mock).mockReturnValue("/my-apps/test-app");
+    const { container } = render(<Footer />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it("renders on non-my-apps routes", () => {
+    (usePathname as Mock).mockReturnValue("/dashboard");
+    render(<Footer />);
+    expect(screen.getByText("Spike Land")).toBeDefined();
   });
 });

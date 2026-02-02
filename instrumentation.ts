@@ -2,7 +2,7 @@
  * Next.js Instrumentation
  *
  * Runs once when the Next.js server starts.
- * Used to initialize server-side error capture.
+ * Used to initialize server-side error capture and the vibe watcher.
  *
  * Note: As of Next.js 16.x, instrumentation.ts is supported natively without
  * requiring the experimental.instrumentationHook flag in next.config.ts.
@@ -17,5 +17,11 @@ export async function register() {
       "@/lib/errors/console-capture.server"
     );
     initializeServerConsoleCapture();
+
+    // Start vibe watcher in development mode
+    if (process.env.NODE_ENV === "development") {
+      const { startVibeWatcher } = await import("@/lib/vibe-watcher");
+      startVibeWatcher();
+    }
   }
 }

@@ -5,6 +5,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -16,12 +17,18 @@ const formSchema = z.object({
 });
 
 export function Footer() {
+  const pathname = usePathname();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
     },
   });
+
+  // Hide footer on my-apps routes
+  if (pathname?.startsWith("/my-apps")) {
+    return null;
+  }
 
   function onSubmit(_values: z.infer<typeof formSchema>) {
     // TODO: Wire up to newsletter API endpoint
