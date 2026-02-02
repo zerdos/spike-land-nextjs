@@ -6,6 +6,7 @@
  * API Reference: https://developers.google.com/youtube/v3
  */
 
+import { YouTubeResumableUploader } from "../youtube/resumable-uploader";
 import type {
   ISocialClient,
   OAuthTokenResponse,
@@ -24,9 +25,11 @@ const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 // YouTube Data API scopes
 // - youtube.readonly: Read channel info, videos, playlists
 // - youtube.force-ssl: Required for write operations (updating video metadata)
+// - youtube.upload: Required for uploading videos
 const YOUTUBE_SCOPES = [
   "https://www.googleapis.com/auth/youtube.readonly",
   "https://www.googleapis.com/auth/youtube.force-ssl",
+  "https://www.googleapis.com/auth/youtube.upload",
 ].join(" ");
 
 /**
@@ -207,6 +210,31 @@ export interface YouTubeChannelMetrics {
   viewCount: number;
   videoCount: number;
   hiddenSubscriberCount: boolean;
+}
+
+export interface YouTubeComment {
+  id: string;
+  videoId: string;
+  authorName: string;
+  authorChannelId?: string;
+  authorProfileImageUrl?: string;
+  text: string;
+  likeCount: number;
+  publishedAt: Date;
+  updatedAt: Date;
+  parentId?: string; // Present if this is a reply
+  replies?: YouTubeComment[]; // Nested replies
+  totalReplyCount?: number;
+}
+
+export interface YouTubePlaylist {
+  id: string;
+  title: string;
+  description: string;
+  publishedAt: Date;
+  thumbnailUrl?: string;
+  privacyStatus: "public" | "private" | "unlisted";
+  itemCount: number;
 }
 
 /**
@@ -492,21 +520,86 @@ export class YouTubeClient implements ISocialClient {
   }
 
   /**
-   * Create a post - NOT SUPPORTED for YouTube
+   * Upload a video to YouTube with resumable upload protocol
    *
-   * YouTube videos must be uploaded through YouTube Studio or the
-   * resumable upload API (which requires video file data).
-   *
-   * @throws Error always - use YouTube Studio to upload videos
+   * @param content - Video title (required)
+   * @param options - Video file, description, tags, privacy settings
+   * @returns Upload result with video ID and processing status
    */
   async createPost(
-    _content: string,
-    _options?: PostOptions,
+    content: string,
+    options?: PostOptions & {
+      videoFile?: File | Buffer;
+      description?: string;
+      tags?: string[];
+      categoryId?: string;
+      privacyStatus?: "public" | "private" | "unlisted";
+      scheduledPublishTime?: Date;
+    },
   ): Promise<PostResult> {
-    throw new Error(
-      "YouTube does not support direct post creation. " +
-        "Use YouTube Studio (https://studio.youtube.com) to upload videos.",
+    if (!options?.videoFile) {
+      throw new Error(
+        "YouTube requires a video file. Use videoFile option to upload a video.",
+      );
+    }
+
+    const uploader = new YouTubeResumableUploader();
+    const token = this.getAccessTokenOrThrow();
+
+    // Initialize resumable upload
+    const { uploadUrl, sessionId } = await uploader.initiate(
+      token,
+      {
+        file: options.videoFile,
+        title: content,
+        description: options.description,
+        tags: options.tags,
+        categoryId: options.categoryId || "22", // Default to "People & Blogs"
+        privacyStatus: options.privacyStatus || "private",
+        publishAt: options.scheduledPublishTime?.toISOString(),
+      },
     );
+
+    // Upload in chunks
+    const fileBuffer = options.videoFile instanceof Buffer
+      ? options.videoFile
+      : await this.fileToBuffer(options.videoFile);
+
+    const chunkSize = 256 * 1024; // 256 KB
+    let uploadedBytes = 0;
+    let videoId: string | undefined;
+
+    while (uploadedBytes < fileBuffer.length) {
+      const chunk = fileBuffer.slice(uploadedBytes, uploadedBytes + chunkSize);
+      const result = await uploader.uploadChunk(
+        uploadUrl,
+        chunk,
+        uploadedBytes,
+        fileBuffer.length,
+      );
+
+      uploadedBytes += chunk.length;
+
+      if (result.status === "complete") {
+        videoId = result.videoId;
+        break;
+      }
+    }
+
+    if (!videoId) {
+      throw new Error("Video upload completed but no video ID returned");
+    }
+
+    return {
+      platformPostId: videoId,
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+      publishedAt: new Date(),
+    };
+  }
+
+  private async fileToBuffer(file: File): Promise<Buffer> {
+    const arrayBuffer = await file.arrayBuffer();
+    return Buffer.from(arrayBuffer);
   }
 
   /**
@@ -730,6 +823,91 @@ export class YouTubeClient implements ISocialClient {
   }
 
   /**
+   * Update video metadata
+   *
+   * @param videoId - YouTube video ID
+   * @param metadata - Fields to update
+   * @returns Updated video details
+   */
+  async updateVideo(
+    videoId: string,
+    metadata: {
+      title?: string;
+      description?: string;
+      tags?: string[];
+      categoryId?: string;
+      privacyStatus?: "public" | "private" | "unlisted";
+      publishAt?: string;
+    },
+  ): Promise<YouTubeVideoDetails> {
+    const token = this.getAccessTokenOrThrow();
+
+    // First get current video to merge
+    const currentResponse = await fetch(
+      `${YOUTUBE_API_BASE}/videos?part=snippet,status,categoryDetails&id=${videoId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!currentResponse.ok) {
+      throw new Error("Failed to fetch video for update");
+    }
+
+    const currentData = await currentResponse.json();
+    const current = currentData.items?.[0];
+
+    if (!current) {
+      throw new Error(`Video not found: ${videoId}`);
+    }
+
+    const updateBody = {
+      id: videoId,
+      snippet: {
+        title: metadata.title || current.snippet.title,
+        description: metadata.description !== undefined
+          ? metadata.description
+          : current.snippet.description,
+        tags: metadata.tags || current.snippet.tags,
+        categoryId: metadata.categoryId || current.snippet.categoryId,
+      },
+      status: {
+        privacyStatus: metadata.privacyStatus || current.status.privacyStatus,
+        publishAt: metadata.publishAt || current.status.publishAt,
+      },
+    };
+
+    // If setting publishAt, privacyStatus must be private
+    if (metadata.publishAt) {
+      updateBody.status.privacyStatus = "private";
+    }
+
+    const response = await fetch(
+      `${YOUTUBE_API_BASE}/videos?part=snippet,status`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateBody),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(
+        `Failed to update video: ${
+          error.error?.message || response.statusText
+        }`,
+      );
+    }
+
+    // Return updated details
+    return this.getVideoDetails(videoId);
+  }
+
+  /**
    * Get channel metrics in YouTube-specific format
    *
    * @returns YouTube-specific channel metrics
@@ -860,6 +1038,475 @@ export class YouTubeClient implements ISocialClient {
         `Failed to unlike YouTube video: ${errorData.error?.message || response.statusText}`,
       );
     }
+  }
+
+  /**
+   * Get comment threads for a video
+   *
+   * @param videoId - YouTube video ID
+   * @param options - Pagination and filtering options
+   * @returns List of comment threads with replies
+   */
+  async getCommentThreads(
+    videoId: string,
+    options?: {
+      maxResults?: number;
+      pageToken?: string;
+      order?: "time" | "relevance";
+    },
+  ): Promise<{
+    comments: YouTubeComment[];
+    nextPageToken?: string;
+    totalResults: number;
+  }> {
+    const token = this.getAccessTokenOrThrow();
+
+    const params = new URLSearchParams({
+      part: "snippet,replies",
+      videoId,
+      maxResults: (options?.maxResults || 20).toString(),
+      order: options?.order || "time",
+    });
+
+    if (options?.pageToken) {
+      params.set("pageToken", options.pageToken);
+    }
+
+    const response = await fetch(
+      `${YOUTUBE_API_BASE}/commentThreads?${params.toString()}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(
+        `Failed to fetch comments: ${
+          error.error?.message || response.statusText
+        }`,
+      );
+    }
+
+    const data = await response.json();
+
+    return {
+      comments: (data.items || []).map((thread: any) =>
+        this.parseCommentThread(thread)
+      ),
+      nextPageToken: data.nextPageToken,
+      totalResults: data.pageInfo?.totalResults || 0,
+    };
+  }
+
+  /**
+   * Reply to a comment
+   *
+   * @param commentId - Parent comment ID
+   * @param text - Reply text
+   * @returns The created reply comment
+   */
+  async replyToComment(
+    commentId: string,
+    text: string,
+  ): Promise<YouTubeComment> {
+    const token = this.getAccessTokenOrThrow();
+
+    const response = await fetch(
+      `${YOUTUBE_API_BASE}/comments?part=snippet`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          snippet: {
+            parentId: commentId,
+            textOriginal: text,
+          },
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(
+        `Failed to reply to comment: ${
+          error.error?.message || response.statusText
+        }`,
+      );
+    }
+
+    const data = await response.json();
+    return this.parseComment(data);
+  }
+
+  /**
+   * Moderate a comment (delete or mark as spam)
+   *
+   * @param commentId - Comment ID to moderate
+   * @param action - Moderation action
+   */
+  async moderateComment(
+    commentId: string,
+    action: "delete" | "markAsSpam" | "setModerationStatus",
+  ): Promise<void> {
+    const token = this.getAccessTokenOrThrow();
+
+    if (action === "delete") {
+      const response = await fetch(
+        `${YOUTUBE_API_BASE}/comments?id=${commentId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete comment: ${response.statusText}`);
+      }
+    } else if (action === "markAsSpam") {
+      const response = await fetch(
+        `${YOUTUBE_API_BASE}/comments/markAsSpam?id=${commentId}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to mark comment as spam: ${response.statusText}`);
+      }
+    } else {
+      const response = await fetch(
+        `${YOUTUBE_API_BASE}/comments/setModerationStatus?id=${commentId}&moderationStatus=published`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to set moderation status: ${response.statusText}`,
+        );
+      }
+    }
+  }
+
+  /**
+   * Bulk moderate comments
+   *
+   * @param commentIds - Array of comment IDs
+   * @param action - Action to perform on all comments
+   */
+  async bulkModerateComments(
+    commentIds: string[],
+    action: "delete" | "markAsSpam",
+  ): Promise<{ succeeded: string[]; failed: { id: string; error: string }[] }> {
+    const results = {
+      succeeded: [] as string[],
+      failed: [] as { id: string; error: string }[],
+    };
+
+    // YouTube API doesn't support true bulk operations
+    // Execute sequentially with rate limiting (5 requests/second)
+    for (const commentId of commentIds) {
+      try {
+        await this.moderateComment(commentId, action);
+        results.succeeded.push(commentId);
+      } catch (error) {
+        results.failed.push({
+          id: commentId,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+
+      // Rate limiting: 5 requests per second
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+
+    return results;
+  }
+
+  /**
+   * Parse comment thread from YouTube API response
+   */
+  private parseCommentThread(thread: any): YouTubeComment {
+    const topLevelComment = thread.snippet.topLevelComment.snippet;
+
+    return {
+      id: thread.id,
+      videoId: thread.snippet.videoId,
+      authorName: topLevelComment.authorDisplayName,
+      authorChannelId: topLevelComment.authorChannelId?.value,
+      authorProfileImageUrl: topLevelComment.authorProfileImageUrl,
+      text: topLevelComment.textDisplay,
+      likeCount: topLevelComment.likeCount || 0,
+      publishedAt: new Date(topLevelComment.publishedAt),
+      updatedAt: new Date(topLevelComment.updatedAt),
+      replies: thread.replies?.comments?.map((c: any) => this.parseComment(c)) ||
+        [],
+      totalReplyCount: thread.snippet.totalReplyCount || 0,
+    };
+  }
+
+  /**
+   * Parse single comment from YouTube API response
+   */
+  private parseComment(comment: any): YouTubeComment {
+    return {
+      id: comment.id,
+      videoId: comment.snippet.videoId,
+      authorName: comment.snippet.authorDisplayName,
+      authorChannelId: comment.snippet.authorChannelId?.value,
+      authorProfileImageUrl: comment.snippet.authorProfileImageUrl,
+      text: comment.snippet.textDisplay,
+      likeCount: comment.snippet.likeCount || 0,
+      publishedAt: new Date(comment.snippet.publishedAt),
+      updatedAt: new Date(comment.snippet.updatedAt),
+      parentId: comment.snippet.parentId,
+    };
+  }
+
+  /**
+   * List playlists for the authenticated channel
+   */
+  async getPlaylists(
+    options?: { maxResults?: number; pageToken?: string },
+  ): Promise<{
+    playlists: YouTubePlaylist[];
+    nextPageToken?: string;
+  }> {
+    const token = this.getAccessTokenOrThrow();
+
+    const params = new URLSearchParams({
+      part: "snippet,contentDetails,status",
+      mine: "true",
+      maxResults: (options?.maxResults || 25).toString(),
+    });
+
+    if (options?.pageToken) {
+      params.set("pageToken", options.pageToken);
+    }
+
+    const response = await fetch(
+      `${YOUTUBE_API_BASE}/playlists?${params.toString()}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(
+        `Failed to fetch playlists: ${
+          error.error?.message || response.statusText
+        }`,
+      );
+    }
+
+    const data = await response.json();
+
+    return {
+      playlists: (data.items || []).map((p: any) => this.parsePlaylist(p)),
+      nextPageToken: data.nextPageToken,
+    };
+  }
+
+  /**
+   * Create a new playlist
+   */
+  async createPlaylist(
+    title: string,
+    description?: string,
+    privacyStatus: "public" | "private" | "unlisted" = "private",
+  ): Promise<YouTubePlaylist> {
+    const token = this.getAccessTokenOrThrow();
+
+    const response = await fetch(
+      `${YOUTUBE_API_BASE}/playlists?part=snippet,status`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          snippet: {
+            title,
+            description: description || "",
+          },
+          status: {
+            privacyStatus,
+          },
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(
+        `Failed to create playlist: ${
+          error.error?.message || response.statusText
+        }`,
+      );
+    }
+
+    const data = await response.json();
+    return this.parsePlaylist(data);
+  }
+
+  /**
+   * Add a video to a playlist
+   */
+  async addToPlaylist(
+    playlistId: string,
+    videoId: string,
+    position?: number,
+  ): Promise<void> {
+    const token = this.getAccessTokenOrThrow();
+
+    const requestBody: any = {
+      snippet: {
+        playlistId,
+        resourceId: {
+          kind: "youtube#video",
+          videoId,
+        },
+      },
+    };
+
+    if (position !== undefined) {
+      requestBody.snippet.position = position;
+    }
+
+    const response = await fetch(
+      `${YOUTUBE_API_BASE}/playlistItems?part=snippet`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(
+        `Failed to add video to playlist: ${
+          error.error?.message || response.statusText
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Update playlist metadata
+   */
+  async updatePlaylist(
+    playlistId: string,
+    updates: {
+      title?: string;
+      description?: string;
+      privacyStatus?: "public" | "private" | "unlisted";
+    },
+  ): Promise<YouTubePlaylist> {
+    const token = this.getAccessTokenOrThrow();
+
+    // First, get current playlist data
+    const currentResponse = await fetch(
+      `${YOUTUBE_API_BASE}/playlists?part=snippet,status&id=${playlistId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!currentResponse.ok) {
+      throw new Error("Failed to fetch current playlist data");
+    }
+
+    const currentData = await currentResponse.json();
+    const current = currentData.items[0];
+
+    if (!current) {
+      throw new Error(`Playlist not found: ${playlistId}`);
+    }
+
+    // Merge updates with current data
+    const updateBody = {
+      id: playlistId,
+      snippet: {
+        title: updates.title || current.snippet.title,
+        description: updates.description !== undefined
+          ? updates.description
+          : current.snippet.description,
+      },
+      status: {
+        privacyStatus: updates.privacyStatus || current.status.privacyStatus,
+      },
+    };
+
+    const response = await fetch(
+      `${YOUTUBE_API_BASE}/playlists?part=snippet,status`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateBody),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(
+        `Failed to update playlist: ${
+          error.error?.message || response.statusText
+        }`,
+      );
+    }
+
+    const data = await response.json();
+    return this.parsePlaylist(data);
+  }
+
+  /**
+   * Delete a playlist
+   */
+  async deletePlaylist(playlistId: string): Promise<void> {
+    const token = this.getAccessTokenOrThrow();
+
+    const response = await fetch(
+      `${YOUTUBE_API_BASE}/playlists?id=${playlistId}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete playlist: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * Parse playlist from YouTube API response
+   */
+  private parsePlaylist(playlist: any): YouTubePlaylist {
+    return {
+      id: playlist.id,
+      title: playlist.snippet.title,
+      description: playlist.snippet.description,
+      publishedAt: new Date(playlist.snippet.publishedAt),
+      thumbnailUrl: playlist.snippet.thumbnails?.medium?.url,
+      privacyStatus: playlist.status?.privacyStatus || "private",
+      itemCount: playlist.contentDetails?.itemCount || 0,
+    };
   }
 
   /**

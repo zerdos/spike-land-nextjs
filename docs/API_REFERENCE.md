@@ -26,6 +26,7 @@
 17. [System Reports](#system-reports)
 18. [Error Handling](#error-handling)
 19. [Rate Limiting](#rate-limiting)
+20. [Social Media Integration (YouTube)](#social-media-integration-youtube)
 
 ---
 
@@ -2254,3 +2255,67 @@ GOOGLE_ADS_DEVELOPER_TOKEN=...
 VERCEL_ACCESS_TOKEN=...
 VERCEL_TEAM_ID=...
 ```
+
+---
+
+## Social Media Integration (YouTube)
+
+See [YouTube Integration Guide](./YOUTUBE_INTEGRATION.md) for full details.
+
+### Upload Video
+
+**Endpoint**: `POST /api/social/youtube/upload`
+
+**Authentication**: Required (Session)
+
+**Request**:
+
+```json
+{
+  "workspaceId": "ws_123",
+  "accountId": "acc_123",
+  "metadata": {
+    "title": "My Video",
+    "privacyStatus": "private"
+  },
+  "fileSize": 1000000
+}
+```
+
+**Response**:
+
+```json
+{
+  "uploadUrl": "https://...",
+  "sessionId": "...",
+  "expiresAt": "2025-01-01T00:00:00Z"
+}
+```
+
+### Analytics
+
+**Endpoint**: `GET /api/social/youtube/analytics`
+
+**Query Parameters**:
+
+- `accountId`: string (required)
+- `type`: string (required) - watch-time, retention, etc.
+- `startDate`: string (YYYY-MM-DD)
+- `endDate`: string (YYYY-MM-DD)
+
+### Comments
+
+**Endpoint**: `GET /api/social/youtube/comments`
+
+**Query Parameters**:
+
+- `accountId`: string
+- `videoId`: string
+
+### Playlists
+
+**Endpoint**: `GET /api/social/youtube/playlists`
+
+**Query Parameters**:
+
+- `accountId`: string

@@ -5,6 +5,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { YouTubeClient } from "./youtube";
 
+// Mock YouTubeResumableUploader
+const mockInitiate = vi.fn();
+const mockUploadChunk = vi.fn();
+
+vi.mock("../youtube/resumable-uploader", () => {
+  return {
+    YouTubeResumableUploader: class {
+      initiate = mockInitiate;
+      uploadChunk = mockUploadChunk;
+    },
+  };
+});
+
 // Mock environment variables
 const mockEnv = {
   YOUTUBE_CLIENT_ID: "test_client_id",
@@ -182,15 +195,56 @@ describe("YouTubeClient", () => {
   });
 
   describe("createPost", () => {
-    it("should throw error indicating video uploads are not supported via API", async () => {
+    beforeEach(() => {
+      mockInitiate.mockReset();
+      mockUploadChunk.mockReset();
+      mockInitiate.mockResolvedValue({
+        uploadUrl: "https://upload.youtube.com/test",
+        sessionId: "test_session",
+      });
+    });
+
+    it("should upload video successfully", async () => {
+      mockUploadChunk.mockResolvedValue({
+        status: "complete",
+        videoId: "video_123",
+      });
+
       const client = new YouTubeClient({
         accessToken: "test_token",
         accountId: "UC1234567890",
       });
 
-      await expect(
-        client.createPost("Test video"),
-      ).rejects.toThrow("does not support direct post creation");
+      const videoFile = Buffer.from("fake video content");
+
+      const result = await client.createPost("Test video", {
+        videoFile,
+        description: "Test description",
+        privacyStatus: "private",
+      });
+
+      expect(mockInitiate).toHaveBeenCalledWith(
+        "test_token",
+        expect.objectContaining({
+          title: "Test video",
+          description: "Test description",
+          privacyStatus: "private",
+        }),
+      );
+
+      expect(mockUploadChunk).toHaveBeenCalled();
+      expect(result.platformPostId).toBe("video_123");
+      expect(result.url).toBe("https://www.youtube.com/watch?v=video_123");
+    });
+
+    it("should throw error if videoFile is missing", async () => {
+      const client = new YouTubeClient({
+        accessToken: "test_token",
+      });
+
+      await expect(client.createPost("Test video")).rejects.toThrow(
+        "YouTube requires a video file",
+      );
     });
   });
 
