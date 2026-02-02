@@ -5,6 +5,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { YouTubeClient } from "./youtube";
 
+// Mock YouTubeResumableUploader
+const mocks = vi.hoisted(() => ({
+  initiate: vi.fn(),
+  uploadChunk: vi.fn(),
+}));
+
+vi.mock("../youtube/resumable-uploader", () => {
+  return {
+    YouTubeResumableUploader: class {
+      initiate = mocks.initiate;
+      uploadChunk = mocks.uploadChunk;
+    },
+  };
+});
+
 // Mock environment variables
 const mockEnv = {
   YOUTUBE_CLIENT_ID: "test_client_id",
@@ -182,15 +197,48 @@ describe("YouTubeClient", () => {
   });
 
   describe("createPost", () => {
-    it("should throw error indicating video uploads are not supported via API", async () => {
+    it("should upload video using resumable uploader", async () => {
+      mocks.initiate.mockResolvedValue({
+        uploadUrl: "https://upload.url",
+        sessionId: "session123",
+      });
+      mocks.uploadChunk.mockResolvedValue({
+        status: "complete",
+        videoId: "newVideo123",
+      });
+
       const client = new YouTubeClient({
         accessToken: "test_token",
         accountId: "UC1234567890",
       });
 
+      const videoFile = Buffer.from("test video content");
+      const result = await client.createPost("Test Video Title", {
+        videoFile,
+        description: "Test Description",
+      });
+
+      expect(mocks.initiate).toHaveBeenCalledWith(
+        "test_token",
+        expect.objectContaining({
+          title: "Test Video Title",
+          description: "Test Description",
+        }),
+      );
+
+      expect(mocks.uploadChunk).toHaveBeenCalled();
+      expect(result.platformPostId).toBe("newVideo123");
+      expect(result.url).toBe("https://www.youtube.com/watch?v=newVideo123");
+    });
+
+    it("should throw error if videoFile is missing", async () => {
+      const client = new YouTubeClient({
+        accessToken: "test_token",
+      });
+
       await expect(
         client.createPost("Test video"),
-      ).rejects.toThrow("does not support direct post creation");
+      ).rejects.toThrow("YouTube requires a video file");
     });
   });
 
