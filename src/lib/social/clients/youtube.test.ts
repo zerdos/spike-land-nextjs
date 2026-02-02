@@ -206,7 +206,6 @@ describe("YouTubeClient", () => {
         videoId: "vid1",
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (YouTubeResumableUploader as any).mockImplementation(function () {
         return {
           initiate: mockInitiate,

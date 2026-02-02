@@ -4,7 +4,8 @@ import prisma from "@/lib/prisma";
 import { tryCatch } from "@/lib/try-catch";
 import { safeDecryptToken } from "@/lib/crypto/token-encryption";
 import { YouTubeResumableUploader } from "@/lib/social/youtube/resumable-uploader";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   const { data: session, error: authError } = await tryCatch(auth());
