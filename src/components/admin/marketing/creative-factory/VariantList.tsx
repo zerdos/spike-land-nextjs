@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { type CreativeSet, type CreativeVariant } from "@prisma/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,10 +17,9 @@ type JobData = CreativeSet & {
 export function VariantList({ jobId }: VariantListProps) {
   const [data, setData] = useState<JobData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-
     const fetchData = async () => {
       try {
         const response = await fetch(`/api/creative-factory/jobs/${jobId}`);
@@ -29,18 +28,29 @@ export function VariantList({ jobId }: VariantListProps) {
         setData(json);
 
         if (json.jobStatus === "COMPLETED" || json.jobStatus === "FAILED") {
-          clearInterval(intervalId);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
         }
       } catch (err) {
         console.error(err);
         setError("Failed to load variants");
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
       }
     };
 
     fetchData();
-    intervalId = setInterval(fetchData, 2000); // Poll every 2s
+    intervalRef.current = setInterval(fetchData, 2000); // Poll every 2s
 
-    return () => clearInterval(intervalId);
+    return () => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+    };
   }, [jobId]);
 
   if (error) return <div className="text-red-500">{error}</div>;

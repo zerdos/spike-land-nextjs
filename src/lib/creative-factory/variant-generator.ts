@@ -1,7 +1,6 @@
 import prisma from "@/lib/prisma";
-import { type CreativeSet, type CreativeVariant, JobStatus, CreativeVariantType, VariantStatus } from "@prisma/client";
-import { generateCopyVariants, type GeneratedCopyVariant } from "./generators/copy-generator";
-import { suggestImagesForCopy, type ImageSuggestion } from "./generators/image-suggester";
+import { generateCopyVariants } from "./generators/copy-generator";
+import { suggestImagesForCopy } from "./generators/image-suggester";
 import logger from "@/lib/logger";
 
 export interface GenerationJobParams {
@@ -23,7 +22,7 @@ export interface GenerationJobParams {
 export async function createGenerationJob(
   params: GenerationJobParams
 ): Promise<{ id: string; name: string; contentToUse: string; audienceToUse: string }> {
-  const { briefId, seedContent, workspaceId, userId, count, tone, targetLength, targetAudience } = params;
+  const { briefId, seedContent, userId, count, tone, targetLength, targetAudience } = params;
 
   if (!briefId && !seedContent) {
     throw new Error("Either briefId or seedContent is required");
@@ -142,13 +141,15 @@ export async function processGenerationJob(
 
           if (suggestions.length > 0) {
             const suggestion = suggestions[0];
-            await prisma.creativeVariant.update({
-              where: { id: variant.id },
-              data: {
-                aiPrompt: suggestion.imagePrompt,
-                // We could also store style/reasoning in a JSON field if we added one
-              },
-            });
+            if (suggestion) { // TS check for noUncheckedIndexedAccess
+                await prisma.creativeVariant.update({
+                where: { id: variant.id },
+                data: {
+                    aiPrompt: suggestion.imagePrompt,
+                    // We could also store style/reasoning in a JSON field if we added one
+                },
+                });
+            }
           }
         } catch (error) {
           logger.warn("Failed to suggest image for variant", { variantId: variant.id, error });

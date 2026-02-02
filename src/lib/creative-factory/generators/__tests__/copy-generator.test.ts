@@ -43,7 +43,8 @@ describe("generateCopyVariants", () => {
     });
 
     expect(result).toHaveLength(2);
-    expect(result[0].headline).toBe("Variant 1");
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    expect(result[0]!.headline).toBe("Variant 1");
     expect(geminiClient.generateStructuredResponse).toHaveBeenCalledWith(
       expect.objectContaining({
         prompt: expect.stringContaining("Test seed content"),
@@ -62,8 +63,16 @@ describe("generateCopyVariants", () => {
     });
 
     const calls = (geminiClient.generateStructuredResponse as any).mock.calls;
-    const params = calls[0][0];
+    if (!calls || !calls[0]) {
+        throw new Error("Expected geminiClient.generateStructuredResponse to be called");
+    }
+    const firstCall = calls[0];
+    if (!firstCall || !firstCall[0]) {
+         throw new Error("Expected call arguments to be present");
+    }
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const params = firstCall[0]!;
     expect(params.prompt).toContain("Tone: balanced");
     expect(params.prompt).toContain("Length: medium");
   });

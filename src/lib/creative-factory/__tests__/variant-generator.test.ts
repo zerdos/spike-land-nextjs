@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { startVariantGeneration } from "../variant-generator";
 import prisma from "@/lib/prisma";
 import * as copyGenerator from "../generators/copy-generator";
-import * as imageSuggester from "../generators/image-suggester";
 
 vi.mock("@/lib/prisma", () => ({
   default: {

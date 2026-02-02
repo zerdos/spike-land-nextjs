@@ -30,11 +30,22 @@ describe("suggestImagesForCopy", () => {
     });
 
     expect(result).toHaveLength(1);
-    expect(result[0].imagePrompt).toContain("happy dog");
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    expect(result[0]!.imagePrompt).toContain("happy dog");
 
     const calls = (geminiClient.generateStructuredResponse as any).mock.calls;
-    expect(calls[0][0].prompt).toContain("Best dog food ever!");
-    expect(calls[0][0].prompt).toContain("Dog owners");
+    if (!calls || !calls[0]) {
+        throw new Error("Expected geminiClient.generateStructuredResponse to be called");
+    }
+    const firstCall = calls[0];
+     if (!firstCall || !firstCall[0]) {
+         throw new Error("Expected call arguments to be present");
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const params = firstCall[0]!;
+    expect(params.prompt).toContain("Best dog food ever!");
+    expect(params.prompt).toContain("Dog owners");
   });
 
   it("should handle error", async () => {
