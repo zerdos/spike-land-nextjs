@@ -1,20 +1,20 @@
 import { prisma } from "@/lib/prisma";
-import { type CampaignBrief, type CreativeVariant, type CreativeSet } from "@prisma/client";
+import { type CampaignBrief, type CreativeVariant } from "@prisma/client";
 
 // Stub for Gemini client
-async function generateTextVariants(params: {
+async function generateTextVariants(_params: {
   brief: CampaignBrief;
   count: number;
-}): Promise<any[]> {
+}): Promise<unknown[]> {
   // TODO: Implement Gemini integration
   return [];
 }
 
 // Stub for MCP generation
-async function generateImageVariants(params: {
+async function generateImageVariants(_params: {
   brief: CampaignBrief;
   count: number;
-}): Promise<any[]> {
+}): Promise<unknown[]> {
   // TODO: Implement MCP integration
   return [];
 }
@@ -42,7 +42,7 @@ export async function generateCreativeVariants(params: {
 
   // 2. Generate text variants using Gemini
   if (params.includeText) {
-    const textVariants = await generateTextVariants({
+    const _textVariants = await generateTextVariants({
       brief: params.brief,
       count: params.count,
     });
@@ -51,7 +51,7 @@ export async function generateCreativeVariants(params: {
 
   // 3. Generate image variants using MCP
   if (params.includeImages) {
-    const imageVariants = await generateImageVariants({
+    const _imageVariants = await generateImageVariants({
       brief: params.brief,
       count: params.count,
     });
