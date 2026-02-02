@@ -4,6 +4,9 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { YouTubeClient } from "./youtube";
+import { YouTubeResumableUploader } from "../youtube/resumable-uploader";
+
+vi.mock("../youtube/resumable-uploader");
 
 // Mock environment variables
 const mockEnv = {
@@ -182,15 +185,57 @@ describe("YouTubeClient", () => {
   });
 
   describe("createPost", () => {
-    it("should throw error indicating video uploads are not supported via API", async () => {
+    it("should throw error if no video file provided", async () => {
       const client = new YouTubeClient({
         accessToken: "test_token",
         accountId: "UC1234567890",
       });
 
-      await expect(
-        client.createPost("Test video"),
-      ).rejects.toThrow("does not support direct post creation");
+      await expect(client.createPost("Test video")).rejects.toThrow(
+        "YouTube requires a video file",
+      );
+    });
+
+    it("should upload video using resumable uploader", async () => {
+      const mockInitiate = vi.fn().mockResolvedValue({
+        uploadUrl: "http://upload",
+        sessionId: "sess1",
+      });
+      const mockUploadChunk = vi.fn().mockResolvedValue({
+        status: "complete",
+        videoId: "vid1",
+      });
+
+      (YouTubeResumableUploader as any).mockImplementation(function () {
+        return {
+          initiate: mockInitiate,
+          uploadChunk: mockUploadChunk,
+        };
+      });
+
+      const client = new YouTubeClient({ accessToken: "test_token" });
+      const buffer = Buffer.from("video data");
+
+      const result = await client.createPost("My Video", {
+        videoFile: buffer,
+        description: "Desc",
+        privacyStatus: "unlisted",
+      });
+
+      expect(mockInitiate).toHaveBeenCalledWith(
+        "test_token",
+        expect.objectContaining({
+          title: "My Video",
+          description: "Desc",
+          privacyStatus: "unlisted",
+          fileSize: buffer.length,
+        }),
+      );
+
+      expect(mockUploadChunk).toHaveBeenCalled();
+      expect(result.platformPostId).toBe("vid1");
+      expect(result.url).toBe("https://www.youtube.com/watch?v=vid1");
+      expect(result.metadata?.["uploadSessionId"]).toBe("sess1");
     });
   });
 

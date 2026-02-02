@@ -52,6 +52,8 @@ export interface PostResult {
   platformPostId: string;
   url: string;
   publishedAt: Date;
+  platform?: SocialPlatform;
+  metadata?: Record<string, unknown>;
 }
 
 /**
