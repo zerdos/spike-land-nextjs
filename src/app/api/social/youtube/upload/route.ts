@@ -1,3 +1,4 @@
+
 import { auth } from "@/auth";
 import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
@@ -20,13 +21,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!workspaceId || !accountId || !metadata) {
     return NextResponse.json(
       { error: "Missing required fields: workspaceId, accountId, metadata" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
   // Verify permission
   const { error: permError } = await tryCatch(
-    requireWorkspacePermission(session, workspaceId, "social:post"),
+    requireWorkspacePermission(session, workspaceId, "social:post")
   );
 
   if (permError) {
@@ -49,14 +50,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // Get valid access token
   const { data: tokenResult, error: tokenError } = await tryCatch(
-    getValidAccessToken(account),
+    getValidAccessToken(account)
   );
 
   if (tokenError || !tokenResult) {
     console.error("Token retrieval failed:", tokenError);
     return NextResponse.json(
       { error: "Failed to authenticate with YouTube" },
-      { status: 401 },
+      { status: 401 }
     );
   }
 
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error("Upload initiation failed:", uploadError);
     return NextResponse.json(
       { error: `Failed to initiate upload: ${uploadError?.message}` },
-      { status: 500 },
+      { status: 500 }
     );
   }
 

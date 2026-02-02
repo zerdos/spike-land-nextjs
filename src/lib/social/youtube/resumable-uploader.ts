@@ -1,3 +1,4 @@
+
 /**
  * YouTube Resumable Upload Utility
  *
@@ -9,8 +10,7 @@
  * API Reference: https://developers.google.com/youtube/v3/guides/using_resumable_upload_protocol
  */
 
-const RESUMABLE_UPLOAD_URL =
-  "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status";
+const RESUMABLE_UPLOAD_URL = "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status";
 
 export interface VideoMetadata {
   file?: Buffer;
@@ -126,7 +126,9 @@ export class YouTubeResumableUploader {
           "Content-Range": contentRange,
           "Content-Type": "application/octet-stream",
         },
-        body: new Uint8Array(chunk),
+        // Force cast for fetch compatibility in diverse environments (Node/Browser)
+        // @ts-expect-error - Buffer is accepted by node-fetch/Next.js fetch but Typescript DOM lib complains
+        body: chunk,
       });
 
       // 308 Resume Incomplete - Chunk uploaded successfully, continue
@@ -143,6 +145,7 @@ export class YouTubeResumableUploader {
       // Other errors
       const errorText = await response.text();
       throw new Error(`Upload failed with status ${response.status}: ${errorText}`);
+
     } catch (error) {
       // Network error or other fetch issue
       // Caller should handle retry logic (e.g., call resumeUpload)
@@ -160,8 +163,8 @@ export class YouTubeResumableUploader {
    */
   async resumeUpload(
     uploadUrl: string,
-    totalSize: number,
-  ): Promise<{ uploadedBytes: number; }> {
+    totalSize: number
+  ): Promise<{ uploadedBytes: number }> {
     const response = await fetch(uploadUrl, {
       method: "PUT",
       headers: {

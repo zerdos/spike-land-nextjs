@@ -223,7 +223,7 @@ describe("YouTubeClient", () => {
         expect.objectContaining({
           title: "Test Video Title",
           description: "Test Description",
-        }),
+        })
       );
 
       expect(mocks.uploadChunk).toHaveBeenCalled();
