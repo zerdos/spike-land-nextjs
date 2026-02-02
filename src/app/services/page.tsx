@@ -18,14 +18,14 @@ export default function ServicesPage() {
             Services & Solutions
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-white/60">
-            We build cutting-edge software solutions, specializing in AI integration, rapid prototyping, and full-stack development to bring your ideas to life.
+            We build cutting-edge software solutions, specializing in AI integration, rapid
+            prototyping, and full-stack development to bring your ideas to life.
           </p>
         </ScrollReveal>
       </section>
 
       {/* Services Grid */}
       <section className="container mx-auto px-4 grid md:grid-cols-2 gap-8 max-w-6xl">
-
         {/* AI Integration */}
         <ScrollReveal delay={0.1} className="h-full">
           <Card className="bg-zinc-900/50 border-white/10 h-full overflow-hidden hover:border-cyan-500/30 transition-colors">
@@ -37,7 +37,9 @@ export default function ServicesPage() {
             </CardHeader>
             <CardContent className="text-white/70 space-y-4">
               <p>
-                Seamlessly integrate advanced AI capabilities into your existing systems. We help you leverage Large Language Models (LLMs), RAG (Retrieval-Augmented Generation), and custom agents to automate workflows and enhance user experience.
+                Seamlessly integrate advanced AI capabilities into your existing systems. We help
+                you leverage Large Language Models (LLMs), RAG (Retrieval-Augmented Generation), and
+                custom agents to automate workflows and enhance user experience.
               </p>
               <ul className="list-disc pl-5 space-y-2 text-sm text-white/60">
                 <li>Custom LLM Agents & Chatbots</li>
@@ -60,7 +62,9 @@ export default function ServicesPage() {
             </CardHeader>
             <CardContent className="text-white/70 space-y-4">
               <p>
-                Turn your concepts into functional MVPs (Minimum Viable Products) in record time. We focus on speed and validation, helping you test your market hypothesis without unnecessary engineering overhead.
+                Turn your concepts into functional MVPs (Minimum Viable Products) in record time. We
+                focus on speed and validation, helping you test your market hypothesis without
+                unnecessary engineering overhead.
               </p>
               <ul className="list-disc pl-5 space-y-2 text-sm text-white/60">
                 <li>MVP Development in Weeks</li>
@@ -83,7 +87,9 @@ export default function ServicesPage() {
             </CardHeader>
             <CardContent className="text-white/70 space-y-4">
               <p>
-                End-to-end application development using modern tech stacks. From robust backends with scalable databases to responsive, interactive frontends, we build reliable and maintainable software.
+                End-to-end application development using modern tech stacks. From robust backends
+                with scalable databases to responsive, interactive frontends, we build reliable and
+                maintainable software.
               </p>
               <ul className="list-disc pl-5 space-y-2 text-sm text-white/60">
                 <li>Next.js & React Applications</li>
@@ -106,7 +112,9 @@ export default function ServicesPage() {
             </CardHeader>
             <CardContent className="text-white/70 space-y-4">
               <p>
-                We don&apos;t just add AI to things; we build products where AI is the core differentiator. From ideation to deployment, we create intelligent applications that solve complex problems in novel ways.
+                We don&apos;t just add AI to things; we build products where AI is the core
+                differentiator. From ideation to deployment, we create intelligent applications that
+                solve complex problems in novel ways.
               </p>
               <ul className="list-disc pl-5 space-y-2 text-sm text-white/60">
                 <li>AI-First SaaS Development</li>
@@ -117,7 +125,6 @@ export default function ServicesPage() {
             </CardContent>
           </Card>
         </ScrollReveal>
-
       </section>
     </main>
   );

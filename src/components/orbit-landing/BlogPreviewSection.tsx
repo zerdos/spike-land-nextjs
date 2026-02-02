@@ -1,35 +1,38 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Calendar, Newspaper, Tag } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const posts = [
   {
     title: "The Future of AI in Social Media Marketing",
-    description: "Discover how artificial intelligence is reshaping the landscape of social media strategies and audience engagement.",
+    description:
+      "Discover how artificial intelligence is reshaping the landscape of social media strategies and audience engagement.",
     category: "AI Trends",
     date: "Oct 12, 2024",
     readTime: "5 min read",
-    color: "from-cyan-500/20 to-blue-500/20"
+    color: "from-cyan-500/20 to-blue-500/20",
   },
   {
     title: "Maximizing ROI with Data-Driven Campaigns",
-    description: "Learn the secrets to leveraging analytics and data insights to boost your campaign performance and ROI.",
+    description:
+      "Learn the secrets to leveraging analytics and data insights to boost your campaign performance and ROI.",
     category: "Strategy",
     date: "Oct 15, 2024",
     readTime: "7 min read",
-    color: "from-fuchsia-500/20 to-purple-500/20"
+    color: "from-fuchsia-500/20 to-purple-500/20",
   },
   {
     title: "Building Authentic Communities in 2025",
-    description: "Why authenticity matters more than ever and how to foster genuine connections with your audience.",
+    description:
+      "Why authenticity matters more than ever and how to foster genuine connections with your audience.",
     category: "Community",
     date: "Oct 20, 2024",
     readTime: "4 min read",
-    color: "from-emerald-500/20 to-green-500/20"
-  }
+    color: "from-emerald-500/20 to-green-500/20",
+  },
 ];
 
 const containerVariants = {
@@ -49,7 +52,7 @@ const itemVariants = {
     y: 0,
     transition: {
       duration: 0.5,
-      ease: "easeOut",
+      ease: "easeOut" as const,
     },
   },
 };
@@ -120,9 +123,10 @@ export function BlogPreviewSection() {
               >
                 <Link href="/blog" className="block h-full">
                   <div className="h-full flex flex-col bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-500/10 hover:-translate-y-1">
-
                     {/* Gradient Header / Placeholder Image */}
-                    <div className={`h-48 w-full bg-gradient-to-br ${post.color} relative overflow-hidden`}>
+                    <div
+                      className={`h-48 w-full bg-gradient-to-br ${post.color} relative overflow-hidden`}
+                    >
                       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay" />
 
                       <div className="absolute top-4 left-4">
@@ -153,7 +157,8 @@ export function BlogPreviewSection() {
                       </p>
 
                       <div className="flex items-center text-sm font-medium text-white/40 group-hover:text-white transition-colors">
-                        Read article <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+                        Read article{" "}
+                        <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
                       </div>
                     </div>
                   </div>

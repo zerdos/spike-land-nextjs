@@ -1,15 +1,16 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight, Bot, Code2, Globe, Layers, Zap, CheckCircle2 } from "lucide-react";
+import { EditorMockup } from "@/components/landing-sections/mockups/EditorMockup";
+import { FALLBACK_GALLERY_ITEMS } from "@/components/landing/gallery-fallback-data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { EditorMockup } from "@/components/landing-sections/mockups/EditorMockup";
-import { FALLBACK_GALLERY_ITEMS } from "@/components/landing/gallery-fallback-data";
+import { ArrowRight, Bot, CheckCircle2, Code2, Globe, Layers, Zap } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Portfolio | Spike Land",
-  description: "Case studies for Pixel, Vibe Coding, and Orbit. Exploring the tech stacks and results of our latest projects.",
+  description:
+    "Case studies for Pixel, Vibe Coding, and Orbit. Exploring the tech stacks and results of our latest projects.",
 };
 
 export default function PortfolioPage() {
@@ -26,7 +27,8 @@ export default function PortfolioPage() {
             Building the Future <br /> with AI & Design.
           </h1>
           <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-            A showcase of our most ambitious projects, pushing the boundaries of what's possible with modern web technologies.
+            A showcase of our most ambitious projects, pushing the boundaries of what's possible
+            with modern web technologies.
           </p>
         </div>
       </section>
@@ -43,14 +45,24 @@ export default function PortfolioPage() {
             </div>
 
             <p className="text-lg text-zinc-400 leading-relaxed">
-              Pixel is a cutting-edge AI-powered image enhancement tool designed to transform low-resolution images into stunning high-quality photos. It leverages advanced machine learning models to upscale, denoise, and restore images with incredible detail.
+              Pixel is a cutting-edge AI-powered image enhancement tool designed to transform
+              low-resolution images into stunning high-quality photos. It leverages advanced machine
+              learning models to upscale, denoise, and restore images with incredible detail.
             </p>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Tech Stack</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                Tech Stack
+              </h3>
               <div className="flex flex-wrap gap-2">
-                {["Next.js 15", "React", "Tailwind CSS", "Python AI Models", "Vercel"].map((tech) => (
-                  <Badge key={tech} variant="outline" className="bg-zinc-900 border-zinc-700 hover:bg-zinc-800">
+                {["Next.js 15", "React", "Tailwind CSS", "Python AI Models", "Vercel"].map((
+                  tech,
+                ) => (
+                  <Badge
+                    key={tech}
+                    variant="outline"
+                    className="bg-zinc-900 border-zinc-700 hover:bg-zinc-800"
+                  >
                     {tech}
                   </Badge>
                 ))}
@@ -58,12 +70,14 @@ export default function PortfolioPage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Key Results</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                Key Results
+              </h3>
               <ul className="space-y-2">
                 {[
                   "Processed over 1M+ images",
                   "99% User Satisfaction Rate",
-                  "40% Faster Processing Time"
+                  "40% Faster Processing Time",
                 ].map((result, i) => (
                   <li key={i} className="flex items-center gap-3 text-zinc-300">
                     <CheckCircle2 className="w-5 h-5 text-green-400" />
@@ -109,14 +123,25 @@ export default function PortfolioPage() {
             </div>
 
             <p className="text-lg text-zinc-400 leading-relaxed">
-              Vibe Coding redefines the developer experience by integrating AI directly into the coding workflow. It acts as an intelligent pair programmer that understands context, suggests optimizations, and automates repetitive tasks, allowing developers to focus on creative problem-solving.
+              Vibe Coding redefines the developer experience by integrating AI directly into the
+              coding workflow. It acts as an intelligent pair programmer that understands context,
+              suggests optimizations, and automates repetitive tasks, allowing developers to focus
+              on creative problem-solving.
             </p>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Tech Stack</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                Tech Stack
+              </h3>
               <div className="flex flex-wrap gap-2">
-                {["TypeScript", "Monaco Editor", "OpenAI API", "WebSockets", "Node.js"].map((tech) => (
-                  <Badge key={tech} variant="outline" className="bg-zinc-900 border-zinc-700 hover:bg-zinc-800">
+                {["TypeScript", "Monaco Editor", "OpenAI API", "WebSockets", "Node.js"].map((
+                  tech,
+                ) => (
+                  <Badge
+                    key={tech}
+                    variant="outline"
+                    className="bg-zinc-900 border-zinc-700 hover:bg-zinc-800"
+                  >
                     {tech}
                   </Badge>
                 ))}
@@ -124,12 +149,14 @@ export default function PortfolioPage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Key Results</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                Key Results
+              </h3>
               <ul className="space-y-2">
                 {[
                   "30% Increase in Coding Speed",
                   "Reduced Bug Density",
-                  "Adopted by Thousands of Devs"
+                  "Adopted by Thousands of Devs",
                 ].map((result, i) => (
                   <li key={i} className="flex items-center gap-3 text-zinc-300">
                     <CheckCircle2 className="w-5 h-5 text-amber-400" />
@@ -141,10 +168,10 @@ export default function PortfolioPage() {
           </div>
 
           <div className="lg:order-1 relative">
-             <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl blur opacity-10 group-hover:opacity-30 transition duration-500" />
-             <div className="relative transform rotate-1 hover:rotate-0 transition-all duration-500">
-                <EditorMockup />
-             </div>
+            <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl blur opacity-10 group-hover:opacity-30 transition duration-500" />
+            <div className="relative transform rotate-1 hover:rotate-0 transition-all duration-500">
+              <EditorMockup />
+            </div>
           </div>
         </div>
       </section>
@@ -161,14 +188,22 @@ export default function PortfolioPage() {
             </div>
 
             <p className="text-lg text-zinc-400 leading-relaxed">
-              Orbit is a comprehensive Social Media Command Center that empowers brands to manage their online presence efficiently. From content scheduling and A/B testing to AI-driven analytics, Orbit provides a unified platform for growth.
+              Orbit is a comprehensive Social Media Command Center that empowers brands to manage
+              their online presence efficiently. From content scheduling and A/B testing to
+              AI-driven analytics, Orbit provides a unified platform for growth.
             </p>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Tech Stack</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                Tech Stack
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {["Next.js", "Prisma", "PostgreSQL", "Framer Motion", "Recharts"].map((tech) => (
-                  <Badge key={tech} variant="outline" className="bg-zinc-900 border-zinc-700 hover:bg-zinc-800">
+                  <Badge
+                    key={tech}
+                    variant="outline"
+                    className="bg-zinc-900 border-zinc-700 hover:bg-zinc-800"
+                  >
                     {tech}
                   </Badge>
                 ))}
@@ -176,12 +211,14 @@ export default function PortfolioPage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Key Results</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                Key Results
+              </h3>
               <ul className="space-y-2">
                 {[
                   "25% Avg. Audience Growth",
                   "10+ Hours Saved Weekly",
-                  "Unified Analytics Dashboard"
+                  "Unified Analytics Dashboard",
                 ].map((result, i) => (
                   <li key={i} className="flex items-center gap-3 text-zinc-300">
                     <CheckCircle2 className="w-5 h-5 text-cyan-400" />
@@ -214,36 +251,43 @@ export default function PortfolioPage() {
                   <div className="h-32 rounded-xl bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border border-cyan-500/20 p-4">
                     <div className="h-4 w-24 bg-cyan-500/20 rounded mb-2" />
                     <div className="flex items-end gap-2 h-20">
-                       {[40, 60, 45, 70, 50, 80, 65].map((h, i) => (
-                         <div key={i} style={{ height: `${h}%` }} className="flex-1 bg-cyan-500/40 rounded-t-sm" />
-                       ))}
+                      {[40, 60, 45, 70, 50, 80, 65].map((h, i) => (
+                        <div
+                          key={i}
+                          style={{ height: `${h}%` }}
+                          className="flex-1 bg-cyan-500/40 rounded-t-sm"
+                        />
+                      ))}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                     <div className="h-24 rounded-xl bg-zinc-900 border border-white/5 p-3">
-                        <div className="h-8 w-8 rounded bg-fuchsia-500/20 mb-2 flex items-center justify-center">
-                            <Zap className="w-4 h-4 text-fuchsia-400" />
-                        </div>
-                        <div className="h-3 w-16 bg-white/10 rounded" />
-                     </div>
-                     <div className="h-24 rounded-xl bg-zinc-900 border border-white/5 p-3">
-                        <div className="h-8 w-8 rounded bg-purple-500/20 mb-2 flex items-center justify-center">
-                            <Bot className="w-4 h-4 text-purple-400" />
-                        </div>
-                        <div className="h-3 w-16 bg-white/10 rounded" />
-                     </div>
+                    <div className="h-24 rounded-xl bg-zinc-900 border border-white/5 p-3">
+                      <div className="h-8 w-8 rounded bg-fuchsia-500/20 mb-2 flex items-center justify-center">
+                        <Zap className="w-4 h-4 text-fuchsia-400" />
+                      </div>
+                      <div className="h-3 w-16 bg-white/10 rounded" />
+                    </div>
+                    <div className="h-24 rounded-xl bg-zinc-900 border border-white/5 p-3">
+                      <div className="h-8 w-8 rounded bg-purple-500/20 mb-2 flex items-center justify-center">
+                        <Bot className="w-4 h-4 text-purple-400" />
+                      </div>
+                      <div className="h-3 w-16 bg-white/10 rounded" />
+                    </div>
                   </div>
                 </div>
                 <div className="col-span-1 space-y-3">
-                   {[1, 2, 3].map((i) => (
-                     <div key={i} className="h-16 rounded-xl bg-zinc-900 border border-white/5 p-3 flex gap-2">
-                        <div className="w-8 h-8 rounded-full bg-white/5" />
-                        <div className="space-y-1">
-                           <div className="h-2 w-12 bg-white/10 rounded" />
-                           <div className="h-2 w-8 bg-white/5 rounded" />
-                        </div>
-                     </div>
-                   ))}
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="h-16 rounded-xl bg-zinc-900 border border-white/5 p-3 flex gap-2"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-white/5" />
+                      <div className="space-y-1">
+                        <div className="h-2 w-12 bg-white/10 rounded" />
+                        <div className="h-2 w-8 bg-white/5 rounded" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </Card>
