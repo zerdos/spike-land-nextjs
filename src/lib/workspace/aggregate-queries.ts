@@ -382,3 +382,63 @@ export async function getWorkspacesWithMetadata(
     recentIds,
   };
 }
+
+/**
+ * Get daily aggregated metrics for charting
+ */
+export async function getAggregateDailyMetrics(
+  workspaceIds: string[],
+  dateRange: DateRange,
+): Promise<
+  Array<{
+    date: string;
+    followers: number;
+    engagements: number;
+    impressions: number;
+  }>
+> {
+  if (workspaceIds.length === 0) {
+    return [];
+  }
+
+  // Group metrics by date
+  // Note: Prisma doesn't support generic groupBy with dates easily across providers,
+  // but for PostgreSQL we can use raw query or just fetch and aggregate in code if volume is low.
+  // Given we are querying existing SocialMetrics table which has a 'date' column, we can use groupBy.
+
+  const metrics = await prisma.socialMetrics.groupBy({
+    by: ["date"],
+    where: {
+      account: {
+        workspaceId: { in: workspaceIds },
+      },
+      date: {
+        gte: dateRange.startDate,
+        lte: dateRange.endDate,
+      },
+    },
+    _sum: {
+      followers: true,
+      impressions: true,
+      likes: true,
+      comments: true,
+      shares: true,
+    },
+    orderBy: {
+      date: "asc",
+    },
+  });
+
+  return metrics.map((m) => {
+    const engagements = (m._sum.likes ?? 0) +
+      (m._sum.comments ?? 0) +
+      (m._sum.shares ?? 0);
+
+    return {
+      date: m.date.toISOString(),
+      followers: m._sum.followers ?? 0,
+      impressions: m._sum.impressions ?? 0,
+      engagements,
+    };
+  });
+}

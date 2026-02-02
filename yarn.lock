@@ -9117,6 +9117,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/papaparse@npm:^5.5.2":
+  version: 5.5.2
+  resolution: "@types/papaparse@npm:5.5.2"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c9/35c38d8c789a0512465665fa6472e8eda7a20413227aafc25b55955a0ced8a061dfbeb0c75658393ebe61670cb95064cc3753ce1a0bac93a12c53ff569d15170
+  languageName: node
+  linkType: hard
+
 "@types/parse-json@npm:^4.0.0":
   version: 4.0.2
   resolution: "@types/parse-json@npm:4.0.2"
@@ -19193,6 +19202,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"papaparse@npm:^5.5.3":
+  version: 5.5.3
+  resolution: "papaparse@npm:5.5.3"
+  checksum: 10c9/f74f8bd54d78baba21594e13af68c16a1f902a5e0221e79f0f97b3fc5bbd881005db25cf35a04fc3e045b4a33d7a2085452fefee6e8daacb8349a4ce199b811a
+  languageName: node
+  linkType: hard
+
 "parent-module@npm:^1.0.0":
   version: 1.0.1
   resolution: "parent-module@npm:1.0.1"
@@ -24437,6 +24453,7 @@ __metadata:
     "@types/mdx": "npm:2.0.13"
     "@types/ms": "npm:2.1.0"
     "@types/node": "npm:25.2.0"
+    "@types/papaparse": "npm:^5.5.2"
     "@types/pg": "npm:8.16.0"
     "@types/qrcode": "npm:1.5.6"
     "@types/react": "npm:19.2.10"
@@ -24456,6 +24473,7 @@ __metadata:
     chokidar: "npm:5.0.0"
     class-variance-authority: "npm:0.7.1"
     clsx: "npm:2.1.1"
+    cmdk: "npm:^1.1.1"
     date-fns: "npm:4.1.0"
     diff: "npm:8.0.3"
     dotenv: "npm:17.2.3"
@@ -24485,6 +24503,7 @@ __metadata:
     next-mdx-remote: "npm:5.0.0"
     next-themes: "npm:0.4.6"
     next-view-transitions: "npm:0.3.5"
+    papaparse: "npm:^5.5.3"
     peerjs: "npm:1.5.5"
     postcss: "npm:8.5.6"
     prisma: "npm:7.3.0"

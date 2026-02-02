@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AggregateKPIs, WorkspaceSummary } from "@/types/workspace";
@@ -14,6 +15,7 @@ import {
   Share2,
   Users,
 } from "lucide-react";
+import Link from "next/link";
 /**
  * Format a number with K/M suffixes for large values
  */
@@ -175,11 +177,18 @@ export function AggregateDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Overview</h2>
-        <p className="text-muted-foreground">
-          Aggregated metrics across all your workspaces
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Overview</h2>
+          <p className="text-muted-foreground">
+            Aggregated metrics across all your workspaces
+          </p>
+        </div>
+        {workspaceSummaries.length > 0 && workspaceSummaries[0] && (
+          <Link href={`/orbit/${workspaceSummaries[0].workspaceSlug}/reports`}>
+            <Button variant="outline">Cross-Workspace Reports</Button>
+          </Link>
+        )}
       </div>
 
       {/* KPI Cards */}
