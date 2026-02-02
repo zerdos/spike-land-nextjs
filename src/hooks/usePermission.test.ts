@@ -279,7 +279,7 @@ describe("usePermission", () => {
 
       const { result } = renderHook(() => useAllPermissions());
 
-      expect(result.current.actions).toHaveLength(40);
+      expect(result.current.actions).toHaveLength(47);
       expect(result.current.role).toBe("OWNER");
       expect(result.current.isLoading).toBe(false);
       expect(result.current.actions).toContain("workspace:delete");
@@ -294,7 +294,7 @@ describe("usePermission", () => {
 
       const { result } = renderHook(() => useAllPermissions());
 
-      expect(result.current.actions).toHaveLength(38);
+      expect(result.current.actions).toHaveLength(45);
       expect(result.current.role).toBe("ADMIN");
       expect(result.current.actions).not.toContain("workspace:delete");
       expect(result.current.actions).not.toContain("workspace:transfer");
@@ -309,7 +309,7 @@ describe("usePermission", () => {
 
       const { result } = renderHook(() => useAllPermissions());
 
-      expect(result.current.actions.length).toBeLessThan(27);
+      expect(result.current.actions).toHaveLength(27);
       expect(result.current.role).toBe("MEMBER");
       expect(result.current.actions).toContain("content:create");
       expect(result.current.actions).not.toContain("members:invite");
@@ -323,9 +323,26 @@ describe("usePermission", () => {
 
       const { result } = renderHook(() => useAllPermissions());
 
-      expect(result.current.actions).toHaveLength(1);
+      // VIEWER now has 8 actions: 1 legacy (inbox:view) + 7 client actions
+      expect(result.current.actions).toHaveLength(8);
       expect(result.current.actions).toContain("inbox:view");
+      expect(result.current.actions).toContain("client:dashboard:view");
       expect(result.current.role).toBe("VIEWER");
+    });
+
+    it("returns client-specific actions for CLIENT", () => {
+      mockUseWorkspace.mockReturnValue({
+        workspace: createMockWorkspace("CLIENT"),
+        isLoading: false,
+      });
+
+      const { result } = renderHook(() => useAllPermissions());
+
+      expect(result.current.actions).toHaveLength(7);
+      expect(result.current.actions).toContain("client:dashboard:view");
+      expect(result.current.actions).toContain("client:content:view");
+      expect(result.current.actions).not.toContain("inbox:view");
+      expect(result.current.role).toBe("CLIENT");
     });
   });
 });
