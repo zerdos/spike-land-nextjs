@@ -181,4 +181,71 @@ describe("HypothesisAgent", () => {
       );
     });
   });
+
+  describe("designExperiment", () => {
+    it("should design an experiment with correct parameters", async () => {
+      // Mock calculateRequiredSampleSize
+      vi.mock("@/lib/ab-testing", async () => {
+        const actual = await vi.importActual("@/lib/ab-testing");
+        return {
+          ...actual,
+          calculateRequiredSampleSize: vi.fn().mockReturnValue(1000),
+        };
+      });
+
+      const params = {
+        hypothesisId: "hyp-1",
+        variants: 2,
+        primaryMetric: "click_rate",
+      };
+
+      const result = await agent.designExperiment(params);
+
+      expect(result).toMatchObject({
+        hypothesisId: "hyp-1",
+        variants: 2,
+        primaryMetric: "click_rate",
+        durationDays: 7,
+      });
+      expect(result.sampleSize).toBeGreaterThan(0);
+      expect(result.minimumDetectableEffect).toBe(0.2);
+    });
+  });
+
+  describe("selectWinner", () => {
+    it("should select a winner when analyzeResults returns a winner", async () => {
+      // Mock analyzeResults internally or its dependencies
+      // Since it calls analyzeResults, we can mock the DB response which analyzeResults uses
+      (prisma.socialPostAbTest.findUnique as any).mockResolvedValue({
+        id: "exp-1",
+        significanceLevel: 0.95,
+        variants: [
+          { id: "v1", impressions: 1000, engagements: 50 },
+          { id: "v2", impressions: 1000, engagements: 100 }, // Significant winner
+        ],
+      });
+
+      const result = await agent.selectWinner({ experimentId: "exp-1", autoPromote: true });
+
+      expect(result.selectedVariantId).toBe("v2");
+      expect(result.autoPromoted).toBe(true);
+      expect(result.reason).toContain("Statistically significant");
+    });
+
+    it("should not select a winner when not significant", async () => {
+      (prisma.socialPostAbTest.findUnique as any).mockResolvedValue({
+        id: "exp-1",
+        significanceLevel: 0.95,
+        variants: [
+          { id: "v1", impressions: 1000, engagements: 50 },
+          { id: "v2", impressions: 1000, engagements: 52 }, // Not significant
+        ],
+      });
+
+      const result = await agent.selectWinner({ experimentId: "exp-1" });
+
+      expect(result.selectedVariantId).toBeNull();
+      expect(result.reason).toContain("No statistically significant winner");
+    });
+  });
 });

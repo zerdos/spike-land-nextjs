@@ -1,6 +1,6 @@
 import { HypothesisAgent } from "@/lib/agents/hypothesis-agent";
 import prisma from "@/lib/prisma";
-import { registerStepHandler } from "@/lib/workflows/workflow-executor";
+import { registerStepHandler } from "@/lib/workflows/step-registry";
 
 // Helper to get agent instance (lazy to support mocking)
 const getAgent = () => new HypothesisAgent();

@@ -196,10 +196,11 @@ export class HypothesisAgent {
     const { hypothesisId, variants } = params;
 
     // Estimate baseline conversion rate (placeholder - should come from analytics)
-    const baselineRate = 0.05; // 5% engagement rate
-    const mde = 0.2; // Detect 20% relative improvement
+    // TODO: Fetch these from historical analytics data
+    const BASELINE_RATE = 0.05; // 5% engagement rate
+    const MINIMUM_DETECTABLE_EFFECT = 0.2; // Detect 20% relative improvement
 
-    const sampleSize = calculateRequiredSampleSize(baselineRate, mde);
+    const sampleSize = calculateRequiredSampleSize(BASELINE_RATE, MINIMUM_DETECTABLE_EFFECT);
 
     return {
       hypothesisId,
@@ -207,7 +208,7 @@ export class HypothesisAgent {
       primaryMetric: params.primaryMetric,
       sampleSize,
       durationDays: 7, // Default
-      minimumDetectableEffect: mde,
+      minimumDetectableEffect: MINIMUM_DETECTABLE_EFFECT,
     };
   }
 
@@ -401,7 +402,7 @@ export class HypothesisAgent {
         id: r.id,
         metricValue: r.metricValue,
         confidenceInterval: r.confidenceInterval,
-        effectSize: null,
+        effectSize: calculateEffectSize(control.metricValue, r.metricValue),
       })),
       insights: insightText,
     };
