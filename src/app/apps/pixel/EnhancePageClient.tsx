@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
 import { useUserAlbums } from "@/hooks/useUserAlbums";
 import type { EnhancedImage, ImageEnhancementJob } from "@prisma/client";
-import { Settings2 } from "lucide-react";
+import { Settings2, Images } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 
 interface EnhancePageClientProps {
@@ -38,6 +38,12 @@ function EnhancePageContent(_props: EnhancePageClientProps) {
             </h1>
           </div>
           <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/apps/pixel/library">
+                <Images className="h-4 w-4 mr-2" />
+                Library
+              </Link>
+            </Button>
             <Button variant="outline" size="sm" asChild>
               <Link href="/apps/pixel/pipelines">
                 <Settings2 className="h-4 w-4 mr-2" />

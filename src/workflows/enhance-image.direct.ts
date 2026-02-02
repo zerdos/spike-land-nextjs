@@ -49,6 +49,7 @@ import {
   validateCropDimensions,
   validateEnhanceImageInput,
 } from "./enhance-image.shared";
+import { applyAutoTags } from "@/lib/images/auto-tagger";
 
 export type { EnhanceImageInput };
 
@@ -463,6 +464,10 @@ async function processEnhancement(input: EnhanceImageInput): Promise<string> {
       geminiTemp: DEFAULT_TEMPERATURE,
     },
   });
+
+  // Step 11: Auto-tag the image
+  console.log(`[Direct Enhancement] Auto-tagging image ${input.imageId}`);
+  await applyAutoTags(input.imageId);
 
   return uploadResult.url;
 }

@@ -57,6 +57,7 @@ function createMockJob(
   return {
     imageId: "image-1",
     tier: EnhancementTier.TIER_1K,
+    enhancementType: "STANDARD",
     status: JobStatus.PROCESSING,
     currentStage: null,
     enhancedUrl: null,

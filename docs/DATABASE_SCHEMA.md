@@ -255,6 +255,7 @@ erDiagram
   String originalFormat
   Boolean isPublic
   Int viewCount
+  String tags
   DateTime createdAt
   DateTime updatedAt
   String shareToken UK "nullable"
@@ -264,6 +265,7 @@ erDiagram
   String imageId FK
   String userId FK
   EnhancementTier tier
+  EnhancementType enhancementType
   Int tokensCost
   JobStatus status
   PipelineStage currentStage "nullable"
@@ -2671,6 +2673,7 @@ Properties as follows:
 - `originalFormat`:
 - `isPublic`:
 - `viewCount`:
+- `tags`:
 - `createdAt`:
 - `updatedAt`:
 - `shareToken`:
@@ -2683,6 +2686,7 @@ Properties as follows:
 - `imageId`:
 - `userId`:
 - `tier`:
+- `enhancementType`:
 - `tokensCost`:
 - `status`:
 - `currentStage`:
