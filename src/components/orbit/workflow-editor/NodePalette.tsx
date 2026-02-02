@@ -1,20 +1,39 @@
-import React from "react";
-import { Zap, Activity, GitFork, Folder } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { WorkflowNodeType, NodePaletteItem } from "./types";
 import type { WorkflowActionType } from "@/lib/workflows/actions/action-types";
+import { Activity, Folder, GitFork, Zap } from "lucide-react";
+import React from "react";
+import type { NodePaletteItem, WorkflowNodeType } from "./types";
 
 const items: NodePaletteItem[] = [
   { type: "trigger", label: "Trigger", icon: <Zap className="h-4 w-4" /> },
-  { type: "action", actionType: "send_notification", label: "Send Notification", icon: <Activity className="h-4 w-4" /> },
-  { type: "action", actionType: "update_record", label: "Update Record", icon: <Activity className="h-4 w-4" /> },
-  { type: "action", actionType: "call_ai_agent", label: "Call AI Agent", icon: <Activity className="h-4 w-4" /> },
+  {
+    type: "action",
+    actionType: "send_notification",
+    label: "Send Notification",
+    icon: <Activity className="h-4 w-4" />,
+  },
+  {
+    type: "action",
+    actionType: "update_record",
+    label: "Update Record",
+    icon: <Activity className="h-4 w-4" />,
+  },
+  {
+    type: "action",
+    actionType: "call_ai_agent",
+    label: "Call AI Agent",
+    icon: <Activity className="h-4 w-4" />,
+  },
   { type: "condition", label: "Condition", icon: <GitFork className="h-4 w-4" /> },
   { type: "group", label: "Group", icon: <Folder className="h-4 w-4" /> },
 ];
 
 const NodePalette = () => {
-  const onDragStart = (event: React.DragEvent, nodeType: WorkflowNodeType, actionType?: WorkflowActionType) => {
+  const onDragStart = (
+    event: React.DragEvent,
+    nodeType: WorkflowNodeType,
+    actionType?: WorkflowActionType,
+  ) => {
     event.dataTransfer.setData("application/reactflow/type", nodeType);
     if (actionType) {
       event.dataTransfer.setData("application/reactflow/actionType", actionType);

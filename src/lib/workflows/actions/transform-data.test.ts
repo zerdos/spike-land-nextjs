@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { transformDataAction } from "./transform-data";
 
 describe("transformDataAction", () => {
@@ -43,16 +43,16 @@ describe("transformDataAction", () => {
   });
 
   it("should map an array", async () => {
-      const result = await transformDataAction.execute({
-        data: [
-          { id: 1, name: "Alice" },
-          { id: 2, name: "Bob" },
-        ],
-        transformation: "map",
-        config: "name",
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.result).toEqual(["Alice", "Bob"]);
+    const result = await transformDataAction.execute({
+      data: [
+        { id: 1, name: "Alice" },
+        { id: 2, name: "Bob" },
+      ],
+      transformation: "map",
+      config: "name",
     });
+
+    expect(result.success).toBe(true);
+    expect(result.result).toEqual(["Alice", "Bob"]);
+  });
 });

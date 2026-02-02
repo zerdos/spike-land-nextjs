@@ -4,9 +4,9 @@ import type { ActionInput, ActionOutput, WorkflowAction } from "./action-types";
 const HttpRequestInputSchema = z.object({
   url: z.string().url(),
   method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
-  headers: z.record(z.string()).optional(),
+  headers: z.record(z.string(), z.string()).optional(),
   body: z.unknown().optional(),
-  timeout: z.number().optional().default(5000),
+  timeout: z.number().default(5000),
 });
 
 export interface HttpRequestInput extends ActionInput {

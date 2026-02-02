@@ -1,16 +1,14 @@
-import React, { memo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Activity } from "lucide-react";
+import { memo } from "react";
 import { Handle, Position } from "reactflow";
 import type { NodeProps } from "reactflow";
-import { Activity } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { WorkflowNodeData } from "../types";
 
 const ActionNode = ({ data, selected }: NodeProps<WorkflowNodeData>) => {
   return (
     <Card
-      className={`min-w-[200px] border-2 ${
-        selected ? "border-primary" : "border-border"
-      }`}
+      className={`min-w-[200px] border-2 ${selected ? "border-primary" : "border-border"}`}
     >
       <Handle
         type="target"
@@ -23,12 +21,12 @@ const ActionNode = ({ data, selected }: NodeProps<WorkflowNodeData>) => {
             <Activity className="h-4 w-4" />
           </div>
           <CardTitle className="text-sm font-medium">
-            {data.label || "Action"}
+            {data["label"] || "Action"}
           </CardTitle>
         </div>
       </CardHeader>
       <CardContent className="p-3 text-xs text-muted-foreground">
-        {data.config?.description || "Performs a task"}
+        {data["config"]?.["description"] || "Performs a task"}
       </CardContent>
       <Handle
         type="source"

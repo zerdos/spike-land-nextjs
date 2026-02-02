@@ -1,12 +1,12 @@
-import React from "react";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { X } from "lucide-react";
+import React from "react";
 import type { WorkflowNode, WorkflowNodeData } from "../types";
-import TriggerConfigForm from "./TriggerConfigForm";
 import ActionConfigForm from "./ActionConfigForm";
+import TriggerConfigForm from "./TriggerConfigForm";
 
 interface NodeConfigPanelProps {
   node: WorkflowNode | null;

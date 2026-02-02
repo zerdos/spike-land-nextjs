@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import WorkflowEditor from "./index";
-import { vi, describe, it, expect, beforeAll } from "vitest";
 
 // Mock ResizeObserver
 beforeAll(() => {
@@ -13,10 +13,10 @@ beforeAll(() => {
 
 // Mock reactflow
 vi.mock("reactflow", () => ({
-  default: ({ children }: { children?: React.ReactNode }) => (
+  default: ({ children }: { children?: React.ReactNode; }) => (
     <div data-testid="react-flow">{children}</div>
   ),
-  ReactFlowProvider: ({ children }: { children: React.ReactNode }) => (
+  ReactFlowProvider: ({ children }: { children: React.ReactNode; }) => (
     <div data-testid="react-flow-provider">{children}</div>
   ),
   Background: () => <div data-testid="background" />,
@@ -24,7 +24,7 @@ vi.mock("reactflow", () => ({
   Handle: () => <div data-testid="handle" />,
   Position: { Top: "top", Bottom: "bottom", Left: "left", Right: "right" },
   useReactFlow: () => ({
-    project: (pos: { x: number; y: number }) => pos,
+    project: (pos: { x: number; y: number; }) => pos,
   }),
   addEdge: vi.fn(),
   applyEdgeChanges: vi.fn(),

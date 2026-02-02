@@ -1,16 +1,14 @@
-import React, { memo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Zap } from "lucide-react";
+import { memo } from "react";
 import { Handle, Position } from "reactflow";
 import type { NodeProps } from "reactflow";
-import { Zap } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { WorkflowNodeData } from "../types";
 
 const TriggerNode = ({ data, selected }: NodeProps<WorkflowNodeData>) => {
   return (
     <Card
-      className={`min-w-[200px] border-2 ${
-        selected ? "border-primary" : "border-border"
-      }`}
+      className={`min-w-[200px] border-2 ${selected ? "border-primary" : "border-border"}`}
     >
       <CardHeader className="p-3 pb-0">
         <div className="flex items-center gap-2">
@@ -18,12 +16,12 @@ const TriggerNode = ({ data, selected }: NodeProps<WorkflowNodeData>) => {
             <Zap className="h-4 w-4" />
           </div>
           <CardTitle className="text-sm font-medium">
-            {data.label || "Trigger"}
+            {data["label"] || "Trigger"}
           </CardTitle>
         </div>
       </CardHeader>
       <CardContent className="p-3 text-xs text-muted-foreground">
-        {data.config?.description || "Starts the workflow"}
+        {data["config"]?.["description"] || "Starts the workflow"}
       </CardContent>
       <Handle
         type="source"

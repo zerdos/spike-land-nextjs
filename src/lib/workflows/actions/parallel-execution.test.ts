@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { parallelExecutionAction } from "./parallel-execution";
 
 // Mock the action-dispatcher module
@@ -14,7 +14,7 @@ describe("parallelExecutionAction", () => {
   });
 
   it("should execute actions in parallel", async () => {
-    (dispatchAction as unknown as jest.Mock).mockResolvedValue({ success: true });
+    (dispatchAction as unknown as Mock).mockResolvedValue({ success: true });
 
     const result = await parallelExecutionAction.execute({
       actions: [
@@ -28,7 +28,7 @@ describe("parallelExecutionAction", () => {
   });
 
   it("should handle failures when stopOnError is false", async () => {
-    (dispatchAction as unknown as jest.Mock)
+    (dispatchAction as unknown as Mock)
       .mockResolvedValueOnce({ success: true })
       .mockRejectedValueOnce(new Error("Failed"));
 
@@ -42,6 +42,6 @@ describe("parallelExecutionAction", () => {
 
     expect(result.success).toBe(false); // Because one failed
     expect(result.results).toHaveLength(2);
-    expect(result.results[1].success).toBe(false);
+    expect(result.results[1]?.success).toBe(false);
   });
 });

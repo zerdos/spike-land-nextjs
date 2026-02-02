@@ -1,19 +1,8 @@
-import { useCallback, useState } from "react";
-import {
-  addEdge,
-  applyEdgeChanges,
-  applyNodeChanges,
-  useReactFlow,
-} from "reactflow";
-import type {
-  Edge,
-  Node,
-  OnConnect,
-  OnEdgesChange,
-  OnNodesChange,
-} from "reactflow";
-import type { WorkflowNodeData, WorkflowNodeType } from "../types";
 import type { WorkflowActionType } from "@/lib/workflows/actions/action-types";
+import { type DragEvent, type RefObject, useCallback, useState } from "react";
+import { addEdge, applyEdgeChanges, applyNodeChanges, useReactFlow } from "reactflow";
+import type { Edge, Node, OnConnect, OnEdgesChange, OnNodesChange } from "reactflow";
+import type { WorkflowNodeData, WorkflowNodeType } from "../types";
 
 export const useWorkflowEditor = (initialNodes: Node<WorkflowNodeData>[] = []) => {
   const [nodes, setNodes] = useState<Node<WorkflowNodeData>[]>(initialNodes);
@@ -36,17 +25,19 @@ export const useWorkflowEditor = (initialNodes: Node<WorkflowNodeData>[] = []) =
     [setEdges],
   );
 
-  const onDragOver = useCallback((event: React.DragEvent) => {
+  const onDragOver = useCallback((event: DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
 
   const onDrop = useCallback(
-    (event: React.DragEvent, reactFlowWrapper: React.RefObject<HTMLDivElement>) => {
+    (event: DragEvent, reactFlowWrapper: RefObject<HTMLDivElement | null>) => {
       event.preventDefault();
 
       const type = event.dataTransfer.getData("application/reactflow/type") as WorkflowNodeType;
-      const actionType = event.dataTransfer.getData("application/reactflow/actionType") as WorkflowActionType;
+      const actionType = event.dataTransfer.getData(
+        "application/reactflow/actionType",
+      ) as WorkflowActionType;
 
       if (typeof type === "undefined" || !type) {
         return;
@@ -54,9 +45,9 @@ export const useWorkflowEditor = (initialNodes: Node<WorkflowNodeData>[] = []) =
 
       const position = reactFlowWrapper.current
         ? project({
-            x: event.clientX - reactFlowWrapper.current.getBoundingClientRect().left,
-            y: event.clientY - reactFlowWrapper.current.getBoundingClientRect().top,
-          })
+          x: event.clientX - reactFlowWrapper.current.getBoundingClientRect().left,
+          y: event.clientY - reactFlowWrapper.current.getBoundingClientRect().top,
+        })
         : { x: event.clientX, y: event.clientY };
 
       const newNode: Node<WorkflowNodeData> = {
@@ -64,9 +55,9 @@ export const useWorkflowEditor = (initialNodes: Node<WorkflowNodeData>[] = []) =
         type,
         position,
         data: {
-            label: actionType ? actionType.replace(/_/g, " ") : `${type} node`,
-            type,
-            actionType
+          label: actionType ? actionType.replace(/_/g, " ") : `${type} node`,
+          type,
+          actionType,
         },
       };
 

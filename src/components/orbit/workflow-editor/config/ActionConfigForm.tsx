@@ -1,7 +1,7 @@
-import React from "react";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+
 import type { WorkflowNodeData } from "../types";
 
 interface ActionConfigFormProps {
@@ -10,8 +10,8 @@ interface ActionConfigFormProps {
 }
 
 const ActionConfigForm = ({ data, onChange }: ActionConfigFormProps) => {
-  const config = data.config || {};
-  const actionType = data.actionType;
+  const config = data["config"] || {};
+  const actionType = data["actionType"];
 
   const handleChange = (key: string, value: unknown) => {
     onChange({
@@ -26,7 +26,7 @@ const ActionConfigForm = ({ data, onChange }: ActionConfigFormProps) => {
         <div className="space-y-2">
           <Label>Recipient</Label>
           <Input
-            value={config.recipient || ""}
+            value={config["recipient"] || ""}
             onChange={(e) => handleChange("recipient", e.target.value)}
             placeholder="email@example.com or slack-channel"
           />
@@ -34,7 +34,7 @@ const ActionConfigForm = ({ data, onChange }: ActionConfigFormProps) => {
         <div className="space-y-2">
           <Label>Message</Label>
           <Textarea
-            value={config.message || ""}
+            value={config["message"] || ""}
             onChange={(e) => handleChange("message", e.target.value)}
             placeholder="Enter notification message..."
           />
@@ -49,7 +49,7 @@ const ActionConfigForm = ({ data, onChange }: ActionConfigFormProps) => {
         <div className="space-y-2">
           <Label>Prompt</Label>
           <Textarea
-            value={config.prompt || ""}
+            value={config["prompt"] || ""}
             onChange={(e) => handleChange("prompt", e.target.value)}
             placeholder="Describe what the AI should do..."
             className="min-h-[100px]"

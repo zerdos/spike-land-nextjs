@@ -6,7 +6,7 @@ const ParallelExecutionInputSchema = z.object({
     z.object({
       type: z.string(), // We can't validate enum easily here due to cycles, but it's WorkflowActionType
       input: z.record(z.string(), z.unknown()),
-    })
+    }),
   ),
   stopOnError: z.boolean().optional().default(false),
 });
@@ -50,18 +50,18 @@ export const parallelExecutionAction: WorkflowAction<
             error: error instanceof Error ? error.message : "Unknown error",
           };
         }
-      })
+      }),
     );
 
     const hasError = results.some((r) => !r.success);
     if (input.stopOnError && hasError) {
-         // Should have been caught above if thrown, but if dispatchAction returns success:false instead of throwing:
-         const firstError = results.find(r => !r.success);
-         return {
-             success: false,
-             error: firstError?.error || "One or more actions failed",
-             results
-         }
+      // Should have been caught above if thrown, but if dispatchAction returns success:false instead of throwing:
+      const firstError = results.find(r => !r.success);
+      return {
+        success: false,
+        error: firstError?.error || "One or more actions failed",
+        results,
+      };
     }
 
     return {

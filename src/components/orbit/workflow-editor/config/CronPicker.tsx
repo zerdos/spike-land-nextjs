@@ -1,4 +1,5 @@
-import React from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -6,8 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import React from "react";
 
 interface CronPickerProps {
   value: string;
@@ -25,7 +25,7 @@ const PRESETS = [
 const CronPicker = ({ value, onChange }: CronPickerProps) => {
   const isPreset = PRESETS.some((p) => p.value === value);
   const [mode, setMode] = React.useState<"preset" | "custom">(
-    isPreset ? "preset" : "custom"
+    isPreset ? "preset" : "custom",
   );
 
   const handlePresetChange = (newValue: string) => {

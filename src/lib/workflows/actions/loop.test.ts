@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { loopAction } from "./loop";
 
 // Mock the action-dispatcher and interpolation modules
@@ -19,8 +19,11 @@ describe("loopAction", () => {
   });
 
   it("should iterate over items", async () => {
-    (dispatchAction as unknown as jest.Mock).mockResolvedValue({ success: true });
-    (interpolate as unknown as jest.Mock).mockImplementation((input: unknown, context: unknown) => ({
+    (dispatchAction as unknown as Mock).mockResolvedValue({ success: true });
+    (interpolate as unknown as Mock).mockImplementation((
+      input: unknown,
+      context: unknown,
+    ) => ({
       ...(input as Record<string, unknown>),
       ...(context as Record<string, unknown>),
     }));

@@ -1,24 +1,18 @@
 "use client";
 
-import { useCallback, useRef, useMemo } from "react";
-import type {
-  Node,
-  NodeTypes} from "reactflow";
-import ReactFlow, {
-  Background,
-  Controls,
-  ReactFlowProvider
-} from "reactflow";
+import { useCallback, useMemo, useRef } from "react";
+import type { Node, NodeTypes } from "reactflow";
+import ReactFlow, { Background, Controls, ReactFlowProvider } from "reactflow";
 import "reactflow/dist/style.css";
 
+import NodeConfigPanel from "./config/NodeConfigPanel";
+import { useWorkflowEditor } from "./hooks/useWorkflowEditor";
 import NodePalette from "./NodePalette";
-import TriggerNode from "./nodes/TriggerNode";
 import ActionNode from "./nodes/ActionNode";
 import ConditionNode from "./nodes/ConditionNode";
 import GroupNode from "./nodes/GroupNode";
-import NodeConfigPanel from "./config/NodeConfigPanel";
+import TriggerNode from "./nodes/TriggerNode";
 import type { WorkflowNodeData } from "./types";
-import { useWorkflowEditor } from "./hooks/useWorkflowEditor";
 
 // Define custom node types
 const nodeTypes: NodeTypes = {
@@ -33,7 +27,11 @@ const initialNodes: Node<WorkflowNodeData>[] = [
     id: "1",
     type: "trigger",
     position: { x: 250, y: 50 },
-    data: { label: "Schedule Trigger", type: "trigger", config: { type: "schedule", cron: "0 9 * * *" } },
+    data: {
+      label: "Schedule Trigger",
+      type: "trigger",
+      config: { type: "schedule", cron: "0 9 * * *" },
+    },
   },
 ];
 
@@ -52,7 +50,7 @@ const WorkflowCanvas = () => {
     updateNodeData,
   } = useWorkflowEditor(initialNodes);
 
-  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+  const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
     setSelectedNodeId(node.id);
   }, [setSelectedNodeId]);
 
@@ -62,16 +60,16 @@ const WorkflowCanvas = () => {
 
   const handleDrop = useCallback(
     (event: React.DragEvent) => {
-        // cast ref to required type or pass ref directly if hook handles types.
-        // hook expects React.RefObject<HTMLDivElement>
-        onDrop(event, reactFlowWrapper);
+      // cast ref to required type or pass ref directly if hook handles types.
+      // hook expects React.RefObject<HTMLDivElement>
+      onDrop(event, reactFlowWrapper);
     },
-    [onDrop]
+    [onDrop],
   );
 
   const selectedNode = useMemo(
     () => nodes.find((n) => n.id === selectedNodeId) || null,
-    [nodes, selectedNodeId]
+    [nodes, selectedNodeId],
   );
 
   return (

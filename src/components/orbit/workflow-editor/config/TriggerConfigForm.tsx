@@ -1,4 +1,3 @@
-import React from "react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -7,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import type { WorkflowNodeData } from "../types";
 import CronPicker from "./CronPicker";
 
@@ -16,7 +16,7 @@ interface TriggerConfigFormProps {
 }
 
 const TriggerConfigForm = ({ data, onChange }: TriggerConfigFormProps) => {
-  const config = data.config || {};
+  const config = data["config"] || {};
 
   const handleTypeChange = (value: string) => {
     onChange({ ...data, config: { ...config, type: value } });
@@ -34,7 +34,7 @@ const TriggerConfigForm = ({ data, onChange }: TriggerConfigFormProps) => {
       <div className="space-y-2">
         <Label>Trigger Type</Label>
         <Select
-          value={config.type || "schedule"}
+          value={config["type"] || "schedule"}
           onValueChange={handleTypeChange}
         >
           <SelectTrigger>
@@ -48,15 +48,15 @@ const TriggerConfigForm = ({ data, onChange }: TriggerConfigFormProps) => {
         </Select>
       </div>
 
-      {config.type === "schedule" && (
-        <CronPicker value={config.cron || ""} onChange={handleCronChange} />
+      {config["type"] === "schedule" && (
+        <CronPicker value={config["cron"] || ""} onChange={handleCronChange} />
       )}
 
-      {config.type === "webhook" && (
+      {config["type"] === "webhook" && (
         <div className="rounded-md bg-muted p-3 text-sm">
           <p className="font-medium">Webhook URL</p>
           <code className="block mt-1 break-all text-xs">
-            https://api.example.com/hooks/workflow/{data.id}
+            https://api.example.com/hooks/workflow/{data["id"]}
           </code>
         </div>
       )}

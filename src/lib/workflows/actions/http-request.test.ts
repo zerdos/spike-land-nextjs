@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { httpRequestAction } from "./http-request";
 
 describe("httpRequestAction", () => {
@@ -32,7 +32,7 @@ describe("httpRequestAction", () => {
     expect(result.data).toEqual({ message: "success" });
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.example.com/data",
-      expect.objectContaining({ method: "GET" })
+      expect.objectContaining({ method: "GET" }),
     );
   });
 
@@ -56,9 +56,9 @@ describe("httpRequestAction", () => {
 
     // Actually the action implementation catches errors.
     const result = await httpRequestAction.execute({
-        url: "https://api.example.com/error",
-        method: "GET",
-      });
+      url: "https://api.example.com/error",
+      method: "GET",
+    });
 
     expect(result.success).toBe(false);
     expect(result.status).toBe(0);

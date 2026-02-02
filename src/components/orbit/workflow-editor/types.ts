@@ -1,5 +1,5 @@
-import type { Node, Edge } from "reactflow";
 import type { WorkflowActionType } from "@/lib/workflows/actions/action-types";
+import type { Edge, Node } from "reactflow";
 
 export type WorkflowNodeType = "trigger" | "action" | "condition" | "group";
 
