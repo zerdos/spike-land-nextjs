@@ -1,7 +1,14 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import _userEvent from "@testing-library/user-event";
+import { toast } from "sonner";
 import { describe, expect, it, vi } from "vitest";
 import { ContactForm } from "./ContactForm";
+
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+  },
+}));
 
 describe("ContactForm", () => {
   it("renders all form fields", () => {
@@ -56,9 +63,7 @@ describe("ContactForm", () => {
     });
   });
 
-  it("submits the form with valid data", async () => {
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
+  it("submits the form with valid data and shows success toast", async () => {
     render(<ContactForm />);
 
     fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "John Doe" } });
@@ -72,14 +77,9 @@ describe("ContactForm", () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(logSpy).toHaveBeenCalledWith({
-        name: "John Doe",
-        email: "john@example.com",
-        company: "Acme Inc.",
-        message: "This is a valid message for testing.",
-      });
+      expect(toast.success).toHaveBeenCalledWith(
+        "Thanks for reaching out! We'll get back to you soon.",
+      );
     });
-
-    logSpy.mockRestore();
   });
 });

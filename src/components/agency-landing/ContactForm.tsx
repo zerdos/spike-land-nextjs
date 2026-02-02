@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -44,9 +45,10 @@ export function ContactForm() {
     },
   });
 
-  function onSubmit(data: ContactFormValues) {
-    // This is where you would handle form submission
-    console.log(data);
+  function onSubmit(_data: ContactFormValues) {
+    // TODO: Wire up to API endpoint for form submission
+    toast.success("Thanks for reaching out! We'll get back to you soon.");
+    form.reset();
   }
 
   return (

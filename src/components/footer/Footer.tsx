@@ -23,8 +23,8 @@ export function Footer() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  function onSubmit(_values: z.infer<typeof formSchema>) {
+    // TODO: Wire up to newsletter API endpoint
     toast.success("Thanks for subscribing!");
     form.reset();
   }
