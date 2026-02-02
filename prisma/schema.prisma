@@ -92,11 +92,6 @@ model User {
   policyViolationOverrides PolicyViolation[]
   campaignBriefs           CampaignBrief[]
 
-  // Creative Factory relations
-  createdBriefTemplates    BriefTemplate[]
-  generatedCreativeSets    CreativeSet[]
-  resolvedFatigueAlerts    CreativeFatigueAlert[]
-
   // Workflow relations
   workflows Workflow[]
 
@@ -130,36 +125,12 @@ model CampaignBrief {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  // New fields for Creative Factory
-  workspaceId String?
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
-
-  templateId String?
-  template   BriefTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
-
-  // Creative direction
-  toneOfVoice      String?
-  keyMessages      String[]
-  callToAction     String?
-  brandGuidelines  Json?
-
-  // Budget and timeline
-  budgetAmount  Float?
-  budgetCurrency String? @default("GBP")
-  startDate     DateTime?
-  endDate       DateTime?
-
   user                User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   // Phase 4: New typed relations (expand phase)
   targetAudienceTyped CampaignTargetAudience?
   objectivesTyped     CampaignObjective[]
 
-  // Creative Factory relations
-  creativeSets CreativeSet[]
-  channels     CreativeChannel[]
-
   @@index([userId])
-  @@index([workspaceId])
   @@map("campaign_briefs")
 }
 
@@ -1516,7 +1487,6 @@ model McpGenerationJob {
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   apiKey ApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
-  creativeVariant CreativeVariant?
 
   @@index([userId, status, createdAt])
   @@index([apiKeyId])
@@ -2573,10 +2543,6 @@ model Workspace {
   assetFolders AssetFolder[]
   assetTags    AssetTag[]
   assets       Asset[]
-
-  // Creative Factory
-  briefTemplates BriefTemplate[]
-  campaignBriefs CampaignBrief[]
 
   // Workflow relations
   workflows Workflow[]
@@ -4356,7 +4322,6 @@ model Asset {
   // Usage in posts
   socialPosts    PostAsset[]
   scheduledPosts ScheduledPostAsset[]
-  creativeVariants CreativeVariant[]
 
   @@index([workspaceId])
   @@index([folderId])
@@ -4886,207 +4851,4 @@ model WorkspaceWhiteLabelConfig {
   @@index([customDomain])
   @@index([dnsVerificationStatus])
   @@map("workspace_white_label_configs")
-}
-
-// =============================================================================
-// Creative Factory Models (Epic #520)
-// =============================================================================
-
-model BriefTemplate {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  // Template structure (JSON schema for form fields)
-  fieldsSchema Json // Defines custom fields for this template type
-
-  // Default values
-  defaultObjectives String[] // Default objective types
-  defaultChannels   String[] // e.g., ["facebook", "google_ads"]
-
-  isPublic    Boolean  @default(false) // Public templates available to all
-  createdById String
-  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  briefs CampaignBrief[]
-
-  @@index([workspaceId])
-  @@map("brief_templates")
-}
-
-model CreativeChannel {
-  id       String @id @default(cuid())
-  briefId  String
-  brief    CampaignBrief @relation(fields: [briefId], references: [id], onDelete: Cascade)
-
-  platform String // e.g., "facebook", "instagram", "google_ads", "linkedin"
-
-  // Platform-specific requirements
-  adFormats String[] // e.g., ["single_image", "carousel", "video"]
-  dimensions Json // Platform-specific size requirements
-
-  createdAt DateTime @default(now())
-
-  @@index([briefId])
-  @@map("creative_channels")
-}
-
-model CreativeSet {
-  id          String   @id @default(cuid())
-  name        String
-  briefId     String
-  brief       CampaignBrief @relation(fields: [briefId], references: [id], onDelete: Cascade)
-
-  // Generation metadata
-  generatedAt     DateTime @default(now())
-  generatedById   String
-  generatedBy     User     @relation(fields: [generatedById], references: [id], onDelete: Cascade)
-
-  // AI model used
-  modelVersion    String // e.g., "gemini-2.0-flash"
-  generationPrompt String @db.Text
-
-  // Performance tracking
-  status CreativeSetStatus @default(DRAFT)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  variants CreativeVariant[]
-
-  @@index([briefId])
-  @@map("creative_sets")
-}
-
-model CreativeVariant {
-  id            String   @id @default(cuid())
-  setId         String
-  set           CreativeSet @relation(fields: [setId], references: [id], onDelete: Cascade)
-
-  variantType   CreativeVariantType
-
-  // Text variants
-  headline      String?
-  bodyText      String? @db.Text
-  callToAction  String?
-
-  // Image variants
-  assetId       String?
-  asset         Asset? @relation(fields: [assetId], references: [id], onDelete: SetNull)
-
-  // Generation job (for images)
-  imageJobId    String? @unique
-  imageJob      McpGenerationJob? @relation(fields: [imageJobId], references: [id], onDelete: SetNull)
-
-  // Variant metadata
-  variantNumber Int // e.g., 1, 2, 3 within the set
-
-  // Performance metrics (populated by ORB-061)
-  impressions   Int @default(0)
-  clicks        Int @default(0)
-  conversions   Int @default(0)
-  ctr           Float @default(0) // Click-through rate
-
-  status        VariantStatus @default(PENDING)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  performanceHistory CreativePerformance[]
-  fatigueAlerts      CreativeFatigueAlert[]
-
-  @@index([setId])
-  @@index([assetId])
-  @@map("creative_variants")
-}
-
-model CreativePerformance {
-  id        String   @id @default(cuid())
-  variantId String
-  variant   CreativeVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
-
-  // Time window
-  date      DateTime @db.Date
-
-  // Performance metrics
-  impressions Int @default(0)
-  clicks      Int @default(0)
-  conversions Int @default(0)
-  spend       Float @default(0)
-
-  // Calculated metrics
-  ctr         Float @default(0) // clicks / impressions
-  cpc         Float @default(0) // spend / clicks
-  cvr         Float @default(0) // conversions / clicks
-
-  createdAt DateTime @default(now())
-
-  @@unique([variantId, date])
-  @@index([variantId])
-  @@index([date])
-  @@map("creative_performance")
-}
-
-model CreativeFatigueAlert {
-  id        String   @id @default(cuid())
-  variantId String
-  variant   CreativeVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
-
-  // Detection metadata
-  detectedAt     DateTime @default(now())
-  severity       FatigueSeverity
-
-  // Fatigue metrics
-  ctrDecayPercent Float // % decline in CTR
-  daysActive      Int   // Days variant has been active
-
-  // Recommendation
-  recommendedAction String // "REFRESH", "PAUSE", "REPLACE"
-  estimatedRefreshDate DateTime?
-
-  // Status
-  isResolved    Boolean @default(false)
-  resolvedAt    DateTime?
-  resolvedById  String?
-  resolvedBy    User? @relation(fields: [resolvedById], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-
-  @@index([variantId])
-  @@index([severity])
-  @@map("creative_fatigue_alerts")
-}
-
-enum CreativeSetStatus {
-  DRAFT
-  ACTIVE
-  PAUSED
-  COMPLETED
-}
-
-enum CreativeVariantType {
-  TEXT_ONLY
-  IMAGE_ONLY
-  COMBINED
-}
-
-enum VariantStatus {
-  PENDING
-  GENERATING
-  READY
-  ACTIVE
-  PAUSED
-  FAILED
-}
-
-enum FatigueSeverity {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
 }

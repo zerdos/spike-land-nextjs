@@ -11,7 +11,7 @@ import type { ActionInput, ActionOutput, WorkflowAction } from "./action-types";
 const ParallelExecutionInputSchema = z.object({
   items: z.array(z.any()),
   actionType: z.string(), // The action to perform on each item
-  actionConfig: z.record(z.any()), // Configuration for that action
+  actionConfig: z.record(z.string(), z.any()), // Configuration for that action
   concurrency: z.number().optional().default(5),
 }, {});
 
@@ -51,6 +51,6 @@ export const parallelExecutionAction: WorkflowAction<
         success: true,
         results: [],
         failedCount: 0
-    }
+    };
   },
 };

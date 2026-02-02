@@ -14,6 +14,7 @@ const TriggerConfigForm = ({ node, onChange }: TriggerConfigFormProps) => {
 
   const handleChange = (field: string, value: unknown) => {
     onChange({
+      ...node.data,
       config: {
         ...config,
         [field]: value,
@@ -21,9 +22,9 @@ const TriggerConfigForm = ({ node, onChange }: TriggerConfigFormProps) => {
     });
   };
 
-  const triggerType = (config.triggerType as string) || "schedule";
-  const cron = (config.cron as string) || "* * * * *";
-  const eventType = (config.eventType as string) || "";
+  const triggerType = (config['triggerType'] as string) || "schedule";
+  const cron = (config['cron'] as string) || "* * * * *";
+  const eventType = (config['eventType'] as string) || "";
 
   return (
     <div className="space-y-4">

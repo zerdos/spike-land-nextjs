@@ -21,8 +21,8 @@ const ActionConfigForm = ({ node, onChange }: ActionConfigFormProps) => {
     });
   };
 
-  const actionType = (config.actionType as string) || "send_notification";
-  const message = (config.message as string) || "";
+  const actionType = (config['actionType'] as string) || "send_notification";
+  const message = (config['message'] as string) || "";
 
   return (
     <div className="space-y-4">

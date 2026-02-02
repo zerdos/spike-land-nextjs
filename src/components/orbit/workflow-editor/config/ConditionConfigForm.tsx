@@ -20,7 +20,7 @@ const ConditionConfigForm = ({ node, onChange }: ConditionConfigFormProps) => {
     });
   };
 
-  const expression = (config.expression as string) || "";
+  const expression = (config['expression'] as string) || "";
 
   return (
     <div className="space-y-4">
