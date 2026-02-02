@@ -1,4 +1,3 @@
-
 /**
  * YouTube Resumable Upload Utility
  *
@@ -10,7 +9,8 @@
  * API Reference: https://developers.google.com/youtube/v3/guides/using_resumable_upload_protocol
  */
 
-const RESUMABLE_UPLOAD_URL = "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status";
+const RESUMABLE_UPLOAD_URL =
+  "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status";
 
 export interface VideoMetadata {
   file?: Buffer;
@@ -145,7 +145,6 @@ export class YouTubeResumableUploader {
       // Other errors
       const errorText = await response.text();
       throw new Error(`Upload failed with status ${response.status}: ${errorText}`);
-
     } catch (error) {
       // Network error or other fetch issue
       // Caller should handle retry logic (e.g., call resumeUpload)
@@ -163,8 +162,8 @@ export class YouTubeResumableUploader {
    */
   async resumeUpload(
     uploadUrl: string,
-    totalSize: number
-  ): Promise<{ uploadedBytes: number }> {
+    totalSize: number,
+  ): Promise<{ uploadedBytes: number; }> {
     const response = await fetch(uploadUrl, {
       method: "PUT",
       headers: {

@@ -1,5 +1,4 @@
-
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { YouTubeResumableUploader } from "./resumable-uploader";
 
 // Mock fetch global
@@ -17,7 +16,8 @@ describe("YouTubeResumableUploader", () => {
 
   describe("initiate", () => {
     it("should initiate upload with file object and return uploadUrl", async () => {
-      const mockUploadUrl = "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&upload_id=session123";
+      const mockUploadUrl =
+        "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&upload_id=session123";
 
       fetchMock.mockResolvedValueOnce({
         ok: true,
@@ -43,7 +43,7 @@ describe("YouTubeResumableUploader", () => {
             Authorization: `Bearer ${mockAccessToken}`,
             "X-Upload-Content-Length": "12",
           }),
-        })
+        }),
       );
 
       expect(result).toEqual({
@@ -53,7 +53,8 @@ describe("YouTubeResumableUploader", () => {
     });
 
     it("should initiate upload with explicit fileSize", async () => {
-      const mockUploadUrl = "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&upload_id=session123";
+      const mockUploadUrl =
+        "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&upload_id=session123";
 
       fetchMock.mockResolvedValueOnce({
         ok: true,
@@ -76,7 +77,7 @@ describe("YouTubeResumableUploader", () => {
           headers: expect.objectContaining({
             "X-Upload-Content-Length": "12345",
           }),
-        })
+        }),
       );
     });
 
@@ -86,7 +87,9 @@ describe("YouTubeResumableUploader", () => {
         privacyStatus: "private" as const,
       };
 
-      await expect(uploader.initiate(mockAccessToken, metadata)).rejects.toThrow("Either file or fileSize must be provided");
+      await expect(uploader.initiate(mockAccessToken, metadata)).rejects.toThrow(
+        "Either file or fileSize must be provided",
+      );
     });
 
     it("should throw error if uploadUrl is missing", async () => {
@@ -103,7 +106,9 @@ describe("YouTubeResumableUploader", () => {
         privacyStatus: "private" as const,
       };
 
-      await expect(uploader.initiate(mockAccessToken, metadata)).rejects.toThrow("YouTube API did not return an upload URL");
+      await expect(uploader.initiate(mockAccessToken, metadata)).rejects.toThrow(
+        "YouTube API did not return an upload URL",
+      );
     });
   });
 
@@ -124,12 +129,15 @@ describe("YouTubeResumableUploader", () => {
       const result = await uploader.uploadChunk(uploadUrl, chunk, start, total);
 
       expect(result).toEqual({ status: "uploading", uploadedBytes: 10 });
-      expect(fetchMock).toHaveBeenCalledWith(uploadUrl, expect.objectContaining({
-        method: "PUT",
-        headers: expect.objectContaining({
-          "Content-Range": "bytes 0-9/100",
+      expect(fetchMock).toHaveBeenCalledWith(
+        uploadUrl,
+        expect.objectContaining({
+          method: "PUT",
+          headers: expect.objectContaining({
+            "Content-Range": "bytes 0-9/100",
+          }),
         }),
-      }));
+      );
     });
 
     it("should handle 200 OK (Complete)", async () => {
@@ -159,10 +167,13 @@ describe("YouTubeResumableUploader", () => {
       const result = await uploader.resumeUpload(uploadUrl, totalSize);
 
       expect(result).toEqual({ uploadedBytes: 500 });
-      expect(fetchMock).toHaveBeenCalledWith(uploadUrl, expect.objectContaining({
-        method: "PUT",
-        headers: { "Content-Range": "bytes */1000" },
-      }));
+      expect(fetchMock).toHaveBeenCalledWith(
+        uploadUrl,
+        expect.objectContaining({
+          method: "PUT",
+          headers: { "Content-Range": "bytes */1000" },
+        }),
+      );
     });
 
     it("should return 0 bytes if no Range header", async () => {

@@ -1,4 +1,3 @@
-
 import type { YouTubeClient } from "../clients/youtube";
 
 const YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3";
@@ -31,7 +30,7 @@ export async function pollVideoProcessingStatus(
     maxAttempts?: number;
     intervalMs?: number;
     timeoutMs?: number;
-  }
+  },
 ): Promise<ProcessingStatus> {
   const maxAttempts = options?.maxAttempts || 60; // Default: 60 attempts
   const intervalMs = options?.intervalMs || 5000; // Default: 5 seconds

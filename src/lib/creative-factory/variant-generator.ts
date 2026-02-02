@@ -25,7 +25,7 @@ export async function generateCreativeVariants(params: {
   includeText: boolean;
   includeImages: boolean;
   userId: string;
-}): Promise<{ setId: string; variants: CreativeVariant[] }> {
+}): Promise<{ setId: string; variants: CreativeVariant[]; }> {
   // 1. Create CreativeSet
   const set = await prisma.creativeSet.create({
     data: {
