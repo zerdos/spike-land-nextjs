@@ -13,6 +13,8 @@ import type {
   WorkflowStepData,
 } from "@/types/workflow";
 import type { Prisma, WorkflowStep } from "@prisma/client";
+import { dispatchAction } from "./actions/action-dispatcher";
+import type { WorkflowActionType } from "./actions/action-types";
 
 /**
  * Step handler function type
@@ -60,6 +62,48 @@ export function getStepHandler(actionType: string): StepHandler | undefined {
 // ============================================================================
 // Built-in Handlers
 // ============================================================================
+
+/**
+ * Generic handler for actions that use the dispatcher
+ */
+const genericActions: WorkflowActionType[] = [
+  "send_notification",
+  "update_record",
+  "call_ai_agent",
+  "post_to_platform",
+  "http_request",
+  "transform_data",
+  "loop",
+  "parallel_execution",
+  // "delay" is handled by built-in handler below
+];
+
+for (const actionType of genericActions) {
+  registerStepHandler(actionType, async (step, context) => {
+    // Resolve interpolation context
+    // We combine previous outputs into a single context object
+    const interpolationContext: Record<string, unknown> = {
+      ...(context.triggerData || {}),
+    };
+
+    // Add step outputs to context so {{stepId.field}} works
+    context.previousOutputs.forEach((value, key) => {
+      interpolationContext[key] = value;
+    });
+
+    const result = await dispatchAction(
+      actionType,
+      step.config as Record<string, unknown>,
+      interpolationContext,
+    );
+
+    if (!result.success) {
+      return { error: result.error || "Action failed" };
+    }
+
+    return { output: result };
+  });
+}
 
 /**
  * No-op handler for triggers (they just pass through)
