@@ -6499,12 +6499,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@remotion/eslint-config@npm:4.0.414":
-  version: 4.0.414
-  resolution: "@remotion/eslint-config@npm:4.0.414"
+"@remotion/eslint-config@npm:4.0.416":
+  version: 4.0.416
+  resolution: "@remotion/eslint-config@npm:4.0.416"
   peerDependencies:
     eslint: ">=7.15.0"
-  checksum: 10c9/60c6af5404ef4fd7456aad9f7461ae5eb58ce89ed75f484f0e02b5f85c5955a83621bab8b73d1c762c48aebc7414b35510650e19595e8faf7afcabdad04a14a3
+  checksum: 10c9/6e550735d5c42c90854200078a144ad2949538b3335175a28cc1a7c3679a4a8e86cea820c20e9bd1e2c0fe9c870e216f330bccc69cdba951cea52cfeb33f8ced
   languageName: node
   linkType: hard
 
@@ -6679,9 +6679,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@remotion/tailwind@npm:4.0.414":
-  version: 4.0.414
-  resolution: "@remotion/tailwind@npm:4.0.414"
+"@remotion/tailwind@npm:4.0.416":
+  version: 4.0.416
+  resolution: "@remotion/tailwind@npm:4.0.416"
   dependencies:
     autoprefixer: "npm:10.4.20"
     css-loader: "npm:5.2.7"
@@ -6691,8 +6691,8 @@ __metadata:
     style-loader: "npm:4.0.0"
     tailwindcss: "npm:3.4.13"
   peerDependencies:
-    "@remotion/bundler": 4.0.414
-  checksum: 10c9/d61b44888eb753f0122a334da9bca7f88d127f41b1a206d0d313b03f1b1d1096cf0c2f12d34df87613cc12dc3abb947462f96e3c244dcd4133d2962707411269
+    "@remotion/bundler": 4.0.416
+  checksum: 10c9/da39b710d138f0c47e2d36f0ba794e084bdb6e6de3d1621c96bb6e51291c9b433d4f09868126bd7efe913eab55fce8ff36c003b3599eb2c8960c3c3745bc1439
   languageName: node
   linkType: hard
 
@@ -8021,11 +8021,11 @@ __metadata:
     eslint: "npm:9.39.2"
     eslint-plugin-react: "npm:7.37.5"
     eslint-plugin-react-hooks: "npm:7.0.1"
-    eslint-plugin-react-refresh: "npm:0.4.26"
+    eslint-plugin-react-refresh: "npm:0.5.0"
     events: "npm:3.3.0"
     fetch-retry: "npm:6.0.0"
     framer-motion: "npm:12.29.2"
-    globals: "npm:17.2.0"
+    globals: "npm:17.3.0"
     happy-dom: "npm:20.4.0"
     html2canvas-pro: "npm:1.6.6"
     immutable: "npm:5.1.4"
@@ -8148,9 +8148,9 @@ __metadata:
     esbuild-wasm: "npm:0.27.2"
     eslint: "npm:9.39.2"
     eslint-plugin-react-hooks: "npm:7.0.1"
-    eslint-plugin-react-refresh: "npm:0.4.26"
+    eslint-plugin-react-refresh: "npm:0.5.0"
     esm-worker: "npm:0.135.18"
-    globals: "npm:17.2.0"
+    globals: "npm:17.3.0"
     hono: "npm:4.11.7"
     immutable: "npm:5.1.4"
     jiti: "npm:2.6.1"
@@ -8213,9 +8213,9 @@ __metadata:
   dependencies:
     "@remotion/bundler": "npm:4.0.414"
     "@remotion/cli": "npm:4.0.414"
-    "@remotion/eslint-config": "npm:4.0.414"
+    "@remotion/eslint-config": "npm:4.0.416"
     "@remotion/media": "npm:4.0.414"
-    "@remotion/tailwind": "npm:4.0.414"
+    "@remotion/tailwind": "npm:4.0.416"
     "@remotion/transitions": "npm:4.0.414"
     "@types/react": "npm:^18.3.27"
     "@types/react-dom": "npm:^18.3.7"
@@ -14330,12 +14330,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react-refresh@npm:0.4.26":
-  version: 0.4.26
-  resolution: "eslint-plugin-react-refresh@npm:0.4.26"
+"eslint-plugin-react-refresh@npm:0.5.0":
+  version: 0.5.0
+  resolution: "eslint-plugin-react-refresh@npm:0.5.0"
   peerDependencies:
-    eslint: ">=8.40"
-  checksum: 10c9/068da7edcd39d802dda4c03b7ea8923891145eb95f4dfd4cfce82a53a5eb55f5cbe66b33cf8e57b71f1525a684517bda4bfca1bc5c6b12c82ba03c9e8197764d
+    eslint: ">=9"
+  checksum: 10c9/4808dee9ac4e34eff8e28cc314e132f19cd479ac47067ebbd5cabe820848f16abadf759fc7360938e2f3fc851eb85357def1d139a8bcc1eec64ac2d9e2b4d499
   languageName: node
   linkType: hard
 
@@ -15615,10 +15615,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:17.2.0":
-  version: 17.2.0
-  resolution: "globals@npm:17.2.0"
-  checksum: 10c9/0e49d352e4e46f87ddff1c22720b089c6ec1fc33164ea6f2412b9a900e8321974201ee9749707d1ea94157bceba8e00c8c922241b13269ab6333674d884a27c0
+"globals@npm:17.3.0":
+  version: 17.3.0
+  resolution: "globals@npm:17.3.0"
+  checksum: 10c9/c9e3e6b7b9c0c09f3d6924cf506dd7ea54b72450ecca7014dbd4c9917fd9a0804fe5158a5f455cb835c2b1946eef9499785ebcc8edcd602b5b3f6daa0cfafde8
   languageName: node
   linkType: hard
 

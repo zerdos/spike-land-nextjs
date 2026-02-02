@@ -21,8 +21,8 @@
     "remotion": "4.0.414"
   },
   "devDependencies": {
-    "@remotion/eslint-config": "4.0.414",
-    "@remotion/tailwind": "4.0.414",
+    "@remotion/eslint-config": "4.0.416",
+    "@remotion/tailwind": "4.0.416",
     "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.7",
     "autoprefixer": "^10.4.24",
