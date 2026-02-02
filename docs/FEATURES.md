@@ -806,23 +806,33 @@ See [ROADMAP.md](./ROADMAP.md) for full roadmap.
 
 ---
 
-## Statistics & Metrics (January 2026)
+## Platform Status (February 2026)
 
-### Platform Metrics
+### Current Stage: Pre-Launch
 
-- **Users**: 50,000+ registered accounts
-- **Workspaces**: 12,000+ active workspaces
-- **Social Accounts**: 35,000+ connected accounts
-- **Posts Managed**: 500,000+ scheduled/published posts
-- **Messages Triaged**: 2,000,000+ inbox messages
-- **AI Drafts Generated**: 100,000+ drafts
+| Aspect             | Status                              |
+| ------------------ | ----------------------------------- |
+| **Product**        | Live at spike.land/orbit            |
+| **Features**       | All 6 core features implemented     |
+| **Infrastructure** | Production-ready                    |
+| **Users**          | Pre-launch (friends/family testing) |
+| **Revenue**        | Pre-revenue                         |
+| **Next Phase**     | Marketing and go-to-market          |
 
-### Performance Metrics
+### Technical Readiness
 
-- **Uptime**: 99.9% (last 90 days)
-- **Response Time**: <200ms (p50), <500ms (p95)
-- **AI Response Time**: <3s for draft generation
-- **Error Rate**: <0.1%
+- **Infrastructure**: Production-grade, designed for 99.9% uptime
+- **Features**: Full platform (Pulse, Inbox, Allocator, Scout, Brand Brain, Relay)
+- **Integrations**: OAuth for Instagram, Facebook, Twitter/X, LinkedIn, TikTok
+- **Payments**: Stripe integration complete
+- **Company**: UK Ltd incorporated (December 2025)
+
+### Performance Targets
+
+- **Uptime Target**: 99.9%
+- **Response Time Target**: <200ms (p50), <500ms (p95)
+- **AI Response Time Target**: <3s for draft generation
+- **Error Rate Target**: <0.1%
 
 ---
 
