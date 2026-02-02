@@ -12,7 +12,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(
   _request: NextRequest,
-  { params }: { params: Promise<{ workspaceSlug: string }> },
+  { params }: { params: Promise<{ workspaceSlug: string; }>; },
 ) {
   try {
     const { workspaceSlug } = await params;
@@ -35,7 +35,7 @@ export async function POST(
     // 2. Run detection algorithm
     const config = {
       engagementThreshold: 0.05, // 5%
-      velocityThreshold: 5,      // 5 engagements per hour
+      velocityThreshold: 5, // 5 engagements per hour
       minImpressions: 500,
       lookbackPeriod: 30,
     };

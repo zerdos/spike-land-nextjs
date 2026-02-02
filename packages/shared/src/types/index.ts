@@ -423,9 +423,9 @@ export type {
 // Boost Analytics Types
 export type {
   BoostCampaignData,
-  BoostStatus,
-  BoostPerformanceMetrics,
   BoostEffectivenessAnalysis,
+  BoostPerformanceMetrics,
+  BoostStatus,
   OrganicMetricsSnapshot,
   TargetingCriteria,
 } from "./boost-analytics";

@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { syncPostPerformance, updatePostPerformance } from './metrics-tracker';
-import prisma from '@/lib/prisma';
-import { PostType } from '@/generated/prisma';
+import { PostType } from "@/generated/prisma";
+import prisma from "@/lib/prisma";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { syncPostPerformance, updatePostPerformance } from "./metrics-tracker";
 
 // Mock Prisma
-vi.mock('@/lib/prisma', () => ({
+vi.mock("@/lib/prisma", () => ({
   default: {
     socialPost: {
       findMany: vi.fn(),
@@ -17,8 +17,8 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-describe('Metrics Tracker', () => {
-  const mockDate = new Date('2024-01-01T12:00:00Z');
+describe("Metrics Tracker", () => {
+  const mockDate = new Date("2024-01-01T12:00:00Z");
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -29,19 +29,19 @@ describe('Metrics Tracker', () => {
     vi.useRealTimers();
   });
 
-  describe('updatePostPerformance', () => {
-    const workspaceId = 'ws-123';
+  describe("updatePostPerformance", () => {
+    const workspaceId = "ws-123";
     const post = {
-      id: 'post-1',
+      id: "post-1",
       likes: 10,
       comments: 5,
       shares: 2,
       impressions: 1000,
-      publishedAt: new Date('2024-01-01T10:00:00Z'), // 2 hours ago
-      createdAt: new Date('2024-01-01T10:00:00Z'),
+      publishedAt: new Date("2024-01-01T10:00:00Z"), // 2 hours ago
+      createdAt: new Date("2024-01-01T10:00:00Z"),
     };
 
-    it('should create new performance record if none exists', async () => {
+    it("should create new performance record if none exists", async () => {
       vi.mocked(prisma.postPerformance.findFirst).mockResolvedValue(null);
 
       await updatePostPerformance(post, workspaceId);
@@ -66,8 +66,8 @@ describe('Metrics Tracker', () => {
       });
     });
 
-    it('should update existing performance record', async () => {
-      const existingRecord = { id: 'perf-1' };
+    it("should update existing performance record", async () => {
+      const existingRecord = { id: "perf-1" };
       vi.mocked(prisma.postPerformance.findFirst).mockResolvedValue(existingRecord as any);
 
       await updatePostPerformance(post, workspaceId);
@@ -90,7 +90,7 @@ describe('Metrics Tracker', () => {
       });
     });
 
-    it('should handle zero impressions correctly', async () => {
+    it("should handle zero impressions correctly", async () => {
       const zeroImpressionPost = { ...post, impressions: 0 };
       vi.mocked(prisma.postPerformance.findFirst).mockResolvedValue(null);
 
@@ -101,21 +101,21 @@ describe('Metrics Tracker', () => {
           data: expect.objectContaining({
             engagementRate: 0,
           }),
-        })
+        }),
       );
     });
   });
 
-  describe('syncPostPerformance', () => {
-    it('should fetch posts and update performance for each', async () => {
+  describe("syncPostPerformance", () => {
+    it("should fetch posts and update performance for each", async () => {
       const posts = [
-        { id: 'p1', createdAt: new Date() },
-        { id: 'p2', createdAt: new Date() },
+        { id: "p1", createdAt: new Date() },
+        { id: "p2", createdAt: new Date() },
       ];
       vi.mocked(prisma.socialPost.findMany).mockResolvedValue(posts as any);
       vi.mocked(prisma.postPerformance.findFirst).mockResolvedValue(null);
 
-      await syncPostPerformance('ws-1', 7);
+      await syncPostPerformance("ws-1", 7);
 
       expect(prisma.socialPost.findMany).toHaveBeenCalled();
       expect(prisma.postPerformance.create).toHaveBeenCalledTimes(2);

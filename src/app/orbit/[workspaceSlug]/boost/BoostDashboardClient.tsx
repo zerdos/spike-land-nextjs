@@ -116,12 +116,8 @@ export function BoostDashboardClient({ workspaceSlug }: BoostDashboardClientProp
             disabled={detecting}
           >
             {detecting
-              ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )
-              : (
-                <RefreshCw className="mr-2 h-4 w-4" />
-              )}
+              ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              : <RefreshCw className="mr-2 h-4 w-4" />}
             Run Detection
           </Button>
         </div>

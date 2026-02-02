@@ -47,7 +47,9 @@ export function CandidateCard({ candidate, onBoost }: CandidateCardProps) {
               </Badge>
               <span className="text-xs text-muted-foreground">
                 {candidate.postContent?.publishedAt &&
-                  formatDistanceToNow(new Date(candidate.postContent.publishedAt), { addSuffix: true })}
+                  formatDistanceToNow(new Date(candidate.postContent.publishedAt), {
+                    addSuffix: true,
+                  })}
               </span>
             </div>
           </div>
@@ -58,58 +60,64 @@ export function CandidateCard({ candidate, onBoost }: CandidateCardProps) {
       </CardHeader>
       <CardContent className="pb-3">
         <div className="flex gap-4">
-            {/* Image Preview if available */}
-            {candidate.postContent?.assets?.[0] && (
-                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-muted">
-                   {/* In a real app we would resolve R2 key to URL, assuming we have a helper or it's public */}
-                   {/* Using placeholder for now if no URL resolution logic in component */}
-                   <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-                     Media
-                   </div>
-                </div>
-            )}
-
-            <div className="flex flex-col gap-2">
-                <p className="line-clamp-2 text-sm text-muted-foreground">
-                    {candidate.postContent?.content || "No content available"}
-                </p>
-
-                <p className="text-xs font-medium text-emerald-600 flex items-center gap-1">
-                    <TrendingUp className="h-3 w-3" />
-                    {reasoning}
-                </p>
+          {/* Image Preview if available */}
+          {candidate.postContent?.assets?.[0] && (
+            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-muted">
+              {/* In a real app we would resolve R2 key to URL, assuming we have a helper or it's public */}
+              {/* Using placeholder for now if no URL resolution logic in component */}
+              <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+                Media
+              </div>
             </div>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <p className="line-clamp-2 text-sm text-muted-foreground">
+              {candidate.postContent?.content || "No content available"}
+            </p>
+
+            <p className="text-xs font-medium text-emerald-600 flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
+              {reasoning}
+            </p>
+          </div>
         </div>
 
         <div className="mt-4 grid grid-cols-3 gap-2 border-t pt-3">
-            <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">Impressions</span>
-                <span className="font-semibold">{candidate.postPerformance?.impressions.toLocaleString()}</span>
-            </div>
-            <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">Engagement</span>
-                <span className="font-semibold">{engagementRate.toFixed(1)}%</span>
-            </div>
-            <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">Est. ROI</span>
-                <span className="font-semibold text-emerald-600">
-                    {candidate.postPerformance?.estimatedROI ? `${(candidate.postPerformance.estimatedROI * 100).toFixed(0)}%` : "N/A"}
-                </span>
-            </div>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Impressions</span>
+            <span className="font-semibold">
+              {candidate.postPerformance?.impressions.toLocaleString()}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Engagement</span>
+            <span className="font-semibold">{engagementRate.toFixed(1)}%</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Est. ROI</span>
+            <span className="font-semibold text-emerald-600">
+              {candidate.postPerformance?.estimatedROI
+                ? `${(candidate.postPerformance.estimatedROI * 100).toFixed(0)}%`
+                : "N/A"}
+            </span>
+          </div>
         </div>
       </CardContent>
       <CardFooter className="bg-muted/30 pt-3">
         <Button
-            className="w-full gap-2"
-            onClick={() => onBoost(candidate.id)}
-            disabled={candidate.status !== "PENDING"}
+          className="w-full gap-2"
+          onClick={() => onBoost(candidate.id)}
+          disabled={candidate.status !== "PENDING"}
         >
-            {candidate.status === "PENDING" ? (
-                <>
-                    Boost Post <ArrowUpRight className="h-4 w-4" />
-                </>
-            ) : (
-                candidate.status
+          {candidate.status === "PENDING"
+            ? (
+              <>
+                Boost Post <ArrowUpRight className="h-4 w-4" />
+              </>
+            )
+            : (
+              candidate.status
             )}
         </Button>
       </CardFooter>

@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { detectBoostOpportunities, generateRecommendation } from './detector';
-import prisma from '@/lib/prisma';
-import * as scoring from './scoring';
-import { PostType } from '@/generated/prisma';
+import { PostType } from "@/generated/prisma";
+import prisma from "@/lib/prisma";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { detectBoostOpportunities, generateRecommendation } from "./detector";
+import * as scoring from "./scoring";
 
 // Mock Prisma
-vi.mock('@/lib/prisma', () => ({
+vi.mock("@/lib/prisma", () => ({
   default: {
     postPerformance: {
       findMany: vi.fn(),
@@ -24,14 +24,14 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 // Mock scoring
-vi.mock('./scoring', () => ({
+vi.mock("./scoring", () => ({
   calculateBoostScore: vi.fn(),
   predictROI: vi.fn(),
 }));
 
-describe('Boost Detector', () => {
-  const workspaceId = 'ws-123';
-  const ownerId = 'user-123';
+describe("Boost Detector", () => {
+  const workspaceId = "ws-123";
+  const ownerId = "user-123";
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -44,11 +44,11 @@ describe('Boost Detector', () => {
 
     // Setup default marketing account mock
     vi.mocked(prisma.marketingAccount.findMany).mockResolvedValue([
-      { platform: 'FACEBOOK' },
+      { platform: "FACEBOOK" },
     ] as any);
   });
 
-  describe('detectBoostOpportunities', () => {
+  describe("detectBoostOpportunities", () => {
     const config = {
       lookbackPeriod: 30,
       minImpressions: 1000,
@@ -56,12 +56,12 @@ describe('Boost Detector', () => {
       velocityThreshold: 10,
     };
 
-    it('should identify qualified posts and generate recommendations', async () => {
+    it("should identify qualified posts and generate recommendations", async () => {
       // Mock performances
       const performances = [
         {
-          id: 'perf-1',
-          postId: 'post-1',
+          id: "perf-1",
+          postId: "post-1",
           postType: PostType.SOCIAL_POST,
           workspaceId,
           engagementRate: 0.1, // Qualified
@@ -70,8 +70,8 @@ describe('Boost Detector', () => {
           conversions: 0,
         },
         {
-          id: 'perf-2',
-          postId: 'post-2',
+          id: "perf-2",
+          postId: "post-2",
           postType: PostType.SOCIAL_POST,
           workspaceId,
           engagementRate: 0.01, // Not qualified
@@ -92,7 +92,7 @@ describe('Boost Detector', () => {
           contentType: 10,
           timing: 10,
         },
-        trigger: 'HIGH_ENGAGEMENT',
+        trigger: "HIGH_ENGAGEMENT",
       });
 
       vi.mocked(scoring.predictROI).mockResolvedValue({
@@ -106,30 +106,30 @@ describe('Boost Detector', () => {
 
       // Mock create response
       vi.mocked(prisma.postBoostRecommendation.create).mockResolvedValue({
-        id: 'rec-1',
-        postId: 'post-1',
-        status: 'PENDING',
+        id: "rec-1",
+        postId: "post-1",
+        status: "PENDING",
       } as any);
 
       const recommendations = await detectBoostOpportunities(workspaceId, config);
 
       expect(prisma.postPerformance.findMany).toHaveBeenCalled();
       expect(recommendations).toHaveLength(1);
-      expect(recommendations[0]!.postId).toBe('post-1');
+      expect(recommendations[0]!.postId).toBe("post-1");
       expect(prisma.postBoostRecommendation.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            postId: 'post-1',
-            status: 'PENDING',
+            postId: "post-1",
+            status: "PENDING",
           }),
-        })
+        }),
       );
     });
 
-    it('should skip detection if no owner found', async () => {
+    it("should skip detection if no owner found", async () => {
       vi.mocked(prisma.workspace.findUnique).mockResolvedValue(null);
       vi.mocked(prisma.postPerformance.findMany).mockResolvedValue([
-        { engagementRate: 0.1 } as any
+        { engagementRate: 0.1 } as any,
       ]);
 
       await expect(detectBoostOpportunities(workspaceId, config))
@@ -137,10 +137,10 @@ describe('Boost Detector', () => {
     });
   });
 
-  describe('generateRecommendation', () => {
+  describe("generateRecommendation", () => {
     const performance = {
-      id: 'perf-1',
-      postId: 'post-1',
+      id: "perf-1",
+      postId: "post-1",
       postType: PostType.SOCIAL_POST,
       workspaceId,
       engagementRate: 0.08,
@@ -149,11 +149,11 @@ describe('Boost Detector', () => {
       conversions: 2,
     };
 
-    it('should update performance score and create recommendation', async () => {
+    it("should update performance score and create recommendation", async () => {
       vi.mocked(scoring.calculateBoostScore).mockResolvedValue({
         score: 90,
         factors: { engagementVelocity: 50, audienceMatch: 20, contentType: 10, timing: 10 },
-        trigger: 'VIRAL_VELOCITY',
+        trigger: "VIRAL_VELOCITY",
       });
 
       vi.mocked(scoring.predictROI).mockResolvedValue({
@@ -167,9 +167,9 @@ describe('Boost Detector', () => {
 
       // Mock create response
       vi.mocked(prisma.postBoostRecommendation.create).mockResolvedValue({
-        id: 'rec-1',
-        postId: 'post-1',
-        status: 'PENDING',
+        id: "rec-1",
+        postId: "post-1",
+        status: "PENDING",
       } as any);
 
       await generateRecommendation(performance as any, ownerId);
@@ -179,7 +179,7 @@ describe('Boost Detector', () => {
         where: { id: performance.id },
         data: {
           boostScore: 90,
-          boostTrigger: 'VIRAL_VELOCITY',
+          boostTrigger: "VIRAL_VELOCITY",
         },
       });
 
@@ -187,7 +187,7 @@ describe('Boost Detector', () => {
       expect(prisma.postBoostRecommendation.create).toHaveBeenCalled();
     });
 
-    it('should fail if no marketing accounts available', async () => {
+    it("should fail if no marketing accounts available", async () => {
       vi.mocked(prisma.marketingAccount.findMany).mockResolvedValue([]);
 
       await expect(generateRecommendation(performance as any, ownerId))
