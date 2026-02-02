@@ -41,9 +41,9 @@ function detectDecayPattern(ctrTrend: number[]): {
   const peak = Math.max(...ctrTrend);
   const current = ctrTrend[ctrTrend.length - 1];
 
-  if (current === undefined) return { percentDecline: 0, consecutiveDeclineDays: 0 };
+  if (current === undefined || peak === 0) return { percentDecline: 0, consecutiveDeclineDays: 0 };
 
-  const percentDecline = peak > 0 ? ((peak - current) / peak) * 100 : 0;
+  const percentDecline = ((peak - current) / peak) * 100;
 
   // Count consecutive declining days
   let consecutiveDeclineDays = 0;
