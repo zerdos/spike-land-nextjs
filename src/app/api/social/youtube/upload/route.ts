@@ -1,12 +1,10 @@
-
 import { auth } from "@/auth";
 import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
 import { getValidAccessToken } from "@/lib/social/token-refresh";
 import { YouTubeResumableUploader } from "@/lib/social/youtube/resumable-uploader";
 import { tryCatch } from "@/lib/try-catch";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const { data: session, error: authError } = await tryCatch(auth());
@@ -15,19 +13,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  // Parse body
+  const { data: body, error: parseError } = await tryCatch(request.json());
+
+  if (parseError || !body) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   const { workspaceId, accountId, metadata, fileSize } = body;
 
   if (!workspaceId || !accountId || !metadata) {
     return NextResponse.json(
       { error: "Missing required fields: workspaceId, accountId, metadata" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   // Verify permission
   const { error: permError } = await tryCatch(
-    requireWorkspacePermission(session, workspaceId, "social:post")
+    requireWorkspacePermission(session, workspaceId, "content:create"),
   );
 
   if (permError) {
@@ -50,14 +54,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // Get valid access token
   const { data: tokenResult, error: tokenError } = await tryCatch(
-    getValidAccessToken(account)
+    getValidAccessToken(account),
   );
 
   if (tokenError || !tokenResult) {
     console.error("Token retrieval failed:", tokenError);
     return NextResponse.json(
       { error: "Failed to authenticate with YouTube" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -66,7 +70,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // Construct metadata for uploader
   const videoMetadata = {
-    fileSize, // Pass explicit file size
+    file: { size: fileSize }, // Mock file object with size for header
     title: metadata.title,
     description: metadata.description,
     tags: metadata.tags,
@@ -83,7 +87,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error("Upload initiation failed:", uploadError);
     return NextResponse.json(
       { error: `Failed to initiate upload: ${uploadError?.message}` },
-      { status: 500 }
+      { status: 500 },
     );
   }
 

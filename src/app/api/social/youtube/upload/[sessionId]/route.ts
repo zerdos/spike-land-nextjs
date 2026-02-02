@@ -1,17 +1,15 @@
-
 import { auth } from "@/auth";
 import { requireWorkspacePermission } from "@/lib/permissions/workspace-middleware";
 import prisma from "@/lib/prisma";
-import { getValidAccessToken } from "@/lib/social/token-refresh";
 import { YouTubeClient } from "@/lib/social/clients/youtube";
+import { getValidAccessToken } from "@/lib/social/token-refresh";
 import { pollVideoProcessingStatus } from "@/lib/social/youtube/video-processor";
 import { tryCatch } from "@/lib/try-catch";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  props: { params: Promise<{ sessionId: string }> }
+  props: { params: Promise<{ sessionId: string; }>; },
 ): Promise<NextResponse> {
   const params = await props.params;
   const { sessionId } = params;
@@ -30,13 +28,13 @@ export async function GET(
   if (!workspaceId || !accountId) {
     return NextResponse.json(
       { error: "Missing required query params: workspaceId, accountId" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   // Verify permission
   const { error: permError } = await tryCatch(
-    requireWorkspacePermission(session, workspaceId, "social:read")
+    requireWorkspacePermission(session, workspaceId, "social:view"),
   );
 
   if (permError) {
@@ -59,13 +57,13 @@ export async function GET(
 
   // Get valid access token
   const { data: tokenResult, error: tokenError } = await tryCatch(
-    getValidAccessToken(account)
+    getValidAccessToken(account),
   );
 
   if (tokenError || !tokenResult) {
     return NextResponse.json(
       { error: "Failed to authenticate with YouTube" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -74,10 +72,20 @@ export async function GET(
     const client = new YouTubeClient({ accessToken: tokenResult.accessToken });
 
     // Check once (no polling loop)
-    const result = await pollVideoProcessingStatus(client, videoId, {
-      maxAttempts: 1,
-      intervalMs: 0,
-    });
+    const { data: result, error: pollError } = await tryCatch(
+      pollVideoProcessingStatus(client, videoId, {
+        maxAttempts: 1,
+        intervalMs: 0,
+      }),
+    );
+
+    if (pollError || !result) {
+      console.error("Failed to check processing status:", pollError);
+      return NextResponse.json(
+        { error: "Failed to check processing status" },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json({
       status: result.status,
@@ -90,6 +98,6 @@ export async function GET(
   return NextResponse.json({
     status: "unknown",
     message: "Provide videoId to check processing status. Session tracking not implemented yet.",
-    sessionId
+    sessionId,
   });
 }

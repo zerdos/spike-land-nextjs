@@ -521,6 +521,7 @@ export class YouTubeClient implements ISocialClient {
     const uploader = new YouTubeResumableUploader();
 
     // Initialize resumable upload
+    // Initialize resumable upload
     const { uploadUrl } = await uploader.initiate(
       this.getAccessTokenOrThrow(),
       {
@@ -544,7 +545,7 @@ export class YouTubeClient implements ISocialClient {
       fileBuffer = Buffer.from(arrayBuffer);
     }
 
-    const chunkSize = 256 * 1024; // 256 KB
+    const chunkSize = 5 * 1024 * 1024; // 5 MB (YouTube recommendation)
     let uploadedBytes = 0;
     let videoId: string | undefined;
 
