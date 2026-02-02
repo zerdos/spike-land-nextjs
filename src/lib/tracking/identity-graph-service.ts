@@ -2,15 +2,22 @@ import prisma from "@/lib/prisma";
 import type { IdentifierType } from "@prisma/client";
 
 /**
- * Creates a new identity with an initial identifier.
+ * Creates a new identity with an initial identifier, or returns existing one if identifier already exists.
  * @param type - The type of the initial identifier.
  * @param value - The value of the initial identifier.
- * @returns The newly created identity.
+ * @returns The newly created or existing identity.
  */
 export async function createIdentity(
   type: IdentifierType,
   value: string,
 ) {
+  // First check if an identity with this identifier already exists
+  const existing = await findIdentityByIdentifier(type, value);
+  if (existing) {
+    return existing;
+  }
+
+  // Create new identity if it doesn't exist
   return prisma.identity.create({
     data: {
       identifiers: {
