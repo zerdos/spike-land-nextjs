@@ -32,6 +32,16 @@ erDiagram
   String status
   DateTime createdAt
   DateTime updatedAt
+  String workspaceId FK "nullable"
+  String templateId FK "nullable"
+  String toneOfVoice "nullable"
+  String keyMessages
+  String callToAction "nullable"
+  Json brandGuidelines "nullable"
+  Float budgetAmount "nullable"
+  String budgetCurrency "nullable"
+  DateTime startDate "nullable"
+  DateTime endDate "nullable"
 }
 "campaign_target_audiences" {
   String id PK
@@ -2008,11 +2018,91 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
 }
+"brief_templates" {
+  String id PK
+  String name
+  String description "nullable"
+  String workspaceId FK
+  Json fieldsSchema
+  String defaultObjectives
+  String defaultChannels
+  Boolean isPublic
+  String createdById FK
+  DateTime createdAt
+  DateTime updatedAt
+}
+"creative_channels" {
+  String id PK
+  String briefId FK
+  String platform
+  String adFormats
+  Json dimensions
+  DateTime createdAt
+}
+"creative_sets" {
+  String id PK
+  String name
+  String briefId FK
+  DateTime generatedAt
+  String generatedById FK
+  String modelVersion
+  String generationPrompt
+  CreativeSetStatus status
+  DateTime createdAt
+  DateTime updatedAt
+}
+"creative_variants" {
+  String id PK
+  String setId FK
+  CreativeVariantType variantType
+  String headline "nullable"
+  String bodyText "nullable"
+  String callToAction "nullable"
+  String assetId FK "nullable"
+  String imageJobId FK,UK "nullable"
+  Int variantNumber
+  Int impressions
+  Int clicks
+  Int conversions
+  Float ctr
+  VariantStatus status
+  DateTime createdAt
+  DateTime updatedAt
+}
+"creative_performance" {
+  String id PK
+  String variantId FK
+  DateTime date
+  Int impressions
+  Int clicks
+  Int conversions
+  Float spend
+  Float ctr
+  Float cpc
+  Float cvr
+  DateTime createdAt
+}
+"creative_fatigue_alerts" {
+  String id PK
+  String variantId FK
+  DateTime detectedAt
+  FatigueSeverity severity
+  Float ctrDecayPercent
+  Int daysActive
+  String recommendedAction
+  DateTime estimatedRefreshDate "nullable"
+  Boolean isResolved
+  DateTime resolvedAt "nullable"
+  String resolvedById FK "nullable"
+  DateTime createdAt
+}
 "_ConnectionToConnectionTag" {
   String A FK
   String B FK
 }
 "users" }o--o| "users" : referredBy
+"campaign_briefs" }o--o| "workspaces" : workspace
+"campaign_briefs" }o--o| "brief_templates" : template
 "campaign_briefs" }o--|| "users" : user
 "campaign_target_audiences" |o--|| "campaign_briefs" : brief
 "campaign_objectives" }o--|| "campaign_briefs" : brief
@@ -2218,6 +2308,17 @@ erDiagram
 "identities" |o--o| "users" : user
 "identifiers" }o--|| "identities" : identity
 "workspace_white_label_configs" |o--|| "workspaces" : workspace
+"brief_templates" }o--|| "workspaces" : workspace
+"brief_templates" }o--|| "users" : createdBy
+"creative_channels" }o--|| "campaign_briefs" : brief
+"creative_sets" }o--|| "campaign_briefs" : brief
+"creative_sets" }o--|| "users" : generatedBy
+"creative_variants" }o--|| "creative_sets" : set
+"creative_variants" }o--o| "assets" : asset
+"creative_variants" |o--o| "mcp_generation_jobs" : imageJob
+"creative_performance" }o--|| "creative_variants" : variant
+"creative_fatigue_alerts" }o--|| "creative_variants" : variant
+"creative_fatigue_alerts" }o--o| "users" : resolvedBy
 "_ConnectionToConnectionTag" }o--|| "connections" : Connection
 "_ConnectionToConnectionTag" }o--|| "connection_tags" : ConnectionTag
 ```
@@ -2252,6 +2353,16 @@ Properties as follows:
 - `status`:
 - `createdAt`:
 - `updatedAt`:
+- `workspaceId`:
+- `templateId`:
+- `toneOfVoice`:
+- `keyMessages`:
+- `callToAction`:
+- `brandGuidelines`:
+- `budgetAmount`:
+- `budgetCurrency`:
+- `startDate`:
+- `endDate`:
 
 ### `campaign_target_audiences`
 
@@ -4747,6 +4858,102 @@ Properties as follows:
 - `pdfWatermarkUrl`:
 - `createdAt`:
 - `updatedAt`:
+
+### `brief_templates`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `description`:
+- `workspaceId`:
+- `fieldsSchema`:
+- `defaultObjectives`:
+- `defaultChannels`:
+- `isPublic`:
+- `createdById`:
+- `createdAt`:
+- `updatedAt`:
+
+### `creative_channels`
+
+Properties as follows:
+
+- `id`:
+- `briefId`:
+- `platform`:
+- `adFormats`:
+- `dimensions`:
+- `createdAt`:
+
+### `creative_sets`
+
+Properties as follows:
+
+- `id`:
+- `name`:
+- `briefId`:
+- `generatedAt`:
+- `generatedById`:
+- `modelVersion`:
+- `generationPrompt`:
+- `status`:
+- `createdAt`:
+- `updatedAt`:
+
+### `creative_variants`
+
+Properties as follows:
+
+- `id`:
+- `setId`:
+- `variantType`:
+- `headline`:
+- `bodyText`:
+- `callToAction`:
+- `assetId`:
+- `imageJobId`:
+- `variantNumber`:
+- `impressions`:
+- `clicks`:
+- `conversions`:
+- `ctr`:
+- `status`:
+- `createdAt`:
+- `updatedAt`:
+
+### `creative_performance`
+
+Properties as follows:
+
+- `id`:
+- `variantId`:
+- `date`:
+- `impressions`:
+- `clicks`:
+- `conversions`:
+- `spend`:
+- `ctr`:
+- `cpc`:
+- `cvr`:
+- `createdAt`:
+
+### `creative_fatigue_alerts`
+
+Properties as follows:
+
+- `id`:
+- `variantId`:
+- `detectedAt`:
+- `severity`:
+- `ctrDecayPercent`:
+- `daysActive`:
+- `recommendedAction`:
+- `estimatedRefreshDate`:
+- `isResolved`:
+- `resolvedAt`:
+- `resolvedById`:
+- `createdAt`:
 
 ### `_ConnectionToConnectionTag`
 
