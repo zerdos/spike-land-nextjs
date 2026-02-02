@@ -1,4 +1,4 @@
-import { WorkflowActionType } from "./action-types";
+import type { WorkflowActionType } from "./action-types";
 
 export interface ActionMetadata {
   type: WorkflowActionType;

@@ -19,8 +19,8 @@ describe("loopAction", () => {
   });
 
   it("should iterate over items", async () => {
-    (dispatchAction as any).mockResolvedValue({ success: true });
-    (interpolate as any).mockImplementation((input: any, context: any) => ({
+    (dispatchAction as unknown as jest.Mock).mockResolvedValue({ success: true });
+    (interpolate as unknown as jest.Mock).mockImplementation((input: unknown, context: unknown) => ({
       ...input,
       ...context,
     }));

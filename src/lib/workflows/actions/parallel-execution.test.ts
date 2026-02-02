@@ -14,7 +14,7 @@ describe("parallelExecutionAction", () => {
   });
 
   it("should execute actions in parallel", async () => {
-    (dispatchAction as any).mockResolvedValue({ success: true });
+    (dispatchAction as unknown as jest.Mock).mockResolvedValue({ success: true });
 
     const result = await parallelExecutionAction.execute({
       actions: [
@@ -28,7 +28,7 @@ describe("parallelExecutionAction", () => {
   });
 
   it("should handle failures when stopOnError is false", async () => {
-    (dispatchAction as any)
+    (dispatchAction as unknown as jest.Mock)
       .mockResolvedValueOnce({ success: true })
       .mockRejectedValueOnce(new Error("Failed"));
 

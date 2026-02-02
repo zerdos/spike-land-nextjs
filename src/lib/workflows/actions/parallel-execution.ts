@@ -5,7 +5,7 @@ const ParallelExecutionInputSchema = z.object({
   actions: z.array(
     z.object({
       type: z.string(), // We can't validate enum easily here due to cycles, but it's WorkflowActionType
-      input: z.record(z.unknown()),
+      input: z.record(z.string(), z.unknown()),
     })
   ),
   stopOnError: z.boolean().optional().default(false),

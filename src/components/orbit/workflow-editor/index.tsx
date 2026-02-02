@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useRef, useMemo } from "react";
+import type {
+  Node,
+  NodeTypes} from "reactflow";
 import ReactFlow, {
   Background,
   Controls,
-  ReactFlowProvider,
-  Node,
-  NodeTypes,
+  ReactFlowProvider
 } from "reactflow";
 import "reactflow/dist/style.css";
 
@@ -16,7 +17,7 @@ import ActionNode from "./nodes/ActionNode";
 import ConditionNode from "./nodes/ConditionNode";
 import GroupNode from "./nodes/GroupNode";
 import NodeConfigPanel from "./config/NodeConfigPanel";
-import { WorkflowNodeData } from "./types";
+import type { WorkflowNodeData } from "./types";
 import { useWorkflowEditor } from "./hooks/useWorkflowEditor";
 
 // Define custom node types

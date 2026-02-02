@@ -3,16 +3,17 @@ import {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
-  Connection,
+  useReactFlow,
+} from "reactflow";
+import type {
   Edge,
   Node,
   OnConnect,
   OnEdgesChange,
   OnNodesChange,
-  useReactFlow,
 } from "reactflow";
-import { WorkflowNodeData, WorkflowNodeType } from "../types";
-import { WorkflowActionType } from "@/lib/workflows/actions/action-types";
+import type { WorkflowNodeData, WorkflowNodeType } from "../types";
+import type { WorkflowActionType } from "@/lib/workflows/actions/action-types";
 
 export const useWorkflowEditor = (initialNodes: Node<WorkflowNodeData>[] = []) => {
   const [nodes, setNodes] = useState<Node<WorkflowNodeData>[]>(initialNodes);

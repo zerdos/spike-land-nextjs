@@ -1,8 +1,9 @@
 import React, { memo } from "react";
-import { Handle, Position, NodeProps } from "reactflow";
+import { Handle, Position } from "reactflow";
+import type { NodeProps } from "reactflow";
 import { GitFork } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { WorkflowNodeData } from "../types";
+import { Card } from "@/components/ui/card";
+import type { WorkflowNodeData } from "../types";
 
 const ConditionNode = ({ data, selected }: NodeProps<WorkflowNodeData>) => {
   return (

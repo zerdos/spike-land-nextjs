@@ -1,8 +1,9 @@
 import React, { memo } from "react";
-import { Handle, Position, NodeProps } from "reactflow";
+import { Handle, Position } from "reactflow";
+import type { NodeProps } from "reactflow";
 import { Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { WorkflowNodeData } from "../types";
+import type { WorkflowNodeData } from "../types";
 
 const TriggerNode = ({ data, selected }: NodeProps<WorkflowNodeData>) => {
   return (

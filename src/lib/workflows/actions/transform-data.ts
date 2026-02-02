@@ -4,16 +4,18 @@ import type { ActionInput, ActionOutput, WorkflowAction } from "./action-types";
 const TransformDataInputSchema = z.object({
   data: z.any(),
   transformation: z.enum(["map", "filter", "pick", "omit"]),
-  config: z.any(),
+  config: z.unknown(),
 });
 
 export interface TransformDataInput extends ActionInput {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   transformation: "map" | "filter" | "pick" | "omit";
-  config: any;
+  config: unknown;
 }
 
 export interface TransformDataOutput extends ActionOutput {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   result: any;
 }
 
@@ -36,7 +38,8 @@ export const transformDataAction: WorkflowAction<
           if (typeof result !== "object" || result === null) {
              throw new Error("Data must be an object for pick transformation");
           }
-          const keysToPick = Array.isArray(input.config) ? input.config : [input.config];
+          const keysToPick = (Array.isArray(input.config) ? input.config : [input.config]) as string[];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const picked: Record<string, any> = {};
           keysToPick.forEach((key: string) => {
             if (key in result) {
@@ -49,7 +52,7 @@ export const transformDataAction: WorkflowAction<
           if (typeof result !== "object" || result === null) {
              throw new Error("Data must be an object for omit transformation");
           }
-          const keysToOmit = Array.isArray(input.config) ? input.config : [input.config];
+          const keysToOmit = (Array.isArray(input.config) ? input.config : [input.config]) as string[];
           const omitted = { ...result };
           keysToOmit.forEach((key: string) => {
             delete omitted[key];
@@ -65,7 +68,7 @@ export const transformDataAction: WorkflowAction<
                  throw new Error("Data must be an array for map transformation");
              }
              if (typeof input.config === "string") {
-                 result = result.map(item => item[input.config]);
+                 result = result.map((item: Record<string, unknown>) => item[input.config as string]);
              }
              break;
          case "filter":
@@ -73,8 +76,9 @@ export const transformDataAction: WorkflowAction<
                  throw new Error("Data must be an array for filter transformation");
              }
              // config: { key: "status", value: "active" }
-             if (typeof input.config === "object" && input.config.key) {
-                 result = result.filter(item => item[input.config.key] === input.config.value);
+             const cfg = input.config as { key: string; value: unknown };
+             if (typeof cfg === "object" && cfg.key) {
+                 result = result.filter((item: Record<string, unknown>) => item[cfg.key] === cfg.value);
              }
              break;
         default:

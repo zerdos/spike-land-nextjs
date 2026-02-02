@@ -1,5 +1,5 @@
-import { Node, Edge } from "reactflow";
-import { WorkflowActionType } from "@/lib/workflows/actions/action-types";
+import type { Node, Edge } from "reactflow";
+import type { WorkflowActionType } from "@/lib/workflows/actions/action-types";
 
 export type WorkflowNodeType = "trigger" | "action" | "condition" | "group";
 
@@ -7,7 +7,9 @@ export interface WorkflowNodeData {
   label: string;
   type: WorkflowNodeType;
   actionType?: WorkflowActionType;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config?: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 

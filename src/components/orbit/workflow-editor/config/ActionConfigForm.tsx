@@ -2,7 +2,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { WorkflowNodeData } from "../types";
+import type { WorkflowNodeData } from "../types";
 
 interface ActionConfigFormProps {
   data: WorkflowNodeData;
@@ -13,7 +13,7 @@ const ActionConfigForm = ({ data, onChange }: ActionConfigFormProps) => {
   const config = data.config || {};
   const actionType = data.actionType;
 
-  const handleChange = (key: string, value: any) => {
+  const handleChange = (key: string, value: unknown) => {
     onChange({
       ...data,
       config: { ...config, [key]: value },

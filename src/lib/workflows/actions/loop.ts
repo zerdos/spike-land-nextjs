@@ -2,16 +2,16 @@ import { z } from "zod";
 import type { ActionInput, ActionOutput, WorkflowAction, WorkflowActionType } from "./action-types";
 
 const LoopInputSchema = z.object({
-  items: z.array(z.any()),
+  items: z.array(z.unknown()),
   action: z.object({
     type: z.string(),
-    inputTemplate: z.record(z.unknown()), // Template where we might interpolate the item
+    inputTemplate: z.record(z.string(), z.unknown()), // Template where we might interpolate the item
   }),
   itemVariableName: z.string().optional().default("item"),
 });
 
 export interface LoopInput extends ActionInput {
-  items: any[];
+  items: unknown[];
   action: {
     type: WorkflowActionType;
     inputTemplate: ActionInput;

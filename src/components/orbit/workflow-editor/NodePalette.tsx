@@ -1,8 +1,8 @@
 import React from "react";
 import { Zap, Activity, GitFork, Folder } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { WorkflowNodeType, NodePaletteItem } from "./types";
-import { WorkflowActionType } from "@/lib/workflows/actions/action-types";
+import type { WorkflowNodeType, NodePaletteItem } from "./types";
+import type { WorkflowActionType } from "@/lib/workflows/actions/action-types";
 
 const items: NodePaletteItem[] = [
   { type: "trigger", label: "Trigger", icon: <Zap className="h-4 w-4" /> },

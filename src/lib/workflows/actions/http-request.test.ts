@@ -18,7 +18,7 @@ describe("httpRequestAction", () => {
       status: 200,
       headers: new Headers({ "content-type": "application/json" }),
       json: async () => ({ message: "success" }),
-      forEach: (cb: any) => {
+      forEach: (cb: (value: string, key: string) => void) => {
         cb("application/json", "content-type");
       },
     });
@@ -50,7 +50,7 @@ describe("httpRequestAction", () => {
         url: "https://api.example.com/error",
         method: "GET",
       });
-    } catch (e) {
+    } catch {
       // The action catches errors internally and returns success: false
     }
 

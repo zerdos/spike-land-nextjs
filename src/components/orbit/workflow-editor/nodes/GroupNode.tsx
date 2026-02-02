@@ -1,6 +1,6 @@
 import React, { memo } from "react";
-import { NodeProps } from "reactflow";
-import { WorkflowNodeData } from "../types";
+import type { NodeProps } from "reactflow";
+import type { WorkflowNodeData } from "../types";
 
 const GroupNode = ({ data, selected }: NodeProps<WorkflowNodeData>) => {
   return (

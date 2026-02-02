@@ -5,7 +5,7 @@ const HttpRequestInputSchema = z.object({
   url: z.string().url(),
   method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
   headers: z.record(z.string()).optional(),
-  body: z.any().optional(),
+  body: z.unknown().optional(),
   timeout: z.number().optional().default(5000),
 });
 
@@ -13,13 +13,13 @@ export interface HttpRequestInput extends ActionInput {
   url: string;
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   headers?: Record<string, string>;
-  body?: any;
+  body?: unknown;
   timeout?: number;
 }
 
 export interface HttpRequestOutput extends ActionOutput {
   status: number;
-  data: any;
+  data: unknown;
   headers: Record<string, string>;
 }
 
