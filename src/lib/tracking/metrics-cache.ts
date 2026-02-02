@@ -36,8 +36,9 @@ export async function getCachedMetrics<T>(cacheKey: string): Promise<T | null> {
   if (new Date() > cached.expiresAt) {
     // Optionally delete expired cache entry
     // Fire and forget, ignore result
+    // Use deleteMany to avoid P2025 error if record was already deleted by concurrent cleanup
     void tryCatch(
-      prisma.campaignMetricsCache.delete({
+      prisma.campaignMetricsCache.deleteMany({
         where: { cacheKey },
       }),
     );
