@@ -8,6 +8,7 @@ import type {
   WorkflowRunLogEntry,
   WorkflowStepData,
   WorkflowVersionData,
+  StepExecutionState,
 } from "@/types/workflow";
 import type {
   BranchType,
@@ -19,6 +20,7 @@ import type {
   WorkflowStep,
   WorkflowStepType,
   WorkflowVersion,
+  StepRunStatus,
 } from "@prisma/client";
 import { validateForPublish, validateWorkflow } from "./workflow-validator";
 
@@ -453,6 +455,52 @@ export async function getWorkflowRun(
   return run ? mapRunToData(run) : null;
 }
 
+/**
+ * Initializes step execution tracking for a new workflow run
+ */
+export function initializeStepExecutions(
+  steps: WorkflowStep[],
+): Record<string, StepExecutionState> {
+  return steps.reduce((acc, step) => {
+    acc[step.id] = {
+      stepId: step.id,
+      status: "PENDING" as StepRunStatus,
+    };
+    return acc;
+  }, {} as Record<string, StepExecutionState>);
+}
+
+/**
+ * Updates step execution state within a workflow run
+ * TODO: Address race condition - using JSON read-modify-write is not atomic.
+ * Should use database-level JSON updates or optimistic locking in the future.
+ */
+export async function updateStepExecution(
+  runId: string,
+  stepId: string,
+  update: Partial<StepExecutionState>,
+): Promise<void> {
+  const run = await prisma.workflowRun.findUnique({
+    where: { id: runId },
+    select: { stepExecutions: true },
+  });
+
+  if (!run) {
+    throw new Error(`Workflow run ${runId} not found`);
+  }
+
+  const executions = (run.stepExecutions as Record<string, StepExecutionState>) ?? {};
+  executions[stepId] = {
+    ...executions[stepId],
+    ...update,
+  };
+
+  await prisma.workflowRun.update({
+    where: { id: runId },
+    data: { stepExecutions: executions },
+  });
+}
+
 // Helper function to map Prisma workflow to WorkflowData
 type WorkflowWithRelations = Workflow & {
   versions: (WorkflowVersion & { steps: WorkflowStep[]; })[];
@@ -518,6 +566,9 @@ function mapRunToData(run: RunWithLogs): WorkflowRunData {
     status: run.status,
     startedAt: run.startedAt,
     endedAt: run.endedAt,
+    stepExecutions: (run.stepExecutions as Record<string, StepExecutionState>) ?? undefined,
+    triggerType: run.triggerType,
+    triggerData: (run.triggerData as Record<string, unknown>) ?? undefined,
     logs: run.logs.map((log) => ({
       stepId: log.stepId ?? undefined,
       stepStatus: log.stepStatus as WorkflowRunLogEntry["stepStatus"],
