@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
-import { EnhancementTier, JobStatus } from "@prisma/client";
+import type { EnhancementTier } from "@prisma/client";
+import { JobStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {

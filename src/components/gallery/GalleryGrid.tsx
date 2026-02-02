@@ -34,10 +34,17 @@ export function GalleryGrid({ images }: GalleryGridProps) {
         {images.map((image) => {
           const job = image.enhancementJobs[0];
           return (
-            <div
+            <button
               key={image.id}
-              className="group relative cursor-pointer"
+              className="group relative cursor-pointer w-full border-0 p-0 m-0 bg-transparent text-left"
               onClick={() => setSelectedImage(image)}
+              type="button"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelectedImage(image);
+                }
+              }}
             >
               <div className="relative aspect-square rounded-xl overflow-hidden bg-muted/30 transition-all duration-300 hover:ring-2 hover:ring-primary/20">
                 <Image
@@ -83,7 +90,7 @@ export function GalleryGrid({ images }: GalleryGridProps) {
                   </div>
                 </div>
               </div>
-            </div>
+            </button>
           );
         })}
       </MasonryGridUniform>

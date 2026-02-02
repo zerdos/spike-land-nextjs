@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LibraryGrid } from "@/components/pixel/library/LibraryGrid";
 import { BulkActions } from "@/components/pixel/library/BulkActions";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ export function LibraryClient() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [search, setSearch] = useState("");
 
-  const fetchLibrary = async () => {
+  const fetchLibrary = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -32,11 +32,11 @@ export function LibraryClient() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search]);
 
   useEffect(() => {
     fetchLibrary();
-  }, [search]);
+  }, [fetchLibrary]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev =>

@@ -46,6 +46,7 @@ export async function applyAutoTags(imageId: string): Promise<void> {
     const job = await prisma.imageEnhancementJob.findFirst({
       where: {
         imageId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         analysisResult: { not: null as any }, // Prisma JSON filter workaround
       },
       orderBy: { createdAt: "desc" },
