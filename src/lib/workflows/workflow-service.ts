@@ -489,15 +489,29 @@ export async function updateStepExecution(
     throw new Error(`Workflow run ${runId} not found`);
   }
 
-  const executions = (run.stepExecutions as Record<string, StepExecutionState>) ?? {};
-  executions[stepId] = {
-    ...executions[stepId],
-    ...update,
-  };
+  const executions = (run.stepExecutions as unknown as Record<string, StepExecutionState>) ?? {};
+  if (executions[stepId]) {
+    executions[stepId] = {
+      ...executions[stepId],
+      ...update,
+    };
+  } else {
+    // If step state doesn't exist, we can't update it safely without the ID
+    // But since update partial usually doesn't include ID if it's just an update,
+    // we should rely on the caller to ensure state exists or provide ID.
+    // However, to satisfy TS, we need to ensure StepExecutionState constraints are met.
+    if (update.stepId) {
+       executions[stepId] = {
+         ...update,
+         stepId: update.stepId,
+         status: update.status ?? "PENDING",
+       };
+    }
+  }
 
   await prisma.workflowRun.update({
     where: { id: runId },
-    data: { stepExecutions: executions },
+    data: { stepExecutions: executions as unknown as Prisma.InputJsonValue },
   });
 }
 
@@ -566,9 +580,9 @@ function mapRunToData(run: RunWithLogs): WorkflowRunData {
     status: run.status,
     startedAt: run.startedAt,
     endedAt: run.endedAt,
-    stepExecutions: (run.stepExecutions as Record<string, StepExecutionState>) ?? undefined,
+    stepExecutions: (run.stepExecutions as unknown as Record<string, StepExecutionState>) ?? undefined,
     triggerType: run.triggerType,
-    triggerData: (run.triggerData as Record<string, unknown>) ?? undefined,
+    triggerData: (run.triggerData as unknown as Record<string, unknown>) ?? undefined,
     logs: run.logs.map((log) => ({
       stepId: log.stepId ?? undefined,
       stepStatus: log.stepStatus as WorkflowRunLogEntry["stepStatus"],
