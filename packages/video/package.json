@@ -17,14 +17,14 @@
     "@remotion/media": "4.0.414",
     "@remotion/transitions": "4.0.414",
     "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "react-dom": "19.2.4",
     "remotion": "4.0.414"
   },
   "devDependencies": {
     "@remotion/eslint-config": "4.0.414",
     "@remotion/tailwind": "4.0.414",
     "@types/react": "^18.3.27",
-    "@types/react-dom": "^18.3.7",
+    "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.24",
     "eslint": "^9.39.2",
     "postcss": "^8.5.6",
