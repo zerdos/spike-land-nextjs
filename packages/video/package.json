@@ -12,13 +12,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@remotion/bundler": "4.0.414",
-    "@remotion/cli": "4.0.414",
-    "@remotion/media": "4.0.414",
-    "@remotion/transitions": "4.0.414",
+    "@remotion/bundler": "4.0.416",
+    "@remotion/cli": "4.0.416",
+    "@remotion/media": "4.0.416",
+    "@remotion/transitions": "4.0.416",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "remotion": "4.0.414"
+    "remotion": "4.0.416"
   },
   "devDependencies": {
     "@remotion/eslint-config": "4.0.414",
