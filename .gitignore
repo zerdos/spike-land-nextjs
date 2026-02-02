@@ -90,3 +90,4 @@ packages/video/out/
 # Ralph Local Orchestrator temp files
 /tmp/ralph-*
 ralph-worktrees/
+*.log

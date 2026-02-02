@@ -71,6 +71,7 @@ describe("PlatformHeader Component", () => {
 
     it("should render desktop navigation links", () => {
       render(<PlatformHeader />);
+      expect(screen.getByRole("link", { name: "Services" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Pricing" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "My Apps" })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Sign In" })).toBeInTheDocument();
@@ -78,6 +79,10 @@ describe("PlatformHeader Component", () => {
 
     it("should have correct href for navigation links", () => {
       render(<PlatformHeader />);
+      expect(screen.getByRole("link", { name: "Services" })).toHaveAttribute(
+        "href",
+        "/services",
+      );
       expect(screen.getByRole("link", { name: "Pricing" })).toHaveAttribute(
         "href",
         "/pricing",

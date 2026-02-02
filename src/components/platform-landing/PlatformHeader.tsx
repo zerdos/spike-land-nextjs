@@ -61,6 +61,7 @@ const featureItems = [
 
 // Main navigation links
 const navLinks = [
+  { href: "/services", label: "Services" },
   { href: "/pricing", label: "Pricing" },
 ];
 
