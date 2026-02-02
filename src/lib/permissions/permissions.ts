@@ -57,6 +57,8 @@ export type WorkspaceAction =
   | "social:view"
   | "social:connect"
   | "social:disconnect"
+  | "social:post"
+  | "social:read"
   // Notifications
   | "notifications:view"
   | "notifications:manage";
@@ -130,6 +132,8 @@ const PERMISSION_MATRIX: Record<WorkspaceAction, WorkspaceRole> = {
   "social:view": "MEMBER",
   "social:connect": "ADMIN",
   "social:disconnect": "ADMIN",
+  "social:post": "MEMBER",
+  "social:read": "MEMBER",
 
   // Notifications
   "notifications:view": "MEMBER",

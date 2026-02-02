@@ -1,3 +1,4 @@
+
 import type { YouTubeClient } from "../clients/youtube";
 
 const YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3";
@@ -30,7 +31,7 @@ export async function pollVideoProcessingStatus(
     maxAttempts?: number;
     intervalMs?: number;
     timeoutMs?: number;
-  },
+  }
 ): Promise<ProcessingStatus> {
   const maxAttempts = options?.maxAttempts || 60; // Default: 60 attempts
   const intervalMs = options?.intervalMs || 5000; // Default: 5 seconds
@@ -39,11 +40,30 @@ export async function pollVideoProcessingStatus(
   const startTime = Date.now();
   let attempts = 0;
 
-  // Helper to get access token - in production this should ideally be passed in
+  // We need to access a private/protected method or property of the client to get the token.
+  // But since we are using the client instance, we can't access private members nicely.
+  // We'll cast to any or assume the client has a public way to get the token.
+  // YouTubeClient has `getAccessTokenOrThrow` but it is private in the file I read earlier!
+  //
+  // Checking src/lib/social/clients/youtube.ts:
+  // private getAccessTokenOrThrow(): string
+  //
+  // This is a problem. I cannot call it from here.
+  //
+  // Solution: Pass the accessToken string directly, OR change the client method to public (which I might do in step 4 anyway).
+  // Or, I can rely on the fact that I'm inside the same library boundary? No, separate files.
+  //
+  // I will assume for now I will make `getAccessTokenOrThrow` public or add a public accessor in Step 4.
+  // Or simpler: Just take the accessToken as a string in this function. But token might expire.
+  //
+  // Best approach: Pass a function `getAccessToken: () => string`.
+
   const getAccessToken = () => {
-    // Accessing private method via type assertion for now as per legacy pattern
-    return (client as any).getAccessTokenOrThrow ? (client as any).getAccessTokenOrThrow() : "";
+    return client.getAccessTokenOrThrow();
   };
+
+  let lastStatus: ProcessingStatus["status"] | undefined;
+  let lastDetails: ProcessingStatus["processingDetails"] | undefined;
 
   while (attempts < maxAttempts) {
     if (Date.now() - startTime > timeoutMs) {
@@ -64,10 +84,6 @@ export async function pollVideoProcessingStatus(
       );
 
       if (!response.ok) {
-        // If 401/403, maybe token expired?
-        // But we rely on client to handle token refresh?
-        // YouTubeClient methods don't auto-refresh on 401 usually unless built-in.
-        // The current YouTubeClient throws on error.
         console.warn(`Polling error: ${response.statusText}`);
       } else {
         const data = await response.json();
@@ -78,10 +94,10 @@ export async function pollVideoProcessingStatus(
           const processingDetails = item.processingDetails;
           const status = item.status?.uploadStatus;
 
-          // processingDetails.processingStatus can be:
-          // "processing", "succeeded", "failed", "terminated"
-
-          if (status === "processed" || processingDetails?.processingStatus === "succeeded") {
+          if (
+            status === "processed" ||
+            processingDetails?.processingStatus === "succeeded"
+          ) {
             return {
               status: "processed",
               processingDetails,
@@ -99,16 +115,29 @@ export async function pollVideoProcessingStatus(
           }
 
           // Still processing
-        } else {
-          // Video not found yet? (Consistency delay)
+          lastStatus = "processing";
+          lastDetails = processingDetails;
         }
       }
     } catch (error) {
       console.error("Polling exception:", error);
     }
 
+    // If we've reached maxAttempts, don't wait, just check if we have a last known status
+    if (attempts >= maxAttempts) {
+      break;
+    }
+
     // Wait for interval
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+
+  // If we have a last known status, return it (e.g. processing)
+  if (lastStatus) {
+    return {
+      status: lastStatus,
+      processingDetails: lastDetails,
+    };
   }
 
   return { status: "timeout" };

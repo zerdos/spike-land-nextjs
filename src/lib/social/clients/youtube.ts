@@ -520,21 +520,6 @@ export class YouTubeClient implements ISocialClient {
 
     const uploader = new YouTubeResumableUploader();
 
-    // Initialize resumable upload
-    // Initialize resumable upload
-    const { uploadUrl } = await uploader.initiate(
-      this.getAccessTokenOrThrow(),
-      {
-        file: options.videoFile,
-        title: content,
-        description: options.description,
-        tags: options.tags,
-        categoryId: options.categoryId || "22", // Default to "People & Blogs"
-        privacyStatus: options.privacyStatus || "private",
-        publishAt: options.scheduledPublishTime?.toISOString(),
-      },
-    );
-
     // Upload in chunks
     let fileBuffer: Buffer;
     if (Buffer.isBuffer(options.videoFile)) {
@@ -545,7 +530,21 @@ export class YouTubeClient implements ISocialClient {
       fileBuffer = Buffer.from(arrayBuffer);
     }
 
-    const chunkSize = 5 * 1024 * 1024; // 5 MB (YouTube recommendation)
+    // Initialize resumable upload
+    const { uploadUrl } = await uploader.initiate(
+      this.getAccessTokenOrThrow(),
+      {
+        file: fileBuffer,
+        title: content,
+        description: options.description,
+        tags: options.tags,
+        categoryId: options.categoryId || "22", // Default to "People & Blogs"
+        privacyStatus: options.privacyStatus || "private",
+        publishAt: options.scheduledPublishTime?.toISOString(),
+      },
+    );
+
+    const chunkSize = 256 * 1024; // 256 KB
     let uploadedBytes = 0;
     let videoId: string | undefined;
 

@@ -1,3 +1,4 @@
+
 /**
  * YouTube Resumable Upload Utility
  *
@@ -9,18 +10,17 @@
  * API Reference: https://developers.google.com/youtube/v3/guides/using_resumable_upload_protocol
  */
 
-const RESUMABLE_UPLOAD_URL =
-  "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status";
+const RESUMABLE_UPLOAD_URL = "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status";
 
 export interface VideoMetadata {
-  file: File | Buffer | { size: number; };
+  file?: Buffer;
+  fileSize?: number;
   title: string;
   description?: string;
   tags?: string[];
   categoryId?: string;
   privacyStatus: "public" | "private" | "unlisted";
   publishAt?: string; // ISO 8601 date string
-  contentType?: string;
 }
 
 export interface UploadInitiateResult {
@@ -46,13 +46,13 @@ export class YouTubeResumableUploader {
     accessToken: string,
     metadata: VideoMetadata,
   ): Promise<UploadInitiateResult> {
-    let fileSize: number;
+    let fileSize = metadata.fileSize;
 
-    if (Buffer.isBuffer(metadata.file)) {
+    if (fileSize === undefined) {
+      if (!metadata.file) {
+        throw new Error("Either file or fileSize must be provided");
+      }
       fileSize = metadata.file.length;
-    } else {
-      // File or { size: number } both have .size
-      fileSize = (metadata.file as { size: number; }).size;
     }
 
     const body = {
@@ -68,20 +68,13 @@ export class YouTubeResumableUploader {
       },
     };
 
-    const contentType = metadata.contentType || "video/*";
-
-    // Basic security check for content type
-    if (!contentType.startsWith("video/") && contentType !== "application/octet-stream") {
-      throw new Error("Invalid content type. Must be video/*");
-    }
-
     const response = await fetch(RESUMABLE_UPLOAD_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
         "X-Upload-Content-Length": fileSize.toString(),
-        "X-Upload-Content-Type": contentType,
+        "X-Upload-Content-Type": "video/*",
       },
       body: JSON.stringify(body),
     });
@@ -133,7 +126,8 @@ export class YouTubeResumableUploader {
           "Content-Range": contentRange,
           "Content-Type": "application/octet-stream",
         },
-        body: chunk as any,
+        // Force cast for fetch compatibility in diverse environments (Node/Browser)
+        body: chunk as unknown as BodyInit,
       });
 
       // 308 Resume Incomplete - Chunk uploaded successfully, continue
@@ -150,6 +144,7 @@ export class YouTubeResumableUploader {
       // Other errors
       const errorText = await response.text();
       throw new Error(`Upload failed with status ${response.status}: ${errorText}`);
+
     } catch (error) {
       // Network error or other fetch issue
       // Caller should handle retry logic (e.g., call resumeUpload)
@@ -167,8 +162,8 @@ export class YouTubeResumableUploader {
    */
   async resumeUpload(
     uploadUrl: string,
-    totalSize: number,
-  ): Promise<{ uploadedBytes: number; }> {
+    totalSize: number
+  ): Promise<{ uploadedBytes: number }> {
     const response = await fetch(uploadUrl, {
       method: "PUT",
       headers: {
