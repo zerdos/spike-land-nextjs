@@ -55,12 +55,17 @@ CREATE TABLE "creative_channels" (
 CREATE TABLE "creative_sets" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "briefId" TEXT NOT NULL,
+    "briefId" TEXT,
     "generatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "generatedById" TEXT NOT NULL,
     "modelVersion" TEXT NOT NULL,
     "generationPrompt" TEXT NOT NULL,
     "status" "CreativeSetStatus" NOT NULL DEFAULT 'DRAFT',
+    "seedContent" TEXT,
+    "variationConfig" JSONB,
+    "errorMessage" TEXT,
+    "progress" INTEGER NOT NULL DEFAULT 0,
+    "jobStatus" "JobStatus" NOT NULL DEFAULT 'PENDING',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -83,10 +88,31 @@ CREATE TABLE "creative_variants" (
     "conversions" INTEGER NOT NULL DEFAULT 0,
     "ctr" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "status" "VariantStatus" NOT NULL DEFAULT 'PENDING',
+    "tone" TEXT,
+    "length" TEXT,
+    "aiPrompt" TEXT,
+    "aiModel" TEXT,
+    "format" TEXT,
+    "placement" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "creative_variants_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "variant_performance_predictions" (
+    "id" TEXT NOT NULL,
+    "variantId" TEXT NOT NULL,
+    "predictedCTR" DOUBLE PRECISION NOT NULL,
+    "predictedER" DOUBLE PRECISION NOT NULL,
+    "predictedCR" DOUBLE PRECISION NOT NULL,
+    "confidenceScore" DOUBLE PRECISION NOT NULL,
+    "factorsAnalyzed" JSONB NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "variant_performance_predictions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -143,6 +169,9 @@ CREATE INDEX "creative_variants_setId_idx" ON "creative_variants"("setId");
 CREATE INDEX "creative_variants_assetId_idx" ON "creative_variants"("assetId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "variant_performance_predictions_variantId_key" ON "variant_performance_predictions"("variantId");
+
+-- CreateIndex
 CREATE INDEX "creative_performance_variantId_idx" ON "creative_performance"("variantId");
 
 -- CreateIndex
@@ -189,6 +218,9 @@ ALTER TABLE "creative_variants" ADD CONSTRAINT "creative_variants_assetId_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "creative_variants" ADD CONSTRAINT "creative_variants_imageJobId_fkey" FOREIGN KEY ("imageJobId") REFERENCES "mcp_generation_jobs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "variant_performance_predictions" ADD CONSTRAINT "variant_performance_predictions_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "creative_variants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "creative_performance" ADD CONSTRAINT "creative_performance_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "creative_variants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
