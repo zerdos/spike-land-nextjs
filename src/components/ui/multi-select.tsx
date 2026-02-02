@@ -67,12 +67,21 @@ export function MultiSelect({
                 >
                   {option?.label ?? item}
                   <div
+                    role="button"
+                    tabIndex={0}
                     className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
                     onMouseDown={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                     }}
                     onClick={() => handleUnselect(item)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleUnselect(item);
+                      }
+                    }}
                   >
                     <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
                   </div>

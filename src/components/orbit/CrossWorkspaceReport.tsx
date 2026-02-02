@@ -31,6 +31,18 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 
+interface ReportSummary {
+  workspaceId: string;
+  workspaceName: string;
+  socialAccountCount: number;
+  publishedPostCount: number;
+  totalEngagements: number;
+  totalImpressions: number;
+  totalFollowers: number;
+  scheduledPostCount: number;
+  lastActivityAt: string | null;
+}
+
 export function CrossWorkspaceReport() {
   const { workspaces } = useWorkspace();
 
@@ -112,17 +124,21 @@ export function CrossWorkspaceReport() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Workspaces</label>
-              <MultiSelect
-                options={workspaceOptions}
-                selected={selectedWorkspaceIds}
-                onChange={setSelectedWorkspaceIds}
-                placeholder="Select workspaces..."
-              />
+              <label htmlFor="workspace-select" className="text-sm font-medium">Workspaces</label>
+              <div id="workspace-select">
+                <MultiSelect
+                  options={workspaceOptions}
+                  selected={selectedWorkspaceIds}
+                  onChange={setSelectedWorkspaceIds}
+                  placeholder="Select workspaces..."
+                />
+              </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Date Range</label>
-              <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+              <label htmlFor="date-range-picker" className="text-sm font-medium">Date Range</label>
+              <div id="date-range-picker">
+                <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+              </div>
             </div>
           </div>
           <Button onClick={handleGenerateReport} disabled={isLoading} className="w-full md:w-auto">
@@ -241,7 +257,7 @@ export function CrossWorkspaceReport() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {reportData.summaries.map((summary: any) => (
+                  {(reportData.summaries as ReportSummary[]).map((summary) => (
                     <TableRow key={summary.workspaceId}>
                       <TableCell className="font-medium">{summary.workspaceName}</TableCell>
                       <TableCell className="text-right">{summary.socialAccountCount}</TableCell>

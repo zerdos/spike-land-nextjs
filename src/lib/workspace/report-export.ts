@@ -6,7 +6,7 @@ import Papa from "papaparse";
  * @param data Array of objects to export
  * @returns CSV string
  */
-export function exportToCSV(data: any[]): string {
+export function exportToCSV(data: unknown[]): string {
   if (!data || data.length === 0) {
     return "";
   }
@@ -40,7 +40,7 @@ export function downloadCSV(csvContent: string, filename: string): void {
 export function generatePDF(
   title: string,
   summary: Record<string, number | string>,
-  details: any[],
+  details: Record<string, unknown>[],
 ): jsPDF {
   const doc = new jsPDF();
   let yPos = 20;
