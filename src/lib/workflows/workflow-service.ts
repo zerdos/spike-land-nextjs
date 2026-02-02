@@ -8,6 +8,7 @@ import type {
   WorkflowRunLogEntry,
   WorkflowStepData,
   WorkflowVersionData,
+  StepExecutionState,
 } from "@/types/workflow";
 import type {
   BranchType,
@@ -19,6 +20,7 @@ import type {
   WorkflowStep,
   WorkflowStepType,
   WorkflowVersion,
+  StepRunStatus,
 } from "@prisma/client";
 import { validateForPublish, validateWorkflow } from "./workflow-validator";
 
@@ -453,6 +455,66 @@ export async function getWorkflowRun(
   return run ? mapRunToData(run) : null;
 }
 
+/**
+ * Initializes step execution tracking for a new workflow run
+ */
+export function initializeStepExecutions(
+  steps: WorkflowStep[],
+): Record<string, StepExecutionState> {
+  return steps.reduce((acc, step) => {
+    acc[step.id] = {
+      stepId: step.id,
+      status: "PENDING" as StepRunStatus,
+    };
+    return acc;
+  }, {} as Record<string, StepExecutionState>);
+}
+
+/**
+ * Updates step execution state within a workflow run
+ * TODO: Address race condition - using JSON read-modify-write is not atomic.
+ * Should use database-level JSON updates or optimistic locking in the future.
+ */
+export async function updateStepExecution(
+  runId: string,
+  stepId: string,
+  update: Partial<StepExecutionState>,
+): Promise<void> {
+  const run = await prisma.workflowRun.findUnique({
+    where: { id: runId },
+    select: { stepExecutions: true },
+  });
+
+  if (!run) {
+    throw new Error(`Workflow run ${runId} not found`);
+  }
+
+  const executions = (run.stepExecutions as unknown as Record<string, StepExecutionState>) ?? {};
+  if (executions[stepId]) {
+    executions[stepId] = {
+      ...executions[stepId],
+      ...update,
+    };
+  } else {
+    // If step state doesn't exist, we can't update it safely without the ID
+    // But since update partial usually doesn't include ID if it's just an update,
+    // we should rely on the caller to ensure state exists or provide ID.
+    // However, to satisfy TS, we need to ensure StepExecutionState constraints are met.
+    if (update.stepId) {
+       executions[stepId] = {
+         ...update,
+         stepId: update.stepId,
+         status: update.status ?? "PENDING",
+       };
+    }
+  }
+
+  await prisma.workflowRun.update({
+    where: { id: runId },
+    data: { stepExecutions: executions as unknown as Prisma.InputJsonValue },
+  });
+}
+
 // Helper function to map Prisma workflow to WorkflowData
 type WorkflowWithRelations = Workflow & {
   versions: (WorkflowVersion & { steps: WorkflowStep[]; })[];
@@ -518,6 +580,9 @@ function mapRunToData(run: RunWithLogs): WorkflowRunData {
     status: run.status,
     startedAt: run.startedAt,
     endedAt: run.endedAt,
+    stepExecutions: (run.stepExecutions as unknown as Record<string, StepExecutionState>) ?? undefined,
+    triggerType: run.triggerType,
+    triggerData: (run.triggerData as unknown as Record<string, unknown>) ?? undefined,
     logs: run.logs.map((log) => ({
       stepId: log.stepId ?? undefined,
       stepStatus: log.stepStatus as WorkflowRunLogEntry["stepStatus"],

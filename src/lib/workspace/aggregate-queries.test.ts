@@ -14,6 +14,7 @@ vi.mock("@/lib/prisma", () => ({
     },
     socialMetrics: {
       aggregate: vi.fn(),
+      groupBy: vi.fn(),
     },
     workspace: {
       findMany: vi.fn(),
@@ -33,6 +34,7 @@ vi.mock("@/lib/prisma", () => ({
 
 import prisma from "@/lib/prisma";
 import {
+  getAggregateDailyMetrics,
   getAggregateKPIs,
   getUserFavorites,
   getUserRecentWorkspaces,
@@ -350,6 +352,72 @@ describe("toggleWorkspaceFavorite", () => {
     expect(result).toBe(false);
     expect(prisma.workspaceFavorite.delete).toHaveBeenCalledWith({
       where: { id: "fav-1" },
+    });
+  });
+});
+
+describe("getAggregateDailyMetrics", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should return empty array for empty workspace list", async () => {
+    const result = await getAggregateDailyMetrics([], {
+      startDate: new Date(),
+      endDate: new Date(),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("should group metrics by date", async () => {
+    vi.mocked(prisma.socialMetrics.groupBy).mockResolvedValue([
+      {
+        date: new Date("2024-01-01"),
+        _sum: {
+          followers: 100,
+          impressions: 500,
+          likes: 10,
+          comments: 2,
+          shares: 1,
+        },
+        _count: {},
+        _avg: {},
+        _min: {},
+        _max: {},
+      },
+      {
+        date: new Date("2024-01-02"),
+        _sum: {
+          followers: 105,
+          impressions: 600,
+          likes: 15,
+          comments: 3,
+          shares: 2,
+        },
+        _count: {},
+        _avg: {},
+        _min: {},
+        _max: {},
+      },
+    ] as never);
+
+    const result = await getAggregateDailyMetrics(["ws-1"], {
+      startDate: new Date("2024-01-01"),
+      endDate: new Date("2024-01-02"),
+    });
+
+    expect(result).toHaveLength(2);
+    expect(result[0]).toEqual({
+      date: new Date("2024-01-01").toISOString(),
+      followers: 100,
+      impressions: 500,
+      engagements: 13,
+    });
+    expect(result[1]).toEqual({
+      date: new Date("2024-01-02").toISOString(),
+      followers: 105,
+      impressions: 600,
+      engagements: 20,
     });
   });
 });
