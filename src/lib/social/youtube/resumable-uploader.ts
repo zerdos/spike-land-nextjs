@@ -117,7 +117,7 @@ export class YouTubeResumableUploader {
         "Content-Range": contentRange,
         "Content-Type": "application/octet-stream",
       },
-      body: chunk,
+      body: new Blob([chunk]),
     });
 
     if (response.status === 308) {
