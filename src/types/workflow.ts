@@ -99,6 +99,9 @@ export interface WorkflowRunData {
   status: WorkflowRunStatus;
   startedAt: Date;
   endedAt?: Date | null;
+  stepExecutions?: Record<string, StepExecutionState>;
+  triggerType?: string | null;
+  triggerData?: Record<string, unknown> | null;
   logs: WorkflowRunLogEntry[];
 }
 
@@ -320,3 +323,94 @@ export interface WorkflowExecutionResult {
 
 // Re-export the enum type for convenience
 export type { WorkflowEventType };
+
+/**
+ * Available action types in the workflow system
+ */
+export enum WorkflowActionType {
+  // Social Media Actions
+  POST_TO_SOCIAL = "POST_TO_SOCIAL",
+  SCHEDULE_POST = "SCHEDULE_POST",
+  REPLY_TO_COMMENT = "REPLY_TO_COMMENT",
+
+  // Notification Actions
+  SEND_EMAIL = "SEND_EMAIL",
+  SEND_SLACK_MESSAGE = "SEND_SLACK_MESSAGE",
+  CREATE_NOTIFICATION = "CREATE_NOTIFICATION",
+
+  // AI Actions
+  GENERATE_CONTENT = "GENERATE_CONTENT",
+  ANALYZE_SENTIMENT = "ANALYZE_SENTIMENT",
+  MODERATE_CONTENT = "MODERATE_CONTENT",
+
+  // Data Actions
+  UPDATE_DATABASE = "UPDATE_DATABASE",
+  LOG_EVENT = "LOG_EVENT",
+  TRIGGER_WEBHOOK = "TRIGGER_WEBHOOK",
+
+  // Control Flow
+  DELAY = "DELAY",
+  CONDITIONAL_BRANCH = "CONDITIONAL_BRANCH",
+  LOOP = "LOOP",
+}
+
+/**
+ * Step execution state within a workflow run
+ */
+export interface StepExecutionState {
+  stepId: string;
+  status: StepRunStatus;
+  startedAt?: Date;
+  endedAt?: Date;
+  output?: Record<string, unknown>;
+  error?: string;
+  retryCount?: number;
+}
+
+/**
+ * Action configuration schemas by type
+ */
+export type ActionConfig =
+  | PostToSocialConfig
+  | SendEmailConfig
+  | GenerateContentConfig
+  | DelayConfig
+  | WebhookConfig;
+
+export interface PostToSocialConfig {
+  actionType: WorkflowActionType.POST_TO_SOCIAL;
+  platform: string;
+  accountId: string;
+  content: string;
+  mediaUrls?: string[];
+}
+
+export interface SendEmailConfig {
+  actionType: WorkflowActionType.SEND_EMAIL;
+  to: string | string[];
+  subject: string;
+  body: string;
+  templateId?: string;
+}
+
+export interface GenerateContentConfig {
+  actionType: WorkflowActionType.GENERATE_CONTENT;
+  prompt: string;
+  maxTokens?: number;
+  temperature?: number;
+  outputVariable?: string;
+}
+
+export interface DelayConfig {
+  actionType: WorkflowActionType.DELAY;
+  duration: number; // milliseconds
+  until?: Date;
+}
+
+export interface WebhookConfig {
+  actionType: WorkflowActionType.TRIGGER_WEBHOOK;
+  url: string;
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  headers?: Record<string, string>;
+  body?: Record<string, unknown>;
+}
