@@ -5,7 +5,7 @@ const TransformDataInputSchema = z.object({
   data: z.any(),
   transformation: z.string(), // We'll use a simple JSON mapping or expression later, for now maybe just identity or simple extraction
   type: z.enum(["map", "filter", "extract"]).default("map"),
-});
+}, {});
 
 export interface TransformDataInput extends ActionInput {
   data: unknown;

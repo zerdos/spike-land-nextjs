@@ -1,4 +1,3 @@
-import React from "react";
 import type { WorkflowNode } from "../types";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -9,22 +8,26 @@ interface ConditionConfigFormProps {
 }
 
 const ConditionConfigForm = ({ node, onChange }: ConditionConfigFormProps) => {
+  const config = (node.data.config || {}) as Record<string, unknown>;
+
   const handleChange = (field: string, value: unknown) => {
     onChange({
       ...node.data,
       config: {
-        ...node.data.config,
+        ...config,
         [field]: value,
       },
     });
   };
+
+  const expression = (config.expression as string) || "";
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="expression">Condition Expression</Label>
         <Input
-            value={(node.data.config?.expression as string) || ""}
+            value={expression}
             onChange={(e) => handleChange("expression", e.target.value)}
             placeholder="e.g. {{trigger.value}} > 10"
         />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { ReactFlowProvider } from "reactflow";
 import NodePalette from "./NodePalette";
 import WorkflowCanvas from "./WorkflowCanvas";

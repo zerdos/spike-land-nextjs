@@ -3,7 +3,7 @@ import type { ActionInput, ActionOutput, WorkflowAction } from "./action-types";
 
 const LoopInputSchema = z.object({
   items: z.array(z.any()),
-});
+}, {});
 
 export interface LoopInput extends ActionInput {
   items: unknown[];

@@ -13,7 +13,7 @@ const ParallelExecutionInputSchema = z.object({
   actionType: z.string(), // The action to perform on each item
   actionConfig: z.record(z.any()), // Configuration for that action
   concurrency: z.number().optional().default(5),
-});
+}, {});
 
 export interface ParallelExecutionInput extends ActionInput {
   items: unknown[];

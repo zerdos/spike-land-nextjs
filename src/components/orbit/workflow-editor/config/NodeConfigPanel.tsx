@@ -1,4 +1,3 @@
-import React from "react";
 import type { WorkflowNode } from "../types";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import TriggerConfigForm from "./TriggerConfigForm";

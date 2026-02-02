@@ -1,4 +1,3 @@
-import React from "react";
 import type { WorkflowNode } from "../types";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,7 @@ interface TriggerConfigFormProps {
 }
 
 const TriggerConfigForm = ({ node, onChange }: TriggerConfigFormProps) => {
-  const config = node.data.config || {};
+  const config = (node.data.config || {}) as Record<string, unknown>;
 
   const handleChange = (field: string, value: unknown) => {
     onChange({
@@ -22,12 +21,16 @@ const TriggerConfigForm = ({ node, onChange }: TriggerConfigFormProps) => {
     });
   };
 
+  const triggerType = (config.triggerType as string) || "schedule";
+  const cron = (config.cron as string) || "* * * * *";
+  const eventType = (config.eventType as string) || "";
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="trigger-type">Trigger Type</Label>
         <Select
-          value={(config.triggerType as string) || "schedule"}
+          value={triggerType}
           onValueChange={(val) => handleChange("triggerType", val)}
         >
           <SelectTrigger>
@@ -41,17 +44,17 @@ const TriggerConfigForm = ({ node, onChange }: TriggerConfigFormProps) => {
         </Select>
       </div>
 
-      {config.triggerType === "schedule" && (
+      {triggerType === "schedule" && (
         <div className="space-y-2">
           <Label>Schedule</Label>
           <CronPicker
-            value={(config.cron as string) || "* * * * *"}
+            value={cron}
             onChange={(val) => handleChange("cron", val)}
           />
         </div>
       )}
 
-      {config.triggerType === "webhook" && (
+      {triggerType === "webhook" && (
         <div className="space-y-2">
            <div className="text-sm text-muted-foreground bg-blue-50 p-2 rounded border border-blue-100">
              Webhook URL will be generated after saving the workflow.
@@ -59,11 +62,11 @@ const TriggerConfigForm = ({ node, onChange }: TriggerConfigFormProps) => {
         </div>
       )}
 
-       {config.triggerType === "event" && (
+       {triggerType === "event" && (
         <div className="space-y-2">
            <Label>Event Type</Label>
            <Input
-             value={(config.eventType as string) || ""}
+             value={eventType}
              onChange={(e) => handleChange("eventType", e.target.value)}
              placeholder="e.g. user.created"
            />

@@ -7,7 +7,7 @@ const HttpRequestInputSchema = z.object({
   headers: z.record(z.string()).optional(),
   body: z.any().optional(),
   timeout: z.number().optional(),
-});
+}, {});
 
 export interface HttpRequestInput extends ActionInput {
   url: string;
