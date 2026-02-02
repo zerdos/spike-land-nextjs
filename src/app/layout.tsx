@@ -6,6 +6,7 @@ import { SessionProvider } from "@/components/auth/session-provider";
 import { CookieConsent } from "@/components/CookieConsent";
 import { ConsoleCapture } from "@/components/errors/ConsoleCapture";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
+import { Footer } from "@/components/footer/Footer";
 import { ConditionalHeader } from "@/components/platform-landing";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
@@ -90,6 +91,7 @@ export default async function RootLayout({
               <SessionProvider>
                 <ConditionalHeader />
                 {children}
+                <Footer />
                 <FeedbackButton />
                 <Suspense fallback={null}>
                   <SessionTracker />

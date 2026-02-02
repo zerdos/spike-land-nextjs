@@ -7,6 +7,7 @@ import {
   OrbitHero,
   PlatformConnections,
 } from "@/components/orbit-landing";
+import { LandingPageStructuredData } from "@/components/seo/LandingPageStructuredData";
 
 /**
  * Spike Land Landing Page - Orbit Social Media Command Center
@@ -18,6 +19,8 @@ import {
 export default function Home() {
   return (
     <main className="min-h-screen bg-zinc-950">
+      <LandingPageStructuredData />
+
       {/* Hero Section - "Your Social Command Center" */}
       <OrbitHero />
 
