@@ -7,7 +7,7 @@ vi.mock("./action-dispatcher", () => ({
 }));
 
 vi.mock("./interpolation", () => ({
-  interpolate: vi.fn((input, context) => input), // Simple pass-through or custom logic
+  interpolate: vi.fn((input, _context) => input), // Simple pass-through or custom logic
 }));
 
 import { dispatchAction } from "./action-dispatcher";
@@ -21,8 +21,8 @@ describe("loopAction", () => {
   it("should iterate over items", async () => {
     (dispatchAction as unknown as jest.Mock).mockResolvedValue({ success: true });
     (interpolate as unknown as jest.Mock).mockImplementation((input: unknown, context: unknown) => ({
-      ...input,
-      ...context,
+      ...(input as Record<string, unknown>),
+      ...(context as Record<string, unknown>),
     }));
 
     const result = await loopAction.execute({
