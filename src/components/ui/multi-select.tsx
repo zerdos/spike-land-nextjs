@@ -1,32 +1,28 @@
-"use client";
+"use client"
 
-import { Check, ChevronsUpDown, X } from "lucide-react";
-import * as React from "react";
+import * as React from "react"
+import { Check, ChevronsUpDown, X, Search } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Badge } from "@/components/ui/badge"
 
 export type Option = {
-  label: string;
-  value: string;
-};
+  label: string
+  value: string
+}
 
 interface MultiSelectProps {
-  options: Option[];
-  selected: string[];
-  onChange: (selected: string[]) => void;
-  placeholder?: string;
-  className?: string;
+  options: Option[]
+  selected: string[]
+  onChange: (selected: string[]) => void
+  placeholder?: string
+  className?: string
 }
 
 export function MultiSelect({
@@ -36,11 +32,16 @@ export function MultiSelect({
   placeholder = "Select items...",
   className,
 }: MultiSelectProps) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false)
+  const [search, setSearch] = React.useState("")
 
   const handleUnselect = (item: string) => {
-    onChange(selected.filter((i) => i !== item));
-  };
+    onChange(selected.filter((i) => i !== item))
+  }
+
+  const filteredOptions = options.filter((option) =>
+    option.label.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -58,7 +59,7 @@ export function MultiSelect({
               </span>
             )}
             {selected.map((item) => {
-              const option = options.find((o) => o.value === item);
+              const option = options.find((o) => o.value === item)
               return (
                 <Badge
                   key={item}
@@ -71,61 +72,85 @@ export function MultiSelect({
                     tabIndex={0}
                     className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
                     onMouseDown={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+                      e.preventDefault()
+                      e.stopPropagation()
                     }}
                     onClick={() => handleUnselect(item)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleUnselect(item);
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleUnselect(item)
                       }
                     }}
                   >
                     <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
                   </div>
                 </Badge>
-              );
+              )
             })}
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput placeholder="Search..." />
-          <CommandList>
-            <CommandEmpty>No item found.</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-auto">
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.label} // Use label for searching
-                  onSelect={() => {
+        <div className="flex items-center border-b px-3">
+          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+          <input
+            className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="max-h-64 overflow-auto p-1">
+          {filteredOptions.length === 0 ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              No item found.
+            </div>
+          ) : (
+            filteredOptions.map((option) => (
+              <div
+                key={option.value}
+                role="button"
+                tabIndex={0}
+                className={cn(
+                  "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer",
+                  selected.includes(option.value) && "bg-accent/50"
+                )}
+                onClick={() => {
+                  onChange(
+                    selected.includes(option.value)
+                      ? selected.filter((item) => item !== option.value)
+                      : [...selected, option.value]
+                  )
+                  // Keep open to allow multiple selections
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
                     onChange(
                       selected.includes(option.value)
                         ? selected.filter((item) => item !== option.value)
-                        : [...selected, option.value],
-                    );
-                    setOpen(true);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      selected.includes(option.value)
-                        ? "opacity-100"
-                        : "opacity-0",
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+                        : [...selected, option.value]
+                    )
+                  }
+                }}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    selected.includes(option.value)
+                      ? "opacity-100"
+                      : "opacity-0"
+                  )}
+                />
+                {option.label}
+              </div>
+            ))
+          )}
+        </div>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
